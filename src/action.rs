@@ -114,6 +114,8 @@ pub enum PlaceArtifactKind {
 /// automation adapters) produces these; [`crate::app::update`] consumes them.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Action {
+    /// Edit authored themes in the shared native workshop.
+    OpenThemeWorkshop,
     /// Open an address: mint/select its node in the graph and fetch it.
     OpenAddress(String),
     /// Open the submission composer for the focused Titan or Spartan address.
@@ -632,10 +634,10 @@ pub enum CaretMove {
 /// palette without a second edit. Ids stay the technical persistence keys.
 pub fn palette_actions() -> Vec<(String, Action)> {
     let mut actions = vec![
-        ("Back", Action::NavBack),
-        ("Forward", Action::NavForward),
-        ("Reload", Action::Reload),
-        ("Stop loading", Action::Stop),
+        shared(Action::NavBack),
+        shared(Action::NavForward),
+        shared(Action::Reload),
+        shared(Action::Stop),
         (
             "Subscribe to feed: every minute",
             Action::SubscribeFocusedFeed {
@@ -658,7 +660,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Refresh feeds", Action::RefreshFeeds),
         ("Mark feed entry read", Action::MarkFocusedFeedEntryRead),
         ("Reseed layout", Action::ReseedLayout),
-        ("Fit view", Action::FitView),
+        shared(Action::FitView),
         // The per-arrangement `Layout:` rows are derived from the canvas
         // registry below, so the plain display names live in one place.
         // Force-directed is the orrery surface's native arrangement
@@ -667,11 +669,11 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Toggle isometric view", Action::ToggleIsometric),
         ("Toggle height-by-degree", Action::ToggleHeightByDegree),
         ("Toggle size-by-recency", Action::ToggleSizeByRecency),
-        ("Play/pause physics", Action::TogglePhysics),
+        shared(Action::TogglePhysics),
         ("Orbit left", Action::OrbitBy(-0.15)),
         ("Orbit right", Action::OrbitBy(0.15)),
         ("Toggle live content", Action::ToggleNodeContent),
-        ("Save session", Action::SaveSession),
+        shared(Action::SaveSession),
         (
             "Open Knot document",
             Action::ChooseKnotDocumentFile { read_only: false },
@@ -688,12 +690,18 @@ pub fn palette_actions() -> Vec<(String, Action)> {
             },
         ),
     ];
+    // A pane the stack names (Settings, Trail, Workbench) takes the
+    // catalogue's label, as the verbs above do.
     actions.extend(
         crate::panes::pane_palette_entries()
             .into_iter()
-            .map(|(label, kind)| (label, Action::SummonPane(kind))),
+            .map(|(label, kind)| {
+                let action = Action::SummonPane(kind);
+                (shared_label(&action).unwrap_or(label), action)
+            }),
     );
     actions.extend([
+        ("Edit themes", Action::OpenThemeWorkshop),
         ("New window", Action::NewWindow),
         ("Float pane", Action::FloatActivePane),
         ("Dock pane", Action::DockActivePane),
@@ -702,7 +710,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Fork from node", Action::ForkFocusedNode),
         ("Open node in Workbench", Action::OpenInWorkbench),
         ("Close workbench tile", Action::CloseWorkbenchTile),
-        ("Delete node", Action::DeleteFocusedNode),
+        shared(Action::DeleteFocusedNode),
         ("Empty recycle bin", Action::EmptyRecycleBin),
         ("Close pane", Action::CloseActivePane),
         ("Maximize pane", Action::ToggleMaximizePane),
@@ -781,6 +789,43 @@ pub fn palette_actions() -> Vec<(String, Action)> {
     rows
 }
 
+/// The stack's shared command id for an action Turnstone offers under one
+/// (Scenograph editor plan SE49, SE50). The palette registers these rows under
+/// the id and labels them from the catalogue, so a label revision (SE51)
+/// reaches Turnstone without code. Every other row keeps its label as its
+/// host-owned id.
+pub fn shared_command_id(action: &Action) -> Option<&'static str> {
+    use cambium::catalogue::ids;
+    Some(match action {
+        Action::NavBack => ids::NAV_BACK,
+        Action::NavForward => ids::NAV_FORWARD,
+        Action::Reload => ids::NAV_RELOAD,
+        Action::Stop => ids::NAV_STOP,
+        Action::FitView => ids::VIEW_FIT,
+        Action::TogglePhysics => ids::PHYSICS_TOGGLE,
+        Action::DeleteFocusedNode => ids::NODE_DELETE,
+        Action::SaveSession => ids::SESSION_SAVE,
+        Action::SummonPane(kind) => match kind.as_str() {
+            crate::panes::kind::SETTINGS => ids::PANE_SETTINGS,
+            crate::panes::kind::TRAIL => ids::PANE_TRAIL,
+            crate::panes::kind::WORKBENCH => ids::PANE_WORKBENCH,
+            _ => return None,
+        },
+        _ => return None,
+    })
+}
+
+/// The catalogue's label for an action offered under a shared id.
+fn shared_label(action: &Action) -> Option<&'static str> {
+    shared_command_id(action).and_then(cambium::catalogue::label)
+}
+
+/// A registry row for a shared verb, labelled by the catalogue.
+fn shared(action: Action) -> (&'static str, Action) {
+    let label = shared_label(&action).expect("a shared verb has a catalogue id and label");
+    (label, action)
+}
+
 /// Browser controls that a hosted web surface executes directly. Retained
 /// document sessions use the same app actions but complete them through the
 /// fetch/content ports instead.
@@ -796,6 +841,8 @@ pub enum ContentControl {
 /// itself never blocks and never touches a platform API.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Effect {
+    /// Open/focus the host-owned workshop on the existing render core.
+    OpenThemeWorkshop,
     /// Fetch a page document through the fetch actor, for enrichment of the
     /// node that requested it (correlation-over-URLs: several nodes may
     /// share an address, and a node may navigate away mid-flight).

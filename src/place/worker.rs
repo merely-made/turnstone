@@ -257,6 +257,9 @@ pub enum PlaceWorkerCommand {
         request: u64,
     },
     Release(std::sync::mpsc::SyncSender<()>),
+    /// The vault unlocked: the profile root a pending worker was started
+    /// without. The commands it held run now, in the order they came.
+    AdoptIdentity(Arc<RootIdentity>),
     /// Stop serving the way a killed process stops: no close on the wire.
     /// Test-only, because nothing a person does to this app produces it.
     #[cfg(test)]
@@ -2131,16 +2134,31 @@ fn place_snapshot(
 /// Spawn the retained-place worker. Each `Open` first releases the prior
 /// session's database handles, so switch and trash can establish ordering with
 /// the explicit `Release` acknowledgement.
-///
-/// `identity` is `None` while the profile identity is pending (djinn absent or
-/// Locked, dramatis D12): every command that would derive, seal or sign is
-/// refused with [`crate::identity::PENDING`], and nothing is written.
 pub fn spawn_place_worker(
     wake: Wake,
-    identity: impl Into<Option<Arc<RootIdentity>>>,
+    identity: Arc<RootIdentity>,
     settings: PlaceWorkerSettings,
 ) -> (ActorHandle<PlaceWorkerCommand>, Receiver<Update>) {
-    let identity: Option<Arc<RootIdentity>> = identity.into();
+    spawn_place_worker_with(wake, Some(identity), settings)
+}
+
+/// Spawn the worker while the profile identity is pending (the vault is
+/// locked). Every command that speaks as the profile waits, in order, until
+/// [`PlaceWorkerCommand::AdoptIdentity`]; `Release` is still answered at once,
+/// so a session switch never waits on the vault, and drops what the released
+/// session had waiting.
+pub fn spawn_pending_place_worker(
+    wake: Wake,
+    settings: PlaceWorkerSettings,
+) -> (ActorHandle<PlaceWorkerCommand>, Receiver<Update>) {
+    spawn_place_worker_with(wake, None, settings)
+}
+
+fn spawn_place_worker_with(
+    wake: Wake,
+    identity: Option<Arc<RootIdentity>>,
+    settings: PlaceWorkerSettings,
+) -> (ActorHandle<PlaceWorkerCommand>, Receiver<Update>) {
     spawn_named(
         "turnstone-place",
         wake,
@@ -2148,11 +2166,49 @@ pub fn spawn_place_worker(
             let mut live: Option<OpenPlace> = None;
             let mut live_scope: Option<(SessionId, u64)> = None;
             let mut lifecycle_generation = 0u64;
-            while let Ok(command) = commands.recv() {
-                let Some(identity) = identity.as_ref() else {
-                    refuse_pending(command, &out);
-                    continue;
+            let mut adopted = identity;
+            let mut waiting: std::collections::VecDeque<PlaceWorkerCommand> =
+                std::collections::VecDeque::new();
+            loop {
+                let command = match adopted.is_some().then(|| waiting.pop_front()).flatten() {
+                    Some(command) => command,
+                    None => match commands.recv() {
+                        Ok(command) => command,
+                        Err(_) => break,
+                    },
                 };
+                let identity = match (command, &adopted) {
+                    (PlaceWorkerCommand::AdoptIdentity(root), _) => {
+                        adopted.get_or_insert(root);
+                        continue;
+                    },
+                    (command, Some(root)) => {
+                        let root = Arc::clone(root);
+                        (command, root)
+                    },
+                    // Nothing is open while pending, so a release has nothing
+                    // to drop but what that session had waiting.
+                    (PlaceWorkerCommand::Release(ack), None) => {
+                        waiting.clear();
+                        let _ = ack.send(());
+                        continue;
+                    },
+                    #[cfg(test)]
+                    (PlaceWorkerCommand::Abandon(ack), None) => {
+                        let _ = ack.send(());
+                        continue;
+                    },
+                    #[cfg(test)]
+                    (PlaceWorkerCommand::Freeze(_, ack), None) => {
+                        let _ = ack.send(());
+                        continue;
+                    },
+                    (command, None) => {
+                        waiting.push_back(command);
+                        continue;
+                    },
+                };
+                let (command, identity) = identity;
                 match command {
                     PlaceWorkerCommand::Open {
                         session,
@@ -2635,6 +2691,7 @@ pub fn spawn_place_worker(
                         live_scope = None;
                         let _ = ack.send(());
                     },
+                    PlaceWorkerCommand::AdoptIdentity(_) => {},
                     #[cfg(test)]
                     PlaceWorkerCommand::Abandon(ack) => {
                         if let Some(opened) = live.as_mut()
@@ -2658,113 +2715,6 @@ pub fn spawn_place_worker(
             drop(live);
         },
     )
-}
-
-/// Answer one command while the identity is pending: every identity-bound
-/// command fails with the pending reason, and the lifecycle acknowledgements
-/// still answer (no place is open, so there is nothing to release).
-fn refuse_pending(command: PlaceWorkerCommand, out: &Emitter<Update>) {
-    fn pending<T>() -> Result<T, String> {
-        Err(crate::identity::PENDING.to_string())
-    }
-    match command {
-        PlaceWorkerCommand::Open {
-            session,
-            generation,
-            ..
-        }
-        | PlaceWorkerCommand::Reconnect {
-            session,
-            generation,
-            ..
-        }
-        | PlaceWorkerCommand::Resync {
-            session,
-            generation,
-        } => out.emit(Update::PlaceOpened {
-            session,
-            generation,
-            result: pending(),
-        }),
-        PlaceWorkerCommand::Join {
-            session,
-            generation,
-            ..
-        } => out.emit(Update::PlaceJoined {
-            session,
-            generation,
-            result: pending(),
-        }),
-        PlaceWorkerCommand::Found {
-            session,
-            generation,
-            ..
-        } => out.emit(Update::PlaceFounded {
-            session,
-            generation,
-            result: pending(),
-        }),
-        PlaceWorkerCommand::OfferPrekey {
-            session,
-            generation,
-            ..
-        } => out.emit(Update::PlacePrekeyOffered {
-            session,
-            generation,
-            result: pending(),
-        }),
-        PlaceWorkerCommand::Invite {
-            session,
-            generation,
-            ..
-        } => out.emit(Update::PlaceInvited {
-            session,
-            generation,
-            result: pending(),
-        }),
-        PlaceWorkerCommand::SetCollection {
-            session,
-            generation,
-            ..
-        } => out.emit(Update::PlaceCollectionSet {
-            session,
-            generation,
-            result: pending(),
-        }),
-        PlaceWorkerCommand::Author {
-            session,
-            generation,
-            request,
-            ..
-        } => out.emit(Update::PlaceCommandDone {
-            session,
-            generation,
-            request,
-            result: pending(),
-        }),
-        PlaceWorkerCommand::VisitDocument {
-            session,
-            generation,
-            holder_root,
-            path,
-            request,
-            ..
-        } => out.emit(Update::PlaceDocumentVisit {
-            session,
-            generation,
-            request,
-            holder_root,
-            path,
-            result: pending(),
-        }),
-        PlaceWorkerCommand::Release(ack) => {
-            let _ = ack.send(());
-        },
-        #[cfg(test)]
-        PlaceWorkerCommand::Abandon(ack) | PlaceWorkerCommand::Freeze(_, ack) => {
-            let _ = ack.send(());
-        },
-    }
 }
 
 #[cfg(test)]
@@ -3168,7 +3118,7 @@ pub(crate) mod tests {
     fn a_place_with_only_a_plaintext_graph_is_refused_by_name() {
         let root = tempfile::tempdir().unwrap();
         let directory = root.path().join("profile");
-        let identity = RootIdentity::from_seed([0x84; 32]);
+        let identity = RootIdentity::Local(InMemoryProvider::from_seed([0x84; 32]));
         let binding = binding(0x35);
         seed_profile(&directory, &identity, &binding, 1);
         // Positive control: the same profile opens while its store is encrypted.
@@ -3217,8 +3167,8 @@ pub(crate) mod tests {
         let _ = std::fs::remove_dir_all(&root);
         let first_dir = root.join("first");
         let second_dir = root.join("second");
-        let first_identity = RootIdentity::from_seed([0x81; 32]);
-        let second_identity = RootIdentity::from_seed([0x82; 32]);
+        let first_identity = RootIdentity::Local(InMemoryProvider::from_seed([0x81; 32]));
+        let second_identity = RootIdentity::Local(InMemoryProvider::from_seed([0x82; 32]));
         let first_binding = binding(0x21);
         let second_binding = binding(0x31);
         seed_profile(&first_dir, &first_identity, &first_binding, 1);
@@ -3378,8 +3328,8 @@ pub(crate) mod tests {
             std::env::temp_dir().join(format!("turnstone-place-admit-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         let founder = InMemoryProvider::from_seed([0xb1; 32]);
-        let joiner = RootIdentity::from_seed([0xb2; 32]);
-        let stranger = RootIdentity::from_seed([0xb3; 32]);
+        let joiner = RootIdentity::Local(InMemoryProvider::from_seed([0xb2; 32]));
+        let stranger = RootIdentity::Local(InMemoryProvider::from_seed([0xb3; 32]));
         let binding = binding(0x61);
         let joined = root.join("joiner");
         let joiner_id = joiner.master_public_key().to_bytes();
@@ -3487,8 +3437,8 @@ pub(crate) mod tests {
             std::env::temp_dir().join(format!("turnstone-place-author-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         let founder = InMemoryProvider::from_seed([0xc1; 32]);
-        let joiner = RootIdentity::from_seed([0xc2; 32]);
-        let outsider = RootIdentity::from_seed([0xc3; 32]);
+        let joiner = RootIdentity::Local(InMemoryProvider::from_seed([0xc2; 32]));
+        let outsider = RootIdentity::Local(InMemoryProvider::from_seed([0xc3; 32]));
         let binding = binding(0x71);
         let host = root.join("host");
         let guest = root.join("guest");
@@ -3614,8 +3564,8 @@ pub(crate) mod tests {
         let guest = root.join("guest");
         std::fs::create_dir_all(&host).unwrap();
         std::fs::create_dir_all(&guest).unwrap();
-        let host_identity = RootIdentity::from_seed([0xd1; 32]);
-        let guest_identity = RootIdentity::from_seed([0xd2; 32]);
+        let host_identity = RootIdentity::Local(InMemoryProvider::from_seed([0xd1; 32]));
+        let guest_identity = RootIdentity::Local(InMemoryProvider::from_seed([0xd2; 32]));
         // The product clock, not a fixture's: the windows under test are the
         // ones a real founding opens.
         let settings = PlaceWorkerSettings::default();
@@ -3745,8 +3695,8 @@ pub(crate) mod tests {
         let guest = root.join("guest");
         std::fs::create_dir_all(&host).unwrap();
         std::fs::create_dir_all(&guest).unwrap();
-        let host_identity = RootIdentity::from_seed([0xd3; 32]);
-        let reader_identity = RootIdentity::from_seed([0xd4; 32]);
+        let host_identity = RootIdentity::Local(InMemoryProvider::from_seed([0xd3; 32]));
+        let reader_identity = RootIdentity::Local(InMemoryProvider::from_seed([0xd4; 32]));
         let settings = PlaceWorkerSettings::default();
         let now_ms = settings.authority_clock.now_ms();
 
@@ -3893,7 +3843,7 @@ pub(crate) mod tests {
         let root = tempfile::tempdir().unwrap();
         let host = root.path().join("host");
         std::fs::create_dir_all(&host).unwrap();
-        let host_identity = RootIdentity::from_seed([0xd7; 32]);
+        let host_identity = RootIdentity::Local(InMemoryProvider::from_seed([0xd7; 32]));
         let writer = InMemoryProvider::from_seed([0xd8; 32]);
         let host_root = host_identity.master_public_key().to_bytes();
         let writer_root = writer.master_public_key().to_bytes();
@@ -4057,7 +4007,7 @@ pub(crate) mod tests {
             std::env::temp_dir().join(format!("turnstone-place-revoked-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         let directory = root.join("profile");
-        let identity = RootIdentity::from_seed([0xa1; 32]);
+        let identity = RootIdentity::Local(InMemoryProvider::from_seed([0xa1; 32]));
         let binding = binding(0x51);
         seed_profile(&directory, &identity, &binding, 2);
 
@@ -4138,6 +4088,59 @@ pub(crate) mod tests {
         assert_eq!(withdrawn.chat.revoked_authority, 3);
         assert_eq!(withdrawn.moot.delegated_certificates, 1);
         let _ = std::fs::remove_dir_all(&root);
+    }
+
+    /// Vault lock ruling 35: a worker started while the identity is pending
+    /// holds what speaks as the profile until the root arrives, then runs it
+    /// in order. A release is answered at once and drops what was waiting.
+    #[test]
+    fn a_pending_worker_holds_commands_until_the_root_arrives() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = root.path().join("profile");
+        let identity = Arc::new(RootIdentity::Local(InMemoryProvider::from_seed(
+            [0x95; 32],
+        )));
+        let binding = binding(0x45);
+        seed_profile(&directory, identity.as_ref(), &binding, 1);
+
+        let wake: Wake = Arc::new(|| {});
+        let (worker, updates) = spawn_pending_place_worker(wake, settings());
+        let open = |session| PlaceWorkerCommand::Open {
+            session,
+            generation: 1,
+            directory: directory.clone(),
+            binding: binding.clone(),
+        };
+        let wait = std::time::Duration::from_millis(300);
+
+        let released = SessionId::new();
+        worker.command(open(released));
+        let (ack, acked) = std::sync::mpsc::sync_channel(1);
+        worker.command(PlaceWorkerCommand::Release(ack));
+        acked
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .expect("a release never waits on the vault");
+
+        let session = SessionId::new();
+        worker.command(open(session));
+        assert!(
+            updates.recv_timeout(wait).is_err(),
+            "nothing opens while the identity is pending"
+        );
+
+        worker.command(PlaceWorkerCommand::AdoptIdentity(identity));
+        match updates
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap()
+        {
+            Update::PlaceOpened {
+                session: opened,
+                result: Ok(_),
+                ..
+            } => assert_eq!(opened, session, "the released session's open was dropped"),
+            _ => panic!("expected the held open"),
+        }
+        assert!(updates.recv_timeout(wait).is_err(), "and it ran once");
     }
 
     #[test]

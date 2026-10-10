@@ -1,5 +1,14 @@
 # Per-view controls draft
 
+**Current implementation, 2026-10-09:** the prepared consumer changes are applied
+against qualified Mere P2 `3b3afa289` and matching Genet `15713014`. Native
+default and Piccolo gates pass; [the final receipt](native-integration-checks.json) binds their source and
+results. See [the integration status](README.md) and
+[the handoff](../../../design_docs/2026-10-08_browser_resource_handoff.md) for the
+fixed family, execution results and remaining scope. The contract and preparation
+receipts below are retained; their unapplied/pending statements describe earlier
+checkpoints.
+
 Mark selected: "Keep these controls per view; share only descriptive tags."
 `controls.patch` is a saved, UNAPPLIED draft for review and handoff. No production
 source or dependency pins changed. Supplier checkpoint `72c68b6d` is unqualified.
@@ -11,7 +20,8 @@ Patch SHA-256: `0aed7862f888f2aa4740db3de58310d67a0dfdd75c52a0a0402f97cf609d297e
 Apply `session-profile.patch` before `controls.patch`. The controls loader hunks
 are based on the proposed profiled load source, rather than current production.
 Other prepared patches are `reader.patch`, `behaviors.patch`, and
-`content-tests.patch`. Joint sequential apply checks remain pending for controls.
+`content-tests.patch`. Joint sequential apply checks passed in the final handoff and were repeated
+on 2026-10-08; compilation and semantic checks remain pending.
 Controls puts its new app tests in `src/app/surface_control_tests.rs`, avoiding
 `content-tests.patch`'s insertion into `src/app/tests.rs`. It changes node_arms
 Keep/deletion-unread/recovery hunks; inspect combined hunk conflicts before use.
@@ -100,3 +110,31 @@ Inspect tombstone facet restoration and exact migration evidence preservation.
 The new helpers use existing non-journaled host facet access, so behavior-wake
 expectations also need explicit qualification rather than being inferred from
 tag captures. The draft does not establish release readiness.
+
+## Continuation review (2026-10-08)
+
+The unchanged draft has two additional explicit defects: canonical facet load
+errors become empty stores before migration writes, and unchanged feed entries
+with missing bindings remain suppressed by merge. The host ordinary save and
+fork paths also retain the ordering/refusal gaps described in
+`session-profile.md`, section "Continuation design for host persistence".
+These are source-review findings, not executed regression failures. The proposed
+repair design and required positive/negative controls are saved there. All five
+patches remain unapplied and byte-identical to the handoff.
+
+## Host successor patch (2026-10-08)
+
+`host-persistence.patch`, applied sixth, repairs the reviewed corruption and
+missing-binding defects without changing this draft's bytes. Feed reconciliation
+retains stored read status when a binding disappears. Unchanged unbound entries
+mint new views instead of adopting an equal-URL sibling, and the host binds using
+the exact projected GUID/entry identity before deriving its unread facet.
+Compatibility URL binding refuses ambiguity; GUID promotion applies only to old
+unguided URL-keyed entries, preserving distinct GUID entries on the same URL.
+
+Eight isolated actual-source feed tests pass, including both read states through
+sidecar save/reopen and repair, duplicate GUID placements and ambiguous-URL
+refusal. The additional app-level repaired-view control is still uncompiled.
+See `session-profile.md` and `host-persistence-checks.json` for persistence,
+refusal, review corrections and evidence limits. Production source and pins
+remain unchanged; full current/future-family consumer suites remain pending.

@@ -1,0 +1,207 @@
+{
+  "checked_at_utc": "2026-10-09T08:42:51.398513+00:00",
+  "consumer_baseline": "1a99221429523cdc8a0b133885de4d7688ddd73f",
+  "upstream_baseline": "22361c9",
+  "current_family": {
+    "mere": "e48db81404eb580b7a7b3c01caeb410e539da4c8",
+    "genet": "15713014e2e23b887360471552f75f60684f5384",
+    "knot": "16aaff7804d49ba829af646c3a8eca2d6ec2fc2f",
+    "redshank": "ece6e9eaf7c11a37f4b1457895704b1e6aeb6b8c",
+    "mere_lock_source_count": 1
+  },
+  "scope": "Reconciled unapplied resource graph patch set on current upstream browser family. Original seven artifacts preserved byte for byte. No full host compilation or graph supplier adoption.",
+  "application_order": [
+    "reader.patch",
+    "behaviors.patch",
+    "content-tests.patch",
+    "session-profile.patch",
+    "controls.patch",
+    "host-persistence-current-family.patch",
+    "journal-origin-current-family.patch"
+  ],
+  "patches": {
+    "reader.patch": {
+      "sha256": "9066c11a14b61725e603ba26782020eb3d031db892495d99489b706beafa174f",
+      "apply_exit": 0
+    },
+    "behaviors.patch": {
+      "sha256": "2058d84ad3ce130e7b994f8710c39259c273ce6a54ff233fb2d72817e59981e9",
+      "apply_exit": 0
+    },
+    "content-tests.patch": {
+      "sha256": "9f05b0494cc10d1fbf640b9a283d0490cd9528f068434ae032cc532066f0afa9",
+      "apply_exit": 0
+    },
+    "session-profile.patch": {
+      "sha256": "5bd843803273b0205126735bc3e75c9d304f631337dbddeb9acb27b099c46fc6",
+      "apply_exit": 0
+    },
+    "controls.patch": {
+      "sha256": "0aed7862f888f2aa4740db3de58310d67a0dfdd75c52a0a0402f97cf609d297e",
+      "apply_exit": 0
+    },
+    "host-persistence-current-family.patch": {
+      "sha256": "2d3df2996f4821cb5fcb5c67228966578620cc4d813045509fa48c257a15fa0f",
+      "apply_exit": 0
+    },
+    "journal-origin-current-family.patch": {
+      "sha256": "4ed911a70f7aa2a780afdceeeb84075076ae85e457b8658a5642a82cba55746d",
+      "apply_exit": 0
+    }
+  },
+  "syntax": {
+    "src/app/denizen_arms.rs": {
+      "sha256": "964ba0d5eb888cabf4fee1fa275f886fbf9bab4c17df2610c8488664d51338b2",
+      "parse_exit": 0
+    },
+    "src/app/feed_arms.rs": {
+      "sha256": "1dab90c387ef13f647779fda83cd592663307a38e6dc00fe3402efcc02491062",
+      "parse_exit": 0
+    },
+    "src/app/fixtures.rs": {
+      "sha256": "3a0172277a38f73566f85476f4eb27827d9911b0883104071fe89817e971924a",
+      "parse_exit": 0
+    },
+    "src/app/journal_origin.rs": {
+      "sha256": "8fa32aafac403858a36b1a334eb72fe3933ba6415e932a370af39ee854e77a1a",
+      "parse_exit": 0
+    },
+    "src/app/journal_origin_tests.rs": {
+      "sha256": "7e67638f1cb0f67a09ebb294b1f4883424efd69c6798d6c2949845560ed6f284",
+      "parse_exit": 0
+    },
+    "src/app/mod.rs": {
+      "sha256": "c9021c2a4477436e9ab369790a578508c6754ea1bc1293645a7d5a6a75d41bb1",
+      "parse_exit": 0
+    },
+    "src/app/node_arms.rs": {
+      "sha256": "ba9d15a2e3ea7f47b499af923fabe73afefd80b03f1d2b66144b46dcc7fdb39e",
+      "parse_exit": 0
+    },
+    "src/app/omnibar_arms.rs": {
+      "sha256": "27e1c412c3c26e5bdd7804c9b4d8469964a6e40f26d0d61044fdf5013b763f94",
+      "parse_exit": 0
+    },
+    "src/app/palette.rs": {
+      "sha256": "4e361465cbb985f5a35b944f27bb692d5c621b6f00f959182c52e6f3a96c3fe6",
+      "parse_exit": 0
+    },
+    "src/app/resident_run_tests.rs": {
+      "sha256": "bd03c8e28baa4e819e05fd530a2d0a4dc5f98f4d4d3cf0a5d20e16ddc4cf2675",
+      "parse_exit": 0
+    },
+    "src/app/runtime_pool.rs": {
+      "sha256": "275435d8070b866281dd6da822666082d20a628f465394597002cfad03e466e9",
+      "parse_exit": 0
+    },
+    "src/app/session_lifecycle.rs": {
+      "sha256": "d0b0687ce983ba9f4eb7f9c703514476e4074dde9ac5c01aac6f83187315af7c",
+      "parse_exit": 0
+    },
+    "src/app/session_persistence_tests.rs": {
+      "sha256": "07c2527ca766f80f0be09ed279e43576253c500c70463d0eb259fec92b92ae8a",
+      "parse_exit": 0
+    },
+    "src/app/surface_control_tests.rs": {
+      "sha256": "51f853bb240a52d681f2027b1d005d202160c669f87484b504f9eacf1e2984ff",
+      "parse_exit": 0
+    },
+    "src/app/tests.rs": {
+      "sha256": "5705eb06eef58a52ea50c9b8e631b56b120a9086cd9b85717459f3fd079da2bb",
+      "parse_exit": 0
+    },
+    "src/app/updates.rs": {
+      "sha256": "55d5449387ef283fce5d0bdc5b563c6a8fc1148c63b1b5461dc8baee201c4186",
+      "parse_exit": 0
+    },
+    "src/behaviors.rs": {
+      "sha256": "3aed492c021b227b61365bb669b2ff1a536414690fec7246966d785bce157afa",
+      "parse_exit": 0
+    },
+    "src/content_tags.rs": {
+      "sha256": "9862f6a79e34051b66326763cd5ee4df685d7529c6594b04dbadc1af70fb3177",
+      "parse_exit": 0
+    },
+    "src/feed.rs": {
+      "sha256": "361e84b016d509b4bf790388d604a8e437d719eab862b9e6fa04404aaaeefe1c",
+      "parse_exit": 0
+    },
+    "src/host_journal.rs": {
+      "sha256": "eba3497bcaf9ef2717a366e65f54374871ca4495248fa18d205373d839c55520",
+      "parse_exit": 0
+    },
+    "src/inspector_view.rs": {
+      "sha256": "37f4478fe7e185106e8c3df7844e7f930f19fdcd28872579588512da69e44e52",
+      "parse_exit": 0
+    },
+    "src/lib.rs": {
+      "sha256": "60626a1c561b3bf16c1475c9aa64d74fa9d2922094d1dc3bbb49b53c81bd3e5c",
+      "parse_exit": 0
+    },
+    "src/observe.rs": {
+      "sha256": "bb7177af35300cb4e93c4753efc940526f8a2820a1ddc274a154bba6f4aeef73",
+      "parse_exit": 0
+    },
+    "src/recycle.rs": {
+      "sha256": "04934764c5130db81cd53746b5b6b12e3d613f4897157bd531e3135c8f60f6e4",
+      "parse_exit": 0
+    },
+    "src/redshank_host.rs": {
+      "sha256": "bf61964ae5984caddbfdf29b84aba47ffb11075b42c08e201440e455c6948e3e",
+      "parse_exit": 0
+    },
+    "src/remote_projection.rs": {
+      "sha256": "1d74df90cad5799c132b8cb1eb0185b36517c81a17ab56f9a044012320157fdd",
+      "parse_exit": 0
+    },
+    "src/session.rs": {
+      "sha256": "bbdc995c70109578119aa176f5c24cba1124afe2f6a0f27f0235262da5839c9a",
+      "parse_exit": 0
+    },
+    "src/session_persistence.rs": {
+      "sha256": "24bc6c9ef09c68f20bc2e748299e9340a0e06fd88f06c26f3557170190bda28b",
+      "parse_exit": 0
+    },
+    "src/shell/effects.rs": {
+      "sha256": "80a884c950038f7903ced5232e2185869870a2dfbc54f424ac05b214feef4612",
+      "parse_exit": 0
+    },
+    "src/shell/mod.rs": {
+      "sha256": "c6000bbd410359f2ae6642d49ec8533853bee4235e84fd3e0c00b8aa0b1a13f7",
+      "parse_exit": 0
+    },
+    "src/surface_controls.rs": {
+      "sha256": "8ea922d061ff51b6cc37683d939f23e2a8ad16e3737c67ff040e355eecadf159",
+      "parse_exit": 0
+    },
+    "src/trail_memory.rs": {
+      "sha256": "f9c940e6ad7b3ebef984d6fdc0b1468b85935be9a5209bfe2e76112b336ddfa9",
+      "parse_exit": 0
+    }
+  },
+  "merge_resolution": "Keep current optional profile identity as Some(identity), with the graph-bound journal and binding from the prepared patch.",
+  "isolated_tests": {
+    "module": "src/host_journal.rs",
+    "unchanged_from_previous_receipt": true,
+    "passed": 15,
+    "failed": 0,
+    "log": "current-family-journal.tests.log",
+    "scope": "Rerun existing compiled actual-module binary after proving exact proposed module bytes unchanged. Does not compile current full host.",
+    "log_sha256": "a0b2c679bdc9f54b156b1e2c9de85a761517fa2bae2377245cd6fd9cb44ed15b",
+    "log_normalization": "Trailing blank line removed for repository whitespace policy."
+  },
+  "remaining": [
+    "Final owner-qualified immutable Mere graph revision and integration clearance",
+    "Knot then Redshank/Woodshed family repin to that source",
+    "Full Turnstone compilation and behavior/session/feed/recycle/refusal/fork test gates",
+    "Full body session-change controls for all three wake tiers",
+    "Browser and physical accessibility gates"
+  ],
+  "manifest_validation": {
+    "command": "cargo metadata --offline --locked --no-deps --format-version 1",
+    "exit": 0,
+    "full_dependency_resolution": false,
+    "manifest_sha256": "7595d54196e7cf6b424ebd4b709e69dc55ea415649f56e366aed4e2eca82b42d",
+    "lockfile_sha256": "b16cc4a007f1c3af9d9b032a466bf7d56ab9537093adc2867afc25b5970bc3ff"
+  }
+}

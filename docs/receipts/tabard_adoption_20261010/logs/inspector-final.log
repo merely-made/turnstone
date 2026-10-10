@@ -1,0 +1,20 @@
+
+running 15 tests
+test inspector_pane::tests::clip_button_bubbles_a_typed_inspector_intent ... ok
+test inspector_pane::tests::engine_inventory_human_label_keeps_engine_id_scenario_target ... ok
+test inspector_pane::tests::engine_inventory_mapping_preserves_unknown_saved_pin ... ok
+test inspector_pane::tests::engine_inventory_new_registration_reaches_picker_and_observation ... ok
+test inspector_pane::tests::engine_inventory_resync_discards_focus_request_when_rows_change ... ok
+test inspector_pane::tests::engine_inventory_saved_unknown_is_selected_disabled_and_refuses_click ... ok
+test inspector_pane::tests::engine_inventory_survives_session_adoption ... ok
+test inspector_pane::tests::engine_inventory_valid_selection_recovers_failed_pin_but_keeps_at_rest_closed ... ok
+test inspector_pane::tests::focused_document_capabilities_sit_beside_the_viewer_picker ... ok
+test inspector_pane::tests::narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a ... ok
+test inspector_pane::tests::picking_a_viewer_reports_the_intent_and_mirrors_back ... ok
+test inspector_pane::tests::probe_resolved_clip_button_reaches_the_pane_at_receipt_size ... ok
+test inspector_pane::tests::synced_sections_reach_the_dom ... ok
+test inspector_pane::tests::the_requested_page_zoom_is_mirrored_beside_the_capability ... ok
+test inspector_pane::tests::viewer_controls_write_the_followed_member_instead_of_the_runtime_cursor ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 771 filtered out; finished in 6.59s
+

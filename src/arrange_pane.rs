@@ -117,22 +117,24 @@ struct Choice {
 impl Choice {
     fn of(app: &App) -> Self {
         let canvas = &app.graph_runtimes;
-        let view = canvas.physics_view();
         Self {
             layout: canvas
                 .layout_strategy()
                 .map(str::to_string)
                 .unwrap_or_else(|| FREE_LAYOUT_ID.to_string()),
-            law: view.law.id().to_string(),
-            overlays: view
-                .overlays
+            law: canvas.physics_law().id().to_string(),
+            overlays: canvas
+                .physics_overlays()
                 .iter()
                 .map(|overlay| overlay.id().to_string())
                 .collect(),
-            kind: view.kind.id().to_string(),
-            mass: view.mass.id().to_string(),
-            depth: view.depth.id().to_string(),
-            profile: view.profile_id().unwrap_or(CUSTOM_PROFILE_ID).to_string(),
+            kind: canvas.physics_kind_source().id().to_string(),
+            mass: canvas.physics_mass_source().id().to_string(),
+            depth: canvas.physics_depth_source().id().to_string(),
+            profile: canvas
+                .physics_profile_id()
+                .unwrap_or(CUSTOM_PROFILE_ID)
+                .to_string(),
             refusal: app.physics_refusal().map(ToString::to_string),
         }
     }
@@ -512,8 +514,8 @@ mod tests {
             .expect("Density refused the existing overlay");
         assert_eq!(refusal.law, PhysicsLaw::Density);
         assert_eq!(refusal.refused, vec![PhysicsOverlay::GridSnap]);
-        assert_eq!(app.graph_runtimes.physics_view().law, PhysicsLaw::Density);
-        assert!(app.graph_runtimes.physics_view().overlays.is_empty());
+        assert_eq!(app.graph_runtimes.physics_law(), PhysicsLaw::Density);
+        assert!(app.graph_runtimes.physics_overlays().is_empty());
         assert!(
             arrange_rows(&app)
                 .iter()
@@ -528,7 +530,7 @@ mod tests {
             PhysicsOverlay::Skeleton.id(),
             true,
         ));
-        assert!(app.graph_runtimes.physics_view().overlays.is_empty());
+        assert!(app.graph_runtimes.physics_overlays().is_empty());
         assert_eq!(
             app.physics_refusal().unwrap().refused,
             vec![PhysicsOverlay::Skeleton]

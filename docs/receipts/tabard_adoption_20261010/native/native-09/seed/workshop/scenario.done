@@ -1,0 +1,7 @@
+RESULT ok
+captured workshop_authored
+captured workshop_narrow
+capture workshop_authored 2360x1600 digest=266e8ce1c3f56169 file=/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-09/seed/workshop/workshop_authored.png
+capture workshop_narrow 1280x1560 digest=74c1932ecb137ef5 file=/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-09/seed/workshop/workshop_narrow.png
+frames: 2 captured, 0 blank, 2 distinct digests
+presentation: 51 frames, 54 redraws, 3 unpresented redraws

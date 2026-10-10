@@ -12,7 +12,7 @@
 //! its labelled actions, and whether it is still busy. `Driveable` adds the two
 //! the generic loop cannot do: a screenshot and turnstone's own verbs.
 
-use super::NodeSessions;
+use super::{NodeSessions, NodeSurfaces};
 use winit::event::MouseButton;
 use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 
@@ -108,12 +108,10 @@ impl Shell {
                 let effects = self.app.apply_update(update);
                 self.run_effects(effects);
             }
-            // Content sessions fold their own events (a Knot hub's bell or
-            // loss) only when polled, which the frame loop does per frame;
-            // a wait that holds the loop must poll them itself.
-            for session in self.content_sessions.sessions_mut() {
-                let _ = session.settled();
-            }
+            // Retained work must advance even when no window is rendering.
+            // Pump folds completion events as well as document clocks; hidden
+            // work can settle without requesting a paint.
+            let _ = self.pump_visible_documents();
             self.refresh_knot_documents();
             if condition(self) {
                 return true;
@@ -128,6 +126,7 @@ impl Shell {
 
 impl Shell {
     fn idle_diagnosis(&mut self) -> IdleDiagnosis {
+        let _ = self.pump_visible_documents();
         let mut unsettled_sessions = self
             .content_sessions
             .node_sessions_mut()
@@ -169,6 +168,9 @@ impl taproot::Automatable for Shell {
             crate::ui::CAMBIUM_SHEET,
             crate::knot_authoring::KNOT_SHEET
         );
+        let mut chrome = crate::shell_services::ShellChromeConfig::default();
+        self.live_settings.snapshot().apply_to(&mut chrome);
+        let settings_sheet = crate::ui::cambium_sheet(&chrome.appearance);
         for surface in &plan {
             let rect = [
                 surface.rect.x,
@@ -290,6 +292,8 @@ impl taproot::Automatable for Shell {
                 rect: *rect,
                 sheet: if *name == "knot" {
                     &knot_sheet
+                } else if *name == "settings" {
+                    &settings_sheet
                 } else {
                     crate::ui::CAMBIUM_SHEET
                 },
@@ -345,6 +349,38 @@ impl taproot::Automatable for Shell {
                         surface: "workbench",
                         point,
                     });
+                }
+                selected.map_or(taproot::SelectorTarget::Miss, taproot::SelectorTarget::Hit)
+            },
+            Some("settings") => {
+                let plan = self.surface_plan();
+                let mut selected = None;
+                for surface in &plan {
+                    let crate::surface::SurfaceKind::Pane(id) = surface.kind else {
+                        continue;
+                    };
+                    if !matches!(self.pane_content(id), Some(PaneContent::Registered(kind))
+                        if kind.as_str() == crate::panes::kind::SETTINGS)
+                    {
+                        continue;
+                    }
+                    let Some(pane) = self.renderers.settings.get(&id) else {
+                        continue;
+                    };
+                    let point = match pane.selector_point(selector) {
+                        Ok(Some((x, y))) => (surface.rect.x + x, surface.rect.y + y),
+                        Ok(None) => continue,
+                        Err(_) => return taproot::SelectorTarget::Miss,
+                    };
+                    // Preserve ordinary physical routing and attribution:
+                    // covered targets and duplicate panes cannot claim a hit.
+                    if crate::surface::hit_test(&plan, self.app.focus, point.0, point.1)
+                        .is_none_or(|hit| hit.id != surface.id)
+                        || selected.is_some()
+                    {
+                        return taproot::SelectorTarget::Miss;
+                    }
+                    selected = Some(taproot::Hit { surface: "settings", point });
                 }
                 selected.map_or(taproot::SelectorTarget::Miss, taproot::SelectorTarget::Hit)
             },
@@ -437,12 +473,13 @@ impl taproot::Automatable for Shell {
 
     fn snapshot(&self) -> taproot::ProbeSnapshot {
         let snap = crate::observe::snapshot(&self.app);
+        let appearance = self.live_settings.snapshot();
         let kept = snap.focused.as_ref().is_some_and(|node| node.kept);
         let mut out = taproot::ProbeSnapshot::default()
             .with_field("focus", snap.focus)
             .with_field(
                 "host-surface-producers",
-                self.surface_producers.len().to_string(),
+                self.content_sessions.surface_count().to_string(),
             )
             .with_field("node-count", snap.node_count.to_string())
             .with_field("roster-tab", snap.roster_tab)
@@ -454,7 +491,7 @@ impl taproot::Automatable for Shell {
             .with_field("floats", snap.floating_panes.join(","))
             .with_field("lens-floats", snap.lens_floating_panes.join(","))
             // What the app will DO right now, by label — the automation half of
-            // a coherent snapshot. `assert snap actions ~ Fit view` asks whether
+            // a coherent snapshot. `assert snap actions ~ Fit to view` asks whether
             // a verb is on offer before spending a step on it.
             .with_field("actions", snap.available_actions.join(","))
             // The omnibar's offered rows as their display strings, so a
@@ -462,7 +499,52 @@ impl taproot::Automatable for Shell {
             // without a verb of its own — the same minimal-shared-and-grow
             // rule the panes and actions fields follow.
             .with_field("suggestions", snap.omnibar.suggestions.join(","))
-            .with_field("kept", kept.to_string());
+            .with_field("kept", kept.to_string())
+            // The person's command-menu choices by id, as the view sidecar
+            // stores them: the bare `>` lane is bounded by the row limit, so a
+            // kept command can be stored and still sit past the visible rows.
+            .with_field("commands-added", self.app.command_choices.added.join(","))
+            .with_field(
+                "commands-removed",
+                self.app.command_choices.removed.join(","),
+            );
+        out = out
+            .with_field(
+                "appearance-theme",
+                appearance.theme_id().unwrap_or_default(),
+            )
+            .with_field(
+                "appearance-mode",
+                appearance.theme_mode().unwrap_or_default(),
+            )
+            .with_field(
+                "appearance-workshop-open",
+                self.theme_editor.is_some().to_string(),
+            )
+            .with_field(
+                "appearance-workshop-ok",
+                self.main_receipt
+                    .workshop
+                    .map(|ok| ok.to_string())
+                    .unwrap_or_default(),
+            )
+            .with_field("presented-frames", self.main_receipt.presented.to_string())
+            .with_field(
+                "capture-count",
+                self.main_receipt.captures.len().to_string(),
+            )
+            .with_field("capture-errors", self.main_receipt.errors.len().to_string());
+        let appearance_sheet = match self
+            .app
+            .shell_chrome_config()
+            .appearance
+            .theme_presentation
+            .as_ref()
+        {
+            Some(tabard::ThemePresentation::AuthoredStylesheet(sheets)) => sheets.join("\n"),
+            _ => String::new(),
+        };
+        out = out.with_field("appearance-css", appearance_sheet);
         #[cfg(all(feature = "scry", windows))]
         {
             let ready = self
@@ -654,8 +736,10 @@ impl taproot::Automatable for Shell {
     }
 
     /// Turnstone's quiescence report, driving the `wait` verb. Busy while any of
-    /// the three kinds of work a scenario must not race is outstanding:
+    /// the work a scenario must not race is outstanding:
     ///
+    /// - a workshop is requested or owns its native child window,
+    /// - a capture is queued or its owned readback is pending,
     /// - a page, favicon, subresource, or submission FETCH is in flight (the
     ///   port has not answered; favicon failures remain UI-silent),
     /// - a content spawn is `Requested` (the effect is out, no session yet),
@@ -666,6 +750,17 @@ impl taproot::Automatable for Shell {
     /// and it counts a spawn as busy from the effect rather than from the
     /// session, so the gap between them cannot read as quiet.
     fn busy(&mut self) -> Option<bool> {
+        if super::appearance_editor::workshop_pending(
+            self.theme_editor_requested,
+            self.theme_editor.is_some(),
+        ) {
+            // Shared `wait` yields to winit while the child owns native work.
+            // The legacy synchronous file wait cannot drive a child window.
+            return Some(true);
+        }
+        if self.pending_capture.is_some() || self.pending_capture_readback.is_some() {
+            return Some(true);
+        }
         // Keep the hot `wait` poll allocation-free and short-circuiting. The
         // explicit `record-idle` and content-ready assertions call
         // `idle_diagnosis` when a receipt needs every concurrent cause.
@@ -678,6 +773,9 @@ impl taproot::Automatable for Shell {
         if self.app.graph_runtimes.is_settling() {
             return Some(true);
         }
+        // Wait polls also advance clocks when a hidden finite animation has
+        // stopped asking the render loop for frames.
+        let _ = self.pump_visible_documents();
         Some(
             self.content_sessions
                 .sessions_mut()
@@ -717,6 +815,30 @@ impl taproot::Driveable for Shell {
     /// parser and run it against the Shell via `run_scenario_step`. An unknown
     /// verb fails loudly (parse returns Err), never a silent skip.
     fn app_step(&mut self, line: &str) -> Result<(), String> {
+        if let Some(size) = line.strip_prefix("resize ") {
+            let mut values = size.split_whitespace();
+            let width: f64 = values
+                .next()
+                .ok_or("resize needs width height")?
+                .parse()
+                .map_err(|_| "invalid resize width")?;
+            let height: f64 = values
+                .next()
+                .ok_or("resize needs width height")?
+                .parse()
+                .map_err(|_| "invalid resize height")?;
+            if values.next().is_some()
+                || !width.is_finite()
+                || !height.is_finite()
+                || width <= 0.0
+                || height <= 0.0
+            {
+                return Err("resize needs two positive finite dimensions".into());
+            }
+            let window = self.window.as_ref().ok_or("main window is unavailable")?;
+            let _ = window.request_inner_size(winit::dpi::LogicalSize::new(width, height));
+            return Ok(());
+        }
         tracing::debug!(target: "turnstone::selfdrive", verb = line.split_whitespace().next().unwrap_or(""), "begin app step");
         let step = crate::scenario::parse(line)?
             .into_iter()
@@ -790,7 +912,7 @@ impl Shell {
                     self.act(Action::OmnibarInsert(text.clone()));
                 } else if self.deliver_contributed_ime(&winit::event::Ime::Commit(text.clone())) {
                     self.request_redraw();
-                } else if self.deliver_knot_ime(&winit::event::Ime::Commit(text.clone())) {
+                } else if self.deliver_document_ime(&winit::event::Ime::Commit(text.clone())) {
                     self.request_redraw();
                 } else if self.type_surface_text(text) {
                     // Hosted committed text is distinct from OS IME/preedit.
@@ -821,6 +943,7 @@ impl Shell {
                     EditKey::Space => (WinitKey::Named(WinitNamedKey::Space), false),
                     EditKey::Save => (WinitKey::Character("s".into()), true),
                     EditKey::Find => (WinitKey::Character("f".into()), true),
+                    EditKey::KeepCommand => (WinitKey::Character("d".into()), true),
                 };
                 let previous_ctrl = self.ctrl;
                 self.ctrl |= ctrl;
@@ -948,7 +1071,7 @@ impl Shell {
                     #[cfg(not(feature = "servo"))]
                     let servo_views = 0usize;
                     std::fs::write(self.shared_out_dir.join(format!("{name}.surface-frames.json")),
-                        serde_json::to_vec_pretty(&serde_json::json!({"live_producers":self.surface_producers.len(),"cached_frames":self.surface_frames.len(),"scry_importers":stats,"servo_active_views":servo_views,"content_surfaces":surfaces})).map_err(|error|error.to_string())?)
+                        serde_json::to_vec_pretty(&serde_json::json!({"live_producers":self.content_sessions.surface_count(),"cached_frames":self.surface_frames.len(),"scry_importers":stats,"servo_active_views":servo_views,"content_surfaces":surfaces})).map_err(|error|error.to_string())?)
                         .map_err(|error|error.to_string())?;
                 }
             },

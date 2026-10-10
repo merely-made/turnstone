@@ -625,3 +625,109 @@ and `incipit` moved onto turnstone's manifest. The pane model, its layout ops, t
 
 Direction and the publish order are in genet's
 [frisket pane component doc](../../genet/docs/2026-07-24_frisket_pane_component_direction.md).
+
+## Application appearance adoption, 2026-10-10
+
+**Status:** macOS application appearance build and native acceptance passed.
+The final fixed-renderer production candidate completed four serialized
+LaunchServices processes, 521 presentations and nineteen visually inspected,
+nonblank captures, including populated wide/narrow workshop previews, ordinary
+Save/Apply separation and two fresh-process restorations. Exact source/binary
+hashes, CPU test boundaries and historical failed attempts are in the
+[acceptance ledger](../docs/receipts/tabard_adoption_20261010/README.md).
+The existing settings pane and application settings store remain the owner.
+Reader appearance isolation and browser SC fetch/controller work retain their
+existing authority and separate acceptance gates.
+
+### Shared appearance and workshop target
+
+Replace the chrome's placeholder hash accent with Tabard's read-only definition
+and mode resolution. Keep the established Turnstone presentation when no
+appearance is explicitly selected. Offer available built-ins and saved user
+definitions, all four canonical modes, and custom modes actually supplied by the
+selected definition. Missing identities and custom modes retain their requested
+values on disk and show the shared resolver's fallback diagnostics. Malformed
+libraries remain visible and block theme writes without replacing their bytes.
+
+Use the shared authored library under the platform's `mere/tabard/themes.json`,
+with `TURNSTONE_THEME_LIBRARY` selecting an explicit library for a scratch
+profile or receipt. Selection persists through Pandect's existing application
+settings. The provider saves a candidate before publishing it; a failed settings
+read becomes a visible read-only provider. Saving a workshop definition only
+refreshes available choices, and never selects a theme implicitly.
+
+The native workshop uses `tabard-workshop`'s optional `native-host` helpers and
+Turnstone's existing `SurfaceHost::shared_core()`. The app's `OpenThemeWorkshop`
+action and effect route both the command catalog and settings button through
+the same shell. The shell retains the tool window, routes its native events,
+and composes its idle deadline with browser polling. Native app quit first owes
+the editor its shared save/discard/cancel decision. The shared hooks bind the
+graph, Reader, and application stylesheet previews, controlled text and explicit
+export effects; Turnstone retains selection storage and application exit policy.
+Export destinations protect the application settings file and profile directory.
+
+Done when focused provider/live-publication, custom-mode, failed-write, fallback,
+workshop library and retained-CSS tests pass; the coherent Mere/Genet/Knot/
+Redshank family passes the application build and relevant browser/Reader gates;
+and a fresh native run captures actual presented, nonblank chrome and workshop
+frames, then proves restart persistence. No old binary receipt closes this gate.
+
+### Findings and progress
+
+- 2026-10-10: `settings_provider.rs` already owned typed `ThemeChoice` in
+  Pandect and `settings_pane.rs` supplied a live value seam. The provider now
+  resolves the saved library and publishes after persistence; `appearance.rs`
+  uses shared Tabard resolution and exact authored CSS.
+- 2026-10-10: `ui.rs` maps shared color variables onto existing chrome and
+  settings roles through Genet's retained cascade. Authored sheets remain last
+  in that cascade. Reader source/pane appearance code is untouched.
+- 2026-10-10: `shell/appearance_editor.rs` is a source candidate using the
+  existing renderer and optional shared host bindings. CPU validation is pending.
+  Native/GPU launches are held while the orchestrator isolates the shared
+  renderer compute hang observed during Pelt acceptance.
+- 2026-10-10: Turnstone's production workshop now has an opt-in Mesquite lane
+  (`TURNSTONE_THEME_SCENARIO`, `TURNSTONE_THEME_CAPTURE_DIR`,
+  `TURNSTONE_THEME_RECEIPT`) composed with its existing native hooks. Main
+  Taproot scenarios open it through the actual Settings Edit themes button,
+  then select definitions and modes through the ordinary persisted Apply
+  controls. The six `scenarios/tabard_*.scn` fixtures cover four modes,
+  authored CSS, wide/narrow frames, fresh-process restoration, and a same-ID
+  edit whose saved library remains unapplied until an explicit Apply.
+  Main readback uses Genet's async owned copy through the existing render core;
+  Lens readback uses its bounded five-second helper. Receipts account for
+  successful presentations, capture identity, blank frames, and readback errors.
+  These are source candidates: final coherent build and native qualification
+  await the current sibling publications and exclusive GPU-slot handoff.
+- 2026-10-10: The Settings keyboard gap is repaired through the existing Genet
+  runner: a physical Settings click now focuses its pane; Tab/Shift+Tab traverse
+  retained controls, arrow keys stay in their radio group, Enter reaches Apply,
+  and Escape returns focus to the graph. The focused regression proves arrow
+  changes remain drafts until Apply, persist both Light and Dark modes, and do
+  not select the similarly named built-in themes. That regression and all five
+  receipt/fixture tests passed in the current coherent application library run;
+  full-suite closure and actual native screenshots remain separate gates.
+
+- 2026-10-10: Final production native11 passed on Radeon Pro Vega56/Metal after
+  the shared Vello resident-atlas repair 10f. Seed/main 199+workshop 51 frames,
+  first reopen 48, same-ID/main 126+workshop 49, final reopen 48; nineteen captures,
+  zero blank and no new GPU reset. All original PNGs were inspected. Exact
+  stored 255-byte CSS and pixels prove Save held the existing applied definition
+  until ordinary Apply, then fresh processes restored each accepted edit.
+  The 320-input source freeze and actual compiled 7019/7422 shared pins are
+  preserved in the ledger. Full serial 777 CPU checks predate the selector/wait
+  repair; 28 focused delta checks and later appearance/surface checks are separate.
+
+- 2026-10-10: The post-atlas library test executable compiled in 84 seconds but
+  could not enter libtest at dyld_start. Signed/verified bounded 60/180-second
+  attempts and a disposable strip control also stalled before execution;
+  zero tests ran and no assertion failure/pass is inferred. Small startup
+  evidence is retained in the ledger. Production native11 remains qualified;
+  dirty parent-quit Save/Discard/Cancel and every focus transition were not
+  individually exercised by these four scenarios.
+
+- 2026-10-10: Final current CPU execution recovered after a provenance-only
+  repair to the owned generated signed test executable. Eleven appearance,
+  nine Settings pane and twelve provider tests passed: 32 total/0 failed/0 ignored.
+  No source, production binary or system setting changed. Original bounded
+  pre-libtest startup limits remain historical evidence; the older full 777
+  serial run and this current 32-test gate retain separate source boundaries.

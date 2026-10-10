@@ -7,7 +7,7 @@
 //! Feed subscription actions and update folding.
 
 use crate::action::{Effect, FetchedPage};
-use crate::feed::{FEED_ENTRY_TAG, FEED_TAG, FeedMemberInfo, KEEP_TAG, UNREAD_TAG};
+use crate::surface_controls::{self, Control};
 use crate::observe::AppEvent;
 
 use super::App;
@@ -41,8 +41,8 @@ impl App {
         if let Some(graph) = self.graph_runtimes.graph_containing_member(node)
             && let Some(canvas) = self.graph_runtimes.canvas_mut(graph)
         {
-            canvas.tag_node(node, KEEP_TAG);
-            canvas.tag_node(node, FEED_TAG);
+            surface_controls::set(canvas, node, Control::Keep, true);
+            surface_controls::set(canvas, node, Control::Feed, true);
         }
         self.feeds.subscribe(node, url, period);
         self.events.push(AppEvent::FeedSubscribed {
@@ -67,13 +67,14 @@ impl App {
         if let Some(graph) = self.graph_runtimes.graph_containing_member(node)
             && let Some(canvas) = self.graph_runtimes.canvas_mut(graph)
         {
-            canvas.untag_node(node, FEED_TAG);
+            surface_controls::set(canvas, node, Control::Feed, false);
         }
         for entry in entries {
             if let Some(graph) = self.graph_runtimes.graph_containing_member(entry)
                 && let Some(canvas) = self.graph_runtimes.canvas_mut(graph)
             {
-                canvas.untag_node(entry, UNREAD_TAG);
+                let (_, _, unread) = self.feeds.surface_flags(entry);
+                surface_controls::set(canvas, entry, Control::Unread, unread);
             }
         }
         self.events.push(AppEvent::FeedUnsubscribed(node));
@@ -95,7 +96,7 @@ impl App {
         if let Some(graph) = self.graph_runtimes.graph_containing_member(node)
             && let Some(canvas) = self.graph_runtimes.canvas_mut(graph)
         {
-            canvas.untag_node(node, UNREAD_TAG);
+            surface_controls::set(canvas, node, Control::Unread, false);
         }
         self.events.push(AppEvent::FeedEntryRead(node));
         vec![Effect::SaveSession, Effect::Redraw]
@@ -103,6 +104,7 @@ impl App {
 
     /// Supply the host clock to both W4 behaviors and feed schedules.
     pub fn tick(&mut self, now_ms: u64) -> Vec<Effect> {
+        if self.session_load_refused() { return Vec::new(); }
         self.now_ms = Some(now_ms);
         let requests = self.feeds.start_due(now_ms);
         let mut effects = self.feed_fetch_effects(requests);
@@ -132,6 +134,7 @@ impl App {
             }
         }
         if changed {
+            self.reconcile_feed_tags();
             effects.push(Effect::SaveSession);
         }
         if !effects.is_empty() {
@@ -141,10 +144,7 @@ impl App {
     }
 
     fn fetch_feed_effect(&self, node: uuid::Uuid, url: String) -> Effect {
-        let identity = match self
-            .gemini_identities
-            .identity_for(self.identity_provider(), &url)
-        {
+        let identity = match self.gemini_identity_for(&url) {
             Ok(identity) => identity,
             Err(error) => {
                 tracing::warn!(%error, "failed to project Gemini client identity for feed");
@@ -174,6 +174,7 @@ impl App {
             .is_some_and(|canvas| crate::browse::still_current(canvas, node, &url));
         if !current {
             self.feeds.unsubscribe(node);
+            self.reconcile_feed_tags();
             return vec![Effect::SaveSession];
         }
         let now_ms = self.now_ms.unwrap_or_else(crate::denizen::now_ms);
@@ -214,17 +215,11 @@ impl App {
                     }
                     member
                 } else {
-                    canvas
-                        .graph()
-                        .get_node_by_url(&projection.entry.url)
-                        .map(|(_, entry)| entry.id)
-                        .unwrap_or_else(|| {
-                            let selected = canvas.selected_members();
-                            let member =
-                                canvas.open_member_as_new_node(Some(node), &projection.entry.url);
-                            canvas.set_selected_members(&selected);
-                            member
-                        })
+                    // Equal content does not establish an entry placement.
+                    let selected = canvas.selected_members();
+                    let member = canvas.open_member_as_new_node(Some(node), &projection.entry.url);
+                    canvas.set_selected_members(&selected);
+                    member
                 };
                 canvas.assert_relation_between_members(
                     node,
@@ -233,9 +228,11 @@ impl App {
                 );
                 canvas.set_node_title_for(member, projection.entry.title.clone());
                 canvas.set_node_body_for(member, projection.entry.summary.clone());
-                canvas.tag_node(member, FEED_ENTRY_TAG);
-                canvas.tag_node(member, UNREAD_TAG);
-                self.feeds.bind_entry(node, &projection.entry.url, member);
+                let bound = self.feeds.bind_projected_entry(node, &projection.entry, member);
+                debug_assert!(bound, "merge projection names an admitted entry");
+                let (_, _, unread) = self.feeds.surface_flags(member);
+                surface_controls::set(canvas, member, Control::FeedEntry, true);
+                surface_controls::set(canvas, member, Control::Unread, unread);
             }
         }
         let unread = self.feeds.unread_count();
@@ -257,39 +254,20 @@ impl App {
         }
     }
 
+    /// Current feed/read state is projected only from the member-keyed sidecar.
+    /// Keep and historical entry membership remain after unsubscribe.
     pub(super) fn reconcile_feed_tags(&mut self) {
-        let members: Vec<uuid::Uuid> = self
-            .graph_runtimes
-            .graph()
-            .nodes()
-            .map(|(_, node)| node.id)
-            .collect();
-        for member in members {
-            let Some(info) = self.feeds.member_info(member) else {
-                continue;
-            };
-            let Some(graph) = self.graph_runtimes.graph_containing_member(member) else {
-                continue;
-            };
-            let Some(canvas) = self.graph_runtimes.canvas_mut(graph) else {
-                continue;
-            };
-            match info {
-                FeedMemberInfo::Source { .. } => {
-                    canvas.tag_node(member, KEEP_TAG);
-                    canvas.tag_node(member, FEED_TAG);
-                }
-                FeedMemberInfo::Entry { unread, .. } => {
-                    canvas.tag_node(member, FEED_ENTRY_TAG);
-                    if unread {
-                        canvas.tag_node(member, UNREAD_TAG);
-                    } else {
-                        canvas.untag_node(member, UNREAD_TAG);
-                    }
-                }
-            }
+        for member in self.graph_runtimes.member_ids() {
+            let (source, entry, unread) = self.feeds.surface_flags(member);
+            let Some(graph) = self.graph_runtimes.graph_containing_member(member) else { continue };
+            let Some(canvas) = self.graph_runtimes.canvas_mut(graph) else { continue };
+            if source { surface_controls::set(canvas, member, Control::Keep, true); }
+            if entry { surface_controls::set(canvas, member, Control::FeedEntry, true); }
+            surface_controls::set(canvas, member, Control::Feed, source);
+            surface_controls::set(canvas, member, Control::Unread, unread);
         }
     }
+
 }
 
 #[cfg(test)]
@@ -312,9 +290,8 @@ mod tests {
             effect,
             Effect::FetchFeed { node, .. } if *node == source
         )));
-        let source_key = app.graph_runtimes.graph().get_node_by_id(source).unwrap().0;
-        let source_tags = crate::content_tags::content_tags(app.graph_runtimes.graph(), source_key);
-        assert!(source_tags.contains(KEEP_TAG) && source_tags.contains(FEED_TAG));
+        assert!(app.node_is_kept(source));
+        assert!(surface_controls::read(app.graph_runtimes.graph(), source, Control::Feed));
 
         let fetched = FetchedPage::text(
             Some("text/gemini".into()),
@@ -334,9 +311,8 @@ mod tests {
             .unwrap()
             .1
             .id;
-        let one_key = app.graph_runtimes.graph().get_node_by_id(one).unwrap().0;
-        let tags = crate::content_tags::content_tags(app.graph_runtimes.graph(), one_key);
-        assert!(tags.contains(FEED_ENTRY_TAG) && tags.contains(UNREAD_TAG));
+        assert!(surface_controls::read(app.graph_runtimes.graph(), one, Control::FeedEntry));
+        assert!(surface_controls::read(app.graph_runtimes.graph(), one, Control::Unread));
 
         app.apply_update(Update::FeedFetched {
             node: source,

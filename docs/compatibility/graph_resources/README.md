@@ -1,16 +1,53 @@
-# Resource graph consumer preparation
+# Resource graph consumer integration
 
-Turnstone retains its declared Mere revision
-`3ded2cd7c2370713118a2440c962c39262720205`. The original preparation inspected
+The seven reconciled patches are applied and the local native integration is
+qualified. The fixed supplier is main-published Mere
+`3b3afa2895424f4be4e1e5f23d48140bf24da5aa`, with matching Genet `15713014`.
+Knot `802238cb` and Redshank `e08bf4b` select the same Mere revision in their
+consumed workspaces. The tested family is published to main: Knot and Redshank first, then
+Turnstone `93f1e45`. Canonical GitHub refs were verified; ordinary Cargo Git
+fetches can now retrieve the sibling revisions.
+
+Default libraries: 749 passed, 9 existing ignored. Piccolo libraries: 782 passed, 9 existing ignored.
+Both locked all-target checks pass, and both dependency graphs contain one Mere
+Git source. Selected Knot gates passed 522 tests with two ignored; selected
+Redshank gates passed 225 with seven ignored. The one fresh whole-branch source
+review found no actionable issues.
+
+[Final native checks](native-integration-checks.json) bind source, manifests,
+test binaries, exact revisions and full-log hashes.
+[Persisted test results](native-integration-tests.log) retain the actual result
+lines. The initial failing run and focused repairs are recorded separately.
+The Resource-aware fork repair preserves connected records, held assertions,
+fresh Surface identities and copy provenance. Native body session switches
+remain deferred shell effects; this is not a mid-body session-adoption proof.
+Browser, optional engine/wasm, physical GPU and assistive-technology gates remain
+separate.
+
+The original patches and preparation receipts below are historical.
+[Current-family preparation checks](current-family-checks.json) describe ordered
+application on browser baseline `22361c9` before the native repairs.
+
+## Historical preparation and receipts
+
+The historical preparation used Mere `3ded2cd7` and inspected
 uncommitted work based on `6399fe6c`. The 2026-10-08 follow-up reviews immutable
 supplier checkpoint `72c68b6d`; its independent gates passed, but its exact RDF
 import repair is still being implemented and is not qualified. Mark chose the
 additive import envelope in the Mere chat. No direct profile-RDF parse/apply
 pipeline in Turnstone, Knot or Woodshed requires a contribution DTO change.
 `checkpoint-review.json` records this review and committed supplier file hashes.
-This preparation does not merge the supplier or change the family pins.
+Those earlier preparation receipts did not change the family pins.
 
-The Inspector, both Roster gathers, and recycle-label capture now use the
+The 2026-10-09 continuation adds the seventh unapplied `journal-origin.patch`
+after `host-persistence.patch`. Mark approved graph-bound capture and
+session-bound delivery; see [the behavior contract and receipt](behaviors.md#proposed-graph-origin-contract-2026-10-08).
+[Journal checks](journal-origin-checks.json) record seven-patch application,
+32 combined Rust parser checks and 15 isolated actual host-stream tests. Full
+host/resource-aware compilation and real session-changing cascade proof remain
+pending at the qualified immutable family. The previous six patches are preserved.
+
+At the preparation baseline, the Inspector, both Roster gathers, and recycle-label capture used the
 central `content_tags` reader. At the current pin it reads legacy node tags.
 When Mere exposes its inherent `Graph::node_content_tags` method, Rust method
 resolution selects that reader instead of the temporary local fallback. Remove
@@ -48,7 +85,7 @@ adoption and its migration limits.
 Recycle records preserve string labels, not tag concept ownership or assertion
 attribution. The prepared label capture is not an attributed recovery receipt.
 
-## Integration conditions
+## Original integration conditions
 
 1. Mere supplies a qualified immutable resource/content revision and its owner
    clears integration. Repin the family as a tested set.
@@ -91,3 +128,15 @@ still unapplied and unexecuted. It is not a Windows, macOS, browser accessibilit
 shared-resource, attributed recovery, or full-suite receipt. The initial Cargo
 scan reported Servo's malformed tidy fixture manifest and continued successfully;
 no supplier fixture or manifest was modified to obtain this result.
+
+
+The approved host contract now has a sixth unapplied successor patch,
+`host-persistence.patch`, covering retained runtime placement, refusal protection,
+canonical-first graph saving, fork publication ordering and exact feed-binding
+repair. Apply it after the original five, whose bytes are preserved.
+`host-persistence-checks.json` records six ordered applications, 25 parsed Rust
+files and 24 passing isolated module tests; `host-persistence-tests.log` records
+positive and negative controls. This does not compile the host or qualify the
+supplier. Full integration, shell refusal/close/switch controls and graph-runtime
+journal attribution remain open. Details and source-review corrections are in
+`session-profile.md` and `controls.md`.

@@ -164,19 +164,24 @@ fn emit_list(store: &mut dyn Store, out: &Emitter<Update>) {
 /// on every answer (the fetch actor's exact shape). Returns the command
 /// handle plus the update receiver the shell drains.
 pub fn spawn_bin(wake: Wake, dir: PathBuf) -> (ActorHandle<BinCommand>, Receiver<Update>) {
+    spawn_bin_for_session(wake, Some(dir))
+}
+
+pub(crate) fn spawn_bin_for_session(wake: Wake, dir: Option<PathBuf>) -> (ActorHandle<BinCommand>, Receiver<Update>) {
     spawn_named(
         "recycle-bin",
         wake,
         move |commands, out: Emitter<Update>| {
-            let mut current_dir = dir.clone();
-            let mut store = match open(&dir) {
-                Ok(mut store) => {
+            let mut current_dir = dir.clone().unwrap_or_default();
+            let mut store = match dir.as_ref().map(|dir| open(dir)).transpose() {
+                Ok(Some(mut store)) => {
                     retire_then_list(&mut store, &current_dir, &out);
                     Some(store)
                 }
+                Ok(None) => None,
                 Err(err) => {
                     out.emit(Update::BinFailed {
-                        error: format!("open {}: {err}", dir.display()),
+                        error: format!("open {}: {err}", current_dir.display()),
                     });
                     None
                 }

@@ -865,12 +865,19 @@ pub(crate) fn spawn_trail_with_capture_library(
     dir: PathBuf,
     capture_library: crate::place::captured_collection::LocalCaptureLibrary,
 ) -> (ActorHandle<TrailCommand>, Receiver<Update>) {
+    spawn_trail_for_session(wake, Some(dir), capture_library)
+}
+
+pub(crate) fn spawn_trail_for_session(
+    wake: Wake, dir: Option<PathBuf>,
+    capture_library: crate::place::captured_collection::LocalCaptureLibrary,
+) -> (ActorHandle<TrailCommand>, Receiver<Update>) {
     spawn_named(
         "trail-memory",
         wake,
         move |commands, out: Emitter<Update>| {
-            let mut state = open_memory(&dir, &capture_library);
-            let mut current_dir = dir.clone();
+            let mut state = dir.as_ref().and_then(|dir| open_memory(dir, &capture_library));
+            let mut current_dir = dir.unwrap_or_default();
             // The derived lexical/behavioural projection and whether the corpus has
             // moved since it was minted. Built on the first recall, not at
             // spawn: a session that never searches never pays for one.

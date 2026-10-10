@@ -145,7 +145,7 @@ thread_local! {
         const { std::cell::RefCell::new(None) };
 }
 
-fn ordinary_chrome_row_metrics(ui_zoom: f32) -> (f32, f32) {
+pub(crate) fn ordinary_chrome_row_metrics(ui_zoom: f32) -> (f32, f32) {
     let appearance = crate::shell_services::AppearanceConfig {
         ui_zoom,
         ..Default::default()
@@ -175,7 +175,7 @@ pub(crate) fn chrome_review_row_extra_height(
 }
 
 /// Breathing room kept between the last row and the window edge (device px).
-const CARD_BOTTOM_MARGIN: f32 = 16.0;
+pub(crate) const CARD_BOTTOM_MARGIN: f32 = 16.0;
 /// The floor for ordinary suggestions in a cramped window. An expanded
 /// install review may use fewer rows so its complete grant request fits.
 const MIN_VISIBLE_ROWS: usize = 3;
@@ -439,10 +439,11 @@ pub struct OmnibarState {
     /// Index into `suggestions` of the highlighted row.
     pub selected: usize,
     pub suggestions: Vec<Suggestion>,
-    /// The bare `>` lane was expanded to the whole catalog ("All
-    /// commands…"); it returns to the person's commands when the omnibar
-    /// closes.
-    pub all_commands: bool,
+    /// The `>` lane's palette state, read through Cambium's menu session
+    /// (SE48): its query, the highlighted command, and whether it was
+    /// expanded to every command ("All commands…"). It starts over when the
+    /// omnibar closes.
+    pub menu: cambium::MenuSession,
 }
 
 impl std::fmt::Debug for OmnibarState {
@@ -969,37 +970,13 @@ struct PresentationPalette {
     preedit: (u8, u8, u8),
 }
 
-fn theme_accent(theme_id: Option<&str>, fallback: (u8, u8, u8)) -> (u8, u8, u8) {
-    let Some(theme_id) = theme_id.filter(|value| !value.is_empty()) else {
-        return fallback;
-    };
-    match theme_id {
-        "theme:night" | "theme:dark" => (157, 116, 231),
-        "theme:day" | "theme:light" => (47, 111, 191),
-        "theme:ember" => (206, 84, 47),
-        // A theme-pack registry is deliberately not invented here. Until one
-        // is a second provider, an unfamiliar durable id still selects a
-        // stable, visible accent rather than becoming a stored no-op.
-        other => {
-            let hash = other.bytes().fold(0x811c_9dc5u32, |hash, byte| {
-                hash.wrapping_mul(0x0100_0193) ^ u32::from(byte)
-            });
-            (
-                80 + ((hash >> 16) & 0x5f) as u8,
-                90 + ((hash >> 8) & 0x5f) as u8,
-                110 + (hash & 0x5f) as u8,
-            )
-        },
-    }
-}
-
 fn presentation_palette(
     appearance: &crate::shell_services::AppearanceConfig,
 ) -> PresentationPalette {
     use crate::shell_services::ThemeMode;
 
-    match appearance.theme_mode {
-        ThemeMode::Light => PresentationPalette {
+    match &appearance.theme_mode {
+        ThemeMode::Light | ThemeMode::HcLight => PresentationPalette {
             surface: (248, 249, 252),
             raised: (255, 255, 255),
             field: (238, 241, 247),
@@ -1007,21 +984,23 @@ fn presentation_palette(
             text: (28, 35, 48),
             body_text: (45, 55, 72),
             muted: (91, 104, 127),
-            accent: theme_accent(appearance.theme_id.as_deref(), (47, 111, 191)),
+            accent: (47, 111, 191),
             accent_text: (255, 255, 255),
             preedit: (67, 98, 178),
         },
-        ThemeMode::System | ThemeMode::Dark => PresentationPalette {
-            surface: (22, 27, 40),
-            raised: (28, 34, 50),
-            field: (15, 19, 30),
-            border: (70, 82, 110),
-            text: (238, 242, 250),
-            body_text: (216, 222, 234),
-            muted: (140, 148, 165),
-            accent: theme_accent(appearance.theme_id.as_deref(), (232, 150, 40)),
-            accent_text: (28, 22, 10),
-            preedit: (180, 200, 255),
+        ThemeMode::System | ThemeMode::Dark | ThemeMode::HcDark | ThemeMode::Custom(_) => {
+            PresentationPalette {
+                surface: (22, 27, 40),
+                raised: (28, 34, 50),
+                field: (15, 19, 30),
+                border: (70, 82, 110),
+                text: (238, 242, 250),
+                body_text: (216, 222, 234),
+                muted: (140, 148, 165),
+                accent: (232, 150, 40),
+                accent_text: (28, 22, 10),
+                preedit: (180, 200, 255),
+            }
         },
     }
 }
@@ -1030,13 +1009,35 @@ fn rgb((red, green, blue): (u8, u8, u8)) -> String {
     format!("rgb({red}, {green}, {blue})")
 }
 
+fn role_color(
+    appearance: &crate::shell_services::AppearanceConfig,
+    role: &str,
+    fallback: (u8, u8, u8),
+) -> String {
+    if appearance.theme_presentation.is_some() {
+        format!("var(--tabard-color-{role}, {})", rgb(fallback))
+    } else {
+        rgb(fallback)
+    }
+}
+
+fn themed_sheet(appearance: &crate::shell_services::AppearanceConfig, sheet: String) -> String {
+    match &appearance.theme_presentation {
+        Some(presentation) => format!(
+            "{sheet}\n{}",
+            crate::appearance::presentation_css(presentation)
+        ),
+        None => sheet,
+    }
+}
+
 /// The chrome's live sheet. It is regenerated from the shell-owned value
 /// snapshot so theme and zoom change the retained host surface on the next
 /// redraw, without a provider or pane reaching into a renderer.
 pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig) -> String {
     let palette = presentation_palette(appearance);
     let zoom = appearance.zoom();
-    format!(
+    let sheet = format!(
         "{CHROME_SHEET} \
         .omni {{ background-color: {}; border-color: {}; }} \
         .omni-input {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
@@ -1052,39 +1053,40 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         .document-find-input, .decision-input {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
         .decision-prompt {{ color: {}; font-size: {:.2}px; }} \
         .decision-input-active {{ border-color: {}; }}",
-        rgb(palette.surface),
-        rgb(palette.border),
-        rgb(palette.text),
-        rgb(palette.field),
+        role_color(appearance, "bg", palette.surface),
+        role_color(appearance, "text-dim", palette.border),
+        role_color(appearance, "text-header", palette.text),
+        role_color(appearance, "surface-2", palette.field),
         16.0 * zoom,
-        rgb(palette.preedit),
-        rgb(palette.body_text),
+        role_color(appearance, "secondary", palette.preedit),
+        role_color(appearance, "text", palette.body_text),
         14.0 * zoom,
-        rgb(palette.accent_text),
-        rgb(palette.accent),
+        role_color(appearance, "on-primary", palette.accent_text),
+        role_color(appearance, "primary", palette.accent),
         14.0 * zoom,
-        rgb(palette.muted),
+        role_color(appearance, "text-dim", palette.muted),
         14.0 * zoom,
-        rgb(palette.muted),
-        rgb(palette.raised),
-        rgb(palette.border),
+        role_color(appearance, "text-dim", palette.muted),
+        role_color(appearance, "surface", palette.raised),
+        role_color(appearance, "text-dim", palette.border),
         12.0 * zoom,
-        rgb(palette.body_text),
-        rgb(palette.raised),
-        rgb(palette.border),
-        rgb(palette.accent),
-        rgb(palette.text),
-        rgb(palette.field),
-        rgb(palette.border),
+        role_color(appearance, "text", palette.body_text),
+        role_color(appearance, "surface", palette.raised),
+        role_color(appearance, "text-dim", palette.border),
+        role_color(appearance, "primary", palette.accent),
+        role_color(appearance, "text-header", palette.text),
+        role_color(appearance, "surface-2", palette.field),
+        role_color(appearance, "text-dim", palette.border),
         12.0 * zoom,
         12.0 * zoom,
-        rgb(palette.text),
-        rgb(palette.field),
+        role_color(appearance, "text-header", palette.text),
+        role_color(appearance, "surface-2", palette.field),
         13.0 * zoom,
-        rgb(palette.text),
+        role_color(appearance, "text-header", palette.text),
         14.0 * zoom,
-        rgb(palette.accent),
-    )
+        role_color(appearance, "primary", palette.accent),
+    );
+    themed_sheet(appearance, sheet)
 }
 
 /// The Settings pane's live Cambium sheet. Other pane kinds retain their
@@ -1094,7 +1096,7 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
 pub(crate) fn cambium_sheet(appearance: &crate::shell_services::AppearanceConfig) -> String {
     let palette = presentation_palette(appearance);
     let zoom = appearance.zoom();
-    format!(
+    let sheet = format!(
         "{CAMBIUM_SHEET} \
         .pane, .grid {{ background-color: {}; color: {}; font-size: {:.2}px; }} \
         .list-section-title, .setting-label {{ color: {}; font-size: {:.2}px; }} \
@@ -1106,27 +1108,28 @@ pub(crate) fn cambium_sheet(appearance: &crate::shell_services::AppearanceConfig
         .radio.selected {{ color: {}; }} \
         .slider-track {{ background-color: {}; }} \
         .slider-thumb {{ background-color: {}; border-color: {}; }}",
-        rgb(palette.surface),
-        rgb(palette.body_text),
+        role_color(appearance, "bg", palette.surface),
+        role_color(appearance, "text", palette.body_text),
         13.0 * zoom,
-        rgb(palette.muted),
+        role_color(appearance, "text-dim", palette.muted),
         12.0 * zoom,
-        rgb(palette.body_text),
+        role_color(appearance, "text", palette.body_text),
         13.0 * zoom,
-        rgb(palette.muted),
-        rgb(palette.text),
-        rgb(palette.raised),
-        rgb(palette.border),
+        role_color(appearance, "text-dim", palette.muted),
+        role_color(appearance, "text-header", palette.text),
+        role_color(appearance, "surface", palette.raised),
+        role_color(appearance, "text-dim", palette.border),
         13.0 * zoom,
-        rgb(palette.body_text),
+        role_color(appearance, "text", palette.body_text),
         13.0 * zoom,
-        rgb(palette.body_text),
+        role_color(appearance, "text", palette.body_text),
         13.0 * zoom,
-        rgb(palette.accent),
-        rgb(palette.border),
-        rgb(palette.accent),
-        rgb(palette.border),
-    )
+        role_color(appearance, "primary", palette.accent),
+        role_color(appearance, "text-dim", palette.border),
+        role_color(appearance, "primary", palette.accent),
+        role_color(appearance, "text-dim", palette.border),
+    );
+    themed_sheet(appearance, sheet)
 }
 
 /// Where the omnibar caret roughly sits on screen, as `(position, size)` in
@@ -2451,20 +2454,102 @@ mod tests {
     #[test]
     fn live_appearance_changes_chrome_and_settings_paint_styles() {
         let appearance = crate::shell_services::AppearanceConfig {
-            theme_id: Some("theme:night".into()),
+            theme_id: Some("theme:dark".into()),
             theme_mode: crate::shell_services::ThemeMode::Light,
             ui_zoom: 1.5,
+            ..Default::default()
         };
+        let mut appearance = appearance;
+        let resolved = tabard::resolve_theme_choice(
+            &Default::default(),
+            &tabard::theme::choice::ThemeChoice::new(
+                "theme:dark",
+                Some(tabard::theme::registry::Mode::Light),
+            ),
+        )
+        .unwrap();
+        appearance.theme_presentation = Some(resolved.presentation.clone());
         let chrome = chrome_sheet(&appearance);
         let cambium = cambium_sheet(&appearance);
 
-        assert!(chrome.contains("rgb(157, 116, 231)"));
+        assert!(chrome.contains("--tabard-color-primary"));
+        assert!(chrome.contains(&crate::appearance::presentation_css(&resolved.presentation)));
         assert!(chrome.contains("24.00px"), "16px chrome input at 1.5x");
         assert!(cambium.contains("rgb(248, 249, 252)"));
         assert!(cambium.contains("19.50px"), "13px settings text at 1.5x");
         assert!(
             CAMBIUM_SHEET.contains(".radio { color: rgb(220, 226, 238)"),
             "the shared dark sheet gives controls an explicit readable foreground"
+        );
+    }
+
+    #[test]
+    fn shared_canonical_roles_and_authored_rules_reach_the_retained_chrome_cascade() {
+        let mut dom = ScriptedDom::new();
+        let document = dom.document();
+        dom.set_inner_html(document, "<html><body><div class='omni'><div class='omni-input'>Address</div></div></body></html>");
+        let omni = taproot::matching(&dom, &taproot::Selector::class("omni"))[0];
+        let mut retained = RetainedLayout::new();
+        let registry = tabard::theme::registry::ThemeRegistry::default();
+        let mut observed = Vec::new();
+        for mode in [
+            tabard::theme::registry::Mode::Light,
+            tabard::theme::registry::Mode::Dark,
+            tabard::theme::registry::Mode::HcLight,
+            tabard::theme::registry::Mode::HcDark,
+        ] {
+            let resolved = tabard::resolve_theme_choice(
+                &registry,
+                &tabard::theme::choice::ThemeChoice::new("theme:default", Some(mode)),
+            )
+            .unwrap();
+            let tabard::ThemePresentation::Derived(palette) = &resolved.presentation else {
+                panic!("canonical palette")
+            };
+            let expected = rgb((
+                palette.palette.bg.r,
+                palette.palette.bg.g,
+                palette.palette.bg.b,
+            ));
+            let appearance = crate::shell_services::AppearanceConfig {
+                theme_presentation: Some(resolved.presentation),
+                ..Default::default()
+            };
+            let _ = retained.scene(&mut dom, &chrome_sheet(&appearance), 800, 600);
+            let actual = retained
+                .snapshot
+                .as_ref()
+                .unwrap()
+                .styles
+                .computed_style(omni, "background-color")
+                .unwrap();
+            assert_eq!(actual.replace(' ', ""), expected.replace(' ', ""));
+            observed.push(actual);
+        }
+        for (index, color) in observed.iter().enumerate() {
+            assert!(
+                !observed[..index].contains(color),
+                "four canonical modes have distinct actual backgrounds"
+            );
+        }
+        let appearance = crate::shell_services::AppearanceConfig {
+            theme_presentation: Some(tabard::ThemePresentation::AuthoredStylesheet(vec![":root { --tabard-color-bg: rgb(17, 34, 51); } .omni { border-color: rgb(61, 71, 81); }".into()])), ..Default::default()
+        };
+        let _ = retained.scene(&mut dom, &chrome_sheet(&appearance), 800, 600);
+        let styles = &retained.snapshot.as_ref().unwrap().styles;
+        assert_eq!(
+            styles
+                .computed_style(omni, "background-color")
+                .unwrap()
+                .replace(' ', ""),
+            "rgb(17,34,51)"
+        );
+        assert_eq!(
+            styles
+                .computed_style(omni, "border-top-color")
+                .unwrap()
+                .replace(' ', ""),
+            "rgb(61,71,81)"
         );
     }
 

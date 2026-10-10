@@ -28,7 +28,8 @@
 //! - With djinn absent or Locked the identity is **pending** (D12): [`bind`]
 //!   answers `None`, nothing signs, nothing is sealed, and there is no
 //!   fallback key. Already-public state (the browser, read-only places)
-//!   stays readable.
+//!   stays readable. [`watch_for_unlock`] asks djinn again until it
+//!   answers, and the app, the worker and the services adopt the root then.
 
 use std::sync::Arc;
 
@@ -124,6 +125,41 @@ pub fn bind() -> Option<Arc<RootIdentity>> {
 pub const PENDING: &str =
     "the profile identity is pending: djinn is not running or the vault is locked";
 
+/// How often [`watch_for_unlock`] asks djinn again.
+const UNLOCK_POLL: std::time::Duration = std::time::Duration::from_secs(1);
+
+/// Wait for a pending identity and hand back the root once djinn answers
+/// (djinn started, or a user act unlocked its vault). Calls `wake` after
+/// sending; ends with the root sent or the receiver gone.
+pub fn watch_for_unlock(
+    wake: Arc<dyn Fn() + Send + Sync>,
+) -> std::sync::mpsc::Receiver<Arc<RootIdentity>> {
+    watch_with(bind, UNLOCK_POLL, wake)
+}
+
+fn watch_with(
+    bind: impl Fn() -> Option<Arc<RootIdentity>> + Send + 'static,
+    poll: std::time::Duration,
+    wake: Arc<dyn Fn() + Send + Sync>,
+) -> std::sync::mpsc::Receiver<Arc<RootIdentity>> {
+    let (tx, rx) = std::sync::mpsc::channel();
+    let spawned = std::thread::Builder::new()
+        .name("turnstone-unlock-watch".into())
+        .spawn(move || loop {
+            std::thread::sleep(poll);
+            if let Some(root) = bind() {
+                if tx.send(root).is_ok() {
+                    wake();
+                }
+                return;
+            }
+        });
+    if let Err(err) = spawned {
+        tracing::warn!(%err, "could not watch for djinn; the profile identity stays pending");
+    }
+    rx
+}
+
 /// The root subject: the master public key every participant grant descends from.
 pub fn root_subject(provider: &impl IdentityProvider) -> servitor::Subject {
     servitor::Subject::new(provider.master_public_key().to_bytes())
@@ -147,6 +183,34 @@ mod tests {
         assert_eq!(
             root_subject(&root),
             root_subject(&identity::InMemoryProvider::from_seed([3; 32]))
+        );
+    }
+
+    /// The watch hands the root back once djinn answers, and not before.
+    #[test]
+    fn the_unlock_watch_adopts_the_root_once_djinn_answers() {
+        use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+        let poll = std::time::Duration::from_millis(20);
+        let asks = Arc::new(AtomicUsize::new(0));
+        let counted = asks.clone();
+        let woken = Arc::new(AtomicBool::new(false));
+        let flag = woken.clone();
+        let roots = watch_with(
+            move || {
+                (counted.fetch_add(1, Ordering::SeqCst) >= 3)
+                    .then(|| Arc::new(RootIdentity::from_seed([4; 32])))
+            },
+            poll,
+            Arc::new(move || flag.store(true, Ordering::SeqCst)),
+        );
+        let root = roots
+            .recv_timeout(poll * 100)
+            .expect("the root arrives once djinn answers");
+        assert!(asks.load(Ordering::SeqCst) >= 4, "pending answers came first");
+        assert!(woken.load(Ordering::SeqCst));
+        assert_eq!(
+            root_subject(root.as_ref()),
+            root_subject(&RootIdentity::from_seed([4; 32]))
         );
     }
 }

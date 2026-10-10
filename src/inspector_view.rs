@@ -201,6 +201,9 @@ fn feed_rows(app: &App, member: uuid::Uuid) -> Option<Vec<(String, String)>> {
 /// label while kind/version/route remain visible; only the trusted UI person
 /// renders as `you`. An engine or script named `user` is still a machine.
 fn journal_rows(app: &App) -> Vec<(String, String)> {
+    let Some(origin) = app.behavior_origin() else {
+        return Vec::new();
+    };
     let Ok(journal) = app.journal.lock() else {
         return Vec::new();
     };
@@ -208,6 +211,7 @@ fn journal_rows(app: &App) -> Vec<(String, String)> {
         .entries()
         .iter()
         .rev()
+        .filter(|entry| entry.origin == origin)
         .take(5)
         .map(|entry| {
             let author = journal_author_label(app, &entry.author);
@@ -490,6 +494,7 @@ mod tests {
             node,
             facts: Some(ContentFacts {
                 engine: "genet.web".to_string(),
+                lane: crate::content::ContentLane::Document,
                 lineage: None,
                 capabilities: Default::default(),
                 structure: Some(StructureFacts {
@@ -529,6 +534,7 @@ mod tests {
             node,
             facts: Some(ContentFacts {
                 engine: "some.lane".to_string(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: Default::default(),
@@ -567,6 +573,7 @@ mod tests {
             node,
             Some(ContentFacts {
                 engine: "genet.livery".into(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: livery,
@@ -608,6 +615,7 @@ mod tests {
             node,
             Some(ContentFacts {
                 engine: "weld.chromium".into(),
+                lane: crate::content::ContentLane::Surface,
                 structure: None,
                 lineage: None,
                 capabilities: DocumentCapabilityFacts {
@@ -660,6 +668,7 @@ mod tests {
             node,
             facts: Some(ContentFacts {
                 engine: "genet.web".to_string(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: Default::default(),

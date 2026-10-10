@@ -53,9 +53,13 @@ set.
 ## Current implementation plans and product direction
 
 - [Browser/resource handoff, 2026-10-08](2026-10-08_browser_resource_handoff.md):
-  resume point for published browser adoption, ThinkPad preservation, per-view
-  control ruling and unapplied next-Mere consumer patches; qualification and
-  session/runtime gates remain explicit.
+  resume point for browser adoption and applied resource-graph integration.
+  Mere P2 is qualified at `3b3afa289`; per-view controls, retained session
+  placement, refusal protection and graph-origin routing are applied. Default/Piccolo
+  native suites, all-target checks and source review pass. Final receipts bind
+  the tested source; sibling and consumer commits are published to main.
+  The SC continuation centralizes controller pumping and placement-derived
+  visibility; live document accessibility and the larger pool remain open.
 - [Unusual-protocols browser plan](2026-10-06_unusual_protocols_browser_plan.md):
   the bar ("can you use this as a web browser for the unusual protocols"),
   per-protocol state, ranked gaps and stages S0 to S11 plus SC. Ruled U1 to
@@ -87,7 +91,7 @@ set.
 - [Turnstone place port](2026-07-28_turnstone_place_port_plan.md): shared-place product composition and two-peer acceptance path.
 - [Peer-web reframe](2026-07-28_turnstone_peer_web_reframe.md): current product direction for local-first personal and shared places.
 - [Turnstone architecture](2026-07-10_turnstone_architecture_plan.md): structural obviation ladder and current Mere/Turnstone boundaries.
-- [Turnstone rung 5 panes](2026-07-14_turnstone_rung5_panes_plan.md): pane, surface-composition, focus, workbench, and window foundations.
+- [Turnstone rung 5 panes](2026-07-14_turnstone_rung5_panes_plan.md): pane, surface-composition, focus, workbench, and window foundations; October 10 application appearance adoption uses shared Tabard definitions and native workshop bindings; macOS production acceptance passed four serialized processes and nineteen inspected captures, with exact Save/Apply and restart evidence in the [receipt ledger](../docs/receipts/tabard_adoption_20261010/README.md). Reader/browser rollout gates remain separate.
 - [Genet probe automatability](2026-07-17_genet_probe_automatability_plan.md): proposed shared diagnostics, accessibility, and automation contract for Genet apps.
 
 ## Current architecture, audits, and design records

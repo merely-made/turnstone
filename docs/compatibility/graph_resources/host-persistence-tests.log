@@ -1,0 +1,250 @@
+PERSISTENCE GREEN
+
+running 6 tests
+test tests::graph_replacement_clears_qualification_but_cannot_clear_refusal ... ok
+test tests::ordinary_save_keeps_optional_placement_and_writes_facets_first ... ok
+test tests::refused_unbound_and_wrong_destination_write_nothing ... ok
+test tests::failed_facets_prevent_graph_write_and_graph_failure_is_returned ... ok
+test tests::facet_write_failure_preserves_actual_graph_bytes_and_evidence_retry ... ok
+test tests::interrupted_replacement_is_not_a_fresh_writable_session ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+FEED GREEN
+
+running 8 tests
+test feed::tests::guid_identity_survives_an_enclosure_or_link_change ... ok
+test feed::tests::gemtext_feed_preserves_relative_urls_dates_and_dedupes ... ok
+test feed::tests::rss_and_json_feed_share_the_entry_shape ... ok
+test feed::tests::separate_guid_entries_with_one_url_keep_distinct_bindings ... ok
+test feed::tests::podcast_facts_resolve_against_the_caller_base_and_guid_wins_deduplication ... ok
+test feed::tests::unchanged_unbound_entry_gets_an_explicit_view_without_adopting_a_sibling ... ok
+test feed::tests::schedule_survives_restart_and_suppresses_unchanged_entries ... ok
+test feed::tests::unread_entry_missing_binding_retains_status_through_restart_and_repair ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+REDSHANK GREEN
+
+running 10 tests
+test redshank_host::tests::another_items_note_loads_paused_at_zero_and_holds_saved_progress ... ok
+test redshank_host::tests::capturing_cancels_a_pending_open_and_compact_projection_keeps_its_warning ... ok
+test redshank_host::tests::aligned_points_require_the_loaded_digest_and_never_remap_span_ends ... ok
+test redshank_host::tests::refused_replacement_and_failed_runtime_dispatch_keep_the_progress_hold ... ok
+test redshank_host::tests::note_opens_require_ready_matching_receipts_or_explicit_approximation ... ok
+test redshank_host::tests::suspended_host_keeps_output_and_fetch_without_opening_storage ... ok
+test redshank_host::tests::the_shells_fetch_handle_survives_a_session_reopen ... ok
+test redshank_host::tests::new_transport_supersedes_an_unacknowledged_note_seek_when_delivery_succeeds ... ok
+test redshank_host::tests::missing_replacement_note_cancels_the_old_deferred_open_and_span ... ok
+test redshank_host::tests::only_the_latest_seek_acknowledgement_releases_saved_progress ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+persistence-red.log
+warning: unused import: `super::*`
+ --> /tmp/turnstone-host-preparation-dkwl8oxl/proposed/src/session_persistence.rs:3:9
+  |
+3 |     use super::*;
+  |         ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0433]: cannot find type `SessionPersistence` in this scope
+  --> /tmp/turnstone-host-preparation-dkwl8oxl/proposed/src/session_persistence.rs:10:25
+   |
+10 |             let state = SessionPersistence::writable(PathBuf::from("session-a"), profile);
+   |                         ^^^^^^^^^^^^^^^^^^ use of undeclared type `SessionPersistence`
+
+error[E0433]: cannot find type `SessionPersistence` in this scope
+  --> /tmp/turnstone-host-preparation-dkwl8oxl/proposed/src/session_persistence.rs:25:13
+   |
+25 |             SessionPersistence::refused(PathBuf::from("session-a"), "invalid input".into()),
+   |             ^^^^^^^^^^^^^^^^^^ use of undeclared type `SessionPersistence`
+
+error[E0433]: cannot find type `SessionPersistence` in this scope
+  --> /tmp/turnstone-host-preparation-dkwl8oxl/proposed/src/session_persistence.rs:26:13
+   |
+26 |             SessionPersistence::Unbound,
+   |             ^^^^^^^^^^^^^^^^^^ use of undeclared type `SessionPersistence`
+
+error[E0433]: cannot find type `SessionPersistence` in this scope
+  --> /tmp/turnstone-host-preparation-dkwl8oxl/proposed/src/session_persistence.rs:27:13
+   |
+27 |             SessionPersistence::writable(PathBuf::from("session-b"), Some(7u8)),
+   |             ^^^^^^^^^^^^^^^^^^ use of undeclared type `SessionPersistence`
+
+error[E0433]: cannot find type `SessionPersistence` in this scope
+  --> /tmp/turnstone-host-preparation-dkwl8oxl/proposed/src/session_persistence.rs:36:21
+   |
+36 |         let state = SessionPersistence::writable(PathBuf::from("session-a"), Some(7u8));
+   |                     ^^^^^^^^^^^^^^^^^^ use of undeclared type `SessionPersistence`
+
+error[E0433]: cannot find type `SessionPersistence` in this scope
+  --> /tmp/turnstone-host-preparation-dkwl8oxl/proposed/src/session_persistence.rs:47:25
+   |
+47 |         let mut state = SessionPersistence::writable(PathBuf::from("session-a"), Some(7u8));
+   |                         ^^^^^^^^^^^^^^^^^^ use of undeclared type `SessionPersistence`
+
+error[E0433]: cannot find type `SessionPersistence` in this scope
+  --> /tmp/turnstone-host-preparation-dkwl8oxl/proposed/src/session_persistence.rs:52:17
+   |
+52 |         state = SessionPersistence::refused(PathBuf::from("session-a"), "bad".into());
+   |                 ^^^^^^^^^^^^^^^^^^ use of undeclared type `SessionPersistence`
+
+error[E0433]: cannot find type `SessionPersistence` in this scope
+  --> /tmp/turnstone-host-preparation-dkwl8oxl/proposed/src/session_persistence.rs:58:17
+   |
+58 |         state = SessionPersistence::writable(PathBuf::from("session-a"), None);
+   |                 ^^^^^^^^^^^^^^^^^^ use of undeclared type `SessionPersistence`
+
+error: aborting due to 8 previous errors; 1 warning emitted
+
+For more information about this error, try `rustc --explain E0433`.
+
+persistence-order-red.log
+
+running 5 tests
+test tests::graph_replacement_clears_qualification_but_cannot_clear_refusal ... ok
+test tests::facet_write_failure_preserves_actual_graph_bytes_and_evidence_retry ... FAILED
+test tests::failed_facets_prevent_graph_write_and_graph_failure_is_returned ... FAILED
+test tests::refused_unbound_and_wrong_destination_write_nothing ... ok
+test tests::ordinary_save_keeps_optional_placement_and_writes_facets_first ... FAILED
+
+failures:
+
+---- tests::facet_write_failure_preserves_actual_graph_bytes_and_evidence_retry stdout ----
+
+thread 'tests::facet_write_failure_preserves_actual_graph_bytes_and_evidence_retry' (603094) panicked at /tmp/turnstone-host-preparation-dkwl8oxl/persistence-reversed.rs:127:9:
+assertion `left == right` failed
+  left: [115, 116, 114, 105, 112, 112, 101, 100, 32, 103, 114, 97, 112, 104]
+ right: [111, 114, 105, 103, 105, 110, 97, 108, 32, 103, 114, 97, 112, 104, 32, 119, 105, 116, 104, 32, 111, 108, 100, 32, 108, 97, 98, 101, 108, 115]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- tests::failed_facets_prevent_graph_write_and_graph_failure_is_returned stdout ----
+
+thread 'tests::failed_facets_prevent_graph_write_and_graph_failure_is_returned' (603095) panicked at /tmp/turnstone-host-preparation-dkwl8oxl/persistence-reversed.rs:91:62:
+graph write
+
+---- tests::ordinary_save_keeps_optional_placement_and_writes_facets_first stdout ----
+
+thread 'tests::ordinary_save_keeps_optional_placement_and_writes_facets_first' (603097) panicked at /tmp/turnstone-host-preparation-dkwl8oxl/persistence-reversed.rs:71:13:
+assertion `left == right` failed
+  left: ["graph", "facets"]
+ right: ["facets", "graph"]
+
+
+failures:
+    tests::facet_write_failure_preserves_actual_graph_bytes_and_evidence_retry
+    tests::failed_facets_prevent_graph_write_and_graph_failure_is_returned
+    tests::ordinary_save_keeps_optional_placement_and_writes_facets_first
+
+test result: FAILED. 2 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+persistence-interrupted-red.log
+
+running 1 test
+test tests::interrupted_replacement_is_not_a_fresh_writable_session ... FAILED
+
+failures:
+
+---- tests::interrupted_replacement_is_not_a_fresh_writable_session stdout ----
+
+thread 'tests::interrupted_replacement_is_not_a_fresh_writable_session' (669130) panicked at /tmp/turnstone-host-preparation-dkwl8oxl/persistence-missing-target.rs:239:13:
+assertion failed: require_complete_file(&target).is_err()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::interrupted_replacement_is_not_a_fresh_writable_session
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+
+feed-red.log
+
+running 1 test
+test feed::tests::unchanged_unbound_entry_gets_an_explicit_view_without_adopting_a_sibling ... FAILED
+
+failures:
+
+---- feed::tests::unchanged_unbound_entry_gets_an_explicit_view_without_adopting_a_sibling stdout ----
+
+thread 'feed::tests::unchanged_unbound_entry_gets_an_explicit_view_without_adopting_a_sibling' (628318) panicked at /tmp/turnstone-host-preparation-dkwl8oxl/proposed/src/feed.rs:960:9:
+assertion `left == right` failed: unchanged content still needs an explicit view binding
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    feed::tests::unchanged_unbound_entry_gets_an_explicit_view_without_adopting_a_sibling
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+
+feed-unread-red.log
+
+running 1 test
+test feed::tests::unread_entry_missing_binding_retains_status_through_restart_and_repair ... FAILED
+
+failures:
+
+---- feed::tests::unread_entry_missing_binding_retains_status_through_restart_and_repair stdout ----
+
+thread 'feed::tests::unread_entry_missing_binding_retains_status_through_restart_and_repair' (660246) panicked at /tmp/turnstone-host-preparation-dkwl8oxl/proposed/src/feed.rs:997:13:
+assertion `left == right` failed
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    feed::tests::unread_entry_missing_binding_retains_status_through_restart_and_repair
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+
+feed-guid-red.log
+
+running 1 test
+test feed::tests::separate_guid_entries_with_one_url_keep_distinct_bindings ... FAILED
+
+failures:
+
+---- feed::tests::separate_guid_entries_with_one_url_keep_distinct_bindings stdout ----
+
+thread 'feed::tests::separate_guid_entries_with_one_url_keep_distinct_bindings' (661692) panicked at /tmp/turnstone-host-preparation-dkwl8oxl/proposed/src/feed.rs:1021:9:
+both explicit GUID placements must remain bound
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    feed::tests::separate_guid_entries_with_one_url_keep_distinct_bindings
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+
+redshank-red.log
+
+running 1 test
+test redshank_host::tests::suspended_host_keeps_output_and_fetch_without_opening_storage ... FAILED
+
+failures:
+
+---- redshank_host::tests::suspended_host_keeps_output_and_fetch_without_opening_storage stdout ----
+
+thread 'redshank_host::tests::suspended_host_keeps_output_and_fetch_without_opening_storage' (666880) panicked at /tmp/turnstone-host-preparation-dkwl8oxl/redshank-default.rs:1342:9:
+assertion `left == right` failed
+  left: Silent
+ right: Device
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    redshank_host::tests::suspended_host_keeps_output_and_fetch_without_opening_storage
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s

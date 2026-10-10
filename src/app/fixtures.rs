@@ -46,6 +46,19 @@ impl App {
         let graph_id = GraphId::from_uuid(*session_id.as_uuid());
         let mut frisket = FrisketLayout::default();
         frisket.retag_graph_bound(graph_id);
+        mere::kernel::graph::set_captured_delta_hook(None);
+        let journal = crate::host_journal::shared_journal();
+        let mut graph_runtimes = super::GraphRuntimePool::with_journal(graph_id, Some(session_id), Canvas::new(),
+            journal.clone(),
+        );
+        graph_runtimes.adopt_graph(mere::kernel::graph::Graph::new(),
+            crate::session_persistence::SessionPersistence::writable(
+                crate::session::session_dir(&data_root, session_id), None,
+            ),
+        );
+        let behavior_binding = graph_runtimes
+            .get(graph_id)
+            .and_then(|runtime| runtime.origin());
         Self {
             watches: servitor::WatchTable::new(),
             app_watches: servitor::WatchTable::new(),
@@ -57,7 +70,7 @@ impl App {
             now_ms: None,
             behavior_cursor: 0,
             cascade_budget: servitor::cascade::CascadeBudget::DEFAULT.rounds(),
-            graph_runtimes: super::GraphRuntimePool::new(graph_id, Some(session_id), Canvas::new()),
+            graph_runtimes,
             graph_views: super::GraphPaneViews::default(),
             forme_runtimes: super::FormeRuntimePool::default(),
             pane_context: crate::panes::ContextIndex::default(),
@@ -103,7 +116,7 @@ impl App {
             recall_query: String::new(),
             trash: Vec::new(),
             pending_install: None,
-            denizens: crate::denizen::Denizens::for_root(root),
+            denizens: root.map_or_else(crate::denizen::Denizens::pending, crate::denizen::Denizens::new),
             resident_runs: crate::resident_runs::ResidentRuns::default(),
             resident_run_error: None,
             resident_run_effect_policy: crate::resident_runs::ExternalEffectPolicy::default(),
@@ -111,11 +124,9 @@ impl App {
             resident_run_storage_limits: crate::resident_runs::StorageLimits::default(),
             gemini_identities: crate::gemini_identity::GeminiIdentityBindings::default(),
             identity,
-            journal: {
-                let (journal, hook) = mere::kernel::graph::journal_capture_hook();
-                mere::kernel::graph::set_captured_delta_hook(Some(hook));
-                journal
-            },
+            journal,
+            behavior_binding,
+            behavior_refusal: None,
             next_pane_id: 1,
             events: Vec::new(),
             knot_documents: Vec::new(),
@@ -156,6 +167,7 @@ impl App {
         let _ = assert_relation(&mut graph, notes, radios, relation());
         let _ = assert_relation(&mut graph, notes, harmony, relation());
         app.graph_runtimes.set_graph(graph);
+        app.bind_behavior_journal().expect("fixture graph binding");
         let _ = app
             .graph_runtimes
             .set_node_title_for(uuid::Uuid::from_u128(0x101), "Field notes".into());
@@ -170,7 +182,12 @@ impl App {
 
     #[cfg(test)]
     pub(crate) fn test_stub() -> Self {
-        let mut app = Self::isolated(std::env::temp_dir().join("turnstone-app-test"));
+        Self::test_stub_at(std::env::temp_dir().join("turnstone-app-test"))
+    }
+
+    #[cfg(test)]
+    pub(crate) fn test_stub_at(data_root: PathBuf) -> Self {
+        let mut app = Self::isolated(data_root);
         app.engine_inventory = crate::shell::project_engine_inventory(
             &crate::shell::standard_content_engines(),
             &inker::SurfaceEngineRegistry::new(),

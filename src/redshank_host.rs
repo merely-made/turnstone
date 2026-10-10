@@ -149,6 +149,16 @@ impl RedshankHost {
         Self::open_with(session_dir, output, Some(fetch))
     }
 
+    /// Configure playback without opening a session store or runtime. Refused
+    /// sessions keep this configuration so the next successful reopen recovers.
+    pub(crate) fn detached(output: Output, fetch: Arc<dyn Fetch>) -> Self {
+        Self { output, fetch: Some(fetch), ..Self::default() }
+    }
+
+    pub(crate) fn suspended(&self) -> Self {
+        Self { output: self.output, fetch: self.fetch.clone(), ..Self::default() }
+    }
+
     /// Reopen under another session directory with this host's output and
     /// handle. A host that never had a handle reopens its model and notes but
     /// starts no runtime, rather than minting a handle of its own.
@@ -1324,4 +1334,22 @@ mod tests {
         assert!(bare.fetch().is_none());
         assert!(bare.runtime().is_none());
     }
+    #[test]
+    fn suspended_host_keeps_output_and_fetch_without_opening_storage() {
+        let handle: Arc<dyn Fetch> = Arc::new(Inert);
+        let configured = RedshankHost::detached(Output::Device, handle.clone());
+        let suspended = configured.suspended();
+        assert_eq!(suspended.output(), Output::Device);
+        assert!(Arc::ptr_eq(&suspended.fetch().unwrap(), &handle));
+        assert!(suspended.runtime().is_none());
+        assert!(suspended.store.is_none());
+        // Verify the same reopen seam without opening a physical audio device.
+        let silent = RedshankHost::detached(Output::Silent, handle.clone()).suspended();
+        let root = tempfile::tempdir().unwrap();
+        let reopened = silent.reopen(root.path());
+        assert_eq!(reopened.output(), Output::Silent);
+        assert!(Arc::ptr_eq(&reopened.fetch().unwrap(), &handle));
+        assert!(reopened.runtime().is_none());
+    }
+
 }

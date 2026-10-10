@@ -10,7 +10,10 @@
 //! effect runner. The only module that touches a platform API; everything it
 //! learns flows back through the spine.
 
+mod appearance_editor;
+mod appearance_receipt;
 mod contributed_automation;
+mod controller_input;
 mod drive;
 mod effects;
 mod events;
@@ -88,9 +91,11 @@ const SMOLWEB_SESSION_ENGINE_IDS: &[&str] = &[
     inker::routing::ENGINE_NEMATIC_FEED,
 ];
 
-/// Each node's live document: Pelt's routed content around a host-loading,
-/// host-history controller (SC step 4). The App owns the node's load and graph
-/// history; the controller opens the body the App fetched.
+/// Each node's live content: Pelt's routed content, either a document lane
+/// around a host-loading, host-history controller or a surface lane around the
+/// web engine's producer (SC step 4). The App owns the node's load and graph
+/// history; a document controller opens the body the App fetched, and a
+/// surface takes navigation on its own web plane.
 pub(crate) type NodeDocuments =
     HashMap<uuid::Uuid, pelt_core::PeltContent<netrender::Scene>>;
 
@@ -143,9 +148,55 @@ impl NodeSessions for NodeDocuments {
     }
 }
 
-/// Turnstone pumps each session with its own frame clock; the controller's
-/// clock is only consulted by `PeltController::pump`, which the shell does not
-/// call yet.
+/// The surface lane of each node's content: the live producer, for the host
+/// work the content does not wrap (pointer streams, drag, accessibility,
+/// capture, imported frames).
+pub(crate) trait NodeSurfaces {
+    fn surface_mut(&mut self, node: &uuid::Uuid) -> Option<&mut dyn inker::SurfaceProducer>;
+    fn has_surface(&self, node: &uuid::Uuid) -> bool;
+    /// Whether `node`'s content is a document. A torn-out lens window
+    /// composites only documents.
+    fn has_document(&self, node: &uuid::Uuid) -> bool;
+    fn surfaces_mut(
+        &mut self,
+    ) -> impl Iterator<Item = (uuid::Uuid, &mut dyn inker::SurfaceProducer)>;
+    fn surface_count(&self) -> usize;
+}
+
+impl NodeSurfaces for NodeDocuments {
+    fn surface_mut(&mut self, node: &uuid::Uuid) -> Option<&mut dyn inker::SurfaceProducer> {
+        self.get_mut(node)
+            .and_then(pelt_core::PeltContent::surface_producer_mut)
+    }
+
+    fn has_surface(&self, node: &uuid::Uuid) -> bool {
+        self.get(node)
+            .is_some_and(|content| content.lane() == pelt_core::PeltLane::Surface)
+    }
+
+    fn has_document(&self, node: &uuid::Uuid) -> bool {
+        self.get(node)
+            .is_some_and(|content| content.lane() == pelt_core::PeltLane::Document)
+    }
+
+    fn surfaces_mut(
+        &mut self,
+    ) -> impl Iterator<Item = (uuid::Uuid, &mut dyn inker::SurfaceProducer)> {
+        self.iter_mut().filter_map(|(node, content)| {
+            content
+                .surface_producer_mut()
+                .map(|producer| (*node, producer))
+        })
+    }
+
+    fn surface_count(&self) -> usize {
+        self.values()
+            .filter(|content| content.lane() == pelt_core::PeltLane::Surface)
+            .count()
+    }
+}
+
+/// Every retained document controller uses the same monotonic shell epoch.
 pub(crate) struct ShellClock(std::time::Instant);
 
 impl pelt_core::PeltClock for ShellClock {
@@ -343,6 +394,76 @@ fn pane_display_label(content: &PaneContent) -> String {
 /// path). A parse error yields a stillborn scenario whose first `finish` reports
 /// the failure — the harness learns WHY instead of timing out. `None` when the
 /// env var is unset (the turnstone driver, or no driver, runs instead).
+/// How many visits a locked session holds for the trail before it drops the
+/// rest. Far beyond an ordinary sitting; a bound so a session left locked
+/// for days cannot grow without limit.
+const PENDING_TRAIL_CAP: usize = 4096;
+
+/// The share reader, which speaks as the profile root.
+fn start_share_reader(
+    root: Arc<crate::identity::RootIdentity>,
+) -> Option<Arc<crate::share_reader_service::KnotShareReaderService>> {
+    match crate::share_reader_service::KnotShareReaderService::start(root) {
+        Ok(service) => Some(Arc::new(service)),
+        Err(error) => {
+            tracing::warn!(%error, "Knot share reader is unavailable");
+            None
+        }
+    }
+}
+
+/// Knot publishing, which signs as the profile root.
+fn start_publishing(
+    source: knot::KnotPublishSource,
+    root: Arc<crate::identity::RootIdentity>,
+) -> Option<Arc<crate::publish_service::KnotPublishingService>> {
+    match crate::publish_service::KnotPublishingService::start(source, root) {
+        Ok(service) => Some(Arc::new(service)),
+        Err(error) => {
+            tracing::warn!(%error, "Knot publishing is unavailable");
+            None
+        }
+    }
+}
+
+impl Shell {
+    /// Take the profile root once a locked vault unlocks (vault lock ruling
+    /// 35): the app adopts it, the place worker runs what it held, and the
+    /// share reader and publishing start. Their panes are rebuilt so they
+    /// reach the services rather than keep the absence they were drawn with.
+    fn adopt_unlocked_root(&mut self) {
+        let Some(unlocks) = &self.unlock_rx else {
+            return;
+        };
+        let Ok(root) = unlocks.try_recv() else {
+            return;
+        };
+        self.unlock_rx = None;
+        let effects = self.app.adopt_profile_root(root.clone());
+        self.place_handle
+            .command(crate::place::worker::PlaceWorkerCommand::AdoptIdentity(root.clone()));
+        self.shared_knot_service = start_share_reader(root.clone());
+        if let Some(source) = self.pending_publish_source.take() {
+            self.publish_service = start_publishing(source, root);
+        }
+        self.renderers.publish.clear();
+        self.renderers.shared_knot.clear();
+        if let Some(owner) = self.app.personae_root() {
+            let owner: String = owner.iter().map(|b| format!("{b:02x}")).collect();
+            for (url, transition, at_ms) in std::mem::take(&mut self.pending_trail) {
+                self.trail_handle
+                    .command(crate::trail_memory::TrailCommand::Record {
+                        owner: owner.clone(),
+                        url,
+                        transition,
+                        at_ms,
+                    });
+            }
+        }
+        self.run_effects(effects);
+    }
+}
+
 fn shared_scenario_from_env() -> Option<taproot::Scenario> {
     let path = std::path::PathBuf::from(std::env::var_os("TURNSTONE_SCENARIO")?);
     let body = std::fs::read_to_string(&path).unwrap_or_default();
@@ -523,6 +644,15 @@ pub struct Shell {
     place_handle: armillary::ActorHandle<crate::place::worker::PlaceWorkerCommand>,
     /// Generation-tagged app-owned answers from the place worker.
     place_rx: Receiver<Update>,
+    /// The profile root, once a locked vault unlocks (vault lock ruling 35).
+    /// `None` when the identity was ready at start, or once adopted.
+    unlock_rx: Option<Receiver<Arc<crate::identity::RootIdentity>>>,
+    /// Knot's publish source, held while the identity is pending: the
+    /// publishing service speaks as the profile, so it starts at unlock.
+    pending_publish_source: Option<knot::KnotPublishSource>,
+    /// Visits made while the identity is pending, filed under the root at
+    /// unlock (at most [`PENDING_TRAIL_CAP`]).
+    pending_trail: Vec<(String, eidetic::TraceTransition, u64)>,
     /// The system clipboard, opened once at startup: the handle holds X11 and
     /// Wayland selection ownership for its lifetime. `Err` carries why it is
     /// unreachable, so a copy refuses out loud rather than panicking. It stays
@@ -556,6 +686,8 @@ pub struct Shell {
     /// A capture the next `render` fulfills from the very views it presents
     /// (never a re-rasterization — the receipt must be the presented frame).
     pending_capture: Option<std::path::PathBuf>,
+    pending_capture_readback: Option<appearance_receipt::PendingCapture>,
+    main_receipt: appearance_receipt::MainReceipt,
     /// A capture the next LENS render fulfills (the scenario's capture-lens
     /// verb; targets the first live lens window).
     pending_lens_capture: Option<std::path::PathBuf>,
@@ -590,8 +722,9 @@ pub struct Shell {
     /// ContentStates tracks. Ports own handles; App holds data.
     /// Shared with every node's Pelt controller, which spawns from it.
     content_engines: Arc<SessionRegistry<netrender::Scene>>,
-    /// Pelt's surface registry for document controllers. Web surfaces still
-    /// live in `surface_producers` until SC step 4's second pass.
+    /// Pelt's surface registry for document controllers. A node's web surface
+    /// is spawned from `surface_engines` below and held as the surface lane
+    /// of its content.
     pelt_surface_engines: Arc<inker::SurfaceEngineRegistry>,
     content_sessions: NodeDocuments,
     /// Reader's immutable article packet remains in `content_sessions`; each
@@ -602,11 +735,10 @@ pub struct Shell {
         crate::surface::SurfaceId,
         (uuid::Uuid, mere_document_lanes::ReaderDocumentSession),
     >,
-    /// Long-lived frame-streaming engines, separate from the retained document
-    /// sessions above. The neutral inker registry chooses the producer; the
-    /// shell owns its non-Send live handle and its imported frame cache.
+    /// Long-lived frame-streaming engines. The neutral inker registry chooses
+    /// the producer; each node's content holds its non-Send live handle, and
+    /// the shell keeps the imported frame cache.
     surface_engines: inker::SurfaceEngineRegistry,
-    surface_producers: std::collections::HashMap<uuid::Uuid, Box<dyn inker::SurfaceProducer>>,
     /// Mailbox fallback cadence until producers expose an event-loop wake hook.
     surface_poll_clock: surface_poll::SurfacePollClock,
     /// Last monitor-rate observation on the existing event/render cadence.
@@ -752,19 +884,23 @@ pub struct Shell {
     /// `ActiveEventLoop`, which effects don't carry; the event handlers drain
     /// this while one is in scope).
     pending_windows: Vec<usize>,
+    theme_editor: Option<appearance_editor::EditorWindow>,
+    theme_editor_requested: bool,
+    close_after_theme_editor: bool,
 }
 
 impl Shell {
     pub fn new(proxy: EventLoopProxy<()>, address: Option<String>) -> Self {
         let (mut app, boot_effects) = App::boot(address.as_deref());
-        let initial_settings = match ApplicationSettingsProvider::load(&app.data_root) {
-            Ok(provider) => provider.settings().clone(),
+        let initial_provider = match ApplicationSettingsProvider::load(&app.data_root) {
+            Ok(provider) => provider,
             Err(error) => {
                 tracing::warn!(%error, "application settings could not be loaded at shell startup");
-                pandect::ApplicationSettings::default()
-            }
+                ApplicationSettingsProvider::from_failed_load(&app.data_root, error.to_string())
+            },
         };
-        let live_settings = LiveSettingsHandle::new(&initial_settings);
+        let live_settings = LiveSettingsHandle::new(initial_provider.settings());
+        live_settings.publish_provider(&initial_provider);
         app.apply_chrome_settings_snapshot(&live_settings.snapshot());
         let policy_path = crate::web_policy::default_policy_path(&app.data_root);
         let policy_registry = crate::web_policy::PermissionRegistry::load(
@@ -826,7 +962,8 @@ impl Shell {
             let _ = bin_proxy.send_event(());
         });
         let (bin_handle, bin_rx) =
-            crate::recycle::spawn_bin(bin_wake, crate::recycle::bin_dir(&app.session_dir()));
+            crate::recycle::spawn_bin_for_session(bin_wake,
+                (!app.session_load_refused()).then(|| crate::recycle::bin_dir(&app.session_dir())));
 
         // The trail-memory actor over THIS session's memory store (search
         // wiring W1 + W2): browsing capture in, recall answers out, behind
@@ -837,9 +974,9 @@ impl Shell {
         });
         let capture_library =
             crate::place::captured_collection::LocalCaptureLibrary::default();
-        let (trail_handle, trail_rx) = crate::trail_memory::spawn_trail_with_capture_library(
+        let (trail_handle, trail_rx) = crate::trail_memory::spawn_trail_for_session(
             trail_wake,
-            crate::trail_memory::memory_dir(&app.session_dir()),
+            (!app.session_load_refused()).then(|| crate::trail_memory::memory_dir(&app.session_dir())),
             capture_library.clone(),
         );
 
@@ -847,14 +984,29 @@ impl Shell {
         let place_wake: armillary::Wake = Arc::new(move || {
             let _ = place_proxy.send_event(());
         });
-        let (place_handle, place_rx) = crate::place::worker::spawn_place_worker(
-            place_wake,
-            app.identity.clone(),
-            crate::place::worker::PlaceWorkerSettings {
-                capture_library,
-                ..crate::place::worker::PlaceWorkerSettings::default()
+        let place_settings = crate::place::worker::PlaceWorkerSettings {
+            capture_library,
+            ..crate::place::worker::PlaceWorkerSettings::default()
+        };
+        // With the vault locked the identity is pending (vault lock ruling
+        // 35): the place worker holds what speaks as the profile, the share
+        // reader and publishing wait, and a watch on the persisted lock's
+        // marker hands the root over once a user act unlocks the vault.
+        let (place_handle, place_rx) = match &app.identity {
+            Some(root) => {
+                crate::place::worker::spawn_place_worker(place_wake, root.clone(), place_settings)
             },
-        );
+            None => crate::place::worker::spawn_pending_place_worker(place_wake, place_settings),
+        };
+        let unlock_rx = app.identity.is_none().then(|| {
+            let unlock_proxy = proxy.clone();
+            crate::identity::watch_for_unlock(
+                Arc::new(move || {
+                    let _ = unlock_proxy.send_event(());
+                }),
+            )
+        });
+        let mut pending_publish_source = None;
 
         // The content port's ordinary lanes: both Genet static renderers plus
         // the engine-native smolweb family. Route policy selects one by
@@ -866,18 +1018,7 @@ impl Shell {
         });
         let mut knot_clip = None;
         let mut publish_service = None;
-        let shared_knot_service = match app
-            .identity
-            .clone()
-            .ok_or_else(|| crate::identity::PENDING.to_string())
-            .and_then(crate::share_reader_service::KnotShareReaderService::start)
-        {
-            Ok(service) => Some(Arc::new(service)),
-            Err(error) => {
-                tracing::warn!(%error, "Knot share reader is unavailable");
-                None
-            }
-        };
+        let shared_knot_service = app.identity.clone().and_then(start_share_reader);
         let device_receipts_service =
             match crate::device_receipts_service::DeviceReceiptsService::start() {
                 Ok(service) => Some(Arc::new(service)),
@@ -891,16 +1032,9 @@ impl Shell {
             Ok(Some(mut engine)) => {
                 knot_clip = engine.clip_handle();
                 if let Some(source) = engine.take_publish_source() {
-                    match app
-                        .identity
-                        .clone()
-                        .ok_or_else(|| crate::identity::PENDING.to_string())
-                        .and_then(|identity| {
-                            crate::publish_service::KnotPublishingService::start(source, identity)
-                        })
-                    {
-                        Ok(service) => publish_service = Some(Arc::new(service)),
-                        Err(error) => tracing::warn!(%error, "Knot publishing is unavailable"),
+                    match app.identity.clone() {
+                        Some(root) => publish_service = start_publishing(source, root),
+                        None => pending_publish_source = Some(source),
                     }
                 }
                 content_engines.register(Box::new(engine));
@@ -937,11 +1071,16 @@ impl Shell {
                 redshank_docks.clone(),
             ))
             .expect("the Redshank episode provider is unique");
+        if app.session_load_refused() {
+            app.redshank = crate::redshank_host::RedshankHost::detached(
+                crate::redshank_host::Output::Device, blocking_fetch);
+        } else {
         app.redshank = crate::redshank_host::RedshankHost::open(
             &app.session_dir(),
             crate::redshank_host::Output::Device,
             blocking_fetch,
         );
+        }
         if let Some(runtime) = app.redshank.runtime() {
             let redshank_proxy = proxy.clone();
             runtime.set_wake(Arc::new(move || {
@@ -968,6 +1107,9 @@ impl Shell {
             trail_rx,
             place_handle,
             place_rx,
+            unlock_rx,
+            pending_publish_source,
+            pending_trail: Vec::new(),
             clipboard,
             cursor: (0.0, 0.0),
             ctrl: false,
@@ -980,6 +1122,8 @@ impl Shell {
             diagnostic_observations: crate::diagnostic_observations::DiagnosticObservations::from_env(),
             shared_out_dir: shared_out_dir_from_env(),
             pending_capture: None,
+            pending_capture_readback: None,
+            main_receipt: Default::default(),
             pending_lens_capture: None,
             window: None,
             a11y_adapter: None,
@@ -1000,7 +1144,6 @@ impl Shell {
             content_sessions: std::collections::HashMap::new(),
             reader_appearances: std::collections::HashMap::new(),
             surface_engines: inker::SurfaceEngineRegistry::new(),
-            surface_producers: std::collections::HashMap::new(),
             surface_poll_clock: surface_poll::SurfacePollClock::new(surface_poll_interval_from_env()),
             physics_display_rate_last_observed: None,
             surface_find_requests: std::collections::HashMap::new(),
@@ -1044,6 +1187,9 @@ impl Shell {
             lens_divider_drag: None,
             lens_windows: std::collections::HashMap::new(),
             pending_windows: Vec::new(),
+            theme_editor: None,
+            theme_editor_requested: false,
+            close_after_theme_editor: false,
         };
         shell.publish_engine_inventory();
         shell.run_effects(boot_effects);
@@ -1051,7 +1197,7 @@ impl Shell {
     }
 
     fn has_live_content(&self, node: &uuid::Uuid) -> bool {
-        self.content_sessions.contains_key(node) || self.surface_producers.contains_key(node)
+        self.content_sessions.contains_key(node)
     }
 
     fn has_independent_reader_appearance(&self, node: &uuid::Uuid) -> bool {
@@ -1108,7 +1254,8 @@ impl Shell {
     fn clear_surface_content(&mut self) {
         self.reader_appearances.clear();
         self.surface_a11y.clear();
-        self.surface_producers.clear();
+        self.content_sessions
+            .retain(|_, content| content.lane() != pelt_core::PeltLane::Surface);
         self.surface_find_requests.clear();
         self.page_captures.clear_surfaces();
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
@@ -1198,17 +1345,27 @@ impl Shell {
         let profile_name = match std::env::var("TURNSTONE_SERVO_PROFILE") {
             Ok(name) => name,
             Err(std::env::VarError::NotPresent) => "Default".into(),
-            Err(std::env::VarError::NotUnicode(_)) => return Err("TURNSTONE_SERVO_PROFILE must be valid UTF-8".into()),
+            Err(std::env::VarError::NotUnicode(_)) => {
+                return Err("TURNSTONE_SERVO_PROFILE must be valid UTF-8".into());
+            },
         };
         let profile = servo_profile_directory(
             &self.app.data_root,
             &profile_name,
             std::env::var_os("TURNSTONE_SERVO_PROFILE_DIR").map(std::path::PathBuf::from),
         )?;
-        std::fs::create_dir_all(&profile)
-            .map_err(|error| format!("could not create Servo profile {}: {error}", profile.display()))?;
-        let profile = effects::browser_profile_path(profile.canonicalize()
-            .map_err(|error| format!("could not resolve Servo profile {}: {error}", profile.display()))?)?;
+        std::fs::create_dir_all(&profile).map_err(|error| {
+            format!(
+                "could not create Servo profile {}: {error}",
+                profile.display()
+            )
+        })?;
+        let profile = effects::browser_profile_path(profile.canonicalize().map_err(|error| {
+            format!(
+                "could not resolve Servo profile {}: {error}",
+                profile.display()
+            )
+        })?)?;
         let proxy = self.proxy.clone();
         let factory = Arc::new(servo::TurnstoneServoFactory::new(
             servo::ServoHostOptions { profile_name, profile_dir: profile.clone() },
@@ -1281,6 +1438,24 @@ impl Shell {
         if self.hovered_pane == Some(pane) {
             self.hovered_pane = None;
         }
+    }
+
+    /// Pump documents placed in the primary or any open lens. Lens-only
+    /// documents stay visible when the primary renders; an unplaced document
+    /// keeps its controller and state without scheduling another redraw.
+    fn pump_visible_documents(&mut self) -> bool {
+        let mut plans = self.surface_plan();
+        for lens in self.lens_windows.values() {
+            plans.extend(self.lens_plan(lens.ordinal, lens.width, lens.height));
+        }
+        let visible = plans
+            .into_iter()
+            .filter_map(|surface| match surface.kind {
+                crate::surface::SurfaceKind::Content(node) => Some(node),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        crate::document_pump::pump_documents(&mut self.content_sessions, &visible)
     }
 
     /// The current surface plan, from app truth plus the window size. The one
@@ -1941,8 +2116,8 @@ impl Shell {
                     if !self.foreign_a11y_placements().iter().any(|(current, _)| *current == node) {
                         return Err("foreign accessibility surface is no longer visible".to_owned());
                     }
-                    self.surface_producers
-                        .get_mut(&node)
+                    self.content_sessions
+                        .surface_mut(&node)
                         .ok_or_else(|| "foreign accessibility producer retired".to_owned())
                         .and_then(|producer| {
                             producer
@@ -2058,18 +2233,37 @@ impl Shell {
 
     /// Advance the self-drive scenario one step after each rendered frame.
     /// Steps lower to Actions through the same spine as a keypress; a Done
-    /// tick writes the sentinel and exits WITHOUT saving the session (a
-    /// scenario never mutates the profile it ran against).
+    /// tick writes the sentinel and exits without an implicit session save.
+    /// Explicit product actions, including Settings Apply, retain their normal
+    /// persistence behavior; acceptance runs use an isolated profile.
     /// Write the shared driver's outcome in turnstone's `scenario.done` format
     /// (first line `RESULT ok`/`RESULT fail`, then the log), so the same headed
     /// harness that waits on the turnstone driver reads a shared run identically.
     fn write_shared_done(&mut self, outcome: &taproot::Outcome) {
-        if let Err(error) = self.diagnostic_observations.write_scenario_receipt(&self.shared_out_dir, outcome) {
+        let mut outcome = outcome.clone();
+        self.main_receipt.qualify(&mut outcome);
+        if let Err(error) = self
+            .diagnostic_observations
+            .write_scenario_receipt(&self.shared_out_dir, &outcome)
+        {
             eprintln!("turnstone: scenario receipt write failed: {error}");
         }
     }
 
     fn scenario_pump(&mut self, event_loop: &ActiveEventLoop) {
+        if !self.main_receipt.errors.is_empty()
+            && let Some(shared) = self.shared_scenario.take()
+        {
+            let mut outcome = shared.finish();
+            outcome.ok = false;
+            self.write_shared_done(&outcome);
+            event_loop.exit();
+            return;
+        }
+        if self.pending_capture_readback.is_some() {
+            self.request_redraw();
+            return;
+        }
         // The shared taproot driver, when active, takes the frame: take the
         // scenario out (so `tick(self)` can borrow the Shell mutably), tick it,
         // put it back — or, on Done, write the `scenario.done` sentinel in
@@ -2111,6 +2305,103 @@ impl Shell {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn hidden_livery_animation_reaches_quiescence_without_redraw() {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        struct Clock(Arc<AtomicU64>);
+        impl pelt_core::PeltClock for Clock {
+            fn now_ms(&self) -> f64 { self.0.load(Ordering::Relaxed) as f64 }
+        }
+        let clock = Arc::new(AtomicU64::new(0));
+        let request = SessionSpawnRequest::new("https://test.invalid/animation")
+            .with_body("<html><head><style>@keyframes fade { from { opacity: 0.2; } to { opacity: 0.8; } } #a { animation: fade 1000ms linear; width: 100px; height: 100px; background: red; }</style></head><body><div id=a>fade</div></body></html>")
+            .with_viewport(640, 480);
+        let route = standard_route_policy().route(&inker::EngineRouteRequest {
+            workspace_id: inker::WorkspaceRouteId::new("hidden-animation"),
+            view: None, node: None, address: request.address.clone(),
+            content_type: None, pinned_engine: Some(inker::routing::ENGINE_GENET_LIVERY.into()),
+        });
+        let config = pelt_core::PeltControllerConfig::from_request(route.engine_id.clone(), request)
+            .with_host_history();
+        let mut controller = pelt_core::PeltController::new_shared(
+            Arc::new(standard_content_engines()), Arc::new(inker::SurfaceEngineRegistry::new()),
+            config, Clock(clock.clone()),
+        ).expect("the Livery lane spawns");
+        let _ = controller.frame(640, 480);
+        assert!(!controller.session_mut().settled(), "the real CSS animation is initially active");
+        let content = pelt_core::PeltContent::from_controller(controller, pelt_core::PeltRoute {
+            decision: route, source: pelt_core::PeltRouteSource::Automatic,
+            state: pelt_core::PeltRouteState::Document,
+        });
+        let mut contents = std::collections::HashMap::from([(1u8, content)]);
+        clock.store(2000, Ordering::Relaxed);
+        assert!(!crate::document_pump::pump_documents(&mut contents, &[]));
+        assert!(contents.get_mut(&1).unwrap().document_mut().unwrap().session_mut().settled(),
+            "a hidden finite animation can finish without another frame");
+    }
+
+    /// SC controller-level input over Turnstone's own engines: a host-history
+    /// controller hands a Spartan prompt's submission up as a POST the
+    /// submission conversation completes, and a link up as a navigation the
+    /// graph places. Keyboard focus and Enter reach the page through the same
+    /// neutral input, and nothing loads in place.
+    #[test]
+    fn a_document_controller_hands_links_and_submissions_up() {
+        use inker::{
+            SessionButtonState, SessionFocusDirection, SessionFormMethod, SessionInput,
+            SessionKey, SessionModifiers,
+        };
+        let address = "spartan://capsule.test/";
+        let decision = standard_route_policy().route(&inker::EngineRouteRequest {
+            workspace_id: inker::WorkspaceRouteId::new("turnstone-test"),
+            view: None,
+            node: None,
+            address: address.to_string(),
+            content_type: None,
+            pinned_engine: None,
+        });
+        let request = SessionSpawnRequest::new(address)
+            .with_body("=: /sign Sign it\n=> /next Next\n")
+            .with_viewport(640, 480);
+        let config = pelt_core::PeltControllerConfig::from_request(decision.engine_id, request)
+            .with_host_history();
+        let mut controller = pelt_core::PeltController::new_shared(
+            Arc::new(standard_content_engines()),
+            Arc::new(inker::SurfaceEngineRegistry::new()),
+            config,
+            ShellClock(std::time::Instant::now()),
+        )
+        .expect("the Spartan lane spawns");
+        let _ = controller.frame(640, 480);
+        let enter = || SessionInput::Key {
+            key: SessionKey::Enter,
+            state: SessionButtonState::Pressed,
+            modifiers: SessionModifiers::default(),
+            repeat: false,
+        };
+
+        assert!(
+            controller
+                .input(SessionInput::FocusMove(SessionFocusDirection::Forward))
+                .handled
+        );
+        let submitted = controller.input(enter());
+        let submission = submitted.submission.expect("the prompt hands its submission up");
+        assert_eq!(submission.method, SessionFormMethod::Post);
+        assert_eq!(submission.action, "spartan://capsule.test/sign");
+        assert_eq!(submitted.navigation, None, "a submission is not a navigation");
+
+        assert!(
+            controller
+                .input(SessionInput::FocusMove(SessionFocusDirection::Forward))
+                .handled
+        );
+        let followed = controller.input(enter());
+        let navigation = followed.navigation.expect("the link hands its navigation up");
+        assert_eq!(navigation.request.address, "spartan://capsule.test/next");
+        assert_eq!(controller.address(), address, "nothing loads in place");
+    }
 
     /// Gate 1 of the smolweb browser gap analysis: Turnstone's default route
     /// for a Gemini address must name a registered retained-session engine,

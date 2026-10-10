@@ -18,6 +18,7 @@ use super::App;
 impl App {
     /// Fold one typed service answer into state.
     pub fn apply_update(&mut self, update: Update) -> Vec<Effect> {
+        if self.session_load_refused() { return Vec::new(); }
         match update {
             Update::FeedFetched { node, url, result } => self.apply_feed_fetched(node, url, result),
             Update::PageStreamed {
@@ -712,14 +713,12 @@ impl App {
                 else {
                     return Vec::new();
                 };
-                let result = result.and_then(|prekey| {
-                    self.personae_root()
-                        .map(|root| (prekey, root))
-                        .ok_or_else(|| crate::identity::PENDING.to_string())
-                });
                 match result {
-                    Ok((prekey, root)) => {
+                    Ok(prekey) => {
                         use base64::Engine as _;
+                        let Some(root) = self.personae_root() else {
+                            return self.refuse_place(crate::denizen::PENDING_IDENTITY);
+                        };
                         let offer = crate::place::PlacePrekeyOfferV1 {
                             version: crate::place::PLACE_CARD_VERSION,
                             moot: pending.moot,

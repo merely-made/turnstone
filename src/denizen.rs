@@ -243,17 +243,11 @@ impl Denizens {
         }
     }
 
-    /// A runtime for a pending identity (dramatis D12): no root, so nothing
-    /// verifies and every resident fails closed. The table's root is a
-    /// throwaway public key whose secret was never kept, so no certificate
-    /// can name it; an all-zero root would be a value anyone can write.
+    /// A runtime with no profile root yet: the vault is locked, so it holds
+    /// no certificate and covers nothing (vault lock ruling 35). The adopt
+    /// path rebuilds it under the root once the vault unlocks.
     pub fn pending() -> Self {
-        Self::new(identity::Ed25519Keypair::generate().public_key().to_bytes())
-    }
-
-    /// [`Self::new`] for a bound root, [`Self::pending`] without one.
-    pub fn for_root(root: Option<[u8; 32]>) -> Self {
-        root.map_or_else(Self::pending, Self::new)
+        Self::default()
     }
 
     /// Whether any participant resides in the session.
@@ -462,16 +456,17 @@ pub fn load_nested(session_dir: &Path, log_id: &str) -> Option<GraphLog<Containe
 /// on [`Denizens::legacy_heals`] so the adopt path can move the pointer onto
 /// the node and rewrite the facet without it.
 ///
-/// `root` is the profile identity's master public key, `None` while the
-/// identity is pending (D12): residents still rebuild, but no certificate is
-/// adopted, so every one fails closed until djinn answers.
+/// `root` is the profile root's public key, or `None` while the identity is
+/// pending (the vault is locked). A pending rebuild adopts no certificate, so
+/// every resident fails closed, and it writes nothing: it never imports
+/// admission state, which needs a verified chain.
 pub fn rebuild(
     app_facets: &pandect::NodeFacetStore,
     graph: &mere::kernel::graph::Graph,
     session_dir: &Path,
     root: Option<[u8; 32]>,
 ) -> Denizens {
-    let mut denizens = Denizens::for_root(root);
+    let mut denizens = root.map_or_else(Denizens::pending, Denizens::new);
     denizens.authority.set_now(now_ms());
     let admission_path = crate::resident_admission::path(session_dir);
     let missing_admission_state = match admission_path.try_exists() {
@@ -524,17 +519,14 @@ pub fn rebuild(
         // A projection is an audit record, never authority that can mint a
         // replacement certificate. Missing, malformed, or re-rooted chains
         // therefore stay refused until an owner explicitly installs again.
-        let stored = match root {
-            Some(_) => load_certs(session_dir, &subject.to_hex()),
-            None => Vec::new(),
-        };
-        let verifies = {
-            let mut probe = servitor::delegation::DelegationTable::new(denizens.authority.root());
+        let stored = load_certs(session_dir, &subject.to_hex());
+        let verifies = root.is_some_and(|root| {
+            let mut probe = servitor::delegation::DelegationTable::new(root);
             for cert in &stored {
                 probe.adopt(cert.clone());
             }
             stored.iter().any(|cert| probe.verify_chain(cert).is_ok())
-        };
+        });
         for cert in stored.into_iter().filter(|_| verifies) {
             denizens.authority.adopt(cert);
         }
@@ -877,11 +869,20 @@ pub fn install_caps(rings: &[crate::ring::Ring], watched: Option<&Cap>) -> Vec<(
     caps
 }
 
+/// Why a gesture that speaks as the profile refuses while the identity is
+/// pending (djinn absent or Locked, dramatis D12).
+pub const PENDING_IDENTITY: &str = crate::identity::PENDING;
+
 /// Mint the confirmed participant into the session: the graph node, the binding +
 /// source facets, the nested world with its gate-projected grant, and the
 /// runtime entry. Returns the member id. (The caller persists: facets ride
 /// the ordinary save; the nested log saves here, once, at its birth.)
 pub fn install(app: &mut App, pending: PendingInstall) -> Result<Uuid, String> {
+    // Install is a delegation signed by the profile root; with the vault
+    // locked there is none to sign with, and no fallback stands in for it.
+    let Some(root) = app.identity.clone() else {
+        return Err(PENDING_IDENTITY.to_string());
+    };
     if let Some(error) = &app.denizens.admission_error {
         return Err(format!("resident admission state needs owner repair before install: {error}"));
     }
@@ -1041,13 +1042,10 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Result<Uuid, String> {
         PackBody::Component(bytes) => crate::resident_admission::body_revision(bytes),
     };
     let issued_at = now_ms();
-    let Some(identity) = app.identity.clone() else {
-        return Err(crate::identity::PENDING.into());
-    };
     let certs = issue_install_certificates_for_generation(
-        identity.as_ref(), subject, &caps, issued_at, generation,
+        root.as_ref(), subject, &caps, issued_at, generation,
     );
-    let mut probe = DelegationTable::new(identity.master_public_key().to_bytes());
+    let mut probe = DelegationTable::new(root.master_public_key().to_bytes());
     probe.set_now(issued_at);
     for cert in certs.iter().cloned() { probe.adopt(cert); }
     if caps.iter().any(|(cap, mode)| !servitor::AuthorityProvider::covers(&probe, subject, cap, *mode)) {

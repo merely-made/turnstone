@@ -10,7 +10,7 @@
 //! here, and every answer comes back as a typed `Update`. Nothing else in the
 //! shell talks to a port.
 
-use super::NodeSessions;
+use super::{NodeSessions, NodeSurfaces};
 use std::sync::mpsc::Receiver;
 
 use fetch::{FetchCommand, FetchUpdate};
@@ -453,6 +453,7 @@ mod retained_page_zoom_tests {
             node,
             Some(crate::content::ContentFacts {
                 engine: inker::routing::ENGINE_GENET_LIVERY.to_string(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: facts,
@@ -504,6 +505,7 @@ mod retained_page_zoom_tests {
             node,
             Some(crate::content::ContentFacts {
                 engine: inker::routing::ENGINE_GENET_LIVERY.to_string(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: app_document_capabilities(session.document_capabilities()),
@@ -621,12 +623,9 @@ impl Shell {
         if events.is_empty() {
             return;
         }
-        // No owner while the identity is pending (D12): navigation is not
-        // recorded for nobody.
-        let owner: Option<String> = self
-            .app
-            .identity_root()
-            .map(|root| root.iter().map(|b| format!("{b:02x}")).collect());
+        let owner: Option<String> = self.app.personae_root().map(|root| {
+            root.iter().map(|b| format!("{b:02x}")).collect()
+        });
         let at_ms = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_millis() as u64)
@@ -637,26 +636,47 @@ impl Shell {
                 self.observed_events.pop_front();
             }
             self.observed_events.push_back(event.describe());
-            if let (Some(owner), Some((url, transition))) =
-                (owner.as_ref(), crate::trail_memory::navigation(&event))
-            {
-                self.trail_handle
-                    .command(crate::trail_memory::TrailCommand::Record {
-                        owner: owner.clone(),
-                        url,
-                        transition,
-                        at_ms,
-                    });
+            if let Some((url, transition)) = crate::trail_memory::navigation(&event) {
+                match &owner {
+                    Some(owner) => {
+                        self.trail_handle
+                            .command(crate::trail_memory::TrailCommand::Record {
+                                owner: owner.clone(),
+                                url,
+                                transition,
+                                at_ms,
+                            });
+                    },
+                    // The trail is the persona's, keyed by its root, which a
+                    // locked vault does not reveal (vault lock ruling 38).
+                    // Hold the visit until the root is adopted.
+                    None if self.pending_trail.len() < super::PENDING_TRAIL_CAP => {
+                        self.pending_trail.push((url, transition, at_ms));
+                    },
+                    None => {},
+                }
             }
         }
     }
 
     /// The effect runner: the one place effects meet ports.
+    /// Retire what the shell keeps beside a node's surface: its capture
+    /// registration and its imported frames. The caller removes or replaces
+    /// the node's content entry.
+    fn retire_surface_extras(&mut self, node: uuid::Uuid) {
+        self.page_captures.remove_surface(node);
+        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+        self.surface_frames.remove(&node);
+        #[cfg(all(feature = "scry", windows))]
+        self.scry_frame_importers.remove(&node);
+    }
+
     fn spawn_browser_surface(
         &mut self,
         node: uuid::Uuid,
         url: &str,
         decision: &inker::routing::EngineRouteDecision,
+        source: pelt_core::PeltRouteSource,
     ) -> Update {
         let result = (|| -> Result<crate::content::ContentFacts, String> {
             let scry = decision.engine_id == inker::routing::ENGINE_SCRYING_WEB;
@@ -704,7 +724,6 @@ impl Shell {
             // synchronization before a replacement can emit an equal epoch.
             self.content_sessions.remove(&node);
             self.clear_reader_appearances(node);
-            self.surface_producers.remove(&node);
             self.surface_a11y.retire(node);
             self.surface_find_requests.remove(&node);
             self.page_captures.remove_surface(node);
@@ -753,12 +772,24 @@ impl Shell {
                 .map(|web| app_document_capabilities(web.document_capabilities()))
                 .unwrap_or_default();
             replay_page_scale(&mut self.app, node, producer.as_mut());
-            self.surface_producers.insert(node, producer);
+            // The node's content is the surface lane of its Pelt content, so
+            // navigation reaches the web plane through the same command API
+            // as a document (SC step 4, pass B).
+            let route = pelt_core::PeltRoute {
+                decision: decision.clone(),
+                source,
+                state: pelt_core::PeltRouteState::Surface,
+            };
+            self.content_sessions.insert(
+                node,
+                pelt_core::PeltContent::from_surface(producer, (spawn.width, spawn.height), route),
+            );
             self.activate_surface_accessibility(node, false);
             self.page_captures.register_surface(node);
             tracing::info!(%node, %url, engine = %decision.engine_id, "surface content live");
             Ok(crate::content::ContentFacts {
                 engine: decision.engine_id.clone(),
+                lane: crate::content::ContentLane::Surface,
                 structure: None,
                 lineage: None,
                 capabilities,
@@ -784,6 +815,10 @@ impl Shell {
         // the scenario log and diagnostics subscribe at this same drain).
         self.drain_app_events();
         for effect in effects {
+            if self.app.session_load_refused() && !matches!(&effect,
+                Effect::SwitchSession { .. } | Effect::Redraw | Effect::ClosePlace { .. }) {
+                continue;
+            }
             let fetch_commands = browse::fetch_commands_for(&effect, &mut self.pending_fetches);
             if !fetch_commands.is_empty() {
                 for command in fetch_commands {
@@ -792,6 +827,7 @@ impl Shell {
                 continue;
             }
             match effect {
+                Effect::OpenThemeWorkshop => self.theme_editor_requested = true,
                 Effect::ReplaceGeminiTrust {
                     node,
                     fetch_url,
@@ -1122,13 +1158,19 @@ impl Shell {
                     self.lens_divider_drag = None;
                     self.pending_windows.clear();
                     let fx = self.app.adopt_session(next);
-                    self.bin_handle.command(crate::recycle::BinCommand::Reopen(
-                        crate::recycle::bin_dir(&self.app.session_dir()),
-                    ));
-                    self.trail_handle
-                        .command(crate::trail_memory::TrailCommand::Reopen(
+                    if !self.app.session_load_refused() {
+                        self.bin_handle.command(crate::recycle::BinCommand::Reopen(
+                            crate::recycle::bin_dir(&self.app.session_dir()),
+                        ));
+                        self.trail_handle.command(crate::trail_memory::TrailCommand::Reopen(
                             crate::trail_memory::memory_dir(&self.app.session_dir()),
                         ));
+                    } else {
+                        let (bin_ack, _) = std::sync::mpsc::sync_channel(1);
+                        let (trail_ack, _) = std::sync::mpsc::sync_channel(1);
+                        self.bin_handle.command(crate::recycle::BinCommand::Release(bin_ack));
+                        self.trail_handle.command(crate::trail_memory::TrailCommand::Release(trail_ack));
+                    }
                     self.run_effects(fx);
                     self.request_redraw();
                 }
@@ -1148,13 +1190,19 @@ impl Shell {
                     // it answers with THAT bin's list (the app cleared its
                     // mirror in adopt_session). The trail memory re-points
                     // with it (flushing the departing session's segments).
-                    self.bin_handle.command(crate::recycle::BinCommand::Reopen(
-                        crate::recycle::bin_dir(&self.app.session_dir()),
-                    ));
-                    self.trail_handle
-                        .command(crate::trail_memory::TrailCommand::Reopen(
+                    if !self.app.session_load_refused() {
+                        self.bin_handle.command(crate::recycle::BinCommand::Reopen(
+                            crate::recycle::bin_dir(&self.app.session_dir()),
+                        ));
+                        self.trail_handle.command(crate::trail_memory::TrailCommand::Reopen(
                             crate::trail_memory::memory_dir(&self.app.session_dir()),
                         ));
+                    } else {
+                        let (bin_ack, _) = std::sync::mpsc::sync_channel(1);
+                        let (trail_ack, _) = std::sync::mpsc::sync_channel(1);
+                        self.bin_handle.command(crate::recycle::BinCommand::Release(bin_ack));
+                        self.trail_handle.command(crate::trail_memory::TrailCommand::Release(trail_ack));
+                    }
                     self.run_effects(fx);
                     self.request_redraw();
                 }
@@ -1210,7 +1258,12 @@ impl Shell {
                     ) {
                         ContentSpawnDispatch::PendingBrowser => continue,
                         ContentSpawnDispatch::Browser => {
-                            let update = self.spawn_browser_surface(node, &url, &decision);
+                            let source = if request.pinned_engine.is_some() {
+                                pelt_core::PeltRouteSource::UserOverride
+                            } else {
+                                pelt_core::PeltRouteSource::Automatic
+                            };
+                            let update = self.spawn_browser_surface(node, &url, &decision, source);
                             let effects = self.app.apply_update(update);
                             self.run_effects(effects);
                             continue;
@@ -1265,7 +1318,7 @@ impl Shell {
                         std::sync::Arc::clone(&self.content_engines),
                         std::sync::Arc::clone(&self.pelt_surface_engines),
                         config,
-                        super::ShellClock(std::time::Instant::now()),
+                        super::ShellClock(self.epoch),
                     );
                     let update = match opened {
                         Ok(mut controller) => {
@@ -1290,6 +1343,7 @@ impl Shell {
                             });
                             let facts = crate::content::ContentFacts {
                                 engine: decision.engine_id.clone(),
+                                lane: crate::content::ContentLane::Document,
                                 capabilities: app_document_capabilities(
                                     session.document_capabilities(),
                                 ),
@@ -1323,6 +1377,14 @@ impl Shell {
                             replay_retained_page_scale(&mut self.app, node, session);
                             let subresources = session.subresources();
                             self.clear_reader_appearances(node);
+                            // A document replacing a live surface takes the
+                            // node's one content entry, so what the shell
+                            // kept beside the surface retires with it.
+                            if self.content_sessions.has_surface(&node) {
+                                self.surface_a11y.retire(node);
+                                self.surface_find_requests.remove(&node);
+                                self.retire_surface_extras(node);
+                            }
                             self.content_sessions.insert(
                                 node,
                                 pelt_core::PeltContent::from_controller(controller, route),
@@ -1379,6 +1441,7 @@ impl Shell {
                     smolweb.replace_body(&url, &document.body);
                     let facts = crate::content::ContentFacts {
                         engine,
+                        lane: crate::content::ContentLane::Document,
                         capabilities: app_document_capabilities(session.document_capabilities()),
                         structure: session
                             .inspect()
@@ -1425,19 +1488,31 @@ impl Shell {
                     self.run_effects(effects);
                 }
                 Effect::ControlContent { node, control } => {
+                    // The surface lane's own command API reaches the engine's
+                    // web plane. A document's Back, Reload and Stop belong to
+                    // the App's load and graph history, so only a surface
+                    // takes them here.
                     let result = self
-                        .surface_producers
+                        .content_sessions
                         .get_mut(&node)
-                        .and_then(|producer| producer.as_web_surface())
+                        .filter(|content| content.lane() == pelt_core::PeltLane::Surface)
                         .ok_or_else(|| "content has no web control plane".to_string())
-                        .and_then(|web| {
-                            match control {
-                                crate::action::ContentControl::Back => web.go_back(),
-                                crate::action::ContentControl::Forward => web.go_forward(),
-                                crate::action::ContentControl::Reload => web.reload(),
-                                crate::action::ContentControl::Stop => web.stop(),
-                            }
-                            .map_err(|error| error.to_string())
+                        .and_then(|content| {
+                            let effect = content.command(match control {
+                                crate::action::ContentControl::Back => {
+                                    inker::SessionNavigationCommand::Back
+                                },
+                                crate::action::ContentControl::Forward => {
+                                    inker::SessionNavigationCommand::Forward
+                                },
+                                crate::action::ContentControl::Reload => {
+                                    inker::SessionNavigationCommand::Reload
+                                },
+                                crate::action::ContentControl::Stop => {
+                                    inker::SessionNavigationCommand::Stop
+                                },
+                            });
+                            effect.error.map_or(Ok(()), Err)
                         });
                     if let Err(error) = result {
                         tracing::warn!(%node, ?control, %error, "web content control failed");
@@ -1446,8 +1521,7 @@ impl Shell {
                     self.request_redraw();
                 }
                 Effect::ScaleContent { node, scale } => {
-                    if let Some(producer) = self.surface_producers.get_mut(&node) {
-                        let producer = producer.as_mut();
+                    if let Some(producer) = self.content_sessions.surface_mut(&node) {
                         apply_page_scale(&mut self.app, node, scale, producer);
                     } else if let Some(session) = self.content_sessions.session_mut(&node) {
                         // The retained lane: the session reflows at the new CSS
@@ -1540,8 +1614,8 @@ impl Shell {
                             .map_err(|error| error.to_string()),
                         )
                     } else if let Some(web) = self
-                        .surface_producers
-                        .get_mut(&node)
+                        .content_sessions
+                        .surface_mut(&node)
                         .and_then(|producer| producer.as_web_surface())
                     {
                         match web.document_find(&engine_query, engine_direction, find_next) {
@@ -1572,8 +1646,8 @@ impl Shell {
                             tracing::warn!(%node, %error, "retained document find clear failed");
                         }
                     } else if let Some(web) = self
-                        .surface_producers
-                        .get_mut(&node)
+                        .content_sessions
+                        .surface_mut(&node)
                         .and_then(|producer| producer.as_web_surface())
                         && let Err(error) = web.clear_document_find()
                     {
@@ -1658,16 +1732,15 @@ impl Shell {
                     self.withdraw_user_agent_requests(node, "surface-closed");
                     self.clear_reader_appearances(node);
                     self.surface_find_requests.remove(&node);
-                    if self.content_sessions.remove(&node).is_some() {
-                        tracing::info!(%node, "content session closed");
-                    }
-                    if self.surface_producers.remove(&node).is_some() {
-                        self.page_captures.remove_surface(node);
-                        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
-                        self.surface_frames.remove(&node);
-                        #[cfg(all(feature = "scry", windows))]
-                        self.scry_frame_importers.remove(&node);
-                        tracing::info!(%node, "surface content closed");
+                    match self.content_sessions.remove(&node).map(|content| content.lane()) {
+                        Some(pelt_core::PeltLane::Document) => {
+                            tracing::info!(%node, "content session closed");
+                        },
+                        Some(pelt_core::PeltLane::Surface) => {
+                            self.retire_surface_extras(node);
+                            tracing::info!(%node, "surface content closed");
+                        },
+                        None => {},
                     }
                 }
                 Effect::Redraw => self.request_redraw(),
@@ -1868,9 +1941,9 @@ impl Shell {
     /// session switch (which must save the DEPARTING session first).
     pub(super) fn save_session(&mut self) {
         let sdir = self.app.session_dir();
-        session::save_session_graph(&sdir, self.app.graph_runtimes.graph());
-        if let Err(error) = self.app.feeds.save(&sdir) {
-            tracing::warn!(%error, "failed to persist feed subscriptions");
+        if let Err(error) = self.app.persist_session_graph() {
+            tracing::warn!(%error, "session persistence refused or failed; sidecars and image collection skipped");
+            return;
         }
         if let Some(binding) = self.app.place.binding() {
             match session::update_place_binding(&sdir, binding) {
@@ -1900,16 +1973,7 @@ impl Shell {
         // The lens-window spaces (rung 7 depth): torn-out panes
         // survive a restart as windows again.
         session::save_lens_spaces(&sdir, &self.app.lenses);
-        // Browser state (rung 6): content-on refreshed from live truth, so a
-        // restart respawns what was showing; then the whole live state lands
-        // in the facet store (arrangement.* + scene.* + web.*) via the shared
-        // refresh (the fork's facet-carry reads the same refreshed store).
-        self.app.refresh_browser_states();
-        self.app.refresh_facets();
-        if let Err(error) = crate::content_classes::reconcile(&mut self.app.graph_runtimes) {
-            tracing::warn!(%error, "content-class reconciliation failed");
-        }
-        session::save_node_facets(&sdir, self.app.graph_runtimes.facets());
+        // Browser, canonical facets and graph were persisted together above.
         if let Err(error) = self.app.gemini_identities.save(&self.app.data_root) {
             tracing::warn!(%error, "failed to persist Gemini identity bindings");
         }
@@ -1918,7 +1982,6 @@ impl Shell {
         }
         // The score records what the solver produced; this records what the
         // viewer chose, which the score cannot be read backward to recover.
-        let physics = self.app.graph_runtimes.physics_view();
         session::save_view_intent(
             &sdir,
             &session::ViewIntentV1 {
@@ -1927,16 +1990,24 @@ impl Shell {
                     .graph_runtimes
                     .layout_strategy()
                     .map(str::to_string),
-                physics_law: Some(physics.law.id().to_string()),
-                physics_overlays: physics
-                    .overlays
+                physics_law: Some(self.app.graph_runtimes.physics_law().id().to_string()),
+                physics_overlays: self
+                    .app
+                    .graph_runtimes
+                    .physics_overlays()
                     .iter()
                     .map(|overlay| overlay.id().to_string())
                     .collect(),
-                physics_kind_source: Some(physics.kind.id().to_string()),
-                physics_mass_source: Some(physics.mass.id().to_string()),
-                physics_depth_source: Some(physics.depth.id().to_string()),
-                command_menu: (&self.app.command_choices).into(),
+                physics_kind_source: Some(
+                    self.app.graph_runtimes.physics_kind_source().id().to_string(),
+                ),
+                physics_mass_source: Some(
+                    self.app.graph_runtimes.physics_mass_source().id().to_string(),
+                ),
+                physics_depth_source: Some(
+                    self.app.graph_runtimes.physics_depth_source().id().to_string(),
+                ),
+                command_menu: self.app.command_choices.clone(),
             },
         );
         // Stamp a derived display name the first time the session has content

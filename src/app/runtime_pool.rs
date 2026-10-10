@@ -15,7 +15,10 @@
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 
-use mere::canvas::{Canvas, OverlayRefusal, PhysicsChoice, Viewport};
+use mere::canvas::{
+    Canvas, OverlayRefusal, PhysicsChoice, PhysicsDepthSource, PhysicsKindSource, PhysicsLaw,
+    PhysicsMassSource, PhysicsOverlay, Viewport,
+};
 use mere::forme::FormeRef;
 use mere::platen::Workbench;
 
@@ -30,14 +33,21 @@ pub struct GraphRuntime {
     pub graph: GraphId,
     pub session: Option<SessionId>,
     pub canvas: Canvas,
+    origin: Option<crate::host_journal::RuntimeOrigin>,
+    pub(crate) persistence: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile>,
 }
 
 impl GraphRuntime {
+    pub(crate) fn origin(&self) -> Option<crate::host_journal::RuntimeOrigin> {
+        self.origin
+    }
     pub fn new(graph: GraphId, session: Option<SessionId>, canvas: Canvas) -> Self {
         Self {
             graph,
             session,
             canvas,
+            origin: None,
+            persistence: crate::session_persistence::SessionPersistence::Unbound,
         }
     }
 }
@@ -52,55 +62,115 @@ pub struct GraphRuntimePool {
     runtimes: HashMap<GraphId, GraphRuntime>,
     active: GraphId,
     display_rate: Option<Option<u32>>,
+journal: crate::host_journal::SharedJournal,
 }
 
 impl GraphRuntimePool {
     pub fn new(graph: GraphId, session: Option<SessionId>, canvas: Canvas) -> Self {
+        Self::with_journal(
+            graph,
+            session,
+            canvas,
+            crate::host_journal::shared_journal(),
+        )
+    }
+
+    pub(crate) fn with_journal(
+        graph: GraphId,
+        session: Option<SessionId>,
+        canvas: Canvas,
+        journal: crate::host_journal::SharedJournal,
+    ) -> Self {
         let runtime = GraphRuntime::new(graph, session, canvas);
         let mut runtimes = HashMap::new();
         runtimes.insert(graph, runtime);
-        Self {
+        let mut pool = Self {
             runtimes,
             active: graph,
             display_rate: None,
+        journal,
+        }
+    ;
+        let _ = pool.bind_recording(graph);
+        pool
+    }
+
+    /// Recorder installation changes host instrumentation, not graph truth.
+    pub(crate) fn suspend_recording(&mut self, graph: GraphId) {
+        if let Some(runtime) = self.runtimes.get_mut(&graph) {
+            runtime.origin = None;
+            runtime.canvas.ingest_graph(|graph| {
+                graph.set_recorder(None);
+                false
+            });
         }
     }
 
-    /// What the active canvas runs now, as the flat view (a law, its overlays
-    /// and the four sources). The canvas's public physics surface is its
-    /// spec; this is the view a picker or a saved session reads (F162).
-    pub fn physics_view(&self) -> PhysicsChoice {
-        PhysicsChoice::live(self.active_canvas())
-    }
-
-    /// Apply `choice` to the active canvas as a picker does: overlays the law
-    /// refuses are dropped and returned with the law's reason, the rest are
-    /// written into the canvas's record and set back. `set_dynamics_spec`
-    /// applies only what changed, so a source edit keeps a composition or a
-    /// schedule and a law or overlay edit replaces it (F162).
-    pub fn pick_physics(&mut self, choice: PhysicsChoice) -> Result<(), OverlayRefusal> {
-        let canvas = self.active_canvas_mut();
-        let (choice, refusal) = choice.admitted();
-        let running = PhysicsChoice::live(canvas);
-        // A grouping on a partition handed in has no spec (F157): a pick
-        // after one starts from the stage as a law.
-        let mut spec = canvas
-            .dynamics_spec()
-            .unwrap_or_else(|_| running.clone().into_spec());
-        choice.write_into(&mut spec, &running);
-        canvas
-            .set_dynamics_spec(&spec)
-            .expect("an admitted choice binds");
-        refusal.map_or(Ok(()), Err)
-    }
-
-    /// Apply profile `id`'s law and overlays, the sources kept; `false` for
-    /// an unknown id.
-    pub fn pick_physics_profile(&mut self, id: &str) -> bool {
-        match self.physics_view().with_profile(id) {
-            Some(choice) => self.pick_physics(choice).is_ok(),
-            None => false,
+    pub(crate) fn bind_recording(
+        &mut self,
+        graph: GraphId,
+    ) -> Result<crate::host_journal::RuntimeOrigin, String> {
+        self.suspend_recording(graph);
+        let runtime = self
+            .runtimes
+            .get_mut(&graph)
+            .ok_or("graph runtime is absent")?;
+        if matches!(
+            &runtime.persistence,
+            crate::session_persistence::SessionPersistence::Refused { .. }
+        ) {
+            return Err("refused graph cannot record live edits".into());
         }
+        let origin = self
+            .journal
+            .lock()
+            .map_err(|_| "behavior journal capture lock poisoned")?
+            .allocate_origin(graph, runtime.session)
+            .map_err(|error| error.to_string())?;
+        let recorder = crate::host_journal::recorder(self.journal.clone(), origin);
+        runtime.canvas.ingest_graph(|graph| {
+            graph.set_recorder(Some(recorder));
+            false
+        });
+        runtime.origin = Some(origin);
+        Ok(origin)
+    }
+
+    pub(crate) fn replace_active_canvas(&mut self, mut canvas: Canvas) {
+        if let Some(rate) = self.display_rate {
+            canvas.set_physics_display_rate(rate);
+        }
+        let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
+        runtime.persistence.clear_placement();
+        runtime.canvas = canvas;
+        runtime.origin = None;
+        let _ = self.bind_recording(self.active);
+    }
+
+    pub(crate) fn active_persistence(&self) -> &crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile> {
+        &self.runtimes.get(&self.active).expect("active runtime").persistence
+    }
+
+    pub(crate) fn adopt_graph(
+        &mut self, graph: mere::kernel::graph::Graph,
+        state: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile,
+        >,
+    ) {
+        let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
+        runtime.canvas.set_graph(graph);
+        runtime.persistence = state;
+        runtime.origin = None;
+        let _ = self.bind_recording(self.active);
+    }
+
+    /// Unqualified graph replacement revokes any prior placement. It cannot
+    /// unlock a refused destination. Adoption carries graph and state together.
+    pub fn set_graph(&mut self, graph: mere::kernel::graph::Graph) {
+        let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
+        runtime.persistence.clear_placement();
+        runtime.canvas.set_graph(graph);
+        runtime.origin = None;
+        let _ = self.bind_recording(self.active);
     }
 
     pub fn active_graph(&self) -> GraphId {
@@ -172,6 +242,7 @@ impl GraphRuntimePool {
         self.runtimes
             .insert(graph, GraphRuntime::new(graph, session, canvas));
         self.active = graph;
+        let _ = self.bind_recording(graph);
         self.runtimes
             .get_mut(&graph)
             .expect("the runtime was just inserted")
@@ -197,6 +268,11 @@ impl GraphRuntimePool {
         self.runtimes.is_empty()
     }
 
+    /// Stable Surface IDs across every live graph authority.
+    pub(crate) fn member_ids(&self) -> Vec<uuid::Uuid> {
+        self.runtimes.values().flat_map(|runtime| runtime.canvas.graph().nodes().map(|(_, node)| node.id)).collect()
+    }
+
     /// Resolve graph authority from member identity instead of the legacy
     /// active-runtime cursor. A live content callback carries its member, so
     /// focus changes must not retarget the mutation to another graph.
@@ -209,6 +285,97 @@ impl GraphRuntimePool {
                 .is_some()
                 .then_some(*graph)
         })
+    }
+}
+
+/// The active canvas's physics through its dynamics spec. Mere's canvas
+/// exposes physics as a `DynamicsSpec` edited through the flat
+/// `PhysicsChoice` view (dynamics grammar plan, F162); these keep Turnstone's
+/// one-field reads and edits, each written into the spec as one change.
+impl GraphRuntimePool {
+    /// What the active canvas runs, as the flat view.
+    pub fn physics(&self) -> PhysicsChoice {
+        PhysicsChoice::live(self.active_canvas())
+    }
+
+    pub fn physics_law(&self) -> PhysicsLaw {
+        self.physics().law
+    }
+
+    pub fn physics_overlays(&self) -> Vec<PhysicsOverlay> {
+        self.physics().overlays
+    }
+
+    pub fn physics_kind_source(&self) -> PhysicsKindSource {
+        self.physics().kind
+    }
+
+    pub fn physics_mass_source(&self) -> PhysicsMassSource {
+        self.physics().mass
+    }
+
+    pub fn physics_depth_source(&self) -> PhysicsDepthSource {
+        self.physics().depth
+    }
+
+    pub fn physics_profile_id(&self) -> Option<&'static str> {
+        self.physics().profile_id()
+    }
+
+    /// Change the flat view and set it as one spec change. Overlays the law
+    /// refuses are left out, and the refusal carries its reason.
+    pub fn edit_physics(
+        &mut self,
+        edit: impl FnOnce(&mut PhysicsChoice),
+    ) -> Result<(), OverlayRefusal> {
+        let canvas = self.active_canvas_mut();
+        let running = PhysicsChoice::live(canvas);
+        let mut choice = running.clone();
+        edit(&mut choice);
+        let (choice, refusal) = choice.admitted();
+        let applied = canvas.dynamics_spec().and_then(|mut spec| {
+            choice.write_into(&mut spec, &running);
+            canvas
+                .set_dynamics_spec(&spec)
+                .map(|_| ())
+                .map_err(|error| error.to_string())
+        });
+        if let Err(error) = applied {
+            tracing::warn!(%error, "the canvas refused the physics change");
+        }
+        refusal.map_or(Ok(()), Err)
+    }
+
+    pub fn set_physics_law(&mut self, law: PhysicsLaw) -> Result<(), OverlayRefusal> {
+        self.edit_physics(|choice| choice.law = law)
+    }
+
+    pub fn set_physics_overlays(
+        &mut self,
+        overlays: Vec<PhysicsOverlay>,
+    ) -> Result<(), OverlayRefusal> {
+        self.edit_physics(|choice| choice.overlays = overlays)
+    }
+
+    pub fn set_physics_kind_source(&mut self, source: PhysicsKindSource) {
+        let _ = self.edit_physics(|choice| choice.kind = source);
+    }
+
+    pub fn set_physics_mass_source(&mut self, source: PhysicsMassSource) {
+        let _ = self.edit_physics(|choice| choice.mass = source);
+    }
+
+    pub fn set_physics_depth_source(&mut self, source: PhysicsDepthSource) {
+        let _ = self.edit_physics(|choice| choice.depth = source);
+    }
+
+    /// Apply a catalog profile's law and overlays; `false` for an unknown id.
+    pub fn apply_physics_profile(&mut self, id: &str) -> bool {
+        let Some(profile) = self.physics().with_profile(id) else {
+            return false;
+        };
+        let _ = self.edit_physics(|choice| *choice = profile);
+        true
     }
 }
 

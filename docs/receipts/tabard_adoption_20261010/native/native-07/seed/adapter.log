@@ -1,0 +1,20 @@
+{"launch_method": "LaunchServices temporary application bundle", "launcher_exit": 0, "timeout": false, "success": false, "elapsed_seconds": 34.457, "binary_sha256": "e63c45974e3673b590b22ba82213a1a273c3a2678e024d2d702b5b3b35eaccc9", "scenario_sha256": "3e8470fd996afd3a2079543ab365018fb1f5b3f4b47e9b8f6fe37fe7d08c2083", "receipt": "scenario.done", "captures": 7}
+RESULT fail
+captured app_default
+waited 52 frames
+FAIL: assert snap appearance-workshop-ok Eq 'true': got 'false'
+captured app_saved_unselected
+captured app_light
+captured app_dark
+captured app_hc_light
+captured app_hc_dark
+captured app_authored_narrow
+presentation frames=199 captures=7 blank=0
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-07/seed/app/app_default.png digest=90342347df2b4ea9 blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-07/seed/app/app_saved_unselected.png digest=a397349d96818ae2 blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-07/seed/app/app_light.png digest=2661cd5037825a33 blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-07/seed/app/app_dark.png digest=c0e9394257b55422 blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-07/seed/app/app_hc_light.png digest=793e4e15842f7143 blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-07/seed/app/app_hc_dark.png digest=74e3b244c65a7fa4 blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-07/seed/app/app_authored_narrow.png digest=79ad5dc8c98d1caa blank=false
+FAIL: workshop scenario did not complete successfully

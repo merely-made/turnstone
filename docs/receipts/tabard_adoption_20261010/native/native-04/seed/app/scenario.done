@@ -1,0 +1,17 @@
+RESULT ok
+captured app_default
+waited 51 frames
+captured app_saved_unselected
+captured app_light
+captured app_dark
+captured app_hc_light
+captured app_hc_dark
+captured app_authored_narrow
+presentation frames=198 captures=7 blank=0
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-04/seed/app/app_default.png digest=0fb3cc4e8e5d4137 blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-04/seed/app/app_saved_unselected.png digest=a6de6ae1dee1d40b blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-04/seed/app/app_light.png digest=2661cd5037825a33 blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-04/seed/app/app_dark.png digest=28a1de75b5a6dcca blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-04/seed/app/app_hc_light.png digest=793e4e15842f7143 blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-04/seed/app/app_hc_dark.png digest=74e3b244c65a7fa4 blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-04/seed/app/app_authored_narrow.png digest=ed81cb98de41b422 blank=false

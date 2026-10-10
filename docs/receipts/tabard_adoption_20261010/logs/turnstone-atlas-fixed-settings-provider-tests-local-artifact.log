@@ -1,0 +1,17 @@
+
+running 12 tests
+test settings_provider::tests::application_projection_describes_owner_axes_and_controls ... ok
+test settings_provider::tests::authored_custom_modes_are_offered_only_by_the_selected_definition ... ok
+test settings_provider::tests::combined_saved_choice_does_not_publish_when_application_write_fails ... ok
+test settings_provider::tests::failed_load_projection_refuses_to_overwrite_the_corrupt_settings_file ... ok
+test settings_provider::tests::failed_setting_write_keeps_the_owner_and_cannot_leak_into_a_later_save ... ok
+test settings_provider::tests::invalid_reference_and_value_do_not_write ... ok
+test settings_provider::tests::legacy_mode_without_id_survives_load_and_an_unrelated_write ... ok
+test settings_provider::tests::malformed_library_blocks_theme_changes_and_preserves_both_owners ... ok
+test settings_provider::tests::missing_identity_and_custom_mode_remain_stored_while_visible_fallback_is_used ... ok
+test settings_provider::tests::saved_workshop_definition_becomes_available_without_selecting_it_until_apply ... ok
+test settings_provider::tests::theme_id_and_mode_edits_preserve_the_other_value ... ok
+test settings_provider::tests::typed_writes_update_the_owner_and_persist ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 776 filtered out; finished in 0.77s
+

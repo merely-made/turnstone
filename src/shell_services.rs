@@ -152,12 +152,15 @@ impl Default for ShellbarConfig {
 /// The base color family selected for host-owned chrome and Cambium panes.
 /// `System` deliberately resolves to Turnstone's established dark presentation
 /// until the platform adapter exposes a live system-color preference.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub enum ThemeMode {
     #[default]
     System,
     Light,
     Dark,
+    HcLight,
+    HcDark,
+    Custom(String),
 }
 
 impl ThemeMode {
@@ -167,6 +170,11 @@ impl ThemeMode {
         match value {
             Some("light") => Self::Light,
             Some("dark") => Self::Dark,
+            Some("hc_light") => Self::HcLight,
+            Some("hc_dark") => Self::HcDark,
+            Some(value) if value.starts_with("custom:") && value.len() > 7 => {
+                Self::Custom(value[7..].into())
+            },
             _ => Self::System,
         }
     }
@@ -177,14 +185,16 @@ impl ThemeMode {
 /// provider owns persistence and the shell owns polling/redraw.
 #[derive(Clone, Debug, PartialEq)]
 pub struct AppearanceConfig {
-    /// A persona-synced theme selector. The current host derives a stable
-    /// accent from it until a theme-pack provider is registered.
+    /// The requested persona-synced identity; missing definitions keep it
+    /// intact while shared resolution supplies a visible fallback.
     pub theme_id: Option<String>,
     /// The base light/dark family for host-owned surfaces.
     pub theme_mode: ThemeMode,
     /// Scale for retained UI surfaces, constrained by the application store's
     /// 0.5..=3.0 setting contract.
     pub ui_zoom: f32,
+    /// Shared derived roles or exact authored CSS for host-owned surfaces.
+    pub theme_presentation: Option<tabard::ThemePresentation>,
 }
 
 impl Default for AppearanceConfig {
@@ -193,6 +203,7 @@ impl Default for AppearanceConfig {
             theme_id: None,
             theme_mode: ThemeMode::System,
             ui_zoom: 1.1,
+            theme_presentation: None,
         }
     }
 }

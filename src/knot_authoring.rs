@@ -22,8 +22,8 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use cambium::{
-    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, Key, KeyEvent, PointerClick,
-    StyleRange, button, el, lens, styled_textarea,
+    AnyView, CompositionEvent, DomHandle, GenetAppRunner, GenetCtx, GenetElement, Key, KeyEvent,
+    NamedKey, PointerClick, StyleRange, button, el, lens, styled_textarea,
 };
 use genet_scripted_dom::ScriptedDom;
 use graphshell::client::{ResolvedContent, ResolvedPresentation, RetainedEndpointSession};
@@ -39,8 +39,9 @@ use graphshell::protocol::{
     KnotClipSelectorV1, KnotEffectV1, PresentationCapability, ProjectionSession, SaveTextV1,
 };
 use inker::{
-    ContentReport, DocumentSession, OutlineEntry, SessionClick, SessionEngine, SessionError,
-    SessionLink, SessionScrollKey, SessionSpawnRequest,
+    ContentReport, DocumentSession, OutlineEntry, SessionButtonState, SessionClick, SessionEffect,
+    SessionEngine, SessionError, SessionIme, SessionKey, SessionLink, SessionModifiers,
+    SessionScrollKey, SessionSpawnRequest,
 };
 use knot_editor_host::KnotEditor;
 use netrender::Scene;
@@ -2803,6 +2804,37 @@ impl Drop for KnotDocumentSession {
     }
 }
 
+/// A neutral session key as the Cambium key event Knot's editor takes.
+fn cambium_key(key: SessionKey, modifiers: SessionModifiers) -> Option<KeyEvent> {
+    let key = match key {
+        SessionKey::Character(text) => Key::Character(text),
+        SessionKey::Enter => Key::Named(NamedKey::Enter),
+        SessionKey::Tab => Key::Named(NamedKey::Tab),
+        SessionKey::Backspace => Key::Named(NamedKey::Backspace),
+        SessionKey::Delete => Key::Named(NamedKey::Delete),
+        SessionKey::Escape => Key::Named(NamedKey::Escape),
+        SessionKey::Space => Key::Named(NamedKey::Space),
+        SessionKey::ArrowLeft => Key::Named(NamedKey::ArrowLeft),
+        SessionKey::ArrowRight => Key::Named(NamedKey::ArrowRight),
+        SessionKey::ArrowUp => Key::Named(NamedKey::ArrowUp),
+        SessionKey::ArrowDown => Key::Named(NamedKey::ArrowDown),
+        SessionKey::Home => Key::Named(NamedKey::Home),
+        SessionKey::End => Key::Named(NamedKey::End),
+        SessionKey::PageUp => Key::Named(NamedKey::PageUp),
+        SessionKey::PageDown => Key::Named(NamedKey::PageDown),
+        SessionKey::Unidentified => return None,
+    };
+    Some(KeyEvent::with_mods(
+        key,
+        cambium::Modifiers {
+            shift: modifiers.shift,
+            ctrl: modifiers.control,
+            alt: modifiers.alt,
+            meta: modifiers.meta,
+        },
+    ))
+}
+
 impl DocumentSession<Scene> for KnotDocumentSession {
     fn frame(&mut self, width: u32, height: u32) -> Scene {
         self.drain_events();
@@ -2823,6 +2855,50 @@ impl DocumentSession<Scene> for KnotDocumentSession {
 
     fn scroll_for_key(&mut self, _key: SessionScrollKey) -> bool {
         false
+    }
+
+    /// Keys reach the editor through its Cambium key dispatch, the focused
+    /// channel a pane's keys take, so the browsing controller's neutral input
+    /// drives Knot as it drives every other document. A key the editor holds
+    /// no focus for is left to the host.
+    fn key_input(
+        &mut self,
+        key: SessionKey,
+        state: SessionButtonState,
+        modifiers: SessionModifiers,
+        _repeat: bool,
+    ) -> SessionEffect {
+        if state != SessionButtonState::Pressed {
+            return SessionEffect::Ignored;
+        }
+        let Some(event) = cambium_key(key, modifiers) else {
+            return SessionEffect::Ignored;
+        };
+        if self.dispatch_key(event) {
+            SessionEffect::Handled
+        } else {
+            SessionEffect::Ignored
+        }
+    }
+
+    fn text_input(&mut self, text: &str) -> bool {
+        self.dispatch_key(KeyEvent::new(Key::Composition(CompositionEvent::Commit(
+            text.to_owned(),
+        ))))
+    }
+
+    fn ime_input(&mut self, ime: SessionIme) -> bool {
+        let composition = match ime {
+            SessionIme::Enabled => CompositionEvent::Enabled,
+            SessionIme::Preedit { text, selection } => CompositionEvent::Preedit { text, selection },
+            SessionIme::Commit(text) => CompositionEvent::Commit(text),
+            SessionIme::Disabled => CompositionEvent::Disabled,
+        };
+        self.dispatch_key(KeyEvent::new(Key::Composition(composition)))
+    }
+
+    fn editable_focus(&self) -> bool {
+        self.runner.focus().is_some()
     }
 
     fn click_at(&mut self, x: f32, y: f32) -> SessionClick {
@@ -2921,6 +2997,25 @@ mod tests {
     /// A non-founder process inherits every name its parent exported, blank
     /// ones included: `TURNSTONE_KNOT_ROOT=` must read as "no vault of my own",
     /// not as a path at the current directory.
+    /// The neutral session keys reach Knot's editor as the Cambium events its
+    /// own key path took, modifiers included (SC controller-level input).
+    #[test]
+    fn neutral_session_keys_become_cambium_key_events() {
+        let modifiers = inker::SessionModifiers {
+            control: true,
+            ..Default::default()
+        };
+        let save = super::cambium_key(inker::SessionKey::Character("s".to_owned()), modifiers)
+            .expect("a character maps");
+        assert!(matches!(&save.key, cambium::Key::Character(text) if text == "s"));
+        assert!(save.mods.ctrl && !save.mods.shift);
+        assert!(matches!(
+            super::cambium_key(inker::SessionKey::Tab, Default::default()).map(|event| event.key),
+            Some(cambium::Key::Named(cambium::NamedKey::Tab))
+        ));
+        assert!(super::cambium_key(inker::SessionKey::Unidentified, Default::default()).is_none());
+    }
+
     #[test]
     fn a_blank_path_setting_reads_as_unset() {
         let name = "TURNSTONE_KNOT_ROOT_ENV_PATH_PROBE";
@@ -2993,6 +3088,7 @@ mod tests {
                 label: Some(Channel::Field("heading".to_owned())),
             },
             arrangement: Arrangement::default(),
+            dynamics: None,
             interaction: Interaction::default(),
             appearance: Appearance {
                 realization: "turnstone.knot-outline".to_owned(),

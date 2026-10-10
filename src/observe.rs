@@ -417,6 +417,12 @@ pub enum AppEvent {
     /// A workbench tile tore out into a lens window as a pinned Tile pane
     /// (the branch arm), by the node's url.
     TileTornOut(String),
+    /// The personae vault was locked at start: the profile identity is
+    /// pending, and what speaks as the profile waits (vault lock ruling 35).
+    ProfileIdentityPending,
+    /// The vault unlocked and the pending identity became the profile root,
+    /// with the backend's account of what protects it.
+    ProfileIdentityUnlocked(String),
     /// A place command was refused, with the reason. Loud rather than silent:
     /// a message that never sends because authority was withdrawn must say so,
     /// not vanish.
@@ -427,6 +433,7 @@ pub enum AppEvent {
     PlaceRendezvousCopied(usize),
     /// The app adopted a session (a boot, a mint, or a switch), by label.
     SessionSwitched(String),
+    SessionLoadRefused { error: String },
     /// The current session was closed (trashed).
     SessionClosed,
     /// A fork minted a new session from the focused component (the fork arm).
@@ -700,11 +707,16 @@ impl AppEvent {
             AppEvent::PaneDocked(tag) => format!("pane-docked {tag}"),
             AppEvent::PaneReturned(tag) => format!("pane-returned {tag}"),
             AppEvent::TileTornOut(url) => format!("tile-torn-out {url}"),
+            AppEvent::ProfileIdentityPending => "profile-identity-pending".to_string(),
+            AppEvent::ProfileIdentityUnlocked(protection) => {
+                format!("profile-identity-unlocked {protection}")
+            }
             AppEvent::PlaceRefused(reason) => format!("place-refused {reason}"),
             AppEvent::PlaceRendezvousCopied(count) => {
                 format!("place-rendezvous-copied {count}")
             }
             AppEvent::SessionSwitched(label) => format!("session-switched {label}"),
+            AppEvent::SessionLoadRefused { error } => format!("session-load-refused {error}"),
             AppEvent::SessionClosed => "session-closed".to_string(),
             AppEvent::SessionForked => "session-forked".to_string(),
             AppEvent::SessionRecovered(label) => format!("session-recovered {label}"),
@@ -1307,6 +1319,7 @@ mod tests {
             node,
             Some(ContentFacts {
                 engine: "weld.chromium".into(),
+                lane: crate::content::ContentLane::Surface,
                 structure: None,
                 lineage: None,
                 capabilities: DocumentCapabilityFacts {
@@ -1354,6 +1367,7 @@ mod tests {
             node,
             Some(ContentFacts {
                 engine: "weld.chromium".into(),
+                lane: crate::content::ContentLane::Surface,
                 structure: None,
                 lineage: None,
                 capabilities: DocumentCapabilityFacts {
@@ -1404,6 +1418,7 @@ mod tests {
             node,
             Some(ContentFacts {
                 engine: "genet.livery".into(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: DocumentCapabilityFacts {

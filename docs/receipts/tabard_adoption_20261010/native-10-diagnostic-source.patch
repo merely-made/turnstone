@@ -1,0 +1,354 @@
+--- a/src/shell/appearance_receipt.rs
++++ b/src/shell/appearance_receipt.rs
+@@ -104,6 +104,7 @@
+             close_request(ctx, request)
+         }
+     });
++    super::appearance_registration_probe::install(&mut hooks);
+     Ok((hooks, Some(completion)))
+ }
+ 
+--- a/src/shell/mod.rs
++++ b/src/shell/mod.rs
+@@ -12,6 +12,7 @@
+ 
+ mod appearance_editor;
+ mod appearance_receipt;
++mod appearance_registration_probe;
+ mod contributed_automation;
+ mod controller_input;
+ mod drive;
+--- /dev/null
++++ b/src/shell/appearance_registration_probe.rs
+@@ -0,0 +1,331 @@
++//! Private live registration control. The original child copy is armed first.
++//! A one-time wrapper delegates the real SceneProducer unchanged and retains
++//! its returned view; no source readback is inserted before production staging.
++use cambium_genet_winit_host::{HostHooks, SceneProducer};
++use cambium_rootstock::{
++    ProducedTexture, ProducerContext, ProducerRole, ProducerSemantics, TextureProducer,
++};
++use std::{
++    cell::RefCell,
++    path::PathBuf,
++    rc::Rc,
++    sync::Arc,
++    time::{Duration, Instant},
++};
++use tabard_workshop::{
++    StylesheetSpecimen, WorkshopState, WorkshopView, native_host::WorkshopLogic,
++};
++const ORIGINAL_CSS: u64 = 0xc000_0000_7461_6263;
++const NEW_STAGE_PRODUCER: u64 = 0x7461_7001;
++const NEW_DIRECT_PRODUCER: u64 = 0x7461_7002;
++const RASTER: u64 = 0x7461_6200_7267_0001;
++thread_local! {static SCENE_STATS:RefCell<serde_json::Value>=RefCell::new(serde_json::Value::Null);}
++fn frame(source: &mut StylesheetSpecimen, w: u32, h: u32) -> netrender::Scene {
++    let scene = source.frame(w, h);
++    SCENE_STATS.with(|last|*last.borrow_mut()=serde_json::json!({"ops":scene.ops.len(),"glyph_runs":scene.ops.iter().filter(|op|matches!(op,netrender::SceneOp::GlyphRun(_))).count(),"revision":source.revision(),"logical_size":[w,h],"errors":source.diagnostics()}));
++    scene
++}
++struct Copy {
++    label: &'static str,
++    pending: cambium_rootstock::PendingFrame,
++    armed: Instant,
++    mapped: Option<cambium_rootstock::Frame>,
++    mapped_ms: Option<u128>,
++}
++struct Probe {
++    directory: PathBuf,
++    claimed: bool,
++    latest: Option<ProducedTexture>,
++    mode: String,
++    source_scene: serde_json::Value,
++    copies: Option<Vec<Copy>>,
++    metadata: serde_json::Value,
++}
++struct Observed {
++    inner: SceneProducer<StylesheetSpecimen>,
++    probe: Rc<RefCell<Probe>>,
++}
++impl Observed {
++    fn new(source: Rc<RefCell<StylesheetSpecimen>>, probe: Rc<RefCell<Probe>>) -> Self {
++        Self {
++            inner: SceneProducer::new(
++                source,
++                0x7461_6200_0000_0001,
++                frame,
++                StylesheetSpecimen::revision,
++                |s| {
++                    Some(ProducerSemantics {
++                        role: Some(ProducerRole::Image),
++                        name: Some(s.accessible_name().into()),
++                        children: Vec::new(),
++                    })
++                },
++            ),
++            probe,
++        }
++    }
++}
++impl TextureProducer for Observed {
++    fn render(&mut self, cx: &ProducerContext<'_>) -> Option<ProducedTexture> {
++        let output = self.inner.render(cx);
++        if let Some(output) = &output {
++            let mut p = self.probe.borrow_mut();
++            p.latest = Some(output.clone());
++            p.source_scene = SCENE_STATS.with(|last| last.borrow().clone());
++            eprintln!(
++                "[turnstone-registration-probe] source generation={} scene={}",
++                output.generation, p.source_scene
++            );
++        }
++        output
++    }
++    fn suspend(&mut self) {
++        self.inner.suspend();
++        self.probe.borrow_mut().latest = None;
++    }
++    fn retire(&mut self) {
++        self.inner.retire();
++        self.probe.borrow_mut().latest = None;
++    }
++    fn semantics(&mut self) -> Option<ProducerSemantics> {
++        self.inner.semantics()
++    }
++    fn act(&mut self, key: u64, id: &str) -> bool {
++        self.inner.act(key, id)
++    }
++}
++/// Call after constructing the ordinary lane after_frame wrapper.
++pub(super) fn install(hooks: &mut HostHooks<WorkshopState, WorkshopLogic, WorkshopView>) {
++    let Some(directory) = std::env::var_os("TURNSTONE_THEME_REGISTRATION_PROBE_DIR") else {
++        return;
++    };
++    let probe = Rc::new(RefCell::new(Probe {
++        directory: PathBuf::from(directory),
++        claimed: false,
++        latest: None,
++        mode: String::new(),
++        source_scene: serde_json::Value::Null,
++        copies: None,
++        metadata: serde_json::Value::Null,
++    }));
++    let observed: Rc<RefCell<Option<Rc<RefCell<Observed>>>>> = Rc::new(RefCell::new(None));
++    let mut previous_frame = std::mem::replace(&mut hooks.frame, Box::new(|_| false));
++    let frame_probe = probe.clone();
++    hooks.frame = Box::new(move |ctx| {
++        let result = previous_frame(ctx);
++        let source = ctx.runner.state().stylesheet_preview();
++        frame_probe.borrow_mut().mode = ctx.runner.state().mode_key().into();
++        let mut holder = observed.borrow_mut();
++        if holder.is_none() {
++            ctx.producers.remove(tabard_workshop::STYLESHEET_LEAF_KEY);
++            let wrapper = Rc::new(RefCell::new(Observed::new(
++                source.clone(),
++                frame_probe.clone(),
++            )));
++            ctx.producers
++                .register(tabard_workshop::STYLESHEET_LEAF_KEY, wrapper.clone(), &[])
++                .expect("reserved diagnostic stylesheet slot");
++            *holder = Some(wrapper);
++        }
++        holder
++            .as_ref()
++            .unwrap()
++            .borrow_mut()
++            .inner
++            .set_source(source);
++        result
++    });
++    let mut previous_after = std::mem::replace(&mut hooks.after_frame, Box::new(|_| {}));
++    hooks.after_frame = Box::new(move |ctx| {
++        previous_after(ctx);
++        probe.borrow_mut().poll();
++        if probe.borrow().claimed {
++            return;
++        }
++        if let Some(original) = ctx.capture_stamped.take() {
++            let sink = probe.clone();
++            probe.borrow_mut().claimed = true;
++            *ctx.capture_stamped = Some(Box::new(move |surface, view, p| {
++                original(surface, view, p);
++                sink.borrow_mut().arm(surface,p.width,p.height,p.layout_scale,serde_json::json!({"kind":"stamped","host":p.host,"sequence":p.sequence,"width":p.width,"height":p.height,"scale":p.layout_scale}));
++            }));
++        } else if let Some(original) = ctx.capture.take() {
++            let sink = probe.clone();
++            probe.borrow_mut().claimed = true;
++            *ctx.capture = Some(Box::new(move |surface, view, w, h| {
++                original(surface, view, w, h);
++                sink.borrow_mut().arm(surface,w,h,2.0,serde_json::json!({"kind":"legacy","width":w,"height":h,"scale":"assumed2,requirewide2360"}));
++            }));
++        }
++    });
++}
++fn sample(surface: &dyn cambium_rootstock::Surface, key: u64, raster: u64) -> wgpu::Texture {
++    let core = surface.core();
++    let mut scene = netrender::Scene::new(831, 328);
++    scene.push_image_full(
++        0.0,
++        0.0,
++        831.0,
++        328.0,
++        [0.0, 0.0, 1.0, 1.0],
++        [1.0; 4],
++        key,
++        0,
++        netrender::NO_CLIP,
++    );
++    core.rasterize_scaled_for(
++        raster,
++        &scene,
++        1662,
++        656,
++        netrender::ColorLoad::Clear(wgpu::Color::TRANSPARENT),
++        2.0,
++    )
++    .0
++}
++impl Probe {
++    fn arm(
++        &mut self,
++        surface: &dyn cambium_rootstock::Surface,
++        w: u32,
++        h: u32,
++        scale: f32,
++        parent: serde_json::Value,
++    ) {
++        if w != 2360 || (scale - 2.0).abs() > 0.001 {
++            eprintln!(
++                "[turnstone-registration-probe] unsupportedfirstcapture w={w} h={h} scale={scale}"
++            );
++            return;
++        }
++        let Some(source) = self.latest.clone() else {
++            eprintln!("[turnstone-registration-probe] no actual source output");
++            return;
++        };
++        let texture = source.view.texture();
++        if texture.width() != 1662
++            || texture.height() != 656
++            || texture.format() != wgpu::TextureFormat::Rgba8Unorm
++            || !texture.usage().contains(wgpu::TextureUsages::COPY_SRC)
++        {
++            eprintln!(
++                "[turnstone-registration-probe] unsupported direct source texture={texture:?}"
++            );
++            return;
++        }
++        let core = surface.core();
++        let renderer = surface.renderer();
++        let before = renderer.vello_live_texture_registrations();
++        // Original registration is sampled before either new registration.
++        let old = sample(surface, ORIGINAL_CSS, RASTER);
++        let after_original = renderer.vello_live_texture_registrations();
++        let staged_key = netrender::external_image_key(NEW_STAGE_PRODUCER);
++        renderer.stage_external_image(staged_key, &source.view, [1662, 656], source.alpha, 1);
++        let staged = sample(surface, staged_key, RASTER + 1);
++        let after_stage = renderer.vello_live_texture_registrations();
++        let direct_key = netrender::external_image_key(NEW_DIRECT_PRODUCER);
++        renderer.insert_image_vello(direct_key, Arc::new(texture.clone()));
++        let direct = sample(surface, direct_key, RASTER + 2);
++        let after_direct = renderer.vello_live_texture_registrations();
++        let old_after = sample(surface, ORIGINAL_CSS, RASTER + 3);
++        let after_old_again = renderer.vello_live_texture_registrations();
++        self.metadata = serde_json::json!({"original_child":parent,"mode":self.mode,"source_scene":self.source_scene,"source_generation":source.generation,"source_alpha":format!("{:?}",source.alpha),"source_encoding":format!("{:?}",source.encoding),"source_format":format!("{:?}",texture.format()),"source_usage":format!("{:?}",texture.usage()),"image_keys":{"original":format!("{ORIGINAL_CSS:#018x}"),"new_stage":format!("{staged_key:#018x}"),"new_direct":format!("{direct_key:#018x}")},"live_registrations":{"before":before,"after_original":after_original,"after_stage":after_stage,"after_direct":after_direct,"after_old_again":after_old_again},"order":"original child capture FIRST; sample original image; stage source under newkey and sample; direct insert source under anothernewkey and sample; sample original image again after both new registrations; then arm5copies; collectall before rawwrites","producer_wrapper":"one initial registry replacement; same actual source Rc; original SceneProducer delegated; no source copies during producer render","original_registry_image":"never restaged/unregistered by diagnostic","new_stage_effect":"new image identity deliberately causes renderer normal cache invalidation; original sampler and child copy precede it","probe_raster_base":format!("{RASTER:#018x}")});
++        let mut copies = Vec::new();
++        for (label, target) in [
++            ("original-registration", old),
++            ("new-stage", staged),
++            ("direct-registration", direct),
++            ("original-after-new", old_after),
++            ("actual-source", texture.clone()),
++        ] {
++            let armed = Instant::now();
++            match core.start_rgba8_readback(&target, 1662, 656) {
++                Ok(pending) => copies.push(Copy {
++                    label,
++                    pending,
++                    armed,
++                    mapped: None,
++                    mapped_ms: None,
++                }),
++                Err(error) => {
++                    eprintln!("[turnstone-registration-probe] arm {label} failed:{error}");
++                    return;
++                },
++            }
++        }
++        self.copies = Some(copies);
++    }
++    fn poll(&mut self) {
++        let Some(mut copies) = self.copies.take() else {
++            return;
++        };
++        for copy in copies.iter_mut().rev() {
++            if copy.mapped.is_some() {
++                continue;
++            }
++            if copy.armed.elapsed() >= Duration::from_secs(5) {
++                eprintln!("[turnstone-registration-probe] {} exceeded5s", copy.label);
++                return;
++            }
++            let start = Instant::now();
++            let ready = copy.pending.poll();
++            if start.elapsed() >= Duration::from_millis(250)
++                || copy.armed.elapsed() >= Duration::from_secs(5)
++            {
++                eprintln!(
++                    "[turnstone-registration-probe] {} missednonblocking/deadline",
++                    copy.label
++                );
++                return;
++            }
++            if let Some(ready) = ready {
++                match ready {
++                    Ok(frame) => {
++                        copy.mapped_ms = Some(copy.armed.elapsed().as_millis());
++                        copy.mapped = Some(frame);
++                    },
++                    Err(error) => {
++                        eprintln!(
++                            "[turnstone-registration-probe] {} failed:{error}",
++                            copy.label
++                        );
++                        return;
++                    },
++                }
++            }
++        }
++        if copies.iter().any(|copy| copy.mapped.is_none()) {
++            self.copies = Some(copies);
++            return;
++        }
++        let result = (|| -> Result<(), String> {
++            use std::io::Write;
++            std::fs::create_dir_all(&self.directory).map_err(|e| e.to_string())?;
++            let mut records = Vec::new();
++            for copy in copies {
++                let frame = copy.mapped.unwrap();
++                let path = self.directory.join(format!("{}.rgba", copy.label));
++                let mut raw = std::fs::OpenOptions::new()
++                    .write(true)
++                    .create_new(true)
++                    .open(&path)
++                    .map_err(|e| e.to_string())?;
++                raw.write_all(&frame.rgba).map_err(|e| e.to_string())?;
++                records.push(serde_json::json!({"label":copy.label,"width":frame.width,"height":frame.height,"byte_count":frame.rgba.len(),"arm_to_map_ms":copy.mapped_ms,"raw_path":path}));
++            }
++            self.metadata["copies"] = serde_json::json!(records);
++            let mut json = std::fs::OpenOptions::new()
++                .write(true)
++                .create_new(true)
++                .open(self.directory.join("registration-probe.json"))
++                .map_err(|e| e.to_string())?;
++            json.write_all(self.metadata.to_string().as_bytes())
++                .map_err(|e| e.to_string())?;
++            Ok(())
++        })();
++        match result {
++            Ok(()) => eprintln!("[turnstone-registration-probe] mapped:{}", self.metadata),
++            Err(error) => eprintln!("[turnstone-registration-probe] failure:{error}"),
++        }
++    }
++}

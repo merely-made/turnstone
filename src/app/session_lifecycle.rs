@@ -46,11 +46,11 @@ impl App {
             Ok(false) => {}
             Err(error) => eprintln!("[turnstone] could not adopt the legacy identity: {error}"),
         }
-        // The attributed journal + its capture hook (participant gate B1):
-        // every mutation that flows through apply_graph_delta records here
-        // under the current author.
-        let (journal, hook) = mere::kernel::graph::journal_capture_hook();
-        mere::kernel::graph::set_captured_delta_hook(Some(hook));
+
+        let journal = crate::host_journal::shared_journal();
+        // Each installed graph records once. Scratch/migration graphs are quiet.
+
+        mere::kernel::graph::set_captured_delta_hook(None);
         let mut sessions = session::load_manifests(&data_root);
         // Pre-overmap manifests minted nil root_graph_ids; the container id
         // must be real (scene.* facet key + overmap identity), so heal at boot.
@@ -83,10 +83,11 @@ impl App {
             now_ms: None,
             behavior_cursor: 0,
             cascade_budget: servitor::cascade::CascadeBudget::DEFAULT.rounds(),
-            graph_runtimes: super::GraphRuntimePool::new(
+            graph_runtimes: super::GraphRuntimePool::with_journal(
                 initial_graph,
                 Some(session_id),
                 Canvas::new(),
+                journal.clone(),
             ),
             graph_views: super::GraphPaneViews::default(),
             forme_runtimes: super::FormeRuntimePool::default(),
@@ -133,7 +134,7 @@ impl App {
             recall: Vec::new(),
             recall_query: String::new(),
             pending_install: None,
-            denizens: crate::denizen::Denizens::for_root(root),
+            denizens: root.map_or_else(crate::denizen::Denizens::pending, crate::denizen::Denizens::new),
             resident_runs: crate::resident_runs::ResidentRuns::default(),
             resident_run_error: None,
             resident_run_effect_policy: crate::resident_runs::ExternalEffectPolicy::default(),
@@ -142,19 +143,27 @@ impl App {
             gemini_identities,
             identity,
             journal,
+            behavior_binding: None,
+            behavior_refusal: None,
             next_pane_id: 1,
             events: Vec::new(),
             knot_documents: Vec::new(),
         };
+        if app.identity.is_none() {
+            app.events.push(AppEvent::ProfileIdentityPending);
+        }
         let mut effects = app.adopt_session(session_id);
-        if let Some(url) = address {
+        if !app.session_load_refused() && let Some(url) = address {
             app.apply_launch_address(url, &mut effects);
-        } else if minted && app.graph_runtimes.graph().nodes().count() == 0 {
+        } else if !app.session_load_refused() && minted && app.graph_runtimes.graph().nodes().count() == 0 {
             // A bare FIRST launch: the sample graph, with the omnibar open by
             // itself so the app is discoverable without documentation. A bare
             // relaunch restores the canvas quietly (Ctrl+L / Ctrl+K summon).
             tracing::info!("no session graph; starting on the sample graph");
-            *app.graph_runtimes.active_canvas_mut() = Canvas::with_sample_graph();
+            app.graph_runtimes.replace_active_canvas( Canvas::with_sample_graph());
+            if let Err(error) = app.bind_behavior_journal() {
+                app.refuse_behavior(error);
+            }
             app.omnibar.open = true;
             let context = app.fallback_shell_context();
             app.shell.begin_omnibar(context);
@@ -255,6 +264,10 @@ impl App {
     /// untouched; the two are independent thereafter. Returns no effects if
     /// `seed` names no node.
     pub fn fork_session_from(&mut self, seed: uuid::Uuid) -> Vec<Effect> {
+        let donor_placement = match self.graph_runtimes.active_persistence().placement_for(&self.session_dir()) {
+            Ok(placement) => placement,
+            Err(error) => { tracing::warn!(%error, "session fork refused"); return Vec::new(); }
+        };
         if self.graph_runtimes.graph().get_node_by_id(seed).is_none() {
             return Vec::new();
         }
@@ -283,9 +296,12 @@ impl App {
 
         // The kernel half: component copy with the id remap for the carry.
         let donor_graph_label = self.container_id().map(|c| c.to_string());
-        let mut fork_graph = mere::kernel::graph::Graph::new();
-        let copy =
-            fork_graph.copy_component_from(self.graph_runtimes.graph(), seed, donor_graph_label);
+        let (mut fork_graph, copy) = match session::copy_session_component(
+            self.graph_runtimes.graph(), seed, donor_graph_label,
+        ) {
+            Ok(copy) => copy,
+            Err(error) => { tracing::warn!(%error, "fork component copy refused"); return Vec::new(); }
+        };
         if copy.new_keys.is_empty() {
             return Vec::new();
         }
@@ -378,6 +394,13 @@ impl App {
 
         // Mint the fork's session: manifest with the parent back-reference,
         // then its on-disk state, so the switch below adopts a real session.
+        let fork_placement = donor_placement;
+        let fork_facets = fork_graph.facets().clone();
+        let mut fork_graph = match pandect::graph_placement::materialize_snapshot(&fork_graph.to_snapshot(), fork_placement) {
+            Ok(graph) => graph,
+            Err(error) => { tracing::warn!(%error, "assembled fork graph refused"); return Vec::new(); }
+        };
+        fork_graph.overlay_facets(fork_facets);
         let fork_id = crate::panes::SessionId::new();
         let fork_dir = session::session_dir(&self.data_root, fork_id);
         if let Some(admissions) = &fork_admissions
@@ -389,12 +412,16 @@ impl App {
         let mut manifest = pandect::GraphSessionManifest::new(fork_id, fork_graph_id);
         manifest.storage_path = Some(session::session_dir(&self.data_root, fork_id));
         manifest.parent_session = Some(self.session_id);
-        self.sessions.insert(manifest);
-        if let Err(err) = self.sessions.flush_dirty() {
-            tracing::warn!(%err, "failed to write the fork session's manifest");
+        let fork_state = crate::session_persistence::SessionPersistence::writable(fork_dir.clone(), fork_placement);
+        if let Err(error) = fork_state.save_with(&fork_dir,
+            || pandect::save_node_facets(&fork_dir, fork_graph.facets()),
+            |placement| {
+                pandect::session_graph_store::save_profiled(
+                &fork_dir.join(pandect::session_graph_store::GRAPH_FILE), &fork_graph, placement)},
+        ) {
+            tracing::warn!(%error, "fork persistence failed before manifest publication");
+            return Vec::new();
         }
-        session::save_session_graph(&fork_dir, &fork_graph);
-        session::save_node_facets(&fork_dir, fork_graph.facets());
         // Each carried world becomes the fork's own file: donor and fork
         // evolve their copies independently thereafter. A missing donor file
         // is fine — the resident rebuilds on an empty world, as always.
@@ -413,7 +440,14 @@ impl App {
             })();
             if let Err(err) = result {
                 tracing::warn!(%err, log_id, "failed to carry a participant world into the fork");
+                return Vec::new();
             }
+        }
+        self.sessions.insert(manifest);
+        if let Err(error) = self.sessions.flush_dirty() {
+            tracing::warn!(%error, "fork manifest publication failed; refusing switch");
+            self.sessions.remove(fork_id);
+            return Vec::new();
         }
         self.events.push(AppEvent::SessionForked);
         vec![Effect::SwitchSession { id: fork_id }]
@@ -445,24 +479,37 @@ impl App {
 
     /// This profile's Personae root. The same root the worker evaluates
     /// authority for; read here so a card can name it without a round trip.
-    /// `None` while the identity is pending (D12).
+    /// `None` while the vault is locked.
     pub(crate) fn personae_root(&self) -> Option<[u8; 32]> {
-        self.identity_root()
-    }
-
-    /// The profile identity as a provider, `None` while pending.
-    pub(crate) fn identity_provider(&self) -> Option<&dyn identity::IdentityProvider> {
-        self.identity
-            .as_deref()
-            .map(|identity| identity as &dyn identity::IdentityProvider)
-    }
-
-    /// The profile identity's master public key, `None` while pending.
-    pub(crate) fn identity_root(&self) -> Option<[u8; 32]> {
         use identity::IdentityProvider as _;
         self.identity
-            .as_deref()
-            .map(|identity| identity.master_public_key().to_bytes())
+            .as_ref()
+            .map(|root| root.master_public_key().to_bytes())
+    }
+
+    /// The vault unlocked: the pending identity becomes the profile root.
+    /// Participants rebuild under it, so their chains verify again; the
+    /// shell starts what speaks as the profile. A second root for the same
+    /// run is ignored: a live persona switch is not this path.
+    pub(crate) fn adopt_profile_root(
+        &mut self,
+        root: std::sync::Arc<crate::identity::RootIdentity>,
+    ) -> Vec<Effect> {
+        if self.identity.is_some() {
+            return Vec::new();
+        }
+        let description = root.description();
+        self.identity = Some(root);
+        let sdir = self.session_dir();
+        self.denizens = crate::denizen::rebuild(
+            self.graph_runtimes.facets(),
+            self.graph_runtimes.graph(),
+            &sdir,
+            self.personae_root(),
+        );
+        self.events
+            .push(AppEvent::ProfileIdentityUnlocked(description));
+        vec![Effect::Redraw]
     }
 
     /// Refuse one place gesture out loud, changing nothing.
@@ -484,7 +531,7 @@ impl App {
             .push(AppEvent::PlaceRendezvousCopied(tickets.len()));
         vec![
             Effect::CopyText(tickets.join("\n")),
-            Effect::Redraw,
+            Effect::Redraw
         ]
     }
 
@@ -498,7 +545,7 @@ impl App {
         match prompt {
             PlacePrompt::FoundPlace | PlacePrompt::OfferPrekey | PlacePrompt::Join if joined => {
                 return self.refuse_place("leave this place before joining or founding another");
-            },
+            }
             PlacePrompt::ExportCard
             | PlacePrompt::Invite
             | PlacePrompt::InviteReader
@@ -506,8 +553,8 @@ impl App {
                 if !joined =>
             {
                 return self.refuse_place("this session is not in a place");
-            },
-            _ => {},
+            }
+            _ => {}
         }
         self.omnibar = OmnibarState {
             open: true,
@@ -544,11 +591,11 @@ impl App {
 
     /// Write this place's card. Contact metadata and public ids only.
     pub fn export_place_card(&mut self, path: String) -> Vec<Effect> {
-        let Some(founder_root) = self.personae_root() else {
-            return self.refuse_place(crate::identity::PENDING);
-        };
         let Some(binding) = self.place.binding().cloned() else {
             return self.refuse_place("open a place before exporting its card");
+        };
+        let Some(root) = self.personae_root() else {
+            return self.refuse_place(crate::denizen::PENDING_IDENTITY);
         };
         let local_rendezvous = match &self.place {
             crate::place::PlaceState::Offline { snapshot, .. } => snapshot
@@ -561,7 +608,7 @@ impl App {
         let card = crate::place::PlaceCardV1 {
             version: crate::place::PLACE_CARD_VERSION,
             binding,
-            founder_root: crate::place::hex32(&founder_root),
+            founder_root: crate::place::hex32(&root),
             rendezvous: local_rendezvous
                 .into_iter()
                 .map(|hint| crate::place::invite::RendezvousV1 {
@@ -924,6 +971,7 @@ impl App {
     /// (content respawns + lens-window reopens). Session-scoped view state
     /// (omnibar, active pane, maximize) resets.
     pub fn adopt_session(&mut self, id: crate::panes::SessionId) -> Vec<Effect> {
+        self.behavior_binding = None;
         self.session_id = id;
         self.physics_refusal = None;
         let graph = self
@@ -933,13 +981,40 @@ impl App {
             .unwrap_or_else(GraphId::nil);
         self.graph_runtimes
             .activate_or_insert(graph, Some(id), Canvas::new());
+        self.graph_runtimes.suspend_recording(graph);
+        let sdir = self.session_dir();
+        match session::try_load_session_graph(&sdir) {
+            Ok(input) => {
+                let (graph, placement) = input.map(|input| (input.graph, input.placement))
+                    .unwrap_or_else(|| (mere::kernel::graph::Graph::new(), None));
+                self.graph_runtimes.adopt_graph(graph,
+                    crate::session_persistence::SessionPersistence::writable(sdir.clone(), placement));
+            }
+            Err(error) => {
+                tracing::warn!(%error, "refusing session adoption; disk state remains protected");
+                self.graph_runtimes.adopt_graph(mere::kernel::graph::Graph::new(),
+                    crate::session_persistence::SessionPersistence::refused(sdir, error.clone()));
+                self.next_place_generation = self.next_place_generation.wrapping_add(1);
+                self.place = crate::place::PlaceState::Failed { error: error.clone() };
+                self.feeds = Default::default();
+                self.redshank = self.redshank.suspended();
+                self.redshank_members.clear();
+                self.browser = Default::default();
+                self.content = ContentStates::default();
+                self.removed.clear();
+                self.resident_runs = Default::default();
+                self.resident_run_error = Some(error.clone());
+                self.events.push(AppEvent::SessionLoadRefused { error });
+                return vec![Effect::Redraw];
+            }
+        }
+        self.graph_runtimes.suspend_recording(graph);
         session::record_current_session(&self.data_root, id);
         if self.sessions.update(id, |m| m.touch()) {
             if let Err(err) = self.sessions.flush_dirty() {
                 tracing::warn!(%err, "failed to touch the adopted session's manifest");
             }
         }
-        let sdir = self.session_dir();
         // This is the sole recovery boundary. Do not reload this store around
         // nested `update` calls: the live table is what prevents overlap.
         self.resident_runs = crate::resident_runs::ResidentRuns::with_limits(self.resident_run_storage_limits);
@@ -986,7 +1061,7 @@ impl App {
                     Err(error) => {
                         tracing::warn!(%error, "place-left mark failed to load");
                         crate::place::PlaceState::Failed { error: error.to_string() }
-                    },
+                    }
                     Ok(None) => unreachable!("guarded above"),
                 }
             }
@@ -1023,11 +1098,8 @@ impl App {
         // canvas's own session-switch seam (mere's MG2 `set_graph`: physics
         // actor and node pool stay alive, every node parks at the origin and
         // halts; the saved layout is applied from the facet store next).
-        self.graph_runtimes
-            .set_graph(session::load_session_graph(&sdir).unwrap_or_default());
         self.feeds = crate::feed::FeedSubscriptions::load(&sdir);
         self.feeds.reconcile(self.graph_runtimes.graph());
-        self.reconcile_feed_tags();
         // The listening model rides the session directory like the feeds do.
         // A session with no audio output still reopens its library, progress
         // and notes; only the runtime is absent.
@@ -1046,50 +1118,51 @@ impl App {
         let view_intent = session::load_view_intent(&sdir);
         self.command_choices = view_intent
             .as_ref()
-            .map(|intent| intent.command_menu.clone().into())
+            .map(|intent| intent.command_menu.clone())
             .unwrap_or_default();
         if let Some(intent) = view_intent {
             self.graph_runtimes
                 .set_layout_strategy(intent.layout_strategy);
-            // The physics choice rides the same sidecar, applied as one pick:
-            // the sources, the law, then its overlays. An unknown id (a newer
-            // catalog) falls back to what the canvas runs rather than failing
-            // the open. (Physics catalog — P2; F162.)
-            let mut choice = self.graph_runtimes.physics_view();
-            if let Some(kind) = intent
+            // The physics choice rides the same sidecar: sources first, so
+            // the law's build reads them, then the law, then its overlays.
+            // An unknown id (a newer catalog) falls back to the default
+            // rather than failing the open. (Physics catalog — P2.)
+            if let Some(source) = intent
                 .physics_kind_source
                 .as_deref()
                 .and_then(mere::canvas::PhysicsKindSource::parse)
             {
-                choice.kind = kind;
+                self.graph_runtimes.set_physics_kind_source(source);
             }
-            if let Some(mass) = intent
+            if let Some(source) = intent
                 .physics_mass_source
                 .as_deref()
                 .and_then(mere::canvas::PhysicsMassSource::parse)
             {
-                choice.mass = mass;
+                self.graph_runtimes.set_physics_mass_source(source);
             }
-            if let Some(depth) = intent
+            if let Some(source) = intent
                 .physics_depth_source
                 .as_deref()
                 .and_then(mere::canvas::PhysicsDepthSource::parse)
             {
-                choice.depth = depth;
+                self.graph_runtimes.set_physics_depth_source(source);
             }
             if let Some(law) = intent
                 .physics_law
                 .as_deref()
                 .and_then(mere::canvas::PhysicsLaw::parse)
             {
-                choice.law = law;
+                let result = self.graph_runtimes.set_physics_law(law);
+                self.record_physics_result(result);
             }
-            choice.overlays = intent
-                .physics_overlays
-                .iter()
-                .filter_map(|id| mere::canvas::PhysicsOverlay::parse(id))
-                .collect();
-            let result = self.graph_runtimes.pick_physics(choice);
+            let result = self.graph_runtimes.set_physics_overlays(
+                intent
+                    .physics_overlays
+                    .iter()
+                    .filter_map(|id| mere::canvas::PhysicsOverlay::parse(id))
+                    .collect(),
+            );
             self.record_physics_result(result);
         }
         // Preview imagery lives out of the graph now. The first paint queues
@@ -1105,8 +1178,9 @@ impl App {
         // The removed-sessions cache (overmap O3): derived from the manifest
         // trash, refreshed here and on close/recover.
         self.trash = self.sessions.list_trash();
-        self.graph_runtimes
-            .overlay_facets(session::load_node_facets(&sdir).unwrap_or_default());
+        // Canonical facets were read fallibly and overlaid during graph adoption.
+        // Current member-keyed sidecar state wins over cached feed projections.
+        self.reconcile_feed_tags();
         // A profile saved before the nil-GraphId heal keyed its scene.* facets
         // by the nil uuid; move them onto the healed container id once.
         if let Some(container) = self.container_id() {
@@ -1155,7 +1229,7 @@ impl App {
             self.graph_runtimes.facets(),
             self.graph_runtimes.graph(),
             &sdir,
-            self.identity_root(),
+            self.personae_root(),
         );
         // Residency came back; its standing subscriptions have to come with
         // it, or a behavior silently stops waking after a reload.
@@ -1328,10 +1402,35 @@ impl App {
             }
         }
         self.window_count = 1;
+        if let Err(error) = self.bind_behavior_journal() {
+            self.refuse_behavior(error);
+        }
         let label = self.session_label(id);
         self.events.push(AppEvent::SessionSwitched(label));
         effects.push(Effect::Redraw);
         effects
+    }
+
+    pub(crate) fn session_load_refused(&self) -> bool {
+        matches!(self.graph_runtimes.active_persistence(), crate::session_persistence::SessionPersistence::Refused { .. })
+    }
+
+    pub(crate) fn persist_session_graph(&mut self) -> std::io::Result<()> {
+        let directory = self.session_dir();
+        self.graph_runtimes.active_persistence().placement_for(&directory)?;
+        self.refresh_browser_states();
+        self.refresh_facets();
+        crate::content_classes::reconcile(&mut self.graph_runtimes).map_err(std::io::Error::other)?;
+        // Persist the sidecar's read status before its Surface projection. An
+        // error is observable and stops this save rather than reporting success.
+        self.feeds.save(&directory)?;
+        let graph = self.graph_runtimes.graph();
+        self.graph_runtimes.active_persistence().save_with(&directory,
+            || pandect::save_node_facets(&directory, graph.facets()),
+            |placement| {
+                pandect::session_graph_store::save_profiled(
+                &directory.join(pandect::session_graph_store::GRAPH_FILE), graph, placement)},
+        )
     }
 
     /// Refresh the browser-state sidecar from live truth before a save

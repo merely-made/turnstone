@@ -234,6 +234,9 @@ pub fn ring_of(action: &Action) -> Ring {
         // carry a narrower, independently verifiable source grant.
         | ChooseKnotDocumentFile { .. }
         | SummonContributedPane { .. }
+        // Personal theme authoring is a local settings gesture, with no
+        // participant grant to open or alter the user's shared library.
+        | OpenThemeWorkshop
         // A web page may ask, but only a literal local interaction may grant,
         // deny, or supply credentials to its exact pending callback. Keeping
         // these controls host-only also prevents a participant from typing into a
@@ -313,13 +316,14 @@ pub fn emit_allowed(
         // belongs in the message rather than in a second enum variant that
         // would behave the same. Split the ring only if the policies diverge.
         let what = match action {
+            Action::OpenThemeWorkshop => "personal theme authoring",
             Action::JoinPlace(_) | Action::JoinPlaceFile { .. } | Action::BeginJoinPlaceFile => {
                 "joining a place"
-            }
+            },
             Action::BeginFoundPlace | Action::FoundPlace { .. } => "founding a place",
             Action::BeginExportPlaceCard | Action::ExportPlaceCard { .. } => {
                 "exporting a place card"
-            }
+            },
             Action::BeginOfferPlacePrekey
             | Action::OfferPlacePrekey { .. }
             | Action::OfferPlacePrekeyForCard { .. } => "offering a place pre-key",
@@ -340,7 +344,7 @@ pub fn emit_allowed(
             | Action::MarkFocusedFeedEntryRead => "feed subscription management",
             Action::ChooseKnotDocumentFile { .. } | Action::SummonContributedPane { .. } => {
                 "local source admission"
-            }
+            },
             _ => "gate management",
         };
         return Err(format!(
@@ -472,7 +476,7 @@ pub fn decode_envelope(name: &str, payload: &str) -> Result<Action, EnvelopeErro
         "new-session" => Action::NewSession,
         "switch-session" => {
             Action::SwitchSession(crate::panes::SessionId::from_uuid(id(payload, "id")?))
-        }
+        },
         "close-session" => Action::CloseSession,
         "leave-place" => Action::LeavePlace,
         "reconnect-place" => Action::ReconnectPlace,
@@ -483,7 +487,7 @@ pub fn decode_envelope(name: &str, payload: &str) -> Result<Action, EnvelopeErro
         "empty-recycle-bin" => Action::EmptyRecycleBin,
         "recover-session" => {
             Action::RecoverSession(crate::panes::SessionId::from_uuid(id(payload, "id")?))
-        }
+        },
         // host-only (decodable so the DENIAL is exact and attributable)
         "install-denizen" => Action::InstallDenizen {
             path: string(payload, "path")?,
@@ -568,6 +572,7 @@ mod tests {
             Action::RejoinPlace,
             Action::ShowPlaceStatus,
             Action::ConfirmInstallDenizen,
+            Action::OpenThemeWorkshop,
             Action::CancelInstallDenizen,
             Action::InstallDenizen {
                 path: "x.lua".into(),

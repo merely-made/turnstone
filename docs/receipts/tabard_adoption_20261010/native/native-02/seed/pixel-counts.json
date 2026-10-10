@@ -1,0 +1,128 @@
+[
+  {
+    "file": "app/app_authored_narrow.png",
+    "size": [
+      1280,
+      1560
+    ],
+    "distinct_rgba": 2398,
+    "dominant_rgba_count": [
+      [
+        17,
+        20,
+        26,
+        255
+      ],
+      984899
+    ],
+    "opaque_pixels": 1996800
+  },
+  {
+    "file": "app/app_dark.png",
+    "size": [
+      2360,
+      1600
+    ],
+    "distinct_rgba": 2398,
+    "dominant_rgba_count": [
+      [
+        17,
+        20,
+        26,
+        255
+      ],
+      1874379
+    ],
+    "opaque_pixels": 3776000
+  },
+  {
+    "file": "app/app_default.png",
+    "size": [
+      2360,
+      1600
+    ],
+    "distinct_rgba": 2305,
+    "dominant_rgba_count": [
+      [
+        17,
+        20,
+        26,
+        255
+      ],
+      1876555
+    ],
+    "opaque_pixels": 3776000
+  },
+  {
+    "file": "app/app_hc_dark.png",
+    "size": [
+      2360,
+      1600
+    ],
+    "distinct_rgba": 2688,
+    "dominant_rgba_count": [
+      [
+        17,
+        20,
+        26,
+        255
+      ],
+      1874379
+    ],
+    "opaque_pixels": 3776000
+  },
+  {
+    "file": "app/app_hc_light.png",
+    "size": [
+      2360,
+      1600
+    ],
+    "distinct_rgba": 2710,
+    "dominant_rgba_count": [
+      [
+        17,
+        20,
+        26,
+        255
+      ],
+      1874379
+    ],
+    "opaque_pixels": 3776000
+  },
+  {
+    "file": "app/app_light.png",
+    "size": [
+      2360,
+      1600
+    ],
+    "distinct_rgba": 2621,
+    "dominant_rgba_count": [
+      [
+        17,
+        20,
+        26,
+        255
+      ],
+      1874379
+    ],
+    "opaque_pixels": 3776000
+  },
+  {
+    "file": "app/app_saved_unselected.png",
+    "size": [
+      2360,
+      1600
+    ],
+    "distinct_rgba": 2491,
+    "dominant_rgba_count": [
+      [
+        17,
+        20,
+        26,
+        255
+      ],
+      1874379
+    ],
+    "opaque_pixels": 3776000
+  }
+]

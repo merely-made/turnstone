@@ -1,0 +1,165 @@
+2026-10-10T08:48:13.408897Z  INFO turnstone::launch: turnstone starting
+2026-10-10T08:48:13.481087Z  WARN turnstone::identity: personae vault unavailable; falling back to the unsealed profile seed err=identity backend error: no OS auto-unlock backend on this platform yet; set PERSONAE_PASSPHRASE to use the portable passphrase vault instead
+2026-10-10T08:48:13.726926Z  INFO turnstone::app::session_lifecycle: no session graph; starting on the sample graph
+2026-10-10T08:48:14.953436Z  INFO actor{actor="actor"}: armillary: actor started actor="actor"
+2026-10-10T08:48:14.953442Z  INFO actor{actor="actor"}: armillary: actor started actor="actor"
+2026-10-10T08:48:14.953697Z  INFO fjall::keyspace: Opening keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-03/turnstone-profile/cookies"
+2026-10-10T08:48:15.174675Z  INFO actor{actor="actor"}: armillary: actor started actor="actor"
+2026-10-10T08:48:15.174857Z  INFO actor{actor="download-custody"}: armillary: actor started actor="download-custody"
+2026-10-10T08:48:15.174885Z  INFO actor{actor="recycle-bin"}: armillary: actor started actor="recycle-bin"
+2026-10-10T08:48:15.174959Z  INFO actor{actor="trail-memory"}: armillary: actor started actor="trail-memory"
+2026-10-10T08:48:15.175004Z  INFO actor{actor="turnstone-place"}: armillary: actor started actor="turnstone-place"
+2026-10-10T08:48:15.175167Z  INFO actor{actor="recycle-bin"}: fjall::keyspace: Opening keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-03/turnstone-profile/sessions/e8b22fd1-32ab-4c23-9015-1d5acb3eb87f/bin"
+2026-10-10T08:48:15.175202Z  INFO actor{actor="trail-memory"}: fjall::keyspace: Opening keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-03/turnstone-profile/sessions/e8b22fd1-32ab-4c23-9015-1d5acb3eb87f/memory"
+2026-10-10T08:48:15.199151Z  INFO swarm_discovery::sender: no addresses for peer, not announcing
+2026-10-10T08:48:15.215862Z  INFO swarm_discovery::sender: no addresses for peer, not announcing
+2026-10-10T08:48:15.279549Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-10T08:48:15.563558Z  INFO vello::wgpu_engine: Initialising shader modules in parallel using 14 threads
+2026-10-10T08:48:15.979405Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:15.991638Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:16.694253Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:16.699652Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:17.429284Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:17.482186Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:17.520366Z  INFO actor{actor="actor"}: armillary: actor started actor="actor"
+2026-10-10T08:48:18.191576Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:18.229205Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+[genet-render-host] surface acquire skipped: Occluded
+[genet-render-host] surface acquire skipped: Occluded
+[genet-render-host] surface acquire skipped: Occluded
+2026-10-10T08:48:18.943374Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:18.984259Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:19.690455Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:19.738834Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:20.053667Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=12
+2026-10-10T08:48:20.490655Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:20.494738Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+[cambium-winit] window-frame backend=macos policy=App decorated=true transparent=false
+2026-10-10T08:48:21.210169Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:21.235631Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-winit] accessibility Installed, 195 nodes projected
+[cambium-host] initial reveal macos app_active=true app_hidden=false policy=NSApplicationActivationPolicy(0) launched=true window_visible=true key=true can_key=true active_space=true occlusion=NSWindowOcclusionState(8192) frame=CGRect { origin: CGPoint { x: 690.0, y: 320.0 }, size: CGSize { width: 1180.0, height: 800.0 } }
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw macos app_active=true app_hidden=false policy=NSApplicationActivationPolicy(0) launched=true window_visible=true key=true can_key=true active_space=true occlusion=NSWindowOcclusionState(8192) frame=CGRect { origin: CGPoint { x: 690.0, y: 320.0 }, size: CGSize { width: 1180.0, height: 800.0 } }
+[cambium-host] unpresented redraw visible=Some(true) focused=true minimized=Some(false)
+2026-10-10T08:48:21.978514Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:22.028410Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:22.764377Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:22.789752Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:23.493380Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:23.520755Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:24.272354Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:24.322058Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:25.066653Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:25.090039Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:25.820072Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:25.822805Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:26.559640Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:26.608781Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:27.323196Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:27.344965Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:28.107700Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:28.126052Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:28.857798Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:28.906941Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:29.678846Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:29.712848Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:30.424507Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:30.463384Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:31.176359Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:31.199738Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:31.918956Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:31.951317Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:32.708875Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:32.750342Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:36.151547Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:36.181833Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:36.886625Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:36.924545Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:37.636730Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:37.664113Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:38.371812Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:38.385247Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:39.125983Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:39.156255Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:39.904260Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:39.953350Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:40.716106Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:40.735582Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:41.489778Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:41.502163Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:42.254939Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:42.299566Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:43.007231Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:43.011401Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:43.767552Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:43.813560Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:44.569562Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:44.595752Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:45.351381Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:45.401851Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:46.145311Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:46.165742Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:46.927961Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:46.929421Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:47.677328Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:47.680057Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:48.423342Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:48.462735Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:49.209339Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:49.234697Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:49.981233Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:50.031949Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:50.739833Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:50.749603Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:51.507260Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:51.517287Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:52.272972Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:52.288353Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:53.037093Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:53.082491Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:53.815371Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:53.840881Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:54.566289Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:54.597049Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:55.336775Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:55.380706Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw macos app_active=true app_hidden=false policy=NSApplicationActivationPolicy(0) launched=true window_visible=true key=true can_key=true active_space=true occlusion=NSWindowOcclusionState(8192) frame=CGRect { origin: CGPoint { x: 690.0, y: 320.0 }, size: CGSize { width: 1180.0, height: 800.0 } }
+[cambium-host] unpresented redraw visible=Some(true) focused=true minimized=Some(false)
+turnstone-theme: FAIL: native presentation stalled for 10000 ms (2 redraws, 0 presented frames)
+turnstone-theme: RESULT fail (0 frames, 0 captures)
+2026-10-10T08:48:56.093391Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:56.118814Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:56.576811Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=12
+2026-10-10T08:48:56.833966Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:56.876944Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:57.636812Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:57.649153Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:58.092068Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=12
+2026-10-10T08:48:58.403566Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:58.447870Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:59.193365Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:59.203723Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=12
+2026-10-10T08:48:59.208972Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:59.923741Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:48:59.944651Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:49:00.186212Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=12
+2026-10-10T08:49:00.673185Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:49:00.690535Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:49:01.172436Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=12
+2026-10-10T08:49:01.401997Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:49:01.406058Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:49:02.133485Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:49:02.169362Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:49:02.521228Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=12
+2026-10-10T08:49:02.904671Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:49:02.941028Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T08:49:03.191109Z  INFO actor{actor="actor"}: armillary: actor finished actor="actor" lifetime_ms=45671
+2026-10-10T08:49:03.193376Z  INFO actor{actor="actor"}: armillary: actor finished actor="actor" lifetime_ms=48019
+2026-10-10T08:49:03.323305Z  INFO actor{actor="trail-memory"}: armillary: actor finished actor="trail-memory" lifetime_ms=48149
+2026-10-10T08:49:03.323322Z  INFO actor{actor="download-custody"}: armillary: actor finished actor="download-custody" lifetime_ms=48149
+2026-10-10T08:49:03.323350Z  INFO actor{actor="turnstone-place"}: armillary: actor finished actor="turnstone-place" lifetime_ms=48149
+2026-10-10T08:49:03.324422Z  INFO actor{actor="actor"}: armillary: actor finished actor="actor" lifetime_ms=48372
+2026-10-10T08:49:03.324435Z  INFO actor{actor="actor"}: armillary: actor finished actor="actor" lifetime_ms=48372

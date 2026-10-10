@@ -1,0 +1,65 @@
+{
+  "method": "PIL RGBA original PNG ROI counts and exact stable parent pixel scan, after owned native exit",
+  "preview": {
+    "workshop_same_id.png": {
+      "roi": [
+        660,
+        330,
+        2290,
+        968
+      ],
+      "distinct_rgba": 1863,
+      "edited_background_rgba": [
+        52,
+        34,
+        20,
+        255
+      ],
+      "edited_background_pixels": 244036
+    },
+    "workshop_same_id_narrow.png": {
+      "roi": [
+        50,
+        850,
+        1220,
+        1480
+      ],
+      "distinct_rgba": 1877,
+      "edited_background_rgba": [
+        52,
+        34,
+        20,
+        255
+      ],
+      "edited_background_pixels": 191508
+    }
+  },
+  "parent_probe": "(width-40,height//2)",
+  "parent_pixels": {
+    "app_before_same_id_save.png": [
+      20,
+      34,
+      56,
+      255
+    ],
+    "app_same_id_saved_unapplied.png": [
+      20,
+      34,
+      56,
+      255
+    ],
+    "app_same_id_applied.png": [
+      52,
+      34,
+      20,
+      255
+    ],
+    "app_same_id_narrow.png": [
+      52,
+      34,
+      20,
+      255
+    ]
+  },
+  "visually_inspected_originals": 6
+}

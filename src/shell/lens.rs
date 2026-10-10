@@ -11,7 +11,7 @@
 //! retained runners and their identity. Arrangement rides the SESSION, so
 //! adopting a session closes these and reopens that session's own.
 
-use super::NodeSessions;
+use super::{NodeSessions, NodeSurfaces};
 use std::sync::Arc;
 
 use genet_winit_host::SurfaceHost;
@@ -163,7 +163,7 @@ impl Shell {
                 if matches!(content, PaneContent::Orrery) {
                     (SurfaceKind::Graph(*id), *rect)
                 } else if let PaneContent::Tile(m) = content
-                    && self.content_sessions.contains_key(&m)
+                    && self.content_sessions.has_document(&m)
                 {
                     // A torn-out tile: the pinned pane composites its live
                     // session as this window's content surface.
@@ -203,7 +203,7 @@ impl Shell {
                     .filter_map(|c| {
                         let m = c.active_member()?;
                         self.content_sessions
-                            .contains_key(&m)
+                            .has_document(&m)
                             .then(|| (m, c.body()))
                     })
                     .collect()
@@ -218,7 +218,7 @@ impl Shell {
                 .and_then(|workbench| workbench.to_arrangement().1);
             for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), rect).cells {
                 if let Some(node) = cell.active_member()
-                    && self.content_sessions.contains_key(&node)
+                    && self.content_sessions.has_document(&node)
                 {
                     appearance_roles.push((
                         node,
@@ -230,7 +230,7 @@ impl Shell {
         }
         appearance_roles.extend(pane_rects.iter().filter_map(|(pane, rect)| {
             match self.lens_pane_content(ordinal, *pane) {
-                Some(PaneContent::Tile(node)) if self.content_sessions.contains_key(&node) => {
+                Some(PaneContent::Tile(node)) if self.content_sessions.has_document(&node) => {
                     Some((node, 0x1000_0000_0000_0000 | pane.0, *rect))
                 }
                 _ => None,
@@ -238,7 +238,7 @@ impl Shell {
         }));
         appearance_roles.extend(float_rects.iter().filter_map(|(pane, rect)| {
             match self.lens_pane_content(ordinal, *pane) {
-                Some(PaneContent::Tile(node)) if self.content_sessions.contains_key(&node) => {
+                Some(PaneContent::Tile(node)) if self.content_sessions.has_document(&node) => {
                     Some((node, 0x1000_0000_0000_0000 | pane.0, *rect))
                 }
                 _ => None,
@@ -248,7 +248,7 @@ impl Shell {
             let content = self.lens_pane_content(ordinal, id)?;
             let kind = match content {
                 PaneContent::Orrery => SurfaceKind::Graph(id),
-                PaneContent::Tile(member) if self.content_sessions.contains_key(&member) => {
+                PaneContent::Tile(member) if self.content_sessions.has_document(&member) => {
                     SurfaceKind::Content(member)
                 }
                 _ => SurfaceKind::Pane(id),
@@ -303,19 +303,10 @@ impl Shell {
         if surfaces.is_empty() {
             return;
         }
+        // Visibility includes every open window. Each render invocation pumps
+        // a retained document once; separate window events remain separate polls.
+        let mut animating = self.pump_visible_documents();
         // Pass 1 (mutable): produce each surface's scene at its rect size.
-        // Sessions pump here too (the bug-#2 discipline): a lens hosting the
-        // workbench must keep its tiles' clocks honest even while the primary
-        // idles. The pump clock is shared and monotonic, so double-pumping in
-        // a frame where both windows render is a no-op.
-        let now_ms = self.epoch.elapsed().as_secs_f64() * 1000.0;
-        let mut animating = false;
-        for session in self.content_sessions.sessions_mut() {
-            session.pump(now_ms);
-            if !session.settled() {
-                animating = true;
-            }
-        }
         let mut scenes: Vec<PlannedScene> = Vec::with_capacity(surfaces.len());
         for surface in &surfaces {
             let rect = surface.rect;
@@ -524,7 +515,26 @@ impl Shell {
                         }
                         crate::surface::SurfaceKind::Content(node) => {
                             self.app.focus = crate::surface::FocusTarget::Content { node, appearance: hit.id };
-                            if let Some(outcome) = self.with_content_appearance(node, hit.id, |session| session.click_at(hit.local.0, hit.local.1)) {
+                            if self.controller_drives(&node) {
+                                // A lens window takes a whole click per press, as
+                                // before: press and release at one point.
+                                let modifiers = self.session_modifiers();
+                                for state in [
+                                    inker::SessionButtonState::Pressed,
+                                    inker::SessionButtonState::Released,
+                                ] {
+                                    self.document_input(
+                                        node,
+                                        inker::SessionInput::PointerButton {
+                                            x: hit.local.0,
+                                            y: hit.local.1,
+                                            button: inker::SessionPointerButton::Primary,
+                                            state,
+                                            modifiers,
+                                        },
+                                    );
+                                }
+                            } else if let Some(outcome) = self.with_content_appearance(node, hit.id, |session| session.click_at(hit.local.0, hit.local.1)) {
                                 match outcome {
                                     SessionClick::Navigate(url) => {
                                         let url = super::content_link_target(&self.app, node, &url);

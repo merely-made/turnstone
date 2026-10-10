@@ -23,6 +23,71 @@ use mere::kernel::graph::Graph;
 use pandect::{GraphSessionManifest, ManifestStore, session_graph_store};
 use sceno::Score;
 
+/// Copy the displayed component across Surface and Resource relations. The
+/// supplier's older cross-graph helper walks only raw Surface edges. Fresh
+/// Surface identities retain copy provenance; Resource identities, records and
+/// held assertions travel verbatim within this component. The result is quiet.
+pub(crate) fn copy_session_component(
+    source: &Graph,
+    seed: uuid::Uuid,
+    source_graph: Option<String>,
+) -> Result<(Graph, mere::kernel::graph::ComponentCopy), String> {
+    use std::collections::{HashMap, HashSet};
+    let members = source.component_members(seed, &[]);
+    let mut graph = Graph::new();
+    let mut copy = mere::kernel::graph::ComponentCopy::default();
+    let mut remap = HashMap::new();
+    let mut resources = HashSet::new();
+    for member in members {
+        let (key, node) = source.get_node_by_id(member).ok_or("component member disappeared")?;
+        if let Some(resource) = source.shown_resource_id(key) {
+            resources.insert(resource);
+        }
+        let copied = graph.copy_node_from_xy(node, source_graph.clone(), 0.0, 0.0);
+        let id = graph.get_node(copied).ok_or("copied member disappeared")?.id;
+        copy.new_keys.push(copied);
+        copy.id_remap.push((member, id));
+        remap.insert(member.to_string(), id.to_string());
+    }
+    // Preserve unshown Resource intermediates and tag concepts too. This is
+    // graph closure, with no fetches or changes to Keep/subscription policy.
+    let mut neighbors: HashMap<uuid::Uuid, Vec<uuid::Uuid>> = HashMap::new();
+    for (from, to, _) in source.resource_edges() {
+        neighbors.entry(from.id()).or_default().push(to.id());
+        neighbors.entry(to.id()).or_default().push(from.id());
+    }
+    let mut pending: Vec<_> = resources.iter().copied().collect();
+    while let Some(resource) = pending.pop() {
+        for neighbor in neighbors.get(&resource).into_iter().flatten() {
+            if resources.insert(*neighbor) {
+                pending.push(*neighbor);
+            }
+        }
+    }
+    let original = source.to_snapshot();
+    let mut snapshot = graph.to_snapshot();
+    snapshot.edges = original.edges.into_iter().filter_map(|mut edge| {
+        edge.from_node_id = remap.get(&edge.from_node_id)?.clone();
+        edge.to_node_id = remap.get(&edge.to_node_id)?.clone();
+        Some(edge)
+    }).collect();
+    snapshot.resources = original.resources.into_iter().filter(|record| {
+        resources.contains(&chartulary::resource_id_from_canonical_iri(&record.canonical_iri))
+    }).collect();
+    snapshot.resource_edges = original.resource_edges.into_iter().filter(|edge| {
+        edge.from_node_id.parse().is_ok_and(|id| resources.contains(&id))
+            && edge.to_node_id.parse().is_ok_and(|id| resources.contains(&id))
+    }).collect();
+    snapshot.shown_resources = original.shown_resources.into_iter().filter_map(|mut shown| {
+        shown.surface_id = remap.get(&shown.surface_id)?.clone();
+        Some(shown)
+    }).collect();
+    let facets = graph.facets().clone();
+    let mut graph = Graph::try_from_recorded_snapshot(&snapshot).map_err(|error| error.to_string())?;
+    graph.overlay_facets(facets);
+    Ok((graph, copy))
+}
+
 /// The per-user data root (`<data_dir>/turnstone`). A `TURNSTONE_ROOT` override
 /// points the whole root at a scratch profile, so a headed-verification run
 /// (or any throwaway session) isolates from the real per-user data dir (the
@@ -457,40 +522,11 @@ pub struct ViewIntentV1 {
     pub physics_depth_source: Option<String>,
     /// The person's command menu (Scenograph editor plan SE28 to SE31):
     /// commands kept beyond the defaults, defaults dropped, and the recent
-    /// ones. View state like the rest of this sidecar, never graph truth.
+    /// ones, stored as Cambium's own choices (SE45), so the JSON is the one
+    /// every host writes. View state like the rest of this sidecar, never
+    /// graph truth.
     #[serde(default)]
-    pub command_menu: CommandMenuV1,
-}
-
-/// The stored half of `cambium::CommandChoices`; ids are command labels.
-#[derive(Debug, Default, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct CommandMenuV1 {
-    #[serde(default)]
-    pub added: Vec<String>,
-    #[serde(default)]
-    pub removed: Vec<String>,
-    #[serde(default)]
-    pub recent: Vec<String>,
-}
-
-impl From<&cambium::CommandChoices> for CommandMenuV1 {
-    fn from(choices: &cambium::CommandChoices) -> Self {
-        Self {
-            added: choices.added.clone(),
-            removed: choices.removed.clone(),
-            recent: choices.recent.clone(),
-        }
-    }
-}
-
-impl From<CommandMenuV1> for cambium::CommandChoices {
-    fn from(menu: CommandMenuV1) -> Self {
-        Self {
-            added: menu.added,
-            removed: menu.removed,
-            recent: menu.recent,
-        }
-    }
+    pub command_menu: cambium::CommandChoices,
 }
 
 pub fn view_intent_path(session_dir: &Path) -> PathBuf {
@@ -579,47 +615,58 @@ pub fn migrate_flat_layout(data_root: &Path, store: &mut ManifestStore) -> Optio
     Some(id)
 }
 
-/// Restore the persisted session graph, if one exists. Logs and returns
-/// `None` on a load failure (the host starts fresh rather than dying on a
-/// corrupt file).
-pub fn load_session_graph(data_root: &Path) -> Option<Graph> {
+/// A loaded graph carries only the placement declared at its input boundary.
+pub(crate) struct LoadedSessionGraph {
+    pub graph: Graph,
+    pub placement: Option<pandect::graph_placement::PlacementProfile>,
+}
+
+/// Missing inputs are fresh; corrupt or unreadable inputs refuse persistence.
+/// Read canonical facets before any migration write or image deposition.
+pub(crate) fn try_load_session_graph(data_root: &Path) -> Result<Option<LoadedSessionGraph>, String> {
+    // Pandect's compatibility reader uses exists(); distinguish inspection
+    // failure here before it can silently treat an unreadable path as absent.
+    crate::session_persistence::require_complete_file(&pandect::node_facets_path(data_root))
+        .map_err(|error| format!("canonical facets could not be inspected: {error}"))?;
+    let canonical = pandect::load_node_facets(data_root)
+        .map_err(|error| format!("canonical facets could not be read: {error}"))?
+        .unwrap_or_default();
     let graph_file = data_root.join(session_graph_store::GRAPH_FILE);
-    match session_graph_store::load_snapshot(&graph_file) {
-        Ok(Some(mut snapshot)) => {
-            let legacy_node_facets = snapshot.legacy_node_facet_count();
-            // Externalize any pre-phase-2 inline imagery BEFORE materializing:
-            // conversion keeps references only, so pixels left here would be
-            // dropped silently. One-time; a snapshot already externalized has
-            // nothing to do.
-            let migrated = externalize_legacy_images(&mut snapshot, data_root);
-            let mut graph = mere::kernel::graph::Graph::from_snapshot(&snapshot);
-            if legacy_node_facets > 0 {
-                // Existing facets are canonical and therefore win over the
-                // one-time import from legacy graph columns. Persist the merged
-                // store first, then strip those columns from graph.json.
-                graph.overlay_facets(load_node_facets(data_root).unwrap_or_default());
-                save_node_facets(data_root, graph.facets());
-                save_session_graph(data_root, &graph);
-                tracing::info!(
-                    legacy_node_facets,
-                    "migrated legacy node metadata into facets"
-                );
-            } else if migrated > 0 {
-                // Re-save immediately so the pixels leave `graph.json` even if
-                // the session never saves again.
-                save_session_graph(data_root, &graph);
-            }
-            if migrated > 0 {
-                tracing::info!(migrated, "externalized legacy inline node imagery");
-            }
-            tracing::info!(path = ?graph_file, "session graph restored");
-            Some(graph)
-        }
-        Ok(None) => None,
-        Err(err) => {
-            tracing::warn!(%err, path = ?graph_file, "failed to load the session graph; starting fresh");
-            None
-        }
+    crate::session_persistence::require_complete_file(&graph_file)
+        .map_err(|error| format!("session graph replacement is incomplete: {error}"))?;
+    let Some(mut input) = session_graph_store::load_profiled_snapshot(&graph_file)
+        .map_err(|error| format!("session graph could not be read: {error}"))? else {
+        return Ok(None);
+    };
+    let placement = input.placement;
+    let snapshot = &mut input.snapshot;
+    // Validate the untouched source before stripping old controls or depositing blobs.
+    pandect::graph_placement::materialize_snapshot(snapshot, placement)?;
+    let legacy_node_facets = snapshot.legacy_node_facet_count();
+    let legacy_controls = crate::surface_controls::extract_legacy(snapshot);
+    let controls_migrated = !legacy_controls.is_empty();
+    let migrated = externalize_legacy_images(snapshot, data_root)
+        .map_err(|error| format!("session imagery could not be migrated: {error}"))?;
+    let mut graph = pandect::graph_placement::materialize_snapshot(snapshot, placement)?;
+    graph.overlay_facets(legacy_controls);
+    graph.overlay_facets(canonical);
+    if legacy_node_facets > 0 || controls_migrated || migrated > 0 {
+        // Evidence first, and propagate failure so the display runtime cannot
+        // overwrite the source later through an automatic ordinary save.
+        pandect::save_node_facets(data_root, graph.facets())
+            .map_err(|error| format!("migration facets could not be persisted: {error}"))?;
+        session_graph_store::save_profiled(&graph_file, &graph, placement)
+            .map_err(|error| format!("migrated graph could not be persisted: {error}"))?;
+    }
+    Ok(Some(LoadedSessionGraph { graph, placement }))
+}
+
+/// Read-only compatibility for consumers that need a graph without adopting
+/// session persistence authority. The application uses the fallible loader.
+pub fn load_session_graph(data_root: &Path) -> Option<Graph> {
+    match try_load_session_graph(data_root) {
+        Ok(input) => input.map(|input| input.graph),
+        Err(error) => { tracing::warn!(%error, "session graph load refused"); None }
     }
 }
 
@@ -636,7 +683,7 @@ pub fn load_session_graph(data_root: &Path) -> Option<Graph> {
 fn externalize_legacy_images(
     snapshot: &mut mere::kernel::persistence::GraphSnapshot,
     data_root: &Path,
-) -> usize {
+) -> std::io::Result<usize> {
     use mere::kernel::types::{ImageRef, ImageRole};
 
     let mut written = 0usize;
@@ -648,7 +695,7 @@ fn externalize_legacy_images(
                 node.legacy_thumbnail_width,
                 node.legacy_thumbnail_height,
             );
-            save_image_blob(data_root, &image.hex(), &png);
+            try_save_image_blob(data_root, &image.hex(), &png)?;
             node.images.insert(ImageRole::Preview, image);
             node.legacy_thumbnail_width = 0;
             node.legacy_thumbnail_height = 0;
@@ -667,7 +714,7 @@ fn externalize_legacy_images(
                 node.legacy_favicon_width,
                 node.legacy_favicon_height,
             );
-            save_image_blob(data_root, &image.hex(), &png);
+            try_save_image_blob(data_root, &image.hex(), &png)?;
             node.images.insert(ImageRole::Favicon, image);
             node.legacy_favicon_width = 0;
             node.legacy_favicon_height = 0;
@@ -679,7 +726,7 @@ fn externalize_legacy_images(
         0,
         "every legacy image must be externalized before the snapshot materializes"
     );
-    written
+    Ok(written)
 }
 
 /// Encode decoded straight-alpha RGBA8 pixels into the one durable image
@@ -723,20 +770,21 @@ fn images_dir(data_root: &Path) -> std::path::PathBuf {
 /// Persist one image blob under its digest hex. Best-effort, like the graph:
 /// a lost favicon re-fetches, so a write failure is logged, not fatal.
 pub fn save_image_blob(data_root: &Path, hex: &str, bytes: &[u8]) {
+    if let Err(error) = try_save_image_blob(data_root, hex, bytes) {
+        tracing::warn!(%error, "failed to persist an image blob");
+    }
+}
+
+fn try_save_image_blob(data_root: &Path, hex: &str, bytes: &[u8]) -> std::io::Result<()> {
     let dir = images_dir(data_root);
-    if let Err(err) = std::fs::create_dir_all(&dir) {
-        tracing::warn!(%err, path = ?dir, "failed to create the image directory");
-        return;
-    }
+    std::fs::create_dir_all(&dir)?;
     let path = dir.join(hex);
-    // Content-addressed: identical bytes are the same file, so an existing
-    // blob needs no rewrite.
-    if path.exists() {
-        return;
+    if path.try_exists()? {
+        if std::fs::read(&path)? == bytes { return Ok(()); }
+        return Err(std::io::Error::new(std::io::ErrorKind::InvalidData,
+            "existing content-addressed image blob has different bytes"));
     }
-    if let Err(err) = std::fs::write(&path, bytes) {
-        tracing::warn!(%err, path = ?path, "failed to persist an image blob");
-    }
+    std::fs::write(path, bytes)
 }
 
 /// Read one image blob back, or `None` when it is absent (swept, not yet
@@ -938,6 +986,143 @@ mod tests {
     use super::*;
     use sceno::{Arrangement, Spiral};
 
+    // Future-supplier controls: these require the coordinated immutable
+    // resource supplier. They cover only load and migration re-save placement.
+    fn recorded_session_fixture() -> Graph {
+        use mere::kernel::graph::apply::add_node;
+        let mut graph = Graph::new();
+        add_node(&mut graph, None, "https://placement.test/dir/page".into(), Default::default());
+        add_node(&mut graph, None, "https://placement.test/dir/".into(), Default::default());
+        let mut snapshot = graph.to_snapshot();
+        snapshot.edges.clear();
+        snapshot.resource_edges.clear();
+        let recorded = Graph::try_from_recorded_snapshot(&snapshot).unwrap();
+        let unqualified = Graph::try_from_snapshot(&snapshot).unwrap().to_snapshot();
+        assert!(unqualified.edges.len() + unqualified.resource_edges.len() > 0,
+            "the deliberately broken unprofiled load re-derives URL containment");
+        recorded
+    }
+
+    // Legacy pixels are deserialize-only fields. Build their historical wire
+    // form explicitly; serializing PersistedNode intentionally omits them.
+    fn with_inline_thumbnail(mut wire: serde_json::Value) -> Vec<u8> {
+        wire["nodes"][0]["thumbnail_png"] = serde_json::json!(encode_rgba_png(&[1, 2, 3, 255], 1, 1).unwrap());
+        wire["nodes"][0]["thumbnail_width"] = serde_json::json!(1);
+        wire["nodes"][0]["thumbnail_height"] = serde_json::json!(1);
+        serde_json::to_vec_pretty(&wire).unwrap()
+    }
+
+    #[test]
+    fn session_profile_corrupt_facets_preserve_graph_labels_and_deposit_no_images() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join(session_graph_store::GRAPH_FILE);
+        let mut snapshot = recorded_session_fixture().to_snapshot();
+        snapshot.nodes[0].tags = vec!["keep".into(), "Paper".into()];
+        let bytes = with_inline_thumbnail(serde_json::to_value(&snapshot).unwrap());
+        std::fs::write(&path, &bytes).unwrap();
+        let facets = pandect::node_facets_path(root.path());
+        std::fs::write(&facets, b"{bad facets").unwrap();
+        assert!(try_load_session_graph(root.path()).is_err());
+        assert_eq!(std::fs::read(&path).unwrap(), bytes);
+        assert_eq!(std::fs::read(facets).unwrap(), b"{bad facets");
+        assert!(!root.path().join("images").exists());
+    }
+
+    #[test]
+    fn session_profile_migration_write_failure_preserves_raw_control_evidence() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join(session_graph_store::GRAPH_FILE);
+        let mut snapshot = recorded_session_fixture().to_snapshot();
+        snapshot.nodes[0].tags = vec!["keep".into(), "Paper".into()];
+        let bytes = serde_json::to_vec_pretty(&snapshot).unwrap();
+        std::fs::write(&path, &bytes).unwrap();
+        let blocked_tmp = pandect::node_facets_path(root.path()).with_extension("json.tmp");
+        std::fs::create_dir(&blocked_tmp).unwrap();
+        assert!(try_load_session_graph(root.path()).is_err());
+        assert_eq!(std::fs::read(&path).unwrap(), bytes);
+        std::fs::remove_dir(blocked_tmp).unwrap();
+        let input = try_load_session_graph(root.path()).unwrap().unwrap();
+        let first = uuid::Uuid::parse_str(&snapshot.nodes[0].node_id).unwrap();
+        assert!(crate::surface_controls::read(&input.graph, first, crate::surface_controls::Control::Keep));
+        let saved = session_graph_store::load_profiled_snapshot(&path).unwrap().unwrap();
+        assert_eq!(saved.placement, None);
+        assert!(saved.snapshot.nodes.iter().all(|node| !node.tags.iter().any(|tag| tag == "keep")));
+    }
+
+    #[test]
+    fn session_profile_recorded_load_and_migration_preserve_held_relations() {
+        use pandect::graph_placement::PlacementProfile;
+        use mere::kernel::types::ImageRole;
+        for image_migration in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let path = root.path().join(session_graph_store::GRAPH_FILE);
+            let graph = recorded_session_fixture();
+            session_graph_store::save_profiled(&path, &graph,
+                Some(PlacementProfile::RecordedStrataV1)).unwrap();
+            let mut input = session_graph_store::load_profiled_snapshot(&path).unwrap().unwrap();
+            let migrated_member = input.snapshot.nodes[0].node_id.clone();
+            let bytes = if image_migration {
+                with_inline_thumbnail(serde_json::to_value(&input).unwrap())
+            } else {
+                input.snapshot.nodes[0].is_pinned = true;
+                serde_json::to_vec_pretty(&input).unwrap()
+            };
+            std::fs::write(&path, bytes).unwrap();
+            let restored = load_session_graph(root.path()).expect("qualified recorded input");
+            let restored_snapshot = restored.to_snapshot();
+            assert!(restored_snapshot.edges.is_empty());
+            assert!(restored_snapshot.resource_edges.is_empty());
+            let saved = session_graph_store::load_profiled_snapshot(&path).unwrap().unwrap();
+            assert_eq!(saved.placement, Some(PlacementProfile::RecordedStrataV1));
+            assert_eq!(saved.snapshot.legacy_image_count(), 0);
+            assert_eq!(saved.snapshot.legacy_node_facet_count(), 0);
+            if image_migration {
+                let migrated = saved.snapshot.nodes.iter().find(|node| node.node_id == migrated_member).unwrap();
+                let image = migrated.images.get(&ImageRole::Preview)
+                    .expect("the migrated member retains its preview reference");
+                assert!(load_image_blob(root.path(), &image.hex()).is_some());
+            }
+            let reopened = load_session_graph(root.path()).unwrap().to_snapshot();
+            assert_eq!(reopened.edges, saved.snapshot.edges);
+            assert_eq!(reopened.resource_edges, saved.snapshot.resource_edges);
+        }
+    }
+
+    #[test]
+    fn session_profile_invalid_resource_and_declared_legacy_refuse_without_rewrite() {
+        use mere::kernel::persistence::PersistedShownResource;
+        use pandect::graph_placement::PlacementProfile;
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join(session_graph_store::GRAPH_FILE);
+        let mut invalid = recorded_session_fixture().to_snapshot();
+        invalid.shown_resources.push(PersistedShownResource {
+            surface_id: "not-a-uuid".into(), resource_id: uuid::Uuid::new_v4().to_string(),
+        });
+        std::fs::write(&path, with_inline_thumbnail(serde_json::to_value(&invalid).unwrap())).unwrap();
+        let original = std::fs::read(&path).unwrap();
+        assert!(load_session_graph(root.path()).is_none(), "invalid explicit resource data is fallible");
+        assert!(!root.path().join("images").exists(), "refused input deposits no migration blobs");
+        assert_eq!(std::fs::read(&path).unwrap(), original);
+        session_graph_store::save_profiled(&path, &Graph::new(),
+            Some(PlacementProfile::LegacySurfaceV1)).unwrap();
+        let original = std::fs::read(&path).unwrap();
+        assert!(load_session_graph(root.path()).is_none(), "declared legacy needs qualified replay");
+        assert_eq!(std::fs::read(&path).unwrap(), original);
+    }
+
+    #[test]
+    fn session_profile_absent_migration_does_not_mint_qualification() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join(session_graph_store::GRAPH_FILE);
+        let mut snapshot = recorded_session_fixture().to_snapshot();
+        snapshot.nodes[0].is_pinned = true;
+        std::fs::write(&path, serde_json::to_vec_pretty(&snapshot).unwrap()).unwrap();
+        assert!(load_session_graph(root.path()).is_some());
+        let saved = session_graph_store::load_profiled_snapshot(&path).unwrap().unwrap();
+        assert_eq!(saved.placement, None);
+        assert_eq!(saved.snapshot.legacy_node_facet_count(), 0);
+    }
+
     #[test]
     fn place_collection_sidecar_is_exact_and_refuses_corruption() {
         let root = tempfile::tempdir().unwrap();
@@ -1056,10 +1241,10 @@ mod tests {
     fn command_menu_rides_the_view_sidecar_and_old_sidecars_default_it() {
         let root = temp_root("command-menu");
         let intent = ViewIntentV1 {
-            command_menu: CommandMenuV1 {
+            command_menu: cambium::CommandChoices {
                 added: vec!["Reseed layout".into()],
-                removed: vec!["Fit view".into()],
-                recent: vec!["Back".into()],
+                removed: vec!["view:fit".into()],
+                recent: vec!["nav:back".into()],
             },
             ..ViewIntentV1::default()
         };
@@ -1069,8 +1254,19 @@ mod tests {
         // A sidecar written before the command menu existed still opens.
         std::fs::write(view_intent_path(&root), br#"{"layout_strategy":"spiral"}"#).unwrap();
         let older = load_view_intent(&root).expect("older sidecar loads");
-        assert_eq!(older.command_menu, CommandMenuV1::default());
+        assert_eq!(older.command_menu, cambium::CommandChoices::default());
         assert_eq!(older.layout_strategy.as_deref(), Some("spiral"));
+
+        // A sidecar from the label-keyed `CommandMenuV1` reads back with its
+        // fields intact: the JSON names did not change (SE45).
+        std::fs::write(
+            view_intent_path(&root),
+            br#"{"command_menu":{"added":["Reseed layout"],"removed":["Fit view"],"recent":[]}}"#,
+        )
+        .unwrap();
+        let labelled = load_view_intent(&root).expect("a label-keyed sidecar loads");
+        assert_eq!(labelled.command_menu.added, ["Reseed layout"]);
+        assert_eq!(labelled.command_menu.removed, ["Fit view"]);
     }
 
     #[test]
@@ -1116,7 +1312,7 @@ mod tests {
             physics_kind_source: Some("coloring".to_string()),
             physics_mass_source: Some("pagerank".to_string()),
             physics_depth_source: Some("layers".to_string()),
-            command_menu: CommandMenuV1::default(),
+            command_menu: cambium::CommandChoices::default(),
         };
         save_view_intent(&root, &intent);
         assert_eq!(load_view_intent(&root), Some(intent));

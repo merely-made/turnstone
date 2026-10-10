@@ -7,8 +7,9 @@
 //! Durable, graph-native feed subscriptions.
 //!
 //! A subscription belongs to a kept source node. The sidecar stores scheduling
-//! and duplicate-suppression state; source and entry identity, relations,
-//! titles, bodies, and unread tags remain ordinary graph truth.
+//! and duplicate-suppression state, including read state keyed by Surface ID.
+//! Host-owned Surface facets project those controls. Descriptive tags belong to
+//! the shown Resource independently of subscription and retention state.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::io;
@@ -381,7 +382,8 @@ impl FeedSubscriptions {
                     .entries
                     .iter()
                     .find(|(stored_identity, stored)| {
-                        stored.url == entry.url || stored_identity.as_str() == entry.url
+                        stored.guid.as_deref().is_none_or(str::is_empty)
+                            && stored_identity.as_str() == entry.url
                     })
                     .map(|(identity, _)| identity.clone())
                 && let Some(stored) = subscription.entries.remove(&old_identity)
@@ -389,7 +391,12 @@ impl FeedSubscriptions {
                 subscription.entries.insert(identity.clone(), stored);
             }
             match subscription.entries.get_mut(&identity) {
-                Some(stored) if stored.same_document(&entry) => {}
+                Some(stored) if stored.same_document(&entry) && stored.member.is_some() => {}
+                Some(stored) if stored.same_document(&entry) => {
+                    // The document is unchanged, but its placement is missing.
+                    // Repair that binding without changing its stored read status.
+                    merge.entries.push(EntryProjection { member: None, entry });
+                }
                 Some(stored) => {
                     stored.replace_document(&entry);
                     merge.entries.push(EntryProjection {
@@ -425,20 +432,25 @@ impl FeedSubscriptions {
         Some(merge)
     }
 
+    /// Compatibility for an unambiguous address. A URL cannot choose among
+    /// different GUID entries, even when they describe the same resource.
     pub fn bind_entry(&mut self, source: Uuid, url: &str, member: Uuid) {
-        if let Some(entry) = self
-            .subscriptions
-            .get_mut(&source)
-            .and_then(|subscription| {
-                subscription
-                    .entries
-                    .iter_mut()
-                    .find(|(identity, entry)| identity.as_str() == url || entry.url == url)
-                    .map(|(_, entry)| entry)
-            })
-        {
-            entry.member = Some(member);
+        let Some(subscription) = self.subscriptions.get_mut(&source) else { return; };
+        let identities: Vec<_> = subscription.entries.iter()
+            .filter(|(identity, entry)| identity.as_str() == url || entry.url == url)
+            .map(|(identity, _)| identity.clone()).collect();
+        if identities.len() == 1 {
+            subscription.entries.get_mut(&identities[0]).expect("selected entry").member = Some(member);
         }
+    }
+
+    /// Bind the exact entry that was projected, rather than the first URL match.
+    pub(crate) fn bind_projected_entry(&mut self, source: Uuid, entry: &FeedEntry, member: Uuid) -> bool {
+        let identity = entry_identity(entry);
+        let Some(stored) = self.subscriptions.get_mut(&source)
+            .and_then(|subscription| subscription.entries.get_mut(&identity)) else { return false; };
+        stored.member = Some(member);
+        true
     }
 
     /// The subscribed episode an address names: its own page, its bound
@@ -544,13 +556,27 @@ impl FeedSubscriptions {
                         graph
                             .get_node_by_id(*member)
                             .is_some_and(|(_, node)| node.url() == url)
-                    })
-                    .or_else(|| graph.get_node_by_url(url).map(|(_, node)| node.id));
-                if entry.member.is_none() {
-                    entry.unread = false;
-                }
+                    });
+                // Equal URLs do not prove placement identity; never adopt a sibling.
+                // Retain the sidecar's read status while this exact placement
+                // is absent. It is projected only after an explicit binding exists.
             }
         }
+    }
+
+    /// Projection for exactly one Surface. An old sidecar can explicitly bind
+    /// it in several feeds; unread stays true while any such binding is unread.
+    pub(crate) fn surface_flags(&self, member: Uuid) -> (bool, bool, bool) {
+        let source = self.subscriptions.contains_key(&member);
+        let mut entry_member = false;
+        let mut unread = false;
+        for entry in self.subscriptions.values().flat_map(|subscription| subscription.entries.values()) {
+            if entry.member == Some(member) {
+                entry_member = true;
+                unread |= entry.unread;
+            }
+        }
+        (source, entry_member, unread)
     }
 
     pub fn member_info(&self, member: Uuid) -> Option<FeedMemberInfo> {
@@ -920,6 +946,95 @@ mod tests {
     }
 
     #[test]
+    fn unchanged_unbound_entry_gets_an_explicit_view_without_adopting_a_sibling() {
+        let source = Uuid::new_v4();
+        let sibling = Uuid::new_v4();
+        let entry_view = Uuid::new_v4();
+        let source_url = "https://feed-repair.test/feed";
+        let entry_url = "https://feed-repair.test/entry";
+        let mut graph = mere::kernel::graph::Graph::new();
+        for (id, url) in [(source, source_url), (sibling, entry_url)] {
+            mere::kernel::graph::apply::add_node(&mut graph, Some(id), url.into(), Default::default());
+        }
+        let mut feeds = FeedSubscriptions::default();
+        feeds.subscribe(source, source_url.into(), servitor::Period::Hour);
+        let parsed = ParsedFeed { entries: vec![FeedEntry {
+            url: entry_url.into(), title: "Entry".into(), ..Default::default()
+        }], ..Default::default() };
+        feeds.merge(source, parsed.clone(), 1).unwrap();
+        feeds.bind_entry(source, entry_url, entry_view);
+        feeds.mark_read(entry_view);
+        // Reopen/reconcile refuses an arbitrary equal-URL sibling and retains
+        // the prior read status while there is no explicit view.
+        feeds.reconcile(&graph);
+        assert_eq!(feeds.surface_flags(sibling), (false, false, false));
+        let repaired = feeds.merge(source, parsed.clone(), 2).unwrap();
+        assert_eq!(repaired.entries.len(), 1, "unchanged content still needs an explicit view binding");
+        assert_eq!(repaired.entries[0].member, None);
+        feeds.bind_entry(source, entry_url, entry_view);
+        assert_eq!(feeds.surface_flags(entry_view), (false, true, false), "binding repair preserves read status");
+        assert!(feeds.merge(source, parsed.clone(), 3).unwrap().entries.is_empty());
+        // A changed document is new unread evidence, independently of repair.
+        let mut changed = parsed;
+        changed.entries[0].title = "Changed".into();
+        assert_eq!(feeds.merge(source, changed, 4).unwrap().entries.len(), 1);
+        assert_eq!(feeds.surface_flags(entry_view), (false, true, true));
+    }
+
+    #[test]
+    fn unread_entry_missing_binding_retains_status_through_restart_and_repair() {
+        let root = tempfile::tempdir().unwrap();
+        let source = Uuid::new_v4();
+        let entry = Uuid::new_v4();
+        let mut graph = mere::kernel::graph::Graph::new();
+        mere::kernel::graph::apply::add_node(&mut graph, Some(source),
+            "https://unread-repair.test/feed".into(), Default::default());
+        let parsed = ParsedFeed { entries: vec![FeedEntry {
+            url: "https://unread-repair.test/entry".into(), title: "Entry".into(), ..Default::default()
+        }], ..Default::default() };
+        for unread in [false, true] {
+            let mut feeds = FeedSubscriptions::default();
+            feeds.subscribe(source, "https://unread-repair.test/feed".into(), servitor::Period::Hour);
+            feeds.merge(source, parsed.clone(), 1).unwrap();
+            feeds.bind_entry(source, "https://unread-repair.test/entry", entry);
+            if !unread { feeds.mark_read(entry); }
+            feeds.save(root.path()).unwrap();
+            let mut feeds = FeedSubscriptions::load(root.path());
+            feeds.reconcile(&graph); // The exact bound view is absent.
+            assert_eq!(feeds.unread_count(), usize::from(unread));
+            let repair = feeds.merge(source, parsed.clone(), 2).unwrap();
+            assert_eq!(repair.entries.len(), 1);
+            let fresh = Uuid::new_v4();
+            feeds.bind_entry(source, &repair.entries[0].entry.url, fresh);
+            assert_eq!(feeds.surface_flags(fresh), (false, true, unread));
+            assert!(feeds.merge(source, parsed.clone(), 3).unwrap().entries.is_empty());
+        }
+    }
+
+    #[test]
+    fn separate_guid_entries_with_one_url_keep_distinct_bindings() {
+        let source = Uuid::new_v4();
+        let mut feeds = FeedSubscriptions::default();
+        feeds.subscribe(source, "https://guid-binding.test/feed".into(), servitor::Period::Hour);
+        let parsed = ParsedFeed { entries: ["left", "right"].into_iter().map(|guid| FeedEntry {
+            guid: Some(guid.into()), url: "https://guid-binding.test/shared".into(),
+            title: guid.into(), ..Default::default()
+        }).collect(), ..Default::default() };
+        let projections = feeds.merge(source, parsed.clone(), 1).unwrap();
+        let members = [Uuid::new_v4(), Uuid::new_v4()];
+        for (projection, member) in projections.entries.iter().zip(members) {
+            assert!(feeds.bind_projected_entry(source, &projection.entry, member));
+        }
+        assert!(feeds.merge(source, parsed.clone(), 2).unwrap().entries.is_empty(),
+            "both explicit GUID placements must remain bound");
+        assert_eq!(feeds.entry_members(source).len(), 2);
+        for member in members { assert_eq!(feeds.surface_flags(member), (false, true, true)); }
+        // A URL alone must not choose between these two entries.
+        feeds.bind_entry(source, "https://guid-binding.test/shared", Uuid::new_v4());
+        for member in members { assert_eq!(feeds.surface_flags(member), (false, true, true)); }
+    }
+
+    #[test]
     fn schedule_survives_restart_and_suppresses_unchanged_entries() {
         let dir = tempfile::tempdir().unwrap();
         let source = Uuid::new_v4();
@@ -943,6 +1058,7 @@ mod tests {
         };
         let merge = feeds.merge(source, parsed.clone(), 10).unwrap();
         assert_eq!(merge.entries.len(), 1);
+        feeds.bind_entry(source, "gemini://capsule.test/one", Uuid::new_v4());
         assert!(feeds.merge(source, parsed, 20).unwrap().entries.is_empty());
         feeds.save(dir.path()).unwrap();
 

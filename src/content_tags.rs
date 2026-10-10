@@ -4,11 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! Read content tags through the graph's resource-aware reader.
-//!
-//! Since mere r44 a tag is an assertion on the shown resource, not a flag on the
-//! Surface node, so `Graph::node_tags` (the raw Surface set) no longer sees tags
-//! written through `Canvas::tag_node`. Every read goes through here.
+//! Read descriptive tags from the resource shown by a surface.
 
 use mere::kernel::graph::{Graph, NodeKey};
 use std::collections::HashSet;

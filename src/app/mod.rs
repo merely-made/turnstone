@@ -27,6 +27,9 @@ use crate::{browse, session};
 
 mod contributed_pane_arms;
 mod document_find_arms;
+mod journal_origin;
+#[cfg(test)]
+mod journal_origin_tests;
 #[cfg(test)]
 mod resident_admission_tests;
 #[cfg(test)]
@@ -323,23 +326,26 @@ pub struct App {
     /// descends from (capability-model OQ2): the persona djinn holds,
     /// reached over the custody route. `None` while it is pending (djinn
     /// absent or Locked, dramatis D12): nothing that signs or seals runs, and
-    /// there is no fallback key. Install signs a delegation with it inside
-    /// djinn; uninstall revokes that delegation.
+    /// there is no fallback key, until [`App::adopt_profile_root`]. Install
+    /// signs a delegation with it inside djinn; uninstall revokes that
+    /// delegation.
     pub identity: Option<std::sync::Arc<crate::identity::RootIdentity>>,
     /// Capsule approvals for the active Personae root. The sidecar contains
     /// origin mappings only; client certificate keys are derived on demand.
     pub gemini_identities: crate::gemini_identity::GeminiIdentityBindings,
-    /// The attributed edit journal (mere's spine): every graph mutation
-    /// captured under its author — `user` for the UI, a participant's subject hex
-    /// during a run. Shared with the capture hook installed at boot.
-    pub journal: std::sync::Arc<std::sync::Mutex<mere::kernel::graph::GraphJournal>>,
+    /// Process-local, ordered captures with graph/session/generation origin.
+
+    pub journal: crate::host_journal::SharedJournal,
+    pub(crate) behavior_binding: Option<crate::host_journal::RuntimeOrigin>,
+    pub(crate) behavior_refusal: Option<String>,
     /// Standing subscriptions: which participant wakes on what (graph behaviors
     /// W0/W1). Empty until a behavior is installed, which is why the drain
     /// costs nothing on a session that has none.
     pub watches: servitor::WatchTable,
     /// The app tier's own table (W3). A separate table because a watch cursor
     /// is a position in ONE journal, and these two count different things: a
-    /// `GraphJournal` sequence and an app-event ordinal. Sharing a table would
+    /// host graph-capture ordinal and an app-event ordinal. Sharing a table would
+
     /// have the two seq spaces advance each other's cursors past unread work.
     pub app_watches: servitor::WatchTable,
     /// How far the behavior drain has read the undrained event queue.
@@ -488,19 +494,23 @@ impl App {
             // The host measures (per-node face footprints), the strategy
             // places — extent-aware spacing per the P2 contract.
             let extents = canvas.strategy_extents();
-            // The canvas is the binding: the arrangement reads its channel
-            // registry's facts (the community partition among them), so the
-            // host passes no cluster set of its own (F21, F87).
-            let strategy = canvas.project_arrangement_for_view(
+            let community = canvas.community().cloned();
+            // Recency reading pairs the Spiral's newest-first ordering with
+            // the size-by-recency channel (P3).
+            let recent_first = canvas.size_by_recency();
+            // The canvas passes its own channel registry, which serves its
+            // graph (Mere F87).
+            let (registry, graph) = canvas.registry_and_graph();
+            let strategy = mere::canvas::project_canvas_strategy_with_score(
+                registry,
                 &id,
+                graph,
+                focus,
                 w,
                 h,
+                community.as_ref(),
                 Some(&extents),
-                // Recency reading pairs the Spiral's newest-first ordering
-                // with the size-by-recency channel (P3).
-                canvas.size_by_recency(),
-                1.0,
-                None,
+                recent_first,
             );
             canvas.apply_strategy_positions(&strategy.positions);
             canvas.set_projection_score(strategy.score);
@@ -861,7 +871,7 @@ impl App {
             Err(refusal) => {
                 self.events.push(AppEvent::PhysicsRefused(refusal.clone()));
                 Some((self.graph_runtimes.active_graph(), refusal))
-            },
+            }
         };
     }
 
@@ -1126,13 +1136,21 @@ impl App {
     /// woken body sees the world the action left rather than the one it found,
     /// and its own effects join the same return.
     pub fn update(&mut self, action: Action) -> Vec<Effect> {
+        if self.session_load_refused() && !matches!(&action, Action::NewSession | Action::SwitchSession(_)
+            | Action::OmnibarOpen { .. } | Action::OmnibarClose | Action::OmnibarChar(_)
+            | Action::OmnibarInsert(_) | Action::OmnibarBackspace | Action::OmnibarDelete
+            | Action::OmnibarCaret(_) | Action::OmnibarMove(_) | Action::OmnibarCommitRow(_)
+            | Action::OmnibarShowAllCommands | Action::OmnibarCommit) {
+            return vec![Effect::Redraw];
+        }
         let mut effects = self.dispatch(action);
-        effects.extend(crate::behaviors::drain(self));
+        if !self.session_load_refused() { effects.extend(crate::behaviors::drain(self)); }
         effects
     }
 
     fn dispatch(&mut self, action: Action) -> Vec<Effect> {
         match action {
+            Action::OpenThemeWorkshop => vec![Effect::OpenThemeWorkshop],
             Action::OpenAddress(url) => self.open_address(url),
             Action::ComposeFocusedSmolwebSubmission => self.compose_focused_smolweb_submission(),
             Action::ComposeFocusedMicronForm => self.compose_focused_micron_form(),
@@ -1189,63 +1207,43 @@ impl App {
             Action::SetLayoutStrategy(id) => self.set_layout_strategy(id),
             Action::SetPhysicsLaw(id) => {
                 if let Some(law) = mere::canvas::PhysicsLaw::parse(id) {
-                    let choice = mere::canvas::PhysicsChoice {
-                        law,
-                        ..self.graph_runtimes.physics_view()
-                    };
-                    let result = self.graph_runtimes.pick_physics(choice);
+                    let result = self.graph_runtimes.set_physics_law(law);
                     self.record_physics_result(result);
                 }
                 vec![Effect::Redraw]
             }
             Action::SetPhysicsOverlay(id, on) => {
                 if let Some(overlay) = mere::canvas::PhysicsOverlay::parse(id) {
-                    let mut overlays = self.graph_runtimes.physics_view().overlays;
+                    let mut overlays = self.graph_runtimes.physics_overlays().to_vec();
                     overlays.retain(|o| *o != overlay);
                     if on {
                         overlays.push(overlay);
                     }
-                    let choice = mere::canvas::PhysicsChoice {
-                        overlays,
-                        ..self.graph_runtimes.physics_view()
-                    };
-                    let result = self.graph_runtimes.pick_physics(choice);
+                    let result = self.graph_runtimes.set_physics_overlays(overlays);
                     self.record_physics_result(result);
                 }
                 vec![Effect::Redraw]
             }
             Action::SetPhysicsKindSource(id) => {
-                if let Some(kind) = mere::canvas::PhysicsKindSource::parse(id) {
-                    let choice = mere::canvas::PhysicsChoice {
-                        kind,
-                        ..self.graph_runtimes.physics_view()
-                    };
-                    let _ = self.graph_runtimes.pick_physics(choice);
+                if let Some(source) = mere::canvas::PhysicsKindSource::parse(id) {
+                    self.graph_runtimes.set_physics_kind_source(source);
                 }
                 vec![Effect::Redraw]
             }
             Action::SetPhysicsMassSource(id) => {
-                if let Some(mass) = mere::canvas::PhysicsMassSource::parse(id) {
-                    let choice = mere::canvas::PhysicsChoice {
-                        mass,
-                        ..self.graph_runtimes.physics_view()
-                    };
-                    let _ = self.graph_runtimes.pick_physics(choice);
+                if let Some(source) = mere::canvas::PhysicsMassSource::parse(id) {
+                    self.graph_runtimes.set_physics_mass_source(source);
                 }
                 vec![Effect::Redraw]
             }
             Action::SetPhysicsDepthSource(id) => {
-                if let Some(depth) = mere::canvas::PhysicsDepthSource::parse(id) {
-                    let choice = mere::canvas::PhysicsChoice {
-                        depth,
-                        ..self.graph_runtimes.physics_view()
-                    };
-                    let _ = self.graph_runtimes.pick_physics(choice);
+                if let Some(source) = mere::canvas::PhysicsDepthSource::parse(id) {
+                    self.graph_runtimes.set_physics_depth_source(source);
                 }
                 vec![Effect::Redraw]
             }
             Action::ApplyPhysicsProfile(id) => {
-                if self.graph_runtimes.pick_physics_profile(id) {
+                if self.graph_runtimes.apply_physics_profile(id) {
                     self.physics_refusal = None;
                 }
                 vec![Effect::Redraw]
@@ -1283,19 +1281,19 @@ impl App {
             Action::FoundPlace { name } => self.found_place(name),
             Action::BeginExportPlaceCard => {
                 self.begin_place_prompt(crate::ui::PlacePrompt::ExportCard)
-            },
+            }
             Action::ExportPlaceCard { path } => self.export_place_card(path),
             Action::BeginOfferPlacePrekey => {
                 self.begin_place_prompt(crate::ui::PlacePrompt::OfferPrekey)
-            },
+            }
             Action::OfferPlacePrekey { path } => self.offer_place_prekey(path),
             Action::OfferPlacePrekeyForCard { card, out } => {
                 self.offer_place_prekey_for_card(card, out)
-            },
+            }
             Action::BeginInviteToPlace => self.begin_place_prompt(crate::ui::PlacePrompt::Invite),
             Action::BeginInviteToPlaceAsReader => {
                 self.begin_place_prompt(crate::ui::PlacePrompt::InviteReader)
-            },
+            }
             Action::InviteToPlace {
                 path,
                 access,
@@ -1312,7 +1310,7 @@ impl App {
             Action::JoinPlaceFile { path } => self.join_place_file(path),
             Action::BeginSendPlaceMessage => {
                 self.begin_place_prompt(crate::ui::PlacePrompt::SendMessage)
-            },
+            }
             Action::JoinPlace(invite) => self.join_place(invite),
             Action::LeavePlace => self.leave_place(),
             Action::ReconnectPlace => self.reconnect_place(),
@@ -1346,7 +1344,8 @@ impl App {
                 vec![Effect::SwitchSession { id }]
             }
             Action::SwitchSession(id) => {
-                if id == self.session_id || self.sessions.get(id).is_none() {
+                if (id == self.session_id && !self.session_load_refused())
+                    || (id != self.session_id && self.sessions.get(id).is_none()) {
                     return vec![Effect::Redraw];
                 }
                 vec![Effect::SwitchSession { id }]
@@ -1501,13 +1500,18 @@ impl App {
 
 mod denizen_arms;
 mod feed_arms;
-mod redshank_arms;
-mod fixtures;
+mod  fixtures;
 mod node_arms;
+
 mod omnibar_arms;
 mod palette;
 mod pane_arms;
+mod redshank_arms;
 mod session_lifecycle;
+#[cfg(test)]
+mod session_persistence_tests;
+#[cfg(test)]
+mod surface_control_tests;
 mod updates;
 
 #[cfg(test)]

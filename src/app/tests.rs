@@ -9,6 +9,132 @@
 
 use super::*;
 
+// Future-supplier controls: apply only after the resource-content API is
+// integrated as an exact, coordinated supplier set. These are product read
+// and recycle-label checks, not an attributed recovery receipt.
+fn resource_content_fixture() -> (App, uuid::Uuid, uuid::Uuid, uuid::Uuid) {
+    use mere::kernel::graph::apply::add_node;
+    use mere::kernel::graph::resource_tags::{TagConcept, tag_concept_iri};
+    use mere::kernel::graph::{Author, Graph};
+
+    let mut graph = Graph::new();
+    let first = uuid::Uuid::from_u128(101);
+    let second = uuid::Uuid::from_u128(102);
+    let a = add_node(
+        &mut graph,
+        Some(first),
+        "https://EXAMPLE.test/page#one".into(),
+        Default::default(),
+    );
+    let b = add_node(
+        &mut graph,
+        Some(second),
+        "https://example.test/page#two".into(),
+        Default::default(),
+    );
+    let resource = graph.shown_resource_id(a).expect("live add records resource");
+    assert_eq!(graph.shown_resource_id(b), Some(resource));
+    graph.write_as(Author::person("content-fixture"), |graph| {
+        let owner_iri = graph.write_author().asserter_iri();
+        for label in ["Paper", "paper"] {
+            assert!(graph.tag_resource_with_concept(
+                resource,
+                &tag_concept_iri(&owner_iri, label),
+                TagConcept {
+                    owner_iri: owner_iri.clone(),
+                    label: label.into(),
+                },
+            ).unwrap());
+        }
+    });
+    // A raw Surface read is a deliberately broken consumer control: none of
+    // these labels was copied into either Surface's legacy tag column.
+    assert!(graph.get_node(a).unwrap().tags.is_empty());
+    assert!(graph.get_node(b).unwrap().tags.is_empty());
+    let mut app = App::test_stub();
+    app.graph_runtimes.set_graph(graph);
+    app.bind_behavior_journal().expect("test baseline");
+    let pane = app.default_graph_pane();
+    assert!(app.graph_pane_select_member(pane, first));
+    (app, first, second, resource)
+}
+
+#[test]
+fn resource_content_inspector_follows_shared_resource_and_navigation() {
+    let (mut app, first, second, resource) = resource_content_fixture();
+    let pane = app.default_graph_pane();
+    for member in [first, second] {
+        assert!(app.graph_pane_select_member(pane, member));
+        let lines = crate::inspector_view::inspector_lines(&app);
+        assert!(lines.iter().any(|line| line == "Tags: Paper, paper"), "{lines:?}");
+        assert!(lines.iter().any(|line| line == &format!("Node id: {member}")));
+    }
+
+    app.update(Action::ContentNavigationCommitted {
+        member: first,
+        url: "https://example.test/next".into(),
+    });
+    let graph = app.graph_runtimes.graph();
+    let first_key = graph.get_node_by_id(first).unwrap().0;
+    let second_key = graph.get_node_by_id(second).unwrap().0;
+    assert_ne!(graph.shown_resource_id(first_key), Some(resource));
+    assert_eq!(graph.shown_resource_id(second_key), Some(resource));
+    assert!(app.graph_pane_select_member(pane, first));
+    assert!(crate::inspector_view::inspector_lines(&app)
+        .iter().any(|line| line == "Tags: none"));
+    assert!(app.graph_pane_select_member(pane, second));
+    assert!(crate::inspector_view::inspector_lines(&app)
+        .iter().any(|line| line == "Tags: Paper, paper"));
+
+    // Returning the same Surface to the old resource restores the content
+    // read without copying the sibling's tags into the Surface.
+    app.update(Action::ContentNavigationCommitted {
+        member: first,
+        url: "https://example.test/page#three".into(),
+    });
+    let graph = app.graph_runtimes.graph();
+    let key = graph.get_node_by_id(first).unwrap().0;
+    assert_eq!(graph.shown_resource_id(key), Some(resource));
+    assert!(graph.get_node(key).unwrap().tags.is_empty());
+    assert!(app.graph_pane_select_member(pane, first));
+    assert!(crate::inspector_view::inspector_lines(&app)
+        .iter().any(|line| line == "Tags: Paper, paper"));
+}
+
+#[test]
+fn resource_content_recycle_capture_keeps_exact_labels_and_live_sibling() {
+    let (mut app, first, second, resource) = resource_content_fixture();
+    let effects = app.update(Action::DeleteFocusedNode);
+    let record = effects.iter().find_map(|effect| match effect {
+        Effect::RecordDeleted { record } => Some(record),
+        _ => None,
+    }).expect("delete stages recycle record");
+    assert_eq!(record.node_id, first);
+    assert_eq!(record.url, "https://EXAMPLE.test/page#one");
+    let mut labels = record.tags.clone();
+    labels.sort();
+    assert_eq!(labels, vec!["Paper".to_string(), "paper".to_string()]);
+
+    let graph = app.graph_runtimes.graph();
+    assert!(graph.get_node_by_id(first).is_none());
+    let sibling_key = graph.get_node_by_id(second).expect("sibling survives").0;
+    assert_eq!(graph.shown_resource_id(sibling_key), Some(resource));
+    assert_eq!(graph.surface_ids_showing_resource(resource), vec![second]);
+    assert_eq!(graph.resource_tag_labels(resource).len(), 2);
+    let reloaded = mere::kernel::graph::Graph::try_from_snapshot(&graph.to_snapshot())
+        .expect("persisted live sibling association");
+    let key = reloaded.get_node_by_id(second).unwrap().0;
+    assert_eq!(reloaded.shown_resource_id(key), Some(resource));
+    assert_eq!(reloaded.surface_ids_showing_resource(resource), vec![second]);
+    assert_eq!(reloaded.resource_tag_labels(resource), graph.resource_tag_labels(resource));
+    let pane = app.default_graph_pane();
+    assert!(app.graph_pane_select_member(pane, second));
+    assert!(crate::inspector_view::inspector_lines(&app)
+        .iter().any(|line| line == "Tags: Paper, paper"));
+    // RemovedRecord.tags is Vec<String>: this asserts labels only. It cannot
+    // establish concept owners, assertion handles, taggers, or recovery scope.
+}
+
 #[test]
 fn session_restore_applies_law_before_overlays_and_records_refusal() {
     let dir = tempfile::tempdir().unwrap();
@@ -24,10 +150,10 @@ fn session_restore_applies_law_before_overlays_and_records_refusal() {
     session::save_view_intent(&session_dir, &intent);
     app.adopt_session(session_id);
     assert_eq!(
-        app.graph_runtimes.physics_view().law,
+        app.graph_runtimes.physics_law(),
         mere::canvas::PhysicsLaw::Density
     );
-    assert!(app.graph_runtimes.physics_view().overlays.is_empty());
+    assert!(app.graph_runtimes.physics_overlays().is_empty());
     assert_eq!(
         app.physics_refusal().unwrap().refused,
         vec![mere::canvas::PhysicsOverlay::GridSnap]
@@ -42,7 +168,7 @@ fn session_restore_applies_law_before_overlays_and_records_refusal() {
     session::save_view_intent(&session_dir, &intent);
     app.adopt_session(session_id);
     assert_eq!(
-        app.graph_runtimes.physics_view().overlays,
+        app.graph_runtimes.physics_overlays(),
         &[mere::canvas::PhysicsOverlay::GridSnap]
     );
     assert!(app.physics_refusal().is_none());
@@ -1151,7 +1277,7 @@ fn denizen_installs_after_visible_review() {
         app.graph_runtimes.facets(),
         app.graph_runtimes.graph(),
         &app.session_dir(),
-        app.identity_root(),
+        app.personae_root(),
     );
     assert_eq!(rebuilt.residents.len(), 1);
     assert!(
@@ -1166,6 +1292,76 @@ fn denizen_installs_after_visible_review() {
             servitor::Mode::Write
         ),
         "authority derives from the projection, not from a second store"
+    );
+    let _ = std::fs::remove_dir_all(&app.data_root);
+}
+
+/// Vault lock ruling 35: with the vault locked the identity is pending, not
+/// replaced. Participants keep residing but nothing they hold verifies, a new
+/// install refuses rather than signing with a fallback key, nothing on disk
+/// is rewritten, and the unlocked root brings their authority back.
+#[test]
+fn a_locked_vault_holds_participants_until_the_root_is_adopted() {
+    use servitor::AuthorityProvider;
+
+    let mut app = App::test_stub();
+    app.data_root = std::env::temp_dir().join(format!("turnstone-pending-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir()).unwrap();
+    let pack = app.data_root.join("keeper.lua");
+    std::fs::write(&pack, "mere.open('mere://kept/note')").unwrap();
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
+    app.update(Action::ConfirmInstallDenizen);
+    let subject = app.denizens.residents.values().next().unwrap().subject;
+    let navigate = crate::ring::Ring::Navigate.cap().unwrap();
+    let admissions = crate::resident_admission::path(&app.session_dir());
+    let admitted = std::fs::read(&admissions).unwrap();
+
+    // The vault locks: the app runs with its identity pending.
+    let root = app.identity.take().expect("the stub starts unlocked");
+    app.denizens = crate::denizen::rebuild(
+        app.graph_runtimes.facets(),
+        app.graph_runtimes.graph(),
+        &app.session_dir(),
+        app.personae_root(),
+    );
+    assert_eq!(app.denizens.residents.len(), 1, "still resident");
+    assert!(
+        !app.denizens.authority.covers(subject, &navigate, servitor::Mode::Write),
+        "no chain verifies without the root"
+    );
+    assert_eq!(std::fs::read(&admissions).unwrap(), admitted, "nothing rewritten");
+    assert_eq!(app.personae_root(), None);
+    assert_eq!(app.gemini_identity_for("gemini://capsule.example/"), Ok(None));
+
+    let other = app.data_root.join("other.lua");
+    std::fs::write(&other, "mere.open('mere://kept/other')").unwrap();
+    app.update(Action::InstallDenizen {
+        path: other.display().to_string(),
+    });
+    app.take_events();
+    app.update(Action::ConfirmInstallDenizen);
+    assert_eq!(app.denizens.residents.len(), 1, "no install while pending");
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        AppEvent::DenizenRefused(reason) if reason == crate::denizen::PENDING_IDENTITY
+    )));
+
+    // The vault unlocks: the same root returns, and with it the authority.
+    app.adopt_profile_root(root.clone());
+    assert!(
+        app.denizens.authority.covers(subject, &navigate, servitor::Mode::Write),
+        "the stored chain verifies under the adopted root"
+    );
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        AppEvent::ProfileIdentityUnlocked(_)
+    )));
+    assert!(
+        app.adopt_profile_root(root).is_empty(),
+        "a second root for the same run is ignored"
     );
     let _ = std::fs::remove_dir_all(&app.data_root);
 }
@@ -2008,10 +2204,9 @@ fn denizen_runs_attributed() {
 /// scene settings, and opens by session-switch.
 #[test]
 fn fork_session_snapshots_the_component_with_its_facets() {
-    let mut app = App::test_stub();
-    app.data_root =
-        std::env::temp_dir().join(format!("turnstone-fork-test-{}", std::process::id()));
-    let _ = std::fs::remove_dir_all(&app.data_root);
+    let root = tempfile::tempdir().unwrap();
+    let mut app = App::test_stub_at(root.path().to_path_buf());
+    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(&app.data_root));
     let donor_container = uuid::Uuid::from_u128(0xd0);
     app.sessions.insert(pandect::GraphSessionManifest::new(
         app.session_id,
@@ -2020,8 +2215,11 @@ fn fork_session_snapshots_the_component_with_its_facets() {
     std::fs::create_dir_all(app.session_dir()).unwrap();
 
     // A two-node connected component plus a disconnected bystander.
-    let a = app.graph_runtimes.visit("https://fork.example/a");
-    let a_id = app.graph_runtimes.graph().get_node(a).unwrap().id;
+    // Use the pane's visit lane for both opens so its saved selection carries
+    // the first member into the second open's browse-trail relation.
+    app.update(Action::OpenAddress("https://fork.example/a".to_string()));
+    let a_id = app.graph_runtimes.graph()
+        .get_node_by_url("https://fork.example/a").unwrap().1.id;
     app.update(Action::OpenAddress("https://fork.example/b".to_string()));
     let _bystander = {
         let mut g = app.graph_runtimes.graph().clone();
@@ -2100,10 +2298,9 @@ fn fork_session_snapshots_the_component_with_its_facets() {
 /// copy alone would leave the fork's participant un-resided).
 #[test]
 fn fork_carries_denizen_worlds_as_real_copies() {
-    let mut app = App::test_stub();
-    app.data_root =
-        std::env::temp_dir().join(format!("turnstone-fork-world-{}", std::process::id()));
-    let _ = std::fs::remove_dir_all(&app.data_root);
+    let root = tempfile::tempdir().unwrap();
+    let mut app = App::test_stub_at(root.path().to_path_buf());
+    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(&app.data_root));
     std::fs::create_dir_all(app.session_dir()).unwrap();
     let pack = app.data_root.join("keeper.lua");
     std::fs::write(&pack, "mere.open('mere://kept/note')").unwrap();
@@ -2151,7 +2348,7 @@ fn fork_carries_denizen_worlds_as_real_copies() {
     // The fork rebuilds a full resident from its OWN dir, no legacy heal.
     let fork_facets = session::load_node_facets(&fork_dir).expect("fork facets persisted");
     let rebuilt =
-        crate::denizen::rebuild(&fork_facets, &fork_graph, &fork_dir, app.identity_root());
+        crate::denizen::rebuild(&fork_facets, &fork_graph, &fork_dir, app.personae_root());
     assert_eq!(rebuilt.residents.len(), 1, "the fork's denizen resides");
     assert!(rebuilt.legacy_heals.is_empty());
     let fork_member = rebuilt.residents.keys().next().copied().unwrap();
@@ -2739,7 +2936,7 @@ fn install_delegates_from_the_profile_identity_and_uninstall_revokes_it() {
     let _ = std::fs::remove_dir_all(&app.data_root);
     std::fs::create_dir_all(app.session_dir()).unwrap();
     // The root identity is the profile's, not a constant.
-    let root = identity::IdentityProvider::master_public_key(app.identity.as_deref().unwrap()).to_bytes();
+    let root = app.personae_root().unwrap();
     assert_eq!(
         app.denizens.authority.root(),
         root,
@@ -3045,7 +3242,7 @@ fn available_actions_lead_with_the_contextual_rows() {
     // first; the static registry follows.
     let first_static = rows
         .iter()
-        .position(|(label, _)| label == "Fit view")
+        .position(|(label, _)| label == "Fit to view")
         .expect("the static registry is in the catalog");
     let a_contextual = rows
         .iter()
@@ -3646,6 +3843,75 @@ fn browser_states_refresh_and_round_trip() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// SC step 4 pass B: a node's content lane, not its engine id, decides who
+/// takes Reload and Stop. Every surface engine (Scry and Servo as well as
+/// Weld) gets them on its own web plane; a document reloads through the App's
+/// load.
+#[test]
+fn every_surface_engine_takes_reload_and_stop_on_its_web_plane() {
+    for engine in [
+        inker::routing::ENGINE_WELD_CHROMIUM,
+        inker::routing::ENGINE_SCRYING_WEB,
+        inker::routing::ENGINE_GRAFT_SERVO,
+    ] {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.com/page".to_string()));
+        let node = app.graph_runtimes.focused_member().unwrap();
+        // The address's own page fetch is the App's, and Stop cancels it first.
+        assert!(
+            app.update(Action::Stop)
+                .iter()
+                .any(|effect| matches!(effect, Effect::CancelPage { .. }))
+        );
+        app.content.note_live(
+            node,
+            Some(crate::content::ContentFacts {
+                engine: engine.to_string(),
+                lane: crate::content::ContentLane::Surface,
+                structure: None,
+                lineage: None,
+                capabilities: Default::default(),
+            }),
+        );
+        let reload = app.update(Action::Reload);
+        assert!(
+            reload.contains(&Effect::ControlContent {
+                node,
+                control: crate::action::ContentControl::Reload,
+            }),
+            "{engine}: {reload:?}"
+        );
+        let stop = app.update(Action::Stop);
+        assert!(
+            stop.contains(&Effect::ControlContent {
+                node,
+                control: crate::action::ContentControl::Stop,
+            }),
+            "{engine}: a surface mid-load stops on its web plane"
+        );
+    }
+
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.com/page".to_string()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    app.content.note_live(
+        node,
+        Some(crate::content::ContentFacts {
+            engine: inker::routing::ENGINE_GENET_LIVERY.to_string(),
+            lane: crate::content::ContentLane::Document,
+            structure: None,
+            lineage: None,
+            capabilities: Default::default(),
+        }),
+    );
+    assert!(
+        !app.update(Action::Reload)
+            .iter()
+            .any(|effect| matches!(effect, Effect::ControlContent { .. })),
+        "a document reloads through the App's load"
+    );
+}
+
 /// The requested page scale rides the same sidecar to the same store, and a
 /// reset leaves nothing behind for it to carry.
 #[test]
@@ -3657,6 +3923,7 @@ fn requested_page_scale_round_trips_through_the_store() {
         node,
         Some(crate::content::ContentFacts {
             engine: "weld.chromium".into(),
+            lane: crate::content::ContentLane::Surface,
             structure: None,
             lineage: None,
             capabilities: crate::content::DocumentCapabilityFacts {
@@ -3977,11 +4244,17 @@ fn the_row_count_follows_the_viewport_under_the_configured_ceiling() {
         "a tall window offers the whole configured maximum"
     );
 
-    let short = visible_row_limit(10, &ChromePlacement::Overlay, 400.0, 1.0);
-    assert!(
-        (3..10).contains(&short),
-        "a short window offers fewer rows, not the ceiling: {short}"
-    );
+    // Use the actual card and font geometry. On this Mac the 24px rows
+    // and 48px card chrome legitimately fit ten rows in the old 400px case.
+    let (row_height, card_chrome_height) = crate::ui::ordinary_chrome_row_metrics(1.0);
+    assert!(row_height.is_finite() && row_height > 0.0);
+    assert!(card_chrome_height.is_finite() && card_chrome_height > 0.0);
+    let short_viewport = crate::ui::CARD_TOP
+        + card_chrome_height
+        + crate::ui::CARD_BOTTOM_MARGIN
+        + 5.5 * row_height;
+    let short = visible_row_limit(10, &ChromePlacement::Overlay, short_viewport, 1.0);
+    assert_eq!(short, 5, "the short window offers only the five rows that fit");
 
     let cramped = visible_row_limit(10, &ChromePlacement::Overlay, 120.0, 1.0);
     assert_eq!(cramped, 3, "a window with no room still offers the floor");
@@ -5166,7 +5439,7 @@ fn place_artifacts_are_written_where_the_person_asked() {
     assert_eq!(card.rendezvous[0].hint, "ticket-one");
     assert_eq!(
         card.founder_root,
-        crate::place::hex32(&app.personae_root().expect("a bound fixture identity")),
+        crate::place::hex32(&app.personae_root().unwrap()),
         "the card names this profile's own root"
     );
 
@@ -5470,7 +5743,7 @@ fn place_prekey_offer_is_written_beside_its_card() {
         ] => {
             assert_eq!(*moot, binding.moot.0);
             *generation
-        },
+        }
         other => panic!("offering a pre-key lowers one worker command: {other:?}"),
     };
 
@@ -5484,13 +5757,13 @@ fn place_prekey_offer_is_written_beside_its_card() {
         .find_map(|effect| match effect {
             Effect::WritePlaceArtifact { path, bytes } if path == "card.json.prekey.json" => {
                 Some(bytes)
-            },
+            }
             _ => None,
         })
         .expect("the offer lands beside the card");
     let offer: crate::place::PlacePrekeyOfferV1 = serde_json::from_slice(bytes).unwrap();
     assert_eq!(offer.moot, binding.moot);
-    assert_eq!(offer.root, crate::place::hex32(&app.personae_root().expect("a bound fixture identity")));
+    assert_eq!(offer.root, crate::place::hex32(&app.personae_root().unwrap()));
     assert_eq!(offer.prekey_bytes().unwrap(), vec![7, 8, 9]);
 
     // The answer was consumed; a replay writes nothing.
@@ -5592,7 +5865,7 @@ fn place_revoke_rows_are_a_founders_one_per_other_member() {
             .collect()
     };
     let mut app = App::test_stub();
-    let local = app.personae_root().expect("a bound fixture identity");
+    let local = app.personae_root().unwrap();
     let with_local = |access| {
         vec![
             PlaceMember {
@@ -5711,7 +5984,7 @@ fn place_invite_lifetime_suffix_is_read_from_the_right() {
     use crate::place::PlaceInviteAccess::{Reader, Writer};
 
     let mut app = App::test_stub();
-    let local = app.personae_root().expect("a bound fixture identity");
+    let local = app.personae_root().unwrap();
     app.place = open_place(local, Vec::new());
     let commit = |app: &mut App, begin: Action, line: &str| -> Vec<Effect> {
         app.update(begin);

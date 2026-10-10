@@ -1,0 +1,16 @@
+# Vault lock ruling 35 headed check. The launcher starts Turnstone with the
+# persisted lock's marker in the vault directory (XDG_DATA_HOME on Linux and
+# macOS, LOCALAPPDATA on Windows, then personae/vault/locked) and removes it a
+# few seconds in, standing in for djinn's unlock prompt. Turnstone starts with
+# its identity pending and still browses; once the marker clears, its watch
+# opens the root and the app adopts it. No fallback key is minted while
+# locked.
+settle 30
+key escape
+assert event profile-identity-pending
+open mere://alpha
+settle 20
+assert snap node-count >= 1
+settle 900
+assert event profile-identity-unlocked
+log vault locked pending receipt complete

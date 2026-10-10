@@ -1,0 +1,266 @@
+{
+  "reviewed_at": "2026-10-09T03:05:25.878619+00:00",
+  "consumer_baseline": "187091e1aad4b0445e2a23f003d371fed1cd43ea",
+  "supplier_api_reference": "72c68b6d6f6a5c9023999d9fdaf4b3db632e6874",
+  "scope": "Unapplied host persistence preparation; isolated module tests and static combined checks. Full application/qualified supplier compilation not performed.",
+  "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8",
+  "parser": "rustfmt 1.9.0-stable (8bab26f4f6 2026-07-14)",
+  "application_order": [
+    "reader.patch",
+    "behaviors.patch",
+    "content-tests.patch",
+    "session-profile.patch",
+    "controls.patch",
+    "host-persistence.patch"
+  ],
+  "patches": {
+    "reader.patch": {
+      "sha256": "9066c11a14b61725e603ba26782020eb3d031db892495d99489b706beafa174f",
+      "apply_exit": 0,
+      "original_handoff_bytes_preserved": true
+    },
+    "behaviors.patch": {
+      "sha256": "2058d84ad3ce130e7b994f8710c39259c273ce6a54ff233fb2d72817e59981e9",
+      "apply_exit": 0,
+      "original_handoff_bytes_preserved": true
+    },
+    "content-tests.patch": {
+      "sha256": "9f05b0494cc10d1fbf640b9a283d0490cd9528f068434ae032cc532066f0afa9",
+      "apply_exit": 0,
+      "original_handoff_bytes_preserved": true
+    },
+    "session-profile.patch": {
+      "sha256": "5bd843803273b0205126735bc3e75c9d304f631337dbddeb9acb27b099c46fc6",
+      "apply_exit": 0,
+      "original_handoff_bytes_preserved": true
+    },
+    "controls.patch": {
+      "sha256": "0aed7862f888f2aa4740db3de58310d67a0dfdd75c52a0a0402f97cf609d297e",
+      "apply_exit": 0,
+      "original_handoff_bytes_preserved": true
+    },
+    "host-persistence.patch": {
+      "sha256": "41f7ff71212656825b04e4cc89068d755165b3fb8732f09665dcb0898ee94fc0",
+      "apply_exit": 0,
+      "original_handoff_bytes_preserved": false
+    }
+  },
+  "syntax": {
+    "src/app/feed_arms.rs": {
+      "source_sha256": "ae1cf134988ad39ef80bf55f32662d68771b752274d660a4a5ccfaf7e4de6ab4",
+      "parse_exit": 0
+    },
+    "src/app/fixtures.rs": {
+      "source_sha256": "c55003b5c2693886dc4053b67713d1ab78f201fdddf7160dfdd1c0d84ec4b4aa",
+      "parse_exit": 0
+    },
+    "src/app/mod.rs": {
+      "source_sha256": "decb93fc6fd2e1d3429a86a1562b32206d680332ebd2425d4e08525d762aadd1",
+      "parse_exit": 0
+    },
+    "src/app/node_arms.rs": {
+      "source_sha256": "fba3a7dafd858cba466cb6fd7b9f65ea354c17fa8ea81f137fdee7f5cfb997b6",
+      "parse_exit": 0
+    },
+    "src/app/omnibar_arms.rs": {
+      "source_sha256": "4aa7967dbf9c3d65003a47d422504ded34f28ae1e5af1f306b805cc3c9657ee3",
+      "parse_exit": 0
+    },
+    "src/app/palette.rs": {
+      "source_sha256": "c1f0cb874aeef6bace694676c9ff6d647b584b24c0f52cfd6749157ebae233bc",
+      "parse_exit": 0
+    },
+    "src/app/runtime_pool.rs": {
+      "source_sha256": "6143aeaba9a97b361b49c0126ef847a706124b23fcf70c08a12019c27f7f0260",
+      "parse_exit": 0
+    },
+    "src/app/session_lifecycle.rs": {
+      "source_sha256": "776561c1dbf2de5aa3c539f38bb2a507d8f7bf4de22f372cc54e9440efc7e093",
+      "parse_exit": 0
+    },
+    "src/app/session_persistence_tests.rs": {
+      "source_sha256": "07c2527ca766f80f0be09ed279e43576253c500c70463d0eb259fec92b92ae8a",
+      "parse_exit": 0
+    },
+    "src/app/surface_control_tests.rs": {
+      "source_sha256": "51f853bb240a52d681f2027b1d005d202160c669f87484b504f9eacf1e2984ff",
+      "parse_exit": 0
+    },
+    "src/app/tests.rs": {
+      "source_sha256": "b3227163fe7e6156b367659ef16a71bf7c3702ec54455735e0d0cd2a0985a18d",
+      "parse_exit": 0
+    },
+    "src/app/updates.rs": {
+      "source_sha256": "8fada4b4e59d751b84f8aa93e51ea4720b8b08b7f42312a7915fd2b5c966c007",
+      "parse_exit": 0
+    },
+    "src/behaviors.rs": {
+      "source_sha256": "e1f43f3d88dc1856038dfd2b68d4ad0975ba768f020cd7efb5946bdb3dd071d7",
+      "parse_exit": 0
+    },
+    "src/content_tags.rs": {
+      "source_sha256": "9862f6a79e34051b66326763cd5ee4df685d7529c6594b04dbadc1af70fb3177",
+      "parse_exit": 0
+    },
+    "src/feed.rs": {
+      "source_sha256": "361e84b016d509b4bf790388d604a8e437d719eab862b9e6fa04404aaaeefe1c",
+      "parse_exit": 0
+    },
+    "src/lib.rs": {
+      "source_sha256": "ebc008fb5ad548011e9c048282e6b6cdb243bff15477e631ce19ddaa45cf6d6a",
+      "parse_exit": 0
+    },
+    "src/observe.rs": {
+      "source_sha256": "2b81149ad65a50847c8a4d25fa3a86cfabe86d83023bb978213b117f5601c8fc",
+      "parse_exit": 0
+    },
+    "src/recycle.rs": {
+      "source_sha256": "04934764c5130db81cd53746b5b6b12e3d613f4897157bd531e3135c8f60f6e4",
+      "parse_exit": 0
+    },
+    "src/redshank_host.rs": {
+      "source_sha256": "bf61964ae5984caddbfdf29b84aba47ffb11075b42c08e201440e455c6948e3e",
+      "parse_exit": 0
+    },
+    "src/session.rs": {
+      "source_sha256": "a5e9fcaa65be8651dc0d8184d1b13d3bc6acc984fe46ca201ceaf0ff746c1aea",
+      "parse_exit": 0
+    },
+    "src/session_persistence.rs": {
+      "source_sha256": "24bc6c9ef09c68f20bc2e748299e9340a0e06fd88f06c26f3557170190bda28b",
+      "parse_exit": 0
+    },
+    "src/shell/effects.rs": {
+      "source_sha256": "35a64f10bb2c57261cb206543dc8d727a9856b2c2164bdff846f2d3a1d4707a8",
+      "parse_exit": 0
+    },
+    "src/shell/mod.rs": {
+      "source_sha256": "736ad71bf6b4395c4d0135a4dba4d8e8c9fc63b117a328de5a2433d3453d3fb7",
+      "parse_exit": 0
+    },
+    "src/surface_controls.rs": {
+      "source_sha256": "8ea922d061ff51b6cc37683d939f23e2a8ad16e3737c67ff040e355eecadf159",
+      "parse_exit": 0
+    },
+    "src/trail_memory.rs": {
+      "source_sha256": "f9c940e6ad7b3ebef984d6fdc0b1468b85935be9a5209bfe2e76112b336ddfa9",
+      "parse_exit": 0
+    }
+  },
+  "isolated_tests": {
+    "persistence": {
+      "source_sha256": "24bc6c9ef09c68f20bc2e748299e9340a0e06fd88f06c26f3557170190bda28b",
+      "binary_sha256": "d5cb7afe45dea4543bf7bd58c0fae5d4a530e473ce14e57b9f60f9ce34e739a6",
+      "passed": 6,
+      "failed": 0,
+      "scope": "Actual proposed module, outside the application; no full app wiring qualification"
+    },
+    "feed": {
+      "source_sha256": "361e84b016d509b4bf790388d604a8e437d719eab862b9e6fa04404aaaeefe1c",
+      "binary_sha256": "238070c9828eeefa588c7e2dc4546395ed984f691e3d6f6e16b1bc75f37c691b",
+      "passed": 8,
+      "failed": 0,
+      "scope": "Actual proposed module, outside the application; no full app wiring qualification",
+      "cached_dependency_fingerprint": "/home/markik/Code/target/debug/.fingerprint/turnstone-919ba489be28f23f/test-lib-turnstone.json",
+      "cached_dependencies": {
+        "mere": {
+          "path": "/home/markik/Code/target/debug/deps/libmere-02095f5ebc14e3be.rlib",
+          "sha256": "cdbb644935a663433859dc75be3561493b1e86f2460ae1b5332eb6b2e55d311b"
+        },
+        "servitor": {
+          "path": "/home/markik/Code/target/debug/deps/libservitor-a71057e4ee701c27.rlib",
+          "sha256": "b456137cfb954aad598003408485248a3d1913c3205457e7b6537498ae1d5ccd"
+        },
+        "serde": {
+          "path": "/home/markik/Code/target/debug/deps/libserde-d1fa4449b6b96a09.rlib",
+          "sha256": "d0215e77bab523b40c71c973ff4ad81bae8fb98ec883df6dc63e6409589c0cc7"
+        },
+        "serde_json": {
+          "path": "/home/markik/Code/target/debug/deps/libserde_json-a8286f839cecd83e.rlib",
+          "sha256": "4c50db2de6ce533c3bc51ecef42ed900ac1106045549a1a454233486864050de"
+        },
+        "uuid": {
+          "path": "/home/markik/Code/target/debug/deps/libuuid-905d01c74d516f40.rlib",
+          "sha256": "7ea721efdc8777eb5946ade8875feac2d553c9eda66f12389ae60916246fee95"
+        },
+        "errand": {
+          "path": "/home/markik/Code/target/debug/deps/liberrand-ac0dda301ffe032c.rlib",
+          "sha256": "7211bb8356b46df9654d4bc218d8e783f034d0e4e32ad93f4bf10b79043afa8e"
+        },
+        "url": {
+          "path": "/home/markik/Code/target/debug/deps/liburl-cf615196039c434a.rlib",
+          "sha256": "882872ce5bf5da806a7b63b9c5f45527109a01ba4b99cc13a1e72d61299bd51e"
+        },
+        "tracing": {
+          "path": "/home/markik/Code/target/debug/deps/libtracing-71b740567d3ce4ff.rlib",
+          "sha256": "80777bbf3468fb14f7ac093d07b600dcfd351413345f0276078b33cc7f4d8206"
+        },
+        "tempfile": {
+          "path": "/home/markik/Code/target/debug/deps/libtempfile-dba93698a88d4160.rlib",
+          "sha256": "3ed7590d45610835e504b24a37e3fabddc56bc8670023f13a4f4c4d85e314df1"
+        },
+        "blake3": {
+          "path": "/home/markik/Code/target/debug/deps/libblake3-b2d4baaed1fece16.rlib",
+          "sha256": "ff593d5859fcbc39fd4a46a864f9d306201b3d88c40d91fee47f7f3a775c7df0"
+        }
+      },
+      "harness_sha256": "d695bfc566e05292a7534fa5a08b1a06ddd59654570bf047dc08261ae3af660e"
+    },
+    "redshank": {
+      "source_sha256": "bf61964ae5984caddbfdf29b84aba47ffb11075b42c08e201440e455c6948e3e",
+      "binary_sha256": "ae774f6048afada09b95b34ec2673030f5f79f54798bbe760fd636c34187a516",
+      "passed": 10,
+      "failed": 0,
+      "scope": "Actual proposed module, outside the application; no full app wiring qualification",
+      "cached_dependency_fingerprint": "/home/markik/Code/target/debug/.fingerprint/turnstone-919ba489be28f23f/test-lib-turnstone.json",
+      "cached_dependencies": {
+        "fetch": {
+          "path": "/home/markik/Code/target/debug/deps/libfetch-e62fadae040f8172.rlib",
+          "sha256": "494b76932180fa949d2d96c9eba8dabb4b79263b6013a76908c7c461f84198f2"
+        },
+        "redshank_model": {
+          "path": "/home/markik/Code/target/debug/deps/libredshank_model-8359753ced7c70b9.rlib",
+          "sha256": "f3821955f316de2566e2d5ea6e2577e30027dbd32ca1261f1d8bbfde14392d0a"
+        },
+        "redshank_playback": {
+          "path": "/home/markik/Code/target/debug/deps/libredshank_playback-7a294598d10f16f4.rlib",
+          "sha256": "7265749c51d82683129909220540ba405722f5a29741aafc8c46ab77f5b4ecf3"
+        },
+        "redshank_storage": {
+          "path": "/home/markik/Code/target/debug/deps/libredshank_storage-187fbb948735016a.rlib",
+          "sha256": "b75a2719f9ed937eda3e52a1a025dad17ca23e6cad37f5cad612275360785bda"
+        },
+        "redshank_surfaces": {
+          "path": "/home/markik/Code/target/debug/deps/libredshank_surfaces-9da0cc3eaaa8e1f6.rlib",
+          "sha256": "de39d3dfcf58ae2e149af163bf2816aef8d177c3e363b0f12ac37408cb9f4769"
+        },
+        "url": {
+          "path": "/home/markik/Code/target/debug/deps/liburl-cf615196039c434a.rlib",
+          "sha256": "882872ce5bf5da806a7b63b9c5f45527109a01ba4b99cc13a1e72d61299bd51e"
+        },
+        "tracing": {
+          "path": "/home/markik/Code/target/debug/deps/libtracing-71b740567d3ce4ff.rlib",
+          "sha256": "80777bbf3468fb14f7ac093d07b600dcfd351413345f0276078b33cc7f4d8206"
+        },
+        "tempfile": {
+          "path": "/home/markik/Code/target/debug/deps/libtempfile-dba93698a88d4160.rlib",
+          "sha256": "3ed7590d45610835e504b24a37e3fabddc56bc8670023f13a4f4c4d85e314df1"
+        }
+      },
+      "harness_sha256": "dcefb35402c089e4e57888d3884b0f34c622974a42b399a6d52f069842af16ca"
+    }
+  },
+  "pending": [
+    "Final qualified immutable family and integration clearance",
+    "Full app/host test compilation and execution",
+    "Shell close/switch and refused actor startup end-to-end controls",
+    "Fork storage-failure controls and cross-platform manifest behavior",
+    "Graph failure preventing shell image collection",
+    "Runtime replacement and fork placement qualification at final supplier",
+    "Graph-specific behavior journal attribution; its envelope/authority design remains open",
+    "Browser pixels and physical assistive-technology release gates"
+  ],
+  "red_control_note": "Feed regressions were executed against actual pre-repair draft logic. Reversed write ordering, missing-target-as-fresh and reset-to-default Redshank controls used explicit bad-source copies to verify failure sensitivity; original helper API absence produced a compile failure.",
+  "production_source_unchanged": true,
+  "test_log_sha256": "9d85f085677c5d3a8136264e2f36b3957bec31a6113cde903e48ca3272a12d31"
+}

@@ -1,0 +1,25 @@
+   Compiling vello_encoding v0.10.0 (/Users/markik/Code/output/radeon-clip-fix/vello/vello_encoding)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.16s
+     Running unittests src/lib.rs (target/debug/deps/vello_encoding-7287c4ee152763fb)
+
+running 2 tests
+test resolve::tests::patchless_resolve_preserves_a_pending_override_refresh ... ok
+test resolve::tests::patchless_resolves_preserve_the_resident_atlas_dimensions ... FAILED
+
+failures:
+
+---- resolve::tests::patchless_resolves_preserve_the_resident_atlas_dimensions stdout ----
+
+thread 'resolve::tests::patchless_resolves_preserve_the_resident_atlas_dimensions' (20466817) panicked at vello_encoding/src/resolve.rs:694:13:
+assertion `left == right` failed
+  left: (0, 0)
+ right: (2048, 2048)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    resolve::tests::patchless_resolves_preserve_the_resident_atlas_dimensions
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 31 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p vello_encoding --lib`

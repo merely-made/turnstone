@@ -1,0 +1,11 @@
+RESULT ok
+captured app_before_same_id_save
+waited 50 frames
+captured app_same_id_saved_unapplied
+captured app_same_id_applied
+captured app_same_id_narrow
+presentation frames=126 captures=4 blank=0
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/same-id/app/app_before_same_id_save.png digest=bd4d8664f08405af blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/same-id/app/app_same_id_saved_unapplied.png digest=2ea007b4bf078b9d blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/same-id/app/app_same_id_applied.png digest=cd6a227c81f4ddeb blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/same-id/app/app_same_id_narrow.png digest=3b641df08d2e6ab2 blank=false

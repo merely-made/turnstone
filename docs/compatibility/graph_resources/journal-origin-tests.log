@@ -1,0 +1,242 @@
+JOURNAL GREEN
+
+running 15 tests
+test host_journal::journal_tests::equal_node_ids_keep_distinct_runtime_origins ... ok
+test host_journal::journal_tests::append_exhaustion_is_latched_without_wrapping ... ok
+test host_journal::journal_tests::complete_typed_author_is_retained ... ok
+test host_journal::journal_tests::generation_exhaustion_refuses_and_latches ... ok
+test host_journal::journal_tests::interrupted_cascade_keeps_new_watch_table_after_same_session_reload ... ok
+test host_journal::journal_tests::exhausted_restored_cursor_refuses_without_poisoning_other_sessions ... ok
+test host_journal::journal_tests::final_captured_ordinal_refuses_the_next_execution_before_any_write ... ok
+test host_journal::journal_tests::foreign_only_tail_still_advances_scan_boundary ... ok
+test host_journal::journal_tests::poisoned_capture_is_visible_and_cannot_supply_fresh_triggers ... ok
+test host_journal::journal_tests::nested_author_guards_restore_all_fields_even_on_unwind ... ok
+test host_journal::journal_tests::reloaded_graph_and_session_get_new_generation ... ok
+test host_journal::journal_tests::graph_owned_recorder_records_once_and_clone_scratch_is_silent ... ok
+test host_journal::journal_tests::restored_cursor_is_a_floor_not_a_vector_index ... ok
+test host_journal::journal_tests::runtime_binding_requires_exact_generation_and_session ... ok
+test host_journal::journal_tests::typed_subject_projection_preserves_no_self_wake ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+journal-absent-red.log
+error[E0433]: cannot find type `HostJournal` in this scope
+  --> /tmp/turnstone-journal-prepare-pkjyawbt/proposed/src/host_journal.rs:10:21
+   |
+10 |         let mut j = HostJournal::new();
+   |                     ^^^^^^^^^^^ use of undeclared type `HostJournal`
+
+error[E0433]: cannot find type `HostJournal` in this scope
+  --> /tmp/turnstone-journal-prepare-pkjyawbt/proposed/src/host_journal.rs:21:21
+   |
+21 |         let mut j = HostJournal::new();
+   |                     ^^^^^^^^^^^ use of undeclared type `HostJournal`
+
+error[E0433]: cannot find type `HostJournal` in this scope
+  --> /tmp/turnstone-journal-prepare-pkjyawbt/proposed/src/host_journal.rs:33:21
+   |
+33 |         let mut j = HostJournal::new();
+   |                     ^^^^^^^^^^^ use of undeclared type `HostJournal`
+
+error[E0433]: cannot find type `HostJournal` in this scope
+  --> /tmp/turnstone-journal-prepare-pkjyawbt/proposed/src/host_journal.rs:44:21
+   |
+44 |         let mut j = HostJournal::new();
+   |                     ^^^^^^^^^^^ use of undeclared type `HostJournal`
+
+error[E0433]: cannot find type `HostJournal` in this scope
+  --> /tmp/turnstone-journal-prepare-pkjyawbt/proposed/src/host_journal.rs:54:21
+   |
+54 |         let mut j = HostJournal::new();
+   |                     ^^^^^^^^^^^ use of undeclared type `HostJournal`
+
+error[E0433]: cannot find type `JournalError` in this scope
+  --> /tmp/turnstone-journal-prepare-pkjyawbt/proposed/src/host_journal.rs:55:56
+   |
+55 |         assert_eq!(j.raise_cursor_floor(u64::MAX), Err(JournalError::SequenceExhausted));
+   |                                                        ^^^^^^^^^^^^ use of undeclared type `JournalError`
+
+error[E0433]: cannot find type `HostJournal` in this scope
+  --> /tmp/turnstone-journal-prepare-pkjyawbt/proposed/src/host_journal.rs:62:21
+   |
+62 |         let mut j = HostJournal::new();
+   |                     ^^^^^^^^^^^ use of undeclared type `HostJournal`
+
+error[E0433]: cannot find type `JournalError` in this scope
+  --> /tmp/turnstone-journal-prepare-pkjyawbt/proposed/src/host_journal.rs:66:65
+   |
+66 |         assert_eq!(j.record_as(a, Author::user(), delta()), Err(JournalError::SequenceExhausted));
+   |                                                                 ^^^^^^^^^^^^ use of undeclared type `JournalError`
+
+error[E0433]: cannot find type `JournalError` in this scope
+  --> /tmp/turnstone-journal-prepare-pkjyawbt/proposed/src/host_journal.rs:69:37
+   |
+69 |         assert_eq!(j.error(), Some(&JournalError::SequenceExhausted));
+   |                                     ^^^^^^^^^^^^ use of undeclared type `JournalError`
+
+error[E0433]: cannot find type `HostJournal` in this scope
+  --> /tmp/turnstone-journal-prepare-pkjyawbt/proposed/src/host_journal.rs:73:21
+   |
+73 |         let mut j = HostJournal::new();
+   |                     ^^^^^^^^^^^ use of undeclared type `HostJournal`
+
+error: aborting due to 10 previous errors
+
+For more information about this error, try `rustc --explain E0433`.
+
+origin-red.log
+
+running 1 test
+test host_journal::journal_tests::equal_node_ids_keep_distinct_runtime_origins ... FAILED
+
+failures:
+
+---- host_journal::journal_tests::equal_node_ids_keep_distinct_runtime_origins stdout ----
+
+thread 'host_journal::journal_tests::equal_node_ids_keep_distinct_runtime_origins' (817073) panicked at /tmp/turnstone-journal-prepare-pkjyawbt/origin-bad.rs:251:9:
+assertion `left == right` failed
+  left: 2
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    host_journal::journal_tests::equal_node_ids_keep_distinct_runtime_origins
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.00s
+
+
+sequence-red.log
+
+running 1 test
+test host_journal::journal_tests::restored_cursor_is_a_floor_not_a_vector_index ... FAILED
+
+failures:
+
+---- host_journal::journal_tests::restored_cursor_is_a_floor_not_a_vector_index stdout ----
+
+thread 'host_journal::journal_tests::restored_cursor_is_a_floor_not_a_vector_index' (817104) panicked at /tmp/turnstone-journal-prepare-pkjyawbt/sequence-bad.rs:260:9:
+assertion `left == right` failed
+  left: 1
+ right: 901
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    host_journal::journal_tests::restored_cursor_is_a_floor_not_a_vector_index
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.00s
+
+
+generation-red.log
+
+running 1 test
+test host_journal::journal_tests::reloaded_graph_and_session_get_new_generation ... FAILED
+
+failures:
+
+---- host_journal::journal_tests::reloaded_graph_and_session_get_new_generation stdout ----
+
+thread 'host_journal::journal_tests::reloaded_graph_and_session_get_new_generation' (817134) panicked at /tmp/turnstone-journal-prepare-pkjyawbt/generation-bad.rs:285:9:
+assertion `left != right` failed
+  left: RuntimeOrigin { graph: GraphId(00000000-0000-0000-0000-000000000001), session: Some(SessionId(b6585ffa-3fcd-4572-9036-1a741fb345a7)), generation: 1 }
+ right: RuntimeOrigin { graph: GraphId(00000000-0000-0000-0000-000000000001), session: Some(SessionId(b6585ffa-3fcd-4572-9036-1a741fb345a7)), generation: 1 }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    host_journal::journal_tests::reloaded_graph_and_session_get_new_generation
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.00s
+
+
+restore-red.log
+
+running 1 test
+test host_journal::journal_tests::interrupted_cascade_keeps_new_watch_table_after_same_session_reload ... FAILED
+
+failures:
+
+---- host_journal::journal_tests::interrupted_cascade_keeps_new_watch_table_after_same_session_reload stdout ----
+
+thread 'host_journal::journal_tests::interrupted_cascade_keeps_new_watch_table_after_same_session_reload' (817165) panicked at /tmp/turnstone-journal-prepare-pkjyawbt/restore-bad.rs:475:9:
+assertion failed: !restore_table(&mut current, table(1), old_origin, Some(new_origin))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    host_journal::journal_tests::interrupted_cascade_keeps_new_watch_table_after_same_session_reload
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.00s
+
+
+author-red.log
+
+running 1 test
+test host_journal::journal_tests::nested_author_guards_restore_all_fields_even_on_unwind ... FAILED
+
+failures:
+
+---- host_journal::journal_tests::nested_author_guards_restore_all_fields_even_on_unwind stdout ----
+
+thread 'host_journal::journal_tests::nested_author_guards_restore_all_fields_even_on_unwind' (817244) panicked at /tmp/turnstone-journal-prepare-pkjyawbt/author-bad.rs:379:17:
+script failed
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'host_journal::journal_tests::nested_author_guards_restore_all_fields_even_on_unwind' (817244) panicked at /tmp/turnstone-journal-prepare-pkjyawbt/author-bad.rs:382:13:
+assertion `left == right` failed
+  left: Author { kind: Person, id: "user", version: None, via: None }
+ right: Author { kind: Script, id: "outer", version: Some("body-1"), via: Some("turnstone") }
+
+
+failures:
+    host_journal::journal_tests::nested_author_guards_restore_all_fields_even_on_unwind
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.00s
+
+
+execution-exhaustion-red.log
+
+running 1 test
+test host_journal::journal_tests::final_captured_ordinal_refuses_the_next_execution_before_any_write ... FAILED
+
+failures:
+
+---- host_journal::journal_tests::final_captured_ordinal_refuses_the_next_execution_before_any_write stdout ----
+
+thread 'host_journal::journal_tests::final_captured_ordinal_refuses_the_next_execution_before_any_write' (819833) panicked at /tmp/turnstone-journal-prepare-pkjyawbt/proposed/src/host_journal.rs:500:9:
+assertion `left == right` failed
+  left: None
+ right: Some(SequenceExhausted)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    host_journal::journal_tests::final_captured_ordinal_refuses_the_next_execution_before_any_write
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 14 filtered out; finished in 0.00s
+
+
+CACHED RUNTIME BUILD LIMITATION
+error[E0433]: cannot find `graph_placement` in `pandect`
+  --> /tmp/turnstone-journal-prepare-pkjyawbt/proposed/src/app/runtime_pool.rs:34:85
+   |
+34 |     pub(crate) persistence: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile>,
+   |                                                                                     ^^^^^^^^^^^^^^^ could not find `graph_placement` in `pandect`
+
+error[E0433]: cannot find `graph_placement` in `pandect`
+   --> /tmp/turnstone-journal-prepare-pkjyawbt/proposed/src/app/runtime_pool.rs:108:105
+    |
+108 | ...nce::SessionPersistence<pandect::graph_placement::PlacementProfile> {
+    |                                     ^^^^^^^^^^^^^^^ could not find `graph_placement` in `pandect`
+
+error[E0433]: cannot find `graph_placement` in `pandect`
+   --> /tmp/turnstone-journal-prepare-pkjyawbt/proposed/src/app/runtime_pool.rs:114:72
+    |
+114 |         state: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile>,
+    |                                                                        ^^^^^^^^^^^^^^^ could not find `graph_placement` in `pandect`
+
+error: aborting due to 3 previous errors
+
+For more information about this error, try `rustc --explain E0433`.
