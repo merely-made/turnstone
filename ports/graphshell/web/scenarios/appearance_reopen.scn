@@ -1,0 +1,10 @@
+# Same origin/profile after appearance_modes.scn.
+assert snap ready == true
+assert snap appearance-owner == application
+assert snap appearance-theme == theme:graphshell-garden-receipt
+assert snap appearance-mode == custom:garden
+assert snap appearance-background == rgb(32, 48, 32)
+assert dom [data-appearance-status-text] Saved appearance reopened
+capture appearance_reopened
+wait
+log shared Tabard appearance reopened

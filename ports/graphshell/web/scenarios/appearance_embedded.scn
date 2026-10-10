@@ -1,0 +1,11 @@
+# After saving the app preference, embed.html still belongs to its host.
+assert snap ready == true
+assert title An embedding page
+assert dom #host-title An embedding page
+assert snap appearance-owner == host
+assert snap appearance-background == rgb(244, 239, 230)
+assert attr #search-input data-host-keys 0
+assert attr #session-local data-host-clicks 0
+capture appearance_embedded_host
+wait
+log embedded appearance inherits host roles
