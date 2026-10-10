@@ -14,17 +14,18 @@ pub mod app_client;
 pub mod browser_host;
 #[cfg(feature = "personal-sync")]
 pub mod carriage_host;
+pub mod custody;
+pub mod custody_client;
 pub mod device_broker;
 pub mod endpoint_catalog;
 #[cfg(feature = "personal-sync")]
 pub mod graph_keys;
-pub mod identity_ui;
 pub mod local_endpoint;
 pub mod local_session;
-pub mod personae_host;
 #[cfg(feature = "personal-sync")]
 pub mod personal_sync_host;
 pub mod projection_host;
+pub mod resident_identity;
 pub mod tasks;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod transfer_staging;

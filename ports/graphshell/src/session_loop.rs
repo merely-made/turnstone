@@ -336,7 +336,6 @@ mod tests {
         BrowserChallenge, BrowserLauncher, BrowserLink, BrowserMessage, CHROMIUM_EXTENSION_ID,
         admit_browser_session,
     };
-    use crate::identity::VaultProtectionView;
     use crate::identity_endpoint::IdentityEndpoint;
     use crate::identity_projection::{SIGNING_APPROVE_ONCE_INTENT, SigningDecisionIntentV1};
     use chirograph::{
@@ -354,14 +353,8 @@ mod tests {
         ServiceAccess, ServiceRule, SessionClaims, SessionFacts, TrafficClass, TrustedRoot,
     };
     use personae::delegation::Issue;
-    use personae::{
-        Ed25519Keypair, IdentityProvider, IdentityVault, InMemoryProvider, InMemoryStorage,
-        Profile, ProfileId,
-    };
+    use personae::{IdentityProvider, InMemoryProvider};
     use sceno::InstanceId;
-    use signature::Verifier;
-    use ssh_agent_lib::agent::Session;
-    use ssh_agent_lib::proto::SignRequest;
     use std::sync::Arc;
     use std::sync::atomic::{AtomicU64, Ordering};
     use tokio::io::BufReader as TokioBufReader;
@@ -583,48 +576,32 @@ mod tests {
         use base64::Engine;
         use ssh_key::{Algorithm, LineEnding};
 
+        // A fixed authority holding one pending signing request: the carrier
+        // and endpoint are what is under test here. The keeper's own approval
+        // path (agent, broker, signature) is castellan's and djinn's to prove.
         let mut private =
             ssh_key::PrivateKey::random(&mut rand_core::OsRng, Algorithm::Ed25519).unwrap();
         private.set_comment("admitted-identity");
-        let public = ssh_key::PublicKey::from(&private);
         let private_openssh = private.to_openssh(LineEnding::LF).unwrap().to_string();
-        let mut profile = Profile::new(
-            ProfileId("research".to_string()),
-            "Research",
-            Ed25519Keypair::from_seed([0x7c; 32]),
+        let pending = personae::signing::SigningRequest::new(
+            "research",
+            "SHA256:admitted-identity",
+            "ssh.sign",
+            b"approved by admitted browser client",
+            "ssh-agent",
         );
-        profile.slots.insert(
-            personae::ssh_slot::protocol_key_for(&private),
-            personae::ssh_slot::slot_for(&private, personae::UnlockTier::PerUse).unwrap(),
+        let pending_id = pending.request_id;
+        let mut fixed = crate::native::resident_identity::test_support::fixed_snapshot();
+        fixed
+            .pending_signing
+            .push(personae::signing::PendingSigningRequest {
+                request: pending,
+                policy: personae::signing::SigningPolicy::PerUse,
+                expires_at_ms: u64::MAX,
+            });
+        let host = crate::native::resident_identity::test_support::FixedIdentity::with_snapshot(
+            0x7c, fixed,
         );
-        let host = Arc::new(crate::native::personae_host::PersonaeHost::new(
-            IdentityVault::with_profile(InMemoryStorage::new(), profile),
-            None,
-            VaultProtectionView::Ephemeral,
-        ));
-        let verify_data = b"approved by admitted browser client".to_vec();
-        let sign_data = verify_data.clone();
-        let sign_credential = public.key_data().clone().into();
-        let mut agent = host.agent_session();
-        let signing = tokio::spawn(async move {
-            agent
-                .sign(SignRequest {
-                    credential: sign_credential,
-                    data: sign_data,
-                    flags: 0,
-                })
-                .await
-        });
-        tokio::time::timeout(std::time::Duration::from_secs(1), async {
-            loop {
-                if !host.snapshot().unwrap().pending_signing.is_empty() {
-                    break;
-                }
-                tokio::task::yield_now().await;
-            }
-        })
-        .await
-        .unwrap();
 
         let launcher =
             BrowserLauncher::parse(&[format!("chrome-extension://{CHROMIUM_EXTENSION_ID}/")])
@@ -686,7 +663,10 @@ mod tests {
 
         let server_task = tokio::spawn(async move {
             let revocations = RwLock::new(RevocationLedger::default());
-            let mut resume = |_: &mut IdentityEndpoint<InMemoryStorage>, _: ResumeRequest| {
+            let mut resume = |_: &mut IdentityEndpoint<
+                crate::native::resident_identity::test_support::FixedIdentity,
+            >,
+                              _: ResumeRequest| {
                 Err("identity resume is not implemented".to_string())
             };
             serve_admitted_session(
@@ -833,9 +813,15 @@ mod tests {
             intent.body,
             Ok(CarrierResponseBody::Intent(IntentResult::Accepted))
         ));
-        let signature = signing.await.unwrap().unwrap();
-        public.key_data().verify(&verify_data, &signature).unwrap();
-        assert_eq!(host.snapshot().unwrap().signing_history.len(), 1);
+        assert_eq!(
+            request_id, pending_id,
+            "the card disclosed the pending request"
+        );
+        assert_eq!(
+            host.intents.lock().unwrap().as_slice(),
+            [SIGNING_APPROVE_ONCE_INTENT.to_string()],
+            "the approval reached the resident authority"
+        );
 
         let closed = browser
             .request(&carrier_request(100, CarrierRequestBody::Close))

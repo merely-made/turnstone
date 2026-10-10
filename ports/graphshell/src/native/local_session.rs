@@ -25,7 +25,7 @@ use notochord::{
     ServiceRule, TrustedRoot,
 };
 use personae::delegation::DelegationError;
-use personae::{IdentityError, IdentityProvider, IdentityStorage, InMemoryProvider, RetainedKeys};
+use personae::{IdentityError, IdentityProvider, InMemoryProvider, RetainedKeys};
 use tokio::io::DuplexStream;
 
 use crate::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};
@@ -34,7 +34,7 @@ use crate::identity_endpoint::IdentityEndpoint;
 use crate::lifecycle::SessionAuthority;
 use crate::native::browser_host::{BrowserHostError, now_ms};
 use crate::native::device_broker::DeviceSurface;
-use crate::native::personae_host::PersonaeHost;
+use crate::native::resident_identity::ResidentIdentity;
 
 const NETWORK_DOMAIN: &[u8] = b"mere.graphshell/local-browser-network/v1";
 const ROOT_DOMAIN: &[u8] = b"mere.graphshell/local-browser-root/v1";
@@ -60,12 +60,6 @@ pub trait DoorIdentity: Send + Sync {
 }
 
 /// The resident host keeps the door keys through every lock.
-impl<S: IdentityStorage + 'static> DoorIdentity for PersonaeHost<S> {
-    fn door_keys(&self) -> Result<Arc<RetainedKeys>, IdentityError> {
-        self.retained_keys(&door_salts(self.master_public_key().to_bytes()))
-    }
-}
-
 /// A fixture provider never locks; it captures afresh.
 impl DoorIdentity for InMemoryProvider {
     fn door_keys(&self) -> Result<Arc<RetainedKeys>, IdentityError> {
@@ -150,11 +144,11 @@ pub(crate) async fn admit_local_client<D: DoorIdentity + ?Sized>(
 /// Both doors compose the same one. A card naming content the session cannot
 /// then read would be a card that lies, so the reader and the released blobs
 /// travel with the cards rather than being wired per door.
-pub(crate) fn identity_endpoint_for<S: IdentityStorage + 'static>(
-    personae: Arc<PersonaeHost<S>>,
+pub(crate) fn identity_endpoint_for<A: ResidentIdentity + ?Sized>(
+    personae: Arc<A>,
     authority: &SessionAuthority,
     surface: DeviceSurface,
-) -> IdentityEndpoint<S> {
+) -> IdentityEndpoint<A> {
     let mut endpoint =
         IdentityEndpoint::for_admitted_with_cards(personae, authority, surface.cards);
     endpoint.with_decisions(surface.decisions);

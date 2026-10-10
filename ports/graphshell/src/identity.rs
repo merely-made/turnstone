@@ -4,16 +4,10 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! Castellan's secret-free identity read model, at its pre-founding path.
+//! The secret-free identity read model Graphshell projects.
 //!
-//! The types moved home to [`castellan::view`] when the keeper surface was
-//! founded (2026-08-14): by the port law, identity is a capability the stack
-//! owns, castellan is its port, and graphshell composes it. This shim keeps
-//! every existing graphshell call site — the endpoint, the native hosts, the
-//! receipt bins — compiling unchanged.
-//!
-//! Since the dramatis repo plan's DR-A (2026-10-09) the types themselves live
-//! in `dramatis::view`; castellan re-exports them, and this shim reaches them
-//! through castellan.
+//! The types live in `dramatis::view` (dramatis repo plan, DR-A). Since DR-C
+//! Graphshell reaches them there directly rather than through castellan,
+//! which only djinn links (rulings D4, D15).
 
-pub use castellan::view::*;
+pub use dramatis::view::*;

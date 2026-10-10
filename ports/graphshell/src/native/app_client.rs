@@ -27,6 +27,7 @@ use rand_core::{OsRng, RngCore};
 use crate::browser_carrier::{read_native_message_async, write_native_message_async};
 use crate::native::app_admission::{AppHello, AppId, AppRouteId, configured_app_endpoint};
 use crate::native::app_broker::{APP_CONNECT_SCHEMA, AppBrokerError, AppHostMessage, AppMessage};
+use crate::native::custody::{CustodyAnswer, CustodyCall, CustodyRefusal};
 use crate::native::local_endpoint::{LocalStream, connect_local};
 
 #[derive(Debug, thiserror::Error)]
@@ -249,6 +250,32 @@ impl AppBrokerClient {
         }
     }
 
+    /// One call on the custody route. Only a client opened on
+    /// [`crate::native::custody::CUSTODY_ROUTE`] is answered; see
+    /// [`crate::native::custody_client`] for the typed calls.
+    pub async fn custody_call(
+        &mut self,
+        call: CustodyCall,
+    ) -> Result<Result<CustodyAnswer, CustodyRefusal>, AppClientError> {
+        let id = self.next_id;
+        self.next_id += 1;
+        write_native_message_async(&mut self.stream, &AppMessage::Call { id, call }).await?;
+        match read_host(&mut self.stream).await? {
+            AppHostMessage::Answer {
+                id: answered,
+                answer,
+            } if answered == id => Ok(answer),
+            AppHostMessage::Answer { id: answered, .. } => {
+                Err(AppClientError::MismatchedResponse {
+                    expected: id,
+                    got: answered,
+                })
+            },
+            AppHostMessage::Failure { message } => Err(AppClientError::Refused(message)),
+            other => Err(unexpected("a custody answer", &other)),
+        }
+    }
+
     /// Take one already-received resident notice.
     pub async fn take_notice(&mut self) -> Result<Option<CarrierNotice>, AppClientError> {
         write_native_message_async(&mut self.stream, &AppMessage::TakeNotice).await?;
@@ -359,6 +386,7 @@ fn unexpected(expected: &'static str, got: &AppHostMessage) -> AppClientError {
         AppHostMessage::Connected { .. } => "connected",
         AppHostMessage::Response { .. } => "a carrier response",
         AppHostMessage::Notice { .. } => "a carrier notice",
+        AppHostMessage::Answer { .. } => "a custody answer",
         AppHostMessage::Failure { .. } => "a failure",
     };
     AppClientError::UnexpectedAnswer { expected, got }
