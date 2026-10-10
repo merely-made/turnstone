@@ -253,6 +253,7 @@ main { background-color:var(--tabard-color-bg); }
 .action, .action-submit { background-color:var(--tabard-color-primary); color:var(--tabard-color-on-primary); }
 .brand, .session-name, .selection, .detail-title, .remote-card-title, .action-form-title, .action-field-label, .product-status, .card-title, .tools-active, .tools-cards, .preview-title { color:var(--tabard-color-text); }
 .subtitle, .hint, .eyebrow, .address, .action-help, .action-choice, .proof-copy, .tools-caption, .tree-tools .tools-caption, .tools-status, .tools-storage, .tools-note, .card-detail, .preview-status { color:var(--tabard-color-text-dim); }
+.preview-card.selected .card-title, .preview-card.selected .card-detail { color:var(--tabard-color-on-tertiary); }
 .action-choice.selected, .remote-card-kicker { color:var(--tabard-color-primary); }
 .action-form, .tools-section + .tools-section { border-color:var(--tabard-color-text-dim); }
 .action-form-error { color:var(--tabard-color-danger); }
