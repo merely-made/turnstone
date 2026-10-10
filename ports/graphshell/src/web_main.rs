@@ -52,54 +52,7 @@ use web_scenario::{DomAction, ScenarioRun};
 use web_view::{ChromeModel, build_chrome_scene};
 
 const REMOTE_LABEL: &str = "Remote projection · 2 objects";
-const CAPTURE_POLICY_GLOBAL: &str = "graphshellCapturePolicyJson";
-const CAPTURE_VISITS_GLOBAL: &str = "graphshellInitialVisitsJson";
-const HISTORY_FILTER_GLOBAL: &str = "graphshellHistoryFilterJson";
-const HISTORY_FORGET_GLOBAL: &str = "graphshellHistoryForgetJson";
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-struct InitialCaptureSummary {
-    active: bool,
-    accepted: usize,
-    dropped: usize,
-}
-
-#[derive(Clone, Debug, Default, Deserialize)]
-#[serde(default, deny_unknown_fields)]
-struct HistoryFilterInput {
-    start_ms: Option<u64>,
-    end_ms: Option<u64>,
-    persona: Option<String>,
-    device: Option<String>,
-}
-
-impl From<HistoryFilterInput> for AccessRecordFilter {
-    fn from(value: HistoryFilterInput) -> Self {
-        Self {
-            start_ms: value.start_ms,
-            end_ms: value.end_ms,
-            persona: value.persona,
-            device: value.device,
-        }
-    }
-}
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
-struct HistoryForgetInput {
-    url: String,
-    #[serde(default)]
-    remove_object: bool,
-}
-
-#[derive(Clone, Debug, Default)]
-struct HistoryControlSummary {
-    active: bool,
-    records: Vec<AccessRecord>,
-    forget_attempted: bool,
-    forgotten: usize,
-    error: Option<String>,
-}
+use crate::web_capture::*;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum ActiveSession {
@@ -227,65 +180,10 @@ impl ProjectionDefinitionSink for SessionProjectionSink<'_> {
     }
 }
 
-fn initial_projection_draft() -> ProjectionDraft {
-    ProjectionDraft {
-        version: graphshell::projection_editor::PROJECTION_DEFINITION_VERSION,
-        id: "graphshell-reference".to_string(),
-        label: "Graphshell reference projection".to_string(),
-        source: SourceBinding {
-            authority: "graphshell-reference-host".to_string(),
-            domain: "mere.graph".to_string(),
-            resource: "fixture.graphshell/reference".to_string(),
-        },
-        reading: Reading {
-            kind: "nodes".to_string(),
-            key: "title".to_string(),
-            value: None,
-        },
-        encoding: Encoding {
-            x: Channel::Field("x".to_string()),
-            y: Channel::Field("y".to_string()),
-            color: Some(Channel::Field("kind".to_string())),
-            label: Some(Channel::Field("title".to_string())),
-        },
-        arrangement: graphshell::projection_editor::Arrangement {
-            kind: "phyllotaxis.default".to_string(),
-            direction: "horizontal".to_string(),
-            spacing: 16,
-            options: Default::default(),
-        },
-        interaction: Interaction {
-            selection: SelectionMode::Single,
-            pan: true,
-            zoom: true,
-        },
-        appearance: Appearance {
-            realization: "canvas".to_string(),
-            title: "Graphshell reference projection".to_string(),
-            theme: "dark".to_string(),
-        },
-        provenance: Provenance {
-            author: "Graphshell reference host".to_string(),
-            source_revision: Some("fixture-v1".into()),
-            revision_evidence: RevisionEvidence::PublicGeneration,
-            note: "Host-owned editor fixture".to_string(),
-        },
-    }
-}
+fn initial_projection_draft() -> ProjectionDraft { graphshell::projection_editor::initial_projection_draft() }
 
 fn draft_from_definition(definition: &ProjectionDefinition) -> ProjectionDraft {
-    ProjectionDraft {
-        version: definition.version,
-        id: definition.id.clone(),
-        label: definition.label.clone(),
-        source: definition.source.clone(),
-        reading: definition.reading.clone(),
-        encoding: definition.encoding.clone(),
-        arrangement: definition.arrangement.clone(),
-        interaction: definition.interaction.clone(),
-        appearance: definition.appearance.clone(),
-        provenance: definition.provenance.clone(),
-    }
+    graphshell::local_projection::draft_from_definition(definition)
 }
 
 impl BrowserHost {
@@ -589,92 +487,11 @@ impl BrowserHost {
     }
 
     fn update_projection_field(&mut self, field: &str, value: &str) {
-        let mut draft = self.projection_editor.draft().clone();
-        let action = match field {
-            "source.authority" => {
-                draft.source.authority = value.to_string();
-                EditorAction::SetSource(draft.source)
-            },
-            "source.domain" => {
-                draft.source.domain = value.to_string();
-                EditorAction::SetSource(draft.source)
-            },
-            "source.resource" => {
-                draft.source.resource = value.to_string();
-                EditorAction::SetSource(draft.source)
-            },
-            "reading.key" => {
-                draft.reading.key = value.to_string();
-                EditorAction::SetReading(draft.reading)
-            },
-            "encoding.x" => {
-                draft.encoding.x = Channel::Field(value.to_string());
-                EditorAction::SetEncoding(draft.encoding)
-            },
-            "encoding.y" => {
-                draft.encoding.y = Channel::Field(value.to_string());
-                EditorAction::SetEncoding(draft.encoding)
-            },
-            "encoding.label" => {
-                draft.encoding.label = Some(Channel::Field(value.to_string()));
-                EditorAction::SetEncoding(draft.encoding)
-            },
-            "arrangement.kind" => EditorAction::SetArrangement(
-                graphshell::projection_editor::with_kind(
-                    &draft.arrangement,
-                    value,
-                    graphshell::projection_compile::practice_compiler().registry(),
-                ),
-            ),
-            "arrangement.direction" => {
-                draft.arrangement.direction = value.to_string();
-                EditorAction::SetArrangement(draft.arrangement)
-            },
-            "arrangement.spacing" => match value.parse::<u32>() {
-                Ok(spacing) => {
-                    draft.arrangement.spacing = spacing;
-                    EditorAction::SetArrangement(draft.arrangement)
-                },
-                Err(_) => {
-                    // The typed draft must also become invalid, otherwise Save
-                    // would silently persist the previous spacing value.
-                    draft.arrangement.spacing = 0;
-                    self.projection_editor
-                        .reduce(EditorAction::SetArrangement(draft.arrangement), now_ms());
-                    self.recompile_projection();
-                    self.projection_editor_status =
-                        "Invalid · arrangement.spacing must be a number".to_string();
-                    self.projection_editor_open = true;
-                    self.chrome_dirty = true;
-                    return;
-                },
-            },
-            "appearance.realization" => {
-                draft.appearance.realization = value.to_string();
-                EditorAction::SetAppearance(draft.appearance)
-            },
-            "appearance.title" => {
-                draft.appearance.title = value.to_string();
-                EditorAction::SetAppearance(draft.appearance)
-            },
-            "provenance.author" => {
-                draft.provenance.author = value.to_string();
-                EditorAction::SetProvenance(draft.provenance)
-            },
-            "provenance.source_revision" => {
-                draft.provenance.source_revision = Some(value.into());
-                draft.provenance.revision_evidence = RevisionEvidence::PublicGeneration;
-                EditorAction::SetProvenance(draft.provenance)
-            },
-            "provenance.note" => {
-                draft.provenance.note = value.to_string();
-                EditorAction::SetProvenance(draft.provenance)
-            },
-            _ => return,
+        self.projection_editor_status = match self.projection_editor.edit_field(field, value, now_ms()) {
+            Ok(()) => format!("Edited · {field}"),
+            Err(error) => error,
         };
-        self.projection_editor.reduce(action, now_ms());
         self.recompile_projection();
-        self.projection_editor_status = format!("Edited · {field}");
         self.projection_editor_open = true;
         self.chrome_dirty = true;
     }
@@ -1423,153 +1240,6 @@ fn update_projection_editor_semantics(host: &BrowserHost) -> Result<(), String> 
     )
     .map_err(|_| "could not expose projection editor save count")?;
     Ok(())
-}
-
-fn global_json(window: &Window, name: &str) -> Result<Option<String>, String> {
-    let value = js_sys::Reflect::get(window.as_ref(), &JsValue::from_str(name))
-        .map_err(|_| format!("could not read browser global {name}"))?;
-    Ok(value.as_string())
-}
-
-fn initial_capture_input(
-    window: &Window,
-) -> Result<Option<(HistoryCapturePolicy, Vec<BrowserVisit>)>, String> {
-    let Some(policy_json) = global_json(window, CAPTURE_POLICY_GLOBAL)? else {
-        return Ok(None);
-    };
-    let policy = serde_json::from_str(&policy_json)
-        .map_err(|error| format!("invalid browser capture policy: {error}"))?;
-    let visits_json =
-        global_json(window, CAPTURE_VISITS_GLOBAL)?.unwrap_or_else(|| "[]".to_string());
-    let visits = serde_json::from_str(&visits_json)
-        .map_err(|error| format!("invalid browser visit batch: {error}"))?;
-    Ok(Some((policy, visits)))
-}
-
-async fn apply_initial_capture(
-    app: &mut GraphshellApp<IndexedDbBackend>,
-    store: &mut IndexedDbBackend,
-    input: Option<(HistoryCapturePolicy, Vec<BrowserVisit>)>,
-    persona: &str,
-    now_secs: u64,
-) -> Result<InitialCaptureSummary, String> {
-    let Some((policy, visits)) = input else {
-        return Ok(InitialCaptureSummary::default());
-    };
-    let mut capture = BrowserHistoryCapture::load(store, policy)
-        .await
-        .map_err(|error| error.to_string())?;
-    if visits.is_empty() {
-        return Ok(InitialCaptureSummary {
-            active: capture.policy().enabled,
-            ..InitialCaptureSummary::default()
-        });
-    }
-    let outcomes = capture
-        .ingest_batch(
-            &mut app.host,
-            store,
-            visits,
-            persona,
-            FIXTURE_DEVICE_TWO_ADDRESS,
-            now_secs,
-        )
-        .await
-        .map_err(|error| error.to_string())?;
-    Ok(InitialCaptureSummary {
-        active: capture.policy().enabled,
-        accepted: outcomes
-            .iter()
-            .filter(|outcome| matches!(outcome, CaptureOutcome::Accepted { .. }))
-            .count(),
-        dropped: outcomes
-            .iter()
-            .filter(|outcome| matches!(outcome, CaptureOutcome::Dropped(_)))
-            .count(),
-    })
-}
-
-fn history_control_input(
-    window: &Window,
-) -> Result<Option<(AccessRecordFilter, Option<HistoryForgetInput>)>, String> {
-    let Some(filter_json) = global_json(window, HISTORY_FILTER_GLOBAL)? else {
-        return Ok(None);
-    };
-    let filter: HistoryFilterInput = serde_json::from_str(&filter_json)
-        .map_err(|error| format!("invalid history authority filter: {error}"))?;
-    let forget = global_json(window, HISTORY_FORGET_GLOBAL)?
-        .map(|json| {
-            serde_json::from_str(&json)
-                .map_err(|error| format!("invalid history forget request: {error}"))
-        })
-        .transpose()?;
-    Ok(Some((filter.into(), forget)))
-}
-
-async fn apply_history_controls(
-    app: &mut GraphshellApp<IndexedDbBackend>,
-    store: &mut IndexedDbBackend,
-    policy: HistoryCapturePolicy,
-    now_secs: u64,
-) -> HistoryControlSummary {
-    let browser_window = match window() {
-        Ok(window) => window,
-        Err(error) => {
-            return HistoryControlSummary {
-                active: true,
-                error: Some(error),
-                ..HistoryControlSummary::default()
-            };
-        },
-    };
-    let input = match history_control_input(&browser_window) {
-        Ok(input) => input,
-        Err(error) => {
-            return HistoryControlSummary {
-                active: true,
-                error: Some(error),
-                ..HistoryControlSummary::default()
-            };
-        },
-    };
-    let Some((filter, forget)) = input else {
-        return HistoryControlSummary::default();
-    };
-    let mut summary = HistoryControlSummary {
-        active: true,
-        forget_attempted: forget.is_some(),
-        ..HistoryControlSummary::default()
-    };
-    if let Some(forget) = forget {
-        let mode = if forget.remove_object {
-            ForgetMode::RemoveCapturedObject
-        } else {
-            ForgetMode::HistoryOnly
-        };
-        let result = async {
-            let mut capture = BrowserHistoryCapture::load(store, policy).await?;
-            capture
-                .forget_url(&mut app.host, store, &forget.url, mode, now_secs)
-                .await
-        }
-        .await;
-        match result {
-            Ok(forgotten) => summary.forgotten = forgotten,
-            Err(error) => summary.error = Some(error.to_string()),
-        }
-    }
-    if summary.error.is_none() {
-        match query_access_records(store, &filter).await {
-            Ok(records) => {
-                summary.records = records
-                    .into_iter()
-                    .filter(|record| record.handler.starts_with(BROWSER_HISTORY_HANDLER_PREFIX))
-                    .collect();
-            },
-            Err(error) => summary.error = Some(error.to_string()),
-        }
-    }
-    summary
 }
 
 fn publish_capture_receipt(

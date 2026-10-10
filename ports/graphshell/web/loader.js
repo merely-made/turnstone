@@ -100,7 +100,7 @@ const treeReceipt = () => ({
   visibility: document.visibilityState,
   viewport: { width: window.innerWidth, height: window.innerHeight },
 });
-window.graphshellReceipt = () => document.querySelector("graphshell-tree") ? treeReceipt() : ({
+window.graphshellReceipt = () => graphshellRoot()?.dataset.presenter === "tree" ? treeReceipt() : ({
   practice: graphshellRoot()?.hasAttribute('data-practice-workspace') ? {
     view: graphshellRoot().dataset.practiceView,
     selection: graphshellRoot().dataset.practiceSelection,
@@ -423,7 +423,7 @@ try {
   // Two ways in, one component. `mountGraphshell(element)` is the plain
   // entry; `<graphshell-view>` is the same entry as a custom element, mounted
   // when it connects. Elements already in the document upgrade on define.
-  window.mountGraphshell = (element) => module.mount(element);
+  window.mountGraphshell = (element) => module.mount_tree(element);
   if (!customElements.get("graphshell-view")) {
     customElements.define(
       "graphshell-view",
@@ -431,7 +431,7 @@ try {
         connectedCallback() {
           if (!this.dataset.mounted) {
             this.dataset.mounted = "true";
-            module.mount(this);
+            module.mount_tree(this);
           }
         }
       },

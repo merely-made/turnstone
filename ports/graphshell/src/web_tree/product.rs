@@ -14,14 +14,30 @@ use graphshell::local_intake::{create_address, create_file, persist_intake, sync
 use mere::canvas::Role;
 use muniment::IndexedDbBackend;
 use uuid::Uuid;
+mod commands;
+mod detail;
+mod fields;
+mod find;
+mod history;
+mod projection;
+mod scenes;
+pub(super) use commands::menu;
+use fields::TextField;
+pub(super) use fields::focused_text;
+pub(super) use find::section as find_section;
+pub(super) use history::section as history_section;
+pub(super) use projection::{editor as projection_editor, section as projection_section};
+pub(super) use scenes::section as scenes_section;
 
 type App = GraphshellApp<IndexedDbBackend>;
 #[derive(Clone, Copy)]
 enum CompletedEdit {
     Metadata,
     Intake,
+    Detail(Option<Uuid>),
 }
 type Completion = (App, CompletedEdit, Result<NodeMetadata, String>);
+type OperationCompletion = (App, Result<(), String>);
 
 pub(super) struct SavedProduct {
     app: Option<App>,
@@ -48,18 +64,30 @@ pub(super) struct SavedProduct {
     file_requested: bool,
     /// A created but unacknowledged member. Retrying stores this same object.
     pending_intake: Option<Uuid>,
+    pending_detail: Option<CompletedEdit>,
+    detail: detail::DetailControls,
+    find: find::FindControls,
+    scenes: scenes::SceneControls,
+    projection: projection::ProjectionControls,
+    history: history::HistoryControls,
+    commands: commands::Commands,
+    operation_completed: Rc<RefCell<Option<OperationCompletion>>>,
+    operation_pending: bool,
+    operation_success: Option<String>,
 }
 
 /// The existing fixture and generated comparison routes remain unchanged.
 /// `?app=local` is the opt-in migration route onto the existing browser store.
-pub(super) async fn open() -> Result<Option<SavedProduct>, String> {
+pub(super) async fn open(root: &Element) -> Result<Option<SavedProduct>, String> {
     let search = super::super::window()?
         .location()
         .search()
         .map_err(|_| "cannot read page options")?;
     let params =
         web_sys::UrlSearchParams::new_with_str(&search).map_err(|_| "invalid page options")?;
-    if params.get("app").as_deref() != Some("local") {
+    let requested = params.get("app").as_deref() == Some("local");
+    let public_page = root.tag_name().eq_ignore_ascii_case("graphshell-view");
+    if !requested && (!public_page || web_graphs::requested().is_some()) {
         return Ok(None);
     }
     if web_graphs::requested().is_some() {
@@ -68,6 +96,7 @@ pub(super) async fn open() -> Result<Option<SavedProduct>, String> {
     let backend = IndexedDbBackend::open("graphshell-reference-host-h5", "muniment")
         .await
         .map_err(|error| error.to_string())?;
+    let capture_store = backend.clone();
     let mut app = GraphshellApp::open_or_fixture(
         backend,
         SelectedPersonaRef {
@@ -78,6 +107,7 @@ pub(super) async fn open() -> Result<Option<SavedProduct>, String> {
     .await
     .map_err(|error| error.to_string())?;
     let reopened = app.host.was_reopened();
+    let history = history::HistoryControls::load(&mut app, capture_store).await?;
     app.host
         .persist(now_secs())
         .await
@@ -93,6 +123,7 @@ pub(super) async fn open() -> Result<Option<SavedProduct>, String> {
         &persistence,
     );
     let session = app.host.graph_session().id().0.to_string();
+    let commands = commands::Commands::load(&app);
     Ok(Some(SavedProduct {
         app: Some(app),
         completed: Rc::new(RefCell::new(None)),
@@ -113,6 +144,16 @@ pub(super) async fn open() -> Result<Option<SavedProduct>, String> {
         intake_title: TextInput::new(""),
         file_requested: false,
         pending_intake: None,
+        pending_detail: None,
+        detail: detail::DetailControls::default(),
+        find: find::FindControls::default(),
+        scenes: scenes::SceneControls::default(),
+        projection: projection::ProjectionControls::default(),
+        history,
+        commands,
+        operation_completed: Rc::new(RefCell::new(None)),
+        operation_pending: false,
+        operation_success: None,
     }))
 }
 
@@ -120,80 +161,18 @@ fn now_secs() -> u64 {
     (js_sys::Date::now() / 1_000.0) as u64
 }
 
-#[derive(Clone, Copy)]
-enum TextField {
-    Title,
-    Tags,
-    IntakeAddress,
-    IntakeTitle,
-}
-
-impl TextField {
-    fn get(self, product: &SavedProduct) -> &TextInput {
-        match self {
-            Self::Title => &product.title,
-            Self::Tags => &product.tags,
-            Self::IntakeAddress => &product.intake_address,
-            Self::IntakeTitle => &product.intake_title,
-        }
-    }
-    fn get_mut(self, product: &mut SavedProduct) -> &mut TextInput {
-        match self {
-            Self::Title => &mut product.title,
-            Self::Tags => &mut product.tags,
-            Self::IntakeAddress => &mut product.intake_address,
-            Self::IntakeTitle => &mut product.intake_title,
-        }
-    }
-}
-
-/// Map the retained fields to the host's caret, IME and selection path.
-pub(super) fn focused_text(
-    runner: &cambium_rootstock::Runner<TreePage, Logic, Child>,
-) -> Option<cambium_rootstock::FocusedTextSlot<TreePage>> {
-    let product = runner.state().product.as_ref()?;
-    if product.saving || product.pending_intake.is_some() {
-        return None;
-    }
-    let node = runner.focus()?;
-    let dom = runner.dom();
-    let dom = dom.borrow();
-    let field = [
-        ("Title", TextField::Title, product.detail_open),
-        ("Tags", TextField::Tags, product.detail_open),
-        ("Address", TextField::IntakeAddress, product.intake_open),
-        (
-            "New object title",
-            TextField::IntakeTitle,
-            product.intake_open,
-        ),
-    ]
-    .into_iter()
-    .find_map(|(label, field, visible)| {
-        (visible
-            && taproot::matching(&dom, &Selector::role("textbox").containing(label))
-                .contains(&node))
-        .then_some(field)
-    })?;
-    Some(cambium_rootstock::FocusedTextSlot {
-        node,
-        get: Box::new(move |page: &TreePage| {
-            let product = page.product.as_ref().expect("focused local detail");
-            field.get(product)
-        }),
-        get_mut: Box::new(move |page: &mut TreePage| {
-            let product = page.product.as_mut().expect("focused local detail");
-            field.get_mut(product)
-        }),
-    })
-}
-
 impl SavedProduct {
     pub(super) fn ready(&self) -> bool {
         self.completed.borrow().is_some()
+            || self.operation_completed.borrow().is_some()
+            || self.projection.changed()
     }
     pub(super) fn selection_locked(&self) -> bool {
-        self.saving || self.file_requested || self.pending_intake.is_some()
+        self.saving
+            || self.operation_pending
+            || self.file_requested
+            || self.pending_intake.is_some()
+            || self.pending_detail.is_some()
     }
     pub(super) fn graph(&self) -> Graph {
         self.app
@@ -252,10 +231,11 @@ impl SavedProduct {
         self.detail_open = true;
         self.role.selected =
             item_role_index(self.selected.and_then(|member| canvas.member_role(member)));
+        self.detail.face.selected = detail::face_index(canvas, self.selected);
     }
 
     pub(super) fn save(&mut self) {
-        if self.saving || self.file_requested {
+        if self.selection_locked() {
             return;
         }
         if self.pending_intake.is_some() {
@@ -283,7 +263,7 @@ impl SavedProduct {
     }
 
     fn add_address(&mut self) {
-        if self.saving || self.pending_intake.is_some() || self.file_requested {
+        if self.selection_locked() {
             return;
         }
         let Some(app) = self.app.as_mut() else {
@@ -300,7 +280,7 @@ impl SavedProduct {
 
     fn receive_file(&mut self, event: FileEvent) {
         self.file_requested = false;
-        if self.saving || self.pending_intake.is_some() {
+        if self.saving || self.pending_intake.is_some() || self.pending_detail.is_some() {
             return;
         }
         let Some(file) = event.files.into_iter().next() else {
@@ -343,9 +323,60 @@ impl SavedProduct {
         });
     }
 
+    /// Persist the current typed owner transaction without holding a borrow across await.
+    fn persist_operation(&mut self) {
+        if self.saving {
+            return;
+        }
+        let Some(mut app) = self.app.take() else {
+            return;
+        };
+        self.operation_pending = true;
+        self.status = "Saving changes…".into();
+        self.saving = true;
+        self.save_state = "saving";
+        let completed = self.operation_completed.clone();
+        wasm_bindgen_futures::spawn_local(async move {
+            let result = app
+                .host
+                .persist(now_secs())
+                .await
+                .map_err(|error| error.to_string());
+            *completed.borrow_mut() = Some((app, result));
+        });
+    }
+
     pub(super) fn poll(&mut self, canvas: &mut Canvas) -> bool {
+        self.history.poll();
+        let projection_changed = self.projection.changed();
+        if projection_changed {
+            self.projection.apply_fields();
+        }
+        let operation = self.operation_completed.borrow_mut().take();
+        if let Some((app, result)) = operation {
+            self.app = Some(app);
+            self.saving = false;
+            match result {
+                Ok(()) => {
+                    self.operation_pending = false;
+                    self.projection.saved();
+                    self.save_state = "saved";
+                    self.status = self
+                        .operation_success
+                        .take()
+                        .unwrap_or_else(|| "Changes saved".into());
+                },
+                Err(error) => {
+                    self.save_state = "error";
+                    self.status =
+                        format!("Save failed: {error}. Retry to persist the pending changes");
+                },
+            }
+            return true;
+        }
+
         let Some((app, edit, result)) = self.completed.borrow_mut().take() else {
-            return false;
+            return projection_changed;
         };
         self.app = Some(app);
         self.saving = false;
@@ -372,6 +403,20 @@ impl SavedProduct {
                         }
                         refresh
                     },
+                    CompletedEdit::Detail(target) => {
+                        let refresh = sync_canvas_intake(
+                            canvas,
+                            self.app.as_ref().expect("completed app").host.graph(),
+                            saved.member,
+                        );
+                        if refresh.is_ok() {
+                            if let Some(target) = target {
+                                canvas.set_selected_members(&[saved.member, target]);
+                            }
+                        }
+                        self.pending_detail = None;
+                        refresh
+                    },
                 };
                 if matches!(edit, CompletedEdit::Metadata) || refresh.is_ok() {
                     self.title = TextInput::new(saved.title);
@@ -379,11 +424,13 @@ impl SavedProduct {
                 }
                 self.status = match refresh {
                     Ok(()) => match edit {
-                        CompletedEdit::Metadata => "Changes saved".into(),
+                        CompletedEdit::Metadata | CompletedEdit::Detail(_) => {
+                            "Changes saved".into()
+                        },
                         CompletedEdit::Intake => "Object added and saved".into(),
                     },
                     Err(error) => match edit {
-                        CompletedEdit::Metadata => {
+                        CompletedEdit::Metadata | CompletedEdit::Detail(_) => {
                             format!("Changes saved · canvas refresh failed: {error}")
                         },
                         CompletedEdit::Intake => format!(
@@ -401,6 +448,9 @@ impl SavedProduct {
                     CompletedEdit::Intake => format!(
                         "Intake save failed · {error} · new object remains in memory; retry intake to save it"
                     ),
+                    CompletedEdit::Detail(_) => {
+                        format!("Detail save failed · {error} · retry to save the pending edit")
+                    },
                 };
                 self.save_state = "error";
             },
@@ -451,6 +501,7 @@ fn intake_controls(page: &TreePage) -> Child {
             if let Some(product) = &mut page.product
                 && !product.saving
                 && !product.file_requested
+                && product.pending_detail.is_none()
             {
                 product.intake_open = !product.intake_open;
                 if product.intake_open {
@@ -549,29 +600,51 @@ pub(super) fn controls(page: &TreePage) -> Child {
     let mut children: Vec<Child> = Vec::new();
     if !product.status.is_empty() {
         children.push(Box::new(
-            el("p", product.status.clone()).attr("role", "status"),
+            el("p", product.status.clone())
+                .attr("role", "status")
+                .attr("aria-label", "Graph status"),
         ));
     }
-    children.push(intake_controls(page));
-    if product.selected.is_some() {
-        children.push(Box::new(button(
-            if product.detail_open {
-                "Close details"
-            } else {
-                "Open details"
-            },
-            |page: &mut TreePage, _| {
-                let canvas = page.shared.canvas.borrow();
-                if let Some(product) = &mut page.product {
-                    if product.detail_open {
-                        product.detail_open = false;
-                    } else {
-                        product.open_detail(&canvas);
-                    }
-                }
-            },
-        )));
+    if product.operation_pending && !product.saving {
+        children.push(Box::new(button("Retry save", |page: &mut TreePage, _| {
+            if let Some(product) = &mut page.product {
+                product.persist_operation();
+            }
+        })));
     }
+    for (label, id) in [
+        ("Undo session", "session:undo"),
+        ("Redo session", "session:redo"),
+    ] {
+        children.push(Box::new(button(label, move |page: &mut TreePage, _| {
+            page.command(id);
+        })));
+    }
+    children.push(intake_controls(page));
+    children.push(Box::new(button(
+        if product.detail_open {
+            "Close details"
+        } else {
+            "Open details"
+        },
+        |page: &mut TreePage, _| {
+            if page
+                .product
+                .as_ref()
+                .is_some_and(|product| product.detail_open)
+            {
+                if let Some(product) = &mut page.product {
+                    product.detail_open = false;
+                }
+                page.shared
+                    .events
+                    .borrow_mut()
+                    .push("command close-detail".into());
+            } else {
+                page.command("node:edit");
+            }
+        },
+    )));
     if product.detail_open {
         let mut fields: Vec<Child> = vec![Box::new(detail_panel(&[DetailSection::new(
             "Object details",
@@ -579,6 +652,15 @@ pub(super) fn controls(page: &TreePage) -> Child {
         )]))];
         if product.saving {
             fields.push(Box::new(el("p", "Saving changes…")));
+        } else if product.pending_detail.is_some() {
+            fields.push(Box::new(button(
+                "Retry detail save",
+                |page: &mut TreePage, _| {
+                    if let Some(product) = &mut page.product {
+                        product.retry_detail();
+                    }
+                },
+            )));
         } else {
             fields.push(Box::new(el(
                 "label",
@@ -631,6 +713,7 @@ pub(super) fn controls(page: &TreePage) -> Child {
                 "Apply item role",
                 |page: &mut TreePage, _| apply_item_role(page),
             )));
+            fields.push(detail::controls(page));
         }
         children.push(Box::new(
             el("section", fields)

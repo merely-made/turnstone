@@ -16,6 +16,7 @@ pub(super) struct TreeLane {
     pub(super) drop: Option<(f32, f32)>,
     /// The same drop in world units, for `drag-return-world`.
     pub(super) drop_world: Option<(f32, f32)>,
+    pub(super) camera_mark: Option<(f32, f32)>,
 }
 
 /// `layout-*` fields are a pairwise pass plus all-pairs hop distances, so a
@@ -411,11 +412,22 @@ impl TreeLane {
                 "tools-sections",
                 format!(
                     "physics:{},remote:{}",
-                    if page.sections.physics.expanded { "open" } else { "closed" },
-                    if page.sections.remote.expanded { "open" } else { "closed" },
+                    if page.sections.physics.expanded {
+                        "open"
+                    } else {
+                        "closed"
+                    },
+                    if page.sections.remote.expanded {
+                        "open"
+                    } else {
+                        "closed"
+                    },
                 ),
             )
-            .with_field("remote-link", if live.is_some() { "webrtc" } else { "none" })
+            .with_field(
+                "remote-link",
+                if live.is_some() { "webrtc" } else { "none" },
+            )
             .with_field("remote-state", remote.status())
             .with_field(
                 "remote-revision",
@@ -657,7 +669,29 @@ impl Product for TreeLane {
                     .unwrap_or_else(|| "unavailable".into()),
             )
             .with_field("zoom", canvas.camera().zoom.to_string())
-            .with_field("camera", format!("{:?}", canvas.camera().offset))
+            .with_field(
+                "camera",
+                format!(
+                    "{:.2},{:.2},{:.3}",
+                    canvas.camera().offset.0,
+                    canvas.camera().offset.1,
+                    canvas.camera().zoom
+                ),
+            )
+            .with_field("camera-x", format!("{:.2}", canvas.camera().offset.0))
+            .with_field("camera-y", format!("{:.2}", canvas.camera().offset.1))
+            .with_field(
+                "camera-dx",
+                self.camera_mark.map_or_else(String::new, |(x, _)| {
+                    format!("{:.2}", canvas.camera().offset.0 - x)
+                }),
+            )
+            .with_field(
+                "camera-dy",
+                self.camera_mark.map_or_else(String::new, |(_, y)| {
+                    format!("{:.2}", canvas.camera().offset.1 - y)
+                }),
+            )
             .with_field("picked", page.picked.clone().unwrap_or_default())
             .with_field("nodes", page.nodes.to_string())
             .with_field("source", page.source.clone())
@@ -681,8 +715,7 @@ impl Product for TreeLane {
         // own semantic tree, and the keyboard move (dynamics grammar plan,
         // F65 to F68).
         let tree = semantic_tree();
-        let (heard_relations, heard_alert) =
-            tree.as_ref().map(heard_dataset).unwrap_or_default();
+        let (heard_relations, heard_alert) = tree.as_ref().map(heard_dataset).unwrap_or_default();
         let heard = tree.as_ref().and_then(heard_canvas);
         let snapshot = snapshot
             .with_field(
@@ -693,7 +726,10 @@ impl Product for TreeLane {
             )
             .with_field(
                 "reader-items",
-                heard.as_ref().map_or(0, |(_, items)| items.len()).to_string(),
+                heard
+                    .as_ref()
+                    .map_or(0, |(_, items)| items.len())
+                    .to_string(),
             )
             .with_field(
                 "reader-buttons",
@@ -712,7 +748,9 @@ impl Product for TreeLane {
                 "reader-described",
                 heard
                     .as_ref()
-                    .map_or(0, |(_, items)| items.iter().map(|item| item.described).sum())
+                    .map_or(0, |(_, items)| {
+                        items.iter().map(|item| item.described).sum()
+                    })
                     .to_string(),
             )
             .with_field("reader-relations", heard_relations.len().to_string())
@@ -730,17 +768,29 @@ impl Product for TreeLane {
                 canvas
                     .graph()
                     .nodes()
-                    .filter(|(key, _)| canvas.arrangement_role_of(*key) == mere::canvas::Role::Pinned)
+                    .filter(|(key, _)| {
+                        canvas.arrangement_role_of(*key) == mere::canvas::Role::Pinned
+                    })
                     .map(|(key, _)| canvas.graph().node_display_label(key))
                     .collect::<Vec<_>>()
                     .join("|"),
             );
         let faces = self.shared.faces.get().unwrap_or_default().fields();
+        let snapshot = practice::fields(page, snapshot);
         let snapshot = faces.into_iter().fold(snapshot, |snapshot, (name, value)| {
             snapshot.with_field(name, value)
         });
         if let Some(product) = &page.product {
-            snapshot
+            product
+                .history_fields(product.projection_fields(snapshot))
+                .with_field(
+                    "command-menu",
+                    if product.menu_open() {
+                        "open"
+                    } else {
+                        "closed"
+                    },
+                )
                 .with_field("graph-session", product.session.clone())
                 .with_field("storage-reopened", product.reopened.to_string())
                 .with_field("save-state", product.save_state)
@@ -755,6 +805,24 @@ impl Product for TreeLane {
                 .with_field("detail-title", product.title.text())
                 .with_field("detail-address", &product.address)
                 .with_field("detail-tags", product.tags.text())
+                .with_field("detail-facet", product.detail_facet())
+                .with_field("action-count", product.action_count().to_string())
+                .with_field("filter-count", product.filter_count().to_string())
+                .with_field("saved-scene-facet", product.saved_scene_facet())
+                .with_field("export-bytes", product.export_bytes().to_string())
+                .with_field("imported-nodes", product.imported_nodes().to_string())
+                .with_field(
+                    "selected-count",
+                    canvas.selected_members().len().to_string(),
+                )
+                .with_field(
+                    "face",
+                    product
+                        .selected
+                        .and_then(|id| canvas.graph().get_node_by_id(id))
+                        .map(|(key, _)| canvas.node_face(key).as_code())
+                        .unwrap_or("none"),
+                )
                 .with_field(
                     "item-role",
                     product
@@ -774,8 +842,79 @@ impl Product for TreeLane {
         _: mesquite::Checkpoints<'_>,
         line: &str,
     ) -> Result<(), String> {
+        if let Some(json) = line.strip_prefix("assert retained ") {
+            return observe::assertion(ctx, json);
+        }
+        if let Some(expected) = line.strip_prefix("assert title ") {
+            let got = super::super::document()?.title();
+            return if got.contains(expected) {
+                Ok(())
+            } else {
+                Err(format!("title {expected:?}: got {got:?}"))
+            };
+        }
         let (verb, rest) = line.split_once(' ').unwrap_or((line, ""));
         match verb {
+            // Translate the original explicit focus fixture without activating
+            // the target. Subsequent keys still traverse shared host input.
+            "focus-retained" => {
+                let (head, label) = rest.split_once(' ').unwrap_or((rest, ""));
+                let mut selector = if let Some(role) = head.strip_prefix("role:") {
+                    Selector::role(role)
+                } else if let Some(class) = head.strip_prefix('.') {
+                    Selector::class(class)
+                } else {
+                    return Err("focus-retained wants role:name or .class".into());
+                };
+                if !label.is_empty() {
+                    selector = selector.containing(label);
+                }
+                let projection = ctx
+                    .a11y_projection()
+                    .ok_or("retained focus projection is unavailable")?;
+                let nodes = {
+                    let dom = ctx.runner.dom();
+                    let dom = dom.borrow();
+                    taproot::matching_with_projection(&dom, &selector, &projection)
+                };
+                let [node] = nodes.as_slice() else {
+                    return Err(format!(
+                        "focus-retained requires one target, got {}",
+                        nodes.len()
+                    ));
+                };
+                ctx.scroll_into_view(*node, cambium_rootstock::ScrollAlign::Nearest);
+                ctx.runner.set_focus(Some(*node));
+                Ok(())
+            },
+            "mark-camera" => {
+                self.camera_mark = Some(self.shared.canvas.borrow().camera().offset);
+                Ok(())
+            },
+            "pointer" => {
+                let words: Vec<_> = rest.split_whitespace().collect();
+                if words.as_slice() == ["cancel"] {
+                    ctx.pointer.push(HostPointer::Cancel);
+                    return Ok(());
+                }
+                let [phase, button, x, y] = words.as_slice() else {
+                    return Err("pointer wants <down|move|up> <left|right> <x> <y>".into());
+                };
+                let (left, top, _, _) =
+                    leaf_rect(ctx).ok_or("graph leaf has no current rectangle")?;
+                let x = x.parse::<f32>().map_err(|_| "pointer x is not numeric")? + left;
+                let y = y.parse::<f32>().map_err(|_| "pointer y is not numeric")? + top;
+                let pointer = match (*phase, *button) {
+                    ("down", "left") => HostPointer::Press(x, y),
+                    ("up", "left") => HostPointer::Release(x, y),
+                    ("down", "right") => HostPointer::SecondaryPress(x, y),
+                    ("up", "right") => HostPointer::SecondaryRelease(x, y),
+                    ("move", "left" | "right") => HostPointer::Moved(x, y),
+                    _ => return Err("unsupported pointer phase or button".into()),
+                };
+                ctx.pointer.push(pointer);
+                Ok(())
+            },
             // The browser instrument cannot operate an empty chooser. Exercise
             // the platform cancel event through the real chooser listener,
             // including its pending FileAnswer and the retained callback target.
@@ -997,7 +1136,10 @@ impl Product for TreeLane {
                     return Err("move-by-world wants dx dy".into());
                 }
                 let (left, top, _, _) = leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
-                let point = self.pointer.as_mut().ok_or("move-by-world without a press")?;
+                let point = self
+                    .pointer
+                    .as_mut()
+                    .ok_or("move-by-world without a press")?;
                 let canvas = self.shared.canvas.borrow();
                 let (wx, wy) = canvas.world_point_at((point.0 - left, point.1 - top));
                 let (sx, sy) = canvas.screen_point_of((wx + args[0], wy + args[1]));
@@ -1103,9 +1245,69 @@ impl Product for TreeLane {
         }
     }
 
-    /// The remote session's receipt events.
+    fn app_step_with_clicks(
+        &mut self,
+        ctx: &mut mesquite::Ctx<'_, Self>,
+        checkpoints: mesquite::Checkpoints<'_>,
+        clicks: &mut mesquite::Clicks,
+        line: &str,
+    ) -> Result<(), String> {
+        if let Some(rest) = line.strip_prefix("check-role ") {
+            use layout_dom_api::{LayoutDom, LocalName, Namespace};
+            let (label, wanted) = rest
+                .rsplit_once(' ')
+                .ok_or("check-role wants <label> <on|off>")?;
+            let wanted = match wanted {
+                "on" => "true",
+                "off" => "false",
+                _ => return Err("check-role wants on or off".into()),
+            };
+            let selector = Selector::role("checkbox").containing(label);
+            let projection = ctx
+                .a11y_projection()
+                .ok_or("shared checkbox projection is unavailable")?;
+            let dom = ctx.runner.dom();
+            let dom = dom.borrow();
+            let matches = taproot::matching_with_projection(&dom, &selector, &projection);
+            let [node] = matches.as_slice() else {
+                return Err(format!(
+                    "check-role requires one checkbox {label:?}, got {}",
+                    matches.len()
+                ));
+            };
+            let current = dom.attribute(
+                *node,
+                &Namespace::default(),
+                &LocalName::from("aria-checked"),
+            );
+            if current == Some(wanted) {
+                return Ok(());
+            }
+            drop(dom);
+            return if clicks.click(ctx, &selector, |_, _, r| {
+                (r[0] + r[2] * 0.5, r[1] + r[3] * 0.5)
+            }) {
+                Ok(())
+            } else {
+                Err(format!("shared checkbox {label:?} cannot be clicked"))
+            };
+        }
+        self.app_step(ctx, checkpoints, line)
+    }
+
+    fn act(&mut self, ctx: &mut mesquite::Ctx<'_, Self>, command: &str) -> bool {
+        let mut handled = false;
+        ctx.runner.update(|page| {
+            handled = page.command(command);
+        });
+        handled
+    }
+
+    /// Events emitted by the same command owners as the visible controls.
     fn drain_events(&mut self, _ctx: &mut mesquite::Ctx<'_, Self>) -> Vec<String> {
-        std::mem::take(&mut self.shared.remote.borrow_mut().events)
+        let mut events = std::mem::take(&mut self.shared.events.borrow_mut());
+        events.extend(std::mem::take(&mut self.shared.remote.borrow_mut().events));
+        events
     }
 
     /// Busy while a capture is pending, a remote answer is still to come, the

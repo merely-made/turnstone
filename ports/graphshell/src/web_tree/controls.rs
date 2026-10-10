@@ -55,10 +55,14 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
     let mut buttons: Vec<Child> = commands
         .into_iter()
         .map(|(label, command)| {
-            Box::new(button(label, move |page: &mut TreePage, _| {
+            let mut control = button(label, move |page: &mut TreePage, _| {
                 command.apply(&mut page.shared.canvas.borrow_mut(), page.shared.size.get());
                 page.shared.dirty.set(true);
-            })) as Child
+            });
+            if matches!(command, CanvasCommand::TogglePhysics) {
+                control = control.attr("data-command", "physics:toggle");
+            }
+            Box::new(control) as Child
         })
         .collect();
     // Collapsed, the Graph tools region opens over the canvas from here.
@@ -82,6 +86,13 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
 
 impl TreePage {
     pub(super) fn pointer(&mut self, event: PointerEvent) {
+        // A cancellation always releases the gesture, including while a save
+        // temporarily locks selection.
+        if event.phase == PointerPhase::Cancel {
+            self.shared.canvas.borrow_mut().pointer_cancel();
+            self.shared.dirty.set(true);
+            return;
+        }
         if self
             .product
             .as_ref()
@@ -89,26 +100,46 @@ impl TreePage {
         {
             return;
         }
-        if event.button != PointerButton::Primary {
-            return;
-        }
+        let button = match event.button {
+            PointerButton::Primary => mere::canvas::PointerButton::Left,
+            PointerButton::Secondary => mere::canvas::PointerButton::Right,
+            PointerButton::Auxiliary => mere::canvas::PointerButton::Middle,
+        };
         let (x, y) = event.local;
         let mut canvas = self.shared.canvas.borrow_mut();
+        canvas.set_ctrl(event.modifiers.ctrl);
+        canvas.set_shift(event.modifiers.shift);
+        canvas.set_alt(event.modifiers.alt);
         match event.phase {
             PointerPhase::Down => {
-                canvas.pointer_down(mere::canvas::PointerButton::Left, x, y);
+                // Canvas right-drag is a marquee; shared menu handlers retain
+                // their default one-shot secondary press behavior.
+                if event.button == PointerButton::Secondary {
+                    event.capture_pointer();
+                }
+                canvas.pointer_down(button, x, y);
             },
             PointerPhase::Move => {
                 canvas.cursor_moved(x, y);
             },
             PointerPhase::Up => {
-                canvas.pointer_up(mere::canvas::PointerButton::Left, x, y);
+                canvas.pointer_up(button, x, y);
+                if let Some(request) = canvas.take_context_request() {
+                    if let Some(product) = &mut self.product {
+                        product.open_menu(request, &mut canvas);
+                    }
+                }
                 self.picked = canvas.focused_url().map(str::to_owned);
                 if let Some(product) = &mut self.product {
                     product.select(canvas.selected_members().first().copied());
                 }
             },
+            PointerPhase::Cancel => unreachable!("cancellation handled before selection lock"),
         }
+        // Modifier state belongs to this event, not later toolbar commands.
+        canvas.set_ctrl(false);
+        canvas.set_shift(false);
+        canvas.set_alt(false);
         self.shared.dirty.set(true);
     }
 }
@@ -213,4 +244,30 @@ pub(super) fn physics_config() -> Result<mere::canvas::ElapsedStepConfig, String
         );
     }
     Ok(config)
+}
+
+pub(super) fn named_command(id: &str) -> Option<CanvasCommand> {
+    match id {
+        "view:zoom_in" => Some(CanvasCommand::Zoom { delta: ZOOM_STEP }),
+        "view:zoom_out" => Some(CanvasCommand::Zoom { delta: -ZOOM_STEP }),
+        "view:fit" => Some(CanvasCommand::Fit),
+        "pan-left" => Some(CanvasCommand::Pan {
+            dx: -PAN_STEP,
+            dy: 0.0,
+        }),
+        "pan-right" => Some(CanvasCommand::Pan {
+            dx: PAN_STEP,
+            dy: 0.0,
+        }),
+        "pan-up" => Some(CanvasCommand::Pan {
+            dx: 0.0,
+            dy: -PAN_STEP,
+        }),
+        "pan-down" => Some(CanvasCommand::Pan {
+            dx: 0.0,
+            dy: PAN_STEP,
+        }),
+        "physics:toggle" => Some(CanvasCommand::TogglePhysics),
+        _ => None,
+    }
 }

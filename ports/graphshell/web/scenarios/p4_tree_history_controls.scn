@@ -1,0 +1,6 @@
+# Browser-history controls belong to the retained product tree.
+# A fresh local profile has no browser-history capture records.
+click role:button History
+assert snap history-result-count == 0
+assert snap history-forget-attempted == false
+capture p4_tree_history_controls

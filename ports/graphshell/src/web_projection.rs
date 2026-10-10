@@ -147,42 +147,19 @@ impl BrowserHost {
             channel_name(&draft.encoding.x),
             channel_name(&draft.encoding.y),
         ];
-        let result = self
-            .projection_editor
-            .draft()
-            .to_definition()
-            .map_err(|issues| {
-                issues
-                    .iter()
-                    .map(|i| format!("{}: {}", i.field, i.message))
-                    .collect::<Vec<_>>()
-                    .join("; ")
-            })
-            .and_then(|definition| {
-                let compiled = match &live.compiled {
-                    Some(previous) => practice_compiler().refresh(previous, &definition, &live.dataset),
-                    None => practice_compiler().compile(&definition, &live.dataset),
-                };
-                compiled.map_err(|issues| {
-                    issues
-                        .iter()
-                        .map(|i| format!("{}: {}", i.field, i.message))
-                        .collect::<Vec<_>>()
-                        .join("; ")
-                })
-            });
+        let result = graphshell::local_projection::compile_editor(
+            &self.projection_editor,
+            &live.dataset,
+            live.compiled.as_ref(),
+            live.selected.as_deref(),
+        );
         match result {
-            Ok(mut compiled) => {
+            Ok(compiled) => {
                 if compiled.placement_reused {
                     live.placement_reuses += 1;
                 } else {
                     live.solves += 1;
                 }
-                compiled.selected = live
-                    .selected
-                    .as_ref()
-                    .and_then(|id| compiled.instance_by_occurrence.get(id))
-                    .copied();
                 live.compiled = Some(compiled);
                 live.error.clear();
             },
@@ -302,16 +279,11 @@ impl BrowserHost {
             if live.compiled.is_none() {
                 return Err(live.error.clone());
             }
-            let definition = self
-                .projection_editor
-                .draft()
-                .to_definition()
-                .map_err(|_| "Invalid draft")?;
-            let snapshot = ProjectionSnapshot {
-                definition,
-                selected_occurrence: live.selected.clone(),
-            };
-            Ok(snapshot)
+            graphshell::local_projection::snapshot_editor(
+                &self.projection_editor,
+                &live.dataset,
+                live.selected.as_deref(),
+            )
         })()
         .and_then(|snapshot| {
             self.app

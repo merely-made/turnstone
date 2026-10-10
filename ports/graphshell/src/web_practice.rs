@@ -44,21 +44,21 @@ const STORAGE: &str = "graphshellPracticeWorkspaceV1";
 const HISTORY_LIMIT: usize = 64;
 
 #[derive(Clone, Debug, PartialEq)]
-struct Face {
-    label: String,
-    detail: String,
-    kind: &'static str,
-    selected: bool,
-    width: u32,
-    height: u32,
+pub(crate) struct Face {
+    pub(crate) label: String,
+    pub(crate) detail: String,
+    pub(crate) kind: &'static str,
+    pub(crate) selected: bool,
+    pub(crate) width: u32,
+    pub(crate) height: u32,
 }
 
-struct Control {
-    id: String,
-    face: Face,
-    rect: [f32; 4],
-    command: Option<String>,
-    body: Option<String>,
+pub(crate) struct Control {
+    pub(crate) id: String,
+    pub(crate) face: Face,
+    pub(crate) rect: [f32; 4],
+    pub(crate) command: Option<String>,
+    pub(crate) body: Option<String>,
 }
 
 struct RetainedControl {
@@ -435,7 +435,7 @@ impl PracticeHost {
             .join("; ")
     }
 
-    fn controls(&self, width: u32, height: u32) -> Vec<Control> {
+    pub(crate) fn controls(&self, width: u32, height: u32) -> Vec<Control> {
         let w = width as f32;
         let narrow = width < 700;
         let mut controls = Vec::new();
@@ -846,15 +846,8 @@ impl PracticeHost {
         controls
     }
 
-    pub(super) fn frame(
-        &mut self,
-        width: u32,
-        height: u32,
-        host_ms: f64,
-        text_system: &mut TextSystem,
-        gpu: &GpuPresenter,
-    ) -> Result<Option<Scene>, String> {
-        let started = now();
+    /// Advance the shared practice state on either host presentation.
+    pub(crate) fn advance(&mut self, width: u32, height: u32, host_ms: f64) -> bool {
         self.metrics.frames += 1;
         if self.extent != (width, height) {
             self.extent = (width, height);
@@ -879,6 +872,106 @@ impl PracticeHost {
         }
         self.clock_ms = Some(host_ms);
         if !self.dirty && !moved {
+            return false;
+        }
+        self.dirty = false;
+        true
+    }
+
+    /// The board owns drag permission, constraints and cancellation. Hosts only route coordinates.
+    pub(crate) fn board_pointer(
+        &mut self,
+        id: &str,
+        phase: cambium::PointerPhase,
+        px: f32,
+        py: f32,
+    ) -> bool {
+        match phase {
+            cambium::PointerPhase::Down => {
+                let Some((x, y)) = self.board.position(id) else {
+                    return false;
+                };
+                if !self.board.drag_start(id) {
+                    return false;
+                }
+                self.dragging = Some((id.into(), px - x, py - y));
+            },
+            cambium::PointerPhase::Move => {
+                let Some((_, dx, dy)) = &self.dragging else {
+                    return false;
+                };
+                self.board.drag_move(
+                    (px - dx).clamp(
+                        8.0,
+                        (self.extent.0 as f32 - self.card_size.0 - 8.0).max(8.0),
+                    ),
+                    (py - dy).clamp(
+                        216.0,
+                        (self.extent.1 as f32 - 180.0 - self.card_size.1).max(216.0),
+                    ),
+                );
+            },
+            cambium::PointerPhase::Up | cambium::PointerPhase::Cancel => {
+                if self.dragging.take().is_none() {
+                    return false;
+                }
+                self.board.drag_end();
+            },
+        }
+        self.dirty = true;
+        true
+    }
+    /// Endpoints from the arrangement owner, shared by both renderers.
+    pub(crate) fn relation_lines(&self) -> Vec<([f32; 4], bool)> {
+        let mut lines = Vec::new();
+        if self.workspace.location().view != PracticeView::Relations {
+            return lines;
+        }
+        let record = self.workspace.comparison();
+        if let Some((rx, ry)) = self.board.position(&record.relation().id) {
+            for id in [&record.left.occurrence_id, &record.right.occurrence_id] {
+                if let Some((x, y)) = self.board.position(id) {
+                    lines.push((
+                        [
+                            x + self.card_size.0 * 0.5,
+                            y + self.card_size.1,
+                            rx + self.card_size.0 * 0.5,
+                            ry,
+                        ],
+                        true,
+                    ));
+                }
+            }
+        }
+        let center = |instance: &sceno::InstanceId| {
+            self.compiled
+                .occurrence_by_instance
+                .get(instance)
+                .and_then(|id| self.board.position(id))
+                .map(|(x, y)| (x + self.card_size.0 * 0.5, y + self.card_size.1 * 0.5))
+        };
+        for relation in &self.compiled.scene.relations {
+            if let (Some((fx, fy)), Some((tx, ty))) = (center(&relation.from), center(&relation.to))
+            {
+                lines.push(([fx, fy, tx, ty], false));
+            }
+        }
+        lines
+    }
+    pub(crate) fn set_error(&mut self, error: String) {
+        self.status = error;
+        self.dirty = true;
+    }
+    pub(super) fn frame(
+        &mut self,
+        width: u32,
+        height: u32,
+        host_ms: f64,
+        text_system: &mut TextSystem,
+        gpu: &GpuPresenter,
+    ) -> Result<Option<Scene>, String> {
+        let started = now();
+        if !self.advance(width, height, host_ms) {
             return Ok(None);
         }
         let controls = self.controls(width, height);
@@ -890,39 +983,23 @@ impl PracticeHost {
             height as f32,
             [0.10, 0.13, 0.105, 1.0],
         );
-        if self.workspace.location().view == PracticeView::Relations {
-            let record = self.workspace.comparison();
-            let relation = record.relation();
-            if let Some((rx, ry)) = self.board.position(&relation.id) {
-                for id in [&record.left.occurrence_id, &record.right.occurrence_id] {
-                    if let Some((x, y)) = self.board.position(id) {
-                        let (x, y) = (x + self.card_size.0 * 0.5, y + self.card_size.1);
-                        let (tx, ty) = (rx + self.card_size.0 * 0.5, ry);
-                        let mut path = ScenePath::new();
-                        path.move_to(x, y)
-                            .cubic_to(x, (y + ty) * 0.5, tx, (y + ty) * 0.5, tx, ty);
-                        scene.push_shape_stroked(path, [0.60, 0.70, 0.57, 1.0], 1.5);
-                    }
-                }
+        for ([x, y, tx, ty], curved) in self.relation_lines() {
+            let mut path = ScenePath::new();
+            path.move_to(x, y);
+            if curved {
+                path.cubic_to(x, (y + ty) * 0.5, tx, (y + ty) * 0.5, tx, ty);
+            } else {
+                path.line_to(tx, ty);
             }
-            // Relationships the host dataset disclosed (S1), routed onto
-            // this arrangement, drawn between the cards they join.
-            let center = |instance: &sceno::InstanceId| {
-                self.compiled
-                    .occurrence_by_instance
-                    .get(instance)
-                    .and_then(|id| self.board.position(id))
-                    .map(|(x, y)| (x + self.card_size.0 * 0.5, y + self.card_size.1 * 0.5))
-            };
-            for relation in &self.compiled.scene.relations {
-                if let (Some((fx, fy)), Some((tx, ty))) =
-                    (center(&relation.from), center(&relation.to))
-                {
-                    let mut path = ScenePath::new();
-                    path.move_to(fx, fy).line_to(tx, ty);
-                    scene.push_shape_stroked(path, [0.86, 0.72, 0.42, 1.0], 2.0);
-                }
-            }
+            scene.push_shape_stroked(
+                path,
+                if curved {
+                    [0.60, 0.70, 0.57, 1.0]
+                } else {
+                    [0.86, 0.72, 0.42, 1.0]
+                },
+                if curved { 1.5 } else { 2.0 },
+            );
         }
         let container = element("practice-controls")?;
         // Keep alternate views warm, including the actual focused controls.
@@ -1076,9 +1153,8 @@ impl PracticeHost {
         Ok(Some(scene))
     }
 
-    pub(super) fn publish(&self) -> Result<(), String> {
-        let root = root()?;
-        for (key, value) in [
+    pub(crate) fn fields(&self) -> Result<Vec<(&'static str, String)>, String> {
+        Ok([
             (
                 "data-practice-view",
                 format!("{:?}", self.workspace.location().view).to_lowercase(),
@@ -1119,7 +1195,14 @@ impl PracticeHost {
                 "data-practice-metrics",
                 serde_json::to_string(&self.metrics).map_err(|e| e.to_string())?,
             ),
-        ] {
+        ]
+        .into_iter()
+        .collect())
+    }
+
+    pub(super) fn publish(&self) -> Result<(), String> {
+        let root = root()?;
+        for (key, value) in self.fields()? {
             if root.get_attribute(key).as_deref() != Some(&value) {
                 root.set_attribute(key, &value)
                     .map_err(|_| "Workspace state")?;
@@ -1250,33 +1333,16 @@ pub(super) fn install(state: &Rc<RefCell<BrowserHost>>) -> Result<(), String> {
                 let Some(id) = target.get_attribute("data-practice-body") else {
                     return;
                 };
-                let Some((x, y)) = practice.board.position(&id) else {
-                    return;
-                };
-                if practice.board.drag_start(&id) {
-                    practice.dragging = Some((id, px - x, py - y));
+                if practice.board_pointer(&id, cambium::PointerPhase::Down, px, py) {
                     let _ = target.set_pointer_capture(event.pointer_id());
-                    practice.dirty = true;
                 }
-            } else if phase == "pointermove" {
-                if let Some((_, dx, dy)) = &practice.dragging {
-                    // The visible workspace is the drag boundary; source slots
-                    // and schema coordinates are unchanged by this clamp.
-                    practice.board.drag_move(
-                        (px - dx).clamp(
-                            8.0,
-                            (practice.extent.0 as f32 - practice.card_size.0 - 8.0).max(8.0),
-                        ),
-                        (py - dy).clamp(
-                            216.0,
-                            (practice.extent.1 as f32 - 180.0 - practice.card_size.1).max(216.0),
-                        ),
-                    );
-                    practice.dirty = true;
-                }
-            } else if practice.dragging.take().is_some() {
-                practice.board.drag_end();
-                practice.dirty = true;
+            } else {
+                let phase = match phase {
+                    "pointermove" => cambium::PointerPhase::Move,
+                    "pointerup" => cambium::PointerPhase::Up,
+                    _ => cambium::PointerPhase::Cancel,
+                };
+                practice.board_pointer("", phase, px, py);
             }
         });
         root()?

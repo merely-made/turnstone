@@ -60,6 +60,10 @@ pub mod live_endpoint;
 pub mod local_edit;
 #[cfg(feature = "web")]
 pub mod local_intake;
+#[cfg(any(feature = "native", feature = "web"))]
+pub mod local_projection;
+#[cfg(feature = "web")]
+pub mod local_scene;
 #[cfg(feature = "web")]
 pub mod mere_host;
 #[cfg(feature = "web")]

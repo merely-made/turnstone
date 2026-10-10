@@ -1,0 +1,3122 @@
+{
+  "schema": "graphshell.scenario-inventory/v1",
+  "baseline": "b6b551d44",
+  "scenarios": [
+    {
+      "name": "c4b1_live_board.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "host": "Real local admitted WebRTC fixture board; signal query",
+        "setup_verification": "pending"
+      },
+      "current_source_sha256": "cc81138b6a1ab2eb8311685a1f661dd60d66c52e284bfbe4d3b46e4d707c88f4",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "c4b2_embed.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "1faa84d58a0c126686dd50e7205c2d9986c50913d9281881067e425147e808ee",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "c4b2_full_page.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "e8183d230fcc36d3a50435f6599e31d987e86b8398b8a78f721471db53e88dd6",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "c4b3_reconnect.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "host": "Real local admitted WebRTC fixture board with native nudge during disconnect",
+        "setup_verification": "pending"
+      },
+      "current_source_sha256": "0dd3f9c0cb1fdbb6841d7d40b4f4a90bddc5e560a845f4a677451ceae16dec7f",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "canvas_commands.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "8cf9201bd01416f32c613ac9b1bbcc530d426ab60c2941374c387cc987578699",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "canvas_commands_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "same_origin_profile_after": "canvas_commands.scn",
+        "page": "index.html"
+      },
+      "current_source_sha256": "14d5baeff982a9a0a81d6bd60429c8381cb4b4667d168cbaa497281f83a6196b",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "co_op_retained.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "page": "co_op.html",
+        "setup": "Contribute via external co_op controls, retain peer store, reopen offline",
+        "setup_verification": "pending"
+      },
+      "current_source_sha256": "7ec4a079deeb6db885bef0e10557ba7f4299c6a8eb5eb124097adbd652f8f1fc",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "codicil_grouping.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "07a3141bcd4b363c8df8cad08aab6d9e04ced9ad2c169fef97e5c9310910733c",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "d3_derived_faces_detail.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "03731c1ce649dde83d5120f66a2bb8e52dc2cd3d2e2a277ce88ab6ca6f187411",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "diag_display_period.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "dd1dea9fd75f6e817ca7a42b9522b26ab3e55bf60a8b941d897baddd19c0fa74",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "diag_physics_probe.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "5c27e82d4d0ba68d4fe724e767c33253c0ab16fde7ec128d2b20c2eec0b73277",
+      "expected_outcome": {
+        "scenario": "diagnostic_assertions",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true,
+        "failure_assertions": [
+          "assert snap physics-energy <= -1",
+          "assert snap layout-spread <= -1",
+          "assert snap layout-overlaps <= -1"
+        ],
+        "rationale": "Source explicitly uses impossible negative bounds to report energy, spread and overlaps; unrelated failures remain failures."
+      }
+    },
+    {
+      "name": "diag_speed_budget.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "cb6cef075ca76654d1ac823fa9d67064f7cff80ad66a03007f50d8157deaa04e",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "diag_speed_fifty.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "35ecda66351827e9a8ee7302b2163508dc92742442e0fa39e6be9f7cbbdb5e2c",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "diag_speed_margin.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "7d0ef762d268dd29ef97af9a474111ad878f998a54604b8ed3595e2b7a95e480",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "distillery_chronicle_live_w1.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "host": "Local Djinn-owned receipt host with one real job posted before admitted Chronicle route joins",
+        "setup_verification": "pending"
+      },
+      "current_source_sha256": "3fd61062e87ba665936d9a4ac6e51d43451d67bcee8330a20d0117aabcdbf9a6",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "distillery_chronicle_w1.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "host": "Local opt-in Distillery Chronicle fixture over admitted WebRTC route",
+        "setup_verification": "pending"
+      },
+      "current_source_sha256": "d90bf7aac88057054a63368b7fd6ad637dee4faa1b35acb67853a1466be7d691",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "distillery_chronicle_w2.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "host": "Local Chronicle binding receipt, two successful source reads, shelfmark generation and era-bands-off variant",
+        "setup_verification": "pending"
+      },
+      "current_source_sha256": "379ae24476e27989f10fb4a64f73faedb3b1a29475057cd48f9077b95e29d7cc",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "face_zoom.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "a7e862f2849abea2e421857b1bb45a575f2b6cbfaec96d07fdf4f8d8baf3fc85",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "h3_boot.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "25090e3f0e295894ec45d2acb603272a05ed0050e4e22c1f4be8ed3d22bbf3d4",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p0_viewer_site_frames_21.scn",
+      "status": "live",
+      "verification": "pending",
+      "imported_from": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer-release/scenarios/p0_viewer_site_frames_21.scn",
+      "source_sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+      "current_source_sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p0_worker_failed.scn",
+      "status": "live",
+      "verification": "pending",
+      "imported_from": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_failed.scn",
+      "source_sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+      "current_source_sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p0_worker_main.scn",
+      "status": "live",
+      "verification": "pending",
+      "imported_from": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_main.scn",
+      "source_sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+      "current_source_sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p0_worker_worker.scn",
+      "status": "live",
+      "verification": "pending",
+      "imported_from": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_worker.scn",
+      "source_sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+      "current_source_sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p3_presenter_2000.scn",
+      "status": "historical-presenter-comparison",
+      "verification": "pending",
+      "current_source_sha256": "a3ddbbdca9723718d4df7d0d16603a624f24ab7c6b97090ee19d52a3e08317d7",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p3_presenter_fixture.scn",
+      "status": "historical-presenter-comparison",
+      "verification": "pending",
+      "current_source_sha256": "fe374536b1412926e07f32269d69ab9eb99d68ed92605f592fe794fedbeb82ba",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p3_tree_2000.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "310d31e108a77880bee1b6feb2ffb6d636568daad4d29db88e91e63e24a7cd3b",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p3_tree_fixture.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "49ee5eab91bb13506ded67278f87e06f174407d17bc40d8fce9a57025bc4a696",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p3_tree_health.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "9098926f21c52896c8d6af22ca64c1078590da55a7282629c61949378233a908",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_arrangement_roles.scn",
+      "status": "live",
+      "verification": "pending",
+      "prior_runs": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-arrangement",
+          "scenario": "p4_tree_arrangement_roles",
+          "query": "gpu=off",
+          "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+          "scenario_sha256": "c30732aa841e5677f77f1b5f9bf9e23afc4e305d85955ff2c4baa3c547a0d979",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-arrangement",
+          "scenario": "p4_tree_arrangement_roles",
+          "query": "gpu=off",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "c30732aa841e5677f77f1b5f9bf9e23afc4e305d85955ff2c4baa3c547a0d979",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-arrangement",
+          "scenario": "p4_tree_arrangement_roles",
+          "query": "gpu=off",
+          "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+          "scenario_sha256": "c30732aa841e5677f77f1b5f9bf9e23afc4e305d85955ff2c4baa3c547a0d979",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-arrangement",
+          "scenario": "p4_tree_arrangement_roles",
+          "query": "gpu=off",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "c30732aa841e5677f77f1b5f9bf9e23afc4e305d85955ff2c4baa3c547a0d979",
+          "current_verification": "pending"
+        }
+      ],
+      "current_source_sha256": "c30732aa841e5677f77f1b5f9bf9e23afc4e305d85955ff2c4baa3c547a0d979",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_c4b1_live_board.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "0f3f9ebde81b9dd003b4a047389bec48702e2b9d683a150486d6a22942d69c8b",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_c4b3_reconnect.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "4a582c720e817c1f8b23f49172b98e65cf53a9effc844a5859b4e6748ecbcd85",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_canvas_reader.scn",
+      "status": "live",
+      "verification": "pending",
+      "prior_runs": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-reader",
+          "scenario": "p4_tree_canvas_reader",
+          "query": "gpu=off",
+          "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+          "scenario_sha256": "153fd81bbcf9433f37c3069a080062ec92bc6ea28ca7cc759cb33e12bd8c934e",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-reader-control",
+          "scenario": "p4_tree_canvas_reader",
+          "query": "gpu=off&plant_a11y=missing_action",
+          "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+          "scenario_sha256": "153fd81bbcf9433f37c3069a080062ec92bc6ea28ca7cc759cb33e12bd8c934e",
+          "current_verification": "pending",
+          "expected_outcome": {
+            "scenario": "intended_a11y_failure",
+            "required_reason": "the specific semantic item/action named by plant_a11y is absent or dead",
+            "unrelated_failures_allowed": false,
+            "frozen_before_run": true
+          }
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-reader",
+          "scenario": "p4_tree_canvas_reader",
+          "query": "gpu=off",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "153fd81bbcf9433f37c3069a080062ec92bc6ea28ca7cc759cb33e12bd8c934e",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-reader-control",
+          "scenario": "p4_tree_canvas_reader",
+          "query": "gpu=off&plant_a11y=missing_action",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "153fd81bbcf9433f37c3069a080062ec92bc6ea28ca7cc759cb33e12bd8c934e",
+          "current_verification": "pending",
+          "expected_outcome": {
+            "scenario": "intended_a11y_failure",
+            "required_reason": "the specific semantic item/action named by plant_a11y is absent or dead",
+            "unrelated_failures_allowed": false,
+            "frozen_before_run": true
+          }
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-remote-export",
+          "scenario": "p4_tree_canvas_reader",
+          "query": "gpu=off&signal=ws://127.0.0.1:8999",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "153fd81bbcf9433f37c3069a080062ec92bc6ea28ca7cc759cb33e12bd8c934e",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-reader",
+          "scenario": "p4_tree_canvas_reader",
+          "query": "gpu=off",
+          "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+          "scenario_sha256": "153fd81bbcf9433f37c3069a080062ec92bc6ea28ca7cc759cb33e12bd8c934e",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-reader-control",
+          "scenario": "p4_tree_canvas_reader",
+          "query": "gpu=off&plant_a11y=missing_action",
+          "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+          "scenario_sha256": "153fd81bbcf9433f37c3069a080062ec92bc6ea28ca7cc759cb33e12bd8c934e",
+          "current_verification": "pending",
+          "expected_outcome": {
+            "scenario": "intended_a11y_failure",
+            "required_reason": "the specific semantic item/action named by plant_a11y is absent or dead",
+            "unrelated_failures_allowed": false,
+            "frozen_before_run": true
+          }
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-reader",
+          "scenario": "p4_tree_canvas_reader",
+          "query": "gpu=off",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "153fd81bbcf9433f37c3069a080062ec92bc6ea28ca7cc759cb33e12bd8c934e",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-reader-control",
+          "scenario": "p4_tree_canvas_reader",
+          "query": "gpu=off&plant_a11y=missing_action",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "153fd81bbcf9433f37c3069a080062ec92bc6ea28ca7cc759cb33e12bd8c934e",
+          "current_verification": "pending",
+          "expected_outcome": {
+            "scenario": "intended_a11y_failure",
+            "required_reason": "the specific semantic item/action named by plant_a11y is absent or dead",
+            "unrelated_failures_allowed": false,
+            "frozen_before_run": true
+          }
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-remote-export",
+          "scenario": "p4_tree_canvas_reader",
+          "query": "gpu=off&signal=ws://127.0.0.1:8999",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "153fd81bbcf9433f37c3069a080062ec92bc6ea28ca7cc759cb33e12bd8c934e",
+          "current_verification": "pending"
+        }
+      ],
+      "current_source_sha256": "153fd81bbcf9433f37c3069a080062ec92bc6ea28ca7cc759cb33e12bd8c934e",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_canvas_reader_cdp.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "bc9c856e37562ae2bca7cabf5b0a3863418ae40436543248394d0d009b0da74e",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_controls.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "2945c5c0f8c861a655edfcd037697f64dca340deda83a7380489f0edbd024d10",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_density_cost.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "b4bab4099273110b2586500c8ec14974e847fa33fea8af6c0b0da2dbfe8a1d8e",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_detail_actions.scn",
+      "status": "live",
+      "verification": "pending",
+      "introduced_by": "retained-tree-cutover",
+      "prerequisites": {
+        "page": "tree.html",
+        "query": "app=local"
+      },
+      "current_source_sha256": "e66c11cdfc1eafb2869d28369042d73a06d1694da0a024c7acd60c9bd70fe65f",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_elapsed.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "3a1c4c39565986895466f70ab5f187cb6787d895de9e737d56980dd510a3e43d",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_face_zoom.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "5fdc160653f43dc0a30d671a5f9c113839b8d493c312aac8ea0cc5c24d957b38",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_file_cancel.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "3c77ba7ea6aa8770cf2f9aeedd8f673f0f7fa888c0730c14bda1c32e3b266159",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_file_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "284d2cc231739ff84dc72f11e2e2dcc3b866e08d4ebf53c182992732c4f40e40",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_find.scn",
+      "status": "live",
+      "verification": "pending",
+      "introduced_by": "retained-tree-cutover",
+      "prerequisites": {
+        "page": "tree.html",
+        "query": "app=local"
+      },
+      "current_source_sha256": "6f87c859d0299a6144ab92b093f6c29c397e0f7a8c09d6cdcc72393336c39525",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_history_controls.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "page": "tree.html",
+        "query": "app=local",
+        "profile": "fresh"
+      },
+      "current_source_sha256": "6eb8905a7785aaf7eccea0faf6e393ffcef8594f48e152293998643786800202",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_intake.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "388ef126f67c3844076fe3166f33cd3ab5f8ce9e65041fa6cbfa6b31483e2ab7",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_intake_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "283e2393d35510cd1f597395bc0e53f36b00391bb5c7852e41eb77bb676e0a38",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_item_role.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "8550f760cd9d552cdb0be448ae1a21b5a50a2aa91438a301931d942d19f5e700",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_live_profile.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "c561b9e3474a23c2229caafcfe1d45559471fbad3e8cd122a07b002881579c8e",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_add.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "30de4bede38ad07cc5affc71e40bd4c5533fcbdd3653f537ad46eb13b330060a",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_anneal.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "c35456fe615159a1e6343850581517fac875ceecb48d1da656e33802401450ea",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_charge.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "56684981020ac35da7c10bc71a07ca0466fbc7976aaacc38a3d1121176110f76",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_converted.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "92ecd7df02b7630da3968a8d1978e069d2ba227be6e018e6cc81796067262a50",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_density.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "2ff09e79b62589d25974c6f2345858ad18ca48a91849d1fe207286c968e3c67d",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_density_control.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "61e344b86a270db369b16c08a8018e7d20113dfeed8608033212e76ec1ac2186",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_drag.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "8045f699573c3435227d52d4ab6f56b68584d0e52162e58eed43bc67e3a50a5a",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_energy.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "842451ae5d6a988a413534d8256cf4eb983f9817e52be1c9e829842665510ca5",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_flock.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "839d64ad7c9e82277a4617b76a29252af7ebeca2c94094dd5fc479d65d52f145",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_flow.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "8585f5fc7fd4cb1cc57f72e7806c52d6ed8a09f8d3560a4b8015be6ea9020cb1",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_framing_control.scn",
+      "status": "live",
+      "verification": "pending",
+      "prior_runs": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-framing",
+          "scenario": "p4_tree_physics_framing_control",
+          "query": "gpu=off",
+          "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+          "scenario_sha256": "8466a1bf0f8ce4d9f687f4887ffa168159321100a988472d7a9899c5ffdc355f",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-page-error",
+          "scenario": "p4_tree_physics_framing_control",
+          "query": "gpu=off&plant_page_error=throw",
+          "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+          "scenario_sha256": "8466a1bf0f8ce4d9f687f4887ffa168159321100a988472d7a9899c5ffdc355f",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-framing",
+          "scenario": "p4_tree_physics_framing_control",
+          "query": "gpu=off",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "8466a1bf0f8ce4d9f687f4887ffa168159321100a988472d7a9899c5ffdc355f",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-page-error",
+          "scenario": "p4_tree_physics_framing_control",
+          "query": "gpu=off&plant_page_error=throw",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "8466a1bf0f8ce4d9f687f4887ffa168159321100a988472d7a9899c5ffdc355f",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-framing",
+          "scenario": "p4_tree_physics_framing_control",
+          "query": "gpu=off",
+          "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+          "scenario_sha256": "8466a1bf0f8ce4d9f687f4887ffa168159321100a988472d7a9899c5ffdc355f",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-page-error",
+          "scenario": "p4_tree_physics_framing_control",
+          "query": "gpu=off&plant_page_error=throw",
+          "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+          "scenario_sha256": "8466a1bf0f8ce4d9f687f4887ffa168159321100a988472d7a9899c5ffdc355f",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-framing",
+          "scenario": "p4_tree_physics_framing_control",
+          "query": "gpu=off",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "8466a1bf0f8ce4d9f687f4887ffa168159321100a988472d7a9899c5ffdc355f",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-page-error",
+          "scenario": "p4_tree_physics_framing_control",
+          "query": "gpu=off&plant_page_error=throw",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "8466a1bf0f8ce4d9f687f4887ffa168159321100a988472d7a9899c5ffdc355f",
+          "current_verification": "pending"
+        }
+      ],
+      "current_source_sha256": "8466a1bf0f8ce4d9f687f4887ffa168159321100a988472d7a9899c5ffdc355f",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_keys.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "2b0e99e34c78c5f8bf192c2abdac7cfab611c2b35fa1e2516a7575b0b0c5a2a4",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_kinds.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "db2ce19c22d68b54a973628d74fb4ca2e3efb23a06e72ea3d07fe52ac9c91f85",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_meaning.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "947b6cd6a3fca1931001a15b38ae403e4e54c7aa581f801d2bdcdb240da25915",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_orbit.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "8645f38c8658cfa6b8b0c89c9e86655564f90cd7728f79df95ab0665e8cef077",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_profiles.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "24ed060ead61ad032182f7eebcb9e04e46c44adc31ba3ac7b363113ea76f18d5",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_remote_board.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "78dd889e85005619b874a2aa858bb20a9ed92fd68a0e167941772c32a8d64f3e",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_springs.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "bd33029025d9aff15fdac83f302a1e54eb0babe90549017d5aecf222a661c93d",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_still.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "3fc1cf730b08037c784a9d9925c87a11a16f937205752748602bc736621982c0",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_stress.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "ec6eb9ba38d70c42d238990abd16cf36220a31cf3eee824818bb252ceb14e798",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_physics_sync.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "8b1fb4ae6c773bcd2e4e84287311b740577273a2f48dc764ce5b77acc13c63f1",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_practice_controls.scn",
+      "status": "live",
+      "verification": "pending",
+      "introduced_by": "retained-tree-cutover",
+      "prerequisites": {
+        "page": "practice-tree-test.html",
+        "query": ""
+      },
+      "current_source_sha256": "6e0190ac2b0df0c35b1c93b8c0f15204a3738bf650a5e2bb543204c0943e1359",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_profile.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "b21667e42863d5292a71be8f57ebfa7019b50689a568323b613630635dbd6b1b",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_projection_controls.scn",
+      "status": "live",
+      "verification": "pending",
+      "introduced_by": "retained-tree-cutover",
+      "prerequisites": {
+        "page": "tree.html",
+        "query": "app=local"
+      },
+      "current_source_sha256": "07d804c12ccc17af9000cbaff572f9496d81f3b0c28c65f44d8626e8b29dfac0",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_remote_absent.scn",
+      "status": "live",
+      "verification": "pending",
+      "prior_runs": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-remote-refused",
+          "scenario": "p4_tree_remote_absent",
+          "query": "gpu=off",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "798b9990da250bc0d5d4211044f74ff7d2123bd3c2d64327de20e7d9295a7764",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-remote-refused",
+          "scenario": "p4_tree_remote_absent",
+          "query": "gpu=off",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "798b9990da250bc0d5d4211044f74ff7d2123bd3c2d64327de20e7d9295a7764",
+          "current_verification": "pending"
+        }
+      ],
+      "current_source_sha256": "798b9990da250bc0d5d4211044f74ff7d2123bd3c2d64327de20e7d9295a7764",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_remote_draft.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "84408a0a70bcddd1ab2a997cf15ff6b0022df9d0d6a3feda7f21314469f8fcb3",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_role_controls.scn",
+      "status": "live",
+      "verification": "pending",
+      "prior_runs": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-roles",
+          "scenario": "p4_tree_role_controls",
+          "query": "gpu=off",
+          "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+          "scenario_sha256": "a7abfc58f596d676aadc44618f0770fcc4efea42b905fb8c6e69a82c9d49d356",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-roles",
+          "scenario": "p4_tree_role_controls",
+          "query": "gpu=off",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "a7abfc58f596d676aadc44618f0770fcc4efea42b905fb8c6e69a82c9d49d356",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-roles",
+          "scenario": "p4_tree_role_controls",
+          "query": "gpu=off",
+          "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+          "scenario_sha256": "a7abfc58f596d676aadc44618f0770fcc4efea42b905fb8c6e69a82c9d49d356",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-roles",
+          "scenario": "p4_tree_role_controls",
+          "query": "gpu=off",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "a7abfc58f596d676aadc44618f0770fcc4efea42b905fb8c6e69a82c9d49d356",
+          "current_verification": "pending"
+        }
+      ],
+      "current_source_sha256": "a7abfc58f596d676aadc44618f0770fcc4efea42b905fb8c6e69a82c9d49d356",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_saved_edit.scn",
+      "status": "live",
+      "verification": "pending",
+      "prior_runs": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-saved-refused",
+          "scenario": "p4_tree_saved_edit",
+          "query": "gpu=off&app=local",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "ae1502a3123283376895ae55e745d7e20092435832648b3aa879cd02766172ed",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-saved-refused",
+          "scenario": "p4_tree_saved_edit",
+          "query": "gpu=off&app=local",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "ae1502a3123283376895ae55e745d7e20092435832648b3aa879cd02766172ed",
+          "current_verification": "pending"
+        }
+      ],
+      "current_source_sha256": "ae1502a3123283376895ae55e745d7e20092435832648b3aa879cd02766172ed",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_saved_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "991271699d36d4b6a34b97da744c1d6160e29e57660df3f4333f7437a8676156",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_scene_controls.scn",
+      "status": "live",
+      "verification": "pending",
+      "introduced_by": "retained-tree-cutover",
+      "prerequisites": {
+        "page": "tree.html",
+        "query": "app=local"
+      },
+      "current_source_sha256": "efae4b2d64a38f5d67e88b3ba1289220de3a938de0a4f47ed0cf5eb0619a6bab",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_tools_narrow.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "84342981a429c5d28cdc3eb4e99acb0f22ab37706cddc92518b0ace29b1a506f",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p4_tree_visibility_timing.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "834593926075a5bfd1b78b056a09a8920a41938b8a0e081f918354a2e120820b",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": "only the visibility-gap timing window after an independently recorded hidden-tab interval",
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true,
+        "rationale": "Source requests a real hidden-tab timing positive control; a continuously visible run does not qualify this control."
+      }
+    },
+    {
+      "name": "p5_tree_cpu_settle_2000.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "0de37b5370578ca15e1949c86ddf2fb7d15589727d8bde54feaccc47d5ada2bd",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p5_tree_gpu_settle_2000.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "3f9217c2dc0efc25d42279e04c9f4673f268286a3a89218eb045adb691b8ba13",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p5_tree_gpu_timing.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "fffd7b711b6a7b7867b3e12e5044139ff8fe6a6d4c36ce0154a7f403350382de",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p5_tree_meaning_cost.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "d7922cbc916773e2fceee07be913badc7cfa7c5138bb065758adcb566b980a85",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p6_tree_speed_fast.scn",
+      "status": "live",
+      "verification": "pending",
+      "prior_runs": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-fast",
+          "scenario": "p6_tree_speed_fast",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=1",
+          "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+          "scenario_sha256": "5811803df71a8f212697ef6a62dc782308c0ba8c763b8dcbbf4160a0d7e785d3",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-fast",
+          "scenario": "p6_tree_speed_fast",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=1",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "5811803df71a8f212697ef6a62dc782308c0ba8c763b8dcbbf4160a0d7e785d3",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/adapter-default",
+          "scenario": "p6_tree_speed_fast",
+          "query": "probe=1",
+          "bundle_sha256": "686fd0115f2a42588aecbda3f80c77e4ed3e50a8e30485807f9006e121fbd592",
+          "scenario_sha256": "b183f3118f4180de96b8d1fdef024c89c7a9a5e0675501cec46d96b5863dfdd1",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/adapter-enabled",
+          "scenario": "p6_tree_speed_fast",
+          "query": "probe=1",
+          "bundle_sha256": "686fd0115f2a42588aecbda3f80c77e4ed3e50a8e30485807f9006e121fbd592",
+          "scenario_sha256": "b183f3118f4180de96b8d1fdef024c89c7a9a5e0675501cec46d96b5863dfdd1",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/adapter-vulkan",
+          "scenario": "p6_tree_speed_fast",
+          "query": "probe=1",
+          "bundle_sha256": "686fd0115f2a42588aecbda3f80c77e4ed3e50a8e30485807f9006e121fbd592",
+          "scenario_sha256": "b183f3118f4180de96b8d1fdef024c89c7a9a5e0675501cec46d96b5863dfdd1",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/default-fast",
+          "scenario": "p6_tree_speed_fast",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=max",
+          "bundle_sha256": "686fd0115f2a42588aecbda3f80c77e4ed3e50a8e30485807f9006e121fbd592",
+          "scenario_sha256": "b183f3118f4180de96b8d1fdef024c89c7a9a5e0675501cec46d96b5863dfdd1",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/default-fast-hardware",
+          "scenario": "p6_tree_speed_fast",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=max",
+          "bundle_sha256": "686fd0115f2a42588aecbda3f80c77e4ed3e50a8e30485807f9006e121fbd592",
+          "scenario_sha256": "b183f3118f4180de96b8d1fdef024c89c7a9a5e0675501cec46d96b5863dfdd1",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/default-release-p6_tree_speed_fast-hardware",
+          "scenario": "p6_tree_speed_fast",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=max",
+          "bundle_sha256": "49b56bd3b6c8e971d215ec6aab43a15abe2ad9a9488e8ff0c3b899d53a45be7a",
+          "scenario_sha256": "b183f3118f4180de96b8d1fdef024c89c7a9a5e0675501cec46d96b5863dfdd1",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/viewer-p6_tree_speed_fast-hardware",
+          "scenario": "p6_tree_speed_fast",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=max",
+          "bundle_sha256": "a53a08ad6df7486895d59879117dca3de9f59ab2bb4dd17b43256eece33b035e",
+          "scenario_sha256": "b183f3118f4180de96b8d1fdef024c89c7a9a5e0675501cec46d96b5863dfdd1",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/viewer-release-p6_tree_speed_fast-hardware",
+          "scenario": "p6_tree_speed_fast",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=max",
+          "bundle_sha256": "3723753272428b9df78e8321078aeae46230fc0b108adcc698319ccd465fef73",
+          "scenario_sha256": "b183f3118f4180de96b8d1fdef024c89c7a9a5e0675501cec46d96b5863dfdd1",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-fast",
+          "scenario": "p6_tree_speed_fast",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=1",
+          "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+          "scenario_sha256": "5811803df71a8f212697ef6a62dc782308c0ba8c763b8dcbbf4160a0d7e785d3",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-fast",
+          "scenario": "p6_tree_speed_fast",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=1",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "5811803df71a8f212697ef6a62dc782308c0ba8c763b8dcbbf4160a0d7e785d3",
+          "current_verification": "pending"
+        }
+      ],
+      "current_source_sha256": "5811803df71a8f212697ef6a62dc782308c0ba8c763b8dcbbf4160a0d7e785d3",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p6_tree_speed_fast_control.scn",
+      "status": "live",
+      "verification": "pending",
+      "prior_runs": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-fifty",
+          "scenario": "p6_tree_speed_fast_control",
+          "query": "nodes=24&seed=7&links=none&gpu=off&physics_speed=1",
+          "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+          "scenario_sha256": "d668256fc4cc43380a5c0fde931a5ba52d63e767ad5587990eccbdeb5c6cd8af",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-fifty",
+          "scenario": "p6_tree_speed_fast_control",
+          "query": "nodes=24&seed=7&links=none&gpu=off&physics_speed=1",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "d668256fc4cc43380a5c0fde931a5ba52d63e767ad5587990eccbdeb5c6cd8af",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/default-p6_tree_speed_fast_control-hardware",
+          "scenario": "p6_tree_speed_fast_control",
+          "query": "nodes=24&seed=7&links=none&gpu=off&physics_speed=50",
+          "bundle_sha256": "686fd0115f2a42588aecbda3f80c77e4ed3e50a8e30485807f9006e121fbd592",
+          "scenario_sha256": "90a4cf8ff963d40efd4a4c2714402fafff7b156156b27d8b0597028183953dee",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/release-default-control",
+          "scenario": "p6_tree_speed_fast_control",
+          "query": "nodes=24&seed=7&links=none&gpu=off&physics_speed=50",
+          "bundle_sha256": "49b56bd3b6c8e971d215ec6aab43a15abe2ad9a9488e8ff0c3b899d53a45be7a",
+          "scenario_sha256": "90a4cf8ff963d40efd4a4c2714402fafff7b156156b27d8b0597028183953dee",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/viewer-p6_tree_speed_fast_control-hardware",
+          "scenario": "p6_tree_speed_fast_control",
+          "query": "nodes=24&seed=7&links=none&gpu=off&physics_speed=50",
+          "bundle_sha256": "a53a08ad6df7486895d59879117dca3de9f59ab2bb4dd17b43256eece33b035e",
+          "scenario_sha256": "90a4cf8ff963d40efd4a4c2714402fafff7b156156b27d8b0597028183953dee",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/viewer-release-p6_tree_speed_fast_control-hardware",
+          "scenario": "p6_tree_speed_fast_control",
+          "query": "nodes=24&seed=7&links=none&gpu=off&physics_speed=50",
+          "bundle_sha256": "3723753272428b9df78e8321078aeae46230fc0b108adcc698319ccd465fef73",
+          "scenario_sha256": "90a4cf8ff963d40efd4a4c2714402fafff7b156156b27d8b0597028183953dee",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-fifty",
+          "scenario": "p6_tree_speed_fast_control",
+          "query": "nodes=24&seed=7&links=none&gpu=off&physics_speed=1",
+          "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+          "scenario_sha256": "d668256fc4cc43380a5c0fde931a5ba52d63e767ad5587990eccbdeb5c6cd8af",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-fifty",
+          "scenario": "p6_tree_speed_fast_control",
+          "query": "nodes=24&seed=7&links=none&gpu=off&physics_speed=1",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "d668256fc4cc43380a5c0fde931a5ba52d63e767ad5587990eccbdeb5c6cd8af",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-original-fifty",
+          "scenario": "p6_tree_speed_fast_control",
+          "query": "nodes=24&seed=7&links=none&gpu=off&physics_speed=1",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "372ff12bd648f28be2af4fd7043319dd513607fe93ac44490d28415f18173100",
+          "current_verification": "pending"
+        }
+      ],
+      "current_source_sha256": "d668256fc4cc43380a5c0fde931a5ba52d63e767ad5587990eccbdeb5c6cd8af",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p6_tree_speed_fast_control_capped.scn",
+      "status": "live",
+      "verification": "pending",
+      "prior_runs": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-cap",
+          "scenario": "p6_tree_speed_fast_control_capped",
+          "query": "nodes=24&seed=7&links=none&gpu=off&physics_speed=1&physics_plant_owed=1x",
+          "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+          "scenario_sha256": "fa449be6fc123385e1ddc94b163ee676c5a72f79ed105e835f96c00a3a95c832",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-cap",
+          "scenario": "p6_tree_speed_fast_control_capped",
+          "query": "nodes=24&seed=7&links=none&gpu=off&physics_speed=1&physics_plant_owed=1x",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "fa449be6fc123385e1ddc94b163ee676c5a72f79ed105e835f96c00a3a95c832",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-cap",
+          "scenario": "p6_tree_speed_fast_control_capped",
+          "query": "nodes=24&seed=7&links=none&gpu=off&physics_speed=1&physics_plant_owed=1x",
+          "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+          "scenario_sha256": "fa449be6fc123385e1ddc94b163ee676c5a72f79ed105e835f96c00a3a95c832",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-cap",
+          "scenario": "p6_tree_speed_fast_control_capped",
+          "query": "nodes=24&seed=7&links=none&gpu=off&physics_speed=1&physics_plant_owed=1x",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "fa449be6fc123385e1ddc94b163ee676c5a72f79ed105e835f96c00a3a95c832",
+          "current_verification": "pending"
+        }
+      ],
+      "current_source_sha256": "fa449be6fc123385e1ddc94b163ee676c5a72f79ed105e835f96c00a3a95c832",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p6_tree_speed_fast_planted.scn",
+      "status": "live",
+      "verification": "pending",
+      "prior_runs": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-stall",
+          "scenario": "p6_tree_speed_fast_planted",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=max&physics_plant_stall_ms=10",
+          "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+          "scenario_sha256": "7c50f1a1a0c71840fa036ed666aafc1a7b70cebc8e6d32a66eb8759bed176696",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-stall",
+          "scenario": "p6_tree_speed_fast_planted",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=max&physics_plant_stall_ms=10",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "7c50f1a1a0c71840fa036ed666aafc1a7b70cebc8e6d32a66eb8759bed176696",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/release-default-planted",
+          "scenario": "p6_tree_speed_fast_planted",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=max&physics_plant_stall_ms=10",
+          "bundle_sha256": "49b56bd3b6c8e971d215ec6aab43a15abe2ad9a9488e8ff0c3b899d53a45be7a",
+          "scenario_sha256": "df7be9f37e7795db227dcf8e20b0db3d117c2e8bc11057921a7e8bcf730c74a8",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-stall",
+          "scenario": "p6_tree_speed_fast_planted",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=max&physics_plant_stall_ms=10",
+          "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+          "scenario_sha256": "7c50f1a1a0c71840fa036ed666aafc1a7b70cebc8e6d32a66eb8759bed176696",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-stall",
+          "scenario": "p6_tree_speed_fast_planted",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=max&physics_plant_stall_ms=10",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "7c50f1a1a0c71840fa036ed666aafc1a7b70cebc8e6d32a66eb8759bed176696",
+          "current_verification": "pending"
+        }
+      ],
+      "current_source_sha256": "7c50f1a1a0c71840fa036ed666aafc1a7b70cebc8e6d32a66eb8759bed176696",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p6_tree_speed_fast_slow_max.scn",
+      "status": "live",
+      "verification": "pending",
+      "prior_runs": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-slow-max",
+          "scenario": "p6_tree_speed_fast_slow_max",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=1&physics_plant_max_frame_ms=3000",
+          "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+          "scenario_sha256": "6118bbb503ca60c46833849292a50a72d2d7d85c06f415163f04be85445d9d33",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-slow-max",
+          "scenario": "p6_tree_speed_fast_slow_max",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=1&physics_plant_max_frame_ms=500",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "3c3e48ffd5e069eb61717daefd5dbc3b301cf36eaa1498bc91dd94e7d32432b7",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-strong-slow-max",
+          "scenario": "p6_tree_speed_fast_slow_max",
+          "query": "nodes=300&seed=7&links=none&gpu=off&physics_speed=1&physics_plant_max_frame_ms=3000",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "6118bbb503ca60c46833849292a50a72d2d7d85c06f415163f04be85445d9d33",
+          "current_verification": "pending"
+        }
+      ],
+      "current_source_sha256": "6118bbb503ca60c46833849292a50a72d2d7d85c06f415163f04be85445d9d33",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p6_tree_speed_select.scn",
+      "status": "live",
+      "verification": "pending",
+      "prior_runs": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-select",
+          "scenario": "p6_tree_speed_select",
+          "query": "nodes=300&seed=7&links=none&gpu=off",
+          "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+          "scenario_sha256": "90c8926e482f0b13f05f499ef22e09244c4b944d1e7b8801c2c626423692c273",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-select",
+          "scenario": "p6_tree_speed_select",
+          "query": "nodes=300&seed=7&links=none&gpu=off",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "90c8926e482f0b13f05f499ef22e09244c4b944d1e7b8801c2c626423692c273",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-select",
+          "scenario": "p6_tree_speed_select",
+          "query": "nodes=300&seed=7&links=none&gpu=off",
+          "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+          "scenario_sha256": "90c8926e482f0b13f05f499ef22e09244c4b944d1e7b8801c2c626423692c273",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-select",
+          "scenario": "p6_tree_speed_select",
+          "query": "nodes=300&seed=7&links=none&gpu=off",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "90c8926e482f0b13f05f499ef22e09244c4b944d1e7b8801c2c626423692c273",
+          "current_verification": "pending"
+        }
+      ],
+      "current_source_sha256": "90c8926e482f0b13f05f499ef22e09244c4b944d1e7b8801c2c626423692c273",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "p6_tree_speed_slow.scn",
+      "status": "live",
+      "verification": "pending",
+      "prior_runs": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-slow",
+          "scenario": "p6_tree_speed_slow",
+          "query": "physics_speed=0.2&gpu=off",
+          "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+          "scenario_sha256": "c8df0d3bb1e1be3b6bab8f024bad303d05b49299d24ba7a99239af2e7ac2043d",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-slow",
+          "scenario": "p6_tree_speed_slow",
+          "query": "physics_speed=0.2&gpu=off",
+          "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+          "scenario_sha256": "c8df0d3bb1e1be3b6bab8f024bad303d05b49299d24ba7a99239af2e7ac2043d",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/viewer-p6_tree_speed_slow-hardware",
+          "scenario": "p6_tree_speed_slow",
+          "query": "physics_speed=0.2",
+          "bundle_sha256": "a53a08ad6df7486895d59879117dca3de9f59ab2bb4dd17b43256eece33b035e",
+          "scenario_sha256": "217f3bb130540c2cee4d795a5095a001662668338ea74c67cd33391203d9ed7f",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/viewer-release-p6_tree_speed_slow-hardware",
+          "scenario": "p6_tree_speed_slow",
+          "query": "physics_speed=0.2",
+          "bundle_sha256": "3723753272428b9df78e8321078aeae46230fc0b108adcc698319ccd465fef73",
+          "scenario_sha256": "217f3bb130540c2cee4d795a5095a001662668338ea74c67cd33391203d9ed7f",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-slow",
+          "scenario": "p6_tree_speed_slow",
+          "query": "physics_speed=0.2&gpu=off",
+          "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+          "scenario_sha256": "c8df0d3bb1e1be3b6bab8f024bad303d05b49299d24ba7a99239af2e7ac2043d",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-slow",
+          "scenario": "p6_tree_speed_slow",
+          "query": "physics_speed=0.2&gpu=off",
+          "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+          "scenario_sha256": "c8df0d3bb1e1be3b6bab8f024bad303d05b49299d24ba7a99239af2e7ac2043d",
+          "current_verification": "pending"
+        }
+      ],
+      "current_source_sha256": "c8df0d3bb1e1be3b6bab8f024bad303d05b49299d24ba7a99239af2e7ac2043d",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_add.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "adc84ef82895f4a1d49657c567d6958307465e66f37ba90fceb8b7f0eac4cdcf",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_anneal.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "29a8ce7d5cce1b430be39ee3440019b775fc32915f68452ca6e79d3957cb3d49",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_charge.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "75b3f04634a4849e96beb9f1641df977d3f772385d3c3d94d1330d519a6a442b",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_converted.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "c6f5f39182943c6501ca000dfee3400279ae675e5fc854d4a25cf2e10e2a8e54",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_density.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "318ce8f0184789d20ff22b40a696cf672d7a25816273c457dcdc092e094a15b3",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_density_control.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "ff9800d6a7f2f124ce25cabab0f56fffb1c46a44195578bbeb76d979088fb58c",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_drag.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "186792b8c9e22ffc858190b6b9104300ab5ba64e194a545118880b5b1639da64",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_energy.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "6cd6daf48198600b211c2f10f7e43238dcb1f483bb19f99527d0c9b0223037b3",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_flock.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "077b29d0d66d98dc958f7db5c0f17e41574397c490a6b6fc7c3df655caedc7c3",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_flow.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "0c88392bb4411da91d88eab67de3eae8c075ff9fc7bc6a64bbdc2cd4864a211d",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_framing_control.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "3dc63607f3c6eb3c02c83c1b5d6dc44ba5c3f01f7841c59521f394e3f19cedd7",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_kinds.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "9c37ac2a78951765d578a141ebcd449efba02c3eb764761594a8226e7247570f",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_orbit.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "bbba7d40e62336acbb4571dd950a9535ff1566bf47d710ccb5fdfac4409e795c",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_profiles.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "947ca75750eea95b3c3bda53fcab9d793e1d8dcc2916e70ed89c00a9ae6b473a",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_remote_board.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "host": "Real local admitted WebRTC fixture board; signal query",
+        "setup_verification": "pending"
+      },
+      "current_source_sha256": "e676a6f2a199c94ef5be036d08f6a8a342d7b2add58295cec7918e33f5ff0e12",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_speed_select.scn",
+      "status": "live",
+      "verification": "pending",
+      "prior_runs": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-main-select",
+          "scenario": "physics_speed_select",
+          "query": "nodes=300&seed=7&links=none&gpu=off",
+          "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+          "scenario_sha256": "194d71726048beb30f8ecfc0757dcc55948700b882de22d068bde8e450a3d3ba",
+          "current_verification": "pending"
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-main-select",
+          "scenario": "physics_speed_select",
+          "query": "nodes=300&seed=7&links=none&gpu=off",
+          "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+          "scenario_sha256": "194d71726048beb30f8ecfc0757dcc55948700b882de22d068bde8e450a3d3ba",
+          "current_verification": "pending"
+        }
+      ],
+      "current_source_sha256": "61504e59d7fb510287eaa4d414ccbddf52325ecaf7b971f76ef74fad3f35f304",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_springs.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "674a728ee8ad783808eb821dc6cd6b2c75f32268fe727cc83c3fb5a78f775b16",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_still.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "4f11416222411c4656d1c91c25167947c1b7ca416cd1300a5f15ff9b77355572",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_stress.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "9a413f10ea448b0827022dbaae914a68ec2f95615685f87181b044f9041ff685",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "physics_sync.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "62fa7100104e8b36e75e2cc8c3fbd6372c1c223a1f4a6a20fa0c82415f5b250f",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "practice_embedded.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "same_origin_profile_after": "practice_workspace.scn",
+        "page": "practice-embed.html"
+      },
+      "current_source_sha256": "59382f0d1009a6cc887ca360ffc1d6daa87cb320a48f44e035b5195144933bab",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "practice_encoded_axes.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "96e9d5348ec9b0e46aee8b1b37e589e5edea2fa0117bbf0de0b75308785b3cb9",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "practice_relations.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "02275ff2ef5d10371df1f461209592b25ef524c79061f324ff4ea872d53f0b02",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "practice_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "same_origin_profile_after": "practice_workspace.scn",
+        "page": "practice.html"
+      },
+      "current_source_sha256": "2f0914d6d03586b3646e96dd30cfb969c27a60b1ed3f769c96cc370d40d34857",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "practice_workspace.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "e280d388cf7f4bf01f5cada5eac925aac3a502691e3557291ecb46787b7d8e03",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "projection_authoring.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "81f861a16ecf51227eb52e9a73d3eca96475b1a1fff077f16a7fb4e6891bdeb4",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "projection_compare.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "73b833bebfa401605f92f3277c4213cbba91cbbcc776d4142c72f43c89548499",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "projection_options.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "609c31741b57e0b7ad47602c76cd1d50c3787e0ae0d336688b03e522f5a8e0a0",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "projection_refresh.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "32cc8170004835054da6143ea7aaec418c5fc0890b274ff1aa92599d249dffa7",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "projection_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "same_origin_profile_after": "projection_authoring.scn",
+        "page": "index.html"
+      },
+      "current_source_sha256": "23c52dcb5b443c3dc637952bde0161dd866b4b7b37178eeb6936575029de90ec",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "projection_session.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "b72e141f1d302d872f34a3ae3d5898cff1821642065e9b0a72a7a962d43c70d8",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "projection_session_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "same_origin_profile_after": "projection_session.scn",
+        "page": "index.html"
+      },
+      "current_source_sha256": "d9f733a8f8a2aea5c51e4ecc6fd8c59761ec6ea0f0f53326f8c3ad84ef24fb86",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "projection_undo.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "3793198728c56d92bdca0b01f218f7885e7c14caba2768938f3ff8cafdf58160",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "reservoir_step4_migrated.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "initial_store": "Legacy graphshell/mere-host/v1 only, eleven fixture members; no current session",
+        "page": "index.html",
+        "setup_verification": "pending"
+      },
+      "current_source_sha256": "6cb246a5335dc9667dbf950977231268bf15f441c33f93d4b811c9f268dc18a3",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "reservoir_step4_reopened.scn",
+      "status": "live",
+      "verification": "pending",
+      "prerequisites": {
+        "same_origin_profile_after": "reservoir_step4_seeded.scn",
+        "page": "index.html"
+      },
+      "current_source_sha256": "395dd1e18772ff8d1c0f4a405b9ff5add871193a3ae6dd64d6070c8af5b331c7",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "reservoir_step4_seeded.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "68034ad4afeaf8b2b993628931a5d111623b269de749985ea7693b371900ced8",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "role_controls.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "475af60e3f677a04da9cdcaadfc40457e65dfa3febc849616c8ff25c16e9fe23",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "scene_save_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "c2c7755364d2b6879c29039b68d5e486994b192141f23faed58c16d514f2ed0e",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "tree_host_dataset.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "cf742e6bf7ddc533209a48d1595c2e7b800adfd252a0a7568949655f379fee80",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    },
+    {
+      "name": "tree_host_dataset_refused.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "2b7922c5537a9cfd2bd9c29f3aa3b8c6b0f0fd9263592c7afeddcf4d3bd25e6d",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      }
+    }
+  ],
+  "unmatched_prior_runs": [
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-worker",
+      "scenario": "p0_worker_worker",
+      "query": "gpu=off",
+      "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+      "scenario_sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/default/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-worker-failed",
+      "scenario": "p0_worker_failed",
+      "query": "gpu=off&physics_plant_worker=fail",
+      "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+      "scenario_sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/default/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/default-worker-off",
+      "scenario": "p0_worker_main",
+      "query": "gpu=off&physics_period_source=main",
+      "bundle_sha256": "b735a0d0c86d4ccf4cb6b252cd320740075e9ac608d78593fddd1af9f665ba86",
+      "scenario_sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/default/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-release-port-retry-site21",
+      "scenario": "p0_viewer_site_frames_21",
+      "query": "nodes=21&seed=7&links=none&physics_speed=1&gpu=off",
+      "bundle_sha256": "c2a30aa75b857973659cf7ec707f8edacb9553d0400839382b5ef6d3fdf97ec2",
+      "scenario_sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/viewer-gpu-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/viewer-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-worker",
+      "scenario": "p0_worker_worker",
+      "query": "gpu=off",
+      "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+      "scenario_sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/default/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-worker-failed",
+      "scenario": "p0_worker_failed",
+      "query": "gpu=off&physics_plant_worker=fail",
+      "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+      "scenario_sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/default/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/integration/receipts/viewer-worker-off",
+      "scenario": "p0_worker_main",
+      "query": "gpu=off&physics_period_source=main",
+      "bundle_sha256": "a3c9befc6d9d667c5b5fc03349be8ab29c55d0ffa83a00d9ca51e4d1119f1fc2",
+      "scenario_sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/default/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/site21-viewer",
+      "scenario": "p0_viewer_site_frames_21",
+      "query": "nodes=21&seed=7&links=none&physics_speed=1&gpu=off",
+      "bundle_sha256": "3723753272428b9df78e8321078aeae46230fc0b108adcc698319ccd465fef73",
+      "scenario_sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/viewer-gpu-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/viewer-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/receipts/site21-viewer-gpu",
+      "scenario": "p0_viewer_site_frames_21",
+      "query": "nodes=21&seed=7&links=none&physics_speed=1",
+      "bundle_sha256": "f0c94918df4e88961f61803093cc09ac83ab12d680d2383df8832c8471eb12ab",
+      "scenario_sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/viewer-gpu-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/viewer-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-worker",
+      "scenario": "p0_worker_worker",
+      "query": "gpu=off",
+      "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+      "scenario_sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/default/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-worker-failed",
+      "scenario": "p0_worker_failed",
+      "query": "gpu=off&physics_plant_worker=fail",
+      "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+      "scenario_sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/default/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/default-worker-off",
+      "scenario": "p0_worker_main",
+      "query": "gpu=off&physics_period_source=main",
+      "bundle_sha256": "8e69f9e21acd6bfe81683b8763501b20d570678725dd4564ba8f88818fff25d1",
+      "scenario_sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/default/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-release-port-retry-site21",
+      "scenario": "p0_viewer_site_frames_21",
+      "query": "nodes=21&seed=7&links=none&physics_speed=1&gpu=off",
+      "bundle_sha256": "85256add26c4c60b6bdafdb5b04571a43a3e20b470ea5b2281747dcee6980866",
+      "scenario_sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/viewer-gpu-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/viewer-release/scenarios/p0_viewer_site_frames_21.scn",
+          "sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-worker",
+      "scenario": "p0_worker_worker",
+      "query": "gpu=off",
+      "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+      "scenario_sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/default/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer/scenarios/p0_worker_worker.scn",
+          "sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-worker-failed",
+      "scenario": "p0_worker_failed",
+      "query": "gpu=off&physics_plant_worker=fail",
+      "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+      "scenario_sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/default/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer/scenarios/p0_worker_failed.scn",
+          "sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    },
+    {
+      "path": "/home/markik/Code/testing/mere/viewer-cone/review/receipts/viewer-worker-off",
+      "scenario": "p0_worker_main",
+      "query": "gpu=off&physics_period_source=main",
+      "bundle_sha256": "9be4392e28bf89d80ec5436da70ddfe3adcb9553bbbb024231ea036a454a59b2",
+      "scenario_sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+      "current_verification": "pending",
+      "source_candidates": [
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/default/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/integration/viewer/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/default/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        },
+        {
+          "path": "/home/markik/Code/testing/mere/viewer-cone/review/viewer/scenarios/p0_worker_main.scn",
+          "sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+          "matches_recorded_hash": true
+        }
+      ],
+      "status": "live-external-scenario",
+      "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
+    }
+  ],
+  "missing_archive": "/home/markik/Code/testing/mere/scenarios/graphshell-web"
+}

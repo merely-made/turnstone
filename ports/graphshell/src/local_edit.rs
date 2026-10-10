@@ -19,6 +19,70 @@ pub struct NodeMetadata {
     pub tags: Vec<String>,
 }
 
+/// A local detail edit expressed without a presenter or DOM control.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum DetailAction {
+    Facet {
+        id: String,
+        json: String,
+    },
+    Relation {
+        target: String,
+        relation: crate::product::EditableRelation,
+    },
+}
+
+pub fn relation_target<B: Backend>(
+    app: &GraphshellApp<B>,
+    member: Uuid,
+    target: &str,
+) -> Result<Uuid, String> {
+    metadata(app, member)?;
+    app.host
+        .graph()
+        .get_node_by_url(target.trim())
+        .map(|(_, node)| node.id)
+        .ok_or_else(|| format!("unknown relation target {}", target.trim()))
+}
+
+/// Validate and apply through the existing product owner, then acknowledge its
+/// durable write. After an I/O refusal the caller retries persistence of the
+/// pending owner state rather than asserting the relation a second time.
+pub async fn save_detail_action<B: Backend>(
+    app: &mut GraphshellApp<B>,
+    member: Uuid,
+    action: DetailAction,
+    saved_at_secs: u64,
+) -> Result<NodeMetadata, String> {
+    apply_detail_action(app, member, action)?;
+    crate::local_intake::persist_intake(app, member, saved_at_secs).await
+}
+
+pub fn apply_detail_action<B: Backend>(
+    app: &mut GraphshellApp<B>,
+    member: Uuid,
+    action: DetailAction,
+) -> Result<(), String> {
+    metadata(app, member)?;
+    match action {
+        DetailAction::Facet { id, json } => {
+            if id.trim().is_empty() {
+                return Err("A facet id is required".into());
+            }
+            app.host
+                .set_product_facet(member, &id, &json)
+                .map_err(|error| error.to_string())?;
+        },
+        DetailAction::Relation { target, relation } => {
+            let target = relation_target(app, member, &target)?;
+            app.host
+                .assert_product_relation(member, target, relation)
+                .map_err(|error| error.to_string())?;
+        },
+    }
+    Ok(())
+}
+
 pub fn metadata<B: Backend>(app: &GraphshellApp<B>, member: Uuid) -> Result<NodeMetadata, String> {
     let (key, node) = app
         .host

@@ -20,6 +20,107 @@ fn persona() -> SelectedPersonaRef {
 }
 
 #[test]
+fn detail_facet_and_relation_reopen_through_the_local_owner() {
+    pollster::block_on(async {
+        let backend = MemoryBackend::new();
+        let mut app = GraphshellApp::open_or_fixture(backend.clone(), persona())
+            .await
+            .unwrap();
+        let member = app
+            .host
+            .create_address("https://detail.test/source", "Source")
+            .unwrap();
+        let target = app
+            .host
+            .create_address("https://detail.test/target", "Target")
+            .unwrap();
+        save_detail_action(
+            &mut app,
+            member,
+            DetailAction::Facet {
+                id: "example.review".into(),
+                json: "{\"reviewed\":true}".into(),
+            },
+            2,
+        )
+        .await
+        .unwrap();
+        save_detail_action(
+            &mut app,
+            member,
+            DetailAction::Relation {
+                target: "https://detail.test/target".into(),
+                relation: crate::product::EditableRelation::Cites,
+            },
+            3,
+        )
+        .await
+        .unwrap();
+        let reopened = GraphshellApp::open_or_fixture(backend, persona())
+            .await
+            .unwrap();
+        assert_eq!(
+            reopened
+                .host
+                .facet_value("https://detail.test/source", "example.review"),
+            Some(&serde_json::json!({"reviewed":true}))
+        );
+        let matches = reopened
+            .host
+            .matching_members("", crate::product::RelationFamilyFilter::Semantic);
+        assert!(matches.contains(&member));
+        assert!(matches.contains(&target));
+    });
+}
+
+#[test]
+fn invalid_detail_action_does_not_change_the_owner() {
+    pollster::block_on(async {
+        let mut app = GraphshellApp::fixture(MemoryBackend::new(), persona()).unwrap();
+        let member = app
+            .host
+            .graph()
+            .get_node_by_url(FIXTURE_WEB_ADDRESS)
+            .unwrap()
+            .1
+            .id;
+        let revision = app.host.graph().revision();
+        assert!(
+            save_detail_action(
+                &mut app,
+                member,
+                DetailAction::Facet {
+                    id: "example.review".into(),
+                    json: "{".into(),
+                },
+                2
+            )
+            .await
+            .is_err()
+        );
+        assert!(
+            save_detail_action(
+                &mut app,
+                member,
+                DetailAction::Relation {
+                    target: "https://missing.test/".into(),
+                    relation: crate::product::EditableRelation::Cites,
+                },
+                2
+            )
+            .await
+            .is_err()
+        );
+        assert_eq!(app.host.graph().revision(), revision);
+        assert!(
+            app.host
+                .facet_value(FIXTURE_WEB_ADDRESS, "example.review")
+                .is_none()
+        );
+    });
+}
+
+#[test]
 fn saved_detail_edit_reopens_same_session_and_member() {
     pollster::block_on(async {
         let backend = MemoryBackend::new();
@@ -172,6 +273,58 @@ fn rejected_detail_save_reports_failure_and_can_retry() {
             .await
             .unwrap();
         assert_eq!(metadata(&stored, id).unwrap().title, "retry me");
+    });
+}
+
+#[test]
+fn refused_detail_facet_write_retains_an_explicit_retry() {
+    pollster::block_on(async {
+        let backend = RejectWrites {
+            inner: MemoryBackend::new(),
+            reject: Arc::new(AtomicBool::new(false)),
+        };
+        let mut app = GraphshellApp::open_or_fixture(backend.clone(), persona())
+            .await
+            .unwrap();
+        app.host.persist(1).await.unwrap();
+        let id = app
+            .host
+            .graph()
+            .get_node_by_url(FIXTURE_WEB_ADDRESS)
+            .unwrap()
+            .1
+            .id;
+        let action = DetailAction::Facet {
+            id: "example.review".into(),
+            json: "true".into(),
+        };
+        backend.reject.store(true, Ordering::SeqCst);
+        assert!(
+            save_detail_action(&mut app, id, action.clone(), 2)
+                .await
+                .unwrap_err()
+                .contains("rejected detail write")
+        );
+        let stored = GraphshellApp::open_or_fixture(backend.inner.clone(), persona())
+            .await
+            .unwrap();
+        assert!(
+            stored
+                .host
+                .facet_value(FIXTURE_WEB_ADDRESS, "example.review")
+                .is_none()
+        );
+        backend.reject.store(false, Ordering::SeqCst);
+        save_detail_action(&mut app, id, action, 3).await.unwrap();
+        let stored = GraphshellApp::open_or_fixture(backend, persona())
+            .await
+            .unwrap();
+        assert_eq!(
+            stored
+                .host
+                .facet_value(FIXTURE_WEB_ADDRESS, "example.review"),
+            Some(&serde_json::json!(true))
+        );
     });
 }
 

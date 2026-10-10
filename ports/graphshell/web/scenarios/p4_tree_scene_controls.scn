@@ -1,0 +1,9 @@
+# Scene and codicil entry points belong to the retained product tree.
+click role:button Scenes and transfers
+click role:button Save scene
+settle 3
+assert snap saved-scene-facet == v4
+click role:button Reopen scene
+settle 2
+assert snap saved-scene-facet == v4
+capture p4_tree_scene_controls

@@ -32,7 +32,7 @@ use cambium_rootstock::{
 };
 use graphshell::app::GraphshellApp;
 use graphshell::canvas_controls::CanvasCommand;
-use graphshell::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+use graphshell::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
 use mere::canvas::Canvas;
 use mere::kernel::graph::Graph;
 use mesquite::{CaptureRecord, Lane, Product};
@@ -97,6 +97,14 @@ const SHEET: &str = "\
     .select-option { padding:1px 8px; } \
     .tree-product { position:absolute;top:8px;left:12px;max-width:360px;max-height:90%;overflow-y:auto;z-index:5; } \
     .tree-product p { margin:4px 0; } \
+    .tree-projection { position:absolute;top:8px;left:12px;right:310px;max-height:90%;overflow:auto;z-index:6;background:#17232b;padding:12px; } \
+    .tree-practice { background:#1a211b;color:#e4eadc; } \
+    .practice-control { box-sizing:border-box; padding:8px; font-size:14px; } \
+    .practice-button,.practice-card { background:#29352a;border:1px solid #627255; } \
+    .practice-selected { background:#3a4c30;border:2px solid #bdd59e; } \
+    .practice-label,.practice-detail { display:block; } \
+    .practice-heading { font-size:24px; } \
+    .practice-detail { font-size:12px; } \
     .tree-detail { background:#17232b;border:1px solid #637581;padding:12px; } \
     .tree-detail label { display:block;margin:8px 0; } \
     .tree-detail .detail-key { display:block; } \
@@ -110,6 +118,8 @@ const SHEET: &str = "\
 
 /// What the page, its producer and its hooks share.
 struct Shared {
+    adapter_info: RefCell<Option<serde_json::Value>>,
+    events: RefCell<Vec<String>>,
     canvas: RefCell<Canvas>,
     /// Input or a new graph since the producer last drew.
     dirty: Cell<bool>,
@@ -288,13 +298,9 @@ impl TextureProducer for CanvasProducer {
         }
         let (scene, moving) = if profile {
             let (scene, moving, sample) = match cx.frame.timestamp {
-                Some(timestamp) => canvas.frame_profiled_at(
-                    size.0,
-                    size.1,
-                    timestamp,
-                    physics_config,
-                    now_ms,
-                ),
+                Some(timestamp) => {
+                    canvas.frame_profiled_at(size.0, size.1, timestamp, physics_config, now_ms)
+                },
                 None => canvas.frame_profiled(size.0, size.1, now_ms),
             };
             shared.timing.borrow_mut().stages(
@@ -311,9 +317,7 @@ impl TextureProducer for CanvasProducer {
             (scene, moving)
         } else {
             match cx.frame.timestamp {
-                Some(timestamp) => {
-                    canvas.frame_at(size.0, size.1, timestamp, physics_config)
-                },
+                Some(timestamp) => canvas.frame_at(size.0, size.1, timestamp, physics_config),
                 None => canvas.frame(size.0, size.1),
             }
         };
@@ -435,12 +439,15 @@ impl TextureProducer for CanvasProducer {
 /// The application state the tree renders.
 pub(crate) struct TreePage {
     shared: Rc<Shared>,
+    root: Element,
+    projection_source: Option<String>,
     /// Where the graph came from, for the status line and receipts.
     source: String,
     nodes: usize,
     /// The address of the node the last click picked.
     picked: Option<String>,
     product: Option<product::SavedProduct>,
+    practice: Option<practice::Practice>,
     /// The host dataset the page supplied, if any (S1).
     dataset: HostedDataset,
     /// The "Graph tools" arrangement and physics section.
@@ -523,19 +530,32 @@ fn hosted_dataset(page: &TreePage) -> Option<Child> {
 
 impl TreePage {
     fn status(&self) -> String {
+        let selected = self.shared.canvas.borrow().selected_members().len();
         format!(
-            "{} · {} nodes · picked: {}",
+            "{} · {} nodes · selected: {} · primary: {}",
             self.source,
             self.nodes,
-            self.picked.as_deref().unwrap_or("none")
+            selected,
+            self.product
+                .as_ref()
+                .filter(|product| product.selected.is_some())
+                .map(|product| product.address.as_str())
+                .or(self.picked.as_deref())
+                .unwrap_or("none")
         )
     }
 
     fn wheel(&mut self, wheel: WheelEvent) {
         wheel.prevent_default();
         let mut canvas = self.shared.canvas.borrow_mut();
+        canvas.set_ctrl(wheel.modifiers.ctrl);
+        canvas.set_shift(wheel.modifiers.shift);
+        canvas.set_alt(wheel.modifiers.alt);
         canvas.cursor_moved(wheel.local.0, wheel.local.1);
         canvas.wheel(wheel.delta.0, wheel.delta.1);
+        canvas.set_ctrl(false);
+        canvas.set_shift(false);
+        canvas.set_alt(false);
         self.shared.dirty.set(true);
     }
 }
@@ -544,6 +564,9 @@ type Child = Box<dyn AnyView<TreePage, (), GenetCtx, GenetElement>>;
 type Logic = fn(&TreePage) -> Child;
 
 fn view(page: &TreePage) -> Child {
+    if let Some(view) = practice::view(page) {
+        return view;
+    }
     let (width, height) = page.size;
     // Genet does not stretch a custom leaf across its cross axis, so the
     // canvas column is told the width the tools region leaves it.
@@ -584,6 +607,8 @@ fn view(page: &TreePage) -> Child {
                     "div",
                     (
                         product::controls(page),
+                        product::projection_editor(page),
+                        product::menu(page),
                         el("div", graph).attr("class", "tree-graph"),
                         if docked {
                             Some(tools_region(page))
@@ -619,6 +644,10 @@ fn tools_region(page: &TreePage) -> Child {
         ));
     }
     children.push(physics::section(page));
+    children.push(product::find_section(page));
+    children.push(product::scenes_section(page));
+    children.push(product::projection_section(page));
+    children.push(product::history_section(page));
     children.push(remote::section(page));
     Box::new(
         el("aside", children)
@@ -630,7 +659,55 @@ fn tools_region(page: &TreePage) -> Child {
 /// Arrows pan and plus or minus zoom, as on the main page. During a
 /// keyboard move the arrows nudge the item instead, Enter drops it and
 /// Escape puts it back (F67).
+impl TreePage {
+    /// The command contract used by menus and explicit command-API scenarios.
+    fn command(&mut self, command: &str) -> bool {
+        if remote::run_command(self, command) {
+            self.shared
+                .events
+                .borrow_mut()
+                .push(format!("command {command}"));
+            return true;
+        }
+        if let Some(action) = controls::named_command(command) {
+            action.apply(&mut self.shared.canvas.borrow_mut(), self.size);
+            self.shared
+                .events
+                .borrow_mut()
+                .push(format!("command {command}"));
+            self.shared.dirty.set(true);
+            return true;
+        }
+        let Some(product) = &mut self.product else {
+            return false;
+        };
+        let mut canvas = self.shared.canvas.borrow_mut();
+        match product.run_command(command, &mut canvas, &self.physics.layout_id, self.size) {
+            Ok(()) => {
+                self.shared
+                    .events
+                    .borrow_mut()
+                    .push(format!("command {command}"));
+                self.shared.dirty.set(true);
+                true
+            },
+            Err(error) => {
+                product.status = error;
+                false
+            },
+        }
+    }
+}
+
 fn keys(page: &mut TreePage, key: &Key) -> bool {
+    if key == &Key::Named(NamedKey::Escape) {
+        if let Some(product) = &mut page.product {
+            if product.menu_open() {
+                product.close_menu();
+                return true;
+            }
+        }
+    }
     use graphshell::canvas_reader::{MoveKey, key_move};
     if page
         .product
@@ -669,44 +746,41 @@ fn keys(page: &mut TreePage, key: &Key) -> bool {
     }
     if let Some(product) = &mut page.product {
         match key {
-            Key::Named(NamedKey::Enter) if product.selected.is_some() => {
-                product.open_detail(&page.shared.canvas.borrow());
+            Key::Named(NamedKey::Enter) => {
+                let mut canvas = page.shared.canvas.borrow_mut();
+                let _ = product.run_command(
+                    "node:edit",
+                    &mut canvas,
+                    &page.physics.layout_id,
+                    page.size,
+                );
+                page.shared
+                    .events
+                    .borrow_mut()
+                    .push("command node:edit".into());
                 return true;
             },
             Key::Named(NamedKey::Escape) if product.detail_open => {
                 product.detail_open = false;
+                page.shared
+                    .events
+                    .borrow_mut()
+                    .push("command close-detail".into());
                 return true;
             },
             _ => {},
         }
     }
-    let shared = &page.shared;
     let command = match key {
-        Key::Named(NamedKey::ArrowLeft) => CanvasCommand::Pan {
-            dx: -PAN_STEP,
-            dy: 0.0,
-        },
-        Key::Named(NamedKey::ArrowRight) => CanvasCommand::Pan {
-            dx: PAN_STEP,
-            dy: 0.0,
-        },
-        Key::Named(NamedKey::ArrowUp) => CanvasCommand::Pan {
-            dx: 0.0,
-            dy: -PAN_STEP,
-        },
-        Key::Named(NamedKey::ArrowDown) => CanvasCommand::Pan {
-            dx: 0.0,
-            dy: PAN_STEP,
-        },
-        Key::Character(text) if text == "+" || text == "=" => {
-            CanvasCommand::Zoom { delta: ZOOM_STEP }
-        },
-        Key::Character(text) if text == "-" => CanvasCommand::Zoom { delta: -ZOOM_STEP },
+        Key::Named(NamedKey::ArrowLeft) => "pan-left",
+        Key::Named(NamedKey::ArrowRight) => "pan-right",
+        Key::Named(NamedKey::ArrowUp) => "pan-up",
+        Key::Named(NamedKey::ArrowDown) => "pan-down",
+        Key::Character(text) if text == "+" || text == "=" => "view:zoom_in",
+        Key::Character(text) if text == "-" => "view:zoom_out",
         _ => return false,
     };
-    command.apply(&mut shared.canvas.borrow_mut(), shared.size.get());
-    shared.dirty.set(true);
-    true
+    page.command(command)
 }
 
 /// The mounted page, for the scenario entry that reaches it from JavaScript.
@@ -759,7 +833,7 @@ async fn boot(root: Element) -> Result<(), String> {
         .map_err(|_| "could not create the canvas")?
         .dyn_into()
         .map_err(|_| "the canvas is not a canvas")?;
-    canvas.set_id("graphshell-canvas");
+    canvas.set_id("gs-graphshell-canvas");
     canvas
         .set_attribute("style", "display:block;width:100%;height:100%;")
         .map_err(|_| "could not size the canvas")?;
@@ -770,11 +844,12 @@ async fn boot(root: Element) -> Result<(), String> {
 
     // A host dataset (S1) replaces every other source, and a refused one
     // shows its refusal over an empty graph, never the fixture.
+    let practice = practice::open(&root)?;
     let hosted = crate::web_dataset::supplied(&root);
     let product = if hosted.is_some() {
         None
     } else {
-        product::open().await?
+        product::open(&root).await?
     };
     let mut dataset = HostedDataset::None;
     let mut placed = None;
@@ -809,6 +884,8 @@ async fn boot(root: Element) -> Result<(), String> {
     let nodes = graph.node_count();
     let speed_options = crate::web_speed::options()?;
     let shared = Rc::new(Shared {
+        adapter_info: RefCell::new(None),
+        events: RefCell::new(Vec::new()),
         canvas: RefCell::new(match &placed {
             Some(positions) => web_graphs::placed_canvas(graph, positions, width, height),
             None => web_graphs::prepared_canvas(graph, width, height),
@@ -870,10 +947,13 @@ async fn boot(root: Element) -> Result<(), String> {
         move |_window, _commands, _wake| Init {
             state: TreePage {
                 shared: page_shared,
+                root: root.clone(),
+                projection_source: None,
                 source,
                 nodes,
                 picked: None,
                 product,
+                practice,
                 dataset,
                 physics,
                 tools_open: false,
@@ -904,8 +984,14 @@ async fn boot(root: Element) -> Result<(), String> {
         })
     });
     if root.has_attribute("data-owns-title") {
-        document.set_title("Graphshell, one tree");
+        document.set_title(if root.tag_name().eq_ignore_ascii_case("graphshell-view") {
+            "GRAPHSHELL H3 READY · Graphshell"
+        } else {
+            "Graphshell, one tree"
+        });
     }
+    root.set_attribute("data-presenter", "tree")
+        .map_err(|_| "could not identify presenter")?;
     root.set_attribute("data-ready", "true")
         .map_err(|_| "could not mark the page ready")?;
     Ok(())
@@ -928,6 +1014,27 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
     let after_shared = shared.clone();
     HostHooks {
         frame: Box::new(move |ctx| {
+            let incoming = ctx
+                .runner
+                .state()
+                .root
+                .get_attribute("data-projection-dataset");
+            if incoming != ctx.runner.state().projection_source {
+                ctx.runner.update(|page| {
+                    page.projection_source = incoming.clone();
+                    if let Some(json) = incoming {
+                        let definition = page.root.get_attribute("data-projection-definition");
+                        if let Some(product) = &mut page.product {
+                            product.load_projection_input(&json, definition.as_deref());
+                        }
+                    }
+                });
+            }
+            if practice::needs_frame(ctx.runner.state()) {
+                ctx.runner.update(|page| {
+                    practice::advance(page, now_ms() as f64);
+                });
+            }
             if ctx
                 .runner
                 .state()
@@ -1023,6 +1130,19 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             );
         }),
         after_frame: Box::new(move |ctx| {
+            if after_shared.adapter_info.borrow().is_none() {
+                if let Some(core) = ctx.render_core {
+                    let info = core.renderer().wgpu_device.core.adapter.get_info();
+                    *after_shared.adapter_info.borrow_mut() = Some(json!({
+                        "name": info.name, "backend": format!("{:?}", info.backend),
+                        "device_type": format!("{:?}", info.device_type),
+                        "vendor": info.vendor, "device": info.device,
+                        "driver": info.driver, "driver_info": info.driver_info,
+                        "source": "shared host RenderCore adapter",
+                    }));
+                }
+            }
+
             after_shared.with_gpu(|gpu| {
                 let mut timing = after_shared.timing.borrow_mut();
                 timing.frame_end(gpu);
@@ -1058,6 +1178,7 @@ pub(crate) fn run(text: &str) -> Result<(), String> {
             pointer: None,
             drop: None,
             drop_world: None,
+            camera_mark: None,
         },
         Some(taproot::Scenario::parse(text).map_err(|e| e.to_string())?),
         None,
@@ -1087,6 +1208,7 @@ fn publish(ok: bool, text: &str, shared: &Shared, saved: Option<serde_json::Valu
         "canvas_logical_size": shared.size.get(),
         "canvas_physical_size": shared.physical_size.get(),
         "saved_graph": saved,
+        "renderer_adapter": shared.adapter_info.borrow().clone(),
     });
     let outcome = super::document().and_then(|document| {
         if let Ok(element) = web_scenario::page_element(&document, "scenario-log") {
@@ -1152,7 +1274,13 @@ impl NoRepulsionLane for mere::canvas::Canvas {
 
 mod controls;
 mod lane;
+mod observe;
 mod physics;
+#[cfg(feature = "main-page")]
+mod practice;
+#[cfg(not(feature = "main-page"))]
+#[path = "web_tree/practice_off.rs"]
+mod practice;
 #[cfg(feature = "product")]
 mod product;
 #[cfg(not(feature = "product"))]

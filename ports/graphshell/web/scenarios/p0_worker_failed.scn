@@ -1,0 +1,7 @@
+assert snap ready == true
+settle 40
+log-pace worker
+log-intervals worker
+assert snap display-period-from == main (no worker rAF)
+assert snap display-period-ms <= 16.7
+log worker source checked

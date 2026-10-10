@@ -69,6 +69,9 @@ genet-render = { git = "https://github.com/merely-made/genet.git", rev = "157130
 # content-over-chrome composition below are ours.
 genet-render-host = { git = "https://github.com/merely-made/genet.git", rev = "15713014e2e23b887360471552f75f60684f5384" }
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "15713014e2e23b887360471552f75f60684f5384", version = "=0.1.2" }
+# Read retained widget attributes through the shared DOM seam for scenario
+# assertions; input and application commands still use the shared host.
+layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "15713014e2e23b887360471552f75f60684f5384", version = "=0.1.1" }
 # The shared scenario driver every genet app runs its receipts through; the
 # page implements its `Automatable`/`Driveable` over the browser DOM
 # (`src/web_scenario.rs`). Pure: its three deps are already in this graph.

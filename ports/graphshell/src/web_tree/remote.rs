@@ -125,7 +125,11 @@ impl TreeRemote {
     }
 
     pub(super) fn in_flight(&self) -> bool {
-        self.joining || self.live.as_ref().is_some_and(|live| live.session.in_flight())
+        self.joining
+            || self
+                .live
+                .as_ref()
+                .is_some_and(|live| live.session.in_flight())
     }
 
     pub(super) fn mounted(&self) -> Option<&MountedScene> {
@@ -198,7 +202,11 @@ impl RemoteHost for TreeRemote {
 /// Join a host over WebRTC as the tree's remote session.
 pub(crate) fn connect(signal_url: String, invite: Option<String>) -> Result<(), String> {
     let remote = TREE
-        .with(|tree| tree.borrow().as_ref().map(|tree| tree.shared.remote.clone()))
+        .with(|tree| {
+            tree.borrow()
+                .as_ref()
+                .map(|tree| tree.shared.remote.clone())
+        })
         .ok_or("the tree has not booted")?;
     web_rtc_link::connect(remote, signal_url, invite);
     Ok(())
@@ -262,7 +270,12 @@ impl TreePage {
 
     /// Carry the selects into the draft, then submit it.
     fn submit(&mut self) {
-        let chosen: Vec<usize> = self.draft.fields.iter().map(|field| field.selected).collect();
+        let chosen: Vec<usize> = self
+            .draft
+            .fields
+            .iter()
+            .map(|field| field.selected)
+            .collect();
         self.with_remote(|remote| {
             let Some(live) = &mut remote.live else {
                 return;
@@ -270,7 +283,8 @@ impl TreePage {
             let form = &mut live.session.form;
             if let Some(draft) = form.draft.as_ref().map(|draft| draft.semantics()) {
                 for (field, selected) in draft.fields.iter().zip(chosen) {
-                    if let Some(choice) = selected.checked_sub(1).and_then(|i| field.choices.get(i)) {
+                    if let Some(choice) = selected.checked_sub(1).and_then(|i| field.choices.get(i))
+                    {
                         form.choose(&field.name, &choice.value);
                     }
                 }
@@ -363,7 +377,11 @@ fn switch(label: &'static str, session: Session, page: &TreePage) -> Child {
     Box::new(
         button(label, move |page: &mut TreePage, _| page.show(session)).attr(
             "aria-pressed",
-            if page.session == session { "true" } else { "false" },
+            if page.session == session {
+                "true"
+            } else {
+                "false"
+            },
         ),
     )
 }
@@ -523,4 +541,18 @@ pub(super) fn section(page: &TreePage) -> Child {
         .attr("class", "tools-section")
         .attr("aria-label", "Remote session"),
     )
+}
+
+/// Existing session operations shared by toolbar controls and command API.
+pub(super) fn run_command(page: &mut TreePage, command: &str) -> bool {
+    match command {
+        "session-local" => page.show(Session::Local),
+        "session-remote" => page.show(Session::Remote),
+        "remote-disconnect" => page.disconnect(),
+        "remote-reconnect" => page.reconnect(),
+        "remote-nudge" => page.nudge(),
+        "invoke-action" if page.session == Session::Remote => page.invoke(0),
+        _ => return false,
+    }
+    true
 }

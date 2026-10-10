@@ -268,7 +268,11 @@ fn overlay_group(page: &TreePage) -> Child {
                     "label",
                     (
                         lens(
-                            move |checked: &mut bool| checkbox(*checked).attr("aria-label", *label),
+                            move |checked: &mut bool| {
+                                checkbox(*checked)
+                                    .attr("aria-label", *label)
+                                    .attr("data-overlay", overlay.id())
+                            },
                             move |page: &mut TreePage| &mut page.physics.overlays[index],
                         ),
                         el("span", *label),
@@ -282,6 +286,7 @@ fn overlay_group(page: &TreePage) -> Child {
                             (
                                 el("span", "[ ]")
                                     .attr("role", "checkbox")
+                                    .attr("data-overlay", overlay.id())
                                     .attr("aria-label", *label)
                                     .attr("aria-checked", "false")
                                     .attr("aria-disabled", "true")
@@ -300,6 +305,8 @@ fn overlay_group(page: &TreePage) -> Child {
         boxes.push(Box::new(
             el("p", reason)
                 .attr("id", "tools-overlay-note")
+                .attr("role", "status")
+                .attr("aria-label", "Overlay availability")
                 .attr("class", "tools-note"),
         ));
     }
@@ -323,7 +330,8 @@ fn speed_note(page: &TreePage) -> Child {
         Some(note) => Box::new(
             el("p", note.clone())
                 .attr("class", "tools-note")
-                .attr("role", "status"),
+                .attr("role", "status")
+                .attr("aria-label", "Speed status"),
         ),
         None => Box::new(el("span", "").attr("hidden", "")),
     }
@@ -377,6 +385,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         apply("Apply profile", TreePage::apply_profile),
         Box::new(
             el("p", page.physics.status.clone())
+                .attr("aria-label", "Physics status")
                 .attr("class", "tools-status")
                 .attr("role", "status"),
         ),

@@ -10,13 +10,13 @@ use std::collections::HashMap;
 
 use graphshell::canvas_physics;
 use graphshell::product::{
-    EditableRelation, ExportRequest, LocalFileMetadata, RelationFamilyFilter, SavedDynamics,
-    SavedSceneV3, TransferScope,
+    EditableRelation, ExportRequest, LocalFileMetadata, RelationFamilyFilter, SavedSceneV3,
+    TransferScope,
 };
 use mere::canvas::{
     CANVAS_PHYSICS_DEPTH_SOURCES, CANVAS_PHYSICS_KIND_SOURCES, CANVAS_PHYSICS_LAWS,
-    CANVAS_PHYSICS_MASS_SOURCES, CANVAS_PHYSICS_OVERLAYS, CANVAS_PHYSICS_PROFILES, CameraView,
-    Face, PhysicsChoice, PhysicsDepthSource, PhysicsKindSource, PhysicsLaw, PhysicsMassSource,
+    CANVAS_PHYSICS_MASS_SOURCES, CANVAS_PHYSICS_OVERLAYS, CANVAS_PHYSICS_PROFILES, Face,
+    PhysicsChoice, PhysicsDepthSource, PhysicsKindSource, PhysicsLaw, PhysicsMassSource,
     PhysicsOverlay, project_canvas_strategy_with_score_for_view,
 };
 use sha2::{Digest, Sha256};
@@ -188,65 +188,23 @@ impl BrowserHost {
     /// grammar plan, G4b1, F142), naming the arrangement, its roles, the law
     /// or composition and the damping; the view state beside it follows.
     pub(super) fn apply_saved_scene(&mut self, scene: SavedSceneV3) -> Result<(), String> {
+        graphshell::local_scene::restore_scene(
+            &mut self.canvas,
+            self.app.host.graph(),
+            &scene,
+            (self.width, self.height),
+        )?;
         self.arrangement_transition = None;
-        let spec = scene.dynamics_spec()?;
         self.layout_id = scene.arrangement()?;
-        let mere::canvas::dynamics_spec::Realization::Integrate { damping } = spec.realization;
+        let mere::canvas::dynamics_spec::Realization::Integrate { damping } =
+            scene.dynamics_spec()?.realization;
         if let Some(damping) = damping {
             self.physics_damping = damping as f32;
         }
         self.physics_paused = scene.physics_paused;
         self.handler_id = scene.default_handler.clone();
-        self.canvas.set_graph(self.app.host.graph().clone());
-        self.canvas.set_layout_strategy(self.strategy_choice());
-        let positions: Vec<_> = scene
-            .cartography
-            .iter()
-            .filter_map(|(id, (x, y))| {
-                self.canvas
-                    .graph()
-                    .get_node_key_by_id(id)
-                    .map(|key| (key, mere::kernel::geometry::PortablePoint::new(x, y)))
-            })
-            .collect();
-        self.canvas.apply_strategy_positions(&positions);
-        self.canvas.note_strategy_computed(
-            &self.layout_id,
-            self.width,
-            self.height,
-            self.canvas.focused_key(),
-        );
-        self.canvas
-            .apply_cartography_importance_metric(scene.cartography.importance_metric());
-        self.canvas.apply_cartography_sizing(
-            scene.cartography.size_iter(),
-            scene.cartography.size_by_degree(),
-            scene.cartography.size_by_importance(),
-        );
-        self.canvas
-            .apply_cartography_sprites(scene.cartography.sprite_iter());
-        self.canvas
-            .apply_cartography_sprite_hulls(scene.cartography.sprite_hull_iter());
-        self.canvas
-            .apply_cartography_materials(scene.cartography.material_iter());
-        self.canvas
-            .apply_cartography_faces(scene.cartography.face_iter());
-        // The roles, the law or composition and the sources ride the spec;
-        // a refusal names where and nothing is applied (F97, F149).
-        self.canvas
-            .set_dynamics_spec(&spec)
-            .map_err(|error| format!("dynamics spec: {error}"))?;
-        self.canvas.set_physics_damping(self.physics_damping);
-        self.canvas.set_physics_paused(scene.physics_paused);
-        // The panel's controls follow the reopened scene; before the first
-        // frame fills them there is nothing to set yet.
         let _ = sync_physics_controls(self);
-        self.canvas.set_selected_members(&scene.selected);
         self.primary_member = scene.selected.first().copied();
-        self.canvas.set_camera(CameraView {
-            offset: scene.camera_offset,
-            zoom: scene.camera_zoom,
-        });
         self.active = ActiveSession::Local;
         self.last_detail_member = None;
         Ok(())
@@ -510,23 +468,12 @@ impl BrowserHost {
                 selected
             }
         };
-        let camera = self.canvas.camera();
-        // The record (F142): what the canvas runs, its arrangement the
-        // host's; a spec opened and not edited since saves as it was.
-        let mut spec = self.canvas.dynamics_spec()?;
-        if let Some(target) = spec.target.as_mut() {
-            target.arrangement = self.layout_id.clone();
-        }
-        let scene = SavedSceneV3 {
-            name: "Graphshell working scene".to_string(),
-            selected,
-            physics_paused: self.physics_paused,
-            dynamics: SavedDynamics::from_spec(&spec),
-            camera_offset: camera.offset,
-            camera_zoom: camera.zoom,
-            default_handler: select_value("handler-select")?,
-            cartography: self.canvas.cartography_geometry(),
-        };
+        let mut scene = graphshell::local_scene::capture_scene(
+            &self.canvas,
+            &self.layout_id,
+            &select_value("handler-select")?,
+        )?;
+        scene.selected = selected;
         self.handler_id = scene.default_handler.clone();
         self.app
             .host
