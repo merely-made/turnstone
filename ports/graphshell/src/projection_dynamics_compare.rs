@@ -19,17 +19,25 @@ use crate::projection_compare::{ComparedCell, Comparison, EDITOR_VIEW, WORKING};
 use crate::projection_compile::{ProjectionDataset, practice_compiler};
 use crate::projection_editor::with_kind;
 
-fn stop_label(report: &mere::canvas::dynamics_recipe::SettleReport) -> String {
+fn end_label(end: mere::canvas::dynamics_recipe::SettleEnd) -> &'static str {
+    match end {
+        mere::canvas::dynamics_recipe::SettleEnd::Rested => "At rest",
+        mere::canvas::dynamics_recipe::SettleEnd::LawFinished => "Law finished",
+        mere::canvas::dynamics_recipe::SettleEnd::StepLimit => "Step limit reached",
+    }
+}
+
+fn step_label(label: &str, steps: u64) -> String {
     format!(
         "{} · {} {}",
-        match report.end {
-            mere::canvas::dynamics_recipe::SettleEnd::Rested => "At rest",
-            mere::canvas::dynamics_recipe::SettleEnd::LawFinished => "Law finished",
-            mere::canvas::dynamics_recipe::SettleEnd::StepLimit => "Step limit reached",
-        },
-        report.steps,
-        if report.steps == 1 { "step" } else { "steps" }
+        label,
+        steps,
+        if steps == 1 { "step" } else { "steps" }
     )
+}
+
+fn stop_label(report: &mere::canvas::dynamics_recipe::SettleReport) -> String {
+    step_label(end_label(report.end), u64::from(report.steps))
 }
 
 /// Retain the existing Scope axis when comparing arrangements with motion.
@@ -119,6 +127,16 @@ pub struct DynamicsComparison {
 }
 
 impl DynamicsComparison {
+    /// The working frame's current state replaces its initial snapshot result.
+    pub fn working_detail(&self, paused: bool) -> Option<String> {
+        let focused = self.focused.as_ref()?;
+        let label = focused
+            .end()
+            .map(end_label)
+            .unwrap_or(if paused { "Paused" } else { "Live" });
+        Some(step_label(label, focused.ticks()))
+    }
+
     pub fn is_running(&self) -> bool {
         self.focused
             .as_ref()
@@ -395,9 +413,21 @@ mod tests {
             |(_, stop)| stop == "Step limit reached · 8 steps" || stop.starts_with("At rest ·")
         ));
         assert_eq!(matrix.stops.len(), matrix.comparison.cells.len());
+        assert_eq!(
+            matrix.working_detail(false).as_deref(),
+            Some("Live · 8 steps")
+        );
+        assert_eq!(
+            matrix.working_detail(true).as_deref(),
+            Some("Paused · 8 steps")
+        );
         let before = matrix.scenes.clone();
         let spaces = matrix.comparison.scene.spaces.clone();
         matrix.tick().unwrap();
+        assert_eq!(
+            matrix.working_detail(false).as_deref(),
+            Some("Live · 9 steps")
+        );
         assert_eq!(matrix.comparison.scene.spaces, spaces);
         for ((id, old), (_, new)) in before.iter().zip(&matrix.scenes) {
             if id == WORKING {

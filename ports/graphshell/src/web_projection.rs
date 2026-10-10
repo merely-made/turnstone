@@ -754,8 +754,11 @@ impl LiveProjection {
                 .and_then(|d| d.stops.iter().find(|(id, _)| id == &cell.swatch_id))
                 .map(|(_, stop)| stop.clone())
                 .unwrap_or_else(|| if cell.working { "Your draft".into() } else { "Pick to apply".into() });
-            if cell.working && self.dynamics_comparison.as_ref().is_some_and(|d| d.is_running()) {
-                detail = format!("{} · {detail}", if self.motion_paused { "Paused" } else { "Live" });
+            if cell.working {
+                if let Some(current) = self.dynamics_comparison.as_ref()
+                    .and_then(|d| d.working_detail(self.motion_paused)) {
+                    detail = current;
+                }
             }
             self.targets.push(Target { occurrence: cell.swatch_id.clone(), view: "compare",
                 label, detail, rect: [x, y, card_w, card_h], selected: cell.working });
