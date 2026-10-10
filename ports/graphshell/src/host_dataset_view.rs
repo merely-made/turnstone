@@ -77,6 +77,7 @@ pub struct HostDatasetView {
 /// labelled by its `label` field.
 pub fn viewer_definition(dataset: &ProjectionDataset) -> ProjectionDefinition {
     ProjectionDefinition {
+        dynamics: None,
         version: PROJECTION_DEFINITION_VERSION,
         id: VIEWER_DEFINITION_ID.into(),
         label: "Host dataset".into(),

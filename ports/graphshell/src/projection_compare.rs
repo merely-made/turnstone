@@ -33,6 +33,7 @@ pub struct ComparedCell {
     /// The family this cell shows; the working draft's own kind for the
     /// working cell.
     pub family: String,
+    pub dynamics: Option<scenograph::DynamicsSlot>,
     pub working: bool,
     pub row: usize,
     pub column: usize,
@@ -54,6 +55,22 @@ pub fn compare_arrangements(
     dataset: &ProjectionDataset,
     selected: Option<&str>,
     layout: &FacetLayout,
+) -> Result<Comparison, String> {
+    compare_arrangements_with_scene(draft, dataset, selected, layout, |definition, compiled| {
+        if definition.dynamics.is_some() {
+            Err("dynamics: this comparison needs an explicit preview step limit and a dynamics host".into())
+        } else { Ok(compiled.scene) }
+    })
+}
+
+/// Supply the host's bounded realization while retaining the Arrangement
+/// and Scope axes. A compiler alone cannot realize an authored dynamics slot.
+pub fn compare_arrangements_with_scene(
+    draft: &ProjectionDraft,
+    dataset: &ProjectionDataset,
+    selected: Option<&str>,
+    layout: &FacetLayout,
+    mut realize: impl FnMut(&scenograph::ProjectionDefinition, crate::projection_compile::CompiledProjection) -> Result<sceno::Scene, String>,
 ) -> Result<Comparison, String> {
     let compiler = practice_compiler();
     let working_kind = draft.arrangement.kind.clone();
@@ -100,16 +117,16 @@ pub fn compare_arrangements(
                         .collect::<Vec<_>>()
                         .join("; ")
                 })?;
-                compiler
+                let compiled = compiler
                     .compile(&definition, data)
-                    .map(|compiled| compiled.scene)
                     .map_err(|issues| {
                         issues
                             .iter()
                             .map(|i| i.message.clone())
                             .collect::<Vec<_>>()
                             .join("; ")
-                    })
+                    })?;
+                realize(&definition, compiled)
             })
             .collect();
         match scenes {
@@ -162,6 +179,7 @@ pub fn compare_arrangements(
             cells.push(ComparedCell {
                 swatch_id: swatch_id.clone(),
                 family: family.clone(),
+                dynamics: draft.dynamics.clone(),
                 working,
                 row,
                 column,
@@ -217,7 +235,8 @@ mod tests {
                 .expect("the practice fixture");
         let definition = default_definition(&dataset);
         let draft = ProjectionDraft {
-            version: definition.version,
+            dynamics: definition.dynamics.clone(),
+        version: definition.version,
             id: definition.id.clone(),
             label: definition.label.clone(),
             source: definition.source.clone(),

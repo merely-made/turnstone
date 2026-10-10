@@ -24,6 +24,7 @@ path = "../src/web.rs"
 # additive and on by default, so the default build is the full page. The viewer
 # is `--no-default-features`, with or without `canvas-gpu`.
 [features]
+dynamics-receipt = []
 default = ["main-page", "product", "remote", "canvas-gpu", "image-decode"]
 # The H5 reference host and its `mount` export (`src/web_main.rs`). It drives
 # the product modules and the remote link, so it needs both.

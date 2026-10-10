@@ -36,6 +36,7 @@ pub fn practice_compiler() -> &'static ProjectionCompiler {
 pub fn default_definition(dataset: &ProjectionDataset) -> ProjectionDefinition {
     use crate::projection_editor::*;
     ProjectionDefinition {
+        dynamics: None,
         version: PROJECTION_DEFINITION_VERSION,
         id: "practice-projection".into(),
         label: "Practice Set".into(),
@@ -239,6 +240,7 @@ mod tests {
 
     fn definition(kind: &str) -> ProjectionDefinition {
         ProjectionDefinition {
+            dynamics: None,
             version: 1,
             id: "woodshed-set".into(),
             label: "Practice set".into(),
