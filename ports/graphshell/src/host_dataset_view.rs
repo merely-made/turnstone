@@ -460,6 +460,7 @@ mod tests {
         let closed = grouped.view().unwrap();
         assert_eq!(closed.graph.node_count(), 3);
         assert_eq!(closed.relations.len(), 3);
+        assert_canvas_projects_all_relations(&closed);
         let key = closed.occurrences["repo:genet"];
         let identity = closed.graph.get_node(key).unwrap().id;
         let remembered = PortablePoint::new(123.0, 456.0);
