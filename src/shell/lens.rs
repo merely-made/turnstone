@@ -164,11 +164,11 @@ impl Shell {
                     .collect(),
             };
             self.project_document_accessibility(&mut frame, &plan);
-            let update = frame.tree.to_tree_update(frame.focus);
-            let initial = super::a11y_bridge::safe_initial(&update);
+            let foreign_placements = self.foreign_a11y_placements_in(&plan);
             let Some(lens) = self.lens_windows.get_mut(&id) else {
                 continue;
             };
+            lens.a11y_forest.sync_retained_from(&self.surface_a11y);
             let epoch = lens.a11y.activation_epoch();
             if lens.a11y_epoch != Some(epoch) {
                 lens.a11y_forest.reset_publication();
@@ -178,9 +178,35 @@ impl Shell {
                     .publish(Default::default());
                 lens.a11y_epoch = Some(epoch);
             }
+            let mut visible = Vec::new();
+            for (node, rect) in foreign_placements {
+                let Some(mut graft) = lens.a11y_forest.graft(node, rect) else {
+                    continue;
+                };
+                graft.set_label("browser page");
+                let graft_id = uxtree::node_id_for_path(&format!("turnstone/doc/{node}"));
+                if let Some((_, root)) = frame
+                    .tree
+                    .nodes
+                    .iter_mut()
+                    .find(|(id, _)| *id == frame.tree.root)
+                {
+                    let mut children = root.children().to_vec();
+                    children.push(graft_id);
+                    root.set_children(children);
+                }
+                frame.tree.nodes.push((graft_id, graft));
+                if matches!(self.app.focus, crate::surface::FocusTarget::Content { node: current, .. } if current == node)
+                {
+                    frame.focus = Some(graft_id);
+                }
+                visible.push(node);
+            }
+            let update = frame.tree.to_tree_update(frame.focus);
+            let initial = super::a11y_bridge::safe_initial(&update);
             let updates = match lens
                 .a11y_forest
-                .frame_with_guests(update, &[], &frame.guests)
+                .frame_with_guests(update, &visible, &frame.guests)
             {
                 Ok(updates) => updates,
                 Err(error) => {

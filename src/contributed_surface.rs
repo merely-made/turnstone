@@ -346,6 +346,7 @@ pub struct ContributedSurfacePane {
     stylesheet: String,
     viewport: (u32, u32, f32),
     hover: Option<NodeId>,
+    mouse_gesture: Option<(NodeId, (f32, f32), bool)>,
 }
 
 impl ContributedSurfacePane {
@@ -372,6 +373,7 @@ impl ContributedSurfacePane {
             ),
             viewport: (0, 0, 1.0),
             hover: None,
+            mouse_gesture: None,
         }
     }
 
@@ -514,21 +516,33 @@ impl ContributedSurfacePane {
     /// Ordinary host mouse gesture entry points. Keep this separate from
     /// semantic Click, which remains available for accessibility and commands.
     pub(crate) fn mouse_press(&mut self, x: f32, y: f32) -> SurfaceRequest {
-        let pointer = self.pointer_down(x, y);
-        let click = self.click(x, y);
+        if self.mouse_gesture.is_some() {
+            self.mouse_cancel(x, y);
+        }
+        self.mouse_gesture = self.hit_test(x, y).map(|target| (target, (x, y), false));
+        self.pointer_down(x, y)
+    }
+    pub(crate) fn mouse_move(&mut self, x: f32, y: f32) -> SurfaceRequest {
+        if let Some((_, origin, moved)) = &mut self.mouse_gesture {
+            *moved |= *origin != (x, y);
+        }
+        self.pointer_move(x, y)
+    }
+    pub(crate) fn mouse_release(&mut self, x: f32, y: f32) -> SurfaceRequest {
+        let gesture = self.mouse_gesture.take();
+        let pointer = self.pointer_up(x, y);
+        let click = match gesture {
+            Some((target, _, false)) if self.hit_test(x, y) == Some(target) => self.click(x, y),
+            _ => SurfaceRequest::None,
+        };
         if pointer == SurfaceRequest::Redraw || click == SurfaceRequest::Redraw {
             SurfaceRequest::Redraw
         } else {
             SurfaceRequest::None
         }
     }
-    pub(crate) fn mouse_move(&mut self, x: f32, y: f32) -> SurfaceRequest {
-        self.pointer_move(x, y)
-    }
-    pub(crate) fn mouse_release(&mut self, x: f32, y: f32) -> SurfaceRequest {
-        self.pointer_up(x, y)
-    }
     pub(crate) fn mouse_cancel(&mut self, x: f32, y: f32) -> SurfaceRequest {
+        self.mouse_gesture = None;
         self.pointer_cancel(x, y)
     }
 
@@ -726,6 +740,9 @@ impl ContributedSurfaceSessions {
             let mut admitted = registry.admit(&spec.kind, &spec.source)?;
             admitted.generation = generation;
             self.next_generation = generation;
+            if let Some(old) = self.panes.get_mut(&spec.id) {
+                old.mouse_cancel(0.0, 0.0);
+            }
             self.panes.insert(spec.id, admitted);
         }
         Ok(self
@@ -743,7 +760,9 @@ impl ContributedSurfaceSessions {
     }
 
     pub fn remove(&mut self, pane: PaneId) -> Option<ContributedSurfacePane> {
-        self.panes.remove(&pane)
+        let mut removed = self.panes.remove(&pane)?;
+        removed.mouse_cancel(0.0, 0.0);
+        Some(removed)
     }
 
     pub fn len(&self) -> usize {

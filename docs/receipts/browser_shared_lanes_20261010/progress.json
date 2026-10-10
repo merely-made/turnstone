@@ -66,10 +66,68 @@
       "failed": 0,
       "filtered": 27,
       "boundary": "pre-upstream integration"
+    },
+    "post_integration_default_resolution": {
+      "packages": 1288,
+      "selected_mere_genet_git_packages": 0,
+      "portable_lock_unchanged_by_local_command": true
+    },
+    "integrated_turnstone_lifecycle": {
+      "red": {
+        "passed": 6,
+        "failed": 2,
+        "filtered": 783
+      },
+      "green": {
+        "passed": 8,
+        "failed": 0,
+        "filtered": 783
+      },
+      "source_boundary": "3663 hashed source/config/lock paths and 3 HEAD records stable; only ignored Turnstone local lock rewrote",
+      "latest_source_boundary": "lifecycle GREEN precedes subsequent native-lens repair; full current integration suite pending"
+    },
+    "integrated_native_foreign_lens": {
+      "red": {
+        "passed": 0,
+        "failed": 1,
+        "filtered": 791
+      },
+      "green": {
+        "passed": 1,
+        "failed": 0,
+        "filtered": 791
+      },
+      "source_boundary": "source/config/portable locks stable; ignored local lock rewrote",
+      "platform_boundary": "independent consumer states; headed/native global TreeId/platform assistive technology evidence pending"
+    },
+    "integrated_native_pelt": {
+      "passed": 72,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "compile_seconds": 33.36,
+      "test_seconds": 8.39,
+      "source_boundary": "246 scoped native source/config paths and three lock captures unchanged; not full family source provenance",
+      "initial_attempt": "compile-only E0063 in incoming authored-appearance fixture; explicit host target_tree ROOT added before successful retry"
+    },
+    "integrated_shared_core_frameworks": {
+      "passed": 433,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "test_binaries": 13,
+      "package_counts": {
+        "cambium": 255,
+        "cambium-rootstock": 75,
+        "mesquite": 28,
+        "pelt-core": 75
+      },
+      "compile_seconds": 203,
+      "source_boundary": "244 scoped source/config paths unchanged; portable Mere and Genet lock unchanged; ignored Mere local lock updated and effective snapshot preserved"
     }
   },
   "pending": [
-    "native Pelt and Ortet qualification",
+    "postmerge shared regression group and final integrated family qualification",
     "full Turnstone default and Piccolo integration and all-target checks",
     "native headed accessibility and Reader appearances",
     "Graphshell full five public mounts and complete live scenario inventory",
@@ -205,6 +263,150 @@
     "task3-resume-ortet-red.sources": {
       "bytes": 167,
       "sha256": "4c152078947de8a782dfdbe4991aa339f3a0ee46af0690bd09d5a5b599f6c35c"
+    },
+    "task-1-integrated-lifecycle-red.log": {
+      "bytes": 63631,
+      "sha256": "8ee21f2bdfd9ad00e316a94c26500f22052400ac9ff90e18167bbaaa38e77992"
+    },
+    "task-1-integrated-lifecycle-red-before.sha256": {
+      "bytes": 573686,
+      "sha256": "2131ab274b87e7bc371318fb88fbc27f7ebf951a7999b76ffd1752d02dde9a79"
+    },
+    "task-1-integrated-lifecycle-red-after.sha256": {
+      "bytes": 573686,
+      "sha256": "a01032b9d021a39823fe5902d1216c30fdd7426b53029f8d1869e01d75de5a68"
+    },
+    "task-1-integrated-lifecycle-red-local-lock.txt": {
+      "bytes": 462543,
+      "sha256": "12a5a5a6c20fcd3a53b5aaf5e82f6616bbb8e2d840e47ce738ef348c7021f0e1"
+    },
+    "task-1-integrated-lifecycle-green.log": {
+      "bytes": 58392,
+      "sha256": "f5dc12b02fb873996a1624fd2ef6ec5de52ebca4b79d2d740be24b8684c7c9a0"
+    },
+    "task-1-integrated-lifecycle-green-before.sha256": {
+      "bytes": 573686,
+      "sha256": "1b97a63521c6b58095bc8c7cbf0f87184475c73510344b39159db0808680427c"
+    },
+    "task-1-integrated-lifecycle-green-after.sha256": {
+      "bytes": 573686,
+      "sha256": "674824eb98045d9afa2fbb97ed32e5a8175551f6e4411a406a7645eae2cac998"
+    },
+    "task-1-integrated-lifecycle-green-local-lock.txt": {
+      "bytes": 462543,
+      "sha256": "ab2b987d86cfbb557fff004dc64c17478f15a47b61d28396a5634fad0e149a20"
+    },
+    "task-1-native-lens-red.log": {
+      "bytes": 58263,
+      "sha256": "5d004c041b8914fd455f1809601b397dbe39acd53d7b3e90206f49b681a7d566"
+    },
+    "task-1-native-lens-red-before.sha256": {
+      "bytes": 573686,
+      "sha256": "0b215f744db895999d845264f8a922708fdacfde8c04ebd105c9e771896c81c4"
+    },
+    "task-1-native-lens-red-after.sha256": {
+      "bytes": 573686,
+      "sha256": "20c4602203a14407508018a6a6bb5e5a2cb4932e121ce2a4b568d4b1b1d2eb63"
+    },
+    "task-1-native-lens-red-local-lock.txt": {
+      "bytes": 462543,
+      "sha256": "12a5a5a6c20fcd3a53b5aaf5e82f6616bbb8e2d840e47ce738ef348c7021f0e1"
+    },
+    "task-1-native-lens-green.log": {
+      "bytes": 57421,
+      "sha256": "ec77f7198604a916cc44efac349a9e36e811900d1ff2a9a9cad5e1449c1a8f6f"
+    },
+    "task-1-native-lens-green-before.sha256": {
+      "bytes": 573686,
+      "sha256": "8ea64bb3f9968f92dc5bcac223bc0ad1a27ec3bd36c5c56412db3ac3d9e03a4c"
+    },
+    "task-1-native-lens-green-after.sha256": {
+      "bytes": 573686,
+      "sha256": "8034ebf0403691359e1c3d714c7cd3e31e3e8655f2368dbae0249f1daa38a005"
+    },
+    "task-1-native-lens-green-local-lock.txt": {
+      "bytes": 462543,
+      "sha256": "ba22a9d07c445768f8552b88f2d649284dd38132121b4e138783aa16eddc50a0"
+    },
+    "task3-native-postmerge-retry-lock-check.txt": {
+      "bytes": 194,
+      "sha256": "8e61bc73a4a79cc75a1770b33c47776cb4dd6dd998b6e3ce64cd695340a916db"
+    },
+    "task3-native-postmerge-retry-source-check.txt": {
+      "bytes": 23063,
+      "sha256": "c58a1280a33ea088c048faf474cf136d54d9d50cf623c8d01a3d05b0616329a6"
+    },
+    "task3-native-postmerge-retry-compiling.locks": {
+      "bytes": 290,
+      "sha256": "01e43e665f2ecd9d93ae5f906b71515cc1d1fd524ae1cd852e4efe53f1542b0d"
+    },
+    "task3-native-postmerge-retry.log": {
+      "bytes": 14358,
+      "sha256": "e87be3e62d638faf63e4271db47ae68391ed97ece003c032cda18ddc942591e3"
+    },
+    "task3-native-postmerge-retry-before.sources": {
+      "bytes": 38315,
+      "sha256": "8ec367cf75163ebd069c1d0f11d619dcd49bb3046b50ee205f9998c301e9de04"
+    },
+    "task3-native-postmerge-lock-check.txt": {
+      "bytes": 194,
+      "sha256": "8e61bc73a4a79cc75a1770b33c47776cb4dd6dd998b6e3ce64cd695340a916db"
+    },
+    "task3-native-postmerge-source-check.txt": {
+      "bytes": 23063,
+      "sha256": "c58a1280a33ea088c048faf474cf136d54d9d50cf623c8d01a3d05b0616329a6"
+    },
+    "task3-native-postmerge.log": {
+      "bytes": 9402,
+      "sha256": "4d7ca778aca1708dcaec22e88d1e03a06789d155fea436c98d0fa2220c3e10c6"
+    },
+    "task3-native-postmerge-before.locks": {
+      "bytes": 380,
+      "sha256": "21a9f5e7478c4bde0e2ac215feba642e6e6e7979b060fd9d1f6f1036adc68b75"
+    },
+    "task3-native-postmerge-before.sources": {
+      "bytes": 38315,
+      "sha256": "bd3c59676eb89836fbc41e8ecae79149e5e97912b2bcdfaee48632a55741ebb6"
+    },
+    "task3-native-postmerge-plan.md": {
+      "bytes": 1462,
+      "sha256": "dcec33db12e0864a999454bdb5ebcb0d57191323f0a408eeb1f08ffc02ac2fc4"
+    },
+    "task3-native-postmerge-inspection.sources": {
+      "bytes": 38315,
+      "sha256": "bd3c59676eb89836fbc41e8ecae79149e5e97912b2bcdfaee48632a55741ebb6"
+    },
+    "task3-native-postmerge-source-paths.txt": {
+      "bytes": 22079,
+      "sha256": "e283cdc25d367c31832128fa03ef584362d90adfc125a157d463071cba6db3e0"
+    },
+    "task3-shared-postmerge-effective-local.lock": {
+      "bytes": 459062,
+      "sha256": "a6c27bed1e4120b7eb299db92c14ad07968df04bfe916d999fd6f6808de2b8de"
+    },
+    "task3-shared-postmerge-after.locks": {
+      "bytes": 290,
+      "sha256": "7f2c783b880af84db85f98c250bd17f198a2baae6dc905f526cdea56835d1812"
+    },
+    "task3-shared-postmerge-lock-check.txt": {
+      "bytes": 198,
+      "sha256": "7145d760fc63ad76de1558840ae722e3a57f1c2f152163fb7d90d9f4672abdb5"
+    },
+    "task3-shared-postmerge-source-check.txt": {
+      "bytes": 23105,
+      "sha256": "ef253973fe2401c88424a8d1c687506b813ea47b5f3d42da724a0d8ba3968ddc"
+    },
+    "task3-shared-postmerge.log": {
+      "bytes": 42915,
+      "sha256": "2988bc9520ef0be74b014058729b229ff95e783cdafdef49e02e6128b10afe58"
+    },
+    "task3-shared-postmerge-before.locks": {
+      "bytes": 380,
+      "sha256": "21a9f5e7478c4bde0e2ac215feba642e6e6e7979b060fd9d1f6f1036adc68b75"
+    },
+    "task3-shared-postmerge-before.sources": {
+      "bytes": 38233,
+      "sha256": "89211f0d65ec54e9108dfc7d3865ceb0aa5083429529ee2fde7c0b2bbbfd91e4"
     }
   },
   "review": {
@@ -215,6 +417,11 @@
     "genet": "7422e90613f9017e5bb790e3acb48f61776b2eda",
     "mere": "44f800c59df861681369e171c24513e73d8d000d",
     "turnstone": "bf1e6a2fb9f0f4c9eba9c866de50a5505bd2404f",
-    "status": "pending"
+    "status": "integrated_source_unqualified"
+  },
+  "integration_checkpoints": {
+    "genet": "8939637d5ca6c508e218f256972c097d5e2a2bb5",
+    "mere": "cb7c45d4a",
+    "turnstone": "4743254"
   }
 }

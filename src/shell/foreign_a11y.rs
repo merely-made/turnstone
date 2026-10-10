@@ -53,8 +53,15 @@ impl Shell {
     }
 
     pub(super) fn foreign_a11y_placements(&self) -> Vec<(uuid::Uuid, accesskit::Rect)> {
+        self.foreign_a11y_placements_in(&self.surface_plan())
+    }
+
+    pub(super) fn foreign_a11y_placements_in(
+        &self,
+        plan: &[crate::surface::Surface],
+    ) -> Vec<(uuid::Uuid, accesskit::Rect)> {
         let mut placements = std::collections::BTreeMap::new();
-        for surface in self.surface_plan() {
+        for surface in plan {
             let SurfaceKind::Content(node) = surface.kind else {
                 continue;
             };

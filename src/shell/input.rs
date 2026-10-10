@@ -134,11 +134,13 @@ pub(super) struct ContributedPointer {
 impl ContributedPointer {
     pub(super) fn is_current(
         &self,
-        _surface: Option<crate::surface::Surface>,
-        _generation: Option<u64>,
-        _window: u64,
+        surface: Option<crate::surface::Surface>,
+        generation: Option<u64>,
+        window: u64,
     ) -> bool {
-        true
+        surface == Some(self.surface)
+            && generation == Some(self.generation)
+            && window == self.window
     }
 }
 
@@ -282,6 +284,9 @@ impl Shell {
     /// canvas gesture. Shared by winit and the scenario runner.
     pub(super) fn deliver_press(&mut self, x: f32, y: f32, button: MouseButton) {
         self.surface_pointer_buttons.0 |= surface_button_mask(button).0;
+        if self.contributed_pointer.is_some() {
+            return;
+        }
         let chrome_intent = self
             .chrome
             .click(0, x, y, self.width.max(1), self.height.max(1))
@@ -971,9 +976,19 @@ impl Shell {
         let crate::surface::SurfaceKind::Pane(pane) = admitted.surface.kind else {
             return false;
         };
+        let plan = if admitted.window == 0 {
+            self.surface_plan()
+        } else if let Some(lens) = self
+            .lens_windows
+            .values()
+            .find(|lens| lens.ordinal as u64 + 1 == admitted.window)
+        {
+            self.lens_plan(lens.ordinal, lens.width, lens.height)
+        } else {
+            return false;
+        };
         admitted.is_current(
-            self.all_content_plans()
-                .into_iter()
+            plan.into_iter()
                 .find(|surface| surface.id == admitted.surface.id),
             self.renderers
                 .contributed
@@ -1034,19 +1049,24 @@ impl Shell {
 
     /// Focus loss cancels actual retained custody, without manufacturing Up.
     pub(super) fn cancel_content_pointer(&mut self) {
+        // Retire host custody first: pool input synchronizes placements and
+        // may otherwise recursively discover the same invalid admission.
+        let captured = self.pointer_capture.take();
+        let contributed = self.contributed_pointer.take();
+        let pane = contributed
+            .map(|admitted| admitted.surface.kind)
+            .or(captured);
+        if let Some(crate::surface::SurfaceKind::Pane(pane)) = pane
+            && let Some(surface) = self.renderers.contributed.get_mut(pane)
+        {
+            surface.mouse_cancel(0.0, 0.0);
+        }
         if let Some(id) = self.content_sessions.pool.captured_placement(0).copied() {
             self.content_input(
                 id,
                 pelt_core::PeltInput::Session(inker::SessionInput::Cancel),
             );
         }
-        if let Some(crate::surface::SurfaceKind::Pane(pane)) = self.pointer_capture
-            && let Some(surface) = self.renderers.contributed.get_mut(pane)
-        {
-            surface.mouse_cancel(0.0, 0.0);
-        }
-        self.pointer_capture = None;
-        self.contributed_pointer = None;
         self.surface_pointer_buttons = inker::PointerButtons::NONE;
         self.wb_divider_drag = None;
         self.wb_tab_drag = None;

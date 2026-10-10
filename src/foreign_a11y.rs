@@ -244,6 +244,36 @@ impl ForeignA11y {
         Self::default()
     }
 
+    /// Share validated producer state while each native window keeps its own
+    /// publication history. Supplier TreeIds and local NodeIds stay intact.
+    pub(crate) fn sync_retained_from(&mut self, source: &Self) {
+        let previous = std::mem::take(&mut self.surfaces);
+        self.surfaces = source.surfaces.clone();
+        self.owners = source.owners.clone();
+        for (surface, forest) in &mut self.surfaces {
+            let old = previous.get(surface).filter(|old| old.root == forest.root);
+            for (id, tree) in &mut forest.trees {
+                tree.publication = old
+                    .and_then(|old| old.trees.get(id))
+                    .map(|tree| tree.publication.clone())
+                    .unwrap_or_default();
+            }
+        }
+        self.mounted.retain(|surface| {
+            self.surfaces.get(surface).is_some_and(|current| {
+                previous
+                    .get(surface)
+                    .is_some_and(|old| old.root == current.root)
+            })
+        });
+        self.published.retain(|surface, published| {
+            self.surfaces
+                .get(surface)
+                .is_some_and(|current| current.root == published.root)
+        });
+        self.dirty = true;
+    }
+
     pub(crate) fn admit(&mut self, surface: Uuid, root: TreeId) -> Result<(), String> {
         if root == TreeId::ROOT || self.owners.get(root).is_some_and(|owner| *owner != surface) {
             return Err("foreign root is owned by the host or another surface".into());
@@ -836,6 +866,79 @@ mod tests {
                 .unwrap(),
         );
         consumer
+    }
+
+    #[test]
+    fn foreign_lens_retains_native_forest_with_independent_publication_and_retirement() {
+        let mut primary = nested();
+        let visible = [surface(1)];
+        let mut primary_consumer = activate(&mut primary, &visible, 10);
+        let mut lens = ForeignA11y::new();
+        lens.sync_retained_from(&primary);
+        assert!(
+            lens.ready(surface(1)),
+            "a new native lens inherits the retained supplier forest"
+        );
+        let mut lens_consumer = activate(&mut lens, &visible, 10);
+        assert!(primary_consumer.state().subtree_root(tree(103)).is_some());
+        assert!(lens_consumer.state().subtree_root(tree(103)).is_some());
+        send(
+            &mut primary_consumer,
+            primary.frame(host(&primary, &[], 0), &[]).unwrap(),
+        );
+        let click = request(tree(103), 1, Action::Click);
+        assert!(primary.action_target(&click).is_err());
+        assert_eq!(lens.action_target(&click), Ok(surface(1)));
+        assert!(lens_consumer.state().subtree_root(tree(103)).is_some());
+        primary
+            .apply(surface(1), document(tree(103), "updated native link"))
+            .unwrap();
+        lens.sync_retained_from(&primary);
+        send(
+            &mut lens_consumer,
+            lens.frame(host(&lens, &visible, 10), &visible).unwrap(),
+        );
+        assert!(
+            lens.observed_lines()
+                .iter()
+                .any(|line| line.contains("updated native link"))
+        );
+        send(
+            &mut lens_consumer,
+            lens.frame(host(&lens, &[], 0), &[]).unwrap(),
+        );
+        assert!(lens.action_target(&click).is_err());
+        send(
+            &mut primary_consumer,
+            primary
+                .frame(host(&primary, &visible, 10), &visible)
+                .unwrap(),
+        );
+        assert_eq!(primary.action_target(&click), Ok(surface(1)));
+        let mut moved = host(&lens, &visible, 10);
+        let graft = lens
+            .graft(surface(1), Rect::new(40.0, 60.0, 240.0, 260.0))
+            .unwrap();
+        moved
+            .nodes
+            .iter_mut()
+            .find(|(id, _)| *id == NodeId(10))
+            .unwrap()
+            .1 = graft;
+        send(&mut lens_consumer, lens.frame(moved, &visible).unwrap());
+        assert_eq!(lens.action_target(&click), Ok(surface(1)));
+        assert!(lens_consumer.state().subtree_root(tree(103)).is_some());
+        primary.retire(surface(1));
+        lens.sync_retained_from(&primary);
+        assert!(
+            lens.action_target(&click).is_err(),
+            "retired supplier cannot survive in another window"
+        );
+        send(
+            &mut lens_consumer,
+            lens.frame(host(&lens, &[], 0), &[]).unwrap(),
+        );
+        assert!(lens_consumer.state().subtree_root(tree(103)).is_none());
     }
 
     #[test]

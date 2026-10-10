@@ -1,0 +1,192 @@
+Local workspace: /home/markik/Code/worktrees/mere-three-lanes
+Local lock: /home/markik/Code/worktrees/mere-three-lanes/.cargo/local/Cargo.lock
+warning: patch `boa_engine v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `boa_gc v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `genet-clipboard v0.1.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-clipboard)` was not used in the crate graph
+warning: patch `ipc-channel v0.22.0 (/home/markik/Code/worktrees/genet-three-lanes/support/patches/ipc-channel)` was not used in the crate graph
+warning: patch `script-engine-piccolo v0.0.0 (/home/markik/Code/worktrees/genet-three-lanes/components/script-engine-piccolo)` was not used in the crate graph
+warning: patch `servo-media-player v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/player)` was not used in the crate graph
+warning: patch `servo-media-streams v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/streams)` was not used in the crate graph
+warning: patch `servo-media-traits v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/traits)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+warning: use of deprecated method `icu_properties::props::BidiClass::to_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> /home/markik/Code/worktrees/genet-three-lanes/support/patches/parley/src/bidi.rs:893:13
+    |
+893 |     1 << (t.to_icu4c_value() as u32)
+    |             ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: `genet-parley` (lib) generated 1 warning
+warning: function `window_control_node` is never used
+   --> crates/cambium/cambium-genet-winit-host/src/decorations.rs:113:4
+    |
+113 | fn window_control_node<D>(dom: &D, root: NodeId, accessible_label: &str) -> Option<NodeId>
+    |    ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `window_control_rect` is never used
+   --> crates/cambium/cambium-genet-winit-host/src/decorations.rs:139:15
+    |
+139 | pub(crate) fn window_control_rect<D>(
+    |               ^^^^^^^^^^^^^^^^^^^
+
+warning: `cambium-genet-winit-host` (lib) generated 2 warnings
+warning: unused variable: `state`
+    --> /home/markik/Code/worktrees/genet-three-lanes/components/genet-documents/src/engines/livery.rs:1062:18
+     |
+1062 |         let Some(state) = self.control_state(node) else {
+     |                  ^^^^^ help: if this is intentional, prefix it with an underscore: `_state`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `genet-documents` (lib) generated 1 warning (run `cargo fix --lib -p genet-documents` to apply 1 suggestion)
+   Compiling pelt-desktop v0.2.0 (/home/markik/Code/worktrees/mere-three-lanes/ports/pelt/desktop)
+warning: unused import: `NativeSurfaceHost`
+  --> ports/pelt/desktop/workspace_viewer.rs:27:5
+   |
+27 |     NativeSurfaceHost, SessionButtonState, SessionCursor, SessionIme, SessionInput, SessionKey,
+   |     ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unreachable expression
+    --> ports/pelt/desktop/workspace_viewer.rs:1522:9
+     |
+1520 |             return Err("native tearout surface reached a host without an importer".to_owned());
+     |             ---------------------------------------------------------------------------------- any code following this expression is unreachable
+1521 |         }
+1522 |         Ok(())
+     |         ^^^^^^ unreachable expression
+     |
+     = note: `#[warn(unreachable_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> ports/pelt/desktop/workspace_viewer.rs:816:9
+    |
+816 |     let mut surfaces = SurfaceEngineRegistry::new();
+    |         ----^^^^^^^^
+    |         |
+    |         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `receipt`
+    --> ports/pelt/desktop/workspace_viewer.rs:3879:17
+     |
+3879 |     if let Some(receipt) = surface_import.as_deref_mut() {
+     |                 ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_receipt`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+    --> ports/pelt/desktop/workspace_viewer.rs:5138:13
+     |
+5138 |         let mut options = NetrenderOptions {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: associated function `new` is never used
+    --> ports/pelt/desktop/static_viewer.rs:1278:19
+     |
+1277 | impl ControllerViewerContent {
+     | ---------------------------- associated function in this implementation
+1278 |     pub(crate) fn new(
+     |                   ^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pelt-desktop` (lib test) generated 6 warnings (run `cargo fix --lib -p pelt-desktop --tests` to apply 4 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 33.36s
+     Running unittests lib.rs (/home/markik/Code/target/debug/deps/pelt_desktop-c82a80a2c093080f)
+
+running 72 tests
+test appearance::tests::in_memory_store_updates_live_value ... ok
+test appearance::tests::provider_rejects_unknown_refs_keys_types_and_values ... ok
+test appearance::tests::stored_choices_present_as_dark_or_light ... ok
+test appearance::tests::provider_describes_live_local_theme_choice ... ok
+test appearance::catalog_tests::missing_definition_fallback_preserves_requested_durable_choice_and_corrupt_settings_are_rejected ... ok
+test appearance::catalog_tests::failed_application_selection_write_keeps_current_choice_and_shared_definition ... ok
+test appearance::catalog_tests::saved_definition_and_exact_mode_survive_independent_store_recreation ... ok
+test appearance::catalog_tests::corrupt_library_and_invalid_modes_preserve_choice_and_original_bytes ... ok
+test appearance_editor::tests::editor_exports_preserve_the_application_choice_bytes_and_allow_other_destinations ... ok
+test frisket_surface::tests::chrome_stylesheet_waits_for_the_workspace_shell ... ok
+test frisket_surface::tests::livery_geometry_is_the_content_hole_and_hit_authority ... ok
+test frisket_surface::tests::chrome_reserves_host_geometry_and_keeps_tab_labels_compact ... ok
+test frisket_surface::appearance_scroll_tests::long_saved_library_scrolls_editor_into_reachable_drawer_space ... ok
+test static_viewer::dpi_tests::physical_window_space_maps_to_one_logical_scene_space ... ok
+test frisket_surface::tests::appearance_drawer_is_live_and_themed_without_moving_content ... ok
+test static_viewer::livery_route_tests::article_product_receipt_drives_the_checked_in_fixture ... ok
+test frisket_surface::tests::accesskit_projection_keeps_shell_controls_and_declared_content_boundaries ... ok
+test frisket_surface::tests::inspector_is_a_retained_region_and_names_opaque_content_honestly ... ok
+test static_viewer::livery_route_tests::controls_product_receipt_drives_nested_scroll_and_retained_editing ... ok
+test static_viewer::livery_route_tests::text_fragment_product_receipt_selects_scrolls_and_fetches_once ... ok
+test static_viewer::reader_receipt_profile_tests::reader_entrypoint_rejects_an_unowned_receipt_before_windowing ... ok
+test static_viewer::receipt_profile_tests::livery_entrypoints_reject_a_scripted_receipt_before_windowing ... ok
+test static_viewer::receipt_profile_tests::livery_entrypoints_reject_the_smolweb_receipt_before_windowing ... ok
+test static_viewer::title_tests::a_window_is_named_by_its_document_then_by_its_host ... ok
+test workspace_viewer::appearance_native::tests::browser_presentation_continues_the_scenario_and_yields_while_the_editor_owns_input ... ok
+test static_viewer::livery_route_tests::resources_product_receipt_keeps_redirected_sheet_graph_and_assets ... ok
+test workspace_viewer::tests::appearance_overlay_reuses_the_matching_physical_frame_crop ... ok
+test static_viewer::livery_route_tests::local_livery_route_keeps_resource_identity_and_interaction_after_resize ... ok
+test workspace_viewer::tests::cancellation_receipt_configures_a_separate_bounded_headed_run ... ok
+test static_viewer::livery_route_tests::responsive_product_receipt_reflows_grid_and_preserves_table_geometry ... ok
+test frisket_surface::tests::narrow_chrome_keeps_one_fixed_row_and_sheds_secondary_controls ... ok
+test workspace_viewer::tests::document_child_accessibility_allocator_never_aliases_local_ids ... ok
+test workspace_viewer::tests::desktop_keeps_source_when_tearout_has_no_native_destination ... ok
+test frisket_surface::tests::appended_chrome_stylesheet_recolors_shell_without_moving_content_or_close_targets ... ok
+test workspace_viewer::tests::four_urls_build_tabs_beside_a_nested_split ... ok
+test workspace_viewer::tests::indeterminate_rehost_enters_destination_terminal_state ... ok
+test workspace_viewer::tests::inspector_overlay_reuses_the_matching_physical_frame_crop ... ok
+test frisket_surface::tests::loading_and_error_documents_overlay_one_content_hole_without_blocking_it ... ok
+test workspace_viewer::tests::fallback_receipt_keeps_held_html_in_livery_without_scrying ... ok
+test workspace_viewer::tests::livery_accessibility_click_waits_for_a_physical_pointer_capture ... ok
+test workspace_viewer::tests::chrome_dpi_receipt_converts_physical_pointer_input_without_moving_content ... ok
+test workspace_viewer::tests::file_appearance_store_restores_theme_after_workspace_recreation ... ok
+[pelt-workspace] could not load /home/markik/Code/worktrees/mere-three-lanes/ports/pelt/examples/workspace/p6-load-error/next.html.missing: session spawn failed: could not load /home/markik/Code/worktrees/mere-three-lanes/ports/pelt/examples/workspace/p6-load-error/next.html.missing
+test workspace_viewer::tests::accessibility_focus_and_click_route_through_the_retained_shell_separately ... ok
+test workspace_viewer::tests::appearance_receipt_changes_session_theme_without_replacing_the_document ... ok
+test workspace_viewer::tests::named_workspace_receipts_pin_their_capture_contract ... ok
+test workspace_viewer::tests::named_workspace_receipts_reject_the_older_receipt_drivers ... ok
+test workspace_viewer::tests::livery_child_accessibility_scroll_into_view_is_namespaced_and_tile_local ... ok
+test workspace_viewer::tests::livery_child_accessibility_is_namespaced_transformed_and_stale_safe ... ok
+test workspace_viewer::tests::livery_nested_editor_rejects_a_queued_pre_scroll_set_value ... ok
+test workspace_viewer::tests::native_surface_keyboard_retains_function_key_scan_code_modifiers_and_text ... ok
+test workspace_viewer::tests::nearest_edge_uses_the_content_hole_geometry ... ok
+test workspace_viewer::tests::opaque_capability_blocks_even_an_accidental_structural_report ... ok
+test workspace_viewer::tests::parent_wait_preserves_editor_animation_and_accessibility_wakes_and_existing_focus_deadline ... ok
+test workspace_viewer::tests::livery_nested_editor_accessibility_input_receipt_runs_at_two_x ... ok
+test workspace_viewer::tests::livery_child_accessibility_text_values_are_namespaced_stale_safe_and_submit_forms ... ok
+test workspace_viewer::tests::receipt_tree_exposes_every_tab_to_frisket_geometry ... ok
+test workspace_viewer::tests::native_document_action_prepares_layout_before_revalidating_captured_revision ... ok
+test workspace_viewer::tests::native_appearance_reveal_uses_the_production_wheel_and_physical_pointer_route_at_two_x ... ok
+[pelt-workspace] could not load /home/markik/Code/worktrees/mere-three-lanes/ports/pelt/examples/workspace/p6-load-error/missing.html: session spawn failed: could not load /home/markik/Code/worktrees/mere-three-lanes/ports/pelt/examples/workspace/p6-load-error/missing.html
+test workspace_viewer::tests::secondary_accessibility_projection_keeps_tile_namespace_and_virtual_focus ... ok
+test workspace_viewer::tests::secondary_receipt_completion_requests_direct_exit_only_for_acceptance ... ok
+test workspace_viewer::tests::secondary_visible_startup_retries_until_presented ... ok
+test workspace_viewer::tests::startup_retries_preserve_owed_first_presentation_without_waking_a_settled_browser ... ok
+test workspace_viewer::tests::tearout_focus_retry_waits_for_event_and_interval ... ok
+test workspace_viewer::tests::tearout_receipt_progressed_includes_focus_identity_transition ... ok
+test workspace_viewer::tests::tearout_render_error_has_a_retained_alert_document ... ok
+test workspace_viewer::tests::reader_child_accessibility_is_namespaced_virtual_and_stale_safe ... ok
+test appearance_editor::tests::production_editor_text_and_close_guard_preserve_the_unsaved_draft ... ok
+[pelt-workspace] could not load /home/markik/Code/worktrees/mere-three-lanes/ports/pelt/examples/workspace/p6-load-error/missing.html: session spawn failed: could not load /home/markik/Code/worktrees/mere-three-lanes/ports/pelt/examples/workspace/p6-load-error/missing.html
+test workspace_viewer::tests::narrow_chrome_receipt_keeps_controls_tabs_and_failure_documents_usable ... ok
+test workspace_viewer::tests::loading_error_receipt_projects_host_documents_and_recovers_to_ready ... ok
+test workspace_viewer::tests::saving_an_active_theme_refreshes_the_catalog_without_implicitly_applying_its_new_css ... ok
+test workspace_viewer::tests::reader_workspace_reuses_the_held_livery_response_without_refetching ... ok
+test workspace_viewer::tests::saved_theme_pointer_controls_apply_exact_css_mode_without_replacing_the_held_session ... ok
+
+test result: ok. 72 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.39s
+

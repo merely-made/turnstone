@@ -1,0 +1,155 @@
+Local workspace: /home/markik/Code/worktrees/mere-three-lanes
+Local lock: /home/markik/Code/worktrees/mere-three-lanes/.cargo/local/Cargo.lock
+warning: patch `boa_engine v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `boa_gc v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `genet-clipboard v0.1.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-clipboard)` was not used in the crate graph
+warning: patch `ipc-channel v0.22.0 (/home/markik/Code/worktrees/genet-three-lanes/support/patches/ipc-channel)` was not used in the crate graph
+warning: patch `script-engine-piccolo v0.0.0 (/home/markik/Code/worktrees/genet-three-lanes/components/script-engine-piccolo)` was not used in the crate graph
+warning: patch `servo-media-player v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/player)` was not used in the crate graph
+warning: patch `servo-media-streams v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/streams)` was not used in the crate graph
+warning: patch `servo-media-traits v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/traits)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling hashbrown v0.17.1
+   Compiling indexmap v2.14.2
+   Compiling toml_edit v0.25.15+spec-1.1.0
+   Compiling proc-macro-crate v3.5.0
+   Compiling zvariant_derive v5.15.0
+   Compiling naga v30.0.1
+   Compiling naga-types v30.0.1
+   Compiling vello_shaders v0.10.0 (https://github.com/mark-ik/vello.git?rev=491c376cf2b01fc11132cf8f86419dec114ae032#491c376c)
+   Compiling zvariant v5.15.0
+   Compiling vello_encoding v0.10.0 (https://github.com/mark-ik/vello.git?rev=491c376cf2b01fc11132cf8f86419dec114ae032#491c376c)
+   Compiling zbus_names v4.3.4
+   Compiling netrender-vello v0.10.1 (https://github.com/mark-ik/vello.git?rev=491c376cf2b01fc11132cf8f86419dec114ae032#491c376c)
+   Compiling netrender v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+warning: use of deprecated method `icu_properties::props::BidiClass::to_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> /home/markik/Code/worktrees/genet-three-lanes/support/patches/parley/src/bidi.rs:893:13
+    |
+893 |     1 << (t.to_icu4c_value() as u32)
+    |             ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: `genet-parley` (lib) generated 1 warning
+   Compiling zbus_xml v5.2.1
+   Compiling logos-codegen v0.16.1
+   Compiling zbus-lockstep v0.5.2
+   Compiling zbus_macros v5.19.0
+   Compiling zbus v5.19.0
+   Compiling zbus-lockstep-macros v0.5.2
+   Compiling logos-derive v0.16.1
+   Compiling paint_list_render v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling tinct v0.1.2 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/tinct)
+   Compiling logos v0.16.1
+   Compiling atspi-common v0.13.0
+   Compiling illume v0.0.2 (/home/markik/Code/worktrees/mere-three-lanes/crates/nematic/illume)
+   Compiling cambium v0.3.3 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/cambium)
+   Compiling atspi-proxies v0.13.0
+   Compiling genet-render v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-render)
+   Compiling genet-render-host v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-render-host)
+   Compiling cambium-winit v0.3.0 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/cambium-winit)
+   Compiling accesskit_atspi_common v0.18.1
+   Compiling atspi v0.29.0
+   Compiling accesskit_unix v0.21.1
+   Compiling cambium-rootstock v0.1.0 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/cambium-rootstock)
+   Compiling genet-winit-host v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-winit-host)
+   Compiling cambium-winit-a11y v0.3.0 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/cambium-winit-a11y)
+   Compiling document-canvas v0.1.0 (/home/markik/Code/worktrees/mere-three-lanes/crates/inker/document-canvas)
+   Compiling tabard v0.0.1 (/home/markik/Code/worktrees/mere-three-lanes/crates/system/tabard)
+   Compiling dirs-sys v0.5.0
+   Compiling cambium-genet-winit-host v0.1.0 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/cambium-genet-winit-host)
+warning: function `window_control_node` is never used
+   --> crates/cambium/cambium-genet-winit-host/src/decorations.rs:113:4
+    |
+113 | fn window_control_node<D>(dom: &D, root: NodeId, accessible_label: &str) -> Option<NodeId>
+    |    ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `window_control_rect` is never used
+   --> crates/cambium/cambium-genet-winit-host/src/decorations.rs:139:15
+    |
+139 | pub(crate) fn window_control_rect<D>(
+    |               ^^^^^^^^^^^^^^^^^^^
+
+warning: `cambium-genet-winit-host` (lib) generated 2 warnings
+   Compiling mere-document-lanes v0.1.0 (/home/markik/Code/worktrees/mere-three-lanes/crates/system/document-lanes)
+   Compiling genet-documents v0.1.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-documents)
+warning: unused variable: `state`
+    --> /home/markik/Code/worktrees/genet-three-lanes/components/genet-documents/src/engines/livery.rs:1062:18
+     |
+1062 |         let Some(state) = self.control_state(node) else {
+     |                  ^^^^^ help: if this is intentional, prefix it with an underscore: `_state`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `genet-documents` (lib) generated 1 warning (run `cargo fix --lib -p genet-documents` to apply 1 suggestion)
+   Compiling mesquite v0.1.0 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/mesquite)
+   Compiling tabard-workshop v0.0.1 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/tabard-workshop)
+   Compiling dirs v6.0.0
+   Compiling tempfile v3.27.0
+   Compiling pelt-desktop v0.2.0 (/home/markik/Code/worktrees/mere-three-lanes/ports/pelt/desktop)
+warning: unused import: `NativeSurfaceHost`
+  --> ports/pelt/desktop/workspace_viewer.rs:27:5
+   |
+27 |     NativeSurfaceHost, SessionButtonState, SessionCursor, SessionIme, SessionInput, SessionKey,
+   |     ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0063]: missing field `target_tree` in initializer of `genet_winit_host::A11yActionRequest`
+    --> ports/pelt/desktop/workspace_viewer/tests.rs:3598:45
+     |
+3598 |     assert!(app.apply_accessibility_request(A11yActionRequest {
+     |                                             ^^^^^^^^^^^^^^^^^ missing `target_tree`
+
+warning: unreachable expression
+    --> ports/pelt/desktop/workspace_viewer.rs:1522:9
+     |
+1520 |             return Err("native tearout surface reached a host without an importer".to_owned());
+     |             ---------------------------------------------------------------------------------- any code following this expression is unreachable
+1521 |         }
+1522 |         Ok(())
+     |         ^^^^^^ unreachable expression
+     |
+     = note: `#[warn(unreachable_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> ports/pelt/desktop/workspace_viewer.rs:816:9
+    |
+816 |     let mut surfaces = SurfaceEngineRegistry::new();
+    |         ----^^^^^^^^
+    |         |
+    |         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `receipt`
+    --> ports/pelt/desktop/workspace_viewer.rs:3879:17
+     |
+3879 |     if let Some(receipt) = surface_import.as_deref_mut() {
+     |                 ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_receipt`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+    --> ports/pelt/desktop/workspace_viewer.rs:5138:13
+     |
+5138 |         let mut options = NetrenderOptions {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+For more information about this error, try `rustc --explain E0063`.
+warning: `pelt-desktop` (lib test) generated 5 warnings
+error: could not compile `pelt-desktop` (lib test) due to 1 previous error; 5 warnings emitted
+cargo_mode: Command '['cargo', '+1.98.1', '--config', '/home/markik/Code/worktrees/mere-three-lanes/.cargo/config.local.toml', '--config', 'resolver.lockfile-path="/home/markik/Code/worktrees/mere-three-lanes/.cargo/local/Cargo.lock"', 'test', '-j1', '-p', 'pelt-desktop', '--lib', '--', '--nocapture']' returned non-zero exit status 101.

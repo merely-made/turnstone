@@ -1379,7 +1379,11 @@ impl Shell {
     }
 
     fn evict_pane_renderer(&mut self, pane: crate::panes::PaneId) {
-        if self.pointer_capture == Some(crate::surface::SurfaceKind::Pane(pane)) {
+        if self.pointer_capture == Some(crate::surface::SurfaceKind::Pane(pane))
+            || self.contributed_pointer.is_some_and(|admitted| {
+                admitted.surface.kind == crate::surface::SurfaceKind::Pane(pane)
+            })
+        {
             self.cancel_content_pointer();
         }
         self.renderers.evict(pane);
@@ -2110,18 +2114,26 @@ impl Shell {
     /// through the route table. Runs on the main thread, woken by the same
     /// proxy the actors use.
     fn drain_a11y_actions(&mut self) {
-        let mut queues = vec![self.a11y_actions.clone()];
+        self.drain_surface_accessibility();
+        for lens in self.lens_windows.values_mut() {
+            lens.a11y_forest.sync_retained_from(&self.surface_a11y);
+        }
+        let mut queues = vec![(None, self.a11y_actions.clone())];
         queues.extend(
             self.lens_windows
-                .values()
-                .map(|lens| lens.a11y_actions.clone()),
+                .iter()
+                .map(|(id, lens)| (Some(*id), lens.a11y_actions.clone())),
         );
         let mut requests = Vec::new();
-        for queue in queues {
+        for (window, queue) in queues {
             let pending = std::mem::take(&mut queue.lock().expect("a11y queue poisoned").requests);
-            requests.extend(pending.into_iter().map(|request| (queue.clone(), request)));
+            requests.extend(
+                pending
+                    .into_iter()
+                    .map(|request| (window, queue.clone(), request)),
+            );
         }
-        for (queue, a11y_bridge::QueuedAction { request, admission }) in requests {
+        for (window, queue, a11y_bridge::QueuedAction { request, admission }) in requests {
             if let Some(captured) = admission {
                 if !queue
                     .lock()
@@ -2184,14 +2196,30 @@ impl Shell {
                 continue;
             }
             if request.target_tree != accesskit::TreeId::ROOT {
-                let result = self.surface_a11y.action_target(&request).and_then(|node| {
-                    // A preceding host action in this batch may hide a pane
-                    // before the next publication replaces the mounted set.
-                    if !self
-                        .foreign_a11y_placements()
-                        .iter()
-                        .any(|(current, _)| *current == node)
-                    {
+                let (target, placements) = match window {
+                    None => (
+                        self.surface_a11y.action_target(&request),
+                        self.foreign_a11y_placements(),
+                    ),
+                    Some(id) => match self.lens_windows.get(&id) {
+                        Some(lens) => (
+                            lens.a11y_forest.action_target(&request),
+                            self.foreign_a11y_placements_in(&self.lens_plan(
+                                lens.ordinal,
+                                lens.width,
+                                lens.height,
+                            )),
+                        ),
+                        None => (
+                            Err("native accessibility window closed".to_owned()),
+                            Vec::new(),
+                        ),
+                    },
+                };
+                let result = target.and_then(|node| {
+                    // The originating window owns visibility; a matching tree
+                    // in another window cannot authorize this queued action.
+                    if !placements.iter().any(|(current, _)| *current == node) {
                         return Err("foreign accessibility surface is no longer visible".to_owned());
                     }
                     self.content_sessions
