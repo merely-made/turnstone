@@ -1,0 +1,198 @@
+{
+  "lane": "reopen",
+  "decoder": "independent stdlib PNG/zlib RGBA scanline unfilter",
+  "exact_facts": {
+    "theme_id": "theme:copy-1",
+    "name": "TurnstoneAcceptance",
+    "css_utf8_bytes": 255,
+    "css_sha256": "a66fd88f7099783f29e428056cff1e613adbe9d6b6421c004c4d848b8ce2746c",
+    "css_exact_fixture_bytes": true,
+    "choice": {
+      "theme_id": "theme:copy-1",
+      "theme_mode": "dark"
+    },
+    "private_library_dump_included": false
+  },
+  "images": [
+    {
+      "file": "app/app_reopened_narrow.png",
+      "size": [
+        1280,
+        1560
+      ],
+      "sha256": "3e1bc00fae56d207bbce356f66963c514dddf236a79a8d8a15bbe0d042d3547f",
+      "distinct_rgba": 2760,
+      "dominant_rgba": [
+        [
+          [
+            17,
+            20,
+            26,
+            255
+          ],
+          986929
+        ],
+        [
+          [
+            20,
+            34,
+            56,
+            255
+          ],
+          969090
+        ],
+        [
+          [
+            9,
+            12,
+            24,
+            255
+          ],
+          9360
+        ],
+        [
+          [
+            27,
+            46,
+            73,
+            255
+          ],
+          4041
+        ],
+        [
+          [
+            54,
+            92,
+            156,
+            255
+          ],
+          2246
+        ],
+        [
+          [
+            192,
+            213,
+            242,
+            255
+          ],
+          1332
+        ],
+        [
+          [
+            101,
+            140,
+            215,
+            255
+          ],
+          770
+        ],
+        [
+          [
+            51,
+            102,
+            200,
+            255
+          ],
+          529
+        ]
+      ],
+      "background_probe_rgba": [
+        20,
+        34,
+        56,
+        255
+      ]
+    },
+    {
+      "file": "app/app_reopened_wide.png",
+      "size": [
+        2360,
+        1600
+      ],
+      "sha256": "b9678360a0a760dbc784d6f0b8da4f469136887440b4744000e853bedb8935aa",
+      "distinct_rgba": 2929,
+      "dominant_rgba": [
+        [
+          [
+            17,
+            20,
+            26,
+            255
+          ],
+          1875610
+        ],
+        [
+          [
+            20,
+            34,
+            56,
+            255
+          ],
+          1858570
+        ],
+        [
+          [
+            9,
+            12,
+            24,
+            255
+          ],
+          9600
+        ],
+        [
+          [
+            27,
+            46,
+            73,
+            255
+          ],
+          4041
+        ],
+        [
+          [
+            54,
+            92,
+            156,
+            255
+          ],
+          2764
+        ],
+        [
+          [
+            192,
+            213,
+            242,
+            255
+          ],
+          1332
+        ],
+        [
+          [
+            101,
+            140,
+            215,
+            255
+          ],
+          793
+        ],
+        [
+          [
+            51,
+            102,
+            200,
+            255
+          ],
+          529
+        ]
+      ],
+      "background_probe_rgba": [
+        20,
+        34,
+        56,
+        255
+      ]
+    }
+  ],
+  "frozen_source_and_binary_unchanged": true,
+  "visual_inspection": "separate original-image review required"
+}

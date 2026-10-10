@@ -629,10 +629,11 @@ Direction and the publish order are in genet's
 ## Application appearance adoption, 2026-10-10
 
 **Status:** macOS application appearance build and native acceptance passed.
-The final fixed-renderer production candidate completed four serialized
+The current-origin native13 production candidate completed four serialized
 LaunchServices processes, 521 presentations and nineteen visually inspected,
-nonblank captures, including populated wide/narrow workshop previews, ordinary
-Save/Apply separation and two fresh-process restorations. Exact source/binary
+nonblank captures, including populated wide/narrow workshop previews, the repaired
+34 CSS pixel Theme name/seed fields, ordinary Save/Apply separation and two
+fresh-process restorations. Native11 and partial native12 remain historical. Exact source/binary
 hashes, CPU test boundaries and historical failed attempts are in the
 [acceptance ledger](../docs/receipts/tabard_adoption_20261010/README.md).
 The existing settings pane and application settings store remain the owner.
@@ -731,3 +732,22 @@ frames, then proves restart persistence. No old binary receipt closes this gate.
   No source, production binary or system setting changed. Original bounded
   pre-libtest startup limits remain historical evidence; the older full 777
   serial run and this current 32-test gate retain separate source boundaries.
+
+- 2026-10-10: Current-origin native13 renews the production gate after the DR-C/D
+  migration and shared field styling/scroll-bounds fixes. Final compiled pins are
+  Mere e953, Knot 59db, Woodshed cf9b, Genet 7422, Dramatis c1d and renderer 10f; full
+  closure has one Mere source. Production 0b12 / 320 frozen inputs passed four
+  serialized processes: 199 + 51 seed, 48 reopen, 126 + 49 same-ID, 48 final reopen,
+  nineteen inspected originals/zero blank/no reset. Name and seed input borders
+  measure 68 physical / 34 CSS pixels at 2x. Exact 255-byte CSS, persisted copy-1/dark and
+  before/after pixels prove Save / ordinary Apply separation and both restorations.
+  A stale fixed verification crop excluded the scrolled Explore button; its
+  failure is preserved, then actual preview bounds and unchanged six-color gates
+  passed on the same originals without source edits or native retries.
+  Final 32 Turnstone and 74 coherent-family targeted CPU tests passed normally, with
+  zero failures/ignores; Mere port/web boundaries and portable provenance passed.
+  The full 777 serial suite remains historical. Native12 is partial 297 frames / 11
+  captures, held before same-ID when 545 changed source. Pending djinn identity at
+  the isolated existing endpoint does not qualify custody/keys; no private
+  profile/library/vault dump is public. Shared scroll bounds / browser / physical AT
+  and dirty parent-quit decision branches retain separate boundaries.

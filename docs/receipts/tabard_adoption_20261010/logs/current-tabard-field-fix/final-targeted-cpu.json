@@ -1,0 +1,20 @@
+{
+  "mere": "e95326dc08446a9256d3e340c63e571684afe697",
+  "knot": "59db666b3186d0256dde87b27fa9ce128dbc0eae",
+  "woodshed": "cf9b070b38c75377b037578d13bdba8208265cc6",
+  "passed": {
+    "shared_field_geometry": 1,
+    "knot_appearance": 17,
+    "knot_preferences": 4,
+    "woodshed_host_appearance": 7,
+    "woodshed_model_views": 12,
+    "woodshed_workshop_text_route": 1,
+    "turnstone_appearance": 11,
+    "turnstone_settings_pane": 9,
+    "turnstone_settings_provider": 12
+  },
+  "failed": 0,
+  "ignored": 0,
+  "passed_total": 74,
+  "scope": "targeted CPU checks on final set; full-suite and standalone native renewal not claimed"
+}

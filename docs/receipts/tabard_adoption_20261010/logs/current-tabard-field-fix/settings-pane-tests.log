@@ -1,0 +1,14 @@
+
+running 9 tests
+test settings_pane::tests::actual_edit_themes_button_requests_host_work_without_changing_selection ... ok
+test settings_pane::tests::mode_radio_keyboard_stays_in_its_group_and_enter_applies_only_after_tab ... ok
+test settings_pane::tests::painted_settings_targets_drive_physical_edit_and_apply_at_wide_and_narrow_sizes ... ok
+test settings_pane::tests::pane_renders_controls_from_setting_control_not_setting_ids ... ok
+test settings_pane::tests::provider_owner_is_available_to_host_after_projection_construction ... ok
+test settings_pane::tests::saved_same_identity_waits_for_explicit_apply_and_reopens_latest_definition ... ok
+test settings_pane::tests::snapshot_projects_every_live_application_axis_to_chrome ... ok
+test settings_pane::tests::stale_settings_panes_cannot_apply_saved_definition_or_overwrite_selected_theme ... ok
+test settings_pane::tests::successful_apply_publishes_a_value_snapshot_for_the_shell ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 777 filtered out; finished in 1.79s
+

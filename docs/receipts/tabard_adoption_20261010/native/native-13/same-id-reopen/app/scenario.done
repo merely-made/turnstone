@@ -1,0 +1,6 @@
+RESULT ok
+captured app_reopened_wide
+captured app_reopened_narrow
+presentation frames=48 captures=2 blank=0
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/same-id-reopen/app/app_reopened_wide.png digest=04e1c6acb613f3c6 blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/same-id-reopen/app/app_reopened_narrow.png digest=261f72c70bc795c2 blank=false

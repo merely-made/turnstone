@@ -1,0 +1,21 @@
+{
+  "final320inputs_and_binary_unchanged": true,
+  "source_freeze_exact_copy": true,
+  "original19_image_hashes_exact": true,
+  "ledger_qualification_equal": true,
+  "counts521_presentations19_originals": true,
+  "private_dump_files_absent": true,
+  "broken_links": [
+    [
+      "design_docs/2026-07-14_turnstone_rung5_panes_plan.md",
+      "../../genet/docs/2026-07-24_frisket_pane_component_direction.md"
+    ]
+  ],
+  "public_native13_bytes": 5417260,
+  "broken_links_are_preexisting_unchanged": true,
+  "new_receipt_and_modified_acceptance_links_all_resolve": true,
+  "diff_check_passed": true,
+  "diff_check_scope": "staged source, manifests, documentation and evidence excluding original raw .log files",
+  "raw_log_whitespace": "original compiler indentation and libtest blank EOF preserved exactly; unfiltered staged diff --check reports these log formatting lines",
+  "root_review": "all 19 image hashes, historical native objects, 521/19 counts, qualification consistency and all 60 receipt README local links passed"
+}

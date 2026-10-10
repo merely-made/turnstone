@@ -1,0 +1,42 @@
+2026-10-10T17:24:23.611474Z  INFO turnstone::launch: turnstone starting
+2026-10-10T17:24:23.685997Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: transport failed: No such file or directory (os error 2)
+2026-10-10T17:24:23.940453Z  INFO turnstone::session: workbench tiling restored path="/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/turnstone-profile/sessions/33413d04-50c5-4170-b6e8-b859e30c9306/workbench.json" tiles=0
+2026-10-10T17:24:23.942480Z  INFO actor{actor="actor"}: armillary: actor started actor="actor"
+2026-10-10T17:24:23.942481Z  INFO actor{actor="actor"}: armillary: actor started actor="actor"
+2026-10-10T17:24:23.942604Z  INFO fjall::keyspace: Opening keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/turnstone-profile/cookies"
+2026-10-10T17:24:23.942653Z  INFO fjall::keyspace: Recovering keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/turnstone-profile/cookies"
+2026-10-10T17:24:23.963210Z  INFO lsm_tree::tree: Recovering LSM-tree at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/turnstone-profile/cookies/partitions/eidetic"
+2026-10-10T17:24:23.963307Z  INFO lsm_tree::tree: Recovering manifest at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/turnstone-profile/cookies/partitions/eidetic/levels"
+2026-10-10T17:24:23.964048Z  INFO actor{actor="actor"}: armillary: actor started actor="actor"
+2026-10-10T17:24:23.964254Z  INFO actor{actor="download-custody"}: armillary: actor started actor="download-custody"
+2026-10-10T17:24:23.964276Z  INFO actor{actor="recycle-bin"}: armillary: actor started actor="recycle-bin"
+2026-10-10T17:24:23.964315Z  INFO actor{actor="trail-memory"}: armillary: actor started actor="trail-memory"
+2026-10-10T17:24:23.964479Z  INFO actor{actor="turnstone-place"}: armillary: actor started actor="turnstone-place"
+2026-10-10T17:24:23.964493Z  INFO actor{actor="trail-memory"}: fjall::keyspace: Opening keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/turnstone-profile/sessions/33413d04-50c5-4170-b6e8-b859e30c9306/memory"
+2026-10-10T17:24:23.964438Z  INFO actor{actor="recycle-bin"}: fjall::keyspace: Opening keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/turnstone-profile/sessions/33413d04-50c5-4170-b6e8-b859e30c9306/bin"
+2026-10-10T17:24:23.964551Z  INFO actor{actor="trail-memory"}: fjall::keyspace: Recovering keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/turnstone-profile/sessions/33413d04-50c5-4170-b6e8-b859e30c9306/memory"
+2026-10-10T17:24:23.964588Z  INFO actor{actor="recycle-bin"}: fjall::keyspace: Recovering keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/turnstone-profile/sessions/33413d04-50c5-4170-b6e8-b859e30c9306/bin"
+2026-10-10T17:24:23.982593Z  INFO actor{actor="trail-memory"}: lsm_tree::tree: Recovering LSM-tree at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/turnstone-profile/sessions/33413d04-50c5-4170-b6e8-b859e30c9306/memory/partitions/eidetic"
+2026-10-10T17:24:23.982594Z  INFO actor{actor="recycle-bin"}: lsm_tree::tree: Recovering LSM-tree at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/turnstone-profile/sessions/33413d04-50c5-4170-b6e8-b859e30c9306/bin/partitions/eidetic"
+2026-10-10T17:24:23.982724Z  INFO actor{actor="trail-memory"}: lsm_tree::tree: Recovering manifest at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/turnstone-profile/sessions/33413d04-50c5-4170-b6e8-b859e30c9306/memory/partitions/eidetic/levels"
+2026-10-10T17:24:23.982774Z  INFO actor{actor="recycle-bin"}: lsm_tree::tree: Recovering manifest at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/turnstone-profile/sessions/33413d04-50c5-4170-b6e8-b859e30c9306/bin/partitions/eidetic/levels"
+2026-10-10T17:24:24.047875Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-10T17:24:24.175717Z  INFO vello::wgpu_engine: Initialising shader modules in parallel using 14 threads
+2026-10-10T17:24:24.974517Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: transport failed: No such file or directory (os error 2)
+2026-10-10T17:24:25.980679Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: transport failed: No such file or directory (os error 2)
+2026-10-10T17:24:26.193468Z  INFO actor{actor="actor"}: armillary: actor started actor="actor"
+[genet-render-host] surface acquire skipped: Occluded
+[genet-render-host] surface acquire skipped: Occluded
+[genet-render-host] surface acquire skipped: Occluded
+2026-10-10T17:24:26.982732Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: transport failed: No such file or directory (os error 2)
+2026-10-10T17:24:27.984696Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: transport failed: No such file or directory (os error 2)
+2026-10-10T17:24:28.093287Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=12
+2026-10-10T17:24:28.934667Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=12
+2026-10-10T17:24:28.985292Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: transport failed: No such file or directory (os error 2)
+2026-10-10T17:24:29.582074Z  INFO actor{actor="actor"}: armillary: actor finished actor="actor" lifetime_ms=3388
+2026-10-10T17:24:29.584337Z  INFO actor{actor="actor"}: armillary: actor finished actor="actor" lifetime_ms=5620
+2026-10-10T17:24:29.838656Z  INFO actor{actor="download-custody"}: armillary: actor finished actor="download-custody" lifetime_ms=5874
+2026-10-10T17:24:29.838718Z  INFO actor{actor="turnstone-place"}: armillary: actor finished actor="turnstone-place" lifetime_ms=5874
+2026-10-10T17:24:29.838711Z  INFO actor{actor="trail-memory"}: armillary: actor finished actor="trail-memory" lifetime_ms=5874
+2026-10-10T17:24:29.839524Z  INFO actor{actor="actor"}: armillary: actor finished actor="actor" lifetime_ms=5897
+2026-10-10T17:24:29.839535Z  INFO actor{actor="actor"}: armillary: actor finished actor="actor" lifetime_ms=5897

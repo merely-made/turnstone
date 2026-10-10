@@ -1,0 +1,633 @@
+warning: patch `p2panda-auth v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling unicode-ident v1.0.26
+   Compiling libc v0.2.190
+   Compiling proc-macro2 v1.0.107
+   Compiling cfg-if v1.0.5
+   Compiling quote v1.0.47
+   Compiling bitflags v2.13.2
+   Compiling syn v3.0.6
+   Compiling syn v2.0.119
+   Compiling zeroize_derive v1.5.0
+   Compiling serde_derive v1.0.229
+   Compiling zeroize v1.9.0
+   Compiling log v0.4.34
+   Compiling getrandom v0.4.3
+   Compiling portable-atomic v1.15.0
+   Compiling jobserver v0.1.35
+   Compiling find-msvc-tools v0.1.14
+   Compiling serde v1.0.229
+   Compiling cc v1.6.0
+   Compiling smallvec v1.16.2
+   Compiling subtle v2.6.1
+   Compiling critical-section v1.2.0
+   Compiling once_cell v1.21.4
+   Compiling thiserror-impl v2.0.21
+   Compiling generic-array v0.14.7
+   Compiling thiserror v2.0.21
+   Compiling synstructure v0.14.0
+   Compiling crypto-common v0.1.7
+   Compiling zerofrom-derive v0.1.8
+   Compiling bytes v1.12.1
+   Compiling hybrid-array v0.4.15
+   Compiling zerofrom v0.1.8
+   Compiling yoke-derive v0.8.4
+   Compiling indexmap v2.14.2
+   Compiling crypto-common v0.2.2
+   Compiling yoke v0.8.3
+   Compiling zerovec-derive v0.11.6
+   Compiling getrandom v0.2.17
+   Compiling displaydoc v0.2.7
+   Compiling zerovec v0.11.8
+   Compiling zerocopy v0.8.59
+   Compiling zerocopy-derive v0.8.59
+   Compiling dispatch2 v0.3.1
+   Compiling block-buffer v0.12.1
+   Compiling tracing-core v0.1.36
+   Compiling objc2-core-foundation v0.3.2
+   Compiling tinystr v0.8.4
+   Compiling tracing-attributes v0.1.31
+   Compiling icu_locale_core v2.3.0
+   Compiling tracing v0.1.44
+   Compiling potential_utf v0.1.6
+   Compiling zerotrie v0.2.5
+   Compiling semver v1.0.28
+   Compiling icu_provider v2.3.1
+   Compiling icu_collections v2.3.0
+   Compiling bytemuck_derive v1.12.1
+   Compiling rustc_version v0.4.1
+   Compiling siphasher v1.0.4
+   Compiling icu_properties v2.3.0
+   Compiling bytemuck v1.25.2
+   Compiling icu_normalizer v2.3.0
+   Compiling parking_lot_core v0.9.12
+   Compiling const-oid v0.9.6
+   Compiling parking_lot v0.12.5
+   Compiling idna_adapter v1.2.2
+   Compiling futures-macro v0.3.34
+   Compiling socket2 v0.6.5
+   Compiling idna v1.1.0
+   Compiling futures-util v0.3.34
+   Compiling tokio-macros v2.7.2
+   Compiling mio v1.2.4
+   Compiling tokio v1.53.2
+   Compiling url v2.5.8
+   Compiling inout v0.2.2
+   Compiling cipher v0.5.2
+   Compiling uuid v1.27.0
+   Compiling block-buffer v0.10.4
+   Compiling blake3 v1.8.7
+   Compiling digest v0.10.7
+   Compiling chacha20 v0.10.2
+   Compiling constant_time_eq v0.4.2
+   Compiling digest v0.11.3
+   Compiling rand_core v0.6.4
+   Compiling base64ct v1.8.3
+   Compiling objc2-foundation v0.3.2
+   Compiling euclid v0.22.14
+   Compiling block-padding v0.3.3
+   Compiling curve25519-dalek-derive v0.1.1
+   Compiling inout v0.1.4
+   Compiling phf_shared v0.13.1
+   Compiling cipher v0.4.4
+   Compiling crossbeam-utils v0.8.23
+   Compiling phf_generator v0.13.1
+   Compiling sha2 v0.11.0
+   Compiling pem-rfc7468 v1.0.0
+   Compiling winnow v1.0.4
+   Compiling toml_parser v1.1.3+spec-1.1.0
+   Compiling der v0.8.2
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling curve25519-dalek v5.0.0
+   Compiling universal-hash v0.5.1
+   Compiling opaque-debug v0.3.1
+   Compiling spki v0.8.1
+   Compiling base16ct v1.0.0
+   Compiling pkcs8 v0.11.0
+   Compiling serdect v0.4.3
+   Compiling rand v0.10.3
+   Compiling signature v3.0.0
+   Compiling profiling-procmacros v1.0.18
+   Compiling profiling v1.0.18
+   Compiling ed25519 v3.0.0
+   Compiling polyval v0.6.2
+   Compiling phf_macros v0.13.1
+   Compiling tokio-util v0.7.19
+   Compiling aead v0.5.2
+   Compiling phf v0.13.1
+   Compiling ghash v0.5.1
+   Compiling ed25519-dalek v3.0.0
+   Compiling crc32fast v1.5.2
+   Compiling ctr v0.9.2
+   Compiling aes v0.8.4
+   Compiling der v0.7.10
+   Compiling half v2.7.1
+   Compiling aes-gcm v0.10.3
+   Compiling flate2 v1.1.10
+   Compiling string_cache_codegen v0.6.1
+   Compiling phf_codegen v0.13.1
+   Compiling sha2 v0.10.9
+   Compiling font-types v0.12.6
+   Compiling ppv-lite86 v0.2.21
+   Compiling ring v0.17.14
+   Compiling powerfmt v0.2.1
+   Compiling time v0.3.55
+   Compiling kurbo v0.13.1
+   Compiling read-fonts v0.41.0
+   Compiling web_atoms v0.2.6
+   Compiling enumn v0.1.14
+   Compiling simdutf8 v0.1.5
+   Compiling guillotiere v0.7.0
+   Compiling peniko v0.6.1
+   Compiling string_cache v0.9.0
+   Compiling accesskit v0.24.1
+   Compiling png v0.18.1
+   Compiling skrifa v0.44.0
+   Compiling naga-types v30.0.1
+   Compiling objc2-metal v0.3.2
+   Compiling hmac v0.12.1
+   Compiling objc2-core-graphics v0.3.2
+   Compiling http v1.5.0
+   Compiling rustls-pki-types v1.15.1
+   Compiling objc2-quartz-core v0.3.2
+   Compiling convert_case v0.10.0
+   Compiling ff v0.13.1
+   Compiling syn v1.0.109
+   Compiling base16ct v0.2.0
+   Compiling base64 v0.23.1
+   Compiling unicode-xid v0.2.6
+   Compiling derive_more-impl v2.1.1
+   Compiling sec1 v0.7.3
+   Compiling markup5ever v0.39.0
+   Compiling group v0.13.0
+   Compiling naga v30.0.1
+   Compiling hkdf v0.12.4
+   Compiling wgpu-types v30.0.1
+   Compiling strum_macros v0.28.0
+   Compiling rand_chacha v0.3.1
+   Compiling spki v0.7.3
+   Compiling signature v2.2.0
+   Compiling crypto-bigint v0.5.5
+   Compiling core-foundation v0.10.1
+   Compiling wgpu-hal v30.0.1
+   Compiling crossbeam-epoch v0.9.21
+   Compiling rustls v0.23.45
+   Compiling elliptic-curve v0.13.8
+   Compiling rand v0.8.8
+   Compiling strum v0.28.0
+   Compiling wgpu-naga-bridge v30.0.1
+   Compiling derive_more v2.1.1
+   Compiling raw-window-metal v1.1.0
+   Compiling rustls-webpki v0.103.15
+   Compiling pin-project-internal v1.1.13
+   Compiling libloading v0.8.9
+   Compiling ipnet v2.12.2
+   Compiling parking v2.2.1
+   Compiling crossbeam-deque v0.8.8
+   Compiling futures-lite v2.6.1
+   Compiling pin-project v1.1.13
+   Compiling http-body v1.1.0
+   Compiling sceno v0.0.4 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling wgpu-core v30.0.1
+   Compiling equator-macro v0.4.2
+   Compiling n0-error-macros v1.0.1
+   Compiling spez v0.1.2
+   Compiling n0-error v1.0.1
+   Compiling equator v0.4.2
+   Compiling wgpu-core-deps-apple v30.0.1
+   Compiling layout-dom-api v0.1.1 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling rfc6979 v0.4.0
+   Compiling curve25519-dalek v4.1.3
+   Compiling wgpu v30.0.1
+   Compiling want v0.3.2
+   Compiling ecdsa v0.16.9
+   Compiling vello_shaders v0.10.0 (https://github.com/mark-ik/vello.git?rev=10f01d6d88e94eac087daf033b24895cf97b8e82#10f01d6d)
+   Compiling rayon-core v1.13.0
+   Compiling aligned-vec v0.6.4
+   Compiling h2 v0.4.20
+   Compiling primeorder v0.13.6
+   Compiling lazy_static v1.5.1
+   Compiling paint_list_api v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling security-framework-sys v2.17.0
+   Compiling font-types v0.11.3
+   Compiling heapless v0.7.17
+   Compiling n0-future v0.3.2
+   Compiling thiserror-impl v1.0.69
+   Compiling cordyceps v0.3.5
+   Compiling diatomic-waker v0.2.3
+   Compiling spin v0.10.1
+   Compiling futures-buffered v0.2.13
+   Compiling hyper v1.12.0
+   Compiling thiserror v1.0.69
+   Compiling read-fonts v0.39.2
+   Compiling security-framework v3.7.0
+   Compiling v_frame v0.3.9
+   Compiling rayon v1.12.0
+   Compiling petgraph v0.8.3
+   Compiling vello_encoding v0.10.0 (https://github.com/mark-ik/vello.git?rev=10f01d6d88e94eac087daf033b24895cf97b8e82#10f01d6d)
+   Compiling poly1305 v0.8.0
+   Compiling chacha20 v0.9.1
+   Compiling sync_wrapper v1.0.2
+   Compiling ptr_meta_derive v0.3.2
+   Compiling redb v2.6.4
+   Compiling ptr_meta v0.3.2
+   Compiling rustls-platform-verifier v0.7.1
+   Compiling hyper-util v0.1.21
+   Compiling xml5ever v0.39.0
+   Compiling html5ever v0.39.0
+   Compiling futures-intrusive v0.5.0
+   Compiling objc2-core-text v0.3.2
+   Compiling cobs v0.3.0
+   Compiling noq-udp v1.3.0
+   Compiling command-menu v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling tinct v0.1.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling app_units v0.7.8
+   Compiling async-trait v0.1.92
+   Compiling arg_enum_proc_macro v0.3.4
+   Compiling postcard-derive v0.2.2
+   Compiling num-bigint-dig v0.8.6
+   Compiling rustversion v1.0.23
+   Compiling ryu v1.0.23
+   Compiling tower-layer v0.3.3
+   Compiling libz-sys v1.1.29
+   Compiling av-scenechange v0.14.1
+   Compiling postcard v1.1.3
+   Compiling av1-grain v0.2.5
+   Compiling genet-paint-types v0.2.0 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling netrender-vello v0.10.1 (https://github.com/mark-ik/vello.git?rev=10f01d6d88e94eac087daf033b24895cf97b8e82#10f01d6d)
+   Compiling genet-static-dom v0.1.1 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling icu_locale_fallback v2.3.0
+   Compiling psm v0.1.32
+   Compiling rancor v0.1.3
+   Compiling netrender_device v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling maybe-rayon v0.1.1
+   Compiling p256 v0.13.2
+   Compiling p384 v0.13.1
+   Compiling http-body-util v0.1.5
+   Compiling tokio-rustls v0.26.6
+   Compiling pkcs8 v0.10.2
+   Compiling toml_edit v0.25.15+spec-1.1.0
+   Compiling pem-rfc7468 v0.7.0
+   Compiling num-iter v0.1.46
+   Compiling hex v0.4.3
+   Compiling bytecheck_derive v0.8.3
+   Compiling num-derive v0.4.2
+   Compiling simd_helpers v0.1.0
+   Compiling serde_bytes v0.11.19
+   Compiling memmap2 v0.9.11
+   Compiling tinyvec v1.13.3
+   Compiling system-configuration-sys v0.6.0
+   Compiling rustix v1.1.5
+   Compiling data-encoding v2.11.1
+   Compiling rav1e v0.8.1
+   Compiling data-encoding-macro-internal v0.1.19
+   Compiling toml v1.1.6+spec-1.1.0
+   Compiling genet-fontique v0.10.0 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling bytecheck v0.8.3
+   Compiling proc-macro-crate v3.5.0
+   Compiling ssh-encoding v0.2.0
+   Compiling pkcs1 v0.7.5
+   Compiling muniment v0.1.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling netrender v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling icu_segmenter v2.3.0
+   Compiling engine-observables-api v0.2.0 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling slotmap v1.1.1
+   Compiling getrandom v0.3.4
+   Compiling tower v0.5.3
+   Compiling harfrust v0.8.4
+   Compiling skrifa v0.42.1
+   Compiling ed25519 v2.2.3
+   Compiling blowfish v0.9.1
+   Compiling cbc v0.1.2
+   Compiling pbkdf2 v0.12.2
+   Compiling futures-executor v0.3.34
+   Compiling parley_data v0.10.0
+   Compiling stacker v0.1.25
+   Compiling cssparser-macros v0.7.1
+   Compiling munge_macro v0.4.7
+   Compiling errno v0.3.14
+   Compiling ravif v0.13.0
+   Compiling munge v0.4.7
+   Compiling fontsan v0.7.0
+   Compiling cssparser v0.37.0
+   Compiling genet-parley v0.10.0 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling futures v0.3.34
+   Compiling bcrypt-pbkdf v0.10.0
+   Compiling ssh-cipher v0.2.0
+   Compiling genet-scripted-dom v0.1.2 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling ed25519-dalek v2.2.0
+   Compiling livery v0.0.5 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling tower-http v0.6.11
+   Compiling rsa v0.9.10
+   Compiling rend v0.5.4
+   Compiling wuff v0.2.9
+   Compiling data-encoding-macro v0.1.21
+   Compiling logos-codegen v0.16.1
+   Compiling hyper-rustls v0.27.10
+   Compiling p521 v0.13.3
+   Compiling tokio-stream v0.1.19
+   Compiling universal-hash v0.6.1
+   Compiling fastbloom v0.17.0
+   Compiling objc2-security v0.3.2
+   Compiling noq v1.3.0
+   Compiling quick-xml v0.42.0
+   Compiling rkyv_derive v0.8.18
+   Compiling enum-assoc v1.4.1
+   Compiling sorted-index-buffer v0.2.1
+   Compiling identity-hash v0.1.0
+   Compiling netdev v0.46.3
+   Compiling n0-dns-resolver v0.1.0
+   Compiling rkyv v0.8.18
+   Compiling noq-proto v1.3.0
+   Compiling plist v1.10.1
+   Compiling objc2-system-configuration v0.3.2
+   Compiling poly1305 v0.9.1
+   Compiling ssh-key v0.6.7
+   Compiling reqwest v0.13.5
+   Compiling logos-derive v0.16.1
+   Compiling iroh-base v1.3.0
+   Compiling system-configuration v0.8.0
+   Compiling wuff-capi v0.2.0
+   Compiling cadency v0.0.1 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling image v0.25.10
+   Compiling num_enum_derive v0.7.6
+   Compiling webpki-roots v1.0.9
+   Compiling vello_encoding v0.10.0 (https://github.com/mark-ik/vello.git?tag=vello-0.10.0#4354955e)
+   Compiling iroh-metrics-derive v1.0.1
+   Compiling aead v0.6.1
+   Compiling lru v0.18.5
+   Compiling iroh-dns v1.3.0
+   Compiling netwatch v0.19.3
+   Compiling genet-taffy v0.14.0 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling document-session-api v0.1.0 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling simple-dns v0.12.0
+   Compiling xml-rs v0.8.29
+   Compiling workbench v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mac-addr v0.3.0
+   Compiling xmltree v0.10.3
+   Compiling buckram v0.0.3 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling chacha20poly1305 v0.11.0
+   Compiling iroh-metrics v1.0.2
+   Compiling vello v0.10.0 (https://github.com/mark-ik/vello.git?tag=vello-0.10.0#4354955e)
+   Compiling num_enum v0.7.6
+   Compiling logos v0.16.1
+   Compiling chartulary v0.2.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling genet-document-resources v0.2.1 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling gethostname v1.1.0
+   Compiling arc-swap v1.9.2
+   Compiling paint_list_render v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling n0-watcher v1.0.0
+   Compiling attohttpc v0.30.1
+   Compiling insigne v0.0.1 (https://github.com/merely-made/dramatis.git?rev=c1d620764315b4c750fcffea30b8c898b8bb73bc#c1d62076)
+   Compiling iroh-relay v1.3.0
+   Compiling mere-curation v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling unicase v2.10.0
+   Compiling hax-lib v0.3.7
+   Compiling edit-history v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling genet-livery v0.0.4 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling meristem v0.2.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mime_guess v2.0.5
+   Compiling objc2-foundation v0.2.2
+   Compiling illume v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling personae v0.2.1 (https://github.com/merely-made/dramatis.git?rev=c1d620764315b4c750fcffea30b8c898b8bb73bc#c1d62076)
+   Compiling igd-next v0.17.1
+   Compiling sprigging v0.2.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mere-surface-api v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling tokio-websockets v0.13.3
+   Compiling core-foundation v0.9.4
+   Compiling safe_arch v1.2.0
+   Compiling iroh v1.3.0
+   Compiling foreign-types-macros v0.2.4
+   Compiling hax-lib-macros v0.3.7
+   Compiling strsim v0.11.1
+   Compiling ident_case v1.0.1
+   Compiling seize v0.5.1
+   Compiling papaya v0.2.5
+   Compiling taffy v0.11.0-experimental-cache-fix.3
+   Compiling darling_core v0.24.1
+   Compiling foreign-types v0.5.0
+   Compiling wide v1.7.1
+   Compiling core-graphics-types v0.1.3
+   Compiling cambium v0.3.3 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling portmapper v0.19.3
+   Compiling objc2-app-kit v0.2.2
+   Compiling numen v0.2.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling backon v1.6.0
+   Compiling cfb v0.7.3
+   Compiling cbor-core v0.10.1
+   Compiling proc-macro-error-attr v0.4.12
+   Compiling prettyplease v0.3.0
+   Compiling p2panda-core v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling infer v0.19.0
+   Compiling simba v0.10.2
+   Compiling core-graphics v0.23.2
+   Compiling darling_macro v0.24.1
+   Compiling mere-forme v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling scenotime v0.0.4 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling syn-mid v0.5.4
+   Compiling pem v4.0.0
+   Compiling yasna v0.6.0
+   Compiling crossbeam-channel v0.5.17
+   Compiling acto v0.8.2
+   Compiling proc-macro-error v0.4.12
+   Compiling async-stream-impl v0.3.6
+   Compiling nalgebra-macros v0.3.0
+   Compiling proc-macro-hack v0.5.20+deprecated
+   Compiling libcrux-intrinsics v0.0.8
+   Compiling winit v0.30.13
+   Compiling nalgebra v0.35.0
+   Compiling async-stream v0.3.6
+   Compiling mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling rcgen v0.14.10
+   Compiling darling v0.24.1
+   Compiling libcrux-secrets v0.0.6
+   Compiling tabard v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling irpc-derive v0.17.0
+   Compiling regex-syntax v0.8.11
+   Compiling smol_str v0.1.24
+   Compiling libcrux-sha3 v0.0.10
+   Compiling regex-automata v0.4.18
+   Compiling spade v2.15.1
+   Compiling irpc v0.17.0
+   Compiling libcrux-traits v0.0.8
+   Compiling bon-macros v3.10.2
+   Compiling glamx v0.3.1
+   Compiling p2panda-store v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling chirograph v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling scenograph v0.0.4 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling genet-render-host v0.2.0 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling hickory-proto v0.26.3
+   Compiling rand_chacha v0.10.0
+   Compiling hpke-rs-crypto v0.7.0
+   Compiling hmac v0.13.0
+   Compiling ordered-float v5.5.0
+   Compiling ena v0.14.4
+   Compiling ref-cast-impl v1.0.27
+   Compiling num-derive v0.5.1
+   Compiling num-complex v0.2.4
+   Compiling libcrux-platform v0.0.3
+   Compiling hashbrown v0.14.5
+   Compiling parry2d v0.31.1
+   Compiling dashmap v6.2.1
+   Compiling ref-cast v1.0.27
+   Compiling swarm-discovery v0.6.4
+   Compiling hkdf v0.13.0
+   Compiling scenomise v0.0.4 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling bon v3.10.2
+   Compiling genawaiter-proc-macro v0.99.1
+   Compiling matchers v0.2.0
+   Compiling cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling genet-render v0.2.0 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling inker v0.1.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling rand_core v0.9.5
+   Compiling chacha20poly1305 v0.10.1
+   Compiling x25519-dalek v2.0.1
+   Compiling sharded-slab v0.1.7
+   Compiling futures-concurrency v7.7.1
+   Compiling k256 v0.13.4
+   Compiling accesskit_consumer v0.38.0
+   Compiling tracing-log v0.2.0
+   Compiling objc2-core-audio-types v0.3.2
+   Compiling inplace-vec-builder v0.1.1
+   Compiling thread_local v1.1.10
+   Compiling redb v4.3.0
+   Compiling ndarray v0.13.1
+   Compiling binary-merge v0.1.2
+   Compiling genawaiter-macro v0.99.1
+   Compiling nu-ansi-term v0.50.3
+   Compiling coremidi-sys v3.2.1
+   Compiling tracing-subscriber v0.3.23
+   Compiling genawaiter v0.99.1
+   Compiling range-collections v0.4.6
+   Compiling dirs-sys v0.4.1
+   Compiling fleece v0.5.0 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling objc2-core-audio v0.3.2
+   Compiling accesskit_macos v0.26.3
+   Compiling hpke-rs-rust-crypto v0.7.0
+   Compiling iroh-gossip v0.101.0
+   Compiling rand_chacha v0.9.0
+   Compiling document-canvas v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling cambium-rootstock v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling ractor v0.16.5
+   Compiling iroh-mdns-address-lookup v0.6.0
+   Compiling rapier2d v0.36.0
+   Compiling hpke-rs v0.7.0
+   Compiling p2panda-sync v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling p2panda-discovery v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling dramatis v0.0.2 (https://github.com/merely-made/dramatis.git?rev=c1d620764315b4c750fcffea30b8c898b8bb73bc#c1d62076)
+   Compiling matrixmultiply v0.2.4
+   Compiling iroh-io v0.6.2
+   Compiling x25519-dalek v3.0.0
+   Compiling iana-time-zone v0.1.65
+   Compiling armillary v0.1.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling serde_path_to_error v0.1.20
+   Compiling iroh-blobs v0.103.1
+   Compiling woodshedding v0.1.0 (/Users/markik/Code/worktrees/woodshed-tabard-apps/crates/woodshedding)
+   Compiling approx v0.3.2
+   Compiling csv-core v0.1.13
+   Compiling positioned-io v0.3.5
+   Compiling self_cell v1.3.0
+   Compiling bao-tree v0.16.1
+   Compiling ciborium-ll v0.2.2
+   Compiling csv v1.4.0
+   Compiling woodshed-graph v0.1.0 (/Users/markik/Code/worktrees/woodshed-tabard-apps/crates/woodshed-graph)
+   Compiling seiche v0.0.6 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling chrono v0.4.45
+   Compiling p2panda-encryption v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling mere-p2panda-net v0.7.5 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling genet-winit-host v0.2.0 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling objc2-audio-toolbox v0.3.2
+   Compiling mere-cartography v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling iroh-util v0.6.0
+   Compiling notochord v0.1.0 (https://github.com/merely-made/dramatis.git?rev=c1d620764315b4c750fcffea30b8c898b8bb73bc#c1d62076)
+   Compiling taproot v0.1.0 (https://github.com/merely-made/genet.git?rev=7422e90613f9017e5bb790e3acb48f61776b2eda#7422e906)
+   Compiling iroh-tickets v1.0.0
+   Compiling nested_enum_utils v0.2.3
+   Compiling mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling objc2-cloud-kit v0.3.2
+   Compiling objc2-core-image v0.3.2
+   Compiling objc2-core-data v0.3.2
+   Compiling objc2-core-video v0.3.2
+   Compiling esp v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling reflink-copy v0.1.30
+   Compiling raunch v1.0.1
+   Compiling emblem v0.2.0
+   Compiling midir v0.11.0
+   Compiling pictograph v0.2.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling service-binding v3.0.1
+   Compiling objc2-app-kit v0.3.2
+   Compiling stickleback v0.1.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling coremidi v0.9.2
+   Compiling coreaudio-rs v0.14.2
+   Compiling cambium-winit-a11y v0.3.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling tabard-workshop v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling woodshed-core v0.1.0 (/Users/markik/Code/worktrees/woodshed-tabard-apps/crates/woodshed-core)
+   Compiling fitting v0.3.0
+   Compiling peak_finder v1.0.1
+   Compiling ciborium v0.2.2
+   Compiling mere-persona-picker v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling dirs v5.0.1
+   Compiling mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling eidetic v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling luggage v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling itertools v0.10.5
+   Compiling incipit v0.2.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling secrecy v0.10.3
+   Compiling apodize v1.0.0
+   Compiling cpal v0.18.2
+   Compiling pitch-detector v0.3.1
+   Compiling cambium-genet-winit-host v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling ssh-agent-lib v0.6.0
+   Compiling pandect v0.1.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mere-webrtc-carrier v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mere-transport v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling pitch-detection v0.3.0
+   Compiling graphshell-client v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling graphshell-endpoint v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling png v0.17.16
+   Compiling mere-apparatus v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling audio-primitives v0.1.0 (/Users/markik/Code/worktrees/woodshed-tabard-apps/crates/audio-primitives)
+   Compiling woodshed-audio v0.1.0 (/Users/markik/Code/worktrees/woodshed-tabard-apps/crates/woodshed-audio)
+   Compiling mesquite v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling graphshell v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling woodshed-views v0.1.0 (/Users/markik/Code/worktrees/woodshed-tabard-apps/crates/woodshed-views)
+   Compiling directories v5.0.1
+   Compiling tempfile v3.27.0
+   Compiling woodshed-genet v0.1.0 (/Users/markik/Code/worktrees/woodshed-tabard-apps/crates/woodshed-genet)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12m 58s
+     Running unittests src/main.rs (/Users/markik/Code/targets/knot-tabard-apps/debug/deps/woodshed_genet-e9c33f25f584b123)
+
+running 7 tests
+test appearance::tests::cancelled_native_close_then_embedded_discard_does_not_exit_the_application ... ok
+test appearance::tests::corrupt_library_disables_authoring_and_preserves_the_requested_appearance_and_file ... ok
+test appearance::tests::current_native_appearance_scenarios_parse_with_the_shared_driver ... ok
+test appearance::tests::explicit_and_scenario_library_paths_preserve_private_profile_isolation ... ok
+test appearance::tests::export_destination_cancellation_and_collision_leave_library_unsaved ... ok
+test appearance::tests::native_export_rejects_existing_and_missing_application_destinations ... ok
+test appearance::tests::native_save_confirmation_persists_the_definition_then_closes_the_application ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 70 filtered out; finished in 7.66s
+
+     Running unittests src/lib.rs (/Users/markik/Code/targets/knot-tabard-apps/debug/deps/woodshed_views-e5e9bd46c0cc628b)
+
+running 12 tests
+test appearance::tests::canonical_modes_use_shared_derivation_without_changing_legacy_seeds ... ok
+test appearance::tests::failed_library_save_cannot_apply_unsaved_theme_and_preserves_selection ... ok
+test appearance::tests::legacy_themes_preserve_every_palette_role_and_stage_rule ... ok
+test appearance::tests::missing_choice_remains_recoverable_and_custom_css_uses_exact_sheet ... ok
+test appearance::tests::product_builtin_collision_is_visible_at_load ... ok
+test appearance::tests::saved_builtin_copy_applies_and_restores_without_preview_activating_it ... ok
+test appearance::view_tests::appearance_settings_offer_named_themes_modes_and_keyboard_focus_without_authoring ... ok
+test appearance::view_tests::authored_shared_roles_recolor_the_product_surface_and_reset_on_builtin_selection ... ok
+test appearance::view_tests::authoring_copy_preview_close_cancel_save_and_apply_follow_real_controls ... ok
+test appearance::view_tests::rejected_preference_write_keeps_the_applied_theme_and_practice_state ... ok
+test appearance::view_tests::saving_an_applied_identity_retains_active_css_until_explicit_apply ... ok
+test appearance::view_tests::workshop_sheet_replaces_authored_app_css_and_returns_when_editor_closes ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 139 filtered out; finished in 9.55s
+

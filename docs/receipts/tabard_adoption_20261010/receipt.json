@@ -1,5 +1,5 @@
 {
-  "status": "qualified: native11 production four serialized lanes;19 original PNGs visually inspected; populated previews and durable explicit Apply/restoration passed",
+  "status": "qualified: native13 final coherent e953 field-fix production; four serialized processes, 521presentations,19 inspected originals;34CSSpx name/seed; exact Save/Apply and two restorations; native11 and partial12 preserved",
   "cpu": {
     "initial_parallel": {
       "passed": 770,
@@ -103,6 +103,23 @@
         "logs/turnstone-atlas-fixed-settings-provider-tests-local-artifact.log",
         "logs/turnstone-atlas-fixed-local-artifact-settings-tests.json"
       ]
+    },
+    "native13_final_targeted": {
+      "turnstone_passed": 32,
+      "turnstone_appearance": 11,
+      "turnstone_settings_pane": 9,
+      "turnstone_provider": 12,
+      "coherent_family_passed": 74,
+      "failed": 0,
+      "ignored": 0,
+      "normal_process_startup": true,
+      "generated_artifact_workaround": false,
+      "full_serial_run_on_this_source": false,
+      "evidence": "logs/current-tabard-field-fix/final-targeted-cpu.json",
+      "port_and_graphshell_web_boundary_seconds": 3.256,
+      "port_boundary_passed": true,
+      "portable_provenance": "passed using bundledPython3.12; initial macOSPython3.9 lackedtomllib, retained separately",
+      "metadata": "online refresh and locked offline full metadata passed; exactly one Mere source; lock changed only three immutable pins"
     }
   },
   "native_01": {
@@ -560,5 +577,231 @@
       "dirty parent quit Cancel",
       "each focus transition"
     ]
+  },
+  "native_13": {
+    "production": true,
+    "temporary_source_observers": false,
+    "binary_sha256": "0b12ba1e6ad21153015c9e300ac087ce65196588bb50055aa0606aa7cd0c1dee",
+    "build_input_digest": "1a657526ae830f27f1680a025d6be6ab4e62ee3a712f734c03d73a637aaa2d10",
+    "build_inputs": 320,
+    "source_manifest": "native-13-source-manifest.json",
+    "lanes": {
+      "seed": {
+        "result": "ok",
+        "main_presentations": 199,
+        "main_captures": 7,
+        "main_blank": 0,
+        "elapsed_seconds": 36.356,
+        "launcher_exit": 0,
+        "timeout": false,
+        "binary_sha256": "0b12ba1e6ad21153015c9e300ac087ce65196588bb50055aa0606aa7cd0c1dee",
+        "main_scenario_sha256": "3e8470fd996afd3a2079543ab365018fb1f5b3f4b47e9b8f6fe37fe7d08c2083",
+        "gpu_reset_reports_changed": false,
+        "all_owned_processes_exited": true,
+        "workshop_presentations": 51,
+        "workshop_redraws": 55,
+        "workshop_unpresented_redraws": 4,
+        "workshop_captures": 2,
+        "workshop_blank": 0,
+        "original_pngs_visually_inspected": 9
+      },
+      "reopen": {
+        "result": "ok",
+        "main_presentations": 48,
+        "main_captures": 2,
+        "main_blank": 0,
+        "elapsed_seconds": 15.873,
+        "launcher_exit": 0,
+        "timeout": false,
+        "binary_sha256": "0b12ba1e6ad21153015c9e300ac087ce65196588bb50055aa0606aa7cd0c1dee",
+        "main_scenario_sha256": "a75b31adc958bdb90553e0dfb1afae7b78921b496a51f60a11de7ea75eec2111",
+        "gpu_reset_reports_changed": false,
+        "all_owned_processes_exited": true,
+        "original_pngs_visually_inspected": 2
+      },
+      "same-id": {
+        "result": "ok",
+        "main_presentations": 126,
+        "main_captures": 4,
+        "main_blank": 0,
+        "elapsed_seconds": 29.172,
+        "launcher_exit": 0,
+        "timeout": false,
+        "binary_sha256": "0b12ba1e6ad21153015c9e300ac087ce65196588bb50055aa0606aa7cd0c1dee",
+        "main_scenario_sha256": "6ea60773f97b46e17be2472568a50266a6876486acfc1c9d05cd176ca15b9622",
+        "gpu_reset_reports_changed": false,
+        "all_owned_processes_exited": true,
+        "workshop_presentations": 49,
+        "workshop_redraws": 53,
+        "workshop_unpresented_redraws": 4,
+        "workshop_captures": 2,
+        "workshop_blank": 0,
+        "original_pngs_visually_inspected": 6
+      },
+      "same-id-reopen": {
+        "result": "ok",
+        "main_presentations": 48,
+        "main_captures": 2,
+        "main_blank": 0,
+        "elapsed_seconds": 15.339,
+        "launcher_exit": 0,
+        "timeout": false,
+        "binary_sha256": "0b12ba1e6ad21153015c9e300ac087ce65196588bb50055aa0606aa7cd0c1dee",
+        "main_scenario_sha256": "9605ae4fcd1c80180375aa61f6d6565ac7c97396a35fe3b11be873accb72fdf9",
+        "gpu_reset_reports_changed": false,
+        "all_owned_processes_exited": true,
+        "original_pngs_visually_inspected": 2
+      }
+    },
+    "total_presentations": 521,
+    "total_captures": 19,
+    "total_blank": 0,
+    "all_original_pngs_visually_inspected": true,
+    "actual_adapter": "AMD Radeon Pro Vega56",
+    "actual_backend": "Metal",
+    "preview_populated_wide_and_narrow": true,
+    "initial_authored": {
+      "theme_id": "theme:copy-1",
+      "name": "TurnstoneAcceptance",
+      "css_utf8_bytes": 255,
+      "css_sha256": "a66fd88f7099783f29e428056cff1e613adbe9d6b6421c004c4d848b8ce2746c",
+      "css_exact_fixture_bytes": true,
+      "choice": {
+        "theme_id": "theme:copy-1",
+        "theme_mode": "dark"
+      },
+      "private_library_dump_included": false
+    },
+    "edited_authored": {
+      "theme_id": "theme:copy-1",
+      "name": "TurnstoneAcceptance",
+      "css_utf8_bytes": 255,
+      "css_sha256": "f96e7541ae4bdce4bf4088efa1071e88a02456b6be68b83a52b6cce59c2a07a2",
+      "css_exact_fixture_bytes": true,
+      "choice": {
+        "theme_id": "theme:copy-1",
+        "theme_mode": "dark"
+      },
+      "private_library_dump_included": false
+    },
+    "same_id_save_keeps_applied_css_until_explicit_apply": true,
+    "fresh_process_choice_and_css_restored_twice": true,
+    "compiled_sources": {
+      "Mere": "e95326dc08446a9256d3e340c63e571684afe697",
+      "Genet": "7422e90613f9017e5bb790e3acb48f61776b2eda",
+      "Knot": "59db666b3186d0256dde87b27fa9ce128dbc0eae",
+      "Woodshed_Redshank": "cf9b070b38c75377b037578d13bdba8208265cc6",
+      "Dramatis": "c1d620764315b4c750fcffea30b8c898b8bb73bc",
+      "maintained_renderer_triple": "10f01d6d88e94eac087daf033b24895cf97b8e82"
+    },
+    "private_profiles_vault_or_library_dump_included": false,
+    "unqualified_platforms": [
+      "Linux",
+      "Windows",
+      "physical assistive technology",
+      "browser rendering"
+    ],
+    "final_fresh_process_exact_pixel_check": "passed; independent stdlib PNG/zlib RGBA unfilter; wide+narrow #342214, persisted copy-1/dark",
+    "image_manifest": "native/native-13/image-manifest.json",
+    "not_separately_native_exercised": [
+      "dirty parent quit Save",
+      "dirty parent quit Discard",
+      "dirty parent quit Cancel",
+      "each focus transition"
+    ],
+    "source_head": "42cc3b7d602e7e64f47362d6b6400eba051f8510",
+    "production_build_seconds": 197.217,
+    "source_and_binary_unchanged_after_all_lanes": true,
+    "six_shipped_fixtures_unchanged": true,
+    "native_retries": 0,
+    "process_startup_workaround": false,
+    "field_geometry": {
+      "evidence": "native/native-13/field-geometry/field-geometry.json",
+      "original_sha256": "031f9bffbbba04d411223da7c4de06275ffb1535bfe3c99c51d8e72fcfbbb430",
+      "scale": 2.0,
+      "name_css_height": 34.0,
+      "seed_css_height": 34.0,
+      "name_physical_height": 68,
+      "seed_physical_height": 68,
+      "both_original_lossless_crops_visually_inspected": true
+    },
+    "included_shared_fixes": {
+      "field_styling": "545732000c5849cc21b897ad05e83b331ba870db",
+      "rootstock_accessibility_scroll_bounds": "6a10ad673",
+      "accessibility_boundary": "included in compiled source; separate shared/Moot accessibility qualification, not physical AT acceptance here"
+    },
+    "identity_boundary": "Actual production djinn absent/pending at isolated existing-env endpoint; no key, custody, broker or vault operations qualified",
+    "verifier_geometry_correction": {
+      "historical_failure": "native/native-13/same-id/fixed-roi-failure.json",
+      "diagnosis": "native/native-13/same-id/verifier-geometry-diagnostic.json",
+      "verifier": "native/native-13/check_lane.py",
+      "method": "derive each painted preview rect from long exact authored-background horizontal runs; independent original-image review; unchanged six role thresholds",
+      "product_source_changed": false,
+      "native_retry": false,
+      "seed_rect": [
+        644,
+        320,
+        2306,
+        976
+      ],
+      "same_id_rect": [
+        644,
+        208,
+        2306,
+        864
+      ],
+      "excluded_primary_pixels_in_old_fixed_roi": 0,
+      "actual_primary_pixels": 8119,
+      "corrected_existing_originals_passed": true
+    }
+  },
+  "native_12_partial": {
+    "qualified": false,
+    "status": "partial historical940d candidate; held when source-changing545 field fix arrived",
+    "binary_sha256": "940d484d19a5b1d72204f1bfce05e44d600cfc77997c4d89b93c3779c4cd5efd",
+    "build_input_digest": "be0f51fd7b3035b8cbea0f691e7a5eab3aa0a319a1febf8d9bfb340dda94a5c0",
+    "source_manifest": "native-12-source-manifest.json",
+    "lanes": {
+      "seed": {
+        "result": "ok",
+        "main_presentations": 198,
+        "main_captures": 7,
+        "main_blank": 0,
+        "elapsed_seconds": 34.673,
+        "launcher_exit": 0,
+        "timeout": false,
+        "binary_sha256": "940d484d19a5b1d72204f1bfce05e44d600cfc77997c4d89b93c3779c4cd5efd",
+        "main_scenario_sha256": "3e8470fd996afd3a2079543ab365018fb1f5b3f4b47e9b8f6fe37fe7d08c2083",
+        "gpu_reset_reports_changed": false,
+        "all_owned_processes_exited": true,
+        "workshop_presentations": 51,
+        "workshop_redraws": 54,
+        "workshop_unpresented_redraws": 3,
+        "workshop_captures": 2,
+        "workshop_blank": 0,
+        "original_pngs_visually_inspected": 9
+      },
+      "reopen": {
+        "result": "ok",
+        "main_presentations": 48,
+        "main_captures": 2,
+        "main_blank": 0,
+        "elapsed_seconds": 14.562,
+        "launcher_exit": 0,
+        "timeout": false,
+        "binary_sha256": "940d484d19a5b1d72204f1bfce05e44d600cfc77997c4d89b93c3779c4cd5efd",
+        "main_scenario_sha256": "a75b31adc958bdb90553e0dfb1afae7b78921b496a51f60a11de7ea75eec2111",
+        "gpu_reset_reports_changed": false,
+        "all_owned_processes_exited": true,
+        "original_pngs_visually_inspected": 2
+      }
+    },
+    "total_presentations": 297,
+    "total_captures": 11,
+    "total_blank": 0,
+    "remaining_lanes": "same-ID and final reopen not run",
+    "all_original_pngs_visually_inspected": true,
+    "no_qualification_of_new_field_fix": true,
+    "private_profiles_vault_or_library_dump_included": false
   }
 }

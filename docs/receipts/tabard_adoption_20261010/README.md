@@ -5,17 +5,113 @@ styles and rendering, the shared native WorkshopHost, and existing Mesquite and
 Taproot acceptance paths. Turnstone's Settings provider remains the owner of
 selection and persistence. Saving a definition is separate from applying it.
 
-**Current status: macOS production appearance acceptance passed.** Native11
-completed four serialized LaunchServices processes on the actual AMD Radeon Pro
-Vega 56 / Metal adapter, with 521 successful presentations, nineteen nonblank
-captures and unchanged GPU restart reports. All nineteen original PNGs were
-visually inspected. The workshop application previews are populated at both
-sizes, author/save and ordinary application Apply remain separate, and both
-initial and same-ID edited choices restore in fresh processes. Earlier failures
-and diagnostic observers remain historical evidence below; no temporary source
-observer is present in the accepted production candidate.
+**Current status: native13 macOS production appearance acceptance passed.**
+The final coherent candidate includes the shared Theme name/seed field styling
+fix and Rootstock accessibility scroll-bounds fix. Four serialized LaunchServices
+processes completed 521 successful presentations and nineteen nonblank captures
+with no new GPU reset. All nineteen originals were inspected. Both repaired
+fields paint at 34 CSS pixels (68 physical pixels at 2×), wide/narrow application
+previews are populated, Save remains separate from ordinary application Apply,
+and both initial and same-ID edited choices restore in fresh processes.
+Native11 remains the completed historical qualification; native12 preserves
+only its passed seed/reopen before the source-changing field fix arrived.
+No temporary observer or profile/library/vault dump is in this production evidence.
 
-## CPU and build evidence
+## Current-origin field-fix qualification: native13
+
+The production build passed in 197.217 seconds. Binary SHA256 is
+`0b12ba1e6ad21153015c9e300ac087ce65196588bb50055aa0606aa7cd0c1dee`.
+The [320-input source manifest](native-13-source-manifest.json), frozen on
+Turnstone HEAD `42cc3b7d602e7e64f47362d6b6400eba051f8510` plus its scoped
+dependency-pin changes, has digest
+`1a657526ae830f27f1680a025d6be6ab4e62ee3a712f734c03d73a637aaa2d10`.
+Source and binary hashes were unchanged after every lane. All six shipped
+fixtures remain byte-identical; no native lane was retried.
+
+The compiled family is Mere `e95326dc08446a9256d3e340c63e571684afe697`,
+Knot `59db666b3186d0256dde87b27fa9ce128dbc0eae`, Woodshed/Redshank
+`cf9b070b38c75377b037578d13bdba8208265cc6`, Genet
+`7422e90613f9017e5bb790e3acb48f61776b2eda`, Dramatis
+`c1d620764315b4c750fcffea30b8c898b8bb73bc`, and the maintained Vello
+triple `10f01d6d88e94eac087daf033b24895cf97b8e82`. The older renderer
+bridge `4354955e` stays intentionally separate. [Full source closure](logs/current-tabard-field-fix/source-closure.json)
+contains exactly one Mere source. Online refresh and locked offline metadata
+passed; only the three immutable Mere/Knot/Woodshed pins changed in the lock.
+Later Mere commits through `71528a7a3` changed only documentation/attributes;
+the product source qualified here remains the explicit e953 pin.
+
+The final Turnstone test executable started normally and passed eleven
+appearance, nine Settings pane and twelve provider tests: 32 passed, zero
+failed or ignored, with no artifact workaround. Across the coherent siblings,
+[74 targeted CPU tests passed](logs/current-tabard-field-fix/final-targeted-cpu.json),
+including the real shared Workshop retained field-height test. Mere's port and
+Graphshell web boundary checker passed in 3.256 seconds. Portable provenance
+passed using bundled Python 3.12; the initial macOS Python 3.9 invocation lacked
+`tomllib` and is retained separately as a tool-runtime failure. These targeted
+results do not renew the older full 777-test serial suite or standalone sibling
+native gates. [Build/check results](logs/current-tabard-field-fix/checks.json) and
+the individual test logs preserve the exact boundaries.
+
+| Process lane | Main presentations | Workshop presentations | Original captures | Seconds |
+| --- | ---: | ---: | ---: | ---: |
+| Seed | 199 | 51 | 9 | 36.356 |
+| Reopen | 48 | — | 2 | 15.873 |
+| Same-ID edit | 126 | 49 | 6 | 29.172 |
+| Final reopen | 48 | — | 2 | 15.339 |
+
+[Native13 qualification](native/native-13/qualification.json), the per-window
+receipts, reset snapshots and [original-image manifest](native/native-13/image-manifest.json)
+bind these counts. The actual Radeon Pro Vega 56/Metal lane remained serialized;
+all owned processes exited and the GPU slot was returned before documentation
+work. All captured frames were nonblank, and the previews contained the exact
+background, surface, secondary surface, primary, heading and text colors.
+The saved initial and edited sheets each match their fixture's 255 UTF-8 bytes
+(hashes `a66fd88f…` and `f96e7541…`); both separate-process restorations retained
+`theme:copy-1` / `dark`. The same-ID parent pixels stay `#142238` after Save,
+switch to `#342214` only after ordinary Apply, and restore that edit wide/narrow.
+
+The Theme name fix `545732000` supplies the shared `tabard-text-input` class;
+the seed rule targets that same class inside `seed-value`. [Original-pixel geometry](native/native-13/field-geometry/field-geometry.json)
+measures the name borders at physical y364–431 and seed input borders at
+y1038–1105, each 68 pixels / 34 CSS pixels at scale2. Both full bordered fields,
+their actual values and the seed monospace styling were inspected in the
+original frame and [name](native/native-13/field-geometry/name.png) /
+[seed](native/native-13/field-geometry/seed-hex.png) lossless crops.
+The included Rootstock fix `6a10ad673` uses painted geometry for accessibility
+scroll bounds; its shared/browser qualification remains separate from this
+application appearance gate and physical assistive-technology acceptance.
+
+One external verifier failed during the same-ID gate because its fixed
+`(660,330)-(2290,968)` crop excluded the visible Explore button after scroll.
+The original [failed result](native/native-13/same-id/fixed-roi-failure.json) is
+preserved. Independent original-image review and [exact pixel diagnosis](native/native-13/same-id/verifier-geometry-diagnostic.json)
+found the actual wide preview at `(644,208)-(2306,864)`, 112 pixels above seed's
+`(644,320)-(2306,976)`. The old crop had zero primary pixels; the actual preview
+contains 8,119 primary pixels plus all five other required exact colors.
+The [external verifier](native/native-13/check_lane.py) now derives each painted
+preview extent from long exact authored-background horizontal runs and records
+the per-image rectangle and all six counts. Role thresholds remain unchanged.
+Corrected checks passed on the existing originals before the single planned
+final reopen. No product source change or native retry was used to close this
+checker geometry failure.
+
+Native12's older binary `940d484d…` passed seed (198 main +51 Workshop
+presentations, nine captures) and reopen (48 presentations, two captures).
+It was held before either same-ID lane when the field fix changed the source:
+297 presentations /11 inspected captures /zero blank /no reset. Its
+[partial qualification record](native/native-12-partial/qualification.json) and
+[source manifest](native-12-source-manifest.json) are historical; they do not
+qualify the newly changed workshop.
+
+All current scenarios use fresh private profiles and the existing custody
+endpoint environment seam. The actual migrated production identity is
+absent/pending because djinn has no broker at that isolated endpoint. This
+acceptance makes no key, custody, vault or broker-operation claim. Raw profiles,
+the library dump and vault data are excluded. Reader/browser/SC rollout,
+Linux/Windows, physical AT, dirty parent-quit Save/Discard/Cancel and every focus
+transition retain their existing separate acceptance boundaries.
+
+## Historical CPU and build evidence: native01–11
 
 The initial parallel library run returned 770 passed, seven failed, and nine
 existing ignores. Inspector target geometry and viewport-row/Sky expectations
