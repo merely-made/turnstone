@@ -54,7 +54,7 @@ distillery-chronicle-fixture = ["webrtc-session", "dep:distillery", "dep:mesh"]
 # functions. No runtime, no transport, no carrier beyond its Wasm-clean core.
 # `webrtc-session` implies it. A wasm build also needs
 # `--cfg getrandom_backend="wasm_js"` in the target's rustflags — see
-# `crates/dramatis/personae/Cargo.toml` for why that cannot live here.
+# personae's `Cargo.toml` (in merely-made/dramatis) for why that cannot live here.
 # The browser's glue over the join: a `BrowserInitiator` as the join's frame
 # channel and the NDJSON session over its frames. wasm32 only in effect — the
 # carrier's `browser` adapter declares its JS bindings for that target alone,
