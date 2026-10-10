@@ -13,26 +13,35 @@ assert snap ready == true
 assert snap physics-paused == true
 # An overlay ticked under Springs that Density refuses is disabled and
 # unticked once Density is picked, so Density applies alone.
-select #gs-physics-select spring.rapier
-check #gs-overlay-grid-snap on
-assert attr #gs-overlay-note hidden
-select #gs-physics-select density.gastner-newman
+click role:combobox Physics law
 settle 1
-assert attr #gs-overlay-grid-snap disabled
-assert dom #gs-overlay-note Density takes only Hub room, Centre and Tide
+click role:option Springs
+settle 1
+check-role Grid on
+assert retained {"role":"status","label":"Overlay availability","count":0}
+click role:combobox Physics law
+settle 1
+click role:option Density
+settle 1
+settle 1
+assert retained {"role":"checkbox","label":"Grid","attribute":"aria-disabled","value":"true"}
+assert retained {"role":"status","label":"Overlay availability","text":"Density takes only Hub room, Centre and Tide"}
 capture physics_density_refused
 wait
-dom click [data-command="apply-physics"]
+click role:button Apply physics
 settle 1
 assert snap physics-law == density.gastner-newman
 assert snap physics-profile == law.density
-assert dom #gs-product-status Physics set to Density
+assert retained {"role":"status","label":"Physics status","text":"Physics set to Density"}
 assert snap physics-paused == true
 log-layout density start
 # No arrangement: the boot Spiral's anchor springs would pull under every
 # law. Returning to none resumes the canvas.
-select #gs-arrangement-select free
-dom click [data-command="apply-arrangement"]
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
 settle 1
 assert snap layout == free
 assert snap physics-paused == false

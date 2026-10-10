@@ -1,5 +1,5 @@
 assert snap practice-view == relations
-dom click [data-practice-command="reopen"]
+click role:button @data-practice-command=reopen
 settle 2
 assert snap practice-view == relations
 assert snap practice-selection == card:2

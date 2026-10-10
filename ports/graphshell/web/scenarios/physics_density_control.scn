@@ -5,14 +5,20 @@ assert title GRAPHSHELL H3 READY
 assert snap ready == true
 # Applied while the boot arrangement holds the canvas paused, as Density is.
 assert snap physics-paused == true
-select #gs-physics-select spring.rapier
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Springs
+settle 1
+click role:button Apply physics
 settle 1
 assert snap physics-law == spring.rapier
 assert snap physics-paused == true
 log-layout springs start
-select #gs-arrangement-select free
-dom click [data-command="apply-arrangement"]
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
 settle 1
 assert snap layout == free
 assert snap physics-paused == false

@@ -1,7 +1,70 @@
 {
   "schema": "graphshell.scenario-inventory/v1",
-  "baseline": "b6b551d44",
+  "baseline": "44f800c59df861681369e171c24513e73d8d000d",
   "scenarios": [
+    {
+      "name": "appearance_embedded.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "74283b0aa3511b81f6fa89c5d03fdd7961a6f81b8b5bc3754625158350c478c4",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "host": "Same-origin profile: appearance_modes first, then appearance_reopen and appearance_embedded",
+        "setup_verification": "pending"
+      },
+      "original_source_sha256": "cf94fc43afe51a4b73c2224a099749395600fe6bd75d71b1c8914dbe7bce6b42",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
+    },
+    {
+      "name": "appearance_modes.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "28247cb6f39a2cc5d0cf605bc034a423cf1f10cec47037135ebc19d2aee489b2",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "host": "Same-origin profile: appearance_modes first, then appearance_reopen and appearance_embedded",
+        "setup_verification": "pending"
+      },
+      "original_source_sha256": "b14cfa9e222046a383ac8470737f8eb9f78624cf4a7b857205cedf92548034ae",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
+    },
+    {
+      "name": "appearance_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "6eddf9c67b48d0ac062aebe51d8e179c66b8e889ed1bf3d7aca054278f16e5d8",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "host": "Same-origin profile: appearance_modes first, then appearance_reopen and appearance_embedded",
+        "setup_verification": "pending"
+      },
+      "original_source_sha256": "1f11f90233a061e88e399170cd4bba7d789b3a85eacaa4b7bbf217b6b9b26e16",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
+    },
     {
       "name": "c4b1_live_board.scn",
       "status": "live",
@@ -10,7 +73,7 @@
         "host": "Real local admitted WebRTC fixture board; signal query",
         "setup_verification": "pending"
       },
-      "current_source_sha256": "cc81138b6a1ab2eb8311685a1f661dd60d66c52e284bfbe4d3b46e4d707c88f4",
+      "current_source_sha256": "d982f61643fc48ab76b16ebf485b90225eadaeeca36f605fbd4eebe3e9ac6afe",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -18,13 +81,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "cc81138b6a1ab2eb8311685a1f661dd60d66c52e284bfbe4d3b46e4d707c88f4",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "c4b2_embed.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "1faa84d58a0c126686dd50e7205c2d9986c50913d9281881067e425147e808ee",
+      "current_source_sha256": "b42dd89e0bed51623acb75cfab2749da95b5fe10bd9879fac28c6a654f0fa828",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -32,13 +98,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "1faa84d58a0c126686dd50e7205c2d9986c50913d9281881067e425147e808ee",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "c4b2_full_page.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "e8183d230fcc36d3a50435f6599e31d987e86b8398b8a78f721471db53e88dd6",
+      "current_source_sha256": "57f488ed6f1638b28ec6c01bb5af22d97f02e8cc47202c4b17f10b8ed15a0a59",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -46,7 +115,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "e8183d230fcc36d3a50435f6599e31d987e86b8398b8a78f721471db53e88dd6",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "c4b3_reconnect.scn",
@@ -56,7 +128,7 @@
         "host": "Real local admitted WebRTC fixture board with native nudge during disconnect",
         "setup_verification": "pending"
       },
-      "current_source_sha256": "0dd3f9c0cb1fdbb6841d7d40b4f4a90bddc5e560a845f4a677451ceae16dec7f",
+      "current_source_sha256": "b86fd6a6463b9b300075a032a6192c96aa9cb43b21bf58339c9cdfec1794626b",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -64,13 +136,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "0dd3f9c0cb1fdbb6841d7d40b4f4a90bddc5e560a845f4a677451ceae16dec7f",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "canvas_commands.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "8cf9201bd01416f32c613ac9b1bbcc530d426ab60c2941374c387cc987578699",
+      "current_source_sha256": "6c90a031323c93f19bd237475b266721ba7917554eac4cb14c48c6fb798ab39c",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -78,7 +153,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "8cf9201bd01416f32c613ac9b1bbcc530d426ab60c2941374c387cc987578699",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "canvas_commands_reopen.scn",
@@ -88,7 +166,7 @@
         "same_origin_profile_after": "canvas_commands.scn",
         "page": "index.html"
       },
-      "current_source_sha256": "14d5baeff982a9a0a81d6bd60429c8381cb4b4667d168cbaa497281f83a6196b",
+      "current_source_sha256": "0a572432ce3c299796ffb91fcea946aa68ef844c4d592ae485ac78317eb885c2",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -96,7 +174,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "14d5baeff982a9a0a81d6bd60429c8381cb4b4667d168cbaa497281f83a6196b",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "co_op_retained.scn",
@@ -115,13 +196,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "7ec4a079deeb6db885bef0e10557ba7f4299c6a8eb5eb124097adbd652f8f1fc",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "codicil_grouping.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "07a3141bcd4b363c8df8cad08aab6d9e04ced9ad2c169fef97e5c9310910733c",
+      "current_source_sha256": "f1a1a8dded3dd9cf08cfde58e3a667bce44343cac773ca6939ea69758ffb8d57",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -129,7 +213,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "07a3141bcd4b363c8df8cad08aab6d9e04ced9ad2c169fef97e5c9310910733c",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "d3_derived_faces_detail.scn",
@@ -143,7 +230,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "03731c1ce649dde83d5120f66a2bb8e52dc2cd3d2e2a277ce88ab6ca6f187411",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "diag_display_period.scn",
@@ -157,13 +247,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "dd1dea9fd75f6e817ca7a42b9522b26ab3e55bf60a8b941d897baddd19c0fa74",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "diag_physics_probe.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "5c27e82d4d0ba68d4fe724e767c33253c0ab16fde7ec128d2b20c2eec0b73277",
+      "current_source_sha256": "6977ec48b19d87112aa5ae3f372a889f8f4c2c14362c0f3c10c08943dcef1558",
       "expected_outcome": {
         "scenario": "diagnostic_assertions",
         "page_errors": 0,
@@ -177,7 +270,10 @@
           "assert snap layout-overlaps <= -1"
         ],
         "rationale": "Source explicitly uses impossible negative bounds to report energy, spread and overlaps; unrelated failures remain failures."
-      }
+      },
+      "original_source_sha256": "5c27e82d4d0ba68d4fe724e767c33253c0ab16fde7ec128d2b20c2eec0b73277",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "diag_speed_budget.scn",
@@ -191,7 +287,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "cb6cef075ca76654d1ac823fa9d67064f7cff80ad66a03007f50d8157deaa04e",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "diag_speed_fifty.scn",
@@ -205,7 +304,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "35ecda66351827e9a8ee7302b2163508dc92742442e0fa39e6be9f7cbbdb5e2c",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "diag_speed_margin.scn",
@@ -219,7 +321,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "7d0ef762d268dd29ef97af9a474111ad878f998a54604b8ed3595e2b7a95e480",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "distillery_chronicle_live_w1.scn",
@@ -237,7 +342,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "3fd61062e87ba665936d9a4ac6e51d43451d67bcee8330a20d0117aabcdbf9a6",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "distillery_chronicle_w1.scn",
@@ -255,7 +363,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "d90bf7aac88057054a63368b7fd6ad637dee4faa1b35acb67853a1466be7d691",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "distillery_chronicle_w2.scn",
@@ -273,13 +384,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "379ae24476e27989f10fb4a64f73faedb3b1a29475057cd48f9077b95e29d7cc",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "face_zoom.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "a7e862f2849abea2e421857b1bb45a575f2b6cbfaec96d07fdf4f8d8baf3fc85",
+      "current_source_sha256": "1c7dae0759da701a74e31fbfd93004ab5220d129397138a779a7d769aeec7c49",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -287,13 +401,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "a7e862f2849abea2e421857b1bb45a575f2b6cbfaec96d07fdf4f8d8baf3fc85",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "h3_boot.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "25090e3f0e295894ec45d2acb603272a05ed0050e4e22c1f4be8ed3d22bbf3d4",
+      "current_source_sha256": "1355d8f94385a28dfd6ec594253cc186a20dc70ea29bcfbc99f6ad618bc01117",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -301,7 +418,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "25090e3f0e295894ec45d2acb603272a05ed0050e4e22c1f4be8ed3d22bbf3d4",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p0_viewer_site_frames_21.scn",
@@ -317,7 +437,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "058f48dd97d84aae1e4a5ff35310781aa79e14f4f92a6c26ba5e6f5001d08f3a",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p0_worker_failed.scn",
@@ -333,7 +456,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "c8e29fa2ce3d5c2bd78e033c035e9f2674b428e9648c58578a9ad07a01c22cde",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p0_worker_main.scn",
@@ -349,7 +475,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "1811d3e3cc678a5eb4f46500d90f35de8743e36e6a0a7a4f2ddca4d32466b22f",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p0_worker_worker.scn",
@@ -365,7 +494,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "b201ee408adec671595fd4f32860d33fdfbf1a96db0638ff57ae47d330d8f0ec",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p3_presenter_2000.scn",
@@ -407,7 +539,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "310d31e108a77880bee1b6feb2ffb6d636568daad4d29db88e91e63e24a7cd3b",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p3_tree_fixture.scn",
@@ -421,7 +556,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "49ee5eab91bb13506ded67278f87e06f174407d17bc40d8fce9a57025bc4a696",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p3_tree_health.scn",
@@ -435,7 +573,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "9098926f21c52896c8d6af22ca64c1078590da55a7282629c61949378233a908",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_arrangement_roles.scn",
@@ -483,7 +624,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "c30732aa841e5677f77f1b5f9bf9e23afc4e305d85955ff2c4baa3c547a0d979",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_c4b1_live_board.scn",
@@ -497,7 +641,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "0f3f9ebde81b9dd003b4a047389bec48702e2b9d683a150486d6a22942d69c8b",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_c4b3_reconnect.scn",
@@ -511,7 +658,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "4a582c720e817c1f8b23f49172b98e65cf53a9effc844a5859b4e6748ecbcd85",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_canvas_reader.scn",
@@ -631,7 +781,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "153fd81bbcf9433f37c3069a080062ec92bc6ea28ca7cc759cb33e12bd8c934e",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_canvas_reader_cdp.scn",
@@ -645,7 +798,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "bc9c856e37562ae2bca7cabf5b0a3863418ae40436543248394d0d009b0da74e",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_controls.scn",
@@ -659,7 +815,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "2945c5c0f8c861a655edfcd037697f64dca340deda83a7380489f0edbd024d10",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_density_cost.scn",
@@ -673,7 +832,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "b4bab4099273110b2586500c8ec14974e847fa33fea8af6c0b0da2dbfe8a1d8e",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_detail_actions.scn",
@@ -684,7 +846,7 @@
         "page": "tree.html",
         "query": "app=local"
       },
-      "current_source_sha256": "e66c11cdfc1eafb2869d28369042d73a06d1694da0a024c7acd60c9bd70fe65f",
+      "current_source_sha256": "eac5129e84be79e55af0d53da63b99e300394ce9d171abb7bf36f28e6e8b76cc",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -692,7 +854,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "eac5129e84be79e55af0d53da63b99e300394ce9d171abb7bf36f28e6e8b76cc",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_elapsed.scn",
@@ -706,7 +871,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "3a1c4c39565986895466f70ab5f187cb6787d895de9e737d56980dd510a3e43d",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_face_zoom.scn",
@@ -720,7 +888,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "5fdc160653f43dc0a30d671a5f9c113839b8d493c312aac8ea0cc5c24d957b38",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_file_cancel.scn",
@@ -734,7 +905,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "3c77ba7ea6aa8770cf2f9aeedd8f673f0f7fa888c0730c14bda1c32e3b266159",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_file_reopen.scn",
@@ -748,7 +922,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "284d2cc231739ff84dc72f11e2e2dcc3b866e08d4ebf53c182992732c4f40e40",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_find.scn",
@@ -759,7 +936,7 @@
         "page": "tree.html",
         "query": "app=local"
       },
-      "current_source_sha256": "6f87c859d0299a6144ab92b093f6c29c397e0f7a8c09d6cdcc72393336c39525",
+      "current_source_sha256": "7d60597dd9085d525a9a7b0c62dbc5cf7b2b53fdf491e6f2819070f7f001940e",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -767,7 +944,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "7d60597dd9085d525a9a7b0c62dbc5cf7b2b53fdf491e6f2819070f7f001940e",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_history_controls.scn",
@@ -786,7 +966,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "6eb8905a7785aaf7eccea0faf6e393ffcef8594f48e152293998643786800202",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_intake.scn",
@@ -800,7 +983,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "388ef126f67c3844076fe3166f33cd3ab5f8ce9e65041fa6cbfa6b31483e2ab7",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_intake_reopen.scn",
@@ -814,7 +1000,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "283e2393d35510cd1f597395bc0e53f36b00391bb5c7852e41eb77bb676e0a38",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_item_role.scn",
@@ -828,7 +1017,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "8550f760cd9d552cdb0be448ae1a21b5a50a2aa91438a301931d942d19f5e700",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_live_profile.scn",
@@ -842,7 +1034,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "c561b9e3474a23c2229caafcfe1d45559471fbad3e8cd122a07b002881579c8e",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_add.scn",
@@ -856,7 +1051,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "30de4bede38ad07cc5affc71e40bd4c5533fcbdd3653f537ad46eb13b330060a",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_anneal.scn",
@@ -870,7 +1068,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "c35456fe615159a1e6343850581517fac875ceecb48d1da656e33802401450ea",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_charge.scn",
@@ -884,7 +1085,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "56684981020ac35da7c10bc71a07ca0466fbc7976aaacc38a3d1121176110f76",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_converted.scn",
@@ -898,7 +1102,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "92ecd7df02b7630da3968a8d1978e069d2ba227be6e018e6cc81796067262a50",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_density.scn",
@@ -912,7 +1119,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "2ff09e79b62589d25974c6f2345858ad18ca48a91849d1fe207286c968e3c67d",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_density_control.scn",
@@ -926,7 +1136,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "61e344b86a270db369b16c08a8018e7d20113dfeed8608033212e76ec1ac2186",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_drag.scn",
@@ -940,7 +1153,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "8045f699573c3435227d52d4ab6f56b68584d0e52162e58eed43bc67e3a50a5a",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_energy.scn",
@@ -954,7 +1170,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "842451ae5d6a988a413534d8256cf4eb983f9817e52be1c9e829842665510ca5",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_flock.scn",
@@ -968,7 +1187,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "839d64ad7c9e82277a4617b76a29252af7ebeca2c94094dd5fc479d65d52f145",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_flow.scn",
@@ -982,7 +1204,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "8585f5fc7fd4cb1cc57f72e7806c52d6ed8a09f8d3560a4b8015be6ea9020cb1",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_framing_control.scn",
@@ -1062,7 +1287,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "8466a1bf0f8ce4d9f687f4887ffa168159321100a988472d7a9899c5ffdc355f",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_keys.scn",
@@ -1076,7 +1304,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "2b0e99e34c78c5f8bf192c2abdac7cfab611c2b35fa1e2516a7575b0b0c5a2a4",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_kinds.scn",
@@ -1090,7 +1321,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "db2ce19c22d68b54a973628d74fb4ca2e3efb23a06e72ea3d07fe52ac9c91f85",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_meaning.scn",
@@ -1104,7 +1338,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "947b6cd6a3fca1931001a15b38ae403e4e54c7aa581f801d2bdcdb240da25915",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_orbit.scn",
@@ -1118,7 +1355,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "8645f38c8658cfa6b8b0c89c9e86655564f90cd7728f79df95ab0665e8cef077",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_profiles.scn",
@@ -1132,7 +1372,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "24ed060ead61ad032182f7eebcb9e04e46c44adc31ba3ac7b363113ea76f18d5",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_remote_board.scn",
@@ -1146,7 +1389,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "78dd889e85005619b874a2aa858bb20a9ed92fd68a0e167941772c32a8d64f3e",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_springs.scn",
@@ -1160,7 +1406,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "bd33029025d9aff15fdac83f302a1e54eb0babe90549017d5aecf222a661c93d",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_still.scn",
@@ -1174,7 +1423,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "3fc1cf730b08037c784a9d9925c87a11a16f937205752748602bc736621982c0",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_stress.scn",
@@ -1188,7 +1440,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "ec6eb9ba38d70c42d238990abd16cf36220a31cf3eee824818bb252ceb14e798",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_physics_sync.scn",
@@ -1202,7 +1457,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "8b1fb4ae6c773bcd2e4e84287311b740577273a2f48dc764ce5b77acc13c63f1",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_practice_controls.scn",
@@ -1221,7 +1479,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "6e0190ac2b0df0c35b1c93b8c0f15204a3738bf650a5e2bb543204c0943e1359",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_profile.scn",
@@ -1235,7 +1496,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "b21667e42863d5292a71be8f57ebfa7019b50689a568323b613630635dbd6b1b",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_projection_controls.scn",
@@ -1254,7 +1518,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "07d804c12ccc17af9000cbaff572f9496d81f3b0c28c65f44d8626e8b29dfac0",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_remote_absent.scn",
@@ -1286,7 +1553,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "798b9990da250bc0d5d4211044f74ff7d2123bd3c2d64327de20e7d9295a7764",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_remote_draft.scn",
@@ -1300,7 +1570,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "84408a0a70bcddd1ab2a997cf15ff6b0022df9d0d6a3feda7f21314469f8fcb3",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_role_controls.scn",
@@ -1348,7 +1621,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "a7abfc58f596d676aadc44618f0770fcc4efea42b905fb8c6e69a82c9d49d356",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_saved_edit.scn",
@@ -1380,7 +1656,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "ae1502a3123283376895ae55e745d7e20092435832648b3aa879cd02766172ed",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_saved_reopen.scn",
@@ -1394,7 +1673,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "991271699d36d4b6a34b97da744c1d6160e29e57660df3f4333f7437a8676156",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_scene_controls.scn",
@@ -1413,7 +1695,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "efae4b2d64a38f5d67e88b3ba1289220de3a938de0a4f47ed0cf5eb0619a6bab",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_tools_narrow.scn",
@@ -1427,7 +1712,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "84342981a429c5d28cdc3eb4e99acb0f22ab37706cddc92518b0ace29b1a506f",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p4_tree_visibility_timing.scn",
@@ -1442,7 +1730,10 @@
         "accessibility_tree_required": true,
         "frozen_before_run": true,
         "rationale": "Source requests a real hidden-tab timing positive control; a continuously visible run does not qualify this control."
-      }
+      },
+      "original_source_sha256": "834593926075a5bfd1b78b056a09a8920a41938b8a0e081f918354a2e120820b",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p5_tree_cpu_settle_2000.scn",
@@ -1456,7 +1747,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "0de37b5370578ca15e1949c86ddf2fb7d15589727d8bde54feaccc47d5ada2bd",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p5_tree_gpu_settle_2000.scn",
@@ -1470,7 +1764,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "3f9217c2dc0efc25d42279e04c9f4673f268286a3a89218eb045adb691b8ba13",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p5_tree_gpu_timing.scn",
@@ -1484,7 +1781,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "fffd7b711b6a7b7867b3e12e5044139ff8fe6a6d4c36ce0154a7f403350382de",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p5_tree_meaning_cost.scn",
@@ -1498,7 +1798,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "d7922cbc916773e2fceee07be913badc7cfa7c5138bb065758adcb566b980a85",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p6_tree_speed_fast.scn",
@@ -1610,7 +1913,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "5811803df71a8f212697ef6a62dc782308c0ba8c763b8dcbbf4160a0d7e785d3",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p6_tree_speed_fast_control.scn",
@@ -1698,7 +2004,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "d668256fc4cc43380a5c0fde931a5ba52d63e767ad5587990eccbdeb5c6cd8af",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p6_tree_speed_fast_control_capped.scn",
@@ -1746,7 +2055,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "fa449be6fc123385e1ddc94b163ee676c5a72f79ed105e835f96c00a3a95c832",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p6_tree_speed_fast_planted.scn",
@@ -1802,7 +2114,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "7c50f1a1a0c71840fa036ed666aafc1a7b70cebc8e6d32a66eb8759bed176696",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p6_tree_speed_fast_slow_max.scn",
@@ -1842,7 +2157,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "6118bbb503ca60c46833849292a50a72d2d7d85c06f415163f04be85445d9d33",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p6_tree_speed_select.scn",
@@ -1890,7 +2208,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "90c8926e482f0b13f05f499ef22e09244c4b944d1e7b8801c2c626423692c273",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "p6_tree_speed_slow.scn",
@@ -1954,13 +2275,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "c8df0d3bb1e1be3b6bab8f024bad303d05b49299d24ba7a99239af2e7ac2043d",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_add.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "adc84ef82895f4a1d49657c567d6958307465e66f37ba90fceb8b7f0eac4cdcf",
+      "current_source_sha256": "44d1ae1b051add839fc22ccf4fd518990746a6589b5e282913f56e21d54e2290",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -1968,13 +2292,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "adc84ef82895f4a1d49657c567d6958307465e66f37ba90fceb8b7f0eac4cdcf",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_anneal.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "29a8ce7d5cce1b430be39ee3440019b775fc32915f68452ca6e79d3957cb3d49",
+      "current_source_sha256": "13be8dd48b153125730770d51b387725a60ba71ab43f9ad6585d577762070149",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -1982,13 +2309,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "29a8ce7d5cce1b430be39ee3440019b775fc32915f68452ca6e79d3957cb3d49",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_charge.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "75b3f04634a4849e96beb9f1641df977d3f772385d3c3d94d1330d519a6a442b",
+      "current_source_sha256": "fa93fd591b7b38b41da1414ecede06ef6b49708bd1815510df9f2f7f07123ab6",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -1996,13 +2326,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "75b3f04634a4849e96beb9f1641df977d3f772385d3c3d94d1330d519a6a442b",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_converted.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "c6f5f39182943c6501ca000dfee3400279ae675e5fc854d4a25cf2e10e2a8e54",
+      "current_source_sha256": "d517f935cf2dfcb5b5bbca4e4474e8428a280547b58ae32d3464ce7987da81b5",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2010,13 +2343,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "c6f5f39182943c6501ca000dfee3400279ae675e5fc854d4a25cf2e10e2a8e54",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_density.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "318ce8f0184789d20ff22b40a696cf672d7a25816273c457dcdc092e094a15b3",
+      "current_source_sha256": "026a0077b3570da4ca60bf32325f3708e0fd9baf4c7832c4a75440ef73f0f20d",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2024,13 +2360,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "318ce8f0184789d20ff22b40a696cf672d7a25816273c457dcdc092e094a15b3",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_density_control.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "ff9800d6a7f2f124ce25cabab0f56fffb1c46a44195578bbeb76d979088fb58c",
+      "current_source_sha256": "bddc14eb9ea5e261ffceddc225c70ed171f4d8cdef022452db6294711c8cf910",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2038,13 +2377,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "ff9800d6a7f2f124ce25cabab0f56fffb1c46a44195578bbeb76d979088fb58c",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_drag.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "186792b8c9e22ffc858190b6b9104300ab5ba64e194a545118880b5b1639da64",
+      "current_source_sha256": "f8535f74a619542dfb7a7b7c0d4b558e8e56e124a1109c34c00d6f9b764ddec0",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2052,13 +2394,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "186792b8c9e22ffc858190b6b9104300ab5ba64e194a545118880b5b1639da64",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_energy.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "6cd6daf48198600b211c2f10f7e43238dcb1f483bb19f99527d0c9b0223037b3",
+      "current_source_sha256": "009f3542370d27c6bcb06f25dd521775b5993e3f2bd507b002a0569c0665744b",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2066,13 +2411,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "6cd6daf48198600b211c2f10f7e43238dcb1f483bb19f99527d0c9b0223037b3",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_flock.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "077b29d0d66d98dc958f7db5c0f17e41574397c490a6b6fc7c3df655caedc7c3",
+      "current_source_sha256": "e2052ac4d17d7ff6920bc374ec66a44e93726e32bbd4d6c75e5cf6600a0afad5",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2080,13 +2428,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "077b29d0d66d98dc958f7db5c0f17e41574397c490a6b6fc7c3df655caedc7c3",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_flow.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "0c88392bb4411da91d88eab67de3eae8c075ff9fc7bc6a64bbdc2cd4864a211d",
+      "current_source_sha256": "3e34f95e6dd8edf35ee7682e893eb38037908bc417c8942b404c2ee8b49ed7a1",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2094,13 +2445,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "0c88392bb4411da91d88eab67de3eae8c075ff9fc7bc6a64bbdc2cd4864a211d",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_framing_control.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "3dc63607f3c6eb3c02c83c1b5d6dc44ba5c3f01f7841c59521f394e3f19cedd7",
+      "current_source_sha256": "08a4ada5ae489c5bc7a4c527b0a5e3ee3e5a007f3e3fff563a733f5034d34a5c",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2108,13 +2462,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "3dc63607f3c6eb3c02c83c1b5d6dc44ba5c3f01f7841c59521f394e3f19cedd7",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_kinds.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "9c37ac2a78951765d578a141ebcd449efba02c3eb764761594a8226e7247570f",
+      "current_source_sha256": "0a55b9639f1aa8e269c88d5a2310fe849cf41b991ddd0a380c066f36e00fced4",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2122,13 +2479,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "9c37ac2a78951765d578a141ebcd449efba02c3eb764761594a8226e7247570f",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_orbit.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "bbba7d40e62336acbb4571dd950a9535ff1566bf47d710ccb5fdfac4409e795c",
+      "current_source_sha256": "61e07e260d3239442321f51213ff2c1599e6484925e98721c06d92af323d215e",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2136,13 +2496,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "bbba7d40e62336acbb4571dd950a9535ff1566bf47d710ccb5fdfac4409e795c",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_profiles.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "947ca75750eea95b3c3bda53fcab9d793e1d8dcc2916e70ed89c00a9ae6b473a",
+      "current_source_sha256": "2e74023c263f2db8d67aeb670f18d149cdbf46b3a5fd71da41ffa3fe5b94eb41",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2150,7 +2513,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "947ca75750eea95b3c3bda53fcab9d793e1d8dcc2916e70ed89c00a9ae6b473a",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_remote_board.scn",
@@ -2160,7 +2526,7 @@
         "host": "Real local admitted WebRTC fixture board; signal query",
         "setup_verification": "pending"
       },
-      "current_source_sha256": "e676a6f2a199c94ef5be036d08f6a8a342d7b2add58295cec7918e33f5ff0e12",
+      "current_source_sha256": "e168d34be51b421300286607b95a11ad23b4073105b098cd4d280228139cdafa",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2168,7 +2534,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "e676a6f2a199c94ef5be036d08f6a8a342d7b2add58295cec7918e33f5ff0e12",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_speed_select.scn",
@@ -2192,7 +2561,7 @@
           "current_verification": "pending"
         }
       ],
-      "current_source_sha256": "61504e59d7fb510287eaa4d414ccbddf52325ecaf7b971f76ef74fad3f35f304",
+      "current_source_sha256": "6d6f88b2590e476f7073051485e8152582547079522cf4158177fb2b49c6ed6a",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2200,13 +2569,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "61504e59d7fb510287eaa4d414ccbddf52325ecaf7b971f76ef74fad3f35f304",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_springs.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "674a728ee8ad783808eb821dc6cd6b2c75f32268fe727cc83c3fb5a78f775b16",
+      "current_source_sha256": "3576ae2cbf6ef82569f3f2486b046feffcd2eb283edc6bff7d130f2fd3ce9b8b",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2214,13 +2586,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "674a728ee8ad783808eb821dc6cd6b2c75f32268fe727cc83c3fb5a78f775b16",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_still.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "4f11416222411c4656d1c91c25167947c1b7ca416cd1300a5f15ff9b77355572",
+      "current_source_sha256": "b399dd088009276d8f76b0f6fb3a3dc520813fe338d0802a89f85c2fb930ae89",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2228,13 +2603,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "4f11416222411c4656d1c91c25167947c1b7ca416cd1300a5f15ff9b77355572",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_stress.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "9a413f10ea448b0827022dbaae914a68ec2f95615685f87181b044f9041ff685",
+      "current_source_sha256": "ff2efdbb2fee6497a3d343d4fa17e7042117a37affcef5a329b5d58ad889c516",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2242,13 +2620,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "9a413f10ea448b0827022dbaae914a68ec2f95615685f87181b044f9041ff685",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "physics_sync.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "62fa7100104e8b36e75e2cc8c3fbd6372c1c223a1f4a6a20fa0c82415f5b250f",
+      "current_source_sha256": "cd36d14922ecbd45d890bc1ea04ed9a300a04a26e21693ae99dcd579ca700a67",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2256,7 +2637,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "62fa7100104e8b36e75e2cc8c3fbd6372c1c223a1f4a6a20fa0c82415f5b250f",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "practice_embedded.scn",
@@ -2266,7 +2650,7 @@
         "same_origin_profile_after": "practice_workspace.scn",
         "page": "practice-embed.html"
       },
-      "current_source_sha256": "59382f0d1009a6cc887ca360ffc1d6daa87cb320a48f44e035b5195144933bab",
+      "current_source_sha256": "a6c1b98e607f78b4c3365475853107f9eeec6dbac17058b90c0c502e149d439a",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2274,13 +2658,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "59382f0d1009a6cc887ca360ffc1d6daa87cb320a48f44e035b5195144933bab",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "practice_encoded_axes.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "96e9d5348ec9b0e46aee8b1b37e589e5edea2fa0117bbf0de0b75308785b3cb9",
+      "current_source_sha256": "f107d7a49e917679657d202464531f8232074f6c46815d31cb395b32540988d7",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2288,13 +2675,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "96e9d5348ec9b0e46aee8b1b37e589e5edea2fa0117bbf0de0b75308785b3cb9",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "practice_relations.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "02275ff2ef5d10371df1f461209592b25ef524c79061f324ff4ea872d53f0b02",
+      "current_source_sha256": "65b9501b162c08edae727ace55dabcc02962725d60dbc9e65910160215fe82c1",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2302,7 +2692,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "02275ff2ef5d10371df1f461209592b25ef524c79061f324ff4ea872d53f0b02",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "practice_reopen.scn",
@@ -2312,7 +2705,7 @@
         "same_origin_profile_after": "practice_workspace.scn",
         "page": "practice.html"
       },
-      "current_source_sha256": "2f0914d6d03586b3646e96dd30cfb969c27a60b1ed3f769c96cc370d40d34857",
+      "current_source_sha256": "d6aaa5769ecb4fa7bc3bc12b84abaad7187ad2bfbed5301317733474c55f1887",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2320,13 +2713,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "2f0914d6d03586b3646e96dd30cfb969c27a60b1ed3f769c96cc370d40d34857",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "practice_workspace.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "e280d388cf7f4bf01f5cada5eac925aac3a502691e3557291ecb46787b7d8e03",
+      "current_source_sha256": "47488afa3f8b1e80fbfa2071e523802bb43e3be8b0bef19014c8d8d4b7cec136",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2334,13 +2730,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "e280d388cf7f4bf01f5cada5eac925aac3a502691e3557291ecb46787b7d8e03",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "projection_authoring.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "81f861a16ecf51227eb52e9a73d3eca96475b1a1fff077f16a7fb4e6891bdeb4",
+      "current_source_sha256": "821525222014b5f79bc9230aaae9ffe744a823e9c314b9da5efa3ad4fd8127a4",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2348,13 +2747,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "81f861a16ecf51227eb52e9a73d3eca96475b1a1fff077f16a7fb4e6891bdeb4",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "projection_compare.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "73b833bebfa401605f92f3277c4213cbba91cbbcc776d4142c72f43c89548499",
+      "current_source_sha256": "f55abebbd7d56cda378814f882f951042cd9d77d85f6fc2eab045691459f55dd",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2362,13 +2764,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "73b833bebfa401605f92f3277c4213cbba91cbbcc776d4142c72f43c89548499",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "projection_options.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "609c31741b57e0b7ad47602c76cd1d50c3787e0ae0d336688b03e522f5a8e0a0",
+      "current_source_sha256": "00b5e9228b15a15ec181eecc358d0819b5a733eccdc86187d51097f6c57d5dfd",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2376,13 +2781,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "609c31741b57e0b7ad47602c76cd1d50c3787e0ae0d336688b03e522f5a8e0a0",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "projection_refresh.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "32cc8170004835054da6143ea7aaec418c5fc0890b274ff1aa92599d249dffa7",
+      "current_source_sha256": "cdeb8a908fd755ac1efccad05a5a112659e7c016f1e1d7b67e015b91ffcb55bd",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2390,7 +2798,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "32cc8170004835054da6143ea7aaec418c5fc0890b274ff1aa92599d249dffa7",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "projection_reopen.scn",
@@ -2400,7 +2811,7 @@
         "same_origin_profile_after": "projection_authoring.scn",
         "page": "index.html"
       },
-      "current_source_sha256": "23c52dcb5b443c3dc637952bde0161dd866b4b7b37178eeb6936575029de90ec",
+      "current_source_sha256": "0e2b453d65cd37c3394e37bb324436a0d731ab41b8e0ac6ac3b4057a76c7036f",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2408,13 +2819,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "23c52dcb5b443c3dc637952bde0161dd866b4b7b37178eeb6936575029de90ec",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "projection_session.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "b72e141f1d302d872f34a3ae3d5898cff1821642065e9b0a72a7a962d43c70d8",
+      "current_source_sha256": "05830d1a3f8eb585b476f641376c496203722b1b7b6ab135ba71515a8ead0026",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2422,7 +2836,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "b72e141f1d302d872f34a3ae3d5898cff1821642065e9b0a72a7a962d43c70d8",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "projection_session_reopen.scn",
@@ -2432,7 +2849,7 @@
         "same_origin_profile_after": "projection_session.scn",
         "page": "index.html"
       },
-      "current_source_sha256": "d9f733a8f8a2aea5c51e4ecc6fd8c59761ec6ea0f0f53326f8c3ad84ef24fb86",
+      "current_source_sha256": "eb588c7fb24a579cb88d3ec1a1e9aedb9b9f3c2291d417938faacdfd5f8b5118",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2440,13 +2857,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "d9f733a8f8a2aea5c51e4ecc6fd8c59761ec6ea0f0f53326f8c3ad84ef24fb86",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "projection_undo.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "3793198728c56d92bdca0b01f218f7885e7c14caba2768938f3ff8cafdf58160",
+      "current_source_sha256": "b9ffdb4e25bffb9eb4df23a27e38ba3494b976f9cd9ccae8e0dcecff248d9216",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2454,7 +2874,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "3793198728c56d92bdca0b01f218f7885e7c14caba2768938f3ff8cafdf58160",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "reservoir_step4_migrated.scn",
@@ -2473,7 +2896,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "6cb246a5335dc9667dbf950977231268bf15f441c33f93d4b811c9f268dc18a3",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "reservoir_step4_reopened.scn",
@@ -2491,7 +2917,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "395dd1e18772ff8d1c0f4a405b9ff5add871193a3ae6dd64d6070c8af5b331c7",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "reservoir_step4_seeded.scn",
@@ -2505,13 +2934,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "68034ad4afeaf8b2b993628931a5d111623b269de749985ea7693b371900ced8",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "role_controls.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "475af60e3f677a04da9cdcaadfc40457e65dfa3febc849616c8ff25c16e9fe23",
+      "current_source_sha256": "3b33c89b22f5023d826b2bb8457760e5fa59c67eba4fb08d6feef0183d7ab7c7",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2519,13 +2951,16 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "475af60e3f677a04da9cdcaadfc40457e65dfa3febc849616c8ff25c16e9fe23",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "scene_save_reopen.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "c2c7755364d2b6879c29039b68d5e486994b192141f23faed58c16d514f2ed0e",
+      "current_source_sha256": "84ff8de58fcae46fd007906de466ec62302a5e96519d0de244fcdd13a28eafd7",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -2533,7 +2968,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "c2c7755364d2b6879c29039b68d5e486994b192141f23faed58c16d514f2ed0e",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "tree_host_dataset.scn",
@@ -2547,7 +2985,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "cf742e6bf7ddc533209a48d1595c2e7b800adfd252a0a7568949655f379fee80",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     },
     {
       "name": "tree_host_dataset_refused.scn",
@@ -2561,7 +3002,10 @@
         "whole_frame_required": true,
         "accessibility_tree_required": true,
         "frozen_before_run": true
-      }
+      },
+      "original_source_sha256": "2b7922c5537a9cfd2bd9c29f3aa3b8c6b0f0fd9263592c7afeddcf4d3bd25e6d",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
     }
   ],
   "unmatched_prior_runs": [

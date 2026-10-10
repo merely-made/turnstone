@@ -136,6 +136,12 @@ impl TreeRemote {
         self.live.as_ref()?.session.mounted()
     }
 
+    pub(super) fn card_labels(&self) -> Vec<String> {
+        self.live
+            .as_ref()
+            .map(|live| live.session.card_labels())
+            .unwrap_or_default()
+    }
     pub(super) fn revision(&self) -> Option<u64> {
         self.live.as_ref()?.session.revision()
     }

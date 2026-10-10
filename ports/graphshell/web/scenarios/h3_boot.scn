@@ -1,3 +1,6 @@
+# Expose retained disclosure controls; return focus to the original canvas key target.
+click role:button Remote session
+focus-retained .tree-canvas
 # The H3 boot receipt, driven by the page itself.
 #
 # One verb per rendered frame. `settle 1` after an `act` lets the frame and
@@ -7,24 +10,24 @@ assert title GRAPHSHELL H3 READY
 assert snap ready == true
 assert snap session == local
 assert snap detail-open == false
-assert dom #gs-active-session Local Mere
-assert attr #gs-session-local aria-pressed true
+assert snap active-session ~ Local Mere
+assert retained {"role":"button","label":"Local Mere","attribute":"aria-pressed","value":"true"}
 capture h3_local
 wait
 act session-remote
 settle 1
 assert snap session == remote
-assert attr #gs-session-remote aria-pressed true
-assert dom #gs-active-session Remote projection
+assert retained {"role":"button","label":"Remote mount","attribute":"aria-pressed","value":"true"}
+assert snap active-session ~ Remote projection
 capture h3_remote
 wait
 act session-local
 settle 1
-key enter
+key Enter
 settle 1
 assert snap detail-open == true
-assert attr #gs-detail-surface aria-hidden false
-key escape
+assert retained {"class":"tree-detail","count":1,"visible":true}
+key Escape
 settle 1
 assert snap detail-open == false
 assert event command node:edit

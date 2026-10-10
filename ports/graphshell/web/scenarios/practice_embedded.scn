@@ -1,12 +1,12 @@
 assert snap practice-view == relations
-dom click [data-practice-command="reopen"]
+click role:button @data-practice-command=reopen
 settle 2
 assert snap practice-selection == card:2
 assert snap practice-layout == scatter.default
-dom click [data-practice-command="compare"]
+click role:button @data-practice-command=compare
 settle 2
 assert snap practice-selection == card:2
-dom click [data-practice-command="select:card:1"]
+click role:button @data-practice-command=select:card:1
 settle 2
 assert snap practice-selection == card:1
 capture practice_embedded

@@ -45,6 +45,7 @@ pub(crate) struct Session {
     root: Element,
     appearance: Appearance,
     owned: bool,
+    dom_controls: bool,
     probe: HtmlIFrameElement,
     inherited: String,
     sheet: String,
@@ -58,6 +59,12 @@ fn error(value: impl Into<JsValue>) -> String {
 }
 
 pub(crate) fn mount(root: Element, owned: bool) -> Result<Handle, String> {
+    mount_controls(root, owned, true)
+}
+pub(crate) fn mount_retained(root: Element, owned: bool) -> Result<Handle, String> {
+    mount_controls(root, owned, false)
+}
+fn mount_controls(root: Element, owned: bool, dom_controls: bool) -> Result<Handle, String> {
     let mut status = if owned {
         "Built-in appearance"
     } else {
@@ -112,6 +119,7 @@ pub(crate) fn mount(root: Element, owned: bool) -> Result<Handle, String> {
         root,
         appearance,
         owned,
+        dom_controls,
         probe,
         inherited: String::new(),
         sheet: String::new(),
@@ -120,13 +128,59 @@ pub(crate) fn mount(root: Element, owned: bool) -> Result<Handle, String> {
         status,
     }));
     handle.borrow_mut().refresh(true)?;
-    if owned {
+    if owned && dom_controls {
         install_controls(&handle)?;
     }
     Ok(handle)
 }
 
+pub(crate) struct Controls {
+    pub themes: Vec<(String, String)>,
+    pub modes: Vec<(String, String)>,
+    pub theme: String,
+    pub mode: String,
+    pub status: String,
+}
 impl Session {
+    pub fn controls(&self) -> Option<Controls> {
+        self.owned.then(|| Controls {
+            themes: self.appearance.themes(),
+            modes: self
+                .appearance
+                .modes()
+                .into_iter()
+                .map(|mode| (mode.as_key(), mode.label()))
+                .collect(),
+            theme: self.appearance.resolved().resolved.theme_id.clone(),
+            mode: self
+                .appearance
+                .resolved()
+                .resolved
+                .theme_mode
+                .as_ref()
+                .expect("resolved mode")
+                .as_key(),
+            status: self
+                .root
+                .get_attribute("data-appearance-status")
+                .unwrap_or_else(|| self.status.clone()),
+        })
+    }
+    pub fn choose(&mut self, theme: &str, mode: &str) -> Result<(), String> {
+        if !self.owned {
+            return Err("Appearance belongs to the embedding host".into());
+        }
+        self.accept(
+            self.appearance
+                .with_choice(ThemeChoice::new(theme.to_owned(), Mode::from_key(mode))),
+        )
+    }
+    pub fn import(&mut self, json: &str) -> Result<(), String> {
+        if !self.owned {
+            return Err("Appearance belongs to the embedding host".into());
+        }
+        self.accept(self.appearance.with_import(json))
+    }
     pub fn sheet(&self) -> &str {
         &self.sheet
     }
@@ -400,6 +454,9 @@ impl Session {
         Ok(())
     }
     fn populate(&self) -> Result<(), String> {
+        if !self.dom_controls {
+            return Ok(());
+        }
         let document = crate::document()?;
         for (selector, options, selected) in [
             (

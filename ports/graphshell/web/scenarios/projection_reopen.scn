@@ -4,11 +4,11 @@ act reopen-practice-projection
 settle 2
 assert snap projection-executable == true
 assert snap projection-selected-occurrence == card:2
-assert dom #gs-projection-editor-status Reopened executable
-assert attr [data-projection-view="spatial"][data-projection-occurrence="card:2"] aria-pressed true
-assert attr [data-projection-view="list"][data-projection-occurrence="card:2"] aria-pressed true
-assert attr [data-projection-view="spatial"][data-projection-occurrence="card:1"] aria-pressed false
-assert dom [data-projection-view="list"][data-projection-occurrence="card:2"] chord:Major
+assert retained {"role":"status","label":"Projection status","text":"Reopened executable"}
+assert retained {"role":"button","label":"spatial card:2:","attribute":"aria-pressed","value":"true"}
+assert retained {"role":"button","label":"list card:2:","attribute":"aria-pressed","value":"true"}
+assert retained {"role":"button","label":"spatial card:1:","attribute":"aria-pressed","value":"false"}
+assert retained {"role":"button","label":"list card:2:","text":"chord:Major"}
 capture projection_fresh_page
 wait
 log executable projection fresh-page reopen complete

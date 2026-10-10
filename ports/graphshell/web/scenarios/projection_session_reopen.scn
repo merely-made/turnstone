@@ -5,7 +5,7 @@ act open-projection-editor
 settle 2
 act reload-projection
 settle 2
-assert dom #gs-projection-editor-status Reloaded · graphshell-reference
-assert dom #gs-projection-editor-preview Stored two ·
-assert dom #gs-projection-editor-dirty No unsaved changes
+assert retained {"role":"status","label":"Projection status","text":"Reloaded \u00b7 graphshell-reference"}
+assert retained {"role":"status","label":"Projection preview","text":"Stored two \u00b7"}
+assert retained {"role":"status","label":"Projection saved state","text":"No unsaved changes"}
 log projection session fresh-page reload complete

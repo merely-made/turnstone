@@ -306,6 +306,10 @@ impl SavedProduct {
                     "pending"
                 } else if self.save_state == "error" {
                     "failed"
+                } else if self.app.as_ref().is_some_and(|app| app.host.has_unstored()) {
+                    "unstored"
+                } else if self.app.is_none() {
+                    "pending"
                 } else {
                     "stored"
                 }

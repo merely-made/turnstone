@@ -4,21 +4,27 @@
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
 # The boot arrangement pauses the canvas; the receipt wants the law running.
-dom click [data-command="physics:toggle"]
+click role:button @data-command=physics:toggle
 settle 1
 assert snap physics-paused == false
 # No arrangement: the boot Spiral's anchor springs would pull under every law.
-select #gs-arrangement-select free
-dom click [data-command="apply-arrangement"]
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
 settle 1
 assert snap layout == free
 assert snap physics-law == spring.rapier
-select #gs-physics-select spring.rapier
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Springs
+settle 1
+click role:button Apply physics
 settle 1
 assert snap physics-law == spring.rapier
 assert snap physics-profile == law.springs
-assert dom #gs-product-status Physics set to Springs
+assert retained {"role":"status","label":"Physics status","text":"Physics set to Springs"}
 capture physics_springs_start
 wait
 settle 60

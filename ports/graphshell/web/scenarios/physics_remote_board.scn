@@ -8,8 +8,11 @@ assert snap remote-state == open
 assert snap remote-revision == 1
 assert snap remote-cards == 1
 # Pick Charge through the panel (the board mirrors the canvas's choice).
-select #gs-physics-select charge.barnes-hut
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Charge
+settle 1
+click role:button Apply physics
 settle 1
 act session-remote
 settle 1
@@ -19,7 +22,7 @@ assert snap remote-physics-law == charge.barnes-hut
 # settle burst; under Charge the pair pushes apart against the anchor pull.
 act invoke-action
 settle 1
-dom click [data-intent="mere.graphshell/live-fixture/append"]
+click role:button Append a card
 wait
 assert snap action-status ~ Accepted
 assert snap remote-revision == 2
@@ -33,8 +36,11 @@ capture physics_remote_charge_settled
 wait
 # Orbit: the cards keep moving — energy above a floor two seconds in and
 # five seconds later.
-select #gs-physics-select orbit.gravity
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Orbit
+settle 1
+click role:button Apply physics
 settle 1
 assert snap remote-physics-law == orbit.gravity
 settle 120

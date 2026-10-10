@@ -174,6 +174,9 @@ impl SavedProduct {
             || self.pending_intake.is_some()
             || self.pending_detail.is_some()
     }
+    pub(super) fn authority_nodes(&self) -> Option<usize> {
+        self.app.as_ref().map(|app| app.host.graph().node_count())
+    }
     pub(super) fn graph(&self) -> Graph {
         self.app
             .as_ref()

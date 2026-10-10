@@ -1,3 +1,6 @@
+# Expose retained disclosure controls; return focus to the original canvas key target.
+click role:button Remote session
+focus-retained .tree-canvas
 # C4b.2: the full-page surface — index.html, the component filling the body
 # and owning the title — with the same keyboard rows the embed runs, so the
 # two receipts compare like for like.
@@ -5,35 +8,38 @@ assert title GRAPHSHELL H3 READY
 assert snap ready == true
 assert snap session == local
 assert snap detail-open == false
-assert dom #gs-active-session Local Mere
-assert attr #gs-session-local aria-pressed true
+assert snap active-session ~ Local Mere
+assert retained {"role":"button","label":"Local Mere","attribute":"aria-pressed","value":"true"}
 capture c4b2_full_boot
 wait
-focus #gs-graphshell-canvas
-assert focused #gs-graphshell-canvas
-assert snap camera == 641.00,361.00,1.000
-key left
+focus-retained .tree-canvas
+assert retained {"class":"tree-canvas","focused":true}
+# Geometry adaptation: actual retained canvas leaf, below the header and beside docked tools.
+assert snap camera-centered == true
+assert snap zoom == 1
+mark-camera
+key ArrowLeft
 settle 1
 # One pan-left is a wheel gesture through the canvas physics; how far it
 # travels is velocity-shaped and differs run to run, so the claim is that
 # the camera moved left of where it started, and that the key reached the
 # component as its command.
 assert event command pan-left
-assert snap camera-x <= 600
-assert snap camera-y == 361.00
-key enter
+assert snap camera-dx <= -41
+assert snap camera-dy == 0
+key Enter
 settle 1
 assert snap detail-open == true
-assert attr #gs-detail-surface aria-hidden false
-key escape
+assert retained {"class":"tree-detail","count":1,"visible":true}
+key Escape
 settle 1
 assert snap detail-open == false
-focus #gs-session-remote
-assert focused #gs-session-remote
+focus-retained role:button Remote mount
+assert retained {"role":"button","label":"Remote mount","focused":true}
 act session-remote
 settle 1
 assert snap session == remote
-assert attr #gs-session-remote aria-pressed true
+assert retained {"role":"button","label":"Remote mount","attribute":"aria-pressed","value":"true"}
 capture c4b2_full_remote
 wait
 act session-local

@@ -8,7 +8,7 @@ settle 240
 assert snap practice-encoded-drift <= 0.01
 capture practice_encoded_grid
 wait
-dom click [data-practice-command="scatter"]
+click role:button @data-practice-command=scatter
 settle 240
 assert snap practice-layout == scatter.default
 assert snap practice-encoded-drift <= 0.01

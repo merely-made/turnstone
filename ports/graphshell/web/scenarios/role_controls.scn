@@ -3,27 +3,39 @@
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
 assert snap arrangement-role == seeded
-select #gs-role-select anchored
-dom click [data-command="apply-role"]
+click role:combobox Role
+settle 1
+click role:option Anchored
+settle 1
+click role:button Apply role
 settle 1
 assert snap arrangement-role == anchored
-assert dom #gs-product-status Role set to anchored
-dom click [data-command="node:edit"]
+assert retained {"role":"status","label":"Physics status","text":"Role set to anchored"}
+click role:button Open details
 settle 2
 assert snap item-role == recipe
-select #gs-item-role-select pinned
-dom click [data-command="apply-item-role"]
+click role:combobox Item role
+settle 1
+click role:option Pinned
+settle 1
+click role:button Apply item role
 settle 1
 assert snap item-role == pinned
-assert dom #gs-product-status Item role set to pinned
+assert retained {"role":"status","label":"Graph status","text":"Item role set to pinned"}
 capture role_controls_item_pinned
 wait
-select #gs-item-role-select recipe
-dom click [data-command="apply-item-role"]
+click role:combobox Item role
+settle 1
+click role:option As recipe
+settle 1
+click role:button Apply item role
 settle 1
 assert snap item-role == recipe
-select #gs-role-select seeded
-dom click [data-command="apply-role"]
+click role:combobox Role
+settle 1
+click role:option Seeded
+settle 1
+click role:button Apply role
 settle 1
 assert snap arrangement-role == seeded
 log old page role controls receipt complete

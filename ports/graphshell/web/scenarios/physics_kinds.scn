@@ -3,17 +3,26 @@
 # floor while the kinds chase and flee.
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
-dom click [data-command="physics:toggle"]
+click role:button @data-command=physics:toggle
 settle 1
 assert snap physics-paused == false
 # No arrangement: the boot Spiral's anchor springs would pull under every law.
-select #gs-arrangement-select free
-dom click [data-command="apply-arrangement"]
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
 settle 1
 assert snap layout == free
-select #gs-physics-select kinds.particle-life
-select #gs-kind-source-select site
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Kinds
+settle 1
+click role:combobox Kinds
+settle 1
+click role:option By site
+settle 1
+click role:button Apply physics
 settle 1
 assert snap physics-law == kinds.particle-life
 assert snap physics-kind-source == site

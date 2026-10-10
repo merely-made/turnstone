@@ -8,18 +8,24 @@
 # reaches, and exactly as the px forms did at zoom 1.
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
-dom click [data-command="physics:toggle"]
+click role:button @data-command=physics:toggle
 settle 1
 assert snap physics-paused == false
-select #gs-arrangement-select free
-dom click [data-command="apply-arrangement"]
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
 settle 1
 assert snap layout == free
 
 # --- Springs ---
 log drag Springs
-select #gs-physics-select spring.rapier
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Springs
+settle 1
+click role:button Apply physics
 settle 120
 act select-web
 settle 1
@@ -27,7 +33,7 @@ assert snap physics-law == spring.rapier
 press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
-assert snap dragging ~ -
+assert snap dragging-node ~ -
 move-by-world 220 0
 settle 1
 release-at
@@ -41,8 +47,11 @@ wait
 
 # --- Charge ---
 log drag Charge
-select #gs-physics-select charge.barnes-hut
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Charge
+settle 1
+click role:button Apply physics
 settle 120
 act select-web
 settle 1
@@ -50,7 +59,7 @@ assert snap physics-law == charge.barnes-hut
 press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
-assert snap dragging ~ -
+assert snap dragging-node ~ -
 move-by-world 220 0
 settle 1
 release-at
@@ -62,8 +71,11 @@ assert snap layout-overlaps == 0
 
 # --- Stress ---
 log drag Stress
-select #gs-physics-select stress.kamada-kawai
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Stress
+settle 1
+click role:button Apply physics
 settle 120
 act select-web
 settle 1
@@ -71,7 +83,7 @@ assert snap physics-law == stress.kamada-kawai
 press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
-assert snap dragging ~ -
+assert snap dragging-node ~ -
 move-by-world 220 0
 settle 1
 release-at
@@ -83,8 +95,11 @@ assert snap layout-overlaps == 0
 
 # --- Energy ---
 log drag Energy
-select #gs-physics-select energy.linlog
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Energy
+settle 1
+click role:button Apply physics
 settle 120
 act select-web
 settle 1
@@ -92,7 +107,7 @@ assert snap physics-law == energy.linlog
 press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
-assert snap dragging ~ -
+assert snap dragging-node ~ -
 move-by-world 220 0
 settle 1
 release-at
@@ -104,8 +119,11 @@ assert snap layout-overlaps == 0
 
 # --- Orbit ---
 log drag Orbit
-select #gs-physics-select orbit.gravity
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Orbit
+settle 1
+click role:button Apply physics
 settle 120
 act select-web
 settle 1
@@ -113,7 +131,7 @@ assert snap physics-law == orbit.gravity
 press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
-assert snap dragging ~ -
+assert snap dragging-node ~ -
 move-by-world 220 0
 settle 1
 release-at
@@ -125,8 +143,11 @@ assert snap physics-energy >= 1
 
 # --- Kinds ---
 log drag Kinds
-select #gs-physics-select kinds.particle-life
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Kinds
+settle 1
+click role:button Apply physics
 settle 120
 act select-web
 settle 1
@@ -134,7 +155,7 @@ assert snap physics-law == kinds.particle-life
 press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
-assert snap dragging ~ -
+assert snap dragging-node ~ -
 move-by-world 220 0
 settle 1
 release-at
@@ -146,8 +167,11 @@ assert snap physics-energy >= 1
 
 # --- Flock ---
 log drag Flock
-select #gs-physics-select flock.boids
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Flock
+settle 1
+click role:button Apply physics
 settle 120
 act select-web
 settle 1
@@ -155,7 +179,7 @@ assert snap physics-law == flock.boids
 press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
-assert snap dragging ~ -
+assert snap dragging-node ~ -
 move-by-world 220 0
 settle 1
 release-at
@@ -167,8 +191,11 @@ assert snap physics-energy >= 1
 
 # --- Sync ---
 log drag Sync
-select #gs-physics-select sync.kuramoto
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Sync
+settle 1
+click role:button Apply physics
 settle 120
 act select-web
 settle 1
@@ -176,7 +203,7 @@ assert snap physics-law == sync.kuramoto
 press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
-assert snap dragging ~ -
+assert snap dragging-node ~ -
 move-by-world 220 0
 settle 1
 release-at
@@ -188,8 +215,11 @@ assert snap physics-energy >= 1
 
 # --- Flow ---
 log drag Flow
-select #gs-physics-select flow.magnetic
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Flow
+settle 1
+click role:button Apply physics
 settle 120
 act select-web
 settle 1
@@ -197,7 +227,7 @@ assert snap physics-law == flow.magnetic
 press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
-assert snap dragging ~ -
+assert snap dragging-node ~ -
 move-by-world 220 0
 settle 1
 release-at
@@ -209,8 +239,11 @@ assert snap physics-energy >= 1
 
 # --- Anneal ---
 log drag Anneal
-select #gs-physics-select anneal.davidson-harel
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Anneal
+settle 1
+click role:button Apply physics
 settle 120
 act select-web
 settle 1
@@ -218,7 +251,7 @@ assert snap physics-law == anneal.davidson-harel
 press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
-assert snap dragging ~ -
+assert snap dragging-node ~ -
 move-by-world 220 0
 settle 1
 release-at
@@ -233,8 +266,11 @@ assert snap layout-overlaps == 0
 
 # --- Still ---
 log drag Still
-select #gs-physics-select still.default
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Still
+settle 1
+click role:button Apply physics
 settle 120
 act select-web
 settle 1
@@ -242,7 +278,7 @@ assert snap physics-law == still.default
 press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
-assert snap dragging ~ -
+assert snap dragging-node ~ -
 move-by-world 220 0
 settle 1
 release-at

@@ -13,7 +13,7 @@ act session-remote
 settle 1
 act invoke-action
 settle 1
-dom click [data-intent="mere.graphshell/live-fixture/append"]
+click role:button Append a card
 wait
 assert snap action-status ~ Accepted
 assert snap remote-revision == 2

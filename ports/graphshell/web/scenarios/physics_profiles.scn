@@ -2,44 +2,65 @@
 # picker, each naming itself back with its law and the overlays it installs.
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
-dom click [data-command="physics:toggle"]
+click role:button @data-command=physics:toggle
 settle 1
 assert snap physics-paused == false
 # No arrangement: the boot Spiral's anchor springs would pull under every law.
-select #gs-arrangement-select free
-dom click [data-command="apply-arrangement"]
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
 settle 1
 assert snap layout == free
-select #gs-profile-select liquid
-dom click [data-command="apply-profile"]
+click role:combobox Profile
+settle 1
+click role:option Liquid
+settle 1
+click role:button Apply profile
 settle 1
 assert snap physics-profile == liquid
 assert snap physics-law == spring.rapier
 assert snap physics-overlays == gravity-locus
-assert attr #gs-overlay-gravity-locus data-overlay gravity-locus
-select #gs-profile-select gas
-dom click [data-command="apply-profile"]
+assert retained {"role":"checkbox","label":"Centre","attribute":"data-overlay","value":"gravity-locus"}
+click role:combobox Profile
+settle 1
+click role:option Gas
+settle 1
+click role:button Apply profile
 settle 1
 assert snap physics-profile == gas
 assert snap physics-law == charge.barnes-hut
-select #gs-profile-select solid
-dom click [data-command="apply-profile"]
+click role:combobox Profile
+settle 1
+click role:option Solid
+settle 1
+click role:button Apply profile
 settle 1
 assert snap physics-profile == solid
 assert snap physics-overlays == domain-cluster,degree-repulsion
-select #gs-profile-select archipelago
-dom click [data-command="apply-profile"]
+click role:combobox Profile
+settle 1
+click role:option Archipelago
+settle 1
+click role:button Apply profile
 settle 1
 assert snap physics-profile == archipelago
 assert snap physics-law == energy.linlog
 assert snap physics-overlays == domain-cluster,degree-repulsion
-select #gs-profile-select constellation
-dom click [data-command="apply-profile"]
+click role:combobox Profile
+settle 1
+click role:option Constellation
+settle 1
+click role:button Apply profile
 settle 1
 assert snap physics-profile == constellation
 assert snap physics-overlays == degree-repulsion,hub-gravity
-select #gs-profile-select crystal
-dom click [data-command="apply-profile"]
+click role:combobox Profile
+settle 1
+click role:option Crystal
+settle 1
+click role:button Apply profile
 settle 1
 assert snap physics-profile == crystal
 assert snap physics-law == stress.kamada-kawai
@@ -49,15 +70,21 @@ capture physics_profiles_crystal
 # frame this capture shows.
 assert snap layout-outside == 0
 wait
-select #gs-profile-select tide
-dom click [data-command="apply-profile"]
+click role:combobox Profile
+settle 1
+click role:option Tide
+settle 1
+click role:button Apply profile
 settle 1
 assert snap physics-profile == tide
 assert snap physics-overlays == tide
 settle 60
 assert snap physics-energy >= 0.1
-select #gs-profile-select sediment
-dom click [data-command="apply-profile"]
+click role:combobox Profile
+settle 1
+click role:option Sediment
+settle 1
+click role:button Apply profile
 settle 1
 assert snap physics-profile == sediment
 assert snap physics-overlays == depth-gravity
@@ -66,25 +93,31 @@ capture physics_profiles_sediment
 # frame this capture shows.
 assert snap layout-outside == 0
 wait
-select #gs-profile-select magnet
-dom click [data-command="apply-profile"]
+click role:combobox Profile
+settle 1
+click role:option Magnet
+settle 1
+click role:button Apply profile
 settle 1
 assert snap physics-profile == magnet
 assert snap physics-law == flow.magnetic
-select #gs-profile-select void
-dom click [data-command="apply-profile"]
+click role:combobox Profile
+settle 1
+click role:option Void
+settle 1
+click role:button Apply profile
 settle 1
 assert snap physics-profile == void
 assert snap physics-law == still.default
 # And a custom pair names no profile: Still plus the skeleton, then the
 # checkbox off again.
-check #gs-overlay-skeleton on
-dom click [data-command="apply-physics"]
+check-role Skeleton on
+click role:button Apply physics
 settle 1
 assert snap physics-overlays == skeleton
 assert snap physics-profile == custom
-check #gs-overlay-skeleton off
-dom click [data-command="apply-physics"]
+check-role Skeleton off
+click role:button Apply physics
 settle 1
 assert snap physics-profile == void
 assert snap layout-outside == 0

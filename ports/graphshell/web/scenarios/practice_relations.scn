@@ -7,11 +7,11 @@
 # two cards, and named to a reader beside the board.
 assert snap practice-view == relations
 assert snap practice-relations == 1
-assert attr [data-practice-id="relations-list"] aria-label Relations Shares C and E: C Major to A Minor
+assert retained {"role":"group","key":["data-practice-id","relations-list"],"attribute":"aria-label","value":"Relations Shares C and E: C Major to A Minor"}
 settle 2
 capture practice_relations_grid
 wait
-dom click [data-practice-command="scatter"]
+click role:button @data-practice-command=scatter
 settle 2
 assert snap practice-layout == scatter.default
 assert snap practice-relations == 1

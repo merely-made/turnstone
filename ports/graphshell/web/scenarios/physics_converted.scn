@@ -5,20 +5,29 @@
 # (F73, F81).
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
-select #gs-physics-select anneal.davidson-harel
-check #gs-overlay-gravity-locus on
+click role:combobox Physics law
 settle 1
-assert attr #gs-overlay-note hidden
-select #gs-physics-select still.default
+click role:option Anneal
 settle 1
-assert attr #gs-overlay-note hidden
-dom click [data-command="apply-physics"]
+check-role Centre on
+settle 1
+assert retained {"role":"status","label":"Overlay availability","count":0}
+click role:combobox Physics law
+settle 1
+click role:option Still
+settle 1
+settle 1
+assert retained {"role":"status","label":"Overlay availability","count":0}
+click role:button Apply physics
 settle 1
 assert snap physics-law == still.default
 assert snap physics-overlays == gravity-locus
-assert dom #gs-product-status Physics set to Still
-select #gs-physics-select density.gastner-newman
+assert retained {"role":"status","label":"Physics status","text":"Physics set to Still"}
+click role:combobox Physics law
 settle 1
-assert attr #gs-overlay-grid-snap disabled
-assert dom #gs-overlay-note Density takes only Hub room, Centre and Tide
+click role:option Density
+settle 1
+settle 1
+assert retained {"role":"checkbox","label":"Grid","attribute":"aria-disabled","value":"true"}
+assert retained {"role":"status","label":"Overlay availability","text":"Density takes only Hub room, Centre and Tide"}
 log physics converted receipt complete

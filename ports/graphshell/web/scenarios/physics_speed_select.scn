@@ -7,29 +7,41 @@
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
 assert snap physics-speed == 1
-dom click [data-command="physics:toggle"]
+click role:button @data-command=physics:toggle
 settle 1
 assert snap physics-paused == false
-select #gs-arrangement-select free
-dom click [data-command="apply-arrangement"]
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
 settle 1
 assert snap layout == free
-select #gs-speed-select 50
+click role:combobox Speed
+settle 1
+click role:option 50x
+settle 1
 settle 2
 assert snap physics-speed == 50
-assert dom #gs-product-status Speed set to 50x
+assert retained {"role":"status","label":"Physics status","text":"Speed set to 50x"}
 settle 40
 assert snap physics-budget-share == 0.5
-assert dom #gs-speed-note Reached
+assert retained {"role":"status","label":"Speed status","text":"Reached"}
 capture physics_speed_select_bound
-select #gs-speed-select max
+click role:combobox Speed
+settle 1
+click role:option Max
+settle 1
 settle 2
 assert snap physics-speed == max
-assert dom #gs-product-status Speed set to Max
+assert retained {"role":"status","label":"Physics status","text":"Speed set to Max"}
 settle 40
 assert snap physics-budget-bound == true
-assert dom #gs-speed-note the frame budget is full
-select #gs-speed-select 1
+assert retained {"role":"status","label":"Speed status","text":"the frame budget is full"}
+click role:combobox Speed
+settle 1
+click role:option 1x
+settle 1
 settle 4
 assert snap physics-speed == 1
 assert snap physics-budget-bound == false

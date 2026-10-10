@@ -40,6 +40,9 @@ pub(super) fn focused_text(
 }
 
 impl SavedProduct {
+    pub(super) fn authority_nodes(&self) -> Option<usize> {
+        match self.never {}
+    }
     pub(super) fn load_projection_input(&mut self, _: &str, _: Option<&str>) {
         match self.never {}
     }

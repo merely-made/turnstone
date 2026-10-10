@@ -5,38 +5,41 @@
 assert title GRAPHSHELL H3 READY
 act open-projection-editor
 settle 2
-assert dom #gs-projection-editor-dirty No unsaved changes
-assert dom #gs-projection-editor-preview Graphshell reference projection ·
-dom click [data-projection-panel="preview"]
+assert retained {"role":"status","label":"Projection saved state","text":"No unsaved changes"}
+assert retained {"role":"status","label":"Projection preview","text":"Graphshell reference projection \u00b7"}
+click role:tab Preview
 settle 2
-type #gs-projection-appearance-title First
+click role:textbox Projection title
+input-text First
 settle 2
-type #gs-projection-appearance-title First draft
+click role:textbox Projection title
+input-text First draft
 settle 90
-type #gs-projection-appearance-title Second
+click role:textbox Projection title
+input-text Second
 settle 2
-assert dom #gs-projection-editor-dirty Unsaved changes
-assert dom #gs-projection-editor-preview Second ·
-dom click [data-projection-panel="provenance"]
+assert retained {"role":"status","label":"Projection saved state","text":"Unsaved changes"}
+assert retained {"role":"status","label":"Projection preview","text":"Second \u00b7"}
+click role:tab Provenance
 settle 2
-dom click [data-command="undo-projection"]
+click role:button Undo projection
 settle 2
-assert dom #gs-projection-editor-status Undone · Preview
-assert dom #gs-projection-editor-preview First draft ·
-dom click [data-command="undo-projection"]
+assert retained {"role":"status","label":"Projection status","text":"Undone \u00b7 Preview"}
+assert retained {"role":"status","label":"Projection preview","text":"First draft \u00b7"}
+click role:button Undo projection
 settle 2
-assert dom #gs-projection-editor-preview Graphshell reference projection ·
-assert dom #gs-projection-editor-dirty No unsaved changes
+assert retained {"role":"status","label":"Projection preview","text":"Graphshell reference projection \u00b7"}
+assert retained {"role":"status","label":"Projection saved state","text":"No unsaved changes"}
 # With nothing left to undo the button is disabled, so a click does nothing;
 # the command itself still answers.
-assert attr [data-command="undo-projection"] disabled
+assert retained {"role":"button","label":"Undo projection","attribute":"disabled","value":""}
 act undo-projection
 settle 2
-assert dom #gs-projection-editor-status Nothing to undo
-dom click [data-command="redo-projection"]
+assert retained {"role":"status","label":"Projection status","text":"Nothing to undo"}
+click role:button Redo projection
 settle 2
-assert dom #gs-projection-editor-preview First draft ·
-assert dom #gs-projection-editor-dirty Unsaved changes
+assert retained {"role":"status","label":"Projection preview","text":"First draft \u00b7"}
+assert retained {"role":"status","label":"Projection saved state","text":"Unsaved changes"}
 capture projection_undo
 wait
 log projection editor undo proof complete

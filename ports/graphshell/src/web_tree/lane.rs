@@ -430,6 +430,14 @@ impl TreeLane {
             )
             .with_field("remote-state", remote.status())
             .with_field(
+                "remote-generation",
+                remote
+                    .mounted()
+                    .map(|mounted| mounted.scene.tables.generation.to_string())
+                    .unwrap_or_default(),
+            )
+            .with_field("remote-card-labels", remote.card_labels().join("\n"))
+            .with_field(
                 "remote-revision",
                 remote.revision().map(|r| r.to_string()).unwrap_or_default(),
             )
@@ -649,6 +657,21 @@ impl Product for TreeLane {
             .with_field("focus", format!("{focus:?}"))
             .with_field("focus-kind", focus_kind)
             .with_field("physics-paused", canvas.physics_paused().to_string())
+            .with_field(
+                "physics-composition",
+                match canvas.physics_composition() {
+                    None => "none",
+                    Some(mere::canvas::PhysicsComposition::Mix(_)) => "mix",
+                    Some(mere::canvas::PhysicsComposition::Grouped(_)) => "grouped",
+                },
+            )
+            .with_field("camera-centered", {
+                let size = self.shared.size.get();
+                let offset = canvas.camera().offset;
+                ((offset.0 - size.0 as f32 / 2.0).abs() < 0.005
+                    && (offset.1 - size.1 as f32 / 2.0).abs() < 0.005)
+                    .to_string()
+            })
             // Arrangement roles (dynamics grammar plan, G7): the recipe's role
             // and how many settles Settled has recorded.
             .with_field("arrangement-role", canvas.arrangement_roles().default.id())
@@ -777,6 +800,31 @@ impl Product for TreeLane {
             );
         let faces = self.shared.faces.get().unwrap_or_default().fields();
         let snapshot = practice::fields(page, snapshot);
+        // Host-boundary receipts come from the existing validated loader and
+        // Tabard adapter. Missing evidence stays absent, never a passing default.
+        let snapshot = [
+            "appearance-owner",
+            "appearance-theme",
+            "appearance-mode",
+            "appearance-background",
+            "appearance-source",
+            "appearance-status",
+            "chronicle-receipt",
+            "chronicle-definition",
+            "chronicle-datasets",
+            "chronicle-shelfmark",
+            "chronicle-variant",
+            "chronicle-era-bands",
+            "chronicle-generation",
+        ]
+        .into_iter()
+        .fold(snapshot, |snapshot, name| {
+            if let Some(value) = page.root.get_attribute(&format!("data-{name}")) {
+                snapshot.with_field(name, value)
+            } else {
+                snapshot
+            }
+        });
         let snapshot = faces.into_iter().fold(snapshot, |snapshot, (name, value)| {
             snapshot.with_field(name, value)
         });
@@ -792,6 +840,14 @@ impl Product for TreeLane {
                     },
                 )
                 .with_field("graph-session", product.session.clone())
+                .with_field("storage", product.storage.clone())
+                .with_field(
+                    "node-count",
+                    product
+                        .authority_nodes()
+                        .map(|count| count.to_string())
+                        .unwrap_or_default(),
+                )
                 .with_field("storage-reopened", product.reopened.to_string())
                 .with_field("save-state", product.save_state)
                 .with_field("detail-open", product.detail_open.to_string())
@@ -842,6 +898,12 @@ impl Product for TreeLane {
         _: mesquite::Checkpoints<'_>,
         line: &str,
     ) -> Result<(), String> {
+        if let Some(json) = line.strip_prefix("assert host ") {
+            return host_boundary::observe(json);
+        }
+        if let Some(command) = line.strip_prefix("host-input ") {
+            return host_boundary::request(&ctx.runner.state().root, command);
+        }
         if let Some(json) = line.strip_prefix("assert retained ") {
             return observe::assertion(ctx, json);
         }
@@ -1318,10 +1380,12 @@ impl Product for TreeLane {
         ctx: &mut AppCtx<'_, TreePage, Logic, Child>,
         capture_pending: bool,
     ) -> Option<bool> {
+        let host_pending = host_boundary::pending(&ctx.runner.state().root, &mut self.errors);
         let pending = self.shared.timing.borrow_mut().poll();
         let local_shown = ctx.runner.state().session == remote::Session::Local;
         Some(
             capture_pending
+                || host_pending
                 || pending
                 || self.shared.remote.borrow().in_flight()
                 || (local_shown && self.shared.moving.get())

@@ -3,16 +3,22 @@
 # floor a second in and five seconds later.
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
-dom click [data-command="physics:toggle"]
+click role:button @data-command=physics:toggle
 settle 1
 assert snap physics-paused == false
 # No arrangement: the boot Spiral's anchor springs would pull under every law.
-select #gs-arrangement-select free
-dom click [data-command="apply-arrangement"]
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
 settle 1
 assert snap layout == free
-select #gs-physics-select flock.boids
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Flock
+settle 1
+click role:button Apply physics
 settle 1
 assert snap physics-law == flock.boids
 assert snap physics-profile == law.flock

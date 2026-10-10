@@ -461,6 +461,7 @@ pub(crate) struct TreePage {
     shared: Rc<Shared>,
     root: Element,
     projection_source: Option<String>,
+    appearance_controls: appearance::Controls,
     /// Where the graph came from, for the status line and receipts.
     source: String,
     nodes: usize,
@@ -554,7 +555,7 @@ impl TreePage {
         format!(
             "{} · {} nodes · selected: {} · primary: {}",
             self.source,
-            self.nodes,
+            self.shared.canvas.borrow().graph().node_count(),
             selected,
             self.product
                 .as_ref()
@@ -660,6 +661,7 @@ fn tools_docked(page: &TreePage) -> bool {
 /// The Graph tools region: the storage line on `app=local`, then its sections.
 fn tools_region(page: &TreePage) -> Child {
     let mut children: Vec<Child> = Vec::new();
+    children.extend(appearance::view(page));
     if let Some(product) = &page.product {
         children.push(Box::new(
             el("p", format!("Storage: {}", product.storage))
@@ -911,10 +913,11 @@ async fn boot(root: Element) -> Result<(), String> {
     };
     let nodes = graph.node_count();
     let speed_options = crate::web_speed::options()?;
-    let appearance = crate::web_appearance::mount(
+    let appearance = crate::web_appearance::mount_retained(
         root.clone(),
         product.is_some() && root.has_attribute("data-appearance-application"),
     )?;
+    let appearance_controls = appearance::Controls::new(&appearance.borrow());
     let initial_sheet = tree_stylesheet(&appearance.borrow().sheet());
     let appearance_revision = Cell::new(appearance.borrow().revision);
     let shared = Rc::new(Shared {
@@ -998,6 +1001,7 @@ async fn boot(root: Element) -> Result<(), String> {
                 shared: page_shared,
                 root: root.clone(),
                 projection_source: None,
+                appearance_controls,
                 source,
                 nodes,
                 picked: None,
@@ -1064,6 +1068,9 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
     let after_shared = shared.clone();
     HostHooks {
         frame: Box::new(move |ctx| {
+            if ctx.runner.state().appearance_controls.changed() {
+                ctx.runner.update(appearance::apply);
+            }
             let incoming = ctx
                 .runner
                 .state()
@@ -1208,6 +1215,21 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             );
         }),
         after_frame: Box::new(move |ctx| {
+            // The Chronicle loader waits on the same live session that the
+            // retained board presents. This is host-boundary observation only.
+            {
+                let remote = after_shared.remote.borrow();
+                let root = &ctx.runner.state().root;
+                let _ = root.set_attribute("data-remote-state", remote.status());
+                if let Some(mounted) = remote.mounted() {
+                    let _ = root.set_attribute(
+                        "data-remote-generation",
+                        &mounted.scene.tables.generation.to_string(),
+                    );
+                } else {
+                    let _ = root.remove_attribute("data-remote-generation");
+                }
+            }
             if after_shared.adapter_info.borrow().is_none() {
                 if let Some(core) = ctx.render_core {
                     let info = core.renderer().wgpu_device.core.adapter.get_info();
@@ -1239,7 +1261,7 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
         }),
         after_wake: Box::new(|_ctx| {}),
         close_request: Box::new(|_ctx, _request| CloseDisposition::KeepVisible),
-        focused_text: Box::new(product::focused_text),
+        focused_text: Box::new(appearance::focused_text),
         key_intercept: Box::new(|_runner, _press| false),
     }
 }
@@ -1350,9 +1372,11 @@ impl NoRepulsionLane for mere::canvas::Canvas {
     }
 }
 
+mod appearance;
 #[cfg(feature = "applets")]
 mod applet;
 mod controls;
+mod host_boundary;
 mod lane;
 mod observe;
 mod physics;

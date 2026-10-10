@@ -6,19 +6,25 @@
 # a no-op by construction — the law holds everything, including the newcomer.
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
-dom click [data-command="physics:toggle"]
+click role:button @data-command=physics:toggle
 settle 1
 assert snap physics-paused == false
-select #gs-arrangement-select free
-dom click [data-command="apply-arrangement"]
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
 settle 1
 assert snap layout == free
 assert snap canvas-nodes == 11
 
 # --- Springs ---
 log add Springs
-select #gs-physics-select spring.rapier
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Springs
+settle 1
+click role:button Apply physics
 settle 120
 assert snap physics-law == spring.rapier
 add-node 300 260 mere://p4/add/springs
@@ -32,8 +38,11 @@ wait
 
 # --- Charge ---
 log add Charge
-select #gs-physics-select charge.barnes-hut
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Charge
+settle 1
+click role:button Apply physics
 settle 120
 assert snap physics-law == charge.barnes-hut
 add-node 320 272 mere://p4/add/charge
@@ -44,8 +53,11 @@ assert snap layout-overlaps == 0
 
 # --- Stress ---
 log add Stress
-select #gs-physics-select stress.kamada-kawai
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Stress
+settle 1
+click role:button Apply physics
 settle 120
 assert snap physics-law == stress.kamada-kawai
 add-node 340 284 mere://p4/add/stress
@@ -56,8 +68,11 @@ assert snap layout-overlaps == 0
 
 # --- Energy ---
 log add Energy
-select #gs-physics-select energy.linlog
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Energy
+settle 1
+click role:button Apply physics
 settle 120
 assert snap physics-law == energy.linlog
 add-node 360 296 mere://p4/add/energy
@@ -68,8 +83,11 @@ assert snap layout-overlaps == 0
 
 # --- Orbit ---
 log add Orbit
-select #gs-physics-select orbit.gravity
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Orbit
+settle 1
+click role:button Apply physics
 settle 120
 assert snap physics-law == orbit.gravity
 add-node 380 308 mere://p4/add/orbit
@@ -80,8 +98,11 @@ assert snap physics-energy >= 1
 
 # --- Kinds ---
 log add Kinds
-select #gs-physics-select kinds.particle-life
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Kinds
+settle 1
+click role:button Apply physics
 settle 120
 assert snap physics-law == kinds.particle-life
 add-node 400 320 mere://p4/add/kinds
@@ -92,8 +113,11 @@ assert snap physics-energy >= 1
 
 # --- Flock ---
 log add Flock
-select #gs-physics-select flock.boids
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Flock
+settle 1
+click role:button Apply physics
 settle 120
 assert snap physics-law == flock.boids
 add-node 420 332 mere://p4/add/flock
@@ -104,8 +128,11 @@ assert snap physics-energy >= 1
 
 # --- Sync ---
 log add Sync
-select #gs-physics-select sync.kuramoto
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Sync
+settle 1
+click role:button Apply physics
 settle 120
 assert snap physics-law == sync.kuramoto
 add-node 440 344 mere://p4/add/sync
@@ -116,8 +143,11 @@ assert snap physics-energy >= 1
 
 # --- Flow ---
 log add Flow
-select #gs-physics-select flow.magnetic
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Flow
+settle 1
+click role:button Apply physics
 settle 120
 assert snap physics-law == flow.magnetic
 add-node 460 356 mere://p4/add/flow
@@ -128,8 +158,11 @@ assert snap physics-energy >= 1
 
 # --- Anneal ---
 log add Anneal
-select #gs-physics-select anneal.davidson-harel
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Anneal
+settle 1
+click role:button Apply physics
 settle 120
 assert snap physics-law == anneal.davidson-harel
 add-node 480 368 mere://p4/add/anneal
@@ -141,8 +174,11 @@ assert snap physics-energy <= 5
 
 # --- Still ---
 log add Still
-select #gs-physics-select still.default
-dom click [data-command="apply-physics"]
+click role:combobox Physics law
+settle 1
+click role:option Still
+settle 1
+click role:button Apply physics
 settle 120
 assert snap physics-law == still.default
 add-node 500 380 mere://p4/add/still

@@ -6,11 +6,11 @@ settle 1
 pointer up right 1000 150
 settle 2
 assert snap command-menu == open
-assert dom #gs-command-menu-items Projection: order by tempo
-dom click [data-command-menu="drop:projection-scatter"]
+assert retained {"class":"tree-command-menu","text":"Projection: order by tempo"}
+click role:button @data-command-menu=drop:projection-scatter
 settle 6
 assert snap session-store == stored
-key escape
+key Escape
 settle 2
 assert snap command-menu == closed
 log command menu fresh-page reload complete

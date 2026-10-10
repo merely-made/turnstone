@@ -3,7 +3,7 @@
 Derived from testing/mere/viewer-cone/run-linux-receipt.py, SHA256
 d408973608a57e54de5f03bce8cb9530e7bfec082e07a875bea21ff236ce76f5.
 Adds explicitly shared managed profiles for reopen chains and outer-page captures.
-No builds or browser input. Output must be new. The sink and
+No builds. Explicit external-fixture input uses the allowlisted CDP bridge. Output must be new. The sink and
 Chrome process group belong to this run; unrelated processes are untouched.
 Linux /proc/stat samples record total CPU use, including the receipt itself.
 """
@@ -78,6 +78,7 @@ def main():
     env.setdefault('WAYLAND_DISPLAY', 'wayland-0')
     env.setdefault('DBUS_SESSION_BUS_ADDRESS', 'unix:path=' + env['XDG_RUNTIME_DIR'] + '/bus')
     chrome = None
+    host_input = None
     sink = None
     started = time.monotonic()
     try:
@@ -103,8 +104,14 @@ def main():
             command.append(url)
             metadata['command'] = command
             chrome = subprocess.Popen(command, stdout=chrome_log, stderr=chrome_log, env=env, start_new_session=True)
+            host_input = subprocess.Popen([
+                str(args.node), str(pathlib.Path(__file__).with_name('host-input.mjs')),
+                str(args.port + 1), origin + '/', str(args.out),
+            ], stdout=chrome_log, stderr=chrome_log, start_new_session=True)
             previous = cpu_ticks()
             while not (args.out / 'scenario.done').exists():
+                if host_input.poll() not in (None, 0):
+                    raise RuntimeError('External fixture input bridge failed; see host-input.json and chrome.log')
                 if chrome.poll() is not None:
                     raise RuntimeError('Chrome exited; see chrome.log')
                 if time.monotonic() - started > args.timeout:
@@ -125,8 +132,12 @@ def main():
             metadata['whole_frame_capture'] = 'whole-frame.png'
             metadata['whole_page_accessibility'] = 'whole-page-accessibility.json'
             print((args.out / 'scenario.done').read_text(), flush=True)
+    except Exception as error:
+        metadata['result'] = 'fail'
+        metadata['failure'] = str(error)
+        raise
     finally:
-        for process in (chrome, sink):
+        for process in (host_input, chrome, sink):
             if process is not None:
                 try:
                     os.killpg(process.pid, signal.SIGTERM)

@@ -71,6 +71,9 @@ pub(super) struct TreeRemote {
 }
 
 impl TreeRemote {
+    pub(super) fn card_labels(&self) -> Vec<String> {
+        Vec::new()
+    }
     pub(super) fn new() -> Self {
         Self {
             live: None,

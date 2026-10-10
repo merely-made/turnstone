@@ -1,3 +1,6 @@
+# Expose retained disclosure controls; return focus to the original canvas key target.
+click role:button Remote session
+focus-retained .tree-canvas
 # C4b.1: the real mount. The page joined a host over WebRTC (`?signal=`), so
 # the remote session is the live fixture's board, not the in-process canary.
 #
@@ -11,7 +14,7 @@ assert snap remote-cards == 1
 act session-remote
 settle 1
 assert snap session == remote
-assert dom #gs-active-session Remote projection
+assert snap active-session ~ Remote projection
 capture c4b1_mounted
 wait
 # The endpoint advertises both intents; the detail surface offers them as
@@ -19,16 +22,16 @@ wait
 # measured by a resnapshot, since a refusal rings no bell.
 act invoke-action
 settle 1
-assert dom #gs-remote-actions Append a card
-assert dom #gs-remote-actions Forbidden action
-dom click [data-intent="mere.graphshell/live-fixture/forbidden"]
+assert retained {"role":"group","label":"Remote actions","text":"Append a card"}
+assert retained {"role":"group","label":"Remote actions","text":"Forbidden action"}
+click role:button Forbidden action
 wait
 assert snap action-status ~ Rejected
 assert snap remote-revision == 1
 assert snap remote-cards == 1
 # The admitted one is accepted; the bell it rings drives a resume the host
 # answers by diff, and the canvas shows the second card.
-dom click [data-intent="mere.graphshell/live-fixture/append"]
+click role:button Append a card
 wait
 assert snap action-status ~ Accepted
 assert snap remote-revision == 2

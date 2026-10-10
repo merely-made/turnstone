@@ -1,3 +1,6 @@
+# Expose retained disclosure controls; return focus to the original canvas key target.
+click role:button Remote session
+focus-retained .tree-canvas
 # C4b.2: the embedded surface. embed.html is someone else's page — its own
 # heading, its own input and button carrying the component's *unprefixed*
 # id names (`search-input`, `session-local`) — with <graphshell-view> in a
@@ -5,59 +8,70 @@
 assert snap ready == true
 assert snap session == local
 assert snap detail-open == false
-assert dom #gs-active-session Local Mere
-assert attr #gs-session-local aria-pressed true
+assert snap active-session ~ Local Mere
+assert retained {"role":"button","label":"Local Mere","attribute":"aria-pressed","value":"true"}
 # The host page is untouched by the mount: its title, its ids, its text.
 assert title An embedding page
-assert dom #host-title An embedding page
-assert attr #search-input data-host-keys 0
-assert attr #session-local data-host-clicks 0
+assert host {"selector":"#host-title","text":"An embedding page"}
+assert host {"selector":"#search-input","attribute":"data-host-keys","value":"0"}
+assert host {"selector":"#session-local","attribute":"data-host-clicks","value":"0"}
 capture c4b2_embed_boot
 wait
 # Keys with focus on the host page's input reach the host page, not the
 # component: the camera does not move, the host counts the key.
-focus #search-input
-assert focused #search-input
-# The camera sits at the centre of the component's own 960 x 600 box, not
-# of the page: the component measures itself, not the viewport.
-assert snap camera == 480.00,300.00,1.000
-key left
+host-input focus #search-input
+wait
+assert host {"selector":"#search-input","focused":true}
+# Historical presenter comment: The camera sits at the centre of the component's own 960 x 600 box, not
+# Historical presenter comment: of the page: the component measures itself, not the viewport.
+# Geometry adaptation: actual retained canvas leaf, below the header and beside docked tools.
+assert snap camera-centered == true
+assert snap zoom == 1
+mark-camera
+host-input key ArrowLeft
+wait
 settle 1
-assert snap camera == 480.00,300.00,1.000
-assert attr #search-input data-host-keys 1
+assert snap camera-dx == 0
+assert snap camera-dy == 0
+# Geometry adaptation: actual retained canvas leaf, below the header and beside docked tools.
+assert snap camera-centered == true
+assert snap zoom == 1
+mark-camera
+assert host {"selector":"#search-input","attribute":"data-host-keys","value":"1"}
 # The host page's button with the component's old id is the host's own.
-dom click #session-local
+host-input click #session-local
+wait
 settle 1
-assert attr #session-local data-host-clicks 1
+assert host {"selector":"#session-local","attribute":"data-host-clicks","value":"1"}
 assert snap session == local
 # Keys with focus inside the component reach the component.
-focus #gs-graphshell-canvas
-assert focused #gs-graphshell-canvas
-key left
+focus-retained .tree-canvas
+assert retained {"class":"tree-canvas","focused":true}
+key ArrowLeft
 settle 1
 # Moved left of the box's centre; the distance is velocity-shaped.
 assert event command pan-left
-assert snap camera-x <= 440
-assert snap camera-y == 300.00
-key enter
+assert snap camera-dx <= -40
+assert snap camera-dy == 0
+key Enter
 settle 1
 assert snap detail-open == true
-assert attr #gs-detail-surface aria-hidden false
-key escape
+assert retained {"class":"tree-detail","count":1,"visible":true}
+key Escape
 settle 1
 assert snap detail-open == false
 # Tab order: the component's controls take focus in document order.
-focus #gs-session-remote
-assert focused #gs-session-remote
-key enter
+focus-retained role:button Remote mount
+assert retained {"role":"button","label":"Remote mount","focused":true}
+key Enter
 settle 1
-# Enter on a focused button is a click in a browser; a synthetic keydown is
-# not, so the session stays local and the host page still counted nothing.
-# The component's own Enter mapping opened the detail; close it, so both
+# Historical presenter comment: Enter on a focused button is a click in a browser; a synthetic keydown is
+# Historical presenter comment: not, so the session stays local and the host page still counted nothing.
+# Historical presenter comment: The component's own Enter mapping opened the detail; close it, so both
 # surfaces' receipts end in the same state and their semantic trees compare.
-assert attr #search-input data-host-keys 1
-assert attr #session-local data-host-clicks 1
-key escape
+assert host {"selector":"#search-input","attribute":"data-host-keys","value":"1"}
+assert host {"selector":"#session-local","attribute":"data-host-clicks","value":"1"}
+key Escape
 settle 1
 assert snap detail-open == false
 capture c4b2_embed_after
