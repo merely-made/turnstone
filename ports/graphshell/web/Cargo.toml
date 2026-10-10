@@ -195,6 +195,9 @@ opt-level = 3
 opt-level = 3
 
 [patch.crates-io]
+# Dramatis uses published muniment; the viewer and its applets share Mere's
+# own package, as the root workspace does after DR-D.
+muniment = { path = "../../../crates/eidetic/muniment" }
 taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda" }
 layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda", version = "=0.1.1" }
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda", version = "=0.1.2" }
