@@ -1133,6 +1133,44 @@
       "unresolved": []
     },
     {
+      "name": "p4_tree_forme.scn",
+      "original_sha256": "1620155cf2e1839e8f716bfb1de14b667b84fb9322f3e4b91617d4faae3d613a",
+      "retained_sha256": "02326d8c2397e07756cd5e28351504f22217d3df6a37831d9bf607a3568fab64",
+      "prelude": [],
+      "changes": [
+        {
+          "line": 50,
+          "original": "dom click [data-forme-address=\"file:///Graphshell/reference-notes.md\"] [data-forme-move]",
+          "retained": [
+            "click role:button @data-forme-control=[\"file:///Graphshell/reference-notes.md\",\"move\"]"
+          ]
+        },
+        {
+          "line": 52,
+          "original": "dom click [data-forme-address=\"https://example.test/i2p-port\"] [data-forme-preview=\"bottom\"]",
+          "retained": [
+            "click role:button @data-forme-control=[\"https://example.test/i2p-port\",\"bottom\"]"
+          ]
+        },
+        {
+          "line": 61,
+          "original": "dom click [data-forme-address=\"file:///Graphshell/reference-notes.md\"] [data-forme-move]",
+          "retained": [
+            "click role:button @data-forme-control=[\"file:///Graphshell/reference-notes.md\",\"move\"]"
+          ]
+        },
+        {
+          "line": 63,
+          "original": "dom click [data-forme-address=\"https://example.test/i2p-port\"] [data-forme-preview=\"bottom\"]",
+          "retained": [
+            "click role:button @data-forme-control=[\"https://example.test/i2p-port\",\"bottom\"]"
+          ]
+        }
+      ],
+      "unresolved": [],
+      "source_commit": "b726955ed36df01912b123421b07669dd849a3ca"
+    },
+    {
       "name": "p4_tree_history_controls.scn",
       "original_sha256": "6eb8905a7785aaf7eccea0faf6e393ffcef8594f48e152293998643786800202",
       "retained_sha256": "6eb8905a7785aaf7eccea0faf6e393ffcef8594f48e152293998643786800202",
@@ -3657,6 +3695,59 @@
         }
       ],
       "unresolved": []
+    },
+    {
+      "name": "projection_dynamics.scn",
+      "original_sha256": "3b92b63610263a2779dfa65c8d321ada26eabc2fbb7a1986200c20e1c858bd66",
+      "retained_sha256": "eb5021214eb4045ba18531a5e14ebe118035d5d8d7cb3597d6b894e8bd93696a",
+      "prelude": [],
+      "changes": [
+        {
+          "line": 5,
+          "original": "dom click [data-projection-panel=\"preview\"]",
+          "retained": [
+            "click role:tab Preview"
+          ]
+        },
+        {
+          "line": 12,
+          "original": "type [data-projection-field=\"dynamics.bound\"] 8",
+          "retained": [
+            "click role:textbox @data-projection-field=dynamics.bound",
+            "input-text 8"
+          ]
+        },
+        {
+          "line": 23,
+          "original": "assert dom [data-projection-compare-cell=\"dynamics:0:5\"] Step limit reached \u00b7 8 steps",
+          "retained": [
+            "assert retained {\"role\":\"button\",\"key\":[\"data-projection-compare-cell\",\"dynamics:0:5\"],\"text\":\"Step limit reached \u00b7 8 steps\"}"
+          ]
+        },
+        {
+          "line": 27,
+          "original": "assert dom [data-projection-compare-cell=\"refused:3:5\"] Refused",
+          "retained": [
+            "assert retained {\"role\":\"button\",\"key\":[\"data-projection-compare-cell\",\"refused:3:5\"],\"text\":\"Refused\"}"
+          ]
+        },
+        {
+          "line": 33,
+          "original": "dom click [data-projection-compare-cell=\"dynamics:0:5\"]",
+          "retained": [
+            "click role:button @data-projection-compare-cell=dynamics:0:5"
+          ]
+        },
+        {
+          "line": 36,
+          "original": "assert dom [data-projection-compare-cell=\"working\"] Live",
+          "retained": [
+            "assert retained {\"role\":\"button\",\"key\":[\"data-projection-compare-cell\",\"working\"],\"text\":\"Live\"}"
+          ]
+        }
+      ],
+      "unresolved": [],
+      "source_commit": "b726955ed36df01912b123421b07669dd849a3ca"
     },
     {
       "name": "projection_options.scn",

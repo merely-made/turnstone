@@ -162,10 +162,15 @@ fn now_secs() -> u64 {
 }
 
 impl SavedProduct {
+    pub(super) fn forme_source(&self) -> Option<(IndexedDbBackend, Uuid)> {
+        let app = self.app.as_ref()?;
+        Some((app.host.store(), app.host.graph_session().id().0))
+    }
     pub(super) fn ready(&self) -> bool {
         self.completed.borrow().is_some()
             || self.operation_completed.borrow().is_some()
             || self.projection.changed()
+            || self.projection.needs_frame()
     }
     pub(super) fn selection_locked(&self) -> bool {
         self.saving
@@ -351,6 +356,7 @@ impl SavedProduct {
 
     pub(super) fn poll(&mut self, canvas: &mut Canvas) -> bool {
         self.history.poll();
+        let projection_advanced = self.projection.advance();
         let projection_changed = self.projection.changed();
         if projection_changed {
             self.projection.apply_fields();
@@ -379,7 +385,7 @@ impl SavedProduct {
         }
 
         let Some((app, edit, result)) = self.completed.borrow_mut().take() else {
-            return projection_changed;
+            return projection_changed || projection_advanced;
         };
         self.app = Some(app);
         self.saving = false;

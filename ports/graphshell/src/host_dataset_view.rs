@@ -27,6 +27,7 @@ use mere::kernel::graph::apply::{
 use mere::kernel::graph::{Graph, NodeKey};
 use mere::kernel::types::GraphScope;
 use scenomise::host_dataset::HostDatasetV1;
+pub use scenomise::host_dataset::folds::FoldViewState;
 use uuid::Uuid;
 
 use crate::projection_compile::{ProjectionDataset, practice_compiler};
@@ -47,6 +48,8 @@ pub struct ViewedRelation {
     /// The labels of the two occurrences it joins.
     pub from: String,
     pub to: String,
+    /// Original assertions, with their explanations and source provenance.
+    pub witnesses: Vec<scenomise::projection::DisclosedRelationship>,
 }
 
 impl ViewedRelation {
@@ -63,12 +66,18 @@ pub struct HostDatasetView {
     pub positions: Vec<(NodeKey, PortablePoint)>,
     pub relations: Vec<ViewedRelation>,
     pub revision: String,
+    pub occurrences: BTreeMap<String, NodeKey>,
+    /// Complete portable scene, including the folds that determine disclosure.
+    pub scene: sceno::Scene,
+    /// Exact reading identity of each portable scene instance.
+    pub instances: BTreeMap<String, sceno::InstanceId>,
 }
 
 /// The viewer's definition: every occurrence in id order on a spiral,
 /// labelled by its `label` field.
 pub fn viewer_definition(dataset: &ProjectionDataset) -> ProjectionDefinition {
     ProjectionDefinition {
+        dynamics: None,
         version: PROJECTION_DEFINITION_VERSION,
         id: VIEWER_DEFINITION_ID.into(),
         label: "Host dataset".into(),
@@ -124,6 +133,7 @@ pub fn host_dataset_view(envelope: &HostDatasetV1) -> Result<HostDatasetView, St
     let mut graph = Graph::new();
     let mut keys = std::collections::HashMap::new();
     let mut positions = Vec::new();
+    let mut occurrences = BTreeMap::new();
     for (index, item) in projection.scene.items.iter().enumerate() {
         let instance = sceno::InstanceId(index as u32);
         let occurrence = &projection.occurrence_by_instance[&instance];
@@ -143,6 +153,7 @@ pub fn host_dataset_view(envelope: &HostDatasetV1) -> Result<HostDatasetView, St
             },
         );
         keys.insert(instance, key);
+        occurrences.insert(occurrence.clone(), key);
         positions.push((key, PortablePoint::new(at.x, at.y)));
     }
     let mut relations = Vec::new();
@@ -167,6 +178,7 @@ pub fn host_dataset_view(envelope: &HostDatasetV1) -> Result<HostDatasetView, St
             label: relationship.disclosure.label.clone(),
             from: projection.labels[&relation.from].clone(),
             to: projection.labels[&relation.to].clone(),
+            witnesses: vec![relationship.disclosure.clone()],
         });
     }
     Ok(HostDatasetView {
@@ -174,7 +186,255 @@ pub fn host_dataset_view(envelope: &HostDatasetV1) -> Result<HostDatasetView, St
         positions,
         relations,
         revision: envelope.dataset.revision.as_str().to_owned(),
+        occurrences,
+        scene: compiled.projection.scene.clone(),
+        instances: compiled.projection.instance_by_occurrence.clone(),
     })
+}
+
+/// A shared host-input controller. It compiles the complete arrangement once;
+/// opening a group changes disclosure, never the remaining nodes' coordinates.
+pub struct GroupedHostDataset {
+    envelope: HostDatasetV1,
+    pub hierarchy: scenomise::host_dataset::folds::HostDatasetFolds,
+    pub state: scenomise::host_dataset::folds::FoldViewState,
+    positions: BTreeMap<String, PortablePoint>,
+    labels: BTreeMap<String, String>,
+}
+
+impl GroupedHostDataset {
+    pub fn new(envelope: HostDatasetV1, membership_kind: &str) -> Result<Self, String> {
+        let complete = host_dataset_view(&envelope)?;
+        let hierarchy = scenomise::host_dataset::folds::HostDatasetFolds::new(
+            &envelope.dataset,
+            &envelope.relationships,
+            membership_kind,
+            complete.scene.clone(),
+            complete.instances.clone(),
+        )?;
+        let position_by_key: BTreeMap<_, _> = complete.positions.into_iter().collect();
+        let positions = complete
+            .occurrences
+            .iter()
+            .map(|(id, key)| (id.clone(), position_by_key[key]))
+            .collect();
+        let labels = complete
+            .occurrences
+            .iter()
+            .map(|(id, key)| (id.clone(), complete.graph.node_display_label(*key)))
+            .collect();
+        Ok(Self {
+            envelope,
+            hierarchy,
+            state: Default::default(),
+            positions,
+            labels,
+        })
+    }
+
+    pub fn label(&self, id: &str) -> &str {
+        &self.labels[id]
+    }
+
+    /// Recompile a checkpoint of the same authority. Surviving groups retain
+    /// their view choices and every surviving identity keeps its placement.
+    /// Choices naming removed groups are dropped rather than refusing history.
+    pub fn at_revision(&self, envelope: HostDatasetV1) -> Result<Self, String> {
+        if envelope.dataset.source != self.envelope.dataset.source {
+            return Err("Fold history cannot change its source authority".into());
+        }
+        let mut next = Self::new(envelope, self.hierarchy.membership_kind())?;
+        next.state.expanded = self
+            .state
+            .expanded
+            .iter()
+            .filter(|id| next.hierarchy.children(id).is_some())
+            .cloned()
+            .collect();
+        next.state.entered = self
+            .state
+            .entered
+            .as_ref()
+            .filter(|id| next.hierarchy.children(id).is_some())
+            .cloned();
+        next.remember_positions(self.positions.iter().map(|(id, at)| (id.clone(), *at)));
+        Ok(next)
+    }
+    pub fn total_occurrences(&self) -> usize {
+        self.envelope.dataset.occurrences.len()
+    }
+
+    /// Remember current coordinates, including a user's drag, before changing
+    /// the visible graph. Hidden nodes retain their last remembered position.
+    pub fn remember_positions(
+        &mut self,
+        positions: impl IntoIterator<Item = (String, PortablePoint)>,
+    ) {
+        for (id, position) in positions {
+            if self.positions.contains_key(&id) && position.x.is_finite() && position.y.is_finite()
+            {
+                self.positions.insert(id, position);
+            }
+        }
+    }
+
+    pub fn projection(&self) -> Result<scenomise::host_dataset::folds::FoldProjection, String> {
+        let mut projection = self.hierarchy.project(&self.state)?;
+        // The complete scene keeps hidden coordinates as well as visible drags.
+        for (id, instance) in self.hierarchy.instances() {
+            let position = self.positions[id];
+            projection.scene.items[instance.0 as usize]
+                .transform
+                .translate = sceno::Vec2::new(position.x, position.y);
+        }
+        let scene = &mut projection.scene;
+        // Hosted relationships are straight world-space routes. Keep the
+        // portable scene consistent with remembered canvas placements.
+        for relation in &mut scene.relations {
+            relation.points = vec![
+                scene.items[relation.from.0 as usize].transform.translate,
+                scene.items[relation.to.0 as usize].transform.translate,
+            ];
+        }
+        let mut bounds: Option<sceno::Rect> = None;
+        for item in &scene.items {
+            let transform = scene
+                .to_world(item.space)
+                .ok_or("Invalid hosted scene space")?
+                .then(&item.transform);
+            let rect = item.footprint.bounds().unwrap_or_default();
+            for (x, y) in [
+                (rect.origin.x, rect.origin.y),
+                (rect.origin.x + rect.size.w, rect.origin.y),
+                (rect.origin.x, rect.origin.y + rect.size.h),
+                (rect.origin.x + rect.size.w, rect.origin.y + rect.size.h),
+            ] {
+                let point = sceno::Rect::new(
+                    transform.apply(sceno::Vec2::new(x, y)),
+                    sceno::Size2::default(),
+                );
+                bounds = Some(bounds.map_or(point, |previous| previous.union(point)));
+            }
+        }
+        scene.bounds = bounds.unwrap_or_default();
+        Ok(projection)
+    }
+
+    /// Apply disclosure while retaining the viewport, surviving focus and the
+    /// current coordinates of every visible source identity. Physics pauses.
+    pub fn apply_to_canvas(
+        &mut self,
+        canvas: &mut mere::canvas::Canvas,
+    ) -> Result<Vec<ViewedRelation>, String> {
+        self.apply_to_canvas_with(canvas, |_| {})
+    }
+
+    /// Apply the same disclosure with optional presentation marks, such as
+    /// checkpoint changes, on the fresh view before it reaches the canvas.
+    pub fn apply_to_canvas_with(
+        &mut self,
+        canvas: &mut mere::canvas::Canvas,
+        decorate: impl FnOnce(&mut HostDatasetView),
+    ) -> Result<Vec<ViewedRelation>, String> {
+        self.remember_positions(canvas.graph().nodes().filter_map(|(key, node)| {
+            let id = node.url().strip_prefix("urn:host-dataset:")?.to_owned();
+            Some((id, canvas.world_position_of(key)?))
+        }));
+        let mut view = self.view()?;
+        decorate(&mut view);
+        let viewport = canvas.viewport();
+        let selected = canvas.focused_url().map(str::to_owned);
+        canvas.set_physics_paused(true);
+        canvas.set_graph(view.graph);
+        canvas.apply_strategy_positions(&view.positions);
+        canvas.land_paused_positions(&view.positions);
+        canvas.set_viewport(viewport);
+        if let Some(url) = selected {
+            canvas.select_by_url(&url);
+        }
+        Ok(view.relations)
+    }
+
+    pub fn view(&self) -> Result<HostDatasetView, String> {
+        let projected = self.projection()?;
+        let mut graph = Graph::new();
+        let mut occurrences = BTreeMap::new();
+        let mut positions = Vec::new();
+        for id in &projected.visible {
+            let url = format!("urn:host-dataset:{id}");
+            let position = self.positions[id];
+            let key = add_node(
+                &mut graph,
+                Some(Uuid::new_v5(&Uuid::NAMESPACE_URL, url.as_bytes())),
+                url,
+                position,
+            );
+            apply_graph_delta(
+                &mut graph,
+                GraphDelta::SetNodeTitle {
+                    key,
+                    title: self.labels[id].clone(),
+                },
+            );
+            occurrences.insert(id.clone(), key);
+            positions.push((key, position));
+        }
+        let by_id: BTreeMap<_, _> = self
+            .envelope
+            .relationships
+            .iter()
+            .map(|r| (&r.id, r))
+            .collect();
+        let mut relations = Vec::new();
+        for bundle in &projected.relations {
+            assert_semantic_predicate_in_scope(
+                &mut graph,
+                occurrences[&bundle.from],
+                occurrences[&bundle.to],
+                bundle.kind.clone(),
+                GraphScope::Custom("grouped-view".into()),
+            )
+            .ok_or("Could not draw a grouped relationship")?;
+            let witnesses: Vec<_> = bundle
+                .relationship_ids
+                .iter()
+                .map(|id| by_id[id].clone())
+                .collect();
+            let id_bytes =
+                serde_json::to_vec(&bundle.relationship_ids).map_err(|e| e.to_string())?;
+            let id = format!("bundle:{}", Uuid::new_v5(&Uuid::NAMESPACE_URL, &id_bytes));
+            let label = if witnesses.len() == 1 {
+                witnesses[0].label.clone()
+            } else {
+                format!(
+                    "{} ({} disclosed relationships)",
+                    witnesses[0].label,
+                    witnesses.len()
+                )
+            };
+            relations.push(ViewedRelation {
+                id,
+                kind: bundle.kind.clone(),
+                label,
+                from: self.labels[&bundle.from].clone(),
+                to: self.labels[&bundle.to].clone(),
+                witnesses,
+            });
+        }
+        Ok(HostDatasetView {
+            graph,
+            positions,
+            relations,
+            revision: self.envelope.dataset.revision.as_str().into(),
+            occurrences,
+            scene: projected.scene,
+            instances: self.hierarchy.instances().clone(),
+        })
+    }
+
+    pub fn relationship(&self, id: &str) -> Option<&scenomise::projection::DisclosedRelationship> {
+        self.envelope.relationships.iter().find(|r| r.id == id)
+    }
 }
 
 #[cfg(test)]
@@ -224,6 +484,146 @@ mod tests {
             "the fixture exercises drawn relationships"
         );
         assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn repository_expansion_keeps_source_identity_witnesses_and_remembered_placement() {
+        let envelope = parse_host_dataset(include_str!(
+            "../web/fixtures/grouped-manifest-components.json"
+        ))
+        .unwrap();
+        let original = envelope.clone();
+        let mut grouped = GroupedHostDataset::new(envelope, "contains").unwrap();
+        let closed = grouped.view().unwrap();
+        assert_eq!(closed.graph.node_count(), 3);
+        assert_eq!(closed.relations.len(), 3);
+        assert_canvas_projects_all_relations(&closed);
+        let key = closed.occurrences["repo:genet"];
+        let identity = closed.graph.get_node(key).unwrap().id;
+        let remembered = PortablePoint::new(123.0, 456.0);
+        grouped.remember_positions([("repo:genet".into(), remembered)]);
+        grouped
+            .state
+            .expanded
+            .extend(["repo:mere".into(), "workspace:mere:root".into()]);
+        let expanded = grouped.view().unwrap();
+        assert_eq!(expanded.graph.node_count(), 10);
+        let key = expanded.occurrences["repo:genet"];
+        assert_eq!(expanded.graph.get_node(key).unwrap().id, identity);
+        assert_eq!(
+            expanded
+                .positions
+                .iter()
+                .find(|(k, _)| *k == key)
+                .unwrap()
+                .1,
+            remembered
+        );
+        for relation in &expanded.relations {
+            for witness in &relation.witnesses {
+                assert_eq!(
+                    Some(witness),
+                    original.relationships.iter().find(|r| r.id == witness.id)
+                );
+            }
+        }
+        grouped.state.expanded.clear();
+        assert_eq!(grouped.view().unwrap().graph.node_count(), 3);
+        assert_eq!(grouped.envelope, original);
+    }
+
+    #[test]
+    fn the_portable_fold_scene_keeps_dragged_members_routes_and_bounds_consistent() {
+        let envelope = parse_host_dataset(include_str!(
+            "../web/fixtures/grouped-manifest-components.json"
+        ))
+        .unwrap();
+        let mut grouped = GroupedHostDataset::new(envelope, "contains").unwrap();
+        let moved = PortablePoint::new(10000.0, -20000.0);
+        grouped.remember_positions([("repo:genet".into(), moved)]);
+        let view = grouped.view().unwrap();
+        let instance = view.instances["repo:genet"];
+        let scene = view.scene;
+        assert_eq!(scene.validate_folds(), Ok(()));
+        assert_eq!(
+            scene.items[instance.0 as usize].transform.translate,
+            sceno::Vec2::new(moved.x, moved.y)
+        );
+        assert!(scene.bounds.origin.y <= moved.y);
+        assert!(scene.bounds.origin.x + scene.bounds.size.w >= moved.x);
+        for relation in &scene.relations {
+            assert_eq!(
+                relation.points[0],
+                scene.items[relation.from.0 as usize].transform.translate
+            );
+            assert_eq!(
+                relation.points[1],
+                scene.items[relation.to.0 as usize].transform.translate
+            );
+        }
+        let reopened: sceno::Scene =
+            serde_json::from_str(&serde_json::to_string(&scene).unwrap()).unwrap();
+        assert_eq!(reopened, scene);
+        assert_eq!(reopened.items.len(), grouped.total_occurrences());
+    }
+
+    #[test]
+    fn entering_a_workspace_exposes_member_crates_and_external_repository_context() {
+        let envelope = parse_host_dataset(include_str!(
+            "../web/fixtures/grouped-manifest-components.json"
+        ))
+        .unwrap();
+        let mut grouped = GroupedHostDataset::new(envelope, "contains").unwrap();
+        grouped.state.entered = Some("workspace:mere:root".into());
+        let projected = grouped.projection().unwrap();
+        assert_eq!(projected.breadcrumbs, ["repo:mere", "workspace:mere:root"]);
+        assert_eq!(projected.boundary.len(), 2);
+        assert!(projected.visible.contains("crate:mere:scenomise"));
+        assert!(projected.visible.contains("repo:genet"));
+        assert!(projected.visible.contains("repo:woodshed"));
+        assert_eq!(grouped.view().unwrap().graph.node_count(), 9);
+    }
+
+    #[test]
+    fn a_canvas_group_swap_preserves_dragged_coordinates_camera_and_surviving_focus() {
+        let envelope = parse_host_dataset(include_str!(
+            "../web/fixtures/grouped-manifest-components.json"
+        ))
+        .unwrap();
+        let mut grouped = GroupedHostDataset::new(envelope, "contains").unwrap();
+        let view = grouped.view().unwrap();
+        let mut canvas = mere::canvas::Canvas::with_graph(view.graph);
+        canvas.set_physics_paused(true);
+        let key = view.occurrences["repo:genet"];
+        let mut positions = view.positions;
+        let dragged = PortablePoint::new(317.0, -211.0);
+        positions.iter_mut().find(|(k, _)| *k == key).unwrap().1 = dragged;
+        canvas.land_paused_positions(&positions);
+        let mut camera = canvas.camera();
+        camera.zoom = 1.7;
+        camera.offset = (29.0, 83.0);
+        canvas.set_camera(camera);
+        canvas.select_by_url("urn:host-dataset:repo:genet");
+        grouped.state.expanded.insert("repo:mere".into());
+        grouped.apply_to_canvas(&mut canvas).unwrap();
+        assert_eq!(canvas.camera().zoom, 1.7);
+        assert_eq!(canvas.camera().offset, (29.0, 83.0));
+        assert_eq!(canvas.focused_url(), Some("urn:host-dataset:repo:genet"));
+        let (key, _) = canvas
+            .graph()
+            .nodes()
+            .find(|(_, n)| n.url() == "urn:host-dataset:repo:genet")
+            .unwrap();
+        assert_eq!(canvas.world_position_of(key), Some(dragged));
+        assert!(canvas.physics_paused());
+        grouped.state.expanded.clear();
+        grouped.apply_to_canvas(&mut canvas).unwrap();
+        let (key, _) = canvas
+            .graph()
+            .nodes()
+            .find(|(_, n)| n.url() == "urn:host-dataset:repo:genet")
+            .unwrap();
+        assert_eq!(canvas.world_position_of(key), Some(dragged));
     }
 
     #[test]

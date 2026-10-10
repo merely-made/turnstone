@@ -35,8 +35,8 @@
 
 use muniment::JsonSlots;
 use pandect::{DeviceId, PersonaId, WrappedEpochRecord, encode_epoch_record};
+use personae::IdentityProvider;
 use personae::carry::persona_wallet_salt;
-use personae::{IdentityProvider, InMemoryProvider};
 use serde::{Deserialize, Serialize};
 
 use super::{CarriageCeilings, CarriageHost, CarriageHostError, HeldLease, now_ms};
@@ -88,6 +88,11 @@ fn retraction_index_key(device: DeviceId) -> String {
 impl CarriageHost {
     /// Publish every slot this wallet's roster says should ride this lane.
     ///
+    /// `wallet` signs as each persona's chain root and `bridge` holds the
+    /// wrapping keys pairing retained. Both are custody: the resident (djinn)
+    /// loads them from castellan and hands them in, since Graphshell opens no
+    /// wallet (dramatis repo plan, D5).
+    ///
     /// The issue-path integration: after grants are issued or refreshed
     /// through `pandect`, the wallet host calls this to put each leased
     /// device's wrapped-epoch records on the carriage topic. The roster is
@@ -104,19 +109,13 @@ impl CarriageHost {
     pub async fn publish_grant_carriage(
         &self,
         data_root: &std::path::Path,
+        wallet: &dyn IdentityProvider,
+        bridge: &pandect::RemoteAuthWrappingKeyBridge,
     ) -> Result<CarriagePublishReport, CarriageHostError> {
-        let seed = pandect::load_identity_seed(data_root)
-            .map_err(|error| CarriageHostError::Transport(error.to_string()))?
-            .ok_or_else(|| {
-                CarriageHostError::Refused("wallet root missing identity seed".into())
-            })?;
-        let provider = personae::InMemoryProvider::from_seed(seed);
+        let provider = wallet;
         let roster = pandect::load_device_roster(data_root)
             .map_err(|error| CarriageHostError::Transport(error.to_string()))?
             .unwrap_or_else(pandect::DeviceRoster::new);
-        let bridge = pandect::load_remote_auth_wrapping_key_bridge(data_root)
-            .map_err(|error| CarriageHostError::Transport(error.to_string()))?
-            .unwrap_or_default();
 
         let mut report = CarriagePublishReport::default();
         for device in &roster.devices {
@@ -236,7 +235,8 @@ impl CarriageHost {
     /// Destroy a revoked device's carriage on every cooperative peer, now
     /// rather than at expiry.
     ///
-    /// Call after `pandect::revoke_remote_auth_device`; the index makes the
+    /// Call after the wallet revokes the device (djinn, through castellan);
+    /// `wallet` signs as each persona's chain root. The index makes the
     /// ordering safe, since it was written when the wrapping key still
     /// existed. Each indexed slot is superseded by an empty record under a
     /// short lease, which the grammar's own prune turns into destruction:
@@ -246,12 +246,12 @@ impl CarriageHost {
     pub async fn retract_device_carriage(
         &self,
         device: DeviceId,
-        master_seed: [u8; 32],
+        wallet: &dyn IdentityProvider,
     ) -> Result<CarriageRetractReport, CarriageHostError> {
         let index = self.retraction_index();
         let key = retraction_index_key(device);
         let targets: Vec<RetractionTarget> = index.load(&key).await?.unwrap_or_default();
-        let provider = InMemoryProvider::from_seed(master_seed);
+        let provider = wallet;
 
         let mut report = CarriageRetractReport::default();
         for target in &targets {

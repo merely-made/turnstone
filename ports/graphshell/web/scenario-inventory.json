@@ -424,6 +424,90 @@
       "translation_record": "tests/scenario-translations.json"
     },
     {
+      "name": "hosted_camera_recovery.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "0c524a023ef4079caa6e7c182d697562c67cdeddbb17999bcf846c09d6f5d77f",
+      "original_source_sha256": "0c524a023ef4079caa6e7c182d697562c67cdeddbb17999bcf846c09d6f5d77f",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "host": "grouped-dataset.html; supplied fixtures/grouped-manifest-components.json; grouping=contains. Original camera/focus assertions and any narrow viewport receipt remain required.",
+        "setup_verification": "pending"
+      },
+      "dialect": "upstream-original-awaiting-retained-qualification",
+      "source_commit": "b726955ed36df01912b123421b07669dd849a3ca"
+    },
+    {
+      "name": "hosted_fold_gestures.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "7fab7faa152cfefc17dc65d6039d535ae14681abc7f52a60f2a99ca84eabb273",
+      "original_source_sha256": "7fab7faa152cfefc17dc65d6039d535ae14681abc7f52a60f2a99ca84eabb273",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "host": "grouped-dataset.html; supplied fixtures/grouped-manifest-components.json; grouping=contains. Real page gesture routing through installed listeners; original scenario assertions unchanged.",
+        "setup_verification": "pending"
+      },
+      "dialect": "upstream-original-awaiting-retained-qualification",
+      "source_commit": "b726955ed36df01912b123421b07669dd849a3ca"
+    },
+    {
+      "name": "hosted_folds_history.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "1830b29f4e75c21697456e04b4e5b44fafe7c377ecd969d50eeb11dfa958b5a6",
+      "original_source_sha256": "1830b29f4e75c21697456e04b4e5b44fafe7c377ecd969d50eeb11dfa958b5a6",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "host": "tree.html?dataset=fixtures/grouped-host-history.json&grouping=contains; host history loaded before mount.",
+        "setup_verification": "pending"
+      },
+      "dialect": "upstream-original-awaiting-retained-qualification",
+      "source_commit": "b726955ed36df01912b123421b07669dd849a3ca"
+    },
+    {
+      "name": "nested_host_groups.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "de4ab13cfef188960f951c1930d562a895fed01e3fc3d5253a050ca893d9166b",
+      "original_source_sha256": "de4ab13cfef188960f951c1930d562a895fed01e3fc3d5253a050ca893d9166b",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "host": "tree.html?dataset=fixtures/grouped-manifest-components.json&grouping=contains; host dataset loaded before mount.",
+        "setup_verification": "pending"
+      },
+      "dialect": "upstream-original-awaiting-retained-qualification",
+      "source_commit": "b726955ed36df01912b123421b07669dd849a3ca"
+    },
+    {
       "name": "p0_viewer_site_frames_21.scn",
       "status": "live",
       "verification": "pending",
@@ -948,6 +1032,49 @@
       "original_source_sha256": "7d60597dd9085d525a9a7b0c62dbc5cf7b2b53fdf491e6f2819070f7f001940e",
       "dialect": "shared-retained-with-explicit-host-fixture",
       "translation_record": "tests/scenario-translations.json"
+    },
+    {
+      "name": "p4_tree_forme.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "02326d8c2397e07756cd5e28351504f22217d3df6a37831d9bf607a3568fab64",
+      "original_source_sha256": "1620155cf2e1839e8f716bfb1de14b667b84fb9322f3e4b91617d4faae3d613a",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "host": "tree.html?app=local with a dedicated local IndexedDB origin/profile; follow with p4_tree_forme_reopen.scn on that same origin/profile.",
+        "setup_verification": "pending"
+      },
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "source_commit": "b726955ed36df01912b123421b07669dd849a3ca",
+      "translation_record": "tests/scenario-translations.json"
+    },
+    {
+      "name": "p4_tree_forme_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "9b48204a57ebd101fa6c249aad275d9f04c66b65e9158e19d709f8a1472224a4",
+      "original_source_sha256": "9b48204a57ebd101fa6c249aad275d9f04c66b65e9158e19d709f8a1472224a4",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "host": "Same local IndexedDB origin/profile after p4_tree_forme.scn; actual saved Forme workspace must exist before reopen.",
+        "setup_verification": "pending"
+      },
+      "dialect": "upstream-original-awaiting-retained-qualification",
+      "source_commit": "b726955ed36df01912b123421b07669dd849a3ca"
     },
     {
       "name": "p4_tree_history_controls.scn",
@@ -2767,6 +2894,28 @@
       },
       "original_source_sha256": "73b833bebfa401605f92f3277c4213cbba91cbbcc776d4142c72f43c89548499",
       "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": "tests/scenario-translations.json"
+    },
+    {
+      "name": "projection_dynamics.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "eb5021214eb4045ba18531a5e14ebe118035d5d8d7cb3597d6b894e8bd93696a",
+      "original_source_sha256": "3b92b63610263a2779dfa65c8d321ada26eabc2fbb7a1986200c20e1c858bd66",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "host": "Default public page; actual practice dataset loaded by original actions; retained shared input to Preview step limit and normal geometry clicks on comparison cells.",
+        "setup_verification": "pending"
+      },
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "source_commit": "b726955ed36df01912b123421b07669dd849a3ca",
       "translation_record": "tests/scenario-translations.json"
     },
     {

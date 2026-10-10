@@ -4,8 +4,8 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! The Graphshell application's identity: a user-selected Personae profile
-//! loaded from the shared vault.
+//! The Graphshell application's identity: the persona in use, as djinn
+//! releases it.
 //!
 //! Section 3 puts this here and nowhere else. `graphshell-client` stays
 //! transport-independent and takes **no** Personae dependency — a client that
@@ -13,43 +13,34 @@
 //! identity lives, which is the opposite of the portable boundary. The
 //! *application* composes Personae; the protocol crates never see it.
 //!
-//! ## Fail closed, unlike Turnstone
+//! ## Through djinn (dramatis repo plan, D5, D11, D12)
 //!
-//! Turnstone's equivalent falls back to an unsealed profile seed when no vault
-//! backend exists, because a browser refusing to start over a key store is
-//! worse than one that says plainly what protects its key. **Graphshell must
-//! not copy that.** It serves sessions to remote peers who pin the key they
-//! reached; inventing one because the vault would not open means a peer's
-//! pinned identity silently changes, which is indistinguishable from an
-//! impostor. So a vault that will not open is an error here, not a fallback.
+//! Graphshell opens no vault. Its session keys are namespaced derived keys
+//! djinn releases on the custody route, each with the master's attestation;
+//! the master never leaves djinn. With djinn absent or Locked the identity is
+//! pending ([`crate::native::custody_client::CustodyClientError::is_pending`]),
+//! never a key of Graphshell's own: a peer pins the key it reached, and a
+//! silently different one is indistinguishable from an impostor. The vault
+//! and the profile selection this module once held moved to djinn in DR-C.
 //!
 //! ## Selection
 //!
-//! The profile is the **family choice** ([`personae::roster`]): picked once,
-//! beside the shared vault, honoured by every Merely application — so
-//! Graphshell speaks as whoever the user is everywhere else, rather than as a
-//! second identity they did not know they had. `GRAPHSHELL_PROFILE` sits above
-//! the family ladder as this application's own override, for a host that
-//! genuinely should speak as someone else (a receipt run, a second resident on
-//! one machine).
+//! The profile is the **family choice**, which djinn resolves beside the
+//! shared vault. `GRAPHSHELL_PROFILE` ([`env_profile`]) sits above the family
+//! ladder as this application's own override, for a host that genuinely
+//! should speak as someone else (a receipt run, a second resident on one
+//! machine); djinn honours it when it resolves.
 
-use personae::AttestationKeys;
-use std::path::{Path, PathBuf};
-
+use dramatis::view::VaultProtectionView;
 use insigne::DerivedKeyAttestation;
-use personae::bootstrap::{self, Unlock};
-use personae::roster;
-use personae::vault::{IdentityStorage, IdentityVault, ProfileId};
-use personae::{Ed25519Keypair, Ed25519PublicKey, IdentityError, IdentityProvider};
+use personae::vault::ProfileId;
+use personae::{Ed25519Keypair, Ed25519PublicKey, IdentityError, IdentityProvider, RetainedKeys};
 
-/// Environment override for the profile Graphshell speaks as, above the
-/// family-wide [`personae::roster::PROFILE_ENV`].
+use crate::native::custody::{CustodyRefusal, KeySource};
+use crate::native::custody_client::{CustodyClient, CustodyClientError};
+
 pub const PROFILE_ENV: &str = "GRAPHSHELL_PROFILE";
 
-/// This application's own override: `GRAPHSHELL_PROFILE`, or nothing.
-///
-/// `None` means Graphshell has no opinion of its own and the family choice
-/// decides — which is the ordinary case.
 pub fn env_profile() -> Option<ProfileId> {
     std::env::var(PROFILE_ENV)
         .ok()
@@ -58,93 +49,50 @@ pub fn env_profile() -> Option<ProfileId> {
         .map(ProfileId)
 }
 
-/// Which profile this process speaks as.
-///
-/// The ladder: an explicit choice from the caller (a `--profile` flag), then
-/// [`env_profile`], then the family ladder ([`personae::roster::resolve_profile`]:
-/// `PERSONAE_PROFILE`, the choice remembered beside the vault, the vault's
-/// sole persona, `default`). Needs the opened storage for the sole-persona
-/// rung, which every caller already has — resolution without looking at the
-/// vault is how five hardcoded `"default"`s happened.
-pub fn resolve_selected_profile(
-    storage: &dyn IdentityStorage,
-    vault_dir: &Path,
-    explicit: Option<&ProfileId>,
-) -> Result<ProfileId, IdentityError> {
-    if let Some(profile) = explicit {
-        return Ok(profile.clone());
-    }
-    if let Some(profile) = env_profile() {
-        return Ok(profile);
-    }
-    roster::resolve_profile(storage, vault_dir)
+/// The derivation salt for one session's endpoint key.
+pub fn session_salt(session: &str) -> Vec<u8> {
+    format!("graphshell/endpoint-session/{session}").into_bytes()
 }
 
-/// The shared Personae vault directory.
-pub fn default_vault_dir() -> PathBuf {
-    bootstrap::default_vault_dir()
-}
-
-/// A loaded Graphshell identity.
+/// The persona Graphshell speaks as, holding only the session keys djinn
+/// released for it.
 pub struct GraphshellIdentity {
-    vault: IdentityVault<Box<dyn IdentityStorage>>,
+    keys: RetainedKeys,
     profile: ProfileId,
-    description: String,
+    protection: VaultProtectionView,
 }
 
 impl GraphshellIdentity {
-    /// Load `profile` from the vault at `vault_dir`, naming the unlock.
-    /// Only a CLI reads it from the environment (vault lock plan, rulings 7
-    /// and 89); errors rather than inventing an identity (see the module
-    /// note).
-    ///
-    /// Exists because [`Unlock::AutoOs`] is only implemented on Windows:
-    /// `personae`'s auto-unlock root is `None` on every other platform, so a
-    /// caller that wants a vault it can actually open elsewhere has to say
-    /// which unlock it means. Tests use it to prove the attestation on any
-    /// platform instead of skipping where the OS ladder is absent.
-    pub fn load_with(
-        vault_dir: &Path,
-        profile: &ProfileId,
-        unlock: Unlock,
-    ) -> Result<Self, IdentityError> {
-        let opened = bootstrap::open_storage(vault_dir, unlock)?;
-        let (loaded, created) = bootstrap::load_or_create_profile(&*opened.storage, profile)?;
-        if created {
-            // Worth saying out loud: a peer that pinned a previous key will
-            // not recognise this one.
-            eprintln!(
-                "graphshell: minted a new Personae profile `{}` in {}",
-                profile.0,
-                vault_dir.display()
-            );
-        }
-        Ok(Self {
-            vault: IdentityVault::with_profile(opened.storage, loaded),
-            profile: profile.clone(),
-            description: opened.description,
-        })
+    /// Ask djinn for the persona in use and the session keys of `sessions`.
+    /// A pending identity (djinn absent or Locked) is an error the caller
+    /// shows as pending, never a reason to mint a key of its own.
+    pub async fn from_djinn(
+        client: &mut CustodyClient,
+        sessions: &[&str],
+    ) -> Result<Self, CustodyClientError> {
+        let status = client.status().await?;
+        let profile = status
+            .profile
+            .ok_or(CustodyClientError::Refused(CustodyRefusal::Locked))?;
+        let salts = sessions
+            .iter()
+            .map(|session| session_salt(session))
+            .collect();
+        let keys = client.release(KeySource::Persona, salts).await?;
+        Ok(Self::from_keys(keys, profile, status.protection))
     }
 
-    /// Load whichever profile [`resolve_selected_profile`] picks from the
-    /// shared vault: the one call an application makes to speak as the user.
-    pub fn load_selected(unlock: Unlock) -> Result<Self, IdentityError> {
-        let vault_dir = default_vault_dir();
-        let opened = bootstrap::open_storage(&vault_dir, unlock)?;
-        let profile = resolve_selected_profile(&*opened.storage, &vault_dir, None)?;
-        let (loaded, created) = bootstrap::load_or_create_profile(&*opened.storage, &profile)?;
-        if created {
-            eprintln!(
-                "graphshell: minted a new Personae profile `{}` in {}",
-                profile.0,
-                vault_dir.display()
-            );
-        }
-        Ok(Self {
-            vault: IdentityVault::with_profile(opened.storage, loaded),
+    /// Wrap keys already released, for a host that asked for them itself.
+    pub fn from_keys(
+        keys: RetainedKeys,
+        profile: ProfileId,
+        protection: VaultProtectionView,
+    ) -> Self {
+        Self {
+            keys,
             profile,
-            description: opened.description,
-        })
+            protection,
+        }
     }
 
     /// The profile this identity speaks as.
@@ -152,29 +100,29 @@ impl GraphshellIdentity {
         &self.profile
     }
 
-    /// Personae's own account of what protects the key at rest — shown, never
-    /// guessed, so a user is never left inferring whether their key is sealed.
-    pub fn protection(&self) -> &str {
-        &self.description
+    /// What protects the key at rest, as djinn reports it — shown, never
+    /// guessed.
+    pub fn protection(&self) -> VaultProtectionView {
+        self.protection
     }
 
     /// The durable identity a remote peer pins.
     pub fn master_public_key(&self) -> Ed25519PublicKey {
-        IdentityProvider::master_public_key(&self.vault)
+        self.keys.master_public_key()
     }
 
     /// The derivation salt for one session's endpoint key.
     pub fn session_salt(session: &str) -> Vec<u8> {
-        format!("graphshell/endpoint-session/{session}").into_bytes()
+        session_salt(session)
     }
 
     /// A per-session endpoint keypair, derived from the profile identity.
     ///
-    /// The same shape Turnstone's projection endpoint uses: a session acts under
-    /// its own key rather than the master, so a compromised session key is not
-    /// the profile.
+    /// The same shape Turnstone's projection endpoint uses: a session acts
+    /// under its own key rather than the master, so a compromised session key
+    /// is not the profile. Locked for a session djinn did not release.
     pub fn session_key(&self, session: &str) -> Result<Ed25519Keypair, IdentityError> {
-        self.vault.derive_keypair(&Self::session_salt(session))
+        self.keys.derive_keypair(&session_salt(session))
     }
 
     /// **The endpoint-key proof.** A master-signed attestation that this
@@ -189,38 +137,30 @@ impl GraphshellIdentity {
         &self,
         session: &str,
     ) -> Result<DerivedKeyAttestation, IdentityError> {
-        self.vault.attest_derived_key(&Self::session_salt(session))
+        self.keys.attest_derived_key(&session_salt(session))
     }
 }
 
 impl IdentityProvider for GraphshellIdentity {
     fn master_public_key(&self) -> Ed25519PublicKey {
-        IdentityProvider::master_public_key(&self.vault)
+        self.keys.master_public_key()
     }
 
     fn derive_keypair(&self, salt: &[u8]) -> Result<Ed25519Keypair, IdentityError> {
-        self.vault.derive_keypair(salt)
+        self.keys.derive_keypair(salt)
     }
 
     fn attest_derived_key(&self, salt: &[u8]) -> Result<DerivedKeyAttestation, IdentityError> {
-        self.vault.attest_derived_key(salt)
+        self.keys.attest_derived_key(salt)
     }
 }
 
-/// Verify an endpoint-key proof: that `attestation` binds a session key to
-/// `expected_master` for `session`.
-///
-/// `expected_master` must come from what the **carrier authenticated**, never
-/// from the same frame that carried the attestation — otherwise an impostor
-/// supplies both halves and they agree with each other.
 pub fn verify_session_key(
     attestation: &DerivedKeyAttestation,
     expected_master: Ed25519PublicKey,
     session: &str,
 ) -> Option<Ed25519PublicKey> {
-    let checked = attestation
-        .check(&GraphshellIdentity::session_salt(session))
-        .ok()?;
+    let checked = attestation.check(&session_salt(session)).ok()?;
     if checked.master() != &expected_master.to_bytes() {
         return None;
     }
@@ -229,66 +169,26 @@ pub fn verify_session_key(
 
 #[cfg(test)]
 mod tests {
+    use personae::InMemoryProvider;
+
     use super::*;
 
-    fn scratch(tag: &str) -> PathBuf {
-        let dir =
-            std::env::temp_dir().join(format!("graphshell-profile-{tag}-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&dir);
-        dir
-    }
-
-    #[test]
-    fn the_selected_profile_is_the_family_choice() {
-        // Graphshell speaks as whoever the user is everywhere else. The rungs
-        // that matter here: an explicit flag beats everything, and with no
-        // opinion of its own Graphshell takes the family ladder — including
-        // the sole-persona rung, so a vault holding one persona under another
-        // name does not gain a second identity minted behind the user's back.
-        use personae::vault::InMemoryStorage;
-        let dir = scratch("family-choice");
-        std::fs::create_dir_all(&dir).unwrap();
-        let storage = InMemoryStorage::new();
-
-        let explicit = ProfileId("receipt".into());
-        assert_eq!(
-            resolve_selected_profile(&storage, &dir, Some(&explicit)).unwrap(),
-            explicit
+    /// Session keys released for `sessions`, as djinn releases them.
+    fn released(sessions: &[&str]) -> (InMemoryProvider, GraphshellIdentity) {
+        let master = InMemoryProvider::from_seed([0x5e; 32]);
+        let salts: Vec<Vec<u8>> = sessions.iter().map(|s| session_salt(s)).collect();
+        let keys = RetainedKeys::capture(&master, &salts).unwrap();
+        let identity = GraphshellIdentity::from_keys(
+            keys,
+            ProfileId("test".into()),
+            VaultProtectionView::Passphrase,
         );
-
-        storage
-            .save_profile(&personae::vault::Profile::new(
-                ProfileId("stage-name".into()),
-                "Stage Name",
-                Ed25519Keypair::generate(),
-            ))
-            .unwrap();
-        assert_eq!(
-            resolve_selected_profile(&storage, &dir, None).unwrap().0,
-            "stage-name",
-            "the vault's sole persona wins over minting a default beside it"
-        );
-        let _ = std::fs::remove_dir_all(&dir);
+        (master, identity)
     }
 
     #[test]
     fn a_session_key_is_derived_stably_and_its_proof_verifies() {
-        let dir = scratch("attest");
-        // Named unlock, not the environment's. This test used to take the OS
-        // ladder and skip when it was absent, which meant that on macOS and
-        // Linux it printed "skipped" and still reported **pass** — "the proof
-        // verifies" with no evidence behind it, which is the exact failure the
-        // Windows branch was hardened against. `Unlock::AutoOs` is Windows-only
-        // (personae's auto-unlock root is `None` everywhere else), so the fix
-        // is not to demand a sealed backend that does not exist on the
-        // platform; it is to use the portable vault, which every platform has,
-        // and assert unconditionally.
-        let identity = GraphshellIdentity::load_with(
-            &dir,
-            &ProfileId("test".into()),
-            Unlock::Passphrase(b"graphshell-test-passphrase".to_vec().into()),
-        )
-        .expect("the portable vault opens on every platform, so this proves the attestation");
+        let (full, identity) = released(&["s1", "s2"]);
 
         let first = identity.session_key("s1").unwrap();
         let again = identity.session_key("s1").unwrap();
@@ -302,6 +202,11 @@ mod tests {
             first.public_key().to_bytes(),
             other.public_key().to_bytes(),
             "a different session is a different key"
+        );
+        assert_eq!(
+            first.to_seed(),
+            full.derive_keypair(&session_salt("s1")).unwrap().to_seed(),
+            "the released key is the vault's own derivation"
         );
 
         // The proof binds that key to this profile's master.
@@ -321,27 +226,15 @@ mod tests {
             verify_session_key(&attestation, impostor, "s1").is_none(),
             "a proof is worthless against the wrong identity"
         );
-        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]
-    fn an_unopenable_vault_is_an_error_not_an_invented_identity() {
-        // A vault path under a FILE cannot be created. Turnstone would fall back
-        // to an unsealed seed here; Graphshell must not, because a peer pins
-        // the key it reached and a silently different one is an impostor.
-        let dir = scratch("closed");
-        std::fs::create_dir_all(&dir).unwrap();
-        let file = dir.join("not-a-dir");
-        std::fs::write(&file, b"x").unwrap();
-        assert!(
-            GraphshellIdentity::load_with(
-                &file.join("vault"),
-                &ProfileId("test".into()),
-                Unlock::passphrase("test"),
-            )
-            .is_err(),
-            "no identity is invented when the vault will not open"
-        );
-        let _ = std::fs::remove_dir_all(&dir);
+    fn a_session_djinn_did_not_release_is_locked_not_invented() {
+        // Graphshell must not invent a key: a peer pins the one it reached.
+        let (_, identity) = released(&["s1"]);
+        assert!(matches!(
+            identity.session_key("s2"),
+            Err(IdentityError::Locked)
+        ));
     }
 }

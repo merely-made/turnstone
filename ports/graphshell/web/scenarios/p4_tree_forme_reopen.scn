@@ -1,0 +1,23 @@
+# Reopen the same local browser origin/profile after p4_tree_forme.scn.
+assert snap source == saved graph
+assert snap storage-reopened == true
+assert snap forme-accesses == 2
+assert snap forme-cells == 2
+assert snap forme-placed == 2
+assert snap forme-locked == true
+assert snap forme-visible == true
+assert snap forme-saving == false
+assert snap forme-preview == false
+capture forme_reopened_graph
+click role:button Show workbench
+settle 2
+capture forme_reopened_tiles
+click role:button Return to Mere
+settle 2
+click-node https://example.test/i2p-port
+settle 1
+click role:button Open selected in workbench
+wait 120
+assert snap forme-accesses == 2
+assert snap forme-cells == 2
+log reopening and focusing an existing access preserve the forme

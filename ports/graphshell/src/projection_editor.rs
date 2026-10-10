@@ -25,10 +25,10 @@ use edit_history::History;
 pub use scenograph::options::{OptionDefault, OptionKind, OptionSpec};
 pub use scenograph::{
     Appearance, Arrangement, AuthoredDefinitionError, AuthoredProjectionDefinition, Channel,
-    Encoding, Interaction, PROJECTION_DEFINITION_VERSION, ProjectionDefinition, ProjectionDraft,
-    ProjectionInputBinding, ProjectionVariant, Provenance, PublicSourceRevision, Reading,
-    RevisionEvidence, RuntimeProjectionBinding, RuntimeSourceBinding, SelectionMode, SourceBinding,
-    ValidationIssue, ValidationSeverity,
+    DynamicsSlot, Encoding, Interaction, PROJECTION_DEFINITION_VERSION, ProjectionDefinition,
+    ProjectionDraft, ProjectionInputBinding, ProjectionVariant, Provenance, PublicSourceRevision,
+    Reading, RevisionEvidence, RuntimeProjectionBinding, RuntimeSourceBinding, SelectionMode,
+    SourceBinding, ValidationIssue, ValidationSeverity,
 };
 use scenomise::catalog::{Family, Measure};
 use scenomise::registry::SolverRegistry;
@@ -145,6 +145,7 @@ pub fn chronicle_definition(
     definition_revision: impl Into<String>,
 ) -> AuthoredProjectionDefinition {
     AuthoredProjectionDefinition {
+        dynamics: None,
         version: PROJECTION_DEFINITION_VERSION,
         id: CHRONICLE_DEFINITION_ID.to_owned(),
         label: "Job Chronicle".to_owned(),
@@ -186,6 +187,7 @@ pub fn chronicle_definition(
 /// the base definition and every non-arrangement field.
 pub fn chronicle_era_bands_off_variant() -> ProjectionVariant {
     ProjectionVariant {
+        dynamics: None,
         definition_id: CHRONICLE_DEFINITION_ID.to_owned(),
         id: "era-bands-off".to_owned(),
         arrangement_options: BTreeMap::from([(
@@ -205,6 +207,11 @@ pub enum EditorAction {
     SetReading(Reading),
     SetEncoding(Encoding),
     SetArrangement(Arrangement),
+    SetDynamics(Option<DynamicsSlot>),
+    ApplyComparison {
+        arrangement: Arrangement,
+        dynamics: Option<DynamicsSlot>,
+    },
     SetInteraction(Interaction),
     SetAppearance(Appearance),
     SetProvenance(Provenance),
@@ -373,6 +380,18 @@ impl ProjectionEditor {
                 self.draft.arrangement = value;
                 ReduceResult::Changed
             },
+            EditorAction::SetDynamics(value) => {
+                self.draft.dynamics = value;
+                ReduceResult::Changed
+            },
+            EditorAction::ApplyComparison {
+                arrangement,
+                dynamics,
+            } => {
+                self.draft.arrangement = arrangement;
+                self.draft.dynamics = dynamics;
+                ReduceResult::Changed
+            },
             EditorAction::SetInteraction(value) => {
                 self.draft.interaction = value;
                 ReduceResult::Changed
@@ -527,8 +546,31 @@ mod tests {
     use super::*;
     use workbench::{DropTarget, WorkbenchEffect};
 
+    #[test]
+    fn dynamics_is_edited_as_one_undo_step_and_saved_in_the_definition() {
+        let mut editor = ProjectionEditor::new(valid_draft());
+        let slot = DynamicsSlot::from_json(1, r#"{"root":{"preset":"spring.rapier"}}"#).unwrap();
+        editor.reduce(EditorAction::SetDynamics(Some(slot.clone())), 0);
+        assert_eq!(editor.draft().dynamics, Some(slot.clone()));
+        assert!(editor.undo());
+        assert_eq!(editor.draft().dynamics, None);
+        assert!(editor.redo());
+        struct Sink(Option<ProjectionDefinition>);
+        impl ProjectionDefinitionSink for Sink {
+            type Error = String;
+            fn save(&mut self, definition: &ProjectionDefinition) -> Result<(), String> {
+                self.0 = Some(definition.clone());
+                Ok(())
+            }
+        }
+        let mut sink = Sink(None);
+        editor.save(&mut sink).unwrap();
+        assert_eq!(sink.0.unwrap().dynamics, Some(slot));
+    }
+
     fn valid_draft() -> ProjectionDraft {
         ProjectionDraft {
+            dynamics: None,
             version: PROJECTION_DEFINITION_VERSION,
             id: "notes-by-topic".into(),
             label: "Notes by topic".into(),
@@ -976,6 +1018,7 @@ mod tests {
             "chronicle-definition-v1",
         );
         let variant = ProjectionVariant {
+            dynamics: None,
             definition_id: "other.recipe".to_owned(),
             id: "era-bands-off".to_owned(),
             arrangement_options: BTreeMap::new(),
@@ -991,6 +1034,7 @@ mod tests {
 
 pub fn initial_projection_draft() -> ProjectionDraft {
     ProjectionDraft {
+        dynamics: None,
         version: PROJECTION_DEFINITION_VERSION,
         id: "graphshell-reference".to_string(),
         label: "Graphshell reference projection".to_string(),
@@ -1040,6 +1084,16 @@ impl ProjectionEditor {
     pub fn edit_field(&mut self, field: &str, value: &str, now_ms: u64) -> Result<(), String> {
         let mut draft = self.draft().clone();
         let action = match field {
+            "dynamics.spec" => EditorAction::SetDynamics(if value.trim().is_empty() {
+                None
+            } else {
+                Some(
+                    DynamicsSlot::from_json(1, value).unwrap_or_else(|_| DynamicsSlot {
+                        version: 1,
+                        spec: value.to_string(),
+                    }),
+                )
+            }),
             "source.authority" => {
                 draft.source.authority = value.to_string();
                 EditorAction::SetSource(draft.source)
@@ -1132,6 +1186,30 @@ mod field_adapter_tests {
                 .is_err()
         );
         assert_eq!(editor.draft(), &before);
+    }
+
+    #[test]
+    fn dynamics_field_preserves_slot_history_and_refuses_invalid_json() {
+        let mut editor = ProjectionEditor::new(initial_projection_draft());
+        let json = r#"{"root":{"preset":"spring.rapier"}}"#;
+        editor.edit_field("dynamics.spec", json, 1).unwrap();
+        let slot = editor.draft().dynamics.clone();
+        assert_eq!(slot, Some(DynamicsSlot::from_json(1, json).unwrap()));
+        assert!(editor.undo());
+        assert_eq!(editor.draft().dynamics, None);
+        assert!(editor.redo());
+        assert_eq!(editor.draft().dynamics, slot);
+        editor.break_run();
+        editor
+            .edit_field("dynamics.spec", "not JSON", 1000)
+            .unwrap();
+        assert_eq!(editor.draft().dynamics.as_ref().unwrap().spec, "not JSON");
+        assert!(editor.draft().to_definition().is_err());
+        editor.break_run();
+        editor.edit_field("dynamics.spec", "", 2000).unwrap();
+        assert_eq!(editor.draft().dynamics, None);
+        assert!(editor.undo());
+        assert!(editor.draft().to_definition().is_err());
     }
 
     #[test]

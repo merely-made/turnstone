@@ -8,15 +8,21 @@ use graphshell::local_projection::{compile_editor, draft_from_definition, snapsh
 use graphshell::projection_compile::{
     CompiledProjection, ProjectionDataset, ProjectionSnapshot, default_definition,
 };
+use graphshell::projection_dynamics_compare::{
+    DynamicsComparison, compare_arrangements_dynamics, compare_dynamics,
+};
 use graphshell::projection_editor::{
     Channel, EditorAction, ProjectionEditor, ProjectionPanel, initial_projection_draft,
 };
+use mere::canvas::PhysicsLaw;
+use mere::canvas::dynamics_recipe::preset_slot;
+use mere::canvas::projection_dynamics::ProjectionDynamics;
 use sceno::InstanceId;
 mod comparison;
 mod options;
 const PRACTICE: &str = include_str!("../../../web/fixtures/woodshed-stage.json");
 
-pub(super) const FIELDS: [(&str, &str, ProjectionPanel); 15] = [
+pub(super) const FIELDS: [(&str, &str, ProjectionPanel); 17] = [
     (
         "source.authority",
         "Source authority",
@@ -57,6 +63,12 @@ pub(super) const FIELDS: [(&str, &str, ProjectionPanel); 15] = [
         "Projection title",
         ProjectionPanel::Preview,
     ),
+    ("dynamics.spec", "Dynamics spec", ProjectionPanel::Preview),
+    (
+        "dynamics.bound",
+        "Preview step limit",
+        ProjectionPanel::Preview,
+    ),
     ("provenance.author", "Author", ProjectionPanel::Provenance),
     (
         "provenance.source_revision",
@@ -87,6 +99,13 @@ pub(super) struct ProjectionControls {
     options_kind: String,
     comparing: bool,
     comparison: Option<graphshell::projection_compare::Comparison>,
+    dynamics: Option<ProjectionDynamics>,
+    dynamics_comparison: Option<DynamicsComparison>,
+    compare_dynamics: bool,
+    settle_bound: Option<u32>,
+    motion_paused: bool,
+    compare_column: usize,
+    compare_row: usize,
 }
 impl Default for ProjectionControls {
     fn default() -> Self {
@@ -107,6 +126,13 @@ impl Default for ProjectionControls {
             options_kind: String::new(),
             comparing: false,
             comparison: None,
+            dynamics: None,
+            dynamics_comparison: None,
+            compare_dynamics: false,
+            settle_bound: Some(60),
+            motion_paused: false,
+            compare_column: 0,
+            compare_row: 0,
         };
         controls.sync_fields();
         controls
@@ -131,6 +157,11 @@ impl ProjectionControls {
             d.arrangement.spacing.to_string(),
             d.appearance.realization.clone(),
             d.appearance.title.clone(),
+            d.dynamics
+                .as_ref()
+                .map_or_else(String::new, |slot| slot.spec.clone()),
+            self.settle_bound
+                .map_or_else(String::new, |bound| bound.to_string()),
             d.provenance.author.clone(),
             d.provenance
                 .source_revision
@@ -153,6 +184,10 @@ impl ProjectionControls {
         for (index, input) in self.inputs.iter().enumerate() {
             if input.text() != self.values[index] {
                 self.values[index] = input.text().into();
+                if FIELDS[index].0 == "dynamics.bound" {
+                    self.settle_bound = input.text().parse().ok();
+                    continue;
+                }
                 self.status = match self.editor.edit_field(
                     FIELDS[index].0,
                     input.text(),
@@ -173,42 +208,146 @@ impl ProjectionControls {
             dataset,
             self.compiled.as_ref(),
             self.selected.as_deref(),
-        ) {
-            Ok(compiled) => {
+        )
+        .and_then(|compiled| {
+            let definition = self.editor.draft().to_definition().map_err(|issues| {
+                issues
+                    .iter()
+                    .map(|issue| format!("{}: {}", issue.field, issue.message))
+                    .collect::<Vec<_>>()
+                    .join("; ")
+            })?;
+            let dynamics = definition
+                .dynamics
+                .as_ref()
+                .map(|slot| {
+                    ProjectionDynamics::new(&definition, &compiled, slot)
+                        .map_err(|error| error.to_string())
+                })
+                .transpose()?;
+            Ok((compiled, dynamics))
+        }) {
+            Ok((compiled, dynamics)) => {
                 if compiled.placement_reused {
                     self.reuses += 1;
                 } else {
                     self.solves += 1;
                 }
+                let keep_dynamics = compiled.placement_reused
+                    && self.editor.draft().dynamics.as_ref().is_some_and(|slot| {
+                        self.dynamics
+                            .as_mut()
+                            .is_some_and(|preview| preview.refresh_display(slot, &compiled.scene))
+                    });
                 self.compiled = Some(compiled);
+                if !keep_dynamics {
+                    self.dynamics = dynamics;
+                }
             },
             Err(error) => {
                 self.compiled = None;
+                self.dynamics = None;
                 self.status = error;
             },
         }
         self.refresh_comparison();
     }
+    pub(super) fn needs_frame(&self) -> bool {
+        !self.motion_paused
+            && if self.comparing {
+                self.dynamics_comparison
+                    .as_ref()
+                    .is_some_and(DynamicsComparison::is_running)
+            } else {
+                self.dynamics
+                    .as_ref()
+                    .is_some_and(ProjectionDynamics::is_running)
+            }
+    }
+    pub(super) fn advance(&mut self) -> bool {
+        if !self.needs_frame() {
+            return false;
+        }
+        if self.comparing {
+            if let Some(preview) = &mut self.dynamics_comparison {
+                match preview.tick() {
+                    Ok(_) => self.comparison = Some(preview.comparison.clone()),
+                    Err(error) => {
+                        self.status = error;
+                        self.motion_paused = true;
+                    },
+                }
+            }
+        } else if let Some(preview) = &mut self.dynamics {
+            if let Err(error) = preview.tick() {
+                self.status = error.to_string();
+                self.motion_paused = true;
+            }
+        }
+        true
+    }
     fn refresh_comparison(&mut self) {
         self.comparison = None;
+        self.dynamics_comparison = None;
         if !self.comparing {
             return;
         }
         let Some(dataset) = &self.dataset else {
             return;
         };
-        match graphshell::projection_compare::compare_arrangements(
-            self.editor.draft(),
-            dataset,
-            self.selected.as_deref(),
-            &graphshell::projection_compare::FacetLayout {
-                cell: sceno::Size2::new(220.0, 150.0),
-                gap: 16.0,
-                heading: 28.0,
-            },
-        ) {
-            Ok(comparison) => self.comparison = Some(comparison),
-            Err(error) => self.status = error,
+        let layout = graphshell::projection_compare::FacetLayout {
+            cell: sceno::Size2::new(220.0, 150.0),
+            gap: 16.0,
+            heading: 28.0,
+        };
+        let draft = self.editor.draft();
+        if self.compare_dynamics || draft.dynamics.is_some() {
+            let result = self
+                .settle_bound
+                .ok_or_else(|| "Choose a preview step limit to compare dynamics".to_string())
+                .and_then(|bound| {
+                    if self.compare_dynamics {
+                        let choices = PhysicsLaw::ALL
+                            .iter()
+                            .map(|law| {
+                                preset_slot(law.id()).map(|slot| (law.label().to_string(), slot))
+                            })
+                            .collect::<Result<Vec<_>, _>>()?;
+                        compare_dynamics(
+                            draft,
+                            dataset,
+                            self.selected.as_deref(),
+                            &choices,
+                            bound,
+                            &layout,
+                        )
+                    } else {
+                        compare_arrangements_dynamics(
+                            draft,
+                            dataset,
+                            self.selected.as_deref(),
+                            bound,
+                            &layout,
+                        )
+                    }
+                });
+            match result {
+                Ok(preview) => {
+                    self.comparison = Some(preview.comparison.clone());
+                    self.dynamics_comparison = Some(preview);
+                },
+                Err(error) => self.status = error,
+            }
+        } else {
+            match graphshell::projection_compare::compare_arrangements(
+                draft,
+                dataset,
+                self.selected.as_deref(),
+                &layout,
+            ) {
+                Ok(comparison) => self.comparison = Some(comparison),
+                Err(error) => self.status = error,
+            }
         }
     }
     pub(super) fn saved(&mut self) {
@@ -240,15 +379,25 @@ impl SavedProduct {
                 .unwrap_or_else(|| default_definition(&dataset));
             let editor = ProjectionEditor::new(draft_from_definition(&definition));
             let compiled = compile_editor(&editor, &dataset, None, None)?;
-            Ok::<_, String>((dataset, editor, compiled))
+            let dynamics = definition
+                .dynamics
+                .as_ref()
+                .map(|slot| {
+                    ProjectionDynamics::new(&definition, &compiled, slot)
+                        .map_err(|error| error.to_string())
+                })
+                .transpose()?;
+            Ok::<_, String>((dataset, editor, compiled, dynamics))
         })();
         match result {
-            Ok((dataset, editor, compiled)) => {
+            Ok((dataset, editor, compiled, dynamics)) => {
                 let p = &mut self.projection;
                 p.editor = editor;
                 p.dataset = Some(dataset);
                 p.compiled = Some(compiled);
+                p.dynamics = dynamics;
                 p.selected = None;
+                p.refresh_comparison();
                 p.open = true;
                 p.solves += 1;
                 p.sync_fields();
@@ -295,6 +444,39 @@ impl SavedProduct {
             (
                 "projection-selected-occurrence",
                 p.selected.clone().unwrap_or_default(),
+            ),
+            (
+                "projection-dynamics",
+                if p.dynamics.is_some() { "on" } else { "off" }.into(),
+            ),
+            (
+                "projection-dynamics-ticks",
+                p.dynamics
+                    .as_ref()
+                    .map_or(0, ProjectionDynamics::ticks)
+                    .to_string(),
+            ),
+            ("projection-motion-paused", p.motion_paused.to_string()),
+            (
+                "projection-step-limit",
+                p.settle_bound
+                    .map_or_else(String::new, |bound| bound.to_string()),
+            ),
+            (
+                "projection-compare-axis",
+                if p.compare_dynamics {
+                    "dynamics"
+                } else {
+                    "scope"
+                }
+                .into(),
+            ),
+            (
+                "projection-compare-refused",
+                p.comparison
+                    .as_ref()
+                    .map_or(0, |c| c.refused.len())
+                    .to_string(),
             ),
             ("projection-placement-solves", p.solves.to_string()),
             ("projection-placement-reuses", p.reuses.to_string()),
@@ -381,9 +563,34 @@ impl SavedProduct {
                 p.refresh();
                 p.sync_fields();
             },
-            "compare" => {
-                p.comparing = !p.comparing;
+            "compare" | "compare-dynamics" => {
+                let dynamics = action == "compare-dynamics";
+                p.comparing = !p.comparing || p.compare_dynamics != dynamics;
+                p.compare_dynamics = dynamics;
                 p.refresh_comparison();
+            },
+            "motion" => p.motion_paused = !p.motion_paused,
+            "compare-left" | "compare-right" | "compare-up" | "compare-down" => {
+                if let Some(comparison) = &p.comparison {
+                    match action {
+                        "compare-left" => p.compare_column = p.compare_column.saturating_sub(1),
+                        "compare-right" => {
+                            p.compare_column = (p.compare_column + 1)
+                                .min(comparison.facet.columns.labels.len().saturating_sub(1))
+                        },
+                        "compare-up" => p.compare_row = p.compare_row.saturating_sub(1),
+                        _ => {
+                            p.compare_row = (p.compare_row + 1).min(
+                                comparison
+                                    .facet
+                                    .rows
+                                    .as_ref()
+                                    .map_or(1, |axis| axis.labels.len())
+                                    .saturating_sub(1),
+                            )
+                        },
+                    }
+                }
             },
             "undo-save" | "redo-save" => {
                 let app = self.app.as_mut().ok_or("Local graph is busy")?;
@@ -425,6 +632,12 @@ impl SavedProduct {
                 }
             },
             "save" => {
+                if p.dataset.is_some()
+                    && p.editor.draft().dynamics.is_some()
+                    && p.compiled.is_none()
+                {
+                    return Err(format!("Cannot execute: {}", p.status));
+                }
                 let snapshot = if let Some(dataset) = &p.dataset {
                     snapshot_editor(&p.editor, dataset, p.selected.as_deref())?
                 } else {
@@ -459,12 +672,23 @@ impl SavedProduct {
                     let compiled = graphshell::projection_compile::practice_compiler()
                         .compile_snapshot(&snapshot, dataset)
                         .map_err(|e| format!("Cannot reopen: {e:?}"))?;
+                    let dynamics = snapshot
+                        .definition
+                        .dynamics
+                        .as_ref()
+                        .map(|slot| {
+                            ProjectionDynamics::new(&snapshot.definition, &compiled, slot)
+                                .map_err(|error| format!("Cannot reopen: {error}"))
+                        })
+                        .transpose()?;
                     p.compiled = Some(compiled);
+                    p.dynamics = dynamics;
                     p.solves += 1;
                 }
                 p.editor
                     .load_stored(draft_from_definition(&snapshot.definition));
                 p.selected = snapshot.selected_occurrence;
+                p.refresh_comparison();
                 p.sync_fields();
                 p.status = if p.dataset.is_some() {
                     "Reopened executable projection".into()
@@ -541,6 +765,7 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
                     }
                 })
                 .attr("role", "tab")
+                .attr("data-projection-panel", panel.label().to_lowercase())
                 .attr("aria-selected", (p.editor.panel() == panel).to_string()),
             ) as Child
         })
@@ -550,17 +775,22 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
             .attr("role", "tablist")
             .attr("aria-label", "Projection panels"),
     ));
-    for (index, (_, label, panel)) in FIELDS.iter().enumerate() {
+    for (index, (field, label, panel)) in FIELDS.iter().enumerate() {
         if *panel != p.editor.panel() {
             continue;
         }
         let label = *label;
+        let field = *field;
         children.push(Box::new(el(
             "label",
             (
                 label,
                 lens(
-                    move |input: &mut TextInput| text_field_typed(input).attr("aria-label", label),
+                    move |input: &mut TextInput| {
+                        text_field_typed(input)
+                            .attr("aria-label", label)
+                            .attr("data-projection-field", field)
+                    },
                     move |page: &mut TreePage| {
                         &mut page.product.as_mut().expect("projection").projection.inputs[index]
                     },
@@ -613,6 +843,12 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
         ("Undo save", "undo-save"),
         ("Redo save", "redo-save"),
         ("Compare arrangements", "compare"),
+        ("Compare dynamics", "compare-dynamics"),
+        ("Pause or resume preview", "motion"),
+        ("Earlier arrangements", "compare-left"),
+        ("Later arrangements", "compare-right"),
+        ("Earlier comparison rows", "compare-up"),
+        ("Later comparison rows", "compare-down"),
         ("Projection: grid", "grid"),
         ("Projection: order by tempo", "scatter"),
     ] {
@@ -632,10 +868,14 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
     if let (Some(compiled), Some(dataset)) = (&p.compiled, &p.dataset) {
         let mut spatial: Vec<Child> = Vec::new();
         let mut list: Vec<Child> = Vec::new();
-        let bounds = compiled.scene.bounds;
+        let scene = p
+            .dynamics
+            .as_ref()
+            .map_or(&compiled.scene, ProjectionDynamics::scene);
+        let bounds = scene.bounds;
         let width = (page.size.0 as f32 - 420.0).max(280.0);
         let scale = ((width - 24.0) / bounds.size.w.max(1.0)).min(1.0);
-        for (index, item) in compiled.scene.items.iter().enumerate() {
+        for (index, item) in scene.items.iter().enumerate() {
             let instance = InstanceId(index as u32);
             let Some(occurrence) = compiled.occurrence_by_instance.get(&instance) else {
                 continue;

@@ -30,7 +30,6 @@ use std::sync::RwLock as StdRwLock;
 use chirograph::{
     CarrierNotice, CarrierRequest, CarrierRequestBody, CarrierResponse, CarrierResponseBody,
 };
-use personae::IdentityStorage;
 use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncRead, AsyncWrite};
 
@@ -44,13 +43,14 @@ use crate::native::app_admission::{
     AppRouteId,
 };
 use crate::native::browser_host::BrowserHostError;
+use crate::native::custody::{CUSTODY_ROUTE, CustodyAnswer, CustodyCall, CustodyRefusal};
 use crate::native::device_broker::{DeviceSurface, DeviceSurfaceHandle};
 use crate::native::endpoint_catalog::{
     ResidentEndpointCatalog, ResidentEndpointCatalogError, ResidentEndpointSession,
 };
 use crate::native::local_endpoint::{LocalStream, connect_local, serve_local};
 use crate::native::local_session::{LocalSession, admit_local_client, identity_endpoint_for};
-use crate::native::personae_host::PersonaeHost;
+use crate::native::resident_identity::ResidentIdentity;
 use crate::native::tasks::spawn_tracked_with_handle;
 use crate::session_loop::{SessionSummary, serve_admitted_session};
 use crate::session_notices::serve_admitted_session_notifying;
@@ -95,17 +95,35 @@ pub enum AppMessage {
     TakeNotice,
     /// Wait until the admitted endpoint rings with a revision notice.
     WaitNotice,
+    /// One call on the custody route ([`crate::native::custody`]).
+    Call { id: u64, call: CustodyCall },
 }
 
 /// Host-to-application messages.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum AppHostMessage {
-    Challenge { challenge: BrowserChallenge },
-    Connected { app: AppId, session: String },
-    Response { response: CarrierResponse },
-    Notice { notice: Option<CarrierNotice> },
-    Failure { message: String },
+    Challenge {
+        challenge: BrowserChallenge,
+    },
+    Connected {
+        app: AppId,
+        session: String,
+    },
+    Response {
+        response: CarrierResponse,
+    },
+    Notice {
+        notice: Option<CarrierNotice>,
+    },
+    /// The answer to one custody call, by its id.
+    Answer {
+        id: u64,
+        answer: Result<CustodyAnswer, CustodyRefusal>,
+    },
+    Failure {
+        message: String,
+    },
 }
 
 /// The resident endpoint registrations available to first-party routes.
@@ -164,16 +182,16 @@ pub async fn connect_as_app_route(
 }
 
 /// Serve first-party applications from the resident authority.
-pub async fn serve_app_broker<S>(
+pub async fn serve_app_broker<A>(
     endpoint: &str,
-    personae: Arc<PersonaeHost<S>>,
+    personae: Arc<A>,
     grants: AppRouteGrants,
     session_duration_ms: u64,
     surface: Option<DeviceSurfaceHandle>,
     catalog: AppEndpointCatalog,
 ) -> Result<(), AppBrokerError>
 where
-    S: IdentityStorage + 'static,
+    A: ResidentIdentity,
 {
     serve_local(
         endpoint,
@@ -208,17 +226,17 @@ where
 #[cfg(test)]
 pub(crate) use serve_app_connection as serve_app_connection_for_tests;
 
-pub(crate) async fn serve_app_connection<S, R, W>(
+pub(crate) async fn serve_app_connection<A, R, W>(
     reader: &mut R,
     writer: &mut W,
-    personae: Arc<PersonaeHost<S>>,
+    personae: Arc<A>,
     allowed: &AllowedAppRoutes,
     session_duration_ms: u64,
     surface: Option<DeviceSurfaceHandle>,
     catalog: AppEndpointCatalog,
 ) -> Result<Option<SessionSummary>, AppBrokerError>
 where
-    S: IdentityStorage + 'static,
+    A: ResidentIdentity,
     R: AsyncRead + Unpin,
     W: AsyncWrite + Unpin,
 {
@@ -247,10 +265,10 @@ where
     .await
 }
 
-async fn serve_admitted_app<S, R, W>(
+async fn serve_admitted_app<A, R, W>(
     reader: &mut R,
     writer: &mut W,
-    personae: Arc<PersonaeHost<S>>,
+    personae: Arc<A>,
     app: AppId,
     route: crate::native::endpoint_catalog::ResidentEndpointRoute,
     session_duration_ms: u64,
@@ -258,7 +276,7 @@ async fn serve_admitted_app<S, R, W>(
     catalog: AppEndpointCatalog,
 ) -> Result<Option<SessionSummary>, AppBrokerError>
 where
-    S: IdentityStorage + 'static,
+    A: ResidentIdentity,
     R: AsyncRead + Unpin,
     W: AsyncWrite + Unpin,
 {
@@ -289,6 +307,14 @@ where
     // minted for one application is not replayable as another.
     let link = LocalLink::bind(app.to_string(), &challenge, &host_nonce, &client_nonce)?;
 
+    // Custody is calls, not a projection, and it must answer while the vault
+    // is Locked (D12: the app shows the identity pending). So it needs no
+    // door keys and no admitted carrier session: reaching the owner-only
+    // endpoint is the trust root, as for every route.
+    if route.id() == CUSTODY_ROUTE {
+        return serve_custody(reader, writer, personae, app, &link).await;
+    }
+
     let identity = Arc::clone(&personae);
     let LocalSession {
         client: mut carrier,
@@ -303,7 +329,7 @@ where
         let mut endpoint = identity_endpoint_for(Arc::clone(&personae), &authority, surface);
         spawn_tracked_with_handle(async move {
             let revocations = StdRwLock::new(revocations);
-            let mut resume = |_: &mut IdentityEndpoint<S>, _: ResumeRequest| {
+            let mut resume = |_: &mut IdentityEndpoint<A>, _: ResumeRequest| {
                 Err("identity resume is not implemented".to_string())
             };
             serve_admitted_session(
@@ -388,6 +414,15 @@ where
                 )
                 .await?;
             },
+            AppMessage::Call { .. } => {
+                write_native_message_async(
+                    writer,
+                    &AppHostMessage::Failure {
+                        message: "custody calls belong to the custody route".to_string(),
+                    },
+                )
+                .await?;
+            },
         }
     }
 
@@ -397,6 +432,44 @@ where
         .map_err(BrowserHostError::from)?
         .map_err(BrowserHostError::from)?;
     Ok(Some(summary))
+}
+
+/// Serve the custody route: one call at a time, each answered by the
+/// resident authority on behalf of `app`.
+async fn serve_custody<A, R, W>(
+    reader: &mut R,
+    writer: &mut W,
+    personae: Arc<A>,
+    app: AppId,
+    link: &LocalLink,
+) -> Result<Option<SessionSummary>, AppBrokerError>
+where
+    A: ResidentIdentity,
+    R: AsyncRead + Unpin,
+    W: AsyncWrite + Unpin,
+{
+    let session = format!("custody:{}", blake3::hash(&link.shared_link).to_hex());
+    write_native_message_async(
+        writer,
+        &AppHostMessage::Connected {
+            app: app.clone(),
+            session,
+        },
+    )
+    .await?;
+    while let Some(message) = read_native_message_async::<_, AppMessage>(reader).await? {
+        let reply = match message {
+            AppMessage::Call { id, call } => AppHostMessage::Answer {
+                id,
+                answer: Arc::clone(&personae).custody(app.clone(), call).await,
+            },
+            _ => AppHostMessage::Failure {
+                message: "the custody route answers custody calls only".to_string(),
+            },
+        };
+        write_native_message_async(writer, &reply).await?;
+    }
+    Ok(None)
 }
 
 #[cfg(test)]

@@ -74,6 +74,41 @@ fn heard_dataset(tree: &serde_json::Value) -> (Vec<String>, Option<String>) {
     (relations, alert)
 }
 
+/// The named region's list items and its status line, as the semantic tree
+/// tells them (S3's "History" region).
+fn heard_region(tree: &serde_json::Value, name: &str) -> (Vec<String>, Option<String>) {
+    let field = |node: &serde_json::Value, key: &str| {
+        node.get(key).and_then(|v| v.as_str()).map(str::to_owned)
+    };
+    let children = |node: &serde_json::Value| {
+        node.get("children")
+            .and_then(|v| v.as_array())
+            .cloned()
+            .unwrap_or_default()
+    };
+    let mut stack = vec![tree.clone()];
+    while let Some(node) = stack.pop() {
+        if field(&node, "role").as_deref() == Some("region")
+            && field(&node, "label").as_deref() == Some(name)
+        {
+            let (mut items, mut status) = (Vec::new(), None);
+            let mut inner = vec![node];
+            while let Some(item) = inner.pop() {
+                match field(&item, "role").as_deref() {
+                    Some("listitem") => items.extend(field(&item, "label")),
+                    Some("status") if status.is_none() => status = field(&item, "label"),
+                    _ => {},
+                }
+                inner.extend(children(&item));
+            }
+            items.sort();
+            return (items, status);
+        }
+        stack.extend(children(&node));
+    }
+    (Vec::new(), None)
+}
+
 /// One item of the canvas slot as the semantic tree tells it: its name, its
 /// buttons' names, and how many of them carry a description.
 struct HeardItem {
@@ -644,6 +679,8 @@ impl Product for TreeLane {
         let step = canvas.elapsed_step_report().unwrap_or_default();
         let snapshot = self.remote_fields(ctx, self.physics_fields(ctx, ProbeSnapshot::default()));
         let snapshot = super::speed::fields(snapshot, &canvas, &self.shared);
+        #[cfg(feature = "product")]
+        let snapshot = forme_fields(page, &canvas, snapshot);
         let snapshot = snapshot
             .with_field("physics-steps", step.steps.to_string())
             .with_field(
@@ -715,6 +752,20 @@ impl Product for TreeLane {
                     format!("{:.2}", canvas.camera().offset.1 - y)
                 }),
             )
+            .with_field(
+                "selection-fit-available",
+                canvas.can_fit_selection().to_string(),
+            )
+            .with_field(
+                "selection-center-distance",
+                canvas
+                    .focused_screen_position()
+                    .map(|(x, y)| {
+                        let (w, h) = self.shared.size.get();
+                        format!("{:.3}", (x - w as f32 * 0.5).hypot(y - h as f32 * 0.5))
+                    })
+                    .unwrap_or_else(|| "unavailable".into()),
+            )
             .with_field("picked", page.picked.clone().unwrap_or_default())
             .with_field("nodes", page.nodes.to_string())
             .with_field("source", page.source.clone())
@@ -728,7 +779,49 @@ impl Product for TreeLane {
                     _ => String::new(),
                 },
             )
-            .with_field("edges", canvas.graph().relations().count().to_string())
+            .with_field(
+                "edges",
+                canvas.graph().projected_relations().count().to_string(),
+            )
+            // The host history (S3): which checkpoint shows, and its changes.
+            .with_field(
+                "history-checkpoints",
+                page.history
+                    .as_ref()
+                    .map_or("0".into(), |hosted| hosted.len().to_string()),
+            )
+            .with_field(
+                "history-index",
+                page.history
+                    .as_ref()
+                    .map(|hosted| (hosted.index + 1).to_string())
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "history-summary",
+                page.history
+                    .as_ref()
+                    .and_then(|hosted| hosted.summary())
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "history-error",
+                page.history
+                    .as_ref()
+                    .and_then(|hosted| hosted.error.clone())
+                    .unwrap_or_default(),
+            )
+            // The page's gestures and motion preference.
+            .with_field("reduced-motion", self.shared.reduced_motion().to_string())
+            .with_field("gesture", self.shared.gestures.borrow().probe.clone())
+            .with_field(
+                "wheel-use",
+                format!("{:?}", self.shared.gestures.borrow().last_wheel),
+            )
+            .with_field(
+                "touch-use",
+                format!("{:?}", self.shared.gestures.borrow().last_touch),
+            )
             .with_field("moving", self.shared.moving.get().to_string())
             .with_field(
                 "gpu-timed",
@@ -740,6 +833,10 @@ impl Product for TreeLane {
         let tree = semantic_tree();
         let (heard_relations, heard_alert) = tree.as_ref().map(heard_dataset).unwrap_or_default();
         let heard = tree.as_ref().and_then(heard_canvas);
+        let (heard_changes, heard_checkpoint) = tree
+            .as_ref()
+            .map(|tree| heard_region(tree, "History"))
+            .unwrap_or_default();
         let snapshot = snapshot
             .with_field(
                 "reader-canvas",
@@ -776,6 +873,22 @@ impl Product for TreeLane {
                     })
                     .to_string(),
             )
+            .with_field(
+                "reader-item-names",
+                heard
+                    .as_ref()
+                    .map(|(_, items)| {
+                        items
+                            .iter()
+                            .map(|item| item.name.clone())
+                            .collect::<Vec<_>>()
+                            .join("|")
+                    })
+                    .unwrap_or_default(),
+            )
+            .with_field("reader-changes", heard_changes.len().to_string())
+            .with_field("reader-change-labels", heard_changes.join("|"))
+            .with_field("reader-checkpoint", heard_checkpoint.unwrap_or_default())
             .with_field("reader-relations", heard_relations.len().to_string())
             .with_field("reader-relation-labels", heard_relations.join("|"))
             .with_field("reader-alert", heard_alert.unwrap_or_default())
@@ -916,6 +1029,9 @@ impl Product for TreeLane {
             };
         }
         let (verb, rest) = line.split_once(' ').unwrap_or((line, ""));
+        if let Some(result) = super::gesture_steps::step(&self.shared, verb, rest) {
+            return result;
+        }
         match verb {
             // Translate the original explicit focus fixture without activating
             // the target. Subsequent keys still traverse shared host input.
@@ -1157,6 +1273,20 @@ impl Product for TreeLane {
                     child = element.next_element_sibling();
                 }
                 Err(format!("reader-click: {item:?} has no {button:?} button"))
+            },
+            "hover-forme" => {
+                let (left, top, _, _) = leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
+                let canvas = self.shared.canvas.borrow();
+                let region = canvas.forme_region().ok_or("no forme in this view")?;
+                let [x, y, r, b] = region.bounds;
+                let world = match rest.trim() {
+                    "inside" => (x + (r - x) * 0.1, y + (b - y) * 0.1),
+                    "outside" => (x - 50., y - 50.),
+                    _ => return Err("hover-forme wants inside or outside".into()),
+                };
+                let (x, y) = canvas.screen_point_of(world);
+                ctx.pointer.push(HostPointer::Moved(left + x, top + y));
+                Ok(())
             },
             "click-node" => {
                 let (x, y) = self.node_point(ctx, rest.trim())?;
@@ -1417,4 +1547,57 @@ impl Product for TreeLane {
         }
         errors
     }
+}
+
+#[cfg(feature = "product")]
+fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> ProbeSnapshot {
+    let Some(pane) = &page.forme else {
+        return snapshot.with_field(
+            "forme",
+            if page.forme_error.is_some() {
+                "refused"
+            } else {
+                "absent"
+            },
+        );
+    };
+    let region = canvas.forme_region();
+    let placed = region.map_or(0, |r| {
+        r.cells
+            .iter()
+            .filter(|cell| {
+                let Some((key, _)) = canvas.graph().get_node_by_id(cell.member) else {
+                    return false;
+                };
+                let Some(at) = canvas.node_position(key) else {
+                    return false;
+                };
+                let [x, y, right, bottom] = r.cell_world_bounds(cell);
+                (at.x - (x + (right - x) / 2.)).abs() < 0.01
+                    && (at.y - (y + (bottom - y) / 2.)).abs() < 0.01
+            })
+            .count()
+    });
+    snapshot
+        .with_field("forme", pane.model.document.id.as_uuid().to_string())
+        .with_field("forme-accesses", pane.model.members().len().to_string())
+        .with_field(
+            "forme-cells",
+            region.map_or(0, |r| r.cells.len()).to_string(),
+        )
+        .with_field("forme-placed", placed.to_string())
+        .with_field("forme-locked", pane.model.locked.to_string())
+        .with_field("forme-visible", pane.model.visible.to_string())
+        .with_field("forme-hovered", canvas.forme_region_hovered().to_string())
+        .with_field("forme-saving", pane.saving.to_string())
+        .with_field("forme-preview", pane.previewing().to_string())
+        .with_field(
+            "forme-geometry",
+            serde_json::to_string(&pane.model.geometry).unwrap_or_default(),
+        )
+        .with_field(
+            "forme-bounds",
+            serde_json::to_string(&pane.model.bounds).unwrap_or_default(),
+        )
+        .with_field("workbench", pane.workbench.to_string())
 }

@@ -1,0 +1,50 @@
+# F192-F195 / SE54-SE55: occurrence bodies, bounded comparison and one undo.
+assert title GRAPHSHELL H3 READY
+act load-practice-projection
+settle 2
+click role:tab Preview
+settle 2
+assert snap projection-step-limit == 60
+act compare-projection-dynamics
+settle 4
+assert snap projection-compare == on
+assert snap projection-step-limit == 60
+click role:textbox @data-projection-field=dynamics.bound
+input-text 8
+settle 4
+assert snap projection-compare-axis == dynamics
+assert snap projection-step-limit == 8
+assert snap projection-compare-cells >= 12
+act projection-compare-down
+act projection-compare-down
+act projection-compare-down
+act projection-compare-down
+act projection-compare-down
+settle 2
+assert retained {"role":"button","key":["data-projection-compare-cell","dynamics:0:5"],"text":"Step limit reached · 8 steps"}
+act projection-compare-right
+act projection-compare-right
+settle 2
+assert retained {"role":"button","key":["data-projection-compare-cell","refused:3:5"],"text":"Refused"}
+capture projection_dynamics_refusals
+act projection-compare-left
+act projection-compare-left
+settle 2
+capture projection_dynamics_grid
+click role:button @data-projection-compare-cell=dynamics:0:5
+settle 4
+assert snap projection-dynamics == on
+assert retained {"role":"button","key":["data-projection-compare-cell","working"],"text":"Live"}
+capture projection_dynamics_focused
+act compare-projection-dynamics
+settle 2
+assert snap projection-compare == off
+assert snap projection-dynamics-ticks >= 1
+act projection-motion
+settle 2
+assert snap projection-motion-paused == true
+capture projection_dynamics_live
+act undo-projection
+settle 2
+assert snap projection-dynamics == off
+log projection dynamics proof complete

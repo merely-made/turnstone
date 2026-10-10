@@ -11,6 +11,8 @@
 //! from an unsigned snapshot. Local execution review is a separate authority.
 //! No guest emission grants a capability, mutates a Moot or retains a file.
 
+pub mod readings;
+
 use std::collections::BTreeSet;
 use std::sync::atomic::{AtomicU64, Ordering};
 

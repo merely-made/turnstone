@@ -192,7 +192,7 @@ impl PersonalSyncHost {
             PersonalSyncHostError::Store(muniment::StoreError::Backend(error.to_string()))
         })?;
         let backend = RedbBackend::open(&config.store_path)?;
-        let transport_key = identity.derive_keypair(&personal_graph_identity_salt(config.graph))?;
+        let transport_key = identity.derived_keypair(&personal_graph_identity_salt(config.graph))?;
         // The host knows which device it is; callers should not have to say so.
         // Leaving this to the caller is what makes an addressed-object filter
         // quietly inert, which is worse than absent because the lane still
@@ -267,7 +267,7 @@ impl PersonalSyncHost {
         // sibling reaches bytes through the pairing it already has. Without it
         // the lane replicated `ObserveBlobAvailability` records saying which
         // device held which blob, and offered no way to ask for one.
-        let builder = P2pandaTransport::builder(&transport_key)
+        let builder = P2pandaTransport::builder_for(&transport_key)
             .gossip()
             .scoped_blobs(&blobs, blob_scope, blob_authority.clone());
         let overlay = sync_overlay_topic(config.graph);

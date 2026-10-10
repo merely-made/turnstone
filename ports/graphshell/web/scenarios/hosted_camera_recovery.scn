@@ -1,0 +1,62 @@
+# One-shot recovery of existing positions on grouped-dataset.html.
+assert snap ready == true
+settle 3
+assert snap dataset == loaded
+assert snap selection-fit-available == false
+click role:button Expand mere
+settle 2
+click role:button Expand mere workspace
+settle 2
+click role:button Enter mere workspace
+settle 2
+assert snap nodes == 9
+assert snap physics-paused == true
+center-node urn:host-dataset:crate:mere:sceno
+settle 2
+click-node urn:host-dataset:crate:mere:sceno
+settle 2
+assert snap selection-fit-available == true
+remember placement
+click role:button Pan right
+click role:button Pan right
+click role:button Pan right
+click role:button Pan right
+click role:button Pan right
+click role:button Pan right
+click role:button Pan right
+click role:button Pan right
+click role:button Pan right
+click role:button Pan right
+wait 120
+assert snap layout-outside >= 1
+click role:button Fit visible graph
+settle 2
+assert snap layout-outside == 0
+assert snap view-follow == false
+same placement geometry
+same placement picked
+same placement nodes
+same placement edges
+remember fitted
+wait 60
+same fitted camera
+same fitted zoom
+same fitted geometry
+capture hosted_visible_fit
+wait
+click role:button Fit selection
+settle 2
+assert snap zoom == 1
+assert snap selection-center-distance <= 1
+assert snap view-follow == false
+same placement geometry
+same placement picked
+same placement nodes
+same placement edges
+remember selection-fit
+wait 60
+same selection-fit camera
+same selection-fit zoom
+capture hosted_selection_fit
+wait
+log hosted camera recovery complete

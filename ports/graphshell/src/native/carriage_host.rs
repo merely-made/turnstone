@@ -163,9 +163,9 @@ impl CarriageHost {
         let store: MunimentStore<RedbBackend, CarriageExt> = MunimentStore::new(backend);
         let held = Arc::new(RwLock::new(scan_held(&store, config.graph).await?));
 
-        let transport_key = identity.derive_keypair(&carriage_identity_salt(config.graph))?;
+        let transport_key = identity.derived_keypair(&carriage_identity_salt(config.graph))?;
         let writer = SigningKey::from_bytes(&transport_key.to_seed());
-        let transport = P2pandaTransport::builder(&transport_key)
+        let transport = P2pandaTransport::builder_for(&transport_key)
             .gossip()
             .mdns(MdnsDiscoveryMode::Active)
             .bind()

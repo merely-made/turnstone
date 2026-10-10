@@ -8,9 +8,10 @@
 //! The JS adapter drives worker turns and fetches; it never renders the guest.
 
 use super::*;
-use cambium::{button, lens, text_field_typed};
+use cambium::{Keyed, button, lens, text_field_typed};
+use graphshell::capsule_applet::readings::Readings;
 use graphshell::capsule_applet::{
-    CapsuleDisclosure, CapsuleMount, MAX_DISCLOSURE_BYTES, NAVIGATE, OpenedCapsule, VIEW,
+    CapsuleDisclosure, CapsuleMount, MAX_DISCLOSURE_BYTES, NAVIGATE, VIEW,
 };
 use muniment::{Backend, IndexedDbBackend, WriteOp};
 use serde::{Deserialize, Serialize};
@@ -23,8 +24,7 @@ pub(super) struct Pane {
     generation: u32,
     running: bool,
     status: String,
-    opened: Option<OpenedCapsule>,
-    kept: bool,
+    readings: Readings,
     commands: Vec<Value>,
     refusals: Vec<Value>,
     logs: Vec<String>,
@@ -78,7 +78,7 @@ impl Pane {
         self.generation += 1;
         self.running = false;
         self.mount = None;
-        self.opened = None;
+        self.readings.clear();
         self.commands.clear();
         self.command("stop", Value::Null);
     }
@@ -115,8 +115,7 @@ pub fn review_applet(
         pane.generation += 1;
         pane.mount = Some(mount);
         pane.running = false;
-        pane.opened = None;
-        pane.kept = false;
+        pane.readings.clear();
         pane.commands.clear();
         pane.refusals.clear();
         pane.logs.clear();
@@ -228,8 +227,10 @@ pub fn applet_open_body(
             return Err("Stale or stopped capsule response".into());
         }
         let opened = pane.mount.as_ref().ok_or("No applet")?.open(url, body)?;
-        pane.opened = Some(opened);
-        pane.kept = kept;
+        if let Err(error) = pane.readings.open(opened, kept) {
+            pane.status = error.clone();
+            pane.refusals.push(json!({"tag":"denied", "val":error}));
+        }
         pane.version += 1;
         Ok(())
     })
@@ -259,12 +260,40 @@ struct KeptCapsule {
 
 /// Only the explicit host retention command writes a capsule payload.
 #[wasm_bindgen]
-pub async fn applet_keep(generation: u32) -> Result<(), JsValue> {
+pub async fn applet_keep(generation: u32, reading: u32) -> Result<bool, JsValue> {
+    match keep_reading(generation, reading).await {
+        Ok(()) => Ok(true),
+        Err(error) => with_pane(|pane| {
+            if generation == pane.generation {
+                let detail = error
+                    .as_string()
+                    .unwrap_or_else(|| "Storage or reading unavailable".into());
+                pane.status = format!("Could not keep reading {reading}: {detail}")
+                    .chars()
+                    .take(300)
+                    .collect();
+                pane.refusals
+                    .push(json!({"tag":"retention", "val":pane.status}));
+                if pane.refusals.len() > 64 {
+                    pane.refusals.remove(0);
+                }
+                pane.version += 1;
+            }
+            Ok(false)
+        }),
+    }
+}
+
+async fn keep_reading(generation: u32, reading: u32) -> Result<(), JsValue> {
     let (moot, revision, saved) = with_pane(|pane| {
         if generation != pane.generation {
             return Err("Stale keep command".into());
         }
-        let opened = pane.opened.as_ref().ok_or("Open a capsule first")?;
+        let opened = pane
+            .readings
+            .view(reading)
+            .ok_or("Reading is closed or unknown")?
+            .opened;
         let mount = pane.mount.as_ref().ok_or("No applet")?;
         let capsule = mount
             .disclosure
@@ -293,14 +322,16 @@ pub async fn applet_keep(generation: u32) -> Result<(), JsValue> {
         .await
         .map_err(|e| JsValue::from_str(&e.to_string()))?;
     with_pane(|pane| {
-        if generation == pane.generation
-            && pane
+        if generation == pane.generation && pane.readings.kept(reading, &revision) {
+            let title = pane
+                .readings
+                .view(reading)
+                .expect("confirmed reading")
                 .opened
-                .as_ref()
-                .is_some_and(|opened| opened.entry.revision == revision)
-        {
-            pane.kept = true;
-            pane.status = "Kept this verified revision on this device".into();
+                .entry
+                .title
+                .clone();
+            pane.status = format!("Kept {title} on this device (reading {reading})");
             pane.version += 1;
         }
         Ok(())
@@ -356,6 +387,7 @@ pub async fn applet_kept_body(generation: u32, url: &str) -> Result<Option<Vec<u
 pub fn applet_receipt() -> Result<String, JsValue> {
     with_pane(|pane| {
         let mount = pane.mount.as_ref();
+        let selected = pane.readings.selected();
         Ok(json!({
             "generation": pane.generation, "running": pane.running, "turns": pane.turns,
             "component_hash": mount.map(|m| &m.component_hash),
@@ -365,10 +397,35 @@ pub fn applet_receipt() -> Result<String, JsValue> {
             "disclosure_revision": mount.map(|m| &m.disclosure.revision),
             "grants": mount.map(|m| m.granted()).unwrap_or_default(),
             "projection": mount.map(|m| &m.projection),
-            "opened": pane.opened, "kept": pane.kept,
+            "readings": pane.readings.views(),
+            "selected_reading": selected.as_ref().map(|reading| reading.id),
+            "opened": selected.as_ref().map(|reading| reading.opened),
+            "kept": selected.as_ref().is_some_and(|reading| reading.kept),
             "status": pane.status, "refusals": pane.refusals, "logs": pane.logs,
         })
         .to_string())
+    })
+}
+
+/// Local view curation changes neither publication nor retention.
+#[wasm_bindgen]
+pub fn applet_select_reading(reading: Option<u32>) -> Result<(), JsValue> {
+    with_pane(|pane| {
+        match reading {
+            Some(id) => pane.readings.select(id)?,
+            None => pane.readings.deselect(),
+        }
+        pane.version += 1;
+        Ok(())
+    })
+}
+
+#[wasm_bindgen]
+pub fn applet_close_reading(reading: u32) -> Result<(), JsValue> {
+    with_pane(|pane| {
+        pane.readings.close(reading)?;
+        pane.version += 1;
+        Ok(())
     })
 }
 
@@ -495,43 +552,119 @@ pub(super) fn view(page: &TreePage) -> Child {
             .attr("id", "gs-applet-entries")
             .attr("role", "list"),
     ));
-    if let Some(opened) = &pane.opened {
-        let keep = button("Keep this revision", |page: &mut TreePage, _| {
-            page.shared.applet.borrow_mut().command("keep", Value::Null)
-        })
-        .attr("id", "gs-applet-keep");
-        let keep = if pane.kept {
-            keep.attr("disabled", "")
-        } else {
-            keep
-        };
-        children.push(Box::new(
-            el(
-                "section",
-                (
-                    el("h2", opened.entry.title.clone()),
-                    el("pre", opened.body.clone()).attr("id", "gs-applet-body"),
-                    el(
-                        "p",
-                        if pane.kept {
-                            "This revision is kept on this device"
-                        } else {
-                            "Reading has not saved this capsule"
-                        },
+    let clear_selection = button("Clear reading selection", |page: &mut TreePage, _| {
+        let mut pane = page.shared.applet.borrow_mut();
+        pane.readings.deselect();
+        pane.version += 1;
+    });
+    let clear_selection = if pane.readings.selected().is_some() {
+        clear_selection
+    } else {
+        clear_selection.attr("disabled", "")
+    };
+    children.push(Box::new(clear_selection));
+    let readings: Keyed<u32, Child> = pane
+        .readings
+        .views()
+        .into_iter()
+        .map(|reading| {
+            let id = reading.id;
+            let opened = reading.opened;
+            let keep = button("Keep this revision", move |page: &mut TreePage, _| {
+                page.shared.applet.borrow_mut().command("keep", json!(id))
+            })
+            .attr("aria-label", format!("Keep revision in reading {id}"));
+            let keep = if reading.kept {
+                keep.attr("disabled", "")
+            } else {
+                keep
+            };
+            let select = button("Select reading", move |page: &mut TreePage, _| {
+                let mut pane = page.shared.applet.borrow_mut();
+                if let Err(error) = pane.readings.select(id) {
+                    pane.status = error;
+                }
+                pane.version += 1;
+            })
+            .attr("aria-label", format!("Select reading {id}"))
+            .attr(
+                "aria-pressed",
+                if reading.selected { "true" } else { "false" },
+            );
+            let url = opened.entry.url.clone();
+            let another = button("Open another reading", move |page: &mut TreePage, _| {
+                page.shared.applet.borrow_mut().command(
+                    "event",
+                    json!({"kind":"open", "payload":json!({"url":url}).to_string()}),
+                );
+            })
+            .attr(
+                "aria-label",
+                format!("Open another reading of {}", opened.entry.title),
+            );
+            let another = if pane.running && mount.permits(NAVIGATE) {
+                another
+            } else {
+                another.attr("disabled", "")
+            };
+            let close = button("Close reading", move |page: &mut TreePage, _| {
+                let mut pane = page.shared.applet.borrow_mut();
+                if let Err(error) = pane.readings.close(id) {
+                    pane.status = error;
+                }
+                pane.version += 1;
+            })
+            .attr("aria-label", format!("Close reading {id}"));
+            let card: Child = Box::new(
+                el(
+                    "section",
+                    (
+                        el(
+                            "p",
+                            format!(
+                                "Reading {id}{}",
+                                if reading.selected { " · selected" } else { "" }
+                            ),
+                        ),
+                        el("h2", opened.entry.title.clone()),
+                        el("pre", opened.body.clone()).attr("id", format!("gs-applet-body-{id}")),
+                        el(
+                            "p",
+                            if reading.kept {
+                                "This revision is kept on this device"
+                            } else {
+                                "Reading has not saved this capsule"
+                            },
+                        ),
+                        el("div", (keep, select, another, close))
+                            .attr("class", "applet-reading-controls"),
                     ),
-                    keep,
+                )
+                .attr("id", format!("gs-applet-reader-{id}"))
+                .attr("class", "applet-reader")
+                .attr(
+                    "data-selected",
+                    if reading.selected { "true" } else { "false" },
+                )
+                .attr(
+                    "aria-label",
+                    format!("Reading {id}: {}", opened.entry.title),
                 ),
-            )
-            .attr("aria-label", "Capsule reader"),
-        ));
-    }
-    Box::new(el("main", children).attr("class", "applet-library").attr(
+            );
+            (id, card)
+        })
+        .collect();
+    children.push(Box::new(
+        el("div", readings).attr("class", "applet-readings"),
+    ));
+    let viewport = el("main", children).attr("class", "applet-library").attr(
         "style",
         format!(
             "width:{}px;height:{}px;overflow-y:auto;padding:20px;",
             page.size.0, page.size.1
         ),
-    ))
+    );
+    Box::new(viewport)
 }
 
 pub(super) const SHEET: &str = "\
@@ -545,4 +678,10 @@ pub(super) const SHEET: &str = "\
     .applet-library ul { margin:0;padding:0;list-style:none; } \
     .applet-library li { padding:10px 14px;margin-bottom:8px;background:#1f3533;border:1px solid #506c67; } \
     .applet-library pre { color:#e6f0ee;background:#102723;padding:12px;white-space:pre-wrap;font-family:Roboto; } \
+    .applet-readings { display:flex;flex-direction:row;flex-wrap:wrap;gap:12px; } \
+    .applet-reader { flex:1 1 360px;min-width:260px;padding:12px;border:1px solid #506c67;box-sizing:border-box; } \
+    .applet-reader[data-selected=true] { border-color:#b6d3c9; } \
+    .applet-reader pre { max-height:180px;overflow:auto; } \
+    .applet-reading-controls { display:flex;flex-wrap:wrap;gap:4px; } \
+    .applet-reading-controls button { padding:6px 8px;margin:0; } \
     .applet-review { background:#203b36;padding:12px;border:1px solid #739389; }";

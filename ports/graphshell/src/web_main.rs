@@ -182,7 +182,9 @@ impl ProjectionDefinitionSink for SessionProjectionSink<'_> {
     }
 }
 
-fn initial_projection_draft() -> ProjectionDraft { graphshell::projection_editor::initial_projection_draft() }
+fn initial_projection_draft() -> ProjectionDraft {
+    graphshell::projection_editor::initial_projection_draft()
+}
 
 fn draft_from_definition(definition: &ProjectionDefinition) -> ProjectionDraft {
     graphshell::local_projection::draft_from_definition(definition)
@@ -300,15 +302,30 @@ impl BrowserHost {
             }
         }
         if let Some(practice) = &mut self.practice {
-            let frame = practice.frame(self.width, self.height, host_ms, &mut self.chrome_text, &self.gpu)?;
+            let frame = practice.frame(
+                self.width,
+                self.height,
+                host_ms,
+                &mut self.chrome_text,
+                &self.gpu,
+            )?;
             let changed = frame.is_some();
-            if let Some(scene) = frame { self.practice_scene = scene; }
+            if let Some(scene) = frame {
+                self.practice_scene = scene;
+            }
             let chrome = Scene::new(self.width, self.height);
             if let Some(name) = self.capture_request.take() {
-                self.capture_pending = Some((name, self.gpu.capture(&self.practice_scene, &chrome, self.width, self.height)));
+                self.capture_pending = Some((
+                    name,
+                    self.gpu
+                        .capture(&self.practice_scene, &chrome, self.width, self.height),
+                ));
             }
             self.chrome_dirty = false;
-            if changed { self.gpu.present(&self.practice_scene, &chrome, self.width, self.height)?; }
+            if changed {
+                self.gpu
+                    .present(&self.practice_scene, &chrome, self.width, self.height)?;
+            }
             return Ok(());
         }
         self.advance_arrangement_transition(host_ms);
@@ -332,7 +349,9 @@ impl BrowserHost {
         }
         let content = if let Some(live) = &mut self.live_projection {
             live.frame(
-                self.width, self.height, &mut self.chrome_text,
+                self.width,
+                self.height,
+                &mut self.chrome_text,
                 self.host_appearance.borrow().sheet(),
             )?
         } else {
@@ -409,6 +428,12 @@ impl BrowserHost {
             "projection-grid" => self.projection_arrangement("grid.default"),
             "projection-scatter" => self.projection_arrangement("scatter.default"),
             "compare-projection" => self.toggle_projection_compare(),
+            "compare-projection-dynamics" => self.toggle_projection_dynamics_compare(),
+            "projection-motion" => self.toggle_projection_motion(),
+            "projection-compare-left" => self.move_projection_comparison(-1, 0),
+            "projection-compare-right" => self.move_projection_comparison(1, 0),
+            "projection-compare-up" => self.move_projection_comparison(0, -1),
+            "projection-compare-down" => self.move_projection_comparison(0, 1),
             "open-projection-editor" => {
                 self.projection_editor_open = true;
                 self.projection_editor_status = "Draft ready · unsaved".to_string();
@@ -502,10 +527,15 @@ impl BrowserHost {
     }
 
     fn update_projection_field(&mut self, field: &str, value: &str) {
-        self.projection_editor_status = match self.projection_editor.edit_field(field, value, now_ms()) {
-            Ok(()) => format!("Edited · {field}"),
-            Err(error) => error,
-        };
+        if field == "dynamics.bound" {
+            self.set_projection_settle_bound(value.parse().ok());
+            return;
+        }
+        self.projection_editor_status =
+            match self.projection_editor.edit_field(field, value, now_ms()) {
+                Ok(()) => format!("Edited · {field}"),
+                Err(error) => error,
+            };
         self.recompile_projection();
         self.projection_editor_open = true;
         self.chrome_dirty = true;
@@ -692,9 +722,9 @@ impl BrowserHost {
                         .open_with_url_and_target(&address, "_blank")
                         .map_err(|_| "host-browser open failed".to_string())
                 }) {
-                    Ok(Some(_)) => format!(
-                        "Accepted · opened in host browser · {count} invocation(s)"
-                    ),
+                    Ok(Some(_)) => {
+                        format!("Accepted · opened in host browser · {count} invocation(s)")
+                    },
                     Ok(None) => "Failed · host browser blocked the external open".to_string(),
                     Err(error) => format!("Failed · {error}"),
                 }
@@ -1124,6 +1154,16 @@ fn update_projection_editor_semantics(host: &BrowserHost) -> Result<(), String> 
     )?;
     set_projection_input_value("projection-arrangement-kind", &draft.arrangement.kind)?;
     set_projection_input_value(
+        "projection-dynamics-spec",
+        draft.dynamics.as_ref().map_or("", |slot| &slot.spec),
+    )?;
+    set_projection_input_value(
+        "projection-dynamics-bound",
+        &host
+            .projection_settle_bound()
+            .map_or(String::new(), |bound| bound.to_string()),
+    )?;
+    set_projection_input_value(
         "projection-arrangement-direction",
         &draft.arrangement.direction,
     )?;
@@ -1332,11 +1372,15 @@ fn publish_history_controls(
 fn update_semantics(host: &mut BrowserHost) -> Result<(), String> {
     host.pump_remote();
     if host.practice.is_some() {
-        let body=root()?;
-        if body.get_attribute("data-ready").as_deref()!=Some("true") {
-            body.set_attribute("data-ready","true").map_err(|_|"Workspace ready state")?;
-            body.set_attribute("data-session","local").map_err(|_|"Workspace session")?;
-            if owns_title() { document()?.set_title("GRAPHSHELL H3 READY"); }
+        let body = root()?;
+        if body.get_attribute("data-ready").as_deref() != Some("true") {
+            body.set_attribute("data-ready", "true")
+                .map_err(|_| "Workspace ready state")?;
+            body.set_attribute("data-session", "local")
+                .map_err(|_| "Workspace session")?;
+            if owns_title() {
+                document()?.set_title("GRAPHSHELL H3 READY");
+            }
         }
         return Ok(());
     }
@@ -1435,12 +1479,16 @@ fn update_semantics(host: &mut BrowserHost) -> Result<(), String> {
         "data-session-store",
         host.session_store.token(host.app.host.has_unstored()),
     )
-        .map_err(|_| "could not expose session store state")?;
+    .map_err(|_| "could not expose session store state")?;
     body.set_attribute("data-session-store-error", &host.session_store_error)
         .map_err(|_| "could not expose session store error")?;
     body.set_attribute(
         "data-command-menu",
-        if host.command_menu_open() { "open" } else { "closed" },
+        if host.command_menu_open() {
+            "open"
+        } else {
+            "closed"
+        },
     )
     .map_err(|_| "could not expose the command menu state")?;
     body.set_attribute("data-storage", &host.storage_status)
@@ -1591,12 +1639,17 @@ async fn run(root_element: Element) -> Result<(), String> {
     chrome_text.register_font_bytes(include_bytes!("../web/GraphshellSans.ttf").to_vec());
     let appearance_root = root()?;
     let host_appearance = crate::web_appearance::mount(
-        appearance_root.clone(), appearance_root.has_attribute("data-appearance-application"),
+        appearance_root.clone(),
+        appearance_root.has_attribute("data-appearance-application"),
     )?;
     host_appearance.borrow().apply_canvas(&mut graph_canvas);
     let appearance_revision = host_appearance.borrow().revision;
     let chrome_scene = build_chrome_scene(
-        initial_model, width, height, &mut chrome_text, host_appearance.borrow().sheet(),
+        initial_model,
+        width,
+        height,
+        &mut chrome_text,
+        host_appearance.borrow().sheet(),
     )?;
     let command_choices = web_commands::stored_choices(&app.host);
     let state = Rc::new(RefCell::new(BrowserHost {
@@ -1649,8 +1702,12 @@ async fn run(root_element: Element) -> Result<(), String> {
         projection_editor: ProjectionEditor::new(initial_projection_draft()),
         live_projection: None,
         practice: if root()?.has_attribute("data-practice-workspace") {
-            Some(web_practice::PracticeHost::new(web_dataset::supplied(&root()?))?)
-        } else { None },
+            Some(web_practice::PracticeHost::new(web_dataset::supplied(
+                &root()?,
+            ))?)
+        } else {
+            None
+        },
         practice_scene: Scene::new(width, height),
         projection_editor_open: false,
         projection_editor_status: "Draft ready · unsaved".to_string(),
@@ -1689,20 +1746,5 @@ async fn run(root_element: Element) -> Result<(), String> {
 /// a box in someone else's page. One component, whichever surface.
 #[wasm_bindgen]
 pub fn mount(root: Element) -> Result<(), JsValue> {
-    if ROOT.with(|slot| slot.borrow().is_some()) {
-        return Err(JsValue::from_str(
-            "Graphshell is already mounted on this page",
-        ));
-    }
-    wasm_bindgen_futures::spawn_local(async move {
-        if let Err(error) = run(root).await {
-            web_sys::console::error_1(&error.clone().into());
-            if owns_title() {
-                if let Ok(document) = document() {
-                    document.set_title(&format!("GRAPHSHELL H3 FAIL: {error}"));
-                }
-            }
-        }
-    });
-    Ok(())
+    web_tree::mount_tree(root)
 }

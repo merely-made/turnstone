@@ -12,6 +12,7 @@ use crate::projection_editor::{
 
 pub fn draft_from_definition(definition: &ProjectionDefinition) -> ProjectionDraft {
     ProjectionDraft {
+        dynamics: definition.dynamics.clone(),
         version: definition.version,
         id: definition.id.clone(),
         label: definition.label.clone(),
