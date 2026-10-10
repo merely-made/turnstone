@@ -16,6 +16,7 @@ pub mod browser_host;
 pub mod carriage_host;
 pub mod custody;
 pub mod custody_client;
+pub mod custody_identity;
 pub mod device_broker;
 pub mod endpoint_catalog;
 #[cfg(feature = "personal-sync")]

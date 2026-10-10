@@ -74,6 +74,7 @@ impl CustodyClientError {
 /// An open custody session against djinn, as one application.
 pub struct CustodyClient {
     inner: AppBrokerClient,
+    profile: Option<ProfileId>,
 }
 
 impl CustodyClient {
@@ -88,12 +89,29 @@ impl CustodyClient {
         let inner = AppBrokerClient::open_route_at(endpoint, app, route)
             .await
             .map_err(CustodyClientError::Absent)?;
-        Ok(Self { inner })
+        Ok(Self {
+            inner,
+            profile: None,
+        })
     }
 
     /// One raw call. The typed calls below are what an app normally uses.
     pub async fn call(&mut self, call: CustodyCall) -> Result<CustodyAnswer, CustodyClientError> {
+        let call = match &self.profile {
+            Some(profile) if call.answers_as_profile() => CustodyCall::AsProfile {
+                profile: profile.clone(),
+                inner: Box::new(call),
+            },
+            _ => call,
+        };
         Ok(self.inner.custody_call(call).await??)
+    }
+
+    /// Speak as persona `profile` from now on, without switching djinn to
+    /// it: status, releases, attestations and signatures answer for that
+    /// persona (D13). `None` returns to the persona in use.
+    pub fn speak_as(&mut self, profile: Option<ProfileId>) {
+        self.profile = profile;
     }
 
     /// The lock, the protection and the public roots.
@@ -239,6 +257,11 @@ impl BlockingCustodyClient {
             .map_err(|error| CustodyClientError::Absent(AppClientError::Io(error)))?;
         let client = runtime.block_on(CustodyClient::open_at(endpoint, app))?;
         Ok(Self { runtime, client })
+    }
+
+    /// See [`CustodyClient::speak_as`].
+    pub fn speak_as(&mut self, profile: Option<ProfileId>) {
+        self.client.speak_as(profile);
     }
 
     /// One raw call.

@@ -112,6 +112,37 @@ pub enum CustodyCall {
         device_label: Option<String>,
         keys: Vec<EpochKeyRequest>,
     },
+    /// Answer `call` as persona `profile` without switching to it: for an
+    /// application whose own identity djinn adopted as a persona apart from
+    /// the one in use (D13). Only a status, or a persona release,
+    /// attestation or signature, answers this way.
+    AsProfile {
+        profile: ProfileId,
+        inner: Box<CustodyCall>,
+    },
+}
+
+impl CustodyCall {
+    /// Whether this call can be answered as a named persona
+    /// ([`CustodyCall::AsProfile`]).
+    pub fn answers_as_profile(&self) -> bool {
+        matches!(
+            self,
+            Self::Status
+                | Self::Release {
+                    source: KeySource::Persona,
+                    ..
+                }
+                | Self::Attest {
+                    source: KeySource::Persona,
+                    ..
+                }
+                | Self::Sign {
+                    source: KeySource::Persona,
+                    ..
+                }
+        )
+    }
 }
 
 /// One key derived from a persona's current private epoch: blake3's
