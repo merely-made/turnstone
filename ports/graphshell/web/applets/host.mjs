@@ -100,7 +100,7 @@ export async function mountCapsuleApplet(root, gs, supplied) {
     } else if (command.command === 'grants') {
       if (runtime) await runtime.call('grants', data);
     } else if (command.command === 'keep') {
-      await gs.applet_keep(generation);
+      await gs.applet_keep(generation, Number(data));
     } else throw new Error('Unknown host command');
   }
 
