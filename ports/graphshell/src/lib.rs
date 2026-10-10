@@ -18,6 +18,8 @@ pub mod access;
 pub mod admission;
 #[cfg(feature = "web")]
 pub mod app;
+#[cfg(feature = "applets")]
+pub mod capsule_applet;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod browser_carrier;
 #[cfg(feature = "web")]

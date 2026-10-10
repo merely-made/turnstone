@@ -110,6 +110,8 @@ const SHEET: &str = "\
 
 /// What the page, its producer and its hooks share.
 struct Shared {
+    #[cfg(feature = "applets")]
+    applet: RefCell<applet::Pane>,
     canvas: RefCell<Canvas>,
     /// Input or a new graph since the producer last drew.
     dirty: Cell<bool>,
@@ -288,13 +290,9 @@ impl TextureProducer for CanvasProducer {
         }
         let (scene, moving) = if profile {
             let (scene, moving, sample) = match cx.frame.timestamp {
-                Some(timestamp) => canvas.frame_profiled_at(
-                    size.0,
-                    size.1,
-                    timestamp,
-                    physics_config,
-                    now_ms,
-                ),
+                Some(timestamp) => {
+                    canvas.frame_profiled_at(size.0, size.1, timestamp, physics_config, now_ms)
+                },
                 None => canvas.frame_profiled(size.0, size.1, now_ms),
             };
             shared.timing.borrow_mut().stages(
@@ -311,9 +309,7 @@ impl TextureProducer for CanvasProducer {
             (scene, moving)
         } else {
             match cx.frame.timestamp {
-                Some(timestamp) => {
-                    canvas.frame_at(size.0, size.1, timestamp, physics_config)
-                },
+                Some(timestamp) => canvas.frame_at(size.0, size.1, timestamp, physics_config),
                 None => canvas.frame(size.0, size.1),
             }
         };
@@ -434,6 +430,12 @@ impl TextureProducer for CanvasProducer {
 
 /// The application state the tree renders.
 pub(crate) struct TreePage {
+    #[cfg(feature = "applets")]
+    applet_seen: u64,
+    #[cfg(feature = "applets")]
+    applet_generation: u32,
+    #[cfg(feature = "applets")]
+    applet_query: cambium::TextInput,
     shared: Rc<Shared>,
     /// Where the graph came from, for the status line and receipts.
     source: String,
@@ -544,6 +546,10 @@ type Child = Box<dyn AnyView<TreePage, (), GenetCtx, GenetElement>>;
 type Logic = fn(&TreePage) -> Child;
 
 fn view(page: &TreePage) -> Child {
+    #[cfg(feature = "applets")]
+    if page.shared.applet.borrow().mount.is_some() {
+        return applet::view(page);
+    }
     let (width, height) = page.size;
     // Genet does not stretch a custom leaf across its cross axis, so the
     // canvas column is told the width the tools region leaves it.
@@ -809,6 +815,8 @@ async fn boot(root: Element) -> Result<(), String> {
     let nodes = graph.node_count();
     let speed_options = crate::web_speed::options()?;
     let shared = Rc::new(Shared {
+        #[cfg(feature = "applets")]
+        applet: RefCell::new(applet::Pane::default()),
         canvas: RefCell::new(match &placed {
             Some(positions) => web_graphs::placed_canvas(graph, positions, width, height),
             None => web_graphs::prepared_canvas(graph, width, height),
@@ -869,6 +877,12 @@ async fn boot(root: Element) -> Result<(), String> {
         options,
         move |_window, _commands, _wake| Init {
             state: TreePage {
+                #[cfg(feature = "applets")]
+                applet_seen: 0,
+                #[cfg(feature = "applets")]
+                applet_generation: 0,
+                #[cfg(feature = "applets")]
+                applet_query: cambium::TextInput::new(""),
                 shared: page_shared,
                 source,
                 nodes,
@@ -885,7 +899,16 @@ async fn boot(root: Element) -> Result<(), String> {
                 size: (width, height),
             },
             logic: view as Logic,
-            sheet: SHEET.to_string(),
+            sheet: {
+                #[cfg(feature = "applets")]
+                {
+                    format!("{SHEET}{}", applet::SHEET)
+                }
+                #[cfg(not(feature = "applets"))]
+                {
+                    SHEET.to_string()
+                }
+            },
             // A browser lends genet no system faces, so the page brings one.
             fonts: vec![HostFont {
                 family: None,
@@ -928,6 +951,22 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
     let after_shared = shared.clone();
     HostHooks {
         frame: Box::new(move |ctx| {
+            #[cfg(feature = "applets")]
+            {
+                let (version, generation) = {
+                    let pane = frame_shared.applet.borrow();
+                    (pane.version, pane.generation())
+                };
+                if ctx.runner.state().applet_seen != version {
+                    ctx.runner.update(|page| {
+                        page.applet_seen = version;
+                        if page.applet_generation != generation {
+                            page.applet_generation = generation;
+                            page.applet_query = cambium::TextInput::new("");
+                        }
+                    });
+                }
+            }
             if ctx
                 .runner
                 .state()
@@ -1150,6 +1189,8 @@ impl NoRepulsionLane for mere::canvas::Canvas {
     }
 }
 
+#[cfg(feature = "applets")]
+mod applet;
 mod controls;
 mod lane;
 mod physics;
