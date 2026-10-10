@@ -102,6 +102,9 @@ web = [
     "dep:uuid",
     "dep:url",
 ]
+# A bounded app-core host dialect over a disclosed capsule collection. Pack
+# verification is portable; the browser owns worker execution and its view.
+applets = ["web", "eidetic/pack-signing", "dep:personae"]
 # `mere_route`: a mere route's two projections as the mere view's model, and
 # the view's requests as the route's intents (reservoir plan V2b step 3, §7
 # item 42). It brings in `mere-view`, and with it Cambium, so it is opt-in.
@@ -278,7 +281,6 @@ required-features = ["native"]
 # producer semantics through cambium-winit-a11y's AccessKit lowering, driven
 # by the headless harness, its view built with Cambium, the tree read in
 # AccessKit's own types.
-accesskit = "0.24"
 cambium = { workspace = true }
 # W1's integration receipt drives the actual Distillery Chronicle endpoint.
 # Distillery depends on Mere's substrate, not Graphshell, so this test-only
@@ -306,6 +308,13 @@ tokio = { version = "1", features = [
     "time",
 ] }
 
+# These fixtures lower into the native AccessKit host, not the browser mirror.
+# Cargo's browser cone includes dev dependencies, so keep this lane scoped.
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+accesskit = "0.24"
+cambium-genet-winit-host = { workspace = true }
+cambium-winit-a11y = { workspace = true }
+
 [[bin]]
 name = "c4_webrtc_host"
 path = "src/bin/c4_webrtc_host.rs"
@@ -325,9 +334,3 @@ required-features = ["webrtc-session"]
 # the one above, the way `personae` does it.
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom = { version = "0.3", features = ["wasm_js"], optional = true }
-
-# The headless accessibility harness is a native test consumer. Keeping these
-# target-scoped prevents desktop host packages entering the web test graph.
-[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
-cambium-genet-winit-host = { workspace = true }
-cambium-winit-a11y = { workspace = true }

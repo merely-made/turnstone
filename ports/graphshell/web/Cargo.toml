@@ -31,6 +31,7 @@ main-page = ["product", "remote"]
 # What a page saves: IndexedDB, saved scenes, the tree's product mode,
 # `web_product` and `web_practice`.
 product = ["muniment/indexeddb", "dep:sha2"]
+applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.
 remote = ["graphshell/webrtc-browser", "dep:futures-channel", "dep:futures-util"]
