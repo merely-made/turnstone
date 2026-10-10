@@ -33,6 +33,8 @@ capture projection_dynamics_grid
 dom click [data-projection-compare-cell="dynamics:0:5"]
 settle 4
 assert snap projection-dynamics == on
+assert dom [data-projection-compare-cell="working"] Live
+capture projection_dynamics_focused
 act compare-projection-dynamics
 settle 2
 assert snap projection-compare == off

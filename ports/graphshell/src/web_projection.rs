@@ -375,6 +375,10 @@ impl BrowserHost {
         self.projection_editor.break_run();
         self.projection_editor.reduce(EditorAction::ApplyComparison { arrangement, dynamics: cell.dynamics }, now_ms());
         self.projection_editor.break_run();
+        if let Some(live) = &mut self.live_projection {
+            live.compare_column = 0;
+            live.compare_row = 0;
+        }
         self.recompile_projection();
         self.projection_editor_status = format!("Recipe · {} (from the comparison)", cell.family);
         self.chrome_dirty = true;
@@ -746,10 +750,13 @@ impl LiveProjection {
             let label = format!("{}{}{}", cell.family,
                 if cell.working { " (working)" } else { "" },
                 row.map_or(String::new(), |row| format!("  ·  {row}")));
-            let detail = self.dynamics_comparison.as_ref()
+            let mut detail = self.dynamics_comparison.as_ref()
                 .and_then(|d| d.stops.iter().find(|(id, _)| id == &cell.swatch_id))
                 .map(|(_, stop)| stop.clone())
                 .unwrap_or_else(|| if cell.working { "Your draft".into() } else { "Pick to apply".into() });
+            if cell.working && self.dynamics_comparison.as_ref().is_some_and(|d| d.is_running()) {
+                detail = format!("{} · {detail}", if self.motion_paused { "Paused" } else { "Live" });
+            }
             self.targets.push(Target { occurrence: cell.swatch_id.clone(), view: "compare",
                 label, detail, rect: [x, y, card_w, card_h], selected: cell.working });
             let Some(frame) = scene.items.iter().find(|item| {
