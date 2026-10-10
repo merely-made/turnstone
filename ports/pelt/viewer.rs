@@ -55,6 +55,7 @@ pub(crate) fn main() {
     let mut tearout_cancellation_receipt = false;
     let mut workspace_receipt: Option<pelt_desktop::WorkspaceReceipt> = None;
     let mut appearance_store: Option<std::path::PathBuf> = None;
+    let mut theme_library: Option<std::path::PathBuf> = None;
     let mut tile_engine_overrides = Vec::new();
     let mut tile_urls = Vec::new();
     let mut netrender_smoke = false;
@@ -155,7 +156,19 @@ pub(crate) fn main() {
                 appearance_store = Some(value["--appearance-store=".len()..].into());
                 with_tiles = true;
             },
-            "--tiles" => {
+            "--theme-library" => {
+                let Some(value) = args.next() else {
+                    eprintln!("--theme-library requires a file path");
+                    std::process::exit(2);
+                };
+                theme_library = Some(value.into());
+                with_tiles = true;
+            },
+            value if value.starts_with("--theme-library=") => {
+                theme_library = Some(value["--theme-library=".len()..].into());
+                with_tiles = true;
+            },
+            "--tiles" | "--workspace" => {
                 with_tiles = true;
             },
             "--tile-receipt" => {
@@ -615,6 +628,7 @@ pub(crate) fn main() {
             workspace_receipt,
             artifact,
             appearance_store,
+            theme_library,
             workspace_size_matrix,
             tile_engine_overrides,
         );
@@ -1048,23 +1062,61 @@ fn run_workspace_profile(
     workspace_receipt: Option<pelt_desktop::WorkspaceReceipt>,
     artifact: Option<std::path::PathBuf>,
     appearance_store: Option<std::path::PathBuf>,
+    theme_library: Option<std::path::PathBuf>,
     workspace_size_matrix: Option<Vec<(u32, u32)>>,
     route_overrides: Vec<(u64, String)>,
 ) {
     let mut config =
         pelt_desktop::WorkspaceViewerConfig::new(urls, pelt_desktop::WindowingMode::Headed);
-    if let Some(path) = appearance_store {
-        let store = match pelt_desktop::FileThemeChoiceStore::load(&path) {
-            Ok(store) => store,
+    // The real application owns a durable choice and shares Tabard definitions.
+    // Existing named receipts keep their explicitly injected/session-only store.
+    let production = workspace_receipt.is_none()
+        && !interaction_receipt
+        && !capability_receipt
+        && !tearout_receipt
+        && !tearout_cancellation_receipt;
+    let appearance_store = appearance_store.or_else(|| {
+        if !production {
+            return None;
+        }
+        match pelt_desktop::default_appearance_store_path() {
+            Ok(path) => Some(path),
             Err(error) => {
-                eprintln!(
-                    "could not load Pelt appearance store {}: {error}",
-                    path.display()
-                );
-                std::process::exit(2);
+                config.appearance_error = Some(error.to_string());
+                None
             },
-        };
-        config = config.with_appearance_store(store);
+        }
+    });
+    if let Some(path) = appearance_store {
+        config.appearance_store_path = Some(path.clone());
+        match pelt_desktop::load_appearance_store(&path) {
+            Ok(store) => config = config.with_appearance_store_at(path, store),
+            Err(error) => {
+                config.appearance_error = Some(format!(
+                    "Could not load Pelt appearance {}: {error}",
+                    path.display()
+                ))
+            },
+        }
+    }
+    let theme_library = theme_library.or_else(|| {
+        if !production {
+            return None;
+        }
+        match pelt_desktop::default_theme_library_path() {
+            Ok(path) => Some(path),
+            Err(error) => {
+                let notice = config.appearance_error.get_or_insert_with(String::new);
+                if !notice.is_empty() {
+                    notice.push_str("; ");
+                }
+                notice.push_str(&error.to_string());
+                None
+            },
+        }
+    });
+    if let Some(path) = theme_library {
+        config = config.with_theme_library(path);
     }
     if let Some(receipt) = workspace_receipt {
         config = config.with_workspace_receipt(
@@ -1734,7 +1786,8 @@ Options:
     --product-receipt <article|controls|responsive|scripted|text-fragment|resources|gemtext> (bounded fixture + semantic assertion + PNG)
     --artifact <path.png>              (required with a named receipt)
     --appearance-store <path>          (persist Pelt Chrome appearance at this caller-selected path; implies --tiles)
-    --tiles                            (route positional URLs in a recursive Frisket workspace)
+    --theme-library <path>             (shared saved Tabard themes; independent of Pelt appearance selection; implies --workspace)
+    --workspace, --tiles               (route positional URLs in a recursive Frisket workspace)
     --tile-engine <N=engine-id>        (override one workspace tile; repeatable)
     --tile-receipt                     (drive the bounded P3 split/tab/navigation receipt)
     --capability-receipt               (drive the mixed P4 routing receipt)
