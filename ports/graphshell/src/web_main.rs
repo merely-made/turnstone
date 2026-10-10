@@ -108,6 +108,8 @@ enum ActiveSession {
 }
 
 struct BrowserHost {
+    host_appearance: crate::web_appearance::Handle,
+    appearance_revision: u64,
     app: GraphshellApp<IndexedDbBackend>,
     /// Where the remote projection lives (`web_remote`).
     remote: RemoteLink,
@@ -229,6 +231,7 @@ impl ProjectionDefinitionSink for SessionProjectionSink<'_> {
 
 fn initial_projection_draft() -> ProjectionDraft {
     ProjectionDraft {
+        dynamics: None,
         version: graphshell::projection_editor::PROJECTION_DEFINITION_VERSION,
         id: "graphshell-reference".to_string(),
         label: "Graphshell reference projection".to_string(),
@@ -275,6 +278,7 @@ fn initial_projection_draft() -> ProjectionDraft {
 
 fn draft_from_definition(definition: &ProjectionDefinition) -> ProjectionDraft {
     ProjectionDraft {
+        dynamics: definition.dynamics.clone(),
         version: definition.version,
         id: definition.id.clone(),
         label: definition.label.clone(),
@@ -390,6 +394,15 @@ impl BrowserHost {
         self.scenario_frames = self.scenario_frames.wrapping_add(1);
         self.finish_capture()?;
         self.resize_if_needed();
+        {
+            let mut appearance = self.host_appearance.borrow_mut();
+            appearance.refresh(false)?;
+            if self.appearance_revision != appearance.revision {
+                appearance.apply_canvas(&mut self.canvas);
+                self.appearance_revision = appearance.revision;
+                self.chrome_dirty = true;
+            }
+        }
         if let Some(practice) = &mut self.practice {
             let frame = practice.frame(self.width, self.height, host_ms, &mut self.chrome_text, &self.gpu)?;
             let changed = frame.is_some();
@@ -417,11 +430,15 @@ impl BrowserHost {
                 self.width,
                 self.height,
                 &mut self.chrome_text,
+                self.host_appearance.borrow().sheet(),
             )?;
             self.chrome_dirty = false;
         }
         let content = if let Some(live) = &mut self.live_projection {
-            live.frame(self.width, self.height, &mut self.chrome_text)?
+            live.frame(
+                self.width, self.height, &mut self.chrome_text,
+                self.host_appearance.borrow().sheet(),
+            )?
         } else {
             match self.active {
                 ActiveSession::Local => {
@@ -496,6 +513,12 @@ impl BrowserHost {
             "projection-grid" => self.projection_arrangement("grid.default"),
             "projection-scatter" => self.projection_arrangement("scatter.default"),
             "compare-projection" => self.toggle_projection_compare(),
+            "compare-projection-dynamics" => self.toggle_projection_dynamics_compare(),
+            "projection-motion" => self.toggle_projection_motion(),
+            "projection-compare-left" => self.move_projection_comparison(-1, 0),
+            "projection-compare-right" => self.move_projection_comparison(1, 0),
+            "projection-compare-up" => self.move_projection_comparison(0, -1),
+            "projection-compare-down" => self.move_projection_comparison(0, 1),
             "open-projection-editor" => {
                 self.projection_editor_open = true;
                 self.projection_editor_status = "Draft ready · unsaved".to_string();
@@ -589,8 +612,17 @@ impl BrowserHost {
     }
 
     fn update_projection_field(&mut self, field: &str, value: &str) {
+        if field == "dynamics.bound" {
+            self.set_projection_settle_bound(value.parse().ok());
+            return;
+        }
         let mut draft = self.projection_editor.draft().clone();
         let action = match field {
+            "dynamics.spec" => EditorAction::SetDynamics(if value.trim().is_empty() { None } else {
+                Some(graphshell::projection_editor::DynamicsSlot::from_json(1, value).unwrap_or_else(|_| {
+                    graphshell::projection_editor::DynamicsSlot { version: 1, spec: value.to_string() }
+                }))
+            }),
             "source.authority" => {
                 draft.source.authority = value.to_string();
                 EditorAction::SetSource(draft.source)
@@ -1291,6 +1323,8 @@ fn update_projection_editor_semantics(host: &BrowserHost) -> Result<(), String> 
         },
     )?;
     set_projection_input_value("projection-arrangement-kind", &draft.arrangement.kind)?;
+    set_projection_input_value("projection-dynamics-spec", draft.dynamics.as_ref().map_or("", |slot| &slot.spec))?;
+    set_projection_input_value("projection-dynamics-bound", &host.projection_settle_bound().map_or(String::new(), |bound| bound.to_string()))?;
     set_projection_input_value(
         "projection-arrangement-direction",
         &draft.arrangement.direction,
@@ -1904,9 +1938,19 @@ async fn run(root_element: Element) -> Result<(), String> {
     // the Livery migration retired that crate, and the glyphs went with it.
     let mut chrome_text = TextSystem::new();
     chrome_text.register_font_bytes(include_bytes!("../web/GraphshellSans.ttf").to_vec());
-    let chrome_scene = build_chrome_scene(initial_model, width, height, &mut chrome_text)?;
+    let appearance_root = root()?;
+    let host_appearance = crate::web_appearance::mount(
+        appearance_root.clone(), appearance_root.has_attribute("data-appearance-application"),
+    )?;
+    host_appearance.borrow().apply_canvas(&mut graph_canvas);
+    let appearance_revision = host_appearance.borrow().revision;
+    let chrome_scene = build_chrome_scene(
+        initial_model, width, height, &mut chrome_text, host_appearance.borrow().sheet(),
+    )?;
     let command_choices = web_commands::stored_choices(&app.host);
     let state = Rc::new(RefCell::new(BrowserHost {
+        host_appearance,
+        appearance_revision,
         app,
         remote: RemoteLink::Fixture(remote),
         remote_board: RemoteBoard::new(),
@@ -2002,8 +2046,10 @@ pub fn mount(root: Element) -> Result<(), JsValue> {
     wasm_bindgen_futures::spawn_local(async move {
         if let Err(error) = run(root).await {
             web_sys::console::error_1(&error.clone().into());
-            if let Ok(document) = document() {
-                document.set_title(&format!("GRAPHSHELL H3 FAIL: {error}"));
+            if owns_title() {
+                if let Ok(document) = document() {
+                    document.set_title(&format!("GRAPHSHELL H3 FAIL: {error}"));
+                }
             }
         }
     });

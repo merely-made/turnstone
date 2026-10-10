@@ -25,7 +25,7 @@ use edit_history::History;
 pub use scenograph::options::{OptionDefault, OptionKind, OptionSpec};
 pub use scenograph::{
     Appearance, Arrangement, AuthoredDefinitionError, AuthoredProjectionDefinition, Channel,
-    Encoding, Interaction, PROJECTION_DEFINITION_VERSION, ProjectionDefinition, ProjectionDraft,
+    DynamicsSlot, Encoding, Interaction, PROJECTION_DEFINITION_VERSION, ProjectionDefinition, ProjectionDraft,
     ProjectionInputBinding, ProjectionVariant, Provenance, PublicSourceRevision, Reading,
     RevisionEvidence, RuntimeProjectionBinding, RuntimeSourceBinding, SelectionMode, SourceBinding,
     ValidationIssue, ValidationSeverity,
@@ -145,6 +145,7 @@ pub fn chronicle_definition(
     definition_revision: impl Into<String>,
 ) -> AuthoredProjectionDefinition {
     AuthoredProjectionDefinition {
+        dynamics: None,
         version: PROJECTION_DEFINITION_VERSION,
         id: CHRONICLE_DEFINITION_ID.to_owned(),
         label: "Job Chronicle".to_owned(),
@@ -186,6 +187,7 @@ pub fn chronicle_definition(
 /// the base definition and every non-arrangement field.
 pub fn chronicle_era_bands_off_variant() -> ProjectionVariant {
     ProjectionVariant {
+        dynamics: None,
         definition_id: CHRONICLE_DEFINITION_ID.to_owned(),
         id: "era-bands-off".to_owned(),
         arrangement_options: BTreeMap::from([(
@@ -205,6 +207,8 @@ pub enum EditorAction {
     SetReading(Reading),
     SetEncoding(Encoding),
     SetArrangement(Arrangement),
+    SetDynamics(Option<DynamicsSlot>),
+    ApplyComparison { arrangement: Arrangement, dynamics: Option<DynamicsSlot> },
     SetInteraction(Interaction),
     SetAppearance(Appearance),
     SetProvenance(Provenance),
@@ -373,6 +377,15 @@ impl ProjectionEditor {
                 self.draft.arrangement = value;
                 ReduceResult::Changed
             },
+            EditorAction::SetDynamics(value) => {
+                self.draft.dynamics = value;
+                ReduceResult::Changed
+            },
+            EditorAction::ApplyComparison { arrangement, dynamics } => {
+                self.draft.arrangement = arrangement;
+                self.draft.dynamics = dynamics;
+                ReduceResult::Changed
+            },
             EditorAction::SetInteraction(value) => {
                 self.draft.interaction = value;
                 ReduceResult::Changed
@@ -527,9 +540,31 @@ mod tests {
     use super::*;
     use workbench::{DropTarget, WorkbenchEffect};
 
+    #[test]
+    fn dynamics_is_edited_as_one_undo_step_and_saved_in_the_definition() {
+        let mut editor = ProjectionEditor::new(valid_draft());
+        let slot = DynamicsSlot::from_json(1, r#"{"root":{"preset":"spring.rapier"}}"#).unwrap();
+        editor.reduce(EditorAction::SetDynamics(Some(slot.clone())), 0);
+        assert_eq!(editor.draft().dynamics, Some(slot.clone()));
+        assert!(editor.undo());
+        assert_eq!(editor.draft().dynamics, None);
+        assert!(editor.redo());
+        struct Sink(Option<ProjectionDefinition>);
+        impl ProjectionDefinitionSink for Sink {
+            type Error = String;
+            fn save(&mut self, definition: &ProjectionDefinition) -> Result<(), String> {
+                self.0 = Some(definition.clone()); Ok(())
+            }
+        }
+        let mut sink = Sink(None);
+        editor.save(&mut sink).unwrap();
+        assert_eq!(sink.0.unwrap().dynamics, Some(slot));
+    }
+
     fn valid_draft() -> ProjectionDraft {
         ProjectionDraft {
-            version: PROJECTION_DEFINITION_VERSION,
+            dynamics: None,
+        version: PROJECTION_DEFINITION_VERSION,
             id: "notes-by-topic".into(),
             label: "Notes by topic".into(),
             source: SourceBinding {
@@ -976,7 +1011,8 @@ mod tests {
             "chronicle-definition-v1",
         );
         let variant = ProjectionVariant {
-            definition_id: "other.recipe".to_owned(),
+            dynamics: None,
+        definition_id: "other.recipe".to_owned(),
             id: "era-bands-off".to_owned(),
             arrangement_options: BTreeMap::new(),
         };

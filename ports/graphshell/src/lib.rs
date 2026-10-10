@@ -18,8 +18,8 @@ pub mod access;
 pub mod admission;
 #[cfg(feature = "web")]
 pub mod app;
-#[cfg(feature = "applets")]
-pub mod capsule_applet;
+#[cfg(feature = "web")]
+pub mod appearance;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod browser_carrier;
 #[cfg(feature = "web")]
@@ -30,9 +30,13 @@ pub mod canvas_controls;
 #[cfg(feature = "web")]
 pub mod canvas_faces;
 #[cfg(feature = "web")]
+pub mod canvas_gestures;
+#[cfg(feature = "web")]
 pub mod canvas_physics;
 #[cfg(feature = "web")]
 pub mod canvas_reader;
+#[cfg(feature = "applets")]
+pub mod capsule_applet;
 #[cfg(feature = "web")]
 pub mod capture;
 #[cfg(all(test, feature = "web"))]
@@ -51,6 +55,8 @@ pub mod forme_workspace;
 pub mod handlers;
 #[cfg(feature = "web")]
 pub mod host_dataset_view;
+#[cfg(feature = "web")]
+pub mod host_history_view;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod identity;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
@@ -95,6 +101,10 @@ pub mod practice_disclosure;
 pub mod practice_workspace;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod projection_compare;
+#[cfg(feature = "web")]
+pub mod projection_dynamics_compare;
+#[cfg(feature = "web")]
+pub mod projection_dynamics_receipt;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod projection_compile;
 #[cfg(any(feature = "native", feature = "web"))]

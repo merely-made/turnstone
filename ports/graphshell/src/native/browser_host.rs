@@ -12,7 +12,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use base64::Engine;
 use chirograph::{CarrierRequestBody, CarrierResponseBody, ResumeRequest};
 use personae::delegation::DelegationError;
-use personae::IdentityStorage;
 
 use crate::browser_carrier::{
     BrowserCarrierError, BrowserChallenge, BrowserHostMessage, BrowserLauncher, BrowserLink,
@@ -26,11 +25,10 @@ use crate::native::endpoint_catalog::{
     ResidentEndpointCatalog, ResidentEndpointCatalogError, ResidentEndpointRoute,
     ResidentEndpointSession,
 };
-use crate::native::identity_ui::{NativeIdentityUi, apply_native_identity_action};
 use crate::native::local_session::{
     DoorIdentity, LocalSession, admit_local_client, identity_endpoint_for,
 };
-use crate::native::personae_host::PersonaeHost;
+use crate::native::resident_identity::ResidentIdentity;
 use crate::native::tasks::spawn_tracked_with_handle;
 use crate::session_loop::{SessionLoopError, SessionSummary, serve_admitted_session};
 use crate::session_notices::serve_admitted_session_notifying;
@@ -61,10 +59,9 @@ pub enum BrowserHostError {
 /// This is shared by the installed host and the headed approval receipt host,
 /// so the receipt exercises the product carrier rather than a second wire
 /// implementation.
-pub async fn serve_identity_native_messages<P, S, U, R, W>(
+pub async fn serve_identity_native_messages<P, A, R, W>(
     identity: &P,
-    personae: Arc<PersonaeHost<S>>,
-    native_ui: &U,
+    personae: Arc<A>,
     launcher: BrowserLauncher,
     reader: &mut R,
     writer: &mut W,
@@ -72,15 +69,13 @@ pub async fn serve_identity_native_messages<P, S, U, R, W>(
 ) -> Result<Option<SessionSummary>, BrowserHostError>
 where
     P: DoorIdentity + ?Sized,
-    S: IdentityStorage + 'static,
-    U: NativeIdentityUi,
+    A: ResidentIdentity + ?Sized,
     R: tokio::io::AsyncRead + Unpin,
     W: tokio::io::AsyncWrite + Unpin,
 {
     serve_identity_native_messages_with_cards(
         identity,
         personae,
-        native_ui,
         launcher,
         reader,
         writer,
@@ -92,10 +87,9 @@ where
 
 /// Serve the admitted resident-device surface with additional public cards.
 #[allow(clippy::too_many_arguments)]
-pub(crate) async fn serve_identity_native_messages_with_cards<P, S, U, R, W>(
+pub(crate) async fn serve_identity_native_messages_with_cards<P, A, R, W>(
     identity: &P,
-    personae: Arc<PersonaeHost<S>>,
-    native_ui: &U,
+    personae: Arc<A>,
     launcher: BrowserLauncher,
     reader: &mut R,
     writer: &mut W,
@@ -104,15 +98,13 @@ pub(crate) async fn serve_identity_native_messages_with_cards<P, S, U, R, W>(
 ) -> Result<Option<SessionSummary>, BrowserHostError>
 where
     P: DoorIdentity + ?Sized,
-    S: IdentityStorage + 'static,
-    U: NativeIdentityUi,
+    A: ResidentIdentity + ?Sized,
     R: tokio::io::AsyncRead + Unpin,
     W: tokio::io::AsyncWrite + Unpin,
 {
     serve_native_messages(
         identity,
         personae,
-        native_ui,
         launcher,
         reader,
         writer,
@@ -128,10 +120,9 @@ where
 /// does the host open `route` from `catalog`, using the resulting admitted
 /// context. The route is supplied by the host process, never by the browser.
 #[allow(clippy::too_many_arguments)]
-pub async fn serve_catalog_native_messages<P, S, U, R, W>(
+pub async fn serve_catalog_native_messages<P, A, R, W>(
     identity: &P,
-    personae: Arc<PersonaeHost<S>>,
-    native_ui: &U,
+    personae: Arc<A>,
     launcher: BrowserLauncher,
     reader: &mut R,
     writer: &mut W,
@@ -141,15 +132,13 @@ pub async fn serve_catalog_native_messages<P, S, U, R, W>(
 ) -> Result<Option<SessionSummary>, BrowserHostError>
 where
     P: DoorIdentity + ?Sized,
-    S: IdentityStorage + 'static,
-    U: NativeIdentityUi,
+    A: ResidentIdentity + ?Sized,
     R: tokio::io::AsyncRead + Unpin,
     W: tokio::io::AsyncWrite + Unpin,
 {
     serve_native_messages(
         identity,
         personae,
-        native_ui,
         launcher,
         reader,
         writer,
@@ -170,10 +159,9 @@ enum BrowserSessionEndpoint {
 }
 
 #[allow(clippy::too_many_arguments)]
-async fn serve_native_messages<P, S, U, R, W>(
+async fn serve_native_messages<P, A, R, W>(
     identity: &P,
-    personae: Arc<PersonaeHost<S>>,
-    native_ui: &U,
+    personae: Arc<A>,
     launcher: BrowserLauncher,
     reader: &mut R,
     writer: &mut W,
@@ -182,8 +170,7 @@ async fn serve_native_messages<P, S, U, R, W>(
 ) -> Result<Option<SessionSummary>, BrowserHostError>
 where
     P: DoorIdentity + ?Sized,
-    S: IdentityStorage + 'static,
-    U: NativeIdentityUi,
+    A: ResidentIdentity + ?Sized,
     R: tokio::io::AsyncRead + Unpin,
     W: tokio::io::AsyncWrite + Unpin,
 {
@@ -220,7 +207,7 @@ where
             let mut endpoint = identity_endpoint_for(Arc::clone(&personae), &authority, surface);
             spawn_tracked_with_handle(async move {
                 let revocations = RwLock::new(revocations);
-                let mut resume = |_: &mut IdentityEndpoint<S>, _: ResumeRequest| {
+                let mut resume = |_: &mut IdentityEndpoint<A>, _: ResumeRequest| {
                     Err("identity resume is not implemented".to_string())
                 };
                 serve_admitted_session(
@@ -280,7 +267,7 @@ where
             },
             BrowserMessage::NativeIdentity { request } => {
                 let result = if request.session == session {
-                    apply_native_identity_action(&personae, native_ui, request.action)
+                    personae.native_action(request.action)
                 } else {
                     NativeIdentityResult::Rejected {
                         reason: NativeIdentityFailure::WrongSession,
@@ -328,16 +315,13 @@ mod tests {
         EndpointDescriptor, IntentInvocation, IntentResult, PortableCardV1, ProjectionRequest,
         ProjectionSnapshot, ProtocolVersion, ResourceRequest, ResourceResponse, SessionOpen,
     };
-    use personae::{
-        Ed25519Keypair, IdentityVault, InMemoryProvider, InMemoryStorage, Profile, ProfileId,
-    };
+    use personae::InMemoryProvider;
 
     use super::*;
     use crate::browser_carrier::{BrowserHostMessage, CHROMIUM_EXTENSION_ID};
-    use crate::identity::VaultProtectionView;
     use crate::lifecycle::AdmittedEndpointContext;
     use crate::native::endpoint_catalog::ResidentEndpoint;
-    use crate::native::identity_ui::UnavailableNativeIdentityUi;
+    use crate::native::resident_identity::test_support::FixedIdentity;
 
     struct CatalogFixtureEndpoint;
 
@@ -365,16 +349,7 @@ mod tests {
     #[tokio::test]
     async fn admitted_browser_receives_resident_personal_sync_cards() {
         let identity = InMemoryProvider::from_seed([0x81; 32]);
-        let profile = Profile::new(
-            ProfileId("default".into()),
-            "Default",
-            Ed25519Keypair::from_seed([0x82; 32]),
-        );
-        let personae = Arc::new(PersonaeHost::new(
-            IdentityVault::with_profile(InMemoryStorage::new(), profile),
-            None,
-            VaultProtectionView::Ephemeral,
-        ));
+        let personae = FixedIdentity::new(0x82);
         let launcher =
             BrowserLauncher::parse(&[format!("chrome-extension://{CHROMIUM_EXTENSION_ID}/")])
                 .unwrap();
@@ -392,12 +367,10 @@ mod tests {
         let (host_stream, browser_stream) = tokio::io::duplex(64 * 1024);
         let (mut host_reader, mut host_writer) = tokio::io::split(host_stream);
         let (mut browser_reader, mut browser_writer) = tokio::io::split(browser_stream);
-        let ui = UnavailableNativeIdentityUi;
 
         let host = serve_identity_native_messages_with_cards(
             &identity,
             personae,
-            &ui,
             launcher,
             &mut host_reader,
             &mut host_writer,
@@ -563,16 +536,7 @@ mod tests {
     #[tokio::test]
     async fn browser_route_opens_a_catalog_endpoint_only_after_admission() {
         let identity = InMemoryProvider::from_seed([0x91; 32]);
-        let profile = Profile::new(
-            ProfileId("default".into()),
-            "Default",
-            Ed25519Keypair::from_seed([0x92; 32]),
-        );
-        let personae = Arc::new(PersonaeHost::new(
-            IdentityVault::with_profile(InMemoryStorage::new(), profile),
-            None,
-            VaultProtectionView::Ephemeral,
-        ));
+        let personae = FixedIdentity::new(0x92);
         let launcher =
             BrowserLauncher::parse(&[format!("chrome-extension://{CHROMIUM_EXTENSION_ID}/")])
                 .unwrap();
@@ -589,12 +553,10 @@ mod tests {
         let (host_stream, browser_stream) = tokio::io::duplex(64 * 1024);
         let (mut host_reader, mut host_writer) = tokio::io::split(host_stream);
         let (mut browser_reader, mut browser_writer) = tokio::io::split(browser_stream);
-        let ui = UnavailableNativeIdentityUi;
 
         let host = serve_catalog_native_messages(
             &identity,
             personae,
-            &ui,
             launcher,
             &mut host_reader,
             &mut host_writer,

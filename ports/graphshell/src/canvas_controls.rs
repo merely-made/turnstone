@@ -28,6 +28,9 @@ pub enum CanvasCommand {
         zoom: f32,
     },
     Fit,
+    /// One-shot framing, without enabling layout following or restoring placement.
+    FitVisible,
+    FitSelection,
     RestoreArrangement,
     SetPhysicsPaused(bool),
     TogglePhysics,
@@ -64,6 +67,12 @@ impl CanvasCommand {
             Self::Fit => {
                 canvas.fit_to_content();
                 canvas.set_view_follow(true);
+            },
+            Self::FitVisible => {
+                canvas.fit_visible();
+            },
+            Self::FitSelection => {
+                canvas.fit_selection();
             },
             Self::RestoreArrangement => {
                 canvas.restore_arrangement();

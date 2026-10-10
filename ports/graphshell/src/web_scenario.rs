@@ -623,6 +623,7 @@ impl Automatable for Probe<'_> {
                 .unwrap_or_default(),
         );
         snap = snap.with_field("product-status", self.host.product_status.clone());
+        snap = snap.with_field("graph-nodes", self.host.app.host.graph().node_count().to_string());
         snap.with_field("scenario-frames", self.host.scenario_frames.to_string())
     }
 

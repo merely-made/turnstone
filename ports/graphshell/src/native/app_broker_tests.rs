@@ -14,14 +14,6 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use tokio::sync::RwLock;
 
-use chirograph::{
-    CapabilityProfile, CarrierRequest, CarrierRequestBody, CarrierResponseBody, ContentHash,
-    PortableCardV1, ProtocolVersion, ResourceRequest, SessionOpen,
-};
-use personae::{Ed25519Keypair, IdentityVault, InMemoryStorage, Profile, ProfileId};
-
-use crate::identity::VaultProtectionView;
-
 use crate::browser_carrier::{read_native_message_async, write_native_message_async};
 use crate::identity_endpoint::SupplementalCard;
 use crate::native::app_admission::{AllowedAppRoutes, AppHello, AppId, AppRouteGrants, AppRouteId};
@@ -32,19 +24,14 @@ use crate::native::app_broker::{
 use crate::native::app_client::AppBrokerClient;
 use crate::native::device_broker::DeviceSurface;
 use crate::native::endpoint_catalog::ResidentEndpointCatalog;
-use crate::native::personae_host::PersonaeHost;
+use crate::native::resident_identity::test_support::FixedIdentity;
+use chirograph::{
+    CapabilityProfile, CarrierRequest, CarrierRequestBody, CarrierResponseBody, ContentHash,
+    PortableCardV1, ProtocolVersion, ResourceRequest, SessionOpen,
+};
 
-fn resident_host() -> Arc<PersonaeHost<InMemoryStorage>> {
-    let profile = Profile::new(
-        ProfileId("default".into()),
-        "Default",
-        Ed25519Keypair::from_seed([0x91; 32]),
-    );
-    Arc::new(PersonaeHost::new(
-        IdentityVault::with_profile(InMemoryStorage::new(), profile),
-        None,
-        VaultProtectionView::Ephemeral,
-    ))
+fn resident_host() -> Arc<FixedIdentity> {
+    FixedIdentity::new(0x91)
 }
 
 /// A surface shaped like the one the receipts lane composes: a card that names

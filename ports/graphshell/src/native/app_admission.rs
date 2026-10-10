@@ -424,7 +424,7 @@ pub fn default_app_endpoint() -> String {
         // host without XDG, at the same user-only permissions.
         std::env::var_os("XDG_RUNTIME_DIR")
             .map(std::path::PathBuf::from)
-            .unwrap_or_else(personae::bootstrap::default_vault_dir)
+            .unwrap_or_else(personae::default_vault_dir)
             .join("graphshell-app.sock")
             .display()
             .to_string()

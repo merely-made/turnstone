@@ -73,6 +73,41 @@ fn heard_dataset(tree: &serde_json::Value) -> (Vec<String>, Option<String>) {
     (relations, alert)
 }
 
+/// The named region's list items and its status line, as the semantic tree
+/// tells them (S3's "History" region).
+fn heard_region(tree: &serde_json::Value, name: &str) -> (Vec<String>, Option<String>) {
+    let field = |node: &serde_json::Value, key: &str| {
+        node.get(key).and_then(|v| v.as_str()).map(str::to_owned)
+    };
+    let children = |node: &serde_json::Value| {
+        node.get("children")
+            .and_then(|v| v.as_array())
+            .cloned()
+            .unwrap_or_default()
+    };
+    let mut stack = vec![tree.clone()];
+    while let Some(node) = stack.pop() {
+        if field(&node, "role").as_deref() == Some("region")
+            && field(&node, "label").as_deref() == Some(name)
+        {
+            let (mut items, mut status) = (Vec::new(), None);
+            let mut inner = vec![node];
+            while let Some(item) = inner.pop() {
+                match field(&item, "role").as_deref() {
+                    Some("listitem") => items.extend(field(&item, "label")),
+                    Some("status") if status.is_none() => status = field(&item, "label"),
+                    _ => {},
+                }
+                inner.extend(children(&item));
+            }
+            items.sort();
+            return (items, status);
+        }
+        stack.extend(children(&node));
+    }
+    (Vec::new(), None)
+}
+
 /// One item of the canvas slot as the semantic tree tells it: its name, its
 /// buttons' names, and how many of them carry a description.
 struct HeardItem {
@@ -411,11 +446,22 @@ impl TreeLane {
                 "tools-sections",
                 format!(
                     "physics:{},remote:{}",
-                    if page.sections.physics.expanded { "open" } else { "closed" },
-                    if page.sections.remote.expanded { "open" } else { "closed" },
+                    if page.sections.physics.expanded {
+                        "open"
+                    } else {
+                        "closed"
+                    },
+                    if page.sections.remote.expanded {
+                        "open"
+                    } else {
+                        "closed"
+                    },
                 ),
             )
-            .with_field("remote-link", if live.is_some() { "webrtc" } else { "none" })
+            .with_field(
+                "remote-link",
+                if live.is_some() { "webrtc" } else { "none" },
+            )
             .with_field("remote-state", remote.status())
             .with_field(
                 "remote-revision",
@@ -660,6 +706,20 @@ impl Product for TreeLane {
             )
             .with_field("zoom", canvas.camera().zoom.to_string())
             .with_field("camera", format!("{:?}", canvas.camera().offset))
+            .with_field(
+                "selection-fit-available",
+                canvas.can_fit_selection().to_string(),
+            )
+            .with_field(
+                "selection-center-distance",
+                canvas
+                    .focused_screen_position()
+                    .map(|(x, y)| {
+                        let (w, h) = self.shared.size.get();
+                        format!("{:.3}", (x - w as f32 * 0.5).hypot(y - h as f32 * 0.5))
+                    })
+                    .unwrap_or_else(|| "unavailable".into()),
+            )
             .with_field("picked", page.picked.clone().unwrap_or_default())
             .with_field("nodes", page.nodes.to_string())
             .with_field("source", page.source.clone())
@@ -673,7 +733,49 @@ impl Product for TreeLane {
                     _ => String::new(),
                 },
             )
-            .with_field("edges", canvas.graph().relations().count().to_string())
+            .with_field(
+                "edges",
+                canvas.graph().projected_relations().count().to_string(),
+            )
+            // The host history (S3): which checkpoint shows, and its changes.
+            .with_field(
+                "history-checkpoints",
+                page.history
+                    .as_ref()
+                    .map_or("0".into(), |hosted| hosted.len().to_string()),
+            )
+            .with_field(
+                "history-index",
+                page.history
+                    .as_ref()
+                    .map(|hosted| (hosted.index + 1).to_string())
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "history-summary",
+                page.history
+                    .as_ref()
+                    .and_then(|hosted| hosted.summary())
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "history-error",
+                page.history
+                    .as_ref()
+                    .and_then(|hosted| hosted.error.clone())
+                    .unwrap_or_default(),
+            )
+            // The page's gestures and motion preference.
+            .with_field("reduced-motion", self.shared.reduced_motion().to_string())
+            .with_field("gesture", self.shared.gestures.borrow().probe.clone())
+            .with_field(
+                "wheel-use",
+                format!("{:?}", self.shared.gestures.borrow().last_wheel),
+            )
+            .with_field(
+                "touch-use",
+                format!("{:?}", self.shared.gestures.borrow().last_touch),
+            )
             .with_field("moving", self.shared.moving.get().to_string())
             .with_field(
                 "gpu-timed",
@@ -683,9 +785,12 @@ impl Product for TreeLane {
         // own semantic tree, and the keyboard move (dynamics grammar plan,
         // F65 to F68).
         let tree = semantic_tree();
-        let (heard_relations, heard_alert) =
-            tree.as_ref().map(heard_dataset).unwrap_or_default();
+        let (heard_relations, heard_alert) = tree.as_ref().map(heard_dataset).unwrap_or_default();
         let heard = tree.as_ref().and_then(heard_canvas);
+        let (heard_changes, heard_checkpoint) = tree
+            .as_ref()
+            .map(|tree| heard_region(tree, "History"))
+            .unwrap_or_default();
         let snapshot = snapshot
             .with_field(
                 "reader-canvas",
@@ -695,7 +800,10 @@ impl Product for TreeLane {
             )
             .with_field(
                 "reader-items",
-                heard.as_ref().map_or(0, |(_, items)| items.len()).to_string(),
+                heard
+                    .as_ref()
+                    .map_or(0, |(_, items)| items.len())
+                    .to_string(),
             )
             .with_field(
                 "reader-buttons",
@@ -714,9 +822,27 @@ impl Product for TreeLane {
                 "reader-described",
                 heard
                     .as_ref()
-                    .map_or(0, |(_, items)| items.iter().map(|item| item.described).sum())
+                    .map_or(0, |(_, items)| {
+                        items.iter().map(|item| item.described).sum()
+                    })
                     .to_string(),
             )
+            .with_field(
+                "reader-item-names",
+                heard
+                    .as_ref()
+                    .map(|(_, items)| {
+                        items
+                            .iter()
+                            .map(|item| item.name.clone())
+                            .collect::<Vec<_>>()
+                            .join("|")
+                    })
+                    .unwrap_or_default(),
+            )
+            .with_field("reader-changes", heard_changes.len().to_string())
+            .with_field("reader-change-labels", heard_changes.join("|"))
+            .with_field("reader-checkpoint", heard_checkpoint.unwrap_or_default())
             .with_field("reader-relations", heard_relations.len().to_string())
             .with_field("reader-relation-labels", heard_relations.join("|"))
             .with_field("reader-alert", heard_alert.unwrap_or_default())
@@ -732,7 +858,9 @@ impl Product for TreeLane {
                 canvas
                     .graph()
                     .nodes()
-                    .filter(|(key, _)| canvas.arrangement_role_of(*key) == mere::canvas::Role::Pinned)
+                    .filter(|(key, _)| {
+                        canvas.arrangement_role_of(*key) == mere::canvas::Role::Pinned
+                    })
                     .map(|(key, _)| canvas.graph().node_display_label(key))
                     .collect::<Vec<_>>()
                     .join("|"),
@@ -777,6 +905,9 @@ impl Product for TreeLane {
         line: &str,
     ) -> Result<(), String> {
         let (verb, rest) = line.split_once(' ').unwrap_or((line, ""));
+        if let Some(result) = super::gesture_steps::step(&self.shared, verb, rest) {
+            return result;
+        }
         match verb {
             // The browser instrument cannot operate an empty chooser. Exercise
             // the platform cancel event through the real chooser listener,
@@ -1013,7 +1144,10 @@ impl Product for TreeLane {
                     return Err("move-by-world wants dx dy".into());
                 }
                 let (left, top, _, _) = leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
-                let point = self.pointer.as_mut().ok_or("move-by-world without a press")?;
+                let point = self
+                    .pointer
+                    .as_mut()
+                    .ok_or("move-by-world without a press")?;
                 let canvas = self.shared.canvas.borrow();
                 let (wx, wy) = canvas.world_point_at((point.0 - left, point.1 - top));
                 let (sx, sy) = canvas.screen_point_of((wx + args[0], wy + args[1]));

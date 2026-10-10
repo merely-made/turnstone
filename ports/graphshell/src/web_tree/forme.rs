@@ -601,4 +601,5 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
 }
 pub(super) const SHEET: &str = " .forme-workbench { width:100%;height:100%;min-height:0; } \
     .forme-workbench .frisket-content { background:inherit; } .reading-pane { padding:16px;color:inherit;height:100%;overflow:auto; } \
+    .reading-pane button { padding:5px 10px;border:1px solid currentColor; } \
     .reading-address { overflow-wrap:anywhere; } .reading-body { white-space:pre-wrap;overflow-wrap:anywhere; } ";

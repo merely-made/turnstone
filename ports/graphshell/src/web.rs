@@ -23,6 +23,7 @@
 // The viewer cone (mer3ly site canvas plan, Rulings 109-110, 118): the tree page
 // and what it reads are always compiled; the H5 reference host, the product
 // modes and the remote board are additive features, all on by default.
+mod web_appearance;
 mod web_dataset;
 #[cfg(feature = "main-page")]
 mod web_events;
@@ -115,6 +116,20 @@ pub fn start() {
     // once (burn migration plan §13.33; rulings 532 and 536).
     cambium_genet_web_host::run_static_constructors_once();
     console_error_panic_hook::set_once();
+}
+
+/// Optional F195 receipt export. It uses the same compiler and runner as the
+/// native example and is absent from ordinary bundles.
+#[cfg(feature = "dynamics-receipt")]
+#[wasm_bindgen]
+pub fn projection_dynamics_receipt(bound: u32) -> Result<String, JsValue> {
+    graphshell::projection_dynamics_receipt::catalog_receipt(bound).map_err(|e| JsValue::from_str(&e))
+}
+
+#[cfg(feature = "dynamics-receipt")]
+#[wasm_bindgen]
+pub fn projection_coordinates_receipt(bound: u32) -> Result<String, JsValue> {
+    graphshell::projection_dynamics_receipt::catalog_receipt_for(bound, "geographic").map_err(|e| JsValue::from_str(&e))
 }
 
 /// Join a host over WebRTC as the tree's remote session; `loader.js` calls this
