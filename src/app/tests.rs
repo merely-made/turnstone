@@ -1151,7 +1151,7 @@ fn denizen_installs_after_visible_review() {
         app.graph_runtimes.facets(),
         app.graph_runtimes.graph(),
         &app.session_dir(),
-        app.identity.as_ref(),
+        app.identity_root(),
     );
     assert_eq!(rebuilt.residents.len(), 1);
     assert!(
@@ -2151,7 +2151,7 @@ fn fork_carries_denizen_worlds_as_real_copies() {
     // The fork rebuilds a full resident from its OWN dir, no legacy heal.
     let fork_facets = session::load_node_facets(&fork_dir).expect("fork facets persisted");
     let rebuilt =
-        crate::denizen::rebuild(&fork_facets, &fork_graph, &fork_dir, app.identity.as_ref());
+        crate::denizen::rebuild(&fork_facets, &fork_graph, &fork_dir, app.identity_root());
     assert_eq!(rebuilt.residents.len(), 1, "the fork's denizen resides");
     assert!(rebuilt.legacy_heals.is_empty());
     let fork_member = rebuilt.residents.keys().next().copied().unwrap();
@@ -2661,14 +2661,14 @@ fn a_rerooted_profile_refuses_automatic_certificate_reissue() {
     let navigate = crate::ring::Ring::Navigate.cap().unwrap();
     let session_ring = crate::ring::Ring::Session.cap().unwrap();
 
-    // The profile re-roots: a NEW identity (the vault superseding the
-    // stopgap seed). The old certificates on disk name the old root.
+    // The profile re-roots: a NEW identity (djinn speaking as another
+    // persona). The old certificates on disk name the old root.
     let new_root = identity::InMemoryProvider::from_seed([77u8; 32]);
     let rebuilt = crate::denizen::rebuild(
         app.graph_runtimes.facets(),
         app.graph_runtimes.graph(),
         &app.session_dir(),
-        &new_root,
+        Some(identity::IdentityProvider::master_public_key(&new_root).to_bytes()),
     );
     assert_eq!(
         rebuilt.residents.len(),
@@ -2739,7 +2739,7 @@ fn install_delegates_from_the_profile_identity_and_uninstall_revokes_it() {
     let _ = std::fs::remove_dir_all(&app.data_root);
     std::fs::create_dir_all(app.session_dir()).unwrap();
     // The root identity is the profile's, not a constant.
-    let root = identity::IdentityProvider::master_public_key(app.identity.as_ref()).to_bytes();
+    let root = identity::IdentityProvider::master_public_key(app.identity.as_deref().unwrap()).to_bytes();
     assert_eq!(
         app.denizens.authority.root(),
         root,
@@ -5166,7 +5166,7 @@ fn place_artifacts_are_written_where_the_person_asked() {
     assert_eq!(card.rendezvous[0].hint, "ticket-one");
     assert_eq!(
         card.founder_root,
-        crate::place::hex32(&app.personae_root()),
+        crate::place::hex32(&app.personae_root().expect("a bound fixture identity")),
         "the card names this profile's own root"
     );
 
@@ -5490,7 +5490,7 @@ fn place_prekey_offer_is_written_beside_its_card() {
         .expect("the offer lands beside the card");
     let offer: crate::place::PlacePrekeyOfferV1 = serde_json::from_slice(bytes).unwrap();
     assert_eq!(offer.moot, binding.moot);
-    assert_eq!(offer.root, crate::place::hex32(&app.personae_root()));
+    assert_eq!(offer.root, crate::place::hex32(&app.personae_root().expect("a bound fixture identity")));
     assert_eq!(offer.prekey_bytes().unwrap(), vec![7, 8, 9]);
 
     // The answer was consumed; a replay writes nothing.
@@ -5592,7 +5592,7 @@ fn place_revoke_rows_are_a_founders_one_per_other_member() {
             .collect()
     };
     let mut app = App::test_stub();
-    let local = app.personae_root();
+    let local = app.personae_root().expect("a bound fixture identity");
     let with_local = |access| {
         vec![
             PlaceMember {
@@ -5711,7 +5711,7 @@ fn place_invite_lifetime_suffix_is_read_from_the_right() {
     use crate::place::PlaceInviteAccess::{Reader, Writer};
 
     let mut app = App::test_stub();
-    let local = app.personae_root();
+    let local = app.personae_root().expect("a bound fixture identity");
     app.place = open_place(local, Vec::new());
     let commit = |app: &mut App, begin: Action, line: &str| -> Vec<Effect> {
         app.update(begin);

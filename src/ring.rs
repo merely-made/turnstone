@@ -500,11 +500,11 @@ pub fn decode_envelope(name: &str, payload: &str) -> Result<Action, EnvelopeErro
 #[cfg(test)]
 mod tests {
     use super::*;
-    use identity::{IdentityProvider, InMemoryProvider};
+    use identity::IdentityProvider;
     use servitor::delegation::DelegationTable;
 
-    fn user() -> InMemoryProvider {
-        InMemoryProvider::from_seed([42u8; 32])
+    fn user() -> crate::identity::RootIdentity {
+        crate::identity::RootIdentity::from_seed([42u8; 32])
     }
 
     fn subject() -> Subject {

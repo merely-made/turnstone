@@ -65,9 +65,12 @@ impl App {
             .get(session_id)
             .map(|manifest| manifest.root_graph_id)
             .unwrap_or_else(GraphId::nil);
-        let identity =
-            crate::identity::load_or_create_root(&data_root, &crate::identity::default_vault_dir());
-        let root = identity::IdentityProvider::master_public_key(identity.as_ref()).to_bytes();
+        // djinn holds the profile identity; pending (None) when it is absent
+        // or Locked, with no fallback key (dramatis D12).
+        let identity = crate::identity::bind();
+        let root = identity
+            .as_deref()
+            .map(|identity| identity::IdentityProvider::master_public_key(identity).to_bytes());
         let gemini_identities = crate::gemini_identity::GeminiIdentityBindings::load(&data_root);
         let mut app = Self {
             watches: servitor::WatchTable::new(),
@@ -130,7 +133,7 @@ impl App {
             recall: Vec::new(),
             recall_query: String::new(),
             pending_install: None,
-            denizens: crate::denizen::Denizens::new(root),
+            denizens: crate::denizen::Denizens::for_root(root),
             resident_runs: crate::resident_runs::ResidentRuns::default(),
             resident_run_error: None,
             resident_run_effect_policy: crate::resident_runs::ExternalEffectPolicy::default(),
@@ -442,9 +445,24 @@ impl App {
 
     /// This profile's Personae root. The same root the worker evaluates
     /// authority for; read here so a card can name it without a round trip.
-    pub(crate) fn personae_root(&self) -> [u8; 32] {
+    /// `None` while the identity is pending (D12).
+    pub(crate) fn personae_root(&self) -> Option<[u8; 32]> {
+        self.identity_root()
+    }
+
+    /// The profile identity as a provider, `None` while pending.
+    pub(crate) fn identity_provider(&self) -> Option<&dyn identity::IdentityProvider> {
+        self.identity
+            .as_deref()
+            .map(|identity| identity as &dyn identity::IdentityProvider)
+    }
+
+    /// The profile identity's master public key, `None` while pending.
+    pub(crate) fn identity_root(&self) -> Option<[u8; 32]> {
         use identity::IdentityProvider as _;
-        self.identity.master_public_key().to_bytes()
+        self.identity
+            .as_deref()
+            .map(|identity| identity.master_public_key().to_bytes())
     }
 
     /// Refuse one place gesture out loud, changing nothing.
@@ -526,6 +544,9 @@ impl App {
 
     /// Write this place's card. Contact metadata and public ids only.
     pub fn export_place_card(&mut self, path: String) -> Vec<Effect> {
+        let Some(founder_root) = self.personae_root() else {
+            return self.refuse_place(crate::identity::PENDING);
+        };
         let Some(binding) = self.place.binding().cloned() else {
             return self.refuse_place("open a place before exporting its card");
         };
@@ -540,7 +561,7 @@ impl App {
         let card = crate::place::PlaceCardV1 {
             version: crate::place::PLACE_CARD_VERSION,
             binding,
-            founder_root: crate::place::hex32(&self.personae_root()),
+            founder_root: crate::place::hex32(&founder_root),
             rendezvous: local_rendezvous
                 .into_iter()
                 .map(|hint| crate::place::invite::RendezvousV1 {
@@ -1135,7 +1156,7 @@ impl App {
             self.graph_runtimes.facets(),
             self.graph_runtimes.graph(),
             &sdir,
-            self.identity.as_ref(),
+            self.identity_root(),
         );
         // Residency came back; its standing subscriptions have to come with
         // it, or a behavior silently stops waking after a reload.

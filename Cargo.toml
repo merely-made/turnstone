@@ -62,8 +62,9 @@ mere-import = { package = "import", git = "https://github.com/merely-made/mere.g
 # nested chartulary graph, plus the substrate types the host speaks to it in.
 servitor = { git = "https://github.com/merely-made/mere.git", rev = "3ded2cd7c2370713118a2440c962c39262720205" }
 # The profile's root identity: install is a delegation SIGNED by the user's
-# personae master key (capability-model OQ2). The sealed vault implements the
-# same IdentityProvider trait, so it swaps in without touching consumers.
+# personae master key (capability-model OQ2). Personae lends the key types and
+# the IdentityProvider trait; the keys themselves stay in djinn, which
+# Turnstone calls through Graphshell's custody route (dramatis DR-C).
 identity = { package = "personae", git = "https://github.com/merely-made/mere.git", rev = "3ded2cd7c2370713118a2440c962c39262720205" }
 # Self-signed Gemini client certificates projected from capsule-scoped
 # Personae-derived Ed25519 keys. The private key stays transient.
@@ -290,6 +291,9 @@ accesskit_consumer = "=0.38.0"
 accesskit-consumer-windows = { package = "accesskit_consumer", version = "=0.35.0" }
 accesskit-consumer-unix = { package = "accesskit_consumer", version = "=0.36.0" }
 mien = { git = "https://github.com/merely-made/mere.git", rev = "3ded2cd7c2370713118a2440c962c39262720205" }
+# The place tests bind a transport from a fixture master; Mere gates that
+# builder behind `test-identity` (vault lock ruling 97).
+transport = { package = "mere-transport", git = "https://github.com/merely-made/mere.git", rev = "3ded2cd7c2370713118a2440c962c39262720205", features = ["test-identity"] }
 # The cookie custody test speaks the jar's own types. Same Genet revision as
 # every other genet.git row here, so it adds no package to the graph.
 netfetcher = { git = "https://github.com/merely-made/genet.git", rev = "965b64e206a47d1c8808472de9aa461233638768" }

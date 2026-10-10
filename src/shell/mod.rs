@@ -866,9 +866,12 @@ impl Shell {
         });
         let mut knot_clip = None;
         let mut publish_service = None;
-        let shared_knot_service = match crate::share_reader_service::KnotShareReaderService::start(
-            app.identity.clone(),
-        ) {
+        let shared_knot_service = match app
+            .identity
+            .clone()
+            .ok_or_else(|| crate::identity::PENDING.to_string())
+            .and_then(crate::share_reader_service::KnotShareReaderService::start)
+        {
             Ok(service) => Some(Arc::new(service)),
             Err(error) => {
                 tracing::warn!(%error, "Knot share reader is unavailable");
@@ -888,10 +891,14 @@ impl Shell {
             Ok(Some(mut engine)) => {
                 knot_clip = engine.clip_handle();
                 if let Some(source) = engine.take_publish_source() {
-                    match crate::publish_service::KnotPublishingService::start(
-                        source,
-                        app.identity.clone(),
-                    ) {
+                    match app
+                        .identity
+                        .clone()
+                        .ok_or_else(|| crate::identity::PENDING.to_string())
+                        .and_then(|identity| {
+                            crate::publish_service::KnotPublishingService::start(source, identity)
+                        })
+                    {
                         Ok(service) => publish_service = Some(Arc::new(service)),
                         Err(error) => tracing::warn!(%error, "Knot publishing is unavailable"),
                     }

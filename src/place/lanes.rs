@@ -516,7 +516,7 @@ mod tests {
         let _ = std::fs::remove_dir_all(&root);
         let host = root.join("host");
         std::fs::create_dir_all(&host).unwrap();
-        let founder = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xf1; 32]));
+        let founder = RootIdentity::from_seed([0xf1; 32]);
 
         let wake: armillary::Wake = Arc::new(|| {});
         let (worker, updates) = spawn_place_worker(
@@ -594,7 +594,7 @@ mod tests {
         let _ = std::fs::remove_dir_all(&root);
         let host = root.join("host");
         std::fs::create_dir_all(&host).unwrap();
-        let founder = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xf2; 32]));
+        let founder = RootIdentity::from_seed([0xf2; 32]);
         let settings = crate::place::worker::PlaceWorkerSettings::default();
 
         // Exactly what the `Found` command leaves behind on disk, without the
@@ -647,7 +647,7 @@ mod tests {
         let host = root.join("host");
         let guest = root.join("guest");
         let founder = InMemoryProvider::from_seed([0xd1; 32]);
-        let joiner = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xd2; 32]));
+        let joiner = RootIdentity::from_seed([0xd2; 32]);
         let b = binding(0x7a);
 
         // Retained state exists before anything dials.
@@ -878,14 +878,14 @@ mod tests {
         let b = binding(0x9c);
         let founder_seed = [b.moot.0[0].wrapping_add(40); 32];
         let founder = InMemoryProvider::from_seed(founder_seed);
-        let joiner = RootIdentity::Unsealed(InMemoryProvider::from_seed([0x9d; 32]));
+        let joiner = RootIdentity::from_seed([0x9d; 32]);
 
         // Both profiles retain the same captured text up front. That lets the
         // receiver prove the selection filter, rather than merely showing
         // that a peer without the local document has no search result.
         let (host_settings, requested, selected_share) = seed_exact_collection(
             &host,
-            &RootIdentity::Unsealed(InMemoryProvider::from_seed(founder_seed)),
+            &RootIdentity::from_seed(founder_seed),
             &b,
         );
         let (guest_settings, _, _) = seed_exact_collection_captures(&guest);
@@ -1174,7 +1174,7 @@ mod tests {
         let host = root.join("host");
         let guest = root.join("guest");
         let founder = InMemoryProvider::from_seed([0xf1; 32]);
-        let joiner = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xf2; 32]));
+        let joiner = RootIdentity::from_seed([0xf2; 32]);
         let b = binding(0x7e);
         let joiner_root = joiner.master_public_key().to_bytes();
 
@@ -1345,7 +1345,7 @@ mod tests {
         let host = root.join("host");
         let guest = root.join("guest");
         let founder = InMemoryProvider::from_seed([0xa7; 32]);
-        let joiner = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xa8; 32]));
+        let joiner = RootIdentity::from_seed([0xa8; 32]);
         let b = binding(0x8a);
         let joiner_root = joiner.master_public_key().to_bytes();
 
@@ -1619,7 +1619,7 @@ mod tests {
         let host = root.join("host");
         let guest = root.join("guest");
         let founder = InMemoryProvider::from_seed([0xe1; 32]);
-        let joiner = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xe2; 32]));
+        let joiner = RootIdentity::from_seed([0xe2; 32]);
         let b = binding(0x7c);
 
         // Membership without a delegation: the joiner belongs to the Moot but
@@ -1689,7 +1689,7 @@ mod tests {
         let _ = std::fs::remove_dir_all(&root);
         let host = root.join("host");
         std::fs::create_dir_all(&host).unwrap();
-        let founder = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xb7; 32]));
+        let founder = RootIdentity::from_seed([0xb7; 32]);
         let settings = settings();
 
         let b = crate::place::worker::found_place(&host, &founder, "Hearth", &settings).unwrap();
@@ -1783,7 +1783,7 @@ mod tests {
         let document = vault.join("field.knot");
         std::fs::write(&document, "# Field\n").unwrap();
 
-        let founder = RootIdentity::Unsealed(InMemoryProvider::from_seed([seed; 32]));
+        let founder = RootIdentity::from_seed([seed; 32]);
         let host_settings = crate::place::worker::PlaceWorkerSettings {
             knot_root: Some(vault.clone()),
             ..clock
@@ -2287,7 +2287,7 @@ mod tests {
             ..settings()
         };
 
-        let founder = RootIdentity::Unsealed(InMemoryProvider::from_seed([seed; 32]));
+        let founder = RootIdentity::from_seed([seed; 32]);
         let host_settings = crate::place::worker::PlaceWorkerSettings {
             knot_root: Some(vault.clone()),
             ..clocked.clone()
@@ -2620,9 +2620,9 @@ mod tests {
             std::fs::create_dir_all(directory).unwrap();
         }
 
-        let founder = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xa1; 32]));
-        let joiner = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xa2; 32]));
-        let third = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xa3; 32]));
+        let founder = RootIdentity::from_seed([0xa1; 32]);
+        let joiner = RootIdentity::from_seed([0xa2; 32]);
+        let third = RootIdentity::from_seed([0xa3; 32]);
 
         // The founder: `Found` opens the place and binds its ten lanes
         // listen-only, minting the ticket its invitations carry.
@@ -3106,7 +3106,7 @@ mod tests {
             crate::place::PlaceInviteAccess::Writer,
         );
 
-        let member = || Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed([0x3b; 32])));
+        let member = || Arc::new(RootIdentity::from_seed([0x3b; 32]));
         let (guest_worker, guest_updates) =
             spawn_place_worker(Arc::new(|| {}), member(), settings());
         let session = SessionId::new();
@@ -3304,7 +3304,7 @@ mod tests {
             LIFETIME.as_millis() as u64
         );
 
-        let member = || Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed([0x3d; 32])));
+        let member = || Arc::new(RootIdentity::from_seed([0x3d; 32]));
         let (guest_worker, guest_updates) =
             spawn_place_worker(Arc::new(|| {}), member(), clocked.clone());
         let session = SessionId::new();
@@ -3425,10 +3425,10 @@ mod tests {
         let founder = InMemoryProvider::from_seed([0xb4; 32]);
         let joiner = InMemoryProvider::from_seed([0xb5; 32]);
         let third = InMemoryProvider::from_seed([0xb6; 32]);
-        let unsealed = |seed: u8| Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed([seed; 32])));
+        let fixture_root = |seed: u8| Arc::new(RootIdentity::from_seed([seed; 32]));
 
         let (host_worker, host_updates) =
-            spawn_place_worker(Arc::new(|| {}), unsealed(0xb4), settings());
+            spawn_place_worker(Arc::new(|| {}), fixture_root(0xb4), settings());
         let host_session = SessionId::new();
         host_worker.command(PlaceWorkerCommand::Found {
             session: host_session,
@@ -3473,7 +3473,7 @@ mod tests {
         let a_invite_epoch = invite.expected_epoch;
         let after_a_epoch = epoch_on_disk(&host, &founder);
         let (guest_worker, guest_updates) =
-            spawn_place_worker(Arc::new(|| {}), unsealed(0xb5), settings());
+            spawn_place_worker(Arc::new(|| {}), fixture_root(0xb5), settings());
         let guest_session = SessionId::new();
         guest_worker.command(PlaceWorkerCommand::Join {
             session: guest_session,
@@ -3699,7 +3699,7 @@ mod tests {
         SessionId,
         PlaceBindingV1,
     ) {
-        let identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([seed; 32]));
+        let identity = RootIdentity::from_seed([seed; 32]);
         let founder = spawn_place_worker(Arc::new(|| {}), Arc::new(identity), settings());
         let session = SessionId::new();
         founder.0.command(PlaceWorkerCommand::Found {
@@ -3753,7 +3753,7 @@ mod tests {
         seed: u8,
         invite: Box<crate::place::invite::PlaceInviteV1>,
     ) -> (armillary::ActorHandle<PlaceWorkerCommand>, std::sync::mpsc::Receiver<Update>, SessionId) {
-        let identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([seed; 32]));
+        let identity = RootIdentity::from_seed([seed; 32]);
         let (worker, updates) = spawn_place_worker(Arc::new(|| {}), Arc::new(identity), settings());
         let session = SessionId::new();
         worker.command(PlaceWorkerCommand::Join {
@@ -3974,7 +3974,7 @@ mod tests {
         drop(reopen_by_hand(&a_dir, &binding, &InMemoryProvider::from_seed([A; 32])));
         let (a_worker, a_updates) = spawn_place_worker(
             Arc::new(|| {}),
-            Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed([A; 32]))),
+            Arc::new(RootIdentity::from_seed([A; 32])),
             settings(),
         );
         a_worker.command(PlaceWorkerCommand::Reconnect {
@@ -4286,7 +4286,7 @@ mod tests {
 
         let (founder, updates) = spawn_place_worker(
             Arc::new(|| {}),
-            Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed([F; 32]))),
+            Arc::new(RootIdentity::from_seed([F; 32])),
             settings(),
         );
         founder.command(PlaceWorkerCommand::Reconnect {
@@ -4613,7 +4613,7 @@ mod tests {
         // in and reconciling from scratch rather than being nudged.
         let (w_worker2, w_updates2) = spawn_place_worker(
             Arc::new(|| {}),
-            Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed([W; 32]))),
+            Arc::new(RootIdentity::from_seed([W; 32])),
             settings(),
         );
         w_worker2.command(PlaceWorkerCommand::Reconnect {
@@ -4770,7 +4770,7 @@ mod tests {
                 authority_clock: crate::place::worker::AuthorityClock::SystemTime,
                 ..settings()
             };
-            let identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([Self::FOUNDER_SEED; 32]));
+            let identity = RootIdentity::from_seed([Self::FOUNDER_SEED; 32]);
             let founder = spawn_place_worker(Arc::new(|| {}), Arc::new(identity), clock.clone());
             let founder_session = SessionId::new();
             founder.0.command(PlaceWorkerCommand::Found {
@@ -4896,7 +4896,7 @@ mod tests {
                 .clone()
                 .ok_or_else(|| "invite must run before join".to_string())?;
             self.release_member();
-            let identity = Arc::new(RootIdentity::Unsealed(Self::member_identity()));
+            let identity = Arc::new(RootIdentity::Local(Self::member_identity()));
             let (worker, updates) = spawn_place_worker(Arc::new(|| {}), identity, self.clock.clone());
             let session = SessionId::new();
             worker.command(PlaceWorkerCommand::Join {
@@ -4996,7 +4996,7 @@ mod tests {
             // the same way `reopen_by_hand` retries a raw `open_cached_place`.
             let deadline = Instant::now() + Duration::from_secs(30);
             loop {
-                let identity = Arc::new(RootIdentity::Unsealed(Self::member_identity()));
+                let identity = Arc::new(RootIdentity::Local(Self::member_identity()));
                 let (worker, updates) =
                     spawn_place_worker(Arc::new(|| {}), identity, self.clock.clone());
                 let session = SessionId::new();

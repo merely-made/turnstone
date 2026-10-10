@@ -35,7 +35,6 @@ use std::path::{Path, PathBuf};
 
 use chartulary::{Container, GraphLog, Relation};
 use identity::IdentityProvider;
-use identity::delegation::Issue;
 use insigne::delegation::SignedDelegationCertificate;
 use muniment::{Journal, LogId};
 use servitor::delegation::{DelegationTable, root_certificate};
@@ -244,6 +243,19 @@ impl Denizens {
         }
     }
 
+    /// A runtime for a pending identity (dramatis D12): no root, so nothing
+    /// verifies and every resident fails closed. The table's root is a
+    /// throwaway public key whose secret was never kept, so no certificate
+    /// can name it; an all-zero root would be a value anyone can write.
+    pub fn pending() -> Self {
+        Self::new(identity::Ed25519Keypair::generate().public_key().to_bytes())
+    }
+
+    /// [`Self::new`] for a bound root, [`Self::pending`] without one.
+    pub fn for_root(root: Option<[u8; 32]>) -> Self {
+        root.map_or_else(Self::pending, Self::new)
+    }
+
     /// Whether any participant resides in the session.
     pub fn is_empty(&self) -> bool {
         self.residents.is_empty()
@@ -449,14 +461,17 @@ pub fn load_nested(session_dir: &Path, log_id: &str) -> Option<GraphLog<Containe
 /// (`legacy_nested_log`); such a resident still rebuilds, and the member goes
 /// on [`Denizens::legacy_heals`] so the adopt path can move the pointer onto
 /// the node and rewrite the facet without it.
+///
+/// `root` is the profile identity's master public key, `None` while the
+/// identity is pending (D12): residents still rebuild, but no certificate is
+/// adopted, so every one fails closed until djinn answers.
 pub fn rebuild(
     app_facets: &pandect::NodeFacetStore,
     graph: &mere::kernel::graph::Graph,
     session_dir: &Path,
-    provider: &impl IdentityProvider,
+    root: Option<[u8; 32]>,
 ) -> Denizens {
-    let root = provider.master_public_key().to_bytes();
-    let mut denizens = Denizens::new(root);
+    let mut denizens = Denizens::for_root(root);
     denizens.authority.set_now(now_ms());
     let admission_path = crate::resident_admission::path(session_dir);
     let missing_admission_state = match admission_path.try_exists() {
@@ -509,11 +524,12 @@ pub fn rebuild(
         // A projection is an audit record, never authority that can mint a
         // replacement certificate. Missing, malformed, or re-rooted chains
         // therefore stay refused until an owner explicitly installs again.
-        let stored = load_certs(session_dir, &subject.to_hex());
+        let stored = match root {
+            Some(_) => load_certs(session_dir, &subject.to_hex()),
+            None => Vec::new(),
+        };
         let verifies = {
-            let mut probe = servitor::delegation::DelegationTable::new(
-                identity::IdentityProvider::master_public_key(provider).to_bytes(),
-            );
+            let mut probe = servitor::delegation::DelegationTable::new(denizens.authority.root());
             for cert in &stored {
                 probe.adopt(cert.clone());
             }
@@ -785,7 +801,7 @@ pub fn now_ms() -> u64 {
 /// conferring each reviewed capability directly. `depth` is 0, so an installed
 /// helper may act but never sub-delegate.
 pub fn issue_install_certificates(
-    provider: &impl IdentityProvider,
+    provider: &crate::identity::RootIdentity,
     subject: Subject,
     caps: &[(Cap, Mode)],
     issued_at_ms: u64,
@@ -809,7 +825,7 @@ fn save_certs_strict(
 /// joins the nonce so a revoked earlier installation cannot make a reviewed
 /// owner re-install deterministically reissue the revoked certificate.
 pub fn issue_install_certificates_for_generation(
-    provider: &impl IdentityProvider,
+    provider: &crate::identity::RootIdentity,
     subject: Subject,
     caps: &[(Cap, Mode)],
     issued_at_ms: u64,
@@ -831,7 +847,8 @@ pub fn issue_install_certificates_for_generation(
             0,
             cert_nonce(&hex, cap, generation),
         );
-        match SignedDelegationCertificate::issue(provider, certificate) {
+        // Signed inside djinn: the residency scope's key never leaves it (D11).
+        match provider.issue_certificate(certificate) {
             Ok(cert) => signed.push(cert),
             Err(err) => tracing::warn!(?err, cap = %cap, "failed to sign an install certificate"),
         }
@@ -1024,10 +1041,13 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Result<Uuid, String> {
         PackBody::Component(bytes) => crate::resident_admission::body_revision(bytes),
     };
     let issued_at = now_ms();
+    let Some(identity) = app.identity.clone() else {
+        return Err(crate::identity::PENDING.into());
+    };
     let certs = issue_install_certificates_for_generation(
-        app.identity.as_ref(), subject, &caps, issued_at, generation,
+        identity.as_ref(), subject, &caps, issued_at, generation,
     );
-    let mut probe = DelegationTable::new(app.identity.master_public_key().to_bytes());
+    let mut probe = DelegationTable::new(identity.master_public_key().to_bytes());
     probe.set_now(issued_at);
     for cert in certs.iter().cloned() { probe.adopt(cert); }
     if caps.iter().any(|(cap, mode)| !servitor::AuthorityProvider::covers(&probe, subject, cap, *mode)) {
@@ -1224,7 +1244,12 @@ mod tests {
 
         let graph = mere::kernel::graph::Graph::new();
         let provider = identity::InMemoryProvider::from_seed([5u8; 32]);
-        let denizens = rebuild(&store, &graph, &dir, &provider);
+        let denizens = rebuild(
+            &store,
+            &graph,
+            &dir,
+            Some(identity::IdentityProvider::master_public_key(&provider).to_bytes()),
+        );
         assert_eq!(denizens.residents.len(), 1, "the legacy resident survives");
         assert_eq!(
             denizens.legacy_heals,

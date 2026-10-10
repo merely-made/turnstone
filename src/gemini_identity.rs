@@ -92,9 +92,10 @@ impl GeminiIdentityBindings {
 
     pub fn bind(
         &mut self,
-        provider: &dyn IdentityProvider,
+        provider: Option<&dyn IdentityProvider>,
         capsule_url: &str,
     ) -> Result<String, String> {
+        let provider = provider.ok_or_else(|| crate::identity::PENDING.to_string())?;
         let origin = capsule_origin(capsule_url)?;
         self.bindings.insert(Binding {
             persona: provider.master_public_key().to_bytes(),
@@ -103,11 +104,16 @@ impl GeminiIdentityBindings {
         Ok(origin)
     }
 
+    /// The capsule's client identity, or `None` when it has no approval or
+    /// the profile identity is pending (the fetch then goes anonymous).
     pub fn identity_for(
         &self,
-        provider: &dyn IdentityProvider,
+        provider: Option<&dyn IdentityProvider>,
         capsule_url: &str,
     ) -> Result<Option<fetch::GeminiClientIdentity>, String> {
+        let Some(provider) = provider else {
+            return Ok(None);
+        };
         let origin = capsule_origin(capsule_url)?;
         let binding = Binding {
             persona: provider.master_public_key().to_bytes(),
@@ -121,7 +127,7 @@ impl GeminiIdentityBindings {
 
     #[cfg(test)]
     fn contains(&self, provider: &dyn IdentityProvider, capsule_url: &str) -> bool {
-        self.identity_for(provider, capsule_url)
+        self.identity_for(Some(provider), capsule_url)
             .is_ok_and(|identity| identity.is_some())
     }
 }
@@ -206,7 +212,7 @@ impl crate::app::App {
         let supersedes = self.content.begin_fetch(node, request);
         let identity = match self
             .gemini_identities
-            .identity_for(self.identity.as_ref(), &url)
+            .identity_for(self.identity_provider(), &url)
         {
             Ok(identity) => identity,
             Err(error) => {
@@ -256,7 +262,7 @@ mod tests {
         let b = InMemoryProvider::from_seed([0x52; 32]);
         let mut bindings = GeminiIdentityBindings::default();
         bindings
-            .bind(&a, "gemini://capsule.example/account")
+            .bind(Some(&a), "gemini://capsule.example/account")
             .unwrap();
         assert!(bindings.contains(&a, "gemini://capsule.example/private"));
         assert!(!bindings.contains(&a, "gemini://other.example/"));

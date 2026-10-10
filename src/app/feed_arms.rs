@@ -143,7 +143,7 @@ impl App {
     fn fetch_feed_effect(&self, node: uuid::Uuid, url: String) -> Effect {
         let identity = match self
             .gemini_identities
-            .identity_for(self.identity.as_ref(), &url)
+            .identity_for(self.identity_provider(), &url)
         {
             Ok(identity) => identity,
             Err(error) => {

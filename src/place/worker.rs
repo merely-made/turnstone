@@ -2131,11 +2131,16 @@ fn place_snapshot(
 /// Spawn the retained-place worker. Each `Open` first releases the prior
 /// session's database handles, so switch and trash can establish ordering with
 /// the explicit `Release` acknowledgement.
+///
+/// `identity` is `None` while the profile identity is pending (djinn absent or
+/// Locked, dramatis D12): every command that would derive, seal or sign is
+/// refused with [`crate::identity::PENDING`], and nothing is written.
 pub fn spawn_place_worker(
     wake: Wake,
-    identity: Arc<RootIdentity>,
+    identity: impl Into<Option<Arc<RootIdentity>>>,
     settings: PlaceWorkerSettings,
 ) -> (ActorHandle<PlaceWorkerCommand>, Receiver<Update>) {
+    let identity: Option<Arc<RootIdentity>> = identity.into();
     spawn_named(
         "turnstone-place",
         wake,
@@ -2144,6 +2149,10 @@ pub fn spawn_place_worker(
             let mut live_scope: Option<(SessionId, u64)> = None;
             let mut lifecycle_generation = 0u64;
             while let Ok(command) = commands.recv() {
+                let Some(identity) = identity.as_ref() else {
+                    refuse_pending(command, &out);
+                    continue;
+                };
                 match command {
                     PlaceWorkerCommand::Open {
                         session,
@@ -2651,6 +2660,113 @@ pub fn spawn_place_worker(
     )
 }
 
+/// Answer one command while the identity is pending: every identity-bound
+/// command fails with the pending reason, and the lifecycle acknowledgements
+/// still answer (no place is open, so there is nothing to release).
+fn refuse_pending(command: PlaceWorkerCommand, out: &Emitter<Update>) {
+    fn pending<T>() -> Result<T, String> {
+        Err(crate::identity::PENDING.to_string())
+    }
+    match command {
+        PlaceWorkerCommand::Open {
+            session,
+            generation,
+            ..
+        }
+        | PlaceWorkerCommand::Reconnect {
+            session,
+            generation,
+            ..
+        }
+        | PlaceWorkerCommand::Resync {
+            session,
+            generation,
+        } => out.emit(Update::PlaceOpened {
+            session,
+            generation,
+            result: pending(),
+        }),
+        PlaceWorkerCommand::Join {
+            session,
+            generation,
+            ..
+        } => out.emit(Update::PlaceJoined {
+            session,
+            generation,
+            result: pending(),
+        }),
+        PlaceWorkerCommand::Found {
+            session,
+            generation,
+            ..
+        } => out.emit(Update::PlaceFounded {
+            session,
+            generation,
+            result: pending(),
+        }),
+        PlaceWorkerCommand::OfferPrekey {
+            session,
+            generation,
+            ..
+        } => out.emit(Update::PlacePrekeyOffered {
+            session,
+            generation,
+            result: pending(),
+        }),
+        PlaceWorkerCommand::Invite {
+            session,
+            generation,
+            ..
+        } => out.emit(Update::PlaceInvited {
+            session,
+            generation,
+            result: pending(),
+        }),
+        PlaceWorkerCommand::SetCollection {
+            session,
+            generation,
+            ..
+        } => out.emit(Update::PlaceCollectionSet {
+            session,
+            generation,
+            result: pending(),
+        }),
+        PlaceWorkerCommand::Author {
+            session,
+            generation,
+            request,
+            ..
+        } => out.emit(Update::PlaceCommandDone {
+            session,
+            generation,
+            request,
+            result: pending(),
+        }),
+        PlaceWorkerCommand::VisitDocument {
+            session,
+            generation,
+            holder_root,
+            path,
+            request,
+            ..
+        } => out.emit(Update::PlaceDocumentVisit {
+            session,
+            generation,
+            request,
+            holder_root,
+            path,
+            result: pending(),
+        }),
+        PlaceWorkerCommand::Release(ack) => {
+            let _ = ack.send(());
+        },
+        #[cfg(test)]
+        PlaceWorkerCommand::Abandon(ack) | PlaceWorkerCommand::Freeze(_, ack) => {
+            let _ = ack.send(());
+        },
+    }
+}
+
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
@@ -3052,7 +3168,7 @@ pub(crate) mod tests {
     fn a_place_with_only_a_plaintext_graph_is_refused_by_name() {
         let root = tempfile::tempdir().unwrap();
         let directory = root.path().join("profile");
-        let identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0x84; 32]));
+        let identity = RootIdentity::from_seed([0x84; 32]);
         let binding = binding(0x35);
         seed_profile(&directory, &identity, &binding, 1);
         // Positive control: the same profile opens while its store is encrypted.
@@ -3101,8 +3217,8 @@ pub(crate) mod tests {
         let _ = std::fs::remove_dir_all(&root);
         let first_dir = root.join("first");
         let second_dir = root.join("second");
-        let first_identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0x81; 32]));
-        let second_identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0x82; 32]));
+        let first_identity = RootIdentity::from_seed([0x81; 32]);
+        let second_identity = RootIdentity::from_seed([0x82; 32]);
         let first_binding = binding(0x21);
         let second_binding = binding(0x31);
         seed_profile(&first_dir, &first_identity, &first_binding, 1);
@@ -3262,8 +3378,8 @@ pub(crate) mod tests {
             std::env::temp_dir().join(format!("turnstone-place-admit-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         let founder = InMemoryProvider::from_seed([0xb1; 32]);
-        let joiner = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xb2; 32]));
-        let stranger = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xb3; 32]));
+        let joiner = RootIdentity::from_seed([0xb2; 32]);
+        let stranger = RootIdentity::from_seed([0xb3; 32]);
         let binding = binding(0x61);
         let joined = root.join("joiner");
         let joiner_id = joiner.master_public_key().to_bytes();
@@ -3371,8 +3487,8 @@ pub(crate) mod tests {
             std::env::temp_dir().join(format!("turnstone-place-author-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         let founder = InMemoryProvider::from_seed([0xc1; 32]);
-        let joiner = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xc2; 32]));
-        let outsider = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xc3; 32]));
+        let joiner = RootIdentity::from_seed([0xc2; 32]);
+        let outsider = RootIdentity::from_seed([0xc3; 32]);
         let binding = binding(0x71);
         let host = root.join("host");
         let guest = root.join("guest");
@@ -3498,8 +3614,8 @@ pub(crate) mod tests {
         let guest = root.join("guest");
         std::fs::create_dir_all(&host).unwrap();
         std::fs::create_dir_all(&guest).unwrap();
-        let host_identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xd1; 32]));
-        let guest_identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xd2; 32]));
+        let host_identity = RootIdentity::from_seed([0xd1; 32]);
+        let guest_identity = RootIdentity::from_seed([0xd2; 32]);
         // The product clock, not a fixture's: the windows under test are the
         // ones a real founding opens.
         let settings = PlaceWorkerSettings::default();
@@ -3629,8 +3745,8 @@ pub(crate) mod tests {
         let guest = root.join("guest");
         std::fs::create_dir_all(&host).unwrap();
         std::fs::create_dir_all(&guest).unwrap();
-        let host_identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xd3; 32]));
-        let reader_identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xd4; 32]));
+        let host_identity = RootIdentity::from_seed([0xd3; 32]);
+        let reader_identity = RootIdentity::from_seed([0xd4; 32]);
         let settings = PlaceWorkerSettings::default();
         let now_ms = settings.authority_clock.now_ms();
 
@@ -3777,7 +3893,7 @@ pub(crate) mod tests {
         let root = tempfile::tempdir().unwrap();
         let host = root.path().join("host");
         std::fs::create_dir_all(&host).unwrap();
-        let host_identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xd7; 32]));
+        let host_identity = RootIdentity::from_seed([0xd7; 32]);
         let writer = InMemoryProvider::from_seed([0xd8; 32]);
         let host_root = host_identity.master_public_key().to_bytes();
         let writer_root = writer.master_public_key().to_bytes();
@@ -3941,7 +4057,7 @@ pub(crate) mod tests {
             std::env::temp_dir().join(format!("turnstone-place-revoked-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         let directory = root.join("profile");
-        let identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xa1; 32]));
+        let identity = RootIdentity::from_seed([0xa1; 32]);
         let binding = binding(0x51);
         seed_profile(&directory, &identity, &binding, 2);
 
@@ -4028,7 +4144,7 @@ pub(crate) mod tests {
     fn worker_sets_and_clears_an_exact_collection_selection() {
         let root = tempfile::tempdir().unwrap();
         let directory = root.path().join("profile");
-        let identity = Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed(
+        let identity = Arc::new(RootIdentity::Local(InMemoryProvider::from_seed(
             [0x93; 32],
         )));
         let binding = binding(0x43);
@@ -4106,7 +4222,7 @@ pub(crate) mod tests {
         let root = tempfile::tempdir().unwrap();
         let directory = root.path().join("profile");
         let binding = binding(0x4c);
-        let identity = Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed(
+        let identity = Arc::new(RootIdentity::Local(InMemoryProvider::from_seed(
             [0x95; 32],
         )));
         seed_profile(&directory, identity.as_ref(), &binding, 2);
@@ -4180,7 +4296,7 @@ pub(crate) mod tests {
         let root = tempfile::tempdir().unwrap();
         let directory = root.path().join("host");
         std::fs::create_dir_all(&directory).unwrap();
-        let identity = Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed(
+        let identity = Arc::new(RootIdentity::Local(InMemoryProvider::from_seed(
             [0xc4; 32],
         )));
 
@@ -4240,7 +4356,7 @@ pub(crate) mod tests {
         let root = tempfile::tempdir().unwrap();
         let stale_directory = root.path().join("stale");
         let current_directory = root.path().join("current");
-        let identity = Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed(
+        let identity = Arc::new(RootIdentity::Local(InMemoryProvider::from_seed(
             [0x96; 32],
         )));
         let stale_binding = binding(0x4d);
@@ -4309,7 +4425,7 @@ pub(crate) mod tests {
         let root = tempfile::tempdir().unwrap();
         let directory = root.path().join("profile");
         let binding = binding(0x4f);
-        let identity = Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed(
+        let identity = Arc::new(RootIdentity::Local(InMemoryProvider::from_seed(
             [0x97; 32],
         )));
         seed_profile(&directory, identity.as_ref(), &binding, 0);
@@ -4357,7 +4473,7 @@ pub(crate) mod tests {
         let root = tempfile::tempdir().unwrap();
         let first_directory = root.path().join("first");
         let second_directory = root.path().join("second");
-        let identity = Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed(
+        let identity = Arc::new(RootIdentity::Local(InMemoryProvider::from_seed(
             [0x94; 32],
         )));
         let first_binding = binding(0x47);
@@ -4440,7 +4556,7 @@ pub(crate) mod tests {
         let root = tempfile::tempdir().unwrap();
         let directory = root.path().join("profile");
         let binding = binding(0x44);
-        let identity = Arc::new(RootIdentity::Unsealed(founder_for(&binding)));
+        let identity = Arc::new(RootIdentity::Local(founder_for(&binding)));
         let (settings, requested, selected_share) =
             seed_exact_collection(&directory, identity.as_ref(), &binding);
 
@@ -4580,7 +4696,7 @@ pub(crate) mod tests {
         let root = tempfile::tempdir().unwrap();
         let directory = root.path().join("profile");
         let binding = binding(0x4b);
-        let identity = Arc::new(RootIdentity::Unsealed(founder_for(&binding)));
+        let identity = Arc::new(RootIdentity::Local(founder_for(&binding)));
         let (settings, requested, _) =
             seed_exact_collection(&directory, identity.as_ref(), &binding);
         let (worker, updates) = spawn_place_worker(Arc::new(|| {}), identity, settings);
@@ -4636,7 +4752,7 @@ pub(crate) mod tests {
         let directory = root.path().join("profile");
         let binding = binding(0x45);
         let founder = founder_for(&binding);
-        let identity = Arc::new(RootIdentity::Unsealed(founder_for(&binding)));
+        let identity = Arc::new(RootIdentity::Local(founder_for(&binding)));
         let (settings, requested, selected_share) =
             seed_exact_collection(&directory, identity.as_ref(), &binding);
 
@@ -4728,7 +4844,7 @@ pub(crate) mod tests {
         let root = tempfile::tempdir().unwrap();
         let directory = root.path().join("profile");
         let binding = binding(0x46);
-        let identity = Arc::new(RootIdentity::Unsealed(founder_for(&binding)));
+        let identity = Arc::new(RootIdentity::Local(founder_for(&binding)));
         let (settings, requested, selected_share) =
             seed_exact_collection(&directory, identity.as_ref(), &binding);
 
@@ -4854,7 +4970,7 @@ pub(crate) mod tests {
         let _ = std::fs::remove_dir_all(&root);
         let original = root.join("original");
         let moved = root.join("moved");
-        let identity = Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed(
+        let identity = Arc::new(RootIdentity::Local(InMemoryProvider::from_seed(
             [0x91; 32],
         )));
         let binding = binding(0x41);

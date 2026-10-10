@@ -159,7 +159,7 @@ pub fn run_bytes(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use identity::{IdentityProvider, InMemoryProvider};
+    use identity::IdentityProvider;
     use servitor::Mode;
 
     fn subject() -> Subject {
@@ -169,7 +169,7 @@ mod tests {
     #[test]
     fn the_sink_queues_granted_emissions_and_refuses_the_rest() {
         // A real signed root delegation for the navigate ring only.
-        let user = InMemoryProvider::from_seed([8u8; 32]);
+        let user = crate::identity::RootIdentity::from_seed([8u8; 32]);
         let mut authority = DelegationTable::new(user.master_public_key().to_bytes());
         let caps = vec![(crate::ring::Ring::Navigate.cap().unwrap(), Mode::Write)];
         for cert in crate::denizen::issue_install_certificates(&user, subject(), &caps, 1_000) {

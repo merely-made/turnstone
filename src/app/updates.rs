@@ -712,13 +712,18 @@ impl App {
                 else {
                     return Vec::new();
                 };
+                let result = result.and_then(|prekey| {
+                    self.personae_root()
+                        .map(|root| (prekey, root))
+                        .ok_or_else(|| crate::identity::PENDING.to_string())
+                });
                 match result {
-                    Ok(prekey) => {
+                    Ok((prekey, root)) => {
                         use base64::Engine as _;
                         let offer = crate::place::PlacePrekeyOfferV1 {
                             version: crate::place::PLACE_CARD_VERSION,
                             moot: pending.moot,
-                            root: crate::place::hex32(&self.personae_root()),
+                            root: crate::place::hex32(&root),
                             prekey: base64::engine::general_purpose::STANDARD.encode(&prekey),
                         };
                         match serde_json::to_vec_pretty(&offer) {

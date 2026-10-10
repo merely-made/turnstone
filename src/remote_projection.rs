@@ -27,7 +27,6 @@ use graphshell_client::{
 };
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, ProjectionSource};
 use identity::IdentityProvider;
-use identity::delegation::Issue;
 use insigne::delegation::SignedDelegationCertificate;
 use mere::kernel::graph::{Author, GraphJournal, NodeKey};
 use sceno::{Arrangement, Score, Spiral};
@@ -152,8 +151,11 @@ impl TurnstoneEndpoint {
         // statement. Now: a per-session keypair derived from the user's
         // master key, holding a capability the USER delegated to it.
         let salt = format!("turnstone/projection-endpoint/{}", session.0);
-        let endpoint_key = app
+        let identity = app
             .identity
+            .clone()
+            .ok_or_else(|| crate::identity::PENDING.to_string())?;
+        let endpoint_key = identity
             .derive_keypair(salt.as_bytes())
             .map_err(|error| format!("failed to derive the endpoint identity: {error:?}"))?;
         let subject = Subject::new(endpoint_key.public_key().to_bytes());
@@ -179,7 +181,7 @@ impl TurnstoneEndpoint {
         // authorized for nothing.
         let now = crate::denizen::now_ms();
         let certificate = root_certificate(
-            IdentityProvider::master_public_key(app.identity.as_ref()).to_bytes(),
+            IdentityProvider::master_public_key(identity.as_ref()).to_bytes(),
             subject,
             &layout,
             Mode::Write,
@@ -189,10 +191,12 @@ impl TurnstoneEndpoint {
             0,
             *blake3::hash(salt.as_bytes()).as_bytes(),
         );
-        let signed = SignedDelegationCertificate::issue(app.identity.as_ref(), certificate)
+        // Signed inside djinn (D11): only the certificate crosses.
+        let signed = identity
+            .issue_certificate(certificate)
             .map_err(|error| format!("failed to sign the endpoint delegation: {error:?}"))?;
         let mut authority = DelegationTable::new(
-            IdentityProvider::master_public_key(app.identity.as_ref()).to_bytes(),
+            IdentityProvider::master_public_key(identity.as_ref()).to_bytes(),
         );
         authority.adopt(signed);
         authority.set_now(now);
@@ -799,7 +803,7 @@ mod tests {
         use servitor::AuthorityProvider;
 
         let app = App::projection_fixture();
-        let user = IdentityProvider::master_public_key(app.identity.as_ref()).to_bytes();
+        let user = IdentityProvider::master_public_key(app.identity.as_deref().unwrap()).to_bytes();
         let endpoint = TurnstoneEndpoint::new(app).unwrap();
         let layout = Cap::Scope(layout_scope());
 

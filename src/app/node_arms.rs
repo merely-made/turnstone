@@ -235,7 +235,7 @@ impl App {
                 self.graph_runtimes.facets(),
                 self.graph_runtimes.graph(),
                 &sdir,
-                self.identity.as_ref(),
+                self.identity_root(),
             );
         }
         for runtime in self.forme_runtimes.iter_mut() {
@@ -303,7 +303,7 @@ impl App {
                 self.graph_runtimes.facets(),
                 self.graph_runtimes.graph(),
                 &sdir,
-                self.identity.as_ref(),
+                self.identity_root(),
             );
             // Residency came back; its standing subscriptions come with it, or
             // a recovered behavior silently stops waking.
@@ -986,7 +986,7 @@ impl App {
         self.active_smolweb_submission = Some(request);
         let identity = if submission.protocol == Protocol::Titan {
             self.gemini_identities
-                .identity_for(self.identity.as_ref(), &submission.target)
+                .identity_for(self.identity_provider(), &submission.target)
                 .unwrap_or_else(|error| {
                     tracing::warn!(%error, "failed to project Titan client identity");
                     None
@@ -1412,7 +1412,12 @@ impl App {
 
         let origin = match self
             .gemini_identities
-            .bind(self.identity.as_ref(), &input.identity_url)
+            .bind(
+                self.identity
+                    .as_deref()
+                    .map(|identity| identity as &dyn identity::IdentityProvider),
+                &input.identity_url,
+            )
         {
             Ok(origin) => origin,
             Err(error) => {

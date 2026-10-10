@@ -320,11 +320,12 @@ pub struct App {
     /// Host storage policy, retained across session adoption and applied to reads.
     pub resident_run_storage_limits: crate::resident_runs::StorageLimits,
     /// The profile's root identity: whose authority every participant grant
-    /// descends from (capability-model OQ2). Vault-sealed when a personae
-    /// backend exists (the SHARED vault, so this is the user's actual
-    /// identity); the loud unsealed fallback otherwise. Install signs a
-    /// delegation with it; uninstall revokes that delegation.
-    pub identity: std::sync::Arc<crate::identity::RootIdentity>,
+    /// descends from (capability-model OQ2): the persona djinn holds,
+    /// reached over the custody route. `None` while it is pending (djinn
+    /// absent or Locked, dramatis D12): nothing that signs or seals runs, and
+    /// there is no fallback key. Install signs a delegation with it inside
+    /// djinn; uninstall revokes that delegation.
+    pub identity: Option<std::sync::Arc<crate::identity::RootIdentity>>,
     /// Capsule approvals for the active Personae root. The sidecar contains
     /// origin mappings only; client certificate keys are derived on demand.
     pub gemini_identities: crate::gemini_identity::GeminiIdentityBindings,

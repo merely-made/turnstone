@@ -621,12 +621,12 @@ impl Shell {
         if events.is_empty() {
             return;
         }
-        let owner: String =
-            identity::IdentityProvider::master_public_key(self.app.identity.as_ref())
-                .to_bytes()
-                .iter()
-                .map(|b| format!("{b:02x}"))
-                .collect();
+        // No owner while the identity is pending (D12): navigation is not
+        // recorded for nobody.
+        let owner: Option<String> = self
+            .app
+            .identity_root()
+            .map(|root| root.iter().map(|b| format!("{b:02x}")).collect());
         let at_ms = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_millis() as u64)
@@ -637,7 +637,9 @@ impl Shell {
                 self.observed_events.pop_front();
             }
             self.observed_events.push_back(event.describe());
-            if let Some((url, transition)) = crate::trail_memory::navigation(&event) {
+            if let (Some(owner), Some((url, transition))) =
+                (owner.as_ref(), crate::trail_memory::navigation(&event))
+            {
                 self.trail_handle
                     .command(crate::trail_memory::TrailCommand::Record {
                         owner: owner.clone(),
