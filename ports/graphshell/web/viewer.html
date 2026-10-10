@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Graphshell viewer</title>
+    <style>
+      body { margin: 0; font-family: sans-serif; background: #070c0f; color: #dce3e8; }
+      p { margin: 16px; max-width: 60ch; }
+      graphshell-tree { display: block; height: 720px; }
+    </style>
+  </head>
+  <body>
+    <!-- The plain viewer as a host page mounts it (mer3ly site canvas plan,
+         Rulings 121, 124 and 157): `viewer.js`, with no scenario lane or
+         receipt harness, and a host history named by data-dataset-src
+         (`?dataset=` overrides it). The page scrolls past the viewer: a plain
+         wheel scrolls it, Ctrl or Meta and the wheel zoom the graph. -->
+    <p>The site's published repository history, one checkpoint at a time.</p>
+    <graphshell-tree data-dataset-src="fixtures/site-repository-host-history.json"></graphshell-tree>
+    <p>The page continues below the viewer.</p>
+    <div style="height: 600px"></div>
+    <script type="module" src="./viewer.js"></script>
+  </body>
+</html>

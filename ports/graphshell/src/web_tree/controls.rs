@@ -67,6 +67,10 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
                 on_click(
                     el("button", label.to_owned()),
                     move |page: &mut TreePage, _| {
+                        if let CanvasCommand::Pan { dx, dy } = command {
+                            page.shared.pan(dx, dy);
+                            return;
+                        }
                         let mut canvas = page.shared.canvas.borrow_mut();
                         if command == CanvasCommand::FitSelection && !canvas.can_fit_selection() {
                             return;
@@ -153,6 +157,7 @@ pub(super) const WEB_GPU_MAX_STALE_STEPS: u32 = 9;
 /// `gpu_max_stale_steps` override the host defaults above.
 #[derive(Clone, Copy, Debug)]
 pub(super) struct GpuOptions {
+    #[cfg_attr(not(feature = "canvas-gpu"), allow(dead_code))]
     pub(super) enabled: bool,
     pub(super) threshold: usize,
     pub(super) max_stale_steps: u32,

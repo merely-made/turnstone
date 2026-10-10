@@ -1,0 +1,2499 @@
+{
+  "schema": "scenomise.host-dataset/v2",
+  "revisions": [
+    {
+      "sequence": 1,
+      "revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+      "dataset": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "cargo-manifest-components",
+          "resource": "selected-workspaces"
+        },
+        "revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+        "fields": {
+          "component_kind": "text",
+          "coverage": "text",
+          "label": "text",
+          "occurrence_id": "text"
+        },
+        "occurrences": [
+          {
+            "occurrence_id": "crate:genet:genet-livery",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:genet:genet-livery"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:genet:genet-livery"
+              },
+              "label": {
+                "kind": "text",
+                "value": "genet-livery"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:genet:genet-render",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:genet:genet-render"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:genet:genet-render"
+              },
+              "label": {
+                "kind": "text",
+                "value": "genet-render"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:genet:taproot",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:genet:taproot"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:genet:taproot"
+              },
+              "label": {
+                "kind": "text",
+                "value": "taproot"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:mere:graphshell",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:mere:graphshell"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:mere:graphshell"
+              },
+              "label": {
+                "kind": "text",
+                "value": "graphshell"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:mere:mere",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:mere:mere"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:mere:mere"
+              },
+              "label": {
+                "kind": "text",
+                "value": "mere"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:mere:pictograph",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:mere:pictograph"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:mere:pictograph"
+              },
+              "label": {
+                "kind": "text",
+                "value": "pictograph"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:mere:sceno",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:mere:sceno"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:mere:sceno"
+              },
+              "label": {
+                "kind": "text",
+                "value": "sceno"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:mere:scenograph",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:mere:scenograph"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:mere:scenograph"
+              },
+              "label": {
+                "kind": "text",
+                "value": "scenograph"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:mere:scenomise",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:mere:scenomise"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:mere:scenomise"
+              },
+              "label": {
+                "kind": "text",
+                "value": "scenomise"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:woodshed:woodshed-core",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:woodshed:woodshed-core"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:woodshed:woodshed-core"
+              },
+              "label": {
+                "kind": "text",
+                "value": "woodshed-core"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:woodshed:woodshed-genet",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:woodshed:woodshed-genet"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:woodshed:woodshed-genet"
+              },
+              "label": {
+                "kind": "text",
+                "value": "woodshed-genet"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:woodshed:woodshedding",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:woodshed:woodshedding"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:woodshed:woodshedding"
+              },
+              "label": {
+                "kind": "text",
+                "value": "woodshedding"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "repo:genet",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "repo:genet"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "repo:genet"
+              },
+              "label": {
+                "kind": "text",
+                "value": "genet"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "repository"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "repo:mere",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "repo:mere"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "repo:mere"
+              },
+              "label": {
+                "kind": "text",
+                "value": "mere"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "repository"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "repo:woodshed",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "repo:woodshed"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "repo:woodshed"
+              },
+              "label": {
+                "kind": "text",
+                "value": "woodshed"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "repository"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "workspace:genet:root",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "workspace:genet:root"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "workspace:genet:root"
+              },
+              "label": {
+                "kind": "text",
+                "value": "genet workspace"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "workspace"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "workspace:mere:root",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "workspace:mere:root"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "workspace:mere:root"
+              },
+              "label": {
+                "kind": "text",
+                "value": "mere workspace"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "workspace"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "workspace:woodshed:root",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "workspace:woodshed:root"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "workspace:woodshed:root"
+              },
+              "label": {
+                "kind": "text",
+                "value": "woodshed workspace"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "workspace"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          }
+        ]
+      },
+      "relationships": [
+        {
+          "id": "contains:crate:genet:genet-livery",
+          "from_occurrence": "workspace:genet:root",
+          "to_occurrence": "crate:genet:genet-livery",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes genet-livery 0.0.4 at components/genet-livery/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "genet/components/genet-livery/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:genet:genet-render",
+          "from_occurrence": "workspace:genet:root",
+          "to_occurrence": "crate:genet:genet-render",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes genet-render 0.2.0 at components/genet-render/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "genet/components/genet-render/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:genet:taproot",
+          "from_occurrence": "workspace:genet:root",
+          "to_occurrence": "crate:genet:taproot",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes taproot 0.1.0 at components/taproot/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "genet/components/taproot/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:mere:graphshell",
+          "from_occurrence": "workspace:mere:root",
+          "to_occurrence": "crate:mere:graphshell",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes graphshell 0.0.2 at ports/graphshell/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/ports/graphshell/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:mere:mere",
+          "from_occurrence": "workspace:mere:root",
+          "to_occurrence": "crate:mere:mere",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes mere 0.0.2 at crates/mere/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/mere/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:mere:pictograph",
+          "from_occurrence": "workspace:mere:root",
+          "to_occurrence": "crate:mere:pictograph",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes pictograph 0.2.0 at crates/canvas/pictograph/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/canvas/pictograph/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:mere:sceno",
+          "from_occurrence": "workspace:mere:root",
+          "to_occurrence": "crate:mere:sceno",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes sceno 0.0.4 at crates/cambium/scenes/sceno/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/cambium/scenes/sceno/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:mere:scenograph",
+          "from_occurrence": "workspace:mere:root",
+          "to_occurrence": "crate:mere:scenograph",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes scenograph 0.0.4 at crates/cambium/scenes/scenograph/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/cambium/scenes/scenograph/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:mere:scenomise",
+          "from_occurrence": "workspace:mere:root",
+          "to_occurrence": "crate:mere:scenomise",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes scenomise 0.0.4 at crates/cambium/scenes/scenomise/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/cambium/scenes/scenomise/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:woodshed:woodshed-core",
+          "from_occurrence": "workspace:woodshed:root",
+          "to_occurrence": "crate:woodshed:woodshed-core",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes woodshed-core 0.1.0 at crates/woodshed-core/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshed-core/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:woodshed:woodshed-genet",
+          "from_occurrence": "workspace:woodshed:root",
+          "to_occurrence": "crate:woodshed:woodshed-genet",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes woodshed-genet 0.1.0 at crates/woodshed-genet/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshed-genet/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:woodshed:woodshedding",
+          "from_occurrence": "workspace:woodshed:root",
+          "to_occurrence": "crate:woodshed:woodshedding",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes woodshedding 0.1.0 at crates/woodshedding/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshedding/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:workspace:genet:root",
+          "from_occurrence": "repo:genet",
+          "to_occurrence": "workspace:genet:root",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Named input scope genet discloses this Cargo workspace.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "workspace:genet:root"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:workspace:mere:root",
+          "from_occurrence": "repo:mere",
+          "to_occurrence": "workspace:mere:root",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Named input scope mere discloses this Cargo workspace.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "workspace:mere:root"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:workspace:woodshed:root",
+          "from_occurrence": "repo:woodshed",
+          "to_occurrence": "workspace:woodshed:root",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Named input scope woodshed discloses this Cargo workspace.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "workspace:woodshed:root"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:genet:genet-render:336624e2a81ba0ea:crate:genet:genet-livery",
+          "from_occurrence": "crate:genet:genet-render",
+          "to_occurrence": "crate:genet:genet-livery",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "genet/components/genet-render/Cargo.toml declares genet-livery * as genet-livery; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "genet/components/genet-render/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:genet:taproot:336624e2a81ba0ea:crate:genet:genet-livery",
+          "from_occurrence": "crate:genet:taproot",
+          "to_occurrence": "crate:genet:genet-livery",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "genet/components/taproot/Cargo.toml declares genet-livery >=0.0.1, <0.1 as genet-livery; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "genet/components/taproot/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:genet:taproot:63ad0ac9fda0414c:crate:genet:genet-render",
+          "from_occurrence": "crate:genet:taproot",
+          "to_occurrence": "crate:genet:genet-render",
+          "kind": "declares_dev_dependency",
+          "label": "Declares a development dependency on",
+          "explanation": "genet/components/taproot/Cargo.toml declares genet-render * as genet-render; kind=dev, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "genet/components/taproot/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:graphshell:baf820d2850cf380:crate:mere:scenomise",
+          "from_occurrence": "crate:mere:graphshell",
+          "to_occurrence": "crate:mere:scenomise",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/ports/graphshell/Cargo.toml declares scenomise ^0.0.4 as scenomise; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/ports/graphshell/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:graphshell:c8ad0a7d529a2ef3:crate:mere:sceno",
+          "from_occurrence": "crate:mere:graphshell",
+          "to_occurrence": "crate:mere:sceno",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/ports/graphshell/Cargo.toml declares sceno ^0.0.4 as sceno; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/ports/graphshell/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:graphshell:e9b84b6fb8cd891b:crate:mere:scenograph",
+          "from_occurrence": "crate:mere:graphshell",
+          "to_occurrence": "crate:mere:scenograph",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/ports/graphshell/Cargo.toml declares scenograph ^0.0.4 as scenograph; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/ports/graphshell/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:graphshell:f91cb764f0bbe261:crate:mere:mere",
+          "from_occurrence": "crate:mere:graphshell",
+          "to_occurrence": "crate:mere:mere",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/ports/graphshell/Cargo.toml declares mere * as mere; kind=normal, optional=True, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/ports/graphshell/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:mere:70a0120de223e342:crate:mere:pictograph",
+          "from_occurrence": "crate:mere:mere",
+          "to_occurrence": "crate:mere:pictograph",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/crates/mere/Cargo.toml declares pictograph ^0.2.0 as pictograph; kind=normal, optional=True, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/mere/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:pictograph:336624e2a81ba0ea:crate:genet:genet-livery",
+          "from_occurrence": "crate:mere:pictograph",
+          "to_occurrence": "crate:genet:genet-livery",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/crates/canvas/pictograph/Cargo.toml declares genet-livery ^0.0.4 as genet-livery; kind=normal, optional=True, target=all. Declared source: git+https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/canvas/pictograph/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:pictograph:baf820d2850cf380:crate:mere:scenomise",
+          "from_occurrence": "crate:mere:pictograph",
+          "to_occurrence": "crate:mere:scenomise",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/crates/canvas/pictograph/Cargo.toml declares scenomise ^0.0.4 as scenomise; kind=normal, optional=True, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/canvas/pictograph/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:pictograph:c8ad0a7d529a2ef3:crate:mere:sceno",
+          "from_occurrence": "crate:mere:pictograph",
+          "to_occurrence": "crate:mere:sceno",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/crates/canvas/pictograph/Cargo.toml declares sceno ^0.0.4 as sceno; kind=normal, optional=True, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/canvas/pictograph/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:scenograph:c8ad0a7d529a2ef3:crate:mere:sceno",
+          "from_occurrence": "crate:mere:scenograph",
+          "to_occurrence": "crate:mere:sceno",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/crates/cambium/scenes/scenograph/Cargo.toml declares sceno ^0.0.4 as sceno; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/cambium/scenes/scenograph/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:scenomise:c8ad0a7d529a2ef3:crate:mere:sceno",
+          "from_occurrence": "crate:mere:scenomise",
+          "to_occurrence": "crate:mere:sceno",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/crates/cambium/scenes/scenomise/Cargo.toml declares sceno ^0.0.4 as sceno; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/cambium/scenes/scenomise/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:scenomise:e9b84b6fb8cd891b:crate:mere:scenograph",
+          "from_occurrence": "crate:mere:scenomise",
+          "to_occurrence": "crate:mere:scenograph",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/crates/cambium/scenes/scenomise/Cargo.toml declares scenograph ^0.0.4 as scenograph; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/cambium/scenes/scenomise/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:woodshed:woodshed-core:354e4896bd3591cf:crate:woodshed:woodshedding",
+          "from_occurrence": "crate:woodshed:woodshed-core",
+          "to_occurrence": "crate:woodshed:woodshedding",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "woodshed/crates/woodshed-core/Cargo.toml declares woodshedding ^0.1.0 as woodshedding; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshed-core/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:woodshed:woodshed-core:c8ad0a7d529a2ef3:crate:mere:sceno",
+          "from_occurrence": "crate:woodshed:woodshed-core",
+          "to_occurrence": "crate:mere:sceno",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "woodshed/crates/woodshed-core/Cargo.toml declares sceno * as sceno; kind=normal, optional=False, target=all. Declared source: git+https://github.com/merely-made/mere.git?rev=5d694c7599d689e423afbe4513b7e577e943b627. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshed-core/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:woodshed:woodshed-genet:02ebaa2dce709510:crate:genet:taproot",
+          "from_occurrence": "crate:woodshed:woodshed-genet",
+          "to_occurrence": "crate:genet:taproot",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "woodshed/crates/woodshed-genet/Cargo.toml declares taproot * as taproot; kind=normal, optional=False, target=all. Declared source: git+https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshed-genet/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:woodshed:woodshed-genet:2f7240af1da2198a:crate:woodshed:woodshed-core",
+          "from_occurrence": "crate:woodshed:woodshed-genet",
+          "to_occurrence": "crate:woodshed:woodshed-core",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "woodshed/crates/woodshed-genet/Cargo.toml declares woodshed-core ^0.1.0 as woodshed-core; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshed-genet/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:woodshed:woodshed-genet:354e4896bd3591cf:crate:woodshed:woodshedding",
+          "from_occurrence": "crate:woodshed:woodshed-genet",
+          "to_occurrence": "crate:woodshed:woodshedding",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "woodshed/crates/woodshed-genet/Cargo.toml declares woodshedding ^0.1.0 as woodshedding; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-sha256:fc6df1451cb8cb68b6faee4a8e318f696dfcdb12bd7b0c8110c38d8f1f2f32f1",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshed-genet/Cargo.toml"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "sequence": 2,
+      "revision": "manifest-next",
+      "dataset": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "cargo-manifest-components",
+          "resource": "selected-workspaces"
+        },
+        "revision": "manifest-next",
+        "fields": {
+          "component_kind": "text",
+          "coverage": "text",
+          "label": "text",
+          "occurrence_id": "text"
+        },
+        "occurrences": [
+          {
+            "occurrence_id": "crate:genet:genet-livery",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:genet:genet-livery"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:genet:genet-livery"
+              },
+              "label": {
+                "kind": "text",
+                "value": "genet-livery"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:genet:genet-render",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:genet:genet-render"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:genet:genet-render"
+              },
+              "label": {
+                "kind": "text",
+                "value": "genet-render"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:genet:taproot",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:genet:taproot"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:genet:taproot"
+              },
+              "label": {
+                "kind": "text",
+                "value": "taproot"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:mere:graphshell",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:mere:graphshell"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:mere:graphshell"
+              },
+              "label": {
+                "kind": "text",
+                "value": "graphshell"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:mere:mere",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:mere:mere"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:mere:mere"
+              },
+              "label": {
+                "kind": "text",
+                "value": "mere"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:mere:pictograph",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:mere:pictograph"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:mere:pictograph"
+              },
+              "label": {
+                "kind": "text",
+                "value": "pictograph"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:mere:sceno",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:mere:sceno"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:mere:sceno"
+              },
+              "label": {
+                "kind": "text",
+                "value": "sceno"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:mere:scenograph",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:mere:scenograph"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:mere:scenograph"
+              },
+              "label": {
+                "kind": "text",
+                "value": "scenograph"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:mere:scenomise",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:mere:scenomise"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:mere:scenomise"
+              },
+              "label": {
+                "kind": "text",
+                "value": "scenomise"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:woodshed:woodshed-core",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:woodshed:woodshed-core"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:woodshed:woodshed-core"
+              },
+              "label": {
+                "kind": "text",
+                "value": "woodshed-core"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:woodshed:woodshed-genet",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:woodshed:woodshed-genet"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:woodshed:woodshed-genet"
+              },
+              "label": {
+                "kind": "text",
+                "value": "woodshed-genet"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "crate:woodshed:woodshedding",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "crate:woodshed:woodshedding"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "crate:woodshed:woodshedding"
+              },
+              "label": {
+                "kind": "text",
+                "value": "woodshedding"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "crate"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "repo:genet",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "repo:genet"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "repo:genet"
+              },
+              "label": {
+                "kind": "text",
+                "value": "genet"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "repository"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "repo:mere",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "repo:mere"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "repo:mere"
+              },
+              "label": "mere next",
+              "component_kind": {
+                "kind": "text",
+                "value": "repository"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "repo:woodshed",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "repo:woodshed"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "repo:woodshed"
+              },
+              "label": {
+                "kind": "text",
+                "value": "woodshed"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "repository"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "workspace:genet:root",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "workspace:genet:root"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "workspace:genet:root"
+              },
+              "label": {
+                "kind": "text",
+                "value": "genet workspace"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "workspace"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "workspace:mere:root",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "workspace:mere:root"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "workspace:mere:root"
+              },
+              "label": {
+                "kind": "text",
+                "value": "mere workspace"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "workspace"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          },
+          {
+            "occurrence_id": "workspace:woodshed:root",
+            "source": {
+              "adapter": "cargo.manifest-components/v1",
+              "id": "workspace:woodshed:root"
+            },
+            "values": {
+              "occurrence_id": {
+                "kind": "text",
+                "value": "workspace:woodshed:root"
+              },
+              "label": {
+                "kind": "text",
+                "value": "woodshed workspace"
+              },
+              "component_kind": {
+                "kind": "text",
+                "value": "workspace"
+              },
+              "coverage": {
+                "kind": "text",
+                "value": "Manifest declarations among selected workspace members; optional, build, dev and target-specific declarations included; external and compiled closure excluded."
+              }
+            }
+          }
+        ]
+      },
+      "relationships": [
+        {
+          "id": "contains:crate:genet:genet-livery",
+          "from_occurrence": "workspace:genet:root",
+          "to_occurrence": "crate:genet:genet-livery",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes genet-livery 0.0.4 at components/genet-livery/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "genet/components/genet-livery/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:genet:genet-render",
+          "from_occurrence": "workspace:genet:root",
+          "to_occurrence": "crate:genet:genet-render",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes genet-render 0.2.0 at components/genet-render/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "genet/components/genet-render/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:genet:taproot",
+          "from_occurrence": "workspace:genet:root",
+          "to_occurrence": "crate:genet:taproot",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes taproot 0.1.0 at components/taproot/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "genet/components/taproot/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:woodshed:woodshed-core",
+          "from_occurrence": "workspace:woodshed:root",
+          "to_occurrence": "crate:woodshed:woodshed-core",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes woodshed-core 0.1.0 at crates/woodshed-core/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshed-core/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:woodshed:woodshed-genet",
+          "from_occurrence": "workspace:woodshed:root",
+          "to_occurrence": "crate:woodshed:woodshed-genet",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes woodshed-genet 0.1.0 at crates/woodshed-genet/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshed-genet/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:crate:woodshed:woodshedding",
+          "from_occurrence": "workspace:woodshed:root",
+          "to_occurrence": "crate:woodshed:woodshedding",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Cargo workspace_members includes woodshedding 0.1.0 at crates/woodshedding/Cargo.toml.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshedding/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:workspace:genet:root",
+          "from_occurrence": "repo:genet",
+          "to_occurrence": "workspace:genet:root",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Named input scope genet discloses this Cargo workspace.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "workspace:genet:root"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:workspace:mere:root",
+          "from_occurrence": "repo:mere",
+          "to_occurrence": "workspace:mere:root",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Named input scope mere discloses this Cargo workspace.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "workspace:mere:root"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contains:workspace:woodshed:root",
+          "from_occurrence": "repo:woodshed",
+          "to_occurrence": "workspace:woodshed:root",
+          "kind": "contains",
+          "label": "Contains",
+          "explanation": "Named input scope woodshed discloses this Cargo workspace.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "workspace:woodshed:root"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:genet:genet-render:336624e2a81ba0ea:crate:genet:genet-livery",
+          "from_occurrence": "crate:genet:genet-render",
+          "to_occurrence": "crate:genet:genet-livery",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "genet/components/genet-render/Cargo.toml declares genet-livery * as genet-livery; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "genet/components/genet-render/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:genet:taproot:336624e2a81ba0ea:crate:genet:genet-livery",
+          "from_occurrence": "crate:genet:taproot",
+          "to_occurrence": "crate:genet:genet-livery",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "genet/components/taproot/Cargo.toml declares genet-livery >=0.0.1, <0.1 as genet-livery; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "genet/components/taproot/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:genet:taproot:63ad0ac9fda0414c:crate:genet:genet-render",
+          "from_occurrence": "crate:genet:taproot",
+          "to_occurrence": "crate:genet:genet-render",
+          "kind": "declares_dev_dependency",
+          "label": "Declares a development dependency on",
+          "explanation": "genet/components/taproot/Cargo.toml declares genet-render * as genet-render; kind=dev, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "genet/components/taproot/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:graphshell:baf820d2850cf380:crate:mere:scenomise",
+          "from_occurrence": "crate:mere:graphshell",
+          "to_occurrence": "crate:mere:scenomise",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/ports/graphshell/Cargo.toml declares scenomise ^0.0.4 as scenomise; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/ports/graphshell/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:graphshell:c8ad0a7d529a2ef3:crate:mere:sceno",
+          "from_occurrence": "crate:mere:graphshell",
+          "to_occurrence": "crate:mere:sceno",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/ports/graphshell/Cargo.toml declares sceno ^0.0.4 as sceno; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/ports/graphshell/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:graphshell:e9b84b6fb8cd891b:crate:mere:scenograph",
+          "from_occurrence": "crate:mere:graphshell",
+          "to_occurrence": "crate:mere:scenograph",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/ports/graphshell/Cargo.toml declares scenograph ^0.0.4 as scenograph; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/ports/graphshell/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:graphshell:f91cb764f0bbe261:crate:mere:mere",
+          "from_occurrence": "crate:mere:graphshell",
+          "to_occurrence": "crate:mere:mere",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/ports/graphshell/Cargo.toml declares mere * as mere; kind=normal, optional=True, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/ports/graphshell/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:mere:70a0120de223e342:crate:mere:pictograph",
+          "from_occurrence": "crate:mere:mere",
+          "to_occurrence": "crate:mere:pictograph",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/crates/mere/Cargo.toml declares pictograph ^0.2.0 as pictograph; kind=normal, optional=True, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/mere/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:pictograph:336624e2a81ba0ea:crate:genet:genet-livery",
+          "from_occurrence": "crate:mere:pictograph",
+          "to_occurrence": "crate:genet:genet-livery",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/crates/canvas/pictograph/Cargo.toml declares genet-livery ^0.0.4 as genet-livery; kind=normal, optional=True, target=all. Declared source: git+https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/canvas/pictograph/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:pictograph:baf820d2850cf380:crate:mere:scenomise",
+          "from_occurrence": "crate:mere:pictograph",
+          "to_occurrence": "crate:mere:scenomise",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/crates/canvas/pictograph/Cargo.toml declares scenomise ^0.0.4 as scenomise; kind=normal, optional=True, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/canvas/pictograph/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:pictograph:c8ad0a7d529a2ef3:crate:mere:sceno",
+          "from_occurrence": "crate:mere:pictograph",
+          "to_occurrence": "crate:mere:sceno",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/crates/canvas/pictograph/Cargo.toml declares sceno ^0.0.4 as sceno; kind=normal, optional=True, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/canvas/pictograph/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:scenograph:c8ad0a7d529a2ef3:crate:mere:sceno",
+          "from_occurrence": "crate:mere:scenograph",
+          "to_occurrence": "crate:mere:sceno",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/crates/cambium/scenes/scenograph/Cargo.toml declares sceno ^0.0.4 as sceno; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/cambium/scenes/scenograph/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:scenomise:c8ad0a7d529a2ef3:crate:mere:sceno",
+          "from_occurrence": "crate:mere:scenomise",
+          "to_occurrence": "crate:mere:sceno",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/crates/cambium/scenes/scenomise/Cargo.toml declares sceno ^0.0.4 as sceno; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/cambium/scenes/scenomise/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:mere:scenomise:e9b84b6fb8cd891b:crate:mere:scenograph",
+          "from_occurrence": "crate:mere:scenomise",
+          "to_occurrence": "crate:mere:scenograph",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "mere/crates/cambium/scenes/scenomise/Cargo.toml declares scenograph ^0.0.4 as scenograph; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "mere/crates/cambium/scenes/scenomise/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:woodshed:woodshed-core:354e4896bd3591cf:crate:woodshed:woodshedding",
+          "from_occurrence": "crate:woodshed:woodshed-core",
+          "to_occurrence": "crate:woodshed:woodshedding",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "woodshed/crates/woodshed-core/Cargo.toml declares woodshedding ^0.1.0 as woodshedding; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshed-core/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:woodshed:woodshed-core:c8ad0a7d529a2ef3:crate:mere:sceno",
+          "from_occurrence": "crate:woodshed:woodshed-core",
+          "to_occurrence": "crate:mere:sceno",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "woodshed/crates/woodshed-core/Cargo.toml declares sceno * as sceno; kind=normal, optional=False, target=all. Declared source: git+https://github.com/merely-made/mere.git?rev=5d694c7599d689e423afbe4513b7e577e943b627. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshed-core/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:woodshed:woodshed-genet:02ebaa2dce709510:crate:genet:taproot",
+          "from_occurrence": "crate:woodshed:woodshed-genet",
+          "to_occurrence": "crate:genet:taproot",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "woodshed/crates/woodshed-genet/Cargo.toml declares taproot * as taproot; kind=normal, optional=False, target=all. Declared source: git+https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshed-genet/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:woodshed:woodshed-genet:2f7240af1da2198a:crate:woodshed:woodshed-core",
+          "from_occurrence": "crate:woodshed:woodshed-genet",
+          "to_occurrence": "crate:woodshed:woodshed-core",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "woodshed/crates/woodshed-genet/Cargo.toml declares woodshed-core ^0.1.0 as woodshed-core; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshed-genet/Cargo.toml"
+              }
+            ]
+          }
+        },
+        {
+          "id": "declares:crate:woodshed:woodshed-genet:354e4896bd3591cf:crate:woodshed:woodshedding",
+          "from_occurrence": "crate:woodshed:woodshed-genet",
+          "to_occurrence": "crate:woodshed:woodshedding",
+          "kind": "declares_normal_dependency",
+          "label": "Declares a dependency on",
+          "explanation": "woodshed/crates/woodshed-genet/Cargo.toml declares woodshedding ^0.1.0 as woodshedding; kind=normal, optional=False, target=all. Declared source: local path in the named input snapshots. This is a declaration, not evidence that these snapshot versions compile together.",
+          "provenance": {
+            "source": {
+              "authority": "https://merelyllc.com",
+              "domain": "cargo-manifest-components",
+              "resource": "selected-workspaces"
+            },
+            "source_revision": "manifest-next",
+            "method": "cargo.metadata-manifest-declarations",
+            "method_version": 1,
+            "provider": "export_grouped_cargo.py",
+            "evidence": [
+              {
+                "adapter": "cargo.manifest-components/v1",
+                "id": "woodshed/crates/woodshed-genet/Cargo.toml"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "compared_fields": [
+    "label"
+  ]
+}

@@ -169,12 +169,18 @@ impl TreePage {
         let before = grouped.state.clone();
         let mut canvas = self.shared.canvas.borrow_mut();
         change(&mut grouped.state);
-        match grouped.apply_to_canvas(&mut canvas) {
+        match grouped.apply_to_canvas_with(&mut canvas, |view| {
+            if let Some(history) = &self.history {
+                history.mark_view(view);
+            }
+        }) {
             Ok(relations) => {
                 self.picked = canvas.focused_url().map(str::to_owned);
                 self.nodes = canvas.graph().node_count();
                 self.dataset = HostedDataset::Loaded(relations);
                 self.grouping_error = None;
+                // Slots in an arrangement transition name the previous view.
+                self.physics.transition = None;
                 self.shared.dirty.set(true);
             },
             Err(error) => {

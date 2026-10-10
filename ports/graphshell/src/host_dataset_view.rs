@@ -234,6 +234,31 @@ impl GroupedHostDataset {
     pub fn label(&self, id: &str) -> &str {
         &self.labels[id]
     }
+
+    /// Recompile a checkpoint of the same authority. Surviving groups retain
+    /// their view choices and every surviving identity keeps its placement.
+    /// Choices naming removed groups are dropped rather than refusing history.
+    pub fn at_revision(&self, envelope: HostDatasetV1) -> Result<Self, String> {
+        if envelope.dataset.source != self.envelope.dataset.source {
+            return Err("Fold history cannot change its source authority".into());
+        }
+        let mut next = Self::new(envelope, self.hierarchy.membership_kind())?;
+        next.state.expanded = self
+            .state
+            .expanded
+            .iter()
+            .filter(|id| next.hierarchy.children(id).is_some())
+            .cloned()
+            .collect();
+        next.state.entered = self
+            .state
+            .entered
+            .as_ref()
+            .filter(|id| next.hierarchy.children(id).is_some())
+            .cloned();
+        next.remember_positions(self.positions.iter().map(|(id, at)| (id.clone(), *at)));
+        Ok(next)
+    }
     pub fn total_occurrences(&self) -> usize {
         self.envelope.dataset.occurrences.len()
     }
@@ -300,11 +325,22 @@ impl GroupedHostDataset {
         &mut self,
         canvas: &mut mere::canvas::Canvas,
     ) -> Result<Vec<ViewedRelation>, String> {
+        self.apply_to_canvas_with(canvas, |_| {})
+    }
+
+    /// Apply the same disclosure with optional presentation marks, such as
+    /// checkpoint changes, on the fresh view before it reaches the canvas.
+    pub fn apply_to_canvas_with(
+        &mut self,
+        canvas: &mut mere::canvas::Canvas,
+        decorate: impl FnOnce(&mut HostDatasetView),
+    ) -> Result<Vec<ViewedRelation>, String> {
         self.remember_positions(canvas.graph().nodes().filter_map(|(key, node)| {
             let id = node.url().strip_prefix("urn:host-dataset:")?.to_owned();
             Some((id, canvas.world_position_of(key)?))
         }));
-        let view = self.view()?;
+        let mut view = self.view()?;
+        decorate(&mut view);
         let viewport = canvas.viewport();
         let selected = canvas.focused_url().map(str::to_owned);
         canvas.set_physics_paused(true);

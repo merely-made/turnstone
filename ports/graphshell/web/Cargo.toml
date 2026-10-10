@@ -90,6 +90,9 @@ wgpu = { version = "30.0.1", default-features = false, features = ["std", "wgsl"
 console_error_panic_hook = "0.1"
 web-sys = { version = "0.3", features = [
     "console",
+    # The viewer's own wheel and touch listeners, ahead of the host's
+    # (src/web_tree/gestures.rs), and its reduced-motion query.
+    "AddEventListenerOptions",
     "Blob",
     # The display period's worker (src/web_period_worker.rs).
     "BlobPropertyBag",
@@ -111,6 +114,7 @@ web-sys = { version = "0.3", features = [
     "ImageData",
     "KeyboardEvent",
     "KeyboardEventInit",
+    "MediaQueryList",
     "MessageEvent",
     # `?nodes=` and `?seed=`: phase 3's generated graph (src/web_graphs.rs).
     "Location",
@@ -126,9 +130,16 @@ web-sys = { version = "0.3", features = [
     "Response",
     "StorageManager",
     "Storage",
+    "Touch",
+    "TouchEvent",
+    # A scenario's synthetic touches and wheel (src/web_tree/gesture_steps.rs).
+    "TouchEventInit",
+    "TouchInit",
+    "TouchList",
     "Url",
     "UrlSearchParams",
     "WheelEvent",
+    "WheelEventInit",
     "Window",
     "Worker",
 ] }
@@ -148,6 +159,16 @@ web-sys = { version = "0.3", features = [
 # maintained wgpu-30 renderer fork. These are remote revision/tag patches, never
 # local paths. The root dropped its ipc-channel row as dead on 2026-09-23, and
 # so does this table.
+# The release build a host ships (mer3ly site canvas plan, Ruling 157): the
+# settings P0 measured the viewer cone with (`measure-release.sh`), pinned
+# here so every `cargo build --release --locked` of a commit makes the same
+# bundle. Receipts use the dev profile below.
+[profile.release]
+opt-level = "s"
+lto = "thin"
+strip = "symbols"
+codegen-units = 1
+
 # The receipts settle physics for hundreds of frames, and the dynamics stack
 # at the dev profile's opt-level 0 was the slow part of every run. Optimize
 # just those crates in dev builds — never the crates edited here, so an
