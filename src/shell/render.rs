@@ -760,19 +760,7 @@ impl Shell {
             .and_then(|graph| self.app.graph_runtimes.canvas(graph))
             .and_then(crate::app::focused_caption);
 
-        // Bug #2 (rung-4 debt): keep EVERY live session's clock advancing, not
-        // just the framed one. Before this, a session lost focus and stopped
-        // pumping, so `Live` was a lie for every non-focused node. Pumping is
-        // cheap for the settled static lane and correct for future animated
-        // ones; only the framed surface is rasterized below.
-        let now_ms = self.epoch.elapsed().as_secs_f64() * 1000.0;
-        let mut needs_redraw = false;
-        for session in self.content_sessions.sessions_mut() {
-            session.pump(now_ms);
-            if !session.settled() {
-                needs_redraw = true;
-            }
-        }
+        let mut needs_redraw = self.pump_visible_documents();
 
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         let (surface_device, surface_queue) = {

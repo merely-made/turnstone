@@ -32,6 +32,7 @@ mod device_receipts_service;
 pub mod diagnostic_observations;
 pub mod distillery_installed_surface;
 pub mod document_find;
+mod document_pump;
 mod download;
 mod feed;
 mod foreign_a11y;

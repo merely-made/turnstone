@@ -659,8 +659,9 @@ Steps (each keeps both suites green):
 4. Turnstone drives one controller per node, with its fetch actor as the
    transport. The gate is the smolweb scenarios, with exact Stop and Reload
    identities.
-5. Turnstone's documents take the controller's projection (S8). This needs
-   the Genet bridge fix.
+5. Turnstone's documents take the controller's projection (S8). Its own
+   guest-aware adapter permits this source cut; the Genet bridge repair
+   remains a prerequisite for standalone Pelt's bridge path.
 6. The pool and placements, with hidden derived from them.
 7. The store traits.
 
@@ -1919,12 +1920,15 @@ does not expand S0's platform or physical accessibility qualification.
 
 Read-only SC/S8 inventories distinguish historical duplication from current
 source. Loading already shares Mere PageLoad, while documents and surfaces
-already use one PeltContent map. Primary and lens rendering still pump all
-document sessions directly. The next bounded preparation uses the controller's
-pump and derives hidden state from existing placements across every open
-window. It does not introduce a pool, change Reader appearance lifetime or
-change the qualified Windows surface input path. The handoff records the
-scheduling ruling and resource constraint.
+already use one PeltContent map. The bounded controller-pumping preparation
+replaces the primary/lens raw-session loops and derives hidden state from
+existing placements across every open window. All retained clocks still advance;
+only visible unfinished work asks for another frame. Wait/idle polls advance
+controllers too, so a hidden finite animation can reach quiescence without
+painting. This preserves all-session completion accounting, introduces no pool
+and changes neither Reader appearance lifetime nor the qualified Windows
+surface input path. The handoff records the review finding, revised scheduling
+ruling and source qualification; SC5 and the larger SC6 pool remain open.
 
 For S8, Turnstone already installs its own AccessKit adapter, preserves the
 original tree-aware action request and publishes ordered guest batches through
@@ -1933,6 +1937,20 @@ does not block Turnstone source integration. The pinned Genet bridge still
 needs its target_tree/activation repair for consumers using it, including
 standalone Pelt. Live document projections/actions, contributed-tree migration,
 shared composed scenario observation and all physical S8/E1b gates remain open.
+
+The same fixed Mere snapshot locates Graphshell at `ports/graphshell`: it is
+Mere's projection client/reference host, without a second PeltContent/PageLoad
+implementation. Its actual parallel GUI paths are the legacy presenter/DOM/
+scenario path and retained Cambium tree. The supplier's canonical
+`design_docs/2026-09-25_graphshell_one_tree_plan.md` and
+`design_docs/2026-09-27_graphshell_tree_migration_inventory.md` keep the five-page
+cutover open. That product migration is independent of Turnstone's SC5/S8 work.
+Shared surface input needs a coordinated contract for pointer identity,
+wheel modifiers and button parity; SC6 still owns the engine-aware pool,
+repeated placement geometry and Reader lifetime. SC7's reusable store contracts
+stay below product conversations and concrete stores. A second page-loading
+rewrite would repeat the already shared PageLoad machinery. This is a local
+comparison at the qualified pin, not a claim about a moving supplier tail.
 
 ## Cross-references
 

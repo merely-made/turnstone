@@ -1317,7 +1317,7 @@ impl Shell {
                         std::sync::Arc::clone(&self.content_engines),
                         std::sync::Arc::clone(&self.pelt_surface_engines),
                         config,
-                        super::ShellClock(std::time::Instant::now()),
+                        super::ShellClock(self.epoch),
                     );
                     let update = match opened {
                         Ok(mut controller) => {

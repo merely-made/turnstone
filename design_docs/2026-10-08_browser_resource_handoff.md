@@ -607,3 +607,104 @@ and four unrelated linkers. Our agents are read-only; new compiler/link work
 is deferred until there is safe headroom. All later build commands stay one
 job at low priority in the existing shared target. No other task's processes
 are stopped or changed.
+
+### Controller pumping qualification, 2026-10-09
+
+The bounded controller cut uses the primary plan plus every open lens plan,
+retains one controller per node and shares the shell epoch. Repeated placements
+pump once per helper invocation; separate window render events remain separate
+polls. Surface producers keep their own polling policy and Reader appearances
+keep their current lifetime.
+
+Ruling: keep hidden document clocks advancing, while suppressing hidden redraw
+requests, and advance controllers in synchronous wait/idle polls. The first
+visible-only implementation passed its six controls but whole-cut review found
+that Livery's finite CSS animations settle only when pump advances their clock;
+all-session quiescence would strand a hidden animation. Retaining clock work
+preserves the current all-session idle contract and asynchronous completion
+polls without making hidden animation schedule paints. If wrong, hidden clock
+work can still cost CPU; avoiding that requires an engine-aware pool contract,
+not silently treating unfinished sessions as idle. This supersedes the earlier
+visible-only implementation assumption, not SC's pool/placement gate.
+
+Status: corrected source cut qualified against the unchanged Mere P2/Genet
+pins. Seven direct actual-controller controls pass, plus the real Livery finite
+CSS animation control and existing Spartan keyboard navigation/submission
+control: nine focused native tests in default and nine with Piccolo. Both locked
+all-target checks exit zero. The full resource-family suites remain the separate
+749/782-test proof bound to source 93f1e45; these focused gates are not a rerun.
+
+One fresh whole-cut review found one P2 quiescence issue and no other actionable
+findings. The fix pass observed the hidden pending-work fake-engine control fail,
+and a real Livery CSS animation fail before completion, then both pass with
+retained clock pumping and hidden redraw suppression. Synchronous wait/idle
+polls now call the same pump helper. No second reviewer was dispatched for that
+fix pass.
+
+The initial API-only absence and all-document behavior RED logs are preserved.
+The initial visible-only six-test GREEN is also preserved as superseded evidence;
+it did not cover hidden animation quiescence. A standalone link initially hit its
+1 GiB virtual-memory/thread limit; limiting LLD to one thread made that bounded
+build pass below 200 MiB RSS. Host commands used Rust 1.98.1, one Cargo job, nice
+10/idle IO priority, the existing shared target and descriptor budget 65536.
+Available RAM recovered before host builds; peak native build RSS was about
+3.4 GiB and available RAM stayed above the earlier pressured state. No other
+task's processes or supplier-owner checkout were changed.
+
+Source base is e86906a. The following hashes bind all seven changed source files,
+the unchanged manifests, focused binaries and original logs in
+`/home/markik/Code/target`. Platform/headed multi-window, physical AT/E1b and
+optional web-engine gates remain separate. SC5 live projections/actions, shared
+composed observation, contributed-tree graft migration, and the full SC6 pool
+remain open.
+
+```json
+{
+  "base": "e86906a3d2f1e0f85c6d2cfd132da9a0c17e3c0f",
+  "source_sha256": {
+    "src/lib.rs": "97201ac9a9d12e06c6198978a3430f5465b0fd3c95c6fedae9462efb4d42fae3",
+    "src/document_pump.rs": "d9617a2b281e31074e2cc37ea8ceb72ba34810b2ebd8444c912e029a014e98db",
+    "src/shell/drive.rs": "13176037e73e510f5ea4aad0524958aead271b9ac6092a4fa6e7b31f55cf65d6",
+    "src/shell/effects.rs": "bc61cc3e0803a7c794173df134a121e5edee2c8c2b37a292d412e5fe5cbc83c9",
+    "src/shell/lens.rs": "5c3111a1bcbdf5b8c04f80fe626b5413b1bc582aa2ad9fe62eb8dc3abaaac34a",
+    "src/shell/mod.rs": "7faffba6cb225011692691eaca7d2fa0da609460acc55f4fc087d6164eafdf45",
+    "src/shell/render.rs": "526d49956921f754e4979249e8d42c01d7283b27894280459240b5d141da026f",
+    "Cargo.toml": "93b114eff5913d36deda31342c9b00ecc5d48fbed6fc127057f18c853980c8f0",
+    "Cargo.lock": "4b2e0e02150aa80fb8f35626cd13cf752682ba70d517ba14f49af99c3080a53e"
+  },
+  "logs_sha256": {
+    "turnstone-sc-pump-api-red.log": "b68fffebe08ef77cf7b8397d271f09c9d218ad292910ccd6c6a707998ca10c63",
+    "turnstone-sc-pump-behavior-red.log": "d65f89cea9bc4ece5b8d5eb3fd1d599b1093b3ca6ff31bbbea2411e266301781",
+    "turnstone-sc-pump-hidden-red.log": "e78adbeaabc4339fb8df840b20093a37739d58385d62a3733f47c9443dc1bd15",
+    "turnstone-sc-pump-livery-red.log": "83d964edcf56303a1b4dd1c8885fb8b1518b45994b70f627ba27bb7fa32bb17a",
+    "turnstone-sc-pump-green.log": "7008239507f593b611e056004c39abb270ecdd832f7b0239e4c7e8cc7e4ed629",
+    "turnstone-sc-pump-host-default-final.log": "00e2641c7ea8bb432de9292c97659b6d1400bb8b6a23abb4f5687d587a99b206",
+    "turnstone-sc-pump-default-all-targets-final.log": "fb22d558957a70519b9c505c73b09577ce09419b7540c4a798f67af13366facf",
+    "turnstone-sc-pump-host-piccolo-final.log": "1243d2febdfd590f1eb19ad3a1d98cf4752196a15c8bffa51a27e17d3e82cc52",
+    "turnstone-sc-pump-piccolo-all-targets-final.log": "fddc9cd87265ba1bae17760f8562fddbeaeba2600681c5b12a4e1f13b6263b85"
+  },
+  "native_controls": {
+    "default": {
+      "binary": "/home/markik/Code/target/debug/deps/turnstone-56895bc2249f60eb",
+      "sha256": "ad4bac7f541b69387c13e23d8a837cb60eb06442a4835cd02cf66938bc3142ff",
+      "result": "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 757 filtered out; finished in 0.13s"
+    },
+    "piccolo": {
+      "binary": "/home/markik/Code/target/debug/deps/turnstone-2369ecc0dbe0db57",
+      "sha256": "dfb537c755650ca71d9bd9395a700b5d65622d4b427b2c73f0bdfa9660bc35d4",
+      "result": "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 790 filtered out; finished in 0.18s"
+    }
+  },
+  "all_target_checks": {
+    "default": {
+      "exit_status": 0,
+      "log": "/home/markik/Code/target/turnstone-sc-pump-default-all-targets-final.log"
+    },
+    "piccolo": {
+      "exit_status": 0,
+      "log": "/home/markik/Code/target/turnstone-sc-pump-piccolo-all-targets-final.log"
+    }
+  },
+  "scope": "Nine focused native controls in each feature build; not a rerun of the full resource-family library suites."
+}
+```

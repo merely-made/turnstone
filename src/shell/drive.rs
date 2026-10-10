@@ -108,12 +108,10 @@ impl Shell {
                 let effects = self.app.apply_update(update);
                 self.run_effects(effects);
             }
-            // Content sessions fold their own events (a Knot hub's bell or
-            // loss) only when polled, which the frame loop does per frame;
-            // a wait that holds the loop must poll them itself.
-            for session in self.content_sessions.sessions_mut() {
-                let _ = session.settled();
-            }
+            // Retained work must advance even when no window is rendering.
+            // Pump folds completion events as well as document clocks; hidden
+            // work can settle without requesting a paint.
+            let _ = self.pump_visible_documents();
             self.refresh_knot_documents();
             if condition(self) {
                 return true;
@@ -128,6 +126,7 @@ impl Shell {
 
 impl Shell {
     fn idle_diagnosis(&mut self) -> IdleDiagnosis {
+        let _ = self.pump_visible_documents();
         let mut unsettled_sessions = self
             .content_sessions
             .node_sessions_mut()
@@ -683,6 +682,9 @@ impl taproot::Automatable for Shell {
         if self.app.graph_runtimes.is_settling() {
             return Some(true);
         }
+        // Wait polls also advance clocks when a hidden finite animation has
+        // stopped asking the render loop for frames.
+        let _ = self.pump_visible_documents();
         Some(
             self.content_sessions
                 .sessions_mut()

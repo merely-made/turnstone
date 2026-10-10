@@ -194,9 +194,7 @@ impl NodeSurfaces for NodeDocuments {
     }
 }
 
-/// Turnstone pumps each session with its own frame clock; the controller's
-/// clock is only consulted by `PeltController::pump`, which the shell does not
-/// call yet.
+/// Every retained document controller uses the same monotonic shell epoch.
 pub(crate) struct ShellClock(std::time::Instant);
 
 impl pelt_core::PeltClock for ShellClock {
@@ -1421,6 +1419,24 @@ impl Shell {
         }
     }
 
+    /// Pump documents placed in the primary or any open lens. Lens-only
+    /// documents stay visible when the primary renders; an unplaced document
+    /// keeps its controller and state without scheduling another redraw.
+    fn pump_visible_documents(&mut self) -> bool {
+        let mut plans = self.surface_plan();
+        for lens in self.lens_windows.values() {
+            plans.extend(self.lens_plan(lens.ordinal, lens.width, lens.height));
+        }
+        let visible = plans
+            .into_iter()
+            .filter_map(|surface| match surface.kind {
+                crate::surface::SurfaceKind::Content(node) => Some(node),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        crate::document_pump::pump_documents(&mut self.content_sessions, &visible)
+    }
+
     /// The current surface plan, from app truth plus the window size. The one
     /// place render and input agree on which surfaces exist and where, so a
     /// pointer always hits exactly what the last frame drew. The base layer is
@@ -2249,6 +2265,41 @@ impl Shell {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn hidden_livery_animation_reaches_quiescence_without_redraw() {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        struct Clock(Arc<AtomicU64>);
+        impl pelt_core::PeltClock for Clock {
+            fn now_ms(&self) -> f64 { self.0.load(Ordering::Relaxed) as f64 }
+        }
+        let clock = Arc::new(AtomicU64::new(0));
+        let request = SessionSpawnRequest::new("https://test.invalid/animation")
+            .with_body("<html><head><style>@keyframes fade { from { opacity: 0.2; } to { opacity: 0.8; } } #a { animation: fade 1000ms linear; width: 100px; height: 100px; background: red; }</style></head><body><div id=a>fade</div></body></html>")
+            .with_viewport(640, 480);
+        let route = standard_route_policy().route(&inker::EngineRouteRequest {
+            workspace_id: inker::WorkspaceRouteId::new("hidden-animation"),
+            view: None, node: None, address: request.address.clone(),
+            content_type: None, pinned_engine: Some(inker::routing::ENGINE_GENET_LIVERY.into()),
+        });
+        let config = pelt_core::PeltControllerConfig::from_request(route.engine_id.clone(), request)
+            .with_host_history();
+        let mut controller = pelt_core::PeltController::new_shared(
+            Arc::new(standard_content_engines()), Arc::new(inker::SurfaceEngineRegistry::new()),
+            config, Clock(clock.clone()),
+        ).expect("the Livery lane spawns");
+        let _ = controller.frame(640, 480);
+        assert!(!controller.session_mut().settled(), "the real CSS animation is initially active");
+        let content = pelt_core::PeltContent::from_controller(controller, pelt_core::PeltRoute {
+            decision: route, source: pelt_core::PeltRouteSource::Automatic,
+            state: pelt_core::PeltRouteState::Document,
+        });
+        let mut contents = std::collections::HashMap::from([(1u8, content)]);
+        clock.store(2000, Ordering::Relaxed);
+        assert!(!crate::document_pump::pump_documents(&mut contents, &[]));
+        assert!(contents.get_mut(&1).unwrap().document_mut().unwrap().session_mut().settled(),
+            "a hidden finite animation can finish without another frame");
+    }
 
     /// SC controller-level input over Turnstone's own engines: a host-history
     /// controller hands a Spartan prompt's submission up as a POST the

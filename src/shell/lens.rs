@@ -303,19 +303,10 @@ impl Shell {
         if surfaces.is_empty() {
             return;
         }
+        // Visibility includes every open window. Each render invocation pumps
+        // a retained document once; separate window events remain separate polls.
+        let mut animating = self.pump_visible_documents();
         // Pass 1 (mutable): produce each surface's scene at its rect size.
-        // Sessions pump here too (the bug-#2 discipline): a lens hosting the
-        // workbench must keep its tiles' clocks honest even while the primary
-        // idles. The pump clock is shared and monotonic, so double-pumping in
-        // a frame where both windows render is a no-op.
-        let now_ms = self.epoch.elapsed().as_secs_f64() * 1000.0;
-        let mut animating = false;
-        for session in self.content_sessions.sessions_mut() {
-            session.pump(now_ms);
-            if !session.settled() {
-                animating = true;
-            }
-        }
         let mut scenes: Vec<PlannedScene> = Vec::with_capacity(surfaces.len());
         for surface in &surfaces {
             let rect = surface.rect;
