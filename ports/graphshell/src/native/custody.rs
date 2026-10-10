@@ -58,6 +58,12 @@ pub enum CustodyCall {
     Status,
     /// The vault's personas, as a picker shows them.
     Roster,
+    /// Terminal vault operations run inside djinn. Only public output crosses.
+    VaultCommand {
+        profile: ProfileId,
+        command: String,
+        args: Vec<String>,
+    },
     /// Switch the persona in use.
     ChooseProfile { profile: ProfileId },
     /// Mint a persona and switch to it.
@@ -257,6 +263,13 @@ impl Drop for ReleasedKey {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "answer", rename_all = "snake_case")]
 pub enum CustodyAnswer {
+    /// Public CA installation material. The terminal executes SSH after the
+    /// keeper releases its mutex, allowing the resident agent to authenticate.
+    VaultEnrollment { target: String, script: String, confirmation: String },
+    /// Public terminal text produced by a keeper-owned command.
+    VaultOutput {
+        text: String,
+    },
     Status(ResidentStatus),
     Roster(Roster),
     /// The call changed state and has nothing to report.

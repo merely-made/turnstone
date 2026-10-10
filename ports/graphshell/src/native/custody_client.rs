@@ -350,6 +350,8 @@ impl BlockingCustodyClient {
 
 fn answer_name(answer: &CustodyAnswer) -> &'static str {
     match answer {
+        CustodyAnswer::VaultOutput { .. } => "vault output",
+        CustodyAnswer::VaultEnrollment { .. } => "vault enrollment",
         CustodyAnswer::Status(_) => "a status",
         CustodyAnswer::Roster(_) => "a roster",
         CustodyAnswer::Done => "done",
