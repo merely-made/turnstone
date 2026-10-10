@@ -277,7 +277,9 @@ pub enum CustodyAnswer {
     Revoked(RemoteAuthRevocationOutcome),
     Lock(VaultLockView),
     /// The epoch keys asked for, in request order.
-    EpochKeys(Vec<ReleasedEpochKey>),
+    /// A struct variant: the internal `answer` tag cannot sit beside a bare
+    /// sequence.
+    EpochKeys { keys: Vec<ReleasedEpochKey> },
 }
 
 /// Why djinn did not answer a call.
@@ -441,10 +443,10 @@ mod tests {
         };
         let text = serde_json::to_string(&call).unwrap();
         assert_eq!(serde_json::from_str::<CustodyCall>(&text).unwrap(), call);
-        let answer = CustodyAnswer::EpochKeys(vec![ReleasedEpochKey {
+        let answer = CustodyAnswer::EpochKeys { keys: vec![ReleasedEpochKey {
             request: EpochKeyRequest::public("ctx", false),
             key: [0x5a; 32],
-        }]);
+        }] };
         let text = serde_json::to_string(&answer).unwrap();
         assert_eq!(
             serde_json::from_str::<CustodyAnswer>(&text).unwrap(),

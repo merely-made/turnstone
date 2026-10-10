@@ -359,7 +359,7 @@ fn answer_name(answer: &CustodyAnswer) -> &'static str {
         CustodyAnswer::StationGrant(_) => "a station grant",
         CustodyAnswer::Revoked(_) => "a revocation",
         CustodyAnswer::Lock(_) => "a lock state",
-        CustodyAnswer::EpochKeys(_) => "epoch keys",
+        CustodyAnswer::EpochKeys { .. } => "epoch keys",
     }
 }
 
@@ -445,7 +445,7 @@ fn expect_revoked(
 
 fn expect_epoch_keys(answer: CustodyAnswer) -> Result<Vec<ReleasedEpochKey>, CustodyClientError> {
     match answer {
-        CustodyAnswer::EpochKeys(keys) => Ok(keys),
+        CustodyAnswer::EpochKeys { keys } => Ok(keys),
         other => Err(mismatch("release epoch keys", &other)),
     }
 }
