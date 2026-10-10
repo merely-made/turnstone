@@ -15,9 +15,6 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use personae::IdentityStorage;
-#[cfg(not(windows))]
-use personae::bootstrap;
 use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio::sync::RwLock;
@@ -28,9 +25,8 @@ use crate::browser_carrier::{
 };
 use crate::identity_endpoint::{SupplementalCard, TransferDecisions};
 use crate::native::browser_host::{BrowserHostError, serve_identity_native_messages_with_cards};
-use crate::native::identity_ui::NativeIdentityUi;
 use crate::native::local_endpoint::{LocalStream, connect_local, serve_local};
-use crate::native::personae_host::PersonaeHost;
+use crate::native::resident_identity::ResidentIdentity;
 use chirograph::ContentHash;
 
 pub const DEVICE_ENDPOINT_ENV: &str = "GRAPHSHELL_DEVICE_ENDPOINT";
@@ -138,7 +134,7 @@ pub fn default_device_endpoint() -> String {
     {
         std::env::var_os("XDG_RUNTIME_DIR")
             .map(PathBuf::from)
-            .unwrap_or_else(bootstrap::default_vault_dir)
+            .unwrap_or_else(personae::default_vault_dir)
             .join("graphshell-device.sock")
             .display()
             .to_string()
@@ -172,45 +168,32 @@ pub async fn relay_browser_native_messages(
 }
 
 /// Serve browser relays from the resident authority.
-pub async fn serve_browser_broker<S, U>(
+pub async fn serve_browser_broker<A>(
     endpoint: &str,
-    personae: Arc<PersonaeHost<S>>,
-    native_ui: Arc<U>,
+    personae: Arc<A>,
     allowlist: AllowedExtensions,
     session_duration_ms: u64,
 ) -> Result<(), DeviceBrokerError>
 where
-    S: IdentityStorage + 'static,
-    U: NativeIdentityUi + 'static,
+    A: ResidentIdentity,
 {
-    serve(
-        endpoint,
-        personae,
-        native_ui,
-        allowlist,
-        session_duration_ms,
-        None,
-    )
-    .await
+    serve(endpoint, personae, allowlist, session_duration_ms, None).await
 }
 
 /// Serve browser relays with public cards owned by another resident authority.
-pub async fn serve_browser_broker_with_cards<S, U>(
+pub async fn serve_browser_broker_with_cards<A>(
     endpoint: &str,
-    personae: Arc<PersonaeHost<S>>,
-    native_ui: Arc<U>,
+    personae: Arc<A>,
     allowlist: AllowedExtensions,
     session_duration_ms: u64,
     surface: DeviceSurfaceHandle,
 ) -> Result<(), DeviceBrokerError>
 where
-    S: IdentityStorage + 'static,
-    U: NativeIdentityUi + 'static,
+    A: ResidentIdentity,
 {
     serve(
         endpoint,
         personae,
-        native_ui,
         allowlist,
         session_duration_ms,
         Some(surface),
@@ -218,18 +201,16 @@ where
     .await
 }
 
-async fn serve_connection<S, U, R, W>(
+async fn serve_connection<A, R, W>(
     reader: &mut R,
     writer: &mut W,
-    personae: Arc<PersonaeHost<S>>,
-    native_ui: Arc<U>,
+    personae: Arc<A>,
     allowlist: &AllowedExtensions,
     session_duration_ms: u64,
     surface: Option<DeviceSurfaceHandle>,
 ) -> Result<(), DeviceBrokerError>
 where
-    S: IdentityStorage + 'static,
-    U: NativeIdentityUi,
+    A: ResidentIdentity,
     R: AsyncRead + Unpin,
     W: AsyncWrite + Unpin,
 {
@@ -248,7 +229,6 @@ where
     let summary = serve_identity_native_messages_with_cards(
         personae.as_ref(),
         Arc::clone(&personae),
-        native_ui.as_ref(),
         launcher,
         reader,
         writer,
@@ -270,21 +250,18 @@ where
 ///
 /// One function for both platforms now: the listener and the same-user check
 /// moved to `local_endpoint`, where the first-party door reuses them.
-async fn serve<S, U>(
+async fn serve<A>(
     endpoint: &str,
-    personae: Arc<PersonaeHost<S>>,
-    native_ui: Arc<U>,
+    personae: Arc<A>,
     allowlist: AllowedExtensions,
     session_duration_ms: u64,
     surface: Option<DeviceSurfaceHandle>,
 ) -> Result<(), DeviceBrokerError>
 where
-    S: IdentityStorage + 'static,
-    U: NativeIdentityUi + 'static,
+    A: ResidentIdentity,
 {
     serve_local(endpoint, "browser", move |stream: Box<dyn LocalStream>| {
         let personae = Arc::clone(&personae);
-        let native_ui = Arc::clone(&native_ui);
         let allowlist = allowlist.clone();
         let surface = surface.clone();
         async move {
@@ -293,7 +270,6 @@ where
                 &mut reader,
                 &mut writer,
                 personae,
-                native_ui,
                 &allowlist,
                 session_duration_ms,
                 surface,

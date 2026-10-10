@@ -509,84 +509,70 @@ mod tests {
     async fn h4_exportable_identity_cards_and_access_survive_scene_reopen_as_projections() {
         use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionSource};
         use mere::canvas::CartographyGeometry;
-        use pandect::{
-            DeviceExposure, DeviceId, DevicePublicKey, PersonaId, RemoteAuthGrantSpec,
-            ensure_wallet_state, issue_remote_auth_device_grant, load_device_roster,
+        use personae::signing::{
+            ApprovalSource, SigningPolicy, SigningRecord, SigningRecordResult, SigningRequest,
         };
-        use personae::ssh_slot::{protocol_key_for, slot_for};
-        use personae::{
-            Ed25519Keypair, IdentityVault, InMemoryStorage, Profile, ProfileId, UnlockTier,
-        };
-        use ssh_agent_lib::agent::Session;
-        use ssh_agent_lib::proto::SignRequest;
-        use ssh_key::Algorithm;
 
-        use crate::identity::VaultProtectionView;
+        use crate::identity::{DeviceGrantView, DeviceView, ProfileView};
         use crate::identity_endpoint::IdentityEndpoint;
         use crate::identity_projection::{DEVICE_REVOKE_INTENT, RevokeDeviceIntentV1};
-        use crate::native::personae_host::PersonaeHost;
+        use crate::native::resident_identity::test_support::{FixedIdentity, fixed_snapshot};
 
-        let carry_root = std::env::temp_dir().join(format!(
-            "graphshell-h4-carry-scene-{}-{}",
-            std::process::id(),
-            uuid::Uuid::new_v4()
-        ));
-        let persona = PersonaId::default_persona();
-        ensure_wallet_state(&carry_root, persona, "Graphshell workstation")
-            .expect("bootstrap carry authority");
-        let device_id = DeviceId::new();
-        let delegatee = Ed25519Keypair::from_seed([0x45; 32]);
-        issue_remote_auth_device_grant(
-            &carry_root,
-            &RemoteAuthGrantSpec {
-                device_id,
-                delegatee_pubkey: DevicePublicKey::from(delegatee.public_key()),
-                label: "Pocket relay".to_string(),
-                exposure: DeviceExposure::HiddenClient,
-                issued_at_ms: 1_700_000_000_000,
-                expires_at_ms: Some(1_800_000_000_000),
-                personas: vec![persona],
-                scopes: vec!["identity.act".to_string()],
-                attenuations: vec!["no-subdelegation".to_string()],
-                wrapped_private_epochs: Vec::new(),
+        // The public read model a keeper with one profile, one leased device,
+        // its grant and one signing record shows. The keeper itself (wallet,
+        // agent, revocation) is djinn's to exercise; this test is about the
+        // cards surviving a scene reopen as projections.
+        let device_id = uuid::Uuid::from_u128(0x45);
+        let mut fixed = fixed_snapshot();
+        fixed.profiles.push(ProfileView {
+            id: "mixed-scene".to_string(),
+            display_name: "Mixed scene".to_string(),
+            selected: true,
+            slot_count: 1,
+            master_public_fingerprint: "fixture".to_string(),
+        });
+        fixed.carry.devices.push(DeviceView {
+            device_id: device_id.to_string(),
+            label: "Pocket relay".to_string(),
+            mode: "remote-auth".to_string(),
+            exposure: "hidden-client".to_string(),
+            public_key_fingerprint: "fixture".to_string(),
+            revoked: false,
+            grant_ref: Some("grant-ref".to_string()),
+        });
+        fixed.carry.grants.push(DeviceGrantView {
+            device_id: device_id.to_string(),
+            grant_ref: Some("grant-ref".to_string()),
+            signature_valid: Some(true),
+            issued_at_ms: 1_700_000_000_000,
+            expires_at_ms: Some(1_800_000_000_000),
+            personas: vec!["default".to_string()],
+            scopes: vec!["identity.act".to_string()],
+            attenuations: vec!["no-subdelegation".to_string()],
+            wrapped_epoch_count: 0,
+        });
+        fixed.signing_history.push(SigningRecord {
+            request: SigningRequest::new(
+                "mixed-scene",
+                "SHA256:mixed-scene-key",
+                "ssh.sign",
+                b"graphshell mixed scene",
+                "ssh-agent",
+            ),
+            policy: SigningPolicy::Session,
+            approval_source: Some(ApprovalSource::SessionPolicy),
+            result: SigningRecordResult::Signed {
+                signature_ref: "sig-1".to_string(),
             },
-        )
-        .expect("issue live device grant");
-
-        let mut private =
-            ssh_key::PrivateKey::random(&mut rand_core::OsRng, Algorithm::Ed25519).unwrap();
-        private.set_comment("mixed-scene-key");
-        let public = ssh_key::PublicKey::from(&private);
-        let mut profile = Profile::new(
-            ProfileId("mixed-scene".to_string()),
-            "Mixed scene",
-            Ed25519Keypair::from_seed([0x46; 32]),
-        );
-        profile.slots.insert(
-            protocol_key_for(&private),
-            slot_for(&private, UnlockTier::Session).unwrap(),
-        );
-        let authority = std::sync::Arc::new(PersonaeHost::new(
-            IdentityVault::with_profile(InMemoryStorage::new(), profile),
-            Some(carry_root.clone()),
-            VaultProtectionView::Ephemeral,
-        ));
-        let mut agent = authority.agent_session();
-        let signature = agent
-            .sign(SignRequest {
-                credential: public.key_data().clone().into(),
-                data: b"graphshell mixed scene".to_vec(),
-                flags: 0,
-            })
-            .await
-            .expect("produce real signing history");
-        assert!(!signature.as_bytes().is_empty());
+            completed_at_ms: 1_700_000_000_500,
+        });
+        let authority = FixedIdentity::with_snapshot(0x46, fixed);
 
         let mut endpoint = IdentityEndpoint::new(authority);
         let before = endpoint
             .snapshot(endpoint.request())
             .expect("identity projection before revocation");
-        let device_source = format!("identity:device:{}", device_id.as_uuid());
+        let device_source = format!("identity:device:{device_id}");
         let device_instance = before
             .scene
             .active_items_in_order()
@@ -606,7 +592,7 @@ mod tests {
                 observed_revision: before.scene.revision,
                 intent: DEVICE_REVOKE_INTENT.to_string(),
                 payload: serde_json::to_vec(&RevokeDeviceIntentV1 {
-                    device_id: *device_id.as_uuid(),
+                    device_id,
                     confirmed: false,
                 })
                 .unwrap(),
@@ -621,7 +607,7 @@ mod tests {
                 observed_revision: before.scene.revision,
                 intent: DEVICE_REVOKE_INTENT.to_string(),
                 payload: serde_json::to_vec(&RevokeDeviceIntentV1 {
-                    device_id: *device_id.as_uuid(),
+                    device_id,
                     confirmed: true,
                 })
                 .unwrap(),
@@ -629,12 +615,13 @@ mod tests {
             .expect("typed revocation");
         assert_eq!(revoked, IntentResult::Accepted);
         assert!(
-            load_device_roster(&carry_root)
+            endpoint
+                .host()
+                .intents
+                .lock()
                 .unwrap()
-                .unwrap()
-                .revoked
-                .contains(&device_id),
-            "the pandect roster remains mutation authority"
+                .contains(&DEVICE_REVOKE_INTENT.to_string()),
+            "the revocation reached the resident authority, the mutation authority"
         );
 
         let snapshot = endpoint
@@ -652,7 +639,7 @@ mod tests {
         let wanted_sources = [
             "identity:profile:mixed-scene".to_string(),
             device_source,
-            format!("identity:grant:{}", device_id.as_uuid()),
+            format!("identity:grant:{device_id}"),
         ];
         let signing_source = snapshot
             .scene
@@ -787,7 +774,5 @@ mod tests {
             assert!(!json.contains("\"intent\""));
             assert!(!json.contains("BEGIN OPENSSH PRIVATE KEY"));
         }
-
-        std::fs::remove_dir_all(carry_root).expect("remove isolated carry fixture");
     }
 }
