@@ -136,7 +136,13 @@ impl PaceWindow {
         }
     }
 
-    pub(super) fn record(&mut self, canvas: &Canvas, moving: bool, budget: Duration, wall: Duration) {
+    pub(super) fn record(
+        &mut self,
+        canvas: &Canvas,
+        moving: bool,
+        budget: Duration,
+        wall: Duration,
+    ) {
         if self.sample.is_empty() {
             let mut keys: Vec<NodeKey> = canvas.graph().nodes().map(|(key, _)| key).collect();
             keys.sort_by_key(|key| key.index());

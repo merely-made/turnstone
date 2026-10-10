@@ -726,7 +726,7 @@ impl TreePage {
 }
 
 fn keys(page: &mut TreePage, key: &Key) -> bool {
-    if key == &Key::Named(NamedKey::Escape) {
+    if matches!(key, Key::Named(NamedKey::Escape)) {
         if let Some(product) = &mut page.product {
             if product.menu_open() {
                 product.close_menu();
@@ -986,6 +986,7 @@ async fn boot(root: Element) -> Result<(), String> {
         ..Default::default()
     };
     let page_shared = shared.clone();
+    let page_root = root.clone();
     let physics = physics::PhysicsPanel::new(&shared.canvas.borrow(), web_graphs::LAYOUT);
     let mounted = mount(
         canvas,
@@ -999,7 +1000,7 @@ async fn boot(root: Element) -> Result<(), String> {
                 #[cfg(feature = "applets")]
                 applet_query: cambium::TextInput::new(""),
                 shared: page_shared,
-                root: root.clone(),
+                root: page_root,
                 projection_source: None,
                 appearance_controls,
                 source,

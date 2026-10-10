@@ -1367,7 +1367,7 @@ impl Product for TreeLane {
 
     /// Events emitted by the same command owners as the visible controls.
     fn drain_events(&mut self, _ctx: &mut mesquite::Ctx<'_, Self>) -> Vec<String> {
-        let mut events = std::mem::take(&mut self.shared.events.borrow_mut());
+        let mut events = std::mem::take(&mut *self.shared.events.borrow_mut());
         events.extend(std::mem::take(&mut self.shared.remote.borrow_mut().events));
         events
     }

@@ -231,7 +231,7 @@ pub(in crate::web_tree) fn menu(page: &TreePage) -> Option<Child> {
     Some(Box::new(on_key(el("section",children).attr("aria-label","Graph commands").attr("class","tree-command-menu")
         .attr("style",format!("position:absolute;left:{x}px;top:{y}px;width:320px;max-height:350px;overflow:auto;z-index:12;background:#1e303d;padding:10px;")),
         |page: &mut TreePage,event: cambium::KeyEvent| {
-            if event.key == Key::Named(NamedKey::Escape) {
+            if matches!(event.key, Key::Named(NamedKey::Escape)) {
                 if let Some(product) = &mut page.product { product.close_menu(); }
                 event.prevent_default();
             }
