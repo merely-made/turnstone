@@ -7,7 +7,7 @@
     "knot": "802238cb9aae33d5d0ce334c8adef60874e9a6bb",
     "redshank": "e08bf4b9875a7efb02b1c17bf9fac56708712cee"
   },
-  "publication": "Mere and Genet published. Knot, Redshank and consumer integration commits local; sibling revision fetches used process-scoped file Git URL rewrites, retaining canonical Cargo sources. No shared Git configuration changed.",
+  "publication": "Qualification was recorded while sibling and consumer commits were local. The subsequent canonical-main publication is verified below; original test/source bindings are unchanged.",
   "execution": {
     "rust": "1.98.1",
     "cargo_jobs": 1,
@@ -661,5 +661,12 @@
   "persisted_test_results": {
     "path": "native-integration-tests.log",
     "sha256": "5fbb1dd314f6442d121845268f8eda49b727ec4bc512f2bf389130aebe343ba8"
+  },
+  "published_family": {
+    "verified_at_utc": "2026-10-10T00:10:10.884636+00:00",
+    "method": "Normal non-force pushes in dependency order, followed by git ls-remote against canonical GitHub repository URLs.",
+    "knot": "802238cb9aae33d5d0ce334c8adef60874e9a6bb",
+    "redshank": "e08bf4b9875a7efb02b1c17bf9fac56708712cee",
+    "turnstone_source": "93f1e45a0670bae30ca72d1684c322e137ddf1d4"
   }
 }

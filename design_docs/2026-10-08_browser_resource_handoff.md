@@ -5,8 +5,9 @@ authorization to continue. The qualified fixed family is Mere `3b3afa289`,
 Genet `15713014`, Knot `802238cb` and Redshank `e08bf4b`. All seven reconciled
 patches and native repairs are applied. Default libraries: 749 passed, nine
 existing ignored. Piccolo libraries: 782 passed, nine existing ignored.
-Both locked all-target checks and the fresh source review pass. Knot, Redshank
-and consumer integration commits remain local. The final continuation and
+Both locked all-target checks and the fresh source review pass. The tested
+Knot, Redshank and consumer integration commits are now published to main.
+The final continuation and
 [source-bound receipt](../docs/compatibility/graph_resources/native-integration-checks.json)
 record qualification and publication scope.
 
@@ -557,7 +558,7 @@ recovery remain deferred. The nine ignored host controls require a live Knot end
 corpora or explicit measurements. Browser, optional engine/wasm, physical GPU
 and assistive-technology qualification are separate.
 
-Publication state: Mere and Genet are published; Knot, Redshank and this consumer
+Publication state at native qualification: Mere and Genet were published; Knot, Redshank and this consumer
 integration remain local. Initial sibling fetches used process-scoped local Git
 URL rewrites while retaining canonical Cargo source identities. No global Git
 configuration, supplier worktree, primary Turnstone checkout or unrelated WIP
@@ -565,3 +566,44 @@ was changed. Publishing this family requires making the two sibling commits
 available before the Turnstone pin update. Continue from these final receipts;
 do not reapply the historical patch artifacts or repin to the supplier's moving
 P3/P4 lane.
+
+
+## Family publication and SC/S8 continuation, 2026-10-09
+
+Mark authorized continuation and free orchestration with attention to system
+resources. The tested commits are normally pushed to main in dependency order:
+Knot `802238cb9aae33d5d0ce334c8adef60874e9a6bb`, Redshank/Woodshed
+`e08bf4b9875a7efb02b1c17bf9fac56708712cee`, then Turnstone
+`93f1e45a0670bae30ca72d1684c322e137ddf1d4`. Fresh fetches found no divergent
+upstream changes. Exact heads were verified through each canonical
+`https://github.com/merely-made/<repository>.git` URL. Woodshed's old origin
+redirects to its canonical home; shared Git configuration was preserved.
+All 157 native-receipt source/manifest/HTML hashes still match. The primary
+Turnstone checkout and preserved Knot receipt directory remain untouched.
+The resource integration's implementation, native qualification and publication
+are closed. Browser, optional engine and physical accessibility release gates
+remain separate.
+
+SC/S8 resumes from the existing unusual-protocols plan and its approved
+SC1/SC2 design. Two read-only inventories checked final consumer source against
+the fixed immutable Mere pin, without builds or supplier worktree mutations.
+Loading already delegates to Mere's shared PageLoad; host graph history is
+intentional. Actual duplicate orchestration remains in primary/lens pumping,
+frame production and placement visibility. S8 can use Turnstone's existing
+ordered guest-aware adapter: the pinned Genet bridge still drops target_tree
+and overwrites activation state, but that bridge is not Turnstone's current
+adapter. Pelt's standalone bridge path retains that prerequisite.
+
+Ruling: prepare a bounded controller-pumping/visibility cut before the live
+document accessibility graft, using existing primary and lens placements.
+This removes duplicated loops and preserves lens-only documents; it is
+preparation for SC6, not a new pool or completion of SC6. If wrong, scheduling
+may hide or duplicate work, so tests must cover hidden sessions, lens-only
+visibility, repeated placements, retained identity and the controller clock.
+Reader appearance lifetime and web-surface input remain outside this cut.
+
+The initial resource check found approximately 2 GiB available RAM, full swap
+and four unrelated linkers. Our agents are read-only; new compiler/link work
+is deferred until there is safe headroom. All later build commands stay one
+job at low priority in the existing shared target. No other task's processes
+are stopped or changed.

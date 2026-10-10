@@ -57,7 +57,7 @@ set.
   Mere P2 is qualified at `3b3afa289`; per-view controls, retained session
   placement, refusal protection and graph-origin routing are applied. Default/Piccolo
   native suites, all-target checks and source review pass. Final receipts bind
-  the tested source; sibling and consumer commits remain local.
+  the tested source; sibling and consumer commits are published to main.
 - [Unusual-protocols browser plan](2026-10-06_unusual_protocols_browser_plan.md):
   the bar ("can you use this as a web browser for the unusual protocols"),
   per-protocol state, ranked gaps and stages S0 to S11 plus SC. Ruled U1 to

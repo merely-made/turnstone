@@ -222,6 +222,11 @@ browser for these protocols.
 
 ### 3. Pelt and Graphshell, the two axes
 
+This assessment describes the pre-SC state. The approved design and later
+progress record controller adoption; current source uses PeltContent for both
+documents and surfaces and Mere PageLoad for host loading. Remaining
+orchestration and S8 work are recorded in the latest continuation below.
+
 **Graphshell is composed.** Turnstone links the `graphshell` port,
 `graphshell-client` and `graphshell-endpoint`, and uses them for six things:
 
@@ -1901,6 +1906,33 @@ the same record once this lane can push to Mere (U15).
   Turnstone `50d44f6` and the current local Mere plans/implementation; no browser
   code changed, and nothing was built or run for this scope review. The proposed
   browser cuts do not change U2's priority, U15/U16's ownership or stage order.
+
+### 2026-10-09, qualified resource family and SC/S8 resumption
+
+Turnstone's resource graph source `93f1e45`, Knot `802238cb` and
+Redshank/Woodshed `e08bf4b` are published to main, against fixed Mere P2
+`3b3afa289` and Genet `15713014`. Default libraries pass 749 tests; Piccolo
+passes 782, with nine existing ignored controls in each. Both all-target checks
+and a fresh whole-branch source review pass. The source-bound receipt lives
+in `docs/compatibility/graph_resources/native-integration-checks.json`; this
+does not expand S0's platform or physical accessibility qualification.
+
+Read-only SC/S8 inventories distinguish historical duplication from current
+source. Loading already shares Mere PageLoad, while documents and surfaces
+already use one PeltContent map. Primary and lens rendering still pump all
+document sessions directly. The next bounded preparation uses the controller's
+pump and derives hidden state from existing placements across every open
+window. It does not introduce a pool, change Reader appearance lifetime or
+change the qualified Windows surface input path. The handoff records the
+scheduling ruling and resource constraint.
+
+For S8, Turnstone already installs its own AccessKit adapter, preserves the
+original tree-aware action request and publishes ordered guest batches through
+uxtree::graft. Therefore the earlier unconditional Genet bridge prerequisite
+does not block Turnstone source integration. The pinned Genet bridge still
+needs its target_tree/activation repair for consumers using it, including
+standalone Pelt. Live document projections/actions, contributed-tree migration,
+shared composed scenario observation and all physical S8/E1b gates remain open.
 
 ## Cross-references
 

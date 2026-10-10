@@ -4,8 +4,9 @@ The seven reconciled patches are applied and the local native integration is
 qualified. The fixed supplier is main-published Mere
 `3b3afa2895424f4be4e1e5f23d48140bf24da5aa`, with matching Genet `15713014`.
 Knot `802238cb` and Redshank `e08bf4b` select the same Mere revision in their
-consumed workspaces. Those sibling commits and this consumer integration remain
-local; their revision fetches are not yet available from GitHub.
+consumed workspaces. The tested family is published to main: Knot and Redshank first, then
+Turnstone `93f1e45`. Canonical GitHub refs were verified; ordinary Cargo Git
+fetches can now retrieve the sibling revisions.
 
 Default libraries: 749 passed, 9 existing ignored. Piccolo libraries: 782 passed, 9 existing ignored.
 Both locked all-target checks pass, and both dependency graphs contain one Mere
