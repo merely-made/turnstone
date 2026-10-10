@@ -220,6 +220,11 @@ path = "src/bin/g1_receipt.rs"
 required-features = ["native"]
 
 [[bin]]
+name = "personae-vault"
+path = "src/bin/personae_vault.rs"
+required-features = ["native"]
+
+[[bin]]
 name = "g4_sessions"
 path = "src/bin/g4_sessions.rs"
 required-features = ["native"]

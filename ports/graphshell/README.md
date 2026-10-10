@@ -7,6 +7,12 @@ loops, hosts resident endpoints, and renders projections.
 Package name `graphshell`. It re-exports the stack as `graphshell::protocol`,
 `graphshell::client`, and `graphshell::endpoint`.
 
+The `personae-vault` binary is djinn's terminal custody client. From Mere, run
+`cargo run -p graphshell --bin personae-vault -- --help`. It accepts a broker
+endpoint and persona name; djinn owns the vault path, unlock gate and private
+command execution. With djinn absent or Locked, commands needing identity
+stay pending. The public `profiles` roster remains readable while Locked.
+
 ## Modules
 
 Always compiled:
@@ -33,14 +39,12 @@ Under `native` (non-wasm):
 | `identity_endpoint` | `SupplementalCard`, `TransferAcceptIntentV1`, `TransferDecision`, `IdentityEndpointError` |
 | `identity_projection` | Identity cards plus the signing, SSH generate, and SSH import intents |
 | `policy_projection` | `PolicySettingsView`, `run_n4_policy_scenario`, `render_n4_policy_receipt` |
-| `profile` | `PROFILE_ENV` (`GRAPHSHELL_PROFILE`), `selected_profile`, `default_vault_dir`, `GraphshellIdentity` |
+| `profile` | `PROFILE_ENV` (`GRAPHSHELL_PROFILE`), `selected_profile`, `GraphshellIdentity` from djinn |
 | `native::endpoint_catalog` | `ResidentEndpointCatalog`, `ResidentEndpoint`, `ResidentEndpointRoute`, `ResidentEndpointSession` |
 | `native::projection_host` | `ResidentProjectionHost`, `ServedProjection` |
-| `native::personae_host` | Resident Personae authority; SSH key mutation receipts |
+| `native::custody`, `native::custody_client`, `native::custody_identity` | Public wire calls, broker clients, and pending identity binding; custody lives in djinn |
 | `native::browser_host` | `serve_identity_native_messages`, `serve_catalog_native_messages` |
 | `native::device_broker` | `DeviceSurface`, `DEVICE_ENDPOINT_ENV` (`GRAPHSHELL_DEVICE_ENDPOINT`), `configured_device_endpoint` |
-| `native::identity_ui` | `NativeIdentityUi`, `SystemNativeIdentityUi`, `apply_native_identity_action` |
-| `native::owner_settings` | App directory, data root, per-profile settings file |
 
 Under `web` (portable, builds for `wasm32-unknown-unknown`):
 
