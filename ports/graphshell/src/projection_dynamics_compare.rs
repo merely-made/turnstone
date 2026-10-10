@@ -21,13 +21,14 @@ use crate::projection_editor::with_kind;
 
 fn stop_label(report: &mere::canvas::dynamics_recipe::SettleReport) -> String {
     format!(
-        "{} · {} steps",
+        "{} · {} {}",
         match report.end {
             mere::canvas::dynamics_recipe::SettleEnd::Rested => "At rest",
             mere::canvas::dynamics_recipe::SettleEnd::LawFinished => "Law finished",
             mere::canvas::dynamics_recipe::SettleEnd::StepLimit => "Step limit reached",
         },
-        report.steps
+        report.steps,
+        if report.steps == 1 { "step" } else { "steps" }
     )
 }
 

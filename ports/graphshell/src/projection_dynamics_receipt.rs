@@ -13,12 +13,31 @@ use mere::canvas::{
 };
 
 pub fn catalog_receipt(bound: u32) -> Result<String, String> {
-    let data: ProjectionDataset =
+    catalog_receipt_for(bound, "grid")
+}
+
+pub fn catalog_receipt_for(bound: u32, family: &str) -> Result<String, String> {
+    let mut data: ProjectionDataset =
         serde_json::from_str(include_str!("../web/fixtures/woodshed-stage.json"))
             .map_err(|e| e.to_string())?;
+    if family == "geographic" {
+        for (index, occurrence) in data.occurrences.iter_mut().enumerate() {
+            for field in ["order", "tempo_bpm"] {
+                occurrence.values.insert(
+                    field.into(),
+                    crate::projection_compile::ProjectionValue::Number(index as f64 * 1000.0),
+                );
+            }
+        }
+    }
     let mut rows = Vec::new();
     for law in PhysicsLaw::ALL {
         let mut definition = default_definition(&data);
+        definition.arrangement = crate::projection_editor::with_kind(
+            &definition.arrangement,
+            family,
+            practice_compiler().registry(),
+        );
         let slot = preset_slot(law.id())?;
         definition.dynamics = Some(slot.clone());
         let compiled = practice_compiler()

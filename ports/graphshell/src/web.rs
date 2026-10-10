@@ -126,6 +126,12 @@ pub fn projection_dynamics_receipt(bound: u32) -> Result<String, JsValue> {
     graphshell::projection_dynamics_receipt::catalog_receipt(bound).map_err(|e| JsValue::from_str(&e))
 }
 
+#[cfg(feature = "dynamics-receipt")]
+#[wasm_bindgen]
+pub fn projection_coordinates_receipt(bound: u32) -> Result<String, JsValue> {
+    graphshell::projection_dynamics_receipt::catalog_receipt_for(bound, "geographic").map_err(|e| JsValue::from_str(&e))
+}
+
 /// Join a host over WebRTC as the tree's remote session; `loader.js` calls this
 /// from `?signal=` once the page is ready. Without the reference host this is
 /// the tree's only route (with it, `web_remote`'s export also serves the old

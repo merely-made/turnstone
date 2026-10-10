@@ -12,7 +12,10 @@ fn main() {
         .expect("u32 step bound");
     println!(
         "{}",
-        graphshell::projection_dynamics_receipt::catalog_receipt(bound)
-            .expect("bound practice dynamics")
+        graphshell::projection_dynamics_receipt::catalog_receipt_for(
+            bound,
+            &std::env::args().nth(2).unwrap_or_else(|| "grid".into())
+        )
+        .expect("bound practice dynamics")
     );
 }

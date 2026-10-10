@@ -5,8 +5,11 @@ settle 2
 dom click [data-projection-panel="preview"]
 settle 2
 assert snap projection-step-limit == 60
-type [data-projection-field="dynamics.bound"] 8
 act compare-projection-dynamics
+settle 4
+assert snap projection-compare == on
+assert snap projection-step-limit == 60
+type [data-projection-field="dynamics.bound"] 8
 settle 4
 assert snap projection-compare-axis == dynamics
 assert snap projection-step-limit == 8
@@ -16,6 +19,15 @@ act projection-compare-down
 act projection-compare-down
 act projection-compare-down
 act projection-compare-down
+settle 2
+assert dom [data-projection-compare-cell="dynamics:0:5"] Step limit reached · 8 steps
+act projection-compare-right
+act projection-compare-right
+settle 2
+assert dom [data-projection-compare-cell="refused:3:5"] Refused
+capture projection_dynamics_refusals
+act projection-compare-left
+act projection-compare-left
 settle 2
 capture projection_dynamics_grid
 dom click [data-projection-compare-cell="dynamics:0:5"]

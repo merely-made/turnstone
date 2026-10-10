@@ -692,19 +692,17 @@ impl LiveProjection {
                 });
             }
         }
-        let status = if self.error.is_empty() {
-            format!(
-                "{} occurrences · source {} · selection shared across both views",
-                self.dataset.occurrences.len(),
-                self.dataset.revision
-            )
-        } else {
+        let status = if !self.error.is_empty() {
             format!("Cannot execute: {}", self.error)
+        } else if self.comparing {
+            format!("Preview step limit: {}", self.settle_bound.map_or_else(|| "unset".into(), |bound| bound.to_string()))
+        } else {
+            format!("{} · {} occurrences", self.axes, self.dataset.occurrences.len())
         };
         self.scene = paint(
             &self.targets,
             &self.title,
-            &format!("{} · {status}", self.axes),
+            &status,
             width,
             height,
             text_system,
@@ -787,6 +785,22 @@ impl LiveProjection {
                     view: "compare-item", label: String::new(), detail: String::new(), rect, selected: false });
             }
         }
+        // Refused cells occupy their actual matrix coordinates and explain why.
+        for row in self.compare_row..self.compare_row + shown_rows {
+            for column in self.compare_column..self.compare_column + shown_columns {
+                if comparison.cells.iter().any(|cell| cell.row == row && cell.column == column) { continue; }
+                let family = &comparison.facet.columns.labels[column];
+                let row_label = comparison.facet.rows.as_ref().and_then(|axis| axis.labels.get(row));
+                let key = row_label.map_or(family.clone(), |label| format!("{family} / {label}"));
+                let reason = comparison.refused.iter().find(|(id, _)| id == &key || id == family)
+                    .map_or("Unavailable for this input", |(_, reason)| reason.as_str());
+                self.targets.push(Target { occurrence: format!("refused:{column}:{row}"), view: "compare-refused",
+                    label: row_label.map_or(family.clone(), |label| format!("{family} / {label}")),
+                    detail: format!("Refused: {reason}"),
+                    rect: [left + (column - self.compare_column) as f32 * (card_w + gap),
+                        174.0 + (row - self.compare_row) as f32 * (card_h + gap), card_w, card_h], selected: false });
+            }
+        }
     }
 
     fn sync_semantics(&self) -> Result<(), String> {
@@ -817,10 +831,11 @@ impl LiveProjection {
                 let button = document
                     .create_element("button")
                     .map_err(|_| "Could not create preview target")?;
+                if target.view == "compare-refused" { button.set_attribute("disabled", "").map_err(|_| "Refusal state")?; }
                 button
                     .set_attribute("type", "button")
                     .map_err(|_| "Target type")?;
-                let pick = if target.view == "compare" {
+                let pick = if matches!(target.view, "compare" | "compare-refused") {
                     "data-projection-compare-cell"
                 } else {
                     "data-projection-occurrence"
@@ -850,7 +865,7 @@ impl LiveProjection {
                     "aria-label",
                     &format!(
                         "{} view: {} · occurrence {}",
-                        target.view, target.label, target.occurrence
+                        target.view, format!("{} · {}", target.label, target.detail), target.occurrence
                     ),
                 )
                 .map_err(|_| "Target label")?;
@@ -975,6 +990,7 @@ fn paint(
                                 ("compare", false) => "preview-card compare-cell",
                                 ("compare-item", _) => "preview-card compare-item",
                                 ("compare-heading", _) => "preview-card compare-heading",
+                                ("compare-refused", _) => "preview-card compare-refused",
                                 (_, true) => "preview-card selected",
                                 (_, false) => "preview-card",
                             },
@@ -1010,6 +1026,8 @@ fn paint(
       .compare-cell {{ background-color:transparent; padding:6px; }}
       .compare-cell .card-detail {{ position:absolute; left:6px; right:6px; bottom:6px; margin:0; font-size:11px; }}
       .compare-cell .card-title {{ font-size:12px; }}
+      .compare-refused {{ background-color:#261f26; padding:6px; }}
+      .compare-refused .card-title {{ font-size:12px; }}
       .compare-item {{ padding:0; border-radius:3px; }}
       .compare-heading {{ background-color:transparent; border:none; padding:2px; }}
       .compare-heading .card-title {{ font-size:12px; color:#c9d6db; }}
