@@ -72,8 +72,21 @@ fn pointer(canvas: &Element, kind: &str, id: i32, (x, y): (i32, i32)) -> Option<
     init.set_client_x(x);
     init.set_client_y(y);
     let event = web_sys::PointerEvent::new_with_event_init_dict(kind, &init).ok()?;
-    canvas.dispatch_event(&event).ok()?;
-    Some(event.cancel_bubble())
+    // Dispatch clears the stop-propagation flag before returning (DOM event
+    // dispatch, https://dom.spec.whatwg.org/#concept-event-dispatch). Observe
+    // whether the event reaches the host's canvas instead of reading that flag.
+    let reached = Rc::new(Cell::new(false));
+    let heard = reached.clone();
+    let observer = Closure::<dyn FnMut(web_sys::Event)>::new(move |_| heard.set(true));
+    let callback = observer.as_ref().unchecked_ref();
+    canvas
+        .add_event_listener_with_callback_and_bool(kind, callback, true)
+        .ok()?;
+    let dispatched = canvas.dispatch_event(&event);
+    let removed = canvas.remove_event_listener_with_callback_and_bool(kind, callback, true);
+    dispatched.ok()?;
+    removed.ok()?;
+    Some(!reached.get())
 }
 
 /// Dispatch a touch event with `fingers` down; whether its default was
