@@ -11,5 +11,9 @@
 //! owns, castellan is its port, and graphshell composes it. This shim keeps
 //! every existing graphshell call site — the endpoint, the native hosts, the
 //! receipt bins — compiling unchanged.
+//!
+//! Since the dramatis repo plan's DR-A (2026-10-09) the types themselves live
+//! in `dramatis::view`; castellan re-exports them, and this shim reaches them
+//! through castellan.
 
 pub use castellan::view::*;

@@ -19,11 +19,13 @@ use graphshell::access::AccessContext;
 use graphshell::admission::open_session;
 use graphshell::carrier::projection_alpn;
 use graphshell::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
+use graphshell::product::ProductCodicilV3;
 use graphshell::transfer::{
     ApplyTransferContext, TransferAuthorization, TransferManifestV1, TransferOperation,
     apply_transfer,
 };
 use graphshell::transfer_endpoint::{TRANSFER_BEGIN_INTENT, TransferBeginV1};
+use mere::kernel::graph::{RelationKind, SemanticSubKind};
 use muniment::{BlobStore, MemoryBackend};
 use notochord::{NetworkId, SessionReply, TrafficClass, initiate_session};
 use personae::{IdentityProvider, InMemoryProvider};
@@ -452,8 +454,11 @@ async fn verify_destination(
     manifest: &TransferManifestV1,
     receipt: &graphshell::transfer::TransferReceiptV1,
 ) -> Result<(), String> {
+    let carried: ProductCodicilV3 =
+        serde_json::from_slice(&manifest.selection.payload).map_err(|error| error.to_string())?;
     if receipt.nodes != 2
-        || receipt.relations != 1
+        // This v1 receipt counts carried Surface edge records.
+        || receipt.relations != carried.graph.edges.len() as u64
         || receipt.destination_access_records.len() != 2
         || receipt
             .id_map
@@ -463,15 +468,25 @@ async fn verify_destination(
         return Err(format!("destination receipt is incomplete: {receipt:?}"));
     }
     for mapping in &receipt.id_map {
-        let (_, node) = host
+        let (key, _) = host
             .graph()
             .get_node_by_id(mapping.destination)
             .ok_or_else(|| format!("destination is missing {}", mapping.destination))?;
-        if !node.tags.contains("h6") || !node.tags.contains("physical") {
+        let tags = host
+            .graph()
+            .node_content_tags(key)
+            .ok_or("destination Surface disappeared")?;
+        if !tags.contains("h6") || !tags.contains("physical") {
             return Err(format!("{} lost its transfer tags", mapping.destination));
         }
     }
-    if host.graph().relations().count() != 1 {
+    if host
+        .graph()
+        .projected_relations()
+        .filter(|(_, relation)| relation.kind == RelationKind::Semantic(SemanticSubKind::Cites))
+        .count()
+        != 1
+    {
         return Err("destination did not preserve the Cites relation".to_string());
     }
     for descriptor in &manifest.blobs {

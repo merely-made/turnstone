@@ -454,6 +454,32 @@ mod tests {
             .unwrap();
         assert_eq!(fetched.transfer_id, manifest.transfer_id);
 
+        let normalize_edges = |graph: &mere::kernel::graph::Graph| {
+            let mut edges: Vec<_> = graph
+                .to_snapshot()
+                .resource_edges
+                .iter()
+                .map(|edge| serde_json::to_string(edge).unwrap())
+                .collect();
+            edges.sort();
+            edges
+        };
+        let expected_resource_edges = normalize_edges(source.graph());
+        let file_resource = source
+            .graph()
+            .shown_resource_id(source.graph().get_node_key_by_id(file).unwrap())
+            .unwrap();
+        let url_resource = source
+            .graph()
+            .shown_resource_id(source.graph().get_node_key_by_id(url).unwrap())
+            .unwrap();
+        assert!(
+            source
+                .graph()
+                .find_resource_edge_key(file_resource, url_resource)
+                .is_some()
+        );
+
         // Everything the source contributes ends here.
         source_sync.close().await.unwrap();
         drop(source_blobs);
@@ -491,7 +517,10 @@ mod tests {
         .unwrap();
 
         assert_eq!(receipt.nodes, 2);
-        assert_eq!(receipt.relations, 1);
+        assert_eq!(
+            receipt.relations, 0,
+            "the protocol counts Surface relation records"
+        );
         assert_eq!(receipt.nodes, offered.nodes, "the offer's summary held");
         assert_eq!(receipt.relations, offered.relations);
         assert!(
@@ -503,14 +532,42 @@ mod tests {
         );
         assert!(destination.graph().get_node_by_id(url).is_some());
         assert!(destination.graph().get_node_by_id(file).is_some());
+        let file_key = destination.graph().get_node_key_by_id(file).unwrap();
+        let url_key = destination.graph().get_node_key_by_id(url).unwrap();
+        assert_eq!(
+            destination.graph().shown_resource_id(file_key),
+            Some(file_resource)
+        );
+        assert_eq!(
+            destination.graph().shown_resource_id(url_key),
+            Some(url_resource)
+        );
         assert!(
             destination
                 .graph()
-                .get_node_by_id(file)
+                .node_content_tags(file_key)
                 .unwrap()
-                .1
-                .tags
                 .contains("file")
+        );
+        assert!(destination.graph().node_tags(file_key).unwrap().is_empty());
+        let (handle, payload) = destination
+            .graph()
+            .projected_relations_between(file_key, url_key)
+            .next()
+            .unwrap();
+        assert!(matches!(
+            handle,
+            mere::kernel::graph::RelationKey::Resource(_)
+        ));
+        assert!(
+            payload.has_relation(mere::kernel::graph::RelationSelector::Semantic(
+                mere::kernel::graph::SemanticSubKind::Cites
+            ))
+        );
+        assert_eq!(
+            normalize_edges(destination.graph()),
+            expected_resource_edges,
+            "all Resource assertion handles, sources, scopes and metadata survive the source closing"
         );
 
         // The bytes a browser would pull are the bytes that were applied.

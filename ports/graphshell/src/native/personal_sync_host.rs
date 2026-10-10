@@ -116,6 +116,8 @@ pub struct PersonalSyncHost {
     /// must not send the bytes back over the wire. It is also why a device can
     /// still answer for a blob after the session that received it ended.
     blobs: Arc<BlobStore>,
+    /// Compatibility `open` owns its dedicated store; process custody is borrowed.
+    owns_blob_store: bool,
     blob_authority: BlobReadAuthorizer,
     blob_scope: BlobScope,
     /// This device's Personae root, which is how the graph names it as a
@@ -143,19 +145,36 @@ impl PersonalSyncHost {
                 .await
                 .map_err(|error| PersonalSyncHostError::Transport(error.to_string()))?,
         );
-        let authority = BlobReadAuthorizer::new();
-        let scope = BlobScope::new(config.graph);
-        // Compatibility for isolated callers reopening the former dedicated
-        // store. The resident path imports these tags into scoped leases
-        // before it calls `open_with_blob_custody`.
-        for hash in blobs
-            .retained_hashes()
-            .await
-            .map_err(|error| PersonalSyncHostError::Transport(error.to_string()))?
-        {
-            authority.retain(scope, hash);
+        // Keep the private owner until construction succeeds or cleanup completes.
+        let opened = async {
+            let authority = BlobReadAuthorizer::new();
+            let scope = BlobScope::new(config.graph);
+            // Isolated callers reopen the former dedicated store. Resident hosts
+            // import these tags into scoped leases before borrowing shared custody.
+            for hash in blobs
+                .retained_hashes()
+                .await
+                .map_err(|error| PersonalSyncHostError::Transport(error.to_string()))?
+            {
+                authority.retain(scope, hash);
+            }
+            Self::open_with_blob_custody(identity, config, blobs.clone(), authority).await
         }
-        Self::open_with_blob_custody(identity, config, blobs, authority).await
+        .await;
+        match opened {
+            Ok(mut host) => {
+                host.owns_blob_store = true;
+                Ok(host)
+            },
+            Err(error) => {
+                if let Err(cleanup) = blobs.shutdown().await {
+                    return Err(PersonalSyncHostError::Transport(format!(
+                        "{error}; private blob store cleanup failed: {cleanup}"
+                    )));
+                }
+                Err(error)
+            },
+        }
     }
 
     /// Open personal sync against the process owner's shared physical store.
@@ -356,6 +375,7 @@ impl PersonalSyncHost {
             joined,
             network,
             blobs,
+            owns_blob_store: false,
             blob_authority,
             blob_scope,
             own_root: identity.master_public_key().to_bytes(),
@@ -1040,6 +1060,12 @@ impl PersonalSyncHost {
             .map_err(|error| PersonalSyncHostError::Transport(error.to_string()))?;
         drop(self.network);
         drop(self.replica);
+        if self.owns_blob_store {
+            self.blobs
+                .shutdown()
+                .await
+                .map_err(|error| PersonalSyncHostError::Transport(error.to_string()))?;
+        }
 
         let mut last_error = None;
         // Ten seconds rather than one. An attached sibling lane (carriage)
@@ -1127,7 +1153,13 @@ impl PersonalSyncHost {
                 continue;
             }
 
-            let mut tags = node.tags.iter().cloned().collect::<Vec<_>>();
+            let mut tags = projection
+                .graph
+                .get_node_key_by_id(node.id)
+                .and_then(|key| projection.graph.node_content_tags(key))
+                .unwrap_or_default()
+                .into_iter()
+                .collect::<Vec<_>>();
             tags.sort();
             cards.push(SupplementalCard {
                 adapter: "mere.graph".into(),
@@ -1365,7 +1397,13 @@ mod tests {
         let node_id = host.node_id();
         host.close().await.unwrap();
 
-        let reopened = PersonalSyncHost::open(&identity, config()).await.unwrap();
+        let reopened = tokio::time::timeout(
+            std::time::Duration::from_secs(30),
+            PersonalSyncHost::open(&identity, config()),
+        )
+        .await
+        .expect("closing an owned host must release its blob store for reopening")
+        .unwrap();
         let cards = reopened.supplemental_cards().await.unwrap();
         assert!(
             cards
@@ -1378,6 +1416,80 @@ mod tests {
             "the node id must survive a restart: pairing persists it, and a \
              peer that stored it has no other way back to this device"
         );
+        reopened.close().await.unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn failed_private_open_releases_its_store_for_retry() {
+        let directory = tempfile::tempdir().unwrap();
+        let identity = InMemoryProvider::from_seed([0x68; 32]);
+        let config = |peer_tickets| PersonalSyncHostConfig {
+            graph: [0x69; 32],
+            store_path: directory.path().join("retry.redb"),
+            roster: SyncRoster::new([identity.master_public_key().to_bytes()]),
+            selection: SyncSelection::default(),
+            peer_tickets,
+            peer_hints: Vec::new(),
+            paired_nodes: Vec::new(),
+            relay_urls: Vec::new(),
+        };
+        for _ in 0..2 {
+            let result = tokio::time::timeout(
+                std::time::Duration::from_secs(30),
+                PersonalSyncHost::open(&identity, config(vec!["invalid ticket".into()])),
+            )
+            .await
+            .expect("a failed private open must release its blob store for retry");
+            assert!(matches!(result, Err(PersonalSyncHostError::Transport(_))));
+        }
+        let host = tokio::time::timeout(
+            std::time::Duration::from_secs(30),
+            PersonalSyncHost::open(&identity, config(Vec::new())),
+        )
+        .await
+        .expect("a corrected configuration must open after refusal")
+        .unwrap();
+        host.close().await.unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn closing_a_lane_preserves_the_process_owned_blob_store() {
+        let directory = tempfile::tempdir().unwrap();
+        let identity = InMemoryProvider::from_seed([0x66; 32]);
+        let blob_root = directory.path().join("shared-blobs");
+        let blobs = Arc::new(BlobStore::open(&blob_root).await.unwrap());
+        let host = PersonalSyncHost::open_with_blob_custody(
+            &identity,
+            PersonalSyncHostConfig {
+                graph: [0x67; 32],
+                store_path: directory.path().join("lane.redb"),
+                roster: SyncRoster::new([identity.master_public_key().to_bytes()]),
+                selection: SyncSelection::default(),
+                peer_tickets: Vec::new(),
+                peer_hints: Vec::new(),
+                paired_nodes: Vec::new(),
+                relay_urls: Vec::new(),
+            },
+            blobs.clone(),
+            BlobReadAuthorizer::new(),
+        )
+        .await
+        .unwrap();
+        host.close().await.unwrap();
+        let payload = b"the process still owns this store".to_vec();
+        let hash = blobs.put_bytes(payload.clone()).await.unwrap();
+        assert_eq!(
+            blobs.get_bytes(hash).await.unwrap().as_ref(),
+            payload.as_slice()
+        );
+        blobs.shutdown().await.unwrap();
+        drop(blobs);
+        let reopened = BlobStore::open(&blob_root).await.unwrap();
+        assert_eq!(
+            reopened.get_bytes(hash).await.unwrap().as_ref(),
+            payload.as_slice()
+        );
+        reopened.shutdown().await.unwrap();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]

@@ -280,8 +280,6 @@ required-features = ["native"]
 # AccessKit's own types.
 accesskit = "0.24"
 cambium = { workspace = true }
-cambium-genet-winit-host = { workspace = true }
-cambium-winit-a11y = { workspace = true }
 # W1's integration receipt drives the actual Distillery Chronicle endpoint.
 # Distillery depends on Mere's substrate, not Graphshell, so this test-only
 # edge does not enter the product dependency graph.
@@ -327,3 +325,9 @@ required-features = ["webrtc-session"]
 # the one above, the way `personae` does it.
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom = { version = "0.3", features = ["wasm_js"], optional = true }
+
+# The headless accessibility harness is a native test consumer. Keeping these
+# target-scoped prevents desktop host packages entering the web test graph.
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+cambium-genet-winit-host = { workspace = true }
+cambium-winit-a11y = { workspace = true }

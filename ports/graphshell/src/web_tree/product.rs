@@ -7,7 +7,9 @@
 //! The bounded local saved-graph workflow on the retained tree.
 use super::*;
 use cambium::{FileEvent, SelectState, TextInput};
-use graphshell::local_edit::{NodeMetadata, metadata, save_metadata, sync_canvas_metadata};
+use graphshell::local_edit::{
+    NodeMetadata, metadata, save_metadata, sync_canvas_metadata_from_graph,
+};
 use graphshell::local_intake::{create_address, create_file, persist_intake, sync_canvas_intake};
 use mere::canvas::Role;
 use muniment::IndexedDbBackend;
@@ -350,7 +352,11 @@ impl SavedProduct {
         match result {
             Ok(saved) => {
                 let refresh = match edit {
-                    CompletedEdit::Metadata => sync_canvas_metadata(canvas, &saved),
+                    CompletedEdit::Metadata => sync_canvas_metadata_from_graph(
+                        canvas,
+                        self.app.as_ref().expect("completed app").host.graph(),
+                        &saved,
+                    ),
                     CompletedEdit::Intake => {
                         let refresh = sync_canvas_intake(
                             canvas,

@@ -1,0 +1,29 @@
+# The projection editor's comparison grid (Scenograph editor plan, S1, SE79 to
+# SE83): the working draft first, then every other family that compiles, over
+# the whole set and the selection; picking a cell applies it as one undo step.
+assert title GRAPHSHELL H3 READY
+act load-practice-projection
+settle 2
+dom click [data-projection-panel="preview"]
+settle 2
+assert snap projection-compare == off
+assert snap projection-arrangement == grid
+dom click [data-projection-occurrence]
+settle 2
+act compare-projection
+settle 4
+assert snap projection-compare == on
+assert snap projection-compare-cells >= 4
+assert attr [data-projection-compare-cell="working"] aria-pressed true
+capture projection_compare
+dom click [data-projection-compare-cell="spiral:0"]
+settle 4
+assert snap projection-arrangement == spiral
+assert snap projection-compare == on
+act undo-projection
+settle 4
+assert snap projection-arrangement == grid
+act compare-projection
+settle 2
+assert snap projection-compare == off
+log projection editor comparison grid proof complete

@@ -495,6 +495,7 @@ impl BrowserHost {
             },
             "projection-grid" => self.projection_arrangement("grid.default"),
             "projection-scatter" => self.projection_arrangement("scatter.default"),
+            "compare-projection" => self.toggle_projection_compare(),
             "open-projection-editor" => {
                 self.projection_editor_open = true;
                 self.projection_editor_status = "Draft ready · unsaved".to_string();

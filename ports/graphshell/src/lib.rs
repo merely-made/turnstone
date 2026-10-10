@@ -33,12 +33,16 @@ pub mod canvas_physics;
 pub mod canvas_reader;
 #[cfg(feature = "web")]
 pub mod capture;
+#[cfg(all(test, feature = "web"))]
+mod capture_resources;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod carriage;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod carrier;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod distillery_w1;
+#[cfg(feature = "web")]
+pub mod frame_budget;
 #[cfg(feature = "web")]
 pub mod handlers;
 #[cfg(feature = "web")]
@@ -71,22 +75,22 @@ pub mod personal_sync;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod policy_projection;
 #[cfg(feature = "web")]
-pub mod frame_budget;
-#[cfg(feature = "web")]
 pub mod product;
-#[cfg(feature = "web")]
-pub mod remote_board;
-#[cfg(feature = "web")]
-pub mod speed_bar;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod profile;
 #[cfg(feature = "web")]
+pub mod remote_board;
+#[cfg(feature = "web")]
 pub mod session_item;
+#[cfg(feature = "web")]
+pub mod speed_bar;
 
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod practice_disclosure;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod practice_workspace;
+#[cfg(any(feature = "native", feature = "web"))]
+pub mod projection_compare;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod projection_compile;
 #[cfg(any(feature = "native", feature = "web"))]
