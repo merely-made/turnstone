@@ -6,13 +6,19 @@
 
 const originalError = console.error.bind(console);
 
+function failureTitle(message) {
+  if (document.querySelector("graphshell-view[data-owns-title], graphshell-tree[data-owns-title]")) {
+    document.title = `GRAPHSHELL H3 FAIL: ${message}`;
+  }
+}
+
 console.error = (...args) => {
   const text = args.map(String).join(" ");
   (window.graphshellErrors ??= []).push(text);
   // A Rust panic reaches the page as console_error_panic_hook's message.
   if (text.includes("panicked at")) (window.graphshellGateFailures ??= []).push(`panic: ${text}`);
   if (!document.title.startsWith("GRAPHSHELL H3 FAIL")) {
-    document.title = `GRAPHSHELL H3 FAIL: ${args.map(String).join(" ").slice(0, 240)}`;
+    failureTitle(args.map(String).join(" ").slice(0, 240));
   }
   originalError(...args);
 };
@@ -26,7 +32,7 @@ window.graphshellGateFailures ??= [];
 window.addEventListener("error", (event) => {
   window.graphshellErrors.push(String(event.message));
   window.graphshellGateFailures.push(`uncaught: ${event.message}`);
-  document.title = `GRAPHSHELL H3 FAIL: ${event.message}`;
+  failureTitle(event.message);
 });
 window.addEventListener("unhandledrejection", (event) => {
   window.graphshellErrors.push(`unhandled rejection: ${event.reason}`);
@@ -569,6 +575,6 @@ try {
     module.run_scenario(text);
   }
 } catch (error) {
-  document.title = `GRAPHSHELL H3 FAIL: ${error}`;
+  failureTitle(error);
   originalError(error);
 }

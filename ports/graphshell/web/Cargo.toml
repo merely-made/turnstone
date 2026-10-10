@@ -58,6 +58,7 @@ serde = { version = "1", features = ["derive"] }
 # A mere workspace member since 2026-09-03 (platform boundary plan, P2), so a
 # relative path like the other mere crates above, not a git pin.
 cambium = { path = "../../../crates/cambium/cambium" }
+tabard = { path = "../../../crates/system/tabard" }
 # The one-tree page (`src/web_tree.rs`): Cambium's web host mounts the tree,
 # and rootstock carries the host types and the canvas's texture producer.
 cambium-genet-web-host = { path = "../../../crates/cambium/cambium-genet-web-host", default-features = false }
@@ -104,6 +105,8 @@ web-sys = { version = "0.3", features = [
     "File",
     "FileList",
     "HtmlCanvasElement",
+    "HtmlIFrameElement",
+    "CssStyleDeclaration",
     "HtmlElement",
     "HtmlInputElement",
     "HtmlSelectElement",

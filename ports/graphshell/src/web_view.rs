@@ -344,13 +344,14 @@ pub(crate) fn build_chrome_scene(
     width: u32,
     height: u32,
     text: &mut TextSystem,
+    appearance: &str,
 ) -> Result<Scene, String> {
     let dom = Rc::new(RefCell::new(ScriptedDom::new()));
     let view_model = model.clone();
     let runner = GenetAppRunner::new(dom, move |_: &()| chrome_view(view_model.clone()), ());
     let dom = runner.dom();
     let dom_ref = dom.borrow();
-    let sheet = stylesheet(width, height);
+    let sheet = format!("{}\n{appearance}", stylesheet(width, height));
     let sheets = [sheet.as_str()];
     genet_render::scene_from_scripted_dom_with_text_system(
         &*dom_ref,
