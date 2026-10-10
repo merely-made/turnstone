@@ -10,9 +10,11 @@
 //! Cambium tree before any control moves there. Pictograph's canvas renders
 //! through a [`TextureProducer`] into a custom-leaf slot, rasterized with the
 //! web host's own renderer under a key of its own. A click on the slot picks
-//! the node under it, the wheel pans, and the arrow keys pan and plus and
+//! the node under it, a Ctrl or Meta wheel or two fingers zoom while a plain
+//! wheel scrolls the page (`gestures`), and the arrow keys pan and plus and
 //! minus zoom. `tree.html` mounts it with [`mount_tree`]; `nodes` and `seed`
-//! in the URL swap the fixture graph for a generated one.
+//! in the URL swap the fixture graph for a generated one, and a host history
+//! (`data-dataset`) replaces both, stepped by checkpoint (`history`).
 //!
 //! The page drives itself through Mesquite's scenario lane with the web
 //! host's [`WebCapture`], and times its frames with the same
@@ -22,8 +24,7 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, GenetCtx, GenetElement, Key, NamedKey, WheelEvent, custom_leaf, el, on_key,
-    on_pointer, on_wheel,
+    AnyView, GenetCtx, GenetElement, Key, NamedKey, custom_leaf, el, on_key, on_pointer,
 };
 use cambium_genet_web_host::{WebCapture, WebWindow, mount};
 use cambium_rootstock::{
@@ -106,7 +107,18 @@ const SHEET: &str = "\
     .tree-relations { margin:0 12px 6px; font-size:12px; } \
     .tree-relations h2 { font-size:13px; margin:0 0 2px; } \
     .tree-relations ul { margin:0; padding:0 0 0 16px; max-height:96px; overflow-y:auto; } \
-    .tree-refusal { margin:4px 12px 8px; padding:8px; color:#f3d2c6; background:#3a1f1a; border:1px solid #a4574a; }";
+    .tree-refusal { margin:4px 12px 8px; padding:8px; color:#f3d2c6; background:#3a1f1a; border:1px solid #a4574a; } \
+    .tree-relations ul, .history-changes { max-height:72px; } \
+    .tree-history { margin:0 12px 6px; font-size:12px; } \
+    .history-control { display:flex; flex-direction:row; align-items:center; gap:8px; } \
+    .history-control button { background:#263640; color:#dce3e8; padding:3px 10px; border:1px solid #637581; } \
+    .history-control button[aria-disabled=true] { opacity:.45; } \
+    .history-slider { position:relative; width:240px; height:18px; } \
+    .history-track { position:absolute; left:0; right:0; top:8px; height:2px; background:#637581; } \
+    .history-thumb { position:absolute; top:2px; width:10px; height:14px; margin-left:-5px; background:#79a9be; } \
+    .history-value { margin:4px 0 0; overflow-wrap:anywhere; } \
+    .history-summary { margin:2px 0; color:#f0dfb8; } \
+    .history-changes { margin:0; padding:0 0 0 16px; overflow-y:auto; }";
 
 /// What the page, its producer and its hooks share.
 struct Shared {
@@ -165,9 +177,30 @@ struct Shared {
     /// A planted accessibility defect, the receipts' positive control
     /// (`?plant_a11y=`; dynamics grammar plan, G9). `None` in use.
     plant: graphshell::canvas_reader::Plant,
+    /// The mount root, which carries the page's motion preference.
+    root: Element,
+    /// The page's gestures over the graph, and where the graph is.
+    gestures: RefCell<gestures::Gestures>,
 }
 
 impl Shared {
+    /// Whether the page asks for reduced motion: transitions land at once,
+    /// the camera jumps rather than glides, and physics starts paused.
+    fn reduced_motion(&self) -> bool {
+        gestures::reduced_motion(&self.root)
+    }
+
+    /// Pan the camera by a keyboard step, gliding unless motion is reduced.
+    fn pan(&self, dx: f32, dy: f32) {
+        let mut canvas = self.canvas.borrow_mut();
+        if self.reduced_motion() {
+            graphshell::canvas_gestures::pan_at_once(&mut canvas, dx, dy);
+        } else {
+            CanvasCommand::Pan { dx, dy }.apply(&mut canvas, self.size.get());
+        }
+        self.dirty.set(true);
+    }
+
     fn with_gpu<R>(&self, f: impl FnOnce(Option<(&wgpu::Device, &wgpu::Queue)>) -> R) -> R {
         let gpu = self.gpu.borrow();
         f(gpu.as_ref().map(|(device, queue)| (device, queue)))
@@ -188,6 +221,7 @@ impl TextureProducer for CanvasProducer {
         let visibility_before = visibility::before(shared);
         if shared.gpu.borrow().is_none() {
             *shared.gpu.borrow_mut() = Some((cx.device.clone(), cx.queue.clone()));
+            #[cfg_attr(not(feature = "canvas-gpu"), allow(unused_variables))]
             let options = shared.gpu_options;
             #[cfg(feature = "canvas-gpu")]
             if options.enabled {
@@ -443,6 +477,8 @@ pub(crate) struct TreePage {
     product: Option<product::SavedProduct>,
     /// The host dataset the page supplied, if any (S1).
     dataset: HostedDataset,
+    /// Its history and the checkpoint shown (S3); a v1 dataset is one.
+    history: Option<history::HostedHistory>,
     /// The "Graph tools" arrangement and physics section.
     physics: physics::PhysicsPanel,
     /// Which session the canvas leaf shows.
@@ -450,6 +486,7 @@ pub(crate) struct TreePage {
     /// Which Graph tools sections are open.
     sections: remote::Sections,
     /// The open remote draft's field selects.
+    #[cfg_attr(not(feature = "remote"), allow(dead_code))]
     draft: remote::DraftControls,
     /// The remote generation the view last rebuilt for.
     remote_seen: u64,
@@ -530,14 +567,6 @@ impl TreePage {
             self.picked.as_deref().unwrap_or("none")
         )
     }
-
-    fn wheel(&mut self, wheel: WheelEvent) {
-        wheel.prevent_default();
-        let mut canvas = self.shared.canvas.borrow_mut();
-        canvas.cursor_moved(wheel.local.0, wheel.local.1);
-        canvas.wheel(wheel.delta.0, wheel.delta.1);
-        self.shared.dirty.set(true);
-    }
 }
 
 type Child = Box<dyn AnyView<TreePage, (), GenetCtx, GenetElement>>;
@@ -553,22 +582,21 @@ fn view(page: &TreePage) -> Child {
     } else {
         width.max(1)
     };
-    let graph = on_wheel(
-        on_key(
-            on_pointer(
-                custom_leaf::<TreePage, ()>(CANVAS_KEY, canvas_width, 1)
-                    .attr("class", "tree-canvas")
-                    .attr("role", "img")
-                    .attr("aria-label", "Graph"),
-                |page: &mut TreePage, event: cambium::PointerEvent| page.pointer(event),
-            ),
-            |page: &mut TreePage, event: cambium::KeyEvent| {
-                if keys(page, &event.key) {
-                    event.prevent_default();
-                }
-            },
+    // The wheel and touch over the graph are the page's gestures
+    // (`gestures`), taken before the host hears of them.
+    let graph = on_key(
+        on_pointer(
+            custom_leaf::<TreePage, ()>(CANVAS_KEY, canvas_width, 1)
+                .attr("class", "tree-canvas")
+                .attr("role", "img")
+                .attr("aria-label", "Graph"),
+            |page: &mut TreePage, event: cambium::PointerEvent| page.pointer(event),
         ),
-        |page: &mut TreePage, wheel: WheelEvent| page.wheel(wheel),
+        |page: &mut TreePage, event: cambium::KeyEvent| {
+            if keys(page, &event.key) {
+                event.prevent_default();
+            }
+        },
     );
     Box::new(
         el(
@@ -578,6 +606,7 @@ fn view(page: &TreePage) -> Child {
                 el("p", page.status())
                     .attr("class", "tree-status")
                     .attr("role", "status"),
+                history::region(page),
                 hosted_dataset(page),
                 controls::toolbar(page),
                 el(
@@ -681,23 +710,18 @@ fn keys(page: &mut TreePage, key: &Key) -> bool {
         }
     }
     let shared = &page.shared;
+    let pan = match key {
+        Key::Named(NamedKey::ArrowLeft) => Some((-PAN_STEP, 0.0)),
+        Key::Named(NamedKey::ArrowRight) => Some((PAN_STEP, 0.0)),
+        Key::Named(NamedKey::ArrowUp) => Some((0.0, -PAN_STEP)),
+        Key::Named(NamedKey::ArrowDown) => Some((0.0, PAN_STEP)),
+        _ => None,
+    };
+    if let Some((dx, dy)) = pan {
+        shared.pan(dx, dy);
+        return true;
+    }
     let command = match key {
-        Key::Named(NamedKey::ArrowLeft) => CanvasCommand::Pan {
-            dx: -PAN_STEP,
-            dy: 0.0,
-        },
-        Key::Named(NamedKey::ArrowRight) => CanvasCommand::Pan {
-            dx: PAN_STEP,
-            dy: 0.0,
-        },
-        Key::Named(NamedKey::ArrowUp) => CanvasCommand::Pan {
-            dx: 0.0,
-            dy: -PAN_STEP,
-        },
-        Key::Named(NamedKey::ArrowDown) => CanvasCommand::Pan {
-            dx: 0.0,
-            dy: PAN_STEP,
-        },
         Key::Character(text) if text == "+" || text == "=" => {
             CanvasCommand::Zoom { delta: ZOOM_STEP }
         },
@@ -760,29 +784,33 @@ async fn boot(root: Element) -> Result<(), String> {
         .dyn_into()
         .map_err(|_| "the canvas is not a canvas")?;
     canvas.set_id("graphshell-canvas");
+    // One finger may scroll the page; pinching is the viewer's (`gestures`).
     canvas
-        .set_attribute("style", "display:block;width:100%;height:100%;")
+        .set_attribute(
+            "style",
+            "display:block;width:100%;height:100%;touch-action:pan-x pan-y;",
+        )
         .map_err(|_| "could not size the canvas")?;
     root.append_child(&canvas)
         .map_err(|_| "could not place the canvas")?;
     let width = canvas.client_width().max(1) as u32;
     let height = canvas.client_height().max(1) as u32;
 
-    // A host dataset (S1) replaces every other source, and a refused one
-    // shows its refusal over an empty graph, never the fixture.
-    let hosted = crate::web_dataset::supplied(&root);
+    // A host dataset (S1) or history (S3) replaces every other source, and a
+    // refused one shows its refusal over an empty graph, never the fixture.
+    let hosted = crate::web_dataset::supplied_history(&root);
     let product = if hosted.is_some() {
         None
     } else {
         product::open().await?
     };
     let mut dataset = HostedDataset::None;
+    let mut hosted_history = None;
     let mut placed = None;
     let (graph, source) = if let Some(hosted) = hosted {
-        match hosted
-            .and_then(|envelope| graphshell::host_dataset_view::host_dataset_view(&envelope))
-        {
-            Ok(view) => {
+        match hosted.and_then(history::HostedHistory::open) {
+            Ok((hosted, view)) => {
+                hosted_history = Some(hosted);
                 dataset = HostedDataset::Loaded(view.relations);
                 placed = Some(view.positions);
                 (
@@ -842,7 +870,14 @@ async fn boot(root: Element) -> Result<(), String> {
         remote_shown: Cell::new(false),
         selection_locked: Cell::new(false),
         plant: controls::reader_plant()?,
+        root: root.clone(),
+        gestures: RefCell::new(gestures::Gestures::default()),
     });
+    // Reduced motion: the graph stays where it was placed until the reader
+    // plays physics.
+    if shared.reduced_motion() {
+        shared.canvas.borrow_mut().set_physics_paused(true);
+    }
     if let Some(slice) = controls::meaning_slice()? {
         shared.canvas.borrow_mut().set_meaning_slice(slice);
     }
@@ -865,7 +900,7 @@ async fn boot(root: Element) -> Result<(), String> {
     let page_shared = shared.clone();
     let physics = physics::PhysicsPanel::new(&shared.canvas.borrow(), web_graphs::LAYOUT);
     let mounted = mount(
-        canvas,
+        canvas.clone(),
         options,
         move |_window, _commands, _wake| Init {
             state: TreePage {
@@ -875,6 +910,7 @@ async fn boot(root: Element) -> Result<(), String> {
                 picked: None,
                 product,
                 dataset,
+                history: hosted_history,
                 physics,
                 tools_open: false,
                 session: remote::Session::Local,
@@ -896,6 +932,18 @@ async fn boot(root: Element) -> Result<(), String> {
         hooks(shared.clone()),
     )
     .await?;
+    let zoom_host = mounted.host().clone();
+    let release_host = mounted.host().clone();
+    gestures::install(
+        &root,
+        canvas,
+        shared.clone(),
+        gestures::HostHandle {
+            ui_zoom: Rc::new(move || zoom_host.borrow().ui_zoom()),
+            release: Box::new(move || release_host.borrow_mut().release()),
+            window: mounted.window().clone(),
+        },
+    )?;
     TREE.with(|tree| {
         *tree.borrow_mut() = Some(Tree {
             shared,
@@ -1023,6 +1071,13 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             );
         }),
         after_frame: Box::new(move |ctx| {
+            // Where the graph is, for the page's gestures.
+            let (graph, overlays) = gestures::layout_rects(ctx);
+            {
+                let mut gestures = after_shared.gestures.borrow_mut();
+                gestures.graph = graph;
+                gestures.overlays = overlays;
+            }
             after_shared.with_gpu(|gpu| {
                 let mut timing = after_shared.timing.borrow_mut();
                 timing.frame_end(gpu);
@@ -1151,6 +1206,9 @@ impl NoRepulsionLane for mere::canvas::Canvas {
 }
 
 mod controls;
+mod gesture_steps;
+mod gestures;
+mod history;
 mod lane;
 mod physics;
 #[cfg(feature = "product")]

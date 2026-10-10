@@ -219,18 +219,45 @@ impl TreePage {
         self.shared.dirty.set(true);
     }
 
-    /// Step a running arrangement transition at host time `host_ms`.
+    /// Step a running arrangement transition at host time `host_ms`. Under
+    /// reduced motion it lands on this frame: a second step, far enough on
+    /// to finish any schedule.
     pub(super) fn advance_arrangement(&mut self, host_ms: f64) {
+        /// Past the end of any arrangement transition, in ms.
+        const LAND_MS: f64 = 3_600_000.0;
+        let reduced = self.shared.reduced_motion();
         let mut canvas = self.shared.canvas.borrow_mut();
-        if let Some(status) = canvas_physics::advance_arrangement(
-            &mut canvas,
-            &mut self.physics.transition,
-            &self.physics.layout_id,
-            host_ms,
-        ) {
-            self.physics.status = status;
+        let steps: &[f64] = if reduced {
+            &[host_ms, host_ms + LAND_MS]
+        } else {
+            &[host_ms]
+        };
+        for &at in steps {
+            if let Some(status) = canvas_physics::advance_arrangement(
+                &mut canvas,
+                &mut self.physics.transition,
+                &self.physics.layout_id,
+                at,
+            ) {
+                self.physics.status = status;
+            }
         }
         self.shared.dirty.set(true);
+    }
+
+    /// Apply the arrangement last applied again, onto a new graph: a host
+    /// history's checkpoint keeps the reader's arrangement.
+    pub(super) fn reapply_arrangement(&mut self) {
+        let layout_id = self.physics.layout_id.clone();
+        let mut canvas = self.shared.canvas.borrow_mut();
+        self.physics.transition = None;
+        match canvas_physics::apply_arrangement(&mut canvas, &layout_id, self.shared.size.get()) {
+            Ok(applied) => {
+                self.physics.transition = applied.transition;
+                self.physics.status = applied.status;
+            },
+            Err(error) => self.physics.status = format!("Failed · {error}"),
+        }
     }
 }
 

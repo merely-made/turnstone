@@ -90,6 +90,9 @@ wgpu = { version = "30.0.1", default-features = false, features = ["std", "wgsl"
 console_error_panic_hook = "0.1"
 web-sys = { version = "0.3", features = [
     "console",
+    # The viewer's own wheel and touch listeners, ahead of the host's
+    # (src/web_tree/gestures.rs), and its reduced-motion query.
+    "AddEventListenerOptions",
     "Blob",
     # The display period's worker (src/web_period_worker.rs).
     "BlobPropertyBag",
@@ -111,6 +114,7 @@ web-sys = { version = "0.3", features = [
     "ImageData",
     "KeyboardEvent",
     "KeyboardEventInit",
+    "MediaQueryList",
     "MessageEvent",
     # `?nodes=` and `?seed=`: phase 3's generated graph (src/web_graphs.rs).
     "Location",
@@ -126,9 +130,16 @@ web-sys = { version = "0.3", features = [
     "Response",
     "StorageManager",
     "Storage",
+    "Touch",
+    "TouchEvent",
+    # A scenario's synthetic touches and wheel (src/web_tree/gesture_steps.rs).
+    "TouchEventInit",
+    "TouchInit",
+    "TouchList",
     "Url",
     "UrlSearchParams",
     "WheelEvent",
+    "WheelEventInit",
     "Window",
     "Worker",
 ] }
