@@ -11,12 +11,12 @@
 //! retained runners and their identity. Arrangement rides the SESSION, so
 //! adopting a session closes these and reopens that session's own.
 
-use super::{NodeSessions, NodeSurfaces};
+use super::NodeSessions;
 use std::sync::Arc;
 
 use genet_winit_host::SurfaceHost;
 use netrender::external_texture::ExternalTexturePlacement;
-use netrender::{ColorLoad, NetrenderOptions, Scene};
+use netrender::{ColorLoad, Scene};
 use winit::dpi::{PhysicalPosition, PhysicalSize};
 use winit::event::{ElementState, MouseButton, MouseScrollDelta, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
@@ -29,7 +29,7 @@ use crate::surface::{Rect, SurfaceKind};
 use inker::SessionClick;
 
 use super::input::pointer_button;
-use super::{CompositeLayer, PlannedScene, Shell, capture_composed};
+use super::{CompositeLayer, PlannedLayer, PlannedScene, Shell, capture_composed};
 
 /// One lens window's record: its platform window, present stack, size,
 /// cursor, and graph gesture capture.
@@ -57,6 +57,11 @@ impl Shell {
     /// install their own view state on their first render/input pass.
     pub(super) fn drain_pending_windows(&mut self, event_loop: &ActiveEventLoop) {
         while let Some(ordinal) = self.pending_windows.pop() {
+            let Some(primary) = self.host.as_ref() else {
+                tracing::warn!("lens requires the primary render core");
+                continue;
+            };
+            let shared_core = primary.shared_core();
             let attributes = Window::default_attributes()
                 .with_title("Turnstone — lens")
                 .with_visible(false)
@@ -67,22 +72,14 @@ impl Shell {
             };
             let window = Arc::new(window);
             let size = window.inner_size();
-            let options = NetrenderOptions {
-                tile_cache_size: Some(16),
-                enable_vello: true,
-                // Windows browser frames use D3D12 resources. Keep every
-                // presentation device on that API, including later lenses.
-                #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
-                backends: Some(wgpu::Backends::DX12),
-                ..Default::default()
-            };
-            match SurfaceHost::boot(
+            match SurfaceHost::from_shared_core(
                 window.clone(),
                 size.width.max(1),
                 size.height.max(1),
-                options,
+                shared_core.clone(),
             ) {
                 Ok(host) => {
+                    debug_assert!(Arc::ptr_eq(&shared_core, &host.shared_core()));
                     let a11y_actions = Arc::new(std::sync::Mutex::new(Default::default()));
                     let a11y = super::a11y_bridge::install(
                         &window,
@@ -178,30 +175,12 @@ impl Shell {
                     .publish(Default::default());
                 lens.a11y_epoch = Some(epoch);
             }
-            let mut visible = Vec::new();
-            for (node, rect) in foreign_placements {
-                let Some(mut graft) = lens.a11y_forest.graft(node, rect) else {
-                    continue;
-                };
-                graft.set_label("browser page");
-                let graft_id = uxtree::node_id_for_path(&format!("turnstone/doc/{node}"));
-                if let Some((_, root)) = frame
-                    .tree
-                    .nodes
-                    .iter_mut()
-                    .find(|(id, _)| *id == frame.tree.root)
-                {
-                    let mut children = root.children().to_vec();
-                    children.push(graft_id);
-                    root.set_children(children);
-                }
-                frame.tree.nodes.push((graft_id, graft));
-                if matches!(self.app.focus, crate::surface::FocusTarget::Content { node: current, .. } if current == node)
-                {
-                    frame.focus = Some(graft_id);
-                }
-                visible.push(node);
-            }
+            let visible = append_foreign_lens(
+                &mut frame,
+                &lens.a11y_forest,
+                foreign_placements,
+                self.app.focus,
+            );
             let update = frame.tree.to_tree_update(frame.focus);
             let initial = super::a11y_bridge::safe_initial(&update);
             let updates = match lens
@@ -242,167 +221,7 @@ impl Shell {
     /// content in a lens (the tile IS the lens's content story); chrome
     /// composites separately in `render_lens`.
     pub(super) fn lens_plan(&self, ordinal: usize, w: u32, h: u32) -> Vec<crate::surface::Surface> {
-        let Some(Some(space)) = self.app.lenses.get(ordinal) else {
-            return Vec::new();
-        };
-        let area = Rect::full(w.max(1), h.max(1));
-        let (pane_rects, divider_rects, float_rects): (
-            Vec<(crate::panes::PaneId, Rect)>,
-            Vec<(u32, Rect)>,
-            Vec<(crate::panes::PaneId, Rect)>,
-        ) = match self
-            .app
-            .blueprint_space(crate::action::SpaceRef::Lens(ordinal))
-        {
-            Some(blueprint) => {
-                let placements = crate::panes::place_space(blueprint, area, None);
-                (
-                    placements
-                        .panes
-                        .into_iter()
-                        .map(|pane| (pane.id, pane.rect))
-                        .collect(),
-                    placements
-                        .dividers
-                        .into_iter()
-                        .map(|divider| (divider.index, divider.rect))
-                        .collect(),
-                    placements
-                        .floats
-                        .into_iter()
-                        .map(|pane| (pane.id, pane.rect))
-                        .collect(),
-                )
-            },
-            None => {
-                let placements = crate::pane::place_panes(space, area, None);
-                (
-                    placements
-                        .panes
-                        .into_iter()
-                        .map(|pane| (pane.id, pane.rect))
-                        .collect(),
-                    placements
-                        .dividers
-                        .into_iter()
-                        .map(|divider| (divider.index, divider.rect))
-                        .collect(),
-                    Vec::new(),
-                )
-            },
-        };
-        let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
-            .iter()
-            .filter_map(|(id, rect)| {
-                self.lens_pane_content(ordinal, *id)
-                    .map(|content| (id, rect, content))
-            })
-            .map(|(id, rect, content)| {
-                if matches!(content, PaneContent::Orrery) {
-                    (SurfaceKind::Graph(*id), *rect)
-                } else if let PaneContent::Tile(m) = content
-                    && self.content_sessions.has_document(&m)
-                {
-                    // A torn-out tile: the pinned pane composites its live
-                    // session as this window's content surface.
-                    (SurfaceKind::Content(m), *rect)
-                } else {
-                    (SurfaceKind::Pane(*id), *rect)
-                }
-            })
-            .collect();
-        base.extend(
-            divider_rects
-                .iter()
-                .map(|(index, rect)| (SurfaceKind::Divider(*index), *rect)),
-        );
-        // Workbench tiles in a LENS (rung-7 depth: content tiles follow the
-        // pane): when the workbench pane tore out to this window, its cells'
-        // live tiles compose as content surfaces at their body rects — the
-        // same walk the primary plan does, at the lens pane's rect.
-        let workbench_pane = pane_rects
-            .iter()
-            .find(|(id, _)| {
-                matches!(
-                    self.lens_pane_content(ordinal, *id),
-                    Some(PaneContent::Workbench)
-                )
-            })
-            .map(|(id, rect)| (*id, *rect));
-        let tiles: Vec<(uuid::Uuid, Rect)> = workbench_pane
-            .map(|(pane, rect)| {
-                let geom = self
-                    .app
-                    .workbench_for_pane(pane)
-                    .and_then(|workbench| workbench.to_arrangement().1);
-                crate::workbench_tiling::place_workbench(geom.as_ref(), rect)
-                    .cells
-                    .iter()
-                    .filter_map(|c| {
-                        let m = c.active_member()?;
-                        self.content_sessions
-                            .has_document(&m)
-                            .then(|| (m, c.body()))
-                    })
-                    .collect()
-            })
-            .unwrap_or_default();
-        let mut surfaces = crate::surface::assemble(&base, &tiles, None, None);
-        let mut appearance_roles = Vec::new();
-        if let Some((pane, rect)) = workbench_pane {
-            let geom = self
-                .app
-                .workbench_for_pane(pane)
-                .and_then(|workbench| workbench.to_arrangement().1);
-            for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), rect).cells {
-                if let Some(node) = cell.active_member()
-                    && self.content_sessions.has_document(&node)
-                {
-                    appearance_roles.push((
-                        node,
-                        crate::surface::appearance::workbench_appearance_role(pane, node),
-                        cell.body(),
-                    ));
-                }
-            }
-        }
-        appearance_roles.extend(pane_rects.iter().filter_map(|(pane, rect)| {
-            match self.lens_pane_content(ordinal, *pane) {
-                Some(PaneContent::Tile(node)) if self.content_sessions.has_document(&node) => {
-                    Some((node, 0x1000_0000_0000_0000 | pane.0, *rect))
-                },
-                _ => None,
-            }
-        }));
-        appearance_roles.extend(float_rects.iter().filter_map(|(pane, rect)| {
-            match self.lens_pane_content(ordinal, *pane) {
-                Some(PaneContent::Tile(node)) if self.content_sessions.has_document(&node) => {
-                    Some((node, 0x1000_0000_0000_0000 | pane.0, *rect))
-                },
-                _ => None,
-            }
-        }));
-        surfaces.extend(float_rects.into_iter().filter_map(|(id, rect)| {
-            let content = self.lens_pane_content(ordinal, id)?;
-            let kind = match content {
-                PaneContent::Orrery => SurfaceKind::Graph(id),
-                PaneContent::Tile(member) if self.content_sessions.has_document(&member) => {
-                    SurfaceKind::Content(member)
-                },
-                _ => SurfaceKind::Pane(id),
-            };
-            Some(crate::surface::Surface {
-                id: crate::surface::SurfaceId::for_kind(kind),
-                kind,
-                rect,
-            })
-        }));
-        crate::surface::appearance::assign_content_appearance_ids(
-            &mut surfaces,
-            ordinal as u32 + 1,
-            &appearance_roles,
-        );
-        surfaces
+        lens_content_plan(&self.app, &self.content_sessions, ordinal, w, h)
     }
 
     /// A pane's `PaneContent` in a LENS window's space.
@@ -411,16 +230,7 @@ impl Shell {
         ordinal: usize,
         id: crate::panes::PaneId,
     ) -> Option<PaneContent> {
-        self.app
-            .lenses
-            .get(ordinal)
-            .and_then(|s| s.as_ref())
-            .and_then(|space| {
-                space
-                    .iter_leaves()
-                    .find(|(pid, _, _)| *pid == id)
-                    .map(|(_, content, _)| content.clone())
-            })
+        lens_pane_content(&self.app, ordinal, id)
     }
 
     /// Render one lens window: its pane space composited through its host —
@@ -437,6 +247,9 @@ impl Shell {
             return;
         };
         let (lw, lh, ordinal) = (lens.width, lens.height, lens.ordinal);
+        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+        let (surface_device, surface_queue) =
+            (lens.host.device().clone(), lens.host.queue().clone());
         let surfaces = self.lens_plan(ordinal, lw, lh);
         if surfaces.is_empty() {
             return;
@@ -448,8 +261,10 @@ impl Shell {
             .content_sessions
             .pool
             .window_needs_frame(ordinal as u64 + 1);
-        // Pass 1 (mutable): produce each surface's scene at its rect size.
-        let mut scenes: Vec<PlannedScene> = Vec::with_capacity(surfaces.len());
+        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+        let mut surface_failures = Vec::new();
+        // Pass 1 keeps scene construction and imported frames in plan order.
+        let mut scenes: Vec<PlannedLayer> = Vec::with_capacity(surfaces.len());
         for surface in &surfaces {
             let rect = surface.rect;
             let (rw, rh) = (
@@ -475,12 +290,41 @@ impl Shell {
                 // the primary would frame, at this cell's size (already pumped
                 // above).
                 crate::surface::SurfaceKind::Content(node) => {
-                    let Some(pelt_core::PeltLayer::Document(scene)) =
-                        self.content_sessions.pool.frame(&surface.id)
-                    else {
-                        continue;
-                    };
-                    (scene, wgpu::Color::WHITE)
+                    match super::render::lens_content_frame(
+                        &mut self.content_sessions.pool,
+                        &surface.id,
+                    ) {
+                        Some(pelt_core::PeltLayer::Document(scene)) => (scene, wgpu::Color::WHITE),
+                        Some(pelt_core::PeltLayer::Surface(result)) => {
+                            #[cfg(all(
+                                any(feature = "weld", feature = "scry", feature = "servo"),
+                                windows
+                            ))]
+                            {
+                                match self.import_content_layer(
+                                    node,
+                                    surface,
+                                    result,
+                                    &surface_device,
+                                    &surface_queue,
+                                ) {
+                                    Ok(Some(layer)) => scenes.push(PlannedLayer::Imported(layer)),
+                                    Ok(None) => {},
+                                    Err(error) => surface_failures.push((node, error)),
+                                }
+                                // Browser capture is asynchronous, as in the primary.
+                                animating = true;
+                            }
+                            // No native frame importer is registered on other platforms.
+                            #[cfg(not(all(
+                                any(feature = "weld", feature = "scry", feature = "servo"),
+                                windows
+                            )))]
+                            let _ = (node, result);
+                            continue;
+                        },
+                        None => continue,
+                    }
                 },
                 crate::surface::SurfaceKind::Divider(_) => {
                     (Scene::default(), crate::ui::SEAM_CLEAR)
@@ -489,14 +333,14 @@ impl Shell {
                 // (chrome composites separately below).
                 _ => continue,
             };
-            scenes.push(PlannedScene {
+            scenes.push(PlannedLayer::Scene(PlannedScene {
                 id: surface.id.0,
                 kind: surface.kind,
                 placement: ExternalTexturePlacement::new(rect.dest()),
                 dims: (rw, rh),
                 scene,
                 clear,
-            });
+            }));
         }
         // The lens's chrome (its window-root in the shared chrome forest):
         // the caption chip, composited on top when there is one to show.
@@ -504,34 +348,41 @@ impl Shell {
             let slot = ordinal + 1;
             self.chrome.ensure_slot(slot);
             let scene = self.chrome.scene(slot, lw, lh);
-            scenes.push(PlannedScene {
+            scenes.push(PlannedLayer::Scene(PlannedScene {
                 id: crate::surface::SurfaceId::CHROME.0,
                 kind: crate::surface::SurfaceKind::Chrome,
                 placement: ExternalTexturePlacement::new([0.0, 0.0, lw as f32, lh as f32]),
                 dims: (lw, lh),
                 scene,
                 clear: wgpu::Color::TRANSPARENT,
-            });
+            }));
+        }
+        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+        if self.fail_surface_frames(surface_failures) {
+            return;
         }
         // Pass 2 (immutable host): rasterize + compose, keyed per surface.
         let Some(lens) = self.lens_windows.get_mut(&id) else {
             return;
         };
         let layers: Vec<CompositeLayer> = scenes
-            .iter()
-            .map(|s| {
-                let (_tex, view) = lens.host.core().rasterize_for(
-                    s.id,
-                    &s.scene,
-                    s.dims.0,
-                    s.dims.1,
-                    ColorLoad::Clear(s.clear),
-                );
-                CompositeLayer {
-                    kind: s.kind,
-                    view,
-                    placement: s.placement,
-                }
+            .into_iter()
+            .map(|source| match source {
+                PlannedLayer::Scene(scene) => {
+                    let (_tex, view) = lens.host.core().rasterize_for(
+                        scene.id,
+                        &scene.scene,
+                        scene.dims.0,
+                        scene.dims.1,
+                        ColorLoad::Clear(scene.clear),
+                    );
+                    CompositeLayer {
+                        kind: scene.kind,
+                        view,
+                        placement: scene.placement,
+                    }
+                },
+                PlannedLayer::Imported(layer) => layer,
             })
             .collect();
         let Some(frame) = lens.host.acquire() else {
@@ -763,11 +614,16 @@ impl Shell {
                             self.request_redraw();
                             return;
                         },
-                        crate::surface::SurfaceKind::Content(node) => {
-                            self.app.focus = crate::surface::FocusTarget::Content {
-                                node,
-                                appearance: hit.id,
-                            };
+                        crate::surface::SurfaceKind::Content(_) => {
+                            self.sync_content_placements();
+                            let hit = super::window_input::content_press_target(
+                                &mut self.app.focus,
+                                &self.content_sessions.pool,
+                                ordinal as u64 + 1,
+                                inker::PhysicalPosition { x, y },
+                                hit,
+                            );
+                            self.pointer_capture = Some(hit.kind);
                             self.content_mouse(
                                 hit.id,
                                 hit.local,
@@ -990,4 +846,217 @@ impl Shell {
             }
         }
     }
+}
+
+pub(super) fn lens_content_plan(
+    app: &crate::app::App,
+    contents: &super::NodeDocuments,
+    ordinal: usize,
+    w: u32,
+    h: u32,
+) -> Vec<crate::surface::Surface> {
+    let Some(Some(space)) = app.lenses.get(ordinal) else {
+        return Vec::new();
+    };
+    let area = Rect::full(w.max(1), h.max(1));
+    let (pane_rects, divider_rects, float_rects): (
+        Vec<(crate::panes::PaneId, Rect)>,
+        Vec<(u32, Rect)>,
+        Vec<(crate::panes::PaneId, Rect)>,
+    ) = match app.blueprint_space(crate::action::SpaceRef::Lens(ordinal)) {
+        Some(blueprint) => {
+            let placements = crate::panes::place_space(blueprint, area, None);
+            (
+                placements
+                    .panes
+                    .into_iter()
+                    .map(|pane| (pane.id, pane.rect))
+                    .collect(),
+                placements
+                    .dividers
+                    .into_iter()
+                    .map(|divider| (divider.index, divider.rect))
+                    .collect(),
+                placements
+                    .floats
+                    .into_iter()
+                    .map(|pane| (pane.id, pane.rect))
+                    .collect(),
+            )
+        },
+        None => {
+            let placements = crate::pane::place_panes(space, area, None);
+            (
+                placements
+                    .panes
+                    .into_iter()
+                    .map(|pane| (pane.id, pane.rect))
+                    .collect(),
+                placements
+                    .dividers
+                    .into_iter()
+                    .map(|divider| (divider.index, divider.rect))
+                    .collect(),
+                Vec::new(),
+            )
+        },
+    };
+    let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
+        .iter()
+        .filter_map(|(id, rect)| {
+            lens_pane_content(app, ordinal, *id).map(|content| (id, rect, content))
+        })
+        .map(|(id, rect, content)| {
+            if matches!(content, PaneContent::Orrery) {
+                (SurfaceKind::Graph(*id), *rect)
+            } else if let PaneContent::Tile(m) = content
+                && contents.contains_key(&m)
+            {
+                // A torn-out tile: the pinned pane composites its live
+                // session as this window's content surface.
+                (SurfaceKind::Content(m), *rect)
+            } else {
+                (SurfaceKind::Pane(*id), *rect)
+            }
+        })
+        .collect();
+    base.extend(
+        divider_rects
+            .iter()
+            .map(|(index, rect)| (SurfaceKind::Divider(*index), *rect)),
+    );
+    // Workbench tiles in a LENS (rung-7 depth: content tiles follow the
+    // pane): when the workbench pane tore out to this window, its cells'
+    // live tiles compose as content surfaces at their body rects — the
+    // same walk the primary plan does, at the lens pane's rect.
+    let workbench_pane = pane_rects
+        .iter()
+        .find(|(id, _)| {
+            matches!(
+                lens_pane_content(app, ordinal, *id),
+                Some(PaneContent::Workbench)
+            )
+        })
+        .map(|(id, rect)| (*id, *rect));
+    let tiles: Vec<(uuid::Uuid, Rect)> = workbench_pane
+        .map(|(pane, rect)| {
+            let geom = app
+                .workbench_for_pane(pane)
+                .and_then(|workbench| workbench.to_arrangement().1);
+            crate::workbench_tiling::place_workbench(geom.as_ref(), rect)
+                .cells
+                .iter()
+                .filter_map(|c| {
+                    let m = c.active_member()?;
+                    contents.contains_key(&m).then(|| (m, c.body()))
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    let mut surfaces = crate::surface::assemble(&base, &tiles, None, None);
+    let mut appearance_roles = Vec::new();
+    if let Some((pane, rect)) = workbench_pane {
+        let geom = app
+            .workbench_for_pane(pane)
+            .and_then(|workbench| workbench.to_arrangement().1);
+        for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), rect).cells {
+            if let Some(node) = cell.active_member()
+                && contents.contains_key(&node)
+            {
+                appearance_roles.push((
+                    node,
+                    crate::surface::appearance::workbench_appearance_role(pane, node),
+                    cell.body(),
+                ));
+            }
+        }
+    }
+    appearance_roles.extend(pane_rects.iter().filter_map(|(pane, rect)| {
+        match lens_pane_content(app, ordinal, *pane) {
+            Some(PaneContent::Tile(node)) if contents.contains_key(&node) => {
+                Some((node, 0x1000_0000_0000_0000 | pane.0, *rect))
+            },
+            _ => None,
+        }
+    }));
+    appearance_roles.extend(
+        float_rects.iter().filter_map(|(pane, rect)| {
+            match lens_pane_content(app, ordinal, *pane) {
+                Some(PaneContent::Tile(node)) if contents.contains_key(&node) => {
+                    Some((node, 0x1000_0000_0000_0000 | pane.0, *rect))
+                },
+                _ => None,
+            }
+        }),
+    );
+    surfaces.extend(float_rects.into_iter().filter_map(|(id, rect)| {
+        let content = lens_pane_content(app, ordinal, id)?;
+        let kind = match content {
+            PaneContent::Orrery => SurfaceKind::Graph(id),
+            PaneContent::Tile(member) if contents.contains_key(&member) => {
+                SurfaceKind::Content(member)
+            },
+            _ => SurfaceKind::Pane(id),
+        };
+        Some(crate::surface::Surface {
+            id: crate::surface::SurfaceId::for_kind(kind),
+            kind,
+            rect,
+        })
+    }));
+    crate::surface::appearance::assign_content_appearance_ids(
+        &mut surfaces,
+        ordinal as u32 + 1,
+        &appearance_roles,
+    );
+    surfaces
+}
+
+fn lens_pane_content(app: &crate::app::App, ordinal: usize, id: PaneId) -> Option<PaneContent> {
+    app.lenses
+        .get(ordinal)
+        .and_then(|s| s.as_ref())
+        .and_then(|space| {
+            space
+                .iter_leaves()
+                .find(|(pid, _, _)| *pid == id)
+                .map(|(_, content, _)| content.clone())
+        })
+}
+
+#[cfg(test)]
+#[path = "lens_tests.rs"]
+mod tests;
+
+fn append_foreign_lens(
+    frame: &mut super::document_a11y::Projected,
+    forest: &crate::foreign_a11y::ForeignA11y,
+    placements: Vec<(uuid::Uuid, accesskit::Rect)>,
+    focus: crate::surface::FocusTarget,
+) -> Vec<uuid::Uuid> {
+    let mut visible = Vec::new();
+    for (node, rect) in placements {
+        let Some(mut graft) = forest.graft(node, rect) else {
+            continue;
+        };
+        graft.set_label("browser page");
+        let graft_id = uxtree::node_id_for_path(&format!("turnstone/doc/{node}"));
+        if let Some((_, root)) = frame
+            .tree
+            .nodes
+            .iter_mut()
+            .find(|(id, _)| *id == frame.tree.root)
+        {
+            let mut children = root.children().to_vec();
+            children.push(graft_id);
+            root.set_children(children);
+        }
+        frame.tree.nodes.push((graft_id, graft));
+        if matches!(focus, crate::surface::FocusTarget::Content { node: current, .. } if current == node)
+        {
+            frame.focus = Some(graft_id);
+        }
+        visible.push(node);
+    }
+    visible
 }

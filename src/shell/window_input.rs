@@ -165,6 +165,41 @@ pub(super) fn captured_mouse(pool: &Pool) -> Option<SurfaceId> {
     pool.captured_placement(1).copied()
 }
 
+/// Resolve an admitted content press after current placements are revalidated.
+pub(super) fn content_press_target(
+    focus: &mut FocusTarget,
+    pool: &Pool,
+    window: u64,
+    position: PhysicalPosition,
+    hit: crate::surface::HitResult,
+) -> crate::surface::HitResult {
+    let hit = if let Some(id) = captured_mouse(pool)
+        && let Some(placement) = pool.placement(&id)
+        && placement.window == window
+        && pool
+            .placement_generation(&id)
+            .is_some_and(|generation| pool.admits(&id, generation))
+    {
+        let node = match placement.content {
+            ContentKey::Node(node) | ContentKey::Reader { node, .. } => node,
+        };
+        crate::surface::HitResult {
+            id,
+            kind: SurfaceKind::Content(node),
+            local: (position.x - placement.rect.x, position.y - placement.rect.y),
+        }
+    } else {
+        hit
+    };
+    if let SurfaceKind::Content(node) = hit.kind {
+        *focus = FocusTarget::Content {
+            node,
+            appearance: hit.id,
+        };
+    }
+    hit
+}
+
 /// The shared native button boundary and its optional content admission.
 pub(super) fn native_mouse_input(
     pool: &mut Pool,
@@ -208,7 +243,11 @@ pub(super) fn content_mouse_input(
     button: Option<inker::MouseButton>,
     modifiers: KeyboardModifiers,
 ) -> Option<(ContentKey, PeltHostEffect)> {
-    let placement = pool.placement(&appearance?).cloned()?;
+    let appearance = appearance?;
+    // Pool custody may outlive a new host hit. Name the actual captured
+    // receiver when returning its navigation/submission effects.
+    let appearance = captured_mouse(pool).unwrap_or(appearance);
+    let placement = pool.placement(&appearance).cloned()?;
     if placement.window != window {
         return None;
     }

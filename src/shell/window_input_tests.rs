@@ -691,3 +691,1137 @@ fn review_mouse_boundary_unrelated_release_keeps_middle_custody() {
         );
     }
 }
+
+fn bookkeeping_with_existing_mouse_capture(window: u64) {
+    let (mut pool, events, _) = touch_pool();
+    pool.set_placements([(SurfaceId(10), placed(key(7), window, 0., false))]);
+    let mut buttons = HashMap::new();
+    let position = PhysicalPosition { x: 7., y: 9. };
+    assert!(
+        native_mouse_input(
+            &mut pool,
+            &mut buttons,
+            window,
+            None,
+            position,
+            PointerPhase::Down,
+            Some(inker::MouseButton::Left),
+            Default::default(),
+        )
+        .is_none()
+    );
+    let (source, effect) = content_mouse_input(
+        &mut pool,
+        &buttons,
+        window,
+        Some(SurfaceId(10)),
+        position,
+        PointerPhase::Down,
+        Some(inker::MouseButton::Left),
+        Default::default(),
+    )
+    .unwrap();
+    assert_eq!(source, key(7));
+    assert!(effect.handled);
+    assert_eq!(captured_mouse(&pool), Some(SurfaceId(10)));
+    events.lock().unwrap().clear();
+
+    // Both native windows record the physical press before deciding whether
+    // the host admits content delivery. Existing capture cannot admit it early.
+    let bookkeeping = native_mouse_input(
+        &mut pool,
+        &mut buttons,
+        window,
+        None,
+        position,
+        PointerPhase::Down,
+        Some(inker::MouseButton::Middle),
+        Default::default(),
+    );
+    let both = PointerButtons(PointerButtons::PRIMARY.0 | PointerButtons::AUXILIARY.0);
+    assert_eq!(buttons[&window], both);
+    assert!(
+        bookkeeping.is_none(),
+        "bookkeeping must emit no host effect"
+    );
+    assert!(
+        events.lock().unwrap().is_empty(),
+        "bookkeeping must not reach the producer"
+    );
+    assert_eq!(captured_mouse(&pool), Some(SurfaceId(10)));
+
+    let (source, effect) = content_mouse_input(
+        &mut pool,
+        &buttons,
+        window,
+        Some(SurfaceId(10)),
+        position,
+        PointerPhase::Down,
+        Some(inker::MouseButton::Middle),
+        Default::default(),
+    )
+    .unwrap();
+    assert_eq!(source, key(7));
+    assert!(effect.handled);
+    assert!(effect.navigation.is_none());
+    assert!(effect.submission.is_none());
+    assert_eq!(captured_mouse(&pool), Some(SurfaceId(10)));
+    assert_eq!(
+        events
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|e| (e.phase, e.button, e.buttons, e.position.x, e.position.y))
+            .collect::<Vec<_>>(),
+        [(
+            PointerPhase::Down,
+            Some(inker::MouseButton::Middle),
+            both,
+            7.,
+            9.
+        )],
+        "the admitted second button press must reach the producer exactly once"
+    );
+
+    native_mouse(
+        &mut pool,
+        &mut buttons,
+        window,
+        Some(SurfaceId(10)),
+        PointerPhase::Up,
+        Some(inker::MouseButton::Left),
+    );
+    assert_eq!(buttons[&window], PointerButtons::AUXILIARY);
+    assert_eq!(captured_mouse(&pool), Some(SurfaceId(10)));
+    native_mouse(
+        &mut pool,
+        &mut buttons,
+        window,
+        Some(SurfaceId(10)),
+        PointerPhase::Up,
+        Some(inker::MouseButton::Middle),
+    );
+    assert_eq!(buttons[&window], PointerButtons::NONE);
+    assert_eq!(captured_mouse(&pool), None);
+    assert_eq!(
+        events
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|e| (e.phase, e.button, e.buttons))
+            .collect::<Vec<_>>(),
+        [
+            (PointerPhase::Down, Some(inker::MouseButton::Middle), both),
+            (
+                PointerPhase::Up,
+                Some(inker::MouseButton::Left),
+                PointerButtons::AUXILIARY
+            ),
+            (
+                PointerPhase::Up,
+                Some(inker::MouseButton::Middle),
+                PointerButtons::NONE
+            ),
+        ]
+    );
+    let (_, late) = native_mouse_input(
+        &mut pool,
+        &mut buttons,
+        window,
+        Some(SurfaceId(10)),
+        position,
+        PointerPhase::Up,
+        Some(inker::MouseButton::Middle),
+        Default::default(),
+    )
+    .unwrap();
+    assert!(!late.handled);
+    assert!(late.navigation.is_none());
+    assert!(late.submission.is_none());
+    assert_eq!(
+        events.lock().unwrap().len(),
+        3,
+        "late release cannot reach retired capture"
+    );
+}
+
+#[test]
+fn review_bookkeeping_primary_second_button_is_delivered_once() {
+    bookkeeping_with_existing_mouse_capture(0);
+}
+
+#[test]
+fn review_bookkeeping_lens_second_button_is_delivered_once() {
+    bookkeeping_with_existing_mouse_capture(1);
+}
+
+fn overlap_surface_pool() -> (
+    Pool,
+    [Arc<Mutex<Vec<inker::PointerEvent>>>; 2],
+    Vec<Surface>,
+) {
+    let mut pool = Pool::new();
+    let events = [
+        Arc::new(Mutex::new(Vec::new())),
+        Arc::new(Mutex::new(Vec::new())),
+    ];
+    let plan = vec![
+        Surface {
+            id: SurfaceId(10),
+            kind: SurfaceKind::Content(uuid::Uuid::from_u128(7)),
+            rect: Rect::new(0., 0., 100., 100.),
+        },
+        Surface {
+            id: SurfaceId(11),
+            kind: SurfaceKind::Content(uuid::Uuid::from_u128(8)),
+            rect: Rect::new(20., 0., 100., 100.),
+        },
+    ];
+    for (node, pointers) in [(7, &events[0]), (8, &events[1])] {
+        pool.insert(
+            key(node),
+            PeltContent::from_surface(
+                Box::new(Page {
+                    calls: Default::default(),
+                    pointers: pointers.clone(),
+                    acquisitions: Default::default(),
+                    title: None,
+                    fail_offset: None,
+                }),
+                (100, 100),
+                route(),
+            ),
+        );
+    }
+    pool.set_placements([
+        (SurfaceId(10), placed(key(7), 0, 0., false)),
+        (SurfaceId(11), placed(key(8), 0, 20., false)),
+    ]);
+    (pool, events, plan)
+}
+
+#[test]
+fn review_overlap_native_mouse_matches_host_topmost_and_preserves_capture() {
+    let (mut pool, events, plan) = overlap_surface_pool();
+    let hit = crate::surface::hit_test(
+        &plan,
+        FocusTarget::Content {
+            node: uuid::Uuid::from_u128(8),
+            appearance: SurfaceId(11),
+        },
+        27.,
+        9.,
+    )
+    .unwrap();
+    assert_eq!(hit.id, SurfaceId(11));
+    let mut buttons = HashMap::new();
+    let (source, effect) = native_mouse_input(
+        &mut pool,
+        &mut buttons,
+        0,
+        Some(hit.id),
+        PhysicalPosition { x: 27., y: 9. },
+        PointerPhase::Down,
+        Some(inker::MouseButton::Left),
+        Default::default(),
+    )
+    .unwrap();
+    assert_eq!(source, key(8));
+    assert!(effect.handled);
+    assert_eq!(captured_mouse(&pool), Some(SurfaceId(11)));
+    let (source, unrelated) = native_mouse_input(
+        &mut pool,
+        &mut buttons,
+        0,
+        Some(SurfaceId(11)),
+        PhysicalPosition { x: 207., y: 209. },
+        PointerPhase::Up,
+        Some(inker::MouseButton::Right),
+        Default::default(),
+    )
+    .unwrap();
+    assert_eq!(source, key(8));
+    assert!(!unrelated.handled);
+    assert_eq!(captured_mouse(&pool), Some(SurfaceId(11)));
+    for (phase, button) in [
+        (PointerPhase::Move, None),
+        (PointerPhase::Up, Some(inker::MouseButton::Left)),
+    ] {
+        let appearance = captured_mouse(&pool);
+        let (source, effect) = native_mouse_input(
+            &mut pool,
+            &mut buttons,
+            0,
+            appearance,
+            PhysicalPosition { x: 207., y: 209. },
+            phase,
+            button,
+            Default::default(),
+        )
+        .unwrap();
+        assert_eq!(source, key(8));
+        assert!(effect.handled);
+    }
+    assert_eq!(captured_mouse(&pool), None);
+    assert!(
+        events[0].lock().unwrap().is_empty(),
+        "covered producer must receive no gesture"
+    );
+    let upper = events[1].lock().unwrap();
+    assert_eq!(
+        upper
+            .iter()
+            .map(|e| (e.phase, e.position.x, e.position.y))
+            .collect::<Vec<_>>(),
+        vec![
+            (PointerPhase::Down, 7., 9.),
+            (PointerPhase::Move, 187., 209.),
+            (PointerPhase::Up, 187., 209.)
+        ]
+    );
+}
+
+#[test]
+fn review_overlap_native_touch_matches_host_topmost_and_preserves_capture() {
+    let (mut pool, events, plan) = overlap_surface_pool();
+    let mut adapter = TouchInput::default();
+    for (phase, x) in [
+        (PointerPhase::Down, 27.),
+        (PointerPhase::Move, 207.),
+        (PointerPhase::Up, 207.),
+    ] {
+        assert!(adapter.deliver(
+            &mut pool,
+            &plan,
+            FocusTarget::Graph(crate::panes::PaneId(99)),
+            0,
+            80,
+            phase,
+            PhysicalPosition { x, y: 9. },
+            Some(0.6),
+            Some(0.7),
+            Default::default()
+        ));
+        if phase == PointerPhase::Down {
+            let id = events[1].lock().unwrap().last().map(|e| e.pointer_id);
+            assert!(
+                id.is_some(),
+                "host-selected upper producer receives touch Down"
+            );
+            assert_eq!(pool.captured_placement(id.unwrap()), Some(&SurfaceId(11)));
+        }
+    }
+    assert!(events[0].lock().unwrap().is_empty());
+    let upper = events[1].lock().unwrap();
+    assert_eq!(
+        upper
+            .iter()
+            .map(|e| (e.phase, e.position.x, e.position.y))
+            .collect::<Vec<_>>(),
+        vec![
+            (PointerPhase::Down, 7., 9.),
+            (PointerPhase::Move, 187., 9.),
+            (PointerPhase::Up, 187., 9.)
+        ]
+    );
+    assert!(upper.iter().all(|e| e.pointer_type == PointerType::Touch));
+    assert_eq!(pool.captured_placement(upper[0].pointer_id), None);
+}
+
+struct OverlapDocument {
+    inputs: Arc<Mutex<Vec<inker::SessionInput>>>,
+    submit: bool,
+}
+impl inker::DocumentSession<netrender::Scene> for OverlapDocument {
+    fn frame(&mut self, _width: u32, _height: u32) -> netrender::Scene {
+        Default::default()
+    }
+    fn scroll_by(&mut self, _dx: f32, _dy: f32) -> bool {
+        true
+    }
+    fn scroll_for_key(&mut self, _key: inker::SessionScrollKey) -> bool {
+        true
+    }
+    fn click_at(&mut self, _x: f32, _y: f32) -> inker::SessionClick {
+        inker::SessionClick::Miss
+    }
+    fn links(&self) -> Vec<inker::SessionLink> {
+        Vec::new()
+    }
+    fn input(&mut self, input: inker::SessionInput) -> inker::SessionInputResult {
+        use inker::{SessionButtonState, SessionEffect, SessionInput};
+        self.inputs.lock().unwrap().push(input.clone());
+        let effect = match input {
+            SessionInput::PointerButton {
+                state: SessionButtonState::Released,
+                ..
+            } if self.submit => SessionEffect::Submit(inker::SessionFormSubmission {
+                action: "post".into(),
+                method: inker::SessionFormMethod::Post,
+                fields: vec![("producer".into(), "upper".into())],
+            }),
+            SessionInput::PointerButton {
+                state: SessionButtonState::Released,
+                ..
+            } => SessionEffect::Navigate("next".into()),
+            _ => SessionEffect::Handled,
+        };
+        inker::SessionInputResult {
+            effect,
+            cursor: None,
+            capture: Some(true),
+            editable: false,
+        }
+    }
+    fn as_any_ref(&self) -> &dyn std::any::Any {
+        self
+    }
+    fn as_any(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
+}
+
+fn overlap_native_document_effect(submit: bool) {
+    let (mut pool, _, plan) = overlap_surface_pool();
+    let inputs = [
+        Arc::new(Mutex::new(Vec::new())),
+        Arc::new(Mutex::new(Vec::new())),
+    ];
+    for (node, address, events) in [
+        (7, "https://lower.test/index", &inputs[0]),
+        (8, "https://upper.test/index", &inputs[1]),
+    ] {
+        let controller = pelt_core::PeltController::from_session_shared(
+            Arc::new(inker::SessionRegistry::new()),
+            Arc::new(inker::SurfaceEngineRegistry::new()),
+            pelt_core::PeltControllerConfig::new("probe", address, (100, 100)).with_host_history(),
+            super::super::ShellClock(std::time::Instant::now()),
+            Box::new(OverlapDocument {
+                inputs: events.clone(),
+                submit,
+            }),
+        );
+        pool.insert(key(node), PeltContent::from_controller(controller, route()));
+    }
+    for input in &inputs {
+        input.lock().unwrap().clear();
+    }
+    let hit =
+        crate::surface::hit_test(&plan, FocusTarget::Graph(crate::panes::PaneId(99)), 27., 9.)
+            .unwrap();
+    let mut buttons = HashMap::new();
+    let (source, effect) = native_mouse_input(
+        &mut pool,
+        &mut buttons,
+        0,
+        Some(hit.id),
+        PhysicalPosition { x: 27., y: 9. },
+        PointerPhase::Down,
+        Some(inker::MouseButton::Left),
+        Default::default(),
+    )
+    .unwrap();
+    assert_eq!(source, key(8));
+    assert!(effect.handled);
+    assert_eq!(captured_mouse(&pool), Some(SurfaceId(11)));
+    // A hit supplied after the cursor moved onto the lower tile cannot replace
+    // the pool's captured target or mislabel its outgoing host effect.
+    let (source, effect) = native_mouse_input(
+        &mut pool,
+        &mut buttons,
+        0,
+        Some(SurfaceId(10)),
+        PhysicalPosition { x: 5., y: 9. },
+        PointerPhase::Up,
+        Some(inker::MouseButton::Left),
+        Default::default(),
+    )
+    .unwrap();
+    assert_eq!(
+        source,
+        key(8),
+        "effect source must name the receiving captured content"
+    );
+    if submit {
+        let submission = effect.submission.unwrap();
+        assert_eq!(submission.action, "https://upper.test/post");
+        assert_eq!(submission.fields, vec![("producer".into(), "upper".into())]);
+        assert!(effect.navigation.is_none());
+    } else {
+        assert_eq!(
+            effect.navigation.unwrap().request.address,
+            "https://upper.test/next"
+        );
+        assert!(effect.submission.is_none());
+    }
+    assert_eq!(captured_mouse(&pool), None);
+    assert!(inputs[0].lock().unwrap().is_empty());
+    let delivered = inputs[1].lock().unwrap();
+    assert!(matches!(
+        delivered.as_slice(),
+        [
+            inker::SessionInput::PointerButton {
+                x: 7.,
+                y: 9.,
+                state: inker::SessionButtonState::Pressed,
+                ..
+            },
+            inker::SessionInput::PointerButton {
+                x: -15.,
+                y: 9.,
+                state: inker::SessionButtonState::Released,
+                ..
+            }
+        ]
+    ));
+}
+
+#[test]
+fn review_overlap_native_navigation_effect_names_actual_receiver() {
+    overlap_native_document_effect(false);
+}
+#[test]
+fn review_overlap_native_submission_effect_names_actual_receiver() {
+    overlap_native_document_effect(true);
+}
+
+#[test]
+fn review_overlap_native_reader_appearances_wheel_mutates_only_top_view() {
+    use super::super::content_pool::{HostPlacement, NodeDocuments};
+    let engines = Arc::new(super::super::standard_content_engines());
+    let surface_engines = Arc::new(inker::SurfaceEngineRegistry::new());
+    let epoch = std::time::Instant::now();
+    let body = format!("<html><body><main><h1>Article</h1>{}</main></body></html>",
+        "<p>This substantial article has enough words for independent retained Reader views and scrolling.</p>".repeat(150));
+    let request = inker::SessionSpawnRequest::new("https://fixture.test/story")
+        .with_body(body)
+        .with_content_type("text/html")
+        .with_viewport(640, 480);
+    let decision = super::super::standard_route_policy().route(&inker::EngineRouteRequest {
+        workspace_id: inker::WorkspaceRouteId::new("overlap-reader-test"),
+        view: None,
+        node: None,
+        address: request.address.clone(),
+        content_type: request.content_type.clone(),
+        pinned_engine: Some(inker::routing::ENGINE_GENET_READER.into()),
+    });
+    let controller = pelt_core::PeltController::new_shared(
+        engines.clone(),
+        surface_engines.clone(),
+        pelt_core::PeltControllerConfig::from_request(decision.engine_id.clone(), request)
+            .with_host_history(),
+        super::super::ShellClock(epoch),
+    )
+    .unwrap();
+    let node = uuid::Uuid::from_u128(7);
+    let mut contents = NodeDocuments::default();
+    contents.insert(
+        node,
+        PeltContent::from_controller(
+            controller,
+            PeltRoute {
+                decision,
+                source: PeltRouteSource::Automatic,
+                state: PeltRouteState::Document,
+            },
+        ),
+    );
+    let plan = vec![
+        Surface {
+            id: SurfaceId(10),
+            kind: SurfaceKind::Content(node),
+            rect: Rect::new(0., 0., 320., 200.),
+        },
+        Surface {
+            id: SurfaceId(11),
+            kind: SurfaceKind::Content(node),
+            rect: Rect::new(20., 0., 320., 200.),
+        },
+    ];
+    contents.sync_placements(
+        plan.iter()
+            .map(|surface| HostPlacement {
+                surface: *surface,
+                window: 0,
+                focused: false,
+                scale_factor: 1.,
+            })
+            .collect(),
+        engines,
+        surface_engines,
+        epoch,
+    );
+    let keys = plan
+        .iter()
+        .map(|surface| contents.pool.placement(&surface.id).unwrap().content)
+        .collect::<Vec<_>>();
+    assert_ne!(keys[0], keys[1]);
+    for surface in &plan {
+        assert!(contents.pool.frame(&surface.id).is_some());
+    }
+    let reader = |key: &ContentKey| {
+        contents
+            .pool
+            .content(key)
+            .unwrap()
+            .document()
+            .unwrap()
+            .session()
+            .as_any_ref()
+            .downcast_ref::<mere_document_lanes::ReaderDocumentSession>()
+            .unwrap()
+    };
+    assert!(Arc::ptr_eq(
+        &reader(&keys[0]).source_document(),
+        &reader(&keys[1]).source_document()
+    ));
+    assert_eq!(
+        crate::surface::hit_test(&plan, FocusTarget::Graph(crate::panes::PaneId(99)), 27., 9.)
+            .unwrap()
+            .id,
+        SurfaceId(11)
+    );
+    assert!(
+        contents
+            .pool
+            .input_at(
+                0,
+                PeltInput::Wheel {
+                    position: PhysicalPosition { x: 27., y: 9. },
+                    delta: (0., 120.),
+                    modifiers: Default::default()
+                }
+            )
+            .handled
+    );
+    let reader = |key: &ContentKey| {
+        contents
+            .pool
+            .content(key)
+            .unwrap()
+            .document()
+            .unwrap()
+            .session()
+            .as_any_ref()
+            .downcast_ref::<mere_document_lanes::ReaderDocumentSession>()
+            .unwrap()
+    };
+    assert_eq!(
+        reader(&keys[0]).scroll_y(),
+        0.,
+        "covered Reader appearance retains its own state"
+    );
+    assert!(
+        reader(&keys[1]).scroll_y() > 0.,
+        "top Reader appearance receives wheel"
+    );
+}
+
+struct CallerCaptureFixture {
+    app: crate::app::App,
+    contents: super::super::content_pool::NodeDocuments,
+    window: u64,
+    nodes: [uuid::Uuid; 2],
+    surfaces: [Surface; 2],
+    pointers: [Arc<Mutex<Vec<inker::PointerEvent>>>; 2],
+    inputs: [Arc<Mutex<Vec<inker::SessionInput>>>; 2],
+    buttons: HashMap<u64, PointerButtons>,
+}
+impl CallerCaptureFixture {
+    fn new(window: u64, document: Option<bool>) -> Self {
+        use crate::action::{Action, WbAxis};
+        let mut app = crate::app::App::test_stub();
+        app.viewport = (1200., 900.);
+        let mut nodes = Vec::new();
+        for address in ["https://upper.test/index", "https://lower.test/index"] {
+            app.update(Action::OpenAddress(address.into()));
+            nodes.push(app.graph_runtimes.focused_member().unwrap());
+            app.update(Action::OpenInWorkbench);
+        }
+        app.update(Action::WorkbenchSplitBeside {
+            dragged: nodes[1],
+            target: nodes[0],
+            axis: WbAxis::Row,
+            after: true,
+        });
+        if window != 0 {
+            app.update(Action::TearOutActivePane);
+        }
+        let nodes = [nodes[0], nodes[1]];
+        let pointers = [
+            Arc::new(Mutex::new(Vec::new())),
+            Arc::new(Mutex::new(Vec::new())),
+        ];
+        let inputs = [
+            Arc::new(Mutex::new(Vec::new())),
+            Arc::new(Mutex::new(Vec::new())),
+        ];
+        let mut contents = super::super::content_pool::NodeDocuments::default();
+        for (index, node) in nodes.iter().enumerate() {
+            let content = if let Some(submit) = document {
+                let address = if index == 0 {
+                    "https://upper.test/index"
+                } else {
+                    "https://lower.test/index"
+                };
+                let controller = pelt_core::PeltController::from_session_shared(
+                    Arc::new(inker::SessionRegistry::new()),
+                    Arc::new(inker::SurfaceEngineRegistry::new()),
+                    pelt_core::PeltControllerConfig::new("probe", address, (100, 100))
+                        .with_host_history(),
+                    super::super::ShellClock(std::time::Instant::now()),
+                    Box::new(OverlapDocument {
+                        inputs: inputs[index].clone(),
+                        submit,
+                    }),
+                );
+                PeltContent::from_controller(controller, route())
+            } else {
+                PeltContent::from_surface(
+                    Box::new(Page {
+                        calls: Default::default(),
+                        pointers: pointers[index].clone(),
+                        acquisitions: Default::default(),
+                        title: None,
+                        fail_offset: None,
+                    }),
+                    (100, 100),
+                    route(),
+                )
+            };
+            contents.insert(*node, content);
+        }
+        let plan = if window == 0 {
+            super::super::primary_content_plan(&app, &contents, 1200, 900)
+        } else {
+            super::super::lens::lens_content_plan(&app, &contents, 0, 1200, 900)
+        };
+        let surfaces = nodes.map(|node| {
+            *plan
+                .iter()
+                .find(|s| {
+                    s.kind == SurfaceKind::Content(node)
+                        && crate::surface::hit_test(
+                            &plan,
+                            app.focus,
+                            s.rect.x + s.rect.w / 2.,
+                            s.rect.y + s.rect.h / 2.,
+                        )
+                        .is_some_and(|hit| hit.id == s.id)
+                })
+                .expect("actual portable plan exposes both separate content appearances")
+        });
+        assert_ne!(surfaces[0].id, surfaces[1].id);
+        assert_ne!(surfaces[0].rect, surfaces[1].rect);
+        let mut fixture = Self {
+            app,
+            contents,
+            window,
+            nodes,
+            surfaces,
+            pointers,
+            inputs,
+            buttons: HashMap::new(),
+        };
+        fixture.sync(true);
+        fixture
+    }
+    fn plan(&self) -> Vec<Surface> {
+        if self.window == 0 {
+            super::super::primary_content_plan(&self.app, &self.contents, 1200, 900)
+        } else {
+            super::super::lens::lens_content_plan(&self.app, &self.contents, 0, 1200, 900)
+        }
+    }
+    fn sync(&mut self, active: bool) {
+        let placements = self
+            .plan()
+            .into_iter()
+            .map(|surface| {
+                super::super::content_pool::HostPlacement::for_focus(
+                    surface,
+                    self.window,
+                    active,
+                    self.app.focus,
+                    2.,
+                )
+            })
+            .collect();
+        self.contents.sync_placements(
+            placements,
+            Arc::new(inker::SessionRegistry::new()),
+            Arc::new(inker::SurfaceEngineRegistry::new()),
+            std::time::Instant::now(),
+        );
+    }
+    fn position(&self, index: usize) -> PhysicalPosition {
+        let r = self.surfaces[index].rect;
+        PhysicalPosition {
+            x: r.x + r.w / 2.,
+            y: r.y + r.h / 2.,
+        }
+    }
+    fn press(&mut self, index: usize, button: inker::MouseButton) -> (ContentKey, PeltHostEffect) {
+        let position = self.position(index);
+        assert!(
+            native_mouse_input(
+                &mut self.contents.pool,
+                &mut self.buttons,
+                self.window,
+                None,
+                position,
+                PointerPhase::Down,
+                Some(button),
+                Default::default()
+            )
+            .is_none()
+        );
+        let plan = self.plan();
+        let hit = crate::surface::hit_test(&plan, self.app.focus, position.x, position.y).unwrap();
+        assert_eq!(hit.id, self.surfaces[index].id);
+        let target = content_press_target(
+            &mut self.app.focus,
+            &self.contents.pool,
+            self.window,
+            position,
+            hit,
+        );
+        // Primary content_input(Focus(true)) syncs first. Lens content_mouse
+        // syncs directly. Both use the real shared placement construction.
+        if self.window == 0 {
+            self.sync(true);
+            self.contents.pool.input(
+                &target.id,
+                PeltInput::Session(inker::SessionInput::Focus(true)),
+            );
+        }
+        self.sync(true);
+        let rect = self.contents.pool.placement(&target.id).unwrap().rect;
+        content_mouse_input(
+            &mut self.contents.pool,
+            &self.buttons,
+            self.window,
+            Some(target.id),
+            PhysicalPosition {
+                x: target.local.0 + rect.x,
+                y: target.local.1 + rect.y,
+            },
+            PointerPhase::Down,
+            Some(button),
+            Default::default(),
+        )
+        .unwrap()
+    }
+    fn pointer(
+        &mut self,
+        phase: PointerPhase,
+        button: Option<inker::MouseButton>,
+    ) -> (ContentKey, PeltHostEffect) {
+        self.sync(true);
+        let position = self.position(1);
+        native_mouse_input(
+            &mut self.contents.pool,
+            &mut self.buttons,
+            self.window,
+            Some(self.surfaces[1].id),
+            position,
+            phase,
+            button,
+            Default::default(),
+        )
+        .unwrap()
+    }
+    fn assert_a_custody(&self) {
+        assert_eq!(
+            captured_mouse(&self.contents.pool),
+            Some(self.surfaces[0].id),
+            "admitted second Down must retain the first appearance capture through caller focus and sync"
+        );
+        assert_eq!(
+            self.app.focus,
+            FocusTarget::Content {
+                node: self.nodes[0],
+                appearance: self.surfaces[0].id
+            }
+        );
+        assert!(
+            self.contents
+                .pool
+                .placement(&self.surfaces[0].id)
+                .unwrap()
+                .focused
+        );
+        assert!(
+            !self
+                .contents
+                .pool
+                .placement(&self.surfaces[1].id)
+                .unwrap()
+                .focused
+        );
+    }
+}
+fn caller_capture_gesture(window: u64) {
+    let mut f = CallerCaptureFixture::new(window, None);
+    assert!(f.press(0, inker::MouseButton::Left).1.handled);
+    f.assert_a_custody();
+    let plan = f.plan();
+    // Actual movement over B stays captured by A and leaves host focus alone.
+    let position = f.position(1);
+    assert!(
+        native_mouse_input(
+            &mut f.contents.pool,
+            &mut f.buttons,
+            window,
+            Some(f.surfaces[0].id),
+            position,
+            PointerPhase::Move,
+            None,
+            Default::default()
+        )
+        .unwrap()
+        .1
+        .handled
+    );
+    assert!(f.press(1, inker::MouseButton::Middle).1.handled);
+    f.assert_a_custody();
+    assert_eq!(
+        f.plan(),
+        plan,
+        "focus mutation must not be mistaken for changed appearance geometry"
+    );
+    let both = PointerButtons(PointerButtons::PRIMARY.0 | PointerButtons::AUXILIARY.0);
+    assert_eq!(f.buttons[&window], both);
+    let second = f.pointers[0].lock().unwrap().clone();
+    assert_eq!(second.len(), 3);
+    assert!(second.iter().all(|e| e.phase != PointerPhase::Cancel));
+    assert_eq!(
+        (second[2].phase, second[2].button, second[2].buttons),
+        (PointerPhase::Down, Some(inker::MouseButton::Middle), both)
+    );
+    assert_eq!(
+        (second[2].position.x, second[2].position.y),
+        (
+            position.x - f.surfaces[0].rect.x,
+            position.y - f.surfaces[0].rect.y
+        )
+    );
+    assert!(
+        f.pointers[1].lock().unwrap().is_empty(),
+        "fresh hit B receives no captured gesture"
+    );
+    assert!(
+        !f.pointer(PointerPhase::Up, Some(inker::MouseButton::Right))
+            .1
+            .handled
+    );
+    f.assert_a_custody();
+    assert!(
+        f.pointer(PointerPhase::Up, Some(inker::MouseButton::Left))
+            .1
+            .handled
+    );
+    assert_eq!(f.buttons[&window], PointerButtons::AUXILIARY);
+    f.assert_a_custody();
+    assert!(
+        f.pointer(PointerPhase::Up, Some(inker::MouseButton::Middle))
+            .1
+            .handled
+    );
+    assert_eq!(captured_mouse(&f.contents.pool), None);
+    assert_eq!(f.buttons[&window], PointerButtons::NONE);
+    assert_eq!(f.pointers[0].lock().unwrap().len(), 5);
+    assert!(
+        !f.pointer(PointerPhase::Up, Some(inker::MouseButton::Middle))
+            .1
+            .handled
+    );
+    assert_eq!(f.pointers[0].lock().unwrap().len(), 5);
+    assert!(f.pointers[1].lock().unwrap().is_empty());
+}
+fn caller_capture_effect(window: u64, submit: bool) {
+    let mut f = CallerCaptureFixture::new(window, Some(submit));
+    f.press(0, inker::MouseButton::Left);
+    let (source, effect) = f.press(1, inker::MouseButton::Middle);
+    assert!(effect.handled);
+    assert_eq!(
+        source,
+        ContentKey::Node(f.nodes[0]),
+        "caller selects actual captured effect source A"
+    );
+    f.assert_a_custody();
+    let (source, unrelated) = f.pointer(PointerPhase::Up, Some(inker::MouseButton::Right));
+    assert_eq!(source, ContentKey::Node(f.nodes[0]));
+    assert!(!unrelated.handled);
+    assert!(unrelated.navigation.is_none() && unrelated.submission.is_none());
+    f.assert_a_custody();
+    for button in [inker::MouseButton::Left, inker::MouseButton::Middle] {
+        let (source, effect) = f.pointer(PointerPhase::Up, Some(button));
+        assert_eq!(source, ContentKey::Node(f.nodes[0]));
+        if submit {
+            assert_eq!(effect.submission.unwrap().action, "https://upper.test/post");
+            assert!(effect.navigation.is_none());
+        } else {
+            assert_eq!(
+                effect.navigation.unwrap().request.address,
+                "https://upper.test/next"
+            );
+            assert!(effect.submission.is_none());
+        }
+        if button == inker::MouseButton::Left {
+            f.assert_a_custody();
+        }
+    }
+    assert_eq!(captured_mouse(&f.contents.pool), None);
+    assert!(
+        !f.inputs[0]
+            .lock()
+            .unwrap()
+            .iter()
+            .any(|input| matches!(input, inker::SessionInput::Cancel))
+    );
+    assert!(!f.inputs[1].lock().unwrap().iter().any(|input| matches!(
+        input,
+        inker::SessionInput::PointerButton { .. } | inker::SessionInput::PointerMoved { .. }
+    )));
+}
+fn caller_capture_retirement(window: u64) {
+    for retirement in 0..4 {
+        let mut f = CallerCaptureFixture::new(window, None);
+        f.press(0, inker::MouseButton::Left);
+        f.assert_a_custody();
+        match retirement {
+            0 => f.sync(false), // Genuine native focus loss.
+            1 => {
+                let placements = f
+                    .plan()
+                    .into_iter()
+                    .filter(|s| s.id != f.surfaces[0].id)
+                    .map(|surface| {
+                        super::super::content_pool::HostPlacement::for_focus(
+                            surface,
+                            window,
+                            true,
+                            f.app.focus,
+                            1.,
+                        )
+                    })
+                    .collect();
+                f.contents.sync_placements(
+                    placements,
+                    Arc::new(inker::SessionRegistry::new()),
+                    Arc::new(inker::SurfaceEngineRegistry::new()),
+                    std::time::Instant::now(),
+                );
+            },
+            2 => {
+                let placements = f
+                    .plan()
+                    .into_iter()
+                    .map(|surface| {
+                        let source_window = if surface.id == f.surfaces[0].id {
+                            window + 1
+                        } else {
+                            window
+                        };
+                        super::super::content_pool::HostPlacement::for_focus(
+                            surface,
+                            source_window,
+                            true,
+                            f.app.focus,
+                            1.,
+                        )
+                    })
+                    .collect();
+                f.contents.sync_placements(
+                    placements,
+                    Arc::new(inker::SessionRegistry::new()),
+                    Arc::new(inker::SurfaceEngineRegistry::new()),
+                    std::time::Instant::now(),
+                );
+            },
+            _ => {
+                f.contents.insert(f.nodes[0], hosted(&Default::default()));
+            },
+        }
+        assert_eq!(
+            captured_mouse(&f.contents.pool),
+            None,
+            "real retirement must still cancel custody"
+        );
+        assert_eq!(
+            f.pointers[0]
+                .lock()
+                .unwrap()
+                .iter()
+                .map(|e| e.phase)
+                .collect::<Vec<_>>(),
+            [PointerPhase::Down, PointerPhase::Cancel]
+        );
+        assert_eq!(
+            f.buttons[&window],
+            PointerButtons::PRIMARY,
+            "Cancel is not physical release"
+        );
+        let position = f.position(1);
+        assert!(
+            native_mouse_input(
+                &mut f.contents.pool,
+                &mut f.buttons,
+                window,
+                None,
+                position,
+                PointerPhase::Up,
+                Some(inker::MouseButton::Left),
+                Default::default()
+            )
+            .is_none()
+        );
+        assert_eq!(f.buttons[&window], PointerButtons::NONE);
+        assert_eq!(f.pointers[0].lock().unwrap().len(), 2);
+        let (source, effect) = f.press(1, inker::MouseButton::Middle);
+        assert_eq!(source, ContentKey::Node(f.nodes[1]));
+        assert!(effect.handled);
+        assert_eq!(
+            f.app.focus,
+            FocusTarget::Content {
+                node: f.nodes[1],
+                appearance: f.surfaces[1].id
+            }
+        );
+        assert_eq!(captured_mouse(&f.contents.pool), Some(f.surfaces[1].id));
+        assert_eq!(f.pointers[1].lock().unwrap().len(), 1);
+    }
+}
+#[test]
+fn review_caller_capture_primary_second_down_preserves_custody() {
+    caller_capture_gesture(0);
+}
+#[test]
+fn review_caller_capture_lens_second_down_preserves_custody() {
+    caller_capture_gesture(1);
+}
+#[test]
+fn review_caller_capture_primary_navigation_names_first_receiver() {
+    caller_capture_effect(0, false);
+}
+#[test]
+fn review_caller_capture_lens_navigation_names_first_receiver() {
+    caller_capture_effect(1, false);
+}
+#[test]
+fn review_caller_capture_primary_submission_names_first_receiver() {
+    caller_capture_effect(0, true);
+}
+#[test]
+fn review_caller_capture_lens_submission_names_first_receiver() {
+    caller_capture_effect(1, true);
+}
+#[test]
+fn review_caller_capture_primary_actual_retirement_allows_new_receiver() {
+    caller_capture_retirement(0);
+}
+#[test]
+fn review_caller_capture_lens_actual_retirement_allows_new_receiver() {
+    caller_capture_retirement(1);
+}

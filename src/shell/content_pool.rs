@@ -24,6 +24,23 @@ pub(super) struct HostPlacement {
 }
 
 impl HostPlacement {
+    pub(super) fn for_focus(
+        surface: Surface,
+        window: u64,
+        active: bool,
+        focus: crate::surface::FocusTarget,
+        native_scale: f64,
+    ) -> Self {
+        Self::physical(
+            surface,
+            window,
+            active
+                && matches!(focus, crate::surface::FocusTarget::Content { node, appearance }
+                if surface.kind == crate::surface::SurfaceKind::Content(node) && surface.id == appearance),
+            native_scale,
+        )
+    }
+
     /// Surface plans already use physical pixels. Native display scale is
     /// intentionally observed here without applying it again to content.
     pub(super) fn physical(

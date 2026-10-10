@@ -60,28 +60,58 @@ impl Shell {
         &self,
         plan: &[crate::surface::Surface],
     ) -> Vec<(uuid::Uuid, accesskit::Rect)> {
-        let mut placements = std::collections::BTreeMap::new();
-        for surface in plan {
-            let SurfaceKind::Content(node) = surface.kind else {
-                continue;
-            };
-            if !self.surface_a11y.ready(node) {
-                continue;
-            }
-            let rect = accesskit::Rect::new(
-                surface.rect.x as f64,
-                surface.rect.y as f64,
-                (surface.rect.x + surface.rect.w) as f64,
-                (surface.rect.y + surface.rect.h) as f64,
-            );
-            let focused = matches!(self.app.focus, FocusTarget::Content { node: current, appearance }
-                if current == node && appearance == surface.id);
-            // One native producer has one tree. A repeated visual appearance
-            // does not create a second parent for that same tree.
-            if focused || !placements.contains_key(&node) {
-                placements.insert(node, rect);
-            }
-        }
-        placements.into_iter().collect()
+        foreign_placements(&self.surface_a11y, self.app.focus, plan)
     }
+}
+
+/// Native visibility uses the actual window plan, retaining supplier IDs.
+pub(super) fn foreign_placements(
+    forest: &crate::foreign_a11y::ForeignA11y,
+    focus: FocusTarget,
+    plan: &[crate::surface::Surface],
+) -> Vec<(uuid::Uuid, accesskit::Rect)> {
+    let mut placements = std::collections::BTreeMap::new();
+    for surface in plan {
+        let SurfaceKind::Content(node) = surface.kind else {
+            continue;
+        };
+        if !forest.ready(node) {
+            continue;
+        }
+        let rect = accesskit::Rect::new(
+            surface.rect.x as f64,
+            surface.rect.y as f64,
+            (surface.rect.x + surface.rect.w) as f64,
+            (surface.rect.y + surface.rect.h) as f64,
+        );
+        let focused = matches!(focus, FocusTarget::Content { node: current, appearance }
+                if current == node && appearance == surface.id);
+        // One native producer has one tree. A repeated visual appearance
+        // does not create a second parent for that same tree.
+        if focused || !placements.contains_key(&node) {
+            placements.insert(node, rect);
+        }
+    }
+    placements.into_iter().collect()
+}
+
+pub(super) fn deliver_foreign_action(
+    contents: &mut super::NodeDocuments,
+    target: Result<uuid::Uuid, String>,
+    placements: &[(uuid::Uuid, accesskit::Rect)],
+    request: accesskit::ActionRequest,
+) -> Result<(), String> {
+    target.and_then(|node| {
+        if !placements.iter().any(|(current, _)| *current == node) {
+            return Err("foreign accessibility surface is no longer visible".to_owned());
+        }
+        contents
+            .surface_mut(&node)
+            .ok_or_else(|| "foreign accessibility producer retired".to_owned())
+            .and_then(|producer| {
+                producer
+                    .send_accessibility_action(request)
+                    .map_err(|error| error.to_string())
+            })
+    })
 }

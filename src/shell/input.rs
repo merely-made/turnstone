@@ -346,11 +346,16 @@ impl Shell {
         self.pointer_capture = hit.map(|h| h.kind);
         if let Some(hit) = hit {
             match hit.kind {
-                crate::surface::SurfaceKind::Content(node) => {
-                    self.app.focus = crate::surface::FocusTarget::Content {
-                        node,
-                        appearance: hit.id,
-                    };
+                crate::surface::SurfaceKind::Content(_) => {
+                    self.sync_content_placements();
+                    let hit = super::window_input::content_press_target(
+                        &mut self.app.focus,
+                        &self.content_sessions.pool,
+                        0,
+                        inker::PhysicalPosition { x, y },
+                        hit,
+                    );
+                    self.pointer_capture = Some(hit.kind);
                     self.content_input(
                         hit.id,
                         pelt_core::PeltInput::Session(inker::SessionInput::Focus(true)),

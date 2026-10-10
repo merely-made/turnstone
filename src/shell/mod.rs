@@ -134,8 +134,7 @@ impl NodeSessions for NodeDocuments {
 pub(crate) trait NodeSurfaces {
     fn surface_mut(&mut self, node: &uuid::Uuid) -> Option<&mut dyn inker::SurfaceProducer>;
     fn has_surface(&self, node: &uuid::Uuid) -> bool;
-    /// Whether `node`'s content is a document. A torn-out lens window
-    /// composites only documents.
+    /// Whether `node`'s content is a document, for controller input admission.
     fn has_document(&self, node: &uuid::Uuid) -> bool;
     fn surfaces_mut(
         &mut self,
@@ -1415,14 +1414,7 @@ impl Shell {
         // Surface plans and native pointer positions are physical pixels.
         // A factor of one prevents applying native DPI a second time.
         let placement = |surface: crate::surface::Surface, window, active, native_scale| {
-            HostPlacement::physical(
-                surface,
-                window,
-                active
-                    && matches!(focus, crate::surface::FocusTarget::Content { node, appearance }
-                if surface.kind == crate::surface::SurfaceKind::Content(node) && surface.id == appearance),
-                native_scale,
-            )
+            HostPlacement::for_focus(surface, window, active, focus, native_scale)
         };
         let mut placements: Vec<_> = self
             .surface_plan()
@@ -1481,259 +1473,7 @@ impl Shell {
     /// every other leaf a pane. Content insets over the canvas; chrome sits on
     /// top.
     fn surface_plan(&self) -> Vec<crate::surface::Surface> {
-        let area = Rect::full(self.width.max(1), self.height.max(1));
-        // A5 promotes a space to its `SpaceBlueprint` only when it enters the
-        // float layer. Its placements then drive this exact compositor path;
-        // legacy Frisket still supplies the payload and retained renderer
-        // lookup during the A8 persistence migration.
-        let (pane_rects, divider_rects, float_rects): (
-            Vec<(crate::panes::PaneId, Rect)>,
-            Vec<(u32, Rect)>,
-            Vec<(crate::panes::PaneId, Rect)>,
-        ) = match self.app.blueprint_space(crate::action::SpaceRef::Primary) {
-            Some(blueprint) => {
-                let placements = crate::panes::place_space(blueprint, area, self.app.maximized);
-                (
-                    placements
-                        .panes
-                        .into_iter()
-                        .map(|pane| (pane.id, pane.rect))
-                        .collect(),
-                    placements
-                        .dividers
-                        .into_iter()
-                        .map(|divider| (divider.index, divider.rect))
-                        .collect(),
-                    placements
-                        .floats
-                        .into_iter()
-                        .map(|pane| (pane.id, pane.rect))
-                        .collect(),
-                )
-            },
-            None => {
-                let placements =
-                    crate::pane::place_panes(&self.app.frisket, area, self.app.maximized);
-                (
-                    placements
-                        .panes
-                        .into_iter()
-                        .map(|pane| (pane.id, pane.rect))
-                        .collect(),
-                    placements
-                        .dividers
-                        .into_iter()
-                        .map(|divider| (divider.index, divider.rect))
-                        .collect(),
-                    Vec::new(),
-                )
-            },
-        };
-        let mut graph_rects = Vec::new();
-        let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
-            .iter()
-            .filter_map(|(id, rect)| {
-                self.app
-                    .pane_content(*id)
-                    .map(|content| (id, rect, content))
-            })
-            .map(|(id, rect, content)| {
-                if matches!(content, PaneContent::Orrery) {
-                    graph_rects.push((*id, *rect));
-                    (SurfaceKind::Graph(*id), *rect)
-                } else if let PaneContent::Tile(m) = content
-                    && self.has_live_content(&m)
-                {
-                    // A pinned Tile pane with a live session IS a content
-                    // surface at the pane's rect — same keyed path as an
-                    // inset or workbench tile, so input routes for free.
-                    (SurfaceKind::Content(*m), *rect)
-                } else {
-                    (SurfaceKind::Pane(*id), *rect)
-                }
-            })
-            .collect();
-        // Each seam is its own thin surface, so it paints (an empty scene over
-        // the seam clear colour) and takes the divider drag.
-        base.extend(
-            divider_rects
-                .iter()
-                .map(|(index, rect)| (SurfaceKind::Divider(*index), *rect)),
-        );
-        // Workbench tiles (rung 5 slice E): the Workbench pane's cells, walked
-        // at the pane's WINDOW rect, compose each visible (active) tile with a
-        // live session as its own content surface at the cell's body rect —
-        // the same keyed path the focused inset uses, so tile input routing
-        // (wheel, clicks, focus) arrives through the existing Content arms.
-        let workbench_panes: Vec<_> = pane_rects
-            .iter()
-            .filter(|(id, _)| matches!(self.app.pane_content(*id), Some(PaneContent::Workbench)))
-            .map(|(id, rect)| (*id, *rect))
-            .collect();
-        let tiles: Vec<(uuid::Uuid, Rect)> = workbench_panes
-            .iter()
-            .flat_map(|(pane, rect)| {
-                let geom = self
-                    .app
-                    .workbench_for_pane(*pane)
-                    .and_then(|workbench| workbench.to_arrangement().1);
-                crate::workbench_tiling::place_workbench(geom.as_ref(), *rect)
-                    .cells
-                    .iter()
-                    .filter_map(|c| {
-                        let m = c.active_member()?;
-                        self.has_live_content(&m).then(|| (m, c.body()))
-                    })
-                    .collect::<Vec<_>>()
-            })
-            .collect();
-        // Content overlays the canvas pane (when it is shown); a live node's
-        // document insets within the graph, not over a maximized pane. A node
-        // showing as a workbench tile is not ALSO inset over the canvas: one
-        // session, one surface, or the two frame at fighting sizes. That rule
-        // holds ACROSS windows too — when the workbench pane tore out to a
-        // lens, its tiles render THERE (the lens's plan walks them), so the
-        // same membership excludes the inset here.
-        let wb_in_lens = workbench_panes.is_empty()
-            && self.app.lenses.iter().flatten().any(|space| {
-                space
-                    .iter_leaves()
-                    .any(|(_, c, _)| matches!(c, PaneContent::Workbench))
-            });
-        let tiled_in_lens = |id: &uuid::Uuid| {
-            wb_in_lens && {
-                self.app
-                    .lenses
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(ordinal, space)| {
-                        space.as_ref().and_then(|space| {
-                            space
-                                .iter_leaves()
-                                .find(|(_, content, _)| matches!(content, PaneContent::Workbench))
-                                .and_then(|(pane, _, _)| self.app.workbench_for_pane(pane))
-                                .and_then(|workbench| workbench.to_arrangement().1)
-                                .map(|geometry| (ordinal, geometry))
-                        })
-                    })
-                    .any(|(_, geom)| {
-                        crate::workbench_tiling::place_workbench(Some(&geom), area)
-                            .cells
-                            .iter()
-                            .any(|c| c.active_member() == Some(*id))
-                    })
-            }
-        };
-        // A pinned Tile pane claims its member wherever its space shows.
-        let tile_paned = |id: &uuid::Uuid| {
-            self.app
-                .frisket
-                .iter_leaves()
-                .chain(
-                    self.app
-                        .lenses
-                        .iter()
-                        .flatten()
-                        .flat_map(|s| s.iter_leaves()),
-                )
-                .any(|(_, c, _)| matches!(c, PaneContent::Tile(m) if *m == *id))
-        };
-        let focused_graph = self
-            .app
-            .focused_graph_pane()
-            .or_else(|| graph_rects.first().map(|(pane, _)| *pane));
-        let content = focused_graph.and_then(|pane| {
-            let cr = graph_rects
-                .iter()
-                .find(|(candidate, _)| *candidate == pane)
-                .map(|(_, rect)| *rect)?;
-            self.app
-                .graph_pane_focused_member(pane)
-                .filter(|id| self.has_live_content(id))
-                .filter(|id| {
-                    self.has_independent_reader_appearance(id)
-                        || (!tiles.iter().any(|(t, _)| t == id)
-                            && !tiled_in_lens(id)
-                            && !tile_paned(id))
-                })
-                .map(|node| (node, crate::surface::content_rect(cr)))
-        });
-        let caption = focused_graph
-            .and_then(|pane| self.app.graph_for_pane(pane))
-            .and_then(|graph| self.app.graph_runtimes.canvas(graph))
-            .and_then(crate::app::focused_caption);
-        let chrome = (self.app.user_agent_decision.is_open()
-            || self.app.document_find.open
-            || self.app.shell_chrome_config().projects_shellbar() && caption.is_some()
-            || self.app.omnibar.open && self.app.shell_chrome_config().projects_omnibar())
-        .then_some(area);
-        let mut surfaces = crate::surface::assemble(&base, &tiles, content, None);
-        let mut appearance_roles: Vec<(uuid::Uuid, u64, Rect)> = pane_rects
-            .iter()
-            .filter_map(|(pane, rect)| match self.app.pane_content(*pane) {
-                Some(PaneContent::Tile(node)) if self.has_live_content(node) => {
-                    Some((*node, 0x1000_0000_0000_0000 | pane.0, *rect))
-                },
-                _ => None,
-            })
-            .collect();
-        for (pane, rect) in &workbench_panes {
-            let geom = self
-                .app
-                .workbench_for_pane(*pane)
-                .and_then(|workbench| workbench.to_arrangement().1);
-            for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), *rect).cells {
-                if let Some(node) = cell.active_member()
-                    && self.has_live_content(&node)
-                {
-                    appearance_roles.push((
-                        node,
-                        crate::surface::appearance::workbench_appearance_role(*pane, node),
-                        cell.body(),
-                    ));
-                }
-            }
-        }
-        if let Some((node, rect)) = content {
-            let pane = focused_graph.expect("content inset has a graph pane");
-            appearance_roles.push((node, 0x3000_0000_0000_0000 | pane.0, rect));
-        }
-        appearance_roles.extend(float_rects.iter().filter_map(|(pane, rect)| {
-            match self.app.pane_content(*pane) {
-                Some(PaneContent::Tile(node)) if self.has_live_content(node) => {
-                    Some((*node, 0x1000_0000_0000_0000 | pane.0, *rect))
-                },
-                _ => None,
-            }
-        }));
-        surfaces.extend(float_rects.into_iter().filter_map(|(id, rect)| {
-            let content = self.app.pane_content(id)?;
-            let kind = match content {
-                PaneContent::Orrery => SurfaceKind::Graph(id),
-                PaneContent::Tile(member) if self.has_live_content(member) => {
-                    SurfaceKind::Content(*member)
-                },
-                _ => SurfaceKind::Pane(id),
-            };
-            Some(crate::surface::Surface {
-                id: crate::surface::SurfaceId::for_kind(kind),
-                kind,
-                rect,
-            })
-        }));
-        if let Some(rect) = chrome {
-            surfaces.push(crate::surface::Surface {
-                id: crate::surface::SurfaceId::CHROME,
-                kind: SurfaceKind::Chrome,
-                rect,
-            });
-        }
-        crate::surface::appearance::assign_content_appearance_ids(
-            &mut surfaces,
-            0,
-            &appearance_roles,
-        );
-        surfaces
+        primary_content_plan(&self.app, &self.content_sessions, self.width, self.height)
     }
 
     /// A pane's `PaneContent`, looked up from the frisket tree by id.
@@ -2153,35 +1893,39 @@ impl Shell {
                         false /* legacy routes exist only in queue tests */
                     },
                     a11y_bridge::Admission::Contributed(published) => {
-                        let route = published.route;
-                        let rect = self.all_content_plans().into_iter().find_map(|surface| {
-                            (surface.kind == crate::surface::SurfaceKind::Pane(route.pane))
-                                .then_some(surface.rect)
-                        });
+                        let origin = match window {
+                            None => Some(crate::action::SpaceRef::Primary),
+                            Some(id) => self
+                                .lens_windows
+                                .get(&id)
+                                .map(|lens| crate::action::SpaceRef::Lens(lens.ordinal)),
+                        };
+                        let windows = ContributedActionWindows {
+                            primary: (self.width, self.height),
+                            lenses: self
+                                .lens_windows
+                                .values()
+                                .map(|lens| (lens.ordinal, lens.width, lens.height))
+                                .collect(),
+                        };
+                        let plan = contributed_action_plan(
+                            &self.app,
+                            &self.content_sessions,
+                            &windows,
+                            origin,
+                        );
                         let spec = self.contributed_pane_spec(
-                            route.pane,
-                            self.pane_content(route.pane).as_ref(),
+                            published.route.pane,
+                            self.pane_content(published.route.pane).as_ref(),
                         );
-                        let current = crate::contributed_a11y::published_route_is_current(
-                            &self.renderers.contributed,
+                        dispatch_contributed_action(
+                            &mut self.app,
+                            &mut self.renderers.contributed,
                             &published,
-                            rect,
-                            request.target_node,
-                            request.action,
-                        );
-                        let landed = current
-                            && crate::contributed_a11y::apply_route(
-                                &mut self.renderers.contributed,
-                                spec.as_ref(),
-                                route,
-                                request.action,
-                            );
-                        if landed && request.action == accesskit::Action::Focus {
-                            self.app.focus = crate::surface::FocusTarget::Pane(route.pane);
-                            self.app.active_pane = Some(route.pane);
-                            self.app.raise_floating_pane(route.pane);
-                        }
-                        landed
+                            &request,
+                            &plan,
+                            spec.as_ref(),
+                        )
                     },
                 };
                 if !landed {
@@ -2214,21 +1958,12 @@ impl Shell {
                         ),
                     },
                 };
-                let result = target.and_then(|node| {
-                    // The originating window owns visibility; a matching tree
-                    // in another window cannot authorize this queued action.
-                    if !placements.iter().any(|(current, _)| *current == node) {
-                        return Err("foreign accessibility surface is no longer visible".to_owned());
-                    }
-                    self.content_sessions
-                        .surface_mut(&node)
-                        .ok_or_else(|| "foreign accessibility producer retired".to_owned())
-                        .and_then(|producer| {
-                            producer
-                                .send_accessibility_action(request)
-                                .map_err(|error| error.to_string())
-                        })
-                });
+                let result = foreign_a11y::deliver_foreign_action(
+                    &mut self.content_sessions,
+                    target,
+                    &placements,
+                    request,
+                );
                 if let Err(reason) = result {
                     self.app.note(crate::observe::AppEvent::InteractionMissed {
                         what: "a11y-action",
@@ -2771,3 +2506,310 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
     }
 }
+
+/// Primary plan shared by presentation, input, and portable host-plan controls.
+fn primary_content_plan(
+    app: &App,
+    contents: &NodeDocuments,
+    width: u32,
+    height: u32,
+) -> Vec<crate::surface::Surface> {
+    let area = Rect::full(width.max(1), height.max(1));
+    // A5 promotes a space to its `SpaceBlueprint` only when it enters the
+    // float layer. Its placements then drive this exact compositor path;
+    // legacy Frisket still supplies the payload and retained renderer
+    // lookup during the A8 persistence migration.
+    let (pane_rects, divider_rects, float_rects): (
+        Vec<(crate::panes::PaneId, Rect)>,
+        Vec<(u32, Rect)>,
+        Vec<(crate::panes::PaneId, Rect)>,
+    ) = match app.blueprint_space(crate::action::SpaceRef::Primary) {
+        Some(blueprint) => {
+            let placements = crate::panes::place_space(blueprint, area, app.maximized);
+            (
+                placements
+                    .panes
+                    .into_iter()
+                    .map(|pane| (pane.id, pane.rect))
+                    .collect(),
+                placements
+                    .dividers
+                    .into_iter()
+                    .map(|divider| (divider.index, divider.rect))
+                    .collect(),
+                placements
+                    .floats
+                    .into_iter()
+                    .map(|pane| (pane.id, pane.rect))
+                    .collect(),
+            )
+        },
+        None => {
+            let placements = crate::pane::place_panes(&app.frisket, area, app.maximized);
+            (
+                placements
+                    .panes
+                    .into_iter()
+                    .map(|pane| (pane.id, pane.rect))
+                    .collect(),
+                placements
+                    .dividers
+                    .into_iter()
+                    .map(|divider| (divider.index, divider.rect))
+                    .collect(),
+                Vec::new(),
+            )
+        },
+    };
+    let mut graph_rects = Vec::new();
+    let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
+        .iter()
+        .filter_map(|(id, rect)| app.pane_content(*id).map(|content| (id, rect, content)))
+        .map(|(id, rect, content)| {
+            if matches!(content, PaneContent::Orrery) {
+                graph_rects.push((*id, *rect));
+                (SurfaceKind::Graph(*id), *rect)
+            } else if let PaneContent::Tile(m) = content
+                && contents.contains_key(&m)
+            {
+                // A pinned Tile pane with a live session IS a content
+                // surface at the pane's rect — same keyed path as an
+                // inset or workbench tile, so input routes for free.
+                (SurfaceKind::Content(*m), *rect)
+            } else {
+                (SurfaceKind::Pane(*id), *rect)
+            }
+        })
+        .collect();
+    // Each seam is its own thin surface, so it paints (an empty scene over
+    // the seam clear colour) and takes the divider drag.
+    base.extend(
+        divider_rects
+            .iter()
+            .map(|(index, rect)| (SurfaceKind::Divider(*index), *rect)),
+    );
+    // Workbench tiles (rung 5 slice E): the Workbench pane's cells, walked
+    // at the pane's WINDOW rect, compose each visible (active) tile with a
+    // live session as its own content surface at the cell's body rect —
+    // the same keyed path the focused inset uses, so tile input routing
+    // (wheel, clicks, focus) arrives through the existing Content arms.
+    let workbench_panes: Vec<_> = pane_rects
+        .iter()
+        .filter(|(id, _)| matches!(app.pane_content(*id), Some(PaneContent::Workbench)))
+        .map(|(id, rect)| (*id, *rect))
+        .collect();
+    let tiles: Vec<(uuid::Uuid, Rect)> = workbench_panes
+        .iter()
+        .flat_map(|(pane, rect)| {
+            let geom = app
+                .workbench_for_pane(*pane)
+                .and_then(|workbench| workbench.to_arrangement().1);
+            crate::workbench_tiling::place_workbench(geom.as_ref(), *rect)
+                .cells
+                .iter()
+                .filter_map(|c| {
+                    let m = c.active_member()?;
+                    contents.contains_key(&m).then(|| (m, c.body()))
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect();
+    // Content overlays the canvas pane (when it is shown); a live node's
+    // document insets within the graph, not over a maximized pane. A node
+    // showing as a workbench tile is not ALSO inset over the canvas: one
+    // session, one surface, or the two frame at fighting sizes. That rule
+    // holds ACROSS windows too — when the workbench pane tore out to a
+    // lens, its tiles render THERE (the lens's plan walks them), so the
+    // same membership excludes the inset here.
+    let wb_in_lens = workbench_panes.is_empty()
+        && app.lenses.iter().flatten().any(|space| {
+            space
+                .iter_leaves()
+                .any(|(_, c, _)| matches!(c, PaneContent::Workbench))
+        });
+    let tiled_in_lens = |id: &uuid::Uuid| {
+        wb_in_lens && {
+            app.lenses
+                .iter()
+                .enumerate()
+                .filter_map(|(ordinal, space)| {
+                    space.as_ref().and_then(|space| {
+                        space
+                            .iter_leaves()
+                            .find(|(_, content, _)| matches!(content, PaneContent::Workbench))
+                            .and_then(|(pane, _, _)| app.workbench_for_pane(pane))
+                            .and_then(|workbench| workbench.to_arrangement().1)
+                            .map(|geometry| (ordinal, geometry))
+                    })
+                })
+                .any(|(_, geom)| {
+                    crate::workbench_tiling::place_workbench(Some(&geom), area)
+                        .cells
+                        .iter()
+                        .any(|c| c.active_member() == Some(*id))
+                })
+        }
+    };
+    // A pinned Tile pane claims its member wherever its space shows.
+    let tile_paned = |id: &uuid::Uuid| {
+        app.frisket
+            .iter_leaves()
+            .chain(app.lenses.iter().flatten().flat_map(|s| s.iter_leaves()))
+            .any(|(_, c, _)| matches!(c, PaneContent::Tile(m) if *m == *id))
+    };
+    let focused_graph = app
+        .focused_graph_pane()
+        .or_else(|| graph_rects.first().map(|(pane, _)| *pane));
+    let content = focused_graph.and_then(|pane| {
+        let cr = graph_rects
+            .iter()
+            .find(|(candidate, _)| *candidate == pane)
+            .map(|(_, rect)| *rect)?;
+        app.graph_pane_focused_member(pane)
+            .filter(|id| contents.contains_key(id))
+            .filter(|id| {
+                contents.session(id).is_some_and(|session| {
+                    session
+                        .as_any_ref()
+                        .is::<mere_document_lanes::ReaderDocumentSession>()
+                }) || (!tiles.iter().any(|(t, _)| t == id) && !tiled_in_lens(id) && !tile_paned(id))
+            })
+            .map(|node| (node, crate::surface::content_rect(cr)))
+    });
+    let caption = focused_graph
+        .and_then(|pane| app.graph_for_pane(pane))
+        .and_then(|graph| app.graph_runtimes.canvas(graph))
+        .and_then(crate::app::focused_caption);
+    let chrome = (app.user_agent_decision.is_open()
+        || app.document_find.open
+        || app.shell_chrome_config().projects_shellbar() && caption.is_some()
+        || app.omnibar.open && app.shell_chrome_config().projects_omnibar())
+    .then_some(area);
+    let mut surfaces = crate::surface::assemble(&base, &tiles, content, None);
+    let mut appearance_roles: Vec<(uuid::Uuid, u64, Rect)> = pane_rects
+        .iter()
+        .filter_map(|(pane, rect)| match app.pane_content(*pane) {
+            Some(PaneContent::Tile(node)) if contents.contains_key(node) => {
+                Some((*node, 0x1000_0000_0000_0000 | pane.0, *rect))
+            },
+            _ => None,
+        })
+        .collect();
+    for (pane, rect) in &workbench_panes {
+        let geom = app
+            .workbench_for_pane(*pane)
+            .and_then(|workbench| workbench.to_arrangement().1);
+        for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), *rect).cells {
+            if let Some(node) = cell.active_member()
+                && contents.contains_key(&node)
+            {
+                appearance_roles.push((
+                    node,
+                    crate::surface::appearance::workbench_appearance_role(*pane, node),
+                    cell.body(),
+                ));
+            }
+        }
+    }
+    if let Some((node, rect)) = content {
+        let pane = focused_graph.expect("content inset has a graph pane");
+        appearance_roles.push((node, 0x3000_0000_0000_0000 | pane.0, rect));
+    }
+    appearance_roles.extend(float_rects.iter().filter_map(|(pane, rect)| {
+        match app.pane_content(*pane) {
+            Some(PaneContent::Tile(node)) if contents.contains_key(node) => {
+                Some((*node, 0x1000_0000_0000_0000 | pane.0, *rect))
+            },
+            _ => None,
+        }
+    }));
+    surfaces.extend(float_rects.into_iter().filter_map(|(id, rect)| {
+        let content = app.pane_content(id)?;
+        let kind = match content {
+            PaneContent::Orrery => SurfaceKind::Graph(id),
+            PaneContent::Tile(member) if contents.contains_key(member) => {
+                SurfaceKind::Content(*member)
+            },
+            _ => SurfaceKind::Pane(id),
+        };
+        Some(crate::surface::Surface {
+            id: crate::surface::SurfaceId::for_kind(kind),
+            kind,
+            rect,
+        })
+    }));
+    if let Some(rect) = chrome {
+        surfaces.push(crate::surface::Surface {
+            id: crate::surface::SurfaceId::CHROME,
+            kind: SurfaceKind::Chrome,
+            rect,
+        });
+    }
+    crate::surface::appearance::assign_content_appearance_ids(&mut surfaces, 0, &appearance_roles);
+    surfaces
+}
+
+/// Native window metadata captured from the shell's current primary/lens records.
+/// The portable controls use actual App lens identities and the same host planners.
+struct ContributedActionWindows {
+    primary: (u32, u32),
+    lenses: Vec<(usize, u32, u32)>,
+}
+
+/// Resolve delivery against the queued native window's current host plan.
+/// A pane moving to another window cannot revive its old publication there.
+fn contributed_action_plan(
+    app: &App,
+    contents: &NodeDocuments,
+    windows: &ContributedActionWindows,
+    origin: Option<crate::action::SpaceRef>,
+) -> Vec<crate::surface::Surface> {
+    match origin {
+        Some(crate::action::SpaceRef::Primary) => {
+            primary_content_plan(app, contents, windows.primary.0, windows.primary.1)
+        },
+        Some(crate::action::SpaceRef::Lens(ordinal)) => windows
+            .lenses
+            .iter()
+            .find(|(current, _, _)| *current == ordinal)
+            .map(|(_, width, height)| {
+                lens::lens_content_plan(app, contents, ordinal, *width, *height)
+            })
+            .unwrap_or_default(),
+        None => Vec::new(),
+    }
+}
+
+/// The contributed branch of the ordered native drain, shared by delivery controls.
+fn dispatch_contributed_action(
+    app: &mut App,
+    sessions: &mut crate::contributed_surface::ContributedSurfaceSessions,
+    published: &crate::contributed_a11y::PublishedRoute,
+    request: &accesskit::ActionRequest,
+    plan: &[crate::surface::Surface],
+    spec: Option<&crate::panes::PaneSpec>,
+) -> bool {
+    let route = published.route;
+    let rect = plan.iter().find_map(|surface| {
+        (surface.kind == crate::surface::SurfaceKind::Pane(route.pane)).then_some(surface.rect)
+    });
+    let current = crate::contributed_a11y::published_route_is_current(
+        sessions,
+        published,
+        rect,
+        request.target_node,
+        request.action,
+    );
+    let landed =
+        current && crate::contributed_a11y::apply_route(sessions, spec, route, request.action);
+    if landed && request.action == accesskit::Action::Focus {
+        app.focus = crate::surface::FocusTarget::Pane(route.pane);
+        app.active_pane = Some(route.pane);
+        app.raise_floating_pane(route.pane);
+    }
+    landed
+}
+
+#[cfg(test)]
+#[path = "contributed_window_a11y_tests.rs"]
+mod contributed_window_a11y_tests;

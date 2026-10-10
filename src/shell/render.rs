@@ -30,6 +30,65 @@ use winit::dpi::{PhysicalPosition, PhysicalSize};
 use super::{CompositeLayer, PlannedLayer, PlannedScene, Shell, pane_display_label};
 
 impl Shell {
+    /// Both windows import on the primary render core and keep one producer cache.
+    #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+    pub(super) fn import_content_layer(
+        &mut self,
+        node: uuid::Uuid,
+        surface: &crate::surface::Surface,
+        result: Result<Option<inker::SurfaceFrame>, String>,
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+    ) -> Result<Option<CompositeLayer>, String> {
+        match result {
+            Ok(Some(frame)) => {
+                let cached = self.surface_frames.entry(node).or_insert(None);
+                if let Err(error) = super::surface_frames::update_imported_frame(
+                    cached,
+                    frame,
+                    device,
+                    queue,
+                    #[cfg(feature = "scry")]
+                    self.scry_frame_importers.get(&node),
+                ) {
+                    tracing::warn!(%node, %error, "surface frame import failed");
+                    return Err(format!("browser frame import failed: {error}"));
+                }
+            },
+            Ok(None) => {},
+            Err(error) => {
+                tracing::warn!(%node, %error, "surface resize/capture failed");
+                return Err(format!("browser resize/capture failed: {error}"));
+            },
+        }
+        Ok(self
+            .surface_frames
+            .get(&node)
+            .and_then(|cached| cached.as_ref())
+            .map(|frame| CompositeLayer {
+                kind: surface.kind,
+                view: frame.view(),
+                placement: ExternalTexturePlacement::new(surface.rect.dest()),
+            }))
+    }
+
+    /// Acquisition/import refusal withdraws content custody in either window.
+    #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+    pub(super) fn fail_surface_frames(&mut self, failures: Vec<(uuid::Uuid, String)>) -> bool {
+        if failures.is_empty() {
+            return false;
+        }
+        for (node, error) in failures {
+            self.run_effects(vec![crate::action::Effect::CloseContent { node }]);
+            let effects = self
+                .app
+                .apply_update(crate::action::Update::ContentFailed { node, error });
+            self.run_effects(effects);
+        }
+        self.request_redraw();
+        true
+    }
+
     /// Start one target-bound hosted capture. The pending target is recorded
     /// before the engine is called, and the request id remains spent even when
     /// the engine refuses admission.
@@ -817,41 +876,19 @@ impl Shell {
                             windows
                         ))]
                         if let Some(result) = surface_frame {
-                            match result {
-                                Ok(Some(frame)) => {
-                                    let cached = self.surface_frames.entry(node).or_insert(None);
-                                    if let Err(error) = super::surface_frames::update_imported_frame(
-                                        cached,
-                                        frame,
-                                        &surface_device,
-                                        &surface_queue,
-                                        #[cfg(feature = "scry")]
-                                        self.scry_frame_importers.get(&node),
-                                    ) {
-                                        tracing::warn!(%node, %error, "surface frame import failed");
-                                        surface_failures.push((
-                                            node,
-                                            format!("browser frame import failed: {error}"),
-                                        ));
-                                        continue;
-                                    }
-                                },
+                            match self.import_content_layer(
+                                node,
+                                surface,
+                                result,
+                                &surface_device,
+                                &surface_queue,
+                            ) {
+                                Ok(Some(layer)) => scenes.push(PlannedLayer::Imported(layer)),
                                 Ok(None) => {},
                                 Err(error) => {
-                                    tracing::warn!(%node, %error, "surface resize/capture failed");
-                                    surface_failures.push((
-                                        node,
-                                        format!("browser resize/capture failed: {error}"),
-                                    ));
+                                    surface_failures.push((node, error));
                                     continue;
                                 },
-                            }
-                            if let Some(Some(frame)) = self.surface_frames.get(&node) {
-                                scenes.push(PlannedLayer::Imported(CompositeLayer {
-                                    kind: surface.kind,
-                                    view: frame.view(),
-                                    placement: ExternalTexturePlacement::new(rect.dest()),
-                                }));
                             }
                             // Browser capture arrives asynchronously. Drive its
                             // mailbox until the shell has a wake bridge.
@@ -913,17 +950,7 @@ impl Shell {
         }
 
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
-        if !surface_failures.is_empty() {
-            for (node, error) in surface_failures {
-                // Capture starts lazily, after spawn. A setup/import refusal
-                // must retire its custody and become a visible failed state.
-                self.run_effects(vec![crate::action::Effect::CloseContent { node }]);
-                let effects = self
-                    .app
-                    .apply_update(crate::action::Update::ContentFailed { node, error });
-                self.run_effects(effects);
-            }
-            self.request_redraw();
+        if self.fail_surface_frames(surface_failures) {
             return;
         }
 
@@ -1233,4 +1260,16 @@ pub(super) fn read_texture_rgba(
         out.extend_from_slice(&mapped[start..start + row_bytes as usize]);
     }
     out
+}
+
+/// Preserve the pool's document or native frame result for lens composition.
+pub(super) fn lens_content_frame(
+    pool: &mut pelt_core::PeltControllerPool<
+        super::content_pool::ContentKey,
+        crate::surface::SurfaceId,
+        Scene,
+    >,
+    appearance: &crate::surface::SurfaceId,
+) -> Option<pelt_core::PeltLayer<Scene>> {
+    pool.frame(appearance)
 }
