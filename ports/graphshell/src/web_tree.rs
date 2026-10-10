@@ -127,10 +127,22 @@ const SHEET: &str = "\
     .history-summary { margin:2px 0; color:#f0dfb8; } \
     .history-changes { margin:0; padding:0 0 0 16px; overflow-y:auto; }";
 
+// Applets retain their host stylesheet; application appearance enters last.
+fn tree_stylesheet(appearance: &str) -> String {
+    #[cfg(feature = "applets")]
+    let applet_sheet = applet::SHEET;
+    #[cfg(not(feature = "applets"))]
+    let applet_sheet = "";
+    format!("{SHEET}\n{applet_sheet}\n{appearance}")
+}
+
 /// What the page, its producer and its hooks share.
 struct Shared {
     #[cfg(feature = "applets")]
     applet: RefCell<applet::Pane>,
+    appearance: crate::web_appearance::Handle,
+    appearance_revision: Cell<u64>,
+
     canvas: RefCell<Canvas>,
     /// Input or a new graph since the producer last drew.
     dirty: Cell<bool>,
@@ -800,10 +812,14 @@ pub fn mount_tree(root: Element) -> Result<(), JsValue> {
             "Graphshell is already mounted on this page",
         ));
     }
+    let owns_title = root.has_attribute("data-owns-title");
     wasm_bindgen_futures::spawn_local(async move {
         if let Err(error) = boot(root).await {
             web_sys::console::error_1(&error.clone().into());
-            if let Some(document) = web_sys::window().and_then(|window| window.document()) {
+            if let Some(document) = web_sys::window()
+                .and_then(|window| window.document())
+                .filter(|_| owns_title)
+            {
                 document.set_title(&format!("GRAPHSHELL TREE FAIL: {error}"));
             }
         }
@@ -875,9 +891,18 @@ async fn boot(root: Element) -> Result<(), String> {
     };
     let nodes = graph.node_count();
     let speed_options = crate::web_speed::options()?;
+    let appearance = crate::web_appearance::mount(
+        root.clone(),
+        product.is_some() && root.has_attribute("data-appearance-application"),
+    )?;
+    let initial_sheet = tree_stylesheet(&appearance.borrow().sheet());
+    let appearance_revision = Cell::new(appearance.borrow().revision);
     let shared = Rc::new(Shared {
         #[cfg(feature = "applets")]
         applet: RefCell::new(applet::Pane::default()),
+        appearance,
+        appearance_revision,
+
         canvas: RefCell::new(match &placed {
             Some(positions) => web_graphs::placed_canvas(graph, positions, width, height),
             None => web_graphs::prepared_canvas(graph, width, height),
@@ -914,6 +939,10 @@ async fn boot(root: Element) -> Result<(), String> {
         root: root.clone(),
         gestures: RefCell::new(gestures::Gestures::default()),
     });
+    shared
+        .appearance
+        .borrow()
+        .apply_canvas(&mut shared.canvas.borrow_mut());
     // Reduced motion: the graph stays where it was placed until the reader
     // plays physics.
     if shared.reduced_motion() {
@@ -971,16 +1000,8 @@ async fn boot(root: Element) -> Result<(), String> {
                 size: (width, height),
             },
             logic: view as Logic,
-            sheet: {
-                #[cfg(feature = "applets")]
-                {
-                    format!("{SHEET}{}", applet::SHEET)
-                }
-                #[cfg(not(feature = "applets"))]
-                {
-                    SHEET.to_string()
-                }
-            },
+            sheet: initial_sheet,
+
             // A browser lends genet no system faces, so the page brings one.
             fonts: vec![HostFont {
                 family: None,
@@ -1049,6 +1070,18 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                             page.applet_query = cambium::TextInput::new("");
                         }
                     });
+                }
+            }
+            {
+                let mut appearance = frame_shared.appearance.borrow_mut();
+                if let Err(message) = appearance.refresh(false) {
+                    web_sys::console::error_1(&message.into());
+                }
+                if frame_shared.appearance_revision.get() != appearance.revision {
+                    appearance.apply_canvas(&mut frame_shared.canvas.borrow_mut());
+                    frame_shared.appearance_revision.set(appearance.revision);
+                    *ctx.set_sheet = Some(tree_stylesheet(&appearance.sheet()));
+                    frame_shared.dirty.set(true);
                 }
             }
             if ctx

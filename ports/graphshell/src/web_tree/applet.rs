@@ -528,14 +528,14 @@ pub(super) fn view(page: &TreePage) -> Child {
     Box::new(el("main", children).attr("class", "applet-library").attr(
         "style",
         format!(
-            "width:{}px;height:{}px;overflow-y:auto;padding:20px;background:#17232b;",
+            "width:{}px;height:{}px;overflow-y:auto;padding:20px;",
             page.size.0, page.size.1
         ),
     ))
 }
 
 pub(super) const SHEET: &str = "\
-    .applet-library { display:flex;flex-direction:column;gap:10px;color:#e6f0ee;box-sizing:border-box; } \
+    .applet-library { display:flex;flex-direction:column;gap:10px;color:#e6f0ee;background:#17232b;box-sizing:border-box; } \
     .applet-library h1 { font-size:23px;margin:0 0 8px; } \
     .applet-library h2 { font-size:18px;margin:8px 0; } \
     .applet-library p { margin:4px 0;overflow-wrap:anywhere; } \

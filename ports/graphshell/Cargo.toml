@@ -88,6 +88,7 @@ webrtc-join = [
 # (physics catalog plan, P5c; mere `canvas-gpu`, ruled 2026-10-02).
 canvas-gpu = ["web", "mere/canvas-gpu"]
 web = [
+    "dep:tabard",
     "dep:async-trait",
     # The canvas's producer semantics for a screen reader (`canvas_reader`;
     # dynamics grammar plan, F67).
@@ -148,6 +149,7 @@ scenotime.workspace = true
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json.workspace = true
 workbench.workspace = true
+tabard = { workspace = true, optional = true }
 # The projection editor's undo (Scenograph editor plan, E2 and SE10).
 edit-history.workspace = true
 sha2 = { workspace = true, optional = true }
