@@ -1,0 +1,22 @@
+# Fixture URI is a local file; transport and human AT remain separate gates.
+settle 30
+key escape
+open ${TURNSTONE_A11Y_MICRON_URI}
+settle 60
+act Toggle live content
+settle 30
+assert content-live
+assert a11y link: First Micron >> link: Second Micron
+capture micron_document_a11y
+# The inline field is inert source text. The host's real editor owns editing.
+act Fill Micron form
+assert a11y textinput: name = seed
+assert a11y Enter to continue
+key enter
+assert a11y passwordinput: secret
+key enter
+assert a11y type send and press Enter
+capture micron_host_form_confirmation
+# Deliberately stop before network submission; the unit gate checks the exact
+# SubmitMicron effect and existing transport gates own request delivery.
+key escape

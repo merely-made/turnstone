@@ -127,10 +127,6 @@ uxtree = { git = "https://github.com/merely-made/mere.git", rev = "3b3afa2895424
 chrome = { package = "mere-chrome", git = "https://github.com/merely-made/mere.git", rev = "3b3afa2895424f4be4e1e5f23d48140bf24da5aa" }
 # AccessKit node vocabulary for the projection (matches mere's 0.24 pin).
 accesskit = "0.24"
-# 0.32 on purpose: genet-winit-host pins accesskit_windows 0.32, and two
-# platform adapter stacks in one process is two UIA providers and one
-# oversized PDB. Both ride the same core accesskit 0.24 either way.
-accesskit_winit = "0.32"
 # The actor-kernel runtime: the physics + fetch actors wake this shell's
 # event loop through an `armillary::Wake`.
 armillary = { git = "https://github.com/merely-made/mere.git", rev = "3b3afa2895424f4be4e1e5f23d48140bf24da5aa" }

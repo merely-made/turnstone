@@ -1,0 +1,51 @@
+Local workspace: /home/markik/Code/worktrees/mere-three-lanes
+Local lock: /home/markik/Code/worktrees/mere-three-lanes/.cargo/local/Cargo.lock
+warning: patch `boa_engine v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `boa_gc v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `genet-clipboard v0.1.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-clipboard)` was not used in the crate graph
+warning: patch `ipc-channel v0.22.0 (/home/markik/Code/worktrees/genet-three-lanes/support/patches/ipc-channel)` was not used in the crate graph
+warning: patch `script-engine-piccolo v0.0.0 (/home/markik/Code/worktrees/genet-three-lanes/components/script-engine-piccolo)` was not used in the crate graph
+warning: patch `servo-media-player v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/player)` was not used in the crate graph
+warning: patch `servo-media-streams v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/streams)` was not used in the crate graph
+warning: patch `servo-media-traits v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/traits)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+warning: use of deprecated method `icu_properties::props::BidiClass::to_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> /home/markik/Code/worktrees/genet-three-lanes/support/patches/parley/src/bidi.rs:893:13
+    |
+893 |     1 << (t.to_icu4c_value() as u32)
+    |             ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: `genet-parley` (lib) generated 1 warning
+   Compiling cambium-rootstock v0.1.0 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/cambium-rootstock)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.14s
+     Running unittests src/lib.rs (/home/markik/Code/target/debug/deps/cambium_rootstock-7402ddbdef0c8974)
+
+running 1 test
+
+thread 'multi_host_tests::queued_secondary_release_and_cancel_follow_host_capture_routing' (3357028) panicked at crates/cambium/cambium-rootstock/src/multi_host_tests.rs:719:5:
+assertion `left == right` failed
+  left: [Down, Move, Up, Down, Up]
+ right: [Down, Move, Up, Down, Cancel]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test multi_host_tests::queued_secondary_release_and_cancel_follow_host_capture_routing ... FAILED
+
+failures:
+
+failures:
+    multi_host_tests::queued_secondary_release_and_cancel_follow_host_capture_routing
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 73 filtered out; finished in 0.08s
+
+error: test failed, to rerun pass `-p cambium-rootstock --lib`
+cargo_mode: Command '['cargo', '+1.98.1', '--config', '/home/markik/Code/worktrees/mere-three-lanes/.cargo/config.local.toml', '--config', 'resolver.lockfile-path="/home/markik/Code/worktrees/mere-three-lanes/.cargo/local/Cargo.lock"', 'test', '-j1', '-p', 'cambium-rootstock', '--lib', 'queued_secondary_release_and_cancel_follow_host_capture_routing', '--', '--nocapture']' returned non-zero exit status 101.

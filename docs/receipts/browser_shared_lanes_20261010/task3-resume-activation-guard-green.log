@@ -1,0 +1,14 @@
+   Compiling genet-winit-host v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-winit-host)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.15s
+     Running unittests src/lib.rs (/home/markik/Code/target/debug/deps/genet_winit_host-2c7507789acf914d)
+
+running 6 tests
+test a11y::tests::batch_completion_requires_every_boundary_and_no_activation_reset ... ok
+test a11y::tests::custom_action_sink_captures_tree_identity_before_waking ... ok
+test a11y::tests::activation_rejects_an_uninstalled_child_graft_even_with_host_root_focus ... ok
+test a11y::tests::queued_actions_retain_value_data ... ok
+test a11y::tests::single_host_publication_cannot_activate_a_missing_guest ... ok
+test a11y::tests::publication_replays_safe_root_before_guest_focus_after_activation ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+

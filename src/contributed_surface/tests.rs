@@ -492,3 +492,113 @@ fn admission_generations_never_wrap_or_reuse_removed_identity() {
     ));
     assert!(sessions.is_empty());
 }
+
+#[test]
+fn content_pool_contributed_cancel_preserves_move_and_retires_capture() {
+    type State = Rc<RefCell<(Vec<PointerPhase>, f32, u32)>>;
+    fn view(_: &State) -> impl View<State, (), GenetCtx, Element = GenetElement> + use<> {
+        on_click(
+            cambium::on_pointer(
+                el::<_, State, ()>("button", "drag"),
+                |state: &mut State, event: PointerEvent| {
+                    let mut state = state.borrow_mut();
+                    state.0.push(event.phase);
+                    if event.phase == PointerPhase::Move {
+                        state.1 = event.local.0;
+                    }
+                },
+            ),
+            |state: &mut State, _| state.borrow_mut().2 += 1,
+        )
+    }
+    let state: State = Rc::new(RefCell::new((Vec::new(), 0., 0)));
+    let runner = GenetAppRunner::new(
+        Rc::new(RefCell::new(ScriptedDom::new())),
+        view,
+        state.clone(),
+    );
+    let session = RunnerSurfaceSession::new(
+        descriptor("drag", "drag.v1"),
+        runner,
+        |_: &State| SurfaceAvailability::Available,
+        |_: &mut State, _| {},
+        |_: ()| Vec::new(),
+    );
+    let mut pane = ContributedSurfacePane::new(
+        PaneKindId::new("drag"),
+        source("drag.v1"),
+        Box::new(session),
+        "",
+    );
+    let target = pane.session.root();
+    pane.dispatch(ResolvedSurfaceEvent::PointerDown {
+        target,
+        event: PointerEvent::new(PointerPhase::Down, (1., 1.), (100., 100.)),
+    });
+    assert!(pane.session.pointer_capture().is_some());
+    pane.pointer_move(42., 1.);
+    pane.pointer_cancel(42., 1.);
+    assert!(pane.session.pointer_capture().is_none());
+    pane.pointer_up(42., 1.);
+    let state = state.borrow();
+    assert_eq!(
+        state.0,
+        [PointerPhase::Down, PointerPhase::Move, PointerPhase::Cancel]
+    );
+    assert_eq!(
+        state.1, 42.,
+        "cancellation preserves already applied movement"
+    );
+    assert_eq!(state.2, 0, "cancellation cannot activate the button");
+}
+
+#[test]
+fn content_pool_host_contributed_mouse_waits_for_release_and_cancel_never_activates() {
+    let mut registry = SurfaceProviderRegistry::new();
+    registry
+        .register_provider(provider("fake", "fake.v1", "fake.surface"))
+        .unwrap();
+    let mut pane = registry
+        .admit(&PaneKindId::new("fake"), &source("fake.v1"))
+        .unwrap();
+    pane.scene(240, 120, 1.0);
+    let point = {
+        let dom = pane.dom_ref();
+        taproot::resolve(
+            &[taproot::ProbeSurface {
+                name: "contributed",
+                dom: &dom,
+                rect: [0., 0., 240., 120.],
+                sheet: pane.stylesheet(),
+            }],
+            &taproot::Selector::role("button"),
+        )
+        .unwrap()
+        .point
+    };
+    pane.mouse_press(point.0, point.1);
+    assert!(
+        root_text(&pane.session().dom(), pane.session().root()).contains("count:0"),
+        "press must not activate before cancellation can arrive"
+    );
+    pane.mouse_cancel(point.0, point.1);
+    pane.mouse_release(point.0, point.1);
+    assert!(
+        root_text(&pane.session().dom(), pane.session().root()).contains("count:0"),
+        "cancelled release cannot activate"
+    );
+    pane.mouse_press(point.0, point.1);
+    pane.mouse_release(point.0, point.1);
+    pane.mouse_release(point.0, point.1);
+    assert!(
+        root_text(&pane.session().dom(), pane.session().root()).contains("count:1"),
+        "ordinary release activates exactly once"
+    );
+    pane.mouse_press(point.0, point.1);
+    pane.mouse_move(point.0 + 10., point.1);
+    pane.mouse_release(point.0, point.1);
+    assert!(
+        root_text(&pane.session().dom(), pane.session().root()).contains("count:1"),
+        "drag movement does not become a click"
+    );
+}

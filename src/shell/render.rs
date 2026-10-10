@@ -93,11 +93,11 @@ impl Shell {
                 let effects = self.app.invalidate_document_find_for(node);
                 self.run_effects(effects);
                 self.request_redraw();
-            }
+            },
             inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Committed { url })
             | inker::WebSurfaceEvent::AddressChanged { url } => {
                 self.act(Action::ContentNavigationCommitted { member: node, url });
-            }
+            },
             inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Finished {
                 title, ..
             }) => {
@@ -110,17 +110,17 @@ impl Shell {
                 } else {
                     self.request_redraw();
                 }
-            }
+            },
             inker::WebSurfaceEvent::TitleChanged { title } => {
                 self.act(Action::ContentTitleChanged {
                     member: node,
                     title,
                 });
-            }
+            },
             inker::WebSurfaceEvent::LoadProgress { value } => {
                 self.app.content.note_surface_progress(node, value);
                 self.request_redraw();
-            }
+            },
             inker::WebSurfaceEvent::PageCaptureCompleted { id, result } => {
                 let session = *self.app.session_id.as_uuid();
                 match self.page_captures.finish(session, node, id) {
@@ -140,7 +140,7 @@ impl Shell {
                         tracing::warn!(%node, request_id = id.get(), ?refusal, "page capture completion refused")
                     },
                 }
-            }
+            },
             inker::WebSurfaceEvent::DocumentFindChanged(state) => {
                 let Some((request, query)) = self.surface_find_requests.get(&node).cloned() else {
                     return;
@@ -160,7 +160,7 @@ impl Shell {
                         result: Ok(super::effects::app_find_model(state)),
                     });
                 self.run_effects(effects);
-            }
+            },
             inker::WebSurfaceEvent::NewWindowRequested { url } => {
                 self.app
                     .note(crate::observe::AppEvent::AuxiliaryNavigableRequested { node, url });
@@ -168,7 +168,7 @@ impl Shell {
                 // mutation. Publish it now so its order against adjacent
                 // producer events is retained.
                 self.run_effects(Vec::new());
-            }
+            },
             inker::WebSurfaceEvent::PageDragStarted {
                 data_transfer,
                 position,
@@ -180,10 +180,10 @@ impl Shell {
                         inker::DataTransferItem::String { mime_type, .. } => mime_type.clone(),
                         inker::DataTransferItem::File { mime_type, .. } if mime_type.is_empty() => {
                             "file".into()
-                        }
+                        },
                         inker::DataTransferItem::File { mime_type, .. } => {
                             format!("file:{mime_type}")
-                        }
+                        },
                     })
                     .collect::<Vec<_>>()
                     .join(",");
@@ -200,7 +200,7 @@ impl Shell {
                     tracing::warn!(%node, %error, "surface page drag cancellation failed");
                 }
                 self.run_effects(Vec::new());
-            }
+            },
             inker::WebSurfaceEvent::PermissionRequested(request) => {
                 let disposition = self.web_policy.receive_permission(
                     node,
@@ -214,7 +214,7 @@ impl Shell {
                         {
                             tracing::warn!(%node, request_id = request.id.get(), %error, "stored permission decision could not be applied");
                         }
-                    }
+                    },
                     crate::web_policy::PermissionDisposition::Pending => {
                         let effects =
                             self.app
@@ -226,9 +226,9 @@ impl Shell {
                                 });
                         self.run_effects(effects);
                         self.sync_ime_allowed();
-                    }
+                    },
                 }
-            }
+            },
             inker::WebSurfaceEvent::AuthenticationRequested(challenge) => {
                 let disposition = self.web_policy.receive_authentication(
                     node,
@@ -243,7 +243,7 @@ impl Shell {
                         {
                             tracing::warn!(%node, request_id = challenge.id.get(), %error, "credential-provider answer could not be applied");
                         }
-                    }
+                    },
                     crate::web_policy::AuthenticationDisposition::Pending => {
                         let effects =
                             self.app
@@ -258,28 +258,28 @@ impl Shell {
                                 });
                         self.run_effects(effects);
                         self.sync_ime_allowed();
-                    }
+                    },
                 }
-            }
+            },
             inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Failed { url, reason }) => {
                 self.app.content.note_surface_stopped(node);
                 tracing::warn!(%node, %url, %reason, "surface navigation failed");
                 self.request_redraw();
-            }
+            },
             inker::WebSurfaceEvent::ProcessCrashed { reason } => {
                 self.withdraw_user_agent_requests(node, "surface-crashed");
                 tracing::warn!(%node, %reason, "surface content process crashed");
-            }
+            },
             inker::WebSurfaceEvent::BackendDiagnostic { severity, message } => {
                 tracing::debug!(%node, %severity, %message, "surface backend diagnostic");
-            }
+            },
             other => {
                 // S0 makes every producer event observable through one stream.
                 // Later gates give policy/download/representation events typed
                 // request ids and host actions; until then they remain loud in
                 // diagnostics rather than disappearing in a filtered poller.
                 tracing::debug!(%node, event = ?other, "surface event awaits host projection");
-            }
+            },
         }
     }
 
@@ -346,7 +346,7 @@ impl Shell {
                                 reason: "timed-out",
                             });
                     self.run_effects(effects);
-                }
+                },
                 crate::web_policy::PendingRequest::Authentication { node, id } => {
                     if let Err(error) = self.answer_surface_authentication(
                         node,
@@ -366,7 +366,7 @@ impl Shell {
                                 reason: "timed-out",
                             });
                     self.run_effects(effects);
-                }
+                },
             }
         }
         self.sync_ime_allowed();
@@ -383,7 +383,7 @@ impl Shell {
                         tracing::debug!(%node, request_id = id.get(), %error, "withdrawn permission callback was already unavailable");
                     }
                     (id, "permission")
-                }
+                },
                 crate::web_policy::PendingRequest::Authentication { id, .. } => {
                     if let Err(error) = self.answer_surface_authentication(
                         node,
@@ -393,7 +393,7 @@ impl Shell {
                         tracing::debug!(%node, request_id = id.get(), %error, "withdrawn authentication callback was already unavailable");
                     }
                     (id, "authentication")
-                }
+                },
             };
             let effects = self
                 .app
@@ -488,7 +488,7 @@ impl Shell {
                 Ok(pane) => pane.scene(rw, rh, 1.0),
                 Err(error) => {
                     crate::ui::pane_scene(&format!("Surface admission failed: {error}"), rw, rh)
-                }
+                },
             };
         }
         match content {
@@ -500,7 +500,7 @@ impl Shell {
                     .or_insert_with(crate::trail_pane::TrailPane::new);
                 pane.sync(&self.app, rw as f32, rh as f32);
                 pane.scene(rw, rh)
-            }
+            },
             Some(PaneContent::Roster) => {
                 // The retained cambium grid: refresh it from graph truth at
                 // the pane's size, then draw its DOM.
@@ -511,7 +511,7 @@ impl Shell {
                     .or_insert_with(crate::cambium_pane::RosterGrid::new);
                 grid.sync(&self.app, pane_id, rw as f32, rh as f32);
                 grid.scene(rw, rh)
-            }
+            },
             Some(PaneContent::Gloss(cfg)) => {
                 // The minimap: the swatch's custom-paint leaf renders through
                 // the pane's registry (the leaf pipeline). Its composed
@@ -525,7 +525,7 @@ impl Shell {
                 pane.set_sections(providers);
                 pane.sync(&self.app, rw as f32, rh as f32);
                 pane.scene(rw, rh)
-            }
+            },
             Some(PaneContent::Inspector) => {
                 let clip_source_available = self
                     .app
@@ -558,7 +558,7 @@ impl Shell {
                     &clip_status,
                 );
                 pane.scene(rw, rh)
-            }
+            },
             Some(PaneContent::Workbench) => {
                 // The tiling's furniture: tab strips + cell bodies. Tile
                 // documents composite as their own surfaces in the PRIMARY
@@ -584,10 +584,8 @@ impl Shell {
                     .or_insert_with(crate::transcript_pane::TranscriptPane::new);
                 pane.sync(self.app.shell_transcript(), rw as f32, rh as f32);
                 pane.scene(rw, rh)
-            }
-            Some(PaneContent::Registered(kind))
-                if kind.as_str() == crate::panes::kind::ARRANGE =>
-            {
+            },
+            Some(PaneContent::Registered(kind)) if kind.as_str() == crate::panes::kind::ARRANGE => {
                 let pane = self
                     .renderers
                     .arrange
@@ -595,7 +593,7 @@ impl Shell {
                     .or_insert_with(crate::arrange_pane::ArrangePane::new);
                 pane.sync(&self.app, rw as f32, rh as f32);
                 pane.scene(rw, rh)
-            }
+            },
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::SETTINGS =>
             {
@@ -608,7 +606,7 @@ impl Shell {
                 });
                 pane.sync(rw as f32, rh as f32);
                 pane.scene(rw, rh)
-            }
+            },
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::PUBLISHING =>
             {
@@ -620,7 +618,7 @@ impl Shell {
                     .or_insert_with(|| crate::publish_pane::PublishPane::new(service));
                 pane.sync(rw as f32, rh as f32);
                 pane.scene(rw, rh)
-            }
+            },
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::SHARED_KNOT =>
             {
@@ -632,7 +630,7 @@ impl Shell {
                     .or_insert_with(|| crate::share_reader_pane::SharedKnotPane::new(service));
                 pane.sync(rw as f32, rh as f32);
                 pane.scene(rw, rh)
-            }
+            },
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::DEVICE_RECEIPTS =>
             {
@@ -646,7 +644,7 @@ impl Shell {
                     });
                 pane.sync(rw as f32, rh as f32);
                 pane.scene(rw, rh)
-            }
+            },
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::FROZEN_PROJECTION =>
             {
@@ -657,7 +655,7 @@ impl Shell {
                     .or_insert_with(crate::frozen_projection_pane::FrozenProjectionPane::new);
                 pane.sync(&self.app, rw as f32, rh as f32);
                 pane.scene(rw, rh)
-            }
+            },
             Some(PaneContent::Overmap(cfg)) => {
                 // The switcher as a graph view (overmap O1): sessions as
                 // container nodes, fork lineage as edges, on the shared
@@ -671,11 +669,11 @@ impl Shell {
                 pane.set_sections(providers);
                 pane.sync(&self.app, rw as f32, rh as f32);
                 pane.scene(rw, rh)
-            }
+            },
             other => {
                 let label = other.map(|c| pane_display_label(c)).unwrap_or_default();
                 crate::ui::pane_scene(&label, rw, rh)
-            }
+            },
         }
     }
 
@@ -760,7 +758,8 @@ impl Shell {
             .and_then(|graph| self.app.graph_runtimes.canvas(graph))
             .and_then(crate::app::focused_caption);
 
-        let mut needs_redraw = self.pump_visible_documents();
+        self.pump_visible_documents();
+        let mut needs_redraw = self.content_sessions.pool.window_needs_frame(0);
 
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         let (surface_device, surface_queue) = {
@@ -799,20 +798,26 @@ impl Shell {
                     needs_redraw |= animating;
                     needs_redraw |= self.app.resolve_pending_images() > 0;
                     (scene, wgpu::Color::WHITE)
-                }
+                },
                 crate::surface::SurfaceKind::Content(node) => {
-                    if let Some(scene) = self.with_content_appearance(node, surface.id, |session| {
-                        // Already pumped above; just frame it at the pane size.
-                        session.frame(rw, rh)
-                    }) {
+                    let mut surface_frame = None;
+                    let document_frame = match self.content_sessions.pool.frame(&surface.id) {
+                        Some(pelt_core::PeltLayer::Document(scene)) => Some(scene),
+                        Some(pelt_core::PeltLayer::Surface(frame)) => {
+                            surface_frame = Some(frame);
+                            None
+                        },
+                        None => None,
+                    };
+                    if let Some(scene) = document_frame {
                         (scene, wgpu::Color::WHITE)
                     } else {
-                        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
-                        if let Some(producer) = self.content_sessions.surface_mut(&node) {
-                            match producer
-                                .resize(rw, rh)
-                                .and_then(|()| producer.acquire_frame())
-                            {
+                        #[cfg(all(
+                            any(feature = "weld", feature = "scry", feature = "servo"),
+                            windows
+                        ))]
+                        if let Some(result) = surface_frame {
+                            match result {
                                 Ok(Some(frame)) => {
                                     let cached = self.surface_frames.entry(node).or_insert(None);
                                     if let Err(error) = super::surface_frames::update_imported_frame(
@@ -830,8 +835,8 @@ impl Shell {
                                         ));
                                         continue;
                                     }
-                                }
-                                Ok(None) => {}
+                                },
+                                Ok(None) => {},
                                 Err(error) => {
                                     tracing::warn!(%node, %error, "surface resize/capture failed");
                                     surface_failures.push((
@@ -855,7 +860,7 @@ impl Shell {
                         }
                         continue;
                     }
-                }
+                },
                 crate::surface::SurfaceKind::Pane(id) => {
                     // The pane's scene by kind, through the SHARED retained
                     // runners (extracted so lens windows render the same
@@ -863,11 +868,11 @@ impl Shell {
                     let content = self.pane_content(id);
                     let scene = self.pane_scene_by_kind(id, content.as_ref(), rw, rh);
                     (scene, wgpu::Color::TRANSPARENT)
-                }
+                },
                 crate::surface::SurfaceKind::Divider(_) => {
                     // The band is the clear colour; nothing to draw over it.
                     (Scene::default(), crate::ui::SEAM_CLEAR)
-                }
+                },
                 crate::surface::SurfaceKind::Chrome => {
                     // One sync rebuilds every window's chrome projection (the
                     // one-state contract); this window paints ITS root.
@@ -892,7 +897,7 @@ impl Shell {
                     timings.chrome_scene += scene_elapsed;
                     timings.chrome_syncs += 1;
                     (scene, wgpu::Color::TRANSPARENT)
-                }
+                },
             };
             if !matches!(surface.kind, crate::surface::SurfaceKind::Chrome) {
                 self.app.frame_timings.pane_scenes += scene_started.elapsed();
@@ -956,7 +961,7 @@ impl Shell {
                         view,
                         placement: scene.placement,
                     }
-                }
+                },
                 PlannedLayer::Imported(layer) => layer,
             })
             .collect();
@@ -1053,8 +1058,27 @@ impl Shell {
         // one step dimmer. Without this the renderer, being change-driven,
         // would stop after the scroll and leave the bar frozen on screen --
         // an auto-hiding bar that never hides.
-        if needs_redraw || self.renderers.any_bars_visible() {
-            self.request_redraw();
+        if (needs_redraw || self.renderers.any_bars_visible())
+            && let Some(window) = self.window.as_ref()
+        {
+            window.request_redraw();
+        }
+    }
+
+    pub(super) fn request_pending_document_redraws(&self) {
+        if self.content_sessions.pool.window_needs_frame(0)
+            && let Some(window) = self.window.as_ref()
+        {
+            window.request_redraw();
+        }
+        for lens in self.lens_windows.values() {
+            if self
+                .content_sessions
+                .pool
+                .window_needs_frame(lens.ordinal as u64 + 1)
+            {
+                lens.window.request_redraw();
+            }
         }
     }
 

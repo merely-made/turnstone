@@ -65,8 +65,10 @@ impl Shell {
                 let SurfaceKind::Content(node) = surface.kind else {
                     return None;
                 };
-                let (known, reader) = self.reader_appearances.get(&surface.id)?;
-                (*known == node).then(|| {
+                let reader = self.content_sessions.appearance(node, surface.id)?
+                    .document()?.session().as_any_ref()
+                    .downcast_ref::<mere_document_lanes::ReaderDocumentSession>()?;
+                Some({
                     (
                         surface.id,
                         self.reader_appearance_role(node, surface.id, &plan),

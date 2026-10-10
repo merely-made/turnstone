@@ -1,0 +1,8 @@
+{
+  "base": "a0d95ebd6e20220e3430870365112a608b4f83ff",
+  "diff_sha256": "427ba354d1dc76f3d0e6db379448e81819adc21eaa302c9100175dbb1eb890a3",
+  "files": {
+    "components/genet-winit-host/Cargo.toml": "4c9b2ae76afbddd963353527a994508f439f612f05d2147a6641b7d482cb1b6a",
+    "components/genet-winit-host/src/a11y.rs": "b3c14cc4d41a8e53e5f92346423c86520b4acbb50d520131deeabd6c5dc058d3"
+  }
+}

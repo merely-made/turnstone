@@ -185,7 +185,7 @@ impl SurfaceProviderRegistry {
         let declared = match &provider.descriptor().accepted_source {
             SurfaceSourceShape::One(kind) | SurfaceSourceShape::Many(kind) => {
                 Some(kind.as_str().to_owned())
-            }
+            },
             SurfaceSourceShape::None => None,
         };
         if declared.as_deref() != Some(provider.source_schema().as_str()) {
@@ -269,7 +269,7 @@ impl SurfaceProviderRegistry {
             Ok(session) => session,
             Err(SurfaceAdmissionError::Unavailable { reason }) => {
                 unavailable_surface_session(provider.descriptor().clone(), dom, reason)
-            }
+            },
             Err(error) => return Err(error),
         };
         Ok(ContributedSurfacePane::new(
@@ -511,6 +511,27 @@ impl ContributedSurfacePane {
         })
     }
 
+    /// Ordinary host mouse gesture entry points. Keep this separate from
+    /// semantic Click, which remains available for accessibility and commands.
+    pub(crate) fn mouse_press(&mut self, x: f32, y: f32) -> SurfaceRequest {
+        let pointer = self.pointer_down(x, y);
+        let click = self.click(x, y);
+        if pointer == SurfaceRequest::Redraw || click == SurfaceRequest::Redraw {
+            SurfaceRequest::Redraw
+        } else {
+            SurfaceRequest::None
+        }
+    }
+    pub(crate) fn mouse_move(&mut self, x: f32, y: f32) -> SurfaceRequest {
+        self.pointer_move(x, y)
+    }
+    pub(crate) fn mouse_release(&mut self, x: f32, y: f32) -> SurfaceRequest {
+        self.pointer_up(x, y)
+    }
+    pub(crate) fn mouse_cancel(&mut self, x: f32, y: f32) -> SurfaceRequest {
+        self.pointer_cancel(x, y)
+    }
+
     pub fn pointer_down(&mut self, x: f32, y: f32) -> SurfaceRequest {
         self.pointer(PointerPhase::Down, x, y, true)
     }
@@ -521,6 +542,10 @@ impl ContributedSurfacePane {
 
     pub fn pointer_up(&mut self, x: f32, y: f32) -> SurfaceRequest {
         self.pointer(PointerPhase::Up, x, y, false)
+    }
+
+    pub fn pointer_cancel(&mut self, x: f32, y: f32) -> SurfaceRequest {
+        self.pointer(PointerPhase::Cancel, x, y, false)
     }
 
     fn pointer(
@@ -543,7 +568,10 @@ impl ContributedSurfacePane {
         } else {
             self.dispatch(match phase {
                 PointerPhase::Move => ResolvedSurfaceEvent::PointerMove(event),
-                PointerPhase::Up => ResolvedSurfaceEvent::PointerUp(event),
+                // This terminal envelope preserves the event's Cancel phase.
+                // The retained runner clears custody by pointer identity and
+                // delivers Cancel, without synthesizing an Up or activation.
+                PointerPhase::Up | PointerPhase::Cancel => ResolvedSurfaceEvent::PointerUp(event),
                 PointerPhase::Down => unreachable!("down is resolved above"),
             })
         }

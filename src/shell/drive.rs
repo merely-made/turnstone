@@ -129,10 +129,15 @@ impl Shell {
         let _ = self.pump_visible_documents();
         let mut unsettled_sessions = self
             .content_sessions
-            .node_sessions_mut()
-            .filter_map(|(node, session)| (!session.settled()).then_some(node))
+            .pool
+            .pending_contents()
+            .map(|key: &super::content_pool::ContentKey| match *key {
+                super::content_pool::ContentKey::Node(node)
+                | super::content_pool::ContentKey::Reader { node, .. } => node,
+            })
             .collect::<Vec<_>>();
         unsettled_sessions.sort_unstable();
+        unsettled_sessions.dedup();
         IdleDiagnosis {
             pending_fetches: self.pending_fetches.any_in_flight(),
             requested_content: self.app.content.any_requested(),
@@ -466,7 +471,10 @@ impl taproot::Automatable for Shell {
             // stores them: the bare `>` lane is bounded by the row limit, so a
             // kept command can be stored and still sit past the visible rows.
             .with_field("commands-added", self.app.command_choices.added.join(","))
-            .with_field("commands-removed", self.app.command_choices.removed.join(","));
+            .with_field(
+                "commands-removed",
+                self.app.command_choices.removed.join(","),
+            );
         #[cfg(all(feature = "scry", windows))]
         {
             let ready = self
@@ -485,10 +493,18 @@ impl taproot::Automatable for Shell {
         {
             out = out
                 .with_field("host-servo-views", super::servo::active_views().to_string())
-                .with_field("host-servo-profile", self.servo_factory.as_ref()
-                    .map_or("", |factory| factory.profile_name()))
-                .with_field("host-servo-a11y-focus", self.servo_factory.as_ref()
-                    .map_or("", |factory| factory.a11y_focus_policy()));
+                .with_field(
+                    "host-servo-profile",
+                    self.servo_factory
+                        .as_ref()
+                        .map_or("", |factory| factory.profile_name()),
+                )
+                .with_field(
+                    "host-servo-a11y-focus",
+                    self.servo_factory
+                        .as_ref()
+                        .map_or("", |factory| factory.a11y_focus_policy()),
+                );
         }
         let (foreign_surfaces, foreign_trees, foreign_nodes) = self.surface_a11y.published_counts();
         out = out
@@ -687,8 +703,10 @@ impl taproot::Automatable for Shell {
         let _ = self.pump_visible_documents();
         Some(
             self.content_sessions
-                .sessions_mut()
-                .any(|session| !session.settled()),
+                .pool
+                .pending_contents()
+                .next()
+                .is_some(),
         )
     }
 
@@ -922,10 +940,11 @@ impl Shell {
                 let mut diagnostic = self.surface_a11y.publication_diagnostic(public_fixture);
                 #[cfg(all(feature = "servo", windows))]
                 if let Some(factory) = &self.servo_factory {
-                    diagnostic["servo_focus_policy"] = serde_json::json!(factory.a11y_focus_policy());
+                    diagnostic["servo_focus_policy"] =
+                        serde_json::json!(factory.a11y_focus_policy());
                 }
-                let bytes = serde_json::to_vec_pretty(&diagnostic)
-                .map_err(|error| error.to_string())?;
+                let bytes =
+                    serde_json::to_vec_pretty(&diagnostic).map_err(|error| error.to_string())?;
                 let mut file = std::fs::OpenOptions::new()
                     .write(true)
                     .create_new(true)
@@ -1238,9 +1257,14 @@ impl Shell {
                 }
             },
             Step::AssertA11y(substr) => {
-                let (tree, _, _) = self.projected_a11y_tree();
-                let lines = crate::a11y::tree_lines(&tree);
-                if !lines.iter().any(|l| l.contains(substr)) {
+                self.push_a11y_tree();
+                let mut lines = self.surface_a11y.observed_lines();
+                let mut lenses: Vec<_> = self.lens_windows.values().collect();
+                lenses.sort_by_key(|lens| lens.ordinal);
+                for lens in lenses {
+                    lines.extend(lens.a11y_forest.observed_lines());
+                }
+                if !crate::a11y::matches_lines(&lines, substr) {
                     return Err(format!(
                         "assert a11y '{substr}': {} lines, none match (first 12: {:?})",
                         lines.len(),

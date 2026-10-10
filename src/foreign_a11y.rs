@@ -216,6 +216,7 @@ pub(crate) struct ForeignA11y {
     // This is an in-process publication witness, not platform activation or
     // assistive-technology acceptance. Pending supplier deltas do not alter it.
     published: HashMap<Uuid, PublishedSurface>,
+    published_forest: Vec<TreeUpdate>,
 }
 
 struct PublishedSurface {
@@ -233,6 +234,7 @@ impl Default for ForeignA11y {
             mounted: HashSet::new(),
             dirty: false,
             published: HashMap::new(),
+            published_forest: Vec::new(),
         }
     }
 }
@@ -282,6 +284,7 @@ impl ForeignA11y {
 
     pub(crate) fn clear(&mut self) {
         self.published.clear();
+        self.published_forest.clear();
         self.surfaces.clear();
         self.owners = GraftTable::new(TreeId::ROOT);
         self.mounted.clear();
@@ -380,6 +383,19 @@ impl ForeignA11y {
 
     pub(crate) fn reset_publication(&mut self) {
         self.published.clear();
+        self.published_forest.clear();
+        self.publication = Grafts::new();
+        self.mounted.clear();
+        for forest in self.surfaces.values_mut() {
+            forest.reset_publication();
+        }
+        self.dirty = true;
+    }
+
+    /// An inactive platform has not accepted the composition yet. Rebuild
+    /// the next ordered batch while retaining the exact in-process witness
+    /// used by scenario observations; this grants no action admission.
+    pub(crate) fn retry_publication(&mut self) {
         self.publication = Grafts::new();
         self.mounted.clear();
         for forest in self.surfaces.values_mut() {
@@ -393,6 +409,7 @@ impl ForeignA11y {
         host: TreeUpdate,
         visible: &[Uuid],
         initial: bool,
+        local_guests: &[TreeUpdate],
     ) -> Result<
         (
             Composition,
@@ -408,7 +425,10 @@ impl ForeignA11y {
         let mut surfaces = self.surfaces.clone();
         let mut seen = HashSet::new();
         let mut frames = HashMap::new();
-        let mut guests = Vec::new();
+        let mut guests: Vec<_> = local_guests
+            .iter()
+            .map(|guest| (guest.tree_id, guest.clone()))
+            .collect();
         for surface in visible {
             if !seen.insert(*surface) {
                 return Err("visible surface occurs more than once".into());
@@ -432,7 +452,16 @@ impl ForeignA11y {
         host: TreeUpdate,
         visible: &[Uuid],
     ) -> Result<TreeUpdate, String> {
-        let (composition, _, _) = self.prepare(host, visible, true)?;
+        self.initial_host_with_guests(host, visible, &[])
+    }
+
+    pub(crate) fn initial_host_with_guests(
+        &self,
+        host: TreeUpdate,
+        visible: &[Uuid],
+        guests: &[TreeUpdate],
+    ) -> Result<TreeUpdate, String> {
+        let (composition, _, _) = self.prepare(host, visible, true, guests)?;
         Ok(composition.initial_host())
     }
 
@@ -441,7 +470,16 @@ impl ForeignA11y {
         host: TreeUpdate,
         visible: &[Uuid],
     ) -> Result<Vec<TreeUpdate>, String> {
-        let (composition, frames, surfaces) = self.prepare(host, visible, false)?;
+        self.frame_with_guests(host, visible, &[])
+    }
+
+    pub(crate) fn frame_with_guests(
+        &mut self,
+        host: TreeUpdate,
+        visible: &[Uuid],
+        guests: &[TreeUpdate],
+    ) -> Result<Vec<TreeUpdate>, String> {
+        let (composition, frames, surfaces) = self.prepare(host, visible, false, guests)?;
         let mut publication = self.publication.clone();
         let updates = expand(publication.frame(composition), &frames);
         self.surfaces = surfaces;
@@ -479,8 +517,30 @@ impl ForeignA11y {
                 )
             })
             .collect();
+        // Reconstruct the final whole snapshots from this exact ordered batch,
+        // including the final host focus update. Observation reads this forest.
+        let mut forest: BTreeMap<TreeId, TreeUpdate> = BTreeMap::new();
+        for update in &updates {
+            if update.tree.is_some() {
+                forest.insert(update.tree_id, update.clone());
+            } else if let Some(tree) = forest.get_mut(&update.tree_id) {
+                tree.focus = update.focus;
+                for (id, node) in &update.nodes {
+                    if let Some((_, previous)) = tree.nodes.iter_mut().find(|(n, _)| n == id) {
+                        *previous = node.clone();
+                    } else {
+                        tree.nodes.push((*id, node.clone()));
+                    }
+                }
+            }
+        }
+        self.published_forest = forest.into_values().collect();
         self.dirty = false;
         Ok(updates)
+    }
+
+    pub(crate) fn observed_lines(&self) -> Vec<String> {
+        crate::a11y::forest_lines(&self.published_forest)
     }
 
     fn published_surfaces(&self) -> Vec<(Uuid, &PublishedSurface)> {
@@ -776,6 +836,55 @@ mod tests {
                 .unwrap(),
         );
         consumer
+    }
+
+    #[test]
+    fn local_guests_and_nested_native_guests_share_one_observed_forest() {
+        let mut foreign = nested();
+        let visible = [surface(1)];
+        let local_id = tree(201);
+        let mut host = host(&foreign, &visible, 20);
+        host.nodes[0].1.set_children(vec![NodeId(20), NodeId(10)]);
+        host.nodes.push((
+            NodeId(20),
+            graft_node(Role::Group, local_id, (100.0, 50.0), (300.0, 200.0)),
+        ));
+        let local = document(local_id, "local field");
+        let safe = foreign
+            .initial_host_with_guests(host.clone(), &visible, &[local.clone()])
+            .unwrap();
+        let mut consumer = ConsumerTree::new(safe, true);
+        let updates = foreign
+            .frame_with_guests(host.clone(), &visible, &[local.clone()])
+            .unwrap();
+        send(&mut consumer, updates);
+        assert_eq!(
+            consumer.state().focus().unwrap().label().as_deref(),
+            Some("local field")
+        );
+        let lines = foreign.observed_lines();
+        assert!(crate::a11y::matches_lines(
+            &lines,
+            "button: local field >> button: first"
+        ));
+        let mut changed = local.clone();
+        changed.nodes[1].1.set_label("edited field");
+        send(
+            &mut consumer,
+            foreign
+                .frame_with_guests(host, &visible, &[changed])
+                .unwrap(),
+        );
+        assert_eq!(
+            consumer.state().focus().unwrap().label().as_deref(),
+            Some("edited field")
+        );
+        assert!(
+            foreign
+                .observed_lines()
+                .iter()
+                .any(|line| line == "button: edited field")
+        );
     }
 
     #[test]

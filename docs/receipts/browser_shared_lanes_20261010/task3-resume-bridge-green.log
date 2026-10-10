@@ -1,0 +1,23 @@
+   Compiling genet-winit-host v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-winit-host)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.67s
+     Running unittests src/lib.rs (/home/markik/Code/target/debug/deps/genet_winit_host-2c7507789acf914d)
+
+running 15 tests
+test a11y::tests::epoch_bound_batch_stops_between_entries_and_refuses_later_flush ... ok
+test a11y::tests::epoch_bound_replacement_refuses_an_already_stale_host_observation ... ok
+test a11y::tests::activation_rejects_an_uninstalled_child_graft_even_with_host_root_focus ... ok
+test a11y::tests::activation_inside_adapter_before_update_supplier_substitutes_safe_root ... ok
+test a11y::tests::batch_completion_requires_every_boundary_and_no_activation_reset ... ok
+test a11y::tests::custom_action_sink_captures_tree_identity_before_waking ... ok
+test a11y::tests::deactivation_retires_the_epoch_even_before_a_later_reactivation ... ok
+test a11y::tests::queued_actions_retain_value_data ... ok
+test a11y::tests::steady_epoch_delivers_only_ordered_updates_without_resetting_focus ... ok
+test tests::wheel_line_delta_is_scale_independent ... ok
+test tests::wheel_line_delta_maps_to_document_scroll ... ok
+test tests::wheel_pixel_delta_scales_to_logical_pixels ... ok
+test a11y::tests::single_host_publication_cannot_activate_a_missing_guest ... ok
+test a11y::tests::publication_replays_safe_root_before_guest_focus_after_activation ... ok
+test tests::wheel_pixel_delta_passes_through ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

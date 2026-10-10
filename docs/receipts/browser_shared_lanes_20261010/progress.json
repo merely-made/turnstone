@@ -1,0 +1,220 @@
+{
+  "status": "in_progress",
+  "consumer_base": "25f85bd07392395ef05b38f5a5e5839eb1933589",
+  "mere_base": "b6b551d44e5414d1f3ae5fbc0bcb73931b59a000",
+  "genet_base": "a0d95ebd6e20220e3430870365112a608b4f83ff",
+  "execution": {
+    "rust": "1.98.1",
+    "cargo_jobs": 1,
+    "target": "/home/markik/Code/target",
+    "priority": "nice10 ionice3",
+    "shell_login": false
+  },
+  "verified": {
+    "reader_focus": {
+      "red": {
+        "passed": 0,
+        "failed": 1,
+        "filtered": 8
+      },
+      "green": {
+        "passed": 1,
+        "failed": 0,
+        "filtered": 8
+      },
+      "source_boundary": "production, manifests and configurations unchanged during focused GREEN; Mere ignored local lock changed"
+    },
+    "turnstone_host_api_red": {
+      "intended_missing_method_errors": 12,
+      "tests_executed": 0,
+      "unrelated_compile_errors": 0,
+      "source_boundary": "source and manifests unchanged during retry; Turnstone ignored local lock changed"
+    },
+    "pelt_core_green": {
+      "passed": 75,
+      "failed": 0,
+      "ignored": 0,
+      "suites": 10,
+      "compile_seconds": 12.85,
+      "atomic_a11y_tests_included": 6
+    },
+    "genet_initial_tree_red": {
+      "passed": 0,
+      "failed": 1,
+      "filtered": 9
+    },
+    "genet_bridge_green": {
+      "passed": 15,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "compile_seconds": 2.67,
+      "tests": "ordered consumer replay, targetTree and custom sink; activation/deactivation epoch races; safe initial tree; wheel mapping"
+    },
+    "shared_aggregate": {
+      "cambium_passed": 253,
+      "rootstock_passed": 74,
+      "mesquite_passed": 20,
+      "pelt_passed": 58,
+      "pelt_failed": 1,
+      "source_receipt_entries": 163,
+      "source_unchanged": true,
+      "boundary": "pre-upstream integration; textarea focused projection receipt remains failing"
+    },
+    "ortet_a11y": {
+      "passed": 6,
+      "failed": 0,
+      "filtered": 27,
+      "boundary": "pre-upstream integration"
+    }
+  },
+  "pending": [
+    "native Pelt and Ortet qualification",
+    "full Turnstone default and Piccolo integration and all-target checks",
+    "native headed accessibility and Reader appearances",
+    "Graphshell full five public mounts and complete live scenario inventory",
+    "fresh task and whole-branch review",
+    "final supplier commits, consumer pins and portable graph qualification"
+  ],
+  "human_platform_gates": "No physical assistive technology receipt is supplied by these automated tests.",
+  "files": {
+    "task-1-reader-focus-red.log": {
+      "bytes": 6993,
+      "sha256": "0e796020b6a8382181c7078f634bb30b26365bb88f93ced1a71d79a7816cfde5"
+    },
+    "task-1-reader-focus-green.log": {
+      "bytes": 3218,
+      "sha256": "422c13e6f372239dc4d4d755e438a0bcedda2d55b45ca5ae11d36f9de1169510"
+    },
+    "task-1-reader-focus-green-before.sha256": {
+      "bytes": 540091,
+      "sha256": "7018ab9ca2f18fd88df7c14f3915fe11d307562a86fa89a3db1331a616a5f020"
+    },
+    "task-1-reader-focus-green-after.sha256": {
+      "bytes": 540091,
+      "sha256": "f864c57d0380c9c8a78324fb10dfca981bd49bf0afd2f024d4d1be0af691e750"
+    },
+    "task-1-host-api-red-retry.log": {
+      "bytes": 58321,
+      "sha256": "794460a3b66d65af22e300548dc07cc27be211eb13599bc503c1bf9cd3d19fe6"
+    },
+    "task-1-host-api-red-retry-before.sha256": {
+      "bytes": 540091,
+      "sha256": "7315f2f0544a732bb93cb828a0eec36e565e1d3a0c57c57edd20550399ad2bbd"
+    },
+    "task-1-host-api-red-retry-after.sha256": {
+      "bytes": 540091,
+      "sha256": "34a6b73f5f7662b2618e463b7a2f1fb954caac9e727a27311bc346ac84a3b9c5"
+    },
+    "task3-resume-extra-behavior-red.log": {
+      "bytes": 9070,
+      "sha256": "a5fafdf9d982db897d8b24f95d6f32bbbd846086d47ecaf6aac4e2226e60ef17"
+    },
+    "task3-resume-scroll-key-api-red.log": {
+      "bytes": 2844,
+      "sha256": "83f4fa4799f6afad366e36a9838a54cc74e0befb68de15e7d3201db3936cb977"
+    },
+    "task3-resume-core-green.log": {
+      "bytes": 9783,
+      "sha256": "765c1b0f3644a96dce94abb15d1ec90d65bee40405a92da77984b094e2ca6acd"
+    },
+    "task3-resume-activation-guard-red-genet.log": {
+      "bytes": 995,
+      "sha256": "de0c560dbace95c81668e871037e17e01b668a5b1d0f3dba4dea53be79247673"
+    },
+    "task3-resume-activation-guard-green.log": {
+      "bytes": 903,
+      "sha256": "d9eb942c4b83ff04e897e584754d5e385d051372dfb9f9ffe692786bdf27da0f"
+    },
+    "task3-resume-bridge-green.log": {
+      "bytes": 1593,
+      "sha256": "2c0659fdc6f56ea9790f378ef6ec58502e834dae99e9b2a2f099adbe9f19033b"
+    },
+    "task-3-bridge-checkpoint-review.md": {
+      "bytes": 6742,
+      "sha256": "ea1c4db4f773cb04817c20a96a50a3e8d5b64e006a290e44f1c468ca17889673"
+    },
+    "task-3-bridge-checkpoint-review.json": {
+      "bytes": 388,
+      "sha256": "83fad033a4c68162addde899954f49627981499e06a72e821f61a11924df80d5"
+    },
+    "task-3-bridge-checkpoint-review.diff": {
+      "bytes": 51427,
+      "sha256": "427ba354d1dc76f3d0e6db379448e81819adc21eaa302c9100175dbb1eb890a3"
+    },
+    "task3-resume-queued-cancel-red.log": {
+      "bytes": 3731,
+      "sha256": "9ddbcead829fc5b66a1d4102e89b1adcc542ad78fce8265012005ebdaf401782"
+    },
+    "task3-resume-queued-cancel-red.sources": {
+      "bytes": 346,
+      "sha256": "3c4c105717180868f64763ab567d5ca5efa4fc727dc4f16258327bd6a3fe6511"
+    },
+    "task3-resume-queued-behavior-red.log": {
+      "bytes": 3704,
+      "sha256": "6f9cf3087703fb68aa47698946806400a96ac48a9b18c2995810a0b0397e0b08"
+    },
+    "task3-resume-queued-behavior-red.sources": {
+      "bytes": 346,
+      "sha256": "47868e41289fa21b8a18913b449da74f4b8ea04eb1097d1623dd4f1726beb043"
+    },
+    "task3-resume-queued-api-red.log": {
+      "bytes": 10169,
+      "sha256": "9b22daf8e5be7e87ec6378b403450201f98a45f0fa5173ef8da89ba9cdf0a94a"
+    },
+    "task3-resume-queued-api-red.sources": {
+      "bytes": 346,
+      "sha256": "322badd77677f993cd1b304070c66d13505678359a03f0df1102409589c92bfe"
+    },
+    "task3-resume-aggregate-retry.sources-check": {
+      "bytes": 7519,
+      "sha256": "5aabfac568da3fa377900daa558924ce47ea2de06658e9a310e37d27d8210741"
+    },
+    "task3-resume-aggregate-retry.log": {
+      "bytes": 43165,
+      "sha256": "dd1bccb3c44ab8536d2f083e49f4f2310a8328b52708c1525095d0e46f24d0ec"
+    },
+    "task3-resume-aggregate-retry.sources": {
+      "bytes": 17625,
+      "sha256": "4cdb91d3179017c2cada0641d797b51527e791701698d1e659bfc8a7803b0c43"
+    },
+    "task3-resume-aggregate-green.sources-check": {
+      "bytes": 7519,
+      "sha256": "5aabfac568da3fa377900daa558924ce47ea2de06658e9a310e37d27d8210741"
+    },
+    "task3-resume-aggregate-green.log": {
+      "bytes": 5776,
+      "sha256": "51d82641732eaf28b67c7f233e90a2fd4f90644563631d45bb9ddcbe2843752e"
+    },
+    "task3-resume-aggregate-green.sources": {
+      "bytes": 17625,
+      "sha256": "85ec5f5d279d6ad3782068769cbc905d043f719024b0b1fa8a3ec9923a4d5c43"
+    },
+    "task3-resume-ortet-green.log": {
+      "bytes": 1919,
+      "sha256": "46d52316163bf8e985ae94a35efd75d91770eb017ad3c24ac0b9e3764bc6ed7a"
+    },
+    "task3-resume-ortet-green.sources": {
+      "bytes": 273,
+      "sha256": "73b8149e8051ef89c8b6acdf3fef0272c3ee258a20d6a1cbb5991d137035fe05"
+    },
+    "task3-resume-ortet-red.log": {
+      "bytes": 7651,
+      "sha256": "519a0f60d45c89c2ef85be8e681583da94869e78a2d633e6e268ba39b0f4bbf3"
+    },
+    "task3-resume-ortet-red.sources": {
+      "bytes": 167,
+      "sha256": "4c152078947de8a782dfdbe4991aa339f3a0ee46af0690bd09d5a5b599f6c35c"
+    }
+  },
+  "review": {
+    "scoped_genet_bridge": "Approved; no Critical or Important; minor reset-safe vector documentation applied after reviewed checkpoint",
+    "remaining": "Full task and whole-branch reviews are still required."
+  },
+  "integration_cutoff": {
+    "genet": "7422e90613f9017e5bb790e3acb48f61776b2eda",
+    "mere": "44f800c59df861681369e171c24513e73d8d000d",
+    "turnstone": "bf1e6a2fb9f0f4c9eba9c866de50a5505bd2404f",
+    "status": "pending"
+  }
+}

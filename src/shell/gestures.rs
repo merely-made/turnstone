@@ -362,9 +362,9 @@ impl Shell {
     ) {
         let local = self.surface_plan().into_iter().find_map(|surface| {
             (surface.kind == crate::surface::SurfaceKind::Content(node))
-                .then_some((window_x - surface.rect.x, window_y - surface.rect.y))
+                .then_some((surface.id, window_x - surface.rect.x, window_y - surface.rect.y))
         });
-        let Some((x, y)) = local else {
+        let Some((appearance, x, y)) = local else {
             return;
         };
         let data_transfer = inker::DataTransfer {
@@ -387,10 +387,9 @@ impl Shell {
             shift: self.shift,
             ctrl: self.ctrl,
             alt: self.alt,
-            meta: false,
+            meta: self.meta,
         };
-        if let Some(producer) = self.content_sessions.surface_mut(&node)
-            && let Err(error) = producer.send_drag_input(inker::DragEvent {
+        self.content_input(appearance, pelt_core::PeltInput::Drag(inker::DragEvent {
                 phase,
                 position: inker::PhysicalPosition { x, y },
                 modifiers,
@@ -403,10 +402,7 @@ impl Shell {
                     inker::PointerButtons::PRIMARY
                 },
                 data_transfer,
-            })
-        {
-            tracing::warn!(%node, %error, ?phase, "surface file drag delivery failed");
-        }
+            }));
     }
 }
 

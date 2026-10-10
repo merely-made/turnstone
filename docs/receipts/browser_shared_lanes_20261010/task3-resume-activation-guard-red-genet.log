@@ -1,0 +1,19 @@
+   Compiling genet-winit-host v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-winit-host)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.04s
+     Running unittests src/lib.rs (/home/markik/Code/target/debug/deps/genet_winit_host-2c7507789acf914d)
+
+running 1 test
+
+thread 'a11y::tests::activation_rejects_an_uninstalled_child_graft_even_with_host_root_focus' (3288164) panicked at components/genet-winit-host/src/a11y.rs:949:5:
+root focus does not make missing guest references safe activation data
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test a11y::tests::activation_rejects_an_uninstalled_child_graft_even_with_host_root_focus ... FAILED
+
+failures:
+
+failures:
+    a11y::tests::activation_rejects_an_uninstalled_child_graft_even_with_host_root_focus
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p genet-winit-host --lib`

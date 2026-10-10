@@ -4,15 +4,8 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! A node's document takes pointer and keys through its browsing controller
-//! (SC's "Input": neutral `SessionInput` in place of the click translation).
-//! The controller hands links and submissions up; the graph decides where a
-//! link opens, and a submission opens Turnstone's own conversation.
-//!
-//! Two kinds of content stay on their own paths: a Reader node, whose
-//! appearances are separate sessions until the pool holds them as placements
-//! (SC step 6), and a web surface, whose pointer stream carries identity the
-//! neutral input does not yet (pass B's choice, 2026-10-09).
+//! Placement-addressed input over the shared retained pool. Graph navigation
+//! and submission remain host effects, including for independent Reader views.
 
 use inker::{
     SessionButtonState, SessionFocusDirection, SessionInput, SessionKey, SessionModifiers,
@@ -28,11 +21,6 @@ impl Shell {
     /// Whether `node`'s pointer and keys go through its browsing controller.
     pub(super) fn controller_drives(&self, node: &uuid::Uuid) -> bool {
         self.content_sessions.has_document(node)
-            && !self.content_sessions.session(node).is_some_and(|session| {
-                session
-                    .as_any_ref()
-                    .is::<mere_document_lanes::ReaderDocumentSession>()
-            })
     }
 
     pub(super) fn session_modifiers(&self) -> SessionModifiers {
@@ -40,26 +28,54 @@ impl Shell {
             shift: self.shift,
             control: self.ctrl,
             alt: self.alt,
-            meta: false,
+            meta: self.meta,
         }
     }
 
     /// Deliver `input` to `node`'s document controller and act on what it
     /// hands up. `None` when the controller does not drive `node`; otherwise
     /// whether the document took the input.
-    pub(super) fn document_input(
-        &mut self,
-        node: uuid::Uuid,
-        input: SessionInput,
-    ) -> Option<bool> {
+    pub(super) fn document_input(&mut self, node: uuid::Uuid, input: SessionInput) -> Option<bool> {
         if !self.controller_drives(&node) {
             return None;
         }
-        // A document takes logical coordinates; the scale factor only sizes
-        // a surface lane's pointer.
-        let effect = self.content_sessions.get_mut(&node)?.input(input, 1.0);
+        let appearance = match self.app.focus {
+            crate::surface::FocusTarget::Content {
+                node: focused,
+                appearance,
+            } if focused == node => appearance,
+            _ => {
+                self.surface_plan()
+                    .into_iter()
+                    .find(|surface| surface.kind == crate::surface::SurfaceKind::Content(node))?
+                    .id
+            },
+        };
+        self.content_input(appearance, pelt_core::PeltInput::Session(input))
+    }
+
+    pub(super) fn content_input(
+        &mut self,
+        appearance: crate::surface::SurfaceId,
+        input: pelt_core::PeltInput,
+    ) -> Option<bool> {
+        self.sync_content_placements();
+        let placement = self.content_sessions.pool.placement(&appearance)?;
+        let node = match placement.content {
+            super::content_pool::ContentKey::Node(node)
+            | super::content_pool::ContentKey::Reader { node, .. } => node,
+        };
+        let effect = self.content_sessions.pool.input(&appearance, input);
+        Some(self.apply_content_effect(node, effect))
+    }
+
+    pub(super) fn apply_content_effect(
+        &mut self,
+        node: uuid::Uuid,
+        effect: pelt_core::PeltHostEffect,
+    ) -> bool {
         if let Some(error) = &effect.error {
-            tracing::warn!(%node, %error, "document input failed");
+            tracing::warn!(%node, %error, "content input failed");
         }
         let mut acted = false;
         if let Some(navigation) = effect.navigation {
@@ -77,7 +93,7 @@ impl Shell {
         if effect.redraw || acted {
             self.request_redraw();
         }
-        Some(effect.handled || acted)
+        effect.handled || acted
     }
 
     /// A pressed key for the focused document: the key itself first, so an

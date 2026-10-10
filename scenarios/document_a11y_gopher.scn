@@ -1,0 +1,9 @@
+settle 30
+key escape
+open gopher://127.0.0.1:${TURNSTONE_A11Y_GOPHER_PORT}/1/
+settle 60
+act Toggle live content
+settle 30
+assert content-live
+assert a11y link: First Gopher >> link: Second Gopher
+capture gopher_document_a11y

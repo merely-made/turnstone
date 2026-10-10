@@ -20,7 +20,7 @@ use inker::{
 };
 use servo::{
     DevicePoint, EventLoopWaker, InputEvent, Key, KeyState, LoadStatus, Location, Modifiers,
-    MouseButtonAction, MouseButtonEvent, MouseLeftViewportEvent, MouseMoveEvent, NamedKey, Opts,
+    MouseButtonAction, MouseButtonEvent, MouseMoveEvent, NamedKey, Opts,
     PermissionRequest, Preferences, Servo, ServoBuilder, WebView, WebViewBuilder, WebViewDelegate,
     WebViewPoint, WheelDelta, WheelEvent, WheelMode,
 };
@@ -654,13 +654,10 @@ impl GraftSurface for TurnstoneServoSurface {
             PointerPhase::Down => MouseEventKind::Pressed,
             PointerPhase::Move => MouseEventKind::Moved,
             PointerPhase::Up => MouseEventKind::Released,
-            PointerPhase::Cancel => {
-                self.view()
-                    .notify_input_event(InputEvent::MouseLeftViewport(
-                        MouseLeftViewportEvent::default(),
-                    ));
-                return Ok(());
-            },
+            // Upstream AAC exposes leave/out, but those events do not clear
+            // pressed mouse buttons or dispatch pointercancel. A synthetic
+            // release could activate a control, so report the actual limit.
+            PointerPhase::Cancel => return Err(unsupported("mouse cancellation")),
         };
         self.notify_mouse(MouseEvent {
             position: event.position,
@@ -704,6 +701,10 @@ impl GraftSurface for TurnstoneServoSurface {
     }
     fn focus(&mut self, _: FocusReason) -> Result<(), SurfaceError> {
         self.view().set_focused(true);
+        Ok(())
+    }
+    fn set_focus(&mut self, focused: bool) -> Result<(), SurfaceError> {
+        self.view().set_focused(focused);
         Ok(())
     }
     fn poll_navigation_event(&mut self) -> Option<NavigationEvent> {

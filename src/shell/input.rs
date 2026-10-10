@@ -125,6 +125,23 @@ fn surface_cursor_label(shape: inker::CursorShape) -> &'static str {
     }
 }
 
+#[derive(Clone, Copy)]
+pub(super) struct ContributedPointer {
+    pub surface: crate::surface::Surface,
+    pub generation: u64,
+    pub window: u64,
+}
+impl ContributedPointer {
+    pub(super) fn is_current(
+        &self,
+        _surface: Option<crate::surface::Surface>,
+        _generation: Option<u64>,
+        _window: u64,
+    ) -> bool {
+        true
+    }
+}
+
 impl Shell {
     /// One aim that resolved to nothing, and why.
     ///
@@ -215,34 +232,17 @@ impl Shell {
                 });
                 return;
             }
-            let scrolled = if self.controller_drives(&node) {
-                self.content_sessions
-                    .get_mut(&node)
-                    .is_some_and(|content| content.scroll_at(hit.local.0, hit.local.1, dx, dy, 1.0))
-            } else {
-                self.with_content_appearance(node, hit.id, |session| {
-                    session.scroll_at(hit.local.0, hit.local.1, dx, dy)
-                })
-                .unwrap_or(false)
-            };
-            if scrolled {
-                self.request_redraw();
-            } else if let Some(producer) = self.content_sessions.surface_mut(&node) {
-                if let Err(error) = producer.send_mouse_input(inker::MouseEvent {
+            self.content_input(
+                hit.id,
+                pelt_core::PeltInput::Wheel {
                     position: inker::PhysicalPosition {
                         x: hit.local.0,
                         y: hit.local.1,
                     },
-                    button: None,
-                    kind: inker::MouseEventKind::ScrollPixels {
-                        delta_x: dx,
-                        delta_y: dy,
-                    },
-                }) {
-                    tracing::warn!(%node, %error, "surface wheel delivery failed");
-                }
-                self.request_redraw();
-            }
+                    delta: (dx, dy),
+                    modifiers: self.session_modifiers(),
+                },
+            );
             return;
         }
         if let Some(crate::surface::HitResult {
@@ -291,10 +291,10 @@ impl Shell {
             let action = match intent {
                 crate::chrome_view::ChromeIntent::CommitRow(index) => {
                     Action::OmnibarCommitRow(index)
-                }
+                },
                 crate::chrome_view::ChromeIntent::ToggleKeep(index) => {
                     Action::OmnibarToggleKeepRow(index)
-                }
+                },
                 crate::chrome_view::ChromeIntent::NavBack => Action::NavBack,
                 crate::chrome_view::ChromeIntent::NavForward => Action::NavForward,
                 crate::chrome_view::ChromeIntent::Reload => Action::Reload,
@@ -302,26 +302,26 @@ impl Shell {
                 crate::chrome_view::ChromeIntent::KeepNode(member) => Action::KeepNode { member },
                 crate::chrome_view::ChromeIntent::FindPrevious => {
                     Action::StepDocumentFind(crate::action::DocumentFindDirection::Previous)
-                }
+                },
                 crate::chrome_view::ChromeIntent::FindNext => {
                     Action::StepDocumentFind(crate::action::DocumentFindDirection::Next)
-                }
+                },
                 crate::chrome_view::ChromeIntent::FindClose => Action::CloseDocumentFind,
                 crate::chrome_view::ChromeIntent::Permission { request, choice } => {
                     Action::ChoosePermission { request, choice }
-                }
+                },
                 crate::chrome_view::ChromeIntent::FocusAuthentication(field) => {
                     Action::FocusAuthenticationField(field)
-                }
+                },
                 crate::chrome_view::ChromeIntent::ToggleAuthenticationMemory => {
                     Action::ToggleAuthenticationMemory
-                }
+                },
                 crate::chrome_view::ChromeIntent::SubmitAuthentication(request) => {
                     Action::SubmitAuthentication { request }
-                }
+                },
                 crate::chrome_view::ChromeIntent::CancelAuthentication(request) => {
                     Action::CancelAuthentication { request }
-                }
+                },
             };
             self.act(action);
             self.pointer_capture = None;
@@ -364,63 +364,21 @@ impl Shell {
                         node,
                         appearance: hit.id,
                     };
-                    if self.controller_drives(&node) {
-                        if let Some(button) = super::controller_input::session_pointer_button(button)
-                        {
-                            let modifiers = self.session_modifiers();
-                            self.document_input(
-                                node,
-                                inker::SessionInput::PointerButton {
-                                    x: hit.local.0,
-                                    y: hit.local.1,
-                                    button,
-                                    state: inker::SessionButtonState::Pressed,
-                                    modifiers,
-                                },
-                            );
-                        }
-                    } else if let Some(outcome) = self.with_content_appearance(node, hit.id, |session| {
-                        (button == MouseButton::Left).then(|| session.pointer_down(hit.local.0, hit.local.1))
-                    }).flatten() {
-                        match outcome {
-                                SessionClick::Navigate(url) => {
-                                    let url = super::content_link_target(&self.app, node, &url);
-                                    self.act(Action::OpenAddress(url));
-                                }
-                                SessionClick::Submit(target) => {
-                                    self.act(Action::BeginSmolwebSubmission {
-                                        source: Some(node),
-                                        target,
-                                    });
-                                }
-                                SessionClick::Handled | SessionClick::Miss => {}
-                        }
-                    } else if let (Some(producer), Some(surface_button)) = (
-                        self.content_sessions.surface_mut(&node),
-                        surface_mouse_button(button),
-                    ) {
-                        if let Err(error) = producer.move_focus(inker::FocusReason::Mouse) {
-                            tracing::warn!(%node, %error, "surface focus delivery failed");
-                        }
-                        if let Err(error) = producer.send_pointer_input(mouse_pointer_event(
-                            hit.local.0,
-                            hit.local.1,
+                    self.content_input(
+                        hit.id,
+                        pelt_core::PeltInput::Session(inker::SessionInput::Focus(true)),
+                    );
+                    if let Some(button) = surface_mouse_button(button) {
+                        self.content_mouse(
+                            hit.id,
+                            hit.local,
                             inker::PointerPhase::Down,
-                            Some(surface_button),
-                            self.surface_pointer_buttons,
-                            inker::KeyboardModifiers {
-                                shift: self.shift,
-                                ctrl: self.ctrl,
-                                alt: self.alt,
-                                meta: false,
-                            },
-                        )) {
-                            tracing::warn!(%node, %error, "surface press delivery failed");
-                        }
+                            Some(button),
+                        );
                     }
                     self.request_redraw();
                     return;
-                }
+                },
                 // A press on a pane makes it the active pane (the anchor for
                 // close/maximize/divider). A Trail pane also routes the click to
                 // its row (slice D): a navigable row lowers Action::OpenAddress
@@ -436,8 +394,16 @@ impl Shell {
                         if let Some(pane) = self.renderers.contributed.get_mut(id) {
                             self.app.focus = crate::surface::FocusTarget::Pane(id);
                             pane.focus_at(hit.local.0, hit.local.1);
-                            pane.pointer_down(hit.local.0, hit.local.1);
-                            pane.click(hit.local.0, hit.local.1);
+                            self.contributed_pointer = plan
+                                .iter()
+                                .find(|surface| surface.id == hit.id)
+                                .copied()
+                                .map(|surface| ContributedPointer {
+                                    surface,
+                                    generation: pane.generation(),
+                                    window: 0,
+                                });
+                            pane.mouse_press(hit.local.0, hit.local.1);
                             self.request_redraw();
                             return;
                         }
@@ -453,14 +419,14 @@ impl Shell {
                                 let actions = match (dims, self.renderers.trail.get_mut(&id)) {
                                     (Some((rw, rh)), Some(pane)) => {
                                         pane.click(hit.local.0, hit.local.1, rw, rh)
-                                    }
+                                    },
                                     _ => Vec::new(),
                                 };
                                 for action in actions {
                                     match action {
                                         crate::trail_pane::TrailPaneAction::Navigate(url) => {
                                             self.act(Action::OpenAddress(url))
-                                        }
+                                        },
                                         crate::trail_pane::TrailPaneAction::RecoverSession(id) => {
                                             // A Removed-sessions row: restore the
                                             // trashed session and switch (O3).
@@ -469,7 +435,7 @@ impl Shell {
                                                     crate::panes::SessionId::from_uuid(id),
                                                 ));
                                             }
-                                        }
+                                        },
                                         crate::trail_pane::TrailPaneAction::Recover(id) => {
                                             // The Removed row carries the staged
                                             // node's ORIGINAL uuid; recovery
@@ -483,10 +449,10 @@ impl Shell {
                                                     },
                                                 ),
                                             }
-                                        }
+                                        },
                                     }
                                 }
-                            }
+                            },
                             Some(PaneContent::Roster) => {
                                 // Route into the cambium grid: hit-test its DOM
                                 // at the pane's size and dispatch, then lower
@@ -508,17 +474,17 @@ impl Shell {
                                         // the host can see which tab is showing.
                                         self.app.roster_tab = grid.selected_tab().0;
                                         actions
-                                    }
+                                    },
                                     _ => Vec::new(),
                                 };
                                 for action in actions {
                                     match action {
                                         crate::cambium_pane::RosterAction::Navigate(url) => {
                                             self.act(Action::OpenAddress(url))
-                                        }
+                                        },
                                     }
                                 }
-                            }
+                            },
                             Some(PaneContent::Gloss(_)) => {
                                 // Same hit-test round trip; the outcome arrives
                                 // as drained intents (the swatch mutates state
@@ -532,7 +498,7 @@ impl Shell {
                                 let intents = match (dims, self.renderers.gloss.get_mut(&id)) {
                                     (Some((rw, rh)), Some(pane)) => {
                                         pane.click(hit.local.0, hit.local.1, rw, rh)
-                                    }
+                                    },
                                     _ => Vec::new(),
                                 };
                                 for intent in intents {
@@ -552,10 +518,10 @@ impl Shell {
                                             self.app.focus = crate::surface::FocusTarget::Graph(
                                                 self.app.default_graph_pane(),
                                             );
-                                        }
+                                        },
                                     }
                                 }
-                            }
+                            },
                             Some(PaneContent::Inspector) => {
                                 let dims = plan.iter().find(|s| s.id == hit.id).map(|s| {
                                     (
@@ -566,7 +532,7 @@ impl Shell {
                                 let intents = match (dims, self.renderers.inspector.get_mut(&id)) {
                                     (Some((rw, rh)), Some(pane)) => {
                                         pane.click(hit.local.0, hit.local.1, rw, rh)
-                                    }
+                                    },
                                     _ => Vec::new(),
                                 };
                                 for intent in intents {
@@ -580,7 +546,7 @@ impl Shell {
                                         } => self.act(Action::SetViewerOverride { member, viewer }),
                                     }
                                 }
-                            }
+                            },
                             Some(PaneContent::Registered(kind))
                                 if kind.as_str() == crate::panes::kind::TRANSCRIPT =>
                             {
@@ -593,7 +559,7 @@ impl Shell {
                                 let actions = match (dims, self.renderers.transcript.get_mut(&id)) {
                                     (Some((rw, rh)), Some(pane)) => {
                                         pane.click(hit.local.0, hit.local.1, rw, rh)
-                                    }
+                                    },
                                     _ => Vec::new(),
                                 };
                                 for action in actions {
@@ -605,10 +571,10 @@ impl Shell {
                                             // Action; the pane only names the
                                             // entry to repeat.
                                             self.act(Action::RepeatShellEntry(entry));
-                                        }
+                                        },
                                     }
                                 }
-                            }
+                            },
                             Some(PaneContent::Registered(kind))
                                 if kind.as_str() == crate::panes::kind::ARRANGE =>
                             {
@@ -621,7 +587,7 @@ impl Shell {
                                 let intents = match (dims, self.renderers.arrange.get_mut(&id)) {
                                     (Some((rw, rh)), Some(pane)) => {
                                         pane.click(hit.local.0, hit.local.1, rw, rh)
-                                    }
+                                    },
                                     _ => Vec::new(),
                                 };
                                 for intent in intents {
@@ -629,7 +595,7 @@ impl Shell {
                                         self.act(action);
                                     }
                                 }
-                            }
+                            },
                             Some(PaneContent::Registered(kind))
                                 if kind.as_str() == crate::panes::kind::SETTINGS =>
                             {
@@ -644,7 +610,7 @@ impl Shell {
                                 {
                                     pane.click(hit.local.0, hit.local.1, rw, rh);
                                 }
-                            }
+                            },
                             Some(PaneContent::Registered(kind))
                                 if kind.as_str() == crate::panes::kind::PUBLISHING =>
                             {
@@ -659,7 +625,7 @@ impl Shell {
                                 {
                                     pane.click(hit.local.0, hit.local.1, rw, rh);
                                 }
-                            }
+                            },
                             Some(PaneContent::Registered(kind))
                                 if kind.as_str() == crate::panes::kind::SHARED_KNOT =>
                             {
@@ -674,7 +640,7 @@ impl Shell {
                                 {
                                     pane.click(hit.local.0, hit.local.1, rw, rh);
                                 }
-                            }
+                            },
                             Some(PaneContent::Registered(kind))
                                 if kind.as_str() == crate::panes::kind::DEVICE_RECEIPTS =>
                             {
@@ -689,7 +655,7 @@ impl Shell {
                                 {
                                     pane.click(hit.local.0, hit.local.1, rw, rh);
                                 }
-                            }
+                            },
                             Some(PaneContent::Overmap(_)) => {
                                 // A session-node click adopts that session:
                                 // navigating to a container IS the switch
@@ -703,7 +669,7 @@ impl Shell {
                                 let intents = match (dims, self.renderers.overmap.get_mut(&id)) {
                                     (Some((rw, rh)), Some(pane)) => {
                                         pane.click(hit.local.0, hit.local.1, rw, rh)
-                                    }
+                                    },
                                     _ => Vec::new(),
                                 };
                                 for intent in intents {
@@ -723,10 +689,10 @@ impl Shell {
                                             self.app.focus = crate::surface::FocusTarget::Graph(
                                                 self.app.default_graph_pane(),
                                             );
-                                        }
+                                        },
                                     }
                                 }
-                            }
+                            },
                             Some(PaneContent::Workbench) => {
                                 // A press here begins a gesture, resolved on
                                 // RELEASE (a tab click activates; a tab drag
@@ -754,13 +720,13 @@ impl Shell {
                                         self.wb_tab_drag = Some((id, member));
                                     }
                                 }
-                            }
-                            _ => {}
+                            },
+                            _ => {},
                         }
                     }
                     self.request_redraw();
                     return;
-                }
+                },
                 crate::surface::SurfaceKind::Divider(index) => {
                     let area = Rect::full(self.width.max(1), self.height.max(1));
                     let tiling =
@@ -768,7 +734,7 @@ impl Shell {
                     self.divider_drag = tiling.dividers.into_iter().find(|d| d.index == index);
                     self.request_redraw();
                     return;
-                }
+                },
                 // A graph pane owns the view gesture. The local point is
                 // essential for side-by-side graph panes.
                 crate::surface::SurfaceKind::Graph(pane) => {
@@ -781,8 +747,8 @@ impl Shell {
                     {
                         self.request_redraw();
                     }
-                }
-                crate::surface::SurfaceKind::Chrome => {}
+                },
+                crate::surface::SurfaceKind::Chrome => {},
             }
         }
     }
@@ -875,6 +841,9 @@ impl Shell {
     }
 
     pub(super) fn deliver_move(&mut self, x: f32, y: f32) {
+        if self.move_contributed_pointer(0, x, y) {
+            return;
+        }
         if let Some(crate::surface::SurfaceKind::Graph(pane)) = self.pointer_capture {
             let local = self.surface_plan().into_iter().find_map(|surface| {
                 (surface.kind == crate::surface::SurfaceKind::Graph(pane))
@@ -888,45 +857,12 @@ impl Shell {
             return;
         }
         if let Some(crate::surface::SurfaceKind::Content(node)) = self.pointer_capture {
-            let local = self.surface_plan().into_iter().find_map(|surface| {
-                (surface.kind == crate::surface::SurfaceKind::Content(node))
-                    .then_some((x - surface.rect.x, y - surface.rect.y))
-            });
-            if let Some((local_x, local_y)) = local {
-                let modifiers = self.session_modifiers();
-                if self.controller_drives(&node) {
-                    self.document_input(
-                        node,
-                        inker::SessionInput::PointerMoved {
-                            x: local_x,
-                            y: local_y,
-                            modifiers,
-                        },
-                    );
-                } else if self
-                    .content_sessions
-                    .session_mut(&node)
-                    .is_some_and(|session| session.pointer_move(local_x, local_y))
-                {
-                    self.request_redraw();
-                } else if let Some(producer) = self.content_sessions.surface_mut(&node) {
-                    if let Err(error) = producer.send_pointer_input(mouse_pointer_event(
-                        local_x,
-                        local_y,
-                        inker::PointerPhase::Move,
-                        None,
-                        self.surface_pointer_buttons,
-                        inker::KeyboardModifiers {
-                            shift: self.shift,
-                            ctrl: self.ctrl,
-                            alt: self.alt,
-                            meta: false,
-                        },
-                    )) {
-                        tracing::warn!(%node, %error, "surface move delivery failed");
-                    }
-                    self.request_redraw();
-                }
+            self.sync_content_placements();
+            if let Some(id) = self.content_sessions.pool.captured_placement(0).copied()
+                && let Some(placement) = self.content_sessions.pool.placement(&id)
+            {
+                let local = (x - placement.rect.x, y - placement.rect.y);
+                self.content_mouse(id, local, inker::PointerPhase::Move, None);
                 self.hovered_surface = Some(node);
                 self.apply_pending_surface_cursor();
             }
@@ -939,7 +875,7 @@ impl Shell {
             })
             && let Some(surface) = self.renderers.contributed.get_mut(pane)
         {
-            if surface.pointer_move(local_x, local_y)
+            if surface.mouse_move(local_x, local_y)
                 == crate::contributed_surface::SurfaceRequest::Redraw
             {
                 self.request_redraw();
@@ -973,14 +909,21 @@ impl Shell {
             .and_then(|hit| match hit.kind {
                 crate::surface::SurfaceKind::Content(node) => {
                     Some((node, hit.id, hit.local.0, hit.local.1))
-                }
+                },
                 _ => None,
             });
         let Some((node, appearance, local_x, local_y)) = content_hit else {
             self.reset_surface_cursor();
             return;
         };
-        if let Some(links) = self.with_content_appearance(node, appearance, |session| session.links()) {
+        self.sync_content_placements();
+        let _ = self.content_sessions.pool.prepare(&appearance);
+        if let Some(links) = self
+            .content_sessions
+            .appearance(node, appearance)
+            .and_then(pelt_core::PeltContent::document)
+            .map(|controller| controller.links())
+        {
             let target = links.into_iter().find_map(|link| {
                 let [left, top, width, height] = link.rect;
                 (local_x >= left
@@ -1007,30 +950,130 @@ impl Shell {
             return;
         }
         let preview_changed = self.app.set_link_preview(None);
-        let Some(producer) = self.content_sessions.surface_mut(&node) else {
+        if !self.content_sessions.has_surface(&node) {
             self.reset_surface_cursor();
             return;
-        };
-        if let Err(error) = producer.send_pointer_input(mouse_pointer_event(
-            local_x,
-            local_y,
+        }
+        self.content_mouse(
+            appearance,
+            (local_x, local_y),
             inker::PointerPhase::Move,
             None,
-            self.surface_pointer_buttons,
-            inker::KeyboardModifiers {
-                shift: self.shift,
-                ctrl: self.ctrl,
-                alt: self.alt,
-                meta: false,
-            },
-        )) {
-            tracing::warn!(%node, %error, "surface hover delivery failed");
-        }
+        );
         self.hovered_surface = Some(node);
         self.apply_pending_surface_cursor();
         if preview_changed {
             self.request_redraw();
         }
+    }
+
+    pub(super) fn contributed_pointer_is_current(&self, admitted: ContributedPointer) -> bool {
+        let crate::surface::SurfaceKind::Pane(pane) = admitted.surface.kind else {
+            return false;
+        };
+        admitted.is_current(
+            self.all_content_plans()
+                .into_iter()
+                .find(|surface| surface.id == admitted.surface.id),
+            self.renderers
+                .contributed
+                .get(pane)
+                .map(|surface| surface.generation()),
+            admitted.window,
+        )
+    }
+
+    pub(super) fn move_contributed_pointer(&mut self, window: u64, x: f32, y: f32) -> bool {
+        let Some(admitted) = self.contributed_pointer else {
+            return false;
+        };
+        if admitted.window != window {
+            return false;
+        }
+        if !self.contributed_pointer_is_current(admitted) {
+            self.cancel_content_pointer();
+            return true;
+        }
+        let crate::surface::SurfaceKind::Pane(pane) = admitted.surface.kind else {
+            return false;
+        };
+        if let Some(surface) = self.renderers.contributed.get_mut(pane) {
+            if surface.mouse_move(x - admitted.surface.rect.x, y - admitted.surface.rect.y)
+                == crate::contributed_surface::SurfaceRequest::Redraw
+            {
+                self.request_redraw();
+            }
+        }
+        true
+    }
+
+    pub(super) fn release_contributed_pointer(&mut self, window: u64, x: f32, y: f32) {
+        let Some(admitted) = self.contributed_pointer else {
+            return;
+        };
+        if admitted.window != window {
+            return;
+        }
+        if !self.contributed_pointer_is_current(admitted) {
+            self.cancel_content_pointer();
+            return;
+        }
+        self.contributed_pointer = None;
+        self.pointer_capture = None;
+        let crate::surface::SurfaceKind::Pane(pane) = admitted.surface.kind else {
+            return;
+        };
+        if let Some(surface) = self.renderers.contributed.get_mut(pane) {
+            if surface.mouse_release(x - admitted.surface.rect.x, y - admitted.surface.rect.y)
+                == crate::contributed_surface::SurfaceRequest::Redraw
+            {
+                self.request_redraw();
+            }
+        }
+    }
+
+    /// Focus loss cancels actual retained custody, without manufacturing Up.
+    pub(super) fn cancel_content_pointer(&mut self) {
+        if let Some(id) = self.content_sessions.pool.captured_placement(0).copied() {
+            self.content_input(
+                id,
+                pelt_core::PeltInput::Session(inker::SessionInput::Cancel),
+            );
+        }
+        if let Some(crate::surface::SurfaceKind::Pane(pane)) = self.pointer_capture
+            && let Some(surface) = self.renderers.contributed.get_mut(pane)
+        {
+            surface.mouse_cancel(0.0, 0.0);
+        }
+        self.pointer_capture = None;
+        self.contributed_pointer = None;
+        self.surface_pointer_buttons = inker::PointerButtons::NONE;
+        self.wb_divider_drag = None;
+        self.wb_tab_drag = None;
+        self.lens_divider_drag = None;
+    }
+
+    pub(super) fn content_mouse(
+        &mut self,
+        appearance: crate::surface::SurfaceId,
+        local: (f32, f32),
+        phase: inker::PointerPhase,
+        button: Option<inker::MouseButton>,
+    ) {
+        let event = mouse_pointer_event(
+            local.0,
+            local.1,
+            phase,
+            button,
+            self.surface_pointer_buttons,
+            inker::KeyboardModifiers {
+                shift: self.shift,
+                ctrl: self.ctrl,
+                alt: self.alt,
+                meta: self.meta,
+            },
+        );
+        self.content_input(appearance, pelt_core::PeltInput::Pointer(event));
     }
 
     pub(super) fn apply_pending_surface_cursor(&mut self) {
@@ -1074,76 +1117,29 @@ impl Shell {
 
     pub(super) fn deliver_release(&mut self, x: f32, y: f32, button: MouseButton) {
         self.surface_pointer_buttons.0 &= !surface_button_mask(button).0;
+        if self.contributed_pointer.is_some() {
+            if button == MouseButton::Left {
+                self.release_contributed_pointer(0, x, y);
+            }
+            return;
+        }
         let captured = self.pointer_capture;
         let graph_capture = match captured {
             Some(crate::surface::SurfaceKind::Graph(pane)) => Some(pane),
             _ => None,
         };
         self.pointer_capture = None;
-        if let Some(crate::surface::SurfaceKind::Content(node)) = captured {
-            let local = self.surface_plan().into_iter().find_map(|surface| {
-                (surface.kind == crate::surface::SurfaceKind::Content(node))
-                    .then_some((x - surface.rect.x, y - surface.rect.y))
-            });
-            if self.controller_drives(&node) {
-                if let (Some((local_x, local_y)), Some(button)) =
-                    (local, super::controller_input::session_pointer_button(button))
-                {
-                    let modifiers = self.session_modifiers();
-                    self.document_input(
-                        node,
-                        inker::SessionInput::PointerButton {
-                            x: local_x,
-                            y: local_y,
-                            button,
-                            state: inker::SessionButtonState::Released,
-                            modifiers,
-                        },
-                    );
+        if let Some(crate::surface::SurfaceKind::Content(_)) = captured {
+            self.sync_content_placements();
+            if let Some(id) = self.content_sessions.pool.captured_placement(0).copied()
+                && let Some(placement) = self.content_sessions.pool.placement(&id)
+                && let Some(button) = surface_mouse_button(button)
+            {
+                let local = (x - placement.rect.x, y - placement.rect.y);
+                self.content_mouse(id, local, inker::PointerPhase::Up, Some(button));
+                if self.content_sessions.pool.captured_placement(0).is_some() {
+                    self.pointer_capture = captured;
                 }
-                self.request_redraw();
-                return;
-            }
-            let outcome = local.and_then(|(local_x, local_y)| {
-                if button == MouseButton::Left
-                    && let Some(session) = self.content_sessions.session_mut(&node)
-                {
-                    return Some(session.pointer_up(local_x, local_y));
-                }
-                if let (Some(producer), Some(surface_button)) = (
-                    self.content_sessions.surface_mut(&node),
-                    surface_mouse_button(button),
-                ) {
-                    if let Err(error) = producer.send_pointer_input(mouse_pointer_event(
-                        local_x,
-                        local_y,
-                        inker::PointerPhase::Up,
-                        Some(surface_button),
-                        self.surface_pointer_buttons,
-                        inker::KeyboardModifiers {
-                            shift: self.shift,
-                            ctrl: self.ctrl,
-                            alt: self.alt,
-                            meta: false,
-                        },
-                    )) {
-                        tracing::warn!(%node, %error, "surface release delivery failed");
-                    }
-                }
-                None
-            });
-            match outcome {
-                Some(SessionClick::Navigate(url)) => {
-                    let url = super::content_link_target(&self.app, node, &url);
-                    self.act(Action::OpenAddress(url));
-                }
-                Some(SessionClick::Submit(target)) => {
-                    self.act(Action::BeginSmolwebSubmission {
-                        source: Some(node),
-                        target,
-                    });
-                }
-                Some(SessionClick::Handled | SessionClick::Miss) | None => {}
             }
             self.request_redraw();
             return;
@@ -1156,7 +1152,7 @@ impl Shell {
             && let Some(surface) = self.renderers.contributed.get_mut(pane)
         {
             if button == MouseButton::Left {
-                if surface.pointer_up(local_x, local_y)
+                if surface.mouse_release(local_x, local_y)
                     == crate::contributed_surface::SurfaceRequest::Redraw
                 {
                     self.request_redraw();
@@ -1217,7 +1213,7 @@ impl Shell {
         let altitude_angle = match touch.force {
             Some(Force::Calibrated { altitude_angle, .. }) => {
                 altitude_angle.map(|angle| angle as f32)
-            }
+            },
             _ => None,
         };
         let pressure = touch.force.and_then(|force| {
@@ -1262,7 +1258,7 @@ impl Shell {
                     if self.content_sessions.has_surface(&node) =>
                 {
                     Some(node)
-                }
+                },
                 _ => None,
             });
             let Some(node) = target else {
@@ -1321,7 +1317,7 @@ impl Shell {
                             shift: self.shift,
                             ctrl: self.ctrl,
                             alt: self.alt,
-                            meta: false,
+                            meta: self.meta,
                         },
                     }) {
                         Ok(()) => true,
@@ -1371,5 +1367,58 @@ mod cursor_tests {
         );
         assert_eq!(surface_cursor_icon(inker::CursorShape::Hidden), None);
         assert_eq!(surface_cursor_label(inker::CursorShape::Pointer), "pointer");
+    }
+}
+
+#[cfg(test)]
+mod contributed_custody_tests {
+    use super::*;
+    #[test]
+    fn content_pool_host_contributed_custody_checks_placement_and_provider() {
+        let surface = crate::surface::Surface {
+            id: crate::surface::SurfaceId(8),
+            kind: crate::surface::SurfaceKind::Pane(crate::panes::PaneId(9)),
+            rect: crate::surface::Rect::new(10., 20., 100., 80.),
+        };
+        let admitted = ContributedPointer {
+            surface,
+            generation: 4,
+            window: 0,
+        };
+        assert!(admitted.is_current(Some(surface), Some(4), 0));
+        assert!(
+            !admitted.is_current(Some(surface), Some(4), 1),
+            "another native window cannot inherit gesture"
+        );
+        assert!(
+            !admitted.is_current(None, Some(4), 0),
+            "hidden/closed placement retires gesture"
+        );
+        assert!(
+            !admitted.is_current(Some(surface), Some(5), 0),
+            "replacement provider retires gesture"
+        );
+        assert!(
+            !admitted.is_current(
+                Some(crate::surface::Surface {
+                    rect: crate::surface::Rect::new(11., 20., 100., 80.),
+                    ..surface
+                }),
+                Some(4),
+                0
+            ),
+            "moved placement retires gesture"
+        );
+        assert!(
+            !admitted.is_current(
+                Some(crate::surface::Surface {
+                    id: crate::surface::SurfaceId(10),
+                    ..surface
+                }),
+                Some(4),
+                0
+            ),
+            "another appearance cannot inherit gesture"
+        );
     }
 }

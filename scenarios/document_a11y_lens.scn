@@ -1,0 +1,18 @@
+# The same retained Gemini content moves from primary to a native lens.
+settle 30
+key escape
+open gemini://127.0.0.1:${TURNSTONE_A11Y_GEMINI_PORT}/capsule.gmi
+settle 60
+act Open node in Workbench
+settle 30
+assert surface content
+assert a11y link: First Gemini >> link: Second Gemini
+capture a11y_primary_document
+act Tear out pane
+settle 30
+assert windows == 2
+assert lens-surface content
+assert no-surface content
+assert a11y window: Turnstone lens 0 >> link: First Gemini >> link: Second Gemini
+capture a11y_primary_after_tearout
+capture-lens a11y_lens_document

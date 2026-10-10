@@ -41,8 +41,14 @@ impl ApplicationHandler for Shell {
         // input delivery. A deadline wake requests paint outside WM_PAINT so
         // captured browser mailboxes and self-drive cannot lose their clock.
         // Replace this fallback when the engines expose a host wake callback.
+        let now = std::time::Instant::now();
+        if self.document_clock.poll_due(now) {
+            self.pump_visible_documents();
+            self.request_pending_document_redraws();
+            self.push_a11y_tree();
+        }
         let active = self.content_sessions.surface_count() > 0 || self.shared_scenario.is_some();
-        if self.surface_poll_clock.poll_due(active, std::time::Instant::now()) {
+        if self.surface_poll_clock.poll_due(active, now) {
             self.request_redraw();
         }
     }
@@ -59,7 +65,12 @@ impl ApplicationHandler for Shell {
         // Otherwise a minute supplies the idle W4 schedule clock.
         let active = self.content_sessions.surface_count() > 0 || self.shared_scenario.is_some();
         let now = std::time::Instant::now();
-        let deadline = self.surface_poll_clock.deadline(active, now)
+        let deadline = self
+            .surface_poll_clock
+            .deadline(active, now)
+            .into_iter()
+            .chain(self.document_clock.deadline(now))
+            .min()
             .unwrap_or_else(|| now + std::time::Duration::from_secs(60));
         event_loop.set_control_flow(ControlFlow::WaitUntil(deadline));
     }
@@ -104,12 +115,10 @@ impl ApplicationHandler for Shell {
                 .expect("failed to create the turnstone window"),
         );
         self.a11y_adapter = Some(crate::shell::a11y_bridge::install(
-            event_loop,
             &window,
-            self.a11y_shared.clone(),
             self.a11y_actions.clone(),
             self.proxy.clone(),
-            self.a11y_reactivation.clone(),
+            "Turnstone",
         ));
         window.set_visible(true);
         let size = window.inner_size();
@@ -144,7 +153,7 @@ impl ApplicationHandler for Shell {
                 eprintln!("[turnstone] {err}");
                 event_loop.exit();
                 return;
-            }
+            },
         }
 
         // Restored Weld-pinned nodes are requested before winit gives us a
@@ -191,13 +200,13 @@ impl ApplicationHandler for Shell {
                                     session.provide_subresource(&outcome.url, &bytes);
                                 }
                             }
-                        }
+                        },
                         Err(error) => {
                             tracing::warn!(url = %outcome.url, %error, "content subresource failed");
-                        }
+                        },
                     }
                     continue;
-                }
+                },
                 other => other,
             };
             // The port adapter converts the service's types at the boundary;
@@ -268,7 +277,17 @@ impl ApplicationHandler for Shell {
             && window.id() == window_id
         {
             tracing::debug!(target: "turnstone::selfdrive", redraw = matches!(event, WindowEvent::RedrawRequested), "begin accessibility event delivery");
-            adapter.process_event(window, &event);
+            if matches!(
+                event,
+                WindowEvent::Moved(_)
+                    | WindowEvent::Resized(_)
+                    | WindowEvent::ScaleFactorChanged { .. }
+            ) {
+                adapter.update_window_bounds(window);
+            }
+            if let WindowEvent::Focused(focused) = &event {
+                adapter.update_window_focus(*focused);
+            }
             tracing::debug!(target: "turnstone::selfdrive", "finished accessibility event delivery");
         }
         if self.window.as_ref().map(|w| w.id()) != Some(window_id) {
@@ -281,25 +300,34 @@ impl ApplicationHandler for Shell {
             return;
         }
         match event {
+            WindowEvent::Focused(focused) => {
+                self.primary_focused = focused;
+                if !focused {
+                    self.cancel_content_pointer();
+                }
+                self.sync_content_placements();
+                self.push_a11y_tree();
+            },
             WindowEvent::Moved(_) | WindowEvent::ScaleFactorChanged { .. } => {
                 self.observe_physics_display_rate(true);
             },
             WindowEvent::CloseRequested => {
+                self.cancel_content_pointer();
                 self.act(Action::SaveSession);
                 self.release_place_worker();
                 event_loop.exit();
-            }
+            },
             // A dropped file lands at the last tracked cursor position (winit
             // carries no position on the drop event itself; mid-drag hover
             // updates CursorMoved on the platforms that report it).
             WindowEvent::DroppedFile(path) => {
                 let (x, y) = self.cursor;
                 self.drop_file(x, y, &path);
-            }
+            },
             WindowEvent::HoveredFile(path) => {
                 let (x, y) = self.cursor;
                 self.hover_file(x, y, &path);
-            }
+            },
             WindowEvent::HoveredFileCancelled => self.cancel_host_file_drag(),
             WindowEvent::Resized(size) => {
                 self.width = size.width.max(1);
@@ -311,7 +339,7 @@ impl ApplicationHandler for Shell {
                 self.app.viewport = (self.width as f32, self.height as f32);
                 self.app.reflow_omnibar();
                 self.request_redraw();
-            }
+            },
             // Continuous gestures map onto the canvas's semantic input methods
             // directly (they are already the right typed vocabulary); Actions
             // are the app-intent tier above. (Architecture plan, the spine.)
@@ -319,9 +347,10 @@ impl ApplicationHandler for Shell {
                 self.ctrl = mods.state().control_key();
                 self.alt = mods.state().alt_key();
                 self.shift = mods.state().shift_key();
+                self.meta = mods.state().super_key();
                 self.app.graph_runtimes.set_ctrl(mods.state().control_key());
                 self.app.graph_runtimes.set_alt(mods.state().alt_key());
-            }
+            },
             WindowEvent::CursorMoved { position, .. } => {
                 self.cursor = (position.x as f32, position.y as f32);
                 self.deliver_move(self.cursor.0, self.cursor.1);
@@ -338,14 +367,14 @@ impl ApplicationHandler for Shell {
                                 self.cursor.0 - surface.rect.x,
                                 self.cursor.1 - surface.rect.y,
                             ))
-                        }
+                        },
                         _ => None,
                     })
                     .unwrap_or(false);
                 if graph_redraw {
                     self.request_redraw();
                 }
-            }
+            },
             WindowEvent::CursorLeft { .. } => self.reset_surface_cursor(),
             WindowEvent::MouseWheel { delta, .. } => {
                 // Lines-to-pixels: the canvas pan scale doubles as the content
@@ -356,14 +385,14 @@ impl ApplicationHandler for Shell {
                 };
                 let (cx, cy) = self.cursor;
                 self.deliver_wheel(cx, cy, dx, dy);
-            }
+            },
             WindowEvent::MouseInput { state, button, .. } => {
                 let (x, y) = self.cursor;
                 match state {
                     ElementState::Pressed => self.deliver_press(x, y, button),
                     ElementState::Released => self.deliver_release(x, y, button),
                 }
-            }
+            },
             WindowEvent::Touch(touch) => self.deliver_touch(touch),
             WindowEvent::KeyboardInput { event, .. } => {
                 if !self.deliver_surface_key(
@@ -374,7 +403,7 @@ impl ApplicationHandler for Shell {
                 {
                     self.on_key(&event.logical_key);
                 }
-            }
+            },
             // IME composition. Preedit is ephemeral by the gesture law — it
             // rides directly on state and only the commit lowers to an
             // Action (`OmnibarInsert`, the same path a future paste takes).
@@ -408,14 +437,14 @@ impl ApplicationHandler for Shell {
                     Ime::Commit(s) => {
                         self.app.omnibar.preedit = None;
                         self.act(Action::OmnibarInsert(s));
-                    }
+                    },
                     Ime::Preedit(s, _caret) => {
                         self.app.omnibar.preedit = (!s.is_empty()).then_some(s);
                         self.request_redraw();
-                    }
-                    Ime::Enabled | Ime::Disabled => {}
+                    },
+                    Ime::Enabled | Ime::Disabled => {},
                 }
-            }
+            },
             WindowEvent::RedrawRequested => {
                 self.observe_physics_display_rate(false);
                 tracing::debug!(target: "turnstone::selfdrive", "begin render");
@@ -425,8 +454,8 @@ impl ApplicationHandler for Shell {
                 tracing::debug!(target: "turnstone::selfdrive", "finished accessibility update; begin scenario tick");
                 self.scenario_pump(event_loop);
                 tracing::debug!(target: "turnstone::selfdrive", "finished scenario tick");
-            }
-            _ => {}
+            },
+            _ => {},
         }
         self.drain_pending_windows(event_loop);
     }
@@ -442,9 +471,9 @@ impl Shell {
         };
         let now = std::time::Instant::now();
         if !force
-            && self.physics_display_rate_last_observed.is_some_and(|last| {
-                now.duration_since(last) < std::time::Duration::from_secs(1)
-            })
+            && self
+                .physics_display_rate_last_observed
+                .is_some_and(|last| now.duration_since(last) < std::time::Duration::from_secs(1))
         {
             return;
         }

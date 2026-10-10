@@ -10,6 +10,10 @@
 //! product-free score and scene, and keeps all rendered card data beside that
 //! scene. Incoming intents return through Turnstone's ordinary [`Action`] spine
 //! only after Servitor has evaluated the endpoint's projected grant.
+//!
+//! Graph coverage is local context beside the disclosed scene. The current
+//! Chirograph V1 snapshot, FrozenScene and accessibility scene outputs do not
+//! report that context; they must not be described as coverage-aware outputs.
 
 use std::collections::{BTreeMap, HashMap};
 
@@ -29,7 +33,7 @@ use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, Pro
 use identity::IdentityProvider;
 use identity::delegation::Issue;
 use insigne::delegation::SignedDelegationCertificate;
-use mere::kernel::graph::{Author,  NodeKey};
+use mere::kernel::graph::{Author, CoverageNote, NodeKey};
 use sceno::{Arrangement, Score, Spiral};
 use scenotime::{Revision, SceneEpoch, SceneSnapshot};
 use servitor::delegation::{DelegationTable, root_certificate};
@@ -107,6 +111,7 @@ pub struct TurnstoneEndpoint {
     session: ProjectionSession,
     card_extent: (f32, f32),
     snapshot: Option<ProjectionSnapshot>,
+    snapshot_coverage: Option<CoverageNote>,
     resources: BTreeMap<ContentHash, Vec<u8>>,
     gate: Gate,
     authority: DelegationTable,
@@ -190,6 +195,7 @@ impl TurnstoneEndpoint {
             session,
             card_extent,
             snapshot: None,
+            snapshot_coverage: None,
             resources: BTreeMap::new(),
             gate,
             authority,
@@ -204,6 +210,15 @@ impl TurnstoneEndpoint {
 
     pub fn app(&self) -> &App {
         &self.app
+    }
+
+    /// Known graph limits beside the last successful local snapshot.
+    ///
+    /// None means no snapshot has been installed. An empty note means no known
+    /// limit in that supplied graph, never world completeness. Chirograph V1
+    /// does not carry this note to remote clients.
+    pub fn snapshot_coverage(&self) -> Option<&CoverageNote> {
+        self.snapshot_coverage.as_ref()
     }
 
     pub fn audit(&self) -> &GraphLog<Container, Relation> {
@@ -360,7 +375,7 @@ pub(crate) fn disclose_scene(
     focused: Option<NodeKey>,
     card_extent: (f32, f32),
     spiral: sceno::Spiral,
-) -> sceno::Scene {
+) -> cartography::CoveredScene {
     let extents: HashMap<NodeKey, (f32, f32)> =
         graph.nodes().map(|(key, _)| (key, card_extent)).collect();
     // The spiral reads keyed signals, most recent first (Mere F132). A
@@ -380,7 +395,7 @@ pub(crate) fn disclose_scene(
     );
     mapped.score.arrangement = Arrangement::Spiral(spiral);
     let solved = scenomise::solve(&mapped.score);
-    let mut scene = cartography::scene_from_projection(
+    let cartography::CoveredScene { mut scene, coverage } = cartography::scene_from_projection(
         &mapped.projection,
         |key| {
             graph
@@ -409,7 +424,7 @@ pub(crate) fn disclose_scene(
     }
     scene.bounds = solved.bounds;
     scene.generation = mapped.score.generation;
-    scene
+    cartography::CoveredScene { scene, coverage }
 }
 
 impl ProjectionSource for TurnstoneEndpoint {
@@ -433,7 +448,7 @@ impl ProjectionSource for TurnstoneEndpoint {
         };
 
         let graph = self.app.graph_runtimes.graph();
-        let scene = disclose_scene(
+        let cartography::CoveredScene { scene, coverage } = disclose_scene(
             graph,
             self.app.graph_runtimes.focused_key(),
             self.card_extent,
@@ -455,6 +470,7 @@ impl ProjectionSource for TurnstoneEndpoint {
             cache_policy: CachePolicy::default(),
         };
         self.snapshot = Some(snapshot.clone());
+        self.snapshot_coverage = Some(coverage);
         Ok(snapshot)
     }
 }
@@ -759,6 +775,108 @@ pub fn render_g3_receipt() -> Result<String, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use mere::kernel::graph::{CoverageLayer, CoverageLimit, CoverageNote};
+
+    fn scoped_coverage() -> CoverageNote {
+        let layers = [
+            CoverageLayer::Possession,
+            CoverageLayer::Residency,
+            CoverageLayer::Disclosure,
+            CoverageLayer::Synchronization,
+            CoverageLayer::Projection,
+        ];
+        CoverageNote {
+            limits: layers
+                .into_iter()
+                .enumerate()
+                .map(|(index, layer)| CoverageLimit {
+                    layer,
+                    reason: format!("known limit {index}"),
+                    resources: vec![uuid::Uuid::from_u128(100 + index as u128)],
+                    surfaces: vec![uuid::Uuid::from_u128(200 + index as u128)],
+                    count: if index % 2 == 0 { None } else { Some(index) },
+                })
+                .collect(),
+        }
+    }
+
+    fn set_coverage(app: &mut App, note: CoverageNote) {
+        let mut context = app.graph_runtimes.graph().clone();
+        context.set_known_coverage(note);
+        app.graph_runtimes
+            .active_canvas_mut()
+            .refresh_semantic_context(&context);
+    }
+
+    #[test]
+    fn disclosed_scene_retains_every_scoped_coverage_layer() {
+        let mut app = App::projection_fixture();
+        let known = scoped_coverage();
+        set_coverage(&mut app, known.clone());
+        let disclosed = disclose_scene(
+            app.graph_runtimes.graph(),
+            app.graph_runtimes.focused_key(),
+            (248.0, 168.0),
+            Spiral::default(),
+        );
+        for limit in &known.limits {
+            assert!(disclosed.coverage.limits.contains(limit), "lost {limit:?}");
+        }
+        assert_eq!(disclosed.scene.items.len(), 3);
+        assert_eq!(disclosed.scene.relations.len(), 2);
+    }
+
+    #[test]
+    fn coverage_survives_disclosure_and_snapshot_refusal() {
+        let mut app = App::projection_fixture();
+        let known = scoped_coverage();
+        set_coverage(&mut app, known.clone());
+        let mut endpoint = TurnstoneEndpoint::new(app).unwrap();
+        assert!(endpoint.snapshot_coverage().is_none());
+        let request = ProjectionRequest {
+            version: ProtocolVersion::V1,
+            session: endpoint.session().clone(),
+            score: Score::new(Arrangement::Spiral(Spiral::default())),
+        };
+        let first = endpoint.snapshot(request.clone()).unwrap();
+        for limit in &known.limits {
+            assert!(endpoint.snapshot_coverage().unwrap().limits.contains(limit));
+        }
+        assert_eq!(first.scene.active_item_count(), 3);
+        assert_eq!(first.presentation.bindings.len(), 3);
+
+        let truth_revision = endpoint.app.graph_runtimes.graph().revision();
+        let mut changed = known.clone();
+        changed.limits[0].count = Some(7);
+        changed.limits[1].resources = vec![uuid::Uuid::from_u128(999)];
+        set_coverage(&mut endpoint.app, changed.clone());
+        assert_eq!(endpoint.app.graph_runtimes.graph().revision(), truth_revision);
+        let second = endpoint.snapshot(request.clone()).unwrap();
+        assert_eq!(second.scene.epoch, first.scene.epoch);
+        assert_eq!(second.scene.revision, first.scene.revision);
+        for limit in &changed.limits {
+            assert!(endpoint.snapshot_coverage().unwrap().limits.contains(limit));
+        }
+        assert!(!endpoint.snapshot_coverage().unwrap().limits.contains(&known.limits[0]));
+        assert!(!endpoint.snapshot_coverage().unwrap().limits.contains(&known.limits[1]));
+
+        let prior_coverage = endpoint.snapshot_coverage().unwrap().clone();
+        let prior_resources = endpoint.resources.clone();
+        let mut legacy = request;
+        legacy.score.version = 4;
+        assert!(matches!(
+            endpoint.snapshot(legacy),
+            Err(ProjectionRefusal::UnsupportedScore { received: 4, supported: 5 })
+        ));
+        assert_eq!(endpoint.snapshot_coverage(), Some(&prior_coverage));
+        assert_eq!(endpoint.snapshot.as_ref(), Some(&second));
+        assert_eq!(endpoint.resources, prior_resources);
+
+        // V1 carries scene/presentation only. Local retention is not a claim
+        // that remote clients received these known limits.
+        let wire = serde_json::to_value(&second).unwrap();
+        assert!(wire.get("coverage").is_none());
+    }
 
     #[test]
     fn score_five_accepts_and_score_four_refuses_without_replacing_snapshot() {

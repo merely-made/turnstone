@@ -10,8 +10,10 @@
 //! effect runner. The only module that touches a platform API; everything it
 //! learns flows back through the spine.
 
+mod content_pool;
 mod contributed_automation;
 mod controller_input;
+mod document_a11y;
 mod drive;
 mod effects;
 mod events;
@@ -94,8 +96,7 @@ const SMOLWEB_SESSION_ENGINE_IDS: &[&str] = &[
 /// web engine's producer (SC step 4). The App owns the node's load and graph
 /// history; a document controller opens the body the App fetched, and a
 /// surface takes navigation on its own web plane.
-pub(crate) type NodeDocuments =
-    HashMap<uuid::Uuid, pelt_core::PeltContent<netrender::Scene>>;
+pub(crate) use content_pool::NodeDocuments;
 
 /// The session seam of each node's document, for the host features the Pelt
 /// controller does not wrap yet (find, subresources, Turnstone's own pointer
@@ -104,10 +105,6 @@ pub(crate) trait NodeSessions {
     fn session(&self, node: &uuid::Uuid) -> Option<&dyn DocumentSession<Scene>>;
     fn session_mut(&mut self, node: &uuid::Uuid) -> Option<&mut dyn DocumentSession<Scene>>;
     fn sessions(&self) -> impl Iterator<Item = &dyn DocumentSession<Scene>>;
-    fn sessions_mut(&mut self) -> impl Iterator<Item = &mut dyn DocumentSession<Scene>>;
-    fn node_sessions_mut(
-        &mut self,
-    ) -> impl Iterator<Item = (uuid::Uuid, &mut dyn DocumentSession<Scene>)>;
 }
 
 impl NodeSessions for NodeDocuments {
@@ -127,22 +124,6 @@ impl NodeSessions for NodeDocuments {
         self.values()
             .filter_map(pelt_core::PeltContent::document)
             .map(pelt_core::PeltController::session)
-    }
-
-    fn sessions_mut(&mut self) -> impl Iterator<Item = &mut dyn DocumentSession<Scene>> {
-        self.values_mut()
-            .filter_map(pelt_core::PeltContent::document_mut)
-            .map(pelt_core::PeltController::session_mut)
-    }
-
-    fn node_sessions_mut(
-        &mut self,
-    ) -> impl Iterator<Item = (uuid::Uuid, &mut dyn DocumentSession<Scene>)> {
-        self.iter_mut().filter_map(|(node, content)| {
-            content
-                .document_mut()
-                .map(|controller| (*node, controller.session_mut()))
-        })
     }
 }
 
@@ -180,7 +161,10 @@ impl NodeSurfaces for NodeDocuments {
     fn surfaces_mut(
         &mut self,
     ) -> impl Iterator<Item = (uuid::Uuid, &mut dyn inker::SurfaceProducer)> {
-        self.iter_mut().filter_map(|(node, content)| {
+        self.pool.surfaces_mut().filter_map(|(key, content)| {
+            let content_pool::ContentKey::Node(node) = key else {
+                return None;
+            };
             content
                 .surface_producer_mut()
                 .map(|producer| (*node, producer))
@@ -220,7 +204,7 @@ pub(crate) fn standard_content_engines() -> SessionRegistry<Scene> {
                 LocalFetcher.with_fallback(RemoteFetcher::shared()),
                 SmolwebTheme::default(),
             )
-                .with_inline_media(smolweb_inline_media_policy()),
+            .with_inline_media(smolweb_inline_media_policy()),
         ));
     }
     engines
@@ -406,7 +390,7 @@ fn start_share_reader(
         Err(error) => {
             tracing::warn!(%error, "Knot share reader is unavailable");
             None
-        }
+        },
     }
 }
 
@@ -420,7 +404,7 @@ fn start_publishing(
         Err(error) => {
             tracing::warn!(%error, "Knot publishing is unavailable");
             None
-        }
+        },
     }
 }
 
@@ -439,7 +423,9 @@ impl Shell {
         self.unlock_rx = None;
         let effects = self.app.adopt_profile_root(root.clone());
         self.place_handle
-            .command(crate::place::worker::PlaceWorkerCommand::AdoptIdentity(root.clone()));
+            .command(crate::place::worker::PlaceWorkerCommand::AdoptIdentity(
+                root.clone(),
+            ));
         self.shared_knot_service = start_share_reader(root.clone());
         if let Some(source) = self.pending_publish_source.take() {
             self.publish_service = start_publishing(source, root);
@@ -479,7 +465,7 @@ fn shared_scenario_from_env() -> Option<taproot::Scenario> {
         Err(err) => {
             let fallback = format!("log parse error: {err}\nassert snap __never__ == 1");
             taproot::Scenario::parse(&fallback).expect("fallback scenario parses")
-        }
+        },
     })
 }
 
@@ -496,8 +482,13 @@ fn servo_profile_directory(
         || (reserved.len() == 4
             && (reserved.starts_with("COM") || reserved.starts_with("LPT"))
             && matches!(reserved.as_bytes()[3], b'1'..=b'9'));
-    if name.is_empty() || name.trim() != name || name.ends_with('.') || device_name
-        || name.chars().any(|c| c.is_control() || "<>:\"/\\|?*".contains(c))
+    if name.is_empty()
+        || name.trim() != name
+        || name.ends_with('.')
+        || device_name
+        || name
+            .chars()
+            .any(|c| c.is_control() || "<>:\"/\\|?*".contains(c))
     {
         return Err("TURNSTONE_SERVO_PROFILE must be a nonempty profile name usable as one directory component".into());
     }
@@ -516,19 +507,31 @@ mod servo_profile_tests {
     #[test]
     fn named_process_profile_has_no_node_component_and_can_move() {
         let root = std::env::current_dir().unwrap();
-        assert_eq!(servo_profile_directory(&root, "Research", None).unwrap(),
-            root.join("servo/profiles/Research"));
+        assert_eq!(
+            servo_profile_directory(&root, "Research", None).unwrap(),
+            root.join("servo/profiles/Research")
+        );
         let location = root.join("custom-browser-data");
-        assert_eq!(servo_profile_directory(&root, "Research", Some(location.clone())).unwrap(), location);
+        assert_eq!(
+            servo_profile_directory(&root, "Research", Some(location.clone())).unwrap(),
+            location
+        );
     }
 
     #[test]
     fn ambiguous_or_escaping_profile_bindings_are_refused() {
         let root = std::env::current_dir().unwrap();
-        for name in ["", " ", ".", "..", "../other", "x\\y", "a:b", "a.", "NUL", "COM1.txt"] {
-            assert!(servo_profile_directory(&root, name, None).is_err(), "{name}");
+        for name in [
+            "", " ", ".", "..", "../other", "x\\y", "a:b", "a.", "NUL", "COM1.txt",
+        ] {
+            assert!(
+                servo_profile_directory(&root, name, None).is_err(),
+                "{name}"
+            );
         }
-        assert!(servo_profile_directory(&root, "Research", Some(PathBuf::from("relative"))).is_err());
+        assert!(
+            servo_profile_directory(&root, "Research", Some(PathBuf::from("relative"))).is_err()
+        );
     }
 }
 
@@ -665,6 +668,7 @@ pub struct Shell {
     alt: bool,
     /// Live Shift state, for the tear-out modifier arms (Ctrl+Shift = fork).
     shift: bool,
+    meta: bool,
     /// The taproot scenario driver (activated by `TURNSTONE_SCENARIO`): the
     /// generic one-step-per-frame loop every genet app shares, driving this
     /// Shell through its
@@ -689,26 +693,15 @@ pub struct Shell {
     pending_lens_capture: Option<std::path::PathBuf>,
     window: Option<Arc<Window>>,
     /// The OS AccessKit bridge for the primary window, when installed.
-    a11y_adapter: Option<accesskit_winit::Adapter>,
-    /// The latest projected tree, shared with the platform activation thread.
-    a11y_shared: crate::shell::a11y_bridge::SharedTree,
-    /// Frames since the OS tree was last refreshed; a cadence, not a vsync
-    /// obligation, because the projection walks the graph and freezes the
-    /// disclosed scene, which is not a per-frame cost worth paying.
-    a11y_frames_since_push: u32,
-    /// Refusal included in the last tree; changes publish on the next paint.
-    a11y_physics_refusal_last_projected: Option<mere::canvas::OverlayRefusal>,
-    /// Where an assistive action on each projected node lands, rebuilt with
-    /// every pushed tree so the table and the tree can never disagree for
-    /// longer than one cadence.
+    a11y_adapter: Option<genet_winit_host::AccessKitBridge>,
+    /// Routes for the current host tree. Document admissions are captured
+    /// separately at enqueue and revalidated against their live source.
     a11y_routes: crate::a11y::A11yRoutes,
     /// Assistive actions queued by the platform thread, drained here.
     a11y_actions: crate::shell::a11y_bridge::ActionQueue,
     /// Activation occurs on a platform thread; replay subtrees on the UI thread.
-    a11y_reactivation: Arc<std::sync::atomic::AtomicBool>,
+    a11y_epoch: Option<u64>,
     surface_a11y: crate::foreign_a11y::ForeignA11y,
-    a11y_surface_layout: Vec<(uuid::Uuid, accesskit::Rect)>,
-    a11y_focus_last: Option<crate::surface::FocusTarget>,
     host: Option<SurfaceHost>,
     width: u32,
     height: u32,
@@ -723,20 +716,14 @@ pub struct Shell {
     /// of its content.
     pelt_surface_engines: Arc<inker::SurfaceEngineRegistry>,
     content_sessions: NodeDocuments,
-    /// Reader's immutable article packet remains in `content_sessions`; each
-    /// visible Reader appearance gets a separate document-canvas session here.
-    /// Other engines stay on the established one-session path until they can
-    /// make the same source/appearance split honestly.
-    reader_appearances: std::collections::HashMap<
-        crate::surface::SurfaceId,
-        (uuid::Uuid, mere_document_lanes::ReaderDocumentSession),
-    >,
     /// Long-lived frame-streaming engines. The neutral inker registry chooses
     /// the producer; each node's content holds its non-Send live handle, and
     /// the shell keeps the imported frame cache.
     surface_engines: inker::SurfaceEngineRegistry,
     /// Mailbox fallback cadence until producers expose an event-loop wake hook.
     surface_poll_clock: surface_poll::SurfacePollClock,
+    document_clock: content_pool::DocumentClock,
+    primary_focused: bool,
     /// Last monitor-rate observation on the existing event/render cadence.
     physics_display_rate_last_observed: Option<std::time::Instant>,
     /// Exact app request/query identity for progressive hosted find results.
@@ -787,6 +774,7 @@ pub struct Shell {
     /// one surface: the canvas needs paired `pointer_down`/`pointer_up`, and a
     /// content click must not leak its release to the canvas beneath.
     pointer_capture: Option<crate::surface::SurfaceKind>,
+    contributed_pointer: Option<input::ContributedPointer>,
     /// DOM `buttons` state for the mouse pointer. Pointer Events carries the
     /// full post-event mask, including on move, so CEF can distinguish hover
     /// from a pressed drag.
@@ -890,7 +878,7 @@ impl Shell {
             Err(error) => {
                 tracing::warn!(%error, "application settings could not be loaded at shell startup");
                 pandect::ApplicationSettings::default()
-            }
+            },
         };
         let live_settings = LiveSettingsHandle::new(&initial_settings);
         app.apply_chrome_settings_snapshot(&live_settings.snapshot());
@@ -953,9 +941,10 @@ impl Shell {
         let bin_wake: armillary::Wake = Arc::new(move || {
             let _ = bin_proxy.send_event(());
         });
-        let (bin_handle, bin_rx) =
-            crate::recycle::spawn_bin_for_session(bin_wake,
-                (!app.session_load_refused()).then(|| crate::recycle::bin_dir(&app.session_dir())));
+        let (bin_handle, bin_rx) = crate::recycle::spawn_bin_for_session(
+            bin_wake,
+            (!app.session_load_refused()).then(|| crate::recycle::bin_dir(&app.session_dir())),
+        );
 
         // The trail-memory actor over THIS session's memory store (search
         // wiring W1 + W2): browsing capture in, recall answers out, behind
@@ -964,11 +953,11 @@ impl Shell {
         let trail_wake: armillary::Wake = Arc::new(move || {
             let _ = trail_proxy.send_event(());
         });
-        let capture_library =
-            crate::place::captured_collection::LocalCaptureLibrary::default();
+        let capture_library = crate::place::captured_collection::LocalCaptureLibrary::default();
         let (trail_handle, trail_rx) = crate::trail_memory::spawn_trail_for_session(
             trail_wake,
-            (!app.session_load_refused()).then(|| crate::trail_memory::memory_dir(&app.session_dir())),
+            (!app.session_load_refused())
+                .then(|| crate::trail_memory::memory_dir(&app.session_dir())),
             capture_library.clone(),
         );
 
@@ -1019,7 +1008,7 @@ impl Shell {
                 Err(error) => {
                     tracing::warn!(%error, "device receipts reader is unavailable");
                     None
-                }
+                },
             };
         let knot_visits = crate::knot_authoring::KnotVisits::default();
         match crate::knot_authoring::KnotAuthoringEngine::from_env(knot_wake, knot_visits.clone()) {
@@ -1032,8 +1021,8 @@ impl Shell {
                     }
                 }
                 content_engines.register(Box::new(engine));
-            }
-            Ok(None) => {}
+            },
+            Ok(None) => {},
             Err(error) => tracing::warn!(%error, "Knot authoring is unavailable"),
         }
 
@@ -1061,19 +1050,23 @@ impl Shell {
         // which is where the device is opened.
         let redshank_docks = crate::redshank_episode_surface::RedshankDocks::new();
         surface_providers
-            .register_provider(crate::redshank_episode_surface::RedshankEpisodeProvider::new(
-                redshank_docks.clone(),
-            ))
+            .register_provider(
+                crate::redshank_episode_surface::RedshankEpisodeProvider::new(
+                    redshank_docks.clone(),
+                ),
+            )
             .expect("the Redshank episode provider is unique");
         if app.session_load_refused() {
             app.redshank = crate::redshank_host::RedshankHost::detached(
-                crate::redshank_host::Output::Device, blocking_fetch);
+                crate::redshank_host::Output::Device,
+                blocking_fetch,
+            );
         } else {
-        app.redshank = crate::redshank_host::RedshankHost::open(
-            &app.session_dir(),
-            crate::redshank_host::Output::Device,
-            blocking_fetch,
-        );
+            app.redshank = crate::redshank_host::RedshankHost::open(
+                &app.session_dir(),
+                crate::redshank_host::Output::Device,
+                blocking_fetch,
+            );
         }
         if let Some(runtime) = app.redshank.runtime() {
             let redshank_proxy = proxy.clone();
@@ -1109,34 +1102,34 @@ impl Shell {
             ctrl: false,
             alt: false,
             shift: false,
+            meta: false,
             shared_scenario: shared_scenario_from_env(),
             held_contributed_click: None,
             contributed_click_request: 0,
             observed_events: VecDeque::with_capacity(128),
-            diagnostic_observations: crate::diagnostic_observations::DiagnosticObservations::from_env(),
+            diagnostic_observations:
+                crate::diagnostic_observations::DiagnosticObservations::from_env(),
             shared_out_dir: shared_out_dir_from_env(),
             pending_capture: None,
             pending_lens_capture: None,
             window: None,
             a11y_adapter: None,
-            a11y_shared: std::sync::Arc::new(std::sync::Mutex::new(None)),
-            a11y_frames_since_push: u32::MAX / 2,
-            a11y_physics_refusal_last_projected: None,
             a11y_routes: crate::a11y::A11yRoutes::new(),
-            a11y_actions: std::sync::Arc::new(std::sync::Mutex::new(Vec::new())),
-            a11y_reactivation: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            a11y_actions: std::sync::Arc::new(std::sync::Mutex::new(Default::default())),
+            a11y_epoch: None,
             surface_a11y: crate::foreign_a11y::ForeignA11y::new(),
-            a11y_surface_layout: Vec::new(),
-            a11y_focus_last: None,
             host: None,
             width: 1024,
             height: 600,
             content_engines: Arc::new(content_engines),
             pelt_surface_engines: Arc::new(inker::SurfaceEngineRegistry::new()),
-            content_sessions: std::collections::HashMap::new(),
-            reader_appearances: std::collections::HashMap::new(),
+            content_sessions: NodeDocuments::default(),
             surface_engines: inker::SurfaceEngineRegistry::new(),
-            surface_poll_clock: surface_poll::SurfacePollClock::new(surface_poll_interval_from_env()),
+            surface_poll_clock: surface_poll::SurfacePollClock::new(
+                surface_poll_interval_from_env(),
+            ),
+            document_clock: content_pool::DocumentClock::new(surface_poll_interval_from_env()),
+            primary_focused: true,
             physics_display_rate_last_observed: None,
             surface_find_requests: std::collections::HashMap::new(),
             page_captures: page_capture::CaptureCorrelation::default(),
@@ -1159,6 +1152,7 @@ impl Shell {
             epoch: std::time::Instant::now(),
             pending_fetches: browse::PendingFetches::default(),
             pointer_capture: None,
+            contributed_pointer: None,
             surface_pointer_buttons: inker::PointerButtons::NONE,
             active_surface_touches: HashMap::new(),
             next_surface_touch_id: 2,
@@ -1197,51 +1191,9 @@ impl Shell {
         })
     }
 
-    fn with_content_appearance<R>(
-        &mut self,
-        node: uuid::Uuid,
-        appearance: crate::surface::SurfaceId,
-        f: impl FnOnce(&mut dyn DocumentSession<netrender::Scene>) -> R,
-    ) -> Option<R> {
-        let reader_source = self
-            .content_sessions
-            .session(&node)
-            .and_then(|session| {
-                session
-                    .as_any_ref()
-                    .downcast_ref::<mere_document_lanes::ReaderDocumentSession>()
-            })
-            .map(mere_document_lanes::ReaderDocumentSession::source_document);
-        if let Some(reader_source) = reader_source {
-            let stale = self
-                .reader_appearances
-                .get(&appearance)
-                .is_none_or(|(known, reader)| {
-                    *known != node
-                        || !std::sync::Arc::ptr_eq(&reader_source, &reader.source_document())
-                });
-            if stale {
-                let reader = self
-                    .content_sessions
-                    .session(&node)
-                    .and_then(|session| {
-                        session
-                            .as_any_ref()
-                            .downcast_ref::<mere_document_lanes::ReaderDocumentSession>()
-                    })?
-                    .new_appearance((1, 1));
-                self.reader_appearances.insert(appearance, (node, reader));
-            }
-            let entry = self.reader_appearances.get_mut(&appearance)?;
-            return (entry.0 == node).then(|| f(&mut entry.1));
-        }
-        self.content_sessions
-            .session_mut(&node)
-            .map(|session| f(session))
-    }
-
     fn clear_surface_content(&mut self) {
-        self.reader_appearances.clear();
+        self.cancel_content_pointer();
+        self.content_sessions.retain_appearances(|_, _| false);
         self.surface_a11y.clear();
         self.content_sessions
             .retain(|_, content| content.lane() != pelt_core::PeltLane::Surface);
@@ -1254,8 +1206,7 @@ impl Shell {
     }
 
     fn clear_reader_appearances(&mut self, node: uuid::Uuid) {
-        self.reader_appearances
-            .retain(|_, (known, _)| *known != node);
+        self.content_sessions.clear_appearances(node);
     }
 
     fn publish_engine_inventory(&mut self) {
@@ -1329,30 +1280,51 @@ impl Shell {
         if let Some(factory) = &self.servo_factory {
             return Ok(factory.profile_dir().to_owned());
         }
-        let host = self.host.as_ref()
+        let host = self
+            .host
+            .as_ref()
             .ok_or_else(|| "the Turnstone wgpu host is not ready".to_owned())?;
         let profile_name = match std::env::var("TURNSTONE_SERVO_PROFILE") {
             Ok(name) => name,
             Err(std::env::VarError::NotPresent) => "Default".into(),
-            Err(std::env::VarError::NotUnicode(_)) => return Err("TURNSTONE_SERVO_PROFILE must be valid UTF-8".into()),
+            Err(std::env::VarError::NotUnicode(_)) => {
+                return Err("TURNSTONE_SERVO_PROFILE must be valid UTF-8".into());
+            },
         };
         let profile = servo_profile_directory(
             &self.app.data_root,
             &profile_name,
             std::env::var_os("TURNSTONE_SERVO_PROFILE_DIR").map(std::path::PathBuf::from),
         )?;
-        std::fs::create_dir_all(&profile)
-            .map_err(|error| format!("could not create Servo profile {}: {error}", profile.display()))?;
-        let profile = effects::browser_profile_path(profile.canonicalize()
-            .map_err(|error| format!("could not resolve Servo profile {}: {error}", profile.display()))?)?;
+        std::fs::create_dir_all(&profile).map_err(|error| {
+            format!(
+                "could not create Servo profile {}: {error}",
+                profile.display()
+            )
+        })?;
+        let profile = effects::browser_profile_path(profile.canonicalize().map_err(|error| {
+            format!(
+                "could not resolve Servo profile {}: {error}",
+                profile.display()
+            )
+        })?)?;
         let proxy = self.proxy.clone();
-        let factory = Arc::new(servo::TurnstoneServoFactory::new(
-            servo::ServoHostOptions { profile_name, profile_dir: profile.clone() },
-            host.device().clone(),
-            host.queue().clone(),
-            Arc::new(move || { let _ = proxy.send_event(()); }),
-        ).map_err(|error| error.to_string())?);
-        self.surface_engines.register(Box::new(graft_engine::GraftEngine::new(factory.clone())));
+        let factory = Arc::new(
+            servo::TurnstoneServoFactory::new(
+                servo::ServoHostOptions {
+                    profile_name,
+                    profile_dir: profile.clone(),
+                },
+                host.device().clone(),
+                host.queue().clone(),
+                Arc::new(move || {
+                    let _ = proxy.send_event(());
+                }),
+            )
+            .map_err(|error| error.to_string())?,
+        );
+        self.surface_engines
+            .register(Box::new(graft_engine::GraftEngine::new(factory.clone())));
         self.servo_factory = Some(factory);
         self.publish_engine_inventory();
         Ok(profile)
@@ -1407,11 +1379,14 @@ impl Shell {
     }
 
     fn evict_pane_renderer(&mut self, pane: crate::panes::PaneId) {
+        if self.pointer_capture == Some(crate::surface::SurfaceKind::Pane(pane)) {
+            self.cancel_content_pointer();
+        }
         self.renderers.evict(pane);
         let lens_slots = self.app.lenses.len();
-        self.reader_appearances.retain(|id, (node, _)| {
+        self.content_sessions.retain_appearances(|node, id| {
             !crate::surface::appearance::reader_appearance_belongs_to_pane(
-                *id, *node, pane, lens_slots,
+                id, node, pane, lens_slots,
             )
         });
         if self.hovered_pane == Some(pane) {
@@ -1422,19 +1397,79 @@ impl Shell {
     /// Pump documents placed in the primary or any open lens. Lens-only
     /// documents stay visible when the primary renders; an unplaced document
     /// keeps its controller and state without scheduling another redraw.
-    fn pump_visible_documents(&mut self) -> bool {
-        let mut plans = self.surface_plan();
-        for lens in self.lens_windows.values() {
-            plans.extend(self.lens_plan(lens.ordinal, lens.width, lens.height));
+    fn all_content_plans(&self) -> Vec<crate::surface::Surface> {
+        let mut plan = self.surface_plan();
+        let mut lenses: Vec<_> = self.lens_windows.values().collect();
+        lenses.sort_by_key(|lens| lens.ordinal);
+        for lens in lenses {
+            plan.extend(self.lens_plan(lens.ordinal, lens.width, lens.height));
         }
-        let visible = plans
+        plan
+    }
+
+    fn sync_content_placements(&mut self) {
+        use content_pool::HostPlacement;
+        let focus = self.app.focus;
+        // Surface plans and native pointer positions are physical pixels.
+        // A factor of one prevents applying native DPI a second time.
+        let placement = |surface: crate::surface::Surface, window, active, native_scale| {
+            HostPlacement::physical(
+                surface,
+                window,
+                active
+                    && matches!(focus, crate::surface::FocusTarget::Content { node, appearance }
+                if surface.kind == crate::surface::SurfaceKind::Content(node) && surface.id == appearance),
+                native_scale,
+            )
+        };
+        let mut placements: Vec<_> = self
+            .surface_plan()
             .into_iter()
-            .filter_map(|surface| match surface.kind {
-                crate::surface::SurfaceKind::Content(node) => Some(node),
-                _ => None,
+            .map(|surface| {
+                placement(
+                    surface,
+                    0,
+                    self.primary_focused,
+                    self.window
+                        .as_ref()
+                        .map_or(1.0, |window| window.scale_factor()),
+                )
             })
-            .collect::<Vec<_>>();
-        crate::document_pump::pump_documents(&mut self.content_sessions, &visible)
+            .collect();
+        let mut lenses: Vec<_> = self.lens_windows.values().collect();
+        lenses.sort_by_key(|lens| lens.ordinal);
+        for lens in lenses {
+            placements.extend(
+                self.lens_plan(lens.ordinal, lens.width, lens.height)
+                    .into_iter()
+                    .map(|surface| {
+                        placement(
+                            surface,
+                            lens.ordinal as u64 + 1,
+                            lens.focused,
+                            lens.window.scale_factor(),
+                        )
+                    }),
+            );
+        }
+        self.content_sessions.sync_placements(
+            placements,
+            self.content_engines.clone(),
+            self.pelt_surface_engines.clone(),
+            self.epoch,
+        );
+        if let Some(admitted) = self.contributed_pointer
+            && !self.contributed_pointer_is_current(admitted)
+        {
+            self.cancel_content_pointer();
+        }
+    }
+
+    fn pump_visible_documents(&mut self) -> bool {
+        self.sync_content_placements();
+        let pending = self.content_sessions.pool.pump();
+        self.document_clock.observe(pending);
+        self.content_sessions.pool.visible_needs_frame()
     }
 
     /// The current surface plan, from app truth plus the window size. The one
@@ -1473,7 +1508,7 @@ impl Shell {
                         .map(|pane| (pane.id, pane.rect))
                         .collect(),
                 )
-            }
+            },
             None => {
                 let placements =
                     crate::pane::place_panes(&self.app.frisket, area, self.app.maximized);
@@ -1490,7 +1525,7 @@ impl Shell {
                         .collect(),
                     Vec::new(),
                 )
-            }
+            },
         };
         let mut graph_rects = Vec::new();
         let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
@@ -1675,7 +1710,7 @@ impl Shell {
                 PaneContent::Orrery => SurfaceKind::Graph(id),
                 PaneContent::Tile(member) if self.has_live_content(member) => {
                     SurfaceKind::Content(*member)
-                }
+                },
                 _ => SurfaceKind::Pane(id),
             };
             Some(crate::surface::Surface {
@@ -1740,7 +1775,7 @@ impl Shell {
                         match action {
                             crate::trail_pane::TrailPaneAction::Navigate(url) => {
                                 out.push(Action::OpenAddress(url))
-                            }
+                            },
                             crate::trail_pane::TrailPaneAction::Recover(id) => {
                                 match id.parse::<uuid::Uuid>() {
                                     Ok(id) => out.push(Action::RecoverDeletedNode(id)),
@@ -1749,20 +1784,20 @@ impl Shell {
                                             what: "recover",
                                             target: id.clone(),
                                         })
-                                    }
+                                    },
                                 }
-                            }
+                            },
                             crate::trail_pane::TrailPaneAction::RecoverSession(id) => {
                                 if let Ok(id) = id.parse::<uuid::Uuid>() {
                                     out.push(Action::RecoverSession(
                                         crate::panes::SessionId::from_uuid(id),
                                     ));
                                 }
-                            }
+                            },
                         }
                     }
                 }
-            }
+            },
             PaneContent::Roster => {
                 if let Some(grid) = self.renderers.roster.get_mut(&pane_id) {
                     let actions = grid.click(lx, ly, rw, rh);
@@ -1771,11 +1806,11 @@ impl Shell {
                         match action {
                             crate::cambium_pane::RosterAction::Navigate(url) => {
                                 out.push(Action::OpenAddress(url))
-                            }
+                            },
                         }
                     }
                 }
-            }
+            },
             PaneContent::Gloss(_) => {
                 if let Some(pane) = self.renderers.gloss.get_mut(&pane_id) {
                     for intent in pane.click(lx, ly, rw, rh) {
@@ -1794,7 +1829,7 @@ impl Shell {
                                 self.app.focus = crate::surface::FocusTarget::Graph(
                                     self.app.default_graph_pane(),
                                 );
-                            }
+                            },
                         }
                     }
                 }
@@ -1807,36 +1842,36 @@ impl Shell {
                         }
                     }
                 }
-            }
+            },
             PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::SETTINGS => {
                 if let Some(pane) = self.renderers.settings.get_mut(&pane_id) {
                     pane.click(lx, ly, rw, rh);
                 }
-            }
+            },
             PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::PUBLISHING => {
                 if let Some(pane) = self.renderers.publish.get_mut(&pane_id) {
                     pane.click(lx, ly, rw, rh);
                 }
-            }
+            },
             PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::SHARED_KNOT => {
                 if let Some(pane) = self.renderers.shared_knot.get_mut(&pane_id) {
                     pane.click(lx, ly, rw, rh);
                 }
-            }
+            },
             PaneContent::Registered(kind)
                 if kind.as_str() == crate::panes::kind::DEVICE_RECEIPTS =>
             {
                 if let Some(pane) = self.renderers.device_receipts.get_mut(&pane_id) {
                     pane.click(lx, ly, rw, rh);
                 }
-            }
+            },
             PaneContent::Registered(kind)
                 if kind.as_str() == crate::panes::kind::FROZEN_PROJECTION =>
             {
                 if let Some(pane) = self.renderers.frozen_projection.get_mut(&pane_id) {
                     pane.click(lx, ly, rw, rh);
                 }
-            }
+            },
             PaneContent::Inspector => {
                 let intents = self
                     .renderers
@@ -1854,19 +1889,13 @@ impl Shell {
                         },
                     }
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
         out
     }
 
-    fn projected_a11y_tree(
-        &self,
-    ) -> (
-        uxtree::UxTree,
-        crate::a11y::A11yRoutes,
-        Option<accesskit::NodeId>,
-    ) {
+    fn projected_a11y_tree(&mut self) -> document_a11y::Projected {
         let pane_rects = self
             .surface_plan()
             .into_iter()
@@ -1895,63 +1924,72 @@ impl Shell {
             }
             if matches!(self.pane_content(pane), Some(PaneContent::Gloss(config))
                 if config.sections.iter().any(|id| id == "diagnostics"))
-                && let Some(tree) = self.renderers.gloss.get(&pane)
+                && let Some(tree) = self
+                    .renderers
+                    .gloss
+                    .get(&pane)
                     .and_then(|surface| surface.diagnostic_tree(pane, rect))
             {
                 trees.insert(pane, tree);
             }
         }
-        let (tree, mut routes) =
+        let (tree, routes) =
             crate::a11y::project_app_with_routes_and_contributions(&self.app, trees);
-        routes.extend(contributed.routes.into_iter().map(|(id, route)| {
-            (
-                id,
-                crate::a11y::A11yRoute::Contributed {
-                    pane: route.pane,
-                    generation: route.generation,
-                    node: route.node,
-                },
-            )
-        }));
-        let focus = contributed_focus
-            .filter(|focus| tree.nodes.iter().any(|(candidate, _)| candidate == focus));
-        (tree, routes, focus)
+        let focus = contributed_focus.filter(|focus| tree.nodes.iter().any(|(id, _)| id == focus));
+        let mut frame = document_a11y::Projected {
+            tree,
+            routes,
+            focus,
+            guests: contributed.guests,
+            admissions: contributed
+                .routes
+                .into_iter()
+                .map(|(id, route)| (id, a11y_bridge::Admission::Contributed(route)))
+                .collect(),
+        };
+        let plan = self.surface_plan();
+        self.project_document_accessibility(&mut frame, &plan);
+        frame.focus = crate::a11y::host_input_focus(&self.app).or(frame.focus);
+        let mounted: std::collections::HashSet<_> = frame
+            .tree
+            .nodes
+            .iter()
+            .filter_map(|(_, n)| n.tree_id())
+            .collect();
+        frame
+            .guests
+            .retain(|guest| mounted.contains(&guest.tree_id));
+        frame
+            .admissions
+            .retain(|(tree, _), _| mounted.contains(tree));
+        frame
     }
 
-    /// Refresh the OS accessibility tree on a frame cadence.
-    ///
-    /// Thirty frames is about half a second at sixty; the projection walks
-    /// the graph and re-freezes the disclosed scene, so per-frame would be
-    /// paying a solve for readers that poll far slower than that. A changed
-    /// refusal bypasses that cadence so its appearance or clearing is published
-    /// even when the interaction is followed by an idle window.
+    /// Publish each retained change on its event frame, including the frame
+    /// that settles into idle. Observation uses this same composed forest.
     fn push_a11y_tree(&mut self) {
-        const CADENCE_FRAMES: u32 = 30;
-        if self.a11y_adapter.is_none() {
-            return;
-        }
+        self.sync_content_placements();
         self.drain_surface_accessibility();
-        let replay = self
-            .a11y_reactivation
-            .load(std::sync::atomic::Ordering::Acquire);
-        if replay {
+        let epoch = self
+            .a11y_adapter
+            .as_ref()
+            .map(|bridge| bridge.activation_epoch());
+        if epoch != self.a11y_epoch {
             self.surface_a11y.reset_publication();
+            self.a11y_actions
+                .lock()
+                .expect("a11y queue poisoned")
+                .publish(Default::default());
+            self.a11y_epoch = epoch;
         }
         let placements = self.foreign_a11y_placements();
-        let changed = replay
-            || self.surface_a11y.needs_publish()
-            || placements != self.a11y_surface_layout
-            || self.a11y_focus_last != Some(self.app.focus);
-        self.a11y_frames_since_push = self.a11y_frames_since_push.saturating_add(1);
-        let refusal = self.app.physics_refusal().cloned();
-        if self.a11y_frames_since_push < CADENCE_FRAMES
-            && refusal == self.a11y_physics_refusal_last_projected
-            && !changed
-        {
-            return;
-        }
-        self.a11y_frames_since_push = 0;
-        let (mut tree, mut routes, mut focus) = self.projected_a11y_tree();
+        let document_a11y::Projected {
+            mut tree,
+            mut routes,
+            mut focus,
+            guests,
+            admissions,
+        } = self.projected_a11y_tree();
         let mut visible = Vec::new();
         for &(node, rect) in &placements {
             let Some(mut graft) = self.surface_a11y.graft(node, rect) else {
@@ -2008,10 +2046,12 @@ impl Shell {
             }
             visible.push(node);
         }
+        // An open host editor owns keyboard focus even while a document
+        // remains the selected graph content behind it.
+        focus = crate::a11y::host_input_focus(&self.app).or(focus);
         // Some app routes outlive their optional projected nodes. A route
         // becomes available to the platform only while its node is published.
         routes.retain(|id, _| tree.nodes.iter().any(|(current, _)| current == id));
-        self.a11y_physics_refusal_last_projected = refusal;
         let mut update = tree.to_tree_update(focus);
         // Narrator refuses to walk past a node without a bounding rectangle:
         // UIA treats boundless elements as off-screen, so the tree served
@@ -2031,68 +2071,127 @@ impl Shell {
                 node.set_bounds(bounds);
             }
         }
-        let initial = match self.surface_a11y.initial_host(update.clone(), &visible) {
-            Ok(initial) => initial,
-            Err(error) => {
-                tracing::warn!(%error, "foreign accessibility composition refused");
-                return;
-            },
-        };
-        let updates = match self.surface_a11y.frame(update, &visible) {
+        let initial = a11y_bridge::safe_initial(&update);
+        let updates = match self
+            .surface_a11y
+            .frame_with_guests(update, &visible, &guests)
+        {
             Ok(updates) => updates,
             Err(error) => {
                 tracing::warn!(%error, "foreign accessibility publication refused");
                 return;
             },
         };
-        self.a11y_surface_layout = placements;
-        self.a11y_focus_last = Some(self.app.focus);
         self.a11y_routes = routes;
-        *self.a11y_shared.lock().expect("a11y tree slot poisoned") = Some(initial.clone());
-        let adapter = self
-            .a11y_adapter
-            .as_mut()
-            .expect("adapter presence checked above");
-        let mut aborted = false;
-        for update in updates {
-            adapter.update_if_active(|| {
-                let (update, abort) = crate::foreign_a11y::activation_safe_update(
-                    &self.a11y_reactivation,
-                    update,
-                    &initial,
-                );
-                aborted = abort;
-                update
-            });
-            if aborted {
-                break;
+        let served = self.a11y_adapter.as_mut().is_some_and(|bridge| {
+            match bridge.update_batch_at(epoch.unwrap_or(0), initial, updates) {
+                Ok(served) => served,
+                Err(error) => {
+                    tracing::warn!(%error, "a11y publication refused");
+                    false
+                },
             }
+        });
+        self.a11y_actions
+            .lock()
+            .expect("a11y queue poisoned")
+            .publish(if served {
+                admissions
+            } else {
+                Default::default()
+            });
+        if !served {
+            self.surface_a11y.retry_publication();
         }
-        if aborted {
-            // Activation may replace the consumer between any two updates.
-            // Leave it on safe ROOT and rebuild the whole ordered forest on
-            // the next redraw instead of continuing a partially delivered batch.
-            self.surface_a11y.reset_publication();
-            self.request_redraw();
-        }
+        self.push_lens_a11y_trees();
     }
 
     /// Drain assistive actions queued by the platform thread and lower each
     /// through the route table. Runs on the main thread, woken by the same
     /// proxy the actors use.
     fn drain_a11y_actions(&mut self) {
-        let requests: Vec<accesskit::ActionRequest> = std::mem::take(
-            &mut *self
-                .a11y_actions
-                .lock()
-                .expect("a11y action queue poisoned"),
+        let mut queues = vec![self.a11y_actions.clone()];
+        queues.extend(
+            self.lens_windows
+                .values()
+                .map(|lens| lens.a11y_actions.clone()),
         );
-        for request in requests {
+        let mut requests = Vec::new();
+        for queue in queues {
+            let pending = std::mem::take(&mut queue.lock().expect("a11y queue poisoned").requests);
+            requests.extend(pending.into_iter().map(|request| (queue.clone(), request)));
+        }
+        for (queue, a11y_bridge::QueuedAction { request, admission }) in requests {
+            if let Some(captured) = admission {
+                if !queue
+                    .lock()
+                    .expect("a11y queue poisoned")
+                    .is_current(&request, &captured)
+                {
+                    self.app.note(crate::observe::AppEvent::InteractionMissed {
+                        what: "a11y-action",
+                        target: "retired accessibility admission".into(),
+                    });
+                    continue;
+                }
+                let landed = match captured.admission {
+                    a11y_bridge::Admission::PoolDocument(route) => {
+                        self.dispatch_pool_document_accessibility(&route, &request)
+                    },
+                    #[cfg(test)]
+                    a11y_bridge::Admission::Document(_route) => {
+                        false /* legacy routes exist only in queue tests */
+                    },
+                    a11y_bridge::Admission::Contributed(published) => {
+                        let route = published.route;
+                        let rect = self.all_content_plans().into_iter().find_map(|surface| {
+                            (surface.kind == crate::surface::SurfaceKind::Pane(route.pane))
+                                .then_some(surface.rect)
+                        });
+                        let spec = self.contributed_pane_spec(
+                            route.pane,
+                            self.pane_content(route.pane).as_ref(),
+                        );
+                        let current = crate::contributed_a11y::published_route_is_current(
+                            &self.renderers.contributed,
+                            &published,
+                            rect,
+                            request.target_node,
+                            request.action,
+                        );
+                        let landed = current
+                            && crate::contributed_a11y::apply_route(
+                                &mut self.renderers.contributed,
+                                spec.as_ref(),
+                                route,
+                                request.action,
+                            );
+                        if landed && request.action == accesskit::Action::Focus {
+                            self.app.focus = crate::surface::FocusTarget::Pane(route.pane);
+                            self.app.active_pane = Some(route.pane);
+                            self.app.raise_floating_pane(route.pane);
+                        }
+                        landed
+                    },
+                };
+                if !landed {
+                    self.app.note(crate::observe::AppEvent::InteractionMissed {
+                        what: "a11y-action",
+                        target: "stale or unsupported live document action".into(),
+                    });
+                }
+                self.request_redraw();
+                continue;
+            }
             if request.target_tree != accesskit::TreeId::ROOT {
                 let result = self.surface_a11y.action_target(&request).and_then(|node| {
                     // A preceding host action in this batch may hide a pane
                     // before the next publication replaces the mounted set.
-                    if !self.foreign_a11y_placements().iter().any(|(current, _)| *current == node) {
+                    if !self
+                        .foreign_a11y_placements()
+                        .iter()
+                        .any(|(current, _)| *current == node)
+                    {
                         return Err("foreign accessibility surface is no longer visible".to_owned());
                     }
                     self.content_sessions
@@ -2119,31 +2218,9 @@ impl Shell {
                 continue;
             }
             let route = self.a11y_routes.get(&request.target_node).cloned();
-            if let Some(crate::a11y::A11yRoute::Contributed {
-                pane,
-                generation,
-                node,
-            }) = route.as_ref()
+            if request.action == accesskit::Action::Focus
+                && crate::a11y::focus_host_input(&mut self.app, request.target_node)
             {
-                let (pane, generation, node) = (*pane, *generation, *node);
-                let current_spec =
-                    self.contributed_pane_spec(pane, self.pane_content(pane).as_ref());
-                let landed = crate::contributed_a11y::apply_route(
-                    &mut self.renderers.contributed,
-                    current_spec.as_ref(),
-                    crate::contributed_a11y::ContributedA11yRoute { pane, generation, node },
-                    request.action,
-                );
-                if !landed {
-                    self.app.note(crate::observe::AppEvent::InteractionMissed {
-                        what: "a11y-action",
-                        target: format!("contributed pane {}", pane.0),
-                    });
-                } else if request.action == accesskit::Action::Focus {
-                    self.app.focus = crate::surface::FocusTarget::Pane(pane);
-                    self.app.active_pane = Some(pane);
-                    self.app.raise_floating_pane(pane);
-                }
                 self.request_redraw();
                 continue;
             }
@@ -2190,14 +2267,14 @@ impl Shell {
                 for action in actions {
                     self.act(action);
                 }
-            }
+            },
             Err(err) => {
                 tracing::warn!(%err, "scenario script failed");
                 self.app.note(crate::observe::AppEvent::InteractionMissed {
                     what: "script",
                     target: err,
                 });
-            }
+            },
         }
     }
 
@@ -2218,7 +2295,10 @@ impl Shell {
     /// (first line `RESULT ok`/`RESULT fail`, then the log), so the same headed
     /// harness that waits on the turnstone driver reads a shared run identically.
     fn write_shared_done(&mut self, outcome: &taproot::Outcome) {
-        if let Err(error) = self.diagnostic_observations.write_scenario_receipt(&self.shared_out_dir, outcome) {
+        if let Err(error) = self
+            .diagnostic_observations
+            .write_scenario_receipt(&self.shared_out_dir, outcome)
+        {
             eprintln!("turnstone: scenario receipt write failed: {error}");
         }
     }
@@ -2251,11 +2331,11 @@ impl Shell {
                     let outcome = shared.finish();
                     self.write_shared_done(&outcome);
                     event_loop.exit();
-                }
+                },
                 Progress::Running => {
                     self.request_redraw();
                     self.shared_scenario = Some(shared);
-                }
+                },
             }
             return;
         }
@@ -2271,7 +2351,9 @@ mod tests {
         use std::sync::atomic::{AtomicU64, Ordering};
         struct Clock(Arc<AtomicU64>);
         impl pelt_core::PeltClock for Clock {
-            fn now_ms(&self) -> f64 { self.0.load(Ordering::Relaxed) as f64 }
+            fn now_ms(&self) -> f64 {
+                self.0.load(Ordering::Relaxed) as f64
+            }
         }
         let clock = Arc::new(AtomicU64::new(0));
         let request = SessionSpawnRequest::new("https://test.invalid/animation")
@@ -2279,26 +2361,48 @@ mod tests {
             .with_viewport(640, 480);
         let route = standard_route_policy().route(&inker::EngineRouteRequest {
             workspace_id: inker::WorkspaceRouteId::new("hidden-animation"),
-            view: None, node: None, address: request.address.clone(),
-            content_type: None, pinned_engine: Some(inker::routing::ENGINE_GENET_LIVERY.into()),
+            view: None,
+            node: None,
+            address: request.address.clone(),
+            content_type: None,
+            pinned_engine: Some(inker::routing::ENGINE_GENET_LIVERY.into()),
         });
-        let config = pelt_core::PeltControllerConfig::from_request(route.engine_id.clone(), request)
-            .with_host_history();
+        let config =
+            pelt_core::PeltControllerConfig::from_request(route.engine_id.clone(), request)
+                .with_host_history();
         let mut controller = pelt_core::PeltController::new_shared(
-            Arc::new(standard_content_engines()), Arc::new(inker::SurfaceEngineRegistry::new()),
-            config, Clock(clock.clone()),
-        ).expect("the Livery lane spawns");
+            Arc::new(standard_content_engines()),
+            Arc::new(inker::SurfaceEngineRegistry::new()),
+            config,
+            Clock(clock.clone()),
+        )
+        .expect("the Livery lane spawns");
         let _ = controller.frame(640, 480);
-        assert!(!controller.session_mut().settled(), "the real CSS animation is initially active");
-        let content = pelt_core::PeltContent::from_controller(controller, pelt_core::PeltRoute {
-            decision: route, source: pelt_core::PeltRouteSource::Automatic,
-            state: pelt_core::PeltRouteState::Document,
-        });
+        assert!(
+            !controller.session_mut().settled(),
+            "the real CSS animation is initially active"
+        );
+        let content = pelt_core::PeltContent::from_controller(
+            controller,
+            pelt_core::PeltRoute {
+                decision: route,
+                source: pelt_core::PeltRouteSource::Automatic,
+                state: pelt_core::PeltRouteState::Document,
+            },
+        );
         let mut contents = std::collections::HashMap::from([(1u8, content)]);
         clock.store(2000, Ordering::Relaxed);
         assert!(!crate::document_pump::pump_documents(&mut contents, &[]));
-        assert!(contents.get_mut(&1).unwrap().document_mut().unwrap().session_mut().settled(),
-            "a hidden finite animation can finish without another frame");
+        assert!(
+            contents
+                .get_mut(&1)
+                .unwrap()
+                .document_mut()
+                .unwrap()
+                .session_mut()
+                .settled(),
+            "a hidden finite animation can finish without another frame"
+        );
     }
 
     /// SC controller-level input over Turnstone's own engines: a host-history
@@ -2309,8 +2413,8 @@ mod tests {
     #[test]
     fn a_document_controller_hands_links_and_submissions_up() {
         use inker::{
-            SessionButtonState, SessionFocusDirection, SessionFormMethod, SessionInput,
-            SessionKey, SessionModifiers,
+            SessionButtonState, SessionFocusDirection, SessionFormMethod, SessionInput, SessionKey,
+            SessionModifiers,
         };
         let address = "spartan://capsule.test/";
         let decision = standard_route_policy().route(&inker::EngineRouteRequest {
@@ -2347,10 +2451,15 @@ mod tests {
                 .handled
         );
         let submitted = controller.input(enter());
-        let submission = submitted.submission.expect("the prompt hands its submission up");
+        let submission = submitted
+            .submission
+            .expect("the prompt hands its submission up");
         assert_eq!(submission.method, SessionFormMethod::Post);
         assert_eq!(submission.action, "spartan://capsule.test/sign");
-        assert_eq!(submitted.navigation, None, "a submission is not a navigation");
+        assert_eq!(
+            submitted.navigation, None,
+            "a submission is not a navigation"
+        );
 
         assert!(
             controller
@@ -2358,7 +2467,9 @@ mod tests {
                 .handled
         );
         let followed = controller.input(enter());
-        let navigation = followed.navigation.expect("the link hands its navigation up");
+        let navigation = followed
+            .navigation
+            .expect("the link hands its navigation up");
         assert_eq!(navigation.request.address, "spartan://capsule.test/next");
         assert_eq!(controller.address(), address, "nothing loads in place");
     }
@@ -2538,7 +2649,10 @@ mod tests {
         ));
         assert!(document.blocks.iter().any(|block| matches!(block, inker::Block::Paragraph { spans } if inker::inline_text(spans) == "Local page")));
         assert!(document.outgoing_links().is_empty());
-        assert!(session.links().is_empty(), "file aliases remain inert without site authority");
+        assert!(
+            session.links().is_empty(),
+            "file aliases remain inert without site authority"
+        );
         assert_eq!(std::fs::read(&path).unwrap(), source.as_bytes());
     }
 

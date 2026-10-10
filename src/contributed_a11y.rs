@@ -13,7 +13,7 @@
 
 use std::collections::HashMap;
 
-use accesskit::{NodeId, Role, TreeUpdate};
+use accesskit::{NodeId, Role, TreeId, TreeUpdate};
 use genet_scripted_dom::NodeId as DomNodeId;
 use uxtree::{UxTree, node_id_for_path};
 
@@ -49,51 +49,69 @@ pub(crate) fn apply_route(
     surface.accessibility_action(action, route.node).is_some()
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct PublishedRoute {
+    pub route: ContributedA11yRoute,
+    pub rect: Rect,
+    pub source: std::sync::Arc<TreeUpdate>,
+}
+
 pub(crate) struct ContributedA11yProjection {
     pub trees: HashMap<PaneId, UxTree>,
-    pub routes: HashMap<NodeId, ContributedA11yRoute>,
+    pub guests: Vec<TreeUpdate>,
+    pub routes: HashMap<(TreeId, NodeId), PublishedRoute>,
     pub focus: Option<NodeId>,
 }
 
-/// Project every laid-out contributed session that still has a visible pane.
-/// A session has no accessibility tree before its first retained layout; that
-/// is an honest absence rather than a second speculative layout.
+/// Preserve guest-local references, focus and nested transforms. Only the
+/// graft carries the pane's window placement.
 pub(crate) fn project(
     sessions: &ContributedSurfaceSessions,
     pane_rects: &HashMap<PaneId, Rect>,
     focused_pane: Option<PaneId>,
 ) -> ContributedA11yProjection {
     let mut trees = HashMap::new();
+    let mut guests = Vec::new();
     let mut routes = HashMap::new();
     let mut focus = None;
     let mut panes: Vec<_> = sessions.iter().collect();
     panes.sort_by_key(|(pane, _)| pane.0);
-
     for (pane, session) in panes {
-        let Some(rect) = pane_rects.get(&pane).copied() else {
+        let Some(rect) = pane_rects.get(&pane).copied().filter(|r| {
+            [r.x, r.y, r.w, r.h].into_iter().all(f32::is_finite) && r.w > 0.0 && r.h > 0.0
+        }) else {
             continue;
         };
         let Some((update, action_map)) = session.accessibility_tree() else {
             continue;
         };
-        let has_dom_focus = session.accessibility_focus().is_some();
-        let label = session.descriptor().label.as_str();
-        let (tree, pane_routes, pane_focus) = namespace_tree(
+        let source = std::sync::Arc::new(update.clone());
+        let (tree, guest, pane_routes, pane_focus) = namespace_tree(
             pane,
             session.generation(),
-            label,
+            session.descriptor().label.as_str(),
             rect,
             update,
             action_map,
-            focused_pane == Some(pane) && has_dom_focus,
+            focused_pane == Some(pane) && session.accessibility_focus().is_some(),
         );
+        routes.extend(pane_routes.into_iter().map(|(id, route)| {
+            (
+                (guest.tree_id, id),
+                PublishedRoute {
+                    route,
+                    rect,
+                    source: source.clone(),
+                },
+            )
+        }));
         trees.insert(pane, tree);
-        routes.extend(pane_routes);
+        guests.push(guest);
         focus = focus.or(pane_focus);
     }
-
     ContributedA11yProjection {
         trees,
+        guests,
         routes,
         focus,
     }
@@ -109,77 +127,76 @@ fn namespace_tree(
     carries_focus: bool,
 ) -> (
     UxTree,
+    TreeUpdate,
     HashMap<NodeId, ContributedA11yRoute>,
     Option<NodeId>,
 ) {
-    let local_root = update
-        .tree
-        .as_ref()
-        .expect("a full retained DOM projection carries its root")
-        .root;
-    let remap: HashMap<_, _> = update
-        .nodes
-        .iter()
-        .map(|(local, _)| {
+    let path = format!("turnstone/contributed/{}/admission/{generation}", pane.0);
+    let tree_id = uxtree::graft::tree_id_for_path(&path);
+    let root = node_id_for_path(&path);
+    let mut graft = uxtree::graft::graft_node(
+        Role::Group,
+        tree_id,
+        (rect.x as f64, rect.y as f64),
+        (rect.w as f64, rect.h as f64),
+    );
+    graft.set_label(label);
+    let mut guest = uxtree::graft::as_subtree(update, tree_id);
+    if let Some(root) = guest.tree.as_ref().map(|tree| tree.root)
+        && let Some((_, node)) = guest.nodes.iter_mut().find(|(id, _)| *id == root)
+        && node.role() == Role::Window
+    {
+        node.set_role(Role::Group);
+    }
+    let routes = action_map
+        .into_iter()
+        .map(|(id, node)| {
             (
-                *local,
-                node_id_for_path(&format!(
-                    "turnstone/contributed/{}/admission/{generation}/dom/{local:?}",
-                    pane.0
-                )),
-            )
-        })
-        .collect();
-
-    let mut routes = HashMap::new();
-    let mut nodes = Vec::with_capacity(update.nodes.len());
-    for (local, mut node) in update.nodes {
-        let global = remap[&local];
-        node.set_children(
-            node.children()
-                .iter()
-                .filter_map(|child| remap.get(child).copied())
-                .collect::<Vec<_>>(),
-        );
-        if let Some(bounds) = node.bounds() {
-            node.set_bounds(accesskit::Rect::new(
-                bounds.x0 + rect.x as f64,
-                bounds.y0 + rect.y as f64,
-                bounds.x1 + rect.x as f64,
-                bounds.y1 + rect.y as f64,
-            ));
-        }
-        // ScriptedDom's document node represents a standalone host window.
-        // Inside Turnstone it is a pane subtree, so it must not claim a second
-        // native window. Its semantic document child remains untouched.
-        if local == local_root {
-            node.set_role(Role::Group);
-            node.set_label(label);
-            node.set_bounds(accesskit::Rect::new(
-                rect.x as f64,
-                rect.y as f64,
-                (rect.x + rect.w) as f64,
-                (rect.y + rect.h) as f64,
-            ));
-        }
-        if let Some(dom_node) = action_map.get(&local).copied() {
-            routes.insert(
-                global,
+                id,
                 ContributedA11yRoute {
                     pane,
                     generation,
-                    node: dom_node,
+                    node,
                 },
-            );
-        }
-        nodes.push((global, node));
-    }
+            )
+        })
+        .collect();
+    (
+        UxTree {
+            root,
+            nodes: vec![(root, graft)],
+        },
+        guest,
+        routes,
+        carries_focus.then_some(root),
+    )
+}
 
-    let root = remap[&local_root];
-    let focus = carries_focus
-        .then(|| remap.get(&update.focus).copied())
-        .flatten();
-    (UxTree { root, nodes }, routes, focus)
+/// Check the captured publication before the retained surface's own action
+/// validation. A moved pane or changed source cannot receive an old request.
+pub(crate) fn published_route_is_current(
+    sessions: &ContributedSurfaceSessions,
+    route: &PublishedRoute,
+    current_rect: Option<Rect>,
+    target: NodeId,
+    action: accesskit::Action,
+) -> bool {
+    current_rect == Some(route.rect)
+        && sessions.get(route.route.pane).is_some_and(|session| {
+            session.generation() == route.route.generation
+                && session
+                    .accessibility_tree()
+                    .is_some_and(|(source, actions)| {
+                        source == *route.source
+                            && actions.get(&target) == Some(&route.route.node)
+                            && source.nodes.iter().any(|(id, n)| {
+                                *id == target
+                                    && !n.is_hidden()
+                                    && !n.is_disabled()
+                                    && n.supports_action(action)
+                            })
+                    })
+        })
 }
 
 #[cfg(test)]
@@ -209,8 +226,85 @@ mod tests {
     }
 
     #[test]
+    fn native_graft_composes_nested_transforms_and_keeps_dom_focus() {
+        use accesskit_consumer::{Node as ConsumerNode, Tree as ConsumerTree, TreeChangeHandler};
+        struct Changes;
+        impl TreeChangeHandler for Changes {
+            fn node_added(&mut self, _: &ConsumerNode<'_>) {}
+            fn node_updated(&mut self, _: &ConsumerNode<'_>, _: &ConsumerNode<'_>) {}
+            fn node_removed(&mut self, _: &ConsumerNode<'_>) {}
+            fn focus_moved(&mut self, _: Option<&ConsumerNode<'_>>, _: Option<&ConsumerNode<'_>>) {}
+        }
+        let (mut update, actions) = local_tree();
+        update.nodes[0]
+            .1
+            .set_transform(accesskit::Affine::translate((2.0, 1.0)));
+        update.nodes[1]
+            .1
+            .set_transform(accesskit::Affine::translate((3.0, 4.0)));
+        let (tree, guest, _, focus) = namespace_tree(
+            PaneId(9),
+            1,
+            "pane",
+            Rect::new(100.0, 40.0, 300.0, 200.0),
+            update,
+            actions,
+            true,
+        );
+        let mut root = accesskit::Node::new(Role::Window);
+        root.set_children(vec![tree.root]);
+        let mut nodes = tree.nodes;
+        nodes.push((NodeId(99), root));
+        let host = TreeUpdate {
+            nodes,
+            tree: Some(Tree::new(NodeId(99))),
+            tree_id: TreeId::ROOT,
+            focus: focus.unwrap(),
+        };
+        let composition =
+            uxtree::graft::Composition::new(host, vec![(guest.tree_id, guest)]).unwrap();
+        let mut consumer = ConsumerTree::new(composition.initial_host(), true);
+        for update in uxtree::graft::Grafts::new().frame(composition) {
+            consumer.update_and_process_changes(update, &mut Changes);
+        }
+        let focused = consumer.state().focus().unwrap();
+        assert_eq!(focused.label().as_deref(), Some("Save"));
+        assert_eq!(
+            focused.bounding_box(),
+            Some(accesskit::Rect::new(110.0, 52.0, 130.0, 72.0))
+        );
+    }
+
+    #[test]
+    fn contributed_relations_resolve_inside_the_published_tree() {
+        let (mut update, actions) = local_tree();
+        update.nodes[0].1.set_labelled_by(vec![NodeId(1)]);
+        let (_, tree, _, _) = namespace_tree(
+            PaneId(9),
+            1,
+            "document",
+            Rect::new(100.0, 40.0, 300.0, 200.0),
+            update,
+            actions,
+            false,
+        );
+        let button = tree
+            .nodes
+            .iter()
+            .find(|(_, n)| n.role() == Role::Button)
+            .unwrap();
+        assert!(
+            button
+                .1
+                .labelled_by()
+                .iter()
+                .all(|id| tree.nodes.iter().any(|(n, _)| n == id))
+        );
+    }
+
+    #[test]
     fn namespacing_places_bounds_and_preserves_distinct_actions() {
-        let (tree, routes, focus) = namespace_tree(
+        let (tree, guest, routes, focus) = namespace_tree(
             PaneId(9),
             1,
             "Knot document",
@@ -219,15 +313,16 @@ mod tests {
             local_tree().1,
             true,
         );
-        let focus = focus.expect("the focused pane carries DOM focus");
-        let (_, button) = tree
+        assert_eq!(focus, Some(tree.root));
+        let focus = guest.focus;
+        let (_, button) = guest
             .nodes
             .iter()
             .find(|(id, _)| *id == focus)
             .expect("focused button");
         assert_eq!(
             button.bounds(),
-            Some(accesskit::Rect::new(105.0, 47.0, 125.0, 67.0))
+            Some(accesskit::Rect::new(5.0, 7.0, 25.0, 27.0))
         );
         assert!(button.supports_action(Action::Click));
         assert!(button.supports_action(Action::Focus));
@@ -236,7 +331,7 @@ mod tests {
 
     #[test]
     fn equal_dom_ids_in_two_panes_never_collide() {
-        let (left, _, _) = namespace_tree(
+        let (left, left_guest, _, _) = namespace_tree(
             PaneId(1),
             1,
             "left",
@@ -245,7 +340,7 @@ mod tests {
             local_tree().1,
             false,
         );
-        let (right, _, _) = namespace_tree(
+        let (right, right_guest, _, _) = namespace_tree(
             PaneId(2),
             1,
             "right",
@@ -254,6 +349,8 @@ mod tests {
             local_tree().1,
             false,
         );
+        assert_ne!(left_guest.tree_id, right_guest.tree_id);
+        assert_eq!(left_guest.nodes[0].0, right_guest.nodes[0].0);
         assert!(
             left.nodes
                 .iter()
@@ -263,7 +360,7 @@ mod tests {
 
     #[test]
     fn a_new_admission_never_reuses_the_old_platform_action_id() {
-        let (_, first, _) = namespace_tree(
+        let (_, first_guest, first, _) = namespace_tree(
             PaneId(7),
             1,
             "provider",
@@ -272,7 +369,7 @@ mod tests {
             local_tree().1,
             false,
         );
-        let (_, second, _) = namespace_tree(
+        let (_, second_guest, second, _) = namespace_tree(
             PaneId(7),
             2,
             "provider",
@@ -281,7 +378,7 @@ mod tests {
             local_tree().1,
             false,
         );
-        assert!(first.keys().all(|id| !second.contains_key(id)));
+        assert_ne!(first_guest.tree_id, second_guest.tree_id);
         assert!(first.values().all(|route| route.generation == 1));
         assert!(second.values().all(|route| route.generation == 2));
     }
@@ -486,7 +583,7 @@ mod tests {
 
     #[test]
     fn an_unfocused_dom_does_not_invent_focus_and_its_root_uses_the_pane_rect() {
-        let (tree, _, focus) = namespace_tree(
+        let (tree, _, _, focus) = namespace_tree(
             PaneId(3),
             1,
             "Knot document",
@@ -503,7 +600,7 @@ mod tests {
             .expect("namespaced root");
         assert_eq!(
             root.bounds(),
-            Some(accesskit::Rect::new(30.0, 50.0, 430.0, 300.0))
+            Some(accesskit::Rect::new(0.0, 0.0, 400.0, 250.0))
         );
     }
 }

@@ -107,7 +107,7 @@ impl Shell {
         pressed: bool,
         text: Option<&str>,
     ) -> bool {
-        let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
+        let crate::surface::FocusTarget::Content { node, appearance } = self.app.focus else {
             return false;
         };
         if self.app.omnibar.open
@@ -125,9 +125,9 @@ impl Shell {
         if matches!(key, WinitKey::Named(WinitNamedKey::Escape)) {
             return false;
         }
-        let Some(producer) = self.content_sessions.surface_mut(&node) else {
+        if !self.content_sessions.has_surface(&node) {
             return false;
-        };
+        }
         let key_code = windows_virtual_key(key);
         let event = inker::KeyboardEvent {
             key_code,
@@ -136,16 +136,13 @@ impl Shell {
                 shift: self.shift,
                 ctrl: self.ctrl,
                 alt: self.alt,
-                meta: false,
+                meta: self.meta,
             },
             pressed,
             text: pressed.then(|| text.unwrap_or_default().to_string()),
         };
-        if let Err(error) = producer.send_keyboard_input(event) {
-            tracing::warn!(%node, %error, "surface key delivery failed");
-        }
-        self.request_redraw();
-        true
+        self.content_input(appearance, pelt_core::PeltInput::Keyboard(event))
+            .unwrap_or(false)
     }
 
     /// IME for the focused document goes through its browsing controller,
@@ -184,7 +181,7 @@ impl Shell {
             shift: self.shift,
             ctrl: self.ctrl,
             alt: self.alt,
-            meta: false,
+            meta: self.meta,
         };
         cambium_winit::key_event_from_winit(key, modifiers).is_some_and(|event| {
             pane.key(event);
@@ -235,7 +232,7 @@ impl Shell {
             return false;
         };
         let moved = self
-            .with_content_appearance(node, appearance, |session| session.scroll_for_key(scroll))
+            .content_input(appearance, pelt_core::PeltInput::ScrollKey(scroll))
             .unwrap_or(false);
         // Record the outcome for the scenario probe, and repaint when the page
         // actually moved.
@@ -266,39 +263,39 @@ impl Shell {
                             choice: crate::user_agent_decision::PermissionChoice::Dismiss,
                         },
                     )
-                }
+                },
                 crate::user_agent_decision::PendingUserAgentDecision::Authentication { .. } => {
                     match key {
                         WinitKey::Named(WinitNamedKey::Escape) => {
                             Some(Action::CancelAuthentication { request })
-                        }
+                        },
                         WinitKey::Named(WinitNamedKey::Enter) => {
                             Some(Action::SubmitAuthentication { request })
-                        }
+                        },
                         WinitKey::Named(WinitNamedKey::Tab) => {
                             Some(Action::FocusAuthenticationField(
                                 match self.app.user_agent_decision.authentication.field {
                                     crate::user_agent_decision::AuthenticationField::Username => {
                                         crate::user_agent_decision::AuthenticationField::Password
-                                    }
+                                    },
                                     crate::user_agent_decision::AuthenticationField::Password => {
                                         crate::user_agent_decision::AuthenticationField::Username
-                                    }
+                                    },
                                 },
                             ))
-                        }
+                        },
                         WinitKey::Named(WinitNamedKey::Backspace) => {
                             Some(Action::BackspaceAuthentication)
-                        }
+                        },
                         WinitKey::Named(WinitNamedKey::Space) => {
                             Some(Action::InsertAuthentication(" ".into()))
-                        }
+                        },
                         WinitKey::Character(text) if !self.ctrl && !self.alt => {
                             Some(Action::InsertAuthentication(text.to_string()))
-                        }
+                        },
                         _ => None,
                     }
-                }
+                },
             };
             if let Some(action) = action {
                 self.act(action);
@@ -330,14 +327,14 @@ impl Shell {
                     } else {
                         crate::action::DocumentFindDirection::Next
                     }))
-                }
+                },
                 WinitKey::Named(WinitNamedKey::Backspace) => Some(Action::BackspaceDocumentFind),
                 WinitKey::Named(WinitNamedKey::Space) => {
                     Some(Action::InsertDocumentFind(" ".into()))
-                }
+                },
                 WinitKey::Character(text) if !self.ctrl && !self.alt => {
                     Some(Action::InsertDocumentFind(text.to_string()))
-                }
+                },
                 _ => None,
             };
             if let Some(action) = action {
@@ -366,10 +363,10 @@ impl Shell {
                 WinitKey::Named(WinitNamedKey::ArrowDown) => Some(Action::OmnibarMove(1)),
                 WinitKey::Named(WinitNamedKey::ArrowLeft) => {
                     Some(Action::OmnibarCaret(CaretMove::Left))
-                }
+                },
                 WinitKey::Named(WinitNamedKey::ArrowRight) => {
                     Some(Action::OmnibarCaret(CaretMove::Right))
-                }
+                },
                 WinitKey::Named(WinitNamedKey::Home) => Some(Action::OmnibarCaret(CaretMove::Home)),
                 WinitKey::Named(WinitNamedKey::End) => Some(Action::OmnibarCaret(CaretMove::End)),
                 WinitKey::Named(WinitNamedKey::Delete) => Some(Action::OmnibarDelete),
@@ -378,7 +375,7 @@ impl Shell {
                 // chord; Ctrl+K already summons the palette).
                 WinitKey::Character(s) if self.ctrl && s.eq_ignore_ascii_case("d") => {
                     Some(Action::OmnibarToggleKeepSelected)
-                }
+                },
                 WinitKey::Character(s) if !self.ctrl => s.chars().next().map(Action::OmnibarChar),
                 _ => None,
             }

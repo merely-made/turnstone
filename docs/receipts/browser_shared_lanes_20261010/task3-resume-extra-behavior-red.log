@@ -1,0 +1,141 @@
+Local workspace: /home/markik/Code/worktrees/mere-three-lanes
+Local lock: /home/markik/Code/worktrees/mere-three-lanes/.cargo/local/Cargo.lock
+warning: patch `boa_engine v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `boa_gc v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `genet-clipboard v0.1.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-clipboard)` was not used in the crate graph
+warning: patch `ipc-channel v0.22.0 (/home/markik/Code/worktrees/genet-three-lanes/support/patches/ipc-channel)` was not used in the crate graph
+warning: patch `script-engine-piccolo v0.0.0 (/home/markik/Code/worktrees/genet-three-lanes/components/script-engine-piccolo)` was not used in the crate graph
+warning: patch `servo-media-player v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/player)` was not used in the crate graph
+warning: patch `servo-media-streams v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/streams)` was not used in the crate graph
+warning: patch `servo-media-traits v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/traits)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling pelt-core v0.2.0 (/home/markik/Code/worktrees/mere-three-lanes/ports/pelt/core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.54s
+     Running tests/host_surface.rs (/home/markik/Code/target/debug/deps/host_surface-0912365f4342d869)
+
+running 13 tests
+test a_host_spawned_surface_takes_every_navigation_command_on_its_web_plane ... ok
+test a_spawned_extent_is_kept_until_the_host_lays_the_surface_out_anew ... ok
+test neutral_surface_press_preserves_button_and_modifiers_in_pointer_contract ... ok
+test full_keyboard_payload_reaches_the_focused_surface_through_the_pool ... ok
+test placement_removal_cancels_the_original_pen_pointer_without_losing_sensors ... ok
+
+thread 'surface_ime_commit_is_delivered_and_unsupported_preedit_is_explicit' (3286104) panicked at ports/pelt/core/tests/host_surface.rs:629:5:
+assertion failed: commit.handled
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'failed_other_placement_frame_cannot_leave_old_input_geometry_admitted' (3286096) panicked at ports/pelt/core/tests/host_surface.rs:605:5:
+assertion `left == right` failed: failed B offset follows a real resize, so old prepared A must be restored
+  left: "resize 400x100"
+ right: "resize 200x100"
+
+thread 'positive_subunit_scale_uses_the_same_geometry_for_layout_and_pointer' (3286102) panicked at ports/pelt/core/tests/host_surface.rs:620:5:
+admitted scale applies to producer extent: ["resize 200x100", "pointer Down Some(Left) ctrl=false at=7.5,15"]
+test surface_ime_commit_is_delivered_and_unsupported_preedit_is_explicit ... FAILED
+
+thread 'window_focus_loss_cancels_each_pointer_capture_in_that_window' (3286106) panicked at ports/pelt/core/tests/host_surface.rs:556:5:
+host focus loss is not limited to the focused placement
+test failed_other_placement_frame_cannot_leave_old_input_geometry_admitted ... FAILED
+test positive_subunit_scale_uses_the_same_geometry_for_layout_and_pointer ... FAILED
+test the_host_keeps_the_producer_and_its_event_plane ... ok
+test neutral_drag_and_modified_wheel_preserve_payload_and_scale_once ... ok
+test pool_pointer_capture_qualifies_identity_button_and_focus_loss ... ok
+test preparing_surface_input_resizes_only_the_target_without_resource_polling ... ok
+test window_focus_loss_cancels_each_pointer_capture_in_that_window ... FAILED
+
+failures:
+
+failures:
+    failed_other_placement_frame_cannot_leave_old_input_geometry_admitted
+    positive_subunit_scale_uses_the_same_geometry_for_layout_and_pointer
+    surface_ime_commit_is_delivered_and_unsupported_preedit_is_explicit
+    window_focus_loss_cancels_each_pointer_capture_in_that_window
+
+test result: FAILED. 9 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p pelt-core --test host_surface`
+     Running tests/pool.rs (/home/markik/Code/target/debug/deps/pool-a1c773cb253871a8)
+
+running 20 tests
+
+thread 'async_pump_invalidates_same_size_input_layout_without_hidden_paint' (3286108) panicked at ports/pelt/core/tests/pool.rs:570:5:
+assertion `left == right` failed: settled and same viewport do not establish current layout
+  left: Some(0.0)
+ right: Some(34.0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'handled_accessibility_action_invalidates_input_layout' (3286110) panicked at ports/pelt/core/tests/pool.rs:653:5:
+assertion `left == right` failed
+  left: Some(0.0)
+ right: Some(57.0)
+test hidden_and_invalid_placements_never_frame ... ok
+test handled_accessibility_action_invalidates_input_layout ... FAILED
+test async_pump_invalidates_same_size_input_layout_without_hidden_paint ... FAILED
+test final_placement_close_retains_content_until_explicit_removal ... ok
+test hidden_pending_work_advances_without_requesting_a_visible_frame ... ok
+
+thread 'neutral_keyboard_lowers_document_keys_and_composed_text_explicitly' (3286118) panicked at ports/pelt/core/tests/pool.rs:623:5:
+assertion failed: pool.input(&10, keyboard(37, true, None)).handled
+test neutral_keyboard_lowers_document_keys_and_composed_text_explicitly ... FAILED
+
+thread 'raw_session_mutation_invalidates_input_layout' (3286122) panicked at ports/pelt/core/tests/pool.rs:642:5:
+assertion `left == right` failed
+  left: Some(0.0)
+ right: Some(41.0)
+
+thread 'moving_focus_between_appearances_prepares_each_addressed_viewport' (3286115) panicked at ports/pelt/core/tests/pool.rs:607:5:
+assertion `left == right` failed: focus arrives after its own appearance layout
+  left: Some(("focus", 400))
+ right: Some(("focus", 200))
+test raw_session_mutation_invalidates_input_layout ... FAILED
+test moving_focus_between_appearances_prepares_each_addressed_viewport ... FAILED
+test placement_focus_is_independent_of_visibility_and_replacement_keeps_arrangement ... ok
+test invalid_geometry_is_hidden_and_mutable_iteration_admits_new_same_epoch_work ... ok
+
+thread 'routed_scroll_invalidates_same_size_input_layout' (3286126) panicked at ports/pelt/core/tests/pool.rs:590:5:
+assertion `left == right` failed: scroll must update semantic hit geometry before the next pointer
+  left: Some(0.0)
+ right: Some(23.0)
+test repeated_placement_input_prepares_the_addressed_layout ... ok
+test repeated_content_placements_keep_their_own_geometry ... ok
+test replacing_content_preserves_current_placements_with_new_admission ... ok
+test routed_scroll_invalidates_same_size_input_layout ... FAILED
+test mutable_iteration_invalidates_same_epoch_completion_observation ... ok
+test same_epoch_deduplicates_unchanged_windows_but_not_changed_placements ... ok
+
+thread 'mutable_session_access_invalidates_same_size_input_layout' (3286117) panicked at ports/pelt/core/tests/pool.rs:548:5:
+assertion `left == right` failed: same viewport does not prove unchanged hit geometry after mutation
+  left: Some(0.0)
+ right: Some(12.0)
+test workspace_reopens_closed_content_with_scroll_history_and_identity ... ok
+test mutable_session_access_invalidates_same_size_input_layout ... FAILED
+test pending_observation_is_read_only_and_redraw_is_scoped_to_visible_windows ... ok
+test placement_generation_invalidates_resized_and_reused_action_geometry ... ok
+
+failures:
+
+failures:
+    async_pump_invalidates_same_size_input_layout_without_hidden_paint
+    handled_accessibility_action_invalidates_input_layout
+    moving_focus_between_appearances_prepares_each_addressed_viewport
+    mutable_session_access_invalidates_same_size_input_layout
+    neutral_keyboard_lowers_document_keys_and_composed_text_explicitly
+    raw_session_mutation_invalidates_input_layout
+    routed_scroll_invalidates_same_size_input_layout
+
+test result: FAILED. 13 passed; 7 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p pelt-core --test pool`
+error: 2 targets failed:
+    `-p pelt-core --test host_surface`
+    `-p pelt-core --test pool`
+cargo_mode: Command '['cargo', '+1.98.1', '--config', '/home/markik/Code/worktrees/mere-three-lanes/.cargo/config.local.toml', '--config', 'resolver.lockfile-path="/home/markik/Code/worktrees/mere-three-lanes/.cargo/local/Cargo.lock"', 'test', '-j1', '-p', 'pelt-core', '--test', 'host_surface', '--test', 'pool', '--no-fail-fast', '--', '--nocapture']' returned non-zero exit status 101.

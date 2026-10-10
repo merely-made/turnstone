@@ -268,6 +268,10 @@ impl SurfaceProducer for TurnstoneScryProducer {
         result
     }
 
+    fn set_focus(&mut self, focused: bool) -> Result<(), SurfaceError> {
+        self.inner.set_focus(focused)
+    }
+
     fn poll_cursor_shape(&mut self) -> Option<CursorShape> {
         self.inner.poll_cursor_shape()
     }

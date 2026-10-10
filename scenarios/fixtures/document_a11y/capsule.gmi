@@ -1,0 +1,3 @@
+# Accessibility capsule
+=> /first First Gemini
+=> /second Second Gemini

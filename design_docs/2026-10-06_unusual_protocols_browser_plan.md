@@ -1,14 +1,13 @@
 # Unusual-protocols browser plan
 
 **Date:** 2026-10-06
-**Status (2026-10-07):** ruled. U1 to U14 are ruled: U1, U2 (accessibility
-on all three operating systems comes first), U3, U4, U5, U8 and U9 on
-2026-10-06, and U6, U7, U10 and U11 to U14 on 2026-10-07 (§7). The
-composition brief's AC1 to AC6, U15, U16 and U17 are ruled (§7, fifth round). The stage
-order is in "Stage order (2026-10-07)" under §6. S0 is next; its lane is
-written under S0 and waits on Knot's repin. A cloud
-session owns the plan from 2026-10-07; an assessment lane wrote it, and no
-code has changed (see "Evidence and limits").
+**Status (2026-10-10): in progress.** The resource-family handoff and shared
+controller pumping are qualified at Turnstone `25f85bd`. The current pass
+implements SC5/S8 live document accessibility, Graphshell's five public mounts,
+and SC6 retained content with shared input and placements. See the latest
+continuation for source owners and evidence boundaries. The U1–U17 and AC1–AC6
+rulings remain recorded in §7; S8's physical assistive-technology receipts
+remain separate gates.
 
 ## The bar
 
@@ -1942,8 +1941,8 @@ The same fixed Mere snapshot locates Graphshell at `ports/graphshell`: it is
 Mere's projection client/reference host, without a second PeltContent/PageLoad
 implementation. Its actual parallel GUI paths are the legacy presenter/DOM/
 scenario path and retained Cambium tree. The supplier's canonical
-`design_docs/2026-09-25_graphshell_one_tree_plan.md` and
-`design_docs/2026-09-27_graphshell_tree_migration_inventory.md` keep the five-page
+`design_docs/mere_docs/implementation_strategy/2026-09-25_graphshell_one_tree_plan.md` and
+`design_docs/mere_docs/implementation_strategy/2026-09-27_graphshell_tree_migration_inventory.md` keep the five-page
 cutover open. That product migration is independent of Turnstone's SC5/S8 work.
 Shared surface input needs a coordinated contract for pointer identity,
 wheel modifiers and button parity; SC6 still owns the engine-aware pool,
@@ -1951,6 +1950,103 @@ repeated placement geometry and Reader lifetime. SC7's reusable store contracts
 stay below product conversations and concrete stores. A second page-loading
 rewrite would repeat the already shared PageLoad machinery. This is a local
 comparison at the qualified pin, not a claim about a moving supplier tail.
+
+
+### 2026-10-09, three-lane completion pass
+
+The user has authorized completion of live document accessibility (SC5/S8),
+Graphshell's full five-page retained-tree cutover, and shared input plus the
+controller pool and placements (SC6), with parallel implementation. Separate
+source owners share one low-priority build queue and one existing target cache.
+Turnstone resumes at published `25f85bd`; supplier work is isolated at published
+Mere `b6b551d44` and Genet `a0d95ebd6e2`. The Mere baseline now includes the
+published P3/P4/P5 resource semantics. Final adoption must qualify that full
+supplier snapshot rather than extending the older P2 receipt by inference.
+
+The pool must have real Pelt and Turnstone consumers, preserving content after
+its last placement closes and independent Reader appearance state. Live
+accessibility must publish the controller projection through the same composed
+forest observed by scenarios, with current identity and placement admission for
+actions. Graphshell must migrate every current public mount and live scenario
+before retiring the legacy presenter. Source, headed and physical assistive
+technology gates keep separate evidence; automated source tests cannot supply
+the three-platform human receipts specified by S8.
+
+The first tests reach the intended gaps: Turnstone's accessibility suite has
+37 passing tests and eight new failures; shared hidden completion, modified
+surface input and pointer capture fail their new behavioral checks; the pool,
+Graphshell detail actions, canvas cancellation and saved-scene seam are absent
+at their recorded baselines. Implementations are being checked before supplier
+publication and consumer repinning. These are RED receipts, not qualification.
+
+Storage policy, clarified by the user on 2026-10-09: clear expendable disk
+storage when free space falls below 500 GB. `/home` currently has 569 GB free;
+no files were deleted. The earlier roughly 6 GB figure was available RAM. One
+low-priority compiler job runs at a time in the existing shared target cache.
+
+
+### 2026-10-09, placement and scheduling findings
+
+A controller has one current layout. Preparing a second viewport changes the
+projection revision, and returning to the first viewport does not restore the
+old revision. Publishing both placements and comparing only against the last
+engine projection would leave one window unusable. The shared pool therefore
+owns placement snapshots and dispatches an action atomically: validate its
+captured session, placement and publication, prepare the addressed viewport,
+prove complete projection equality apart from the revision, then deliver using
+the current engine revision. Unexpected source observations retire prior
+publications. This is under qualification, not a completed stale-action gate;
+it cannot promise a stronger source epoch than the engine projection exposes.
+
+The shared pool regressions also exposed missing focus delivery and same-key
+replacement dropping authoritative placements. A same-size frame cache must
+be invalidated after potentially mutating input, pump or session access because
+session `settled` excludes layout dirtiness. Hidden pending document work must
+schedule event-loop ticks without requesting paint, and retire those ticks
+when finite work settles. Real Reader and Livery tests cover these host seams.
+
+Initial live accessibility tests pass 52 cases at their frozen portable source.
+The current consumer includes a separately qualified `CoveredScene` adapter
+adoption and requires its own complete family checks. Default and Piccolo local
+metadata now resolve one selected Mere/Genet family; Graphshell's standalone
+full web graph resolves the same isolated supplier. These resolution checks do
+not establish source or headed qualification. Shared SDK lock resolution must
+follow published Genet's Boa/ICU requirements; local scratch locks are separate
+from portable locks.
+
+### 2026-10-10, resumed qualification
+
+The full-default Graphshell Wasm baseline compiled successfully against the
+isolated supplier family. Its source hashes were unchanged during compilation.
+Bindgen resumed from the preserved artifact after an app interruption, without
+rebuilding it. Six actual headed baseline runs have complete frame and
+accessibility captures: detail actions pass; Find, scenes, projections,
+practice and history expose the expected missing controls. Missing observer
+fields remain incomplete instrumentation, rather than evaluated state failures.
+The remaining panels are being implemented before the complete live inventory
+and all five public mounts are qualified.
+
+The shared atomic placement accessibility suite passes six tests. Actual
+Turnstone Gemini and Livery tests also restore the addressed viewport, reject a
+stale action and deliver exactly one ordinary navigation. Reader placement and
+hidden-work scheduling still require the integrated consumer GREEN run. A
+separate real Reader regression first confirmed that its advertised virtual
+Focus action did not reach the owned session. The narrow Reader repair now passes
+that test, preserving independent appearance focus and rejecting stale or hidden
+targets.
+
+New shared-pool regressions expose stale layouts after mutation, focus moving
+between appearances, incomplete window-wide capture cancellation and geometry
+at scales below one. Following those behavioral RED results, all 75 shared
+`pelt-core` tests pass, including the six atomic accessibility tests.
+Accessibility bridge
+activation epochs, safe host-only initial trees and native window bounds remain
+under qualification. Neither the baseline Wasm build nor the focused native
+tests establish the final supplier or consumer release gates.
+
+Physical free disk space was 570,935,758,848 bytes at the latest check, above the
+user's 500,000,000,000-byte cleanup threshold. No deletion was performed. Builds
+continue serially in the existing shared target cache.
 
 ## Cross-references
 

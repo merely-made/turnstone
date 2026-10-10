@@ -1,0 +1,10 @@
+# Run the document_a11y fixture server, port configurable through the environment.
+settle 30
+key escape
+open gemini://127.0.0.1:${TURNSTONE_A11Y_GEMINI_PORT}/capsule.gmi
+settle 60
+act Toggle live content
+settle 30
+assert content-live
+assert a11y link: First Gemini >> link: Second Gemini
+capture gemini_document_a11y

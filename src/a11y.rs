@@ -4,26 +4,14 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! The accessibility projection (rung 5 slice F): one stitched application
-//! tree over app truth — chrome, the frisket pane structure, the workbench
-//! tiling, and each live document's structural outline — with stable,
-//! path-derived AccessKit ids (uxtree's scheme, so subtree ids stay disjoint
-//! by construction).
+//! Application-owned chrome and pane structure for the composed AccessKit forest.
 //!
-//! Supply, all pre-existing and previously unused: `crate::panes::project_frisket_with`
-//! (the pane tree, with a per-leaf content hook), `mere::platen::project_tile_layout`
-//! (the tiling), and `uxtree::stitch`. The document subtree is built here from
-//! the [`StructureFacts`] outline the content port mirrors at spawn (the
-//! `DocumentSession::inspect` accessor landed with the Inspector slice) — so
-//! the app-owned base projection is pure over `App` and testable headless.
-//! The shell attaches live contributed DOM subtrees through the per-pane hook,
-//! using the same composed tree for the OS adapter and `assert a11y`.
-//!
-//! Honesty (the no-placebo rule): app-mirrored live web documents remain
-//! `A11yCapability::Partial`, structural only, and their roots say so.
-//! Contributed retained documents instead project their actual DOM roles,
-//! focus, actions, and painted Livery bounds. The shell namespaces those trees
-//! below pane leaves before publishing the one update through AccessKit.
+//! The app projection is pure over `App`. Its spawn outline remains a fallback
+//! for lanes without live source ownership. The shell replaces non-Reader
+//! document outlines with controller projections and mounts contributed DOMs
+//! through native Mere grafts. Platform publication and scenario observations
+//! read the same forest in root/children order. Source support declarations
+//! remain intact, including Partial and unavailable semantics.
 
 use crate::panes::PaneContent;
 use accesskit::{Node, Role};
@@ -78,7 +66,7 @@ fn project_app_capturing(
             root.set_label(format!("graph canvas, {count} nodes"));
             let subtrees = docs.take().unwrap_or_default();
             Some(stitch("turnstone/canvas", root, subtrees))
-        }
+        },
         PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::FROZEN_PROJECTION => {
             Some(project_frozen_projection(app))
         },
@@ -103,18 +91,80 @@ pub fn a11y_lines(app: &App) -> Vec<String> {
 /// reads. The shell uses this overload so live contributed DOM semantics and
 /// the platform adapter are checked from the same projection.
 pub fn tree_lines(tree: &UxTree) -> Vec<String> {
-    tree.nodes
-        .iter()
-        .map(|(_, n)| {
-            let role = format!("{:?}", n.role()).to_lowercase();
-            match (n.label(), n.value()) {
-                (Some(label), Some(value)) => format!("{role}: {label} = {value}"),
-                (Some(label), None) => format!("{role}: {label}"),
-                (None, Some(value)) => format!("{role} = {value}"),
-                (None, None) => role,
+    forest_lines(&[tree.to_tree_update(None)])
+}
+
+/// Traverse the exact host/guest forest supplied to the adapter. Local IDs
+/// remain local to their tree, and sibling order comes from children.
+pub(crate) fn forest_lines(forest: &[accesskit::TreeUpdate]) -> Vec<String> {
+    use accesskit::TreeId;
+    let trees: std::collections::HashMap<_, _> = forest.iter().map(|t| (t.tree_id, t)).collect();
+    let Some(root) = trees
+        .get(&TreeId::ROOT)
+        .and_then(|t| t.tree.as_ref())
+        .map(|t| t.root)
+    else {
+        return Vec::new();
+    };
+    let mut pending = vec![(TreeId::ROOT, root)];
+    let mut seen = std::collections::HashSet::new();
+    let mut lines = Vec::new();
+    while let Some((tree, id)) = pending.pop() {
+        if !seen.insert((tree, id)) {
+            continue;
+        }
+        let Some(node) = trees
+            .get(&tree)
+            .and_then(|t| t.nodes.iter().find(|(n, _)| *n == id))
+            .map(|(_, n)| n)
+        else {
+            continue;
+        };
+        if node.is_hidden() {
+            continue;
+        }
+        let role = format!("{:?}", node.role()).to_lowercase();
+        lines.push(match (node.label(), node.value()) {
+            (Some(label), Some(value)) => format!("{role}: {label} = {value}"),
+            (Some(label), None) => format!("{role}: {label}"),
+            (None, Some(value)) => format!("{role} = {value}"),
+            (None, None) => role,
+        });
+        if let Some(guest) = node.tree_id() {
+            if let Some(root) = trees
+                .get(&guest)
+                .and_then(|t| t.tree.as_ref())
+                .map(|t| t.root)
+            {
+                pending.push((guest, root));
             }
-        })
-        .collect()
+        } else {
+            pending.extend(node.children().iter().rev().map(|id| (tree, *id)));
+        }
+    }
+    lines
+}
+
+/// A single substring, or an ordered subsequence separated by ` >> `.
+pub(crate) fn matches_lines(lines: &[String], query: &str) -> bool {
+    let mut remaining = lines.iter();
+    query
+        .split(" >> ")
+        .all(|part| !part.is_empty() && remaining.any(|line| line.contains(part)))
+}
+
+pub(crate) fn host_input_focus(app: &App) -> Option<accesskit::NodeId> {
+    app.omnibar
+        .open
+        .then(|| node_id_for_path("turnstone/chrome/omnibar"))
+}
+
+pub(crate) fn focus_host_input(app: &mut App, target: accesskit::NodeId) -> bool {
+    if host_input_focus(app) != Some(target) {
+        return false;
+    }
+    app.focus = crate::surface::FocusTarget::Chrome;
+    true
 }
 
 /// The Frozen Projection pane's subtree: the same AccessKit tree
@@ -203,11 +253,41 @@ fn project_chrome(app: &App) -> UxTree {
     let mut children = Vec::new();
     if app.omnibar.open {
         let id = node_id_for_path("turnstone/chrome/omnibar");
-        let mut n = Node::new(Role::TextInput);
-        n.set_label("omnibar");
+        let mut n = Node::new(if app.omnibar.sensitive() {
+            Role::PasswordInput
+        } else {
+            Role::TextInput
+        });
+        let label = match &app.omnibar.mode {
+            crate::ui::OmnibarMode::MicronForm(prompt) => match prompt.stage {
+                crate::ui::MicronFormStage::Field(index) => prompt
+                    .form
+                    .fields()
+                    .get(index)
+                    .map(|f| f.name())
+                    .unwrap_or("Micron form"),
+                crate::ui::MicronFormStage::Action => "Micron submit action",
+                crate::ui::MicronFormStage::Confirm => "Micron submission confirmation",
+            },
+            _ => "omnibar",
+        };
+        n.set_label(label);
+        n.add_action(accesskit::Action::Focus);
         n.set_value(app.omnibar.presented_text());
         nodes.push((id, n));
         children.push(id);
+        for (index, suggestion) in app.omnibar.suggestions.iter().enumerate() {
+            if matches!(
+                suggestion,
+                crate::ui::Suggestion::Prompt(_) | crate::ui::Suggestion::Hint(_)
+            ) {
+                let id = node_id_for_path(&format!("turnstone/chrome/prompt/{index}"));
+                let mut prompt = Node::new(Role::Status);
+                prompt.set_label(crate::chrome_view::row_text(suggestion));
+                nodes.push((id, prompt));
+                children.push(id);
+            }
+        }
         for (path, node, _) in omnibar_rows(app) {
             let id = node_id_for_path(&path);
             nodes.push((id, node));
@@ -256,7 +336,7 @@ fn project_chrome(app: &App) -> UxTree {
                     nodes.push((id, button));
                     decision_children.push(id);
                 }
-            }
+            },
             crate::user_agent_decision::PendingUserAgentDecision::Authentication { .. } => {
                 let username_id = node_id_for_path(&format!("{base}/username"));
                 let mut username = Node::new(Role::TextInput);
@@ -291,7 +371,7 @@ fn project_chrome(app: &App) -> UxTree {
                     nodes.push((id, button));
                     decision_children.push(id);
                 }
-            }
+            },
         }
         if let Some(error) = &app.user_agent_decision.error {
             let error_id = node_id_for_path(&format!("{base}/error"));
@@ -483,7 +563,7 @@ pub(crate) fn apply_route(
     match route {
         Some(A11yRoute::OpenOmnibar) => {
             app.update(crate::action::Action::OmnibarOpen { command: false })
-        }
+        },
         Some(A11yRoute::Action(action)) => app.update(action.clone()),
         Some(A11yRoute::SelectMember { pane, member }) => {
             if app.graph_pane_select_member(*pane, *member) {
@@ -495,7 +575,7 @@ pub(crate) fn apply_route(
                 });
                 Vec::new()
             }
-        }
+        },
         Some(A11yRoute::Contributed { .. }) => {
             // The shell owns retained sessions and intercepts this variant
             // before app-only route lowering. Keep a misplaced call loud.
@@ -504,14 +584,14 @@ pub(crate) fn apply_route(
                 target: "contributed route reached app-only lowering".to_string(),
             });
             Vec::new()
-        }
+        },
         None => {
             app.note(crate::observe::AppEvent::InteractionMissed {
                 what: "a11y-action",
                 target: format!("{target:?}"),
             });
             Vec::new()
-        }
+        },
     }
 }
 
@@ -535,7 +615,7 @@ mod route_table {
             match routes.get(&id) {
                 Some(A11yRoute::SelectMember { member: routed, .. }) => {
                     assert_eq!(*routed, member)
-                }
+                },
                 other => panic!("member {member} routed to {other:?}"),
             }
         }
@@ -608,7 +688,7 @@ mod bridge_integrity {
             .find_map(|(pane, content, _)| match content {
                 PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::SETTINGS => {
                     Some(pane)
-                }
+                },
                 _ => None,
             })
             .expect("registered pane");
@@ -849,6 +929,127 @@ mod tests {
         assert!(
             lines.iter().any(|l| l == "textinput: omnibar = hi"),
             "{lines:?}"
+        );
+    }
+}
+
+#[cfg(test)]
+mod reading_order_tests {
+    use super::*;
+    #[test]
+    fn reading_order_follows_children_and_excludes_orphans() {
+        let mut root = Node::new(Role::Document);
+        root.set_label("page");
+        root.set_children(vec![accesskit::NodeId(3), accesskit::NodeId(2)]);
+        let named = |name: &str| {
+            let mut n = Node::new(Role::Link);
+            n.set_label(name);
+            n
+        };
+        let tree = UxTree {
+            root: accesskit::NodeId(1),
+            nodes: vec![
+                (accesskit::NodeId(2), named("second")),
+                (accesskit::NodeId(4), named("orphan")),
+                (accesskit::NodeId(1), root),
+                (accesskit::NodeId(3), named("first")),
+            ],
+        };
+        assert_eq!(
+            tree_lines(&tree),
+            ["document: page", "link: first", "link: second"]
+        );
+    }
+}
+
+#[cfg(test)]
+mod micron_form_tests {
+    use super::*;
+    use crate::action::{Action, Effect};
+    #[test]
+    fn micron_host_editor_exposes_current_field_and_prompt_without_secrets() {
+        let mut app = App::test_stub();
+        let address = "7fc8950ec4e50695be76eddc8e539ee8:/page/index.mu";
+        let source = "`[Submit`:/page/capture.mu`name|secret]\nName: `<name`seed>\nSecret: `<!|secret`mask-seed>\n";
+        app.update(Action::OpenAddress(address.into()));
+        let member = app.graph_runtimes.focused_member().unwrap();
+        app.content.note_fetched(
+            member,
+            address.into(),
+            crate::content::FetchedDocument {
+                bytes: source.as_bytes().to_vec(),
+                content_type: None,
+                body: source.into(),
+                effective_url: Some(address.into()),
+                acquired_at_ms: 1,
+            },
+            source.len(),
+        );
+        app.update(Action::ComposeFocusedMicronForm);
+        let focus = host_input_focus(&app).expect("the active editor owns host focus");
+        let text = app.omnibar.text.clone();
+        assert!(focus_host_input(&mut app, focus));
+        assert_eq!(
+            app.omnibar.text, text,
+            "Focus does not reset or submit the form"
+        );
+        let host = project_app(&app).to_tree_update(host_input_focus(&app));
+        let mut publication = crate::foreign_a11y::ForeignA11y::new();
+        let safe = publication.initial_host(host.clone(), &[]).unwrap();
+        let consumer = accesskit_consumer::Tree::new(safe, true);
+        assert_eq!(
+            consumer.state().focus().unwrap().label().as_deref(),
+            Some("name")
+        );
+        assert!(
+            host.nodes
+                .iter()
+                .find(|(id, _)| *id == focus)
+                .unwrap()
+                .1
+                .supports_action(accesskit::Action::Focus)
+        );
+        publication.frame(host, &[]).unwrap();
+        assert!(
+            a11y_lines(&app)
+                .iter()
+                .any(|line| line == "textinput: name = seed")
+        );
+        assert!(
+            a11y_lines(&app)
+                .iter()
+                .any(|line| line.contains("Enter to continue"))
+        );
+        app.update(Action::OmnibarCommit);
+        let tree = project_app(&app);
+        let host = tree.to_tree_update(host_input_focus(&app));
+        let safe = publication.initial_host(host.clone(), &[]).unwrap();
+        let consumer = accesskit_consumer::Tree::new(safe, true);
+        let focused = consumer.state().focus().unwrap();
+        assert_eq!(focused.label().as_deref(), Some("secret"));
+        assert_eq!(focused.role(), Role::PasswordInput);
+        assert_ne!(focused.value().as_deref(), Some("mask-seed"));
+        publication.frame(host, &[]).unwrap();
+        assert!(
+            tree.nodes
+                .iter()
+                .any(|(_, n)| n.role() == Role::PasswordInput && n.label() == Some("secret"))
+        );
+        assert!(!a11y_lines(&app).join("\n").contains("mask-seed"));
+        app.update(Action::OmnibarCommit);
+        assert!(
+            a11y_lines(&app)
+                .iter()
+                .any(|line| line.contains("type send and press Enter"))
+        );
+        app.update(Action::OmnibarInsert("send".into()));
+        let effects = app.update(Action::OmnibarCommit);
+        assert_eq!(
+            effects
+                .iter()
+                .filter(|e| matches!(e, Effect::SubmitMicron { .. }))
+                .count(),
+            1
         );
     }
 }

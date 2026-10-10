@@ -44,6 +44,11 @@ pub(super) struct LensWindow {
     /// Which `App::lenses` pane space this window shows (stable; the space
     /// tombstones on close).
     pub(super) ordinal: usize,
+    pub(super) focused: bool,
+    pub(super) a11y: genet_winit_host::AccessKitBridge,
+    pub(super) a11y_actions: super::a11y_bridge::ActionQueue,
+    pub(super) a11y_epoch: Option<u64>,
+    pub(super) a11y_forest: crate::foreign_a11y::ForeignA11y,
 }
 
 impl Shell {
@@ -54,6 +59,7 @@ impl Shell {
         while let Some(ordinal) = self.pending_windows.pop() {
             let attributes = Window::default_attributes()
                 .with_title("Turnstone — lens")
+                .with_visible(false)
                 .with_inner_size(PhysicalSize::new(800u32, 600u32));
             let Ok(window) = event_loop.create_window(attributes) else {
                 tracing::warn!("lens window creation failed");
@@ -77,6 +83,14 @@ impl Shell {
                 options,
             ) {
                 Ok(host) => {
+                    let a11y_actions = Arc::new(std::sync::Mutex::new(Default::default()));
+                    let a11y = super::a11y_bridge::install(
+                        &window,
+                        a11y_actions.clone(),
+                        self.proxy.clone(),
+                        &format!("Turnstone lens {ordinal}"),
+                    );
+                    window.set_visible(true);
                     window.request_redraw();
                     self.lens_windows.insert(
                         window.id(),
@@ -88,13 +102,111 @@ impl Shell {
                             cursor: (0.0, 0.0),
                             pointer_graph: None,
                             ordinal,
+                            focused: true,
+                            a11y,
+                            a11y_actions,
+                            a11y_epoch: None,
+                            a11y_forest: crate::foreign_a11y::ForeignA11y::new(),
                         },
                     );
-                }
+                },
                 Err(err) => tracing::warn!(%err, "lens surface boot failed"),
             }
         }
         self.app.window_count = 1 + self.lens_windows.len();
+    }
+
+    pub(super) fn push_lens_a11y_trees(&mut self) {
+        let mut windows: Vec<_> = self
+            .lens_windows
+            .iter()
+            .map(|(id, lens)| (*id, lens.ordinal, lens.width, lens.height))
+            .collect();
+        windows.sort_by_key(|(_, ordinal, _, _)| *ordinal);
+        for (id, ordinal, width, height) in windows {
+            let plan = self.lens_plan(ordinal, width, height);
+            let pane_rects = plan
+                .iter()
+                .filter_map(|surface| match surface.kind {
+                    SurfaceKind::Pane(pane) => Some((pane, surface.rect)),
+                    _ => None,
+                })
+                .collect();
+            let focused_pane = match self.app.focus {
+                crate::surface::FocusTarget::Pane(pane) => Some(pane),
+                _ => None,
+            };
+            let contributed = crate::contributed_a11y::project(
+                &self.renderers.contributed,
+                &pane_rects,
+                focused_pane,
+            );
+            let root = accesskit::NodeId(0);
+            let mut node = accesskit::Node::new(accesskit::Role::Window);
+            node.set_label(format!("Turnstone lens {ordinal}"));
+            node.set_bounds(accesskit::Rect::new(0.0, 0.0, width as f64, height as f64));
+            let mut trees: Vec<_> = contributed.trees.into_iter().collect();
+            trees.sort_by_key(|(pane, _)| pane.0);
+            node.set_children(trees.iter().map(|(_, tree)| tree.root).collect::<Vec<_>>());
+            let mut nodes = vec![(root, node)];
+            for (_, tree) in trees {
+                nodes.extend(tree.nodes);
+            }
+            let mut frame = super::document_a11y::Projected {
+                tree: uxtree::UxTree { root, nodes },
+                routes: Default::default(),
+                focus: contributed.focus,
+                guests: contributed.guests,
+                admissions: contributed
+                    .routes
+                    .into_iter()
+                    .map(|(id, route)| (id, super::a11y_bridge::Admission::Contributed(route)))
+                    .collect(),
+            };
+            self.project_document_accessibility(&mut frame, &plan);
+            let update = frame.tree.to_tree_update(frame.focus);
+            let initial = super::a11y_bridge::safe_initial(&update);
+            let Some(lens) = self.lens_windows.get_mut(&id) else {
+                continue;
+            };
+            let epoch = lens.a11y.activation_epoch();
+            if lens.a11y_epoch != Some(epoch) {
+                lens.a11y_forest.reset_publication();
+                lens.a11y_actions
+                    .lock()
+                    .expect("lens a11y queue poisoned")
+                    .publish(Default::default());
+                lens.a11y_epoch = Some(epoch);
+            }
+            let updates = match lens
+                .a11y_forest
+                .frame_with_guests(update, &[], &frame.guests)
+            {
+                Ok(updates) => updates,
+                Err(error) => {
+                    tracing::warn!(%error, "lens accessibility composition refused");
+                    continue;
+                },
+            };
+            let served = lens
+                .a11y
+                .update_batch_at(epoch, initial, updates)
+                .unwrap_or_else(|error| {
+                    tracing::warn!(%error, "lens accessibility publication refused");
+                    false
+                });
+            lens.a11y_actions
+                .lock()
+                .expect("lens a11y queue poisoned")
+                .publish(if served {
+                    frame.admissions
+                } else {
+                    Default::default()
+                });
+            if !served {
+                lens.a11y_forest.retry_publication();
+            }
+        }
     }
 
     /// A lens window's surface plan: its OWN pane space (`App::lenses`) walked
@@ -135,7 +247,7 @@ impl Shell {
                         .map(|pane| (pane.id, pane.rect))
                         .collect(),
                 )
-            }
+            },
             None => {
                 let placements = crate::pane::place_panes(space, area, None);
                 (
@@ -151,7 +263,7 @@ impl Shell {
                         .collect(),
                     Vec::new(),
                 )
-            }
+            },
         };
         let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
             .iter()
@@ -232,7 +344,7 @@ impl Shell {
             match self.lens_pane_content(ordinal, *pane) {
                 Some(PaneContent::Tile(node)) if self.content_sessions.has_document(&node) => {
                     Some((node, 0x1000_0000_0000_0000 | pane.0, *rect))
-                }
+                },
                 _ => None,
             }
         }));
@@ -240,7 +352,7 @@ impl Shell {
             match self.lens_pane_content(ordinal, *pane) {
                 Some(PaneContent::Tile(node)) if self.content_sessions.has_document(&node) => {
                     Some((node, 0x1000_0000_0000_0000 | pane.0, *rect))
-                }
+                },
                 _ => None,
             }
         }));
@@ -250,7 +362,7 @@ impl Shell {
                 PaneContent::Orrery => SurfaceKind::Graph(id),
                 PaneContent::Tile(member) if self.content_sessions.has_document(&member) => {
                     SurfaceKind::Content(member)
-                }
+                },
                 _ => SurfaceKind::Pane(id),
             };
             Some(crate::surface::Surface {
@@ -305,7 +417,11 @@ impl Shell {
         }
         // Visibility includes every open window. Each render invocation pumps
         // a retained document once; separate window events remain separate polls.
-        let mut animating = self.pump_visible_documents();
+        self.pump_visible_documents();
+        let mut animating = self
+            .content_sessions
+            .pool
+            .window_needs_frame(ordinal as u64 + 1);
         // Pass 1 (mutable): produce each surface's scene at its rect size.
         let mut scenes: Vec<PlannedScene> = Vec::with_capacity(surfaces.len());
         for surface in &surfaces {
@@ -323,24 +439,26 @@ impl Shell {
                     animating |= anim;
                     animating |= self.app.resolve_pending_images() > 0;
                     (scene, wgpu::Color::WHITE)
-                }
+                },
                 crate::surface::SurfaceKind::Pane(pid) => {
                     let content = self.lens_pane_content(ordinal, pid);
                     let scene = self.pane_scene_by_kind(pid, content.as_ref(), rw, rh);
                     (scene, wgpu::Color::TRANSPARENT)
-                }
+                },
                 // A workbench tile whose pane tore out here: the SAME session
                 // the primary would frame, at this cell's size (already pumped
                 // above).
                 crate::surface::SurfaceKind::Content(node) => {
-                    let Some(scene) = self.with_content_appearance(node, surface.id, |session| session.frame(rw, rh)) else {
+                    let Some(pelt_core::PeltLayer::Document(scene)) =
+                        self.content_sessions.pool.frame(&surface.id)
+                    else {
                         continue;
                     };
                     (scene, wgpu::Color::WHITE)
-                }
+                },
                 crate::surface::SurfaceKind::Divider(_) => {
                     (Scene::default(), crate::ui::SEAM_CLEAR)
-                }
+                },
                 // No canvas-inset content / chrome layer in a lens's plan
                 // (chrome composites separately below).
                 _ => continue,
@@ -428,9 +546,50 @@ impl Shell {
         let Some(lens) = self.lens_windows.get_mut(&id) else {
             return;
         };
+        if matches!(
+            event,
+            WindowEvent::Moved(_)
+                | WindowEvent::Resized(_)
+                | WindowEvent::ScaleFactorChanged { .. }
+        ) {
+            lens.a11y.update_window_bounds(&lens.window);
+        }
+        if let WindowEvent::Focused(focused) = &event {
+            lens.focused = *focused;
+            lens.a11y.update_window_focus(*focused);
+            if !focused {
+                self.cancel_content_pointer();
+            }
+            self.sync_content_placements();
+            self.push_a11y_tree();
+            return;
+        }
         match event {
+            WindowEvent::ModifiersChanged(mods) => {
+                self.ctrl = mods.state().control_key();
+                self.alt = mods.state().alt_key();
+                self.shift = mods.state().shift_key();
+                self.meta = mods.state().super_key();
+                return;
+            },
+            WindowEvent::KeyboardInput { event, .. } => {
+                if !self.deliver_surface_key(
+                    &event.logical_key,
+                    event.state == ElementState::Pressed,
+                    event.text.as_deref(),
+                ) && event.state == ElementState::Pressed
+                {
+                    self.on_key(&event.logical_key);
+                }
+                return;
+            },
+            WindowEvent::Ime(ime) => {
+                self.deliver_document_ime(&ime);
+                return;
+            },
             WindowEvent::CloseRequested => {
                 let ordinal = lens.ordinal;
+                self.cancel_content_pointer();
                 self.lens_windows.remove(&id);
                 let closed_panes: Vec<_> = self
                     .app
@@ -454,18 +613,19 @@ impl Shell {
                 // closed across a restart (its slot saves as null).
                 self.act(Action::SaveSession);
                 return;
-            }
+            },
             WindowEvent::Resized(size) => {
                 lens.width = size.width.max(1);
                 lens.height = size.height.max(1);
                 lens.host.resize(lens.width, lens.height);
                 lens.window.request_redraw();
                 return;
-            }
+            },
             WindowEvent::RedrawRequested => {
                 self.render_lens(id);
+                self.push_a11y_tree();
                 return;
-            }
+            },
             WindowEvent::MouseInput {
                 state: ElementState::Pressed,
                 button: MouseButton::Left,
@@ -493,6 +653,23 @@ impl Shell {
                             // beside now aim at this lens's tree.
                             self.app.active_pane = Some(pid);
                             self.app.raise_floating_pane(pid);
+                            if let Some(pane) = self.renderers.contributed.get_mut(pid) {
+                                self.app.focus = crate::surface::FocusTarget::Pane(pid);
+                                self.pointer_capture = Some(SurfaceKind::Pane(pid));
+                                self.contributed_pointer = plan
+                                    .iter()
+                                    .find(|surface| surface.id == hit.id)
+                                    .copied()
+                                    .map(|surface| super::input::ContributedPointer {
+                                        surface,
+                                        generation: pane.generation(),
+                                        window: ordinal as u64 + 1,
+                                    });
+                                pane.focus_at(hit.local.0, hit.local.1);
+                                pane.mouse_press(hit.local.0, hit.local.1);
+                                self.request_redraw();
+                                return;
+                            }
                             if let Some(content) = self.lens_pane_content(ordinal, pid) {
                                 let dims = plan
                                     .iter()
@@ -512,48 +689,23 @@ impl Shell {
                             }
                             self.request_redraw();
                             return;
-                        }
+                        },
                         crate::surface::SurfaceKind::Content(node) => {
-                            self.app.focus = crate::surface::FocusTarget::Content { node, appearance: hit.id };
-                            if self.controller_drives(&node) {
-                                // A lens window takes a whole click per press, as
-                                // before: press and release at one point.
-                                let modifiers = self.session_modifiers();
-                                for state in [
-                                    inker::SessionButtonState::Pressed,
-                                    inker::SessionButtonState::Released,
-                                ] {
-                                    self.document_input(
-                                        node,
-                                        inker::SessionInput::PointerButton {
-                                            x: hit.local.0,
-                                            y: hit.local.1,
-                                            button: inker::SessionPointerButton::Primary,
-                                            state,
-                                            modifiers,
-                                        },
-                                    );
-                                }
-                            } else if let Some(outcome) = self.with_content_appearance(node, hit.id, |session| session.click_at(hit.local.0, hit.local.1)) {
-                                match outcome {
-                                    SessionClick::Navigate(url) => {
-                                        let url = super::content_link_target(&self.app, node, &url);
-                                        self.act(Action::OpenAddress(url));
-                                    }
-                                    SessionClick::Submit(target) => {
-                                        self.act(Action::BeginSmolwebSubmission {
-                                            source: Some(node),
-                                            target,
-                                        });
-                                    }
-                                    SessionClick::Handled | SessionClick::Miss => {}
-                                }
-                            }
+                            self.app.focus = crate::surface::FocusTarget::Content {
+                                node,
+                                appearance: hit.id,
+                            };
+                            self.content_mouse(
+                                hit.id,
+                                hit.local,
+                                inker::PointerPhase::Down,
+                                Some(inker::MouseButton::Left),
+                            );
                             if let Some(lens) = self.lens_windows.get_mut(&id) {
                                 lens.window.request_redraw();
                             }
                             return;
-                        }
+                        },
                         // A lens seam drag: capture the band; moves lower
                         // SetSplitRatio at THIS lens's space (same spine as
                         // the primary's seam, different target tree).
@@ -568,15 +720,27 @@ impl Shell {
                                     .map(|d| (ordinal, d));
                             }
                             return;
-                        }
-                        _ => {}
+                        },
+                        _ => {},
                     }
                 }
                 // Canvas press: handled by the gesture block below.
-            }
+            },
             WindowEvent::CursorMoved { position, .. } => {
                 let (x, y) = (position.x as f32, position.y as f32);
                 lens.cursor = (x, y);
+                let ordinal = lens.ordinal;
+                if self.move_contributed_pointer(ordinal as u64 + 1, x, y) {
+                    return;
+                }
+                if let Some(appearance) = self.content_sessions.pool.captured_placement(0).copied()
+                    && let Some(placement) = self.content_sessions.pool.placement(&appearance)
+                    && placement.window == ordinal as u64 + 1
+                {
+                    let local = (x - placement.rect.x, y - placement.rect.y);
+                    self.content_mouse(appearance, local, inker::PointerPhase::Move, None);
+                    return;
+                }
                 // A held lens seam: each move becomes a ratio through the
                 // same component math as the primary's seam, lowered at the
                 // LENS's space. Falls through to the camera block otherwise.
@@ -594,18 +758,36 @@ impl Shell {
                     }
                     return;
                 }
-            }
+            },
             WindowEvent::MouseInput {
                 state: ElementState::Released,
                 button: MouseButton::Left,
                 ..
             } => {
+                let (cursor, ordinal) = (lens.cursor, lens.ordinal);
+                if self.contributed_pointer.is_some() {
+                    self.release_contributed_pointer(ordinal as u64 + 1, cursor.0, cursor.1);
+                    return;
+                }
+                if let Some(appearance) = self.content_sessions.pool.captured_placement(0).copied()
+                    && let Some(placement) = self.content_sessions.pool.placement(&appearance)
+                    && placement.window == ordinal as u64 + 1
+                {
+                    let local = (cursor.0 - placement.rect.x, cursor.1 - placement.rect.y);
+                    self.content_mouse(
+                        appearance,
+                        local,
+                        inker::PointerPhase::Up,
+                        Some(inker::MouseButton::Left),
+                    );
+                    return;
+                }
                 // Like the primary seam: moves rode Redraw; persist once.
                 if self.lens_divider_drag.take().is_some() {
                     self.act(Action::SaveSession);
                     return;
                 }
-            }
+            },
             WindowEvent::MouseWheel { delta, .. } => {
                 // Wheel over a tile scrolls the PAGE (the rung-5 slice-B rule,
                 // per window); off-tile falls through to the camera pan below.
@@ -625,16 +807,27 @@ impl Shell {
                     x,
                     y,
                 ) && let crate::surface::SurfaceKind::Content(node) = hit.kind
-                    && self.with_content_appearance(node, hit.id, |session| session.scroll_at(hit.local.0, hit.local.1, dx, dy)).unwrap_or(false)
+                    && self
+                        .content_input(
+                            hit.id,
+                            pelt_core::PeltInput::Wheel {
+                                position: inker::PhysicalPosition {
+                                    x: hit.local.0,
+                                    y: hit.local.1,
+                                },
+                                delta: (dx, dy),
+                                modifiers: self.session_modifiers(),
+                            },
+                        )
+                        .unwrap_or(false)
                 {
-                    if let Some(lens) = self.lens_windows.get_mut(&id)
-                    {
+                    if let Some(lens) = self.lens_windows.get_mut(&id) {
                         lens.window.request_redraw();
                     }
                     return;
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
         // Continuous graph gestures route to the captured graph PaneId. The
         // graph runtime supplies truth; `GraphPaneViews` installs and stashes
@@ -676,7 +869,7 @@ impl Shell {
                 {
                     redraw = self.app.graph_pane_cursor_moved(pane, local_x, local_y);
                 }
-            }
+            },
             WindowEvent::MouseWheel { delta, .. } => {
                 let (dx, dy) = match delta {
                     MouseScrollDelta::LineDelta(x, y) => (
@@ -694,7 +887,7 @@ impl Shell {
                 {
                     redraw = self.app.graph_pane_wheel(pane, dx, dy);
                 }
-            }
+            },
             WindowEvent::MouseInput { state, button, .. } => {
                 if let Some(button) = pointer_button(button) {
                     let pane = match state {
@@ -727,15 +920,15 @@ impl Shell {
                                     lens.pointer_graph = Some(pane);
                                 }
                                 handled
-                            }
+                            },
                             ElementState::Released => self
                                 .app
                                 .graph_pane_pointer_up(pane, button, local_x, local_y),
                         };
                     }
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
         if redraw {
             if let Some(lens) = self.lens_windows.get_mut(&id) {

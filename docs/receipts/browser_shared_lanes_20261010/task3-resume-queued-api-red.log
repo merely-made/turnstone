@@ -1,0 +1,168 @@
+Local workspace: /home/markik/Code/worktrees/mere-three-lanes
+Local lock: /home/markik/Code/worktrees/mere-three-lanes/.cargo/local/Cargo.lock
+warning: patch `boa_engine v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `boa_gc v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `genet-clipboard v0.1.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-clipboard)` was not used in the crate graph
+warning: patch `ipc-channel v0.22.0 (/home/markik/Code/worktrees/genet-three-lanes/support/patches/ipc-channel)` was not used in the crate graph
+warning: patch `script-engine-piccolo v0.0.0 (/home/markik/Code/worktrees/genet-three-lanes/components/script-engine-piccolo)` was not used in the crate graph
+warning: patch `servo-media-player v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/player)` was not used in the crate graph
+warning: patch `servo-media-streams v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/streams)` was not used in the crate graph
+warning: patch `servo-media-traits v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/traits)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling syn v3.0.6
+   Compiling bytemuck_derive v1.12.1
+   Compiling bytemuck v1.25.2
+   Compiling serde_derive v1.0.229
+   Compiling serde v1.0.229
+   Compiling thiserror-impl v2.0.21
+   Compiling synstructure v0.14.0
+   Compiling thiserror v2.0.21
+   Compiling zerofrom-derive v0.1.8
+   Compiling zerofrom v0.1.8
+   Compiling yoke-derive v0.8.3
+   Compiling yoke v0.8.3
+   Compiling zerovec-derive v0.11.6
+   Compiling zerovec v0.11.8
+   Compiling displaydoc v0.2.7
+   Compiling euclid v0.22.14
+   Compiling tinystr v0.8.4
+   Compiling icu_locale_core v2.3.0
+   Compiling potential_utf v0.1.6
+   Compiling zerotrie v0.2.5
+   Compiling icu_provider v2.3.1
+   Compiling font-types v0.12.5
+   Compiling icu_collections v2.3.0
+   Compiling read-fonts v0.41.0
+   Compiling naga-types v30.0.1
+   Compiling guillotiere v0.7.0
+   Compiling skrifa v0.44.0
+   Compiling naga v30.0.1
+   Compiling wgpu-types v30.0.1
+   Compiling gpu-allocator v0.28.0
+   Compiling wgpu-naga-bridge v30.0.1
+   Compiling icu_properties v2.3.0
+   Compiling wgpu-hal v30.0.1
+   Compiling icu_normalizer v2.3.0
+   Compiling naga v29.0.4
+   Compiling wgpu-core-deps-windows-linux-android v30.0.1
+   Compiling wgpu-core v30.0.1
+   Compiling vello_shaders v0.10.0
+   Compiling layout-dom-api v0.1.1 (/home/markik/Code/worktrees/genet-three-lanes/components/shared/layout-dom)
+   Compiling font-types v0.11.3
+   Compiling read-fonts v0.39.2
+   Compiling wgpu v30.0.1
+   Compiling idna_adapter v1.2.2
+   Compiling vello_encoding v0.10.0
+   Compiling paint_list_api v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling app_units v0.7.8
+   Compiling av-scenechange v0.14.1
+   Compiling genet-paint-types v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/shared/paint-types)
+   Compiling idna v1.1.0
+   Compiling cssparser-macros v0.7.1
+   Compiling tiny-skia-path v0.11.4
+   Compiling rav1e v0.8.1
+   Compiling netrender_device v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling accesskit v0.24.1
+   Compiling cssparser v0.37.0
+   Compiling genet-static-dom v0.1.1 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-static-dom)
+   Compiling url v2.5.8
+   Compiling icu_locale_fallback v2.3.0
+   Compiling livery v0.0.5 (/home/markik/Code/worktrees/genet-three-lanes/components/livery)
+   Compiling netrender-vello v0.10.1
+   Compiling engine-observables-api v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/shared/engine-observables-api)
+   Compiling vello_encoding v0.10.0 (https://github.com/mark-ik/vello.git?tag=vello-0.10.0#4354955e)
+   Compiling regress v0.11.1 (/home/markik/Code/worktrees/genet-three-lanes/support/patches/regress-0.11.1)
+   Compiling ravif v0.13.0
+   Compiling genet-fontique v0.10.0 (/home/markik/Code/worktrees/genet-three-lanes/support/patches/fontique)
+   Compiling genet-scripted-dom v0.1.2 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-scripted-dom)
+   Compiling vello v0.10.0 (https://github.com/mark-ik/vello.git?tag=vello-0.10.0#4354955e)
+   Compiling icu_segmenter v2.3.0
+   Compiling netrender v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling cadency v0.0.1 (/home/markik/Code/worktrees/genet-three-lanes/components/cadency)
+   Compiling tiny-skia v0.11.4
+   Compiling harfrust v0.8.4
+   Compiling skrifa v0.42.1
+   Compiling parley_data v0.10.0
+   Compiling genet-document-resources v0.2.1 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-document-resources)
+   Compiling buckram v0.0.3 (/home/markik/Code/worktrees/genet-three-lanes/components/buckram)
+   Compiling genet-parley v0.10.0 (/home/markik/Code/worktrees/genet-three-lanes/support/patches/parley)
+warning: use of deprecated method `icu_properties::props::BidiClass::to_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> /home/markik/Code/worktrees/genet-three-lanes/support/patches/parley/src/bidi.rs:893:13
+    |
+893 |     1 << (t.to_icu4c_value() as u32)
+    |             ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: `genet-parley` (lib) generated 1 warning
+   Compiling sctk-adwaita v0.10.1
+   Compiling sceno v0.0.4 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/scenes/sceno)
+   Compiling sprigging v0.2.1 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/sprigging)
+   Compiling image v0.25.10
+   Compiling command-menu v0.1.0 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/command-menu)
+   Compiling winit v0.30.13
+   Compiling genet-livery v0.0.4 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-livery)
+   Compiling cambium v0.3.3 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/cambium)
+   Compiling paint_list_render v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling document-session-api v0.1.0 (/home/markik/Code/worktrees/genet-three-lanes/components/shared/document-session-api)
+   Compiling cambium-winit v0.3.0 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/cambium-winit)
+   Compiling genet-render v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-render)
+   Compiling genet-render-host v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-render-host)
+   Compiling cambium-rootstock v0.1.0 (/home/markik/Code/worktrees/mere-three-lanes/crates/cambium/cambium-rootstock)
+error[E0599]: no variant, associated function, or constant named `SecondaryRelease` found for enum `HostPointer` in the current scope
+   --> crates/cambium/cambium-rootstock/src/multi_host_tests.rs:699:36
+    |
+699 |                 .push(HostPointer::SecondaryRelease(x + 2.0, y));
+    |                                    ^^^^^^^^^^^^^^^^ variant, associated function, or constant not found in `HostPointer`
+    |
+   ::: crates/cambium/cambium-rootstock/src/host.rs:611:1
+    |
+611 | pub enum HostPointer {
+    | -------------------- variant, associated function, or constant `SecondaryRelease` not found for this enum
+    |
+help: there is a variant with a similar name
+    |
+699 -                 .push(HostPointer::SecondaryRelease(x + 2.0, y));
+699 +                 .push(HostPointer::SecondaryPress(x + 2.0, y));
+    |
+
+error[E0599]: no variant, associated function, or constant named `Cancel` found for enum `HostPointer` in the current scope
+   --> crates/cambium/cambium-rootstock/src/multi_host_tests.rs:712:30
+    |
+712 |                 HostPointer::Cancel,
+    |                              ^^^^^^ variant, associated function, or constant not found in `HostPointer`
+    |
+   ::: crates/cambium/cambium-rootstock/src/host.rs:611:1
+    |
+611 | pub enum HostPointer {
+    | -------------------- variant, associated function, or constant `Cancel` not found for this enum
+
+error[E0599]: no variant, associated function, or constant named `SecondaryRelease` found for enum `HostPointer` in the current scope
+   --> crates/cambium/cambium-rootstock/src/multi_host_tests.rs:713:30
+    |
+713 |                 HostPointer::SecondaryRelease(x, y),
+    |                              ^^^^^^^^^^^^^^^^ variant, associated function, or constant not found in `HostPointer`
+    |
+   ::: crates/cambium/cambium-rootstock/src/host.rs:611:1
+    |
+611 | pub enum HostPointer {
+    | -------------------- variant, associated function, or constant `SecondaryRelease` not found for this enum
+    |
+help: there is a variant with a similar name
+    |
+713 -                 HostPointer::SecondaryRelease(x, y),
+713 +                 HostPointer::SecondaryPress(x, y),
+    |
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `cambium-rootstock` (lib test) due to 3 previous errors
+cargo_mode: Command '['cargo', '+1.98.1', '--config', '/home/markik/Code/worktrees/mere-three-lanes/.cargo/config.local.toml', '--config', 'resolver.lockfile-path="/home/markik/Code/worktrees/mere-three-lanes/.cargo/local/Cargo.lock"', 'test', '-j1', '-p', 'cambium-rootstock', '--lib', 'queued_secondary_release_and_cancel_follow_host_capture_routing', '--', '--nocapture']' returned non-zero exit status 101.

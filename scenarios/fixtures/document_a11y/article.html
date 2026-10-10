@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Turnstone reader-lane article</title>
+<style>html,body{margin:0;padding:0;border:0}body{font:16px/1.2 system-ui,sans-serif;color:#172033;background:#f4efe3}p{margin:0;padding:0} article{max-width:40em;margin:0 auto;padding:24px}p{margin:0 0 16px}</style>
+<article>
+<h1>A page zoom is a document scale</h1>
+<p>ARTICLEMARK. Page zoom changes the size of a document without changing the
+size of the window that holds it. The engine shrinks the CSS viewport by the
+zoom factor and lays the document out again against the smaller box, so a
+media query written for a narrow screen answers as though the screen really
+were narrower. Everything a page can measure about itself moves together.</p>
+<p>That is what separates a user-agent page zoom from a CSS transform applied
+to the root element. A transform scales pixels that were already laid out for
+the old box, so the page keeps its wide-screen arrangement and simply becomes
+larger. Nothing reflows, nothing responds, and the reader who wanted bigger
+text ends up scrolling sideways to read each line.</p>
+<p>It is also distinct from a chrome or interface zoom, which scales the
+application's own furniture — the address field, the tabs, the panes — and
+leaves the document alone. The two are frequently confused because both make
+things look bigger, and both are commonly bound to the same modifier and
+wheel gesture in different contexts.</p>
+<p>The third scale in a graph workspace is the camera. A canvas camera zoom
+moves the viewer through a scene of nodes; it has no opinion about the text
+inside any one of them. A page can be at two hundred percent while its node
+is a speck on the canvas, and neither number tells you anything about the
+other.</p>
+<p>Keeping the three separate is mostly a matter of naming and of never
+letting one control write to another's state. The requested document scale
+belongs to the node, persists with it, and is replayed into whatever engine
+next presents that node. The engine decides only what it can actually honour:
+the quantization, the bounds, and the effective level it settles on.</p>
+<p>Not every engine offers the control at all. A reader lane that has already
+reflowed an article into a single column of its own choosing has no page zoom
+to give, and the honest answer is to say so and withhold the commands rather
+than to accept a request it will silently drop.</p>
+</article>
