@@ -31,6 +31,7 @@ main-page = ["product", "remote"]
 # What a page saves: IndexedDB, saved scenes, the tree's product mode,
 # `web_product` and `web_practice`.
 product = ["muniment/indexeddb", "dep:sha2"]
+applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.
 remote = ["graphshell/webrtc-browser", "dep:futures-channel", "dep:futures-util"]
@@ -173,6 +174,10 @@ taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.co
 layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "15713014e2e23b887360471552f75f60684f5384", version = "=0.1.1" }
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "15713014e2e23b887360471552f75f60684f5384", version = "=0.1.2" }
 vello = { git = "https://github.com/mark-ik/vello.git", tag = "vello-0.10.0" }
+# Existing qualified Radeon repair (Mere 27a39780b), kept in step with root.
+netrender-vello = { git = "https://github.com/mark-ik/vello.git", rev = "865cbf419668a6fb5b5e96ea54eaaf9be160fd92" }
+vello_encoding = { git = "https://github.com/mark-ik/vello.git", rev = "865cbf419668a6fb5b5e96ea54eaaf9be160fd92" }
+vello_shaders = { git = "https://github.com/mark-ik/vello.git", rev = "865cbf419668a6fb5b5e96ea54eaaf9be160fd92" }
 # The resident lane's CubeCL stack (mere `canvas-gpu`, physics catalog P5c),
 # restated from the root manifest because [patch] is not inherited:
 # cubecl-runtime 0.11.0 with persistence removed from its defaults
