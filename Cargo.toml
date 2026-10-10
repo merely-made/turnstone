@@ -25,8 +25,10 @@ path = "src/main.rs"
 [dependencies]
 # Product-redacted, bounded observations; no renderer dependency in the store.
 apparatus = { package = "mere-apparatus", git = "https://github.com/merely-made/mere.git", rev = "3ded2cd7c2370713118a2440c962c39262720205", default-features = false, features = ["serde", "projection"] }
-# Presentable proof data/checks; Personae retains keys and issuing.
-insigne = { git = "https://github.com/merely-made/mere.git", rev = "3ded2cd7c2370713118a2440c962c39262720205", features = ["verify"] }
+# Presentable proof data/checks; Personae retains keys and issuing. The
+# identity tier lives in merely-made/dramatis (dramatis repo plan, DR-D); every
+# dramatis pin names the revision mere's workspace names, or personae splits.
+insigne = { git = "https://github.com/merely-made/dramatis.git", rev = "c1d620764315b4c750fcffea30b8c898b8bb73bc", features = ["verify"] }
 athanor = { package = "mere-athanor", git = "https://github.com/merely-made/mere.git", rev = "3ded2cd7c2370713118a2440c962c39262720205" }
 tabard = { git = "https://github.com/merely-made/mere.git", rev = "3ded2cd7c2370713118a2440c962c39262720205" }
 # The library this app is the reference host for: graph truth + the
@@ -65,7 +67,7 @@ servitor = { git = "https://github.com/merely-made/mere.git", rev = "3ded2cd7c23
 # personae master key (capability-model OQ2). Personae lends the key types and
 # the IdentityProvider trait; the keys themselves stay in djinn, which
 # Turnstone calls through Graphshell's custody route (dramatis DR-C).
-identity = { package = "personae", git = "https://github.com/merely-made/mere.git", rev = "3ded2cd7c2370713118a2440c962c39262720205" }
+identity = { package = "personae", git = "https://github.com/merely-made/dramatis.git", rev = "c1d620764315b4c750fcffea30b8c898b8bb73bc" }
 # Self-signed Gemini client certificates projected from capsule-scoped
 # Personae-derived Ed25519 keys. The private key stays transient.
 rcgen = "0.14"
@@ -101,7 +103,7 @@ scenotime = { git = "https://github.com/merely-made/mere.git", rev = "3ded2cd7c2
 # The committed Git sources are authoritative. The gitignored Cargo config
 # redirects them to a sibling checkout during cross-repository development.
 graphshell = { git = "https://github.com/merely-made/mere.git", rev = "3ded2cd7c2370713118a2440c962c39262720205" }
-notochord = { git = "https://github.com/merely-made/mere.git", rev = "3ded2cd7c2370713118a2440c962c39262720205" }
+notochord = { git = "https://github.com/merely-made/dramatis.git", rev = "c1d620764315b4c750fcffea30b8c898b8bb73bc" }
 # The in-process carrier and the Knot endpoint it hosts. Turnstone embeds the
 # endpoint rather than spawning it: a subprocess is unshippable in a browser
 # tab or an iOS app, so the spawn path cannot be the only one.
