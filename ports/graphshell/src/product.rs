@@ -1582,6 +1582,7 @@ mod tests {
     fn projection(label: &str, selected: Option<&str>) -> ProjectionSnapshot {
         use crate::projection_editor::*;
         let definition = ProjectionDraft {
+            dynamics: None,
             version: PROJECTION_DEFINITION_VERSION,
             id: "notes-by-topic".into(),
             label: label.into(),

@@ -231,6 +231,7 @@ impl ProjectionDefinitionSink for SessionProjectionSink<'_> {
 
 fn initial_projection_draft() -> ProjectionDraft {
     ProjectionDraft {
+        dynamics: None,
         version: graphshell::projection_editor::PROJECTION_DEFINITION_VERSION,
         id: "graphshell-reference".to_string(),
         label: "Graphshell reference projection".to_string(),
@@ -277,6 +278,7 @@ fn initial_projection_draft() -> ProjectionDraft {
 
 fn draft_from_definition(definition: &ProjectionDefinition) -> ProjectionDraft {
     ProjectionDraft {
+        dynamics: definition.dynamics.clone(),
         version: definition.version,
         id: definition.id.clone(),
         label: definition.label.clone(),
@@ -511,6 +513,12 @@ impl BrowserHost {
             "projection-grid" => self.projection_arrangement("grid.default"),
             "projection-scatter" => self.projection_arrangement("scatter.default"),
             "compare-projection" => self.toggle_projection_compare(),
+            "compare-projection-dynamics" => self.toggle_projection_dynamics_compare(),
+            "projection-motion" => self.toggle_projection_motion(),
+            "projection-compare-left" => self.move_projection_comparison(-1, 0),
+            "projection-compare-right" => self.move_projection_comparison(1, 0),
+            "projection-compare-up" => self.move_projection_comparison(0, -1),
+            "projection-compare-down" => self.move_projection_comparison(0, 1),
             "open-projection-editor" => {
                 self.projection_editor_open = true;
                 self.projection_editor_status = "Draft ready · unsaved".to_string();
@@ -604,8 +612,17 @@ impl BrowserHost {
     }
 
     fn update_projection_field(&mut self, field: &str, value: &str) {
+        if field == "dynamics.bound" {
+            self.set_projection_settle_bound(value.parse().ok());
+            return;
+        }
         let mut draft = self.projection_editor.draft().clone();
         let action = match field {
+            "dynamics.spec" => EditorAction::SetDynamics(if value.trim().is_empty() { None } else {
+                Some(graphshell::projection_editor::DynamicsSlot::from_json(1, value).unwrap_or_else(|_| {
+                    graphshell::projection_editor::DynamicsSlot { version: 1, spec: value.to_string() }
+                }))
+            }),
             "source.authority" => {
                 draft.source.authority = value.to_string();
                 EditorAction::SetSource(draft.source)
@@ -1306,6 +1323,8 @@ fn update_projection_editor_semantics(host: &BrowserHost) -> Result<(), String> 
         },
     )?;
     set_projection_input_value("projection-arrangement-kind", &draft.arrangement.kind)?;
+    set_projection_input_value("projection-dynamics-spec", draft.dynamics.as_ref().map_or("", |slot| &slot.spec))?;
+    set_projection_input_value("projection-dynamics-bound", &host.projection_settle_bound().map_or(String::new(), |bound| bound.to_string()))?;
     set_projection_input_value(
         "projection-arrangement-direction",
         &draft.arrangement.direction,
