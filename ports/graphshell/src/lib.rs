@@ -18,6 +18,8 @@ pub mod access;
 pub mod admission;
 #[cfg(feature = "web")]
 pub mod app;
+#[cfg(feature = "web")]
+pub mod appearance;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod browser_carrier;
 #[cfg(feature = "web")]
@@ -31,6 +33,8 @@ pub mod canvas_faces;
 pub mod canvas_physics;
 #[cfg(feature = "web")]
 pub mod canvas_reader;
+#[cfg(feature = "applets")]
+pub mod capsule_applet;
 #[cfg(feature = "web")]
 pub mod capture;
 #[cfg(all(test, feature = "web"))]

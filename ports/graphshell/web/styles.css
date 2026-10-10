@@ -5,7 +5,7 @@ graphshell-view {
   display: block;
   position: relative;
   overflow: hidden;
-  color-scheme: dark;
+  color-scheme: inherit;
   background: #071015;
   font-family: system-ui, sans-serif;
 }
@@ -52,7 +52,7 @@ graphshell-tree {
   display: block;
   position: relative;
   overflow: hidden;
-  color-scheme: dark;
+  color-scheme: inherit;
   background: #071015;
 }
 
@@ -602,3 +602,77 @@ nav button:nth-child(8) { left: 254px; }
   color: #8da2a9;
   font-size: 11px;
 }
+
+/* Appearance belongs to the component. These browser controls share the
+   computed roles used by Genet and Canvas, including authored Tabard CSS. */
+:is(graphshell-view, graphshell-tree) {
+  background: var(--gs-app-background, #071015);
+  color: var(--gs-app-text, #dce5e8);
+}
+:is(graphshell-view, graphshell-tree) canvas {
+  background: var(--gs-app-background, #071015);
+}
+graphshell-view #gs-semantic-host { color: var(--gs-app-text, #dce5e8); }
+graphshell-view #gs-semantic-host :is(aside, section, fieldset) {
+  background-color: var(--gs-app-surface, #17242c);
+  border-color: var(--gs-app-edge, #35505b);
+  color: var(--gs-app-text, #dce5e8);
+}
+graphshell-view #gs-semantic-host :is(input, select, textarea, aside button, section button) {
+  background-color: var(--gs-app-surface, #17242c);
+  border-color: var(--gs-app-edge, #35505b);
+  color: var(--gs-app-text, #dce5e8);
+}
+graphshell-view #gs-semantic-host :is(label, legend) { color:var(--gs-app-text, #dce5e8); }
+graphshell-view #gs-command-menu {
+  background:var(--gs-app-surface, #101820); color:var(--gs-app-text, #dce5e8);
+  border-color:var(--gs-app-edge, #41616b);
+}
+graphshell-view #gs-command-menu button {
+  background:var(--gs-app-surface, #17242c); color:var(--gs-app-text, #dce5e8);
+}
+graphshell-view #gs-semantic-host :is(h1, h2, h3, #gs-history-results, #gs-projection-editor-status, #gs-projection-editor-dirty) {
+  color:var(--gs-app-text, #dce5e8);
+}
+graphshell-view #gs-semantic-host :is(p, #gs-detail-address, #gs-projection-editor-source, #gs-projection-editor-provenance, .command-keep) {
+  color:var(--gs-app-edge, #89a6af);
+}
+graphshell-view #gs-semantic-host :is(aside button, section button, .file-picker, button[aria-selected="true"]) {
+  background:var(--gs-app-primary, #d39b4a); color:var(--gs-app-on-primary, #172028);
+}
+graphshell-view #gs-semantic-host .file-picker { color:var(--gs-app-on-primary, #172028) !important; }
+graphshell-view #gs-command-menu :is(button:hover, button:focus-visible) {
+  background:var(--gs-app-primary, #294b52); color:var(--gs-app-on-primary, #172028);
+}
+graphshell-view #gs-command-menu button[disabled] { color:var(--gs-app-edge, #6f858c); }
+graphshell-view #gs-semantic-host :is([role="alert"], .option-refusal, #gs-capture-status[data-state="failed"]) {
+  color:var(--gs-app-danger, #e99387);
+}
+graphshell-view #gs-semantic-host :is(#gs-projection-editor-validation, #gs-capture-status[data-state="working"]) {
+  color:var(--gs-app-success, #8db8a4);
+}
+graphshell-view #gs-semantic-host [aria-invalid="true"] { border-color:var(--gs-app-danger, #c4734f); }
+graphshell-view #gs-semantic-host :focus-visible { outline-color:var(--gs-app-primary, #f0c674); }
+.graphshell-appearance {
+  position:absolute; right:12px; top:10px; z-index:40;
+  max-width:340px; max-height:80%; overflow:auto;
+  border:1px solid var(--gs-app-edge, #35505b);
+  border-radius:6px; padding:8px 12px;
+  color:var(--gs-app-text, #dce5e8);
+  background:var(--gs-app-surface, #17242c);
+  font:13px system-ui,sans-serif; pointer-events:auto;
+}
+.graphshell-appearance summary { cursor:pointer; }
+.graphshell-appearance label { display:block; margin-top:10px; }
+.graphshell-appearance :is(select, textarea) {
+  display:block; width:100%; margin-top:4px; padding:5px;
+  color:var(--gs-app-text, #dce5e8);
+  background:var(--gs-app-background, #071015);
+  border:1px solid var(--gs-app-edge, #35505b); font:inherit;
+}
+.graphshell-appearance button {
+  margin-top:8px; padding:6px 10px;
+  background:var(--gs-app-primary, #f0c674); color:var(--gs-app-on-primary, #071015);
+  border:0; border-radius:4px; cursor:pointer; font:inherit;
+}
+.graphshell-appearance p { margin:8px 0 0; max-width:300px; overflow-wrap:anywhere; }

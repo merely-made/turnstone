@@ -1,0 +1,53 @@
+# Shared host appearance; no graph edits in this scenario.
+assert snap ready == true
+assert snap appearance-owner == application
+dom click .graphshell-appearance summary
+select [data-appearance-theme-select] theme:default
+select [data-appearance-mode-select] light
+settle 2
+assert snap appearance-mode == light
+capture appearance_light
+wait
+select [data-appearance-mode-select] dark
+settle 2
+assert snap appearance-mode == dark
+capture appearance_dark
+wait
+select [data-appearance-mode-select] hc_light
+settle 2
+assert snap appearance-mode == hc_light
+capture appearance_hc_light
+wait
+select [data-appearance-mode-select] hc_dark
+settle 2
+assert snap appearance-mode == hc_dark
+capture appearance_hc_dark
+wait
+select [data-appearance-mode-select] dark
+settle 2
+type [data-appearance-import-json] {"id":"theme:graphshell-garden-receipt","name":"Garden receipt","source":"User","seeds":{"primary":{"r":70,"g":140,"b":95,"a":255},"secondary":{"r":75,"g":135,"b":180,"a":255},"tertiary":{"r":180,"g":130,"b":70,"a":255},"neutral":{"r":25,"g":36,"b":30,"a":255},"text_header":null,"text_body":null,"success":{"r":75,"g":170,"b":95,"a":255},"danger":{"r":205,"g":80,"b":65,"a":255},"dark":true},"mode_sheets":{"dark":[":root { --tabard-color-bg: #123456; --tabard-color-primary: #78c090; }",".topbar { border-width: 4px; }"],"custom:garden":[":root { --tabard-color-bg: #203020; --tabard-color-primary: #a0d070; --tabard-color-text: #f0fff0; }"]}}
+dom click [data-appearance-import]
+settle 2
+assert snap appearance-theme == theme:graphshell-garden-receipt
+assert snap appearance-background == rgb(18, 52, 86)
+capture appearance_authored_dark
+wait
+select [data-appearance-mode-select] custom:garden
+settle 2
+assert snap appearance-mode == custom:garden
+assert snap appearance-background == rgb(32, 48, 32)
+type [data-appearance-import-json] {broken
+dom click [data-appearance-import]
+settle 2
+assert snap appearance-theme == theme:graphshell-garden-receipt
+assert snap appearance-mode == custom:garden
+assert snap appearance-background == rgb(32, 48, 32)
+focus [data-appearance-import-json]
+mark-camera
+key right
+settle 2
+assert snap camera-dx == 0
+assert snap camera-dy == 0
+capture appearance_corrupt_preserved
+wait
+log shared Tabard appearance receipt complete

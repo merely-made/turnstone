@@ -43,6 +43,7 @@ pub(super) struct LiveProjection {
     error: String,
     dirty: bool,
     scene: Scene,
+    host_sheet: String,
     targets: Vec<Target>,
     extent: (u32, u32),
     title: String,
@@ -120,6 +121,7 @@ impl BrowserHost {
                     error: String::new(),
                     dirty: true,
                     scene: Scene::new(self.width, self.height),
+                    host_sheet: String::new(),
                     targets: Vec::new(),
                     extent: (0, 0),
                     title: String::new(),
@@ -564,6 +566,7 @@ impl LiveProjection {
         width: u32,
         height: u32,
         text_system: &mut TextSystem,
+        host_sheet: &str,
     ) -> Result<Scene, String> {
         if self.comparing && !self.motion_paused {
             if let Some(comparison) = &mut self.dynamics_comparison {
@@ -580,6 +583,10 @@ impl LiveProjection {
                     self.dirty = true;
                 }
             }
+        }
+        if self.host_sheet != host_sheet {
+            self.host_sheet = host_sheet.to_string();
+            self.dirty = true;
         }
         if !self.dirty && self.extent == (width, height) {
             return Ok(self.scene.clone());
@@ -701,6 +708,7 @@ impl LiveProjection {
             width,
             height,
             text_system,
+            host_sheet,
         )?;
         self.dirty = false;
         self.sync_semantics()?;
@@ -933,6 +941,7 @@ fn paint(
     width: u32,
     height: u32,
     text_system: &mut TextSystem,
+    host_sheet: &str,
 ) -> Result<Scene, String> {
     let targets = targets.to_vec();
     let title = title.to_string();
@@ -1012,7 +1021,7 @@ fn paint(
     let dom = dom.borrow();
     genet_render::scene_from_scripted_dom_with_text_system(
         &*dom,
-        &[sheet.as_str()],
+        &[sheet.as_str(), host_sheet],
         width,
         height,
         None,

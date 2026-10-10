@@ -357,8 +357,10 @@ pub(super) fn schedule_frames(state: Rc<RefCell<BrowserHost>>) -> Result<(), Str
             let mut host = callback_state.borrow_mut();
             if let Err(error) = host.render(host_ms) {
                 web_sys::console::error_1(&error.clone().into());
-                if let Ok(document) = document() {
-                    document.set_title(&format!("GRAPHSHELL H3 FAIL: {error}"));
+                if super::owns_title() {
+                    if let Ok(document) = document() {
+                        document.set_title(&format!("GRAPHSHELL H3 FAIL: {error}"));
+                    }
                 }
                 Vec::new()
             } else {
