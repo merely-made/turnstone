@@ -52,6 +52,7 @@ mere = { path = "../../../crates/mere", default-features = false, features = ["g
 # the duplicate showed up; muniment owns the backend family, so it owns this.
 muniment = { path = "../../../crates/eidetic/muniment" }
 graphshell-client = { path = "../../../crates/graphshell/graphshell-client" }
+workbench = { path = "../../../crates/cambium/workbench" }
 sceno = { path = "../../../crates/cambium/scenes/sceno" }
 scenotime = { path = "../../../crates/cambium/scenes/scenotime" }
 serde = { version = "1", features = ["derive"] }

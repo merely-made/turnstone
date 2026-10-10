@@ -97,6 +97,7 @@ web = [
     "dep:mere",
     "dep:muniment",
     "dep:pandect",
+    "dep:platen",
     "dep:serde",
     "dep:sha2",
     "dep:uuid",
@@ -141,6 +142,7 @@ muniment = { workspace = true, optional = true }
 # too, so it sits here rather than in the native-only table (reservoir plan
 # §7 item 26).
 pandect = { workspace = true, optional = true }
+platen = { workspace = true, optional = true }
 scenograph.workspace = true
 sceno.workspace = true
 scenomise.workspace = true

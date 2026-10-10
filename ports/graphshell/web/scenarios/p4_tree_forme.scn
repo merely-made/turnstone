@@ -1,0 +1,91 @@
+# Dedicated local IndexedDB origin/profile; follow with p4_tree_forme_reopen.scn.
+# Both projections read Forme + TreeGeometry; all actions go through the host UI.
+assert snap source == saved graph
+assert snap forme-accesses == 0
+click role:button Restore arrangement
+settle 3
+click-node https://example.test/i2p-port
+settle 1
+click role:button Open selected in workbench
+wait 120
+click role:button Return to Mere
+settle 2
+click-node file:///Graphshell/reference-notes.md
+settle 1
+click role:button Open selected in workbench
+wait 120
+assert snap forme-accesses == 2
+assert snap forme-cells == 2
+assert snap forme-placed == 2
+assert snap forme-locked == true
+assert snap forme-saving == false
+capture forme_reading_tiles
+click role:button Return to Mere
+settle 2
+hover-forme inside
+settle 2
+assert snap forme-hovered == true
+capture forme_hover_regions
+hover-forme outside
+settle 2
+assert snap forme-hovered == false
+click role:button Unlock forme
+wait 120
+assert snap forme-locked == false
+click role:button Enlarge first region in split root
+wait 120
+remember sized
+click role:button Move forme right
+wait 120
+differs sized forme-bounds
+assert snap forme-placed == 2
+click role:button Play physics
+settle 20
+assert snap physics-paused == false
+assert snap forme-placed == 2
+click role:button Pause physics
+settle 2
+click role:button Show workbench
+settle 2
+dom click [data-forme-address="file:///Graphshell/reference-notes.md"] [data-forme-move]
+settle 2
+dom click [data-forme-address="https://example.test/i2p-port"] [data-forme-preview="bottom"]
+settle 2
+assert snap forme-preview == true
+assert snap forme-placed == 2
+click role:button Cancel tile move
+settle 2
+assert snap forme-preview == false
+assert text Tile move cancelled
+same sized forme-geometry
+dom click [data-forme-address="file:///Graphshell/reference-notes.md"] [data-forme-move]
+settle 2
+dom click [data-forme-address="https://example.test/i2p-port"] [data-forme-preview="bottom"]
+settle 2
+click role:button Apply tile move
+wait 120
+assert snap forme-preview == false
+differs sized forme-geometry
+click role:button Group as tabs
+wait 120
+assert snap forme-accesses == 2
+assert snap forme-cells == 1
+assert snap forme-placed == 1
+capture forme_tab_stack
+click role:button Arrange top to bottom
+wait 120
+assert snap forme-cells == 2
+assert snap forme-placed == 2
+click role:button Lock forme
+wait 120
+assert snap forme-locked == true
+click role:button Hide forme boundary
+wait 120
+assert snap forme-visible == false
+assert snap forme-placed == 2
+click role:button Show forme boundary
+wait 120
+click role:button Return to Mere
+settle 2
+capture forme_saved_regions
+log forme open hover resize preview cancel commit and local dynamics receipt complete

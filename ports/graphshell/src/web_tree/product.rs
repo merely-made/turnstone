@@ -189,6 +189,10 @@ pub(super) fn focused_text(
 }
 
 impl SavedProduct {
+    pub(super) fn forme_source(&self) -> Option<(IndexedDbBackend, Uuid)> {
+        let app = self.app.as_ref()?;
+        Some((app.host.store(), app.host.graph_session().id().0))
+    }
     pub(super) fn ready(&self) -> bool {
         self.completed.borrow().is_some()
     }

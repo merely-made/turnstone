@@ -46,6 +46,8 @@ pub mod distillery_w1;
 #[cfg(feature = "web")]
 pub mod frame_budget;
 #[cfg(feature = "web")]
+pub mod forme_workspace;
+#[cfg(feature = "web")]
 pub mod handlers;
 #[cfg(feature = "web")]
 pub mod host_dataset_view;
