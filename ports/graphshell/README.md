@@ -131,7 +131,8 @@ a native host and `cargo check --workspace` does not cover its code. Check it
 for the target it is for:
 
 ```
-cargo check -p graphshell-web --target wasm32-unknown-unknown
+cd ports/graphshell/web
+cargo check --locked --offline --target wasm32-unknown-unknown
 ```
 
 `scripts/cross-repo-smoke.ps1` runs this alongside the workspace gate.
@@ -148,3 +149,105 @@ port stays independently usable for local session and admission composition.
 [`docs/`](docs) holds the dated receipt notes for each landed slice.
 [`docs/receipts`](docs/receipts) holds the committed receipt artifacts and the
 commands that regenerate them.
+
+## Application appearance
+
+The existing full web app (`index.html`, `co_op.html`) and the saved tree app
+(`tree.html?app=local`) consume shared Tabard themes. Open **Appearance**, choose
+a built-in or previously imported theme and a mode, or paste the JSON exported
+from the shared Tabard workshop and choose **Import theme**. Import selects that
+theme; its attached custom authoring modes appear alongside Light, Dark,
+High Contrast Light and High Contrast Dark. This application is a consumer of
+the workshop's existing theme definition, not a second theme editor.
+
+The origin's `graphshell.application.appearance.v1` localStorage record contains
+the selected shared `ThemeChoice` and imported shared definitions. Each choice
+or import is persisted before it becomes active. Failed parsing or storage
+leaves the valid preference active. Corrupt stored intake is reported and left
+in storage; the application uses its built-in fallback until the user saves a
+valid choice. Missing stored identities and modes retain the requested choice
+and show Tabard's resolution diagnostic. The IndexedDB graph database,
+projection definitions, remote session revisions and graph authority remain
+owned by their existing systems.
+
+Only roots explicitly marked `data-appearance-application` consume this origin
+preference. The tree additionally requires its existing `app=local` product.
+Bare generated/fixture/dataset trees and embedded roots consume the composing
+host's inherited `--tabard-color-*` variables. They neither read nor write the
+application preference or mount an appearance picker. The existing
+`data-owns-title` marker continues to decide title ownership, including error
+reporting. `embed.html` supplies a light role set to demonstrate this separation
+after the same origin has saved a different standalone preference.
+
+The optional Moot capsule panel follows these same composing-host roles. Its
+review, grant, turn, keep and close lifecycle remain the existing applet host's
+responsibility. Appearance refresh retains the applet stylesheet and changes
+only the host's presentation mapping.
+
+Derived modes use the shared explicit-mode Tabard/Tinct artifact. For an
+attached authored mode sheet, Graphshell supplies the shared default built-in
+roles for omitted properties and then appends the **exact authored CSS rules**
+after its application role mapping in the existing Genet stylesheet cascade.
+It does not claim to derive arbitrary CSS from the imported theme's seeds.
+
+Canvas and the browser semantic overlay use browser-computed shared colors.
+An invisible same-origin document evaluates the sheet without injecting its
+selectors into the containing page. Canvas backdrop and edges consume
+`--gs-canvas-background` and `--gs-canvas-edge`, defaulting to
+`--tabard-color-bg` and `--tabard-color-text-dim`. Retained derived faces use
+primary, secondary, tertiary, success, danger and text through Pictograph's
+shared `DerivedFacePalette::from_palette` mapping, including its existing
+companion-color blend. Graph node selection/focus/status remains semantic
+canvas state. The local executable projection preview shares the same sheet;
+remote presentation continues to own its authored scene.
+
+For CSS that needs to affect Canvas or semantic DOM paint, set the shared
+properties at `:root` in the attached sheet, or inherit them onto the embedded
+component. Arbitrary selector rules such as `.topbar { border-width:4px; }`
+remain authoritative for Genet chrome; they do not redefine Canvas colors.
+The role bridge is the documented seam, with explicit shared defaults for
+omitted roles. It is not a separate renderer or CSS-to-seed conversion.
+
+### Appearance qualification commands
+
+Run standalone commands from `ports/graphshell/web` so its committed getrandom
+WASM configuration applies. Its generated lock is independent of Mere's root
+lock; create it once before the locked gates if this checkout has none.
+
+```sh
+cargo generate-lockfile --offline
+cargo check --locked --offline --target wasm32-unknown-unknown -j2
+cargo check --locked --offline --target wasm32-unknown-unknown --no-default-features -j2
+cargo check --locked --offline --target wasm32-unknown-unknown --features applets -j2
+cargo build --locked --offline --target wasm32-unknown-unknown -j2
+wasm-bindgen target/wasm32-unknown-unknown/debug/graphshell_web.wasm --target web --out-dir pkg
+python3 -m http.server 8872
+```
+
+Run the portable adapter regression suite from the Mere root:
+
+```sh
+cargo test --lib --locked --offline -p graphshell --no-default-features --features web appearance::tests
+```
+
+Use one browser origin/profile for these full application scenarios, in order:
+
+1. `http://127.0.0.1:8872/index.html?scenario=scenarios/appearance_modes.scn`
+2. `http://127.0.0.1:8872/index.html?scenario=scenarios/appearance_reopen.scn`
+3. `http://127.0.0.1:8872/embed.html?scenario=scenarios/appearance_embedded.scn`
+
+The first drives the actual semantic controls, captures four canonical modes,
+imports the attached CSS fixture, selects its custom authoring mode and rejects
+corrupt JSON without losing the valid selection. The second proves a fresh
+page reopens the same imported mode. The third proves the embedded role set
+and containing page title/controls survive the saved app preference. Inspect
+`window.graphshellScenario()` for completion, page/GPU failures, captures and
+snapshot evidence. `graph-nodes` is included in the full app snapshot for
+before/after graph authority checks.
+
+Also open `tree.html?app=local` in that profile: it must reopen the same custom
+mode, switch canonical modes through the same browser picker, update its
+Genet overlay and Canvas, and reopen again. Bare `tree.html` and `dataset.html`
+must expose `data-appearance-owner="host"` and no appearance picker. Review
+actual browser captures and GPU/error gates; successful WASM checks alone do
+not establish visual or reload acceptance.

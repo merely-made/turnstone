@@ -108,6 +108,8 @@ enum ActiveSession {
 }
 
 struct BrowserHost {
+    host_appearance: crate::web_appearance::Handle,
+    appearance_revision: u64,
     app: GraphshellApp<IndexedDbBackend>,
     /// Where the remote projection lives (`web_remote`).
     remote: RemoteLink,
@@ -390,6 +392,15 @@ impl BrowserHost {
         self.scenario_frames = self.scenario_frames.wrapping_add(1);
         self.finish_capture()?;
         self.resize_if_needed();
+        {
+            let mut appearance = self.host_appearance.borrow_mut();
+            appearance.refresh(false)?;
+            if self.appearance_revision != appearance.revision {
+                appearance.apply_canvas(&mut self.canvas);
+                self.appearance_revision = appearance.revision;
+                self.chrome_dirty = true;
+            }
+        }
         if let Some(practice) = &mut self.practice {
             let frame = practice.frame(self.width, self.height, host_ms, &mut self.chrome_text, &self.gpu)?;
             let changed = frame.is_some();
@@ -417,11 +428,15 @@ impl BrowserHost {
                 self.width,
                 self.height,
                 &mut self.chrome_text,
+                self.host_appearance.borrow().sheet(),
             )?;
             self.chrome_dirty = false;
         }
         let content = if let Some(live) = &mut self.live_projection {
-            live.frame(self.width, self.height, &mut self.chrome_text)?
+            live.frame(
+                self.width, self.height, &mut self.chrome_text,
+                self.host_appearance.borrow().sheet(),
+            )?
         } else {
             match self.active {
                 ActiveSession::Local => {
@@ -1904,9 +1919,19 @@ async fn run(root_element: Element) -> Result<(), String> {
     // the Livery migration retired that crate, and the glyphs went with it.
     let mut chrome_text = TextSystem::new();
     chrome_text.register_font_bytes(include_bytes!("../web/GraphshellSans.ttf").to_vec());
-    let chrome_scene = build_chrome_scene(initial_model, width, height, &mut chrome_text)?;
+    let appearance_root = root()?;
+    let host_appearance = crate::web_appearance::mount(
+        appearance_root.clone(), appearance_root.has_attribute("data-appearance-application"),
+    )?;
+    host_appearance.borrow().apply_canvas(&mut graph_canvas);
+    let appearance_revision = host_appearance.borrow().revision;
+    let chrome_scene = build_chrome_scene(
+        initial_model, width, height, &mut chrome_text, host_appearance.borrow().sheet(),
+    )?;
     let command_choices = web_commands::stored_choices(&app.host);
     let state = Rc::new(RefCell::new(BrowserHost {
+        host_appearance,
+        appearance_revision,
         app,
         remote: RemoteLink::Fixture(remote),
         remote_board: RemoteBoard::new(),
@@ -2002,8 +2027,10 @@ pub fn mount(root: Element) -> Result<(), JsValue> {
     wasm_bindgen_futures::spawn_local(async move {
         if let Err(error) = run(root).await {
             web_sys::console::error_1(&error.clone().into());
-            if let Ok(document) = document() {
-                document.set_title(&format!("GRAPHSHELL H3 FAIL: {error}"));
+            if owns_title() {
+                if let Ok(document) = document() {
+                    document.set_title(&format!("GRAPHSHELL H3 FAIL: {error}"));
+                }
             }
         }
     });
