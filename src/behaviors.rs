@@ -142,6 +142,10 @@ pub fn touched_ids(delta: &CapturedDelta) -> Vec<&str> {
         | D::ReplayUpdateNodeHistoryById { node_id, .. }
         | D::ReplayTouchNodeLastVisitedById { node_id, .. } => vec![node_id.as_str()],
 
+        // A surface is a node: showing a different resource in it is a change
+        // to that node.
+        D::ReplaySetShownResourceById { surface_id, .. } => vec![surface_id.as_str()],
+
         D::ReplayAssertRelationByIds { from_id, to_id, .. }
         | D::ReplayRetractRelationsByIds { from_id, to_id, .. }
         | D::ReplayAppendTraversalByIds { from_id, to_id, .. }
@@ -156,7 +160,10 @@ pub fn touched_ids(delta: &CapturedDelta) -> Vec<&str> {
             parent_id,
         } => vec![child_id.as_str(), parent_id.as_str()],
 
-        // Session-level and field/coupling deltas name no node. The physics
+        // Session-level, resource and field/coupling deltas name no node. A
+        // resource is identified by its IRI beneath the surfaces that show it;
+        // its record and its edges are not on any node's containment path.
+        // The physics
         // tier is deliberately outside this vocabulary: spatial influence
         // reaches the graph through fields, never through a petition, so a
         // field change is not a thing a behavior is woken by.
@@ -167,7 +174,9 @@ pub fn touched_ids(delta: &CapturedDelta) -> Vec<&str> {
         | D::ReplayAddCoupling { .. }
         | D::ReplaySetFieldCouplingStrengthByFieldId { .. }
         | D::ReplayActivateFieldById { .. }
-        | D::ReplayRetractCouplingById { .. } => Vec::new(),
+        | D::ReplayRetractCouplingById { .. }
+        | D::ReplaySetResourceRecordById { .. }
+        | D::ReplaySetResourceEdgesByIds { .. } => Vec::new(),
     }
 }
 

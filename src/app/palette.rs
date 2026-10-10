@@ -298,7 +298,7 @@ impl App {
         let mut lane: Vec<(String, Action)> = set
             .menu(&self.command_choices, Some(CONTEXT_COMMANDS), query)
             .into_iter()
-            .filter_map(|item| action_for(&item.id).map(|action| (item.label, action)))
+            .filter_map(|item| action_for(&item.id).map(|action| (item.label.clone(), action)))
             .collect();
         if query.trim().is_empty() {
             lane.truncate(rows.saturating_sub(1).max(1));

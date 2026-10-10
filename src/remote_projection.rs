@@ -377,7 +377,20 @@ pub(crate) fn disclose_scene(
 ) -> sceno::Scene {
     let extents: HashMap<NodeKey, (f32, f32)> =
         graph.nodes().map(|(key, _)| (key, card_extent)).collect();
-    let mut mapped = cartography::project_spiral_score(graph, Some(&extents), focused, true);
+    // The spiral reads its order and recency weights as disclosed channels;
+    // newest first is `order.recency` (F84, F86).
+    let signals = mere::canvas::ChannelRegistry::new().disclose(
+        graph,
+        &[cartography::ORDER_RECENCY, cartography::WEIGHT_RECENCY],
+        focused,
+    );
+    let mut mapped = cartography::project_spiral_score(
+        graph,
+        &signals,
+        cartography::ORDER_RECENCY,
+        Some(&extents),
+        focused,
+    );
     mapped.score.arrangement = Arrangement::Spiral(spiral);
     let solved = scenomise::solve(&mapped.score);
     let mut scene = cartography::scene_from_projection(
@@ -390,7 +403,10 @@ pub(crate) fn disclose_scene(
                 .to_string()
         },
         |key| extents.get(&key).copied(),
-    );
+    )
+    // The portable scene is what a peer is served; the graph's coverage note
+    // rides beside it and the endpoint protocol has no slot for it.
+    .scene;
     for ((item, score_item), solved_item) in scene
         .items
         .iter_mut()

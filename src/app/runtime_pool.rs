@@ -15,7 +15,7 @@
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 
-use mere::canvas::{Canvas, Viewport};
+use mere::canvas::{Canvas, OverlayRefusal, PhysicsChoice, Viewport};
 use mere::forme::FormeRef;
 use mere::platen::Workbench;
 
@@ -63,6 +63,43 @@ impl GraphRuntimePool {
             runtimes,
             active: graph,
             display_rate: None,
+        }
+    }
+
+    /// What the active canvas runs now, as the flat view (a law, its overlays
+    /// and the four sources). The canvas's public physics surface is its
+    /// spec; this is the view a picker or a saved session reads (F162).
+    pub fn physics_view(&self) -> PhysicsChoice {
+        PhysicsChoice::live(self.active_canvas())
+    }
+
+    /// Apply `choice` to the active canvas as a picker does: overlays the law
+    /// refuses are dropped and returned with the law's reason, the rest are
+    /// written into the canvas's record and set back. `set_dynamics_spec`
+    /// applies only what changed, so a source edit keeps a composition or a
+    /// schedule and a law or overlay edit replaces it (F162).
+    pub fn pick_physics(&mut self, choice: PhysicsChoice) -> Result<(), OverlayRefusal> {
+        let canvas = self.active_canvas_mut();
+        let (choice, refusal) = choice.admitted();
+        let running = PhysicsChoice::live(canvas);
+        // A grouping on a partition handed in has no spec (F157): a pick
+        // after one starts from the stage as a law.
+        let mut spec = canvas
+            .dynamics_spec()
+            .unwrap_or_else(|_| running.clone().into_spec());
+        choice.write_into(&mut spec, &running);
+        canvas
+            .set_dynamics_spec(&spec)
+            .expect("an admitted choice binds");
+        refusal.map_or(Ok(()), Err)
+    }
+
+    /// Apply profile `id`'s law and overlays, the sources kept; `false` for
+    /// an unknown id.
+    pub fn pick_physics_profile(&mut self, id: &str) -> bool {
+        match self.physics_view().with_profile(id) {
+            Some(choice) => self.pick_physics(choice).is_ok(),
+            None => false,
         }
     }
 

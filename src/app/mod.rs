@@ -488,17 +488,19 @@ impl App {
             // The host measures (per-node face footprints), the strategy
             // places — extent-aware spacing per the P2 contract.
             let extents = canvas.strategy_extents();
-            let strategy = mere::canvas::project_canvas_strategy_with_score(
+            // The canvas is the binding: the arrangement reads its channel
+            // registry's facts (the community partition among them), so the
+            // host passes no cluster set of its own (F21, F87).
+            let strategy = canvas.project_arrangement_for_view(
                 &id,
-                canvas.graph(),
-                focus,
                 w,
                 h,
-                canvas.community(),
                 Some(&extents),
                 // Recency reading pairs the Spiral's newest-first ordering
                 // with the size-by-recency channel (P3).
                 canvas.size_by_recency(),
+                1.0,
+                None,
             );
             canvas.apply_strategy_positions(&strategy.positions);
             canvas.set_projection_score(strategy.score);
@@ -1187,43 +1189,63 @@ impl App {
             Action::SetLayoutStrategy(id) => self.set_layout_strategy(id),
             Action::SetPhysicsLaw(id) => {
                 if let Some(law) = mere::canvas::PhysicsLaw::parse(id) {
-                    let result = self.graph_runtimes.set_physics_law(law);
+                    let choice = mere::canvas::PhysicsChoice {
+                        law,
+                        ..self.graph_runtimes.physics_view()
+                    };
+                    let result = self.graph_runtimes.pick_physics(choice);
                     self.record_physics_result(result);
                 }
                 vec![Effect::Redraw]
             }
             Action::SetPhysicsOverlay(id, on) => {
                 if let Some(overlay) = mere::canvas::PhysicsOverlay::parse(id) {
-                    let mut overlays = self.graph_runtimes.physics_overlays().to_vec();
+                    let mut overlays = self.graph_runtimes.physics_view().overlays;
                     overlays.retain(|o| *o != overlay);
                     if on {
                         overlays.push(overlay);
                     }
-                    let result = self.graph_runtimes.set_physics_overlays(overlays);
+                    let choice = mere::canvas::PhysicsChoice {
+                        overlays,
+                        ..self.graph_runtimes.physics_view()
+                    };
+                    let result = self.graph_runtimes.pick_physics(choice);
                     self.record_physics_result(result);
                 }
                 vec![Effect::Redraw]
             }
             Action::SetPhysicsKindSource(id) => {
-                if let Some(source) = mere::canvas::PhysicsKindSource::parse(id) {
-                    self.graph_runtimes.set_physics_kind_source(source);
+                if let Some(kind) = mere::canvas::PhysicsKindSource::parse(id) {
+                    let choice = mere::canvas::PhysicsChoice {
+                        kind,
+                        ..self.graph_runtimes.physics_view()
+                    };
+                    let _ = self.graph_runtimes.pick_physics(choice);
                 }
                 vec![Effect::Redraw]
             }
             Action::SetPhysicsMassSource(id) => {
-                if let Some(source) = mere::canvas::PhysicsMassSource::parse(id) {
-                    self.graph_runtimes.set_physics_mass_source(source);
+                if let Some(mass) = mere::canvas::PhysicsMassSource::parse(id) {
+                    let choice = mere::canvas::PhysicsChoice {
+                        mass,
+                        ..self.graph_runtimes.physics_view()
+                    };
+                    let _ = self.graph_runtimes.pick_physics(choice);
                 }
                 vec![Effect::Redraw]
             }
             Action::SetPhysicsDepthSource(id) => {
-                if let Some(source) = mere::canvas::PhysicsDepthSource::parse(id) {
-                    self.graph_runtimes.set_physics_depth_source(source);
+                if let Some(depth) = mere::canvas::PhysicsDepthSource::parse(id) {
+                    let choice = mere::canvas::PhysicsChoice {
+                        depth,
+                        ..self.graph_runtimes.physics_view()
+                    };
+                    let _ = self.graph_runtimes.pick_physics(choice);
                 }
                 vec![Effect::Redraw]
             }
             Action::ApplyPhysicsProfile(id) => {
-                if self.graph_runtimes.apply_physics_profile(id) {
+                if self.graph_runtimes.pick_physics_profile(id) {
                     self.physics_refusal = None;
                 }
                 vec![Effect::Redraw]

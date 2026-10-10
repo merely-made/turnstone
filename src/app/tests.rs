@@ -24,10 +24,10 @@ fn session_restore_applies_law_before_overlays_and_records_refusal() {
     session::save_view_intent(&session_dir, &intent);
     app.adopt_session(session_id);
     assert_eq!(
-        app.graph_runtimes.physics_law(),
+        app.graph_runtimes.physics_view().law,
         mere::canvas::PhysicsLaw::Density
     );
-    assert!(app.graph_runtimes.physics_overlays().is_empty());
+    assert!(app.graph_runtimes.physics_view().overlays.is_empty());
     assert_eq!(
         app.physics_refusal().unwrap().refused,
         vec![mere::canvas::PhysicsOverlay::GridSnap]
@@ -42,7 +42,7 @@ fn session_restore_applies_law_before_overlays_and_records_refusal() {
     session::save_view_intent(&session_dir, &intent);
     app.adopt_session(session_id);
     assert_eq!(
-        app.graph_runtimes.physics_overlays(),
+        app.graph_runtimes.physics_view().overlays,
         &[mere::canvas::PhysicsOverlay::GridSnap]
     );
     assert!(app.physics_refusal().is_none());

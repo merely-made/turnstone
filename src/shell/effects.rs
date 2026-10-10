@@ -1918,6 +1918,7 @@ impl Shell {
         }
         // The score records what the solver produced; this records what the
         // viewer chose, which the score cannot be read backward to recover.
+        let physics = self.app.graph_runtimes.physics_view();
         session::save_view_intent(
             &sdir,
             &session::ViewIntentV1 {
@@ -1926,23 +1927,15 @@ impl Shell {
                     .graph_runtimes
                     .layout_strategy()
                     .map(str::to_string),
-                physics_law: Some(self.app.graph_runtimes.physics_law().id().to_string()),
-                physics_overlays: self
-                    .app
-                    .graph_runtimes
-                    .physics_overlays()
+                physics_law: Some(physics.law.id().to_string()),
+                physics_overlays: physics
+                    .overlays
                     .iter()
                     .map(|overlay| overlay.id().to_string())
                     .collect(),
-                physics_kind_source: Some(
-                    self.app.graph_runtimes.physics_kind_source().id().to_string(),
-                ),
-                physics_mass_source: Some(
-                    self.app.graph_runtimes.physics_mass_source().id().to_string(),
-                ),
-                physics_depth_source: Some(
-                    self.app.graph_runtimes.physics_depth_source().id().to_string(),
-                ),
+                physics_kind_source: Some(physics.kind.id().to_string()),
+                physics_mass_source: Some(physics.mass.id().to_string()),
+                physics_depth_source: Some(physics.depth.id().to_string()),
                 command_menu: (&self.app.command_choices).into(),
             },
         );
