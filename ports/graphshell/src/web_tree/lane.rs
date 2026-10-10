@@ -411,22 +411,11 @@ impl TreeLane {
                 "tools-sections",
                 format!(
                     "physics:{},remote:{}",
-                    if page.sections.physics.expanded {
-                        "open"
-                    } else {
-                        "closed"
-                    },
-                    if page.sections.remote.expanded {
-                        "open"
-                    } else {
-                        "closed"
-                    },
+                    if page.sections.physics.expanded { "open" } else { "closed" },
+                    if page.sections.remote.expanded { "open" } else { "closed" },
                 ),
             )
-            .with_field(
-                "remote-link",
-                if live.is_some() { "webrtc" } else { "none" },
-            )
+            .with_field("remote-link", if live.is_some() { "webrtc" } else { "none" })
             .with_field("remote-state", remote.status())
             .with_field(
                 "remote-revision",
@@ -696,10 +685,7 @@ impl Product for TreeLane {
                     _ => String::new(),
                 },
             )
-            .with_field(
-                "edges",
-                canvas.graph().projected_relations().count().to_string(),
-            )
+            .with_field("edges", canvas.graph().projected_relations().count().to_string())
             .with_field("moving", self.shared.moving.get().to_string())
             .with_field(
                 "gpu-timed",
@@ -709,7 +695,8 @@ impl Product for TreeLane {
         // own semantic tree, and the keyboard move (dynamics grammar plan,
         // F65 to F68).
         let tree = semantic_tree();
-        let (heard_relations, heard_alert) = tree.as_ref().map(heard_dataset).unwrap_or_default();
+        let (heard_relations, heard_alert) =
+            tree.as_ref().map(heard_dataset).unwrap_or_default();
         let heard = tree.as_ref().and_then(heard_canvas);
         let snapshot = snapshot
             .with_field(
@@ -720,10 +707,7 @@ impl Product for TreeLane {
             )
             .with_field(
                 "reader-items",
-                heard
-                    .as_ref()
-                    .map_or(0, |(_, items)| items.len())
-                    .to_string(),
+                heard.as_ref().map_or(0, |(_, items)| items.len()).to_string(),
             )
             .with_field(
                 "reader-buttons",
@@ -742,9 +726,7 @@ impl Product for TreeLane {
                 "reader-described",
                 heard
                     .as_ref()
-                    .map_or(0, |(_, items)| {
-                        items.iter().map(|item| item.described).sum()
-                    })
+                    .map_or(0, |(_, items)| items.iter().map(|item| item.described).sum())
                     .to_string(),
             )
             .with_field("reader-relations", heard_relations.len().to_string())
@@ -762,9 +744,7 @@ impl Product for TreeLane {
                 canvas
                     .graph()
                     .nodes()
-                    .filter(|(key, _)| {
-                        canvas.arrangement_role_of(*key) == mere::canvas::Role::Pinned
-                    })
+                    .filter(|(key, _)| canvas.arrangement_role_of(*key) == mere::canvas::Role::Pinned)
                     .map(|(key, _)| canvas.graph().node_display_label(key))
                     .collect::<Vec<_>>()
                     .join("|"),
@@ -1031,10 +1011,7 @@ impl Product for TreeLane {
                     return Err("move-by-world wants dx dy".into());
                 }
                 let (left, top, _, _) = leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
-                let point = self
-                    .pointer
-                    .as_mut()
-                    .ok_or("move-by-world without a press")?;
+                let point = self.pointer.as_mut().ok_or("move-by-world without a press")?;
                 let canvas = self.shared.canvas.borrow();
                 let (wx, wy) = canvas.world_point_at((point.0 - left, point.1 - top));
                 let (sx, sy) = canvas.screen_point_of((wx + args[0], wy + args[1]));
