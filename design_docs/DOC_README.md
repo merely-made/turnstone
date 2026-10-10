@@ -91,7 +91,7 @@ set.
 - [Turnstone place port](2026-07-28_turnstone_place_port_plan.md): shared-place product composition and two-peer acceptance path.
 - [Peer-web reframe](2026-07-28_turnstone_peer_web_reframe.md): current product direction for local-first personal and shared places.
 - [Turnstone architecture](2026-07-10_turnstone_architecture_plan.md): structural obviation ladder and current Mere/Turnstone boundaries.
-- [Turnstone rung 5 panes](2026-07-14_turnstone_rung5_panes_plan.md): pane, surface-composition, focus, workbench, and window foundations.
+- [Turnstone rung 5 panes](2026-07-14_turnstone_rung5_panes_plan.md): pane, surface-composition, focus, workbench, and window foundations; October 10 application appearance adoption uses shared Tabard definitions and native workshop bindings; macOS production acceptance passed four serialized processes and nineteen inspected captures, with exact Save/Apply and restart evidence in the [receipt ledger](../docs/receipts/tabard_adoption_20261010/README.md). Reader/browser rollout gates remain separate.
 - [Genet probe automatability](2026-07-17_genet_probe_automatability_plan.md): proposed shared diagnostics, accessibility, and automation contract for Genet apps.
 
 ## Current architecture, audits, and design records

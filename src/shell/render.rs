@@ -708,9 +708,10 @@ impl Shell {
     /// compose them in order onto the frame — the canvas below, the chrome
     /// layer (transparent-cleared, alpha-blended) above when the omnibar is
     /// open. Chains another redraw while the canvas is still animating.
-    pub(super) fn render(&mut self) {
+    pub(super) fn render(&mut self) -> bool {
+        self.poll_capture_readback();
         if self.host.is_none() {
-            return;
+            return false;
         }
         self.refresh_diagnostic_inspection();
         // Frame cost, off by default (the shell's own filter is `info`). Turn
@@ -919,7 +920,7 @@ impl Shell {
                 self.run_effects(effects);
             }
             self.request_redraw();
-            return;
+            return false;
         }
 
         // Pass 2 (immutable): rasterize each scene keyed by its surface id (so
@@ -969,7 +970,9 @@ impl Shell {
         // dropped with it. A dropped frame is worth knowing about, but it is
         // the swapchain's story, not the chrome path's.
         let compose_started = std::time::Instant::now();
-        let Some(frame) = host.acquire() else { return };
+        let Some(frame) = host.acquire() else {
+            return false;
+        };
         let target = frame
             .texture
             .create_view(&wgpu::TextureViewDescriptor::default());
@@ -985,6 +988,7 @@ impl Shell {
         }
         // wgpu 30 moved presentation from SurfaceTexture to Queue.
         host.queue().present(frame);
+        self.main_receipt.presented();
         let compose_elapsed = compose_started.elapsed();
 
         // Scenario self-capture: compose the SAME layer views this frame just
@@ -1004,7 +1008,17 @@ impl Shell {
                 nodes = self.app.graph_runtimes.graph().nodes().count(),
                 "capture state"
             );
-            let ok = capture_composed(host, &layers, w, h, &path);
+            match start_capture_composed(host, &layers, w, h) {
+                Ok(frame) => {
+                    self.pending_capture_readback =
+                        Some(super::appearance_receipt::PendingCapture {
+                            path,
+                            frame,
+                            started: std::time::Instant::now(),
+                        })
+                },
+                Err(error) => self.main_receipt.errors.push(error),
+            }
         }
 
         self.app.frame_timings.raster += raster_elapsed;
@@ -1056,6 +1070,38 @@ impl Shell {
         if needs_redraw || self.renderers.any_bars_visible() {
             self.request_redraw();
         }
+        true
+    }
+
+    fn poll_capture_readback(&mut self) {
+        let Some(mut pending) = self.pending_capture_readback.take() else {
+            return;
+        };
+        match pending.frame.poll() {
+            Some(Ok(frame)) => {
+                if let Err(error) = mesquite::write_png(&pending.path, &frame) {
+                    self.main_receipt
+                        .errors
+                        .push(format!("capture {}: {error}", pending.path.display()));
+                } else {
+                    self.main_receipt.captures.push((
+                        pending.path,
+                        frame.digest(),
+                        frame.is_blank(),
+                    ));
+                }
+            },
+            Some(Err(error)) => self.main_receipt.errors.push(error),
+            None if pending.started.elapsed() > std::time::Duration::from_secs(5) => {
+                self.main_receipt
+                    .errors
+                    .push("capture readback exceeded five seconds".into());
+            },
+            None => {
+                self.pending_capture_readback = Some(pending);
+                self.request_redraw();
+            },
+        }
     }
 
     pub(super) fn request_redraw(&self) {
@@ -1106,6 +1152,20 @@ pub(super) fn capture_composed(
     h: u32,
     path: &Path,
 ) -> bool {
+    let frame = capture_target(host, layers, w, h);
+    let rgba = read_texture_rgba(host, &frame, w, h);
+    if rgba.is_empty() {
+        return false;
+    }
+    let Ok(file) = std::fs::File::create(path) else {
+        return false;
+    };
+    image::codecs::png::PngEncoder::new(file)
+        .write_image(&rgba, w, h, image::ExtendedColorType::Rgba8)
+        .is_ok()
+}
+
+fn capture_target(host: &SurfaceHost, layers: &[CompositeLayer], w: u32, h: u32) -> wgpu::Texture {
     let target = host.device().create_texture(&wgpu::TextureDescriptor {
         label: Some("turnstone scenario capture"),
         size: wgpu::Extent3d {
@@ -1131,82 +1191,29 @@ pub(super) fn capture_composed(
             layer.placement,
         );
     }
-    let rgba = read_texture_rgba(host.device(), host.queue(), &target, w, h);
-    if rgba.is_empty() {
-        return false;
-    }
-    let Ok(file) = std::fs::File::create(path) else {
-        return false;
-    };
-    image::codecs::png::PngEncoder::new(file)
-        .write_image(&rgba, w, h, image::ExtendedColorType::Rgba8)
-        .is_ok()
+    target
 }
 
-/// Read a texture's pixels back as tightly packed RGBA8 (empty on failure).
-/// Standard wgpu readback: copy into a row-aligned buffer, map, strip the
-/// per-row padding.
+fn start_capture_composed(
+    host: &SurfaceHost,
+    layers: &[CompositeLayer],
+    w: u32,
+    h: u32,
+) -> Result<cambium_rootstock::PendingFrame, String> {
+    let target = capture_target(host, layers, w, h);
+    host.shared_core().start_rgba8_readback(&target, w, h)
+}
+
+/// Lens captures use the same owned-copy helper with its five-second bound.
 pub(super) fn read_texture_rgba(
-    device: &wgpu::Device,
-    queue: &wgpu::Queue,
+    host: &SurfaceHost,
     texture: &wgpu::Texture,
     width: u32,
     height: u32,
 ) -> Vec<u8> {
-    let row_bytes = width * 4;
-    let padded = row_bytes.next_multiple_of(wgpu::COPY_BYTES_PER_ROW_ALIGNMENT);
-    let buffer = device.create_buffer(&wgpu::BufferDescriptor {
-        label: Some("turnstone capture readback"),
-        size: padded as u64 * height as u64,
-        usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ,
-        mapped_at_creation: false,
-    });
-    let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-        label: Some("turnstone capture readback"),
-    });
-    encoder.copy_texture_to_buffer(
-        wgpu::TexelCopyTextureInfo {
-            texture,
-            mip_level: 0,
-            origin: wgpu::Origin3d { x: 0, y: 0, z: 0 },
-            aspect: wgpu::TextureAspect::All,
-        },
-        wgpu::TexelCopyBufferInfo {
-            buffer: &buffer,
-            layout: wgpu::TexelCopyBufferLayout {
-                offset: 0,
-                bytes_per_row: Some(padded),
-                rows_per_image: Some(height),
-            },
-        },
-        wgpu::Extent3d {
-            width,
-            height,
-            depth_or_array_layers: 1,
-        },
-    );
-    queue.submit([encoder.finish()]);
-    let slice = buffer.slice(..);
-    let (tx, rx) = std::sync::mpsc::channel();
-    slice.map_async(wgpu::MapMode::Read, move |r| {
-        let _ = tx.send(r);
-    });
-    if device.poll(wgpu::PollType::wait_indefinitely()).is_err() {
-        tracing::warn!("capture readback poll failed");
-        return Vec::new();
-    }
-    if !matches!(rx.recv(), Ok(Ok(()))) {
-        tracing::warn!("capture readback map failed");
-        return Vec::new();
-    }
-    let Ok(mapped) = slice.get_mapped_range() else {
-        tracing::warn!("capture readback get_mapped_range failed");
-        return Vec::new();
-    };
-    let mut out = Vec::with_capacity((row_bytes * height) as usize);
-    for row in 0..height as usize {
-        let start = row * padded as usize;
-        out.extend_from_slice(&mapped[start..start + row_bytes as usize]);
-    }
-    out
+    host.shared_core()
+        .read_rgba8_texture(texture, width, height)
+        .map(|frame| frame.rgba)
+        .map_err(|error| tracing::warn!(%error, "capture readback failed"))
+        .unwrap_or_default()
 }

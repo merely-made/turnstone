@@ -4244,11 +4244,17 @@ fn the_row_count_follows_the_viewport_under_the_configured_ceiling() {
         "a tall window offers the whole configured maximum"
     );
 
-    let short = visible_row_limit(10, &ChromePlacement::Overlay, 400.0, 1.0);
-    assert!(
-        (3..10).contains(&short),
-        "a short window offers fewer rows, not the ceiling: {short}"
-    );
+    // Use the actual card and font geometry. On this Mac the 24px rows
+    // and 48px card chrome legitimately fit ten rows in the old 400px case.
+    let (row_height, card_chrome_height) = crate::ui::ordinary_chrome_row_metrics(1.0);
+    assert!(row_height.is_finite() && row_height > 0.0);
+    assert!(card_chrome_height.is_finite() && card_chrome_height > 0.0);
+    let short_viewport = crate::ui::CARD_TOP
+        + card_chrome_height
+        + crate::ui::CARD_BOTTOM_MARGIN
+        + 5.5 * row_height;
+    let short = visible_row_limit(10, &ChromePlacement::Overlay, short_viewport, 1.0);
+    assert_eq!(short, 5, "the short window offers only the five rows that fit");
 
     let cramped = visible_row_limit(10, &ChromePlacement::Overlay, 120.0, 1.0);
     assert_eq!(cramped, 3, "a window with no room still offers the floor");

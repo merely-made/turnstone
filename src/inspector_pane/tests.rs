@@ -81,20 +81,15 @@ fn probe_resolved_clip_button_reaches_the_pane_at_receipt_size() {
         state.viewport_w = 509.0;
         state.viewport_h = 576.0;
     });
-    let (x, y) = {
-        let dom = pane.dom.borrow();
-        taproot::resolve(
-            &[taproot::ProbeSurface {
-                name: "inspector",
-                dom: &dom,
-                rect: [0.0, 0.0, 509.0, 576.0],
-                sheet: crate::ui::CAMBIUM_SHEET,
-            }],
-            &taproot::Selector::role("button").containing("Clip document"),
+    let _ = pane.scene(509, 576);
+    let (x, y) = pane
+        .selector_point(
+            &taproot::Selector::role("button")
+                .containing("Clip document")
+                .on_surface("inspector"),
         )
-        .expect("Probe must resolve the configured clip button")
-        .point
-    };
+        .expect("the configured clip button must resolve uniquely")
+        .expect("the configured clip button must be painted inside its pane");
     assert!(
         (0.0..509.0).contains(&x) && (0.0..576.0).contains(&y),
         "Probe resolved the clip button outside its pane: ({x}, {y})"
@@ -350,20 +345,19 @@ fn viewer_controls_write_the_followed_member_instead_of_the_runtime_cursor() {
     let mut pane = InspectorPane::new();
     pane.sync(&app, id, 400.0, 600.0, None, false, "unconfigured");
     assert_eq!(pane.runner.state().member, Some(followed));
-    let (x, y) = {
-        let dom = pane.dom.borrow();
-        taproot::resolve(
-            &[taproot::ProbeSurface {
-                name: "inspector",
-                dom: &dom,
-                rect: [0.0, 0.0, 400.0, 600.0],
-                sheet: crate::ui::CAMBIUM_SHEET,
-            }],
-            &taproot::Selector::class("radio").with_attr("data-engine-id", "genet.reader"),
+    let _ = pane.scene(400, 600);
+    let (x, y) = pane
+        .selector_point(
+            &taproot::Selector::class("radio")
+                .with_attr("data-engine-id", "genet.reader")
+                .on_surface("inspector"),
         )
-        .unwrap()
-        .point
-    };
+        .expect("the requested viewer must resolve uniquely")
+        .expect("the requested viewer must be painted inside its pane");
+    assert!(
+        (0.0..400.0).contains(&x) && (0.0..600.0).contains(&y),
+        "Probe resolved the viewer outside its pane: ({x}, {y})"
+    );
     let intents = pane.click(x, y, 400, 600);
     let [InspectorIntent::SetViewer { member, viewer }] = &intents[..] else {
         panic!("typed viewer write")

@@ -1,0 +1,12 @@
+{
+  "theme_id": "theme:copy-1",
+  "name": "TurnstoneAcceptance",
+  "css_utf8_bytes": 255,
+  "css_sha256": "f96e7541ae4bdce4bf4088efa1071e88a02456b6be68b83a52b6cce59c2a07a2",
+  "css_exact_fixture_bytes": true,
+  "choice": {
+    "theme_id": "theme:copy-1",
+    "theme_mode": "dark"
+  },
+  "private_library_dump_included": false
+}

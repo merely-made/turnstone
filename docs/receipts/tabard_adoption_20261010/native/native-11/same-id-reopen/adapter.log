@@ -1,0 +1,7 @@
+{"launch_method": "LaunchServices temporary application bundle", "launcher_exit": 0, "timeout": false, "success": true, "elapsed_seconds": 15.175, "binary_sha256": "a402a258d751b2483a5161ce1ddd60911b48c1fe4b0ea085a5579b3854961426", "scenario_sha256": "9605ae4fcd1c80180375aa61f6d6565ac7c97396a35fe3b11be873accb72fdf9", "receipt": "scenario.done", "captures": 2}
+RESULT ok
+captured app_reopened_wide
+captured app_reopened_narrow
+presentation frames=48 captures=2 blank=0
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/same-id-reopen/app/app_reopened_wide.png digest=ee6ae8fa35b419a7 blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/same-id-reopen/app/app_reopened_narrow.png digest=81019b6f5093933c blank=false

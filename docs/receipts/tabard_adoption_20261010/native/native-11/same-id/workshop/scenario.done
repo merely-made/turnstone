@@ -1,0 +1,7 @@
+RESULT ok
+captured workshop_same_id
+captured workshop_same_id_narrow
+capture workshop_same_id 2360x1600 digest=2a963f9057aaab63 file=/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/same-id/workshop/workshop_same_id.png
+capture workshop_same_id_narrow 1280x1560 digest=816048d087c43074 file=/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/same-id/workshop/workshop_same_id_narrow.png
+frames: 2 captured, 0 blank, 2 distinct digests
+presentation: 49 frames, 53 redraws, 4 unpresented redraws

@@ -1150,6 +1150,7 @@ impl App {
 
     fn dispatch(&mut self, action: Action) -> Vec<Effect> {
         match action {
+            Action::OpenThemeWorkshop => vec![Effect::OpenThemeWorkshop],
             Action::OpenAddress(url) => self.open_address(url),
             Action::ComposeFocusedSmolwebSubmission => self.compose_focused_smolweb_submission(),
             Action::ComposeFocusedMicronForm => self.compose_focused_micron_form(),

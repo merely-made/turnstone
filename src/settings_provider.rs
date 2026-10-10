@@ -25,10 +25,12 @@ use workbench::SettingsRef;
 /// Turnstone's application-owned settings page.
 pub const APPLICATION_REFERENCE: &str = "turnstone/application";
 
-const THEME_MODE_OPTIONS: [(&str, &str); 3] = [
+const THEME_MODE_OPTIONS: [(&str, &str); 5] = [
     ("system", "Use system appearance"),
     ("light", "Light"),
     ("dark", "Dark"),
+    ("hc_light", "High contrast light"),
+    ("hc_dark", "High contrast dark"),
 ];
 
 const SHELLBAR_EDGE_OPTIONS: [(&str, &str); 4] = [
@@ -73,6 +75,8 @@ fn invalid_choice(setting_id: &str, value: &str, options: &[(&str, &str)]) -> Se
 pub struct ApplicationSettingsProvider {
     data_root: PathBuf,
     settings: ApplicationSettings,
+    write_error: Option<String>,
+    theme_catalog: crate::appearance::ThemeCatalog,
 }
 
 impl ApplicationSettingsProvider {
@@ -104,18 +108,41 @@ impl ApplicationSettingsProvider {
             Err(error) if error.kind() == io::ErrorKind::NotFound => ApplicationSettings::default(),
             Err(error) => return Err(error),
         };
+        let theme_catalog =
+            crate::appearance::ThemeCatalog::load(crate::appearance::library_path(&data_root));
         Ok(Self {
+            theme_catalog,
             data_root,
             settings,
+            write_error: None,
         })
     }
 
     /// Construct a provider around already-loaded settings.
     pub fn from_settings(data_root: impl Into<PathBuf>, settings: ApplicationSettings) -> Self {
+        let data_root = data_root.into();
+        let theme_catalog =
+            crate::appearance::ThemeCatalog::load(crate::appearance::library_path(&data_root));
         Self {
-            data_root: data_root.into(),
+            data_root,
             settings,
+            write_error: None,
+            theme_catalog,
         }
+    }
+
+    /// Select an explicit authored library without changing selection storage.
+    /// Failed library reads remain visible and prevent theme writes.
+    pub fn with_theme_library(mut self, path: impl Into<PathBuf>) -> Self {
+        self.theme_catalog = crate::appearance::ThemeCatalog::load(path.into());
+        self
+    }
+
+    /// Keep a failed read visible without letting a later setting replace its file.
+    pub fn from_failed_load(data_root: impl Into<PathBuf>, error: impl Into<String>) -> Self {
+        let mut provider = Self::from_settings(data_root, ApplicationSettings::default());
+        provider.write_error = Some(error.into());
+        provider
     }
 
     /// Inspect the typed application owner behind the projection.
@@ -128,29 +155,143 @@ impl ApplicationSettingsProvider {
         &self.data_root
     }
 
+    pub(crate) fn catalog(&self) -> &crate::appearance::ThemeCatalog {
+        &self.theme_catalog
+    }
+
+    pub(crate) fn appearance_notice(&self) -> String {
+        self.theme_catalog.notice(self.settings.theme.as_ref())
+    }
+
+    pub(crate) fn reload_themes(&mut self) {
+        self.theme_catalog = crate::appearance::ThemeCatalog::load(self.theme_catalog.path.clone());
+    }
+
+    /// Apply one complete, validated selection after the shared workshop has
+    /// actually saved it. Persistence succeeds before the live value changes.
+    pub(crate) fn apply_theme_choice(&mut self, choice: ThemeChoice) -> Result<(), SettingsError> {
+        if let Some(error) = &self.theme_catalog.error {
+            return Err(SettingsError::Storage(error.clone()));
+        }
+        let resolved = self
+            .theme_catalog
+            .resolve(&choice)
+            .map_err(SettingsError::Storage)?;
+        if !resolved.diagnostics.is_empty() {
+            return Err(SettingsError::InvalidValue {
+                setting_id: "theme.id".into(),
+                message: resolved
+                    .diagnostics
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect::<Vec<_>>()
+                    .join(" "),
+            });
+        }
+        let mut candidate = self.current_write_base()?;
+        candidate.theme = Some(choice);
+        self.save_candidate(&candidate)?;
+        self.settings = candidate;
+        Ok(())
+    }
+
+    fn theme_specs(&self) -> Vec<SettingSpec> {
+        let mut themes = vec![SettingOption {
+            value: String::new(),
+            label: "Turnstone default".into(),
+        }];
+        themes.extend(
+            self.theme_catalog
+                .registry
+                .list()
+                .into_iter()
+                .map(|theme| SettingOption {
+                    value: theme.id.clone(),
+                    label: theme.name.clone(),
+                }),
+        );
+        if let Some(choice) = &self.settings.theme {
+            if !choice.theme_id.is_empty()
+                && self
+                    .theme_catalog
+                    .registry
+                    .theme_def(&choice.theme_id)
+                    .is_none()
+            {
+                themes.push(SettingOption {
+                    value: choice.theme_id.clone(),
+                    label: format!("{} (unavailable)", choice.theme_id),
+                });
+            }
+        }
+        let mut modes = vec![SettingOption {
+            value: "system".into(),
+            label: "Theme default / system".into(),
+        }];
+        modes.extend(
+            self.theme_catalog
+                .modes(self.settings.theme.as_ref())
+                .into_iter()
+                .map(|mode| SettingOption {
+                    value: mode.as_key(),
+                    label: mode.label(),
+                }),
+        );
+        if let Some(mode) = self
+            .settings
+            .theme
+            .as_ref()
+            .and_then(|choice| choice.theme_mode.as_ref())
+        {
+            if !modes.iter().any(|option| option.value == mode.as_key()) {
+                modes.push(SettingOption {
+                    value: mode.as_key(),
+                    label: format!("{} (unavailable)", mode.label()),
+                });
+            }
+        }
+        vec![
+            SettingSpec {
+                id: "theme.id".into(),
+                label: "Theme".into(),
+                scope: SettingScope::Application,
+                movement: SettingMovement::PersonaSynced,
+                mutability: SettingMutability::Live,
+                security: SettingSecurity::Ordinary,
+                control: SettingControl::Choice { options: themes },
+                value: SettingValue::Text(
+                    self.settings
+                        .theme
+                        .as_ref()
+                        .map(|choice| choice.theme_id.clone())
+                        .unwrap_or_default(),
+                ),
+            },
+            SettingSpec {
+                id: "theme.mode".into(),
+                label: "Theme mode".into(),
+                scope: SettingScope::Application,
+                movement: SettingMovement::PersonaSynced,
+                mutability: SettingMutability::Live,
+                security: SettingSecurity::Ordinary,
+                control: SettingControl::Choice { options: modes },
+                value: SettingValue::Text(
+                    self.settings
+                        .theme
+                        .as_ref()
+                        .and_then(|choice| choice.theme_mode.as_ref())
+                        .map(Mode::as_key)
+                        .unwrap_or_else(|| "system".into()),
+                ),
+            },
+        ]
+    }
+
     fn check_reference(reference: &SettingsRef) -> Result<(), SettingsError> {
         if reference.0 == APPLICATION_REFERENCE {
             Ok(())
         } else {
             Err(SettingsError::UnsupportedReference(reference.clone()))
-        }
-    }
-
-    fn application_text_spec(
-        id: &str,
-        label: &str,
-        value: Option<&String>,
-        movement: SettingMovement,
-    ) -> SettingSpec {
-        SettingSpec {
-            id: id.into(),
-            label: label.into(),
-            scope: SettingScope::Application,
-            movement,
-            mutability: SettingMutability::Live,
-            security: SettingSecurity::Ordinary,
-            control: SettingControl::Text,
-            value: SettingValue::Text(value.cloned().unwrap_or_default()),
         }
     }
 
@@ -181,8 +322,26 @@ impl ApplicationSettingsProvider {
         }
     }
 
-    fn save(&self) -> Result<(), SettingsError> {
-        save_application_settings(&self.data_root, &self.settings)
+    /// Retained panes may cache an older choice. Each edit changes its own
+    /// axis against the current durable owner, rather than overwriting another
+    /// pane's successful selection with its cached snapshot.
+    fn current_write_base(&self) -> Result<ApplicationSettings, SettingsError> {
+        match std::fs::metadata(application_settings_path(&self.data_root)) {
+            Ok(_) => Self::load(&self.data_root)
+                .map(|provider| provider.settings)
+                .map_err(|error| SettingsError::Storage(error.to_string())),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(self.settings.clone()),
+            Err(error) => Err(SettingsError::Storage(error.to_string())),
+        }
+    }
+
+    fn save_candidate(&self, candidate: &ApplicationSettings) -> Result<(), SettingsError> {
+        if let Some(error) = &self.write_error {
+            return Err(SettingsError::Storage(format!(
+                "Application settings were not loaded: {error}. The existing file is preserved."
+            )));
+        }
+        save_application_settings(&self.data_root, candidate)
             .map_err(|error| SettingsError::Storage(error.to_string()))
     }
 }
@@ -190,25 +349,8 @@ impl ApplicationSettingsProvider {
 impl SettingsProvider for ApplicationSettingsProvider {
     fn describe(&self, reference: &SettingsRef) -> Result<Vec<SettingSpec>, SettingsError> {
         Self::check_reference(reference)?;
-        Ok(vec![
-            Self::application_text_spec(
-                "theme.id",
-                "Theme",
-                self.settings.theme.as_ref().map(|theme| &theme.theme_id),
-                SettingMovement::PersonaSynced,
-            ),
-            Self::application_choice_spec(
-                "theme.mode",
-                "Theme mode",
-                self.settings
-                    .theme
-                    .as_ref()
-                    .and_then(|theme| theme.theme_mode.as_ref())
-                    .map(Mode::as_key)
-                    .unwrap_or_else(|| "system".into()),
-                &THEME_MODE_OPTIONS,
-                SettingMovement::PersonaSynced,
-            ),
+        let mut specs = self.theme_specs();
+        specs.extend(vec![
             SettingSpec {
                 id: "ui.zoom".into(),
                 label: "UI zoom".into(),
@@ -257,7 +399,8 @@ impl SettingsProvider for ApplicationSettingsProvider {
                 },
                 value: SettingValue::Number(f64::from(self.settings.cascade_budget)),
             },
-        ])
+        ]);
+        Ok(specs)
     }
 
     fn apply(
@@ -268,51 +411,64 @@ impl SettingsProvider for ApplicationSettingsProvider {
     ) -> Result<(), SettingsError> {
         Self::check_reference(reference)?;
 
+        let mut candidate = self.current_write_base()?;
         match (setting_id, value) {
             ("theme.id", SettingValue::Text(value)) => {
-                let mode = self
-                    .settings
+                if let Some(error) = &self.theme_catalog.error {
+                    return Err(SettingsError::Storage(error.clone()));
+                }
+                if !value.is_empty() && self.theme_catalog.registry.theme_def(&value).is_none() {
+                    return Err(SettingsError::InvalidValue {
+                        setting_id: "theme.id".into(),
+                        message: "Choose an available theme".into(),
+                    });
+                }
+                let mode = candidate
                     .theme
                     .as_ref()
                     .and_then(|theme| theme.theme_mode.clone());
-                self.settings.theme =
+                candidate.theme =
                     (!value.is_empty() || mode.is_some()).then(|| ThemeChoice::new(value, mode));
             },
             ("theme.mode", SettingValue::Text(value)) => {
-                if !THEME_MODE_OPTIONS
-                    .iter()
-                    .any(|(candidate, _)| *candidate == value)
+                if let Some(error) = &self.theme_catalog.error {
+                    return Err(SettingsError::Storage(error.clone()));
+                }
+                if value != "system"
+                    && !self
+                        .theme_catalog
+                        .modes(candidate.theme.as_ref())
+                        .iter()
+                        .any(|mode| mode.as_key() == value)
                 {
                     return Err(invalid_choice("theme.mode", &value, &THEME_MODE_OPTIONS));
                 }
-                let id = self
-                    .settings
+                let id = candidate
                     .theme
                     .as_ref()
                     .map(|theme| theme.theme_id.clone())
                     .unwrap_or_default();
                 let mode = Mode::from_key(&value);
-                self.settings.theme =
+                candidate.theme =
                     (!id.is_empty() || mode.is_some()).then(|| ThemeChoice::new(id, mode));
             },
             ("ui.zoom", SettingValue::Number(value))
                 if value.is_finite() && (0.5..=3.0).contains(&value) =>
             {
-                self.settings.ui_zoom = value as f32;
+                candidate.ui_zoom = value as f32;
             },
             ("chrome.shellbar.edge", SettingValue::Text(value)) => {
-                self.settings.shellbar_edge =
-                    shellbar_edge_from_value(&value).ok_or_else(|| {
-                        invalid_choice("chrome.shellbar.edge", &value, &SHELLBAR_EDGE_OPTIONS)
-                    })?;
+                candidate.shellbar_edge = shellbar_edge_from_value(&value).ok_or_else(|| {
+                    invalid_choice("chrome.shellbar.edge", &value, &SHELLBAR_EDGE_OPTIONS)
+                })?;
             },
             ("chrome.shellbar.visible", SettingValue::Boolean(value)) => {
-                self.settings.shellbar_hidden = !value;
+                candidate.shellbar_hidden = !value;
             },
             ("behaviors.cascade_budget", SettingValue::Number(value))
                 if value.is_finite() && (1.0..=16.0).contains(&value) =>
             {
-                self.settings.cascade_budget = value as u32;
+                candidate.cascade_budget = value as u32;
             },
             ("behaviors.cascade_budget", other) => {
                 return Err(SettingsError::InvalidValue {
@@ -347,7 +503,9 @@ impl SettingsProvider for ApplicationSettingsProvider {
             (other, _) => return Err(SettingsError::UnknownSetting(other.into())),
         }
 
-        self.save()
+        self.save_candidate(&candidate)?;
+        self.settings = candidate;
+        Ok(())
     }
 }
 
@@ -364,6 +522,277 @@ mod tests {
                 .unwrap()
                 .as_nanos()
         ))
+    }
+
+    #[test]
+    fn failed_setting_write_keeps_the_owner_and_cannot_leak_into_a_later_save() {
+        let root = scratch_root("failed-write");
+        let target = application_settings_path(&root);
+        std::fs::create_dir_all(&target).unwrap();
+        std::fs::write(target.join("owned"), b"preserved application bytes").unwrap();
+        let initial = ApplicationSettings::default();
+        let mut provider = ApplicationSettingsProvider::from_settings(&root, initial.clone());
+        let reference = SettingsRef(APPLICATION_REFERENCE.into());
+        assert!(
+            provider
+                .apply(
+                    &reference,
+                    "theme.id",
+                    SettingValue::Text("theme:unpublished".into())
+                )
+                .is_err()
+        );
+        assert_eq!(provider.settings(), &initial);
+        assert_eq!(
+            std::fs::read(target.join("owned")).unwrap(),
+            b"preserved application bytes"
+        );
+        std::fs::remove_dir_all(&target).unwrap();
+        provider
+            .apply(&reference, "ui.zoom", SettingValue::Number(1.5))
+            .unwrap();
+        let reopened = ApplicationSettingsProvider::load(&root).unwrap();
+        assert_eq!(reopened.settings().theme, initial.theme);
+        assert_eq!(reopened.settings().ui_zoom, 1.5);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn failed_load_projection_refuses_to_overwrite_the_corrupt_settings_file() {
+        let root = scratch_root("failed-load");
+        let target = application_settings_path(&root);
+        std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+        std::fs::write(&target, b"unreadable application settings").unwrap();
+        let error = ApplicationSettingsProvider::load(&root).err().unwrap();
+        let mut provider = ApplicationSettingsProvider::from_failed_load(&root, error.to_string());
+        let reference = SettingsRef(APPLICATION_REFERENCE.into());
+        assert!(
+            provider
+                .apply(&reference, "ui.zoom", SettingValue::Number(1.5))
+                .is_err()
+        );
+        assert_eq!(
+            provider.settings().ui_zoom,
+            ApplicationSettings::default().ui_zoom
+        );
+        assert_eq!(
+            std::fs::read(target).unwrap(),
+            b"unreadable application settings"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn saved_workshop_definition_becomes_available_without_selecting_it_until_apply() {
+        let temporary = tempfile::tempdir().unwrap();
+        let root = temporary.path().join("profile");
+        let library = temporary.path().join("shared/themes.json");
+        let mut provider =
+            ApplicationSettingsProvider::from_settings(&root, ApplicationSettings::default())
+                .with_theme_library(&library);
+        let mut editor = tabard_workshop::WorkshopState::load(&library).unwrap();
+        editor
+            .edit_definition(
+                tabard::theme::registry::ThemeRegistry::default()
+                    .theme_def(tabard::theme::registry::THEME_ID_DEFAULT)
+                    .unwrap(),
+                Some(Mode::HcLight),
+            )
+            .unwrap();
+        assert!(editor.saved_choice().is_err());
+        editor.save();
+        let saved = editor.saved_choice().unwrap();
+        provider.reload_themes();
+        assert_eq!(provider.settings().theme, None);
+        assert!(!application_settings_path(&root).exists());
+        let specs = provider
+            .describe(&SettingsRef(APPLICATION_REFERENCE.into()))
+            .unwrap();
+        let SettingControl::Choice { options } = &specs[0].control else {
+            panic!("theme picker")
+        };
+        assert!(options.iter().any(|option| option.value == saved.theme_id));
+        provider.apply_theme_choice(saved.clone()).unwrap();
+        let reopened = ApplicationSettingsProvider::load(&root)
+            .unwrap()
+            .with_theme_library(&library);
+        assert_eq!(reopened.settings().theme, Some(saved));
+        assert_eq!(
+            reopened
+                .catalog()
+                .resolve(reopened.settings().theme.as_ref().unwrap())
+                .unwrap()
+                .resolved
+                .theme_mode,
+            Some(Mode::HcLight)
+        );
+    }
+
+    #[test]
+    fn missing_identity_and_custom_mode_remain_stored_while_visible_fallback_is_used() {
+        let temporary = tempfile::tempdir().unwrap();
+        let root = temporary.path().join("profile");
+        let library = temporary.path().join("themes.json");
+        let requested = ThemeChoice::new(
+            "theme:temporarily-absent",
+            Some(Mode::Custom("concert".into())),
+        );
+        let settings = ApplicationSettings {
+            theme: Some(requested.clone()),
+            ..Default::default()
+        };
+        let mut provider = ApplicationSettingsProvider::from_settings(&root, settings)
+            .with_theme_library(&library);
+        let resolved = provider.catalog().resolve(&requested).unwrap();
+        assert_eq!(resolved.requested, requested);
+        assert_eq!(resolved.diagnostics.len(), 2);
+        assert!(provider.appearance_notice().contains("unavailable"));
+        provider
+            .apply(
+                &SettingsRef(APPLICATION_REFERENCE.into()),
+                "ui.zoom",
+                SettingValue::Number(1.5),
+            )
+            .unwrap();
+        let reopened = ApplicationSettingsProvider::load(&root)
+            .unwrap()
+            .with_theme_library(&library);
+        assert_eq!(reopened.settings().theme, Some(requested));
+    }
+
+    #[test]
+    fn malformed_library_blocks_theme_changes_and_preserves_both_owners() {
+        let temporary = tempfile::tempdir().unwrap();
+        let root = temporary.path().join("profile");
+        let library = temporary.path().join("themes.json");
+        std::fs::write(&library, "broken theme library").unwrap();
+        let original = ApplicationSettings::default();
+        let mut provider = ApplicationSettingsProvider::from_settings(&root, original.clone())
+            .with_theme_library(&library);
+        assert!(
+            provider
+                .appearance_notice()
+                .contains("Existing library is preserved")
+        );
+        assert!(
+            provider
+                .apply_theme_choice(ThemeChoice::new("theme:dark", Some(Mode::Dark)))
+                .is_err()
+        );
+        assert!(
+            provider
+                .apply(
+                    &SettingsRef(APPLICATION_REFERENCE.into()),
+                    "theme.mode",
+                    SettingValue::Text("light".into())
+                )
+                .is_err()
+        );
+        assert_eq!(provider.settings(), &original);
+        assert!(!application_settings_path(&root).exists());
+        assert_eq!(
+            std::fs::read_to_string(&library).unwrap(),
+            "broken theme library"
+        );
+        provider
+            .apply(
+                &SettingsRef(APPLICATION_REFERENCE.into()),
+                "ui.zoom",
+                SettingValue::Number(1.5),
+            )
+            .unwrap();
+        assert_eq!(
+            std::fs::read_to_string(library).unwrap(),
+            "broken theme library"
+        );
+        assert_eq!(provider.settings().theme, None);
+    }
+
+    #[test]
+    fn combined_saved_choice_does_not_publish_when_application_write_fails() {
+        let temporary = tempfile::tempdir().unwrap();
+        let root = temporary.path().join("profile");
+        std::fs::create_dir_all(&root).unwrap();
+        let target = application_settings_path(&root);
+        std::fs::create_dir_all(&target).unwrap();
+        let initial = ApplicationSettings::default();
+        let mut provider = ApplicationSettingsProvider::from_settings(&root, initial.clone())
+            .with_theme_library(temporary.path().join("themes.json"));
+        assert!(
+            provider
+                .apply_theme_choice(ThemeChoice::new("theme:dark", Some(Mode::HcDark)))
+                .is_err()
+        );
+        assert_eq!(provider.settings(), &initial);
+        assert!(target.is_dir());
+    }
+
+    #[test]
+    fn authored_custom_modes_are_offered_only_by_the_selected_definition() {
+        let temporary = tempfile::tempdir().unwrap();
+        let root = temporary.path().join("profile");
+        let library = temporary.path().join("themes.json");
+        let mut theme = tabard::theme::registry::ThemeRegistry::default()
+            .theme_def(tabard::theme::registry::THEME_ID_DEFAULT)
+            .unwrap()
+            .clone();
+        theme.id = "theme:concert".into();
+        theme.name = "Concert".into();
+        theme.source = tabard::theme::registry::ThemeSource::User;
+        let rules = vec![".omni { background-color: rgb(17, 34, 51); }".into()];
+        theme
+            .mode_sheets
+            .insert("custom:concert".into(), rules.clone());
+        tabard::library::ThemeLibraryStore::load(&library)
+            .unwrap()
+            .save(&[theme])
+            .unwrap();
+        let mut provider =
+            ApplicationSettingsProvider::from_settings(&root, ApplicationSettings::default())
+                .with_theme_library(&library);
+        let reference = SettingsRef(APPLICATION_REFERENCE.into());
+        assert!(
+            provider
+                .apply(
+                    &reference,
+                    "theme.mode",
+                    SettingValue::Text("custom:concert".into())
+                )
+                .is_err()
+        );
+        provider
+            .apply(
+                &reference,
+                "theme.id",
+                SettingValue::Text("theme:concert".into()),
+            )
+            .unwrap();
+        let specs = provider.describe(&reference).unwrap();
+        let SettingControl::Choice { options } = &specs[1].control else {
+            panic!("mode picker")
+        };
+        for mode in ["light", "dark", "hc_light", "hc_dark", "custom:concert"] {
+            assert!(options.iter().any(|option| option.value == mode));
+        }
+        provider
+            .apply(
+                &reference,
+                "theme.mode",
+                SettingValue::Text("custom:concert".into()),
+            )
+            .unwrap();
+        let resolved = provider
+            .catalog()
+            .resolve(provider.settings().theme.as_ref().unwrap())
+            .unwrap();
+        assert_eq!(
+            resolved.presentation,
+            tabard::ThemePresentation::AuthoredStylesheet(rules)
+        );
+        let reopened = ApplicationSettingsProvider::load(&root)
+            .unwrap()
+            .with_theme_library(&library);
+        assert_eq!(reopened.settings().theme, provider.settings().theme);
     }
 
     #[test]
@@ -386,7 +815,7 @@ mod tests {
             "the cascade budget is offered as a setting"
         );
         assert_eq!(specs[0].movement, SettingMovement::PersonaSynced);
-        assert_eq!(specs[0].control, SettingControl::Text);
+        assert!(matches!(specs[0].control, SettingControl::Choice { .. }));
         assert!(matches!(specs[1].control, SettingControl::Choice { .. }));
         assert_eq!(specs[2].scope, SettingScope::Application);
         assert_eq!(
@@ -419,7 +848,7 @@ mod tests {
             .apply(
                 &reference,
                 "theme.id",
-                SettingValue::Text("theme:night".into()),
+                SettingValue::Text("theme:dark".into()),
             )
             .unwrap();
         provider
@@ -442,13 +871,13 @@ mod tests {
 
         assert_eq!(
             provider.settings().theme.as_ref().unwrap().theme_id,
-            "theme:night"
+            "theme:dark"
         );
         assert_eq!(provider.settings().ui_zoom, 1.25);
         assert_eq!(provider.settings().shellbar_edge, ShellbarEdge::Bottom);
         assert!(provider.settings().shellbar_hidden);
         let loaded = pandect::load_application_settings(&root).unwrap().unwrap();
-        assert_eq!(loaded.theme.as_ref().unwrap().theme_id, "theme:night");
+        assert_eq!(loaded.theme.as_ref().unwrap().theme_id, "theme:dark");
         assert_eq!(loaded.ui_zoom, 1.25);
         assert_eq!(loaded.shellbar_edge, ShellbarEdge::Bottom);
         assert!(loaded.shellbar_hidden);
@@ -511,12 +940,12 @@ mod tests {
             .apply(
                 &reference,
                 "theme.id",
-                SettingValue::Text("theme:night".into()),
+                SettingValue::Text("theme:dark".into()),
             )
             .unwrap();
         assert_eq!(
             provider.settings().theme,
-            Some(ThemeChoice::new("theme:night", Some(Mode::Light)))
+            Some(ThemeChoice::new("theme:dark", Some(Mode::Light)))
         );
         provider
             .apply(&reference, "theme.mode", SettingValue::Text("dark".into()))
@@ -545,7 +974,7 @@ mod tests {
             .apply(
                 &reference,
                 "theme.id",
-                SettingValue::Text("theme:night".into()),
+                SettingValue::Text("theme:dark".into()),
             )
             .unwrap();
         provider
@@ -560,7 +989,7 @@ mod tests {
             .unwrap();
         assert_eq!(
             provider.settings().theme,
-            Some(ThemeChoice::new("theme:night", None))
+            Some(ThemeChoice::new("theme:dark", None))
         );
         let _ = std::fs::remove_dir_all(root);
     }

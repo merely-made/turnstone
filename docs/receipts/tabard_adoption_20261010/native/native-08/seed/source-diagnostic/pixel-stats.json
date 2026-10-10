@@ -1,0 +1,643 @@
+{
+  "source_outputs": {
+    "source-01": {
+      "metadata": {
+        "alpha": "Straight",
+        "copy": {
+          "arm_to_map_ms": 502,
+          "byte_count": 4361088,
+          "height": 656,
+          "raw_path": "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-08/source-diagnostic/source-01.rgba",
+          "width": 1662
+        },
+        "diagnostic_registration": "one initial replacement; same actual source Rc, first-binding raster key; original SceneProducer delegated",
+        "encoding": "Srgb",
+        "generation": 1,
+        "index": 1,
+        "layout_scale": 2.0,
+        "mode": "dark",
+        "needs_frame": true,
+        "physical_size": [
+          1662,
+          656
+        ],
+        "scene": {
+          "errors": [],
+          "glyph_runs": 13,
+          "logical_size": [
+            831,
+            328
+          ],
+          "ops": 24,
+          "revision": 2
+        },
+        "texture_format": "Rgba8Unorm"
+      },
+      "raw_sha256": "1da786279cd9fc3e95be53c50491089ea71209c6f4674bfddf3f5dc5c4947fc7",
+      "distinct_rgba": 1830,
+      "alpha_zero_pixels": 0,
+      "opaque_pixels": 1090272,
+      "total_pixels": 1090272,
+      "top_colors": [
+        {
+          "rgba": [
+            19,
+            24,
+            38,
+            255
+          ],
+          "pixels": 574201
+        },
+        {
+          "rgba": [
+            9,
+            12,
+            26,
+            255
+          ],
+          "pixels": 320068
+        },
+        {
+          "rgba": [
+            31,
+            35,
+            50,
+            255
+          ],
+          "pixels": 160730
+        },
+        {
+          "rgba": [
+            51,
+            102,
+            200,
+            255
+          ],
+          "pixels": 8120
+        },
+        {
+          "rgba": [
+            163,
+            170,
+            186,
+            255
+          ],
+          "pixels": 7608
+        },
+        {
+          "rgba": [
+            231,
+            238,
+            255,
+            255
+          ],
+          "pixels": 6013
+        },
+        {
+          "rgba": [
+            244,
+            244,
+            248,
+            255
+          ],
+          "pixels": 1102
+        },
+        {
+          "rgba": [
+            36,
+            188,
+            229,
+            255
+          ],
+          "pixels": 731
+        },
+        {
+          "rgba": [
+            235,
+            146,
+            89,
+            255
+          ],
+          "pixels": 202
+        },
+        {
+          "rgba": [
+            20,
+            25,
+            39,
+            255
+          ],
+          "pixels": 105
+        },
+        {
+          "rgba": [
+            56,
+            62,
+            76,
+            255
+          ],
+          "pixels": 99
+        },
+        {
+          "rgba": [
+            125,
+            170,
+            253,
+            255
+          ],
+          "pixels": 97
+        }
+      ]
+    },
+    "source-02": {
+      "metadata": {
+        "alpha": "Straight",
+        "copy": {
+          "arm_to_map_ms": 201,
+          "byte_count": 4361088,
+          "height": 656,
+          "raw_path": "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-08/source-diagnostic/source-02.rgba",
+          "width": 1662
+        },
+        "diagnostic_registration": "one initial replacement; same actual source Rc, first-binding raster key; original SceneProducer delegated",
+        "encoding": "Srgb",
+        "generation": 2,
+        "index": 2,
+        "layout_scale": 2.0,
+        "mode": "dark",
+        "needs_frame": false,
+        "physical_size": [
+          1662,
+          656
+        ],
+        "scene": {
+          "errors": [],
+          "glyph_runs": 13,
+          "logical_size": [
+            831,
+            328
+          ],
+          "ops": 24,
+          "revision": 3
+        },
+        "texture_format": "Rgba8Unorm"
+      },
+      "raw_sha256": "bffa32d67f89091a8f4eb342a7aaf7d9fe1a99d81274404f7e236b05075215e7",
+      "distinct_rgba": 1789,
+      "alpha_zero_pixels": 0,
+      "opaque_pixels": 1090272,
+      "total_pixels": 1090272,
+      "top_colors": [
+        {
+          "rgba": [
+            19,
+            24,
+            38,
+            255
+          ],
+          "pixels": 574201
+        },
+        {
+          "rgba": [
+            9,
+            12,
+            26,
+            255
+          ],
+          "pixels": 320068
+        },
+        {
+          "rgba": [
+            31,
+            35,
+            50,
+            255
+          ],
+          "pixels": 160730
+        },
+        {
+          "rgba": [
+            47,
+            127,
+            255,
+            255
+          ],
+          "pixels": 8119
+        },
+        {
+          "rgba": [
+            163,
+            170,
+            186,
+            255
+          ],
+          "pixels": 7608
+        },
+        {
+          "rgba": [
+            231,
+            238,
+            255,
+            255
+          ],
+          "pixels": 6013
+        },
+        {
+          "rgba": [
+            20,
+            20,
+            26,
+            255
+          ],
+          "pixels": 1102
+        },
+        {
+          "rgba": [
+            29,
+            189,
+            227,
+            255
+          ],
+          "pixels": 731
+        },
+        {
+          "rgba": [
+            236,
+            145,
+            92,
+            255
+          ],
+          "pixels": 202
+        },
+        {
+          "rgba": [
+            20,
+            25,
+            39,
+            255
+          ],
+          "pixels": 104
+        },
+        {
+          "rgba": [
+            56,
+            62,
+            76,
+            255
+          ],
+          "pixels": 99
+        },
+        {
+          "rgba": [
+            121,
+            171,
+            252,
+            255
+          ],
+          "pixels": 97
+        }
+      ]
+    },
+    "source-03": {
+      "metadata": {
+        "alpha": "Straight",
+        "copy": {
+          "arm_to_map_ms": 149,
+          "byte_count": 4361088,
+          "height": 656,
+          "raw_path": "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-08/source-diagnostic/source-03.rgba",
+          "width": 1662
+        },
+        "diagnostic_registration": "one initial replacement; same actual source Rc, first-binding raster key; original SceneProducer delegated",
+        "encoding": "Srgb",
+        "generation": 3,
+        "index": 3,
+        "layout_scale": 2.0,
+        "mode": "dark",
+        "needs_frame": true,
+        "physical_size": [
+          1662,
+          656
+        ],
+        "scene": {
+          "errors": [],
+          "glyph_runs": 13,
+          "logical_size": [
+            831,
+            328
+          ],
+          "ops": 24,
+          "revision": 4
+        },
+        "texture_format": "Rgba8Unorm"
+      },
+      "raw_sha256": "5cfb73d0a2ac38f45b9cdab7aa680ae8f03ccb334d8efec32b4fc02b9fe566c7",
+      "distinct_rgba": 1875,
+      "alpha_zero_pixels": 0,
+      "opaque_pixels": 1090272,
+      "total_pixels": 1090272,
+      "top_colors": [
+        {
+          "rgba": [
+            27,
+            46,
+            73,
+            255
+          ],
+          "pixels": 574283
+        },
+        {
+          "rgba": [
+            20,
+            34,
+            56,
+            255
+          ],
+          "pixels": 320068
+        },
+        {
+          "rgba": [
+            36,
+            61,
+            94,
+            255
+          ],
+          "pixels": 160731
+        },
+        {
+          "rgba": [
+            47,
+            127,
+            255,
+            255
+          ],
+          "pixels": 8119
+        },
+        {
+          "rgba": [
+            192,
+            213,
+            242,
+            255
+          ],
+          "pixels": 7603
+        },
+        {
+          "rgba": [
+            156,
+            213,
+            255,
+            255
+          ],
+          "pixels": 3495
+        },
+        {
+          "rgba": [
+            234,
+            242,
+            255,
+            255
+          ],
+          "pixels": 2454
+        },
+        {
+          "rgba": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "pixels": 1102
+        },
+        {
+          "rgba": [
+            51,
+            51,
+            51,
+            255
+          ],
+          "pixels": 772
+        },
+        {
+          "rgba": [
+            32,
+            32,
+            32,
+            255
+          ],
+          "pixels": 474
+        },
+        {
+          "rgba": [
+            28,
+            47,
+            74,
+            255
+          ],
+          "pixels": 89
+        },
+        {
+          "rgba": [
+            28,
+            46,
+            72,
+            255
+          ],
+          "pixels": 88
+        }
+      ]
+    },
+    "source-04": {
+      "metadata": {
+        "alpha": "Straight",
+        "copy": {
+          "arm_to_map_ms": 170,
+          "byte_count": 3138304,
+          "height": 656,
+          "raw_path": "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-08/source-diagnostic/source-04.rgba",
+          "width": 1196
+        },
+        "diagnostic_registration": "one initial replacement; same actual source Rc, first-binding raster key; original SceneProducer delegated",
+        "encoding": "Srgb",
+        "generation": 4,
+        "index": 4,
+        "layout_scale": 2.0,
+        "mode": "dark",
+        "needs_frame": true,
+        "physical_size": [
+          1196,
+          656
+        ],
+        "scene": {
+          "errors": [],
+          "glyph_runs": 13,
+          "logical_size": [
+            598,
+            328
+          ],
+          "ops": 24,
+          "revision": 4
+        },
+        "texture_format": "Rgba8Unorm"
+      },
+      "raw_sha256": "69e9c62c65c9ea9bc99dc1981ee3e83b2b6b49e306b7c298759b847e606a59b0",
+      "distinct_rgba": 1875,
+      "alpha_zero_pixels": 0,
+      "opaque_pixels": 784576,
+      "total_pixels": 784576,
+      "top_colors": [
+        {
+          "rgba": [
+            27,
+            46,
+            73,
+            255
+          ],
+          "pixels": 401863
+        },
+        {
+          "rgba": [
+            20,
+            34,
+            56,
+            255
+          ],
+          "pixels": 238984
+        },
+        {
+          "rgba": [
+            36,
+            61,
+            94,
+            255
+          ],
+          "pixels": 110403
+        },
+        {
+          "rgba": [
+            47,
+            127,
+            255,
+            255
+          ],
+          "pixels": 8119
+        },
+        {
+          "rgba": [
+            192,
+            213,
+            242,
+            255
+          ],
+          "pixels": 5739
+        },
+        {
+          "rgba": [
+            156,
+            213,
+            255,
+            255
+          ],
+          "pixels": 3495
+        },
+        {
+          "rgba": [
+            234,
+            242,
+            255,
+            255
+          ],
+          "pixels": 2454
+        },
+        {
+          "rgba": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "pixels": 1102
+        },
+        {
+          "rgba": [
+            51,
+            51,
+            51,
+            255
+          ],
+          "pixels": 772
+        },
+        {
+          "rgba": [
+            32,
+            32,
+            32,
+            255
+          ],
+          "pixels": 474
+        },
+        {
+          "rgba": [
+            28,
+            47,
+            74,
+            255
+          ],
+          "pixels": 89
+        },
+        {
+          "rgba": [
+            28,
+            46,
+            72,
+            255
+          ],
+          "pixels": 88
+        }
+      ]
+    }
+  },
+  "child_preview_roi": {
+    "workshop_authored.png": {
+      "box": [
+        660,
+        330,
+        2290,
+        968
+      ],
+      "distinct_rgba": 1,
+      "top_colors": [
+        {
+          "rgba": [
+            243,
+            244,
+            246,
+            255
+          ],
+          "pixels": 1039940
+        }
+      ]
+    },
+    "workshop_narrow.png": {
+      "box": [
+        50,
+        850,
+        1220,
+        1480
+      ],
+      "distinct_rgba": 1,
+      "top_colors": [
+        {
+          "rgba": [
+            243,
+            244,
+            246,
+            255
+          ],
+          "pixels": 737100
+        }
+      ]
+    }
+  },
+  "conversion_after_owned_process_exit": true
+}

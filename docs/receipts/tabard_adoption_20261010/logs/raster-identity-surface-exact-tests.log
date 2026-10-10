@@ -1,0 +1,66 @@
+
+running 1 test
+test surface::tests::a_content_surface_keeps_its_id_across_frames ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 787 filtered out; finished in 0.00s
+
+
+running 1 test
+test surface::tests::abutting_rects_never_both_claim_a_point ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 787 filtered out; finished in 0.00s
+
+
+running 1 test
+test surface::tests::canvas_only_when_nothing_else_present ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 787 filtered out; finished in 0.00s
+
+
+running 1 test
+test surface::tests::chrome_swallows_input_only_when_focused ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 787 filtered out; finished in 0.00s
+
+
+running 1 test
+test surface::tests::content_and_chrome_ids_do_not_alias_the_reserved_ones ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 787 filtered out; finished in 0.00s
+
+
+running 1 test
+test surface::tests::content_is_inset_so_the_canvas_stays_visible ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 787 filtered out; finished in 0.00s
+
+
+running 1 test
+test surface::tests::dest_emits_corners_not_offset_plus_size ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 787 filtered out; finished in 0.00s
+
+
+running 1 test
+test surface::tests::pointer_over_content_hits_content_in_local_space ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 787 filtered out; finished in 0.00s
+
+
+running 1 test
+test surface::tests::pressing_a_surface_focuses_it ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 787 filtered out; finished in 0.00s
+
+
+running 1 test
+test surface::tests::workbench_tiles_compose_as_content_surfaces ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 787 filtered out; finished in 0.00s
+
+
+running 1 test
+test surface::tests::z_order_is_canvas_then_content_then_chrome ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 787 filtered out; finished in 0.00s
+

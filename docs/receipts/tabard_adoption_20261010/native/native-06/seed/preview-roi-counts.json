@@ -1,0 +1,46 @@
+{
+  "workshop_authored.png": {
+    "roi": [
+      660,
+      330,
+      2290,
+      968
+    ],
+    "distinct_rgba": 1,
+    "colors": [
+      {
+        "rgba": [
+          243,
+          244,
+          246,
+          255
+        ],
+        "pixels": 1039940
+      }
+    ],
+    "paired_paintlist_sha256": "56efcb2a8198fdc5b6f80575cbdc69d93f931b808c53093d79debb305bd9945d",
+    "paired_paintlist_bytes": 5932835
+  },
+  "workshop_narrow.png": {
+    "roi": [
+      50,
+      850,
+      1220,
+      1480
+    ],
+    "distinct_rgba": 1,
+    "colors": [
+      {
+        "rgba": [
+          243,
+          244,
+          246,
+          255
+        ],
+        "pixels": 737100
+      }
+    ],
+    "paired_paintlist_sha256": "7374f45ee6166c0eaf450375820b1b67a958130bbec68fcbfd603522a5cf2615",
+    "paired_paintlist_bytes": 5932217
+  }
+}

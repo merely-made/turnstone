@@ -1,0 +1,19 @@
+{
+  "diagnostic_only": true,
+  "binary_sha256": "e63c45974e3673b590b22ba82213a1a273c3a2678e024d2d702b5b3b35eaccc9",
+  "extra_environment": {
+    "CAMBIUM_HOST_PERF_TRACE": "1",
+    "MESQUITE_CAPTURE_PAINT": "1"
+  },
+  "scenario_changes": true,
+  "scenario_sha256": {
+    "tabard_application.scn": "3e8470fd996afd3a2079543ab365018fb1f5b3f4b47e9b8f6fe37fe7d08c2083",
+    "tabard_application_reopen.scn": "a75b31adc958bdb90553e0dfb1afae7b78921b496a51f60a11de7ea75eec2111",
+    "tabard_application_same_id.scn": "6ea60773f97b46e17be2472568a50266a6876486acfc1c9d05cd176ca15b9622",
+    "tabard_application_same_id_reopen.scn": "9605ae4fcd1c80180375aa61f6d6565ac7c97396a35fe3b11be873accb72fdf9",
+    "tabard_workshop.scn": "1165b3a9ebc37064eb844dd4ecd47db6e69d3513616d7342c9bd42dbee52b80f",
+    "tabard_workshop_same_id.scn": "77194ef4fac5b8e4ec37c362aee4c8a15905665b74fd4a5711ad2ad90ab72d17"
+  },
+  "diagnostic_assertion": "assert snap preview-errors == none",
+  "expected_diagnostic_assertion_failure": true
+}

@@ -827,6 +827,7 @@ impl Shell {
                 continue;
             }
             match effect {
+                Effect::OpenThemeWorkshop => self.theme_editor_requested = true,
                 Effect::ReplaceGeminiTrust {
                     node,
                     fetch_url,

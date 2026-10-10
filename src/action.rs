@@ -114,6 +114,8 @@ pub enum PlaceArtifactKind {
 /// automation adapters) produces these; [`crate::app::update`] consumes them.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Action {
+    /// Edit authored themes in the shared native workshop.
+    OpenThemeWorkshop,
     /// Open an address: mint/select its node in the graph and fetch it.
     OpenAddress(String),
     /// Open the submission composer for the focused Titan or Spartan address.
@@ -699,6 +701,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
             }),
     );
     actions.extend([
+        ("Edit themes", Action::OpenThemeWorkshop),
         ("New window", Action::NewWindow),
         ("Float pane", Action::FloatActivePane),
         ("Dock pane", Action::DockActivePane),
@@ -838,6 +841,8 @@ pub enum ContentControl {
 /// itself never blocks and never touches a platform API.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Effect {
+    /// Open/focus the host-owned workshop on the existing render core.
+    OpenThemeWorkshop,
     /// Fetch a page document through the fetch actor, for enrichment of the
     /// node that requested it (correlation-over-URLs: several nodes may
     /// share an address, and a node may navigate away mid-flight).

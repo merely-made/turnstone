@@ -128,7 +128,10 @@ pub struct SurfaceId(pub u64);
 
 impl SurfaceId {
     pub const GRAPH_BASE: u64 = 0x0047_5241_0000_0000;
-    pub const CHROME: SurfaceId = SurfaceId(1);
+    // Shared native child hosts allocate low presentation identities on this
+    // same render core. Keep application chrome in Turnstone's named range,
+    // just as graph and pane surfaces already have their own ranges.
+    pub const CHROME: SurfaceId = SurfaceId(0x0054_4348_0000_0000);
 
     pub fn graph(pane: PaneId) -> Self {
         SurfaceId(Self::GRAPH_BASE | pane.0)

@@ -1,0 +1,47 @@
+   Compiling vello_encoding v0.10.0 (/Users/markik/Code/output/radeon-clip-fix/vello/vello_encoding)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.48s
+     Running unittests src/lib.rs (target/debug/deps/vello_encoding-7287c4ee152763fb)
+
+running 33 tests
+test encoding::tests::ensure_extend_values ... ok
+test encoding::tests::ensure_image_quality_values ... ok
+test draw::tests::draw_color_premultiplied ... ok
+test draw::tests::draw_color_endianness ... ok
+test image_cache::tests::atlas_size_persists_after_growth ... ok
+test math::tests::test_f16_to_f32_inf ... ok
+test math::tests::test_f16_to_f32_inf_roundtrip ... ok
+test image_cache::tests::resident_entries_are_reused_across_resolves ... ok
+test image_cache::tests::stale_entries_can_be_evicted_under_pressure ... ok
+test image_cache::tests::marked_dirty_unused_entries_stay_dirty ... ok
+test image_cache::tests::marked_dirty_resident_entries_are_uploaded_again ... ok
+test image_cache::tests::failed_repack_leaves_existing_residency_unchanged ... ok
+test image_cache::tests::stale_entries_are_evicted_at_most_once_per_resolve ... ok
+test math::tests::test_f16_to_f32_large_pos_roundtrip ... ok
+test math::tests::test_f16_to_f32_large_neg_roundtrip ... ok
+test math::tests::test_f16_to_f32_nan ... ok
+test math::tests::test_f16_to_f32_nan_roundtrip ... ok
+test math::tests::test_f16_to_f32_neg_inf ... ok
+test math::tests::test_f16_to_f32_neg_inf_roundtrip ... ok
+test math::tests::test_f16_to_f32_roundtrip ... ok
+test math::tests::test_f16_to_f32_simple ... ok
+test math::tests::test_f16_to_f32_small_neg_roundtrip ... ok
+test math::tests::test_f16_to_f32_small_pos_roundtrip ... ok
+test math::tests::test_f32_to_f16_exponent_overflow ... ok
+test math::tests::test_f32_to_f16_exponent_overflow_neg_inf ... ok
+test math::tests::test_f32_to_f16_exponent_rebias ... ok
+test math::tests::test_f32_to_f16_inf ... ok
+test math::tests::test_f32_to_f16_nan_overflow ... ok
+test math::tests::test_f32_to_f16_simple ... ok
+test path::tests::test_fill_style ... ok
+test path::tests::test_stroke_style ... ok
+test resolve::tests::patchless_resolve_preserves_a_pending_override_refresh ... ok
+test resolve::tests::patchless_resolves_preserve_the_resident_atlas_dimensions ... ok
+
+test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests vello_encoding
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

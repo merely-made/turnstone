@@ -1,0 +1,564 @@
+{
+  "status": "qualified: native11 production four serialized lanes;19 original PNGs visually inspected; populated previews and durable explicit Apply/restoration passed",
+  "cpu": {
+    "initial_parallel": {
+      "passed": 770,
+      "failed": 7,
+      "ignored": 9,
+      "seconds": 272.01
+    },
+    "serial_before_settings_selector_repair": {
+      "passed": 777,
+      "failed": 0,
+      "ignored": 9,
+      "seconds": 1366.2
+    },
+    "isolated": {
+      "settings": 8,
+      "inspector": 15,
+      "viewport_row": 1,
+      "sky": 1,
+      "network": 3
+    },
+    "network_source_changed": false,
+    "settings_after_selector_repair": {
+      "passed": 9,
+      "failed": 0,
+      "seconds": 1.56
+    },
+    "focused_after_settings_selector_repair": {
+      "settings": 9,
+      "provider": 12,
+      "receipt_editor": 6,
+      "failed": 0
+    },
+    "cooperative_wait_receipt_editor": {
+      "passed": 7,
+      "failed": 0,
+      "seconds": 0.0
+    },
+    "final_focused_delta": {
+      "appearance_editor_receipt": 7,
+      "settings": 9,
+      "provider": 12,
+      "passed_total": 28,
+      "failed": 0,
+      "settings_seconds": 1.55,
+      "provider_seconds": 0.89,
+      "full_serial_run_on_this_final_delta": false
+    },
+    "raster_identity_diagnostic_delta": {
+      "appearance_receipt_editor": 7,
+      "exact_surface_tests": 11,
+      "failed": 0,
+      "partial_substring_surface_run_qualified": false
+    },
+    "post_atlas_compiled_test_executable": {
+      "compiled": true,
+      "compile_seconds": 84,
+      "tests_executed": 32,
+      "status": "startup restored after removing provenance attribute only from owned generated signed/verified test artifact; historical preexec limits preserved",
+      "sample_footprint_kib": 12,
+      "owned_generated_test_executable_signed_and_verified": true,
+      "signed_launch_timeout_seconds": 60.245,
+      "retry_timeout_seconds": 180.036,
+      "disposable_system_strip_timeout_seconds": 60,
+      "production_binary_modified": false,
+      "additional_bounded_provenance_control": "passed11 appearance,9 Settings pane,12 provider; zero failed/ignored; no source/production/system-setting changes",
+      "evidence": [
+        "logs/turnstone-atlas-fixed-test-dyld-sample.txt",
+        "logs/turnstone-atlas-fixed-test-signing.json",
+        "logs/turnstone-atlas-fixed-signed-tests.json",
+        "logs/turnstone-atlas-fixed-tests-retry-result.json",
+        "logs/turnstone-atlas-fixed-appearance-tests.log"
+      ]
+    },
+    "post_atlas_current_focused": {
+      "appearance": {
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0,
+        "test_seconds": 3.31,
+        "process_wall_seconds": 27.31
+      },
+      "settings_pane": {
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0,
+        "test_seconds": 1.74
+      },
+      "settings_provider": {
+        "passed": 12,
+        "failed": 0,
+        "ignored": 0,
+        "test_seconds": 0.77
+      },
+      "passed_total": 32,
+      "full_serial_run_on_this_source": false,
+      "workaround_scope": "removed provenance attribute only on owned generated ad hoc signed/verified test executable; source and production binary unchanged",
+      "evidence": [
+        "logs/turnstone-atlas-fixed-appearance-tests-local-artifact.log",
+        "logs/turnstone-atlas-fixed-local-artifact-tests.json",
+        "logs/turnstone-atlas-fixed-settings-pane-tests-local-artifact.log",
+        "logs/turnstone-atlas-fixed-settings-provider-tests-local-artifact.log",
+        "logs/turnstone-atlas-fixed-local-artifact-settings-tests.json"
+      ]
+    }
+  },
+  "native_01": {
+    "seed": {
+      "result": "fail",
+      "presentations": 142,
+      "captures": 7,
+      "blank": 0,
+      "workshop_captures": 0,
+      "adapter_launcher_exit": 0,
+      "adapter_timeout": false,
+      "elapsed_seconds": 73.32,
+      "gpu_reset_reports_changed": false,
+      "failure": "Edit themes did not open the workshop; no workshop receipt; subsequent theme/mode assertions failed; isolated pane CPU test does not reproduce miss"
+    },
+    "remaining_lanes": "not run after seed failure"
+  },
+  "private_profiles_included": false,
+  "native_02": {
+    "seed": {
+      "result": "fail",
+      "presentations": 147,
+      "captures": 7,
+      "blank": 0,
+      "workshop_presentations": 0,
+      "workshop_redraws": 2,
+      "workshop_captures": 0,
+      "workshop_failure": "native presentation stalled for 10000ms",
+      "adapter_launcher_exit": 0,
+      "adapter_timeout": false,
+      "elapsed_seconds": 55.462,
+      "gpu_reset_reports_changed": false,
+      "four_main_mode_assertions_passed": true,
+      "authored_identity_and_css_assertions_passed": false,
+      "original_pngs_inspected": 7
+    },
+    "remaining_lanes": "not run after seed failure"
+  },
+  "selector_diagnostic": {
+    "generic_point": [
+      54,
+      77.5
+    ],
+    "retained_point": [
+      44.75396,
+      70
+    ],
+    "generic_hits_edit_in_cpu": true,
+    "native_cause_confirmed": false
+  },
+  "binary_after_settings_selector_repair": "d3000572241d4fa4859d7a92f53499f18cd1d30ace8c74a994eb7ba209043d9d",
+  "native_03_diagnostic": {
+    "result": "fail",
+    "presentations": 147,
+    "captures": 7,
+    "blank": 0,
+    "workshop_presentations": 0,
+    "workshop_redraws": 2,
+    "elapsed_seconds": 58.768,
+    "gpu_reset_reports_changed": false,
+    "trace": {
+      "app_active": true,
+      "app_hidden": false,
+      "window_visible": true,
+      "key": true,
+      "active_space": true,
+      "occlusion": 8192
+    },
+    "sample": "main thread sampled inside Shell::wait_frames \u2192 thread::sleep; custom wait-file blocks child winit event progress",
+    "acceptance": false
+  },
+  "native_04": {
+    "binary_sha256": "d6cc8432d696addbc15fc5871579fb4549eff36b75aab886e4f5c3e1d1a893cb",
+    "seed": {
+      "scenario_result": "ok",
+      "main_presentations": 198,
+      "main_captures": 7,
+      "main_blank": 0,
+      "workshop_presentations": 51,
+      "workshop_redraws": 54,
+      "workshop_unpresented_redraws": 3,
+      "workshop_captures": 2,
+      "workshop_blank": 0,
+      "elapsed_seconds": 34.183,
+      "gpu_reset_reports_changed": false,
+      "original_pngs_inspected": 9,
+      "parent_mode_and_authored_selection_assertions_passed": true,
+      "authored_stylesheet_exact_fixture_bytes": true,
+      "application_preview_visual_acceptance": false,
+      "preview_failure": "wide and narrow application stylesheet preview interiors contain only background pixels; document controls/text missing",
+      "all_owned_processes_exited": true
+    },
+    "remaining_lanes": "held before reopen after actual preview pixel failure",
+    "qualified": false
+  },
+  "native_05_diagnostic": {
+    "binary_sha256": "d6cc8432d696addbc15fc5871579fb4549eff36b75aab886e4f5c3e1d1a893cb",
+    "extra_environment": {
+      "CAMBIUM_HOST_PERF_TRACE": "1"
+    },
+    "scenario_changes": false,
+    "seed_receipts": "main and workshop RESULT ok",
+    "main_presentations": 198,
+    "main_captures": 7,
+    "main_blank": 0,
+    "workshop_presentations": 51,
+    "workshop_captures": 2,
+    "workshop_blank": 0,
+    "elapsed_seconds": 34.722,
+    "gpu_reset_reports_changed": false,
+    "producer_calls": 2,
+    "producer_frames_staged": 3,
+    "stages_per_changed_frame": 2,
+    "application_preview_visual_acceptance": false,
+    "remaining_lanes": "not run: diagnostic seed only"
+  },
+  "native_06_diagnostic": {
+    "binary_sha256": "d6cc8432d696addbc15fc5871579fb4549eff36b75aab886e4f5c3e1d1a893cb",
+    "extra_environment": {
+      "CAMBIUM_HOST_PERF_TRACE": "1",
+      "MESQUITE_CAPTURE_PAINT": "1"
+    },
+    "scenario_changes": false,
+    "seed_receipts": "main and workshop RESULT ok",
+    "main_presentations": 198,
+    "main_captures": 7,
+    "main_blank": 0,
+    "workshop_presentations": 51,
+    "workshop_captures": 2,
+    "workshop_blank": 0,
+    "elapsed_seconds": 34.292,
+    "gpu_reset_reports_changed": false,
+    "application_preview_visual_acceptance": false,
+    "paired_paintlists_preserved": true,
+    "all_owned_processes_exited": true,
+    "remaining_lanes": "not run: diagnostic seed only"
+  },
+  "native_07_diagnostic": {
+    "binary_sha256": "e63c45974e3673b590b22ba82213a1a273c3a2678e024d2d702b5b3b35eaccc9",
+    "production_build_seconds": 32.7,
+    "extra_environment": {
+      "CAMBIUM_HOST_PERF_TRACE": "1",
+      "MESQUITE_CAPTURE_PAINT": "1"
+    },
+    "diagnostic_child_fixture_sha256": "1165b3a9ebc37064eb844dd4ecd47db6e69d3513616d7342c9bd42dbee52b80f",
+    "scenario_changes": "intentional assert snap preview-errors == none after both child captures before Save",
+    "seed_receipts": "main and workshop RESULT fail due intentional diagnostic assertion",
+    "stylesheet_preview_errors": "",
+    "main_presentations": 199,
+    "main_captures": 7,
+    "main_blank": 0,
+    "workshop_presentations": 52,
+    "workshop_redraws": 55,
+    "workshop_captures": 2,
+    "workshop_blank": 0,
+    "elapsed_seconds": 34.457,
+    "gpu_reset_reports_changed": false,
+    "application_preview_visual_acceptance": false,
+    "named_chrome_identity_repaired_empty_preview": false,
+    "paired_paintlists_preserved": true,
+    "all_owned_processes_exited": true,
+    "remaining_lanes": "not run: diagnostic seed only"
+  },
+  "native_08_diagnostic": {
+    "binary_sha256": "e3833cb4665d4d754dcdbee1c83a651a1107e65ee93c81eb75db3e788f797c1f",
+    "production_build_seconds": 39.42,
+    "temporary_source_observer": true,
+    "temporary_module_and_patch_preserved": true,
+    "observer_divergence": "one initial registry replacement with actual sourceRc and first-binding raster key; same SceneProducer delegates actual scene; added copy timing may alter output",
+    "extra_environment": {
+      "CAMBIUM_HOST_PERF_TRACE": "1",
+      "MESQUITE_CAPTURE_PAINT": "1",
+      "TURNSTONE_THEME_SOURCE_PROBE_DIR": "external native08/source-diagnostic"
+    },
+    "scenario_changes": false,
+    "seed_receipts": "main and workshop RESULT ok",
+    "main_presentations": 198,
+    "main_captures": 7,
+    "main_blank": 0,
+    "workshop_presentations": 51,
+    "workshop_captures": 2,
+    "workshop_blank": 0,
+    "elapsed_seconds": 35.212,
+    "gpu_reset_reports_changed": false,
+    "source_outputs": 4,
+    "source_scene_ops_each": 24,
+    "source_scene_glyph_runs_each": 13,
+    "source_diagnostics_each": [],
+    "source_copy_arm_to_map_ms": [
+      502,
+      201,
+      149,
+      170
+    ],
+    "source_authored_wide_narrow_distinct_rgba": [
+      1875,
+      1875
+    ],
+    "source_authored_wide_narrow_fully_opaque": true,
+    "source_authored_role_bytes_present": true,
+    "source_authored_wide_narrow_visually_inspected": true,
+    "child_preview_visual_acceptance": false,
+    "child_preview_distinct_rgba_each": 1,
+    "all_owned_processes_exited": true,
+    "raw_to_png_and_pixelstats_after_process_exit": true,
+    "remaining_lanes": "not run: diagnostic seed only"
+  },
+  "native_09_diagnostic": {
+    "binary_sha256": "9c5ab5222fc27713f90bb0e57ca67133a4bfca88b06930c03f419a9f1957a778",
+    "production_build_seconds": 37.68,
+    "temporary_stage_observer": true,
+    "baseline_actual_capture_armed_first": true,
+    "source_probe_unset": true,
+    "producer_source_registry_cache_operations": "none",
+    "scenario_changes": false,
+    "seed_receipts": "main and workshop RESULT ok",
+    "main_presentations": 198,
+    "main_captures": 7,
+    "main_blank": 0,
+    "workshop_presentations": 51,
+    "workshop_captures": 2,
+    "workshop_blank": 0,
+    "elapsed_seconds": 34.535,
+    "gpu_reset_reports_changed": false,
+    "live_texture_registrations": [
+      2,
+      2,
+      2
+    ],
+    "css_image_key": "0xc000000074616263",
+    "full_packet_ops": 434,
+    "full_packet_fonts": 4,
+    "full_packet_shadow_masks": 0,
+    "copy_arm_to_map_ms": [
+      514,
+      512
+    ],
+    "original_capture_callback": "legacy",
+    "presented_frame_host_and_sequence": "unavailable in observed legacy capture callback; not inferred",
+    "staged_css_sampler_rgba": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "staged_css_sampler_transparent_pixels": 1090272,
+    "fresh_full_preview_roi_distinct_rgba": 1,
+    "fresh_full_vs_original_preview_roi_different_pixels": 0,
+    "fresh_full_visually_inspected": true,
+    "application_preview_visual_acceptance": false,
+    "all_owned_processes_exited": true,
+    "raw_to_png_and_pixelstats_after_process_exit": true,
+    "remaining_lanes": "not run: diagnostic seed only"
+  },
+  "native_10_diagnostic": {
+    "binary_sha256": "26a74ff0a0226a2ff5447f973ea4410915162beae69ba50d82b292e97217bf58",
+    "production_build_seconds": 43.31,
+    "temporary_registration_observer": true,
+    "baseline_actual_capture_armed_first": true,
+    "source_stage_probe_environment_unset": true,
+    "producer_divergence": "one wrapper delegates real SceneProducer/same sourceRc; no source copy during producer/stage; originalCSSkey never restaged",
+    "normal_renderer_cache_invalidation_from_newkeys": true,
+    "scenario_changes": false,
+    "seed_receipts": "main and workshop RESULT ok",
+    "main_presentations": 198,
+    "main_captures": 7,
+    "main_blank": 0,
+    "workshop_presentations": 51,
+    "workshop_captures": 2,
+    "workshop_blank": 0,
+    "elapsed_seconds": 34.479,
+    "gpu_reset_reports_changed": false,
+    "copy_arm_to_map_ms": [
+      526,
+      523,
+      518,
+      515,
+      512
+    ],
+    "live_registration_counts": {
+      "before": 2,
+      "after_original": 2,
+      "after_stage": 3,
+      "after_direct": 4,
+      "after_old_again": 4
+    },
+    "original_registration_before_rgba": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "original_registration_before_transparent_pixels": 1090272,
+    "new_stage_direct_original_after_and_actual_source_byte_identical": true,
+    "populated_source_raw_sha256": "5cfb73d0a2ac38f45b9cdab7aa680ae8f03ccb334d8efec32b4fc02b9fe566c7",
+    "populated_source_distinct_rgba": 1875,
+    "original_pngs_visually_inspected": 9,
+    "actual_source_png_visually_inspected": true,
+    "application_preview_visual_acceptance": false,
+    "original_child_callback": "legacy; stamped host/sequence unavailable",
+    "all_owned_processes_exited": true,
+    "raw_to_png_and_pixelstats_after_process_exit": true,
+    "remaining_lanes": "not run: diagnostic seed only"
+  },
+  "shared_renderer_repair": {
+    "revision": "10f01d6d88e94eac087daf033b24895cf97b8e82",
+    "production_fix": "preserve resident image atlas extent across patchless solid/empty renders",
+    "cpu_negative_control": "resident atlas extent returned0x0 rather than2048x2048; meaningful regression failed before fix",
+    "cpu_encoding_passed": 33,
+    "gpu_image_atlas_sequence_frames": 13,
+    "gpu_image_atlas_regression_passed": true,
+    "gpu_image_atlas_seconds": 0.81,
+    "actual_adapter": "AMD Radeon Pro Vega56",
+    "actual_backend": "Metal",
+    "repeated_preview_frames": 6,
+    "repeated_preview_passed": true,
+    "repeated_preview_seconds": 1.2,
+    "turnstone_production_native_acceptance": "native11 qualified"
+  },
+  "native_11": {
+    "production": true,
+    "temporary_source_observers": false,
+    "binary_sha256": "a402a258d751b2483a5161ce1ddd60911b48c1fe4b0ea085a5579b3854961426",
+    "build_input_digest": "32f7ea1a01dbc180c3a62a36e72196e0d2fd5df0866a7731c6c9dd59cfa2789c",
+    "build_inputs": 320,
+    "source_manifest": "native-11-source-manifest.json",
+    "lanes": {
+      "seed": {
+        "result": "ok",
+        "main_presentations": 199,
+        "main_captures": 7,
+        "main_blank": 0,
+        "elapsed_seconds": 36.518,
+        "launcher_exit": 0,
+        "timeout": false,
+        "binary_sha256": "a402a258d751b2483a5161ce1ddd60911b48c1fe4b0ea085a5579b3854961426",
+        "main_scenario_sha256": "3e8470fd996afd3a2079543ab365018fb1f5b3f4b47e9b8f6fe37fe7d08c2083",
+        "gpu_reset_reports_changed": false,
+        "all_owned_processes_exited": true,
+        "workshop_presentations": 51,
+        "workshop_captures": 2,
+        "workshop_blank": 0,
+        "workshop_redraws": 55,
+        "workshop_unpresented_redraws": 4,
+        "original_pngs_visually_inspected": 9
+      },
+      "reopen": {
+        "result": "ok",
+        "main_presentations": 48,
+        "main_captures": 2,
+        "main_blank": 0,
+        "elapsed_seconds": 15.048,
+        "launcher_exit": 0,
+        "timeout": false,
+        "binary_sha256": "a402a258d751b2483a5161ce1ddd60911b48c1fe4b0ea085a5579b3854961426",
+        "main_scenario_sha256": "a75b31adc958bdb90553e0dfb1afae7b78921b496a51f60a11de7ea75eec2111",
+        "gpu_reset_reports_changed": false,
+        "all_owned_processes_exited": true,
+        "original_pngs_visually_inspected": 2
+      },
+      "same-id": {
+        "result": "ok",
+        "main_presentations": 126,
+        "main_captures": 4,
+        "main_blank": 0,
+        "elapsed_seconds": 26.521,
+        "launcher_exit": 0,
+        "timeout": false,
+        "binary_sha256": "a402a258d751b2483a5161ce1ddd60911b48c1fe4b0ea085a5579b3854961426",
+        "main_scenario_sha256": "6ea60773f97b46e17be2472568a50266a6876486acfc1c9d05cd176ca15b9622",
+        "gpu_reset_reports_changed": false,
+        "all_owned_processes_exited": true,
+        "workshop_presentations": 49,
+        "workshop_captures": 2,
+        "workshop_blank": 0,
+        "workshop_redraws": 53,
+        "workshop_unpresented_redraws": 4,
+        "original_pngs_visually_inspected": 6
+      },
+      "same-id-reopen": {
+        "result": "ok",
+        "main_presentations": 48,
+        "main_captures": 2,
+        "main_blank": 0,
+        "elapsed_seconds": 15.175,
+        "launcher_exit": 0,
+        "timeout": false,
+        "binary_sha256": "a402a258d751b2483a5161ce1ddd60911b48c1fe4b0ea085a5579b3854961426",
+        "main_scenario_sha256": "9605ae4fcd1c80180375aa61f6d6565ac7c97396a35fe3b11be873accb72fdf9",
+        "gpu_reset_reports_changed": false,
+        "all_owned_processes_exited": true,
+        "original_pngs_visually_inspected": 2
+      }
+    },
+    "total_presentations": 521,
+    "total_captures": 19,
+    "total_blank": 0,
+    "all_original_pngs_visually_inspected": true,
+    "actual_adapter": "AMD Radeon Pro Vega56",
+    "actual_backend": "Metal",
+    "preview_populated_wide_and_narrow": true,
+    "initial_authored": {
+      "theme_id": "theme:copy-1",
+      "name": "TurnstoneAcceptance",
+      "css_utf8_bytes": 255,
+      "css_sha256": "a66fd88f7099783f29e428056cff1e613adbe9d6b6421c004c4d848b8ce2746c",
+      "css_exact_fixture_bytes": true,
+      "choice": {
+        "theme_id": "theme:copy-1",
+        "theme_mode": "dark"
+      },
+      "private_library_dump_included": false
+    },
+    "edited_authored": {
+      "theme_id": "theme:copy-1",
+      "name": "TurnstoneAcceptance",
+      "css_utf8_bytes": 255,
+      "css_sha256": "f96e7541ae4bdce4bf4088efa1071e88a02456b6be68b83a52b6cce59c2a07a2",
+      "css_exact_fixture_bytes": true,
+      "choice": {
+        "theme_id": "theme:copy-1",
+        "theme_mode": "dark"
+      },
+      "private_library_dump_included": false
+    },
+    "same_id_save_keeps_applied_css_until_explicit_apply": true,
+    "fresh_process_choice_and_css_restored_twice": true,
+    "compiled_sources": {
+      "Mere": "7019f07d36a9da8c1a3edbbcbabad606e9cb3278",
+      "Genet": "7422e90613f9017e5bb790e3acb48f61776b2eda",
+      "Knot": "95849aeaeb952ec917d74dbfa851d3e05384d73a",
+      "Woodshed_Redshank": "4aa68bfba308b7033438bf51963e84ef18f34b51",
+      "maintained_renderer_triple": "10f01d6d88e94eac087daf033b24895cf97b8e82"
+    },
+    "later_shared_policy_publications": {
+      "Mere": "3808c5a22ab5b89b6b5832e740b43b2092e0468c",
+      "compiled_candidate_repinned": false,
+      "root_verified_mere_crates_diff_empty": true,
+      "root_verified_genet_components_diff_empty": true,
+      "Genet": "7971ac91a1d9451bb5f8a50ce23f6311e4233d34"
+    },
+    "private_profiles_vault_or_library_dump_included": false,
+    "unqualified_platforms": [
+      "Linux",
+      "Windows",
+      "physical assistive technology",
+      "browser rendering"
+    ],
+    "final_fresh_process_exact_pixel_check": "passed; independent stdlib PNG/zlib RGBA unfilter; wide+narrow #342214, persisted copy-1/dark",
+    "image_manifest": "native/native-11/image-manifest.json",
+    "environment_startup_limitation": "bundled Python/PIL delayed before startup; owned process terminated after independent responsive stdlib check passed; no GPU failure",
+    "not_separately_native_exercised": [
+      "dirty parent quit Save",
+      "dirty parent quit Discard",
+      "dirty parent quit Cancel",
+      "each focus transition"
+    ]
+  }
+}

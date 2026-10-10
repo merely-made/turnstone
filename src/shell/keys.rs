@@ -165,6 +165,28 @@ impl Shell {
         let crate::surface::FocusTarget::Pane(pane_id) = self.app.focus else {
             return false;
         };
+        if let Some(pane) = self.renderers.settings.get_mut(&pane_id) {
+            if matches!(key, WinitKey::Named(WinitNamedKey::Escape)) {
+                pane.blur();
+                self.app.focus = crate::surface::FocusTarget::Graph(self.app.default_graph_pane());
+                self.request_redraw();
+                return true;
+            }
+            if matches!(key, WinitKey::Named(WinitNamedKey::Tab)) {
+                pane.focus_traverse(!self.shift);
+                return true;
+            }
+            let modifiers = cambium::Modifiers {
+                shift: self.shift,
+                ctrl: self.ctrl,
+                alt: self.alt,
+                meta: false,
+            };
+            return cambium_winit::key_event_from_winit(key, modifiers).is_some_and(|event| {
+                pane.key(event);
+                true
+            });
+        }
         if matches!(key, WinitKey::Named(WinitNamedKey::Escape)) {
             if let Some(pane) = self.renderers.contributed.get_mut(pane_id) {
                 pane.focus(None);
@@ -266,39 +288,39 @@ impl Shell {
                             choice: crate::user_agent_decision::PermissionChoice::Dismiss,
                         },
                     )
-                }
+                },
                 crate::user_agent_decision::PendingUserAgentDecision::Authentication { .. } => {
                     match key {
                         WinitKey::Named(WinitNamedKey::Escape) => {
                             Some(Action::CancelAuthentication { request })
-                        }
+                        },
                         WinitKey::Named(WinitNamedKey::Enter) => {
                             Some(Action::SubmitAuthentication { request })
-                        }
+                        },
                         WinitKey::Named(WinitNamedKey::Tab) => {
                             Some(Action::FocusAuthenticationField(
                                 match self.app.user_agent_decision.authentication.field {
                                     crate::user_agent_decision::AuthenticationField::Username => {
                                         crate::user_agent_decision::AuthenticationField::Password
-                                    }
+                                    },
                                     crate::user_agent_decision::AuthenticationField::Password => {
                                         crate::user_agent_decision::AuthenticationField::Username
-                                    }
+                                    },
                                 },
                             ))
-                        }
+                        },
                         WinitKey::Named(WinitNamedKey::Backspace) => {
                             Some(Action::BackspaceAuthentication)
-                        }
+                        },
                         WinitKey::Named(WinitNamedKey::Space) => {
                             Some(Action::InsertAuthentication(" ".into()))
-                        }
+                        },
                         WinitKey::Character(text) if !self.ctrl && !self.alt => {
                             Some(Action::InsertAuthentication(text.to_string()))
-                        }
+                        },
                         _ => None,
                     }
-                }
+                },
             };
             if let Some(action) = action {
                 self.act(action);
@@ -330,14 +352,14 @@ impl Shell {
                     } else {
                         crate::action::DocumentFindDirection::Next
                     }))
-                }
+                },
                 WinitKey::Named(WinitNamedKey::Backspace) => Some(Action::BackspaceDocumentFind),
                 WinitKey::Named(WinitNamedKey::Space) => {
                     Some(Action::InsertDocumentFind(" ".into()))
-                }
+                },
                 WinitKey::Character(text) if !self.ctrl && !self.alt => {
                     Some(Action::InsertDocumentFind(text.to_string()))
-                }
+                },
                 _ => None,
             };
             if let Some(action) = action {
@@ -366,10 +388,10 @@ impl Shell {
                 WinitKey::Named(WinitNamedKey::ArrowDown) => Some(Action::OmnibarMove(1)),
                 WinitKey::Named(WinitNamedKey::ArrowLeft) => {
                     Some(Action::OmnibarCaret(CaretMove::Left))
-                }
+                },
                 WinitKey::Named(WinitNamedKey::ArrowRight) => {
                     Some(Action::OmnibarCaret(CaretMove::Right))
-                }
+                },
                 WinitKey::Named(WinitNamedKey::Home) => Some(Action::OmnibarCaret(CaretMove::Home)),
                 WinitKey::Named(WinitNamedKey::End) => Some(Action::OmnibarCaret(CaretMove::End)),
                 WinitKey::Named(WinitNamedKey::Delete) => Some(Action::OmnibarDelete),
@@ -378,7 +400,7 @@ impl Shell {
                 // chord; Ctrl+K already summons the palette).
                 WinitKey::Character(s) if self.ctrl && s.eq_ignore_ascii_case("d") => {
                     Some(Action::OmnibarToggleKeepSelected)
-                }
+                },
                 WinitKey::Character(s) if !self.ctrl => s.chars().next().map(Action::OmnibarChar),
                 _ => None,
             }

@@ -168,6 +168,9 @@ impl taproot::Automatable for Shell {
             crate::ui::CAMBIUM_SHEET,
             crate::knot_authoring::KNOT_SHEET
         );
+        let mut chrome = crate::shell_services::ShellChromeConfig::default();
+        self.live_settings.snapshot().apply_to(&mut chrome);
+        let settings_sheet = crate::ui::cambium_sheet(&chrome.appearance);
         for surface in &plan {
             let rect = [
                 surface.rect.x,
@@ -289,6 +292,8 @@ impl taproot::Automatable for Shell {
                 rect: *rect,
                 sheet: if *name == "knot" {
                     &knot_sheet
+                } else if *name == "settings" {
+                    &settings_sheet
                 } else {
                     crate::ui::CAMBIUM_SHEET
                 },
@@ -344,6 +349,38 @@ impl taproot::Automatable for Shell {
                         surface: "workbench",
                         point,
                     });
+                }
+                selected.map_or(taproot::SelectorTarget::Miss, taproot::SelectorTarget::Hit)
+            },
+            Some("settings") => {
+                let plan = self.surface_plan();
+                let mut selected = None;
+                for surface in &plan {
+                    let crate::surface::SurfaceKind::Pane(id) = surface.kind else {
+                        continue;
+                    };
+                    if !matches!(self.pane_content(id), Some(PaneContent::Registered(kind))
+                        if kind.as_str() == crate::panes::kind::SETTINGS)
+                    {
+                        continue;
+                    }
+                    let Some(pane) = self.renderers.settings.get(&id) else {
+                        continue;
+                    };
+                    let point = match pane.selector_point(selector) {
+                        Ok(Some((x, y))) => (surface.rect.x + x, surface.rect.y + y),
+                        Ok(None) => continue,
+                        Err(_) => return taproot::SelectorTarget::Miss,
+                    };
+                    // Preserve ordinary physical routing and attribution:
+                    // covered targets and duplicate panes cannot claim a hit.
+                    if crate::surface::hit_test(&plan, self.app.focus, point.0, point.1)
+                        .is_none_or(|hit| hit.id != surface.id)
+                        || selected.is_some()
+                    {
+                        return taproot::SelectorTarget::Miss;
+                    }
+                    selected = Some(taproot::Hit { surface: "settings", point });
                 }
                 selected.map_or(taproot::SelectorTarget::Miss, taproot::SelectorTarget::Hit)
             },
@@ -436,6 +473,7 @@ impl taproot::Automatable for Shell {
 
     fn snapshot(&self) -> taproot::ProbeSnapshot {
         let snap = crate::observe::snapshot(&self.app);
+        let appearance = self.live_settings.snapshot();
         let kept = snap.focused.as_ref().is_some_and(|node| node.kept);
         let mut out = taproot::ProbeSnapshot::default()
             .with_field("focus", snap.focus)
@@ -466,7 +504,47 @@ impl taproot::Automatable for Shell {
             // stores them: the bare `>` lane is bounded by the row limit, so a
             // kept command can be stored and still sit past the visible rows.
             .with_field("commands-added", self.app.command_choices.added.join(","))
-            .with_field("commands-removed", self.app.command_choices.removed.join(","));
+            .with_field(
+                "commands-removed",
+                self.app.command_choices.removed.join(","),
+            );
+        out = out
+            .with_field(
+                "appearance-theme",
+                appearance.theme_id().unwrap_or_default(),
+            )
+            .with_field(
+                "appearance-mode",
+                appearance.theme_mode().unwrap_or_default(),
+            )
+            .with_field(
+                "appearance-workshop-open",
+                self.theme_editor.is_some().to_string(),
+            )
+            .with_field(
+                "appearance-workshop-ok",
+                self.main_receipt
+                    .workshop
+                    .map(|ok| ok.to_string())
+                    .unwrap_or_default(),
+            )
+            .with_field("presented-frames", self.main_receipt.presented.to_string())
+            .with_field(
+                "capture-count",
+                self.main_receipt.captures.len().to_string(),
+            )
+            .with_field("capture-errors", self.main_receipt.errors.len().to_string());
+        let appearance_sheet = match self
+            .app
+            .shell_chrome_config()
+            .appearance
+            .theme_presentation
+            .as_ref()
+        {
+            Some(tabard::ThemePresentation::AuthoredStylesheet(sheets)) => sheets.join("\n"),
+            _ => String::new(),
+        };
+        out = out.with_field("appearance-css", appearance_sheet);
         #[cfg(all(feature = "scry", windows))]
         {
             let ready = self
@@ -658,8 +736,10 @@ impl taproot::Automatable for Shell {
     }
 
     /// Turnstone's quiescence report, driving the `wait` verb. Busy while any of
-    /// the three kinds of work a scenario must not race is outstanding:
+    /// the work a scenario must not race is outstanding:
     ///
+    /// - a workshop is requested or owns its native child window,
+    /// - a capture is queued or its owned readback is pending,
     /// - a page, favicon, subresource, or submission FETCH is in flight (the
     ///   port has not answered; favicon failures remain UI-silent),
     /// - a content spawn is `Requested` (the effect is out, no session yet),
@@ -670,6 +750,17 @@ impl taproot::Automatable for Shell {
     /// and it counts a spawn as busy from the effect rather than from the
     /// session, so the gap between them cannot read as quiet.
     fn busy(&mut self) -> Option<bool> {
+        if super::appearance_editor::workshop_pending(
+            self.theme_editor_requested,
+            self.theme_editor.is_some(),
+        ) {
+            // Shared `wait` yields to winit while the child owns native work.
+            // The legacy synchronous file wait cannot drive a child window.
+            return Some(true);
+        }
+        if self.pending_capture.is_some() || self.pending_capture_readback.is_some() {
+            return Some(true);
+        }
         // Keep the hot `wait` poll allocation-free and short-circuiting. The
         // explicit `record-idle` and content-ready assertions call
         // `idle_diagnosis` when a receipt needs every concurrent cause.
@@ -724,6 +815,30 @@ impl taproot::Driveable for Shell {
     /// parser and run it against the Shell via `run_scenario_step`. An unknown
     /// verb fails loudly (parse returns Err), never a silent skip.
     fn app_step(&mut self, line: &str) -> Result<(), String> {
+        if let Some(size) = line.strip_prefix("resize ") {
+            let mut values = size.split_whitespace();
+            let width: f64 = values
+                .next()
+                .ok_or("resize needs width height")?
+                .parse()
+                .map_err(|_| "invalid resize width")?;
+            let height: f64 = values
+                .next()
+                .ok_or("resize needs width height")?
+                .parse()
+                .map_err(|_| "invalid resize height")?;
+            if values.next().is_some()
+                || !width.is_finite()
+                || !height.is_finite()
+                || width <= 0.0
+                || height <= 0.0
+            {
+                return Err("resize needs two positive finite dimensions".into());
+            }
+            let window = self.window.as_ref().ok_or("main window is unavailable")?;
+            let _ = window.request_inner_size(winit::dpi::LogicalSize::new(width, height));
+            return Ok(());
+        }
         tracing::debug!(target: "turnstone::selfdrive", verb = line.split_whitespace().next().unwrap_or(""), "begin app step");
         let step = crate::scenario::parse(line)?
             .into_iter()
