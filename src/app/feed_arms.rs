@@ -313,7 +313,7 @@ mod tests {
             Effect::FetchFeed { node, .. } if *node == source
         )));
         let source_key = app.graph_runtimes.graph().get_node_by_id(source).unwrap().0;
-        let source_tags = app.graph_runtimes.graph().node_tags(source_key).unwrap();
+        let source_tags = crate::content_tags::content_tags(app.graph_runtimes.graph(), source_key);
         assert!(source_tags.contains(KEEP_TAG) && source_tags.contains(FEED_TAG));
 
         let fetched = FetchedPage::text(
@@ -335,7 +335,7 @@ mod tests {
             .1
             .id;
         let one_key = app.graph_runtimes.graph().get_node_by_id(one).unwrap().0;
-        let tags = app.graph_runtimes.graph().node_tags(one_key).unwrap();
+        let tags = crate::content_tags::content_tags(app.graph_runtimes.graph(), one_key);
         assert!(tags.contains(FEED_ENTRY_TAG) && tags.contains(UNREAD_TAG));
 
         app.apply_update(Update::FeedFetched {

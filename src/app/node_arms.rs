@@ -128,7 +128,7 @@ impl App {
             .and_then(|graph| self.graph_runtimes.canvas(graph))
             .and_then(|canvas| {
                 let (key, _) = canvas.graph().get_node_by_id(member)?;
-                canvas.graph().node_tags(key)
+                Some(crate::content_tags::content_tags(canvas.graph(), key))
             })
             .is_some_and(|tags| tags.contains(crate::feed::KEEP_TAG))
     }

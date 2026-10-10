@@ -5415,7 +5415,7 @@ pub(crate) fn join_live(
     )>,
 ) -> Result<LiveLanes, String> {
     let keypair = identity
-        .derive_keypair(&transport_salt(binding.moot.0))
+        .derived_keypair(&transport_salt(binding.moot.0))
         .map_err(|error| format!("derive transport identity: {error}"))?;
     let overlays = [
         sync_overlay_topic(binding.moot.0),
@@ -5434,7 +5434,7 @@ pub(crate) fn join_live(
         // Active mDNS so two peers on one LAN re-find each other by node id
         // after either restarts on a fresh port; a ticket fixes an address,
         // not an identity.
-        let transport = P2pandaTransport::builder(&keypair)
+        let transport = P2pandaTransport::builder_for(&keypair)
             .gossip()
             .mdns(MdnsDiscoveryMode::Active)
             // Beside the sync lanes, on the same endpoint: a place member

@@ -430,7 +430,7 @@ mod tests {
             .1
             .id;
         let key = app.graph_runtimes.graph().get_node_by_id(node).unwrap().0;
-        let tags = app.graph_runtimes.graph().node_tags(key).unwrap();
+        let tags = crate::content_tags::content_tags(app.graph_runtimes.graph(), key);
         assert!(tags.contains(REDSHANK_NOTE_TAG));
         assert!(
             app.graph_runtimes
