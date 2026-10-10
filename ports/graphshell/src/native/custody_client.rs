@@ -32,8 +32,8 @@ use personae::{Ed25519Keypair, Ed25519PublicKey, IdentityError, ProfileId, Retai
 use crate::native::app_admission::{AppId, AppRouteId, configured_app_endpoint};
 use crate::native::app_client::{AppBrokerClient, AppClientError};
 use crate::native::custody::{
-    CUSTODY_ROUTE, CustodyAnswer, CustodyCall, CustodyRefusal, KeySource, ResidentStatus,
-    StationGrantRequest,
+    CUSTODY_ROUTE, CustodyAnswer, CustodyCall, CustodyRefusal, EpochKeyRequest, KeySource,
+    ReleasedEpochKey, ResidentStatus, StationGrantRequest,
 };
 
 /// Why a custody call did not answer.
@@ -191,6 +191,24 @@ impl CustodyClient {
         )
     }
 
+    /// Keys derived from `persona`'s current private epoch, released under
+    /// djinn's policy (D11), in request order.
+    pub async fn release_epoch_keys(
+        &mut self,
+        persona: uuid::Uuid,
+        device_label: Option<String>,
+        keys: Vec<EpochKeyRequest>,
+    ) -> Result<Vec<ReleasedEpochKey>, CustodyClientError> {
+        expect_epoch_keys(
+            self.call(CustodyCall::ReleaseEpochKeys {
+                persona,
+                device_label,
+                keys,
+            })
+            .await?,
+        )
+    }
+
     /// Wait until the lock leaves `seen`; the new state.
     pub async fn watch_lock(
         &mut self,
@@ -282,6 +300,20 @@ impl BlockingCustodyClient {
         })?)
     }
 
+    /// See [`CustodyClient::release_epoch_keys`].
+    pub fn release_epoch_keys(
+        &mut self,
+        persona: uuid::Uuid,
+        device_label: Option<String>,
+        keys: Vec<EpochKeyRequest>,
+    ) -> Result<Vec<ReleasedEpochKey>, CustodyClientError> {
+        expect_epoch_keys(self.call(CustodyCall::ReleaseEpochKeys {
+            persona,
+            device_label,
+            keys,
+        })?)
+    }
+
     /// See [`CustodyClient::revoke_device`].
     pub fn revoke_device(
         &mut self,
@@ -304,6 +336,7 @@ fn answer_name(answer: &CustodyAnswer) -> &'static str {
         CustodyAnswer::StationGrant(_) => "a station grant",
         CustodyAnswer::Revoked(_) => "a revocation",
         CustodyAnswer::Lock(_) => "a lock state",
+        CustodyAnswer::EpochKeys(_) => "epoch keys",
     }
 }
 
@@ -384,6 +417,13 @@ fn expect_revoked(
     match answer {
         CustodyAnswer::Revoked(outcome) => Ok(outcome),
         other => Err(mismatch("revoke", &other)),
+    }
+}
+
+fn expect_epoch_keys(answer: CustodyAnswer) -> Result<Vec<ReleasedEpochKey>, CustodyClientError> {
+    match answer {
+        CustodyAnswer::EpochKeys(keys) => Ok(keys),
+        other => Err(mismatch("release epoch keys", &other)),
     }
 }
 

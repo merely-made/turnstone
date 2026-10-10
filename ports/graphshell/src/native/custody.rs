@@ -101,6 +101,72 @@ pub enum CustodyCall {
     /// application holding released keys drops them when this answers
     /// Locked.
     WatchLock { seen: VaultLockView },
+    /// Release keys derived from a persona wallet's current private epoch
+    /// (D11), for a store whose keys must match on every device of the
+    /// persona. The epoch itself never crosses. Refused for any derivation
+    /// outside djinn's release policy.
+    ReleaseEpochKeys {
+        persona: Uuid,
+        /// Mint this device's identity under this label if it has none.
+        /// Absent, a device-bound key with no device identity is refused.
+        device_label: Option<String>,
+        keys: Vec<EpochKeyRequest>,
+    },
+}
+
+/// One key derived from a persona's current private epoch: blake3's
+/// `derive_key` under `context`, over the epoch secret followed by this
+/// device's public root when `device_bound`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EpochKeyRequest {
+    pub context: String,
+    pub device_bound: bool,
+    /// Answer only the Ed25519 public key the derived bytes seed.
+    pub public_only: bool,
+}
+
+impl EpochKeyRequest {
+    /// A secret derivation.
+    pub fn secret(context: impl Into<String>, device_bound: bool) -> Self {
+        Self {
+            context: context.into(),
+            device_bound,
+            public_only: false,
+        }
+    }
+
+    /// The Ed25519 public half of a derivation.
+    pub fn public(context: impl Into<String>, device_bound: bool) -> Self {
+        Self {
+            context: context.into(),
+            device_bound,
+            public_only: true,
+        }
+    }
+}
+
+/// One released epoch key, answering the request it echoes.
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReleasedEpochKey {
+    pub request: EpochKeyRequest,
+    /// The derived secret, or its Ed25519 public key when the request was
+    /// `public_only`.
+    #[serde(with = "b64_32")]
+    pub key: [u8; 32],
+}
+
+impl std::fmt::Debug for ReleasedEpochKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ReleasedEpochKey")
+            .field("request", &self.request)
+            .finish_non_exhaustive()
+    }
+}
+
+impl Drop for ReleasedEpochKey {
+    fn drop(&mut self) {
+        zeroize::Zeroize::zeroize(&mut self.key);
+    }
 }
 
 /// A sited station's grant request, as plain fields.
@@ -179,6 +245,8 @@ pub enum CustodyAnswer {
     StationGrant(DeviceGrantSet),
     Revoked(RemoteAuthRevocationOutcome),
     Lock(VaultLockView),
+    /// The epoch keys asked for, in request order.
+    EpochKeys(Vec<ReleasedEpochKey>),
 }
 
 /// Why djinn did not answer a call.
@@ -197,6 +265,9 @@ pub enum CustodyRefusal {
     /// The resident has no wallet to act with.
     #[error("the resident has no wallet")]
     NoWallet,
+    /// The wallet holds no such persona.
+    #[error("the wallet holds no such persona")]
+    NoPersona,
     /// The request itself was refused, with the reason.
     #[error("refused: {reason}")]
     Refused { reason: String },
@@ -328,5 +399,26 @@ mod tests {
                 .unwrap(),
         };
         assert!(!format!("{key:?}").contains("90"));
+    }
+
+    #[test]
+    fn an_epoch_release_round_trips_and_never_prints_its_key() {
+        let call = CustodyCall::ReleaseEpochKeys {
+            persona: Uuid::from_u128(7),
+            device_label: Some("study".into()),
+            keys: vec![EpochKeyRequest::secret("ctx", true)],
+        };
+        let text = serde_json::to_string(&call).unwrap();
+        assert_eq!(serde_json::from_str::<CustodyCall>(&text).unwrap(), call);
+        let answer = CustodyAnswer::EpochKeys(vec![ReleasedEpochKey {
+            request: EpochKeyRequest::public("ctx", false),
+            key: [0x5a; 32],
+        }]);
+        let text = serde_json::to_string(&answer).unwrap();
+        assert_eq!(
+            serde_json::from_str::<CustodyAnswer>(&text).unwrap(),
+            answer
+        );
+        assert!(!format!("{answer:?}").contains("90"));
     }
 }
