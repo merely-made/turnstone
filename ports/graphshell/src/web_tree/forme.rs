@@ -842,7 +842,8 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                         button("Move tile", move |p: &mut TreePage, _| {
                             begin_move(p, member);
                         })
-                        .attr("data-forme-move", "true"),
+                        .attr("data-forme-move", "true")
+                        .attr("aria-label", format!("Move tile: {title}")),
                     ));
                     if moving.is_some_and(|m| m != member) {
                         for (label, edge) in [
@@ -853,7 +854,8 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                         ] {
                             controls.push(Box::new(
                                 button(label, move |p: &mut TreePage, _| preview(p, member, edge))
-                                    .attr("data-forme-preview", format!("{edge:?}").to_lowercase()),
+                                    .attr("data-forme-preview", format!("{edge:?}").to_lowercase())
+                                    .attr("aria-label", format!("{label}: {title}")),
                             ));
                         }
                     }

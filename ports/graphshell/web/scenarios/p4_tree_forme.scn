@@ -50,9 +50,9 @@ click role:button Pause physics
 settle 2
 click role:button Show workbench
 settle 2
-dom click [data-forme-address="file:///Graphshell/reference-notes.md"] [data-forme-move]
+click role:button Move tile: Reference notes
 settle 2
-dom click [data-forme-address="https://example.test/i2p-port"] [data-forme-preview="bottom"]
+click role:button Preview below: I2P port notes
 settle 2
 assert snap forme-preview == true
 assert snap forme-placed == 2
@@ -61,9 +61,9 @@ settle 2
 assert snap forme-preview == false
 assert text Tile move cancelled
 same sized forme-geometry
-dom click [data-forme-address="file:///Graphshell/reference-notes.md"] [data-forme-move]
+click role:button Move tile: Reference notes
 settle 2
-dom click [data-forme-address="https://example.test/i2p-port"] [data-forme-preview="bottom"]
+click role:button Preview below: I2P port notes
 settle 2
 click role:button Apply tile move
 wait 120
