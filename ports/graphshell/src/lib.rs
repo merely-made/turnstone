@@ -11,6 +11,8 @@
 
 #[cfg(feature = "web")]
 pub mod access;
+#[cfg(feature = "web")]
+pub mod access_inspection;
 #[cfg(any(
     all(feature = "native", not(target_arch = "wasm32")),
     feature = "webrtc-join"

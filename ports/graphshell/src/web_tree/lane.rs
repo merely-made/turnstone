@@ -672,6 +672,8 @@ impl Product for TreeLane {
         let snapshot = super::speed::fields(snapshot, &canvas, &self.shared);
         #[cfg(feature = "product")]
         let snapshot = forme_fields(page, &canvas, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = inspection::fields(page, snapshot);
         let snapshot = snapshot
             .with_field("physics-steps", step.steps.to_string())
             .with_field(

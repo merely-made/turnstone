@@ -89,6 +89,8 @@ const SHEET: &str = "\
     .tools-cards { margin:2px 0 4px; padding:0 0 0 16px; font-size:12px; color:#dce3e8; } \
     .tree-tools h2 { font-size:14px; margin:2px 0 4px; } \
     .tree-tools h3 { font-size:13px; margin:4px 0 2px; } \
+    .tree-inspection { overflow-wrap:anywhere; } \
+    .tree-inspection p, .tree-inspection li { font-size:12px; } \
     .tools-section + .tools-section { margin-top:10px; border-top:1px solid #2c3b44; padding-top:4px; } \
     .tools-switch button[aria-pressed=true] { background:#2d5a63; border-color:#79a9be; } \
     .tools-active { margin:4px 0; color:#f0dfb8; font-size:12px; } \
@@ -487,6 +489,8 @@ pub(crate) struct TreePage {
     forme: Option<forme::Pane>,
     #[cfg(feature = "product")]
     forme_error: Option<String>,
+    #[cfg(feature = "product")]
+    inspected_access: Option<uuid::Uuid>,
     #[cfg(feature = "applets")]
     applet_seen: u64,
     #[cfg(feature = "applets")]
@@ -721,6 +725,8 @@ fn tools_region(page: &TreePage) -> Child {
         ));
     }
     children.push(physics::section(page));
+    #[cfg(feature = "product")]
+    children.push(inspection::section(page));
     #[cfg(feature = "product")]
     children.push(forme::section(page));
     children.push(remote::section(page));
@@ -1024,6 +1030,8 @@ async fn boot(root: Element) -> Result<(), String> {
                 forme,
                 #[cfg(feature = "product")]
                 forme_error,
+                #[cfg(feature = "product")]
+                inspected_access: None,
                 #[cfg(feature = "applets")]
                 applet_seen: 0,
                 #[cfg(feature = "applets")]
@@ -1379,6 +1387,8 @@ mod grouping;
 mod history;
 mod lane;
 mod physics;
+#[cfg(feature = "product")]
+mod inspection;
 #[cfg(feature = "product")]
 mod product;
 #[cfg(not(feature = "product"))]
