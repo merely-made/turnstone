@@ -496,6 +496,8 @@ pub(crate) struct TreePage {
     inspected_link: Option<graphshell::link_inspection::LinkTarget>,
     #[cfg(feature = "product")]
     inspected_statement: Option<String>,
+    #[cfg(feature = "product")]
+    field_inspector: field_inspection::Pane,
     #[cfg(feature = "applets")]
     applet_seen: u64,
     #[cfg(feature = "applets")]
@@ -655,6 +657,11 @@ fn view(page: &TreePage) -> Child {
         ),
         |page: &mut TreePage, event: cambium::KeyEvent| {
             #[cfg(feature = "product")]
+            if field_inspection::cancel_pick(page, &event.key) {
+                event.prevent_default();
+                return;
+            }
+            #[cfg(feature = "product")]
             if page.forme.as_ref().is_some_and(|pane| pane.session.editing())
                 && forme::shortcut(page, &event)
             {
@@ -737,6 +744,8 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(inspection::section(page));
     #[cfg(feature = "product")]
     children.push(link_inspection::section(page));
+    #[cfg(feature = "product")]
+    children.push(field_inspection::section(page));
     #[cfg(feature = "product")]
     children.push(forme::section(page));
     children.push(remote::section(page));
@@ -1046,6 +1055,8 @@ async fn boot(root: Element) -> Result<(), String> {
                 inspected_link: None,
                 #[cfg(feature = "product")]
                 inspected_statement: None,
+                #[cfg(feature = "product")]
+                field_inspector: field_inspection::Pane::default(),
                 #[cfg(feature = "applets")]
                 applet_seen: 0,
                 #[cfg(feature = "applets")]
@@ -1405,6 +1416,8 @@ mod physics;
 mod inspection;
 #[cfg(feature = "product")]
 mod link_inspection;
+#[cfg(feature = "product")]
+mod field_inspection;
 #[cfg(feature = "product")]
 mod product;
 #[cfg(not(feature = "product"))]

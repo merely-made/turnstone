@@ -42,6 +42,7 @@ pub(super) struct SavedProduct {
     pub(super) save_state: &'static str,
     pub(super) session: String,
     pub(super) reopened: bool,
+    pub(super) inspection_fixture: bool,
     intake_open: bool,
     intake_address: TextInput,
     intake_title: TextInput,
@@ -65,17 +66,24 @@ pub(super) async fn open() -> Result<Option<SavedProduct>, String> {
     if web_graphs::requested().is_some() {
         return Err("app=local cannot also select a generated graph".into());
     }
-    let backend = IndexedDbBackend::open("graphshell-reference-host-h5", "muniment")
+    let inspection_fixture = params.get("fixture").as_deref() == Some("field-inspection");
+    let database = if inspection_fixture {
+        "graphshell-field-inspection-draft-v1"
+    } else {
+        "graphshell-reference-host-h5"
+    };
+    let backend = IndexedDbBackend::open(database, "muniment")
         .await
         .map_err(|error| error.to_string())?;
-    let mut app = GraphshellApp::open_or_fixture(
-        backend,
-        SelectedPersonaRef {
-            persona: FIXTURE_PERSONA_ADDRESS.into(),
-            profile: "profile:graphshell-h3".into(),
-        },
-    )
-    .await
+    let persona = SelectedPersonaRef {
+        persona: FIXTURE_PERSONA_ADDRESS.into(),
+        profile: "profile:graphshell-h3".into(),
+    };
+    let mut app = if inspection_fixture {
+        GraphshellApp::open_or_field_inspection_fixture(backend, persona).await
+    } else {
+        GraphshellApp::open_or_fixture(backend, persona).await
+    }
     .map_err(|error| error.to_string())?;
     let reopened = app.host.was_reopened();
     app.host
@@ -108,6 +116,7 @@ pub(super) async fn open() -> Result<Option<SavedProduct>, String> {
         save_state: "idle",
         session,
         reopened,
+        inspection_fixture,
         intake_open: false,
         intake_address: TextInput::new(""),
         intake_title: TextInput::new(""),
@@ -251,6 +260,13 @@ impl SavedProduct {
             .as_ref()
             .ok_or("Source inspection will resume when the current save finishes")?;
         graphshell::link_inspection::inspect_statement(app.host.graph(), statement)
+    }
+
+    pub(super) fn source_graph(&self) -> Result<&Graph, String> {
+        self.app
+            .as_ref()
+            .map(|app| app.host.graph())
+            .ok_or_else(|| "Source inspection will resume when the current save finishes".into())
     }
 
     /// Selected file facts from the acknowledged local owner, for receipts.
@@ -596,6 +612,11 @@ pub(super) fn controls(page: &TreePage) -> Child {
         return Box::new(el("div", ()));
     };
     let mut children: Vec<Child> = Vec::new();
+    if product.inspection_fixture {
+        children.push(Box::new(
+            el("p", "Field inspection fixture · separate browser store").attr("role", "status"),
+        ));
+    }
     if !product.status.is_empty() {
         children.push(Box::new(
             el("p", product.status.clone()).attr("role", "status"),
@@ -603,6 +624,7 @@ pub(super) fn controls(page: &TreePage) -> Child {
     }
     children.push(intake_controls(page));
     children.push(super::inspection::open_button(page));
+    children.push(super::field_inspection::open_button(page));
     if product.selected.is_some() {
         children.push(Box::new(button(
             if product.detail_open {

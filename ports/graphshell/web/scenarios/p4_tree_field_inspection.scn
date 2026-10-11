@@ -1,0 +1,133 @@
+# Fresh dedicated browser profile/origin. Build with product and use
+# tree.html?app=local&fixture=field-inspection&scenario=scenarios/p4_tree_field_inspection.scn
+# Fixture has its own IndexedDB namespace; follow with the reopen page.
+# Picking queues real HostPointer input, never sets the inspector target.
+assert snap source == saved graph
+assert snap field-inspection-fixture == true
+assert snap field-inspector-open == false
+assert snap field-inspector-roster-ready == true
+assert snap field-inspector-roster-count == 3
+assert snap forme-accesses == 0
+click role:button Restore arrangement
+settle 3
+click-node file:///Graphshell/reference-notes.md
+settle 2
+click role:button Open selected in workbench
+wait 120
+click role:button Return to Mere
+settle 2
+click-node https://example.test/i2p-port
+settle 2
+click role:button Open selected in workbench
+wait 120
+click role:button Return to Mere
+settle 2
+assert snap forme-accesses == 2
+assert snap forme-locked == true
+remember selected
+click role:button Inspect fields
+settle 2
+click role:button Inspect field: Region study
+settle 2
+assert snap field-inspector-ready == true
+assert snap field-inspector-kind == numen
+assert snap field-inspector-id == 00000000-0000-0000-0000-000000000065
+assert snap field-inspector-couplings == 2
+click role:button Inspect coupling: 00000000-0000-0000-0000-0000000000c9
+settle 2
+assert snap coupling-inspector-ready == true
+assert snap coupling-inspector-strength == 0.02
+assert snap coupling-inspector-eligibility == Recognized
+capture exact_scalar_coupling
+click role:button Inspect coupling: 00000000-0000-0000-0000-0000000000ca
+settle 2
+assert snap coupling-inspector-strength == 0.08
+assert snap coupling-inspector-eligibility == OpenResponse
+remember exact
+click role:button Fit graph
+settle 2
+click role:button Pick field regions
+settle 2
+pick-field-regions 0 0
+settle 2
+assert snap field-inspector-picking == false
+assert snap field-region-ready == true
+assert snap field-region-count == 3
+same exact field-inspector-target
+same exact coupling-inspector-id
+same selected detail-member
+same selected forme
+same selected forme-accesses
+same selected forme-geometry
+remember overlap
+capture overlapping_field_candidates
+click role:button Pick field regions
+settle 2
+pick-field-regions 0 0
+settle 2
+same overlap field-region-ids
+same exact field-inspector-target
+same exact coupling-inspector-id
+# Choosing a candidate is explicit and keeps selection intact.
+click role:button Inspect region: Region overlap
+settle 2
+assert snap field-inspector-id == 00000000-0000-0000-0000-000000000066
+assert snap field-inspector-couplings == 1
+same selected detail-member
+click role:button Inspect field: Region study
+settle 2
+click role:button Inspect coupling: 00000000-0000-0000-0000-0000000000ca
+settle 2
+click role:button Hide boundary: Region study
+settle 2
+assert snap field-inspector-boundary-enabled == false
+assert snap field-region-count == 2
+assert snap field-inspector-roster-count == 3
+same exact coupling-inspector-strength
+same exact coupling-inspector-eligibility
+click role:button Inspect field: Region study
+settle 2
+assert snap field-inspector-ready == true
+assert snap field-inspector-boundary-enabled == false
+click role:button Show boundary: Region study
+settle 2
+same overlap field-region-ids
+click role:button Inspect field: Retired study
+settle 2
+assert snap field-inspector-lifecycle == Retired
+assert snap field-inspector-couplings == 0
+assert snap field-region-count == 3
+capture retired_field_record
+click role:button Inspect Forme
+settle 2
+assert snap field-inspector-kind == forme
+assert snap field-inspector-lifecycle == arrangement-owner
+assert snap field-inspector-ready == true
+same selected forme
+same selected forme-geometry
+capture forme_arrangement_owner
+click role:button Inspect field: Region study
+settle 2
+click role:button Inspect coupling: 00000000-0000-0000-0000-0000000000ca
+settle 2
+click-node file:///Graphshell/reference-notes.md
+settle 2
+assert snap detail-address == file:///Graphshell/reference-notes.md
+same exact field-inspector-target
+same exact coupling-inspector-id
+same selected forme
+same selected forme-accesses
+same selected forme-geometry
+remember other_selection
+click role:button Close coupling inspection
+settle 2
+assert snap coupling-inspector-ready == false
+assert snap field-inspector-open == true
+click role:button Close field inspection
+settle 2
+assert snap field-inspector-open == false
+same other_selection detail-member
+same selected forme
+same selected forme-accesses
+same selected forme-geometry
+log field inspection and overlap discovery preserve selection and Forme ownership

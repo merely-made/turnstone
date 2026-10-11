@@ -676,6 +676,8 @@ impl Product for TreeLane {
         let snapshot = inspection::fields(page, snapshot);
         #[cfg(feature = "product")]
         let snapshot = link_inspection::fields(page, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = field_inspection::fields(page, &canvas, snapshot);
         let snapshot = snapshot
             .with_field("physics-steps", step.steps.to_string())
             .with_field(
@@ -1106,6 +1108,24 @@ impl Product for TreeLane {
                 };
                 let (x, y) = canvas.screen_point_of(world);
                 ctx.pointer.push(HostPointer::Moved(left + x, top + y));
+                Ok(())
+            },
+            #[cfg(feature = "product")]
+            "pick-field-regions" => {
+                if !ctx.runner.state().field_inspector.picking {
+                    return Err("Arm Pick field regions before the pointer step".into());
+                }
+                let args: Vec<f32> = rest.split_whitespace().map(str::parse).collect::<Result<_, _>>().map_err(|_| "pick-field-regions wants world x y")?;
+                if args.len() != 2 || !args.iter().all(|n| n.is_finite()) {
+                    return Err("pick-field-regions wants finite world x y".into());
+                }
+                let (left, top, width, height) = leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
+                let (x, y) = self.shared.canvas.borrow().screen_point_of((args[0], args[1]));
+                if x < 0. || y < 0. || x >= width || y >= height {
+                    return Err("region point is outside the painted canvas; fit the view first".into());
+                }
+                ctx.pointer.push(HostPointer::Press(left + x, top + y));
+                ctx.pointer.push(HostPointer::Release(left + x, top + y));
                 Ok(())
             },
             #[cfg(feature = "product")]
