@@ -220,6 +220,39 @@ impl SavedProduct {
         graphshell::access_inspection::inspect_access(app.host.graph(), member)
     }
 
+    pub(super) fn linked_accesses(
+        &self,
+        member: Uuid,
+    ) -> Result<Vec<graphshell::access_inspection::AccessSummary>, String> {
+        let app = self
+            .app
+            .as_ref()
+            .ok_or("Source inspection will resume when the current save finishes")?;
+        graphshell::link_inspection::linked_accesses(app.host.graph(), member)
+    }
+
+    pub(super) fn inspect_link(
+        &self,
+        target: graphshell::link_inspection::LinkTarget,
+    ) -> Result<graphshell::link_inspection::LinkInspection, String> {
+        let app = self
+            .app
+            .as_ref()
+            .ok_or("Source inspection will resume when the current save finishes")?;
+        graphshell::link_inspection::inspect_link(app.host.graph(), target)
+    }
+
+    pub(super) fn inspect_statement(
+        &self,
+        statement: &str,
+    ) -> Result<graphshell::link_inspection::StatementInspection, String> {
+        let app = self
+            .app
+            .as_ref()
+            .ok_or("Source inspection will resume when the current save finishes")?;
+        graphshell::link_inspection::inspect_statement(app.host.graph(), statement)
+    }
+
     /// Selected file facts from the acknowledged local owner, for receipts.
     pub(super) fn saved_file(&self) -> Option<serde_json::Value> {
         if self.saving || self.pending_intake.is_some() {
