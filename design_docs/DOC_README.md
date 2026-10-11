@@ -113,7 +113,7 @@ set.
 
 ## Completed plans and receipts
 
-- [Shared diagnostics and Gloss/Inspector adoption receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md): September 30 combined source graph qualifies 635 workspace tests with nine ignores, five exact optional participant checks, repaired admission refusal, restored failure controls and five native Sky/Diagnostics images. Earlier 612-test migration receipts retain their original graph. Human AT and exact Turnstone presented-frame correlation remain open.
+- [Shared diagnostics and Gloss/Inspector adoption receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md): September 30 combined source graph qualifies 635 workspace tests with nine ignores, five exact optional participant checks, repaired admission refusal, restored failure controls and five native Sky/Diagnostics images. Earlier 612-test migration receipts retain their original graph. The October 11 owner update points to the Fleece/Muniment source-qualified compile receipt. Human AT and exact Turnstone presented-frame correlation remain open.
 
 - [Sky home daily timeline](archive_docs/2026-08-26/2026-08-26_sky_home_timeline_plan.md): landed T5a astronomy consumer with an exact-source retained pane and [headed receipt](../docs/receipts/sky_home_20260826/README.md).
 - [Livery and Buckram dependency cutover](2026-08-21_livery_buckram_dependency_cutover.md): completed removal of retired layout edges with clean-source acceptance evidence.

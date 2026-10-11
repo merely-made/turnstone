@@ -40,6 +40,12 @@ dependency becomes `eidetic` with its `fjall` feature and
 and `stdio` features supply Knot's local carrier and the endpoint binary through
 `graphshell-endpoint`. Product storage and transport authority remain local.
 
+**Owner update (2026-10-11):** `muniment` now provides the `fjall` feature and
+`muniment::FjallStore`, with the same session storage paths. Shared capture
+annotations now come from Mere Fleece. The September receipts retain their
+original source graph; the new source-qualified compile receipt lives in
+`mere/design_docs/archive_docs/2026-10-11_completed_plans/2026-10-11_fleece_eidetic_capability_plan.md`.
+
 The sealed settings API now holds an optional Tabard `ThemeChoice`, flattened
 to the existing `theme_id` / `theme_mode` keys. Turnstone retains its setting
 IDs and edits each value independently. Its product read adapter preserves old

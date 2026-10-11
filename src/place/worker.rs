@@ -2722,7 +2722,8 @@ pub(crate) mod tests {
     use super::*;
     use chartulary::{Author, Container};
     use commons::chat::{Channel, ChatEvent, Message};
-    use eidetic::fjall::FjallStore;
+    use fleece::FleeceAnnotationRecord;
+    use fleece::eidetic_bridge::{CaptureIdentity, FLEECE_ANNOTATION_SCHEMA_ID};
     use fleece::{TextPositionSelector, anchor_for_range, extract_document};
     use gemot::moot::constitution::{CapabilityGrant, ConstitutionRules};
     use gemot::moot::{
@@ -2730,9 +2731,8 @@ pub(crate) mod tests {
         MootAccessLevel, MootMember, MootMembershipAction,
     };
     use genet_static_dom::StaticDocument;
-    use mere_document_lanes::FleeceAnnotationRecord;
-    use mere_document_lanes::eidetic_bridge::{CaptureIdentity, FLEECE_ANNOTATION_SCHEMA_ID};
     use mien::Policy;
+    use muniment::FjallStore;
     use stickleback::DropExportProfile;
 
     use crate::place::invite::{ArtifactRefV1, PLACE_INVITE_VERSION};
@@ -2967,16 +2967,11 @@ pub(crate) mod tests {
         .unwrap();
         let (manifest, other_manifest) = {
             let mut store = FjallStore::open(&capture_directory).unwrap();
-            pollster::block_on(mere_document_lanes::bootstrap_fleece_annotation_schema(
-                &mut store,
-            ))
-            .unwrap();
+            pollster::block_on(fleece::bootstrap_fleece_annotation_schema(&mut store)).unwrap();
             (
-                pollster::block_on(mere_document_lanes::save_fleece_annotation(
-                    &mut store, &record, 20,
-                ))
-                .unwrap(),
-                pollster::block_on(mere_document_lanes::save_fleece_annotation(
+                pollster::block_on(fleece::save_fleece_annotation(&mut store, &record, 20))
+                    .unwrap(),
+                pollster::block_on(fleece::save_fleece_annotation(
                     &mut store,
                     &other_record,
                     21,
