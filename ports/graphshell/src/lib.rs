@@ -36,6 +36,8 @@ pub mod canvas_faces;
 #[cfg(feature = "web")]
 pub mod canvas_gestures;
 #[cfg(feature = "web")]
+pub mod viewer_commands;
+#[cfg(feature = "web")]
 pub mod canvas_physics;
 #[cfg(feature = "web")]
 pub mod canvas_reader;

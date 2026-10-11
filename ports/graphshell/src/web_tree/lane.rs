@@ -772,6 +772,9 @@ impl Product for TreeLane {
             // The page's gestures and motion preference.
             .with_field("reduced-motion", self.shared.reduced_motion().to_string())
             .with_field("gesture", self.shared.gestures.borrow().probe.clone())
+            .with_field("wheel-mode", self.shared.wheel_mode.get().name())
+            .with_field("commands-open", page.commands.open.is_some().to_string())
+            .with_field("command-last", page.commands.last.clone())
             .with_field(
                 "wheel-use",
                 format!("{:?}", self.shared.gestures.borrow().last_wheel),

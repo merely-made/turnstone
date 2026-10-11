@@ -159,7 +159,7 @@ pub(super) fn evidence(witness: &graphshell::projection_compile::DisclosedRelati
 }
 
 impl TreePage {
-    fn change_group(
+    pub(super) fn change_group(
         &mut self,
         change: impl FnOnce(&mut graphshell::host_dataset_view::FoldViewState),
     ) {

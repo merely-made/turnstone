@@ -10,8 +10,8 @@
 //! Cambium tree before any control moves there. Pictograph's canvas renders
 //! through a [`TextureProducer`] into a custom-leaf slot, rasterized with the
 //! web host's own renderer under a key of its own. A click on the slot picks
-//! the node under it, a Ctrl or Meta wheel or two fingers zoom while a plain
-//! wheel scrolls the page (`gestures`), and the arrow keys pan and plus and
+//! the node under it, the wheel zooms by default (configurable in `commands`),
+//! two fingers pan/pinch (`gestures`), and the arrow keys pan and plus and
 //! minus zoom. `tree.html` mounts it with [`mount_tree`]; `nodes` and `seed`
 //! in the URL swap the fixture graph for a generated one, and a host history
 //! (`data-dataset`) replaces both, stepped by checkpoint (`history`).
@@ -136,11 +136,17 @@ fn tree_stylesheet(appearance: &str) -> String {
     let applet_sheet = applet::SHEET;
     #[cfg(not(feature = "applets"))]
     let applet_sheet = "";
-    format!("{SHEET}\n{}\n{applet_sheet}\n{appearance}", forme_sheet())
+    format!(
+        "{SHEET}\n{}\n{}\n{applet_sheet}\n{appearance}",
+        commands::SHEET,
+        forme_sheet()
+    )
 }
 
 /// What the page, its producer and its hooks share.
 struct Shared {
+    wheel_mode: Cell<graphshell::canvas_gestures::WheelMode>,
+    command_request: RefCell<Option<commands::Request>>,
     #[cfg(feature = "applets")]
     applet: RefCell<applet::Pane>,
     appearance: crate::web_appearance::Handle,
@@ -486,6 +492,7 @@ impl TextureProducer for CanvasProducer {
 
 /// The application state the tree renders.
 pub(crate) struct TreePage {
+    commands: commands::State,
     #[cfg(feature = "product")]
     forme: Option<forme::Pane>,
     #[cfg(feature = "product")]
@@ -631,89 +638,106 @@ fn view(page: &TreePage) -> Child {
     } else {
         width.max(1)
     };
-    // Wheel and touch remain the page's gestures; hover uses target-local coordinates.
-    let graph = on_key(
-        on_pointer(
-            cambium::on_hover(
-                custom_leaf::<TreePage, ()>(CANVAS_KEY, canvas_width, 1)
-                    .attr("class", "tree-canvas")
-                    .attr("role", "img")
-                    .attr("tabindex", "0")
-                    .attr("aria-label", "Graph"),
-                |page: &mut TreePage, event: cambium::HoverEvent| {
-                    let (x, y) = if event.phase == cambium::HoverPhase::Leave {
-                        (-10000., -10000.)
-                    } else {
-                        event.local
-                    };
-                    page.shared.canvas.borrow_mut().cursor_moved(x, y);
-                    page.shared.dirty.set(true);
-                    event.defer_rebuild();
-                },
+    // Wheel and touch use the graph policy; hover uses target-local coordinates.
+    let graph = cambium::request_focus(
+        on_key(
+            on_pointer(
+                cambium::on_hover(
+                    custom_leaf::<TreePage, ()>(CANVAS_KEY, canvas_width, 1)
+                        .attr("class", "tree-canvas")
+                        .attr("role", "img")
+                        .attr("tabindex", "0")
+                        .attr("aria-label", "Graph"),
+                    |page: &mut TreePage, event: cambium::HoverEvent| {
+                        let (x, y) = if event.phase == cambium::HoverPhase::Leave {
+                            (-10000., -10000.)
+                        } else {
+                            event.local
+                        };
+                        page.shared.canvas.borrow_mut().cursor_moved(x, y);
+                        page.shared.dirty.set(true);
+                        event.defer_rebuild();
+                    },
+                ),
+                |page: &mut TreePage, event: cambium::PointerEvent| page.pointer(event),
             ),
-            |page: &mut TreePage, event: cambium::PointerEvent| page.pointer(event),
+            |page: &mut TreePage, event: cambium::KeyEvent| {
+                if commands::shortcut(page, &event) {
+                    return;
+                }
+                #[cfg(feature = "product")]
+                if page
+                    .forme
+                    .as_ref()
+                    .is_some_and(|pane| pane.session.editing())
+                    && forme::shortcut(page, &event)
+                {
+                    event.prevent_default();
+                    return;
+                }
+                if keys(page, &event.key) {
+                    event.prevent_default();
+                }
+            },
         ),
-        |page: &mut TreePage, event: cambium::KeyEvent| {
-            #[cfg(feature = "product")]
-            if page.forme.as_ref().is_some_and(|pane| pane.session.editing())
-                && forme::shortcut(page, &event)
-            {
-                event.prevent_default();
-                return;
-            }
-            if keys(page, &event.key) {
-                event.prevent_default();
-            }
-        },
+        page.commands.focus_graph,
     );
     let workbench = forme_workbench(page);
     let showing_workbench = workbench.is_some();
     Box::new(
-        el(
-            "main",
-            (
-                el("h1", "Graphshell, one tree"),
-                el("p", page.status())
-                    .attr("class", "tree-status")
-                    .attr("role", "status"),
-                history::region(page),
-                hosted_dataset(page),
-                grouping::controls(page),
-                controls::toolbar(page),
-                forme_toolbar(page),
-                showing_workbench.then(|| product::controls(page)),
-                el(
-                    "div",
-                    (
-                        (!showing_workbench).then(|| product::controls(page)),
-                        el(
-                            "div",
-                            workbench.unwrap_or_else(|| Box::new(graph)),
-                        )
-                        .attr("class", "tree-graph"),
-                        if docked {
-                            Some(tools_region(page))
-                        } else {
-                            page.tools_open.then(|| {
-                                Box::new(
-                                    el("div", tools_region(page)).attr("class", "tools-overlay"),
-                                ) as Child
-                            })
-                        },
-                    ),
-                )
-                .attr("class", "tree-body"),
+        on_key(
+            el(
+                "main",
+                (
+                    el("h1", "Graphshell, one tree"),
+                    el("p", page.status())
+                        .attr("class", "tree-status")
+                        .attr("role", "status"),
+                    history::region(page),
+                    hosted_dataset(page),
+                    grouping::controls(page),
+                    controls::toolbar(page),
+                    forme_toolbar(page),
+                    showing_workbench.then(|| product::controls(page)),
+                    el(
+                        "div",
+                        (
+                            (!showing_workbench).then(|| product::controls(page)),
+                            el("div", workbench.unwrap_or_else(|| Box::new(graph)))
+                                .attr("class", "tree-graph"),
+                            if docked {
+                                Some(tools_region(page))
+                            } else {
+                                page.tools_open.then(|| {
+                                    Box::new(
+                                        el("div", tools_region(page))
+                                            .attr("class", "tools-overlay"),
+                                    ) as Child
+                                })
+                            },
+                        ),
+                    )
+                    .attr("class", "tree-body"),
+                    commands::view(page),
+                ),
+            )
+            .attr(
+                "class",
+                if page.grouping.is_some() {
+                    "tree-grouped"
+                } else {
+                    ""
+                },
+            )
+            .attr(
+                "style",
+                format!("position:relative;width:{width}px;height:{height}px;"),
             ),
-        )
-        .attr(
-            "class",
-            if page.grouping.is_some() {
-                "tree-grouped"
-            } else {
-                ""
+            |page: &mut TreePage, event| {
+                commands::shortcut(page, &event);
             },
         )
-        .attr("style", format!("width:{width}px;height:{height}px;")),
+        .focusable(false),
     )
 }
 
@@ -955,6 +979,8 @@ async fn boot(root: Element) -> Result<(), String> {
     let initial_sheet = tree_stylesheet(&appearance.borrow().sheet());
     let appearance_revision = Cell::new(appearance.borrow().revision);
     let shared = Rc::new(Shared {
+        wheel_mode: Cell::new(gestures::requested_wheel(&root)?),
+        command_request: RefCell::new(None),
         #[cfg(feature = "applets")]
         applet: RefCell::new(applet::Pane::default()),
         appearance,
@@ -1036,6 +1062,7 @@ async fn boot(root: Element) -> Result<(), String> {
         options,
         move |_window, _commands, _wake| Init {
             state: TreePage {
+                commands: commands::State::default(),
                 #[cfg(feature = "product")]
                 forme,
                 #[cfg(feature = "product")]
@@ -1127,6 +1154,9 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
     let after_shared = shared.clone();
     HostHooks {
         frame: Box::new(move |ctx| {
+            if let Some(request) = frame_shared.command_request.borrow_mut().take() {
+                ctx.runner.update(|page| commands::open(page, request));
+            }
             #[cfg(feature = "applets")]
             {
                 let (version, generation) = {
@@ -1281,7 +1311,9 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
         }),
         after_wake: Box::new(|_ctx| {}),
         close_request: Box::new(|_ctx, _request| CloseDisposition::KeepVisible),
-        focused_text: Box::new(product::focused_text),
+        focused_text: Box::new(|runner| {
+            commands::focused_text(runner).or_else(|| product::focused_text(runner))
+        }),
         key_intercept: Box::new(|_runner, _press| false),
     }
 }
@@ -1392,6 +1424,7 @@ impl NoRepulsionLane for mere::canvas::Canvas {
 
 #[cfg(feature = "applets")]
 mod applet;
+mod commands;
 mod controls;
 #[cfg(feature = "product")]
 mod forme;
@@ -1399,12 +1432,12 @@ mod gesture_steps;
 mod gestures;
 mod grouping;
 mod history;
-mod lane;
-mod physics;
 #[cfg(feature = "product")]
 mod inspection;
+mod lane;
 #[cfg(feature = "product")]
 mod link_inspection;
+mod physics;
 #[cfg(feature = "product")]
 mod product;
 #[cfg(not(feature = "product"))]

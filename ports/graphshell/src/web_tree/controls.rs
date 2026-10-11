@@ -87,6 +87,21 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
             Box::new(control) as Child
         })
         .collect();
+    buttons.push(Box::new(
+        button("Graph commands", |page: &mut TreePage, _| {
+            commands::open_keyboard(page)
+        })
+        .attr("aria-haspopup", "dialog")
+        .attr(
+            "aria-expanded",
+            if page.commands.open.is_some() {
+                "true"
+            } else {
+                "false"
+            },
+        )
+        .attr("aria-keyshortcuts", "Control+k Meta+k Shift+F10"),
+    ));
     // Collapsed, the Graph tools region opens over the canvas from here.
     if !tools_docked(page) {
         buttons.push(Box::new(
@@ -117,6 +132,9 @@ impl TreePage {
         }
         if event.button != PointerButton::Primary {
             return;
+        }
+        if event.phase == PointerPhase::Down && self.commands.open.is_some() {
+            commands::close(self);
         }
         #[cfg(feature = "product")]
         if forme::pointer(self, &event) {
