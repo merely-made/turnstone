@@ -1,0 +1,20 @@
+{
+  "document_source": {
+    "byte_span": {
+      "end": 21,
+      "start": 16
+    },
+    "document_address": "mere://knot/document/coffee",
+    "exact_quote": "café",
+    "source_hash": "ba42cefd29e0803c41d1dcf2c6a879bda6d4ef82e82214c708941e969144d7c6"
+  },
+  "id": "knot-coffee",
+  "kind": "passage",
+  "label": "Coffee",
+  "pack_sources": [],
+  "schema": "knot.selected-content/v1",
+  "tags": [
+    "coffee"
+  ],
+  "text": "café"
+}
