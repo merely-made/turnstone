@@ -106,6 +106,7 @@ const SHEET: &str = "\
     .select-list { background:#17232b; border:1px solid #637581; z-index:20; width:262px; } \
     .select-option { padding:1px 8px; } \
     .tree-product { position:absolute;top:8px;left:12px;max-width:360px;max-height:90%;overflow-y:auto;z-index:5; } \
+    .tree-product-workbench { position:static;flex:0 0 auto;max-width:none;max-height:140px;padding:4px 12px; } \
     .tree-product p { margin:4px 0; } \
     .tree-detail { background:#17232b;border:1px solid #637581;padding:12px; } \
     .tree-detail label { display:block;margin:8px 0; } \
@@ -661,6 +662,8 @@ fn view(page: &TreePage) -> Child {
             }
         },
     );
+    let workbench = forme_workbench(page);
+    let showing_workbench = workbench.is_some();
     Box::new(
         el(
             "main",
@@ -674,13 +677,14 @@ fn view(page: &TreePage) -> Child {
                 grouping::controls(page),
                 controls::toolbar(page),
                 forme_toolbar(page),
+                showing_workbench.then(|| product::controls(page)),
                 el(
                     "div",
                     (
-                        product::controls(page),
+                        (!showing_workbench).then(|| product::controls(page)),
                         el(
                             "div",
-                            forme_workbench(page).unwrap_or_else(|| Box::new(graph)),
+                            workbench.unwrap_or_else(|| Box::new(graph)),
                         )
                         .attr("class", "tree-graph"),
                         if docked {

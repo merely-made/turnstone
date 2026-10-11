@@ -657,7 +657,14 @@ pub(super) fn controls(page: &TreePage) -> Child {
     }
     Box::new(
         el("aside", children)
-            .attr("class", "tree-product")
+            .attr(
+                "class",
+                if page.forme.as_ref().is_some_and(|pane| pane.workbench) {
+                    "tree-product tree-product-workbench"
+                } else {
+                    "tree-product"
+                },
+            )
             .attr("aria-label", "Saved graph"),
     )
 }

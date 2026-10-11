@@ -1295,11 +1295,20 @@ impl Product for TreeLane {
     ) -> Option<bool> {
         let pending = self.shared.timing.borrow_mut().poll();
         let local_shown = ctx.runner.state().session == remote::Session::Local;
+        // A hidden canvas cannot advance its last motion flag. Workbench
+        // waits still need the Forme store write to finish before reopening.
+        let canvas_shown = local_shown
+            && leaf_rect(ctx).is_some_and(|(_, _, width, height)| width > 0. && height > 0.);
+        #[cfg(feature = "product")]
+        let forme_saving = ctx.runner.state().forme.as_ref().is_some_and(|pane| pane.saving);
+        #[cfg(not(feature = "product"))]
+        let forme_saving = false;
         Some(
             capture_pending
                 || pending
                 || self.shared.remote.borrow().in_flight()
-                || (local_shown && self.shared.moving.get())
+                || (canvas_shown && self.shared.moving.get())
+                || forme_saving
                 || ctx
                     .runner
                     .state()
