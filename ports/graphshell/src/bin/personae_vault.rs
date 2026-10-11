@@ -9,7 +9,7 @@ use graphshell::native::custody_client::BlockingCustodyClient;
 use personae::ProfileId;
 
 const USAGE: &str = "usage: personae-vault [--app-endpoint <endpoint>] [--profile <name>] <command> [args]\n\
-commands: profiles, new-profile, list, show, add-ssh, pub, remove, ca, mint, enroll-host, face, revoke, krl\n\
+commands: profiles, new-profile, list, show, add-ssh, pub, remove, ca, mint, enroll-host, face, revoke, krl, cxf-preview, cxf-import\n\
 Unlock through djinn's own surface. Vault location and passphrase belong to djinn.";
 
 fn main() {
@@ -31,7 +31,9 @@ fn run(args: Vec<String>) -> Result<String, String> {
             Some("--app-endpoint") => {
                 endpoint = args.next().ok_or("--app-endpoint needs a value")?
             },
-            Some("--profile") => profile = Some(ProfileId(args.next().ok_or("--profile needs a value")?)),
+            Some("--profile") => {
+                profile = Some(ProfileId(args.next().ok_or("--profile needs a value")?))
+            },
             Some("--dir") => {
                 return Err(
                     "djinn owns the vault directory; configure the resident's vault location"
@@ -48,6 +50,14 @@ fn run(args: Vec<String>) -> Result<String, String> {
     let cwd = std::env::current_dir().map_err(|error| error.to_string())?;
     if command == "add-ssh" {
         if let Some(path) = rest.iter_mut().find(|arg| arg.as_str() != "--per-use") {
+            *path = cwd.join(&*path).display().to_string();
+        }
+    }
+    if matches!(command.as_str(), "cxf-preview" | "cxf-import") {
+        for path in rest
+            .iter_mut()
+            .take(if command == "cxf-import" { 2 } else { 1 })
+        {
             *path = cwd.join(&*path).display().to_string();
         }
     }
