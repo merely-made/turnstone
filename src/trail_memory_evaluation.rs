@@ -213,7 +213,7 @@ fn captured_trail_mint_receipt() {
 //
 // A second corpus for the same receipts W6a-W6d took on a captured session:
 // two years of real browsing, exported by `mere/scripts/firefox_history_export.py`
-// and lowered through `mere_import::history_to_traces`. The export lives outside
+// and lowered through `eidetic::import::history_to_traces`. The export lives outside
 // the repo and is named by environment; nothing here prints an address, a title,
 // or a term.
 
@@ -335,10 +335,10 @@ fn percentile(sorted: &[u64], percent: usize) -> u64 {
 fn run_firefox_history_receipt() -> Result<(), String> {
     let export = firefox_env("TURNSTONE_FIREFOX_EXPORT")?;
     let sidecar = firefox_env("TURNSTONE_FIREFOX_FRECENCY")?;
-    let items: Vec<mere_import::ImportedHistoryVisitItem> = read_json(&export)?;
+    let items: Vec<eidetic::import::ImportedHistoryVisitItem> = read_json(&export)?;
     let firefox: FirefoxFrecency = read_json(&sidecar)?;
     let built = Instant::now();
-    let traces = mere_import::history_to_traces(&items, "firefox");
+    let traces = eidetic::import::history_to_traces(&items, "firefox");
     let build_ms = built.elapsed().as_millis();
 
     // A fresh store, in the same scratch root the export lives under. Written

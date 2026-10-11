@@ -8,7 +8,7 @@
 //! actor (design_docs/2026-07-20_recycle_bin_athanor.md, slice 1).
 //!
 //! The bin IS `eidetic::deleted` — `DeletedNode` records staged into a
-//! session-scoped `eidetic::fjall::FjallStore` at `sessions/<id>/bin`. This
+//! session-scoped `muniment::FjallStore` at `sessions/<id>/bin`. This
 //! module is the port adapter on turnstone's spine: the app lowers
 //! [`Effect::RecordDeleted`](crate::action::Effect), the shell forwards a
 //! [`BinCommand`] to the actor, and the actor answers with app-owned
@@ -37,7 +37,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use armillary::{ActorHandle, Emitter, Wake, spawn_named};
 use eidetic::{DeletedNode, Store, clear_deleted, list_deleted, record_deleted};
-use eidetic::fjall::FjallStore;
+use muniment::FjallStore;
 
 use crate::action::{RemovedRecord, Update};
 

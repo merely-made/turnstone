@@ -16,7 +16,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 
-use mere_document_lanes::FleeceAnnotationRecord;
+use fleece::FleeceAnnotationRecord;
 use moot_port::captured_web::{CapturedCollectionProjection, RejectedCaptureReason};
 use servitor::AuthorityProvider;
 
@@ -112,7 +112,7 @@ pub(crate) fn refresh_local_capture_library(
     for manifest in manifests {
         let id = manifest.id;
         let key = *id.0.as_bytes();
-        match pollster::block_on(mere_document_lanes::load_fleece_annotation(store, id)) {
+        match pollster::block_on(fleece::load_fleece_annotation(store, id)) {
             Ok(Some(record)) => {
                 ready.records.insert(key, record);
             },
@@ -248,10 +248,10 @@ pub(crate) fn effective_roster(
 mod tests {
     use super::*;
     use eidetic::{ManifestId, TypedPayload};
-    use eidetic::fjall::FjallStore;
+    use fleece::eidetic_bridge::{CaptureIdentity, FLEECE_ANNOTATION_SCHEMA_ID};
     use fleece::{TextPositionSelector, anchor_for_range, extract_document};
     use genet_static_dom::StaticDocument;
-    use mere_document_lanes::eidetic_bridge::{CaptureIdentity, FLEECE_ANNOTATION_SCHEMA_ID};
+    use muniment::FjallStore;
     use servitor::{Cap, Mode, Subject};
 
     struct Allowed;
@@ -298,14 +298,8 @@ mod tests {
     }
 
     fn save(store: &mut FjallStore, record: &FleeceAnnotationRecord, at_ms: u64) -> ManifestId {
-        pollster::block_on(mere_document_lanes::bootstrap_fleece_annotation_schema(
-            store,
-        ))
-        .unwrap();
-        pollster::block_on(mere_document_lanes::save_fleece_annotation(
-            store, record, at_ms,
-        ))
-        .unwrap()
+        pollster::block_on(fleece::bootstrap_fleece_annotation_schema(store)).unwrap();
+        pollster::block_on(fleece::save_fleece_annotation(store, record, at_ms)).unwrap()
     }
 
     #[test]

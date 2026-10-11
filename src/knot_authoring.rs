@@ -362,7 +362,7 @@ impl KnotClipHandle {
                 relation: "link".into(),
             })
             .collect();
-        let fragment = mere_import::web_clip::fragment_from_text(
+        let fragment = fleece::clip::fragment_from_text(
             clip.source_url.clone(),
             clip.title.clone(),
             clip.text,
@@ -373,7 +373,7 @@ impl KnotClipHandle {
             source_url: clip.source_url,
             title: clip.title,
             selector: clip.selector,
-            knot_body: mere_import::web_clip::fragment_to_knot_body(&fragment),
+            knot_body: clip_knot_body(&fragment),
             selectors,
             artifacts,
             fidelity,
@@ -400,6 +400,26 @@ impl KnotClipHandle {
     pub fn target(&self) -> &str {
         &self.target
     }
+}
+
+/// The receiving Knot endpoint owns provenance and records it from the typed
+/// clip intent. Inserting semantic blocks alone avoids a second document header
+/// in an existing note. Formatting is an authoring concern of this consumer.
+fn clip_knot_body(fragment: &fleece::clip::ClipFragment) -> String {
+    let mut body = String::new();
+    inker::EngineDocument {
+        address: fragment.source_url.clone(),
+        title: None,
+        content_type: "text/x-knot".into(),
+        lang: None,
+        provenance: inker::DocumentProvenance::default(),
+        trust: inker::DocumentTrustState::Unknown,
+        diagnostics: Vec::new(),
+        navigation: Default::default(),
+        blocks: fleece::clip::fragment_blocks(fragment),
+    }
+    .write_knot_body(&mut body);
+    body
 }
 
 fn clip_selectors(
@@ -2993,6 +3013,44 @@ mod tests {
     use layout_dom_api::{LayoutDom, NodeKind};
 
     use super::*;
+
+    #[test]
+    fn semantic_clip_body_omits_document_frontmatter() {
+        let fragment = fleece::clip::fragment_from_text(
+            "https://example.test/post",
+            Some("Interesting bit".into()),
+            "A useful paragraph.",
+            Some("main > article".into()),
+            vec!["https://example.test/ref".into()],
+        );
+        let body = clip_knot_body(&fragment);
+        assert!(body.contains("# Interesting bit"));
+        assert!(body.contains("A useful paragraph."));
+        assert!(body.contains("https://example.test/ref"));
+        assert!(!body.starts_with("---\n"));
+        assert!(!body.contains("source: https://example.test/post"));
+    }
+
+    #[test]
+    fn knot_clip_preserves_micron_local_jump_as_label_text() {
+        let mut registry = inker::EngineRegistry::new();
+        for engine in nematic::engines() {
+            registry.register(engine);
+        }
+        let mut policy = inker::EngineRoutePolicy::default();
+        policy.fallback.engine_id = nematic::micron::ENGINE_MICRON.into();
+        let fragment = fleece::clip::fragment_from_body(
+            "0123456789abcdef0123456789abcdef:/page/index.mu",
+            None,
+            Some("text/x-micron"),
+            "`[Reference`:/page/ref.mu] `[Setup notes`#setup]\n>Setup\n",
+            &registry,
+            &policy,
+        );
+        let body = clip_knot_body(&fragment);
+        assert!(body.contains("Setup notes"));
+        assert!(!body.contains("#setup"));
+    }
 
     /// A non-founder process inherits every name its parent exported, blank
     /// ones included: `TURNSTONE_KNOT_ROOT=` must read as "no vault of my own",

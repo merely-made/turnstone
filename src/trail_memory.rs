@@ -9,7 +9,7 @@
 //!
 //! Capture IS `eidetic::browsing` — the shell drains the app's semantic
 //! events each frame and forwards the navigation ones here; the actor owns a
-//! session-scoped `eidetic::fjall::FjallStore` at `sessions/<id>/memory`,
+//! session-scoped `muniment::FjallStore` at `sessions/<id>/memory`,
 //! buffers traversals into per-owner `BrowsingTrace` segments through
 //! [`eidetic::BrowsingMemory`], and flushes a segment when it fills and on
 //! every lifecycle edge (switch, close, release). `from` chains inside the
@@ -50,8 +50,8 @@ use eidetic::{
     PageTextStore, PageTexts, TraceEvent, TraceTransition, bootstrap_browsing_schema,
     frecency_by_page, page_table,
 };
-use eidetic::fjall::FjallStore;
 use eidetic_search::{CandidateIndex, FusedHit, IndexConfig, Ranking, TrailIndex, fuse_many};
+use muniment::FjallStore;
 
 use crate::action::{RecallHit, StoredSourceDocument, Update};
 
@@ -337,7 +337,7 @@ fn capture_source_document(
         ModerationState, PrivacyClass, ProvenanceOrigin, ProvenanceRecord, Timestamp,
         TrustEnvelope, TrustLevel,
     };
-    use mere_document_lanes::eidetic_bridge::{CaptureDomMode, CaptureEvidenceV1};
+    use fleece::eidetic_bridge::{CaptureDomMode, CaptureEvidenceV1};
 
     if document.acquired_at_ms == 0 {
         return Err("source capture requires an observed acquisition time".to_string());
@@ -404,18 +404,16 @@ fn capture_source_document(
         None,
     )
     .map_err(|error| format!("source capture evidence: {error}"))?;
-    let record = mere_document_lanes::FleeceAnnotationRecord::from_fleece(
-        mere_document_lanes::CaptureIdentity::from_evidence(evidence)
+    let record = fleece::FleeceAnnotationRecord::from_fleece(
+        fleece::CaptureIdentity::from_evidence(evidence)
             .map_err(|error| format!("source capture identity: {error}"))?,
         &extracted,
         &anchor,
     )
     .map_err(|error| format!("Fleece annotation: {error}"))?;
-    pollster::block_on(mere_document_lanes::bootstrap_fleece_annotation_schema(
-        store,
-    ))
-    .map_err(|error| format!("Fleece schema bootstrap: {error}"))?;
-    let annotation_manifest = pollster::block_on(mere_document_lanes::save_fleece_annotation(
+    pollster::block_on(fleece::bootstrap_fleece_annotation_schema(store))
+        .map_err(|error| format!("Fleece schema bootstrap: {error}"))?;
+    let annotation_manifest = pollster::block_on(fleece::save_fleece_annotation(
         store,
         &record,
         document.acquired_at_ms,
@@ -1333,11 +1331,11 @@ mod tests {
 
         let mut reopened = FjallStore::open(&dir).unwrap();
         let manifests = pollster::block_on(eidetic::typed::list_typed::<
-            mere_document_lanes::FleeceAnnotationRecord,
+            fleece::FleeceAnnotationRecord,
         >(&mut reopened))
         .unwrap();
         assert_eq!(manifests.len(), 1);
-        let record = pollster::block_on(mere_document_lanes::load_fleece_annotation(
+        let record = pollster::block_on(fleece::load_fleece_annotation(
             &mut reopened,
             manifests[0].id,
         ))
