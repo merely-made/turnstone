@@ -803,8 +803,8 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 let node = id
                     .parse::<Uuid>()
                     .ok()
-                    .and_then(|id| graph.get_node_by_id(id).map(|(_, n)| n));
-                let Some(node) = node else {
+                    .and_then(|id| graph.get_node_by_id(id));
+                let Some((key, node)) = node else {
                     return Slot::View(Box::new(el("p", "This access is no longer present")));
                 };
                 let member = node.id;
@@ -822,7 +822,11 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                         p.shared.dirty.set(true);
                     })),
                 ];
-                let mut tags: Vec<_> = node.tags.iter().cloned().collect();
+                let mut tags: Vec<_> = graph
+                    .node_content_tags(key)
+                    .unwrap_or_default()
+                    .into_iter()
+                    .collect();
                 tags.sort();
                 if !tags.is_empty() {
                     controls.push(Box::new(el("p", tags.join(" · "))));

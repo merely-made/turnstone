@@ -1,0 +1,58 @@
+# Dedicated app=local origin/profile, seeded with the unchanged reference fixture.
+# Visible headed tab. Physical keyboard/focus and richer fixtures remain in the plan.
+assert snap source == saved graph
+assert snap link-inspector-open == false
+assert snap assertion-inspector-open == false
+click-node file:///Graphshell/reference-notes.md
+settle 2
+remember selected
+click role:button Inspect selected access
+settle 2
+click role:button Inspect links: I2P port notes
+settle 2
+assert snap link-inspector-open == true
+assert snap link-inspector-ready == true
+assert snap link-inspector-records == 1
+assert snap link-inspector-statements == 1
+assert snap link-inspector-strata == resource
+assert snap link-inspector-directions == https://example.test/i2p-port -> file:///Graphshell/reference-notes.md
+same selected detail-member
+same selected forme
+same selected forme-accesses
+capture link_source_records
+click role:button Inspect assertion 1
+settle 2
+assert snap assertion-inspector-open == true
+assert snap assertion-inspector-ready == true
+assert snap assertion-inspector-predicate == https://mere.computer/ns/rel#cites
+remember inspected
+capture exact_link_assertion
+# Selection changes leave both inspection targets intact.
+click-node https://example.test/i2p-port
+settle 2
+remember other_selection
+assert snap detail-address == https://example.test/i2p-port
+same inspected link-inspector-first
+same inspected link-inspector-second
+same inspected assertion-inspector-handle
+same inspected assertion-inspector-from
+same inspected assertion-inspector-to
+same selected forme
+same selected forme-accesses
+click role:button Close access inspection
+settle 2
+assert snap inspector-open == false
+assert snap link-inspector-open == true
+same inspected assertion-inspector-handle
+click role:button Close assertion inspection
+settle 2
+assert snap assertion-inspector-open == false
+assert snap link-inspector-open == true
+same other_selection detail-member
+click role:button Close link inspection
+settle 2
+assert snap link-inspector-open == false
+same other_selection detail-member
+same selected forme
+same selected forme-accesses
+log link and exact assertion inspection preserve selection and workbench membership

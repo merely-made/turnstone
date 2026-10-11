@@ -799,6 +799,49 @@ mod tests {
     }
 
     #[test]
+    fn collapsed_geometry_is_refused_in_drafts_and_saved_history_without_losing_bytes() {
+        pollster::block_on(async {
+            let (graph, mut session, [_, _, c]) = fixture();
+            let backend = MemoryBackend::new();
+            let graph_id = session.view().document.graph_id;
+            let original = LayoutState::capture(session.view());
+            let collapse = |geometry: &mut Option<TreeGeometry>| {
+                let Some(TreeGeometry::Split { children, .. }) = geometry else {
+                    panic!("expected a split");
+                };
+                children[0].fraction = f32::MIN_POSITIVE;
+                children[1].fraction = f32::MAX / 2.;
+            };
+            session.unlock().unwrap();
+            assert!(
+                session
+                    .edit(None, 0, |workspace| {
+                        collapse(&mut workspace.geometry);
+                        Ok(())
+                    })
+                    .is_err()
+            );
+            assert_eq!(LayoutState::capture(session.view()), original);
+            assert!(!session.dirty());
+            assert!(!session.can_undo());
+            session.edit(None, 1, |w| w.open(c, &graph)).unwrap();
+            save(&mut session, backend.clone(), SaveKind::Apply).await;
+            let mut record: SavedRecord =
+                serde_json::from_slice(&backend.get(&slot(graph_id)).await.unwrap().unwrap())
+                    .unwrap();
+            collapse(&mut record.layout_undo[0].geometry);
+            let bytes = serde_json::to_vec(&record).unwrap();
+            backend.put(&slot(graph_id), &bytes).await.unwrap();
+            assert!(
+                FormeSession::load(backend.clone(), graph_id, &graph)
+                    .await
+                    .is_err()
+            );
+            assert_eq!(backend.get(&slot(graph_id)).await.unwrap().unwrap(), bytes);
+        });
+    }
+
+    #[test]
     fn malformed_history_is_retained_and_failed_saved_undo_keeps_its_cursor() {
         pollster::block_on(async {
             let (graph, mut session, [_, _, c]) = fixture();

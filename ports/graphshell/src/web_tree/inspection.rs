@@ -132,6 +132,10 @@ pub(super) fn section(page: &TreePage) -> Child {
                 "This access",
                 access_rows(&inspected.access),
             )])));
+            children.push(super::link_inspection::access_links(
+                page,
+                inspected.access.member,
+            ));
             match inspected.resource {
                 Some(source) => {
                     children.push(Box::new(detail_panel(&[DetailSection::new(

@@ -491,6 +491,10 @@ pub(crate) struct TreePage {
     forme_error: Option<String>,
     #[cfg(feature = "product")]
     inspected_access: Option<uuid::Uuid>,
+    #[cfg(feature = "product")]
+    inspected_link: Option<graphshell::link_inspection::LinkTarget>,
+    #[cfg(feature = "product")]
+    inspected_statement: Option<String>,
     #[cfg(feature = "applets")]
     applet_seen: u64,
     #[cfg(feature = "applets")]
@@ -727,6 +731,8 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(physics::section(page));
     #[cfg(feature = "product")]
     children.push(inspection::section(page));
+    #[cfg(feature = "product")]
+    children.push(link_inspection::section(page));
     #[cfg(feature = "product")]
     children.push(forme::section(page));
     children.push(remote::section(page));
@@ -1032,6 +1038,10 @@ async fn boot(root: Element) -> Result<(), String> {
                 forme_error,
                 #[cfg(feature = "product")]
                 inspected_access: None,
+                #[cfg(feature = "product")]
+                inspected_link: None,
+                #[cfg(feature = "product")]
+                inspected_statement: None,
                 #[cfg(feature = "applets")]
                 applet_seen: 0,
                 #[cfg(feature = "applets")]
@@ -1389,6 +1399,8 @@ mod lane;
 mod physics;
 #[cfg(feature = "product")]
 mod inspection;
+#[cfg(feature = "product")]
+mod link_inspection;
 #[cfg(feature = "product")]
 mod product;
 #[cfg(not(feature = "product"))]
