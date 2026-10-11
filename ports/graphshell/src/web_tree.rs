@@ -90,6 +90,7 @@ const SHEET: &str = "\
     .tree-tools h2 { font-size:14px; margin:2px 0 4px; } \
     .tree-tools h3 { font-size:13px; margin:4px 0 2px; } \
     .tree-rules [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
+    .tree-rules pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
     .tree-inspection { overflow-wrap:anywhere; } \
     .tree-inspection p, .tree-inspection li { font-size:12px; } \
     .tools-section + .tools-section { margin-top:10px; border-top:1px solid #2c3b44; padding-top:4px; } \
@@ -1209,6 +1210,13 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             #[cfg(feature = "product")]
             if ctx.runner.state().presentation.ready() {
                 ctx.runner.update(presentation::poll);
+            }
+            #[cfg(feature = "product")]
+            {
+                if let Some(inputs) = presentation::refresh(ctx.runner.state()) {
+                    ctx.runner.update(|page| presentation::update(page, inputs));
+                }
+                presentation::install(ctx.runner.state());
             }
             // The remote session moves outside the runner (its channel's
             // pumps); rebuild the view when it has.

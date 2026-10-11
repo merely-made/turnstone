@@ -4,14 +4,24 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! Retained authoring controls and decision preview; no renderer effect adapter.
+//! Retained authoring, exact occurrence previews and opt-in saved Forme guides.
 use super::*;
 use cambium::{TextInput, button, lens, text_field_typed};
+use graphshell::field_inspection::FieldTarget;
+use graphshell::presentation_binding::{BoundContext, FormeFacts, Occurrence, ViewInputs, bind};
 use graphshell::presentation_editor::presentation::{Context, PrimitiveKind, Property, Resolution};
 use graphshell::presentation_editor::{
     PresentationSession, RuleDraft, RuleSetDraft, SaveKind, parse,
 };
+use mere::canvas::Role;
 use muniment::IndexedDbBackend;
+
+#[derive(Clone, Debug, PartialEq)]
+pub(super) struct Inputs {
+    bound: Option<Result<BoundContext, String>>,
+    live: Option<Result<BoundContext, String>>,
+    generation: u64,
+}
 
 const LABELS: [&str; 7] = [
     "Rule ID",
@@ -32,6 +42,10 @@ pub(super) struct Pane {
     enabled: bool,
     status: String,
     preview: Option<(String, Context, Resolution)>,
+    binding: Option<Occurrence>,
+    inputs_seen: Option<Inputs>,
+    live_enabled: bool,
+    live_result: Option<Result<(BoundContext, Resolution), String>>,
 }
 impl Pane {
     pub(super) async fn open(product: Option<&product::SavedProduct>) -> Self {
@@ -45,10 +59,15 @@ impl Pane {
             enabled: true,
             status: String::new(),
             preview: None,
+            binding: None,
+            inputs_seen: None,
+            live_enabled: false,
+            live_result: None,
         };
         let Some((backend, id)) = product.and_then(|p| p.forme_source()) else {
             return pane;
         };
+        pane.sample(PrimitiveKind::Node);
         match PresentationSession::load(backend.clone(), id).await {
             Ok(session) => {
                 pane.session = Some(session);
@@ -59,7 +78,6 @@ impl Pane {
                     format!("Rules could not be restored · {error}. Saved bytes retained.");
             },
         }
-        pane.sample(PrimitiveKind::Node);
         pane
     }
     pub(super) fn ready(&self) -> bool {
@@ -138,6 +156,8 @@ impl Pane {
         Ok(())
     }
     fn sample(&mut self, kind: PrimitiveKind) {
+        self.binding = None;
+        self.inputs_seen = None;
         let (id, facts, states) = match kind {
             PrimitiveKind::Node => (
                 "sample:node",
@@ -165,12 +185,24 @@ impl Pane {
         let source = self.inputs[6].text().to_string();
         let context = parse::<Context>(&source, "context")
             .map_err(|e| format!("Preview context refused: {e:?}"))?;
-        let result = self
-            .session
-            .as_ref()
-            .ok_or("Rule workspace unavailable")?
-            .preview(&context)
-            .map_err(|e| format!("Rule preview refused: {e:?}"))?;
+        let session = self.session.as_ref().ok_or("Rule workspace unavailable")?;
+        let result = if self.binding.is_some() {
+            let bound = self
+                .inputs_seen
+                .as_ref()
+                .and_then(|inputs| inputs.bound.as_ref())
+                .ok_or("Bound preview inputs have not been read")?
+                .as_ref()
+                .map_err(Clone::clone)?;
+            bound.resolve(
+                &session
+                    .rules()
+                    .map_err(|e| format!("Rule preview refused: {e:?}"))?,
+            )
+        } else {
+            session.preview(&context)
+        }
+        .map_err(|e| format!("Rule preview refused: {e:?}"))?;
         self.preview = Some((source, context, result));
         Ok(())
     }
@@ -214,6 +246,138 @@ impl Pane {
 pub(super) fn poll(page: &mut TreePage) {
     page.presentation.poll();
 }
+fn bound(page: &TreePage, occurrence: &Occurrence) -> Result<BoundContext, String> {
+    let graph = field_inspection::graph(page)?;
+    let canvas = page.shared.canvas.borrow();
+    let mut view = ViewInputs::default();
+    let mut forme = None;
+    match occurrence {
+        Occurrence::Access { member } => {
+            let key = canvas
+                .graph()
+                .get_node_key_by_id(*member)
+                .ok_or("Access is absent from this view")?;
+            view.selected = Some(canvas.selected_members().contains(member));
+            view.position_pinned = Some(canvas.arrangement_role_of(key) == Role::Pinned);
+            view.inspected = page.inspected_access == Some(*member);
+            view.screen_size = canvas
+                .node_body_rect(key)
+                .map(|(x, y, r, b)| f64::from((r - x).min(b - y).max(0.)));
+        },
+        Occurrence::Assertion { pair, statement } => {
+            view.inspected = page.inspected_link == Some(*pair)
+                && page.inspected_statement.as_ref() == Some(statement);
+        },
+        Occurrence::Numen { id } => {
+            view.inspected = page.field_inspector.target == Some(FieldTarget::Numen(*id));
+            view.visible = Some(canvas.field_visible(*id));
+        },
+        Occurrence::Forme { id } => {
+            let owner = page
+                .forme
+                .as_ref()
+                .ok_or("No Forme workspace is presented here")?
+                .current();
+            if owner.document.id.as_uuid() != *id {
+                return Err(format!("Forme {id} is no longer presented here"));
+            }
+            forme = Some(FormeFacts {
+                id: *id,
+                label: owner.document.label.clone(),
+                locked: owner.locked,
+                visible: owner.visible,
+                members: owner.members().len(),
+            });
+            view.inspected = page.field_inspector.target == Some(FieldTarget::Forme(*id));
+            view.hovered = canvas
+                .forme_region()
+                .filter(|region| region.id == *id)
+                .map(|_| canvas.forme_region_hovered());
+        },
+    }
+    bind(graph, occurrence, &view, forme.as_ref())
+}
+/// Re-resolve exact owners on view changes; preview is invalidated, never retargeted.
+pub(super) fn refresh(page: &TreePage) -> Option<Inputs> {
+    let pane = &page.presentation;
+    if pane.binding.is_none() && !pane.live_enabled && pane.inputs_seen.is_none() {
+        return None;
+    }
+    let inputs = Inputs {
+        bound: if pane.open {
+            pane.binding.as_ref().map(|target| bound(page, target))
+        } else {
+            pane.inputs_seen
+                .as_ref()
+                .and_then(|inputs| inputs.bound.clone())
+        },
+        live: if pane.live_enabled {
+            Some(
+                page.forme
+                    .as_ref()
+                    .ok_or_else(|| "No Forme workspace is presented here".into())
+                    .and_then(|forme| {
+                        bound(
+                            page,
+                            &Occurrence::Forme {
+                                id: forme.current().document.id.as_uuid(),
+                            },
+                        )
+                    }),
+            )
+        } else {
+            None
+        },
+        generation: pane
+            .session
+            .as_ref()
+            .map_or(0, |session| session.generation()),
+    };
+    (pane.inputs_seen.as_ref() != Some(&inputs)).then_some(inputs)
+}
+pub(super) fn update(page: &mut TreePage, inputs: Inputs) {
+    let pane = &mut page.presentation;
+    if pane.inputs_seen.as_ref().and_then(|old| old.bound.as_ref()) != inputs.bound.as_ref() {
+        pane.preview = None;
+        if let Some(Ok(bound)) = &inputs.bound {
+            pane.inputs[6] = TextInput::new(serde_json::to_string(&bound.context).unwrap());
+        }
+    }
+    pane.live_result = inputs.live.as_ref().map(|result| {
+        let bound = result.as_ref().map_err(Clone::clone)?;
+        let session = pane
+            .session
+            .as_ref()
+            .ok_or("Saved rule workspace unavailable")?;
+        let resolution = bound
+            .resolve(session.committed())
+            .map_err(|issues| format!("Saved rules refused: {issues:?}"))?;
+        Ok((bound.clone(), resolution))
+    });
+    pane.inputs_seen = Some(inputs);
+}
+pub(super) fn install(page: &TreePage) {
+    let effect = page
+        .presentation
+        .live_result
+        .as_ref()
+        .and_then(|result| result.as_ref().ok())
+        .and_then(|(bound, result)| bound.guides(result));
+    if page.shared.canvas.borrow_mut().set_forme_guides(effect) {
+        page.shared.dirty.set(true);
+    }
+}
+fn choose(page: &mut TreePage, target: Occurrence) {
+    page.presentation.binding = Some(target);
+    page.presentation.preview = None;
+    page.presentation.inputs_seen = None;
+    if let Some(inputs) = refresh(page) {
+        update(page, inputs);
+    }
+    page.presentation.status =
+        "Bound to the exact occurrence; preview reads current held facts and disclosed view state"
+            .into();
+}
 fn action(page: &mut TreePage, change: impl FnOnce(&mut Pane) -> Result<(), String>) {
     let pane = &mut page.presentation;
     if pane.busy() {
@@ -234,7 +398,8 @@ pub(super) fn focused_text(
     let dom = runner.dom();
     let dom = dom.borrow();
     let index = LABELS.into_iter().enumerate().find_map(|(i, label)| {
-        ((i == 6 || (pane.editing() && pane.selected.is_some()))
+        (((i == 6 && pane.binding.is_none())
+            || (i < 6 && pane.editing() && pane.selected.is_some()))
             && taproot::matching(&dom, &Selector::role("textbox").containing(label))
                 .contains(&node))
         .then_some(i)
@@ -390,7 +555,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         return Box::new(el("section", children).attr("class", "tools-section"));
     }
     children.push(Box::new(el("h2", "Presentation rules")));
-    children.push(Box::new(el("p", "Target → condition → effect. Preview shows decisions and explanations; canvas effect adoption is pending.")));
+    children.push(Box::new(el("p", "Target → condition → effect. Exact occurrence previews disclose their inputs. Saved rules can control Forme subdivisions in this view.")));
     children.push(Box::new(
         el("p", pane.status.clone()).attr("role", "status"),
     ));
@@ -409,6 +574,69 @@ pub(super) fn section(page: &TreePage) -> Child {
                 }
             ),
         )));
+        children.push(Box::new(
+            button(
+                if pane.live_enabled {
+                    "Disable saved rules in this view"
+                } else {
+                    "Enable saved rules in this view"
+                },
+                |page: &mut TreePage, _| {
+                    page.presentation.live_enabled = !page.presentation.live_enabled;
+                    if let Some(inputs) = refresh(page) {
+                        update(page, inputs);
+                    }
+                    install(page);
+                },
+            )
+            .attr("aria-pressed", pane.live_enabled.to_string()),
+        ));
+        children.push(Box::new(el("p", "Live adoption uses acknowledged saved rules, including saved Undo/Redo. Draft previews stay private. Other effects keep the host presentation until a renderer supports them.")));
+        if let Some(result) = &pane.live_result {
+            match result {
+                Ok((bound, result)) => {
+                    children.push(Box::new(el(
+                        "p",
+                        format!(
+                            "Live Forme {} · {}",
+                            bound.context.id,
+                            bound
+                                .guides(result)
+                                .map_or("base guides", |(_, visible)| if visible {
+                                    "show subdivisions"
+                                } else {
+                                    "hide subdivisions"
+                                })
+                        ),
+                    )));
+                    for (property, decision) in &result.winners {
+                        if !bound.supports(*property) {
+                            children.push(Box::new(el(
+                                "p",
+                                format!(
+                                    "{property:?} from {} has no renderer here; host base remains.",
+                                    decision.rule_id
+                                ),
+                            )));
+                        }
+                    }
+                    for trace in result
+                        .traces
+                        .iter()
+                        .filter(|trace| trace.reason.starts_with("Host input unavailable"))
+                    {
+                        children.push(Box::new(el(
+                            "p",
+                            format!("{} · {}", trace.rule_id, trace.reason),
+                        )));
+                    }
+                },
+                Err(error) => children.push(Box::new(el(
+                    "p",
+                    format!("Live inputs unavailable · {error} · base guides restored"),
+                ))),
+            }
+        }
         children.extend(controls(page));
         for (index, row) in pane.rows().rules.iter().enumerate() {
             let label = format!("Edit rule {}: {}", index + 1, row.label);
@@ -494,11 +722,82 @@ pub(super) fn section(page: &TreePage) -> Child {
                     })
                 })));
             }
-            children.push(input(6));
-            children.push(Box::new(el("p", "Facts, states, screen size and prior matches are explicit preview inputs. They are not inferred from the current scene.")));
+            if let Some(member) = page.inspected_access {
+                children.push(Box::new(button(
+                    "Use inspected access",
+                    move |page: &mut TreePage, _| choose(page, Occurrence::Access { member }),
+                )));
+            }
+            if let (Some(pair), Some(statement)) =
+                (page.inspected_link, page.inspected_statement.clone())
+            {
+                children.push(Box::new(button(
+                    "Use inspected assertion",
+                    move |page: &mut TreePage, _| {
+                        choose(
+                            page,
+                            Occurrence::Assertion {
+                                pair,
+                                statement: statement.clone(),
+                            },
+                        )
+                    },
+                )));
+            }
+            if let Some(target) = page.field_inspector.target {
+                children.push(Box::new(button(
+                    "Use inspected field",
+                    move |page: &mut TreePage, _| {
+                        choose(
+                            page,
+                            match target {
+                                FieldTarget::Numen(id) => Occurrence::Numen { id },
+                                FieldTarget::Forme(id) => Occurrence::Forme { id },
+                            },
+                        )
+                    },
+                )));
+            }
+            if let Some(target) = &pane.binding {
+                children.push(Box::new(el(
+                    "p",
+                    format!("Exact occurrence {}", target.id()),
+                )));
+                match pane
+                    .inputs_seen
+                    .as_ref()
+                    .and_then(|inputs| inputs.bound.as_ref())
+                {
+                    Some(Ok(bound)) => {
+                        children.push(Box::new(el(
+                            "pre",
+                            serde_json::to_string_pretty(bound).unwrap(),
+                        )));
+                        for note in &bound.notes {
+                            children.push(Box::new(el("p", note.clone())));
+                        }
+                    },
+                    Some(Err(error)) => children.push(Box::new(el(
+                        "p",
+                        format!("Bound inputs unavailable · {error}"),
+                    ))),
+                    None => {},
+                }
+                children.push(Box::new(button("Edit context manually", |page: &mut TreePage, _| {
+                    page.presentation.binding = None;
+                    page.presentation.preview = None;
+                    page.presentation.status = "Manual context copied from the last bound inputs; it no longer tracks the graph".into();
+                })));
+            } else {
+                children.push(input(6));
+                children.push(Box::new(el("p", "Manual facts, states, screen size and prior matches are explicit preview inputs. Samples do not change the canvas.")));
+            }
             children.push(Box::new(button(
                 "Preview rule decisions",
                 |page: &mut TreePage, _| {
+                    if let Some(inputs) = refresh(page) {
+                        update(page, inputs);
+                    }
                     action(page, |pane| {
                         pane.preview()?;
                         pane.status = "Decision preview resolved".into();
@@ -528,10 +827,21 @@ pub(super) fn section(page: &TreePage) -> Child {
                     children.push(Box::new(el(
                         "p",
                         format!(
-                            "{property:?}: {} · rule {} · priority {}",
+                            "{property:?}: {} · rule {} · priority {} · {}",
                             serde_json::to_string(&decision.effect).unwrap(),
                             decision.rule_id,
-                            decision.priority
+                            decision.priority,
+                            if pane
+                                .inputs_seen
+                                .as_ref()
+                                .and_then(|inputs| inputs.bound.as_ref())
+                                .and_then(|result| result.as_ref().ok())
+                                .is_some_and(|bound| bound.supports(*property))
+                            {
+                                "Forme renderer available for saved rules"
+                            } else {
+                                "decision only; no live renderer for this preview"
+                            }
                         ),
                     )));
                 }
@@ -559,6 +869,64 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
     let rules = session.and_then(|s| s.rules().ok());
     snapshot
         .with_field("rules-open", pane.open.to_string())
+        .with_field("rules-bound", pane.binding.is_some().to_string())
+        .with_field(
+            "rules-bound-context",
+            pane.inputs_seen
+                .as_ref()
+                .and_then(|inputs| inputs.bound.as_ref())
+                .and_then(|result| result.as_ref().ok())
+                .map(|bound| serde_json::to_string(&bound.context).unwrap())
+                .unwrap_or_default(),
+        )
+        .with_field(
+            "rules-live-guides-rule",
+            pane.live_result
+                .as_ref()
+                .and_then(|result| result.as_ref().ok())
+                .and_then(|(_, result)| result.winners.get(&Property::RegionGuides))
+                .map(|decision| decision.rule_id.clone())
+                .unwrap_or_default(),
+        )
+        .with_field(
+            "rules-bound-id",
+            pane.binding
+                .as_ref()
+                .map(Occurrence::id)
+                .unwrap_or_default(),
+        )
+        .with_field(
+            "rules-bound-ready",
+            pane.inputs_seen
+                .as_ref()
+                .and_then(|inputs| inputs.bound.as_ref())
+                .is_some_and(|result| result.is_ok())
+                .to_string(),
+        )
+        .with_field("rules-live-enabled", pane.live_enabled.to_string())
+        .with_field(
+            "rules-live-ready",
+            pane.live_result
+                .as_ref()
+                .is_some_and(|result| result.is_ok())
+                .to_string(),
+        )
+        .with_field(
+            "rules-live",
+            pane.live_result
+                .as_ref()
+                .and_then(|result| result.as_ref().ok())
+                .map(|(_, result)| serde_json::to_string(result).unwrap())
+                .unwrap_or_default(),
+        )
+        .with_field(
+            "forme-guides-visible",
+            page.shared
+                .canvas
+                .borrow()
+                .forme_guides_visible()
+                .to_string(),
+        )
         .with_field("rules-selected", pane.selected.is_some().to_string())
         .with_field(
             "rules-preview-ready",
