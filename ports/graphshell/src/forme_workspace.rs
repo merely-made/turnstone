@@ -51,7 +51,8 @@ impl FormeWorkspace {
         TileLayout::from_arrangement(&self.document.arrangement, self.geometry.as_ref())
     }
     pub fn keep_layout(&mut self, layout: &TileLayout) {
-        let (arrangement, geometry) = layout.to_arrangement();
+        let (mut arrangement, geometry) = layout.to_arrangement();
+        arrangement.preserve_member_identity(&self.document.arrangement);
         self.document.arrangement = arrangement;
         self.geometry = geometry;
     }
@@ -263,7 +264,7 @@ impl FormeWorkspace {
             .map_err(|e| e.to_string())
     }
 }
-fn slot(graph: Uuid) -> String {
+pub(crate) fn slot(graph: Uuid) -> String {
     format!("graphshell.forme-workspace/v1/{graph}")
 }
 fn valid_bounds(b: [f32; 4]) -> bool {

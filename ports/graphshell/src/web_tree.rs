@@ -645,6 +645,13 @@ fn view(page: &TreePage) -> Child {
             |page: &mut TreePage, event: cambium::PointerEvent| page.pointer(event),
         ),
         |page: &mut TreePage, event: cambium::KeyEvent| {
+            #[cfg(feature = "product")]
+            if page.forme.as_ref().is_some_and(|pane| pane.session.editing())
+                && forme::shortcut(page, &event)
+            {
+                event.prevent_default();
+                return;
+            }
             if keys(page, &event.key) {
                 event.prevent_default();
             }
@@ -1154,9 +1161,7 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             #[cfg(feature = "product")]
             if ctx.runner.state().forme.as_ref().is_some_and(|f| f.ready()) {
                 ctx.runner.update(|page| {
-                    if let Some(f) = &mut page.forme {
-                        f.poll();
-                    }
+                    forme::poll(page);
                 });
             }
             // The remote session moves outside the runner (its channel's

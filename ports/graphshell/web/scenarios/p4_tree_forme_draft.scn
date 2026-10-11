@@ -1,0 +1,86 @@
+# Same local origin after p4_tree_forme.scn and p4_tree_forme_reopen.scn.
+# Graph drags queue real HostPointer input; no direct draft mutations.
+assert snap source == saved graph
+assert snap forme-accesses == 2
+assert snap forme-draft == false
+assert snap forme-locked == true
+click role:button Return to Mere
+settle 2
+remember committed
+click role:button Unlock forme
+settle 2
+assert snap forme-dirty == false
+press-node file:///Graphshell/reference-notes.md
+settle 1
+move-to-forme https://example.test/i2p-port center
+settle 2
+assert snap forme-preview == true
+assert snap forme-dirty == false
+capture forme_handle_preview
+release-at
+settle 2
+assert snap forme-preview == false
+assert snap forme-cells == 1
+assert snap forme-dirty == true
+assert snap forme-saving == false
+same committed forme-committed-geometry
+click role:button Undo forme draft
+settle 2
+same committed forme-geometry
+assert snap forme-dirty == false
+click role:button Redo forme draft
+settle 2
+assert snap forme-cells == 1
+click role:button Discard changes
+settle 2
+same committed forme-geometry
+assert snap forme-draft == false
+assert snap forme-locked == true
+click role:button Unlock forme
+settle 2
+assert snap forme-can-redo == false
+assert snap forme-can-undo == false
+# Add an existing source node by dropping its handle into a tile region.
+press-node i2p://reference/service
+settle 1
+move-to-forme https://example.test/i2p-port bottom
+settle 2
+assert snap forme-preview == true
+assert snap forme-accesses == 3
+assert snap forme-dirty == false
+release-at
+settle 2
+assert snap forme-dirty == true
+assert snap forme-accesses == 3
+click role:button Discard changes
+settle 2
+assert snap forme-accesses == 2
+# The source survives removal of its proposed Forme membership.
+click-node i2p://reference/service
+settle 1
+assert snap focus-kind == graph
+click role:button Unlock forme
+settle 2
+press-node file:///Graphshell/reference-notes.md
+settle 1
+move-to-forme https://example.test/i2p-port center
+settle 2
+release-at
+settle 2
+click role:button Lock and apply
+wait 120
+assert snap forme-draft == false
+assert snap forme-locked == true
+assert snap forme-cells == 1
+capture forme_draft_applied
+click role:button Undo saved forme change
+wait 120
+same committed forme-geometry
+assert snap forme-can-redo == true
+click role:button Redo saved forme change
+wait 120
+assert snap forme-cells == 1
+click role:button Undo saved forme change
+wait 120
+same committed forme-geometry
+log Forme handle preview draft undo redo discard membership and saved undo complete
