@@ -75,12 +75,35 @@ impl<B: Backend + Clone> GraphshellApp<B> {
         backend: B,
         selected_persona: SelectedPersonaRef,
     ) -> Result<Self, AppError> {
+        Self::open_or_fixture_kind(backend, selected_persona, false).await
+    }
+
+    /// The field-inspection study must be hosted in its own backend namespace.
+    pub async fn open_or_field_inspection_fixture(
+        backend: B,
+        selected_persona: SelectedPersonaRef,
+    ) -> Result<Self, AppError> {
+        Self::open_or_fixture_kind(backend, selected_persona, true).await
+    }
+
+    async fn open_or_fixture_kind(
+        backend: B,
+        selected_persona: SelectedPersonaRef,
+        field_inspection: bool,
+    ) -> Result<Self, AppError> {
         let sessions = MereSessions::new(backend.clone())
             .list()
             .await
             .map_err(MereHostError::from)?;
         let old_slot = backend.get(HOST_SLOT).await.map_err(MereHostError::from)?;
         if sessions.is_empty() && old_slot.is_none() {
+            if field_inspection {
+                return Ok(Self::new(MereHost::field_inspection_fixture(
+                    backend,
+                    selected_persona,
+                    fixture_handlers(),
+                )?));
+            }
             return Self::fixture(backend, selected_persona);
         }
         let host = MereHost::open(

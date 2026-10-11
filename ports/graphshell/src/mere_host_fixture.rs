@@ -14,8 +14,9 @@
 use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
 use mere::kernel::graph::{
-    ArrangementSubKind, ContainmentSubKind, EdgeAssertion, Graph, NodeKey, ProvenanceSubKind,
-    SemanticSubKind,
+    ArrangementSubKind, ContainmentSubKind, Coupling, CouplingId, CouplingResponse, EdgeAssertion,
+    Field, FieldDefinition, FieldExtent, FieldId, FieldLifecycle, Graph, NodeKey, NodeSelector,
+    ProvenanceSubKind, ScalarField, SemanticSubKind, VectorField,
 };
 use muniment::Backend;
 use serde_json::json;
@@ -30,6 +31,82 @@ use crate::mere_host::{
 };
 
 impl<B: Backend + Clone> MereHost<B> {
+    /// Opt-in inspection data. Callers must use a separate fixture store.
+    pub fn field_inspection_fixture(
+        backend: B,
+        selected_persona: SelectedPersonaRef,
+        handlers: HandlerRegistry,
+    ) -> Result<Self, MereHostError> {
+        let mut host = Self::fixture(backend, selected_persona, handlers)?;
+        host.mutate_product_graph(|graph| {
+            let fid = |id| FieldId::from_uuid(uuid::Uuid::from_u128(id));
+            let cid = |id| CouplingId::from_uuid(uuid::Uuid::from_u128(id));
+            for (id, name, definition, bounds, lifecycle) in [
+                (
+                    101,
+                    "Region study",
+                    FieldDefinition::Scalar(ScalarField::Const(0.0)),
+                    [-320., -220., 120., 180.],
+                    FieldLifecycle::Active,
+                ),
+                (
+                    102,
+                    "Region overlap",
+                    FieldDefinition::Vector(VectorField::ConstVec { x: 0., y: 0. }),
+                    [-120., -180., 320., 220.],
+                    FieldLifecycle::Active,
+                ),
+                (
+                    103,
+                    "Retired study",
+                    FieldDefinition::Scalar(ScalarField::Const(0.0)),
+                    [-80., -80., 80., 80.],
+                    FieldLifecycle::Retired,
+                ),
+            ] {
+                let [min_x, min_y, max_x, max_y] = bounds;
+                let mut field = Field::new(fid(id), definition).with_name(name).with_extent(
+                    FieldExtent::Region {
+                        min_x,
+                        min_y,
+                        max_x,
+                        max_y,
+                    },
+                );
+                field.lifecycle = lifecycle;
+                apply_graph_delta(graph, GraphDelta::AddField { field });
+            }
+            for coupling in [
+                Coupling::new(
+                    cid(201),
+                    fid(101),
+                    NodeSelector::All,
+                    CouplingResponse::AttractToMin,
+                    0.02,
+                ),
+                Coupling::new(
+                    cid(202),
+                    fid(101),
+                    NodeSelector::Tagged("research".into()),
+                    CouplingResponse::Open {
+                        predicate: "urn:graphshell:inspection:highlight".into(),
+                    },
+                    0.08,
+                ),
+                Coupling::new(
+                    cid(203),
+                    fid(102),
+                    NodeSelector::All,
+                    CouplingResponse::FlowAdvect,
+                    1.0,
+                ),
+            ] {
+                apply_graph_delta(graph, GraphDelta::AddCoupling { coupling });
+            }
+        })?;
+        Ok(host)
+    }
+
     /// Deterministic H1 source truth with synthetic public identity material,
     /// journaled as Graphshell's own edits.
     pub fn fixture(

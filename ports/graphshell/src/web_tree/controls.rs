@@ -123,6 +123,11 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
 
 impl TreePage {
     pub(super) fn pointer(&mut self, event: PointerEvent) {
+        #[cfg(feature = "product")]
+        if field_inspection::pointer(self, &event) {
+            event.prop.prevent_default();
+            return;
+        }
         if self
             .product
             .as_ref()
