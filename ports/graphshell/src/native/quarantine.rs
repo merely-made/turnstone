@@ -13,6 +13,8 @@ use uuid::Uuid;
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct QuarantineCard {
+    /// The resident store whose original sealing persona owns its keys.
+    pub store: ProfileId,
     pub persona: Uuid,
     pub item: Item,
     pub revision: String,
@@ -27,6 +29,8 @@ pub enum ReviewAction {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ReviewRequest {
+    /// The resident store whose original sealing persona owns its keys.
+    pub store: ProfileId,
     pub profile: ProfileId,
     pub persona: Uuid,
     pub item: chatelaine::ItemId,
@@ -38,6 +42,8 @@ pub struct ReviewRequest {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct UnassignedImport {
+    /// The resident store whose original sealing persona owns its keys.
+    pub store: ProfileId,
     pub persona: Uuid,
     pub titles: Vec<String>,
     pub item_count: usize,
@@ -46,6 +52,8 @@ pub struct UnassignedImport {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct AssignImportRequest {
+    /// The resident store whose original sealing persona owns its keys.
+    pub store: ProfileId,
     pub profile: ProfileId,
     pub persona: Uuid,
     pub revision: String,
