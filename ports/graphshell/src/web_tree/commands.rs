@@ -39,10 +39,13 @@ pub(super) struct Open {
     at: (f32, f32),
 }
 
-pub(super) struct Request {
-    /// Position in the retained root, not document/client coordinates.
-    pub(super) at: (f32, f32),
-    pub(super) node: Option<uuid::Uuid>,
+pub(super) enum Request {
+    Context {
+        /// Position in the retained root, not document/client coordinates.
+        at: (f32, f32),
+        node: Option<uuid::Uuid>,
+    },
+    Selection,
 }
 
 fn catalog(page: &TreePage) -> CommandSet {
@@ -120,7 +123,26 @@ fn catalog(page: &TreePage) -> CommandSet {
 }
 
 pub(super) fn open(page: &mut TreePage, request: Request) {
-    if let Some(node) = request.node {
+    if (page.shared.selection_locked.get() || page.shared.remote_shown.get())
+        && matches!(
+            &request,
+            Request::Selection | Request::Context { node: Some(_), .. }
+        )
+    {
+        return;
+    }
+    let Request::Context { at, node } = request else {
+        let canvas = page.shared.canvas.borrow();
+        page.picked = canvas.focused_url().map(str::to_owned);
+        if let Some(product) = &mut page.product {
+            product.select(canvas.selected_members().first().copied());
+        }
+        page.commands.open = None;
+        page.commands.focus_graph = true;
+        page.shared.dirty.set(true);
+        return;
+    };
+    if let Some(node) = node {
         let mut canvas = page.shared.canvas.borrow_mut();
         // Opening on an already-selected member retains a multi-selection.
         if !canvas.selected_members().contains(&node) {
@@ -131,16 +153,15 @@ pub(super) fn open(page: &mut TreePage, request: Request) {
             product.select(Some(node));
         }
     }
-    let context =
-        if request.node.is_some() || !page.shared.canvas.borrow().selected_members().is_empty() {
-            "node"
-        } else {
-            "canvas"
-        };
+    let context = if node.is_some() || !page.shared.canvas.borrow().selected_members().is_empty() {
+        "node"
+    } else {
+        "canvas"
+    };
     page.commands.open = Some(Open {
         session: MenuSession::open(Some(context)),
         search: TextInput::new(""),
-        at: request.at,
+        at,
     });
     page.commands.focus_graph = false;
     page.shared.dirty.set(true);
@@ -149,7 +170,7 @@ pub(super) fn open(page: &mut TreePage, request: Request) {
 pub(super) fn open_keyboard(page: &mut TreePage) {
     open(
         page,
-        Request {
+        Request::Context {
             at: (12.0, 80.0),
             node: None,
         },

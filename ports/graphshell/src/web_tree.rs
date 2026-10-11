@@ -737,6 +737,7 @@ fn view(page: &TreePage) -> Child {
                 commands::shortcut(page, &event);
             },
         )
+        .capture(true)
         .focusable(false),
     )
 }
@@ -1155,6 +1156,11 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
     HostHooks {
         frame: Box::new(move |ctx| {
             if let Some(request) = frame_shared.command_request.borrow_mut().take() {
+                if matches!(&request, commands::Request::Selection) {
+                    // Secondary capture bypasses the host's focus routing.
+                    // Pulse the one-shot request even after an earlier close.
+                    ctx.runner.update(|page| page.commands.focus_graph = false);
+                }
                 ctx.runner.update(|page| commands::open(page, request));
             }
             #[cfg(feature = "applets")]

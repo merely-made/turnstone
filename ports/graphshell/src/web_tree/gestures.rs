@@ -14,7 +14,8 @@
 //! wheel follows the view preference (pointer zoom by default); one finger
 //! on empty canvas scrolls the page and one on a node
 //! drags it; two fingers pan and pinch. Outside the graph leaf (the toolbar,
-//! the tools, the lists) the host handles everything, as before.
+//! the tools, the lists) scrollable controls retain the host's wheel route;
+//! the remaining chrome leaves scrolling to the embedding page.
 use std::collections::HashSet;
 
 use cambium_genet_web_host::{WHEEL_LINE_PX, WHEEL_PAGE_PX, wheel_delta_from_dom};
@@ -101,10 +102,16 @@ pub(super) fn layout_rects(ctx: &AppCtx<'_, TreePage, Logic, Child>) -> (Option<
             .next()
     };
     let graph = first("tree-canvas").and_then(|leaf| ctx.painted_rect(leaf));
-    let overlays = ["tools-overlay", "tree-product", "tree-command-menu"]
-        .into_iter()
-        .filter_map(|class| first(class).and_then(|node| ctx.painted_rect(node)))
-        .collect();
+    let overlays = [
+        "tools-overlay",
+        "tree-tools",
+        "tree-product",
+        "tree-command-menu",
+        "tree-relations",
+    ]
+    .into_iter()
+    .filter_map(|class| first(class).and_then(|node| ctx.painted_rect(node)))
+    .collect();
     (graph, overlays)
 }
 
@@ -160,6 +167,18 @@ impl Listeners {
 
     fn wheel(&self, event: web_sys::WheelEvent) {
         let Some(at) = self.graph_point(event.client_x(), event.client_y()) else {
+            let rect = self.canvas.get_bounding_client_rect();
+            let zoom = (self.host.ui_zoom)();
+            let at = (
+                (event.client_x() as f64 - rect.x()) as f32 / zoom,
+                (event.client_y() as f64 - rect.y()) as f32 / zoom,
+            );
+            let gestures = self.shared.gestures.borrow();
+            if gestures.graph.is_some() && !gestures.overlays.iter().any(|rect| inside(*rect, at)) {
+                // The web host claims every notch. Keep ordinary chrome from
+                // trapping page scroll, while its actual scroll panes still work.
+                event.stop_propagation();
+            }
             return;
         };
         let wheel = wheel_use(
@@ -242,14 +261,14 @@ impl Listeners {
                 if ends {
                     canvas.pointer_up(mere::canvas::PointerButton::Right, at.0, at.1);
                     let request = canvas.take_context_request();
-                    if event.type_() == "pointerup"
-                        && let Some(request) = request
-                    {
-                        *self.shared.command_request.borrow_mut() = Some(commands::Request {
-                            at: (graph.0 + at.0, graph.1 + at.1),
-                            node: request.node,
+                    *self.shared.command_request.borrow_mut() =
+                        Some(match request.filter(|_| event.type_() == "pointerup") {
+                            Some(request) => commands::Request::Context {
+                                at: (graph.0 + at.0, graph.1 + at.1),
+                                node: request.node,
+                            },
+                            None => commands::Request::Selection,
                         });
-                    }
                 } else {
                     canvas.cursor_moved(at.0, at.1);
                 }
