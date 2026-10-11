@@ -1,0 +1,41 @@
+# Launch with a fresh isolated --library path and a finite LaunchServices
+# runner timeout. This proves actual presented frames, not a windowless host
+# observation. It does not force driver loss or replace the host device.
+log Upgraded production host presentation preserves draft and selected graph
+settle 4
+remember original
+capture initial
+
+key tab-until aria-label=Primary hue
+key ArrowRight
+settle 3
+differs original primary
+same original name theme graph_selected
+remember edited
+capture seed_edited
+
+# The library also has a button named Dark. Exact focus attribute comparison
+# selects only the preview mode; ordinary Space activates that focused button.
+key tab-until data-mode=dark
+key Space
+settle 3
+assert snap mode == dark
+same edited name theme primary graph_selected
+capture dark
+
+key tab-until data-field=name
+input-text Release-host-draft
+settle 3
+assert snap name == Release-host-draft
+remember named
+capture named
+
+resize 960 780
+settle 4
+same named name theme primary mode graph_selected focus
+capture resized
+
+resize 1280 1100
+settle 4
+same named name theme primary mode graph_selected focus
+capture restored_size

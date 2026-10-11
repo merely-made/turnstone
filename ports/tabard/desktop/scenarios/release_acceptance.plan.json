@@ -1,0 +1,52 @@
+{
+  "status": "cpu_controls_native_presentation_and_orderly_device_rehydration_passed",
+  "cpu_status": "3 production native-hook input/accessibility/application-authority controls passed on the local release candidate after the finite normalized slider SetValue fix",
+  "cpu_validation_receipt": "/Users/markik/Code/output/vello-producer-gates-20261011/checks/mere-pinned-host-controls.json",
+  "cpu_validation_scope": "Passed with published Git-only immutable Netrender and Genet sources; no local source override",
+  "cpu_command": "cargo test -p tabard-workshop --features native-host --test release_host_acceptance -- --test-threads=1",
+  "headless_gpu_command": "TABARD_RELEASE_DEVICE_RECEIPT=<fresh-output-directory> cargo test -p tabard-workshop --features native-host,netrender/vello-cpu --test release_device_rehydration -- --ignored --test-threads=1",
+  "headless_gpu_process_deadline_seconds": 120,
+  "headless_gpu_status": "Qualified rebuilt test passed: explicit whole-frame exact-pixel equality assertion, missing owned source refusal before mutation, and retained application authority across orderly fresh device/session recreation",
+  "headless_gpu_qualified_receipt": "/Users/markik/Code/output/vello-producer-gates-20261011/device-rehydration-qualified/receipt.json",
+  "headless_gpu_first_run_receipt": "/Users/markik/Code/output/vello-producer-gates-20261011/device-rehydration/receipt.json",
+  "headless_gpu_first_run_rgba_sha256": "a307988075899ea251cf7b9f031b0ca775276bbe6ffbb7231ac9d7a7f45d5dd9",
+  "headless_gpu_final_acceptance": "assert_eq!(first.rgba, second.rgba) passes and the rebuilt receipt reports exact_pixels_across_recreate=true",
+  "headless_gpu_scope": "actual production reader CPU bytes, explicit premultiplied-to-straight alpha upload, bounded real RenderCore readback, orderly teardown and fresh device boot, missing owned image resource refusal and fresh CPU session rehydration",
+  "headless_gpu_exclusions": [
+    "swapchain presentation",
+    "forced driver loss",
+    "whole-workshop portable bundle parity"
+  ],
+  "native_status": "passed corrected scenario: RESULT ok, six nonblank distinct captures, 53 successful presentations, draft/mode/focus/graph selection assertions passed",
+  "native_first_run_receipt": "/Users/markik/Code/output/vello-producer-gates-20261011/native-presentation/scenario.done",
+  "native_first_run_evidence": "RESULT fail; 6 nonblank captures and 53 successful presentations establish rendering activity but do not satisfy the failed mode authority assertion",
+  "native_command": "python3 scripts/run_macos_scenario.py --binary <qualified-tabard-desktop-binary> --prefix TABARD --scenario ports/tabard/desktop/scenarios/release_presentation.scn --output <fresh-receipt-directory> --timeout 60 -- --library <isolated-new-library-path>",
+  "native_acceptance": [
+    "RESULT ok",
+    "launcher success and no timeout",
+    "all six captures present and nonblank",
+    "initial/seed_edited/dark capture digests differ as checked by production WorkshopLane",
+    "draft, mode, focused control and graph selection snapshots survive native resize",
+    "captures advance only on successful native presentations through Mesquite"
+  ],
+  "native_exclusions": [
+    "OS assistive technology adapter interaction",
+    "forced driver loss",
+    "host core replacement",
+    "text caret/selection offsets are not exposed by the existing WorkshopLane snapshot; exact retained text selection is covered by the CPU native-hook test"
+  ],
+  "user_state_isolation": "WorkshopState::in_memory in tests; explicit fresh --library in headed scenario; no existing library/preferences or app profile is used",
+  "stale_refusal_scope": "A fresh CPU session refuses an image-only Scene lacking its owned image ledger before cache mutation; source-generation stale portable bundle refusal belongs to the portable capture/adapter gate",
+  "suspension_distinction": "WinitHost::suspend_surface keeps RenderCore and device; same-device resume must not be labeled device reset",
+  "headless_gpu_target_initialization": "ColorLoad::Clear with default wgpu::Color: RGBA zero (transparent)",
+  "native_validation_receipt": "/Users/markik/Code/output/vello-producer-gates-20261011/native-presentation-qualified/scenario.done",
+  "native_validation_scope": "Native execution used coherent local candidate source; subsequent published Git-only locked native and Graphshell Wasm consumer checks passed; runtime receipt retains the executed binary hash",
+  "published_source_pins": {
+    "netrender": "ef5412d760a978584c8c1801e8a765c51aecd403",
+    "genet": "4bc75583865c2fb862b7acd7fe16dc28eb591042",
+    "vello_provider": "5862bba26c8a9f56f6a5fdc8ea6966b360a5d63a"
+  },
+  "browser_status": "default Graphshell Wasm library locked compilation passed; browser execution remains unqualified",
+  "classic_pixel_parity_status": "open: canonical curve and direct producer glyph edge thresholds exceeded; CPU/Sparse GPU twelve-case full composition and24 independent producer comparisons passed",
+  "native_git_compile_receipt": "/Users/markik/Code/output/vello-producer-gates-20261011/checks/tabard-pinned-native-check.json"
+}
