@@ -4,7 +4,7 @@ assert snap source == saved graph
 assert snap forme-accesses == 2
 assert snap forme-draft == false
 assert snap forme-locked == true
-click role:button Return to Mere
+# A fresh page starts in Mere; workbench visibility is page-local.
 settle 2
 remember committed
 click role:button Unlock forme
