@@ -82,7 +82,10 @@ const SHEET: &str = "\
     .tree-grouping button { background:#263640; color:#dce3e8; padding:4px 8px; margin:2px 4px; border:1px solid #637581; } \
     .tree-grouped .tree-relations { max-height:110px; overflow-y:auto; padding:0 12px; overflow-wrap:anywhere; } \
     .tree-body { display:flex; flex-direction:row; flex:1 1 auto; min-height:0; position:relative; }     .tools-overlay { position:absolute; top:0; right:0; bottom:0; z-index:10; }     .tools-storage { margin:2px 0 6px; color:#9fb0bb; font-size:12px; } \
-    .tree-graph { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; } \
+    .tree-graph { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; position:relative; } \
+    .forme-drop-cue { position:absolute; pointer-events:none; z-index:6; box-sizing:border-box; border:2px dashed currentColor; } \
+    .forme-drop-stack { border:5px double currentColor; } \
+    .forme-drop-label { display:block; width:230px; padding:4px 6px; color:#dce3e8; background:#17232b; border:1px solid currentColor; font-size:12px; } \
     .tree-canvas { display: block; flex: 1 1 auto; min-height: 0; } \
     .tree-tools { flex:0 0 auto; width:279px; padding:4px 10px; background:#0d161b; border-left:1px solid #2c3b44; overflow-y:auto; min-height:0; } \
     .tree-tools .disclosure-trigger { display:block; width:100%; text-align:left; font-size:14px; background:transparent; border:none; padding:2px 0 4px; margin:0; } \
@@ -662,7 +665,10 @@ fn view(page: &TreePage) -> Child {
                 return;
             }
             #[cfg(feature = "product")]
-            if page.forme.as_ref().is_some_and(|pane| pane.session.editing())
+            if page
+                .forme
+                .as_ref()
+                .is_some_and(|pane| pane.session.editing())
                 && forme::shortcut(page, &event)
             {
                 event.prevent_default();
@@ -675,6 +681,12 @@ fn view(page: &TreePage) -> Child {
     );
     let workbench = forme_workbench(page);
     let showing_workbench = workbench.is_some();
+    #[cfg(feature = "product")]
+    let drop_feedback = (!showing_workbench)
+        .then(|| forme::drop_feedback(page))
+        .flatten();
+    #[cfg(not(feature = "product"))]
+    let drop_feedback: Option<Child> = None;
     Box::new(
         el(
             "main",
@@ -695,7 +707,7 @@ fn view(page: &TreePage) -> Child {
                         (!showing_workbench).then(|| product::controls(page)),
                         el(
                             "div",
-                            workbench.unwrap_or_else(|| Box::new(graph)),
+                            (workbench.unwrap_or_else(|| Box::new(graph)), drop_feedback),
                         )
                         .attr("class", "tree-graph"),
                         if docked {
@@ -1405,19 +1417,19 @@ impl NoRepulsionLane for mere::canvas::Canvas {
 mod applet;
 mod controls;
 #[cfg(feature = "product")]
+mod field_inspection;
+#[cfg(feature = "product")]
 mod forme;
 mod gesture_steps;
 mod gestures;
 mod grouping;
 mod history;
-mod lane;
-mod physics;
 #[cfg(feature = "product")]
 mod inspection;
+mod lane;
 #[cfg(feature = "product")]
 mod link_inspection;
-#[cfg(feature = "product")]
-mod field_inspection;
+mod physics;
 #[cfg(feature = "product")]
 mod product;
 #[cfg(not(feature = "product"))]
