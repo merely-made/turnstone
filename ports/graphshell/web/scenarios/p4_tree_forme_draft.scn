@@ -18,7 +18,7 @@ assert snap forme-preview == true
 assert snap forme-drop-effect == Stack as tabs
 assert snap forme-dirty == false
 capture forme_handle_preview
-key escape
+key Escape
 settle 2
 assert snap forme-preview == false
 assert snap forme-drop-effect == none
