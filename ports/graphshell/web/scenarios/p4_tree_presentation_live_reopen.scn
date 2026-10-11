@@ -1,0 +1,30 @@
+# Fresh page/process, retained origin/profile after the live scenario.
+# Same product route and field-inspection fixture namespace.
+assert snap source == saved graph
+assert snap rules-count == 2
+assert snap rules-generation == 3
+assert snap rules-live-enabled == false
+assert snap forme-accesses == 2
+click role:button Pause physics
+remember reopened-source
+reveal role:button Presentation rules
+click role:button Presentation rules
+reveal role:button Enable saved rules in this view
+click role:button Enable saved rules in this view
+settle 2
+assert snap rules-live-ready == true
+assert snap rules-live-guides-rule == field-2
+assert snap forme-guides-visible == false
+reveal role:button Undo saved rules
+click role:button Undo saved rules
+wait 120
+assert snap rules-count == 0
+assert snap rules-generation == 4
+reveal role:button Redo saved rules
+click role:button Redo saved rules
+wait 120
+assert snap rules-count == 2
+assert snap rules-generation == 5
+assert snap forme-guides-visible == false
+same reopened-source graph-session nodes forme forme-accesses forme-geometry forme-bounds forme-locked forme-visible
+capture presentation_live_reopen

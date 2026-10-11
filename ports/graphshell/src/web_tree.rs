@@ -92,6 +92,8 @@ const SHEET: &str = "\
     .tools-cards { margin:2px 0 4px; padding:0 0 0 16px; font-size:12px; color:#dce3e8; } \
     .tree-tools h2 { font-size:14px; margin:2px 0 4px; } \
     .tree-tools h3 { font-size:13px; margin:4px 0 2px; } \
+    .tree-rules [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
+    .tree-rules pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
     .tree-inspection { overflow-wrap:anywhere; } \
     .tree-inspection p, .tree-inspection li { font-size:12px; } \
     .tools-section + .tools-section { margin-top:10px; border-top:1px solid #2c3b44; padding-top:4px; } \
@@ -501,6 +503,8 @@ pub(crate) struct TreePage {
     inspected_statement: Option<String>,
     #[cfg(feature = "product")]
     field_inspector: field_inspection::Pane,
+    #[cfg(feature = "product")]
+    presentation: presentation::Pane,
     #[cfg(feature = "applets")]
     applet_seen: u64,
     #[cfg(feature = "applets")]
@@ -759,6 +763,8 @@ fn tools_region(page: &TreePage) -> Child {
     #[cfg(feature = "product")]
     children.push(field_inspection::section(page));
     #[cfg(feature = "product")]
+    children.push(presentation::section(page));
+    #[cfg(feature = "product")]
     children.push(forme::section(page));
     children.push(remote::section(page));
     Box::new(
@@ -933,6 +939,8 @@ async fn boot(root: Element) -> Result<(), String> {
         },
         None => (None, None),
     };
+    #[cfg(feature = "product")]
+    let presentation = presentation::Pane::open(product.as_ref()).await;
     let mut dataset = HostedDataset::None;
     let mut grouping = None;
     let mut hosted_history = None;
@@ -1069,6 +1077,8 @@ async fn boot(root: Element) -> Result<(), String> {
                 inspected_statement: None,
                 #[cfg(feature = "product")]
                 field_inspector: field_inspection::Pane::default(),
+                #[cfg(feature = "product")]
+                presentation,
                 #[cfg(feature = "applets")]
                 applet_seen: 0,
                 #[cfg(feature = "applets")]
@@ -1209,6 +1219,17 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                     forme::poll(page);
                 });
             }
+            #[cfg(feature = "product")]
+            if ctx.runner.state().presentation.ready() {
+                ctx.runner.update(presentation::poll);
+            }
+            #[cfg(feature = "product")]
+            {
+                if let Some(inputs) = presentation::refresh(ctx.runner.state()) {
+                    ctx.runner.update(|page| presentation::update(page, inputs));
+                }
+                presentation::install(ctx.runner.state());
+            }
             // The remote session moves outside the runner (its channel's
             // pumps); rebuild the view when it has.
             let (generation, linked) = {
@@ -1304,7 +1325,13 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
         }),
         after_wake: Box::new(|_ctx| {}),
         close_request: Box::new(|_ctx, _request| CloseDisposition::KeepVisible),
-        focused_text: Box::new(product::focused_text),
+        focused_text: Box::new(|runner| {
+            #[cfg(feature = "product")]
+            if let Some(slot) = presentation::focused_text(runner) {
+                return Some(slot);
+            }
+            product::focused_text(runner)
+        }),
         key_intercept: Box::new(|_runner, _press| false),
     }
 }
@@ -1418,6 +1445,8 @@ mod applet;
 mod controls;
 #[cfg(feature = "product")]
 mod field_inspection;
+#[cfg(feature = "product")]
+mod presentation;
 #[cfg(feature = "product")]
 mod forme;
 mod gesture_steps;
