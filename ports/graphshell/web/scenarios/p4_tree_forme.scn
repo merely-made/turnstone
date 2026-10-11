@@ -29,8 +29,11 @@ capture forme_hover_regions
 hover-forme outside
 settle 2
 assert snap forme-hovered == false
+remember committed
 click role:button Unlock forme
 wait 120
+assert snap forme-draft == true
+assert snap forme-dirty == false
 assert snap forme-locked == false
 click role:button Enlarge first region in split root
 wait 120
@@ -76,9 +79,13 @@ click role:button Arrange top to bottom
 wait 120
 assert snap forme-cells == 2
 assert snap forme-placed == 2
-click role:button Lock forme
+same committed forme-committed-geometry
+same committed forme-committed-bounds
+assert snap forme-dirty == true
+click role:button Lock and apply
 wait 120
 assert snap forme-locked == true
+assert snap forme-draft == false
 click role:button Hide forme boundary
 wait 120
 assert snap forme-visible == false

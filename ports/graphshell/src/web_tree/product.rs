@@ -208,6 +208,18 @@ impl SavedProduct {
             .clone()
     }
 
+    /// Inspect the current source owner, never a cached Canvas or form draft.
+    pub(super) fn inspect_access(
+        &self,
+        member: Uuid,
+    ) -> Result<graphshell::access_inspection::AccessInspection, String> {
+        let app = self
+            .app
+            .as_ref()
+            .ok_or("Source inspection will resume when the current save finishes")?;
+        graphshell::access_inspection::inspect_access(app.host.graph(), member)
+    }
+
     /// Selected file facts from the acknowledged local owner, for receipts.
     pub(super) fn saved_file(&self) -> Option<serde_json::Value> {
         if self.saving || self.pending_intake.is_some() {
@@ -557,6 +569,7 @@ pub(super) fn controls(page: &TreePage) -> Child {
         ));
     }
     children.push(intake_controls(page));
+    children.push(super::inspection::open_button(page));
     if product.selected.is_some() {
         children.push(Box::new(button(
             if product.detail_open {

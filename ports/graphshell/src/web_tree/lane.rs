@@ -672,6 +672,8 @@ impl Product for TreeLane {
         let snapshot = super::speed::fields(snapshot, &canvas, &self.shared);
         #[cfg(feature = "product")]
         let snapshot = forme_fields(page, &canvas, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = inspection::fields(page, snapshot);
         let snapshot = snapshot
             .with_field("physics-steps", step.steps.to_string())
             .with_field(
@@ -1104,6 +1106,31 @@ impl Product for TreeLane {
                 ctx.pointer.push(HostPointer::Moved(left + x, top + y));
                 Ok(())
             },
+            #[cfg(feature = "product")]
+            "move-to-forme" => {
+                let (address, side) = rest.trim().rsplit_once(' ').ok_or("move-to-forme wants target address and left/right/top/bottom/center/outside")?;
+                let (left, top, _, _) = leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
+                let pane = ctx.runner.state().forme.as_ref().ok_or("no Forme workspace")?;
+                let region = pane.session.view().region();
+                let canvas = self.shared.canvas.borrow();
+                let member = canvas.graph().nodes().find(|(_, node)| node.url() == address).map(|(_, node)| node.id).ok_or("unknown drop target")?;
+                let cell = region.cells.iter().find(|cell| cell.member == member).ok_or("target has no active tile region")?;
+                let [x, y, r, b] = region.cell_world_bounds(cell);
+                let world = match side {
+                    "left" => (x + (r-x)*0.1, (y+b)*0.5),
+                    "right" => (r - (r-x)*0.1, (y+b)*0.5),
+                    "top" => ((x+r)*0.5, y + (b-y)*0.1),
+                    "bottom" => ((x+r)*0.5, b - (b-y)*0.1),
+                    "center" => ((x+r)*0.5, (y+b)*0.5),
+                    "outside" => (region.bounds[2]+50., region.bounds[3]+50.),
+                    _ => return Err("unknown Forme drop region".into()),
+                };
+                let (x, y) = canvas.screen_point_of(world);
+                let point = self.pointer.as_mut().ok_or("move-to-forme needs press-node first")?;
+                *point = (left+x, top+y);
+                ctx.pointer.push(HostPointer::Moved(point.0, point.1));
+                Ok(())
+            },
             "click-node" => {
                 let (x, y) = self.node_point(ctx, rest.trim())?;
                 ctx.pointer.push(HostPointer::Press(x, y));
@@ -1333,25 +1360,31 @@ fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> Pr
             .count()
     });
     snapshot
-        .with_field("forme", pane.model.document.id.as_uuid().to_string())
-        .with_field("forme-accesses", pane.model.members().len().to_string())
+        .with_field("forme", pane.current().document.id.as_uuid().to_string())
+        .with_field("forme-accesses", pane.current().members().len().to_string())
         .with_field(
             "forme-cells",
             region.map_or(0, |r| r.cells.len()).to_string(),
         )
         .with_field("forme-placed", placed.to_string())
-        .with_field("forme-locked", pane.model.locked.to_string())
-        .with_field("forme-visible", pane.model.visible.to_string())
+        .with_field("forme-locked", pane.current().locked.to_string())
+        .with_field("forme-visible", pane.current().visible.to_string())
         .with_field("forme-hovered", canvas.forme_region_hovered().to_string())
         .with_field("forme-saving", pane.saving.to_string())
         .with_field("forme-preview", pane.previewing().to_string())
+        .with_field("forme-draft", pane.session.editing().to_string())
+        .with_field("forme-dirty", pane.session.dirty().to_string())
+        .with_field("forme-can-undo", pane.session.can_undo().to_string())
+        .with_field("forme-can-redo", pane.session.can_redo().to_string())
+        .with_field("forme-committed-geometry", serde_json::to_string(&pane.session.committed().geometry).unwrap_or_default())
+        .with_field("forme-committed-bounds", serde_json::to_string(&pane.session.committed().bounds).unwrap_or_default())
         .with_field(
             "forme-geometry",
-            serde_json::to_string(&pane.model.geometry).unwrap_or_default(),
+            serde_json::to_string(&pane.current().geometry).unwrap_or_default(),
         )
         .with_field(
             "forme-bounds",
-            serde_json::to_string(&pane.model.bounds).unwrap_or_default(),
+            serde_json::to_string(&pane.current().bounds).unwrap_or_default(),
         )
         .with_field("workbench", pane.workbench.to_string())
 }

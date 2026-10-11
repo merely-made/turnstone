@@ -118,6 +118,11 @@ impl TreePage {
         if event.button != PointerButton::Primary {
             return;
         }
+        #[cfg(feature = "product")]
+        if forme::pointer(self, &event) {
+            event.prop.prevent_default();
+            return;
+        }
         let (x, y) = event.local;
         let mut canvas = self.shared.canvas.borrow_mut();
         match event.phase {
