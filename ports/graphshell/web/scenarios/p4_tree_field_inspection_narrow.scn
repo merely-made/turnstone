@@ -1,0 +1,23 @@
+# Retained inspector origin, fresh page, 420px viewport, field-inspection fixture.
+assert snap field-inspection-fixture == true
+click role:button Inspect fields
+reveal role:button Inspect field: Region study
+click role:button Inspect field: Region study
+assert snap field-inspector-focus == field
+# Tab continues within the chosen detail section, not from the page's first control.
+key Tab
+assert snap focus-kind == button
+key Enter
+settle 2
+assert snap coupling-inspector-id == 00000000-0000-0000-0000-0000000000c9
+assert snap field-inspector-focus == coupling
+assert snap coupling-inspector-strength == 0.02
+capture narrow_coupling_details
+key Tab
+assert snap focus-kind == button
+key Enter
+settle 2
+assert snap coupling-inspector-ready == false
+assert snap field-inspector-focus == field
+assert snap field-inspector-id == 00000000-0000-0000-0000-000000000065
+capture narrow_field_details

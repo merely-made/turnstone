@@ -2,12 +2,15 @@
 # Keep the page visible. Follow with the retained-origin reopen scenario.
 assert snap source == saved graph
 assert snap dynamics-inspector-open == false
-click role:button Pause physics
+# The seeded analytic arrangement starts paused, even with normal motion.
+assert snap physics-paused == true
 click role:button Restore arrangement
 settle 3
 click-node file:///Graphshell/reference-notes.md
 settle 2
 remember original
+click role:button Graph tools
+settle 2
 reveal role:button Explain selected dynamics
 click role:button Explain selected dynamics
 settle 2
@@ -16,6 +19,8 @@ assert snap dynamics-inspector-ready == true
 assert snap dynamics-inspector-paused == true
 assert snap dynamics-inspector-explicit-pins == 0
 remember exact-access
+reveal .detail-key Forme hold
+settle 2
 capture dynamics_exact_access
 # Inspecting another source target and selecting another access does not retarget motion.
 reveal role:button Inspect selected access
@@ -38,8 +43,13 @@ assert snap assertion-inspector-ready == true
 assert snap assertion-inspector-predicate == https://mere.computer/ns/rel#cites
 same original detail-member graph-session nodes forme forme-accesses
 capture dynamics_exact_pair_inputs
+# Close the overlay and centre the actual pointer target before selecting.
+click role:button Graph tools
+center-node https://example.test/i2p-port
+settle 2
 click-node https://example.test/i2p-port
 settle 2
+assert snap detail-address == https://example.test/i2p-port
 same exact-pair dynamics-inspector-target
 assert snap dynamics-inspector-ready == true
 # The live paused state changes, independently of the inspected target.
@@ -53,6 +63,8 @@ settle 2
 assert snap dynamics-inspector-paused == true
 same exact-pair dynamics-inspector-target
 # Source-inspector closing leaves the independent dynamics inspector open.
+click role:button Graph tools
+settle 2
 reveal role:button Close link inspection
 click role:button Close link inspection
 settle 2

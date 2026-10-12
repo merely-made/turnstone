@@ -25,6 +25,9 @@ pub(super) struct Pane {
     pub(super) point: Option<[f32; 2]>,
     pub(super) target: Option<FieldTarget>,
     pub(super) coupling: Option<CouplingId>,
+    // One explicit inspection moves focus once; ordinary rebuilds never do.
+    pub(super) reveal: bool,
+    pub(super) editor: super::coupling::Pane,
 }
 
 pub(super) fn graph(page: &TreePage) -> Result<&Graph, String> {
@@ -64,7 +67,50 @@ fn choose(page: &mut TreePage, target: FieldTarget) {
     page.field_inspector.target = Some(target);
     page.field_inspector.coupling = None;
     page.field_inspector.open = true;
+    page.field_inspector.reveal = true;
     page.tools_open = true;
+}
+
+pub(super) fn reveal(ctx: &mut AppCtx<'_, TreePage, Logic, Child>) {
+    if !ctx.runner.state().field_inspector.reveal {
+        return;
+    }
+    if let Some(node) = ctx.runner.focus() {
+        ctx.scroll_into_view(node, cambium_rootstock::ScrollAlign::Start);
+    }
+    ctx.runner
+        .update(|page| page.field_inspector.reveal = false);
+}
+
+pub(super) fn focused_detail(ctx: &AppCtx<'_, TreePage, Logic, Child>) -> &'static str {
+    let Some(focus) = ctx.runner.focus() else {
+        return "none";
+    };
+    let dom = ctx.runner.dom();
+    let dom = dom.borrow();
+    for (id, label) in [
+        ("field-inspected-field", "field"),
+        ("field-inspected-coupling", "coupling"),
+    ] {
+        if taproot::matching(&dom, &Selector::class(id)).contains(&focus) {
+            return label;
+        }
+    }
+    "none"
+}
+
+fn detail_heading(page: &TreePage, label: &str, exact_coupling: bool) -> Child {
+    Box::new(cambium::request_focus(
+        cambium::focusable(el("h3", label.to_string()).attr("tabindex", "0").attr(
+            "class",
+            if exact_coupling {
+                "field-inspected-coupling"
+            } else {
+                "field-inspected-field"
+            },
+        )),
+        page.field_inspector.reveal && exact_coupling == page.field_inspector.coupling.is_some(),
+    ))
 }
 
 pub(super) fn pointer(page: &mut TreePage, event: &PointerEvent) -> bool {
@@ -322,6 +368,7 @@ fn numen_detail(page: &TreePage, id: FieldId, canvas: &Canvas) -> Child {
                     format!("Inspect coupling: {}", id.as_uuid()),
                     move |page: &mut TreePage, _| {
                         page.field_inspector.coupling = Some(id);
+                        page.field_inspector.reveal = true;
                     },
                 )));
             }
@@ -382,21 +429,26 @@ pub(super) fn section(page: &TreePage) -> Child {
             pane.point = None;
             pane.target = None;
             pane.coupling = None;
+            pane.reveal = false;
         },
     )));
     children.push(roster(page, &canvas));
     children.push(discovery(page, &canvas));
     if let Some(target) = page.field_inspector.target {
+        children.push(detail_heading(page, "Inspected field", false));
         children.push(match target {
             FieldTarget::Numen(id) => numen_detail(page, id, &canvas),
             FieldTarget::Forme(id) => forme_detail(page, id),
         });
     }
     if let Some(id) = page.field_inspector.coupling {
-        children.push(Box::new(el("h3", "Exact coupling")));
+        children.push(detail_heading(page, "Exact coupling", true));
         children.push(Box::new(button(
             "Close coupling inspection",
-            |page: &mut TreePage, _| page.field_inspector.coupling = None,
+            |page: &mut TreePage, _| {
+                page.field_inspector.coupling = None;
+                page.field_inspector.reveal = true;
+            },
         )));
         match graph(page).and_then(|graph| model::inspect_coupling(graph, id)) {
             Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
@@ -425,7 +477,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         }
     }
     Box::new(
-        el("section", children)
+        el("section", (children, super::coupling::section(page)))
             .attr("class", "tree-inspection")
             .attr("aria-label", "Field inspector"),
     )
