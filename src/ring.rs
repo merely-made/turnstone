@@ -109,6 +109,12 @@ impl Ring {
 /// variant fails to compile until someone decides its ring.
 pub fn ring_of(action: &Action) -> Ring {
     use Action::*;
+    // Navigating the web does not grant reads or playback of the host's local
+    // retained store. A narrower clip capability can replace this later.
+    if let OpenAddress(address) = action
+        && matches!(crate::retained_clip::request(address), Ok(Some(_))) {
+        return Ring::HostOnly;
+    }
     match action {
         // Moving through content.
         OpenAddress(_) | NavBack | NavForward | Reload | Stop => Ring::Navigate,
@@ -233,6 +239,8 @@ pub fn ring_of(action: &Action) -> Ring {
         // authority. It must remain a literal host gesture until providers
         // carry a narrower, independently verifiable source grant.
         | ChooseKnotDocumentFile { .. }
+        | ChooseClipPackageFile
+        | ImportClipPackage(_)
         | SummonContributedPane { .. }
         // Personal theme authoring is a local settings gesture, with no
         // participant grant to open or alter the user's shared library.

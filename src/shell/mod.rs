@@ -23,6 +23,7 @@ mod keys;
 mod nomadnet_fetch;
 mod page_capture;
 mod reader_observe;
+mod retained_clips;
 mod render;
 mod renderers;
 #[cfg(all(feature = "scry", windows))]
@@ -215,6 +216,7 @@ pub(crate) fn standard_content_engines() -> SessionRegistry<Scene> {
     )));
     engines.register(Box::new(ReaderSessionEngine::new(SmolwebTheme::System)));
     engines.register(Box::new(crate::nomadnet::MicronSessionEngine::new()));
+    engines.register(Box::new(crate::retained_clip::ClipSessionEngine));
     for engine_id in SMOLWEB_SESSION_ENGINE_IDS {
         engines.register(Box::new(
             SmolwebSessionEngine::new(
@@ -442,8 +444,10 @@ impl Shell {
         let effects = self.app.adopt_profile_root(root.clone());
         self.place_handle
             .command(crate::place::worker::PlaceWorkerCommand::AdoptIdentity(root.clone()));
-        self.shared_knot_service = start_share_reader(root.clone());
-        if let Some(source) = self.pending_publish_source.take() {
+        if !self.network_offline {
+            self.shared_knot_service = start_share_reader(root.clone());
+        }
+        if let Some(source) = self.pending_publish_source.take().filter(|_| !self.network_offline) {
             self.publish_service = start_publishing(source, root);
         }
         self.renderers.publish.clear();
@@ -612,6 +616,8 @@ pub struct Shell {
     proxy: EventLoopProxy<()>,
     /// The fetch actor's command handle; dropping it ends the actor.
     fetch_handle: armillary::ActorHandle<FetchCommand>,
+    network_offline: bool,
+    offline_attempts: Arc<std::sync::atomic::AtomicUsize>,
     /// Durable Gemini server pins. The protocol verifier shares this exact
     /// instance; the shell retains it for explicit change acceptance.
     gemini_trust: Arc<crate::gemini_trust::GeminiTrustStore>,
@@ -944,10 +950,14 @@ impl Shell {
         // same cookies as the pages (ranged fetch plan, lane T1). Keying the
         // set by persona is lane T2.
         let stores = fetch::session_stores().clone();
-        let (fetch_handle, fetch_rx) = fetch::spawn_fetcher_with(fetch_wake, stores.clone());
-        let blocking_fetch: Arc<dyn fetch::Fetch> = Arc::new(
-            fetch::NetFetch::new(&stores).expect("Turnstone could not build its fetch handle"),
-        );
+        let network_offline = crate::offline::enabled();
+        let offline_attempts = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let (fetch_handle, fetch_rx) = if network_offline {
+            crate::offline::spawn(fetch_wake, offline_attempts.clone())
+        } else { fetch::spawn_fetcher_with(fetch_wake, stores.clone()) };
+        let blocking_fetch: Arc<dyn fetch::Fetch> = if network_offline {
+            Arc::new(crate::offline::NoNetwork(offline_attempts.clone()))
+        } else { Arc::new(fetch::NetFetch::new(&stores).expect("Turnstone could not build its fetch handle")) };
 
         let download_proxy = proxy.clone();
         let download_wake: armillary::Wake = Arc::new(move || {
@@ -1018,7 +1028,8 @@ impl Shell {
         });
         let mut knot_clip = None;
         let mut publish_service = None;
-        let shared_knot_service = app.identity.clone().and_then(start_share_reader);
+        let shared_knot_service = app.identity.clone()
+            .filter(|_| !network_offline).and_then(start_share_reader);
         let device_receipts_service =
             match crate::device_receipts_service::DeviceReceiptsService::start() {
                 Ok(service) => Some(Arc::new(service)),
@@ -1033,7 +1044,8 @@ impl Shell {
                 knot_clip = engine.clip_handle();
                 if let Some(source) = engine.take_publish_source() {
                     match app.identity.clone() {
-                        Some(root) => publish_service = start_publishing(source, root),
+                        Some(root) if !network_offline => publish_service = start_publishing(source, root),
+                        Some(_) => {},
                         None => pending_publish_source = Some(source),
                     }
                 }
@@ -1075,11 +1087,11 @@ impl Shell {
             app.redshank = crate::redshank_host::RedshankHost::detached(
                 crate::redshank_host::Output::Device, blocking_fetch);
         } else {
-        app.redshank = crate::redshank_host::RedshankHost::open(
-            &app.session_dir(),
-            crate::redshank_host::Output::Device,
-            blocking_fetch,
-        );
+            app.redshank = crate::redshank_host::RedshankHost::open(
+                &app.session_dir(),
+                crate::redshank_host::Output::Device,
+                blocking_fetch,
+            );
         }
         if let Some(runtime) = app.redshank.runtime() {
             let redshank_proxy = proxy.clone();
@@ -1092,6 +1104,8 @@ impl Shell {
             live_settings,
             proxy,
             fetch_handle,
+            network_offline,
+            offline_attempts,
             gemini_trust,
             fetch_rx,
             cookie_custody,

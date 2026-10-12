@@ -437,6 +437,9 @@ pub enum Action {
     ChooseKnotDocumentFile {
         read_only: bool,
     },
+    /// Explicit file selection for retained content in the current mere.
+    ChooseClipPackageFile,
+    ImportClipPackage(std::path::PathBuf),
     /// Summon a provider-owned pane beside the active pane. The source was
     /// minted by the caller; provider admission still occurs at the render
     /// boundary, while the app preserves this exact durable value.
@@ -673,6 +676,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Orbit left", Action::OrbitBy(-0.15)),
         ("Orbit right", Action::OrbitBy(0.15)),
         ("Toggle live content", Action::ToggleNodeContent),
+        ("Import clip package", Action::ChooseClipPackageFile),
         shared(Action::SaveSession),
         (
             "Open Knot document",
@@ -930,6 +934,9 @@ pub enum Effect {
     ChooseKnotDocumentFile {
         read_only: bool,
     },
+    ChooseClipPackageFile,
+    ImportClipPackage(std::path::PathBuf),
+    ControlRetainedClip(crate::retained_clip::ClipRequest),
     /// Open this session's retained place domains through the shell-owned
     /// worker. `generation` makes every later answer session-specific.
     OpenPlace {

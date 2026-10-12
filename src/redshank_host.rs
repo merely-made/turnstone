@@ -141,6 +141,26 @@ impl Default for RedshankHost {
 }
 
 impl RedshankHost {
+    pub(crate) fn retained_voice_preview(&self) -> Option<redshank_playback::PreviewSnapshot> {
+        self.snapshot().preview
+    }
+    /// Play a host-resolved retained voice body on the existing output runtime.
+    /// This uses no microphone and leaves the recording target/model unchanged.
+    pub fn play_retained_voice(&mut self, id: &str, path: &Path) -> Result<(), String> {
+        if !path.is_file() { return Err("Retained voice-note audio is missing".into()); }
+        if !self.send(PlaybackCommand::StartPreview { id: format!("clip:{id}"), source: MediaSource::Local { path: path.to_string_lossy().into_owned() } }) {
+            return Err("No audio output in this session".into());
+        }
+        Ok(())
+    }
+
+    pub fn stop_retained_voice(&mut self, id: &str) -> Result<(), String> {
+        if self.snapshot().preview.as_ref().is_some_and(|p| p.id == format!("clip:{id}")) {
+            if !self.send(PlaybackCommand::StopPreview) { return Err("The audio runtime is unavailable".into()); }
+        }
+        Ok(())
+    }
+
     /// Open the model under `<session_dir>/redshank/`, creating nothing until
     /// the first save. A store that cannot be read leaves an empty model
     /// rather than refusing to run. `fetch` is the shell's handle; playback

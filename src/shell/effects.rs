@@ -885,6 +885,38 @@ impl Shell {
                         });
                     }
                 }
+                Effect::ChooseClipPackageFile => {
+                    if let Some(path) = rfd::FileDialog::new().add_filter("Selected clip package", &["json", "mereclip"]).pick_file() {
+                        self.act(Action::ImportClipPackage(path));
+                    }
+                }
+                Effect::ImportClipPackage(path) => {
+                    let admitted = self.app.clip_destination().and_then(|root| {
+                        crate::retained_clip::import(&root, &path, crate::retained_clip::limits()?, crate::denizen::now_ms())
+                    });
+                    match admitted {
+                        Ok(id) => {
+                            self.act(Action::OpenAddress(crate::retained_clip::address(id)));
+                            self.run_effects(vec![Effect::SaveSession]);
+                        },
+                        Err(error) => self.app.note_retained_clip_refusal(error),
+                    }
+                }
+                Effect::ControlRetainedClip(control) => {
+                    use crate::retained_clip::ClipRequest;
+                    let result = self.app.clip_destination().and_then(|root| match control {
+                        ClipRequest::Play(id) => {
+                            let clip = crate::retained_clip::read(&root, id, crate::retained_clip::limits()?)?;
+                            let path = clip.playback_path(&root)?;
+                            self.app.redshank.play_retained_voice(&id.0.to_hex(), &path)
+                        },
+                        ClipRequest::Stop(id) => self.app.redshank.stop_retained_voice(&id.0.to_hex()),
+                        ClipRequest::Read(_) => Err("Unsupported retained clip control".into()),
+                    });
+                    if let Err(error) = result {
+                        self.app.note_retained_clip_refusal(error);
+                    }
+                }
                 Effect::OpenPlace {
                     session,
                     generation,
@@ -1219,12 +1251,28 @@ impl Shell {
                     if self.request_visit_if_held_elsewhere(node, &url) {
                         continue;
                     }
+                    let clip = match crate::retained_clip::request(&url) {
+                        Ok(Some(crate::retained_clip::ClipRequest::Read(id))) => {
+                            let resolved = self.app.clip_destination().and_then(|root| crate::retained_clip::read(&root, id, crate::retained_clip::limits()?));
+                            match resolved {
+                                Ok(clip) => Some(clip.document()),
+                                Err(error) => {
+                                    let follow_up = self.app.apply_update(Update::ContentFailed { node, error });
+                                    self.run_effects(follow_up);
+                                    continue;
+                                },
+                            }
+                        },
+                        Ok(None) => None,
+                        _ => {
+                            let follow_up = self.app.apply_update(Update::ContentFailed { node, error: "Invalid retained clip address".into() });
+                            self.run_effects(follow_up);
+                            continue;
+                        },
+                    };
                     let fetched = self.app.content.fetched(node, &url).cloned();
-                    let pinned = self
-                        .app
-                        .browser
-                        .get(node)
-                        .and_then(|b| b.viewer_override.clone())
+                    let pinned = clip.as_ref().map(|_| crate::retained_clip::ENGINE_ID.to_string())
+                        .or_else(|| self.app.browser.get(node).and_then(|b| b.viewer_override.clone()))
                         .or_else(|| {
                             crate::nomadnet::is_micron_address(&url)
                                 .then(|| crate::nomadnet::ENGINE_ID.to_string())
@@ -1287,7 +1335,16 @@ impl Shell {
                     }
                     let mut spawn = SessionSpawnRequest::new(&url)
                         .with_viewport(self.width.max(1), self.height.max(1));
-                    if let Some(document) = fetched {
+                    if let Some(document) = clip {
+                        match serde_json::to_string(&document) {
+                            Ok(body) => spawn = spawn.with_body(body).with_content_type(document.content_type),
+                            Err(error) => {
+                                let follow_up = self.app.apply_update(Update::ContentFailed { node, error: error.to_string() });
+                                self.run_effects(follow_up);
+                                continue;
+                            },
+                        }
+                    } else if let Some(document) = fetched {
                         spawn = spawn.with_body(document.body);
                         if let Some(content_type) = document.content_type {
                             spawn = spawn.with_content_type(content_type);

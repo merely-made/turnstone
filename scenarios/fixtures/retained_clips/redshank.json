@@ -1,0 +1,31 @@
+{
+  "annotation": {
+    "body": {
+      "blob_id": "voice-blob",
+      "duration_ms": 500,
+      "kind": "audio",
+      "media_type": "audio/wav"
+    },
+    "created_at_ms": 7,
+    "id": "voice-1",
+    "privacy": "shareable",
+    "target": {
+      "end_offset_ms": 4500,
+      "item_id": "recording",
+      "offset_ms": 1250,
+      "pressed_offset_ms": 1400,
+      "representation": {
+        "byte_length": null,
+        "complete_digest": null,
+        "etag": "\"original\"",
+        "final_url": "https://example.test/recording.wav",
+        "last_modified": null,
+        "media_type": null,
+        "requested_url": null,
+        "retrieved_at_ms": null
+      }
+    }
+  },
+  "schema": "redshank.selected-note/v1",
+  "source": "https://example.test/recording.wav"
+}

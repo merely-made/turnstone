@@ -1,0 +1,13 @@
+# No acquired body or recording fallback for an unknown retained identity.
+settle 20
+key escape
+assert snap network-offline == true
+assert snap peer-services == 0
+open mere://clip/0000000000000000000000000000000000000000000000000000000000000000
+settle 30
+act Open node in Workbench
+settle 20
+assert snap browser-current-content == failed
+assert snap offline-acquisition-attempts == 0
+capture 09_missing_clip_refused
+log Missing local retained identity refused without acquisition

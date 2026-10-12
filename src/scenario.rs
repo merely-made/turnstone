@@ -25,6 +25,7 @@
 //! settle [frames]           # pump N frames (default 20)
 //! capture <name>            # self-capture the composed frame -> <name>.png
 //! open <url>                # Action::OpenAddress (use mere:// for offline)
+//! import-clip <path>        # host admission of a selected Fleece package
 //! omnibar find|actions      # Action::OmnibarOpen
 //! type <text>               # Action::OmnibarChar per char
 //! insert <text>             # IME commit into the focused omnibar or Knot editor
@@ -128,6 +129,7 @@
 #[derive(Debug)]
 pub enum Step {
     Open(String),
+    ImportClip(String),
     Omnibar {
         command: bool,
     },
@@ -374,6 +376,7 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
         let err = |msg: &str| Err(format!("line {}: {msg}: '{line}'", i + 1));
         steps.push(match verb {
             "open" if !rest.is_empty() => Step::Open(rest.to_string()),
+            "import-clip" if !rest.is_empty() => Step::ImportClip(rest.to_string()),
             "omnibar" => match rest {
                 "find" => Step::Omnibar { command: false },
                 "actions" => Step::Omnibar { command: true },

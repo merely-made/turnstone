@@ -482,6 +482,11 @@ impl taproot::Automatable for Shell {
                 self.content_sessions.surface_count().to_string(),
             )
             .with_field("node-count", snap.node_count.to_string())
+            .with_field("network-offline", self.network_offline.to_string())
+            .with_field("peer-services", (usize::from(self.publish_service.is_some()) + usize::from(self.shared_knot_service.is_some())).to_string())
+            .with_field("offline-acquisition-attempts", self.offline_attempts.load(std::sync::atomic::Ordering::Relaxed).to_string())
+            .with_field("retained-voice", self.app.redshank.retained_voice_preview()
+                .map(|p| format!("{} {:?} {} ms", p.id, p.state, p.position_ms)).unwrap_or_else(|| "Ready".into()))
             .with_field("roster-tab", snap.roster_tab)
             // The panes and surfaces as joined tags, so a generic scenario can
             // `assert snap panes ~ roster` without an app-specific verb. This is
@@ -881,6 +886,7 @@ impl Shell {
         match step {
             // ---- interactions: drive the Shell (the former Tick execution) ----
             Step::Open(url) => self.act(Action::OpenAddress(url.clone())),
+            Step::ImportClip(path) => self.act(Action::ImportClipPackage(std::path::PathBuf::from(path))),
             Step::Omnibar { command } => self.act(Action::OmnibarOpen { command: *command }),
             Step::Type(text) => {
                 if self.app.user_agent_decision.is_open() {

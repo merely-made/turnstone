@@ -833,6 +833,10 @@ impl App {
         self.events.push(AppEvent::PlaceRefused(reason));
     }
 
+    pub(crate) fn note_retained_clip_refusal(&mut self, reason: String) {
+        self.events.push(AppEvent::AffordanceUnavailable { what: "retained-clip", target: reason });
+    }
+
     /// What this session has open as Knot documents, for observation.
     pub fn knot_documents(&self) -> &[crate::observe::KnotDocumentFacts] {
         &self.knot_documents
@@ -1152,6 +1156,8 @@ impl App {
         match action {
             Action::OpenThemeWorkshop => vec![Effect::OpenThemeWorkshop],
             Action::OpenAddress(url) => self.open_address(url),
+            Action::ChooseClipPackageFile => vec![Effect::ChooseClipPackageFile],
+            Action::ImportClipPackage(path) => vec![Effect::ImportClipPackage(path)],
             Action::ComposeFocusedSmolwebSubmission => self.compose_focused_smolweb_submission(),
             Action::ComposeFocusedMicronForm => self.compose_focused_micron_form(),
             Action::BeginSmolwebSubmission { source, target } => {

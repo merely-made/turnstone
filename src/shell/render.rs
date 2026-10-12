@@ -709,6 +709,7 @@ impl Shell {
     /// layer (transparent-cleared, alpha-blended) above when the omnibar is
     /// open. Chains another redraw while the canvas is still animating.
     pub(super) fn render(&mut self) -> bool {
+        self.refresh_retained_clip_playback();
         self.poll_capture_readback();
         if self.host.is_none() {
             return false;

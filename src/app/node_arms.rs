@@ -1530,6 +1530,7 @@ impl App {
     }
 
     pub(super) fn open_address(&mut self, url: String) -> Vec<Effect> {
+        if let Some(effects) = self.retained_clip_control(&url) { return effects; }
         let mut effects = self.invalidate_micron_submission();
         self.events.push(AppEvent::AddressOpened(url.clone()));
         // Podcast audio is a listening tile, not a reader page. One decision
@@ -1552,6 +1553,13 @@ impl App {
         };
         self.history.visit(url.clone());
         effects.push(Effect::Redraw);
+        if matches!(crate::retained_clip::request(&url), Ok(Some(crate::retained_clip::ClipRequest::Read(_))))
+            && let Some(node) = self.graph_runtimes.graph().get_node(key).map(|n| n.id) {
+            self.content.note_requested(node);
+            effects.push(Effect::CloseContent { node });
+            effects.push(Effect::SpawnContent { node, url });
+            return effects;
+        }
         // A place-held document names the mere that holds it. Outside a
         // place there is nobody to ask, so this is refused at the door with
         // a reason rather than left as a node that spins. The node stays:
@@ -1598,6 +1606,7 @@ impl App {
     }
 
     pub(super) fn commit_content_navigation(&mut self, member: Uuid, url: String) -> Vec<Effect> {
+        if let Some(effects) = self.retained_clip_control(&url) { return effects; }
         let Some(graph) = self.graph_runtimes.graph_containing_member(member) else {
             tracing::warn!(%member, %url, "content navigation named an unknown member");
             return Vec::new();

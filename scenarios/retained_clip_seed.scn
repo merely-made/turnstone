@@ -1,0 +1,32 @@
+# Receiver-only admission through the ordinary host Action/effect path.
+# Package producers have exited before this scenario starts.
+settle 20
+key escape
+assert snap network-offline == true
+assert snap peer-services == 0
+import-clip ${CLIP_PACKAGE_KNOT}
+settle 30
+assert content-live
+act Open node in Workbench
+settle 20
+assert pane workbench
+capture 01_knot_selection
+import-clip ${CLIP_PACKAGE_NOTE}
+settle 30
+assert content-live
+act Open node in Workbench
+settle 20
+capture 02_text_note
+import-clip ${CLIP_PACKAGE_VOICE}
+settle 30
+assert content-live
+act Open node in Workbench
+settle 20
+capture 03_voice_ready
+open ${CLIP_VOICE}/play
+settle 150
+assert snap retained-voice ~ Ended
+assert snap offline-acquisition-attempts == 0
+capture 04_voice_finished
+act Save session
+log Retained clips were admitted and voice body reached Ended with acquisition disabled
