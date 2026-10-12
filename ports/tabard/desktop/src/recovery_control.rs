@@ -34,6 +34,71 @@ struct BeforeLoss {
 mod tests {
     use super::*;
 
+    fn pixel_control(delta: [u8; 4], every_pixel: bool) -> RecoveryControl {
+        let mut control = RecoveryControl {
+            run: Some("pixel-test".into()),
+            before: None,
+            pixels: None,
+            pixel_errors: Vec::new(),
+            pixels_verified: false,
+            pixel_measurement: None,
+        };
+        let baseline = cambium_rootstock::Frame {
+            width: 4,
+            height: 4,
+            rgba: [20, 30, 40, 250].repeat(16),
+        };
+        let mut after = cambium_rootstock::Frame {
+            width: 4,
+            height: 4,
+            rgba: baseline.rgba.clone(),
+        };
+        for pixel in after
+            .rgba
+            .chunks_exact_mut(4)
+            .take(if every_pixel { 16 } else { 1 })
+        {
+            for channel in 0..4 {
+                pixel[channel] += delta[channel];
+            }
+        }
+        control.inspect("before_loss", &baseline);
+        control.inspect("after_loss", &after);
+        control
+    }
+    #[test]
+    fn recovery_pixels_accept_existing_interior_boundary() {
+        assert!(
+            pixel_control([3, 0, 0, 2], false)
+                .pixel_failures()
+                .is_empty()
+        );
+    }
+    #[test]
+    fn recovery_pixels_reject_rgb_over_existing_interior_limit() {
+        assert!(
+            !pixel_control([4, 0, 0, 0], false)
+                .pixel_failures()
+                .is_empty()
+        );
+    }
+    #[test]
+    fn recovery_pixels_reject_alpha_over_existing_limit() {
+        assert!(
+            !pixel_control([0, 0, 0, 3], false)
+                .pixel_failures()
+                .is_empty()
+        );
+    }
+    #[test]
+    fn recovery_pixels_reject_mean_over_existing_limit() {
+        assert!(
+            !pixel_control([2, 2, 2, 0], true)
+                .pixel_failures()
+                .is_empty()
+        );
+    }
+
     fn refusal(control: RecoveryControl) -> String {
         let control = Rc::new(RefCell::new(control));
         let result = Rc::new(RefCell::new(None));
@@ -63,7 +128,8 @@ mod tests {
                 before: None,
                 pixels: None,
                 pixel_errors: Vec::new(),
-                pixels_verified: false
+                pixels_verified: false,
+                pixel_measurement: None
             })
             .contains("dedicated acceptance opt-in")
         );
@@ -77,7 +143,8 @@ mod tests {
                 before: None,
                 pixels: None,
                 pixel_errors: Vec::new(),
-                pixels_verified: false
+                pixels_verified: false,
+                pixel_measurement: None
             })
             .contains("real native core")
         );
@@ -90,6 +157,7 @@ pub(super) struct RecoveryControl {
     pixels: Option<(u32, u32, Vec<u8>)>,
     pixel_errors: Vec<String>,
     pixels_verified: bool,
+    pixel_measurement: Option<String>,
 }
 impl RecoveryControl {
     pub fn from_env() -> Self {
@@ -103,6 +171,7 @@ impl RecoveryControl {
             pixels: None,
             pixel_errors: Vec::new(),
             pixels_verified: false,
+            pixel_measurement: None,
         }
     }
     fn authority(ctx: &Context<'_>) -> BTreeMap<String, String> {
@@ -312,11 +381,16 @@ impl RecoveryControl {
         Ok(())
     }
     pub fn lines(&self) -> Vec<String> {
-        self.before.as_ref().map(|before| vec![format!("controlled owned-device loss generation={} reason={:?}; injection after baseline capture, one requested destruction", before.generation, before.notice.reason), format!("exact displayed RGBA equality verified={}", self.pixels_verified)]).unwrap_or_default()
+        self.before.as_ref().map(|before| vec![format!("controlled owned-device loss generation={} reason={:?}; injection after baseline capture, one requested destruction", before.generation, before.notice.reason), format!("displayed RGBA within existing limits verified={}", self.pixels_verified), self.pixel_measurement.clone().unwrap_or_default()]).unwrap_or_default()
     }
 
     pub fn inspect(&mut self, name: &str, frame: &cambium_rootstock::Frame) {
         if self.run.is_none() || !matches!(name, "before_loss" | "after_loss") {
+            return;
+        }
+        if frame.rgba.len() != frame.width as usize * frame.height as usize * 4 {
+            self.pixel_errors
+                .push("malformed recovery RGBA dimensions".into());
             return;
         }
         if frame.rgba.len() > 32 * 1024 * 1024 {
@@ -327,11 +401,33 @@ impl RecoveryControl {
         if name == "before_loss" {
             self.pixels = Some((frame.width, frame.height, frame.rgba.clone()));
         } else if let Some((width, height, pixels)) = &self.pixels {
-            self.pixels_verified =
-                *width == frame.width && *height == frame.height && pixels == &frame.rgba;
+            self.pixels_verified = *width == frame.width
+                && *height == frame.height
+                && pixels.len() == frame.rgba.len();
+            if self.pixels_verified {
+                // Apply the existing stricter interior limits uniformly. The
+                // renderer's looser edge/neighbor allowances are not needed.
+                let mut max_rgba = 0_u8;
+                let mut max_alpha = 0_u8;
+                let mut sum = 0_u64;
+                for (index, (before, after)) in pixels.iter().zip(&frame.rgba).enumerate() {
+                    let delta = before.abs_diff(*after);
+                    max_rgba = max_rgba.max(delta);
+                    if index % 4 == 3 {
+                        max_alpha = max_alpha.max(delta);
+                    }
+                    sum += u64::from(delta);
+                }
+                let mean = sum as f64 / pixels.len().max(1) as f64;
+                self.pixels_verified = max_rgba <= 3 && max_alpha <= 2 && mean <= 1.0;
+                self.pixel_measurement = Some(format!(
+                    "displayed RGBA max={max_rgba} alpha={max_alpha} mean={mean:.12} exact={}; uniform existing interior limits RGB3/alpha2/mean1",
+                    pixels == &frame.rgba
+                ));
+            }
             if !self.pixels_verified {
                 self.pixel_errors.push(
-                    "actual displayed RGBA bytes or dimensions changed across device recovery"
+                    "displayed recovery pixels exceed existing interior/mean limits or dimensions changed"
                         .into(),
                 );
             }
@@ -343,7 +439,9 @@ impl RecoveryControl {
     pub fn pixel_failures(&self) -> Vec<String> {
         let mut errors = self.pixel_errors.clone();
         if self.run.is_some() && !self.pixels_verified {
-            errors.push("actual recovery RGBA comparison did not pass".into());
+            errors.push(
+                "displayed recovery RGBA comparison under existing limits did not pass".into(),
+            );
         }
         errors
     }

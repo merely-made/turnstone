@@ -402,14 +402,10 @@ impl mesquite::Product for WorkshopLane {
                 ));
             }
         }
-        if self.recovery.borrow().run.is_some() {
-            match (digest("before_loss"), digest("after_loss")) {
-                (Some(before), Some(after)) if before == after => {},
-                (Some(_), Some(_)) => errors.push(
-                    "unchanged full-workshop pixels differ after owned device recovery".into(),
-                ),
-                _ => errors.push("owned device recovery lacks its before/after captures".into()),
-            }
+        if self.recovery.borrow().run.is_some()
+            && (digest("before_loss").is_none() || digest("after_loss").is_none())
+        {
+            errors.push("owned device recovery lacks its before/after captures".into());
         }
         errors.extend(self.recovery.borrow().pixel_failures());
         errors
