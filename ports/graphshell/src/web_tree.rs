@@ -96,6 +96,9 @@ const SHEET: &str = "\
     .tree-rules pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
     .tree-inspection { overflow-wrap:anywhere; } \
     .tree-inspection p, .tree-inspection li { font-size:12px; } \
+    .tree-tools .detail-section-title { font-weight:bold; margin:6px 0 4px; } \
+    .tree-tools .detail-key { display:block; font-size:12px; color:#9fb0bb; } \
+    .tree-tools .detail-value { display:block; margin:2px 0 8px; overflow-wrap:anywhere; } \
     .tools-section + .tools-section { margin-top:10px; border-top:1px solid #2c3b44; padding-top:4px; } \
     .tools-switch button[aria-pressed=true] { background:#2d5a63; border-color:#79a9be; } \
     .tools-active { margin:4px 0; color:#f0dfb8; font-size:12px; } \
@@ -1291,6 +1294,8 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             true
         }),
         after_dispatch: Box::new(|ctx| {
+            #[cfg(feature = "product")]
+            field_inspection::reveal(ctx);
             ctx.runner.state().shared.selection_locked.set(
                 ctx.runner
                     .state()
@@ -1446,8 +1451,6 @@ mod controls;
 #[cfg(feature = "product")]
 mod field_inspection;
 #[cfg(feature = "product")]
-mod presentation;
-#[cfg(feature = "product")]
 mod forme;
 mod gesture_steps;
 mod gestures;
@@ -1459,6 +1462,8 @@ mod lane;
 #[cfg(feature = "product")]
 mod link_inspection;
 mod physics;
+#[cfg(feature = "product")]
+mod presentation;
 #[cfg(feature = "product")]
 mod product;
 #[cfg(not(feature = "product"))]
