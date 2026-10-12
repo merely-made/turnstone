@@ -127,7 +127,7 @@ fn preview(page: &mut TreePage) {
         let draft = page.field_inspector.editor.draft.as_ref().unwrap();
         let candidate = draft.candidate(field_inspection::graph(page)?)?;
         Ok(format!(
-            "{} → {} · exact coupling {}. Authored value preview; no force simulation.",
+            "{} to {} · exact coupling {}. Authored value preview; no force simulation.",
             draft.baseline.strength,
             candidate.strength,
             candidate.id.as_uuid()

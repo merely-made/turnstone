@@ -1220,6 +1220,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             #[cfg(feature = "product")]
             coupling::poll(ctx);
             #[cfg(feature = "product")]
+            field_inspection::reveal(ctx);
+            #[cfg(feature = "product")]
+            coupling::reveal(ctx);
+            #[cfg(feature = "product")]
             if ctx.runner.state().forme.as_ref().is_some_and(|f| f.ready()) {
                 ctx.runner.update(|page| {
                     forme::poll(page);

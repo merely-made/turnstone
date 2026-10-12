@@ -8,6 +8,7 @@ assert snap field-inspector-focus == field
 key Tab
 assert snap focus-kind == button
 key Enter
+settle 2
 assert snap coupling-inspector-id == 00000000-0000-0000-0000-0000000000c9
 assert snap field-inspector-focus == coupling
 assert snap coupling-inspector-strength == 0.02
@@ -15,6 +16,7 @@ capture narrow_coupling_details
 key Tab
 assert snap focus-kind == button
 key Enter
+settle 2
 assert snap coupling-inspector-ready == false
 assert snap field-inspector-focus == field
 assert snap field-inspector-id == 00000000-0000-0000-0000-000000000065
