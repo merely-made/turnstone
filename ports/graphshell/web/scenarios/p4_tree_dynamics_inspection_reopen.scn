@@ -8,6 +8,8 @@ settle 3
 click-node https://example.test/i2p-port
 settle 2
 remember reopened
+click role:button Graph tools
+settle 2
 reveal role:button Explain selected dynamics
 click role:button Explain selected dynamics
 settle 2
