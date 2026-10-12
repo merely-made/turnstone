@@ -1,5 +1,17 @@
 # Redshank episode surface: Turnstone as the port's second host
 
+## Retained voice bodies, 2026-10-11
+
+The [retained clip receiver](2026-10-11_retained_clip_receiver_plan.md) uses the
+existing Redshank preview port and this host's one output runtime for imported
+WAV voice-body bytes. Its [native receipt](../docs/receipts/2026-10-11_retained_clip_receiver/README.md)
+qualifies local playback and fresh-process replay of a synthetic 500 ms PCM
+body with acquisition disabled and the original recording unavailable. It does
+not close this plan's broader compact episode/audio/physical gates or provide
+a microphone. The current receiver adopts Woodshed `961731ac`, Mere `74c1d810`,
+Genet `4bc75583` and Knot `21e1b0f6` as one typed source graph; the September
+adoption below remains its historical receipt.
+
 ## Current adoption, 2026-09-29
 
 Turnstone adopts Mere `ca2351b3`, Genet `19c20687`, Knot `c92ad044` and Woodshed

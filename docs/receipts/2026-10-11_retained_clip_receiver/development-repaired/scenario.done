@@ -1,0 +1,11 @@
+RESULT ok
+captured 01_knot_selection
+captured 02_text_note
+captured 03_voice_ready
+captured 04_voice_finished
+Retained clips were admitted and voice body reached Ended with acquisition disabled
+presentation frames=358 captures=4 blank=0
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/seed-repaired\01_knot_selection.png digest=69bd4eeb54e64499 blank=false
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/seed-repaired\02_text_note.png digest=5835d6f8dea5df2e blank=false
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/seed-repaired\03_voice_ready.png digest=30f23ce5cc3ab966 blank=false
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/seed-repaired\04_voice_finished.png digest=7595cd0a99699d77 blank=false

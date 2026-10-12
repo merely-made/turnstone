@@ -1,0 +1,2 @@
+2026-10-12T02:43:32.527310Z  WARN turnstone::app::updates: content spawn failed node=43d610f0-f808-4ebe-ab45-ef46f9b413f2 error=retained clip missing
+2026-10-12T02:43:34.435729Z  WARN turnstone::app::updates: content spawn failed node=43d610f0-f808-4ebe-ab45-ef46f9b413f2 error=retained clip missing

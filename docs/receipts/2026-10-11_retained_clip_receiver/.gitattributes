@@ -1,0 +1,4 @@
+# Preserve captured bytes so checkout line endings cannot invalidate hashes.
+* -text -whitespace
+# Keep raw compiler output unchanged, including its final blank lines.
+*.log -diff

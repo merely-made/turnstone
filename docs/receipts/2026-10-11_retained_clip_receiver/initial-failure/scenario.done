@@ -1,0 +1,13 @@
+RESULT fail
+captured 01_knot_selection
+FAIL: assert content-live: focused node is without content state
+captured 02_text_note
+FAIL: assert content-live: focused node is without content state
+captured 03_voice_ready
+captured 04_voice_finished
+Retained clips were admitted and voice body reached Ended with acquisition disabled
+presentation frames=356 captures=4 blank=0
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/seed\01_knot_selection.png digest=fde2a6666af2ebb1 blank=false
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/seed\02_text_note.png digest=ee5acf58192e1eea blank=false
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/seed\03_voice_ready.png digest=20e8c541cbc7fd34 blank=false
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/seed\04_voice_finished.png digest=5bdc669570ad9635 blank=false

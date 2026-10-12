@@ -1,8 +1,9 @@
 # Retained clips in the receiving Turnstone host
 
-**Status (2026-10-11):** implementation and automated admission/reopening tests
-pass. Native receiver qualification is in progress. This is Turnstone's first
-consumer of the draft Fleece selected-content profile.
+**Status (2026-10-11):** landed and qualified for the bounded native receiver.
+Committed-source import, package-unavailable restart, local WAV playback and
+missing-content refusal pass in the real Windows host. This is Turnstone's
+first consumer of the draft Fleece selected-content profile.
 
 The shared contract and CP1 to CP4 rulings live in
 `mere/design_docs/eidetic_docs/implementation_strategy/2026-10-11_eidetic_development_plan.md`.
@@ -111,6 +112,9 @@ capability.
   playback. Six receiver tests pass, including real session lowering and
   disk-store reopening. The broad library run passes 789 tests, with ten
   existing ignores. Its focus-path repair has a subsequent focused regression.
-  Native import, fresh-process reopen and missing-content scenarios are being
-  qualified; their final evidence belongs in
+  Committed-source native import, fresh-process reopen and missing-content
+  scenarios pass with nine reviewed captures. Playback reaches Ended 500 ms
+  through the existing output runtime, including the reopened view's Play
+  link. All accepted runs have zero acquisition attempts and peer services;
+  sampled endpoints are empty. The source and limits are recorded in
   [the receiver receipt](../docs/receipts/2026-10-11_retained_clip_receiver/README.md).

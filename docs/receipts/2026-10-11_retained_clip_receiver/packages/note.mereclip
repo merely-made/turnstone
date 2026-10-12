@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "clip": {
+    "version": 1,
+    "clip_id": "text-1",
+    "capture_id": "fixture-note",
+    "title": "Redshank note",
+    "source": {
+      "owner": "note",
+      "entity": "note-source",
+      "revision": null
+    },
+    "source_evidence": null,
+    "parts": [
+      {
+        "name": "body",
+        "role": "note-body",
+        "media_type": "text/plain;charset=utf-8",
+        "schema": null,
+        "manifest": "blake3:e0b8e4be9fb8aea70e925680b67595826a65fc3f9294bcc9730d3718360c04bc",
+        "dependencies": []
+      }
+    ],
+    "anchors": [
+      {
+        "source": "https://example.test/recording.wav",
+        "representation": null,
+        "units": "milliseconds",
+        "selector": {
+          "end_offset_ms": 4500,
+          "item_id": "recording",
+          "offset_ms": 1250,
+          "pressed_offset_ms": 1400,
+          "representation": {
+            "byte_length": null,
+            "complete_digest": null,
+            "etag": "\"original\"",
+            "final_url": "https://example.test/recording.wav",
+            "last_modified": null,
+            "media_type": null,
+            "requested_url": null,
+            "retrieved_at_ms": null
+          }
+        },
+        "evidence": {
+          "body": {
+            "kind": "text",
+            "plain_text": "Portable note about a recording."
+          },
+          "historical_author": null,
+          "source_revision": null
+        }
+      }
+    ],
+    "tags": []
+  },
+  "payloads": [
+    {
+      "id": "blake3:e0b8e4be9fb8aea70e925680b67595826a65fc3f9294bcc9730d3718360c04bc",
+      "bytes": [
+        80,
+        111,
+        114,
+        116,
+        97,
+        98,
+        108,
+        101,
+        32,
+        110,
+        111,
+        116,
+        101,
+        32,
+        97,
+        98,
+        111,
+        117,
+        116,
+        32,
+        97,
+        32,
+        114,
+        101,
+        99,
+        111,
+        114,
+        100,
+        105,
+        110,
+        103,
+        46
+      ]
+    }
+  ]
+}

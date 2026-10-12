@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "clip": {
+    "version": 1,
+    "clip_id": "knot-coffee",
+    "capture_id": "fixture-knot",
+    "title": "Coffee",
+    "source": {
+      "owner": "knot",
+      "entity": "knot-source",
+      "revision": null
+    },
+    "source_evidence": {
+      "kind": "passage",
+      "pack_sources": [],
+      "source_tags": [
+        "coffee"
+      ],
+      "tag_asserter": null
+    },
+    "parts": [
+      {
+        "name": "body",
+        "role": "selected-body",
+        "media_type": "text/plain;charset=utf-8",
+        "schema": null,
+        "manifest": "blake3:e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+        "dependencies": []
+      }
+    ],
+    "anchors": [
+      {
+        "source": "mere://knot/document/coffee",
+        "representation": "ba42cefd29e0803c41d1dcf2c6a879bda6d4ef82e82214c708941e969144d7c6",
+        "units": "utf8-bytes",
+        "selector": {
+          "byte_span": {
+            "end": 21,
+            "start": 16
+          },
+          "document_address": "mere://knot/document/coffee",
+          "exact_quote": "café",
+          "source_hash": "ba42cefd29e0803c41d1dcf2c6a879bda6d4ef82e82214c708941e969144d7c6"
+        },
+        "evidence": null
+      }
+    ],
+    "tags": []
+  },
+  "payloads": [
+    {
+      "id": "blake3:e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+      "bytes": [
+        99,
+        97,
+        102,
+        195,
+        169
+      ]
+    }
+  ]
+}
