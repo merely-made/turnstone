@@ -177,6 +177,9 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
 pub(super) fn panel(page: &TreePage) -> Option<Child> {
     let pane = page.presenter.as_ref()?;
     let p = &pane.model;
+    // Keep subject details ahead of an expanded roster, so choosing a project
+    // does not bury its summary beneath every other disclosed occurrence.
+    let mut disclosure_rows: Vec<Child> = Vec::new();
     let mut rows: Vec<Child> = vec![
         Box::new(el("h2", "Project inspector")),
         Box::new(
@@ -208,7 +211,7 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
         ),
     ];
     if page.grouping.is_some() {
-        rows.push(Box::new(
+        disclosure_rows.push(Box::new(
             button(
                 if pane.folds_open {
                     "Hide Fold controls"
@@ -225,7 +228,7 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
         ));
         if pane.folds_open {
             if let Some(controls) = grouping::controls(page) {
-                rows.push(controls);
+                disclosure_rows.push(controls);
             }
         }
     }
@@ -252,7 +255,7 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
                 )) as Child
             })
             .collect();
-        rows.push(Box::new(
+        disclosure_rows.push(Box::new(
             el("ul", choices).attr("aria-label", "Disclosed projects"),
         ));
     }
@@ -459,6 +462,7 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
             },
         )));
     }
+    rows.extend(disclosure_rows);
     Some(Box::new(
         el("aside", rows)
             .attr("class", "tree-tools tree-presenter-panel")

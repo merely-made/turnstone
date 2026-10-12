@@ -279,6 +279,25 @@ mod tests {
         )
     }
     #[test]
+    fn current_site_disclosure_supplies_inspector_facts_and_explicit_navigation() {
+        let envelope = scenomise::host_dataset::parse_host_dataset(include_str!(
+            "../web/fixtures/site-presenter-host-dataset.json"
+        ))
+        .unwrap();
+        let view = crate::host_dataset_view::host_dataset_view(&envelope).unwrap();
+        assert_eq!(view.graph.node_count(), envelope.dataset.occurrences.len());
+        let p = HostPresenter::new(envelope);
+        assert!(!p.text("mere", "summary").unwrap().is_empty());
+        assert_eq!(
+            navigation_url(p.text("mere", "project_url").unwrap()).as_deref(),
+            Some("https://merelyllc.com/projects/mere/")
+        );
+        assert_eq!(
+            navigation_url(p.text("mere", "github_url").unwrap()).as_deref(),
+            Some("https://github.com/merely-made/mere")
+        );
+    }
+    #[test]
     fn hidden_selection_survives_visible_input_and_returns_to_the_graph() {
         let mut p = presenter();
         let ids: Vec<_> = p
