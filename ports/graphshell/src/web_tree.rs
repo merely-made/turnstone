@@ -511,6 +511,8 @@ pub(crate) struct TreePage {
     presentation: presentation::Pane,
     #[cfg(feature = "product")]
     dynamics_inspector: dynamics_inspection::Pane,
+    #[cfg(feature = "product")]
+    node_presentation: node_presentation::Pane,
     #[cfg(feature = "applets")]
     applet_seen: u64,
     #[cfg(feature = "applets")]
@@ -772,6 +774,8 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(field_inspection::section(page));
     #[cfg(feature = "product")]
     children.push(presentation::section(page));
+    #[cfg(feature = "product")]
+    children.push(node_presentation::section(page));
     #[cfg(feature = "product")]
     children.push(forme::section(page));
     children.push(remote::section(page));
@@ -1089,6 +1093,8 @@ async fn boot(root: Element) -> Result<(), String> {
                 presentation,
                 #[cfg(feature = "product")]
                 dynamics_inspector: dynamics_inspection::Pane::default(),
+                #[cfg(feature = "product")]
+                node_presentation: node_presentation::Pane::default(),
                 #[cfg(feature = "applets")]
                 applet_seen: 0,
                 #[cfg(feature = "applets")]
@@ -1245,6 +1251,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                     ctx.runner.update(|page| presentation::update(page, inputs));
                 }
                 presentation::install(ctx.runner.state());
+                if let Some(input) = node_presentation::refresh(ctx.runner.state()) {
+                    ctx.runner.update(|page| node_presentation::update(page,input));
+                }
+                node_presentation::install(ctx.runner.state());
                 if let Some(report) = dynamics_inspection::refresh(ctx.runner.state()) {
                     ctx.runner.update(|page| dynamics_inspection::update(page, report));
                 }
@@ -1474,6 +1484,8 @@ mod controls;
 mod coupling;
 #[cfg(feature = "product")]
 mod field_inspection;
+#[cfg(feature = "product")]
+mod node_presentation;
 #[cfg(feature = "product")]
 mod forme;
 mod gesture_steps;
