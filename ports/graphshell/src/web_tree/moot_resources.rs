@@ -111,7 +111,31 @@ pub(super) fn fields(page: &TreePage, mut snapshot: ProbeSnapshot) -> ProbeSnaps
     snapshot = snapshot.with_field("community-readings", host.readings.len().to_string());
     for (&id, reading) in &host.readings {
         let pane = &reading.pane;
+        let resource = pane.selected_resource().and_then(|selected| {
+            pane.snapshot()
+                .resources
+                .iter()
+                .find(|r| r.reference == selected)
+        });
         snapshot = snapshot
+            .with_field(
+                format!("community-{id}-retained"),
+                resource
+                    .is_some_and(|r| {
+                        matches!(r.retention, moot::resource_coop::RetentionRead::Held { .. })
+                    })
+                    .to_string(),
+            )
+            .with_field(
+                format!("community-{id}-hosting"),
+                resource.map_or("unknown", |r| match r.hosting {
+                    moot::resource_coop::HostingRead::Promise { .. } => "promise",
+                    moot::resource_coop::HostingRead::Observed { .. } => "observed",
+                    moot::resource_coop::HostingRead::Expired { .. } => "expired",
+                    moot::resource_coop::HostingRead::Withdrawn { .. } => "withdrawn",
+                    _ => "unknown",
+                }),
+            )
             .with_field(
                 format!("community-{id}-opened"),
                 host.opened.contains_key(&id).to_string(),

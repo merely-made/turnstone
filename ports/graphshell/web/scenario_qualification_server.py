@@ -42,10 +42,11 @@ await fetch('/qualification-probe',{method:'POST',headers:{'content-type':'appli
 
 
 class Handler(SimpleHTTPRequestHandler):
-    def __init__(self, *args, package, output, moot_owner=None, **kwargs):
+    def __init__(self, *args, package, output, moot_owner=None, moot_owner_state=None, **kwargs):
         self.package = package
         self.output = output
         self.moot_owner = moot_owner
+        self.moot_owner_state = moot_owner_state
         super().__init__(*args, **kwargs)
 
     def end_headers(self):
@@ -113,7 +114,10 @@ class Handler(SimpleHTTPRequestHandler):
     def owner_response(self, command, body=None):
         # Explicit compiled local fixture, never a user-supplied command string.
         try:
-            result = subprocess.run([str(self.moot_owner), command], input=body,
+            args = [str(self.moot_owner), command]
+            if self.moot_owner_state:
+                args.append(str(self.moot_owner_state))
+            result = subprocess.run(args, input=body,
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, check=False)
         except (OSError, subprocess.TimeoutExpired):
             self.send_error(503, 'Local resource owner unavailable')
@@ -134,12 +138,14 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--port', type=int, required=True)
     parser.add_argument('--moot-owner', type=Path, help='Explicit compiled Moot resource owner fixture')
+    parser.add_argument('--moot-owner-state', type=Path, help='Marker-owned durable state for the handler fixture')
     args = parser.parse_args()
     package = args.package.resolve()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     handler = partial(Handler, directory=str(Path(__file__).parent), package=package, output=output,
-        moot_owner=args.moot_owner.resolve() if args.moot_owner else None)
+        moot_owner=args.moot_owner.resolve() if args.moot_owner else None,
+        moot_owner_state=args.moot_owner_state.resolve() if args.moot_owner_state else None)
     with ThreadingHTTPServer(('127.0.0.1', args.port), handler) as server:
         print(f'Qualification origin: http://127.0.0.1:{args.port}', flush=True)
         server.serve_forever()

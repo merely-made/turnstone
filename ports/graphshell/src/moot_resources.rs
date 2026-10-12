@@ -31,6 +31,13 @@ pub struct Host {
     pub version: u64,
 }
 impl Host {
+    /// Awaited local owner requests count as work even while their commands are
+    /// outside the scene. Clearing a reading still makes no cancellation claim.
+    pub fn in_flight(&self) -> bool {
+        self.readings
+            .values()
+            .any(|reading| reading.pane.pending().is_some())
+    }
     pub fn install(&mut self, id: u32, snapshot: Snapshot) -> Result<(), String> {
         if let Some(reading) = self.readings.get_mut(&id) {
             reading.refresh(snapshot).map_err(|e| e.to_string())?;
@@ -89,8 +96,12 @@ impl Host {
             self.next_token = token;
             let target = match &request.target {
                 Target::Refresh { .. } => serde_json::json!({"refresh":true}),
-                Target::Resource { reference, action } => {
-                    serde_json::json!({"resource":reference,"action":action})
+                Target::Resource {
+                    reference,
+                    action,
+                    observed_terms,
+                } => {
+                    serde_json::json!({"resource":reference,"action":action,"observed_terms":observed_terms})
                 },
                 Target::Activity { reference, action } => {
                     serde_json::json!({"activity":reference,"action":action})
@@ -240,6 +251,7 @@ impl Host {
         let Target::Resource {
             reference,
             action: moot::resource_coop::ResourceAction::Open,
+            ..
         } = pending.request.target
         else {
             return false;
@@ -275,6 +287,8 @@ mod tests {
                 title: "Notebook".into(),
                 schema: "text/plain".into(),
                 content: ContentRead::AddressOnly,
+                retention: RetentionRead::Unknown,
+                terms: BTreeMap::new(),
                 hosting: HostingRead::Unknown,
                 offers: [(ResourceAction::Open, Offer::Offered)].into(),
             }],
@@ -286,10 +300,13 @@ mod tests {
         let mut host = Host::default();
         host.install(1, current.clone()).unwrap();
         host.install(2, current.clone()).unwrap();
+        assert!(!host.in_flight());
         host.begin(1, Intent::Refresh);
+        assert!(host.in_flight());
         let command = host.take_commands().pop().unwrap();
         assert!(!host.fail(2, command.token, "foreign".into()));
         assert!(host.fail(1, command.token, "Owner read unavailable".into()));
+        assert!(!host.in_flight());
         assert!(host.readings[&1].pane.pending().is_none());
         assert!(matches!(
             host.readings[&1].pane.outcome(),

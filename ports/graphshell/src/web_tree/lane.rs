@@ -1341,12 +1341,17 @@ impl Product for TreeLane {
             || ctx.runner.state().presentation.busy();
         #[cfg(not(feature = "product"))]
         let workspace_saving = false;
+        #[cfg(feature = "moot-resources")]
+        let resource_pending = self.shared.moot_resources.borrow().in_flight();
+        #[cfg(not(feature = "moot-resources"))]
+        let resource_pending = false;
         Some(
             capture_pending
                 || pending
                 || self.shared.remote.borrow().in_flight()
                 || (canvas_shown && self.shared.moving.get())
                 || workspace_saving
+                || resource_pending
                 || ctx
                     .runner
                     .state()
