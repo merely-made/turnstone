@@ -1,6 +1,8 @@
+# Use ?motion=normal for this normal-motion qualification.
 # Fresh dedicated profile/origin on tree.html?app=local. Retain it for reopen.
 # Decision preview only; this does not qualify canvas realization of effects.
 assert snap source == saved graph
+assert snap reduced-motion == false
 # Normal-motion profile: pause the scene so wait measures store/capture work.
 click role:button Pause physics
 assert snap rules-ready == true

@@ -679,6 +679,13 @@ impl Product for TreeLane {
         #[cfg(feature = "product")]
         let snapshot = field_inspection::fields(page, &canvas, snapshot);
         #[cfg(feature = "product")]
+        let snapshot = coupling::fields(page, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = snapshot.with_field(
+            "field-inspector-focus",
+            field_inspection::focused_detail(ctx),
+        );
+        #[cfg(feature = "product")]
         let snapshot = presentation::fields(page, snapshot);
         let snapshot = snapshot
             .with_field("physics-steps", step.steps.to_string())

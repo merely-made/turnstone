@@ -94,6 +94,7 @@ const SHEET: &str = "\
     .tree-tools h3 { font-size:13px; margin:4px 0 2px; } \
     .tree-rules [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
     .tree-rules pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
+    .tree-coupling [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
     .tree-inspection { overflow-wrap:anywhere; } \
     .tree-inspection p, .tree-inspection li { font-size:12px; } \
     .tree-tools .detail-section-title { font-weight:bold; margin:6px 0 4px; } \
@@ -1217,6 +1218,8 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                     .is_some_and(|product| product.selection_locked()),
             );
             #[cfg(feature = "product")]
+            coupling::poll(ctx);
+            #[cfg(feature = "product")]
             if ctx.runner.state().forme.as_ref().is_some_and(|f| f.ready()) {
                 ctx.runner.update(|page| {
                     forme::poll(page);
@@ -1331,6 +1334,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
         after_wake: Box::new(|_ctx| {}),
         close_request: Box::new(|_ctx, _request| CloseDisposition::KeepVisible),
         focused_text: Box::new(|runner| {
+            #[cfg(feature = "product")]
+            if let Some(slot) = coupling::focused_text(runner) {
+                return Some(slot);
+            }
             #[cfg(feature = "product")]
             if let Some(slot) = presentation::focused_text(runner) {
                 return Some(slot);
@@ -1448,6 +1455,8 @@ impl NoRepulsionLane for mere::canvas::Canvas {
 #[cfg(feature = "applets")]
 mod applet;
 mod controls;
+#[cfg(feature = "product")]
+mod coupling;
 #[cfg(feature = "product")]
 mod field_inspection;
 #[cfg(feature = "product")]

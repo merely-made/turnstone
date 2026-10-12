@@ -181,6 +181,9 @@ pub struct MereHost<B> {
     served_registry: std::sync::Mutex<mere::canvas::ChannelRegistry>,
 }
 
+#[path = "mere_host_coupling.rs"]
+mod coupling;
+
 /// Changes not yet stored, taken as one batch: what [`MereHost::stage`] put
 /// in a batch, or what [`MereHost::prepare_store`] took for its caller to
 /// write. Mark it stored once it commits.

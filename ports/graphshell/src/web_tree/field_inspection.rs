@@ -27,6 +27,7 @@ pub(super) struct Pane {
     pub(super) coupling: Option<CouplingId>,
     // One explicit inspection moves focus once; ordinary rebuilds never do.
     pub(super) reveal: bool,
+    pub(super) editor: super::coupling::Pane,
 }
 
 pub(super) fn graph(page: &TreePage) -> Result<&Graph, String> {
@@ -81,10 +82,27 @@ pub(super) fn reveal(ctx: &mut AppCtx<'_, TreePage, Logic, Child>) {
         .update(|page| page.field_inspector.reveal = false);
 }
 
+pub(super) fn focused_detail(ctx: &AppCtx<'_, TreePage, Logic, Child>) -> &'static str {
+    let Some(focus) = ctx.runner.focus() else {
+        return "none";
+    };
+    let dom = ctx.runner.dom();
+    let dom = dom.borrow();
+    for (id, label) in [
+        ("field-inspected-field", "field"),
+        ("field-inspected-coupling", "coupling"),
+    ] {
+        if taproot::matching(&dom, &Selector::class(id)).contains(&focus) {
+            return label;
+        }
+    }
+    "none"
+}
+
 fn detail_heading(page: &TreePage, label: &str, exact_coupling: bool) -> Child {
     Box::new(cambium::request_focus(
         el("h3", label.to_string()).attr("tabindex", "-1").attr(
-            "id",
+            "class",
             if exact_coupling {
                 "field-inspected-coupling"
             } else {
@@ -459,7 +477,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         }
     }
     Box::new(
-        el("section", children)
+        el("section", (children, super::coupling::section(page)))
             .attr("class", "tree-inspection")
             .attr("aria-label", "Field inspector"),
     )

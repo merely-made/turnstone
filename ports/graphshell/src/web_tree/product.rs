@@ -12,6 +12,7 @@ use graphshell::local_edit::{
 };
 use graphshell::local_intake::{create_address, create_file, persist_intake, sync_canvas_intake};
 use mere::canvas::Role;
+use mere::kernel::graph::CouplingId;
 use muniment::IndexedDbBackend;
 use uuid::Uuid;
 
@@ -22,10 +23,18 @@ enum CompletedEdit {
     Intake,
 }
 type Completion = (App, CompletedEdit, Result<NodeMetadata, String>);
+type CouplingCompletion = (App, CouplingId, Result<(), String>);
+
+pub(super) enum CouplingOperation {
+    Apply(graphshell::coupling_edit::StrengthDraft),
+    History(CouplingId, bool),
+}
 
 pub(super) struct SavedProduct {
     app: Option<App>,
     completed: Rc<RefCell<Option<Completion>>>,
+    coupling_completed: Rc<RefCell<Option<CouplingCompletion>>>,
+    pub(super) coupling_result: Option<Result<(), String>>,
     pub(super) selected: Option<Uuid>,
     pub(super) title: TextInput,
     pub(super) tags: TextInput,
@@ -104,6 +113,8 @@ pub(super) async fn open() -> Result<Option<SavedProduct>, String> {
     Ok(Some(SavedProduct {
         app: Some(app),
         completed: Rc::new(RefCell::new(None)),
+        coupling_completed: Rc::new(RefCell::new(None)),
+        coupling_result: None,
         selected: None,
         title: TextInput::new(""),
         tags: TextInput::new(""),
@@ -203,7 +214,7 @@ impl SavedProduct {
         Some((app.host.store(), app.host.graph_session().id().0))
     }
     pub(super) fn ready(&self) -> bool {
-        self.completed.borrow().is_some()
+        self.completed.borrow().is_some() || self.coupling_completed.borrow().is_some()
     }
     pub(super) fn selection_locked(&self) -> bool {
         self.saving || self.file_requested || self.pending_intake.is_some()
@@ -347,6 +358,48 @@ impl SavedProduct {
         });
     }
 
+    pub(super) fn save_coupling(&mut self, operation: CouplingOperation) -> Result<(), String> {
+        if self.selection_locked() {
+            return Err("Another graph save or intake is pending".into());
+        }
+        let Some(mut app) = self.app.take() else {
+            return Err("Local source is unavailable".into());
+        };
+        self.saving = true;
+        self.save_state = "saving";
+        let completed = self.coupling_completed.clone();
+        wasm_bindgen_futures::spawn_local(async move {
+            let (id, result) = match operation {
+                CouplingOperation::Apply(draft) => {
+                    let id = draft.baseline.id;
+                    (
+                        id,
+                        app.host
+                            .save_coupling_strength(&draft, now_secs())
+                            .await
+                            .map(|_| ()),
+                    )
+                },
+                CouplingOperation::History(id, redo) => {
+                    let result = app
+                        .host
+                        .coupling_history(id, redo, now_secs())
+                        .await
+                        .and_then(|changed| {
+                            if changed {
+                                Ok(())
+                            } else {
+                                Err("No saved coupling step is available".into())
+                            }
+                        });
+                    (id, result)
+                },
+            };
+            *completed.borrow_mut() = Some((app, id, result));
+        });
+        Ok(())
+    }
+
     fn add_address(&mut self) {
         if self.saving || self.pending_intake.is_some() || self.file_requested {
             return;
@@ -409,6 +462,39 @@ impl SavedProduct {
     }
 
     pub(super) fn poll(&mut self, canvas: &mut Canvas) -> bool {
+        let coupling = self.coupling_completed.borrow_mut().take();
+        if let Some((app, id, result)) = coupling {
+            self.app = Some(app);
+            self.saving = false;
+            self.save_state = if result.is_ok() { "saved" } else { "error" };
+            if result.is_ok() {
+                let record = self
+                    .app
+                    .as_ref()
+                    .expect("completed app")
+                    .host
+                    .graph()
+                    .couplings()
+                    .find(|c| c.id == id)
+                    .cloned();
+                if let Some(record) = record {
+                    canvas.ingest_graph(|graph| {
+                        if graph.couplings().any(|c| c == &record) {
+                            return false;
+                        }
+                        mere::kernel::graph::apply::apply_graph_delta(
+                            graph,
+                            mere::kernel::graph::apply::GraphDelta::AddCoupling {
+                                coupling: record,
+                            },
+                        );
+                        true
+                    });
+                }
+            }
+            self.coupling_result = Some(result);
+            return true;
+        }
         let Some((app, edit, result)) = self.completed.borrow_mut().take() else {
             return false;
         };

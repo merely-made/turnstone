@@ -1,6 +1,8 @@
+# Use ?motion=normal for this normal-motion qualification.
 # Fresh page/process, retained origin/profile after the live scenario.
 # Same product route and field-inspection fixture namespace.
 assert snap source == saved graph
+assert snap reduced-motion == false
 assert snap rules-count == 2
 assert snap rules-generation == 3
 assert snap rules-live-enabled == false
