@@ -23,7 +23,7 @@ enum CompletedEdit {
     Intake,
 }
 type Completion = (App, CompletedEdit, Result<NodeMetadata, String>);
-type CouplingCompletion = (App, CouplingId, Result<(), String>);
+type CouplingCompletion = (App, CouplingId, Result<Option<String>, String>);
 
 pub(super) enum CouplingOperation {
     Apply(graphshell::coupling_edit::StrengthDraft),
@@ -34,7 +34,7 @@ pub(super) struct SavedProduct {
     app: Option<App>,
     completed: Rc<RefCell<Option<Completion>>>,
     coupling_completed: Rc<RefCell<Option<CouplingCompletion>>>,
-    pub(super) coupling_result: Option<Result<(), String>>,
+    pub(super) coupling_result: Option<Result<Option<String>, String>>,
     pub(super) selected: Option<Uuid>,
     pub(super) title: TextInput,
     pub(super) tags: TextInput,
@@ -395,7 +395,14 @@ impl SavedProduct {
                     (id, result)
                 },
             };
-            *completed.borrow_mut() = Some((app, id, result));
+            // Keep the portable local client current as well as the Canvas.
+            // A refresh error after acknowledgement must not be called a
+            // failed storage write; failed writes still display the old graph.
+            let warning = app
+                .mount_local()
+                .err()
+                .map(|error| format!("Local projection refresh needs retry: {error}"));
+            *completed.borrow_mut() = Some((app, id, result.map(|_| warning)));
         });
         Ok(())
     }

@@ -60,12 +60,21 @@ pub(super) fn poll(ctx: &mut AppCtx<'_, TreePage, Logic, Child>) {
         let pane = &mut page.field_inspector.editor;
         pane.busy = false;
         pane.status = match result {
-            Ok(()) => {
+            Ok(warning) => {
                 pane.draft = None;
                 pane.preview = None;
-                "Coupling change saved".into()
+                warning.map_or_else(
+                    || "Coupling change saved".into(),
+                    |warning| format!("Coupling change saved · {warning}"),
+                )
             },
-            Err(error) => format!("Coupling change refused · {error} · draft retained"),
+            Err(error) => {
+                if pane.draft.is_some() {
+                    format!("Coupling change refused · {error} · draft retained")
+                } else {
+                    format!("Coupling history · {error}")
+                }
+            },
         };
     });
 }
