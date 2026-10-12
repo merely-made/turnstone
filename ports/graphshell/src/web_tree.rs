@@ -1299,6 +1299,8 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
         after_dispatch: Box::new(|ctx| {
             #[cfg(feature = "product")]
             field_inspection::reveal(ctx);
+            #[cfg(feature = "product")]
+            coupling::reveal(ctx);
             ctx.runner.state().shared.selection_locked.set(
                 ctx.runner
                     .state()

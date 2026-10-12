@@ -14,6 +14,7 @@ pub(super) struct Pane {
     draft: Option<StrengthDraft>,
     input: TextInput,
     busy: bool,
+    reveal: bool,
     preview: Option<String>,
     status: String,
 }
@@ -23,6 +24,7 @@ impl Default for Pane {
             draft: None,
             input: TextInput::new(""),
             busy: false,
+            reveal: false,
             preview: None,
             status: String::new(),
         }
@@ -68,6 +70,17 @@ pub(super) fn poll(ctx: &mut AppCtx<'_, TreePage, Logic, Child>) {
     });
 }
 
+pub(super) fn reveal(ctx: &mut AppCtx<'_, TreePage, Logic, Child>) {
+    if !ctx.runner.state().field_inspector.editor.reveal {
+        return;
+    }
+    if let Some(node) = ctx.runner.focus() {
+        ctx.scroll_into_view(node, cambium_rootstock::ScrollAlign::Start);
+    }
+    ctx.runner
+        .update(|page| page.field_inspector.editor.reveal = false);
+}
+
 fn begin(page: &mut TreePage) {
     let result = (|| {
         if page.field_inspector.editor.busy || page.field_inspector.editor.draft.is_some() {
@@ -86,6 +99,7 @@ fn begin(page: &mut TreePage) {
             pane.draft = Some(draft);
             pane.preview = None;
             pane.status = "Strength draft opened".into();
+            pane.reveal = true;
         },
         Err(error) => pane.status = error,
     }
@@ -179,6 +193,7 @@ pub(super) fn focused_text(
 
 pub(super) fn section(page: &TreePage) -> Child {
     let pane = &page.field_inspector.editor;
+    let reveal = pane.reveal;
     let mut children: Vec<Child> = Vec::new();
     if !pane.busy {
         if let Some(draft) = &pane.draft {
@@ -196,8 +211,11 @@ pub(super) fn section(page: &TreePage) -> Child {
                 (
                     "Coupling strength",
                     lens(
-                        |input: &mut TextInput| {
-                            text_field_typed(input).attr("aria-label", "Coupling strength")
+                        move |input: &mut TextInput| {
+                            cambium::request_focus(
+                                text_field_typed(input).attr("aria-label", "Coupling strength"),
+                                reveal,
+                            )
                         },
                         |page: &mut TreePage| &mut page.field_inspector.editor.input,
                     ),
