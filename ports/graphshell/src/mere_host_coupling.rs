@@ -15,6 +15,11 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         draft: &StrengthDraft,
         saved_at_secs: u64,
     ) -> Result<Coupling, String> {
+        if self.graph_session.id().0 != draft.graph_id {
+            return Err(
+                "The strength draft belongs to another graph session; draft retained".into(),
+            );
+        }
         if self.has_unstored() {
             return Err("Save pending graph edits first; strength draft retained".into());
         }

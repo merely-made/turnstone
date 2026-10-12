@@ -280,6 +280,13 @@ impl SavedProduct {
             .ok_or_else(|| "Source inspection will resume when the current save finishes".into())
     }
 
+    pub(super) fn source_session_id(&self) -> Result<Uuid, String> {
+        self.app
+            .as_ref()
+            .map(|app| app.host.graph_session().id().0)
+            .ok_or_else(|| "Source inspection will resume when the current save finishes".into())
+    }
+
     /// Selected file facts from the acknowledged local owner, for receipts.
     pub(super) fn saved_file(&self) -> Option<serde_json::Value> {
         if self.saving || self.pending_intake.is_some() {

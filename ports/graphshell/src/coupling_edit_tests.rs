@@ -76,7 +76,9 @@ fn exact_strength_save_and_history_reopen_preserve_siblings_and_other_edits() {
         app.host.persist(10).await.unwrap();
         let sibling = coupling(&app, 202);
         let other = coupling(&app, 203);
-        let mut draft = StrengthDraft::begin(app.host.graph(), id(201)).unwrap();
+        let mut draft =
+            StrengthDraft::begin(app.host.graph(), app.host.graph_session().id().0, id(201))
+                .unwrap();
         draft.set_text("0.125".into()).unwrap();
         app.host.save_coupling_strength(&draft, 11).await.unwrap();
         assert_eq!(coupling(&app, 201).strength, 0.125);
@@ -132,7 +134,9 @@ fn failures_and_nontransactional_backend_preserve_graph_history_and_draft() {
         app.host.persist(10).await.unwrap();
         let before = coupling(&app, 201);
         let revision = app.host.projection_revision();
-        let mut draft = StrengthDraft::begin(app.host.graph(), id(201)).unwrap();
+        let mut draft =
+            StrengthDraft::begin(app.host.graph(), app.host.graph_session().id().0, id(201))
+                .unwrap();
         draft.set_text("0.5".into()).unwrap();
         for mode in [1, 2] {
             store.mode.store(mode, Ordering::SeqCst);
@@ -168,9 +172,19 @@ fn stale_durable_session_refuses_before_overwriting_a_competing_save() {
         let mut second = GraphshellApp::open_or_field_inspection_fixture(store.clone(), persona())
             .await
             .unwrap();
-        let mut draft = StrengthDraft::begin(first.host.graph(), id(201)).unwrap();
+        let mut draft = StrengthDraft::begin(
+            first.host.graph(),
+            first.host.graph_session().id().0,
+            id(201),
+        )
+        .unwrap();
         draft.set_text("0.5".into()).unwrap();
-        let mut newer = StrengthDraft::begin(second.host.graph(), id(201)).unwrap();
+        let mut newer = StrengthDraft::begin(
+            second.host.graph(),
+            second.host.graph_session().id().0,
+            id(201),
+        )
+        .unwrap();
         newer.set_text("0.25".into()).unwrap();
         second
             .host
@@ -204,7 +218,9 @@ fn invalid_and_changed_targets_keep_private_history_without_graph_mutation() {
                 .await
                 .unwrap();
         app.host.persist(10).await.unwrap();
-        let mut draft = StrengthDraft::begin(app.host.graph(), id(201)).unwrap();
+        let mut draft =
+            StrengthDraft::begin(app.host.graph(), app.host.graph_session().id().0, id(201))
+                .unwrap();
         for text in ["NaN", "inf", "1e99", "words"] {
             draft.set_text(text.into()).unwrap();
             assert!(draft.candidate(app.host.graph()).is_err());
@@ -218,5 +234,44 @@ fn invalid_and_changed_targets_keep_private_history_without_graph_mutation() {
         apply_graph_delta(&mut graph, GraphDelta::RetractCoupling { id: id(201) });
         assert!(draft.candidate(&graph).unwrap_err().contains("withdrawn"));
         assert_eq!(coupling(&app, 201).strength, 0.02);
+    });
+}
+
+#[test]
+fn equal_coupling_ids_in_another_graph_cannot_accept_the_draft() {
+    pollster::block_on(async {
+        let mut first =
+            GraphshellApp::open_or_field_inspection_fixture(MemoryBackend::new(), persona())
+                .await
+                .unwrap();
+        let mut other =
+            GraphshellApp::open_or_field_inspection_fixture(MemoryBackend::new(), persona())
+                .await
+                .unwrap();
+        first.host.persist(10).await.unwrap();
+        other.host.persist(10).await.unwrap();
+        assert_ne!(
+            first.host.graph_session().id(),
+            other.host.graph_session().id()
+        );
+        assert_eq!(coupling(&first, 201), coupling(&other, 201));
+        let mut draft = StrengthDraft::begin(
+            first.host.graph(),
+            first.host.graph_session().id().0,
+            id(201),
+        )
+        .unwrap();
+        draft.set_text("0.5".into()).unwrap();
+        assert!(
+            other
+                .host
+                .save_coupling_strength(&draft, 11)
+                .await
+                .unwrap_err()
+                .contains("another graph session")
+        );
+        assert_eq!(coupling(&other, 201).strength, 0.02);
+        assert!(!other.host.has_unstored());
+        assert_eq!(draft.text, "0.5");
     });
 }

@@ -9,6 +9,7 @@ use mere::kernel::graph::{Coupling, CouplingId, Field, Graph};
 
 #[derive(Clone, Debug)]
 pub struct StrengthDraft {
+    pub(crate) graph_id: uuid::Uuid,
     pub baseline: Coupling,
     owner: Field,
     pub text: String,
@@ -17,7 +18,7 @@ pub struct StrengthDraft {
 }
 
 impl StrengthDraft {
-    pub fn begin(graph: &Graph, id: CouplingId) -> Result<Self, String> {
+    pub fn begin(graph: &Graph, graph_id: uuid::Uuid, id: CouplingId) -> Result<Self, String> {
         let baseline = graph
             .couplings()
             .find(|c| c.id == id)
@@ -33,6 +34,7 @@ impl StrengthDraft {
             );
         }
         Ok(Self {
+            graph_id,
             text: baseline.strength.to_string(),
             baseline,
             owner,

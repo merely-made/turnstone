@@ -99,7 +99,14 @@ fn begin(page: &mut TreePage) {
             .field_inspector
             .coupling
             .ok_or("Inspect one exact coupling first")?;
-        StrengthDraft::begin(field_inspection::graph(page)?, id)
+        StrengthDraft::begin(
+            field_inspection::graph(page)?,
+            page.product
+                .as_ref()
+                .ok_or("Local source is unavailable")?
+                .source_session_id()?,
+            id,
+        )
     })();
     let pane = &mut page.field_inspector.editor;
     match result {
