@@ -101,14 +101,14 @@ pub(super) fn focused_detail(ctx: &AppCtx<'_, TreePage, Logic, Child>) -> &'stat
 
 fn detail_heading(page: &TreePage, label: &str, exact_coupling: bool) -> Child {
     Box::new(cambium::request_focus(
-        el("h3", label.to_string()).attr("tabindex", "-1").attr(
+        cambium::focusable(el("h3", label.to_string()).attr("tabindex", "0").attr(
             "class",
             if exact_coupling {
                 "field-inspected-coupling"
             } else {
                 "field-inspected-field"
             },
-        ),
+        )),
         page.field_inspector.reveal && exact_coupling == page.field_inspector.coupling.is_some(),
     ))
 }
