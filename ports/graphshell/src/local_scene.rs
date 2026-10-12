@@ -29,14 +29,11 @@ pub fn capture_scene(
     })
 }
 
-/// Validate before replacing a working canvas. Missing members in a saved
-/// sidecar are skipped by the existing member-keyed Canvas restoration APIs.
-pub fn restore_scene(
-    canvas: &mut Canvas,
-    owner: &Graph,
-    scene: &SavedSceneV3,
-    viewport: (u32, u32),
-) -> Result<(), String> {
+struct PreparedScene {
+    spec: mere::canvas::dynamics_spec::DynamicsSpec,
+    arrangement: String,
+}
+fn prepare_scene(scene: &SavedSceneV3) -> Result<PreparedScene, String> {
     let spec = scene.dynamics_spec()?;
     let arrangement = scene.arrangement()?;
     if !scene.camera_offset.0.is_finite()
@@ -53,6 +50,22 @@ pub fn restore_scene(
     {
         return Err("saved scene has an invalid position".into());
     }
+    Ok(PreparedScene { spec, arrangement })
+}
+/// Graph-free rejection before an imported codicil changes App authority.
+pub(crate) fn validate_scene(scene: &SavedSceneV3) -> Result<(), String> {
+    prepare_scene(scene).map(|_| ())
+}
+
+/// Validate before replacing a working canvas. Missing members in a saved
+/// sidecar are skipped by the existing member-keyed Canvas restoration APIs.
+pub fn restore_scene(
+    canvas: &mut Canvas,
+    owner: &Graph,
+    scene: &SavedSceneV3,
+    viewport: (u32, u32),
+) -> Result<(), String> {
+    let PreparedScene { spec, arrangement } = prepare_scene(scene)?;
     canvas.set_graph(owner.clone());
     canvas.set_layout_strategy(
         (arrangement != crate::canvas_physics::FREE_ARRANGEMENT).then(|| arrangement.clone()),
@@ -90,4 +103,76 @@ pub fn restore_scene(
         zoom: scene.camera_zoom,
     });
     Ok(())
+}
+
+/// A successful import is authority even if its optional view cannot restore.
+pub struct OpenedCodicil {
+    pub receipt: crate::product::ImportReceipt,
+    pub owner: uuid::Uuid,
+    pub scene: Option<SavedSceneV3>,
+    pub view_error: Option<String>,
+}
+/// Restore a view of an already accepted graph. Every return leaves Canvas
+/// attached to that graph; no old graph-local keys survive a restoration error.
+pub(crate) fn install_accepted_codicil(
+    canvas: &mut Canvas,
+    owner: &Graph,
+    scene: Option<&SavedSceneV3>,
+    viewport: (u32, u32),
+) -> Option<String> {
+    if let Some(scene) = scene {
+        if let Err(error) = restore_scene(canvas, owner, scene, viewport) {
+            canvas.set_graph(owner.clone());
+            return Some(error);
+        }
+    } else {
+        canvas.set_graph(owner.clone());
+    }
+    None
+}
+/// The retained Scene Open operation, shared with native lifecycle tests.
+pub fn open_codicil<B: muniment::Backend + Clone>(
+    host: &mut crate::mere_host::MereHost<B>,
+    canvas: &mut Canvas,
+    bytes: &[u8],
+    viewport: (u32, u32),
+) -> Result<OpenedCodicil, String> {
+    let (receipt, scene) = host
+        .replace_with_product_codicil(bytes)
+        .map_err(|e| e.to_string())?;
+    let owner = host.graph_session().id().0;
+    let view_error = install_accepted_codicil(canvas, host.graph(), scene.as_ref(), viewport);
+    Ok(OpenedCodicil {
+        receipt,
+        owner,
+        scene,
+        view_error,
+    })
+}
+
+/// Install the returned App graph before Forme reconciliation, including a
+/// retained in-memory edit whose persistence failed.
+/// Same-owner stable keys retain view and physics state. Reused keys or a new
+/// actual owner use the graph replacement path, which releases old local holds.
+pub fn reconcile_completed_graph(
+    canvas: &mut Canvas,
+    previous_owner: Option<uuid::Uuid>,
+    actual_owner: uuid::Uuid,
+    graph: &Graph,
+) {
+    let keys_match = previous_owner == Some(actual_owner)
+        && canvas.graph().nodes().all(|(key, node)| {
+            graph
+                .get_node_by_id(node.id)
+                .is_none_or(|(next, _)| next == key)
+                && graph.get_node(key).is_none_or(|next| next.id == node.id)
+        });
+    if !keys_match {
+        canvas.set_graph(graph.clone());
+    } else if canvas.refresh_same_topology_graph(graph).is_err() {
+        canvas.ingest_graph(|current| {
+            *current = graph.clone();
+            true
+        });
+    }
 }

@@ -681,6 +681,14 @@ impl Product for TreeLane {
         let snapshot = super::speed::fields(snapshot, &canvas, &self.shared);
         #[cfg(feature = "product")]
         let snapshot = forme_fields(page, &canvas, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = inspection::fields(page, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = link_inspection::fields(page, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = field_inspection::fields(page, &canvas, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = presentation::fields(page, snapshot);
         let snapshot = snapshot
             .with_field("physics-steps", step.steps.to_string())
             .with_field(
@@ -1288,6 +1296,49 @@ impl Product for TreeLane {
                 ctx.pointer.push(HostPointer::Moved(left + x, top + y));
                 Ok(())
             },
+            #[cfg(feature = "product")]
+            "pick-field-regions" => {
+                if !ctx.runner.state().field_inspector.picking {
+                    return Err("Arm Pick field regions before the pointer step".into());
+                }
+                let args: Vec<f32> = rest.split_whitespace().map(str::parse).collect::<Result<_, _>>().map_err(|_| "pick-field-regions wants world x y")?;
+                if args.len() != 2 || !args.iter().all(|n| n.is_finite()) {
+                    return Err("pick-field-regions wants finite world x y".into());
+                }
+                let (left, top, width, height) = leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
+                let (x, y) = self.shared.canvas.borrow().screen_point_of((args[0], args[1]));
+                if x < 0. || y < 0. || x >= width || y >= height {
+                    return Err("region point is outside the painted canvas; fit the view first".into());
+                }
+                ctx.pointer.push(HostPointer::Press(left + x, top + y));
+                ctx.pointer.push(HostPointer::Release(left + x, top + y));
+                Ok(())
+            },
+            #[cfg(feature = "product")]
+            "move-to-forme" => {
+                let (address, side) = rest.trim().rsplit_once(' ').ok_or("move-to-forme wants target address and left/right/top/bottom/center/outside")?;
+                let (left, top, _, _) = leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
+                let pane = ctx.runner.state().forme.as_ref().ok_or("no Forme workspace")?;
+                let region = pane.session.view().region();
+                let canvas = self.shared.canvas.borrow();
+                let member = canvas.graph().nodes().find(|(_, node)| node.url() == address).map(|(_, node)| node.id).ok_or("unknown drop target")?;
+                let cell = region.cells.iter().find(|cell| cell.member == member).ok_or("target has no active tile region")?;
+                let [x, y, r, b] = region.cell_world_bounds(cell);
+                let world = match side {
+                    "left" => (x + (r-x)*0.1, (y+b)*0.5),
+                    "right" => (r - (r-x)*0.1, (y+b)*0.5),
+                    "top" => ((x+r)*0.5, y + (b-y)*0.1),
+                    "bottom" => ((x+r)*0.5, b - (b-y)*0.1),
+                    "center" => ((x+r)*0.5, (y+b)*0.5),
+                    "outside" => (region.bounds[2]+50., region.bounds[3]+50.),
+                    _ => return Err("unknown Forme drop region".into()),
+                };
+                let (x, y) = canvas.screen_point_of(world);
+                let point = self.pointer.as_mut().ok_or("move-to-forme needs press-node first")?;
+                *point = (left+x, top+y);
+                ctx.pointer.push(HostPointer::Moved(point.0, point.1));
+                Ok(())
+            },
             "click-node" => {
                 let (x, y) = self.node_point(ctx, rest.trim())?;
                 ctx.pointer.push(HostPointer::Press(x, y));
@@ -1513,12 +1564,23 @@ impl Product for TreeLane {
         let host_pending = host_boundary::pending(&ctx.runner.state().root, &mut self.errors);
         let pending = self.shared.timing.borrow_mut().poll();
         let local_shown = ctx.runner.state().session == remote::Session::Local;
+        // A hidden canvas cannot advance its last motion flag. Workbench
+        // waits still need workspace store writes to finish before reopening.
+        let canvas_shown = local_shown
+            && leaf_rect(ctx).is_some_and(|(_, _, width, height)| width > 0. && height > 0.);
+        #[cfg(feature = "product")]
+        let workspace_saving = super::forme::owner_busy(ctx.runner.state())
+            || ctx.runner.state().forme.as_ref().is_some_and(|pane| pane.saving)
+            || ctx.runner.state().presentation.busy();
+        #[cfg(not(feature = "product"))]
+        let workspace_saving = false;
         Some(
             capture_pending
                 || host_pending
                 || pending
                 || self.shared.remote.borrow().in_flight()
-                || (local_shown && self.shared.moving.get())
+                || (canvas_shown && self.shared.moving.get())
+                || workspace_saving
                 || ctx
                     .runner
                     .state()
@@ -1579,25 +1641,31 @@ fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> Pr
             .count()
     });
     snapshot
-        .with_field("forme", pane.model.document.id.as_uuid().to_string())
-        .with_field("forme-accesses", pane.model.members().len().to_string())
+        .with_field("forme", pane.current().document.id.as_uuid().to_string())
+        .with_field("forme-accesses", pane.current().members().len().to_string())
         .with_field(
             "forme-cells",
             region.map_or(0, |r| r.cells.len()).to_string(),
         )
         .with_field("forme-placed", placed.to_string())
-        .with_field("forme-locked", pane.model.locked.to_string())
-        .with_field("forme-visible", pane.model.visible.to_string())
+        .with_field("forme-locked", pane.current().locked.to_string())
+        .with_field("forme-visible", pane.current().visible.to_string())
         .with_field("forme-hovered", canvas.forme_region_hovered().to_string())
         .with_field("forme-saving", pane.saving.to_string())
         .with_field("forme-preview", pane.previewing().to_string())
+        .with_field("forme-draft", pane.session.editing().to_string())
+        .with_field("forme-dirty", pane.session.dirty().to_string())
+        .with_field("forme-can-undo", pane.session.can_undo().to_string())
+        .with_field("forme-can-redo", pane.session.can_redo().to_string())
+        .with_field("forme-committed-geometry", serde_json::to_string(&pane.session.committed().geometry).unwrap_or_default())
+        .with_field("forme-committed-bounds", serde_json::to_string(&pane.session.committed().bounds).unwrap_or_default())
         .with_field(
             "forme-geometry",
-            serde_json::to_string(&pane.model.geometry).unwrap_or_default(),
+            serde_json::to_string(&pane.current().geometry).unwrap_or_default(),
         )
         .with_field(
             "forme-bounds",
-            serde_json::to_string(&pane.model.bounds).unwrap_or_default(),
+            serde_json::to_string(&pane.current().bounds).unwrap_or_default(),
         )
         .with_field("workbench", pane.workbench.to_string())
 }

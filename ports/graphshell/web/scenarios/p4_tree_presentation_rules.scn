@@ -1,0 +1,101 @@
+# Fresh dedicated profile/origin on tree.html?app=local. Retain it for reopen.
+# Decision preview only; this does not qualify canvas realization of effects.
+assert snap source == saved graph
+# Normal-motion profile: pause the scene so wait measures store/capture work.
+click role:button Pause physics
+assert snap rules-ready == true
+assert snap rules-count == 0
+assert snap rules-generation == 0
+remember source-before-rules
+reveal role:button Presentation rules
+click role:button Presentation rules
+reveal role:button Begin rule draft
+click role:button Begin rule draft
+reveal role:button Add node rule
+click role:button Add node rule
+assert snap rules-selected-id == node-1
+reveal role:button Preview rule decisions
+click role:button Preview rule decisions
+assert snap rules-preview-details == node-1
+reveal role:button Add node rule
+click role:button Add node rule
+reveal role:textbox Rule effects JSON
+click role:textbox Rule effects JSON
+input-text [{"kind":"details","visible":false}]
+assert snap rules-unstaged == true
+assert snap rules-preview-ready == false
+reveal role:button Preview rule decisions
+click role:button Preview rule decisions
+assert snap rules-preview-details == node-2
+reveal role:button Move rule earlier
+click role:button Move rule earlier
+reveal role:button Preview rule decisions
+click role:button Preview rule decisions
+assert snap rules-preview-details == node-1
+reveal role:button Undo rule draft
+click role:button Undo rule draft
+assert snap rules-selected == false
+reveal role:button Preview rule decisions
+click role:button Preview rule decisions
+assert snap rules-preview-details == node-2
+reveal role:button Add link rule
+click role:button Add link rule
+reveal role:button Link context sample
+click role:button Link context sample
+reveal role:button Preview rule decisions
+click role:button Preview rule decisions
+assert snap rules-preview-provenance == link-1
+reveal role:button Add field rule
+click role:button Add field rule
+reveal role:button Field context sample
+click role:button Field context sample
+reveal role:button Preview rule decisions
+click role:button Preview rule decisions
+assert snap rules-preview-guides == field-1
+reveal role:textbox Rule condition JSON
+click role:textbox Rule condition JSON
+input-text {"kind":"screen_size","enter_below":84,"exit_above":48}
+reveal role:button Apply rules
+click role:button Apply rules
+assert snap rules-valid == false
+assert snap rules-saving == false
+assert snap rules-generation == 0
+assert text Rule draft refused
+same source-before-rules rules-committed nodes graph-session forme-accesses
+reveal role:button Undo rule draft
+click role:button Undo rule draft
+assert snap rules-valid == true
+reveal role:button Apply rules
+click role:button Apply rules
+wait 120
+assert snap rules-saving == false
+assert snap rules-generation == 1
+assert snap rules-editing == false
+assert snap rules-count == 4
+assert text Presentation rules saved
+same source-before-rules nodes graph-session forme-accesses
+reveal role:button Undo saved rules
+click role:button Undo saved rules
+wait 120
+assert snap rules-generation == 2
+assert snap rules-count == 0
+reveal role:button Redo saved rules
+click role:button Redo saved rules
+wait 120
+assert snap rules-generation == 3
+assert snap rules-count == 4
+reveal role:button Begin rule draft
+click role:button Begin rule draft
+reveal role:button Add field rule
+click role:button Add field rule
+assert snap rules-count == 5
+reveal role:button Discard rule draft
+click role:button Discard rule draft
+assert snap rules-count == 4
+assert snap rules-generation == 3
+reveal role:button Field context sample
+click role:button Field context sample
+reveal role:button Preview rule decisions
+click role:button Preview rule decisions
+assert snap rules-preview-guides == field-1
+capture presentation_rule_decisions

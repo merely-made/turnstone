@@ -349,6 +349,14 @@ impl ProjectionControls {
                 Err(error) => self.status = error,
             }
         }
+        if let Some(comparison) = &self.comparison {
+            (self.compare_column, self.compare_row) =
+                graphshell::retained_policy::clamp_comparison_page(
+                    (self.compare_column, self.compare_row),
+                    comparison.facet.columns.labels.len(),
+                    comparison.facet.rows.as_ref().map_or(1, |axis| axis.labels.len()),
+                );
+        }
     }
     pub(super) fn saved(&mut self) {
         if self.pending_save {

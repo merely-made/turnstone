@@ -11,6 +11,16 @@
 
 #[cfg(feature = "web")]
 pub mod access;
+#[cfg(feature = "web")]
+pub mod access_inspection;
+#[cfg(feature = "web")]
+pub mod link_inspection;
+#[cfg(feature = "web")]
+pub mod field_inspection;
+#[cfg(feature = "web")]
+pub mod presentation_editor;
+#[cfg(feature = "web")]
+pub mod presentation_binding;
 #[cfg(any(
     all(feature = "native", not(target_arch = "wasm32")),
     feature = "webrtc-join"
@@ -51,6 +61,8 @@ pub mod distillery_w1;
 pub mod frame_budget;
 #[cfg(feature = "web")]
 pub mod forme_workspace;
+#[cfg(feature = "web")]
+pub mod forme_session;
 #[cfg(feature = "web")]
 pub mod handlers;
 #[cfg(feature = "web")]
@@ -94,6 +106,8 @@ pub mod product;
 pub mod profile;
 #[cfg(feature = "web")]
 pub mod remote_board;
+#[cfg(feature = "web")]
+pub mod retained_policy;
 #[cfg(feature = "web")]
 pub mod session_item;
 #[cfg(feature = "web")]

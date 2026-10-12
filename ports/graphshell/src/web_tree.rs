@@ -89,6 +89,10 @@ const SHEET: &str = "\
     .tools-cards { margin:2px 0 4px; padding:0 0 0 16px; font-size:12px; color:#dce3e8; } \
     .tree-tools h2 { font-size:14px; margin:2px 0 4px; } \
     .tree-tools h3 { font-size:13px; margin:4px 0 2px; } \
+    .tree-rules [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
+    .tree-rules pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
+    .tree-inspection { overflow-wrap:anywhere; } \
+    .tree-inspection p, .tree-inspection li { font-size:12px; } \
     .tools-section + .tools-section { margin-top:10px; border-top:1px solid #2c3b44; padding-top:4px; } \
     .tools-switch button[aria-pressed=true] { background:#2d5a63; border-color:#79a9be; } \
     .tools-active { margin:4px 0; color:#f0dfb8; font-size:12px; } \
@@ -104,6 +108,7 @@ const SHEET: &str = "\
     .select-list { background:#17232b; border:1px solid #637581; z-index:20; width:262px; } \
     .select-option { padding:1px 8px; } \
     .tree-product { position:absolute;top:8px;left:12px;max-width:360px;max-height:90%;overflow-y:auto;z-index:5; } \
+    .tree-product-workbench { position:static;flex:0 0 auto;max-width:none;max-height:140px;padding:4px 12px; } \
     .tree-product p { margin:4px 0; } \
     .tree-projection { position:absolute;top:8px;left:12px;right:310px;max-height:90%;overflow:auto;z-index:6;background:#17232b;padding:12px; } \
     .tree-practice { background:#1a211b;color:#e4eadc; } \
@@ -497,7 +502,19 @@ pub(crate) struct TreePage {
     #[cfg(feature = "product")]
     forme: Option<forme::Pane>,
     #[cfg(feature = "product")]
+    forme_owner: forme::OwnerLifecycle,
+    #[cfg(feature = "product")]
     forme_error: Option<String>,
+    #[cfg(feature = "product")]
+    inspected_access: Option<uuid::Uuid>,
+    #[cfg(feature = "product")]
+    inspected_link: Option<graphshell::link_inspection::LinkTarget>,
+    #[cfg(feature = "product")]
+    inspected_statement: Option<String>,
+    #[cfg(feature = "product")]
+    field_inspector: field_inspection::Pane,
+    #[cfg(feature = "product")]
+    presentation: presentation::Pane,
     #[cfg(feature = "applets")]
     applet_seen: u64,
     #[cfg(feature = "applets")]
@@ -670,11 +687,25 @@ fn view(page: &TreePage) -> Child {
             |page: &mut TreePage, event: cambium::PointerEvent| page.pointer(event),
         ),
         |page: &mut TreePage, event: cambium::KeyEvent| {
+            #[cfg(feature = "product")]
+            if field_inspection::cancel_pick(page, &event.key) {
+                event.prevent_default();
+                return;
+            }
+            #[cfg(feature = "product")]
+            if page.forme.as_ref().is_some_and(|pane| pane.session.editing())
+                && forme::shortcut(page, &event)
+            {
+                event.prevent_default();
+                return;
+            }
             if keys(page, &event.key) {
                 event.prevent_default();
             }
         },
     );
+    let workbench = forme_workbench(page);
+    let showing_workbench = workbench.is_some();
     Box::new(
         el(
             "main",
@@ -688,15 +719,16 @@ fn view(page: &TreePage) -> Child {
                 grouping::controls(page),
                 controls::toolbar(page),
                 forme_toolbar(page),
+                showing_workbench.then(|| product::controls(page)),
                 el(
                     "div",
                     (
-                        product::controls(page),
+                        (!showing_workbench).then(|| product::controls(page)),
                         product::projection_editor(page),
                         product::menu(page),
                         el(
                             "div",
-                            forme_workbench(page).unwrap_or_else(|| Box::new(graph)),
+                            workbench.unwrap_or_else(|| Box::new(graph)),
                         )
                         .attr("class", "tree-graph"),
                         if docked {
@@ -746,6 +778,14 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(product::scenes_section(page));
     children.push(product::projection_section(page));
     children.push(product::history_section(page));
+    #[cfg(feature = "product")]
+    children.push(inspection::section(page));
+    #[cfg(feature = "product")]
+    children.push(link_inspection::section(page));
+    #[cfg(feature = "product")]
+    children.push(field_inspection::section(page));
+    #[cfg(feature = "product")]
+    children.push(presentation::section(page));
     #[cfg(feature = "product")]
     children.push(forme::section(page));
     children.push(remote::section(page));
@@ -980,6 +1020,8 @@ async fn boot(root: Element) -> Result<(), String> {
         },
         None => (None, None),
     };
+    #[cfg(feature = "product")]
+    let presentation = presentation::Pane::open(product.as_ref()).await;
     let mut dataset = HostedDataset::None;
     let mut grouping = None;
     let mut hosted_history = None;
@@ -1111,7 +1153,19 @@ async fn boot(root: Element) -> Result<(), String> {
                 #[cfg(feature = "product")]
                 forme,
                 #[cfg(feature = "product")]
+                forme_owner: forme::OwnerLifecycle::default(),
+                #[cfg(feature = "product")]
                 forme_error,
+                #[cfg(feature = "product")]
+                inspected_access: None,
+                #[cfg(feature = "product")]
+                inspected_link: None,
+                #[cfg(feature = "product")]
+                inspected_statement: None,
+                #[cfg(feature = "product")]
+                field_inspector: field_inspection::Pane::default(),
+                #[cfg(feature = "product")]
+                presentation,
                 #[cfg(feature = "applets")]
                 applet_seen: 0,
                 #[cfg(feature = "applets")]
@@ -1281,12 +1335,25 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                     .is_some_and(|product| product.selection_locked()),
             );
             #[cfg(feature = "product")]
+            if forme::owner_ready(ctx.runner.state()) {
+                ctx.runner.update(forme::poll_owner);
+            }
+            #[cfg(feature = "product")]
             if ctx.runner.state().forme.as_ref().is_some_and(|f| f.ready()) {
                 ctx.runner.update(|page| {
-                    if let Some(f) = &mut page.forme {
-                        f.poll();
-                    }
+                    forme::poll(page);
                 });
+            }
+            #[cfg(feature = "product")]
+            if ctx.runner.state().presentation.ready() {
+                ctx.runner.update(presentation::poll);
+            }
+            #[cfg(feature = "product")]
+            {
+                if let Some(inputs) = presentation::refresh(ctx.runner.state()) {
+                    ctx.runner.update(|page| presentation::update(page, inputs));
+                }
+                presentation::install(ctx.runner.state());
             }
             // The remote session moves outside the runner (its channel's
             // pumps); rebuild the view when it has.
@@ -1349,6 +1416,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             true
         }),
         after_dispatch: Box::new(|ctx| {
+            #[cfg(feature = "product")]
+            if forme::graph_change_ready(ctx.runner.state()) {
+                ctx.runner.update(forme::after_graph_change);
+            }
             ctx.runner.state().shared.selection_locked.set(
                 ctx.runner
                     .state()
@@ -1411,7 +1482,13 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
         }),
         after_wake: Box::new(|_ctx| {}),
         close_request: Box::new(|_ctx, _request| CloseDisposition::KeepVisible),
-        focused_text: Box::new(appearance::focused_text),
+        focused_text: Box::new(|runner| {
+            #[cfg(feature = "product")]
+            if let Some(slot) = presentation::focused_text(runner) {
+                return Some(slot);
+            }
+            appearance::focused_text(runner)
+        }),
         key_intercept: Box::new(|_runner, _press| false),
     }
 }
@@ -1541,6 +1618,14 @@ mod practice;
 #[cfg(not(feature = "main-page"))]
 #[path = "web_tree/practice_off.rs"]
 mod practice;
+#[cfg(feature = "product")]
+mod inspection;
+#[cfg(feature = "product")]
+mod link_inspection;
+#[cfg(feature = "product")]
+mod field_inspection;
+#[cfg(feature = "product")]
+mod presentation;
 #[cfg(feature = "product")]
 mod product;
 #[cfg(not(feature = "product"))]

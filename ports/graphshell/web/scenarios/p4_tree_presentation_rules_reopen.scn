@@ -1,0 +1,27 @@
+# Fresh page/process, same retained origin/profile after the first scenario.
+assert snap source == saved graph
+click role:button Pause physics
+assert snap rules-ready == true
+assert snap rules-count == 4
+assert snap rules-generation == 3
+assert snap rules-editing == false
+remember source-after-reopen
+reveal role:button Presentation rules
+click role:button Presentation rules
+reveal role:button Undo saved rules
+click role:button Undo saved rules
+wait 120
+assert snap rules-count == 0
+assert snap rules-generation == 4
+reveal role:button Redo saved rules
+click role:button Redo saved rules
+wait 120
+assert snap rules-count == 4
+assert snap rules-generation == 5
+reveal role:button Node context sample
+click role:button Node context sample
+reveal role:button Preview rule decisions
+click role:button Preview rule decisions
+assert snap rules-preview-details == node-2
+same source-after-reopen nodes graph-session forme-accesses
+capture presentation_rules_reopened

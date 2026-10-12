@@ -114,8 +114,18 @@ impl TreePage {
         // A cancellation always releases the gesture, including while a save
         // temporarily locks selection.
         if event.phase == PointerPhase::Cancel {
+            #[cfg(feature = "product")]
+            {
+                forme::pointer(self, &event);
+                field_inspection::pointer(self, &event);
+            }
             self.shared.canvas.borrow_mut().pointer_cancel();
             self.shared.dirty.set(true);
+            return;
+        }
+        #[cfg(feature = "product")]
+        if field_inspection::pointer(self, &event) {
+            event.prop.prevent_default();
             return;
         }
         if self
@@ -123,6 +133,11 @@ impl TreePage {
             .as_ref()
             .is_some_and(|product| product.selection_locked())
         {
+            return;
+        }
+        #[cfg(feature = "product")]
+        if event.button == PointerButton::Primary && forme::pointer(self, &event) {
+            event.prop.prevent_default();
             return;
         }
         let button = match event.button {

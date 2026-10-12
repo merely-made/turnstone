@@ -66,24 +66,24 @@ tabard = { path = "../../../crates/system/tabard" }
 cambium-genet-web-host = { path = "../../../crates/cambium/cambium-genet-web-host", default-features = false }
 cambium-rootstock = { path = "../../../crates/cambium/cambium-rootstock", default-features = false }
 mesquite = { path = "../../../crates/cambium/mesquite", default-features = false }
-genet-render = { git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda", default-features = false, features = ["livery", "accesskit"] }
+genet-render = { git = "https://github.com/merely-made/genet.git", rev = "4bc75583865c2fb862b7acd7fe16dc28eb591042", default-features = false, features = ["livery", "accesskit"] }
 # The present core, shared with every winit host. Booting wgpu, picking a
 # non-sRGB surface format, and rasterizing a Scene are not browser-specific, so
 # this crate no longer hand-rolls them; only the canvas target and the
 # content-over-chrome composition below are ours.
-genet-render-host = { git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda" }
-genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda", version = "=0.1.2" }
+genet-render-host = { git = "https://github.com/merely-made/genet.git", rev = "4bc75583865c2fb862b7acd7fe16dc28eb591042" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "4bc75583865c2fb862b7acd7fe16dc28eb591042", version = "=0.1.2" }
 # Read retained widget attributes through the shared DOM seam for scenario
 # assertions; input and application commands still use the shared host.
-layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda", version = "=0.1.1" }
+layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "4bc75583865c2fb862b7acd7fe16dc28eb591042", version = "=0.1.1" }
 # The shared scenario driver every genet app runs its receipts through; the
 # page implements its `Automatable`/`Driveable` over the browser DOM
 # (`src/web_scenario.rs`). Pure: its three deps are already in this graph.
 # Named genet-probe until genet 7baa554c (2026-09-14).
-taproot = { git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda", default-features = false }
+taproot = { git = "https://github.com/merely-made/genet.git", rev = "4bc75583865c2fb862b7acd7fe16dc28eb591042", default-features = false }
 js-sys = "0.3"
-netrender = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
-netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
+netrender = { git = "https://github.com/merely-made/netrender.git", rev = "ef5412d760a978584c8c1801e8a765c51aecd403" }
+netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "ef5412d760a978584c8c1801e8a765c51aecd403" }
 serde_json = "1"
 # The remote link's outbound queue: the host enqueues lines synchronously,
 # a task drains them onto the channel.
@@ -165,7 +165,7 @@ web-sys = { version = "0.3", features = [
 # fork by path inside the git checkout.
 # layout-dom-api (0.1.1) and genet-scripted-dom (0.1.2) are pinned to the same
 # rev so no crates.io copy can enter the graph beside the git one. vello is the
-# maintained wgpu-30 renderer fork. These are remote revision/tag patches, never
+# maintained Classic 0.11 renderer fork. These are remote revision patches, never
 # local paths. The root dropped its ipc-channel row as dead on 2026-09-23, and
 # so does this table.
 # The release build a host ships (mer3ly site canvas plan, Ruling 157): the
@@ -202,16 +202,14 @@ opt-level = 3
 # Dramatis uses published muniment; the viewer and its applets share Mere's
 # own package, as the root workspace does after DR-D.
 muniment = { path = "../../../crates/eidetic/muniment" }
-taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda" }
-layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda", version = "=0.1.1" }
-genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda", version = "=0.1.2" }
-vello = { git = "https://github.com/mark-ik/vello.git", tag = "vello-0.10.0" }
-# Radeon coarse repair, native command guards and resident image atlas repair,
-# kept in step with the root patches.
-# Keep Classic and its encoding/shader types on the same 0.10 maintenance source.
-netrender-vello = { git = "https://github.com/mark-ik/vello.git", rev = "10f01d6d88e94eac087daf033b24895cf97b8e82" }
-vello_encoding = { git = "https://github.com/mark-ik/vello.git", rev = "10f01d6d88e94eac087daf033b24895cf97b8e82" }
-vello_shaders = { git = "https://github.com/mark-ik/vello.git", rev = "10f01d6d88e94eac087daf033b24895cf97b8e82" }
+taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "4bc75583865c2fb862b7acd7fe16dc28eb591042" }
+layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "4bc75583865c2fb862b7acd7fe16dc28eb591042", version = "=0.1.1" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "4bc75583865c2fb862b7acd7fe16dc28eb591042", version = "=0.1.2" }
+# Classic 0.11 and its owned repairs, kept in step with the root Scene aliases.
+# Standalone workspaces restate the complete encoding/shader trio.
+netrender-vello = { git = "https://github.com/mark-ik/vello", rev = "5862bba26c8a9f56f6a5fdc8ea6966b360a5d63a" }
+vello_encoding = { git = "https://github.com/mark-ik/vello", rev = "5862bba26c8a9f56f6a5fdc8ea6966b360a5d63a" }
+vello_shaders = { git = "https://github.com/mark-ik/vello", rev = "5862bba26c8a9f56f6a5fdc8ea6966b360a5d63a" }
 # The resident lane's CubeCL stack (mere `canvas-gpu`, physics catalog P5c),
 # restated from the root manifest because [patch] is not inherited:
 # cubecl-runtime 0.11.0 with persistence removed from its defaults

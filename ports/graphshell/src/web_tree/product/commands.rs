@@ -149,6 +149,7 @@ impl SavedProduct {
                 }
                 .map_err(|e| e.to_string())?;
                 if let Some(reverted) = reverted {
+                    self.forme_reconcile_session = Some(app.host.graph_session().id().0);
                     canvas.set_graph(app.host.graph().clone());
                     self.status = if back {
                         "Undid Graphshell's last change"

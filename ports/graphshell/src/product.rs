@@ -1082,7 +1082,7 @@ impl<B: Backend + Clone> MereHost<B> {
         let input = decode_profiled_codicil(bytes)?;
         let codicil = input.product;
         if let Some(scene) = &codicil.scene {
-            scene.check_dynamics().map_err(ProductError::InvalidScene)?;
+            crate::local_scene::validate_scene(scene).map_err(ProductError::InvalidScene)?;
         }
         let receipt = ImportReceipt {
             nodes: codicil.graph.nodes.len(),
@@ -4098,10 +4098,18 @@ mod tests {
         #[test]
         fn the_grouping_receipts_codicil_reads_and_binds() {
             const RECEIPT: &str = include_str!("../web/scenarios/codicil_grouping.scn");
-            let line = RECEIPT
-                .lines()
-                .find_map(|line| line.strip_prefix("type #gs-codicil-data "))
-                .expect("the receipt types a codicil");
+            let mut lines = RECEIPT.lines();
+            lines
+                .find(|line| *line == "click role:textbox Codicil")
+                .expect("the receipt targets the Codicil textbox");
+            let line = lines
+                .next()
+                .and_then(|line| line.strip_prefix("input-text "))
+                .expect("the Codicil target is immediately followed by its input");
+            assert!(
+                lines.all(|line| line != "click role:textbox Codicil"),
+                "the receipt has exactly one Codicil target/input pair"
+            );
             let codicil = decode_codicil(line.as_bytes()).expect("reads");
             assert_eq!(codicil.schema, PRODUCT_CODICIL_SCHEMA);
             assert_eq!(codicil.graph.nodes.len(), 8);

@@ -663,6 +663,40 @@
       "translation_record": "tests/scenario-translations.json"
     },
     {
+      "name": "p4_tree_access_inspection.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "74743fef444e3cc56e685e84cb8677aab7a78e5a4a265756854e43d928b7bbdf",
+      "original_source_sha256": "74743fef444e3cc56e685e84cb8677aab7a78e5a4a265756854e43d928b7bbdf",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local"
+        },
+        "same_origin_profile_after": [],
+        "fixture_namespace": null,
+        "host": "Fresh dedicated origin/profile; unchanged reference fixture; inspection must create no workspace.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "624e24c98d7cc84d941b0d1255c528d87dfb7ce5",
+        "metadata": "ports/graphshell/docs/receipts/access_inspection_20261010/qualification.json",
+        "metadata_sha256": "0654520e4ec64982206452141c0c1b375e8ff0a0fbb8b1418a866fa9685ecb67",
+        "source": "ports/graphshell/web/scenarios/p4_tree_access_inspection.scn",
+        "source_sha256": "74743fef444e3cc56e685e84cb8677aab7a78e5a4a265756854e43d928b7bbdf",
+        "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
+      }
+    },
+    {
       "name": "p4_tree_arrangement_roles.scn",
       "status": "live",
       "verification": "pending",
@@ -978,6 +1012,78 @@
       "translation_record": "tests/scenario-translations.json"
     },
     {
+      "name": "p4_tree_field_inspection.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "dcac836e1bf787b77cb271c45b0ff24e7ab59a050c01ad546186ae472bbcd84f",
+      "original_source_sha256": "dcac836e1bf787b77cb271c45b0ff24e7ab59a050c01ad546186ae472bbcd84f",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local",
+          "fixture": "field-inspection"
+        },
+        "same_origin_profile_after": [],
+        "fixture_namespace": "graphshell-field-inspection-draft-v1",
+        "host": "Fresh dedicated profile/origin; actual authored field fixture; preserve for dependent reopen.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "624e24c98d7cc84d941b0d1255c528d87dfb7ce5",
+        "metadata": "ports/graphshell/docs/receipts/field_inspection_20261011/qualification.json",
+        "metadata_sha256": "eb2c7ed541dbf4ac7bac64c1c9857d19e80131f2f9638917f5a33a712a2d7b7d",
+        "source": "ports/graphshell/web/scenarios/p4_tree_field_inspection.scn",
+        "source_sha256": "dcac836e1bf787b77cb271c45b0ff24e7ab59a050c01ad546186ae472bbcd84f",
+        "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
+      }
+    },
+    {
+      "name": "p4_tree_field_inspection_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "3361544fdeae22c1290ef2ad7b5ea89ebfa19d5ca53613aec418e252da59f565",
+      "original_source_sha256": "3361544fdeae22c1290ef2ad7b5ea89ebfa19d5ca53613aec418e252da59f565",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local",
+          "fixture": "field-inspection"
+        },
+        "same_origin_profile_after": [
+          "p4_tree_field_inspection.scn"
+        ],
+        "fixture_namespace": "graphshell-field-inspection-draft-v1",
+        "host": "Fresh page/process, identical origin/profile/fixture namespace after actual predecessor success.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "624e24c98d7cc84d941b0d1255c528d87dfb7ce5",
+        "metadata": "ports/graphshell/docs/receipts/field_inspection_20261011/qualification.json",
+        "metadata_sha256": "eb2c7ed541dbf4ac7bac64c1c9857d19e80131f2f9638917f5a33a712a2d7b7d",
+        "source": "ports/graphshell/web/scenarios/p4_tree_field_inspection_reopen.scn",
+        "source_sha256": "3361544fdeae22c1290ef2ad7b5ea89ebfa19d5ca53613aec418e252da59f565",
+        "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
+      }
+    },
+    {
       "name": "p4_tree_file_cancel.scn",
       "status": "live",
       "verification": "pending",
@@ -1037,7 +1143,7 @@
       "name": "p4_tree_forme.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "02326d8c2397e07756cd5e28351504f22217d3df6a37831d9bf607a3568fab64",
+      "current_source_sha256": "0eb76fe9b98ed7ded0f829bca58356e2eba1f9d4c8b2362e3bf4c13624f0509a",
       "original_source_sha256": "1620155cf2e1839e8f716bfb1de14b667b84fb9322f3e4b91617d4faae3d613a",
       "expected_outcome": {
         "scenario": "pass",
@@ -1053,7 +1159,91 @@
       },
       "dialect": "shared-retained-with-explicit-host-fixture",
       "source_commit": "b726955ed36df01912b123421b07669dd849a3ca",
-      "translation_record": "tests/scenario-translations.json"
+      "translation_record": "tests/scenario-translations.json",
+      "harmonization_provenance": {
+        "retained_before_sha256": "02326d8c2397e07756cd5e28351504f22217d3df6a37831d9bf607a3568fab64",
+        "upstream_sha256": "54048db8701e05f7a33533a28d8307dbb5513fab9415940be152d09cce92ad6a",
+        "proof": "../docs/receipts/retained_merge_20261011/harmonization-proof.json",
+        "verification": "static predicate-union custody only; canonical parser/runtime pending",
+        "retained_original": "../docs/receipts/retained_merge_20261011/p4_tree_forme-retained-before.scn",
+        "upstream_original": "../docs/receipts/retained_merge_20261011/p4_tree_forme-current-upstream.scn",
+        "manifest": "../docs/receipts/retained_merge_20261011/manifest.json"
+      }
+    },
+    {
+      "name": "p4_tree_forme_draft.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "3576212eca4429b78d5fbf3f627336132f5e6ab5b38e4e20a18bc6f9ef51cc1a",
+      "original_source_sha256": "3576212eca4429b78d5fbf3f627336132f5e6ab5b38e4e20a18bc6f9ef51cc1a",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local"
+        },
+        "same_origin_profile_after": [
+          "p4_tree_forme.scn",
+          "p4_tree_forme_reopen.scn"
+        ],
+        "fixture_namespace": null,
+        "host": "Same local origin/profile after actual Forme then reopen; real source-node/HostPointer drags; store-aware unchanged waits.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "624e24c98d7cc84d941b0d1255c528d87dfb7ce5",
+        "metadata": "ports/graphshell/docs/receipts/forme_browser_20261011/qualification.json",
+        "metadata_sha256": "506bc9c8569c770afe5ffe2484a2ef1746a994bf00db35235e42c29008f12b04",
+        "source": "ports/graphshell/web/scenarios/p4_tree_forme_draft.scn",
+        "source_sha256": "3576212eca4429b78d5fbf3f627336132f5e6ab5b38e4e20a18bc6f9ef51cc1a",
+        "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
+      }
+    },
+    {
+      "name": "p4_tree_forme_draft_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "6b6943e0396993f70653b61faf81b482ecabd475607040abaf954759b39519b6",
+      "original_source_sha256": "6b6943e0396993f70653b61faf81b482ecabd475607040abaf954759b39519b6",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local"
+        },
+        "same_origin_profile_after": [
+          "p4_tree_forme.scn",
+          "p4_tree_forme_reopen.scn",
+          "p4_tree_forme_draft.scn"
+        ],
+        "fixture_namespace": null,
+        "host": "Fresh page/process with retained same origin/profile after actual ordered Forme draft chain.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "624e24c98d7cc84d941b0d1255c528d87dfb7ce5",
+        "metadata": "ports/graphshell/docs/receipts/forme_browser_20261011/qualification.json",
+        "metadata_sha256": "506bc9c8569c770afe5ffe2484a2ef1746a994bf00db35235e42c29008f12b04",
+        "source": "ports/graphshell/web/scenarios/p4_tree_forme_draft_reopen.scn",
+        "source_sha256": "6b6943e0396993f70653b61faf81b482ecabd475607040abaf954759b39519b6",
+        "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
+      }
     },
     {
       "name": "p4_tree_forme_reopen.scn",
@@ -1148,6 +1338,40 @@
       "original_source_sha256": "8550f760cd9d552cdb0be448ae1a21b5a50a2aa91438a301931d942d19f5e700",
       "dialect": "shared-retained-with-explicit-host-fixture",
       "translation_record": "tests/scenario-translations.json"
+    },
+    {
+      "name": "p4_tree_link_inspection.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "896cdefa978618f4f8aeed963ad23bd333825c1f7779fc3030b167640625aa51",
+      "original_source_sha256": "896cdefa978618f4f8aeed963ad23bd333825c1f7779fc3030b167640625aa51",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local"
+        },
+        "same_origin_profile_after": [],
+        "fixture_namespace": null,
+        "host": "Fresh dedicated origin/profile; unchanged reference fixture. Richer parallel/lifted fixtures remain separate pending coverage.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "624e24c98d7cc84d941b0d1255c528d87dfb7ce5",
+        "metadata": "ports/graphshell/docs/receipts/link_inspection_20261011/qualification.json",
+        "metadata_sha256": "371c7e6bceb4e6919db815647ceabc73d1c665682b2e05759d33e3793b57cdf4",
+        "source": "ports/graphshell/web/scenarios/p4_tree_link_inspection.scn",
+        "source_sha256": "896cdefa978618f4f8aeed963ad23bd333825c1f7779fc3030b167640625aa51",
+        "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
+      }
     },
     {
       "name": "p4_tree_live_profile.scn",
@@ -1610,6 +1834,148 @@
       "original_source_sha256": "6e0190ac2b0df0c35b1c93b8c0f15204a3738bf650a5e2bb543204c0943e1359",
       "dialect": "shared-retained-with-explicit-host-fixture",
       "translation_record": "tests/scenario-translations.json"
+    },
+    {
+      "name": "p4_tree_presentation_live.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "75029c26da556105f1d6759ede48185191164339f682da4f34ac2d59183f8ec8",
+      "original_source_sha256": "75029c26da556105f1d6759ede48185191164339f682da4f34ac2d59183f8ec8",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local",
+          "fixture": "field-inspection"
+        },
+        "same_origin_profile_after": [],
+        "fixture_namespace": "graphshell-field-inspection-draft-v1",
+        "host": "Fresh dedicated origin/profile, normal motion; field fixture; separate origin from authoring expecting absent rule record.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "624e24c98d7cc84d941b0d1255c528d87dfb7ce5",
+        "metadata": "ports/graphshell/docs/receipts/presentation_live_20261011/qualification.json",
+        "metadata_sha256": "5d52813dffbe13a186ded8af1831ce4b8df2d3a8956144eea301db64704b41db",
+        "source": "ports/graphshell/web/scenarios/p4_tree_presentation_live.scn",
+        "source_sha256": "75029c26da556105f1d6759ede48185191164339f682da4f34ac2d59183f8ec8",
+        "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
+      }
+    },
+    {
+      "name": "p4_tree_presentation_live_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "ee35d030ff3347f56dd524640fdbde812277e54357ca5e8b4f8388d88b154b28",
+      "original_source_sha256": "ee35d030ff3347f56dd524640fdbde812277e54357ca5e8b4f8388d88b154b28",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local",
+          "fixture": "field-inspection"
+        },
+        "same_origin_profile_after": [
+          "p4_tree_presentation_live.scn"
+        ],
+        "fixture_namespace": "graphshell-field-inspection-draft-v1",
+        "host": "Fresh page/process retaining identical origin/profile/field fixture; normal motion; view-local switch reset expected.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "624e24c98d7cc84d941b0d1255c528d87dfb7ce5",
+        "metadata": "ports/graphshell/docs/receipts/presentation_live_20261011/qualification.json",
+        "metadata_sha256": "5d52813dffbe13a186ded8af1831ce4b8df2d3a8956144eea301db64704b41db",
+        "source": "ports/graphshell/web/scenarios/p4_tree_presentation_live_reopen.scn",
+        "source_sha256": "ee35d030ff3347f56dd524640fdbde812277e54357ca5e8b4f8388d88b154b28",
+        "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
+      }
+    },
+    {
+      "name": "p4_tree_presentation_rules.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "9e7ccef6a35186fa7ccc777c2643d58e3dad4a444fe9bcc5a512f815088812df",
+      "original_source_sha256": "9e7ccef6a35186fa7ccc777c2643d58e3dad4a444fe9bcc5a512f815088812df",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local"
+        },
+        "same_origin_profile_after": [],
+        "fixture_namespace": null,
+        "host": "Fresh dedicated origin/profile, normal motion, absent rule record initially; preserve origin for reopen.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "624e24c98d7cc84d941b0d1255c528d87dfb7ce5",
+        "metadata": "ports/graphshell/docs/receipts/presentation_rules_20261011/qualification.json",
+        "metadata_sha256": "996e3b060e123f3de3f30f7e1487fc9ee9f7b9559f3dc30077ee853122d1ae21",
+        "source": "ports/graphshell/web/scenarios/p4_tree_presentation_rules.scn",
+        "source_sha256": "9e7ccef6a35186fa7ccc777c2643d58e3dad4a444fe9bcc5a512f815088812df",
+        "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
+      }
+    },
+    {
+      "name": "p4_tree_presentation_rules_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "2d5dd012836ca7743167868bd2873330542bc7c6d3818037097004e38c7ad98a",
+      "original_source_sha256": "2d5dd012836ca7743167868bd2873330542bc7c6d3818037097004e38c7ad98a",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local"
+        },
+        "same_origin_profile_after": [
+          "p4_tree_presentation_rules.scn"
+        ],
+        "fixture_namespace": null,
+        "host": "Fresh page/process retaining identical origin/profile after actual authoring success; normal motion.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "624e24c98d7cc84d941b0d1255c528d87dfb7ce5",
+        "metadata": "ports/graphshell/docs/receipts/presentation_rules_20261011/qualification.json",
+        "metadata_sha256": "996e3b060e123f3de3f30f7e1487fc9ee9f7b9559f3dc30077ee853122d1ae21",
+        "source": "ports/graphshell/web/scenarios/p4_tree_presentation_rules_reopen.scn",
+        "source_sha256": "2d5dd012836ca7743167868bd2873330542bc7c6d3818037097004e38c7ad98a",
+        "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
+      }
     },
     {
       "name": "p4_tree_profile.scn",
@@ -3711,5 +4077,6 @@
       "rationale": "External worker/display-period or viewer-size regression; preserve and rerun matching source. No historical classification."
     }
   ],
-  "missing_archive": "/home/markik/Code/testing/mere/scenarios/graphshell-web"
+  "missing_archive": "/home/markik/Code/testing/mere/scenarios/graphshell-web",
+  "classification_scope": "live = intended current canonical parser/runtime input; verification remains pending; two original historical presenter comparison inputs preserved"
 }

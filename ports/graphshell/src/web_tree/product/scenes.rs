@@ -77,6 +77,7 @@ impl SavedProduct {
                 app.host
                     .save_product_scene(ADDRESS, &scene)
                     .map_err(|e| e.to_string())?;
+                self.forme_reconcile_session = Some(app.host.graph_session().id().0);
                 restore_scene(canvas, app.host.graph(), &scene, viewport)?;
                 self.scenes.saved = Some(scene);
                 self.operation_success = Some("Scene saved".into());
@@ -84,6 +85,7 @@ impl SavedProduct {
             },
             "reopen" => {
                 let scene = app.host.product_scene(ADDRESS).map_err(|e| e.to_string())?;
+                self.forme_reconcile_session = Some(app.host.graph_session().id().0);
                 restore_scene(canvas, app.host.graph(), &scene, viewport)?;
                 self.scenes.saved = Some(scene);
                 let handler = self
@@ -127,17 +129,14 @@ impl SavedProduct {
                 self.status = format!("Exported {} bytes", self.scenes.export_bytes);
             },
             "open" => {
-                let (receipt, scene) = app
-                    .host
-                    .replace_with_product_codicil(self.scenes.codicil.text().as_bytes())
-                    .map_err(|e| e.to_string())?;
-                self.scenes.imported_nodes = receipt.nodes;
-                if let Some(scene) = scene {
-                    restore_scene(canvas, app.host.graph(), &scene, viewport)?;
-                    self.scenes.saved = Some(scene);
-                } else {
-                    canvas.set_graph(app.host.graph().clone());
-                }
+                let accepted = graphshell::local_scene::open_codicil(
+                    &mut app.host, canvas, self.scenes.codicil.text().as_bytes(), viewport,
+                )?;
+                self.session = accepted.owner.to_string();
+                self.forme_new_session = Some(accepted.owner);
+                self.scenes.imported_nodes = accepted.receipt.nodes;
+                if let Some(error) = accepted.view_error { return Err(error); }
+                if let Some(scene) = accepted.scene { self.scenes.saved = Some(scene); }
                 self.detail_open = false;
                 self.operation_success = Some("Opened codicil".into());
                 self.persist_operation();

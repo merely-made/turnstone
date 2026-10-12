@@ -58,6 +58,7 @@ pub(super) struct SavedProduct {
     pub(super) save_state: &'static str,
     pub(super) session: String,
     pub(super) reopened: bool,
+    pub(super) inspection_fixture: bool,
     intake_open: bool,
     intake_address: TextInput,
     intake_title: TextInput,
@@ -73,6 +74,8 @@ pub(super) struct SavedProduct {
     commands: commands::Commands,
     operation_completed: Rc<RefCell<Option<OperationCompletion>>>,
     operation_pending: bool,
+    pub(super) forme_reconcile_session: Option<Uuid>,
+    pub(super) forme_new_session: Option<Uuid>,
     operation_success: Option<String>,
 }
 
@@ -93,18 +96,25 @@ pub(super) async fn open(root: &Element) -> Result<Option<SavedProduct>, String>
     if web_graphs::requested().is_some() {
         return Err("app=local cannot also select a generated graph".into());
     }
-    let backend = IndexedDbBackend::open("graphshell-reference-host-h5", "muniment")
+    let inspection_fixture = params.get("fixture").as_deref() == Some("field-inspection");
+    let database = if inspection_fixture {
+        "graphshell-field-inspection-draft-v1"
+    } else {
+        "graphshell-reference-host-h5"
+    };
+    let backend = IndexedDbBackend::open(database, "muniment")
         .await
         .map_err(|error| error.to_string())?;
     let capture_store = backend.clone();
-    let mut app = GraphshellApp::open_or_fixture(
-        backend,
-        SelectedPersonaRef {
-            persona: FIXTURE_PERSONA_ADDRESS.into(),
-            profile: "profile:graphshell-h3".into(),
-        },
-    )
-    .await
+    let persona = SelectedPersonaRef {
+        persona: FIXTURE_PERSONA_ADDRESS.into(),
+        profile: "profile:graphshell-h3".into(),
+    };
+    let mut app = if inspection_fixture {
+        GraphshellApp::open_or_field_inspection_fixture(backend, persona).await
+    } else {
+        GraphshellApp::open_or_fixture(backend, persona).await
+    }
     .map_err(|error| error.to_string())?;
     let reopened = app.host.was_reopened();
     let history = history::HistoryControls::load(&mut app, capture_store).await?;
@@ -139,6 +149,7 @@ pub(super) async fn open(root: &Element) -> Result<Option<SavedProduct>, String>
         save_state: "idle",
         session,
         reopened,
+        inspection_fixture,
         intake_open: false,
         intake_address: TextInput::new(""),
         intake_title: TextInput::new(""),
@@ -153,6 +164,8 @@ pub(super) async fn open(root: &Element) -> Result<Option<SavedProduct>, String>
         commands,
         operation_completed: Rc::new(RefCell::new(None)),
         operation_pending: false,
+        forme_reconcile_session: None,
+        forme_new_session: None,
         operation_success: None,
     }))
 }
@@ -167,7 +180,9 @@ impl SavedProduct {
         Some((app.host.store(), app.host.graph_session().id().0))
     }
     pub(super) fn ready(&self) -> bool {
-        self.completed.borrow().is_some()
+        self.forme_reconcile_session.is_some()
+            || self.forme_new_session.is_some()
+            || self.completed.borrow().is_some()
             || self.operation_completed.borrow().is_some()
             || self.projection.changed()
             || self.projection.needs_frame()
@@ -189,6 +204,58 @@ impl SavedProduct {
             .host
             .graph()
             .clone()
+    }
+
+    /// Inspect the current source owner, never a cached Canvas or form draft.
+    pub(super) fn inspect_access(
+        &self,
+        member: Uuid,
+    ) -> Result<graphshell::access_inspection::AccessInspection, String> {
+        let app = self
+            .app
+            .as_ref()
+            .ok_or("Source inspection will resume when the current save finishes")?;
+        graphshell::access_inspection::inspect_access(app.host.graph(), member)
+    }
+
+    pub(super) fn linked_accesses(
+        &self,
+        member: Uuid,
+    ) -> Result<Vec<graphshell::access_inspection::AccessSummary>, String> {
+        let app = self
+            .app
+            .as_ref()
+            .ok_or("Source inspection will resume when the current save finishes")?;
+        graphshell::link_inspection::linked_accesses(app.host.graph(), member)
+    }
+
+    pub(super) fn inspect_link(
+        &self,
+        target: graphshell::link_inspection::LinkTarget,
+    ) -> Result<graphshell::link_inspection::LinkInspection, String> {
+        let app = self
+            .app
+            .as_ref()
+            .ok_or("Source inspection will resume when the current save finishes")?;
+        graphshell::link_inspection::inspect_link(app.host.graph(), target)
+    }
+
+    pub(super) fn inspect_statement(
+        &self,
+        statement: &str,
+    ) -> Result<graphshell::link_inspection::StatementInspection, String> {
+        let app = self
+            .app
+            .as_ref()
+            .ok_or("Source inspection will resume when the current save finishes")?;
+        graphshell::link_inspection::inspect_statement(app.host.graph(), statement)
+    }
+
+    pub(super) fn source_graph(&self) -> Result<&Graph, String> {
+        self.app
+            .as_ref()
+            .map(|app| app.host.graph())
+            .ok_or_else(|| "Source inspection will resume when the current save finishes".into())
     }
 
     /// Selected file facts from the acknowledged local owner, for receipts.
@@ -363,6 +430,12 @@ impl SavedProduct {
         }
         let operation = self.operation_completed.borrow_mut().take();
         if let Some((app, result)) = operation {
+            let owner = app.host.graph_session().id().0;
+            graphshell::local_scene::reconcile_completed_graph(
+                canvas, self.session.parse().ok(), owner, app.host.graph(),
+            );
+            self.session = owner.to_string();
+            self.forme_reconcile_session = Some(owner);
             self.app = Some(app);
             self.saving = false;
             match result {
@@ -387,6 +460,12 @@ impl SavedProduct {
         let Some((app, edit, result)) = self.completed.borrow_mut().take() else {
             return projection_changed || projection_advanced;
         };
+        let owner = app.host.graph_session().id().0;
+        graphshell::local_scene::reconcile_completed_graph(
+            canvas, self.session.parse().ok(), owner, app.host.graph(),
+        );
+        self.session = owner.to_string();
+        self.forme_reconcile_session = Some(owner);
         self.app = Some(app);
         self.saving = false;
         match result {
@@ -607,6 +686,11 @@ pub(super) fn controls(page: &TreePage) -> Child {
         return Box::new(el("div", ()));
     };
     let mut children: Vec<Child> = Vec::new();
+    if product.inspection_fixture {
+        children.push(Box::new(
+            el("p", "Field inspection fixture · separate browser store").attr("role", "status"),
+        ));
+    }
     if !product.status.is_empty() {
         children.push(Box::new(
             el("p", product.status.clone())
@@ -630,6 +714,8 @@ pub(super) fn controls(page: &TreePage) -> Child {
         })));
     }
     children.push(intake_controls(page));
+    children.push(super::inspection::open_button(page));
+    children.push(super::field_inspection::open_button(page));
     children.push(Box::new(button(
         if product.detail_open {
             "Close details"
@@ -732,7 +818,14 @@ pub(super) fn controls(page: &TreePage) -> Child {
     }
     Box::new(
         el("aside", children)
-            .attr("class", "tree-product")
+            .attr(
+                "class",
+                if page.forme.as_ref().is_some_and(|pane| pane.workbench) {
+                    "tree-product tree-product-workbench"
+                } else {
+                    "tree-product"
+                },
+            )
             .attr("aria-label", "Saved graph"),
     )
 }

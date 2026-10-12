@@ -1,0 +1,36 @@
+# Dedicated app=local origin/profile. Read-only inspection creates no workspace.
+# Keep this tab visible. Physical keyboard/focus checks remain in the plan.
+assert snap source == saved graph
+assert snap inspector-open == false
+click-node file:///Graphshell/reference-notes.md
+settle 2
+remember selected
+click role:button Inspect selected access
+settle 2
+assert snap inspector-open == true
+assert snap inspector-ready == true
+assert snap inspector-address == file:///Graphshell/reference-notes.md
+assert snap inspector-resource-address == file:///Graphshell/reference-notes.md
+same selected detail-member
+same selected forme
+same selected forme-accesses
+capture access_resource_inspector
+# Picking another object does not retarget the open inspector.
+click-node https://example.test/i2p-port
+settle 2
+assert snap detail-address == https://example.test/i2p-port
+assert snap inspector-address == file:///Graphshell/reference-notes.md
+remember other_selection
+click role:button Inspect selected access
+settle 2
+assert snap inspector-address == https://example.test/i2p-port
+same other_selection detail-member
+same selected forme-accesses
+capture independent_access_inspection
+click role:button Close access inspection
+settle 2
+assert snap inspector-open == false
+same other_selection detail-member
+same selected forme
+same selected forme-accesses
+log access Resource inspection is independent of selection and workbench opening

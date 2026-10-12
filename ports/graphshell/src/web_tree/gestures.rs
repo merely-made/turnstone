@@ -26,15 +26,14 @@ use web_sys::{AddEventListenerOptions, PointerEvent, TouchEvent, TouchList};
 use super::*;
 
 /// A page-px rectangle: left, top, width, height.
-pub(super) type Rect = (f32, f32, f32, f32);
+pub(super) type Rect = graphshell::retained_policy::Rect;
 
 /// What the gestures share with the page.
 #[derive(Default)]
 pub(super) struct Gestures {
     /// The graph leaf's painted rect, from the last frame.
     pub(super) graph: Option<Rect>,
-    /// What sits over the leaf and keeps the host's input: the tools
-    /// overlay, the product panel.
+    /// Painted panels over the leaf which keep their host input.
     pub(super) overlays: Vec<Rect>,
     /// Touch pointers down on the graph.
     touches: Vec<i32>,
@@ -87,15 +86,15 @@ pub(super) fn layout_rects(ctx: &AppCtx<'_, TreePage, Logic, Child>) -> (Option<
             .next()
     };
     let graph = first("tree-canvas").and_then(|leaf| ctx.painted_rect(leaf));
-    let overlays = ["tools-overlay", "tree-product"]
-        .into_iter()
-        .filter_map(|class| first(class).and_then(|node| ctx.painted_rect(node)))
-        .collect();
+    let overlays = graphshell::retained_policy::painted_overlays(|class| {
+        let dom = ctx.runner.dom();
+        let dom = dom.borrow();
+        taproot::matching(&dom, &Selector::class(class))
+            .into_iter()
+            .filter_map(|node| ctx.painted_rect(node))
+            .collect::<Vec<_>>()
+    });
     (graph, overlays)
-}
-
-fn inside((left, top, width, height): Rect, (x, y): (f32, f32)) -> bool {
-    x >= left && y >= top && x < left + width && y < top + height
 }
 
 struct Listeners {
@@ -115,11 +114,7 @@ impl Listeners {
             (client_y as f64 - rect.y()) as f32 / zoom,
         );
         let gestures = self.shared.gestures.borrow();
-        let graph = gestures.graph?;
-        if !inside(graph, at) || gestures.overlays.iter().any(|rect| inside(*rect, at)) {
-            return None;
-        }
-        Some((at.0 - graph.0, at.1 - graph.1))
+        graphshell::retained_policy::graph_point(gestures.graph, &gestures.overlays, at)
     }
 
     fn redraw(&self) {
