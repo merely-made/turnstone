@@ -321,7 +321,8 @@ fn onward_export_omits_private_backing_and_unselected_material() {
 fn export_refuses_missing_over_budget_and_existing_targets_without_replacement() {
     let directory = tempfile::tempdir().unwrap();
     let input = directory.path().join("input.mereclip");
-    std::fs::write(&input, serde_json::to_vec(&package(true)).unwrap()).unwrap();
+    let selected = package(true);
+    std::fs::write(&input, serde_json::to_vec(&selected).unwrap()).unwrap();
     let root = directory.path().join("root");
     let id = import(&root, &input, policy(), 1).unwrap();
     let output = directory.path().join("output.mereclip");
@@ -349,6 +350,21 @@ fn export_refuses_missing_over_budget_and_existing_targets_without_replacement()
     export(&root, id, &output, policy(), true).unwrap();
     let second = directory.path().join("second");
     assert_eq!(import(&second, &output, policy(), 2).unwrap(), id);
+    let body = &selected.payloads[0];
+    let key = format!("blob:{}", body.id.0.to_hex());
+    let refused = directory.path().join("refused.mereclip");
+    let mut store = open(&root, false).unwrap();
+    let mut changed = body.bytes.clone();
+    *changed.last_mut().unwrap() ^= 1;
+    pollster::block_on(eidetic::Store::put(&mut store, &key, &changed)).unwrap();
+    drop(store);
+    assert!(export(&root, id, &refused, policy(), false).is_err());
+    assert!(!refused.exists());
+    let mut store = open(&root, false).unwrap();
+    pollster::block_on(eidetic::Store::delete(&mut store, &key)).unwrap();
+    drop(store);
+    assert!(export(&root, id, &refused, policy(), false).is_err());
+    assert!(!refused.exists());
 }
 
 #[test]

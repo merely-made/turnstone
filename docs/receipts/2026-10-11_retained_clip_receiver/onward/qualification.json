@@ -1,0 +1,56 @@
+{
+  "runtime_source_commit": "97c139442cdc0600f1a5629eec1a40cb27f2a917",
+  "binary_sha256": "d684fc5417e28c6d3afb65f3aa543d10bfaadb3106f82550e5758f7c3e8d126a",
+  "cargo_lock_sha256": "859ea5eca09eb43d2b076c0e9193c19380543f85bbe02fa2a5bc94d908d98676",
+  "library_tests": {
+    "passed": 794,
+    "failed": 0,
+    "ignored": 10
+  },
+  "focused_tests": {
+    "passed": 10,
+    "failed": 0
+  },
+  "native": [
+    {
+      "stage": "seed",
+      "result": "ok",
+      "captures": 4,
+      "acquisition_attempts": 0,
+      "peer_services": 0
+    },
+    {
+      "stage": "export",
+      "result": "ok",
+      "captures": 2,
+      "acquisition_attempts": 0,
+      "peer_services": 0
+    },
+    {
+      "stage": "receive",
+      "result": "ok",
+      "captures": 3,
+      "acquisition_attempts": 0,
+      "peer_services": 0
+    },
+    {
+      "stage": "reopen",
+      "result": "ok",
+      "captures": 3,
+      "acquisition_attempts": 0,
+      "peer_services": 0
+    },
+    {
+      "stage": "omitted",
+      "result": "ok",
+      "captures": 1,
+      "acquisition_attempts": 0,
+      "peer_services": 0
+    }
+  ],
+  "store_mode": "explicitly unsealed",
+  "producer_origin": "authored native-export fixtures",
+  "scope": "two independent native mere directories, same synthetic persona, one Windows machine",
+  "onward_envelopes_unchanged": true,
+  "all_package_paths_unavailable_at_restart": true
+}

@@ -18,7 +18,7 @@ assert content-live
 assert snap browser-current ~ ${CLIP_VOICE}
 capture 07_second_mere_voice_reopened
 # Two-cell Workbench; verify Play's coordinates against the receiving capture.
-click-at 930 145
+click-at 880 134
 settle 150
 assert snap retained-voice ~ Ended
 assert snap offline-acquisition-attempts == 0

@@ -54,8 +54,8 @@ set.
 
 - [Retained clip receiver](2026-10-11_retained_clip_receiver_plan.md): Fleece
   selected-package admission, local Inker reading and Redshank voice-body
-  playback in the receiving mere; automated checks and committed-source native
-  restart qualify text/WAV, with browser/structured/custody gates retained.
+  playback in the receiving mere; automated/native restart and selected onward
+  export into a second mere qualify text/WAV, with browser/structured/custody gates retained.
 - [Browser/resource handoff, 2026-10-08](2026-10-08_browser_resource_handoff.md):
   resume point for browser adoption and applied resource-graph integration.
   Mere P2 is qualified at `3b3afa289`; per-view controls, retained session

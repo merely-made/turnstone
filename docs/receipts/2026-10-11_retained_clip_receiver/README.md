@@ -9,6 +9,12 @@ The receiving behavior and remaining gates are in
 [the host plan](../../../design_docs/2026-10-11_retained_clip_receiver_plan.md).
 The draft shared contract belongs to the Eidetic development plan in Mere.
 
+**Follow-up (2026-10-12):** [selected onward export](onward/README.md) qualifies
+export from this receiver into a second independent native mere, preserving
+source facts and selected-content identities through a package-unavailable
+restart. It records 794 library passes, ten final focused controls and nine
+reviewed onward captures. The original qualification below remains dated.
+
 ## Evidence
 
 | Gate | Result |

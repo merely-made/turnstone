@@ -1,0 +1,9 @@
+RESULT ok
+captured 03_second_mere_knot
+captured 04_second_mere_voice
+captured 05_second_mere_played
+Selected clips received in a second mere with the first receiver stopped
+presentation frames=301 captures=3 blank=0
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/onward-receive\03_second_mere_knot.png digest=62ae0b1b031d3378 blank=false
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/onward-receive\04_second_mere_voice.png digest=224b9b484abbb946 blank=false
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/onward-receive\05_second_mere_played.png digest=cc287e3e066cffde blank=false

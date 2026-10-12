@@ -1,0 +1,9 @@
+RESULT ok
+captured 06_second_mere_knot_reopened
+captured 07_second_mere_voice_reopened
+captured 08_second_mere_replayed
+Second mere retained selected content after sending app and packages disappeared
+presentation frames=301 captures=3 blank=0
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/onward-reopen\06_second_mere_knot_reopened.png digest=0c0dfac78060d192 blank=false
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/onward-reopen\07_second_mere_voice_reopened.png digest=f1b276a90f17a76d blank=false
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/onward-reopen\08_second_mere_replayed.png digest=4d2a5c6c8debadcc blank=false

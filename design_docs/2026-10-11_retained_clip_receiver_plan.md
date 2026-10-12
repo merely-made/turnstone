@@ -62,7 +62,7 @@ local content fails visibly without acquiring its original source.
 
 ### Onward selected export
 
-**Status (2026-10-11):** in progress. The selected clip's own Export link and
+**Status (2026-10-12):** qualified for bounded native onward copy. The selected clip's own Export link and
 the contextual **Export retained clip** command choose a destination package.
 The selection is frozen before opening the native save dialog. The active
 Workbench member owns this command even when the graph cursor names another
@@ -142,3 +142,15 @@ capability.
   link. All accepted runs have zero acquisition attempts and peer services;
   sampled endpoints are empty. The source and limits are recorded in
   [the receiver receipt](../docs/receipts/2026-10-11_retained_clip_receiver/README.md).
+- **2026-10-12, onward copy.** Implementation `97c1394` adds host-only selected
+  export, a contextual command, a clip-view link and an observed completed
+  outcome. The final library regression passes 794 tests with ten existing
+  ignores. Ten focused receiver/export tests cover preserved identity/facts,
+  two distinct same-label tag owners, excluded private/unselected data, frozen
+  Workbench targeting, pending custody, budget/missing/changed-body refusal and
+  atomic replacement policy. Native first-store export, second-store import,
+  package-unavailable restart and unselected-note refusal pass, with nine
+  reviewed onward captures. The same content references and original source
+  facts survive, and the reopened Play link reaches Ended 500 ms. The
+  [onward receipt](../docs/receipts/2026-10-11_retained_clip_receiver/onward/README.md)
+  preserves code, fixture, output and gate evidence. No dependency changed.
