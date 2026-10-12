@@ -1,0 +1,18 @@
+# Fresh page/process on the same retained origin after the dynamics scenario.
+# Inspector is transient; source and Forme storage remain owned independently.
+assert snap source == saved graph
+assert snap dynamics-inspector-open == false
+assert snap forme-accesses == 1
+click role:button Pause physics
+settle 3
+click-node https://example.test/i2p-port
+settle 2
+remember reopened
+reveal role:button Explain selected dynamics
+click role:button Explain selected dynamics
+settle 2
+assert snap dynamics-inspector-ready == true
+assert snap dynamics-inspector-forme-holds == 1
+assert snap dynamics-inspector-explicit-pins == 0
+same reopened detail-member nodes graph-session forme forme-accesses forme-geometry forme-bounds
+capture dynamics_reopened_forme_owner

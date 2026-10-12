@@ -265,6 +265,9 @@ pub(super) fn section(page: &TreePage) -> Child {
     }
     let mut children: Vec<Child> = vec![
         Box::new(el("h2", "Link inspector")),
+        Box::new(button("Explain pair dynamics", |page: &mut TreePage, _| {
+            if let Some(pair) = page.inspected_link { dynamics_inspection::choose(page, mere::canvas::DynamicsTarget::Pair { first: pair.first, second: pair.second }); }
+        })),
         Box::new(button("Close link inspection", |page: &mut TreePage, _| {
             page.inspected_link = None;
             page.inspected_statement = None;

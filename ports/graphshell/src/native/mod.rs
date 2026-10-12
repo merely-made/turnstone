@@ -26,6 +26,7 @@ pub mod local_session;
 #[cfg(feature = "personal-sync")]
 pub mod personal_sync_host;
 pub mod projection_host;
+pub mod quarantine;
 pub mod resident_identity;
 pub mod tasks;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]

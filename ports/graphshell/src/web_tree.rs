@@ -82,7 +82,10 @@ const SHEET: &str = "\
     .tree-grouping button { background:#263640; color:#dce3e8; padding:4px 8px; margin:2px 4px; border:1px solid #637581; } \
     .tree-grouped .tree-relations { max-height:110px; overflow-y:auto; padding:0 12px; overflow-wrap:anywhere; } \
     .tree-body { display:flex; flex-direction:row; flex:1 1 auto; min-height:0; position:relative; }     .tools-overlay { position:absolute; top:0; right:0; bottom:0; z-index:10; }     .tools-storage { margin:2px 0 6px; color:#9fb0bb; font-size:12px; } \
-    .tree-graph { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; } \
+    .tree-graph { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; position:relative; } \
+    .forme-drop-cue { position:absolute; pointer-events:none; z-index:6; box-sizing:border-box; border:2px dashed currentColor; } \
+    .forme-drop-stack { border:5px double currentColor; } \
+    .forme-drop-label { display:block; width:230px; padding:4px 6px; color:#dce3e8; background:#17232b; border:1px solid currentColor; font-size:12px; } \
     .tree-canvas { display: block; flex: 1 1 auto; min-height: 0; } \
     .tree-tools { flex:0 0 auto; width:279px; padding:4px 10px; background:#0d161b; border-left:1px solid #2c3b44; overflow-y:auto; min-height:0; } \
     .tree-tools .disclosure-trigger { display:block; width:100%; text-align:left; font-size:14px; background:transparent; border:none; padding:2px 0 4px; margin:0; } \
@@ -90,7 +93,7 @@ const SHEET: &str = "\
     .tree-tools h2 { font-size:14px; margin:2px 0 4px; } \
     .tree-tools h3 { font-size:13px; margin:4px 0 2px; } \
     .tree-rules [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
-    .tree-rules pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
+    .tree-rules pre, .tree-dynamics pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
     .tree-inspection { overflow-wrap:anywhere; } \
     .tree-inspection p, .tree-inspection li { font-size:12px; } \
     .tools-section + .tools-section { margin-top:10px; border-top:1px solid #2c3b44; padding-top:4px; } \
@@ -515,6 +518,8 @@ pub(crate) struct TreePage {
     field_inspector: field_inspection::Pane,
     #[cfg(feature = "product")]
     presentation: presentation::Pane,
+    #[cfg(feature = "product")]
+    dynamics_inspector: dynamics_inspection::Pane,
     #[cfg(feature = "applets")]
     applet_seen: u64,
     #[cfg(feature = "applets")]
@@ -693,7 +698,10 @@ fn view(page: &TreePage) -> Child {
                 return;
             }
             #[cfg(feature = "product")]
-            if page.forme.as_ref().is_some_and(|pane| pane.session.editing())
+            if page
+                .forme
+                .as_ref()
+                .is_some_and(|pane| pane.session.editing())
                 && forme::shortcut(page, &event)
             {
                 event.prevent_default();
@@ -706,6 +714,12 @@ fn view(page: &TreePage) -> Child {
     );
     let workbench = forme_workbench(page);
     let showing_workbench = workbench.is_some();
+    #[cfg(feature = "product")]
+    let drop_feedback = (!showing_workbench)
+        .then(|| forme::drop_feedback(page))
+        .flatten();
+    #[cfg(not(feature = "product"))]
+    let drop_feedback: Option<Child> = None;
     Box::new(
         el(
             "main",
@@ -728,7 +742,7 @@ fn view(page: &TreePage) -> Child {
                         product::menu(page),
                         el(
                             "div",
-                            workbench.unwrap_or_else(|| Box::new(graph)),
+                            (workbench.unwrap_or_else(|| Box::new(graph)), drop_feedback),
                         )
                         .attr("class", "tree-graph"),
                         if docked {
@@ -778,6 +792,8 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(product::scenes_section(page));
     children.push(product::projection_section(page));
     children.push(product::history_section(page));
+    #[cfg(feature = "product")]
+    children.push(dynamics_inspection::section(page));
     #[cfg(feature = "product")]
     children.push(inspection::section(page));
     #[cfg(feature = "product")]
@@ -1166,6 +1182,8 @@ async fn boot(root: Element) -> Result<(), String> {
                 field_inspector: field_inspection::Pane::default(),
                 #[cfg(feature = "product")]
                 presentation,
+                #[cfg(feature = "product")]
+                dynamics_inspector: dynamics_inspection::Pane::default(),
                 #[cfg(feature = "applets")]
                 applet_seen: 0,
                 #[cfg(feature = "applets")]
@@ -1354,6 +1372,9 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                     ctx.runner.update(|page| presentation::update(page, inputs));
                 }
                 presentation::install(ctx.runner.state());
+                if let Some(report) = dynamics_inspection::refresh(ctx.runner.state()) {
+                    ctx.runner.update(|page| dynamics_inspection::update(page, report));
+                }
             }
             // The remote session moves outside the runner (its channel's
             // pumps); rebuild the view when it has.
@@ -1604,15 +1625,19 @@ mod appearance;
 mod applet;
 mod controls;
 #[cfg(feature = "product")]
+mod field_inspection;
+#[cfg(feature = "product")]
+mod presentation;
+#[cfg(feature = "product")]
+mod dynamics_inspection;
+#[cfg(feature = "product")]
 mod forme;
 mod gesture_steps;
 mod gestures;
 mod grouping;
 mod history;
 mod host_boundary;
-mod lane;
 mod observe;
-mod physics;
 #[cfg(feature = "main-page")]
 mod practice;
 #[cfg(not(feature = "main-page"))]
@@ -1620,12 +1645,10 @@ mod practice;
 mod practice;
 #[cfg(feature = "product")]
 mod inspection;
+mod lane;
 #[cfg(feature = "product")]
 mod link_inspection;
-#[cfg(feature = "product")]
-mod field_inspection;
-#[cfg(feature = "product")]
-mod presentation;
+mod physics;
 #[cfg(feature = "product")]
 mod product;
 #[cfg(not(feature = "product"))]

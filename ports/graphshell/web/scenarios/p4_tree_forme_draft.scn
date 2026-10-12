@@ -15,11 +15,39 @@ settle 1
 move-to-forme https://example.test/i2p-port center
 settle 2
 assert snap forme-preview == true
+assert snap forme-drop-effect == Stack as tabs
 assert snap forme-dirty == false
 capture forme_handle_preview
+key Escape
+settle 2
+assert snap forme-preview == false
+assert snap forme-drop-effect == none
+release-at
+settle 2
+same committed forme-geometry
+assert snap forme-dirty == false
+# Moving outside clears the cue and cannot accept the last valid candidate.
+press-node file:///Graphshell/reference-notes.md
+settle 1
+move-to-forme https://example.test/i2p-port center
+settle 2
+assert snap forme-drop-effect == Stack as tabs
+move-to-forme https://example.test/i2p-port outside
+settle 2
+assert snap forme-preview == false
+assert snap forme-drop-effect == none
+release-at
+settle 2
+same committed forme-geometry
+assert snap forme-dirty == false
+press-node file:///Graphshell/reference-notes.md
+settle 1
+move-to-forme https://example.test/i2p-port center
+settle 2
 release-at
 settle 2
 assert snap forme-preview == false
+assert snap forme-drop-effect == none
 assert snap forme-cells == 1
 assert snap forme-dirty == true
 assert snap forme-saving == false
@@ -46,8 +74,10 @@ settle 1
 move-to-forme https://example.test/i2p-port bottom
 settle 2
 assert snap forme-preview == true
+assert snap forme-drop-effect == Split below
 assert snap forme-accesses == 3
 assert snap forme-dirty == false
+capture forme_split_preview
 release-at
 settle 2
 assert snap forme-dirty == true

@@ -689,6 +689,8 @@ impl Product for TreeLane {
         let snapshot = field_inspection::fields(page, &canvas, snapshot);
         #[cfg(feature = "product")]
         let snapshot = presentation::fields(page, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = dynamics_inspection::fields(page, snapshot);
         let snapshot = snapshot
             .with_field("physics-steps", step.steps.to_string())
             .with_field(
@@ -1653,6 +1655,7 @@ fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> Pr
         .with_field("forme-hovered", canvas.forme_region_hovered().to_string())
         .with_field("forme-saving", pane.saving.to_string())
         .with_field("forme-preview", pane.previewing().to_string())
+        .with_field("forme-drop-effect", pane.drop_effect())
         .with_field("forme-draft", pane.session.editing().to_string())
         .with_field("forme-dirty", pane.session.dirty().to_string())
         .with_field("forme-can-undo", pane.session.can_undo().to_string())

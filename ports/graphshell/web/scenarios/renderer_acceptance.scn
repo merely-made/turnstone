@@ -1,0 +1,64 @@
+# Copyright 2026 Mark Alan Boykin
+# SPDX-License-Identifier: MPL-2.0
+# Current product tree, fresh dedicated origin/profile, normal motion.
+# The browser harness also changes appearance, viewport and page binding.
+# Captures use the host's production composed-frame readback.
+assert snap ready == true
+assert snap nodes >= 1
+assert snap finite == true
+assert snap physics-paused == true
+settle 2
+assert snap physics-paused == true
+click role:button Fit graph
+settle 2
+remember renderer-source
+capture renderer_cold
+wait 120
+capture renderer_repeat
+wait 120
+same renderer-source nodes graph-session geometry source
+reveal role:button Presentation rules
+click role:button Presentation rules
+reveal role:button Begin rule draft
+click role:button Begin rule draft
+reveal role:button Add node rule
+click role:button Add node rule
+assert snap rules-editing == true
+assert snap rules-count == 1
+same renderer-source nodes graph-session geometry source rules-committed
+capture renderer_draft
+wait 120
+reveal role:button Discard rule draft
+click role:button Discard rule draft
+assert snap rules-count == 0
+assert snap rules-generation == 0
+same renderer-source nodes graph-session geometry source rules-committed
+click role:button Fit graph
+settle 2
+remember renderer-before-zoom
+click role:button Zoom in
+settle 2
+differs renderer-before-zoom zoom
+same renderer-before-zoom nodes graph-session geometry source
+capture renderer_zoom
+wait 120
+click role:button Fit graph
+settle 2
+click-node https://example.test/i2p-port
+settle 2
+assert snap focus-kind == graph
+remember renderer-selected
+key ArrowRight
+settle 2
+differs renderer-selected camera
+same renderer-selected nodes graph-session geometry picked
+key Enter
+settle 2
+assert snap detail-open == true
+capture renderer_input
+wait 120
+click role:button Close details
+settle 2
+assert snap detail-open == false
+same renderer-source nodes graph-session geometry source rules-committed
+log production producer renderer authority receipt complete

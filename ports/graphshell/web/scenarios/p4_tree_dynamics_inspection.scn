@@ -1,0 +1,87 @@
+# Fresh dedicated app=local origin/profile, normal motion, product build.
+# Keep the page visible. Follow with the retained-origin reopen scenario.
+assert snap source == saved graph
+assert snap dynamics-inspector-open == false
+click role:button Pause physics
+click role:button Restore arrangement
+settle 3
+click-node file:///Graphshell/reference-notes.md
+settle 2
+remember original
+reveal role:button Explain selected dynamics
+click role:button Explain selected dynamics
+settle 2
+assert snap dynamics-inspector-open == true
+assert snap dynamics-inspector-ready == true
+assert snap dynamics-inspector-paused == true
+assert snap dynamics-inspector-explicit-pins == 0
+remember exact-access
+capture dynamics_exact_access
+# Inspecting another source target and selecting another access does not retarget motion.
+reveal role:button Inspect selected access
+click role:button Inspect selected access
+reveal role:button Inspect links: I2P port notes
+click role:button Inspect links: I2P port notes
+settle 2
+same exact-access dynamics-inspector-target
+reveal role:button Explain pair dynamics
+click role:button Explain pair dynamics
+settle 2
+assert snap dynamics-inspector-ready == true
+assert snap dynamics-inspector-held-rows == 1
+assert snap dynamics-inspector-pair-inputs == 1
+remember exact-pair
+reveal role:button Inspect dynamics input assertion 1
+click role:button Inspect dynamics input assertion 1
+settle 2
+assert snap assertion-inspector-ready == true
+assert snap assertion-inspector-predicate == https://mere.computer/ns/rel#cites
+same original detail-member graph-session nodes forme forme-accesses
+capture dynamics_exact_pair_inputs
+click-node https://example.test/i2p-port
+settle 2
+same exact-pair dynamics-inspector-target
+assert snap dynamics-inspector-ready == true
+# The live paused state changes, independently of the inspected target.
+reveal role:button Play physics
+click role:button Play physics
+settle 3
+assert snap dynamics-inspector-paused == false
+reveal role:button Pause physics
+click role:button Pause physics
+settle 2
+assert snap dynamics-inspector-paused == true
+same exact-pair dynamics-inspector-target
+# Source-inspector closing leaves the independent dynamics inspector open.
+reveal role:button Close link inspection
+click role:button Close link inspection
+settle 2
+assert snap dynamics-inspector-open == true
+assert snap dynamics-inspector-ready == true
+# Install one actual Forme hold and inspect it without manufacturing a position pin.
+reveal role:button Open selected in workbench
+click role:button Open selected in workbench
+wait 120
+click role:button Return to Mere
+settle 3
+assert snap forme-accesses == 1
+assert snap dynamics-inspector-forme-holds == 1
+assert snap dynamics-inspector-explicit-pins == 0
+remember held
+capture dynamics_forme_hold
+reveal role:button Hide forme boundary
+click role:button Hide forme boundary
+wait 120
+assert snap forme-visible == false
+assert snap dynamics-inspector-forme-holds == 1
+same held dynamics-inspector-target
+reveal role:button Show forme boundary
+click role:button Show forme boundary
+wait 120
+assert snap forme-visible == true
+same original nodes graph-session
+reveal role:button Close dynamics inspection
+click role:button Close dynamics inspection
+settle 2
+assert snap dynamics-inspector-open == false
+assert snap dynamics-inspector-ready == false

@@ -18,6 +18,41 @@ use uuid::Uuid;
 const HISTORY_LIMIT: usize = 32;
 const RECORD_LIMIT: usize = 4 * 1024 * 1024;
 
+/// Temporary presentation of the same decision used to build a drop candidate.
+/// Bounds refer to the original target cell, before the candidate rearranges it.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum DropEffect {
+    Stack,
+    Split(workbench::Edge),
+    Add,
+}
+impl DropEffect {
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Stack => "Stack as tabs",
+            Self::Split(workbench::Edge::Left) => "Split left",
+            Self::Split(workbench::Edge::Right) => "Split right",
+            Self::Split(workbench::Edge::Top) => "Split above",
+            Self::Split(workbench::Edge::Bottom) => "Split below",
+            Self::Add => "Add to Forme",
+        }
+    }
+    pub fn preview_bounds(self, [x, y, r, b]: [f32; 4]) -> [f32; 4] {
+        match self {
+            Self::Split(workbench::Edge::Left) => [x, y, x + (r - x) / 2., b],
+            Self::Split(workbench::Edge::Right) => [x + (r - x) / 2., y, r, b],
+            Self::Split(workbench::Edge::Top) => [x, y, r, y + (b - y) / 2.],
+            Self::Split(workbench::Edge::Bottom) => [x, y + (b - y) / 2., r, b],
+            _ => [x, y, r, b],
+        }
+    }
+}
+pub struct DropProposal {
+    pub workspace: FormeWorkspace,
+    pub bounds: [f32; 4],
+    pub effect: DropEffect,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 struct LayoutState {
     arrangement: Arrangement,
@@ -266,6 +301,16 @@ impl FormeSession {
         point: (f32, f32),
         graph: &Graph,
     ) -> Result<Option<FormeWorkspace>, String> {
+        Ok(self
+            .drop_proposal(member, point, graph)?
+            .map(|p| p.workspace))
+    }
+    pub fn drop_proposal(
+        &self,
+        member: Uuid,
+        point: (f32, f32),
+        graph: &Graph,
+    ) -> Result<Option<DropProposal>, String> {
         self.idle()?;
         if !self.editing() {
             return Err("Unlock the forme to drag tile handles".into());
@@ -280,6 +325,8 @@ impl FormeSession {
         }
         let mut next = self.view().clone();
         next.open(member, graph)?;
+        let mut bounds = region.bounds;
+        let mut effect = DropEffect::Add;
         let target = region.cells.iter().find(|cell| {
             let [x, y, r, b] = region.cell_world_bounds(cell);
             graph.get_node_by_id(cell.member).is_some()
@@ -291,6 +338,7 @@ impl FormeSession {
         });
         if let Some(cell) = target {
             let [x, y, r, b] = region.cell_world_bounds(cell);
+            bounds = [x, y, r, b];
             let (u, v) = ((point.0 - x) / (r - x), (point.1 - y) / (b - y));
             use workbench::{DropTarget, Edge, TileEvent, TilePath};
             let edges = [
@@ -304,6 +352,7 @@ impl FormeSession {
                 .min_by(|a, b| a.0.total_cmp(&b.0))
                 .unwrap();
             let to = if distance < 0.25 {
+                effect = DropEffect::Split(edge);
                 DropTarget::Edge {
                     tile: next
                         .tile_for_member(cell.member)
@@ -311,6 +360,7 @@ impl FormeSession {
                     edge,
                 }
             } else {
+                effect = DropEffect::Stack;
                 let stack = next
                     .geometry
                     .as_ref()
@@ -332,7 +382,11 @@ impl FormeSession {
             return Ok(None);
         }
         next.validate(next.document.graph_id)?;
-        Ok(Some(next))
+        Ok(Some(DropProposal {
+            workspace: next,
+            bounds,
+            effect,
+        }))
     }
     pub fn discard(&mut self) -> Result<(), String> {
         self.idle()?;
@@ -909,11 +963,27 @@ mod tests {
             .unwrap();
         assert_eq!(centered.region().cells.len(), 2);
         assert_eq!(centered.members().len(), 3);
+        let proposal = session
+            .drop_proposal(c, ((x + r) / 2., (y + b) / 2.), &graph)
+            .unwrap()
+            .unwrap();
+        assert_eq!(proposal.effect, DropEffect::Stack);
+        assert_eq!(proposal.bounds, [x, y, r, b]);
+        assert_eq!(proposal.workspace.geometry, centered.geometry);
         let edge = session
             .drop_preview(c, ((x + r) / 2., y + 1.), &graph)
             .unwrap()
             .unwrap();
         assert_eq!(edge.region().cells.len(), 3);
+        let proposal = session
+            .drop_proposal(c, ((x + r) / 2., y + 1.), &graph)
+            .unwrap()
+            .unwrap();
+        assert_eq!(proposal.effect, DropEffect::Split(workbench::Edge::Top));
+        assert_eq!(
+            proposal.effect.preview_bounds(proposal.bounds),
+            [x, y, r, (y + b) / 2.]
+        );
         assert!(
             session
                 .drop_preview(c, (region.bounds[2] + 10., y), &graph)

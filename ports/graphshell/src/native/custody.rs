@@ -52,6 +52,18 @@ pub enum KeySource {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "call", rename_all = "snake_case")]
 pub enum CustodyCall {
+    /// Ask the resident to render its own native unlock prompt.
+    UnlockNative,
+    /// Older imports requiring an explicit profile association.
+    UnassignedImports,
+    /// Djinn asks the owner to associate one exact older import namespace.
+    AssignImport(crate::native::quarantine::AssignImportRequest),
+    /// Lock authority without supplying a secret.
+    LockVault,
+    /// Public cards belonging to a named identity profile.
+    Quarantine { profile: ProfileId },
+    /// Request one action; Djinn obtains its own consent.
+    ReviewQuarantine(crate::native::quarantine::ReviewRequest),
     /// The lock, the protection and the public roots. Answered Locked or
     /// not; an application uses it to decide whether to show the identity
     /// as pending (D12).
@@ -263,9 +275,19 @@ impl Drop for ReleasedKey {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "answer", rename_all = "snake_case")]
 pub enum CustodyAnswer {
+    Quarantine {
+        cards: Vec<crate::native::quarantine::QuarantineCard>,
+    },
+    UnassignedImports {
+        imports: Vec<crate::native::quarantine::UnassignedImport>,
+    },
     /// Public CA installation material. The terminal executes SSH after the
     /// keeper releases its mutex, allowing the resident agent to authenticate.
-    VaultEnrollment { target: String, script: String, confirmation: String },
+    VaultEnrollment {
+        target: String,
+        script: String,
+        confirmation: String,
+    },
     /// Public terminal text produced by a keeper-owned command.
     VaultOutput {
         text: String,
@@ -292,7 +314,9 @@ pub enum CustodyAnswer {
     /// The epoch keys asked for, in request order.
     /// A struct variant: the internal `answer` tag cannot sit beside a bare
     /// sequence.
-    EpochKeys { keys: Vec<ReleasedEpochKey> },
+    EpochKeys {
+        keys: Vec<ReleasedEpochKey>,
+    },
 }
 
 /// Why djinn did not answer a call.
@@ -456,10 +480,12 @@ mod tests {
         };
         let text = serde_json::to_string(&call).unwrap();
         assert_eq!(serde_json::from_str::<CustodyCall>(&text).unwrap(), call);
-        let answer = CustodyAnswer::EpochKeys { keys: vec![ReleasedEpochKey {
-            request: EpochKeyRequest::public("ctx", false),
-            key: [0x5a; 32],
-        }] };
+        let answer = CustodyAnswer::EpochKeys {
+            keys: vec![ReleasedEpochKey {
+                request: EpochKeyRequest::public("ctx", false),
+                key: [0x5a; 32],
+            }],
+        };
         let text = serde_json::to_string(&answer).unwrap();
         assert_eq!(
             serde_json::from_str::<CustodyAnswer>(&text).unwrap(),
