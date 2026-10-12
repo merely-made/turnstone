@@ -20,6 +20,6 @@ same reopened detail-member nodes graph-session forme forme-accesses forme-geome
 reveal .detail-section-title Current view
 settle 2
 capture dynamics_reopened_forme_owner
-reveal .detail-key Forme hold
+reveal .detail-key Axis locks
 settle 2
 capture dynamics_reopened_placement_constraints
