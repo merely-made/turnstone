@@ -448,7 +448,11 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
     } else {
         rows.push(Box::new(el(
             "p",
-            "Select a project in the graph or choose projects from the list.",
+            if p.selected.is_empty() {
+                "Select a project in the graph or choose projects from the list."
+            } else {
+                "Choose Inspect for a selected project to read its details."
+            },
         )));
     }
     Some(Box::new(

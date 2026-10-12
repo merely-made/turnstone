@@ -85,11 +85,11 @@ impl HostPresenter {
             .collect();
         let previous = self.selected.len();
         self.selected.retain(|id| known.contains(id.as_str()));
-        if self
+        let inspection_departed = self
             .inspected
             .as_ref()
-            .is_some_and(|id| !known.contains(id.as_str()))
-        {
+            .is_some_and(|id| !known.contains(id.as_str()));
+        if inspection_departed {
             self.inspected = None;
         }
         self.notice = if previous != self.selected.len() {
@@ -97,6 +97,8 @@ impl HostPresenter {
                 "{} selected item(s) unavailable at this checkpoint",
                 previous - self.selected.len()
             )
+        } else if inspection_departed {
+            "Inspected item unavailable at this checkpoint".into()
         } else {
             String::new()
         };
@@ -321,6 +323,19 @@ mod tests {
         wrong.dataset.source.authority = "other".into();
         assert!(p.rebind(wrong).is_err());
         assert_eq!(p.envelope, before);
+        let mut p = presenter();
+        let a = p.envelope.dataset.occurrences[0].occurrence_id.clone();
+        let b = p.envelope.dataset.occurrences[1].occurrence_id.clone();
+        p.toggle(&a).unwrap();
+        p.inspect(&b).unwrap();
+        let mut next = p.envelope.clone();
+        next.dataset
+            .occurrences
+            .retain(|row| row.occurrence_id != b);
+        p.rebind(next).unwrap();
+        assert_eq!(p.selected, BTreeSet::from([a]));
+        assert!(p.inspected.is_none());
+        assert!(p.notice.contains("Inspected item"));
     }
     #[test]
     fn inspection_is_occurrence_local_and_never_changes_source_or_selection() {
