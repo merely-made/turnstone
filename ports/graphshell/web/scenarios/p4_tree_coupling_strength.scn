@@ -1,7 +1,7 @@
 # Fresh origin, product host, ?app=local&fixture=field-inspection&motion=normal.
 # Follow with the reopen page. This neutral fixture does not measure force effects.
 assert snap reduced-motion == false
-click role:button Pause physics
+assert snap physics-paused == true
 click role:button Restore arrangement
 settle 3
 click-node file:///Graphshell/reference-notes.md

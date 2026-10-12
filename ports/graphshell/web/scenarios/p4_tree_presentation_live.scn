@@ -7,7 +7,7 @@ assert snap reduced-motion == false
 assert snap field-inspection-fixture == true
 assert snap rules-count == 0
 assert snap rules-live-enabled == false
-click role:button Pause physics
+assert snap physics-paused == true
 click role:button Restore arrangement
 settle 3
 click-node file:///Graphshell/reference-notes.md

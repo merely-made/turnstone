@@ -7,7 +7,7 @@ assert snap rules-count == 2
 assert snap rules-generation == 3
 assert snap rules-live-enabled == false
 assert snap forme-accesses == 2
-click role:button Pause physics
+assert snap physics-paused == true
 remember reopened-source
 reveal role:button Presentation rules
 click role:button Presentation rules

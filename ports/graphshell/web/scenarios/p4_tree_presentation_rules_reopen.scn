@@ -2,7 +2,7 @@
 # Fresh page/process, same retained origin/profile after the first scenario.
 assert snap source == saved graph
 assert snap reduced-motion == false
-click role:button Pause physics
+assert snap physics-paused == true
 assert snap rules-ready == true
 assert snap rules-count == 4
 assert snap rules-generation == 3

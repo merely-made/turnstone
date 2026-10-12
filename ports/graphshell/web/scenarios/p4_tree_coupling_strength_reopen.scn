@@ -1,6 +1,6 @@
 # Fresh page on retained origin after p4_tree_coupling_strength.scn, motion=normal.
 assert snap reduced-motion == false
-click role:button Pause physics
+assert snap physics-paused == true
 assert snap coupling-editing == false
 assert snap forme-accesses == 2
 remember reopened-scene
