@@ -118,6 +118,9 @@ pub(super) fn section(page: &TreePage) -> Child {
     }
     let mut children: Vec<Child> = vec![
         Box::new(el("h2", "Access inspector")),
+        Box::new(button("Explain this access dynamics", |page: &mut TreePage, _| {
+            if let Some(member) = page.inspected_access { dynamics_inspection::choose(page, mere::canvas::DynamicsTarget::Access { member }); }
+        })),
         Box::new(button(
             "Close access inspection",
             |page: &mut TreePage, _| {
