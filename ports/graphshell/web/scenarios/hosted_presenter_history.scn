@@ -3,10 +3,8 @@ assert snap presenter == true
 assert snap history-index == 2
 reveal role:button Choose projects
 click role:button Choose projects
-reveal role:button Select genet
-click role:button Select genet
-reveal role:button Select woodshed
-click role:button Select woodshed
+click .presenter-select @data-occurrence-id=repo:genet
+click .presenter-select @data-occurrence-id=repo:woodshed
 settle 3
 assert snap presenter-selected == repo:genet,repo:woodshed
 assert snap canvas-selection-count == 2

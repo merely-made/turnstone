@@ -246,7 +246,9 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
                     .attr(
                         "aria-pressed",
                         p.selected.contains(&row.occurrence_id).to_string(),
-                    ),
+                    )
+                    .attr("class", "presenter-select")
+                    .attr("data-occurrence-id", row.occurrence_id.clone()),
                 )) as Child
             })
             .collect();
@@ -283,7 +285,9 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
                                 }
                             }
                         },
-                    ),
+                    )
+                    .attr("class", "presenter-inspect")
+                    .attr("data-occurrence-id", id.clone()),
                     button(
                         format!("Remove {}", p.choice_label(id)),
                         move |page: &mut TreePage, _| remove(page, &remove_id),

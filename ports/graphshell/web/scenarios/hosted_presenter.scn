@@ -6,14 +6,12 @@ assert snap presenter-inspector-open == false
 remember unselected-geometry
 reveal role:button Choose projects
 click role:button Choose projects
-reveal role:button Select genet
-click role:button Select genet
+click .presenter-select @data-occurrence-id=repo:genet
 settle 2
 assert snap presenter-selected == repo:genet
 assert snap presenter-inspected == repo:genet
 same unselected-geometry geometry
-reveal role:button Select woodshed
-click role:button Select woodshed
+click .presenter-select @data-occurrence-id=repo:woodshed
 settle 2
 assert snap presenter-selected == repo:genet,repo:woodshed
 assert snap presenter-inspected == repo:woodshed
@@ -51,8 +49,7 @@ reveal role:button Enter mere workspace
 click role:button Enter mere workspace
 settle 3
 assert snap presenter-selected == crate:mere:graphshell,repo:genet,repo:woodshed
-reveal role:button Inspect genet
-click role:button Inspect genet
+click .presenter-inspect @data-occurrence-id=repo:genet
 settle 2
 assert snap presenter-inspected == repo:genet
 assert snap presenter-selected == crate:mere:graphshell,repo:genet,repo:woodshed
