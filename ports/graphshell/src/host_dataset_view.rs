@@ -343,15 +343,13 @@ impl GroupedHostDataset {
         let mut view = self.view()?;
         decorate(&mut view);
         let viewport = canvas.viewport();
-        let selected = canvas.focused_url().map(str::to_owned);
+        let selected = canvas.selected_members();
         canvas.set_physics_paused(true);
         canvas.set_graph(view.graph);
         canvas.apply_strategy_positions(&view.positions);
         canvas.land_paused_positions(&view.positions);
         canvas.set_viewport(viewport);
-        if let Some(url) = selected {
-            canvas.select_by_url(&url);
-        }
+        canvas.set_selected_members(&selected);
         Ok(view.relations)
     }
 
@@ -582,6 +580,34 @@ mod tests {
         assert!(projected.visible.contains("repo:genet"));
         assert!(projected.visible.contains("repo:woodshed"));
         assert_eq!(grouped.view().unwrap().graph.node_count(), 9);
+    }
+
+    #[test]
+    fn a_fold_swap_preserves_every_surviving_selected_occurrence() {
+        let envelope = parse_host_dataset(include_str!(
+            "../web/fixtures/grouped-manifest-components.json"
+        ))
+        .unwrap();
+        let mut grouped = GroupedHostDataset::new(envelope, "contains").unwrap();
+        let view = grouped.view().unwrap();
+        let selected = ["repo:genet", "repo:woodshed"]
+            .map(|id| view.graph.get_node(view.occurrences[id]).unwrap().id);
+        let mut canvas = mere::canvas::Canvas::with_graph(view.graph);
+        canvas.set_physics_paused(true);
+        canvas.land_paused_positions(&view.positions);
+        canvas.set_selected_members(&selected);
+        grouped.state.expanded.insert("repo:mere".into());
+        grouped.apply_to_canvas(&mut canvas).unwrap();
+        assert_eq!(
+            canvas
+                .selected_members()
+                .into_iter()
+                .collect::<std::collections::BTreeSet<_>>(),
+            selected.into_iter().collect()
+        );
+        grouped.state.expanded.clear();
+        grouped.apply_to_canvas(&mut canvas).unwrap();
+        assert_eq!(canvas.selected_members().len(), 2);
     }
 
     #[test]

@@ -1,0 +1,70 @@
+# grouped-dataset.html?presenter=inspector. Stable faces and Fold-safe selection.
+assert snap ready == true
+assert snap presenter == true
+assert snap presenter-selection-count == 0
+assert snap presenter-inspector-open == false
+remember unselected-geometry
+reveal role:button Choose projects
+click role:button Choose projects
+reveal role:button Select genet
+click role:button Select genet
+settle 2
+assert snap presenter-selected == repo:genet
+assert snap presenter-inspected == repo:genet
+same unselected-geometry geometry
+reveal role:button Select woodshed
+click role:button Select woodshed
+settle 2
+assert snap presenter-selected == repo:genet,repo:woodshed
+assert snap presenter-inspected == repo:woodshed
+assert snap canvas-selection-count == 2
+same unselected-geometry geometry
+reveal role:button Show Fold controls
+click role:button Show Fold controls
+reveal role:button Expand mere
+click role:button Expand mere
+settle 3
+assert snap presenter-selected == repo:genet,repo:woodshed
+reveal role:button Expand mere workspace
+click role:button Expand mere workspace
+settle 3
+reveal role:button Select graphshell
+click role:button Select graphshell
+settle 2
+assert snap presenter-selected == crate:mere:graphshell,repo:genet,repo:woodshed
+assert snap presenter-inspected == crate:mere:graphshell
+reveal role:button Collapse mere
+click role:button Collapse mere
+settle 3
+assert snap presenter-selected == crate:mere:graphshell,repo:genet,repo:woodshed
+assert snap presenter-hidden == crate:mere:graphshell
+assert snap presenter-inspected == crate:mere:graphshell
+assert snap canvas-selection-count == 2
+capture selected-hidden-by-fold
+reveal role:button Expand mere
+click role:button Expand mere
+settle 3
+assert snap presenter-selected == crate:mere:graphshell,repo:genet,repo:woodshed
+assert snap presenter-hidden-count == 0
+assert snap canvas-selection-count == 3
+reveal role:button Enter mere workspace
+click role:button Enter mere workspace
+settle 3
+assert snap presenter-selected == crate:mere:graphshell,repo:genet,repo:woodshed
+reveal role:button Inspect genet
+click role:button Inspect genet
+settle 2
+assert snap presenter-inspected == repo:genet
+assert snap presenter-selected == crate:mere:graphshell,repo:genet,repo:woodshed
+reveal role:button Whole graph
+click role:button Whole graph
+settle 3
+assert snap presenter-selected == crate:mere:graphshell,repo:genet,repo:woodshed
+capture selected-restored-after-fold
+reveal role:button Clear project selection
+click role:button Clear project selection
+settle 2
+assert snap presenter-selection-count == 0
+assert snap presenter-inspector-open == false
+assert snap selection-fit-available == false
+assert snap canvas-selection-count == 0

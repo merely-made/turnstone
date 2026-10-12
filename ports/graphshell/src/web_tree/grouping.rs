@@ -163,6 +163,7 @@ impl TreePage {
         &mut self,
         change: impl FnOnce(&mut graphshell::host_dataset_view::FoldViewState),
     ) {
+        self.capture_host_selection();
         let Some(grouped) = &mut self.grouping else {
             return;
         };
@@ -188,5 +189,7 @@ impl TreePage {
                 self.grouping_error = Some(error);
             },
         }
+        drop(canvas);
+        self.restore_host_selection();
     }
 }

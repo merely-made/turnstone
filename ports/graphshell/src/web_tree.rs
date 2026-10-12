@@ -143,7 +143,7 @@ fn tree_stylesheet(appearance: &str) -> String {
     let applet_sheet = "";
     format!(
         "{SHEET}\n{}\n{}\n{applet_sheet}\n{appearance}",
-        commands::SHEET,
+        format!("{}\n{}", commands::SHEET, presenter::SHEET),
         forme_sheet()
     )
 }
@@ -498,6 +498,7 @@ impl TextureProducer for CanvasProducer {
 /// The application state the tree renders.
 pub(crate) struct TreePage {
     commands: commands::State,
+    presenter: Option<presenter::Pane>,
     #[cfg(feature = "product")]
     forme: Option<forme::Pane>,
     #[cfg(feature = "product")]
@@ -623,6 +624,14 @@ fn hosted_dataset(page: &TreePage) -> Option<Child> {
 
 impl TreePage {
     fn status(&self) -> String {
+        if let Some(pane) = &self.presenter {
+            return format!(
+                "{} visible of {} disclosed · {} selected",
+                pane.model.visible.len(),
+                pane.model.envelope.dataset.occurrences.len(),
+                pane.model.selected.len()
+            );
+        }
         format!(
             "{} · {} nodes · picked: {}",
             self.source,
@@ -644,7 +653,9 @@ fn view(page: &TreePage) -> Child {
     // Genet does not stretch a custom leaf across its cross axis, so the
     // canvas column is told the width the tools region leaves it.
     let docked = tools_docked(page);
-    let canvas_width = if docked {
+    let canvas_width = if presenter::docked(page) {
+        width.saturating_sub(presenter::WIDTH).max(1)
+    } else if docked {
         width.saturating_sub(TOOLS_WIDTH).max(1)
     } else {
         width.max(1)
@@ -711,14 +722,30 @@ fn view(page: &TreePage) -> Child {
             el(
                 "main",
                 (
-                    el("h1", "Graphshell, one tree"),
+                    el(
+                        "h1",
+                        page.presenter
+                            .as_ref()
+                            .map_or("Graphshell, one tree", |p| p.options.caption.as_str())
+                            .to_owned(),
+                    ),
                     el("p", page.status())
                         .attr("class", "tree-status")
                         .attr("role", "status"),
                     history::region(page),
-                    hosted_dataset(page),
-                    grouping::controls(page),
-                    controls::toolbar(page),
+                    page.presenter
+                        .is_none()
+                        .then(|| hosted_dataset(page))
+                        .flatten(),
+                    page.presenter
+                        .is_none()
+                        .then(|| grouping::controls(page))
+                        .flatten(),
+                    if page.presenter.is_some() {
+                        presenter::toolbar(page)
+                    } else {
+                        controls::toolbar(page)
+                    },
                     forme_toolbar(page),
                     showing_workbench.then(|| product::controls(page)),
                     el(
@@ -730,6 +757,7 @@ fn view(page: &TreePage) -> Child {
                                 (workbench.unwrap_or_else(|| Box::new(graph)), drop_feedback),
                             )
                             .attr("class", "tree-graph"),
+                            presenter::panel(page),
                             if docked {
                                 Some(tools_region(page))
                             } else {
@@ -742,17 +770,32 @@ fn view(page: &TreePage) -> Child {
                             },
                         ),
                     )
-                    .attr("class", "tree-body"),
+                    .attr(
+                        "class",
+                        if page.presenter.is_some() && !presenter::docked(page) {
+                            "tree-body tree-presenter-stacked"
+                        } else {
+                            "tree-body"
+                        },
+                    ),
                     commands::view(page),
                 ),
             )
             .attr(
                 "class",
-                if page.grouping.is_some() {
-                    "tree-grouped"
-                } else {
-                    ""
-                },
+                format!(
+                    "{} {}",
+                    if page.grouping.is_some() {
+                        "tree-grouped"
+                    } else {
+                        ""
+                    },
+                    if page.presenter.is_some() {
+                        "tree-presenter"
+                    } else {
+                        ""
+                    }
+                ),
             )
             .attr(
                 "style",
@@ -769,7 +812,7 @@ fn view(page: &TreePage) -> Child {
 
 /// Whether the Graph tools region docks beside the canvas at this width.
 fn tools_docked(page: &TreePage) -> bool {
-    page.size.0 >= TOOLS_DOCK_MIN_WIDTH
+    page.presenter.is_none() && page.size.0 >= TOOLS_DOCK_MIN_WIDTH
 }
 
 /// The Graph tools region: the storage line on `app=local`, then its sections.
@@ -950,6 +993,10 @@ async fn boot(root: Element) -> Result<(), String> {
     // A host dataset (S1) or history (S3) replaces every other source, and a
     // refused one shows its refusal over an empty graph, never the fixture.
     let hosted = crate::web_dataset::supplied_history(&root);
+    let presenter_options = presenter::requested(&root)?;
+    if presenter_options.is_some() && hosted.is_none() {
+        return Err("Inspector presenter requires a disclosed host dataset".into());
+    }
     let product = if hosted.is_some() {
         None
     } else {
@@ -1005,6 +1052,34 @@ async fn boot(root: Element) -> Result<(), String> {
         }
     };
     let nodes = graph.node_count();
+    let presenter = match presenter_options {
+        Some(options) => {
+            let history = hosted_history
+                .as_ref()
+                .ok_or("Inspector source was refused")?;
+            let envelope = history.envelope_at(history.index)?;
+            let mut model = graphshell::host_presenter::HostPresenter::new(envelope);
+            model.set_visible(
+                graph
+                    .nodes()
+                    .filter_map(|(_, node)| {
+                        Some((
+                            node.url().strip_prefix("urn:host-dataset:")?.to_owned(),
+                            node.id,
+                        ))
+                    })
+                    .collect(),
+            );
+            Some(presenter::Pane {
+                model,
+                options,
+                roster_open: false,
+                evidence_open: false,
+                folds_open: false,
+            })
+        },
+        None => None,
+    };
     let speed_options = crate::web_speed::options()?;
     let appearance = crate::web_appearance::mount(
         root.clone(),
@@ -1097,6 +1172,7 @@ async fn boot(root: Element) -> Result<(), String> {
         move |_window, _commands, _wake| Init {
             state: TreePage {
                 commands: commands::State::default(),
+                presenter,
                 #[cfg(feature = "product")]
                 forme,
                 #[cfg(feature = "product")]
@@ -1202,6 +1278,11 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 }
                 ctx.runner.update(|page| commands::open(page, request));
             }
+            if presenter::needs_capture(ctx.runner.state()) {
+                ctx.runner.update(|page| {
+                    page.capture_host_selection();
+                });
+            }
             #[cfg(feature = "applets")]
             {
                 let (version, generation) = {
@@ -1272,7 +1353,8 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 }
                 presentation::install(ctx.runner.state());
                 if let Some(report) = dynamics_inspection::refresh(ctx.runner.state()) {
-                    ctx.runner.update(|page| dynamics_inspection::update(page, report));
+                    ctx.runner
+                        .update(|page| dynamics_inspection::update(page, report));
                 }
             }
             // The remote session moves outside the runner (its channel's
@@ -1493,9 +1575,9 @@ mod applet;
 mod commands;
 mod controls;
 #[cfg(feature = "product")]
-mod field_inspection;
-#[cfg(feature = "product")]
 mod dynamics_inspection;
+#[cfg(feature = "product")]
+mod field_inspection;
 #[cfg(feature = "product")]
 mod forme;
 mod gesture_steps;
@@ -1510,6 +1592,7 @@ mod link_inspection;
 mod physics;
 #[cfg(feature = "product")]
 mod presentation;
+mod presenter;
 #[cfg(feature = "product")]
 mod product;
 #[cfg(not(feature = "product"))]

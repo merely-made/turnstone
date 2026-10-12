@@ -70,6 +70,8 @@ pub mod handlers;
 #[cfg(feature = "web")]
 pub mod host_dataset_view;
 #[cfg(feature = "web")]
+pub mod host_presenter;
+#[cfg(feature = "web")]
 pub mod host_history_view;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod identity;

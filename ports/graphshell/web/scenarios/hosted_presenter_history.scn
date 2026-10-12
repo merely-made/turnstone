@@ -1,0 +1,28 @@
+# tree.html?dataset=fixtures/grouped-host-history.json&grouping=contains&presenter=inspector
+assert snap presenter == true
+assert snap history-index == 2
+reveal role:button Choose projects
+click role:button Choose projects
+reveal role:button Select genet
+click role:button Select genet
+reveal role:button Select woodshed
+click role:button Select woodshed
+settle 3
+assert snap presenter-selected == repo:genet,repo:woodshed
+assert snap canvas-selection-count == 2
+remember selected-checkpoint
+click role:button Earlier checkpoint
+settle 3
+assert snap history-index == 1
+assert snap presenter-selected == repo:genet,repo:woodshed
+assert snap canvas-selection-count == 2
+same selected-checkpoint camera
+same selected-checkpoint zoom
+click role:button Later checkpoint
+settle 3
+assert snap history-index == 2
+assert snap presenter-selected == repo:genet,repo:woodshed
+assert snap canvas-selection-count == 2
+same selected-checkpoint camera
+same selected-checkpoint zoom
+capture presenter-selection-at-checkpoint

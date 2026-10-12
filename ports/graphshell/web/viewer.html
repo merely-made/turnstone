@@ -18,7 +18,9 @@
          Graph commands can choose wheel pan or page scroll; hosts can set
          data-wheel-mode="page" or ?wheel=page. Ctrl/Meta always zooms. -->
     <p>The site's published repository history, one checkpoint at a time.</p>
-    <graphshell-tree data-dataset-src="fixtures/site-repository-host-history.json"></graphshell-tree>
+    <graphshell-tree data-dataset-src="fixtures/site-repository-host-history.json"
+      data-presenter="inspector" data-caption="Project graph" data-summary-field="summary"
+      data-project-link-field="project_url" data-source-link-field="github_url"></graphshell-tree>
     <p>The page continues below the viewer.</p>
     <div style="height: 600px"></div>
     <script type="module" src="./viewer.js"></script>
