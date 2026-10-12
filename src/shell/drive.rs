@@ -887,6 +887,10 @@ impl Shell {
             // ---- interactions: drive the Shell (the former Tick execution) ----
             Step::Open(url) => self.act(Action::OpenAddress(url.clone())),
             Step::ImportClip(path) => self.act(Action::ImportClipPackage(std::path::PathBuf::from(path))),
+            Step::ExportClip(path) => {
+                let clip = self.app.clip_export_target()?;
+                self.act(Action::ExportClipPackage { clip, path: path.into(), replace: false });
+            },
             Step::Omnibar { command } => self.act(Action::OmnibarOpen { command: *command }),
             Step::Type(text) => {
                 if self.app.user_agent_decision.is_open() {

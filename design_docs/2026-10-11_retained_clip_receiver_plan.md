@@ -60,6 +60,30 @@ text note, then plays the retained WAV body to its end. A fresh process repeats
 those results with package files unavailable and acquisition disabled. Missing
 local content fails visibly without acquiring its original source.
 
+### Onward selected export
+
+**Status (2026-10-11):** in progress. The selected clip's own Export link and
+the contextual **Export retained clip** command choose a destination package.
+The selection is frozen before opening the native save dialog. The active
+Workbench member owns this command even when the graph cursor names another
+clip. Host custody/session admission is checked again before disclosure.
+
+The host calls Fleece's existing bounded `export_selected_clip` for the `body`
+root and declared dependencies, with local resolution only. Source facts,
+native selectors, capture identity and carried attribution remain unchanged.
+Private backing, custody manifests and unselected records remain local. The
+output is the existing single-clip package, published atomically; the native
+save dialog authorizes replacement, while scenario exports require a new file.
+There is no new collection format or automatic source-tag copying policy.
+
+**Done when:** the first receiver exports chosen clips after its original
+packages disappear; a second independent mere imports those packages with the
+first app stopped, retains the same selected-content identities and source
+facts, then reopens/plays without either package or source application. An
+unselected note does not enter the second mere. Missing, changed or over-budget
+content cannot create a package, and replacement refusal preserves an existing
+destination. Automated and native checks are recorded separately.
+
 ### Keep the broader host checkpoints explicit
 
 This receiver accepts exactly one selected text/plain or audio/wav body. Clips

@@ -911,10 +911,36 @@ impl Shell {
                             self.app.redshank.play_retained_voice(&id.0.to_hex(), &path)
                         },
                         ClipRequest::Stop(id) => self.app.redshank.stop_retained_voice(&id.0.to_hex()),
-                        ClipRequest::Read(_) => Err("Unsupported retained clip control".into()),
+                        ClipRequest::Read(_) | ClipRequest::Export(_) => Err("Unsupported retained clip control".into()),
                     });
                     if let Err(error) = result {
                         self.app.note_retained_clip_refusal(error);
+                    }
+                }
+                Effect::ChooseClipExportFile { clip } => {
+                    let available = self.app.clip_destination().and_then(|root| {
+                        crate::retained_clip::read(&root, clip, crate::retained_clip::limits()?).map(|_| ())
+                    });
+                    if let Err(error) = available {
+                        self.app.note_retained_clip_refusal(error);
+                        continue;
+                    }
+                    if let Some(path) = rfd::FileDialog::new()
+                        .set_title("Export selected clip")
+                        .add_filter("Selected clip package", &["mereclip"])
+                        .set_file_name("selected-clip.mereclip")
+                        .save_file() {
+                        // The native save dialog owns its overwrite confirmation.
+                        self.act(Action::ExportClipPackage { clip, path, replace: true });
+                    }
+                }
+                Effect::ExportClipPackage { clip, path, replace } => {
+                    let result = self.app.clip_destination().and_then(|root| {
+                        crate::retained_clip::export(&root, clip, &path, crate::retained_clip::limits()?, replace)
+                    });
+                    match result {
+                        Ok(()) => self.app.note_clip_package_exported(clip, &path),
+                        Err(error) => self.app.note_retained_clip_refusal(error),
                     }
                 }
                 Effect::OpenPlace {

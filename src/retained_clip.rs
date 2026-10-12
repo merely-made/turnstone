@@ -55,6 +55,7 @@ pub enum ClipRequest {
     Read(ManifestId),
     Play(ManifestId),
     Stop(ManifestId),
+    Export(ManifestId),
 }
 
 pub fn request(address: &str) -> Result<Option<ClipRequest>, String> {
@@ -88,6 +89,7 @@ pub fn request(address: &str) -> Result<Option<ClipRequest>, String> {
         [_] => Ok(Some(ClipRequest::Read(id))),
         [_, "play"] => Ok(Some(ClipRequest::Play(id))),
         [_, "stop"] => Ok(Some(ClipRequest::Stop(id))),
+        [_, "export"] => Ok(Some(ClipRequest::Export(id))),
         _ => Err("Unsupported retained clip action".into()),
     }
 }
@@ -221,6 +223,41 @@ pub fn read(root: &Path, id: ManifestId, policy: ClipLimits) -> Result<ClipView,
     read_store(&mut open(root, false)?, id, policy)
 }
 
+/// Explicit selected-body disclosure. Fleece validates the held inventory and
+/// hashes with NoFetcher; custody manifests and private backing stay local.
+/// Finish validation before creating output, then atomically publish the file.
+pub fn export(
+    root: &Path,
+    id: ManifestId,
+    file: &Path,
+    policy: ClipLimits,
+    replace: bool,
+) -> Result<(), String> {
+    let package = pollster::block_on(fleece::portable_clip::export_selected_clip(
+        &mut open(root, false)?,
+        None,
+        id,
+        &["body".into()],
+        policy,
+    ))
+    .map_err(|e| e.to_string())?;
+    let parent = file
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .unwrap_or(Path::new("."));
+    let mut temporary = tempfile::NamedTempFile::new_in(parent).map_err(|e| e.to_string())?;
+    serde_json::to_writer(temporary.as_file_mut(), &package).map_err(|e| e.to_string())?;
+    temporary.as_file().sync_all().map_err(|e| e.to_string())?;
+    if replace {
+        temporary.persist(file).map_err(|e| e.to_string())?;
+    } else {
+        temporary
+            .persist_noclobber(file)
+            .map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 impl ClipView {
     pub fn document(&self) -> EngineDocument {
         let mut blocks = vec![Block::Heading {
@@ -303,6 +340,14 @@ impl ClipView {
                 });
             }
         }
+        blocks.push(Block::Paragraph {
+            spans: vec![InlineSpan::Link {
+                url: format!("{}/export", address(self.id)),
+                title: None,
+                spans: vec![InlineSpan::Text("Export selected clip".into())],
+                predicate: None,
+            }],
+        });
         EngineDocument {
             address: address(self.id),
             title: Some(self.clip.title.clone()),
@@ -385,6 +430,27 @@ impl inker::SessionEngine<netrender::Scene> for ClipSessionEngine {
 }
 
 impl crate::app::App {
+    pub(crate) fn clip_export_target(&self) -> Result<ManifestId, String> {
+        self.clip_destination()?;
+        let (_, url) = self
+            .browser_command_target()
+            .ok_or("No retained clip is selected")?;
+        match request(&url)? {
+            Some(ClipRequest::Read(id)) => Ok(id),
+            _ => Err("The current content is not a retained clip".into()),
+        }
+    }
+
+    pub(crate) fn choose_retained_clip_export(&mut self) -> Vec<crate::action::Effect> {
+        match self.clip_export_target() {
+            Ok(clip) => vec![crate::action::Effect::ChooseClipExportFile { clip }],
+            Err(error) => {
+                self.note_retained_clip_refusal(error);
+                vec![crate::action::Effect::Redraw]
+            },
+        }
+    }
+
     pub(crate) fn clip_destination(&self) -> Result<PathBuf, String> {
         if self.identity.is_none() {
             return Err(crate::identity::PENDING.into());
@@ -404,6 +470,13 @@ impl crate::app::App {
         match request(address) {
             Ok(Some(control @ (ClipRequest::Play(_) | ClipRequest::Stop(_)))) => {
                 Some(vec![Effect::ControlRetainedClip(control), Effect::Redraw])
+            },
+            Ok(Some(ClipRequest::Export(clip))) => match self.clip_destination() {
+                Ok(_) => Some(vec![Effect::ChooseClipExportFile { clip }, Effect::Redraw]),
+                Err(error) => {
+                    self.note_retained_clip_refusal(error);
+                    Some(vec![Effect::Redraw])
+                },
             },
             Err(error) => {
                 self.note_retained_clip_refusal(error);

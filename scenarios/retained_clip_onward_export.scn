@@ -1,0 +1,24 @@
+# First receiver re-exports held content after original packages are unavailable.
+settle 20
+key escape
+assert snap network-offline == true
+assert snap peer-services == 0
+open ${CLIP_KNOT}
+settle 30
+act Open node in Workbench
+settle 20
+assert snap actions ~ Export retained clip
+export-clip ${CLIP_ONWARD_KNOT}
+wait-file 30 ${CLIP_ONWARD_KNOT}
+assert event clip-package-exported
+capture 01_knot_exported
+open ${CLIP_VOICE}
+settle 30
+act Open node in Workbench
+settle 20
+export-clip ${CLIP_ONWARD_VOICE}
+wait-file 30 ${CLIP_ONWARD_VOICE}
+assert event clip-package-exported
+assert snap offline-acquisition-attempts == 0
+capture 02_voice_exported
+log Selected held clips exported through the host path with acquisition disabled

@@ -518,6 +518,10 @@ pub enum AppEvent {
         what: &'static str,
         target: String,
     },
+    ClipPackageExported {
+        clip: String,
+        path: String,
+    },
 }
 
 impl AppEvent {
@@ -756,6 +760,9 @@ impl AppEvent {
             }
             AppEvent::AffordanceUnavailable { what, target } => {
                 format!("affordance-unavailable {what} {target}")
+            }
+            AppEvent::ClipPackageExported { clip, path } => {
+                format!("clip-package-exported {clip} {path}")
             }
         }
     }

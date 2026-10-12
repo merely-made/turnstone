@@ -84,7 +84,10 @@ fn native_export_renders_through_real_session_after_receiver_reopen() {
     let held = read(&root, id, policy()).unwrap();
     assert!(matches!(&held.body, ClipBody::Text(body) if body == "café"));
     let document = held.document();
-    assert!(document.outgoing_links().is_empty());
+    assert_eq!(
+        document.outgoing_links(),
+        vec![format!("{}/export", address(id))]
+    );
     assert!(document.blocks.iter().any(|b| matches!(b, Block::MetadataRow { label, value } if label == "Source anchor (utf8-bytes)" && value.contains("mere://knot/document/coffee"))));
     let spawn = inker::SessionSpawnRequest::new(address(id))
         .with_body(serde_json::to_string(&document).unwrap())
@@ -209,4 +212,176 @@ fn clip_opens_target_the_new_reference_while_workbench_has_another_member() {
     assert!(!effects.iter().any(
         |effect| matches!(effect, crate::action::Effect::SpawnContent { url, .. } if *url == first)
     ));
+}
+
+#[test]
+fn onward_copy_keeps_selected_identity_source_facts_and_distinct_tag_owners() {
+    let directory = tempfile::tempdir().unwrap();
+    let original = directory.path().join("original.mereclip");
+    let mut selected = package(false);
+    selected.clip.tags = ["alice", "bob"]
+        .into_iter()
+        .map(|owner| eidetic::clip_profile::ClipTagV1 {
+            concept: format!("urn:tag:{owner}:coffee"),
+            owner: format!("urn:person:{owner}"),
+            label: "Coffee".into(),
+            target: "mere://knot/document/coffee".into(),
+            statement_id: format!("urn:assertion:{owner}:coffee"),
+            asserter: Some(format!("urn:person:{owner}")),
+            scope: json!({"source": owner}),
+            asserted_at_ms: Some(7),
+        })
+        .collect();
+    std::fs::write(&original, serde_json::to_vec(&selected).unwrap()).unwrap();
+    let first = directory.path().join("first");
+    let id = import(&first, &original, policy(), 8).unwrap();
+    std::fs::remove_file(&original).unwrap();
+    let onward = directory.path().join("onward.mereclip");
+    export(&first, id, &onward, policy(), false).unwrap();
+    let wire: ClipPackageV1 = serde_json::from_slice(&std::fs::read(&onward).unwrap()).unwrap();
+    assert_eq!(wire, selected);
+    let second = directory.path().join("second");
+    assert_eq!(import(&second, &onward, policy(), 9).unwrap(), id);
+    std::fs::remove_file(&onward).unwrap();
+    let held = read(&second, id, policy()).unwrap();
+    assert_eq!(held.clip, selected.clip);
+    assert!(matches!(held.body, ClipBody::Text(ref body) if body == "café"));
+    assert_ne!(held.clip.tags[0].owner, held.clip.tags[1].owner);
+}
+
+#[test]
+fn onward_export_omits_private_backing_and_unselected_material() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().join("source");
+    let mut store = open(&root, true).unwrap();
+    let context = CaptureContext {
+        source: ClipSourceV1 {
+            owner: Some("owner".into()),
+            entity: "original".into(),
+            revision: None,
+        },
+        capture_id: "capture".into(),
+        provenance: ProvenanceRecord::self_imported("native owner fixture"),
+        trust: TrustEnvelope::self_asserted(),
+        captured_at: Timestamp(7),
+    };
+    let native = serde_json::from_str(include_str!(
+        "../../scenarios/fixtures/retained_clips/knot.json"
+    ))
+    .unwrap();
+    let id = pollster::block_on(fleece::portable_clip::retain_knot_export(
+        &mut store,
+        None,
+        &native,
+        Some(b"private prefix; caf\xc3\xa9; private suffix".to_vec()),
+        &context,
+        policy(),
+    ))
+    .unwrap();
+    pollster::block_on(eidetic::Store::put(
+        &mut store,
+        "unselected-private-material",
+        b"unselected",
+    ))
+    .unwrap();
+    drop(store);
+    let file = directory.path().join("selected.mereclip");
+    export(&root, id, &file, policy(), false).unwrap();
+    let wire: ClipPackageV1 = serde_json::from_slice(&std::fs::read(&file).unwrap()).unwrap();
+    assert_eq!(wire.payloads.len(), 1);
+    assert_eq!(wire.payloads[0].bytes, "café".as_bytes());
+    let mut store = open(&root, false).unwrap();
+    let retained = pollster::block_on(
+        eidetic::load_typed::<eidetic::clip_profile::RetainedClipV1>(
+            &mut store,
+            &mut eidetic::NoFetcher,
+            id,
+        ),
+    )
+    .unwrap()
+    .unwrap();
+    assert_eq!(retained.private_backing.len(), 1);
+    assert_eq!(wire.clip, retained.clip);
+    let second = directory.path().join("second");
+    let received = import(&second, &file, policy(), 8).unwrap();
+    let mut second_store = open(&second, false).unwrap();
+    let received = pollster::block_on(
+        eidetic::load_typed::<eidetic::clip_profile::RetainedClipV1>(
+            &mut second_store,
+            &mut eidetic::NoFetcher,
+            received,
+        ),
+    )
+    .unwrap()
+    .unwrap();
+    assert!(received.private_backing.is_empty());
+}
+
+#[test]
+fn export_refuses_missing_over_budget_and_existing_targets_without_replacement() {
+    let directory = tempfile::tempdir().unwrap();
+    let input = directory.path().join("input.mereclip");
+    std::fs::write(&input, serde_json::to_vec(&package(true)).unwrap()).unwrap();
+    let root = directory.path().join("root");
+    let id = import(&root, &input, policy(), 1).unwrap();
+    let output = directory.path().join("output.mereclip");
+    assert!(
+        export(
+            &root,
+            ManifestId::of_blob(b"absent"),
+            &output,
+            policy(),
+            false
+        )
+        .is_err()
+    );
+    assert!(!output.exists());
+    let mut tiny = policy();
+    tiny.max_bytes = 1;
+    assert!(export(&root, id, &output, tiny, false).is_err());
+    assert!(!output.exists());
+    std::fs::write(&output, b"existing selected content").unwrap();
+    assert!(export(&root, id, &output, policy(), false).is_err());
+    assert_eq!(
+        std::fs::read(&output).unwrap(),
+        b"existing selected content"
+    );
+    export(&root, id, &output, policy(), true).unwrap();
+    let second = directory.path().join("second");
+    assert_eq!(import(&second, &output, policy(), 2).unwrap(), id);
+}
+
+#[test]
+fn export_freezes_the_workbench_clip_and_requires_host_custody() {
+    use crate::action::{Action, Effect};
+    let mut app = crate::app::App::test_stub();
+    let first = ManifestId::of_blob(b"first");
+    app.update(Action::OpenAddress(address(first)));
+    app.update(Action::OpenInWorkbench);
+    let second = ManifestId::of_blob(b"second");
+    app.update(Action::OpenAddress(address(second)));
+    // The graph cursor moved, while the Workbench's first member owns commands.
+    let effects = app.update(Action::ChooseClipExportFile);
+    assert!(
+        effects
+            .iter()
+            .any(|e| matches!(e, Effect::ChooseClipExportFile { clip } if *clip == first))
+    );
+    app.identity = None;
+    assert!(
+        !app.update(Action::ChooseClipExportFile)
+            .iter()
+            .any(|e| matches!(e, Effect::ChooseClipExportFile { .. }))
+    );
+    for action in [
+        Action::ChooseClipExportFile,
+        Action::ExportClipPackage {
+            clip: first,
+            path: "any".into(),
+            replace: false,
+        },
+        Action::OpenAddress(format!("{}/export", address(first))),
+    ] {
+        assert_eq!(crate::ring::ring_of(&action), crate::ring::Ring::HostOnly);
+    }
 }

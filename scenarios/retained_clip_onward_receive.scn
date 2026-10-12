@@ -1,0 +1,26 @@
+# Independent mere receives only the chosen Knot and voice clips.
+settle 20
+key escape
+assert snap network-offline == true
+assert snap peer-services == 0
+import-clip ${CLIP_ONWARD_KNOT}
+settle 30
+act Open node in Workbench
+settle 20
+assert content-live
+assert snap browser-current ~ ${CLIP_KNOT}
+capture 03_second_mere_knot
+import-clip ${CLIP_ONWARD_VOICE}
+settle 30
+act Open node in Workbench
+settle 20
+assert content-live
+assert snap browser-current ~ ${CLIP_VOICE}
+capture 04_second_mere_voice
+open ${CLIP_VOICE}/play
+settle 150
+assert snap retained-voice ~ Ended
+assert snap offline-acquisition-attempts == 0
+capture 05_second_mere_played
+act Save session
+log Selected clips received in a second mere with the first receiver stopped

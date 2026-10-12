@@ -440,6 +440,12 @@ pub enum Action {
     /// Explicit file selection for retained content in the current mere.
     ChooseClipPackageFile,
     ImportClipPackage(std::path::PathBuf),
+    ChooseClipExportFile,
+    ExportClipPackage {
+        clip: eidetic::ManifestId,
+        path: std::path::PathBuf,
+        replace: bool,
+    },
     /// Summon a provider-owned pane beside the active pane. The source was
     /// minted by the caller; provider admission still occurs at the render
     /// boundary, while the app preserves this exact durable value.
@@ -936,6 +942,12 @@ pub enum Effect {
     },
     ChooseClipPackageFile,
     ImportClipPackage(std::path::PathBuf),
+    ChooseClipExportFile { clip: eidetic::ManifestId },
+    ExportClipPackage {
+        clip: eidetic::ManifestId,
+        path: std::path::PathBuf,
+        replace: bool,
+    },
     ControlRetainedClip(crate::retained_clip::ClipRequest),
     /// Open this session's retained place domains through the shell-owned
     /// worker. `generation` makes every later answer session-specific.

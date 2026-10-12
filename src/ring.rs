@@ -241,6 +241,8 @@ pub fn ring_of(action: &Action) -> Ring {
         | ChooseKnotDocumentFile { .. }
         | ChooseClipPackageFile
         | ImportClipPackage(_)
+        | ChooseClipExportFile
+        | ExportClipPackage { .. }
         | SummonContributedPane { .. }
         // Personal theme authoring is a local settings gesture, with no
         // participant grant to open or alter the user's shared library.
