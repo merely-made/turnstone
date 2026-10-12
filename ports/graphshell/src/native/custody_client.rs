@@ -119,6 +119,43 @@ impl CustodyClient {
         expect_status(self.call(CustodyCall::Status).await?)
     }
 
+    /// The resident's secret-free quarantine cards.
+    pub async fn unassigned_imports(
+        &mut self,
+    ) -> Result<Vec<crate::native::quarantine::UnassignedImport>, CustodyClientError> {
+        match self.call(CustodyCall::UnassignedImports).await? {
+            CustodyAnswer::UnassignedImports { imports } => Ok(imports),
+            other => Err(mismatch("unassigned_imports", &other)),
+        }
+    }
+    pub async fn assign_import(
+        &mut self,
+        request: crate::native::quarantine::AssignImportRequest,
+    ) -> Result<(), CustodyClientError> {
+        expect_done(self.call(CustodyCall::AssignImport(request)).await?)
+    }
+    pub async fn quarantine(
+        &mut self,
+        profile: ProfileId,
+    ) -> Result<Vec<crate::native::quarantine::QuarantineCard>, CustodyClientError> {
+        match self.call(CustodyCall::Quarantine { profile }).await? {
+            CustodyAnswer::Quarantine { cards } => Ok(cards),
+            other => Err(mismatch("quarantine", &other)),
+        }
+    }
+    /// Request a decision, approved only by the resident's own native UI.
+    pub async fn review_quarantine(
+        &mut self,
+        request: crate::native::quarantine::ReviewRequest,
+    ) -> Result<(), CustodyClientError> {
+        expect_done(self.call(CustodyCall::ReviewQuarantine(request)).await?)
+    }
+    pub async fn unlock_native(&mut self) -> Result<(), CustodyClientError> {
+        expect_done(self.call(CustodyCall::UnlockNative).await?)
+    }
+    pub async fn lock_vault(&mut self) -> Result<(), CustodyClientError> {
+        expect_done(self.call(CustodyCall::LockVault).await?)
+    }
     /// The vault's personas, for a picker.
     pub async fn roster(&mut self) -> Result<Roster, CustodyClientError> {
         expect_roster(self.call(CustodyCall::Roster).await?)
@@ -352,6 +389,8 @@ fn answer_name(answer: &CustodyAnswer) -> &'static str {
     match answer {
         CustodyAnswer::VaultOutput { .. } => "vault output",
         CustodyAnswer::VaultEnrollment { .. } => "vault enrollment",
+        CustodyAnswer::Quarantine { .. } => "quarantine cards",
+        CustodyAnswer::UnassignedImports { .. } => "unassigned imports",
         CustodyAnswer::Status(_) => "a status",
         CustodyAnswer::Roster(_) => "a roster",
         CustodyAnswer::Done => "done",

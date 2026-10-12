@@ -17,6 +17,10 @@ pub mod access_inspection;
 pub mod link_inspection;
 #[cfg(feature = "web")]
 pub mod field_inspection;
+#[cfg(feature = "web")]
+pub mod presentation_editor;
+#[cfg(feature = "web")]
+pub mod presentation_binding;
 #[cfg(any(
     all(feature = "native", not(target_arch = "wasm32")),
     feature = "webrtc-join"

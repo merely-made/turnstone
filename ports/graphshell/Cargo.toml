@@ -24,6 +24,7 @@ native = [
     "graphshell-endpoint/stdio",
     "dep:notochord",
     "dep:dramatis",
+    "dep:chatelaine",
     "dep:personae",
     "personae/ssh",
     "dep:rand_core",
@@ -154,6 +155,7 @@ sceno.workspace = true
 scenomise.workspace = true
 scenotime.workspace = true
 serde = { version = "1", features = ["derive"], optional = true }
+chatelaine = { workspace = true, optional = true }
 serde_json.workspace = true
 workbench.workspace = true
 tabard = { workspace = true, optional = true }

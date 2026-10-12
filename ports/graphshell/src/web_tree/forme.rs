@@ -8,7 +8,7 @@
 use super::*;
 use cambium::{Slot, button, frisket_with};
 use graphshell::{
-    forme_session::{FormeSession, PreparedSave, SaveKind},
+    forme_session::{DropEffect, FormeSession, PreparedSave, SaveKind},
     forme_workspace::FormeWorkspace,
 };
 use muniment::IndexedDbBackend;
@@ -26,6 +26,7 @@ pub(super) struct Pane {
     pub(super) workbench: bool,
     moving: Option<Uuid>,
     candidate: Option<FormeWorkspace>,
+    feedback: Option<(DropEffect, [f32; 4])>,
     drag: Option<(Uuid, (f32, f32), bool)>,
     cancelled_drag: bool,
 }
@@ -44,6 +45,7 @@ impl Pane {
             workbench: false,
             moving: None,
             candidate: None,
+            feedback: None,
             drag: None,
             cancelled_drag: false,
         })
@@ -83,6 +85,9 @@ impl Pane {
     pub(super) fn previewing(&self) -> bool {
         self.candidate.is_some()
     }
+    pub(super) fn drop_effect(&self) -> &'static str {
+        self.feedback.map_or("none", |(effect, _)| effect.label())
+    }
     pub(super) fn ready(&self) -> bool {
         self.completed.borrow().is_some()
     }
@@ -114,6 +119,7 @@ pub(super) fn poll(page: &mut TreePage) {
 fn changed(page: &mut TreePage) {
     if let Some(pane) = &mut page.forme {
         pane.candidate = None;
+        pane.feedback = None;
         pane.moving = None;
         pane.drag = None;
         if let Err(error) = pane.install(&mut page.shared.canvas.borrow_mut()) {
@@ -241,6 +247,7 @@ fn begin_move(page: &mut TreePage, member: Uuid) {
             return;
         }
         pane.candidate = None;
+        pane.feedback = None;
         pane.moving = Some(member);
         pane.session.break_gesture();
         let _ = pane.install(&mut page.shared.canvas.borrow_mut());
@@ -278,6 +285,12 @@ fn preview(page: &mut TreePage, target: Uuid, edge: workbench::Edge) {
             .set_forme_region(Some(candidate.region()))
     }) {
         Ok(()) => {
+            let region = pane.model().region();
+            pane.feedback = region
+                .cells
+                .iter()
+                .find(|cell| cell.member == target)
+                .map(|cell| (DropEffect::Split(edge), region.cell_world_bounds(cell)));
             pane.candidate = Some(candidate);
             pane.status = "Preview ready · Apply move or cancel".into();
         },
@@ -293,6 +306,7 @@ fn finish_preview(page: &mut TreePage, apply: bool) {
         return;
     }
     let candidate = pane.candidate.take();
+    pane.feedback = None;
     pane.moving = None;
     pane.cancelled_drag |= !apply && pane.drag.is_some();
     pane.drag = None;
@@ -413,6 +427,7 @@ pub(super) fn pointer(page: &mut TreePage, event: &cambium::PointerEvent) -> boo
                 return false;
             };
             pane.candidate = None;
+            pane.feedback = None;
             pane.moving = None;
             pane.session.break_gesture();
             pane.drag = Some((member, event.local, false));
@@ -427,11 +442,13 @@ pub(super) fn pointer(page: &mut TreePage, event: &cambium::PointerEvent) -> boo
             }
             let canvas = page.shared.canvas.borrow();
             let point = canvas.world_point_at(event.local);
-            let preview = pane.session.drop_preview(*member, point, canvas.graph());
+            let preview = pane.session.drop_proposal(*member, point, canvas.graph());
             drop(canvas);
+            let previous_feedback = pane.feedback;
             match preview {
-                Ok(candidate) => {
-                    pane.candidate = candidate;
+                Ok(proposal) => {
+                    pane.feedback = proposal.as_ref().map(|p| (p.effect, p.bounds));
+                    pane.candidate = proposal.map(|p| p.workspace);
                     pane.status = if pane.candidate.is_some() {
                         "Drop to edit the Forme draft · Escape cancels"
                     } else {
@@ -441,11 +458,16 @@ pub(super) fn pointer(page: &mut TreePage, event: &cambium::PointerEvent) -> boo
                 },
                 Err(error) => {
                     pane.candidate = None;
+                    pane.feedback = None;
                     pane.status = error;
                 },
             }
             let _ = pane.install(&mut page.shared.canvas.borrow_mut());
-            event.defer_rebuild();
+            // Rebuild only when the displayed target/effect changes. Motion
+            // within one drop zone keeps the retained cue and pointer capture.
+            if previous_feedback == pane.feedback {
+                event.defer_rebuild();
+            }
         },
         cambium::PointerPhase::Up => {
             let Some((member, _start, active)) = pane.drag.take() else {
@@ -482,6 +504,50 @@ pub(super) fn pointer(page: &mut TreePage, event: &cambium::PointerEvent) -> boo
     }
     page.shared.dirty.set(true);
     true
+}
+
+/// A view-only cue above the graph. It neither catches pointer input nor
+/// changes the draft; geometry and intent come from the resolved drop proposal.
+pub(super) fn drop_feedback(page: &TreePage) -> Option<Child> {
+    let pane = page.forme.as_ref()?;
+    let (effect, bounds) = pane.feedback?;
+    let canvas = page.shared.canvas.borrow();
+    let [x, y, r, b] = effect.preview_bounds(bounds);
+    let (left, top) = canvas.screen_point_of((x, y));
+    let (right, bottom) = canvas.screen_point_of((r, b));
+    let prompt = if pane.drag.is_some() {
+        "Release to edit draft"
+    } else {
+        "Apply move to accept"
+    };
+    Some(Box::new(
+        el(
+            "div",
+            el(
+                "span",
+                format!("{} · {prompt} · Escape cancels", effect.label()),
+            )
+            .attr("class", "forme-drop-label"),
+        )
+        .attr(
+            "class",
+            if effect == DropEffect::Stack {
+                "forme-drop-cue forme-drop-stack"
+            } else {
+                "forme-drop-cue"
+            },
+        )
+        .attr("role", "status")
+        .attr("data-forme-drop-effect", effect.label())
+        .attr(
+            "style",
+            format!(
+                "left:{left}px;top:{top}px;width:{}px;height:{}px;",
+                right - left,
+                bottom - top
+            ),
+        ),
+    ))
 }
 
 pub(super) fn toolbar(page: &TreePage) -> Child {

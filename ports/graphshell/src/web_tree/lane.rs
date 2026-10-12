@@ -678,6 +678,8 @@ impl Product for TreeLane {
         let snapshot = link_inspection::fields(page, snapshot);
         #[cfg(feature = "product")]
         let snapshot = field_inspection::fields(page, &canvas, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = presentation::fields(page, snapshot);
         let snapshot = snapshot
             .with_field("physics-steps", step.steps.to_string())
             .with_field(
@@ -1321,19 +1323,20 @@ impl Product for TreeLane {
         let pending = self.shared.timing.borrow_mut().poll();
         let local_shown = ctx.runner.state().session == remote::Session::Local;
         // A hidden canvas cannot advance its last motion flag. Workbench
-        // waits still need the Forme store write to finish before reopening.
+        // waits still need workspace store writes to finish before reopening.
         let canvas_shown = local_shown
             && leaf_rect(ctx).is_some_and(|(_, _, width, height)| width > 0. && height > 0.);
         #[cfg(feature = "product")]
-        let forme_saving = ctx.runner.state().forme.as_ref().is_some_and(|pane| pane.saving);
+        let workspace_saving = ctx.runner.state().forme.as_ref().is_some_and(|pane| pane.saving)
+            || ctx.runner.state().presentation.busy();
         #[cfg(not(feature = "product"))]
-        let forme_saving = false;
+        let workspace_saving = false;
         Some(
             capture_pending
                 || pending
                 || self.shared.remote.borrow().in_flight()
                 || (canvas_shown && self.shared.moving.get())
-                || forme_saving
+                || workspace_saving
                 || ctx
                     .runner
                     .state()
@@ -1406,6 +1409,7 @@ fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> Pr
         .with_field("forme-hovered", canvas.forme_region_hovered().to_string())
         .with_field("forme-saving", pane.saving.to_string())
         .with_field("forme-preview", pane.previewing().to_string())
+        .with_field("forme-drop-effect", pane.drop_effect())
         .with_field("forme-draft", pane.session.editing().to_string())
         .with_field("forme-dirty", pane.session.dirty().to_string())
         .with_field("forme-can-undo", pane.session.can_undo().to_string())

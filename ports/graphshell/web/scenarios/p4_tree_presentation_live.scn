@@ -1,0 +1,132 @@
+# Fresh dedicated origin/profile, normal motion, product build:
+# tree.html?app=local&fixture=field-inspection&scenario=scenarios/p4_tree_presentation_live.scn
+# Follow with the reopen case on this retained origin. Captures need review.
+assert snap source == saved graph
+assert snap field-inspection-fixture == true
+assert snap rules-count == 0
+assert snap rules-live-enabled == false
+click role:button Pause physics
+click role:button Restore arrangement
+settle 3
+click-node file:///Graphshell/reference-notes.md
+settle 2
+click role:button Open selected in workbench
+wait 120
+click role:button Return to Mere
+settle 2
+click-node https://example.test/i2p-port
+settle 2
+click role:button Open selected in workbench
+wait 120
+click role:button Return to Mere
+settle 2
+assert snap forme-accesses == 2
+assert snap forme-guides-visible == true
+remember scene-before-rules
+reveal role:button Inspect selected access
+click role:button Inspect selected access
+reveal role:button Presentation rules
+click role:button Presentation rules
+reveal role:button Use inspected access
+click role:button Use inspected access
+assert snap rules-bound-ready == true
+remember exact-access
+reveal role:button Begin rule draft
+click role:button Begin rule draft
+reveal role:button Add node rule
+click role:button Add node rule
+reveal role:button Preview rule decisions
+click role:button Preview rule decisions
+assert snap rules-preview-details == node-1
+# Selecting another access updates state but never retargets the bound occurrence.
+click-node file:///Graphshell/reference-notes.md
+settle 2
+same exact-access rules-bound-id
+assert snap rules-preview-ready == false
+reveal role:button Discard rule draft
+click role:button Discard rule draft
+assert snap rules-count == 0
+reveal role:button Inspect fields
+click role:button Inspect fields
+reveal role:button Inspect Forme
+click role:button Inspect Forme
+reveal role:button Use inspected field
+click role:button Use inspected field
+assert snap rules-bound-ready == true
+remember exact-forme
+reveal role:button Begin rule draft
+click role:button Begin rule draft
+reveal role:button Add field rule
+click role:button Add field rule
+reveal role:button Add field rule
+click role:button Add field rule
+reveal role:textbox Rule priority
+click role:textbox Rule priority
+input-text 1
+reveal role:textbox Rule condition JSON
+click role:textbox Rule condition JSON
+input-text {"kind":"equals","fact":"role","value":"forme"}
+reveal role:textbox Rule effects JSON
+click role:textbox Rule effects JSON
+input-text [{"kind":"region_guides","visible":false}]
+reveal role:button Preview rule decisions
+click role:button Preview rule decisions
+assert snap rules-preview-guides == field-2
+assert snap forme-guides-visible == true
+remember before-apply
+reveal role:button Apply rules
+click role:button Apply rules
+wait 120
+assert snap rules-generation == 1
+assert snap rules-live-enabled == false
+assert snap forme-guides-visible == true
+reveal role:button Enable saved rules in this view
+click role:button Enable saved rules in this view
+settle 2
+assert snap rules-live-ready == true
+assert snap rules-live-guides-rule == field-2
+assert snap forme-guides-visible == false
+same before-apply graph-session nodes detail-member forme forme-accesses forme-geometry forme-bounds forme-locked forme-visible
+capture presentation_saved_forme_guides_hidden
+# Numen can preview a decision; it cannot receive the Forme subdivisions effect.
+reveal role:button Inspect field: Region study
+click role:button Inspect field: Region study
+reveal role:button Use inspected field
+click role:button Use inspected field
+reveal role:button Preview rule decisions
+click role:button Preview rule decisions
+assert snap rules-preview-guides == field-1
+assert snap forme-guides-visible == false
+capture presentation_numen_unsupported_effect
+# Saved Undo changes the live rules only after acknowledgment.
+reveal role:button Undo saved rules
+click role:button Undo saved rules
+wait 120
+assert snap rules-count == 0
+assert snap rules-generation == 2
+assert snap forme-guides-visible == true
+reveal role:button Redo saved rules
+click role:button Redo saved rules
+wait 120
+assert snap rules-count == 2
+assert snap rules-generation == 3
+assert snap forme-guides-visible == false
+# Boundary visibility remains owned by Forme and is preserved independently.
+reveal role:button Hide forme boundary
+click role:button Hide forme boundary
+wait 120
+assert snap forme-visible == false
+assert snap forme-guides-visible == false
+reveal role:button Show forme boundary
+click role:button Show forme boundary
+wait 120
+assert snap forme-visible == true
+assert snap forme-guides-visible == false
+reveal role:button Disable saved rules in this view
+click role:button Disable saved rules in this view
+settle 2
+assert snap rules-live-enabled == false
+assert snap forme-guides-visible == true
+same before-apply graph-session nodes detail-member forme forme-accesses forme-geometry forme-bounds forme-locked forme-visible
+same exact-forme forme
+capture presentation_guides_base_restored
