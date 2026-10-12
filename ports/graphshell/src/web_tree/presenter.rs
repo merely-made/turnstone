@@ -462,7 +462,7 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
     Some(Box::new(
         el("aside", rows)
             .attr("class", "tree-tools tree-presenter-panel")
-            .attr("role", "complementary")
+            .attr("role", "region")
             .attr("aria-label", "Project inspector"),
     ))
 }
