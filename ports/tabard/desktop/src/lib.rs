@@ -9,6 +9,7 @@
 //! a window, a private default library path and frame captures.
 
 mod reader;
+mod recovery_control;
 
 use std::{
     cell::{Cell, RefCell},
@@ -271,6 +272,7 @@ fn focus_name(runner: &WorkshopRunner) -> String {
 struct WorkshopLane {
     completion: Rc<Cell<Option<bool>>>,
     sheet: String,
+    recovery: Rc<RefCell<recovery_control::RecoveryControl>>,
 }
 
 impl mesquite::Product for WorkshopLane {
@@ -288,7 +290,7 @@ impl mesquite::Product for WorkshopLane {
     fn snapshot(&self, ctx: &Context<'_>, _: usize, _: f32) -> ProbeSnapshot {
         let state = ctx.runner.state();
         let primary = state.draft_theme().seeds.primary;
-        ProbeSnapshot::default()
+        let mut snapshot = ProbeSnapshot::default()
             .with_field("mode", state.mode_key())
             .with_field(
                 "graph_selected",
@@ -312,7 +314,34 @@ impl mesquite::Product for WorkshopLane {
             .with_field(
                 "primary",
                 format!("#{:02x}{:02x}{:02x}", primary.r, primary.g, primary.b),
-            )
+            );
+        if self.recovery.borrow().run.is_some() {
+            for (name, value) in self.recovery.borrow().fields(ctx) {
+                snapshot = snapshot.with_field(name, value);
+            }
+        }
+        snapshot
+    }
+
+    fn capture_observer(&self) -> Option<mesquite::CaptureObserver<Self>> {
+        let control = self.recovery.clone();
+        let run = control.borrow().run.clone()?;
+        Some(mesquite::CaptureObserver {
+            run,
+            observe: Box::new(move |ctx, presented| {
+                let mut fields = control.borrow().fields(ctx);
+                fields.insert("presentation_host".into(), presented.host.to_string());
+                fields.insert(
+                    "presentation_sequence".into(),
+                    presented.sequence.to_string(),
+                );
+                Ok(mesquite::CaptureProjection {
+                    fields,
+                    viewport: None,
+                    product: serde_json::json!({"kind": "owned-device-recovery", "injection": "after completed baseline capture", "producers": [READER_LEAF_KEY, STYLESHEET_LEAF_KEY]}),
+                })
+            }),
+        })
     }
 
     fn busy_mut(&mut self, _: &mut Context<'_>, capture_pending: bool) -> Option<bool> {
@@ -327,6 +356,12 @@ impl mesquite::Product for WorkshopLane {
         _: mesquite::Checkpoints<'_>,
         line: &str,
     ) -> Result<(), String> {
+        if line == "device-destroy-owned" {
+            return self.recovery.borrow_mut().destroy(ctx);
+        }
+        if line == "device-recovery-verify" {
+            return self.recovery.borrow().verify(ctx);
+        }
         if let Some(text) = line.strip_prefix("text ") {
             ctx.runner
                 .dispatch_key(KeyEvent::new(Key::Character(text.into())));
@@ -367,7 +402,25 @@ impl mesquite::Product for WorkshopLane {
                 ));
             }
         }
+        if self.recovery.borrow().run.is_some() {
+            match (digest("before_loss"), digest("after_loss")) {
+                (Some(before), Some(after)) if before == after => {},
+                (Some(_), Some(_)) => errors.push(
+                    "unchanged full-workshop pixels differ after owned device recovery".into(),
+                ),
+                _ => errors.push("owned device recovery lacks its before/after captures".into()),
+            }
+        }
+        errors.extend(self.recovery.borrow().pixel_failures());
         errors
+    }
+
+    fn receipt_lines(&self) -> Vec<String> {
+        self.recovery.borrow().lines()
+    }
+
+    fn inspect(&mut self, name: &str, frame: &cambium_rootstock::Frame) {
+        self.recovery.borrow_mut().inspect(name, frame);
     }
 
     fn complete(&mut self, _: &mut Context<'_>, outcome: &taproot::Outcome) -> Result<(), String> {
@@ -390,6 +443,7 @@ pub fn run(library: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
                 WorkshopLane {
                     completion: completion.clone(),
                     sheet: workshop_stylesheet(),
+                    recovery: Rc::new(RefCell::new(recovery_control::RecoveryControl::from_env())),
                 },
                 cambium_genet_winit_host::read_file,
             )
