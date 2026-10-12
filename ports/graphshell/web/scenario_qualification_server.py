@@ -19,6 +19,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 import re
+import subprocess
 from urllib.parse import unquote, urlsplit
 
 
@@ -41,9 +42,10 @@ await fetch('/qualification-probe',{method:'POST',headers:{'content-type':'appli
 
 
 class Handler(SimpleHTTPRequestHandler):
-    def __init__(self, *args, package, output, **kwargs):
+    def __init__(self, *args, package, output, moot_owner=None, **kwargs):
         self.package = package
         self.output = output
+        self.moot_owner = moot_owner
         super().__init__(*args, **kwargs)
 
     def end_headers(self):
@@ -60,6 +62,8 @@ class Handler(SimpleHTTPRequestHandler):
         return super().translate_path(path)
 
     def do_GET(self):
+        if urlsplit(self.path).path == '/moot-resource/read' and self.moot_owner:
+            return self.owner_response('read')
         if urlsplit(self.path).path == '/qualification-probe.html':
             self.send_response(200)
             self.send_header('Content-Type', 'text/html; charset=utf-8')
@@ -71,6 +75,12 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         route = urlsplit(self.path).path
+        if route == '/moot-resource/action' and self.moot_owner:
+            length = int(self.headers.get('Content-Length', '0'))
+            if not 0 < length <= 65536:
+                self.send_error(413)
+                return
+            return self.owner_response('dispatch', self.rfile.read(length))
         if route not in ('/qualification-probe', '/scenario-progress', '/scenario-receipt'):
             self.send_error(404)
             return
@@ -100,17 +110,36 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_response(204)
         self.end_headers()
 
+    def owner_response(self, command, body=None):
+        # Explicit compiled local fixture, never a user-supplied command string.
+        try:
+            result = subprocess.run([str(self.moot_owner), command], input=body,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, check=False)
+        except (OSError, subprocess.TimeoutExpired):
+            self.send_error(503, 'Local resource owner unavailable')
+            return
+        if result.returncode:
+            self.send_error(500, 'Local resource owner failed')
+            return
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Length', str(len(result.stdout)))
+        self.end_headers()
+        self.wfile.write(result.stdout)
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--package', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--port', type=int, required=True)
+    parser.add_argument('--moot-owner', type=Path, help='Explicit compiled Moot resource owner fixture')
     args = parser.parse_args()
     package = args.package.resolve()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    handler = partial(Handler, directory=str(Path(__file__).parent), package=package, output=output)
+    handler = partial(Handler, directory=str(Path(__file__).parent), package=package, output=output,
+        moot_owner=args.moot_owner.resolve() if args.moot_owner else None)
     with ThreadingHTTPServer(('127.0.0.1', args.port), handler) as server:
         print(f'Qualification origin: http://127.0.0.1:{args.port}', flush=True)
         server.serve_forever()

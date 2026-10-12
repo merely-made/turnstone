@@ -3726,6 +3726,7 @@ dependencies = [
  "graphshell-endpoint",
  "insigne",
  "mere",
+ "mere-moot",
  "mere-webrtc-carrier",
  "muniment",
  "notochord",
@@ -3782,6 +3783,7 @@ dependencies = [
  "graphshell-client",
  "js-sys",
  "mere",
+ "mere-moot",
  "mesquite",
  "muniment",
  "netrender",
@@ -4784,6 +4786,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "mere-comms"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "serde",
+]
+
+[[package]]
 name = "mere-curation"
 version = "0.1.0"
 dependencies = [
@@ -4825,6 +4835,15 @@ dependencies = [
  "url",
  "uuid",
  "web-time",
+]
+
+[[package]]
+name = "mere-moot"
+version = "0.0.1"
+dependencies = [
+ "cambium",
+ "mere-comms",
+ "serde",
 ]
 
 [[package]]

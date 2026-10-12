@@ -12,6 +12,7 @@ name = "projection_dynamics_receipt"
 required-features = ["web"]
 
 [features]
+moot-resources = ["web", "dep:moot"]
 default = ["native", "image-decode"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
 image-decode = ["cambium-rootstock?/image-decode", "mere?/image-decode"]
@@ -127,6 +128,7 @@ personal-sync = [
 ]
 
 [dependencies]
+moot = { workspace = true, optional = true }
 # The check conclusions and faults, named directly (insigne proofs plan, B).
 insigne = { workspace = true, features = ["verify"] }
 async-trait = { version = "0.1", optional = true }

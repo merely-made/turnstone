@@ -93,7 +93,7 @@ const SHEET: &str = "\
     .tree-tools h2 { font-size:14px; margin:2px 0 4px; } \
     .tree-tools h3 { font-size:13px; margin:4px 0 2px; } \
     .tree-rules [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
-    .tree-rules pre, .tree-dynamics pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
+    .tree-rules pre, .tree-dynamics pre, .moot-opened-content { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
     .tree-coupling [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
     .tree-inspection { overflow-wrap:anywhere; } \
     .tree-inspection p, .tree-inspection li { font-size:12px; } \
@@ -150,6 +150,8 @@ fn tree_stylesheet(appearance: &str) -> String {
 
 /// What the page, its producer and its hooks share.
 struct Shared {
+    #[cfg(feature = "moot-resources")]
+    moot_resources: RefCell<graphshell::moot_resources::Host>,
     #[cfg(feature = "applets")]
     applet: RefCell<applet::Pane>,
     appearance: crate::web_appearance::Handle,
@@ -495,6 +497,8 @@ impl TextureProducer for CanvasProducer {
 
 /// The application state the tree renders.
 pub(crate) struct TreePage {
+    #[cfg(feature = "moot-resources")]
+    moot_resources_seen: u64,
     #[cfg(feature = "product")]
     forme: Option<forme::Pane>,
     #[cfg(feature = "product")]
@@ -756,6 +760,8 @@ fn tools_docked(page: &TreePage) -> bool {
 /// The Graph tools region: the storage line on `app=local`, then its sections.
 fn tools_region(page: &TreePage) -> Child {
     let mut children: Vec<Child> = Vec::new();
+    #[cfg(feature = "moot-resources")]
+    children.push(moot_resources::section(page));
     if let Some(product) = &page.product {
         children.push(Box::new(
             el("p", format!("Storage: {}", product.storage))
@@ -996,6 +1002,8 @@ async fn boot(root: Element) -> Result<(), String> {
     let initial_sheet = tree_stylesheet(&appearance.borrow().sheet());
     let appearance_revision = Cell::new(appearance.borrow().revision);
     let shared = Rc::new(Shared {
+        #[cfg(feature = "moot-resources")]
+        moot_resources: RefCell::new(graphshell::moot_resources::Host::default()),
         #[cfg(feature = "applets")]
         applet: RefCell::new(applet::Pane::default()),
         appearance,
@@ -1077,6 +1085,8 @@ async fn boot(root: Element) -> Result<(), String> {
         options,
         move |_window, _commands, _wake| Init {
             state: TreePage {
+                #[cfg(feature = "moot-resources")]
+                moot_resources_seen: 0,
                 #[cfg(feature = "product")]
                 forme,
                 #[cfg(feature = "product")]
@@ -1176,6 +1186,13 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
     let after_shared = shared.clone();
     HostHooks {
         frame: Box::new(move |ctx| {
+            #[cfg(feature = "moot-resources")]
+            {
+                let version=frame_shared.moot_resources.borrow().version;
+                if version!=ctx.runner.state().moot_resources_seen {
+                    ctx.runner.update(|page| {page.moot_resources_seen=version;page.tools_open=true;});
+                }
+            }
             #[cfg(feature = "applets")]
             {
                 let (version, generation) = {
@@ -1498,6 +1515,8 @@ mod lane;
 #[cfg(feature = "product")]
 mod link_inspection;
 mod physics;
+#[cfg(feature = "moot-resources")]
+mod moot_resources;
 #[cfg(feature = "product")]
 mod presentation;
 #[cfg(feature = "product")]
