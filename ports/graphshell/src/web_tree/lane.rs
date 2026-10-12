@@ -689,6 +689,8 @@ impl Product for TreeLane {
         let snapshot = presentation::fields(page, snapshot);
         #[cfg(feature = "product")]
         let snapshot = dynamics_inspection::fields(page, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = node_presentation::fields(page,snapshot);
         let snapshot = snapshot
             .with_field("physics-steps", step.steps.to_string())
             .with_field(

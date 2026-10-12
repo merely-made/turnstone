@@ -6,13 +6,10 @@
 
 //! Exact held occurrences and disclosed view inputs for presentation decisions.
 //! No source writes, field evaluation, URL identity or synthetic assertions.
+use crate::link_inspection::{LinkTarget, inspect_link};
 use crate::presentation_editor::presentation::{
     Condition, Context, Effect, Issue, PrimitiveKind, Property, Resolution, RuleSet, Scalar,
     ViewState,
-};
-use crate::{
-    access_inspection::inspect_access,
-    link_inspection::{LinkTarget, inspect_link},
 };
 use mere::kernel::graph::{FieldDefinition, FieldExtent, FieldId, Graph};
 use serde::{Deserialize, Serialize};
@@ -109,10 +106,11 @@ pub fn bind(
     let facts = &mut bound.context.facts;
     match occurrence {
         Occurrence::Access { member } => {
-            let inspected = inspect_access(graph, *member)?;
-            let (_, node) = graph.get_node_by_id(*member).ok_or("Access departed")?;
-            text(facts, "label", inspected.access.title);
-            text(facts, "address", inspected.access.address);
+            let (key, node) = graph
+                .get_node_by_id(*member)
+                .ok_or_else(|| format!("Access {member} is no longer held here"))?;
+            text(facts, "label", &node.title);
+            text(facts, "address", node.url());
             if let Some(mime) = &node.media_type {
                 text(facts, "media_type", mime);
                 let category = mime.split('/').next().unwrap_or("");
@@ -120,14 +118,16 @@ pub fn bind(
                     text(facts, "media", category);
                 }
             }
-            if let Some(id) = inspected.resource_id {
+            if let Some(id) = graph.shown_resource_id(key) {
                 text(facts, "resource_id", id.to_string());
-            }
-            if let Some(resource) = inspected.resource {
-                text(facts, "resource_address", resource.address);
-                for fact in resource.facts {
-                    if let Ok(value) = serde_json::from_value::<Scalar>(fact.value) {
-                        facts.insert(format!("resource.{}", fact.key), value);
+                if let Some(resource) = graph.resource(id) {
+                    text(facts, "resource_address", resource.canonical_iri());
+                    if let Some(values) = graph.resource_facets().facets_of(&id) {
+                        for (key, value) in values.iter() {
+                            if let Ok(value) = serde_json::from_value::<Scalar>(value.clone()) {
+                                facts.insert(format!("resource.{}", key.as_str()), value);
+                            }
+                        }
                     }
                 }
             }
@@ -272,7 +272,23 @@ impl BoundContext {
         matches!(
             (&self.occurrence, property),
             (Occurrence::Forme { .. }, Property::RegionGuides)
+                | (
+                    Occurrence::Access { .. },
+                    Property::Representation | Property::Details
+                )
         )
+    }
+    pub fn supports_effect(&self, effect: &Effect) -> bool {
+        if !self.supports(effect.property()) {
+            return false;
+        }
+        match effect {
+            Effect::Representation { value } => matches!(
+                value,
+                sceno::Representation::Glyph | sceno::Representation::Card
+            ),
+            _ => true,
+        }
     }
     pub fn guides(&self, resolution: &Resolution) -> Option<(Uuid, bool)> {
         let Occurrence::Forme { id } = self.occurrence else {

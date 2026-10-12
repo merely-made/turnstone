@@ -147,8 +147,38 @@ pub(super) fn section(page: &TreePage) -> Child {
                             DetailRow::new("Forme hold", member.forme_hold.to_string()),
                             DetailRow::new("Pointer drag", member.pointer_drag.to_string()),
                             DetailRow::new("Axis locks", &member.axis_locks),
+                            DetailRow::new(
+                                "Face treatment",
+                                match member.face_treatment.as_str() {
+                                    "gnode-representation-glyph" => "Glyph",
+                                    "gnode-representation-card" => "Ordinary Canvas face",
+                                    "gnode-representation-live-pane" => {
+                                        "Live frame indicator; content not embedded"
+                                    },
+                                    _ => "Unknown treatment",
+                                },
+                            ),
+                            DetailRow::new("Rule face override", member.rule_face.to_string()),
+                            DetailRow::new(
+                                "Body size in screen pixels",
+                                member
+                                    .face_screen_size
+                                    .map_or_else(|| "Unavailable".into(), |size| size.to_string()),
+                            ),
                         ],
                     )])));
+                }
+                for member in &report.members {
+                    let member = member.member;
+                    children.push(Box::new(button(
+                        format!("Preview appearance of {member}"),
+                        move |page: &mut TreePage, _| {
+                            presentation::choose(
+                                page,
+                                graphshell::presentation_binding::Occurrence::Access { member },
+                            )
+                        },
+                    )));
                 }
                 if let Some(count) = report.pair_controller_edges {
                     children.push(Box::new(el(
@@ -279,6 +309,31 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
                         .count()
                 })
                 .to_string(),
+        )
+        .with_field(
+            "dynamics-inspector-rule-faces",
+            report
+                .map_or(0, |report| {
+                    report
+                        .members
+                        .iter()
+                        .filter(|member| member.rule_face)
+                        .count()
+                })
+                .to_string(),
+        )
+        .with_field(
+            "dynamics-inspector-face-treatments",
+            report
+                .map(|report| {
+                    report
+                        .members
+                        .iter()
+                        .map(|member| member.face_treatment.clone())
+                        .collect::<Vec<_>>()
+                        .join("|")
+                })
+                .unwrap_or_default(),
         )
         .with_field(
             "dynamics-inspector-error",

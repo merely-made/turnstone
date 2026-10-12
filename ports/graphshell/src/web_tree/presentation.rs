@@ -83,6 +83,16 @@ impl Pane {
     pub(super) fn ready(&self) -> bool {
         self.completed.borrow().is_some()
     }
+    pub(super) fn live_enabled(&self) -> bool {
+        self.live_enabled
+    }
+    pub(super) fn saved_rules(
+        &self,
+    ) -> Option<(&graphshell::presentation_editor::presentation::RuleSet, u64)> {
+        self.session
+            .as_ref()
+            .map(|session| (session.committed(), session.generation()))
+    }
     pub(super) fn busy(&self) -> bool {
         self.session.as_ref().is_some_and(|s| s.busy())
     }
@@ -260,9 +270,7 @@ fn bound(page: &TreePage, occurrence: &Occurrence) -> Result<BoundContext, Strin
             view.selected = Some(canvas.selected_members().contains(member));
             view.position_pinned = Some(canvas.arrangement_role_of(key) == Role::Pinned);
             view.inspected = page.inspected_access == Some(*member);
-            view.screen_size = canvas
-                .node_body_rect(key)
-                .map(|(x, y, r, b)| f64::from((r - x).min(b - y).max(0.)));
+            view.screen_size = canvas.node_presentation_screen_size(*member);
         },
         Occurrence::Assertion { pair, statement } => {
             view.inspected = page.inspected_link == Some(*pair)
@@ -367,7 +375,8 @@ pub(super) fn install(page: &TreePage) {
         page.shared.dirty.set(true);
     }
 }
-fn choose(page: &mut TreePage, target: Occurrence) {
+pub(super) fn choose(page: &mut TreePage, target: Occurrence) {
+    page.presentation.open = true;
     page.presentation.binding = Some(target);
     page.presentation.preview = None;
     page.presentation.inputs_seen = None;
@@ -468,6 +477,16 @@ fn controls(page: &TreePage) -> Vec<Child> {
                 })
             })));
         }
+        children.push(Box::new(button("Add node ladder defaults", |page: &mut TreePage, _| {
+            action(page, |pane| {
+                pane.stage()?;
+                let mut selected = None;
+                pane.session.as_mut().unwrap().edit(None,now_ms() as u64,|draft| { selected = Some(graphshell::node_presentation::add_defaults(draft)); })?;
+                pane.selected = selected; pane.sync();
+                pane.status = "Node ladder defaults added to the private draft; edit priorities and thresholds before applying".into();
+                Ok(())
+            })
+        })));
         children.push(Box::new(button(
             "Discard rule draft",
             |page: &mut TreePage, _| {
@@ -836,9 +855,9 @@ pub(super) fn section(page: &TreePage) -> Child {
                                 .as_ref()
                                 .and_then(|inputs| inputs.bound.as_ref())
                                 .and_then(|result| result.as_ref().ok())
-                                .is_some_and(|bound| bound.supports(*property))
+                                .is_some_and(|bound| bound.supports_effect(&decision.effect))
                             {
-                                "Forme renderer available for saved rules"
+                                "Renderer available for saved rules"
                             } else {
                                 "decision only; no live renderer for this preview"
                             }
