@@ -55,6 +55,8 @@ settle 2
 key Enter
 settle 2
 assert snap wheel-mode == page
+# A preceding pan impulse glides; observe page policy only after it settles.
+wait 120
 remember page-start
 wheel-graph 90
 settle 2

@@ -71,12 +71,12 @@ pub fn wheel_use(mode: WheelMode, ctrl: bool, meta: bool) -> WheelUse {
     }
 }
 
-/// Zoom by a wheel notch `dy` (logical px) about canvas-local `at`, through
-/// the canvas's own cursor-anchored zoom.
+/// Zoom by a DOM wheel notch `dy` (positive down, logical px) about canvas-local
+/// `at`, translating to the canvas's positive-up cursor-anchored zoom.
 pub fn wheel_zoom(canvas: &mut Canvas, at: (f32, f32), dy: f32) {
     canvas.cursor_moved(at.0, at.1);
     canvas.set_ctrl(true);
-    canvas.wheel(0.0, dy);
+    canvas.wheel(0.0, -dy);
     canvas.set_ctrl(false);
 }
 
@@ -202,8 +202,12 @@ mod tests {
         let at = (200.0, 150.0);
         let before = world_at(&canvas, at);
         let zoom = canvas.camera().zoom;
-        wheel_zoom(&mut canvas, at, 40.0);
+        wheel_zoom(&mut canvas, at, -40.0);
         assert!(canvas.camera().zoom > zoom, "wheeling up enlarges");
+        assert!(close(world_at(&canvas, at), before));
+        let enlarged = canvas.camera().zoom;
+        wheel_zoom(&mut canvas, at, 40.0);
+        assert!(canvas.camera().zoom < enlarged, "wheeling down reduces");
         assert!(close(world_at(&canvas, at), before));
     }
 
