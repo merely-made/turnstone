@@ -93,7 +93,7 @@ const SHEET: &str = "\
     .tree-tools h2 { font-size:14px; margin:2px 0 4px; } \
     .tree-tools h3 { font-size:13px; margin:4px 0 2px; } \
     .tree-rules [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
-    .tree-rules pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
+    .tree-rules pre, .tree-dynamics pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
     .tree-coupling [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
     .tree-inspection { overflow-wrap:anywhere; } \
     .tree-inspection p, .tree-inspection li { font-size:12px; } \
@@ -509,6 +509,8 @@ pub(crate) struct TreePage {
     field_inspector: field_inspection::Pane,
     #[cfg(feature = "product")]
     presentation: presentation::Pane,
+    #[cfg(feature = "product")]
+    dynamics_inspector: dynamics_inspection::Pane,
     #[cfg(feature = "applets")]
     applet_seen: u64,
     #[cfg(feature = "applets")]
@@ -760,6 +762,8 @@ fn tools_region(page: &TreePage) -> Child {
         ));
     }
     children.push(physics::section(page));
+    #[cfg(feature = "product")]
+    children.push(dynamics_inspection::section(page));
     #[cfg(feature = "product")]
     children.push(inspection::section(page));
     #[cfg(feature = "product")]
@@ -1083,6 +1087,8 @@ async fn boot(root: Element) -> Result<(), String> {
                 field_inspector: field_inspection::Pane::default(),
                 #[cfg(feature = "product")]
                 presentation,
+                #[cfg(feature = "product")]
+                dynamics_inspector: dynamics_inspection::Pane::default(),
                 #[cfg(feature = "applets")]
                 applet_seen: 0,
                 #[cfg(feature = "applets")]
@@ -1239,6 +1245,9 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                     ctx.runner.update(|page| presentation::update(page, inputs));
                 }
                 presentation::install(ctx.runner.state());
+                if let Some(report) = dynamics_inspection::refresh(ctx.runner.state()) {
+                    ctx.runner.update(|page| dynamics_inspection::update(page, report));
+                }
             }
             // The remote session moves outside the runner (its channel's
             // pumps); rebuild the view when it has.
@@ -1479,6 +1488,8 @@ mod link_inspection;
 mod physics;
 #[cfg(feature = "product")]
 mod presentation;
+#[cfg(feature = "product")]
+mod dynamics_inspection;
 #[cfg(feature = "product")]
 mod product;
 #[cfg(not(feature = "product"))]
