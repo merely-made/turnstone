@@ -15,6 +15,15 @@ alpha. Incomplete hex input stays visible and blocks Save, export and navigation
 until corrected or discarded. Locked accent harmony explains dependent hues
 and keeps their saturation/lightness editable.
 
+Choose **Interface**, **Reading**, **Headings**, **Labels** or **Code** under
+Typography. Enter a family name or choose an installed-family suggestion, an
+optional size in CSS pixels, and an optional line-height multiplier. Empty fields
+keep app defaults. **Apply font preferences** updates the previews; **Use app
+defaults for this role** removes only that role's preferences. Invalid values
+remain visible and block Save, export and navigation. Missing named faces keep
+their requested names and report the generic fallback on this machine. Font
+files are not embedded or downloaded. The editor frame keeps its neutral fonts.
+
 Inspect the specimens in light, dark or either high contrast mode. Preview
 mode is local to the workshop and does not activate the theme in another host.
 **Use preview as default** authors the theme's standard light/dark and contrast
@@ -35,7 +44,7 @@ rules in the cascade. The editor frame keeps its own appearance. CSS recovery
 diagnostics come from the shared Livery parser; valid rules can still render
 when another rule is rejected.
 
-Undo, Redo and Discard operate on the draft. Undo first discards unapplied hex
+Undo, Redo and Discard operate on the draft. Undo first discards unapplied hex, font
 or CSS input when present, then earlier applied edits can be undone. Choosing a
 built-in creates a user copy. **New copy** creates another identity. Switching
 themes, importing, deleting or reopening the library requires saving or
@@ -50,8 +59,9 @@ draft. A built-in marker or occupied identity produces a fresh user copy,
 preserving existing definitions. **Export…** captures the current draft,
 including unsaved edits, for the host to write to a selected destination.
 Theme JSON preserves seeds, alpha, harmony, default mode flags and exact mode
-stylesheet text using the existing `Theme` schema; JSON formatting is generated
-by the shared serializer. CSS colors and DTCG tokens export the selected
+stylesheet text and typography. Font-bearing themes use a version 2 envelope;
+color-only themes retain the existing `Theme` JSON shape. JSON formatting is generated
+by the shared serializer. CSS properties and DTCG color tokens export the selected
 canonical mode through Tabard's shared mode resolver, including high contrast.
 Those derived formats refuse a selected custom mode or a nonempty stylesheet
 attached to the selected mode; export Theme JSON to preserve such appearances.
