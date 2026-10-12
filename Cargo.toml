@@ -28,7 +28,7 @@ apparatus = { package = "mere-apparatus", git = "https://github.com/merely-made/
 # Presentable proof data/checks; Personae retains keys and issuing. The
 # identity tier lives in merely-made/dramatis (dramatis repo plan, DR-D); every
 # dramatis pin names the revision mere's workspace names, or personae splits.
-insigne = { git = "https://github.com/merely-made/dramatis.git", rev = "c1d620764315b4c750fcffea30b8c898b8bb73bc", features = ["verify"] }
+insigne = { git = "https://github.com/merely-made/dramatis.git", rev = "0234e7eea6f2ddf2330a71b9425da01b06ae0391", features = ["verify"] }
 athanor = { package = "mere-athanor", git = "https://github.com/merely-made/mere.git", rev = "5758724e86fcccad4df526514741d74445074bf7" }
 tabard = { git = "https://github.com/merely-made/mere.git", rev = "5758724e86fcccad4df526514741d74445074bf7" }
 tabard-workshop = { git = "https://github.com/merely-made/mere.git", rev = "5758724e86fcccad4df526514741d74445074bf7", features = ["native-host"] }
@@ -69,7 +69,7 @@ servitor = { git = "https://github.com/merely-made/mere.git", rev = "5758724e86f
 # personae master key (capability-model OQ2). Personae lends the key types and
 # the IdentityProvider trait; the keys themselves stay in djinn, which
 # Turnstone calls through Graphshell's custody route (dramatis DR-C).
-identity = { package = "personae", git = "https://github.com/merely-made/dramatis.git", rev = "c1d620764315b4c750fcffea30b8c898b8bb73bc" }
+identity = { package = "personae", git = "https://github.com/merely-made/dramatis.git", rev = "0234e7eea6f2ddf2330a71b9425da01b06ae0391" }
 # Self-signed Gemini client certificates projected from capsule-scoped
 # Personae-derived Ed25519 keys. The private key stays transient.
 rcgen = "0.14"
@@ -105,14 +105,14 @@ scenotime = { git = "https://github.com/merely-made/mere.git", rev = "5758724e86
 # The committed Git sources are authoritative. The gitignored Cargo config
 # redirects them to a sibling checkout during cross-repository development.
 graphshell = { git = "https://github.com/merely-made/mere.git", rev = "5758724e86fcccad4df526514741d74445074bf7" }
-notochord = { git = "https://github.com/merely-made/dramatis.git", rev = "c1d620764315b4c750fcffea30b8c898b8bb73bc" }
+notochord = { git = "https://github.com/merely-made/dramatis.git", rev = "0234e7eea6f2ddf2330a71b9425da01b06ae0391" }
 # The in-process carrier and the Knot endpoint it hosts. Turnstone embeds the
 # endpoint rather than spawning it: a subprocess is unshippable in a browser
 # tab or an iOS app, so the spawn path cannot be the only one.
-knot = { package = "knot-editor", git = "https://github.com/merely-made/knot-editor.git", rev = "e2bc47cf87207cff998a58bac4851ec2b0654400" }
+knot = { package = "knot-editor", git = "https://github.com/merely-made/knot-editor.git", rev = "19b99042d6c6708854f64e6187429da839a1c82c" }
 # The reusable one-document product surface. This stays separate from the
 # broad Knot port graph used by publishing and endpoint composition above.
-knot-document = { git = "https://github.com/merely-made/knot-editor.git", rev = "e2bc47cf87207cff998a58bac4851ec2b0654400" }
+knot-document = { git = "https://github.com/merely-made/knot-editor.git", rev = "19b99042d6c6708854f64e6187429da839a1c82c" }
 # The installed Distillery projection surface: the independent second provider
 # proving the contributed-surface seam (Knot shared-surface plan P0).
 distillery = { git = "https://github.com/merely-made/mere.git", rev = "5758724e86fcccad4df526514741d74445074bf7" }
@@ -205,14 +205,14 @@ taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git",
 # neither the app nor the place worker ever holds a clipboard handle.
 genet-clipboard = { git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda" }
 layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda" }
-paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
-paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
+paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "ef5412d760a978584c8c1801e8a765c51aecd403" }
+paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "ef5412d760a978584c8c1801e8a765c51aecd403" }
 # Suggestion rows key node identity by the graph's stable UUIDs.
 uuid = "1"
 # Resolve a declared icon href (or the /favicon.ico fallback) against the page URL.
 url = "2.5"
 # Rasterize + composite the canvas Scene through the shared present stack.
-netrender = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
+netrender = { git = "https://github.com/merely-made/netrender.git", rev = "ef5412d760a978584c8c1801e8a765c51aecd403" }
 genet-winit-host = { git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda" }
 # The view toolkit (rung 5 slice D, the toolkit adoption): cambium (the xilem
 # fork) + sprigging (its custom-paint leaves, incl. the data_grid and GraphCanvas
@@ -342,12 +342,12 @@ windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 # Dramatis Gaz takes Muniment from the registry; keep its types on the same
 # Mere source as Turnstone and the custody store.
 muniment = { git = "https://github.com/merely-made/mere.git", rev = "e95326dc08446a9256d3e340c63e571684afe697" }
-# Genet's maintained native preview renderer requires this qualified Vello
+# Genet and Mere share the maintained Classic 0.11 Vello
 # shader family. Root patches are not inherited from Mere or Genet, so keep
 # the renderer, encoding and shaders on the same immutable revision.
-netrender-vello = { git = "https://github.com/mark-ik/vello.git", rev = "10f01d6d88e94eac087daf033b24895cf97b8e82" }
-vello_encoding = { git = "https://github.com/mark-ik/vello.git", rev = "10f01d6d88e94eac087daf033b24895cf97b8e82" }
-vello_shaders = { git = "https://github.com/mark-ik/vello.git", rev = "10f01d6d88e94eac087daf033b24895cf97b8e82" }
+netrender-vello = { git = "https://github.com/mark-ik/vello", rev = "5862bba26c8a9f56f6a5fdc8ea6966b360a5d63a" }
+vello_encoding = { git = "https://github.com/mark-ik/vello", rev = "5862bba26c8a9f56f6a5fdc8ea6966b360a5d63a" }
+vello_shaders = { git = "https://github.com/mark-ik/vello", rev = "5862bba26c8a9f56f6a5fdc8ea6966b360a5d63a" }
 # SpiderMonkey's exact C API 2.1.2 release uses ICU ~2.1 internally. Its official
 # published-source commit keeps those path dependencies in a separate Git
 # family from Genet/Vano's required registry ICU >=2.2. No ICU Rust types cross
@@ -382,10 +382,10 @@ layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/gen
 # the host cannot receive source-distinct `Scene` or paint vocabulary types.
 # `netrender_text` is only Netrender's dev-only Parley adapter, so it does not
 # reach this application graph and must not add an unused root patch.
-netrender = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
-netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
-paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
-paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
+netrender = { git = "https://github.com/merely-made/netrender.git", rev = "ef5412d760a978584c8c1801e8a765c51aecd403" }
+netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "ef5412d760a978584c8c1801e8a765c51aecd403" }
+paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "ef5412d760a978584c8c1801e8a765c51aecd403" }
+paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "ef5412d760a978584c8c1801e8a765c51aecd403" }
 #
 # The tagged `mere-p2panda-net =0.7.5` source owns the exact-ALPN net crate.
 # It resolves through this root patch until its crates.io release is available.

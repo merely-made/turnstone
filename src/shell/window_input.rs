@@ -111,6 +111,23 @@ impl TouchInput {
         effect.handled
     }
 
+    /// Actual native UA touch admission gate, before placement/receiver work.
+    pub(super) fn reject_modal(&mut self, pool: &mut Pool, window: u64, open: bool) -> bool {
+        if !open {
+            return false;
+        }
+        // A held prompt rejects page activation but must still retire the
+        // interrupted window's contacts, including physical Up/Cancel.
+        self.cancel_window(pool, window);
+        true
+    }
+
+    /// Retire only this native window's pointers, preserving logical focus.
+    pub(super) fn cancel_window(&mut self, pool: &mut Pool, window: u64) {
+        pool.cancel_window_pointers(window);
+        self.contacts.retain(|(source, _), _| *source != window);
+    }
+
     pub(super) fn focus_lost(&mut self, pool: &mut Pool, window: u64) {
         pool.input_at(
             window,
@@ -165,6 +182,30 @@ pub(super) fn captured_mouse(pool: &Pool) -> Option<SurfaceId> {
     pool.captured_placement(1).copied()
 }
 
+/// A current retained mouse receiver in the event's own native window.
+/// This is independent of whether the new coordinates have a fresh plan hit.
+pub(super) fn captured_content_hit(
+    pool: &Pool,
+    window: u64,
+    position: PhysicalPosition,
+) -> Option<crate::surface::HitResult> {
+    let id = captured_mouse(pool)?;
+    let placement = pool.placement(&id)?;
+    if placement.window != window
+        || !pool.placement_generation(&id).is_some_and(|generation| pool.admits(&id, generation))
+    {
+        return None;
+    }
+    let node = match placement.content {
+        ContentKey::Node(node) | ContentKey::Reader { node, .. } => node,
+    };
+    Some(crate::surface::HitResult {
+        id,
+        kind: SurfaceKind::Content(node),
+        local: (position.x - placement.rect.x, position.y - placement.rect.y),
+    })
+}
+
 /// Resolve an admitted content press after current placements are revalidated.
 pub(super) fn content_press_target(
     focus: &mut FocusTarget,
@@ -173,24 +214,7 @@ pub(super) fn content_press_target(
     position: PhysicalPosition,
     hit: crate::surface::HitResult,
 ) -> crate::surface::HitResult {
-    let hit = if let Some(id) = captured_mouse(pool)
-        && let Some(placement) = pool.placement(&id)
-        && placement.window == window
-        && pool
-            .placement_generation(&id)
-            .is_some_and(|generation| pool.admits(&id, generation))
-    {
-        let node = match placement.content {
-            ContentKey::Node(node) | ContentKey::Reader { node, .. } => node,
-        };
-        crate::surface::HitResult {
-            id,
-            kind: SurfaceKind::Content(node),
-            local: (position.x - placement.rect.x, position.y - placement.rect.y),
-        }
-    } else {
-        hit
-    };
+    let hit = captured_content_hit(pool, window, position).unwrap_or(hit);
     if let SurfaceKind::Content(node) = hit.kind {
         *focus = FocusTarget::Content {
             node,

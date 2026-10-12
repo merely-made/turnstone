@@ -54,8 +54,9 @@ retained find, and the reader lane landed in the later browser-surface work.
 
 ## The taxonomy half
 
-"Bookmarks" is where the taxonomy enrichment lands. Turnstone ships two
-content classes today (`turnstone.web-page`, `turnstone.note` in
+"Bookmarks" is where the taxonomy enrichment lands. Turnstone ships three
+content classes today (`turnstone.web-page`, `turnstone.note`, and
+`turnstone.download` in
 [content_classes.rs](../src/content_classes.rs)), registered through the same
 chartulary seams a pack would use. The browser taxonomy grows the same way:
 
@@ -68,6 +69,13 @@ chartulary seams a pack would use. The browser taxonomy grows the same way:
 
 Nothing privileged: packs can define siblings. That rule is already in the
 file's charter and it holds here.
+
+Integration checkpoint, 2026-10-11: Fleece owns clip/capture boundaries,
+Eidetic owns schema facets, and Muniment owns durable content storage. Their
+adoption is being qualified with the shared Pelt, Graphshell and Genet
+consumers. It does not close U2's source-view consumer or U4's named
+collection and membership UI. Reader rendering remains a viewer lane with
+extraction lineage; these potential profiles are not required new classes.
 
 ## Steps
 

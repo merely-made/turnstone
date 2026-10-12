@@ -1295,6 +1295,12 @@ pub enum Update {
         kind: &'static str,
         reason: &'static str,
     },
+    /// Source held by the host and accepted after a real controller opened.
+    ContentSourceCaptured {
+        node: uuid::Uuid,
+        url: String,
+        document: crate::content::FetchedDocument,
+    },
     /// The content port could not spawn (or lost) `node`'s session.
     ContentFailed { node: uuid::Uuid, error: String },
     /// The recycle bin's current contents (the bin port answers every record

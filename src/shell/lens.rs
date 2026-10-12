@@ -51,6 +51,69 @@ pub(super) struct LensWindow {
     pub(super) a11y_forest: crate::foreign_a11y::ForeignA11y,
 }
 
+/// The actual Lens press resolver before Pane/Content/Divider dispatch.
+/// Current same-window custody precedes every fresh hit-kind branch.
+pub(super) fn lens_press_hit(
+    pool: &super::window_input::Pool,
+    window: u64,
+    plan: &[crate::surface::Surface],
+    focus: crate::surface::FocusTarget,
+    position: inker::PhysicalPosition,
+) -> Option<crate::surface::HitResult> {
+    super::window_input::captured_content_hit(pool, window, position)
+        .or_else(|| crate::surface::hit_test(plan, focus, position.x, position.y))
+}
+
+/// Platform-independent Lens pane custody, before fresh surface selection.
+/// App plans and renderer generation validation remain owned by the host.
+pub(super) trait LensPanePointerHost {
+    fn lens_pane_admission(&self) -> Option<super::input::ContributedPointer>;
+    fn lens_pane_admission_current(&self, admitted: super::input::ContributedPointer) -> bool;
+    fn lens_cancel_stale_admission(&mut self);
+    fn lens_release_admission(&mut self, window: u64, x: f32, y: f32);
+}
+
+pub(super) fn reject_lens_pane_press(host: &mut impl LensPanePointerHost) -> bool {
+    let Some(admitted) = host.lens_pane_admission() else { return false; };
+    // One physical mouse gesture cannot admit a competing page or pane Down,
+    // including a new press arriving in another native window.
+    if !host.lens_pane_admission_current(admitted) {
+        // Existing stale-withdrawal policy is distinct from valid custody.
+        host.lens_cancel_stale_admission();
+    }
+    true
+}
+
+pub(super) fn dispatch_lens_pane_release(
+    host: &mut impl LensPanePointerHost,
+    window: u64,
+    position: (f32, f32),
+    button: MouseButton,
+) -> bool {
+    // Existing correct terminal rule: every other button is swallowed, only
+    // the host's same-window admitted Left can release this receiver.
+    if host.lens_pane_admission().is_none() { return false; }
+    if button == MouseButton::Left {
+        host.lens_release_admission(window, position.0, position.1);
+    }
+    true
+}
+
+impl LensPanePointerHost for Shell {
+    fn lens_pane_admission(&self) -> Option<super::input::ContributedPointer> {
+        self.contributed_pointer
+    }
+    fn lens_pane_admission_current(&self, admitted: super::input::ContributedPointer) -> bool {
+        self.contributed_pointer_is_current(admitted)
+    }
+    fn lens_cancel_stale_admission(&mut self) {
+        self.cancel_content_pointer();
+    }
+    fn lens_release_admission(&mut self, window: u64, x: f32, y: f32) {
+        self.release_contributed_pointer(window, x, y);
+    }
+}
+
 impl Shell {
     /// Create any requested lens windows (rung 7). Called from the event
     /// handlers, where an `ActiveEventLoop` is in scope. Its graph panes
@@ -559,12 +622,19 @@ impl Shell {
                 // camera-gesture block below.
                 let (x, y) = lens.cursor;
                 let (lw, lh, ordinal) = (lens.width, lens.height, lens.ordinal);
+                if reject_lens_pane_press(self) {
+                    return;
+                }
                 let plan = self.lens_plan(ordinal, lw, lh);
-                if let Some(hit) = crate::surface::hit_test(
+                // Revalidate while the retained content focus still names its
+                // receiver, before a fresh Pane/None branch can change it.
+                self.sync_content_placements();
+                if let Some(hit) = lens_press_hit(
+                    &self.content_sessions.pool,
+                    ordinal as u64 + 1,
                     &plan,
                     crate::surface::FocusTarget::Graph(self.app.default_graph_pane()),
-                    x,
-                    y,
+                    inker::PhysicalPosition { x, y },
                 ) {
                     match hit.kind {
                         crate::surface::SurfaceKind::Pane(pid) => {
@@ -699,10 +769,7 @@ impl Shell {
                 .is_some_and(super::window_input::lens_button) =>
             {
                 let (cursor, ordinal) = (lens.cursor, lens.ordinal);
-                if self.contributed_pointer.is_some() {
-                    if button == MouseButton::Left {
-                        self.release_contributed_pointer(ordinal as u64 + 1, cursor.0, cursor.1);
-                    }
+                if dispatch_lens_pane_release(self, ordinal as u64 + 1, cursor, button) {
                     return;
                 }
                 if mouse_delivered {

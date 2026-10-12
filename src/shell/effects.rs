@@ -54,6 +54,115 @@ fn dispatch_content_spawn(
     ContentSpawnDispatch::Browser
 }
 
+/// A held body and its optional newly acquired source stay with one spawn.
+struct PreparedContentController {
+    node: uuid::Uuid,
+    url: String,
+    config: pelt_core::PeltControllerConfig,
+    source: Option<crate::content::FetchedDocument>,
+}
+
+struct OpenedContentController {
+    controller: pelt_core::PeltController<netrender::Scene>,
+    source: Option<Update>,
+}
+
+fn content_spawn_is_current(app: &crate::app::App, node: uuid::Uuid, url: &str) -> bool {
+    app.graph_runtimes
+        .graph_containing_member(node)
+        .and_then(|graph| app.graph_runtimes.canvas(graph))
+        .is_some_and(|canvas| browse::still_current(canvas, node, url))
+}
+
+/// Prepare through the same host boundary used by ordinary SpawnContent.
+fn prepare_content_controller(
+    app: &crate::app::App,
+    node: uuid::Uuid,
+    url: &str,
+    engine_id: &str,
+    fetched: Option<crate::content::FetchedDocument>,
+    viewport: (u32, u32),
+) -> Result<Option<PreparedContentController>, String> {
+    if engine_id == crate::nomadnet::ENGINE_ID
+        && url.starts_with("file://")
+        && !content_spawn_is_current(app, node, url)
+    {
+        return Ok(None);
+    }
+    let (fetched, source) = if engine_id == crate::nomadnet::ENGINE_ID
+        && url.starts_with("file://")
+        && fetched.is_none()
+    {
+        let bytes = mere_document_lanes::ResourceFetcher::fetch(&genet_documents::LocalFetcher, url)
+            .ok_or_else(|| format!("could not load {url} ({engine_id})"))?;
+        let document = crate::content::FetchedDocument {
+            body: String::from_utf8_lossy(&bytes).into_owned(),
+            bytes,
+            content_type: None,
+            effective_url: Some(url.to_owned()),
+            acquired_at_ms: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|duration| duration.as_millis() as u64)
+                .unwrap_or(0),
+        };
+        (Some(document.clone()), Some(document))
+    } else {
+        (fetched, None)
+    };
+    let mut spawn = SessionSpawnRequest::new(url).with_viewport(viewport.0, viewport.1);
+    if let Some(document) = fetched {
+        spawn = spawn.with_body(document.body);
+        if let Some(content_type) = document.content_type {
+            spawn = spawn.with_content_type(content_type);
+        }
+    }
+    let mut config = pelt_core::PeltControllerConfig::from_request(engine_id, spawn)
+        .with_host_history();
+    if config.request.body.is_some() {
+        config = config.with_host_loading();
+    }
+    Ok(Some(PreparedContentController {
+        node,
+        url: url.to_owned(),
+        config,
+        source,
+    }))
+}
+
+/// Construct a real controller before accepting source or installing its entry.
+fn open_prepared_content_controller(
+    app: &crate::app::App,
+    prepared: PreparedContentController,
+    engines: std::sync::Arc<inker::SessionRegistry<netrender::Scene>>,
+    surfaces: std::sync::Arc<inker::SurfaceEngineRegistry>,
+    clock: impl pelt_core::PeltClock,
+) -> Result<Option<OpenedContentController>, String> {
+    let local_micron = prepared.config.engine_id == crate::nomadnet::ENGINE_ID
+        && prepared.url.starts_with("file://");
+    if local_micron && !content_spawn_is_current(app, prepared.node, &prepared.url) {
+        return Ok(None);
+    }
+    let controller = pelt_core::PeltController::new_shared(
+        engines,
+        surfaces,
+        prepared.config,
+        clock,
+    )?;
+    if local_micron && !content_spawn_is_current(app, prepared.node, &prepared.url) {
+        return Ok(None);
+    }
+    let source = prepared.source.map(|document| Update::ContentSourceCaptured {
+        node: prepared.node,
+        url: prepared.url,
+        document,
+    });
+    Ok(Some(OpenedContentController { controller, source }))
+}
+
+#[cfg(test)]
+#[path = "local_micron_source_tests.rs"]
+mod local_micron_source_tests;
+
 #[cfg(test)]
 mod content_spawn_dispatch_tests {
     use super::{ContentSpawnDispatch, dispatch_content_spawn};
@@ -1285,26 +1394,22 @@ impl Shell {
                         }
                         continue;
                     }
-                    let mut spawn = SessionSpawnRequest::new(&url)
-                        .with_viewport(self.width.max(1), self.height.max(1));
-                    if let Some(document) = fetched {
-                        spawn = spawn.with_body(document.body);
-                        if let Some(content_type) = document.content_type {
-                            spawn = spawn.with_content_type(content_type);
-                        }
-                    }
-                    // Each node's document is a Pelt controller (SC step 4).
-                    // The App keeps the node's load and its graph history, so
-                    // the controller opens the held body and hands any link
-                    // back as a navigation request. Addresses Turnstone does
-                    // not fetch (local, mere:, Knot) still load through their
-                    // engine.
-                    let mut config =
-                        pelt_core::PeltControllerConfig::from_request(decision.engine_id.clone(), spawn)
-                            .with_host_history();
-                    if config.request.body.is_some() {
-                        config = config.with_host_loading();
-                    }
+                    let prepared = match prepare_content_controller(
+                        &self.app,
+                        node,
+                        &url,
+                        &decision.engine_id,
+                        fetched,
+                        (self.width.max(1), self.height.max(1)),
+                    ) {
+                        Ok(Some(prepared)) => prepared,
+                        Ok(None) => continue,
+                        Err(error) => {
+                            let effects = self.app.apply_update(Update::ContentFailed { node, error });
+                            self.run_effects(effects);
+                            continue;
+                        },
+                    };
                     let route = pelt_core::PeltRoute {
                         decision: decision.clone(),
                         source: if request.pinned_engine.is_some() {
@@ -1314,14 +1419,19 @@ impl Shell {
                         },
                         state: pelt_core::PeltRouteState::Document,
                     };
-                    let opened = pelt_core::PeltController::new_shared(
+                    let opened = open_prepared_content_controller(
+                        &self.app,
+                        prepared,
                         std::sync::Arc::clone(&self.content_engines),
                         std::sync::Arc::clone(&self.pelt_surface_engines),
-                        config,
                         super::ShellClock(self.epoch),
                     );
                     let update = match opened {
-                        Ok(mut controller) => {
+                        Ok(Some(OpenedContentController { mut controller, source })) => {
+                            if let Some(source) = source {
+                                let effects = self.app.apply_update(source);
+                                self.run_effects(effects);
+                            }
                             let session = controller.session_mut();
                             tracing::info!(%node, %url, engine = %decision.engine_id, "content session live");
                             // Mirror the spawn-time facts into app truth (the
@@ -1400,6 +1510,7 @@ impl Shell {
                                 facts: Some(facts),
                             }
                         }
+                        Ok(None) => continue,
                         Err(err) => {
                             tracing::warn!(%node, %url, engine = %decision.engine_id, %err, "content spawn failed");
                             Update::ContentFailed {

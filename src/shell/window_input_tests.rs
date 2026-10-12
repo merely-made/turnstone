@@ -1835,6 +1835,7 @@ struct PrimaryPaneCaptureFixture {
     content: CallerCaptureFixture,
     capture: Option<SurfaceKind>,
     delivered: Vec<(ContentKey, bool)>,
+    cancellation_capture: Vec<Option<SurfaceKind>>,
 }
 impl PrimaryPaneCaptureFixture {
     fn new() -> Self {
@@ -1842,6 +1843,7 @@ impl PrimaryPaneCaptureFixture {
             content: CallerCaptureFixture::new(0, None),
             capture: None,
             delivered: Vec::new(),
+            cancellation_capture: Vec::new(),
         }
     }
     fn pane_position(&self) -> PhysicalPosition {
@@ -1996,6 +1998,18 @@ impl super::super::input::PrimaryPointerHost for PrimaryPaneCaptureFixture {
             Default::default(),
         );
         self.record(routed);
+    }
+    fn pointer_user_agent_decision_open(&self) -> bool {
+        self.content.app.user_agent_decision.is_open()
+    }
+    fn pointer_has_foreign_capture(&self) -> bool {
+        captured_mouse(&self.content.contents.pool)
+            .and_then(|id| self.content.contents.pool.placement(&id))
+            .is_some_and(|placement| placement.window != 0)
+    }
+    fn pointer_cancel_primary_content(&mut self) {
+        self.cancellation_capture.push(self.capture);
+        TouchInput::default().focus_lost(&mut self.content.contents.pool, 0);
     }
     fn pointer_has_contributed_capture(&self) -> bool {
         false
@@ -2169,4 +2183,1399 @@ fn review_primary_pane_chord_genuine_focus_loss_cancels_and_allows_new_receiver(
         &f.delivered[f.delivered.len() - 2..],
         &[(ContentKey::Node(f.content.nodes[1]), true); 2]
     );
+}
+
+fn primary_no_hit_chord(first_release: winit::event::MouseButton) {
+    use winit::event::MouseButton::{Left, Middle};
+    let mut f = PrimaryPaneCaptureFixture::new();
+    let a = f.content.position(0);
+    f.press(a, Left);
+    assert_eq!(
+        captured_mouse(&f.content.contents.pool),
+        Some(f.content.surfaces[0].id)
+    );
+    let pane = PhysicalPosition { x: -100.0, y: -100.0 };
+    assert!(
+        crate::surface::hit_test(&f.content.plan(), f.content.app.focus, pane.x, pane.y)
+            .is_none(),
+        "this real plan position must have no fresh hit"
+    );
+    f.press(pane, Middle);
+    f.move_pointer(pane);
+    let second_release = if first_release == Left { Middle } else { Left };
+    f.release(pane, first_release);
+    let after_first = captured_mouse(&f.content.contents.pool);
+    f.release(pane, second_release);
+
+    // Check the terminal outcome before intermediate routing assertions, so
+    // the existing caller fault reports stranded custody rather than a count.
+    assert_eq!(
+        captured_mouse(&f.content.contents.pool),
+        None,
+        "all physical releases must retire primary pool custody after a no-hit chord"
+    );
+    assert_eq!(
+        after_first,
+        Some(f.content.surfaces[0].id),
+        "the other admitted button still holds A"
+    );
+    assert_eq!(f.capture, None);
+    assert_eq!(f.content.buttons[&0], PointerButtons::NONE);
+    assert_eq!(
+        f.content.app.focus,
+        FocusTarget::Content {
+            node: f.content.nodes[0],
+            appearance: f.content.surfaces[0].id
+        }
+    );
+    assert!(
+        f.content.pointers[1].lock().unwrap().is_empty(),
+        "B must not receive A's gesture"
+    );
+    assert_eq!(
+        f.delivered,
+        vec![(ContentKey::Node(f.content.nodes[0]), true); 5]
+    );
+    let events = f.content.pointers[0].lock().unwrap().clone();
+    let both = PointerButtons(PointerButtons::PRIMARY.0 | PointerButtons::AUXILIARY.0);
+    let (first, remaining, second) = if first_release == Left {
+        (
+            inker::MouseButton::Left,
+            PointerButtons::AUXILIARY,
+            inker::MouseButton::Middle,
+        )
+    } else {
+        (
+            inker::MouseButton::Middle,
+            PointerButtons::PRIMARY,
+            inker::MouseButton::Left,
+        )
+    };
+    assert_eq!(
+        events
+            .iter()
+            .map(|e| (e.phase, e.button, e.buttons))
+            .collect::<Vec<_>>(),
+        vec![
+            (
+                PointerPhase::Down,
+                Some(inker::MouseButton::Left),
+                PointerButtons::PRIMARY
+            ),
+            (PointerPhase::Down, Some(inker::MouseButton::Middle), both),
+            (PointerPhase::Move, None, both),
+            (PointerPhase::Up, Some(first), remaining),
+            (PointerPhase::Up, Some(second), PointerButtons::NONE),
+        ]
+    );
+    assert!(
+        events
+            .iter()
+            .all(|e| e.pointer_id == 1 && e.pointer_type == inker::PointerType::Mouse)
+    );
+    for event in &events[1..] {
+        assert_eq!(
+            (event.position.x, event.position.y),
+            (
+                pane.x - f.content.surfaces[0].rect.x,
+                pane.y - f.content.surfaces[0].rect.y
+            )
+        );
+    }
+    f.release(pane, second_release);
+    assert_eq!(
+        f.content.pointers[0].lock().unwrap().len(),
+        5,
+        "duplicate terminal input must not re-enter A"
+    );
+}
+
+#[test]
+fn review_primary_no_hit_chord_left_up_then_middle_up_retires_actual_receiver() {
+    primary_no_hit_chord(winit::event::MouseButton::Left);
+}
+#[test]
+fn review_primary_no_hit_chord_middle_up_then_left_up_retires_actual_receiver() {
+    primary_no_hit_chord(winit::event::MouseButton::Middle);
+}
+
+impl PrimaryPaneCaptureFixture {
+    fn open_primary_decision(&mut self) -> crate::user_agent_decision::UserAgentRequestKey {
+        use crate::user_agent_decision::{PendingUserAgentDecision, UserAgentRequestKey};
+        let request = UserAgentRequestKey::new(self.content.nodes[0], inker::UserAgentRequestId::new(71));
+        assert!(self.content.app.user_agent_decision.receive(
+            PendingUserAgentDecision::Permission {
+                request,
+                origin: "https://upper.test".into(),
+                descriptors: vec![inker::PermissionDescriptor::Camera],
+            }
+        ));
+        request
+    }
+    fn press_primary_outside_decision_card(&mut self) {
+        use super::super::input::{PrimaryPointerHost, reject_primary_modal_press};
+        // Begin after chrome.click returned no intent. Use the actual shared
+        // UA predicate/return branch; card geometry is a headed-test boundary.
+        self.pointer_window_mouse(
+            None,
+            (-100.0, -100.0),
+            PointerPhase::Down,
+            Some(inker::MouseButton::Middle),
+        );
+        assert!(reject_primary_modal_press(self));
+    }
+}
+
+#[test]
+fn review_primary_modal_rejection_cancels_before_shell_clear_without_later_up() {
+    use winit::event::MouseButton::{Left, Middle};
+    let mut f = PrimaryPaneCaptureFixture::new();
+    let a = f.content.position(0);
+    f.press(a, Left);
+    let admitted = f.capture;
+    assert_eq!(admitted, Some(SurfaceKind::Content(f.content.nodes[0])));
+    let request = f.open_primary_decision();
+    f.content.assert_a_custody();
+    f.press_primary_outside_decision_card();
+    assert_eq!(
+        f.cancellation_capture,
+        vec![admitted],
+        "the actual gate must cancel A while its shell capture still exists"
+    );
+    assert_eq!(captured_mouse(&f.content.contents.pool), None);
+    assert_eq!(f.capture, None);
+    let both = PointerButtons(PointerButtons::PRIMARY.0 | PointerButtons::AUXILIARY.0);
+    assert_eq!(f.content.buttons[&0], both, "interception is not physical Up");
+    let phases = || f.content.pointers[0].lock().unwrap().iter()
+        .map(|e| e.phase).collect::<Vec<_>>();
+    assert_eq!(phases(), vec![PointerPhase::Down, PointerPhase::Cancel]);
+    // No redraw/sync between rejection and actual terminal input.
+    f.release(a, Left);
+    assert_eq!(f.content.buttons[&0], PointerButtons::AUXILIARY);
+    f.release(a, Middle);
+    assert_eq!(f.content.buttons[&0], PointerButtons::NONE);
+    assert_eq!(
+        f.content.pointers[0].lock().unwrap().iter().map(|e| e.phase).collect::<Vec<_>>(),
+        vec![PointerPhase::Down, PointerPhase::Cancel]
+    );
+    assert!(f.content.pointers[1].lock().unwrap().is_empty());
+    assert!(f.content.app.user_agent_decision.remove(request));
+    let b = f.content.position(1);
+    f.press(b, Left);
+    f.release(b, Left);
+    assert_eq!(captured_mouse(&f.content.contents.pool), None);
+    assert_eq!(f.capture, None);
+    assert_eq!(f.content.pointers[0].lock().unwrap().len(), 2);
+    assert_eq!(
+        f.content.pointers[1].lock().unwrap().iter().map(|e| e.phase).collect::<Vec<_>>(),
+        vec![PointerPhase::Down, PointerPhase::Up]
+    );
+}
+
+#[test]
+fn review_primary_modal_rejection_preserves_real_lens_custody() {
+    let mut f = PrimaryPaneCaptureFixture {
+        content: CallerCaptureFixture::new(1, None),
+        capture: None,
+        delivered: Vec::new(),
+        cancellation_capture: Vec::new(),
+    };
+    assert!(f.content.press(0, inker::MouseButton::Left).1.handled);
+    f.capture = Some(SurfaceKind::Content(f.content.nodes[0]));
+    let admitted = f.capture;
+    let appearance = f.content.surfaces[0].id;
+    assert_eq!(f.content.contents.pool.placement(&appearance).unwrap().window, 1);
+    f.open_primary_decision();
+    f.press_primary_outside_decision_card();
+    assert_eq!(captured_mouse(&f.content.contents.pool), Some(appearance));
+    assert_eq!(f.capture, admitted, "a primary modal must preserve the lens shell mirror");
+    assert_eq!(f.content.buttons[&1], PointerButtons::PRIMARY);
+    assert_eq!(f.content.buttons[&0], PointerButtons::AUXILIARY);
+    assert_eq!(
+        f.content.pointers[0].lock().unwrap().iter().map(|e| e.phase).collect::<Vec<_>>(),
+        vec![PointerPhase::Down]
+    );
+    // Release the rejected primary button without entering the lens receiver.
+    assert!(native_mouse_input(
+        &mut f.content.contents.pool, &mut f.content.buttons, 0, None,
+        PhysicalPosition { x: -100.0, y: -100.0 }, PointerPhase::Up,
+        Some(inker::MouseButton::Middle), Default::default(),
+    ).is_none());
+    assert_eq!(f.content.buttons[&0], PointerButtons::NONE);
+    assert_eq!(captured_mouse(&f.content.contents.pool), Some(appearance));
+    let (source, effect) = f.content.pointer(PointerPhase::Up, Some(inker::MouseButton::Left));
+    assert_eq!(source, ContentKey::Node(f.content.nodes[0]));
+    assert!(effect.handled);
+    assert_eq!(captured_mouse(&f.content.contents.pool), None);
+    assert_eq!(f.content.buttons[&1], PointerButtons::NONE);
+    assert_eq!(
+        f.content.pointers[0].lock().unwrap().iter().map(|e| e.phase).collect::<Vec<_>>(),
+        vec![PointerPhase::Down, PointerPhase::Up]
+    );
+    assert!(f.content.pointers[1].lock().unwrap().is_empty());
+}
+
+#[test]
+fn review_primary_modal_rejection_closed_gate_preserves_content_custody() {
+    let mut f = PrimaryPaneCaptureFixture::new();
+    let a = f.content.position(0);
+    f.press(a, winit::event::MouseButton::Left);
+    let admitted = f.capture;
+    assert!(!super::super::input::reject_primary_modal_press(&mut f));
+    assert_eq!(f.capture, admitted);
+    assert!(f.cancellation_capture.is_empty());
+    f.content.assert_a_custody();
+    f.release(a, winit::event::MouseButton::Left);
+    assert_eq!(captured_mouse(&f.content.contents.pool), None);
+    assert_eq!(f.content.buttons[&0], PointerButtons::NONE);
+    assert_eq!(
+        f.content.pointers[0].lock().unwrap().iter().map(|e| e.phase).collect::<Vec<_>>(),
+        vec![PointerPhase::Down, PointerPhase::Up]
+    );
+}
+
+/// An independent receiver with observable focus and Drop, used only by the
+/// interception controls. The original native fixtures and tests stay intact.
+struct InterceptionPage {
+    page: Page,
+    lifetime: Calls,
+}
+impl Drop for InterceptionPage {
+    fn drop(&mut self) {
+        self.lifetime.lock().unwrap().push("drop".into());
+    }
+}
+impl SurfaceProducer for InterceptionPage {
+    fn resize(&mut self, w: u32, h: u32) -> Result<(), SurfaceError> {
+        self.page.resize(w, h)
+    }
+    fn set_offset(&mut self, x: i32, y: i32) -> Result<(), SurfaceError> {
+        self.page.set_offset(x, y)
+    }
+    fn acquire_frame(&mut self) -> Result<Option<SurfaceFrame>, SurfaceError> {
+        self.page.acquire_frame()
+    }
+    fn send_mouse_input(&mut self, ev: MouseEvent) -> Result<(), SurfaceError> {
+        self.page.send_mouse_input(ev)
+    }
+    fn send_pointer_input(&mut self, ev: inker::PointerEvent) -> Result<(), SurfaceError> {
+        self.lifetime
+            .lock()
+            .unwrap()
+            .push(format!("{:?}", ev.phase));
+        self.page.send_pointer_input(ev)
+    }
+    fn send_keyboard_input(&mut self, ev: KeyboardEvent) -> Result<(), SurfaceError> {
+        self.page.send_keyboard_input(ev)
+    }
+    fn move_focus(&mut self, reason: FocusReason) -> Result<(), SurfaceError> {
+        self.page.move_focus(reason)
+    }
+    fn set_focus(&mut self, focused: bool) -> Result<(), SurfaceError> {
+        self.lifetime
+            .lock()
+            .unwrap()
+            .push(format!("focus {focused}"));
+        Ok(())
+    }
+    fn poll_cursor_shape(&mut self) -> Option<inker::CursorShape> {
+        None
+    }
+    fn apply_settings(&mut self, settings: &SurfaceSettings) -> Result<(), SurfaceError> {
+        self.page.apply_settings(settings)
+    }
+}
+fn interception_page(f: &mut CallerCaptureFixture, index: usize) -> Calls {
+    let lifetime: Calls = Default::default();
+    f.contents.insert(
+        f.nodes[index],
+        PeltContent::from_surface(
+            Box::new(InterceptionPage {
+                page: Page {
+                    calls: Default::default(),
+                    pointers: f.pointers[index].clone(),
+                    acquisitions: Default::default(),
+                    title: None,
+                    fail_offset: None,
+                },
+                lifetime: lifetime.clone(),
+            }),
+            (100, 100),
+            route(),
+        ),
+    );
+    f.sync(true);
+    lifetime
+}
+impl super::super::input::PrimaryPressAdmissionHost for PrimaryPaneCaptureFixture {
+    fn pointer_press_action(&mut self, action: crate::action::Action) {
+        let events = self.content.pointers[0].lock().unwrap();
+        if self.content.window == 0 {
+            assert_eq!(
+                events
+                    .iter()
+                    .filter(|e| e.phase == PointerPhase::Cancel)
+                    .count(),
+                1,
+                "primary interception must retire the old receiver BEFORE executing its App action"
+            );
+            assert_eq!(
+                self.cancellation_capture,
+                vec![Some(SurfaceKind::Content(self.content.nodes[0]))],
+                "retirement must observe the old shell capture before it is cleared"
+            );
+        } else {
+            assert!(
+                events.iter().all(|e| e.phase != PointerPhase::Cancel),
+                "a primary action must preserve foreign Lens custody"
+            );
+        }
+        drop(events);
+        self.content.app.update(action);
+    }
+    fn pointer_omnibar_open(&self) -> bool {
+        self.content.app.omnibar.open
+    }
+    fn pointer_retire_primary_pointers(&mut self) {
+        self.cancellation_capture.push(self.capture);
+        TouchInput::default().cancel_window(&mut self.content.contents.pool, 0);
+    }
+}
+fn interception_fixture() -> (PrimaryPaneCaptureFixture, Calls) {
+    let mut f = PrimaryPaneCaptureFixture::new();
+    let lifetime = interception_page(&mut f.content, 0);
+    f.press(f.content.position(0), winit::event::MouseButton::Left);
+    assert_eq!(
+        captured_mouse(&f.content.contents.pool),
+        Some(f.content.surfaces[0].id)
+    );
+    lifetime.lock().unwrap().clear();
+    (f, lifetime)
+}
+fn assert_interception_retired(
+    f: &mut PrimaryPaneCaptureFixture,
+    lifetime: &Calls,
+    button: winit::event::MouseButton,
+) {
+    assert_eq!(captured_mouse(&f.content.contents.pool), None);
+    assert_eq!(f.capture, None);
+    assert_eq!(
+        f.content.pointers[0]
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|e| e.phase)
+            .collect::<Vec<_>>(),
+        vec![PointerPhase::Down, PointerPhase::Cancel]
+    );
+    assert!(
+        !lifetime.lock().unwrap().iter().any(|e| e == "focus false"),
+        "interception must not invent content or OS focus loss"
+    );
+    let physical = f.content.buttons[&0];
+    assert!(physical.0 & PointerButtons::PRIMARY.0 != 0);
+    assert!(
+        physical.0
+            & match button {
+                winit::event::MouseButton::Middle => PointerButtons::AUXILIARY.0,
+                winit::event::MouseButton::Right => PointerButtons::SECONDARY.0,
+                _ => panic!("expected an intercepted chord button"),
+            }
+            != 0
+    );
+    // Immediate releases occur before a redraw/placement sync and cannot reach
+    // the retired producer. Physical masks still follow the real OS envelope.
+    f.release(f.content.position(0), winit::event::MouseButton::Left);
+    f.release(f.content.position(0), button);
+    assert_eq!(f.content.buttons[&0], PointerButtons::NONE);
+    assert_eq!(f.content.pointers[0].lock().unwrap().len(), 2);
+    assert!(f.content.pointers[1].lock().unwrap().is_empty());
+}
+fn interception_bookkeeping(f: &mut PrimaryPaneCaptureFixture, button: winit::event::MouseButton) {
+    use super::super::input::PrimaryPointerHost;
+    f.pointer_window_mouse(
+        None,
+        (-100., -100.),
+        PointerPhase::Down,
+        super::super::input::surface_mouse_button(button),
+    );
+}
+#[test]
+fn review_native_interception_chrome_retires_before_action_and_drop() {
+    let (mut f, lifetime) = interception_fixture();
+    interception_bookkeeping(&mut f, winit::event::MouseButton::Middle);
+    let node = f.content.nodes[0];
+    assert!(super::super::input::dispatch_primary_chrome_press(
+        &mut f,
+        Some(crate::chrome_view::ChromeIntent::KeepNode(node))
+    ));
+    // Actual KeepNode preserves the content focus; it must stay logically
+    // focused while the pressed gesture alone is retired.
+    assert_eq!(
+        f.content.app.focus,
+        FocusTarget::Content {
+            node,
+            appearance: f.content.surfaces[0].id
+        }
+    );
+    assert_interception_retired(&mut f, &lifetime, winit::event::MouseButton::Middle);
+    drop(f.content.contents.remove(&node).unwrap());
+    assert_eq!(
+        *lifetime.lock().unwrap(),
+        vec![
+            "Cancel".to_string(),
+            "focus false".to_string(),
+            "drop".to_string()
+        ],
+        "receiver Cancel precedes actual removal focus loss and producer Drop"
+    );
+    // The same primary Chrome admission must not clear a Lens-owned mirror.
+    let mut foreign = PrimaryPaneCaptureFixture {
+        content: CallerCaptureFixture::new(1, None),
+        capture: None,
+        delivered: Vec::new(),
+        cancellation_capture: Vec::new(),
+    };
+    assert!(
+        foreign
+            .content
+            .press(0, inker::MouseButton::Right)
+            .1
+            .handled
+    );
+    foreign.capture = Some(SurfaceKind::Content(foreign.content.nodes[0]));
+    let mirror = foreign.capture;
+    let node = foreign.content.nodes[0];
+    interception_bookkeeping(&mut foreign, winit::event::MouseButton::Middle);
+    assert!(super::super::input::dispatch_primary_chrome_press(
+        &mut foreign,
+        Some(crate::chrome_view::ChromeIntent::KeepNode(node))
+    ));
+    assert_eq!(foreign.capture, mirror);
+    assert_eq!(
+        captured_mouse(&foreign.content.contents.pool),
+        Some(foreign.content.surfaces[0].id)
+    );
+    assert!(
+        foreign
+            .content
+            .pointer(PointerPhase::Up, Some(inker::MouseButton::Right))
+            .1
+            .handled
+    );
+}
+#[test]
+fn review_native_interception_omnibar_swallow_retires_before_action() {
+    let (mut f, lifetime) = interception_fixture();
+    f.content
+        .app
+        .update(crate::action::Action::OmnibarOpen { command: false });
+    assert!(f.content.app.omnibar.open);
+    interception_bookkeeping(&mut f, winit::event::MouseButton::Middle);
+    assert!(super::super::input::reject_primary_omnibar_press(&mut f));
+    assert!(!f.content.app.omnibar.open);
+    assert_interception_retired(&mut f, &lifetime, winit::event::MouseButton::Middle);
+}
+#[test]
+fn review_native_interception_context_swallow_retires_before_action() {
+    let (mut f, lifetime) = interception_fixture();
+    let pos = f.content.position(1);
+    let hit = crate::surface::hit_test(&f.content.plan(), f.content.app.focus, pos.x, pos.y);
+    assert!(matches!(hit.unwrap().kind, SurfaceKind::Content(_)));
+    interception_bookkeeping(&mut f, winit::event::MouseButton::Right);
+    assert!(super::super::input::dispatch_primary_context_press(
+        &mut f,
+        winit::event::MouseButton::Right,
+        hit
+    ));
+    assert!(f.content.app.omnibar.open);
+    assert_interception_retired(&mut f, &lifetime, winit::event::MouseButton::Right);
+}
+fn lens_fresh_pane(f: &CallerCaptureFixture) -> PhysicalPosition {
+    let plan = f.plan();
+    let focus = FocusTarget::Graph(f.app.default_graph_pane());
+    for surface in &plan {
+        if !matches!(surface.kind, SurfaceKind::Pane(_)) {
+            continue;
+        }
+        for dy in [1., 8., surface.rect.h / 2., surface.rect.h - 1.] {
+            for dx in [1., 8., surface.rect.w / 2., surface.rect.w - 1.] {
+                let pos = PhysicalPosition {
+                    x: surface.rect.x + dx,
+                    y: surface.rect.y + dy,
+                };
+                if crate::surface::hit_test(&plan, focus, pos.x, pos.y)
+                    .is_some_and(|h| h.id == surface.id)
+                {
+                    return pos;
+                }
+            }
+        }
+    }
+    panic!("actual Lens plan exposes a Pane before any content routing");
+}
+fn lens_interception_chord(none_hit: bool) {
+    let mut f = CallerCaptureFixture::new(1, None);
+    assert!(f.press(0, inker::MouseButton::Right).1.handled);
+    let position = if none_hit {
+        PhysicalPosition {
+            x: -1000.,
+            y: -1000.,
+        }
+    } else {
+        lens_fresh_pane(&f)
+    };
+    let graphfocus = FocusTarget::Graph(f.app.default_graph_pane());
+    let fresh = crate::surface::hit_test(&f.plan(), graphfocus, position.x, position.y);
+    if none_hit {
+        assert!(fresh.is_none());
+    } else {
+        assert!(matches!(fresh.unwrap().kind, SurfaceKind::Pane(_)));
+    }
+    assert!(
+        native_mouse_input(
+            &mut f.contents.pool,
+            &mut f.buttons,
+            1,
+            None,
+            position,
+            PointerPhase::Down,
+            Some(inker::MouseButton::Left),
+            Default::default()
+        )
+        .is_none()
+    );
+    // The production Lens resolver is called before its Pane/None branch,
+    // against the actual App plan and focus-derived placement construction.
+    f.sync(true);
+    let hit =
+        super::super::lens::lens_press_hit(&f.contents.pool, 1, &f.plan(), graphfocus, position)
+            .expect("admitted Lens custody wins even when the fresh plan has no hit");
+    assert_eq!(
+        hit.kind,
+        SurfaceKind::Content(f.nodes[0]),
+        "admitted Lens custody must precede fresh Pane dispatch"
+    );
+    let hit = content_press_target(&mut f.app.focus, &f.contents.pool, 1, position, hit);
+    f.sync(true);
+    f.assert_a_custody();
+    let (source, effect) = content_mouse_input(
+        &mut f.contents.pool,
+        &f.buttons,
+        1,
+        Some(hit.id),
+        position,
+        PointerPhase::Down,
+        Some(inker::MouseButton::Left),
+        Default::default(),
+    )
+    .unwrap();
+    assert_eq!(source, ContentKey::Node(f.nodes[0]));
+    assert!(effect.handled);
+    let events = f.pointers[0].lock().unwrap().clone();
+    assert_eq!(events.len(), 2);
+    assert_eq!(events[1].phase, PointerPhase::Down);
+    assert_eq!(events[1].button, Some(inker::MouseButton::Left));
+    assert_eq!(
+        events[1].buttons,
+        PointerButtons(PointerButtons::PRIMARY.0 | PointerButtons::SECONDARY.0)
+    );
+    assert_eq!(
+        events[1].position,
+        PhysicalPosition {
+            x: position.x - f.surfaces[0].rect.x,
+            y: position.y - f.surfaces[0].rect.y
+        }
+    );
+    assert!(f.pointers[1].lock().unwrap().is_empty());
+    // An unrelated release preserves both admitted buttons and receiver.
+    let unrelated = native_mouse_input(
+        &mut f.contents.pool,
+        &mut f.buttons,
+        1,
+        Some(hit.id),
+        position,
+        PointerPhase::Up,
+        Some(inker::MouseButton::Middle),
+        Default::default(),
+    )
+    .unwrap();
+    assert!(!unrelated.1.handled);
+    assert_eq!(f.pointers[0].lock().unwrap().len(), 2);
+    for button in [inker::MouseButton::Right, inker::MouseButton::Left] {
+        let (source, effect) = native_mouse_input(
+            &mut f.contents.pool,
+            &mut f.buttons,
+            1,
+            Some(hit.id),
+            position,
+            PointerPhase::Up,
+            Some(button),
+            Default::default(),
+        )
+        .unwrap();
+        assert_eq!(source, ContentKey::Node(f.nodes[0]));
+        assert!(effect.handled);
+    }
+    assert_eq!(captured_mouse(&f.contents.pool), None);
+    assert_eq!(f.buttons[&1], PointerButtons::NONE);
+    assert_eq!(
+        f.pointers[0]
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|e| e.phase)
+            .collect::<Vec<_>>(),
+        vec![
+            PointerPhase::Down,
+            PointerPhase::Down,
+            PointerPhase::Up,
+            PointerPhase::Up
+        ]
+    );
+    assert!(f.press(1, inker::MouseButton::Middle).1.handled);
+    assert_eq!(captured_mouse(&f.contents.pool), Some(f.surfaces[1].id));
+}
+#[test]
+fn review_native_interception_lens_admitted_chord_precedes_fresh_pane() {
+    lens_interception_chord(false);
+}
+#[test]
+fn review_native_interception_lens_admitted_chord_precedes_none_hit() {
+    lens_interception_chord(true);
+}
+#[test]
+fn review_native_interception_foreign_lens_capture_is_not_selected_or_cancelled() {
+    let mut f = CallerCaptureFixture::new(1, None);
+    assert!(f.press(0, inker::MouseButton::Right).1.handled);
+    let position = lens_fresh_pane(&f);
+    let focus = FocusTarget::Graph(f.app.default_graph_pane());
+    let plan = f.plan();
+    let fresh = crate::surface::hit_test(&plan, focus, position.x, position.y);
+    assert_eq!(
+        super::super::lens::lens_press_hit(&f.contents.pool, 0, &plan, focus, position),
+        fresh
+    );
+    assert!(
+        super::super::lens::lens_press_hit(
+            &f.contents.pool,
+            0,
+            &plan,
+            focus,
+            PhysicalPosition {
+                x: -1000.,
+                y: -1000.
+            }
+        )
+        .is_none()
+    );
+    TouchInput::default().cancel_window(&mut f.contents.pool, 0);
+    f.assert_a_custody();
+    assert_eq!(f.pointers[0].lock().unwrap().len(), 1);
+    assert!(
+        f.pointer(PointerPhase::Up, Some(inker::MouseButton::Right))
+            .1
+            .handled
+    );
+    assert_eq!(captured_mouse(&f.contents.pool), None);
+}
+#[test]
+fn review_native_interception_window_cancel_preserves_focus_and_foreign_touch() {
+    let mut f = CallerCaptureFixture::new(0, None);
+    let lifetime = interception_page(&mut f, 0);
+    assert!(f.press(0, inker::MouseButton::Left).1.handled);
+    let mut touch = TouchInput::default();
+    let plan = f.plan();
+    let pos = f.position(0);
+    assert!(touch.deliver(
+        &mut f.contents.pool,
+        &plan,
+        f.app.focus,
+        0,
+        70,
+        PointerPhase::Down,
+        pos,
+        Some(0.6),
+        None,
+        Default::default()
+    ));
+    // Give a second real admitted appearance its own foreign native window.
+    let mut foreign = f
+        .contents
+        .pool
+        .placement(&f.surfaces[1].id)
+        .unwrap()
+        .clone();
+    foreign.window = 1;
+    let own = f
+        .contents
+        .pool
+        .placement(&f.surfaces[0].id)
+        .unwrap()
+        .clone();
+    f.contents.pool.set_placements([
+        (f.surfaces[0].id, own.clone()),
+        (f.surfaces[1].id, foreign.clone()),
+    ]);
+    let foreignpos = f.position(1);
+    assert!(touch.deliver(
+        &mut f.contents.pool,
+        &plan,
+        f.app.focus,
+        1,
+        71,
+        PointerPhase::Down,
+        foreignpos,
+        Some(0.7),
+        None,
+        Default::default()
+    ));
+    let admitted = f.pointers[0].lock().unwrap().clone();
+    assert_eq!(touch.contacts.len(), 2);
+    lifetime.lock().unwrap().clear();
+    touch.cancel_window(&mut f.contents.pool, 0);
+    assert_eq!(touch.contacts.len(), 1);
+    assert!(touch.contacts.contains_key(&(1, 71)));
+    let retired = f.pointers[0].lock().unwrap().clone();
+    for old in admitted {
+        let cancel = retired
+            .iter()
+            .find(|event| event.pointer_id == old.pointer_id && event.phase == PointerPhase::Cancel)
+            .expect("each owned pointer is retired once");
+        assert_eq!(cancel.position, old.position);
+        assert_eq!(cancel.pressure, old.pressure);
+        assert_eq!(cancel.pointer_type, old.pointer_type);
+        assert_eq!(cancel.buttons, PointerButtons::NONE);
+        assert_eq!(cancel.button, None);
+        assert_eq!(
+            retired
+                .iter()
+                .filter(|event| event.pointer_id == old.pointer_id
+                    && event.phase == PointerPhase::Cancel)
+                .count(),
+            1
+        );
+    }
+    assert!(
+        !lifetime.lock().unwrap().iter().any(|e| e == "focus false"),
+        "window pointer retirement must preserve the receiver's actual focus"
+    );
+    assert_eq!(
+        f.contents.pool.focused_content(0),
+        Some(&ContentKey::Node(f.nodes[0]))
+    );
+    assert_eq!(captured_mouse(&f.contents.pool), None);
+    assert_eq!(f.buttons[&0], PointerButtons::PRIMARY);
+    assert!(!touch.deliver(
+        &mut f.contents.pool,
+        &plan,
+        f.app.focus,
+        0,
+        70,
+        PointerPhase::Up,
+        pos,
+        None,
+        None,
+        Default::default()
+    ));
+    assert!(touch.deliver(
+        &mut f.contents.pool,
+        &plan,
+        f.app.focus,
+        1,
+        71,
+        PointerPhase::Move,
+        foreignpos,
+        Some(0.8),
+        None,
+        Default::default()
+    ));
+    assert!(touch.deliver(
+        &mut f.contents.pool,
+        &plan,
+        f.app.focus,
+        1,
+        71,
+        PointerPhase::Up,
+        foreignpos,
+        None,
+        None,
+        Default::default()
+    ));
+    assert_eq!(
+        f.pointers[0]
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|e| e.phase)
+            .collect::<Vec<_>>(),
+        vec![
+            PointerPhase::Down,
+            PointerPhase::Down,
+            PointerPhase::Cancel,
+            PointerPhase::Cancel
+        ]
+    );
+    assert_eq!(
+        f.pointers[1]
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|e| e.phase)
+            .collect::<Vec<_>>(),
+        vec![PointerPhase::Down, PointerPhase::Move, PointerPhase::Up]
+    );
+    // Unchanged placement sync must not silently repair an invented blur; no
+    // extra focus event is required because cancellation preserved focus.
+    f.contents
+        .pool
+        .set_placements([(f.surfaces[0].id, own), (f.surfaces[1].id, foreign)]);
+    assert!(
+        !lifetime
+            .lock()
+            .unwrap()
+            .iter()
+            .any(|e| e.starts_with("focus "))
+    );
+}
+#[test]
+fn review_native_interception_real_focus_loss_still_blurs_and_retires() {
+    let mut f = CallerCaptureFixture::new(0, None);
+    let lifetime = interception_page(&mut f, 0);
+    assert!(f.press(0, inker::MouseButton::Left).1.handled);
+    lifetime.lock().unwrap().clear();
+    TouchInput::default().focus_lost(&mut f.contents.pool, 0);
+    assert_eq!(
+        *lifetime.lock().unwrap(),
+        vec!["Cancel".to_string(), "focus false".to_string()]
+    );
+    assert_eq!(captured_mouse(&f.contents.pool), None);
+    assert_eq!(f.buttons[&0], PointerButtons::PRIMARY);
+}
+
+/// Lens caller below native bookkeeping, with a recording retained pane
+/// receiver. App plans, content pool and both production admission/terminal
+/// seams are real; only the contributed renderer and native Window are absent.
+struct LensPaneCustodyFixture {
+    content: CallerCaptureFixture,
+    admitted: Option<super::super::input::ContributedPointer>,
+    capture: Option<SurfaceKind>,
+    pane_events: Vec<(PointerPhase, u64, (f32, f32))>,
+    generation: u64,
+}
+impl LensPaneCustodyFixture {
+    fn new(foreign_primary: bool, extra_lens_pane: bool) -> Self {
+        let mut content = CallerCaptureFixture::new(1, None);
+        if extra_lens_pane || foreign_primary {
+            if foreign_primary {
+                content.app.active_pane = Some(content.app.default_graph_pane());
+            }
+            content.app.update(crate::action::Action::SummonPane(
+                crate::panes::PaneKindId::new(crate::panes::kind::ROSTER),
+            ));
+            let plan = content.plan();
+            content.surfaces = content.nodes.map(|node| {
+                *plan
+                    .iter()
+                    .find(|surface| surface.kind == SurfaceKind::Content(node))
+                    .expect("actual Lens content remains exposed")
+            });
+        }
+        let owner_window = if foreign_primary { 0 } else { 1 };
+        let owner_plan = if foreign_primary {
+            super::super::primary_content_plan(&content.app, &content.contents, 1200, 900)
+        } else {
+            content.plan()
+        };
+        let surface = *owner_plan
+            .iter()
+            .find(|surface| matches!(surface.kind, SurfaceKind::Pane(_)))
+            .expect("actual owner window exposes a retained pane");
+        let SurfaceKind::Pane(pane) = surface.kind else {
+            unreachable!()
+        };
+        content.app.focus = FocusTarget::Pane(pane);
+        content.sync(true);
+        let position = PhysicalPosition {
+            x: surface.rect.x + 1.,
+            y: surface.rect.y + 1.,
+        };
+        assert!(
+            native_mouse_input(
+                &mut content.contents.pool,
+                &mut content.buttons,
+                owner_window,
+                None,
+                position,
+                PointerPhase::Down,
+                Some(inker::MouseButton::Left),
+                Default::default()
+            )
+            .is_none()
+        );
+        let admitted = super::super::input::ContributedPointer {
+            surface,
+            generation: 77,
+            window: owner_window,
+        };
+        Self {
+            content,
+            admitted: Some(admitted),
+            capture: Some(surface.kind),
+            pane_events: vec![(PointerPhase::Down, owner_window, (1., 1.))],
+            generation: 77,
+        }
+    }
+    fn actual_owner_plan(&self, window: u64) -> Vec<Surface> {
+        if window == 0 {
+            super::super::primary_content_plan(&self.content.app, &self.content.contents, 1200, 900)
+        } else {
+            self.content.plan()
+        }
+    }
+    fn press(
+        &mut self,
+        window: u64,
+        position: PhysicalPosition,
+        button: winit::event::MouseButton,
+    ) -> bool {
+        assert!(
+            native_mouse_input(
+                &mut self.content.contents.pool,
+                &mut self.content.buttons,
+                window,
+                None,
+                position,
+                PointerPhase::Down,
+                super::super::input::surface_mouse_button(button),
+                Default::default()
+            )
+            .is_none()
+        );
+        if super::super::lens::reject_lens_pane_press(self) {
+            return true;
+        }
+        let plan = self.content.plan();
+        let graphfocus = FocusTarget::Graph(self.content.app.default_graph_pane());
+        let Some(hit) = super::super::lens::lens_press_hit(
+            &self.content.contents.pool,
+            window,
+            &plan,
+            graphfocus,
+            position,
+        ) else {
+            return false;
+        };
+        match hit.kind {
+            SurfaceKind::Content(_) => {
+                self.content.sync(true);
+                let hit = content_press_target(
+                    &mut self.content.app.focus,
+                    &self.content.contents.pool,
+                    window,
+                    position,
+                    hit,
+                );
+                self.capture = Some(hit.kind);
+                self.content.sync(true);
+                let routed = content_mouse_input(
+                    &mut self.content.contents.pool,
+                    &self.content.buttons,
+                    window,
+                    Some(hit.id),
+                    position,
+                    PointerPhase::Down,
+                    super::super::input::surface_mouse_button(button),
+                    Default::default(),
+                );
+                assert!(routed.is_some_and(|(_, effect)| effect.handled));
+                true
+            },
+            SurfaceKind::Pane(pane) if button == winit::event::MouseButton::Left => {
+                // Renderer adapter boundary in the actual Lens Pane arm: it
+                // retains the exact real-plan surface and receiver generation.
+                self.content.app.focus = FocusTarget::Pane(pane);
+                self.capture = Some(hit.kind);
+                self.admitted = Some(super::super::input::ContributedPointer {
+                    surface: *plan.iter().find(|surface| surface.id == hit.id).unwrap(),
+                    generation: self.generation,
+                    window,
+                });
+                self.pane_events
+                    .push((PointerPhase::Down, window, hit.local));
+                true
+            },
+            _ => false,
+        }
+    }
+    fn release(
+        &mut self,
+        window: u64,
+        position: PhysicalPosition,
+        button: winit::event::MouseButton,
+    ) -> bool {
+        // Same production Lens prelude: while a pane owns the mouse, terminal
+        // bookkeeping is physical only; the pane terminal seam owns delivery.
+        let appearance = if self.admitted.is_none() {
+            captured_mouse(&self.content.contents.pool)
+        } else {
+            None
+        };
+        native_mouse_input(
+            &mut self.content.contents.pool,
+            &mut self.content.buttons,
+            window,
+            appearance,
+            position,
+            PointerPhase::Up,
+            super::super::input::surface_mouse_button(button),
+            Default::default(),
+        );
+        super::super::lens::dispatch_lens_pane_release(
+            self,
+            window,
+            (position.x, position.y),
+            button,
+        )
+    }
+    fn assert_retained(&self, original: super::super::input::ContributedPointer) {
+        assert_eq!(self.admitted.unwrap().surface, original.surface);
+        assert_eq!(self.admitted.unwrap().generation, original.generation);
+        assert_eq!(self.admitted.unwrap().window, original.window);
+        assert_eq!(self.capture, Some(original.surface.kind));
+        let SurfaceKind::Pane(pane) = original.surface.kind else {
+            unreachable!()
+        };
+        assert_eq!(self.content.app.focus, FocusTarget::Pane(pane));
+        assert_eq!(
+            self.pane_events.len(),
+            1,
+            "a chord cannot admit a second retained pane Down"
+        );
+        assert_eq!(
+            captured_mouse(&self.content.contents.pool),
+            None,
+            "a pane-owned chord cannot admit a competing content receiver"
+        );
+        assert!(
+            self.content
+                .pointers
+                .iter()
+                .all(|events| events.lock().unwrap().is_empty())
+        );
+    }
+    fn fresh_content_after_terminal(&mut self) {
+        let pos = self.content.position(0);
+        assert!(self.press(1, pos, winit::event::MouseButton::Right));
+        assert!(self.admitted.is_none());
+        assert_eq!(
+            captured_mouse(&self.content.contents.pool),
+            Some(self.content.surfaces[0].id)
+        );
+        assert!(!self.release(1, pos, winit::event::MouseButton::Right));
+        assert_eq!(captured_mouse(&self.content.contents.pool), None);
+        assert_eq!(self.content.buttons[&1], PointerButtons::NONE);
+        assert_eq!(
+            self.content.pointers[0]
+                .lock()
+                .unwrap()
+                .iter()
+                .map(|e| e.phase)
+                .collect::<Vec<_>>(),
+            vec![PointerPhase::Down, PointerPhase::Up]
+        );
+    }
+}
+impl super::super::lens::LensPanePointerHost for LensPaneCustodyFixture {
+    fn lens_pane_admission(&self) -> Option<super::super::input::ContributedPointer> {
+        self.admitted
+    }
+    fn lens_pane_admission_current(
+        &self,
+        admitted: super::super::input::ContributedPointer,
+    ) -> bool {
+        admitted.is_current(
+            self.actual_owner_plan(admitted.window)
+                .into_iter()
+                .find(|surface| surface.id == admitted.surface.id),
+            Some(self.generation),
+            admitted.window,
+        )
+    }
+    fn lens_cancel_stale_admission(&mut self) {
+        panic!("these controls qualify valid custody, not existing global stale cleanup");
+    }
+    fn lens_release_admission(&mut self, window: u64, x: f32, y: f32) {
+        let Some(admitted) = self.admitted else {
+            return;
+        };
+        if admitted.window != window {
+            return;
+        }
+        assert!(
+            super::super::lens::LensPanePointerHost::lens_pane_admission_current(self, admitted)
+        );
+        self.admitted = None;
+        self.capture = None;
+        self.pane_events.push((
+            PointerPhase::Up,
+            window,
+            (x - admitted.surface.rect.x, y - admitted.surface.rect.y),
+        ));
+    }
+}
+#[test]
+fn review_lens_pane_custody_chord_content_and_none_preserve_receiver() {
+    let mut f = LensPaneCustodyFixture::new(false, false);
+    let admitted = f.admitted.unwrap();
+    let position = f.content.position(0);
+    assert!(f.press(1, position, winit::event::MouseButton::Right));
+    f.assert_retained(admitted);
+    assert_eq!(
+        f.content.buttons[&1],
+        PointerButtons(PointerButtons::PRIMARY.0 | PointerButtons::SECONDARY.0)
+    );
+    assert!(f.press(
+        1,
+        PhysicalPosition {
+            x: -1000.,
+            y: -1000.
+        },
+        winit::event::MouseButton::Middle
+    ));
+    f.assert_retained(admitted);
+    assert!(f.release(1, position, winit::event::MouseButton::Middle));
+    f.assert_retained(admitted);
+    assert!(f.release(1, position, winit::event::MouseButton::Right));
+    f.assert_retained(admitted);
+    assert_eq!(f.content.buttons[&1], PointerButtons::PRIMARY);
+    assert!(f.release(1, position, winit::event::MouseButton::Left));
+    assert_eq!(
+        f.pane_events,
+        vec![
+            (PointerPhase::Down, 1, (1., 1.)),
+            (
+                PointerPhase::Up,
+                1,
+                (
+                    position.x - admitted.surface.rect.x,
+                    position.y - admitted.surface.rect.y
+                )
+            )
+        ]
+    );
+    assert_eq!(f.content.buttons[&1], PointerButtons::NONE);
+    f.fresh_content_after_terminal();
+}
+#[test]
+fn review_lens_pane_custody_second_left_cannot_replace_pane() {
+    let mut f = LensPaneCustodyFixture::new(false, true);
+    let admitted = f.admitted.unwrap();
+    let plan = f.content.plan();
+    let mut exposed = None;
+    for surface in &plan {
+        if !matches!(surface.kind, SurfaceKind::Pane(_)) || surface.id == admitted.surface.id {
+            continue;
+        }
+        for dy in [1., 8., surface.rect.h / 2., surface.rect.h - 1.] {
+            for dx in [1., 8., surface.rect.w / 2., surface.rect.w - 1.] {
+                let position = PhysicalPosition {
+                    x: surface.rect.x + dx,
+                    y: surface.rect.y + dy,
+                };
+                if crate::surface::hit_test(
+                    &plan,
+                    FocusTarget::Graph(f.content.app.default_graph_pane()),
+                    position.x,
+                    position.y,
+                )
+                .is_some_and(|hit| hit.id == surface.id)
+                {
+                    exposed = Some(position);
+                }
+            }
+        }
+    }
+    let position = exposed.expect("actual second Lens pane exposes a fresh Pane hit");
+    assert!(f.press(1, position, winit::event::MouseButton::Left));
+    f.assert_retained(admitted);
+    assert_eq!(f.content.buttons[&1], PointerButtons::PRIMARY);
+    assert!(f.release(1, position, winit::event::MouseButton::Left));
+    assert_eq!(f.pane_events.len(), 2);
+    f.fresh_content_after_terminal();
+}
+#[test]
+fn review_lens_pane_custody_foreign_primary_receiver_preserved() {
+    let mut f = LensPaneCustodyFixture::new(true, false);
+    let admitted = f.admitted.unwrap();
+    assert_eq!(admitted.window, 0);
+    let position = f.content.position(0);
+    assert!(f.press(1, position, winit::event::MouseButton::Right));
+    f.assert_retained(admitted);
+    assert_eq!(f.content.buttons[&0], PointerButtons::PRIMARY);
+    assert_eq!(f.content.buttons[&1], PointerButtons::SECONDARY);
+    assert!(f.release(1, position, winit::event::MouseButton::Right));
+    f.assert_retained(admitted);
+    assert!(f.release(1, position, winit::event::MouseButton::Left));
+    f.assert_retained(admitted);
+    assert_eq!(f.content.buttons[&0], PointerButtons::PRIMARY);
+    assert_eq!(f.content.buttons[&1], PointerButtons::NONE);
+    assert!(f.release(0, position, winit::event::MouseButton::Left));
+    assert_eq!(f.pane_events.len(), 2);
+    assert_eq!(f.content.buttons[&0], PointerButtons::NONE);
+    f.fresh_content_after_terminal();
+}
+#[test]
+fn review_lens_pane_custody_wrong_button_release_preserves_admitted_left() {
+    let mut f = LensPaneCustodyFixture::new(false, false);
+    let admitted = f.admitted.unwrap();
+    let position = f.content.position(0);
+    for button in [
+        winit::event::MouseButton::Right,
+        winit::event::MouseButton::Middle,
+    ] {
+        assert!(f.release(1, position, button));
+        f.assert_retained(admitted);
+        assert_eq!(f.content.buttons[&1], PointerButtons::PRIMARY);
+    }
+    assert!(f.release(0, position, winit::event::MouseButton::Left));
+    f.assert_retained(admitted);
+    assert_eq!(f.content.buttons[&1], PointerButtons::PRIMARY);
+    assert!(f.release(1, position, winit::event::MouseButton::Left));
+    assert_eq!(f.pane_events.len(), 2);
+    assert_eq!(f.content.buttons[&1], PointerButtons::NONE);
+    f.fresh_content_after_terminal();
+}
+
+/// Uses the exact UA gate called by Shell before retained touch delivery.
+/// App admission, NodeDocuments, TouchInput and producer receivers are real;
+/// native Window creation and OS event decoding remain outside this fixture.
+fn modal_touch_open(f: &mut CallerCaptureFixture) -> crate::user_agent_decision::UserAgentRequestKey {
+    let focus = f.app.focus;
+    let effects = f.app.apply_update(crate::action::Update::PermissionRequested {
+        node: f.nodes[0],
+        id: inker::UserAgentRequestId::new(901),
+        origin: "https://upper.test".into(),
+        descriptors: vec![inker::PermissionDescriptor::Geolocation],
+    });
+    assert!(effects.iter().any(|effect| matches!(effect, crate::action::Effect::Redraw)));
+    assert_eq!(f.app.focus, focus, "retained UA admission is not native focus loss");
+    f.app.user_agent_decision.active_request().expect("actual App update opened the UA gate")
+}
+fn modal_touch_close(f: &mut CallerCaptureFixture, request: crate::user_agent_decision::UserAgentRequestKey) {
+    f.app.apply_update(crate::action::Update::UserAgentRequestWithdrawn {
+        request, kind: "permission", reason: "test-withdrawal",
+    });
+    assert!(!f.app.user_agent_decision.is_open());
+}
+fn modal_touch_delivery(
+    f: &mut CallerCaptureFixture, touch: &mut TouchInput, window: u64,
+    host_id: u64, phase: PointerPhase, index: usize,
+) -> bool {
+    if touch.reject_modal(&mut f.contents.pool, window, f.app.user_agent_decision.is_open()) {
+        return false;
+    }
+    // Placement construction is already held by the real-plan fixture; the
+    // rejected branch must return before any geometry, focus or page delivery.
+    let plan = f.plan();
+    let position = f.position(index);
+    touch.deliver(&mut f.contents.pool, &plan, f.app.focus, window, host_id,
+        phase, position, Some(0.6), Some(0.4), Default::default())
+}
+fn modal_touch_terminal(window: u64, terminal: PointerPhase) {
+    let mut f = CallerCaptureFixture::new(window, None);
+    let lifetime = interception_page(&mut f, 0);
+    let mut touch = TouchInput::default();
+    // A second real appearance is admitted in another window, as in the
+    // existing window-cancellation fixture. It must survive this gate.
+    let own = f.contents.pool.placement(&f.surfaces[0].id).unwrap().clone();
+    let mut foreign = f.contents.pool.placement(&f.surfaces[1].id).unwrap().clone();
+    let foreign_window = if window == 0 { 1 } else { 0 };
+    foreign.window = foreign_window;
+    f.contents.pool.set_placements([(f.surfaces[0].id, own), (f.surfaces[1].id, foreign)]);
+    assert!(modal_touch_delivery(&mut f, &mut touch, window, 70, PointerPhase::Down, 0));
+    assert!(modal_touch_delivery(&mut f, &mut touch, foreign_window, 71, PointerPhase::Down, 1));
+    let own_id = touch.contacts[&(window, 70)].pointer_id;
+    let foreign_id = touch.contacts[&(foreign_window, 71)].pointer_id;
+    assert!(own_id > 1 && foreign_id > 1 && own_id != foreign_id);
+    let down = f.pointers[0].lock().unwrap()[0].clone();
+    assert_eq!(down.pointer_id, own_id);
+    let focus = f.app.focus;
+    let request = modal_touch_open(&mut f);
+    lifetime.lock().unwrap().clear();
+    assert!(!modal_touch_delivery(&mut f, &mut touch, window, 70, terminal, 0));
+    assert_eq!(f.contents.pool.captured_placement(own_id), None,
+        "held UA gate must retire the physically ended/cancelled nonzero contact");
+    assert!(!touch.contacts.contains_key(&(window, 70)),
+        "no later physical Up is required to remove host contact custody");
+    assert_eq!(f.contents.pool.captured_placement(foreign_id), Some(&f.surfaces[1].id));
+    assert!(touch.contacts.contains_key(&(foreign_window, 71)));
+    assert_eq!(f.app.focus, focus);
+    let own_events = f.pointers[0].lock().unwrap().clone();
+    assert_eq!(own_events.len(), 2);
+    assert_eq!(own_events[1].phase, PointerPhase::Cancel);
+    assert_eq!(own_events[1].pointer_id, own_id);
+    assert_eq!(own_events[1].position, down.position);
+    assert_eq!(own_events[1].pressure, down.pressure);
+    assert_eq!(own_events[1].altitude_angle, down.altitude_angle);
+    assert_eq!(own_events[1].pointer_type, inker::PointerType::Touch);
+    assert_eq!(own_events[1].buttons, PointerButtons::NONE);
+    assert_eq!(own_events[1].button, None);
+    assert_eq!(*lifetime.lock().unwrap(), vec!["Cancel".to_string()],
+        "modal touch rejection cancels without Up activation or focus loss");
+    assert_eq!(f.pointers[1].lock().unwrap().len(), 1);
+    // Repeated terminal while blocked does not resend cancellation.
+    assert!(!modal_touch_delivery(&mut f, &mut touch, window, 70, terminal, 0));
+    assert_eq!(f.pointers[0].lock().unwrap().len(), 2);
+    modal_touch_close(&mut f, request);
+    // A stale move after withdrawal cannot revive the old contact; this is
+    // intentionally not another physical Up used to repair the test state.
+    assert!(!modal_touch_delivery(&mut f, &mut touch, window, 70, PointerPhase::Move, 0));
+    assert_eq!(f.pointers[0].lock().unwrap().len(), 2);
+    assert!(modal_touch_delivery(&mut f, &mut touch, foreign_window, 71, PointerPhase::Move, 1));
+    assert!(modal_touch_delivery(&mut f, &mut touch, foreign_window, 71, PointerPhase::Up, 1));
+    assert_eq!(f.contents.pool.captured_placement(foreign_id), None);
+    assert!(touch.contacts.is_empty());
+    assert_eq!(f.pointers[1].lock().unwrap().iter().map(|e| e.phase).collect::<Vec<_>>(),
+        vec![PointerPhase::Down, PointerPhase::Move, PointerPhase::Up]);
+    drop(f.contents.pool.remove_content(&ContentKey::Node(f.nodes[0])));
+    let history = lifetime.lock().unwrap().clone();
+    assert_eq!(history.iter().filter(|event| event.as_str() == "Cancel").count(), 1);
+    assert!(history.iter().position(|event| event == "Cancel").unwrap()
+        < history.iter().position(|event| event == "drop").unwrap());
+}
+#[test]
+fn review_modal_touch_primary_ended_retires_without_up_activation() {
+    modal_touch_terminal(0, PointerPhase::Up);
+}
+#[test]
+fn review_modal_touch_primary_cancelled_retires_without_later_up() {
+    modal_touch_terminal(0, PointerPhase::Cancel);
+}
+#[test]
+fn review_modal_touch_lens_ended_preserves_foreign_primary_contact() {
+    modal_touch_terminal(1, PointerPhase::Up);
+}
+#[test]
+fn review_modal_touch_lens_cancelled_preserves_foreign_primary_contact() {
+    modal_touch_terminal(1, PointerPhase::Cancel);
+}
+#[test]
+fn review_modal_touch_fresh_down_is_blocked_then_new_gesture_is_admitted() {
+    for window in [0, 1] {
+        let mut f = CallerCaptureFixture::new(window, None);
+        let mut touch = TouchInput::default();
+        let request = modal_touch_open(&mut f);
+        assert!(!modal_touch_delivery(&mut f, &mut touch, window, 80, PointerPhase::Down, 0));
+        assert!(touch.contacts.is_empty());
+        assert!(!f.contents.pool.has_pointer_capture());
+        assert!(f.pointers.iter().all(|events| events.lock().unwrap().is_empty()));
+        modal_touch_close(&mut f, request);
+        assert!(modal_touch_delivery(&mut f, &mut touch, window, 80, PointerPhase::Down, 0));
+        assert!(modal_touch_delivery(&mut f, &mut touch, window, 80, PointerPhase::Up, 0));
+        assert!(touch.contacts.is_empty());
+        assert!(!f.contents.pool.has_pointer_capture());
+        assert_eq!(f.pointers[0].lock().unwrap().iter().map(|e| e.phase).collect::<Vec<_>>(),
+            vec![PointerPhase::Down, PointerPhase::Up]);
+    }
 }

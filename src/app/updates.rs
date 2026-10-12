@@ -512,6 +512,17 @@ impl App {
                 kind,
                 reason,
             } => self.apply_user_agent_request_withdrawn(request, kind, reason),
+            Update::ContentSourceCaptured { node, url, document } => {
+                let current = self.graph_runtimes
+                    .graph_containing_member(node)
+                    .and_then(|graph| self.graph_runtimes.canvas(graph))
+                    .is_some_and(|canvas| browse::still_current(canvas, node, &url));
+                if current {
+                    let received_bytes = document.bytes.len();
+                    self.content.note_fetched(node, url, document, received_bytes);
+                }
+                Vec::new()
+            },
             Update::ContentFailed { node, error } => {
                 tracing::warn!(%node, %error, "content spawn failed");
                 self.events.push(AppEvent::ContentState {

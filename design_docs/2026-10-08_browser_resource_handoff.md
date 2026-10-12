@@ -708,3 +708,69 @@ remain open.
   "scope": "Nine focused native controls in each feature build; not a rerun of the full resource-family library suites."
 }
 ```
+
+
+## Integration continuation checkpoint, 2026-10-11
+
+**Integration remains open.** The Fleece/Eidetic adoption commit
+`1034fb64b133022926bb4c7135b2b3281d09cc3b` is merged into the existing
+Turnstone consumer worktree as `cab085bc279d2d9cad478b0bc118367002e4e93e`.
+Genet supplier integration HEAD is `542ad5b4795e26e2a2ebc8f7699b7d780c2b3b8c`,
+merging upstream `4bc75583865c2fb862b7acd7fe16dc28eb591042` and retaining the
+three bridge paths. Mere's merge is resolved but uncommitted: HEAD
+`df79e24feb8d157669bb7a94ff81e30cccfe569f`, MERGE_HEAD
+`624e24c98d7cc84d941b0d1255c528d87dfb7ce5`. Its original WIP stash
+`762981ae00546699535d2b3b59d7e1859740afe2` remains preserved; optional
+Graphshell observers are unapplied. Primary supplier-owner checkouts are untouched.
+
+The working source retains Pelt's content pool/native capture and input work,
+Graphshell's public retained mounts and original scenario names, and the Genet
+bridge. Renderer/Knot declarations now align with the selected supplier family.
+Guarded local metadata passes in Turnstone, Mere and standalone Graphshell,
+with one intended NetRender/Classic Vello source family. These are dependency
+resolution results, not compilation or runtime qualification.
+
+Forme lifecycle v3 is applied and independently accepted **for qualification**.
+It rejects foreign/stale saves and loads, fences earlier local-owner writes on
+A→B→A, projects temporarily absent members without deleting their layout identity,
+validates both drop endpoints, and reconciles actual App/Canvas authority after
+imports and successful or failed persistence. Its checked same-topology Canvas
+refresh preserves parked physics; structural changes still use ingest. Twenty-two
+native regressions are prepared. Twelve source files parse; actual tests and
+Wasm feature checks have not run. The fence covers the mounted pane, not independent
+tabs/processes. Retained panel hit exclusions and matrix paging clamps are also
+applied, with seven unexecuted regressions.
+
+Graphshell inventory preserves all 139 original scenario names plus ten newer
+scenarios: 149 source scripts, 147 intended live and two historical presenter
+comparisons. Current verification stays pending. Portable original Forme scripts
+and the harmonization proof live in Mere's
+`ports/graphshell/docs/receipts/retained_merge_20261011`; original strict Scene
+assertions and waits remain exact. The historical strict Scene saved-facet RED
+is unresolved. Its preserved capture shows a failed Reopen lookup, but does not
+establish the earlier Save callback/error or justify a speculative production fix.
+
+Current checkpoint and immutable preparation/review/metadata receipts:
+`/home/markik/Code/testing/turnstone/integration-completion-20261011/progress.md`.
+Source gap and done-condition audit:
+`/home/markik/Code/testing/turnstone/integration-completion-20261011/gap-audit.md`.
+Do not launch older source-bound wrappers unchanged. Root-reviewed successors
+retain the common machine-heavy lock, one Cargo job, 8 GiB compiler admission,
+4 GiB reserve and adaptive kernel cap; bindgen requires 8.75 GiB. Available RAM
+has remained below compiler admission, so current compiler/browser gates are
+held. Disk cleanup triggers below 500,000,000,000 physical free bytes and must
+preserve receipts, source, qualified binaries and other chats' targets.
+
+Next closure: final-source native Graphshell inventory/full suite (including the
+22 Forme and seven panel/paging regressions), Turnstone default/Piccolo and shared
+Pelt/Canvas/Genet gates, fresh native captures, then current Graphshell
+Wasm→strip→bindgen→parser→headed acceptance and diagnosis of the strict Scene RED.
+After those pass, publish coherent Genet→Mere→Turnstone pins, prove portable
+resolution with local overrides disabled, perform whole-change review, and update
+this ledger to the achieved scope. Historical results above remain bound to their
+original sources. Source view, named collections and broader clip/edit/retention
+contracts remain separate product work; visual design polish is deferred.
+
+### Validation preparation reviewed, 2026-10-11T20:05:44.711629+00:00
+
+Graphshell native defaults+web guard v1 is now root-reviewed: all77 packet identities, exact12 live Forme sources and22 required cases verified;32 pure control methods pass. See `/home/markik/Code/testing/turnstone/integration-completion-20261011/graphshell-native-web-guard-v1-root-review.json`. This is preparation, not Cargo or runtime qualification. Final source checkpoint is `/home/markik/Code/testing/turnstone/integration-completion-20261011/source-work-checkpoint-20261011.json`; available RAM remains below admission. The exact build, inventory/full-run and full Wasm/package/browser sequence remains queued. No final Mere merge commit, portable publication or integration-complete claim.

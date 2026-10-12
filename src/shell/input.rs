@@ -173,10 +173,114 @@ pub(super) trait PrimaryPointerHost {
         phase: inker::PointerPhase,
         button: Option<inker::MouseButton>,
     );
+    fn pointer_user_agent_decision_open(&self) -> bool;
+    fn pointer_has_foreign_capture(&self) -> bool;
+    fn pointer_cancel_primary_content(&mut self);
     fn pointer_has_contributed_capture(&self) -> bool;
     fn pointer_release_contributed(&mut self, x: f32, y: f32);
     fn pointer_content_hovered(&mut self, node: uuid::Uuid);
     fn pointer_redraw(&mut self);
+}
+
+/// Portable admission for primary presses consumed before surface dispatch.
+/// The host executes the same App action as Shell's chrome/modal handlers.
+pub(super) trait PrimaryPressAdmissionHost: PrimaryPointerHost {
+    fn pointer_press_action(&mut self, action: Action);
+    fn pointer_omnibar_open(&self) -> bool;
+    fn pointer_retire_primary_pointers(&mut self);
+}
+
+fn dispatch_primary_action_press(host: &mut impl PrimaryPressAdmissionHost, action: Action) {
+    // Retire this window's admitted content before an App action can alter
+    // focus or replace/drop its receiver. Preserve foreign-window custody.
+    let foreign_capture = host.pointer_has_foreign_capture();
+    host.pointer_retire_primary_pointers();
+    if !foreign_capture {
+        *host.pointer_state().2 = None;
+    }
+    host.pointer_press_action(action);
+}
+
+pub(super) fn dispatch_primary_chrome_press(
+    host: &mut impl PrimaryPressAdmissionHost,
+    intent: Option<crate::chrome_view::ChromeIntent>,
+) -> bool {
+    let Some(intent) = intent else { return false; };
+    let action = match intent {
+        crate::chrome_view::ChromeIntent::CommitRow(index) => {
+            Action::OmnibarCommitRow(index)
+        },
+        crate::chrome_view::ChromeIntent::ToggleKeep(index) => {
+            Action::OmnibarToggleKeepRow(index)
+        },
+        crate::chrome_view::ChromeIntent::NavBack => Action::NavBack,
+        crate::chrome_view::ChromeIntent::NavForward => Action::NavForward,
+        crate::chrome_view::ChromeIntent::Reload => Action::Reload,
+        crate::chrome_view::ChromeIntent::Stop => Action::Stop,
+        crate::chrome_view::ChromeIntent::KeepNode(member) => Action::KeepNode { member },
+        crate::chrome_view::ChromeIntent::FindPrevious => {
+            Action::StepDocumentFind(crate::action::DocumentFindDirection::Previous)
+        },
+        crate::chrome_view::ChromeIntent::FindNext => {
+            Action::StepDocumentFind(crate::action::DocumentFindDirection::Next)
+        },
+        crate::chrome_view::ChromeIntent::FindClose => Action::CloseDocumentFind,
+        crate::chrome_view::ChromeIntent::Permission { request, choice } => {
+            Action::ChoosePermission { request, choice }
+        },
+        crate::chrome_view::ChromeIntent::FocusAuthentication(field) => {
+            Action::FocusAuthenticationField(field)
+        },
+        crate::chrome_view::ChromeIntent::ToggleAuthenticationMemory => {
+            Action::ToggleAuthenticationMemory
+        },
+        crate::chrome_view::ChromeIntent::SubmitAuthentication(request) => {
+            Action::SubmitAuthentication { request }
+        },
+        crate::chrome_view::ChromeIntent::CancelAuthentication(request) => {
+            Action::CancelAuthentication { request }
+        },
+    };
+    dispatch_primary_action_press(host, action);
+    true
+}
+
+pub(super) fn reject_primary_omnibar_press(host: &mut impl PrimaryPressAdmissionHost) -> bool {
+    if !host.pointer_omnibar_open() { return false; }
+    dispatch_primary_action_press(host, Action::OmnibarClose);
+    true
+}
+
+pub(super) fn dispatch_primary_context_press(
+    host: &mut impl PrimaryPressAdmissionHost,
+    button: MouseButton,
+    hit: Option<crate::surface::HitResult>,
+) -> bool {
+    if button != MouseButton::Right
+        || hit.is_some_and(|hit| matches!(hit.kind, crate::surface::SurfaceKind::Graph(_)))
+    { return false; }
+    dispatch_primary_action_press(host, Action::OmnibarOpen { command: true });
+    true
+}
+
+impl PrimaryPressAdmissionHost for Shell {
+    fn pointer_press_action(&mut self, action: Action) { self.act(action); }
+    fn pointer_omnibar_open(&self) -> bool { self.app.omnibar.open }
+    fn pointer_retire_primary_pointers(&mut self) { self.pointer_cancel_primary_content(); }
+}
+
+/// The actual primary UA admission gate, after chrome has offered the press.
+/// Retire primary content custody before clearing its shell mirror.
+pub(super) fn reject_primary_modal_press(host: &mut impl PrimaryPointerHost) -> bool {
+    if !host.pointer_user_agent_decision_open() {
+        return false;
+    }
+    let foreign_capture = host.pointer_has_foreign_capture();
+    host.pointer_cancel_primary_content();
+    if !foreign_capture {
+        *host.pointer_state().2 = None;
+    }
+    true
 }
 
 /// Dispatch a hit admitted by the primary caller's chrome/modal/context gates.
@@ -188,24 +292,21 @@ pub(super) fn dispatch_primary_press(
     y: f32,
     button: MouseButton,
 ) -> Option<crate::surface::HitResult> {
+    // Pool custody wins over a fresh hit, including a position outside the
+    // plan, only after current placement/window admission is revalidated.
+    host.sync_pointer_placements();
+    let hit = {
+        let (focus, pool, _) = host.pointer_state();
+        let position = inker::PhysicalPosition { x, y };
+        super::window_input::captured_content_hit(pool, 0, position)
+            .or(hit)
+            .map(|hit| super::window_input::content_press_target(focus, pool, 0, position, hit))
+    };
     *host.pointer_state().2 = hit.map(|h| h.kind);
     let hit = hit?;
     if !matches!(hit.kind, crate::surface::SurfaceKind::Content(_)) {
         return Some(hit);
     }
-    host.sync_pointer_placements();
-    let hit = {
-        let (focus, pool, capture) = host.pointer_state();
-        let hit = super::window_input::content_press_target(
-            focus,
-            pool,
-            0,
-            inker::PhysicalPosition { x, y },
-            hit,
-        );
-        *capture = Some(hit.kind);
-        hit
-    };
     host.pointer_content_focus(hit.id);
     if let Some(button) = surface_mouse_button(button) {
         host.pointer_content_mouse(hit.id, hit.local, inker::PointerPhase::Down, Some(button));
@@ -319,6 +420,19 @@ impl PrimaryPointerHost for Shell {
         button: Option<inker::MouseButton>,
     ) {
         self.window_mouse_input(0, appearance, position, phase, button);
+    }
+    fn pointer_user_agent_decision_open(&self) -> bool {
+        self.app.user_agent_decision.is_open()
+    }
+    fn pointer_has_foreign_capture(&self) -> bool {
+        super::window_input::captured_mouse(&self.content_sessions.pool)
+            .and_then(|id| self.content_sessions.pool.placement(&id))
+            .is_some_and(|placement| placement.window != 0)
+            || self.contributed_pointer.is_some_and(|admitted| admitted.window != 0)
+    }
+    fn pointer_cancel_primary_content(&mut self) {
+        // Interception retires custody; only physical Up changes button masks.
+        self.touch_input.cancel_window(&mut self.content_sessions.pool, 0);
     }
     fn pointer_has_contributed_capture(&self) -> bool {
         self.contributed_pointer.is_some()
@@ -465,58 +579,18 @@ impl Shell {
             .click(0, x, y, self.width.max(1), self.height.max(1))
             .into_iter()
             .next();
-        if let Some(intent) = chrome_intent {
-            let action = match intent {
-                crate::chrome_view::ChromeIntent::CommitRow(index) => {
-                    Action::OmnibarCommitRow(index)
-                },
-                crate::chrome_view::ChromeIntent::ToggleKeep(index) => {
-                    Action::OmnibarToggleKeepRow(index)
-                },
-                crate::chrome_view::ChromeIntent::NavBack => Action::NavBack,
-                crate::chrome_view::ChromeIntent::NavForward => Action::NavForward,
-                crate::chrome_view::ChromeIntent::Reload => Action::Reload,
-                crate::chrome_view::ChromeIntent::Stop => Action::Stop,
-                crate::chrome_view::ChromeIntent::KeepNode(member) => Action::KeepNode { member },
-                crate::chrome_view::ChromeIntent::FindPrevious => {
-                    Action::StepDocumentFind(crate::action::DocumentFindDirection::Previous)
-                },
-                crate::chrome_view::ChromeIntent::FindNext => {
-                    Action::StepDocumentFind(crate::action::DocumentFindDirection::Next)
-                },
-                crate::chrome_view::ChromeIntent::FindClose => Action::CloseDocumentFind,
-                crate::chrome_view::ChromeIntent::Permission { request, choice } => {
-                    Action::ChoosePermission { request, choice }
-                },
-                crate::chrome_view::ChromeIntent::FocusAuthentication(field) => {
-                    Action::FocusAuthenticationField(field)
-                },
-                crate::chrome_view::ChromeIntent::ToggleAuthenticationMemory => {
-                    Action::ToggleAuthenticationMemory
-                },
-                crate::chrome_view::ChromeIntent::SubmitAuthentication(request) => {
-                    Action::SubmitAuthentication { request }
-                },
-                crate::chrome_view::ChromeIntent::CancelAuthentication(request) => {
-                    Action::CancelAuthentication { request }
-                },
-            };
-            self.act(action);
-            self.pointer_capture = None;
+        if dispatch_primary_chrome_press(self, chrome_intent) {
             return;
         }
         // A held user-agent callback is modal with respect to the page that
         // requested it. A click outside the retained decision card is consumed
         // rather than leaking through to content behind the prompt.
-        if self.app.user_agent_decision.is_open() {
-            self.pointer_capture = None;
+        if reject_primary_modal_press(self) {
             return;
         }
         // A press while the omnibar is open dismisses it and is swallowed, so
         // the surface beneath never also reacts to the same press.
-        if self.app.omnibar.open {
-            self.act(Action::OmnibarClose);
-            self.pointer_capture = None;
+        if reject_primary_omnibar_press(self) {
             return;
         }
         let plan = self.surface_plan();
@@ -527,11 +601,7 @@ impl Shell {
         // SE26); the menu opens on the release the canvas reports as a click,
         // in `deliver_release`. Elsewhere the menu opens on the press, as
         // before.
-        if button == MouseButton::Right
-            && !hit.is_some_and(|hit| matches!(hit.kind, crate::surface::SurfaceKind::Graph(_)))
-        {
-            self.act(Action::OmnibarOpen { command: true });
-            self.pointer_capture = None;
+        if dispatch_primary_context_press(self, button, hit) {
             return;
         }
         if let Some(hit) = dispatch_primary_press(self, hit, x, y, button) {
@@ -1480,7 +1550,11 @@ impl Shell {
         pressure: Option<f32>,
         altitude_angle: Option<f32>,
     ) {
-        if self.app.user_agent_decision.is_open() {
+        if self.touch_input.reject_modal(
+            &mut self.content_sessions.pool,
+            window,
+            self.app.user_agent_decision.is_open(),
+        ) {
             return;
         }
         self.sync_content_placements();
