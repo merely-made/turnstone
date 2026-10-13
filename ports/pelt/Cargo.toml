@@ -9,7 +9,8 @@ authors.workspace = true
 license.workspace = true
 edition.workspace = true
 publish = false
-rust-version = "1.86.0"
+
+rust-version = "1.97.1"
 repository.workspace = true
 description = "Pelt: the reference browser port over Genet's engine and Cambium's retained shell."
 build = "build.rs"
