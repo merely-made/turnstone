@@ -231,6 +231,8 @@ Wasm 3.25 MiB, glue 20 KiB, mount 8 KiB, and the site history fixture 128 KiB.
 The report remains available when the gate refuses a package. `--target-dir`
 can keep a delivery lane's build artifacts isolated; `--offline` requires the
 locked dependencies to be available locally.
+The portable workflow's `viewer-delivery` job invokes this same builder and
+retains the package and report as `graphshell-viewer-delivery`.
 
 Portable Platen excludes the unused document scene producer from this viewer.
 Native and product builds retain document layout, including its text capability.
