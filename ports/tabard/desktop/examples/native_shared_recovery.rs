@@ -662,7 +662,8 @@ impl Gate {
             self.started.elapsed() < RUN_TIMEOUT,
             "native shared recovery exceeded sixty seconds",
         )?;
-        match self.phase {
+        let phase = self.phase;
+        match phase {
             Phase::Opening => self.begin_capture(Phase::Baseline),
             Phase::Baseline if self.captured()? => {
                 self.baseline = self.save_captures("baseline")?;
@@ -797,7 +798,7 @@ impl Gate {
                     }
                     for kind in 0..3 {
                         let measurement = compare(frame(b, kind), frame(a, kind))?;
-                        self.proof["comparisons"].as_array_mut().unwrap().push(json!({"window":i,"kind":["complete","reader","stylesheet"][kind],"measurement":measurement}));
+                        self.proof["comparisons"].as_array_mut().unwrap().push(json!({"window":i,"kind":(["complete","reader","stylesheet"][kind]),"measurement":measurement}));
                     }
                 }
                 require(
