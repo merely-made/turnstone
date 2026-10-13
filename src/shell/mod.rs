@@ -211,13 +211,10 @@ impl pelt_core::PeltClock for ShellClock {
 /// build. Keeping their construction together makes route availability an
 /// inspectable fact instead of an assumption split across shell setup.
 pub(crate) fn standard_content_engines() -> SessionRegistry<Scene> {
-    let mut engines = SessionRegistry::new();
-    engines.register(Box::new(genet_documents::LiverySessionEngine::new(
+    let mut engines = pelt_core::native::sessions_with_fetcher(
         LocalFetcher.with_fallback(RemoteFetcher::shared()),
-    )));
-    engines.register(Box::new(ReaderSessionEngine::new(SmolwebTheme::System)));
+    );
     engines.register(Box::new(crate::nomadnet::MicronSessionEngine::new()));
-    engines.register(Box::new(crate::retained_clip::ClipSessionEngine));
     for engine_id in SMOLWEB_SESSION_ENGINE_IDS {
         engines.register(Box::new(
             SmolwebSessionEngine::new(

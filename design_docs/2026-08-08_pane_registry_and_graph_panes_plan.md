@@ -1203,3 +1203,31 @@ custom divider width, same-id save/unapplied/Apply, failed-save rollback, narrow
 windows, DPI, body continuity and the original floating/physics scenarios.
 Keyboard/AccessKit header dispatch, float unification, inline bodies and actual
 presented performance remain A4/S3 continuation gates.
+
+
+## Native Pelt baseline adoption — 2026-10-13
+
+**Status:** landed slice. Published Mere `0d1dc192` passes the normal Windows
+library source check, ten selected-clip tests and five pane-store tests with
+locked dependencies and no source overrides. The supplier closure has one Mere
+source, one Genet revision and no duplicate Genet package names.
+
+Turnstone now registers its native content engines through
+`pelt_core::native::sessions_with_fetcher`, extending that registry with its
+owned Micron and smolweb adapters. Transport, prompts, profile authority and
+browser history remain Turnstone's. Selected clip address parsing, verification,
+presentation and the retained document session now come from Mere's
+`mere-document-lanes/retained-clips`; receiving, custody, onward export and
+native audio actions remain in `src/retained_clip.rs` and the shell.
+
+This is the baseline shared with Graphshell's retained-content Workbench.
+Graphshell's browser host explicitly supplies its reading display fonts;
+Turnstone continues to own browser appearance and authored-content policy.
+The new `7d62a5a` Tabard/Interface-font frame draft is pulled in the same pass.
+Its supplier receipt remains distinct from current Windows source qualification.
+
+The adoption does not close A4's inline Component-body join, floats, physical
+assistive technology or the complete native theme/narrow/DPI/performance wall.
+It does not qualify optional external engine builds or simultaneous loading.
+The shared implementation and receipts live in
+`mere/ports/graphshell/docs/receipts/retained_content_20261012/`.
