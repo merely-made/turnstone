@@ -9,7 +9,7 @@
 //! G1 adds a native semantic view over the portable client state. Networking,
 //! product models, and source authority remain injected at the edge.
 
-#[cfg(feature = "web")]
+#[cfg(feature = "retained-content")]
 pub mod retained_content;
 #[cfg(feature = "moot-resources")]
 pub mod moot_resources;

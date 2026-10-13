@@ -250,6 +250,37 @@ remain authoritative for Genet chrome; they do not redefine Canvas colors.
 The role bridge is the documented seam, with explicit shared defaults for
 omitted roles. It is not a separate renderer or CSS-to-seed conversion.
 
+### Read-only viewer delivery
+
+From the Mere root, build the read-only package with the pinned toolchain and
+`wasm-bindgen` 0.2.129:
+
+```sh
+python3 ports/graphshell/web/scripts/build-viewer.py --out-dir /tmp/graphshell-viewer-pkg
+python3 ports/graphshell/web/scripts/test_viewer_budget.py
+```
+
+The builder uses the standalone web lock, `--profile viewer` and
+`--no-default-features`. The viewer profile selects size optimization and full
+LTO; the full application's release profile remains separate. It writes
+`viewer-delivery.json` with source, compiler, profile, asset hashes and sizes,
+then rejects a package that exceeds any interaction cap at gzip level 6 or 9:
+Wasm 3.25 MiB, glue 20 KiB, mount 8 KiB, and the site history fixture 128 KiB.
+The report remains available when the gate refuses a package. `--target-dir`
+can keep a delivery lane's build artifacts isolated; `--offline` requires the
+locked dependencies to be available locally.
+The portable workflow's `viewer-delivery` job invokes this same builder and
+retains the package and report as `graphshell-viewer-delivery`.
+
+Portable Platen excludes the unused document scene producer from this viewer.
+Retained Pelt content is an explicit `retained-content` capability, enabled by
+native defaults and by the web `product` feature. Standalone retained-content
+examples must select that feature; plain `web` stays the portable graph model.
+Native and product builds retain document layout, including its text capability.
+Size acceptance does not establish browser acceptance or site deployment. A
+site host must retain its separately budgeted frozen first reading and load the
+qualified viewer only on interaction, with an explicit failure fallback.
+
 ### Appearance qualification commands
 
 Run standalone commands from `ports/graphshell/web` so its committed getrandom
