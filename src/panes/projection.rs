@@ -143,6 +143,7 @@ where
             }
             let mut ids = Vec::new();
             active(frame.workspace.tiled(), &mut ids);
+            ids.extend(frame.workspace.visible_floating(true).iter().map(|f|f.tile.id));
             let children = ids
                 .into_iter()
                 .filter_map(|id| {

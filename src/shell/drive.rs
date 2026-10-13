@@ -503,6 +503,8 @@ impl taproot::Automatable for Shell {
             .with_field("panes", snap.panes.join(","))
             .with_field("surfaces", snap.surfaces.join(","))
             .with_field("floats", snap.floating_panes.join(","))
+            .with_field("float-count",snap.floating_panes.len().to_string())
+            .with_field("lens-float-count",snap.lens_floating_panes.len().to_string())
             .with_field("lens-floats", snap.lens_floating_panes.join(","))
             // What the app will DO right now, by label — the automation half of
             // a coherent snapshot. `assert snap actions ~ Fit to view` asks whether
@@ -559,7 +561,8 @@ impl taproot::Automatable for Shell {
             _ => String::new(),
         };
         out = out.with_field("appearance-css", appearance_sheet)
-            .with_field("frame-focus-slot",self.outer_focus.as_ref().map(|f|f.slot.to_string()).unwrap_or_else(||"none".into()));
+            .with_field("frame-focus-slot",self.outer_focus.as_ref().map(|f|f.slot.to_string()).unwrap_or_else(||"none".into()))
+            .with_field("a11y-lens-windows",self.lens_windows.len().to_string());
         if self.app.blueprint_space(crate::action::SpaceRef::Primary).is_none() {
             if let Some(frame) = self.outer_frames.borrow().get(&0) {
                 out = out.with_field("frame-css", frame.stylesheet())
@@ -837,6 +840,19 @@ impl taproot::Driveable for Shell {
     /// parser and run it against the Shell via `run_scenario_step`. An unknown
     /// verb fails loudly (parse returns Err), never a silent skip.
     fn app_step(&mut self, line: &str) -> Result<(), String> {
+        if let Some(args)=line.strip_prefix("frame-a11y-window ") {
+            let (slot,action,target)=crate::frame_a11y::fixture_window_request(args)?;
+            if slot==0 {return self.app_step(&format!("frame-a11y {}",args.split_once(char::is_whitespace).unwrap().1));}
+            self.push_a11y_tree();
+            let lens=self.lens_windows.values_mut().find(|lens|lens.ordinal+1==slot).ok_or("frame window is absent")?;
+            let tree=lens.a11y.shared.lock().map_err(|_|"lens tree poisoned")?.clone().ok_or("lens tree is unpublished")?;
+            let matches=lens.a11y.routes.iter().filter_map(|(id,route)|match route {
+                crate::a11y::A11yRoute::Frame(route) if target.matches(&route.control) && tree.nodes.iter().any(|(node,n)|node==id&&n.supports_action(action))=>Some(*id),_=>None,
+            }).collect::<Vec<_>>();
+            if matches.len()!=1 {return Err("lens frame target is absent, ambiguous or unsupported".into());}
+            lens.a11y.actions.lock().map_err(|_|"lens queue poisoned")?.push(accesskit::ActionRequest{action,target_tree:accesskit::TreeId::ROOT,target_node:matches[0],data:None});
+            self.drain_lens_a11y_actions();return Ok(());
+        }
         if let Some(args)=line.strip_prefix("frame-a11y ") {
             let (action,target)=crate::frame_a11y::fixture_request(args)?;
             let (tree,routes,_)=self.projected_a11y_tree();

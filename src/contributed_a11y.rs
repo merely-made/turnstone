@@ -135,12 +135,7 @@ fn namespace_tree(
     let mut nodes = Vec::with_capacity(update.nodes.len());
     for (local, mut node) in update.nodes {
         let global = remap[&local];
-        node.set_children(
-            node.children()
-                .iter()
-                .filter_map(|child| remap.get(child).copied())
-                .collect::<Vec<_>>(),
-        );
+        crate::window_projection::remap_node(&mut node, &remap);
         if let Some(bounds) = node.bounds() {
             node.set_bounds(accesskit::Rect::new(
                 bounds.x0 + rect.x as f64,

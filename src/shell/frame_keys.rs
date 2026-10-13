@@ -25,6 +25,11 @@ fn space(slot: usize) -> SpaceRef {
     }
 }
 impl Shell {
+    pub(super) fn raise_shared_float(&mut self, pane: PaneId) {
+        if self.app.raise_floating_pane(pane) {
+            self.act(Action::SaveSession);
+        }
+    }
     pub(super) fn enter_frame_focus(&mut self, slot: usize, control: Option<Control>) -> bool {
         let target = control.or_else(|| {
             self.outer_frames.borrow().get(&slot).and_then(|frame| {
@@ -91,16 +96,27 @@ impl Shell {
                         .and_then(|w| w.active_ids().first().copied())
                         .map(|id| PaneId(id.0))
                 });
-            let return_valid = owner.return_pane == active && match owner.return_focus {
-                FocusTarget::Graph(p) | FocusTarget::Pane(p) => {
-                    self.app.space_of(p) == Some(space(owner.slot))
-                },
-                FocusTarget::Content { node, appearance } => self.surface_plan().iter().any(|s| {
-                    s.id == appearance
-                        && matches!(s.kind,crate::surface::SurfaceKind::Content(id) if id==node)
-                }),
-                _ => false,
-            };
+            let return_valid = owner.return_pane == active
+                && match owner.return_focus {
+                    FocusTarget::Graph(p) | FocusTarget::Pane(p) => {
+                        self.app.space_of(p) == Some(space(owner.slot))
+                    },
+                    FocusTarget::Content { node, appearance } => (if owner.slot == 0 {
+                        self.surface_plan()
+                    } else {
+                        self.lens_windows
+                            .values()
+                            .find(|l| l.ordinal + 1 == owner.slot)
+                            .map(|l| self.lens_plan(l.ordinal, l.width, l.height))
+                            .unwrap_or_default()
+                    })
+                    .iter()
+                    .any(|s| {
+                        s.id == appearance
+                            && matches!(s.kind,crate::surface::SurfaceKind::Content(id) if id==node)
+                    }),
+                    _ => false,
+                };
             if return_valid {
                 self.app.focus = owner.return_focus;
             } else if let Some(pane) = active {
@@ -135,9 +151,13 @@ impl Shell {
         events: Vec<WorkspaceEvent>,
         save_dividers: bool,
     ) {
-        let divider = events
-            .iter()
-            .any(|e| matches!(e, WorkspaceEvent::Tile(TileEvent::DividerMoved { .. })));
+        let divider = events.iter().any(|e| {
+            matches!(
+                e,
+                WorkspaceEvent::Tile(TileEvent::DividerMoved { .. })
+                    | WorkspaceEvent::Float(workbench::FloatEvent::SetRect { .. })
+            )
+        });
         for event in events {
             self.act(Action::OuterWorkspace {
                 space: space(slot),
@@ -211,6 +231,7 @@ impl Shell {
     }
     pub(super) fn apply_frame_a11y(
         &mut self,
+        slot: usize,
         route: &crate::frame_controls::FrameRoute,
         action: accesskit::Action,
     ) -> bool {
@@ -220,20 +241,28 @@ impl Shell {
         {
             return false;
         }
-        if !self.prepare_outer(0, (self.width, self.height)) {
+        let size = if slot == 0 {
+            (self.width, self.height)
+        } else {
+            let Some(lens) = self.lens_windows.values().find(|l| l.ordinal + 1 == slot) else {
+                return false;
+            };
+            (lens.width, lens.height)
+        };
+        if !self.prepare_outer(slot, size) {
             return false;
         }
         let events = self
             .outer_frames
             .borrow_mut()
-            .get_mut(&0)
+            .get_mut(&slot)
             .and_then(|frame| frame.accessibility_action(route, action));
         let Some(events) = events else { return false };
-        if !self.enter_frame_focus(0, Some(route.control.clone())) {
+        if !self.enter_frame_focus(slot, Some(route.control.clone())) {
             return false;
         }
-        self.apply_frame_events(0, events, true);
-        self.prepare_outer(0, (self.width, self.height));
+        self.apply_frame_events(slot, events, true);
+        self.prepare_outer(slot, size);
         self.request_redraw();
         true
     }

@@ -91,16 +91,40 @@ impl OuterFrame {
         self.scene();
         let dom = self.controls.dom.borrow();
         let mut out = Vec::new();
-        for node in nodes(&dom) {
-            if let Some(id) =
-                attr(&dom, node, cambium::FRISKET_TILE_ATTR).and_then(|s| s.parse::<u64>().ok())
-            {
-                if let Some((x, y, w, h)) = self.layout.visible_rect(&dom, node) {
-                    out.push((PaneId(id), Rect::new(x, y, w, h)));
-                }
+        for (id, _, node) in cambium::composited_slots(&*dom, self.controls.root()) {
+            if self.workspace.floating().iter().any(|f| f.tile.id == id) {
+                continue;
+            }
+            if let Some((x, y, w, h)) = self.layout.visible_rect(&dom, node) {
+                out.push((PaneId(id.0), Rect::new(x, y, w, h)));
             }
         }
         Ok(out)
+    }
+    /// Nearer floats last, with their actual retained outer and body apertures.
+    pub(crate) fn floats(&self) -> Vec<(PaneId, Rect, Rect)> {
+        let dom = self.controls.dom.borrow();
+        let slots = cambium::composited_slots(&*dom, self.controls.root());
+        self.workspace
+            .visible_floating(true)
+            .into_iter()
+            .filter_map(|float| {
+                let node = nodes(&dom).into_iter().find(|n| {
+                    attr(&dom, *n, "class")
+                        .is_some_and(|c| c.split_whitespace().any(|c| c == "workspace-float"))
+                        && attr(&dom, *n, cambium::FRISKET_TILE_ATTR)
+                            == Some(float.tile.id.0.to_string())
+                })?;
+                let (x, y, w, h) = self.layout.visible_rect(&dom, node)?;
+                let body = slots.iter().find(|(id, _, _)| *id == float.tile.id)?.2;
+                let (bx, by, bw, bh) = self.layout.visible_rect(&dom, body)?;
+                Some((
+                    PaneId(float.tile.id.0),
+                    Rect::new(x, y, w, h),
+                    Rect::new(bx, by, bw, bh),
+                ))
+            })
+            .collect()
     }
     pub fn scene(&mut self) -> netrender::Scene {
         self.layout.scene(
@@ -319,6 +343,41 @@ impl OuterFrame {
             }
             node = dom.parent(node)?;
         }
+    }
+    /// Explicit Ctrl-docking inspects tiled apertures beneath the dragged float.
+    pub(crate) fn float_dock_target(&self, x: f32, y: f32) -> Option<workbench::FloatDockTarget> {
+        if self.workspace.tiled().is_empty() && Rect::full(self.size.0, self.size.1).contains(x, y)
+        {
+            return Some(workbench::FloatDockTarget::TiledRoot);
+        }
+        let dom = self.controls.dom.borrow();
+        for (id, _, node) in cambium::composited_slots(&*dom, self.controls.root()) {
+            if self.workspace.tiled().find(id).is_none() {
+                continue;
+            }
+            let (rx, ry, w, h) = self.layout.visible_rect(&dom, node)?;
+            if !Rect::new(rx, ry, w, h).contains(x, y) {
+                continue;
+            }
+            let dx = (x - rx) / w.max(1.0);
+            let dy = (y - ry) / h.max(1.0);
+            let edge = if dx < 0.25 {
+                Some(Edge::Left)
+            } else if dx > 0.75 {
+                Some(Edge::Right)
+            } else if dy < 0.25 {
+                Some(Edge::Top)
+            } else if dy > 0.75 {
+                Some(Edge::Bottom)
+            } else {
+                None
+            };
+            return Some(match edge {
+                Some(edge) => workbench::FloatDockTarget::Beside { target: id, edge },
+                None => workbench::FloatDockTarget::Tab { target: id },
+            });
+        }
+        None
     }
 }
 fn tree_at<'a>(mut tree: &'a TileTree, path: &[usize]) -> Option<&'a TileTree> {

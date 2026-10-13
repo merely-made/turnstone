@@ -76,3 +76,9 @@ scenarios/frame*.scn text eol=lf
 docs/receipts/frame_controls_20261013/checks/*.log -text -whitespace
 docs/receipts/frame_controls_20261013/*.json text eol=lf
 docs/receipts/frame_controls_20261013/harness/** text eol=lf
+
+# Shared stations / per-window accessibility draft qualification.
+docs/receipts/stations_windows_20261013/checks/*.log -text -whitespace
+docs/receipts/stations_windows_20261013/*.json text eol=lf
+docs/receipts/stations_windows_20261013/checks/*.json text eol=lf
+docs/receipts/stations_windows_20261013/harness/** text eol=lf

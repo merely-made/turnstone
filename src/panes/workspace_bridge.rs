@@ -11,6 +11,16 @@ use workbench::{
 
 pub type OuterWorkspace = super::workspace::PaneWorkspace<(PaneContent, GraphId)>;
 
+pub(crate) fn validate_descriptors(frame: &OuterWorkspace) -> Result<(), String> {
+    for (&id, value) in &frame.descriptors {
+        let spec: super::PaneSpec = serde_json::from_value(value.clone()).map_err(|e| e.to_string())?;
+        if spec.id.0 != id || frame.panes.get(&id).is_none_or(|(content,_)| content.kind_id()!=spec.kind) {
+            return Err("Pane descriptor disagrees with its host payload".into());
+        }
+    }
+    Ok(())
+}
+
 pub fn path_indices(path: &[SplitChoice]) -> TilePath {
     TilePath(
         path.iter()
@@ -132,6 +142,7 @@ impl FrisketLayout {
     pub fn outer_workspace(&self) -> Result<std::borrow::Cow<'_, OuterWorkspace>, String> {
         if let PaneNode::Workspace(frame) = &self.root {
             frame.validate()?;
+            validate_descriptors(frame)?;
             return Ok(std::borrow::Cow::Borrowed(frame));
         }
         let mut panes = BTreeMap::new();
@@ -139,6 +150,7 @@ impl FrisketLayout {
         let frame = OuterWorkspace {
             workspace: Workspace::new(tree),
             panes,
+            descriptors: BTreeMap::new(),
         };
         frame.validate()?;
         Ok(std::borrow::Cow::Owned(frame))

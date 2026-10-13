@@ -1,0 +1,27 @@
+# Fresh private stores. This queues AccessKit requests through each window's
+# real route table; it does not prove OS activation or human screen-reader use.
+settle 30
+key escape
+act Open Settings pane
+settle 5
+act Tear out pane
+settle 30
+assert windows == 2
+assert snap a11y-lens-windows == 1
+frame-a11y-window 1 focus tab 1
+assert snap frame-focus-slot == 1
+frame-a11y-window 1 inc divider . 0
+settle 5
+frame-a11y-window 1 focus close 1
+assert snap frame-control == Close(TileId(1))
+capture-lens 01_lens_close_focus
+frame-a11y-window 1 click close 1
+settle 10
+assert snap frame-control == Tab(TileId(2))
+capture-lens 02_lens_close_repaired
+frame-a11y-window 0 focus tab 0
+assert snap frame-focus-slot == 0
+capture 03_primary_frame_focus
+key escape
+assert snap frame-focus-slot == none
+log primary and lens accessibility dispatch draft complete

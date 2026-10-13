@@ -91,6 +91,9 @@ impl Default for FrameControls {
     }
 }
 impl FrameControls {
+    pub(crate) fn root(&self) -> NodeId {
+        self.runner.root()
+    }
     pub fn sync(&mut self, scope: u128, workspace: Workspace, current: Option<TileId>) {
         if self.scope != Some(scope) {
             self.scope = Some(scope);
@@ -258,6 +261,56 @@ impl FrameControls {
                 false,
             );
         }
+        if event.mods.alt
+            && let Control::Tab(id) = control
+            && let Some(float) = self
+                .runner
+                .state()
+                .workspace
+                .floating()
+                .iter()
+                .find(|f| f.tile.id == id)
+        {
+            let mut rect = float.rect;
+            let step = if event.mods.ctrl { 0.1 } else { 0.01 };
+            match event.key {
+                Key::Named(NamedKey::ArrowLeft) => {
+                    if event.mods.shift {
+                        rect.width = (rect.width - step).max(0.01)
+                    } else {
+                        rect.x -= step
+                    }
+                },
+                Key::Named(NamedKey::ArrowRight) => {
+                    if event.mods.shift {
+                        rect.width = (rect.width + step).min(1.0)
+                    } else {
+                        rect.x += step
+                    }
+                },
+                Key::Named(NamedKey::ArrowUp) => {
+                    if event.mods.shift {
+                        rect.height = (rect.height - step).max(0.01)
+                    } else {
+                        rect.y -= step
+                    }
+                },
+                Key::Named(NamedKey::ArrowDown) => {
+                    if event.mods.shift {
+                        rect.height = (rect.height + step).min(1.0)
+                    } else {
+                        rect.y += step
+                    }
+                },
+                _ => return (Vec::new(), false),
+            }
+            rect.x = rect.x.clamp(0.0, (1.0 - rect.width).max(0.0));
+            rect.y = rect.y.clamp(0.0, (1.0 - rect.height).max(0.0));
+            return (
+                vec![workbench::FloatEvent::SetRect { tile: id, rect }.into()],
+                false,
+            );
+        }
         if let Control::Divider { .. } = control {
             if event.mods.ctrl || event.mods.alt || event.mods.meta {
                 return (Vec::new(), false);
@@ -390,7 +443,9 @@ impl FrameControls {
                     }
                 }
             }
-            if let Some(id) = attr(&dom, node, cambium::FRISKET_TILE_ATTR) {
+            if let Some(id) = attr(&dom, node, cambium::FRISKET_TILE_ATTR)
+                .filter(|_| cambium::slot_kind(&*dom, node).is_some())
+            {
                 let label = id
                     .parse::<u64>()
                     .ok()

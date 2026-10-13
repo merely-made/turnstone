@@ -294,7 +294,8 @@ impl ApplicationHandler for Shell {
         if self.window.as_ref().map(|w| w.id()) != Some(window_id) {
             // A lens window's event (rung 7): canvas gestures through the
             // lens's own camera; everything else is the primary's.
-            if self.lens_windows.contains_key(&window_id) {
+            if let Some(lens)=self.lens_windows.get_mut(&window_id) {
+                lens.a11y.adapter.process_event(&lens.window,&event);
                 self.lens_event(window_id, event);
                 self.drain_pending_windows(event_loop);
             }

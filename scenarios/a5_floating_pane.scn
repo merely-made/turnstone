@@ -1,7 +1,6 @@
-# A5 headed receipt. The live shell starts from its Frisket payload, promotes
-# the primary space at the first float, and then projects the same PaneId
-# through the primary compositor and a lens window. Float station geometry is
-# intentionally transient until A8 replaces the legacy frame sidecar.
+# A5 regression intent from the 2026-08-12 headed receipt. The 2026-10-13
+# draft now owns these stations in shared Workspace v2 sidecars. Re-run the
+# same interactions and captures to qualify this shared consumer join.
 settle 30
 key escape
 
@@ -33,7 +32,7 @@ assert snap floats == roster,gloss
 capture 02_gloss_raised
 
 # Dock Roster, then dock Gloss beside the graph branch. The retained Gloss
-# runner keeps the same PaneId while the blueprint becomes a nested split.
+# runner keeps the same PaneId while the workspace becomes a nested split.
 click-at 180 140
 act Dock pane
 settle 5

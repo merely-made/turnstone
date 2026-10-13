@@ -1,0 +1,17 @@
+{
+  "scope": "Two owned documents against draft parent; sparse checkout, not a whole-docset audit",
+  "files": [
+    {
+      "path": "design_docs/2026-08-08_pane_registry_and_graph_panes_plan.md",
+      "relative_links": 31,
+      "inherited_missing": 6,
+      "targets_and_resolvability_unchanged": true
+    },
+    {
+      "path": "design_docs/DOC_README.md",
+      "relative_links": 49,
+      "inherited_missing": 7,
+      "targets_and_resolvability_unchanged": true
+    }
+  ]
+}

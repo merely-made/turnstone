@@ -29,7 +29,7 @@ use crate::surface::{Rect, SurfaceKind};
 use inker::SessionClick;
 
 use super::input::pointer_button;
-use super::{CompositeLayer, PlannedScene, Shell, capture_composed};
+use super::{CompositeLayer, PlannedScene, Shell, capture_composed, frame_placement};
 
 /// One lens window's record: its platform window, present stack, size,
 /// cursor, and graph gesture capture.
@@ -44,6 +44,7 @@ pub(super) struct LensWindow {
     /// Which `App::lenses` pane space this window shows (stable; the space
     /// tombstones on close).
     pub(super) ordinal: usize,
+    pub(super) a11y:super::window_a11y::WindowA11y,
 }
 
 impl Shell {
@@ -54,7 +55,8 @@ impl Shell {
         while let Some(ordinal) = self.pending_windows.pop() {
             let attributes = Window::default_attributes()
                 .with_title("Turnstone — lens")
-                .with_inner_size(PhysicalSize::new(800u32, 600u32));
+                .with_inner_size(PhysicalSize::new(800u32, 600u32))
+                .with_visible(false);
             let Ok(window) = event_loop.create_window(attributes) else {
                 tracing::warn!("lens window creation failed");
                 continue;
@@ -77,6 +79,8 @@ impl Shell {
                 options,
             ) {
                 Ok(host) => {
+                    let a11y=super::window_a11y::WindowA11y::install(event_loop,&window,self.proxy.clone(),ordinal+1,self.app.session_id.as_uuid().as_u128(),&self.surface_a11y);
+                    let id=window.id();
                     window.request_redraw();
                     self.lens_windows.insert(
                         window.id(),
@@ -88,8 +92,11 @@ impl Shell {
                             cursor: (0.0, 0.0),
                             pointer_graph: None,
                             ordinal,
+                            a11y,
                         },
                     );
+                    self.push_lens_a11y_trees();
+                    if let Some(lens)=self.lens_windows.get(&id) {lens.window.set_visible(true);}
                 }
                 Err(err) => tracing::warn!(%err, "lens surface boot failed"),
             }
@@ -137,7 +144,7 @@ impl Shell {
                 )
             }
             None => {
-                (self.outer_rects(ordinal+1, space, None, (w.max(1), h.max(1))), Vec::new(), Vec::new())
+                (self.outer_rects(ordinal+1, space, None, (w.max(1), h.max(1))), Vec::new(), self.outer_float_rects(ordinal+1).into_iter().map(|(id,_,body)|(id,body)).collect())
             }
         };
         let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
@@ -232,8 +239,8 @@ impl Shell {
                 _ => None,
             }
         }));
-        surfaces.extend(float_rects.into_iter().filter_map(|(id, rect)| {
-            let content = self.lens_pane_content(ordinal, id)?;
+        surfaces.extend(float_rects.into_iter().flat_map(|(id, rect)| {
+            let Some(content) = self.lens_pane_content(ordinal,id) else {return Vec::new()};
             let kind = match content {
                 PaneContent::Orrery => SurfaceKind::Graph(id),
                 PaneContent::Tile(member) if self.content_sessions.has_document(&member) => {
@@ -241,11 +248,22 @@ impl Shell {
                 }
                 _ => SurfaceKind::Pane(id),
             };
-            Some(crate::surface::Surface {
-                id: crate::surface::SurfaceId::for_kind(kind),
-                kind,
-                rect,
-            })
+            let mut group=Vec::new();
+            if let Some((_,outer,_))=self.outer_float_rects(ordinal+1).into_iter().find(|(pane,_,_)|*pane==id) {
+                group.push(crate::surface::Surface {id:crate::surface::SurfaceId::for_kind(SurfaceKind::FloatFrame(id)),kind:SurfaceKind::FloatFrame(id),rect:outer});
+            }
+            group.push(crate::surface::Surface {id:crate::surface::SurfaceId::for_kind(kind),kind,rect});
+            if matches!(content,PaneContent::Workbench) {
+                let geom=self.app.workbench_for_pane(id).and_then(|w|w.to_arrangement().1);
+                for cell in crate::workbench_tiling::place_workbench(geom.as_ref(),rect).cells {
+                    if let Some(node)=cell.active_member().filter(|n|self.content_sessions.has_document(n)) {
+                        let body=cell.body();
+                        appearance_roles.push((node,crate::surface::appearance::workbench_appearance_role(id,node),body));
+                        group.push(crate::surface::Surface {id:crate::surface::SurfaceId::content(node),kind:SurfaceKind::Content(node),rect:body});
+                    }
+                }
+            }
+            group
         }));
         crate::surface::appearance::assign_content_appearance_ids(
             &mut surfaces,
@@ -326,7 +344,7 @@ impl Shell {
                     };
                     (scene, wgpu::Color::WHITE)
                 }
-                crate::surface::SurfaceKind::Frame => (self.outer_scene(ordinal+1), wgpu::Color::TRANSPARENT),
+                crate::surface::SurfaceKind::Frame | crate::surface::SurfaceKind::FloatFrame(_) => (self.outer_scene(ordinal+1), wgpu::Color::TRANSPARENT),
                 crate::surface::SurfaceKind::Divider(_) => {
                     (Scene::default(), crate::ui::SEAM_CLEAR)
                 }
@@ -335,10 +353,10 @@ impl Shell {
                 _ => continue,
             };
             scenes.push(PlannedScene {
-                id: surface.id.0,
+                id: if matches!(surface.kind,SurfaceKind::FloatFrame(_)) {crate::surface::SurfaceId::for_kind(SurfaceKind::Frame).0} else {surface.id.0},
                 kind: surface.kind,
-                placement: ExternalTexturePlacement::new(rect.dest()),
-                dims: (rw, rh),
+                placement: frame_placement(surface,lw,lh),
+                dims: if matches!(surface.kind,SurfaceKind::FloatFrame(_)) {(lw,lh)} else {(rw,rh)},
                 scene,
                 clear,
             });
@@ -359,6 +377,7 @@ impl Shell {
             });
         }
         // Pass 2 (immutable host): rasterize + compose, keyed per surface.
+        self.push_a11y_tree();
         let Some(lens) = self.lens_windows.get_mut(&id) else {
             return;
         };
@@ -501,7 +520,7 @@ impl Shell {
                             // unique across spaces), so close/divider/summon-
                             // beside now aim at this lens's tree.
                             self.app.active_pane = Some(pid);
-                            self.app.raise_floating_pane(pid);
+                            self.raise_shared_float(pid);
                             if let Some(content) = self.lens_pane_content(ordinal, pid) {
                                 let dims = plan
                                     .iter()
@@ -727,7 +746,7 @@ impl Shell {
                     }) {
                         redraw = match state {
                             ElementState::Pressed => {
-                                self.app.raise_floating_pane(pane);
+                                self.raise_shared_float(pane);
                                 let handled = self
                                     .app
                                     .graph_pane_pointer_down(pane, button, local_x, local_y);

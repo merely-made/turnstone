@@ -41,6 +41,34 @@ pub fn project_app(app: &App) -> UxTree {
     project_app_capturing(app, &mut None, &mut no_contribution)
 }
 
+/// A lens has its own pane tree and window root, without primary chrome or
+/// primary graph/document outlines. The shell adds actual visible producers.
+pub(crate) fn project_lens_with_contributions(app:&App,ordinal:usize,mut contributions:std::collections::HashMap<crate::panes::PaneId,UxTree>)->Option<(UxTree,A11yRoutes)> {
+    let layout=app.lenses.get(ordinal)?.as_ref()?;
+    let mut frozen=None;
+    let panes=crate::panes::project_frisket_with(layout,|content,pane|match content {
+        PaneContent::Workbench=>app.workbench_for_pane(pane).map(mere::platen::project_tile_layout),
+        PaneContent::Orrery=>{
+            let mut root=Node::new(Role::Group);
+            let count=app.graph_for_pane(pane).and_then(|graph|app.graph_runtimes.canvas(graph)).map(|canvas|canvas.graph().nodes().count()).unwrap_or(0);
+            root.set_label(format!("graph canvas, {count} nodes"));
+            Some(stitch(&format!("turnstone/lens/{ordinal}/canvas/{}",pane.0),root,Vec::new()))
+        },
+        PaneContent::Registered(kind) if kind.as_str()==crate::panes::kind::FROZEN_PROJECTION=>{frozen=Some(pane);Some(project_frozen_projection(app))},
+        PaneContent::Gloss(_)|PaneContent::Registered(_)=>contributions.remove(&pane),
+        _=>None,
+    });
+    let mut root=Node::new(Role::Window);root.set_label("Turnstone — lens");
+    let tree=stitch(&format!("turnstone/lens/{ordinal}"),root,vec![panes]);
+    let mut routes=A11yRoutes::new();
+    if let Some(pane)=frozen {
+        for (_,node) in app.graph_runtimes.graph().nodes() {
+            routes.insert(node_id_for_path(&format!("turnstone/frozen-projection/instance/{}",node.id)),A11yRoute::SelectMember{pane,member:node.id});
+        }
+    }
+    Some((tree,routes))
+}
+
 fn project_app_capturing(
     app: &App,
     orrery_pane: &mut Option<crate::panes::PaneId>,
@@ -402,7 +430,7 @@ fn outline_role(entry: &OutlineFact) -> Role {
 /// rebuilt where the projection actually lives now.
 #[derive(Clone, Debug, PartialEq)]
 pub enum A11yRoute {
-    /// Exact primary-window shared frame control at its current admission.
+    /// Exact shared frame control; the publishing window owns its route table.
     Frame(crate::frame_controls::FrameRoute),
     /// The chrome: open the omnibar in its find lane.
     OpenOmnibar,

@@ -1,0 +1,27 @@
+[package]
+name = "turnstone-stations-windows-receipt"
+version = "0.0.0"
+edition = "2024"
+[workspace]
+[dependencies]
+serde_json = "1"
+serde = { version = "1", features = ["derive"] }
+tabard = { git = "https://www.github.com/merely-made/mere.git", rev = "0d1dc1927859ff1aa2a43dd88a04391bc1086fd8" }
+cambium = { git = "https://www.github.com/merely-made/mere.git", rev = "0d1dc1927859ff1aa2a43dd88a04391bc1086fd8" }
+workbench = { git = "https://www.github.com/merely-made/mere.git", rev = "0d1dc1927859ff1aa2a43dd88a04391bc1086fd8", features = ["serde"] }
+genet-livery = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+taproot = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947", default-features = false }
+accesskit = "0.24"
+uxtree = { git = "https://www.github.com/merely-made/mere.git", rev = "0d1dc1927859ff1aa2a43dd88a04391bc1086fd8" }
+genet-render = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947", default-features = false, features = ["livery", "accesskit"] }
+inker = { git = "https://www.github.com/merely-made/mere.git", rev = "0d1dc1927859ff1aa2a43dd88a04391bc1086fd8", default-features = false }
+uuid = { version = "1", features = ["v4"] }
+accesskit_consumer = "=0.38.0"
+accesskit-consumer-windows = { package = "accesskit_consumer", version = "=0.35.0" }
+accesskit-consumer-unix = { package = "accesskit_consumer", version = "=0.36.0" }
+[patch.crates-io]
+taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+engine-observables-api = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+genet-paint-types = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }

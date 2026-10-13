@@ -68,6 +68,7 @@ use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 use winit::window::{Window, WindowId};
 
 pub(crate) mod a11y_bridge;
+mod window_a11y;
 
 use crate::panes::PaneContent;
 use crate::settings_pane::LiveSettingsHandle;
@@ -559,6 +560,16 @@ fn shared_out_dir_from_env() -> std::path::PathBuf {
         .unwrap_or_else(|| std::path::PathBuf::from("."));
     let _ = std::fs::create_dir_all(&dir);
     dir
+}
+
+/// Reuse one full-window frame texture for each measured float crop. This
+/// preserves the DOM's paint/clip coordinates without a second layout owner.
+fn frame_placement(surface: &crate::surface::Surface,w:u32,h:u32)->ExternalTexturePlacement {
+    let r=surface.rect;
+    let placement=ExternalTexturePlacement::new(r.dest());
+    if matches!(surface.kind,SurfaceKind::FloatFrame(_)) {
+        placement.with_uv([r.x/w.max(1) as f32,r.y/h.max(1) as f32,(r.x+r.w)/w.max(1) as f32,(r.y+r.h)/h.max(1) as f32])
+    } else {placement}
 }
 
 /// One surface's scene, produced by render's mutable first pass and consumed by
@@ -1274,7 +1285,7 @@ impl Shell {
 
     fn clear_surface_content(&mut self) {
         self.reader_appearances.clear();
-        self.surface_a11y.clear();
+        self.clear_surface_semantics();
         self.content_sessions
             .retain(|_, content| content.lane() != pelt_core::PeltLane::Surface);
         self.surface_find_requests.clear();
@@ -1520,7 +1531,7 @@ impl Shell {
                 )
             }
             None => {
-                (self.outer_rects(0, &self.app.frisket, self.app.maximized, (self.width.max(1), self.height.max(1))), Vec::new(), Vec::new())
+                (self.outer_rects(0, &self.app.frisket, self.app.maximized, (self.width.max(1), self.height.max(1))), Vec::new(), self.outer_float_rects(0).into_iter().map(|(id,_,body)|(id,body)).collect())
             }
         };
         let mut graph_rects = Vec::new();
@@ -1701,8 +1712,8 @@ impl Shell {
                 _ => None,
             }
         }));
-        surfaces.extend(float_rects.into_iter().filter_map(|(id, rect)| {
-            let content = self.app.pane_content(id)?;
+        surfaces.extend(float_rects.into_iter().flat_map(|(id, rect)| {
+            let Some(content) = self.app.pane_content(id) else {return Vec::new()};
             let kind = match content {
                 PaneContent::Orrery => SurfaceKind::Graph(id),
                 PaneContent::Tile(member) if self.has_live_content(member) => {
@@ -1710,11 +1721,22 @@ impl Shell {
                 }
                 _ => SurfaceKind::Pane(id),
             };
-            Some(crate::surface::Surface {
-                id: crate::surface::SurfaceId::for_kind(kind),
-                kind,
-                rect,
-            })
+            let mut group=Vec::new();
+            if let Some((_,outer,_))=self.outer_float_rects(0).into_iter().find(|(pane,_,_)|*pane==id) {
+                group.push(crate::surface::Surface {id:crate::surface::SurfaceId::for_kind(SurfaceKind::FloatFrame(id)),kind:SurfaceKind::FloatFrame(id),rect:outer});
+            }
+            group.push(crate::surface::Surface {id:crate::surface::SurfaceId::for_kind(kind),kind,rect});
+            if matches!(content,PaneContent::Workbench) {
+                let geom=self.app.workbench_for_pane(id).and_then(|w|w.to_arrangement().1);
+                for cell in crate::workbench_tiling::place_workbench(geom.as_ref(),rect).cells {
+                    if let Some(node)=cell.active_member().filter(|n|self.has_live_content(n)) {
+                        let body=cell.body();
+                        appearance_roles.push((node,crate::surface::appearance::workbench_appearance_role(id,node),body));
+                        group.push(crate::surface::Surface {id:crate::surface::SurfaceId::content(node),kind:SurfaceKind::Content(node),rect:body});
+                    }
+                }
+            }
+            group
         }));
         if let Some(rect) = chrome {
             surfaces.push(crate::surface::Surface {
@@ -1970,20 +1992,33 @@ impl Shell {
     /// refusal bypasses that cadence so its appearance or clearing is published
     /// even when the interaction is followed by an idle window.
     fn push_a11y_tree(&mut self) {
+        self.drain_surface_accessibility();
+        // Detach every losing parent before any destination can attach the
+        // same producer tree, including simultaneous swaps between windows.
+        let current=self.foreign_a11y_placements();
+        if self.a11y_surface_layout.iter().any(|(node,_)|!current.iter().any(|(n,_)|n==node)) {
+            let retained=current.into_iter().filter(|(node,_)|self.a11y_surface_layout.iter().any(|(n,_)|n==node)).collect();
+            self.push_primary_a11y_tree(Some(retained));
+        }
+        self.withdraw_lens_a11y_departures();
+        self.push_primary_a11y_tree(None);
+        self.push_lens_a11y_trees();
+    }
+    fn push_primary_a11y_tree(&mut self,override_placements:Option<Vec<(uuid::Uuid,accesskit::Rect)>>) {
         const CADENCE_FRAMES: u32 = 30;
         if self.a11y_adapter.is_none() {
             return;
         }
-        self.drain_surface_accessibility();
         let replay = self
             .a11y_reactivation
             .load(std::sync::atomic::Ordering::Acquire);
         if replay {
             self.surface_a11y.reset_publication();
         }
-        let placements = self.foreign_a11y_placements();
+        let forced=override_placements.is_some();
+        let placements = override_placements.unwrap_or_else(||self.foreign_a11y_placements());
         let frame_stamp=self.outer_frames.borrow().get(&0).map(|frame|frame.stamp());
-        let changed = frame_stamp != self.a11y_frame_last || replay
+        let changed = forced || frame_stamp != self.a11y_frame_last || replay
             || self.surface_a11y.needs_publish()
             || placements != self.a11y_surface_layout
             || self.a11y_focus_last != Some(self.app.focus);
@@ -2159,7 +2194,7 @@ impl Shell {
                 continue;
             }
             if let Some(crate::a11y::A11yRoute::Frame(route))=self.a11y_routes.get(&request.target_node).cloned() {
-                if !self.apply_frame_a11y(&route,request.action) {
+                if !self.apply_frame_a11y(0,&route,request.action) {
                     self.app.note(crate::observe::AppEvent::InteractionMissed {what:"a11y-action",target:"Shared frame control is stale, hidden or unsupported".into()});
                 }
                 continue;
@@ -2180,7 +2215,8 @@ impl Shell {
                 let (pane, generation, node) = (*pane, *generation, *node);
                 let current_spec =
                     self.contributed_pane_spec(pane, self.pane_content(pane).as_ref());
-                let landed = crate::contributed_a11y::apply_route(
+                let visible=self.app.space_of(pane)==Some(crate::action::SpaceRef::Primary) && self.surface_plan().iter().any(|s|s.kind==SurfaceKind::Pane(pane));
+                let landed = visible && crate::contributed_a11y::apply_route(
                     &mut self.renderers.contributed,
                     current_spec.as_ref(),
                     crate::contributed_a11y::ContributedA11yRoute { pane, generation, node },
@@ -2194,7 +2230,7 @@ impl Shell {
                 } else if request.action == accesskit::Action::Focus {
                     self.app.focus = crate::surface::FocusTarget::Pane(pane);
                     self.app.active_pane = Some(pane);
-                    self.app.raise_floating_pane(pane);
+                    self.raise_shared_float(pane);
                 }
                 self.request_redraw();
                 continue;
@@ -2204,11 +2240,18 @@ impl Shell {
             if request.action != accesskit::Action::Click {
                 continue;
             }
+            if let Some(crate::a11y::A11yRoute::SelectMember{pane,..})=&route {
+                if self.app.space_of(*pane)!=Some(crate::action::SpaceRef::Primary) {
+                    self.app.note(crate::observe::AppEvent::InteractionMissed {what:"a11y-action",target:"Graph projection moved to another window".into()});
+                    continue;
+                }
+            }
             let effects =
                 crate::a11y::apply_route(&mut self.app, route.as_ref(), request.target_node);
             self.run_effects(effects);
             self.request_redraw();
         }
+        self.drain_lens_a11y_actions();
     }
 
     fn clip_focused_document_to_knot(&mut self) {

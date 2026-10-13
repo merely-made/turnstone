@@ -1,0 +1,14 @@
+{
+  "source_incremental_r2": [
+    "Result=oom-kill",
+    "MemoryPeak=1342177280",
+    "MemorySwapPeak=0",
+    "MemoryMax=1342177280"
+  ],
+  "source_incremental_r3": [
+    "Result=oom-kill",
+    "MemoryPeak=1342177280",
+    "MemorySwapPeak=0",
+    "MemoryMax=1342177280"
+  ]
+}

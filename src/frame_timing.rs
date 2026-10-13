@@ -143,6 +143,7 @@ impl SurfaceRasterSplit {
             SurfaceKind::Pane(_) => &mut self.pane,
             SurfaceKind::Divider(_) => &mut self.divider,
             SurfaceKind::Frame => &mut self.frame,
+            SurfaceKind::FloatFrame(_) => &mut self.frame,
             SurfaceKind::Chrome => &mut self.chrome,
         }
     }

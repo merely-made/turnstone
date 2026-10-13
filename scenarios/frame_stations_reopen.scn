@@ -1,0 +1,18 @@
+# Reopen frame_stations' stores; verify floating custody and window survive.
+settle 30
+assert pane roster
+assert snap floats == roster
+assert windows == 2
+assert snap lens-float-count == 0
+assert snap frame-focus-slot == none
+assert snap a11y-lens-windows == 1
+capture 04_shared_float_reopened
+frame-a11y-window 0 focus tab 1
+assert snap frame-focus-slot == 0
+key escape
+act Dock pane
+settle 10
+assert event pane-docked roster
+assert snap float-count == 0
+capture 05_shared_float_docked
+log shared float reopen and dock draft complete
