@@ -128,6 +128,23 @@ Turnstone, Genet host packages, and Servo runtime packages.
 Canvas, Cambium over Genet's DOM and layout seam, and NetRender over a WebGPU
 canvas. Its browser dependencies stay out of the `graphshell` package.
 
+### Instrument retained-data reference workspace
+
+`web/workspace.html` opens the existing local-mere reference route
+(`tree.html?app=local`) with Instrument presentation. It reuses the current
+IndexedDB graph/session store and Forme workbench. Graph and tiled views show
+the same material, with a stable session caption and shared Cambium pane
+headers. The title, inspector and controls consume the existing Tabard
+application appearance. Read-only presenter and generated/fixture routes
+retain their existing framing; the Instrument authoring sheet is excluded
+from the no-default viewer build.
+
+This is a local retained-data reference entry, not a new store or a live
+cross-app resolver. An app's mere represents retained material using the
+app's useful views. Cross-domain use still requires the existing admitted
+source/owner and portable clip/live-entity paths; opening a scene does not
+copy data or grant another domain's operations.
+
 ### September 5 practice workspace proof
 
 `web/practice.html` is a current-tree browser proof over one disclosed

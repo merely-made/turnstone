@@ -141,12 +141,21 @@ const SHEET: &str = "\
 
 // Applets retain their host stylesheet; application appearance enters last.
 fn tree_stylesheet(appearance: &str) -> String {
+    #[cfg(feature = "product")]
+    let workspace_sheet = format!(
+        "{}\n{}\n{}",
+        cambium::TITLE_BAR_CSS,
+        cambium::INSTRUMENT_CSS,
+        instrument::SHEET
+    );
+    #[cfg(not(feature = "product"))]
+    let workspace_sheet = "";
     #[cfg(feature = "applets")]
     let applet_sheet = applet::SHEET;
     #[cfg(not(feature = "applets"))]
     let applet_sheet = "";
     format!(
-        "{SHEET}\n{}\n{}\n{applet_sheet}\n{appearance}",
+        "{SHEET}\n{}\n{}\n{workspace_sheet}\n{applet_sheet}\n{appearance}",
         format!("{}\n{}", commands::SHEET, presenter::SHEET),
         forme_sheet()
     )
@@ -717,6 +726,15 @@ fn view(page: &TreePage) -> Child {
     );
     let workbench = forme_workbench(page);
     let showing_workbench = workbench.is_some();
+    let inline_product_controls = showing_workbench || !instrument_class(page).is_empty();
+    #[cfg(feature = "product")]
+    let scene_header = instrument::scene_header(page, showing_workbench);
+    #[cfg(not(feature = "product"))]
+    let scene_header: Option<Child> = None;
+    #[cfg(feature = "product")]
+    let app_header = instrument::app_header(page);
+    #[cfg(not(feature = "product"))]
+    let app_header: Option<Child> = None;
     #[cfg(feature = "product")]
     let drop_feedback = (!showing_workbench)
         .then(|| forme::drop_feedback(page))
@@ -728,13 +746,15 @@ fn view(page: &TreePage) -> Child {
             el(
                 "main",
                 (
-                    el(
-                        "h1",
-                        page.presenter
-                            .as_ref()
-                            .map_or("Graphshell, one tree", |p| p.options.caption.as_str())
-                            .to_owned(),
-                    ),
+                    app_header.unwrap_or_else(|| {
+                        Box::new(el(
+                            "h1",
+                            page.presenter
+                                .as_ref()
+                                .map_or("Graphshell, one tree", |p| p.options.caption.as_str())
+                                .to_owned(),
+                        ))
+                    }),
                     el("p", page.status())
                         .attr("class", "tree-status")
                         .attr("role", "status"),
@@ -753,14 +773,18 @@ fn view(page: &TreePage) -> Child {
                         controls::toolbar(page)
                     },
                     forme_toolbar(page),
-                    showing_workbench.then(|| product::controls(page)),
+                    inline_product_controls.then(|| product::controls(page)),
                     el(
                         "div",
                         (
-                            (!showing_workbench).then(|| product::controls(page)),
+                            (!inline_product_controls).then(|| product::controls(page)),
                             el(
                                 "div",
-                                (workbench.unwrap_or_else(|| Box::new(graph)), drop_feedback),
+                                (
+                                    scene_header,
+                                    workbench.unwrap_or_else(|| Box::new(graph)),
+                                    drop_feedback,
+                                ),
                             )
                             .attr("class", "tree-graph"),
                             presenter::panel(page),
@@ -790,7 +814,7 @@ fn view(page: &TreePage) -> Child {
             .attr(
                 "class",
                 format!(
-                    "{} {}",
+                    "{} {} {}",
                     if page.grouping.is_some() {
                         "tree-grouped"
                     } else {
@@ -800,7 +824,8 @@ fn view(page: &TreePage) -> Child {
                         "tree-presenter"
                     } else {
                         ""
-                    }
+                    },
+                    instrument_class(page)
                 ),
             )
             .attr(
@@ -816,6 +841,16 @@ fn view(page: &TreePage) -> Child {
     )
 }
 
+fn instrument_class(page: &TreePage) -> &'static str {
+    #[cfg(feature = "product")]
+    if instrument::enabled(page) {
+        return "instrument-workspace tree-instrument";
+    }
+    #[cfg(not(feature = "product"))]
+    let _ = page;
+    ""
+}
+
 /// Whether the Graph tools region docks beside the canvas at this width.
 fn tools_docked(page: &TreePage) -> bool {
     page.presenter.is_none() && page.size.0 >= TOOLS_DOCK_MIN_WIDTH
@@ -824,6 +859,10 @@ fn tools_docked(page: &TreePage) -> bool {
 /// The Graph tools region: the storage line on `app=local`, then its sections.
 fn tools_region(page: &TreePage) -> Child {
     let mut children: Vec<Child> = Vec::new();
+    #[cfg(feature = "product")]
+    if let Some(header) = instrument::inspector_header(page) {
+        children.push(header);
+    }
     if let Some(product) = &page.product {
         children.push(Box::new(
             el("p", format!("Storage: {}", product.storage))
@@ -1369,7 +1408,8 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 }
                 presentation::install(ctx.runner.state());
                 if let Some(input) = node_presentation::refresh(ctx.runner.state()) {
-                    ctx.runner.update(|page| node_presentation::update(page,input));
+                    ctx.runner
+                        .update(|page| node_presentation::update(page, input));
                 }
                 node_presentation::install(ctx.runner.state());
                 if let Some(report) = dynamics_inspection::refresh(ctx.runner.state()) {
@@ -1605,8 +1645,6 @@ mod controls;
 #[cfg(feature = "product")]
 mod coupling;
 #[cfg(feature = "product")]
-mod node_presentation;
-#[cfg(feature = "product")]
 mod dynamics_inspection;
 #[cfg(feature = "product")]
 mod field_inspection;
@@ -1618,9 +1656,13 @@ mod grouping;
 mod history;
 #[cfg(feature = "product")]
 mod inspection;
+#[cfg(feature = "product")]
+mod instrument;
 mod lane;
 #[cfg(feature = "product")]
 mod link_inspection;
+#[cfg(feature = "product")]
+mod node_presentation;
 mod physics;
 #[cfg(feature = "product")]
 mod presentation;
