@@ -12,7 +12,10 @@ name = "projection_dynamics_receipt"
 required-features = ["web"]
 
 [features]
-default = ["native", "image-decode"]
+default = ["native", "image-decode", "document-layout"]
+# Document-capable hosts retain Platen's document producer. The read-only
+# browser viewer uses its portable pane/geometry model alone.
+document-layout = ["platen?/document-layout"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
 image-decode = ["cambium-rootstock?/image-decode", "mere?/image-decode"]
 # Existing admitted sessions, transports, Personae composition, and receipt
@@ -149,7 +152,7 @@ muniment = { workspace = true, optional = true }
 # too, so it sits here rather than in the native-only table (reservoir plan
 # §7 item 26).
 pandect = { workspace = true, optional = true }
-platen = { workspace = true, optional = true }
+platen = { path = "../../crates/platen/platen", default-features = false, optional = true }
 scenograph.workspace = true
 sceno.workspace = true
 scenomise.workspace = true
