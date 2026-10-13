@@ -17,6 +17,7 @@
       dedupe_window_ms: 1000,
       segment_size: 64,
       retention_traces: 2048,
+      encounter_limit: 100000,
     };
   }
 
@@ -68,6 +69,7 @@
         1,
         100_000,
       ),
+      encounter_limit: boundedInteger(value?.encounter_limit, fallback.encounter_limit, 1, 1_000_000),
     };
   }
 
@@ -157,29 +159,56 @@
       return null;
     }
     const referrer = optionalText(value?.referrer_url);
+    const referrerUrl = referrer ? sanitizeAddress(referrer, policy) : null;
+    const scope = value?.source_scope;
+    const sourceScope = scope && [scope.product, scope.profile, scope.generation]
+      .every((part) => typeof part === "string" && part.trim() && part.length <= 256)
+      ? { product: scope.product, profile: scope.profile, generation: scope.generation } : null;
+    if (scope && !sourceScope) return null;
+    const sourceParent = value?.parent;
+    let parent = { kind: "unknown" };
+    if (["unknown", "root", "withheld"].includes(sourceParent?.kind)) {
+      parent = { kind: sourceParent.kind };
+    } else if (["visit", "outside_range"].includes(sourceParent?.kind) && optionalText(sourceParent.visit_id)) {
+      parent = { kind: sourceParent.kind, visit_id: sourceParent.visit_id };
+    }
+    if (referrer && !referrerUrl) parent = { kind: "withheld" };
     return {
       source: optionalText(value?.source)?.toLowerCase() ?? "browser",
       visit_id: optionalText(value?.visit_id),
+      source_scope: sourceScope,
+      parent,
+      original_unix_micros: Number.isSafeInteger(value?.original_unix_micros) ? value.original_unix_micros : null,
+      source_is_local: typeof value?.source_is_local === "boolean" ? value.source_is_local : null,
       url,
       title: optionalText(value?.title),
       favicon_url: optionalText(value?.favicon_url),
-      referrer_url: referrer ? sanitizeAddress(referrer, policy) : null,
-      transition: optionalText(value?.transition)?.toLowerCase() ?? "unknown",
+      referrer_url: referrerUrl,
+      transition: optionalText(value?.transition) ?? "unknown",
       at_ms: Number.isFinite(value?.at_ms) ? Math.max(0, Math.trunc(value.at_ms)) : 0,
       private: false,
     };
   }
 
   function queueKey(visit) {
+    const source = visit.source_scope ? JSON.stringify(visit.source_scope) : visit.source;
     return visit.visit_id
-      ? `${visit.source}\u0000${visit.visit_id}`
+      ? `${source}\u0000${visit.visit_id}`
       : `${visit.source}\u0000${visit.url}\u0000${visit.at_ms}\u0000${visit.transition}`;
   }
 
   function mergeQueue(existing, incoming, limit = DEFAULT_QUEUE_LIMIT) {
     const merged = new Map();
     for (const visit of [...existing, ...incoming]) {
-      merged.set(queueKey(visit), visit);
+      const key = queueKey(visit);
+      const prior = merged.get(key);
+      const parentKey = (parent) => ["visit", "outside_range"].includes(parent?.kind)
+        ? `visit:${parent.visit_id}` : parent?.kind ?? "unknown";
+      if (prior && (prior.url !== visit.url || prior.at_ms !== visit.at_ms
+        || prior.transition !== visit.transition || parentKey(prior.parent) !== parentKey(visit.parent))) {
+        throw new Error("Conflicting browser visit source facts");
+      }
+      merged.set(key, prior ?? visit);
     }
     return [...merged.values()]
       .sort((left, right) => left.at_ms - right.at_ms)

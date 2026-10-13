@@ -307,6 +307,7 @@ tokio = { version = "1", features = [
 # These fixtures lower into the native AccessKit host, not the browser mirror.
 # Cargo's browser cone includes dev dependencies, so keep this lane scoped.
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+muniment = { workspace = true, features = ["redb"] }
 accesskit = "0.24"
 cambium-genet-winit-host = { workspace = true }
 cambium-winit-a11y = { workspace = true }

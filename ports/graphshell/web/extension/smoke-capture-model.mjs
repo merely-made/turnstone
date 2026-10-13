@@ -31,7 +31,7 @@ const accepted = model.sanitizeVisit(
 assert.equal(accepted.url, "https://example.net/research");
 assert.equal(accepted.referrer_url, "https://example.net/from");
 assert.equal(accepted.title, "Research");
-assert.equal(accepted.transition, "link");
+assert.equal(accepted.transition, "LINK");
 assert.equal(
   model.sanitizeVisit(
     {
@@ -45,7 +45,7 @@ assert.equal(
 assert.equal(model.sanitizeVisit({ ...accepted, private: true }, policy), null);
 assert.deepEqual(
   model.mergeQueue([accepted], [{ ...accepted, title: "Updated" }]),
-  [{ ...accepted, title: "Updated" }],
+  [accepted],
 );
 assert.deepEqual(
   model.historyFilterFromControls(7, " persona:a ", " device:b ", 700_000_000),
