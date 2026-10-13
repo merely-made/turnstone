@@ -116,7 +116,7 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
     }
     Box::new(
         el("nav", buttons)
-            .attr("class", "tree-controls")
+            .attr("class", "tree-controls workspace-controls")
             .attr("aria-label", "Graph controls"),
     )
 }

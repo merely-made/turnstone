@@ -888,7 +888,7 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(remote::section(page));
     Box::new(
         el("aside", children)
-            .attr("class", "tree-tools")
+            .attr("class", "tree-tools workspace-controls")
             .attr("aria-label", "Graph tools"),
     )
 }
