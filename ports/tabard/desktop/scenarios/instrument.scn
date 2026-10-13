@@ -1,0 +1,45 @@
+# Copyright 2026 Mark Alan Boykin
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+
+# Fresh --library. The neutral Instrument frame surrounds the authored draft;
+# real mode, seed, history and graph controls keep their existing authority.
+log Instrument workspace frame and domain specimens
+settle 4
+assert snap mode == light
+assert snap dirty == false
+remember original
+capture instrument_light
+
+click role:button @data-mode=dark
+settle 4
+same original theme name primary
+assert snap dirty == false
+capture instrument_dark
+
+key tab-until aria-label=Primary hue
+key ArrowRight
+settle 4
+assert snap dirty == true
+same original theme name
+differs original primary
+capture instrument_dirty
+
+click role:button @data-action=undo
+settle 4
+assert snap dirty == false
+same original theme name primary
+capture instrument_undone
+
+resize 520 860
+settle 4
+capture instrument_narrow_editor
+click .reader-canvas
+settle 4
+capture instrument_narrow_reader
+click role:button @data-key=tabard-notes
+settle 4
+assert snap graph_selected == 1
+capture instrument_narrow_graph
