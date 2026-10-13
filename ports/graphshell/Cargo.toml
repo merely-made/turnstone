@@ -96,6 +96,7 @@ webrtc-join = [
 # (physics catalog plan, P5c; mere `canvas-gpu`, ruled 2026-10-02).
 canvas-gpu = ["web", "mere/canvas-gpu"]
 web = [
+    "dep:command-menu",
     "dep:tabard",
     "dep:async-trait",
     # The canvas's producer semantics for a screen reader (`canvas_reader`;
@@ -137,6 +138,7 @@ personal-sync = [
 ]
 
 [dependencies]
+command-menu = { path = "../../crates/cambium/command-menu", optional = true }
 # The check conclusions and faults, named directly (insigne proofs plan, B).
 insigne = { workspace = true, features = ["verify"] }
 async-trait = { version = "0.1", optional = true }

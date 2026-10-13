@@ -3719,6 +3719,7 @@ dependencies = [
  "cambium-rootstock",
  "chartulary",
  "chirograph",
+ "command-menu",
  "edit-history",
  "eidetic",
  "getrandom 0.3.4",

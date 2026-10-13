@@ -11,15 +11,16 @@
 //! which would trap an embedding page's scroll. These listeners sit on the
 //! mount root in the capture phase, ahead of the host's, and keep from it
 //! what belongs to the page, by `graphshell::canvas_gestures`' policy: a
-//! plain wheel over the graph scrolls the page and a Ctrl or Meta wheel
-//! zooms; one finger on empty canvas scrolls the page and one on a node
+//! wheel follows the view preference (pointer zoom by default); one finger
+//! on empty canvas scrolls the page and one on a node
 //! drags it; two fingers pan and pinch. Outside the graph leaf (the toolbar,
-//! the tools, the lists) the host handles everything, as before.
+//! the tools, the lists) scrollable controls retain the host's wheel route;
+//! the remaining chrome leaves scrolling to the embedding page.
 use std::collections::HashSet;
 
 use cambium_genet_web_host::{WHEEL_LINE_PX, WHEEL_PAGE_PX, wheel_delta_from_dom};
 use graphshell::canvas_gestures::{
-    Fingers, TouchUse, WheelUse, touch_use, two_finger, wheel_use, wheel_zoom,
+    Fingers, TouchUse, WheelMode, WheelUse, touch_use, two_finger, wheel_use, wheel_zoom,
 };
 use web_sys::{AddEventListenerOptions, PointerEvent, TouchEvent, TouchList};
 
@@ -28,9 +29,23 @@ use super::*;
 /// A page-px rectangle: left, top, width, height.
 pub(super) type Rect = (f32, f32, f32, f32);
 
+/// A host can set `data-wheel-mode`; the page's `?wheel=` overrides it.
+pub(super) fn requested_wheel(root: &Element) -> Result<WheelMode, String> {
+    let query = web_sys::window()
+        .and_then(|window| window.location().search().ok())
+        .and_then(|query| web_sys::UrlSearchParams::new_with_str(&query).ok())
+        .and_then(|params| params.get("wheel"));
+    query
+        .or_else(|| root.get_attribute("data-wheel-mode"))
+        .map(|value| WheelMode::parse(&value))
+        .unwrap_or(Ok(WheelMode::default()))
+}
+
 /// What the gestures share with the page.
 #[derive(Default)]
 pub(super) struct Gestures {
+    /// The secondary pointer captured for right-click/right-drag arbitration.
+    right: Option<i32>,
     /// The graph leaf's painted rect, from the last frame.
     pub(super) graph: Option<Rect>,
     /// What sits over the leaf and keeps the host's input: the tools
@@ -97,10 +112,16 @@ pub(super) fn layout_rects(ctx: &AppCtx<'_, TreePage, Logic, Child>) -> (Option<
             .next()
     };
     let graph = first("tree-canvas").and_then(|leaf| ctx.painted_rect(leaf));
-    let overlays = ["tools-overlay", "tree-product"]
-        .into_iter()
-        .filter_map(|class| first(class).and_then(|node| ctx.painted_rect(node)))
-        .collect();
+    let overlays = [
+        "tools-overlay",
+        "tree-tools",
+        "tree-product",
+        "tree-command-menu",
+        "tree-relations",
+    ]
+    .into_iter()
+    .filter_map(|class| first(class).and_then(|node| ctx.painted_rect(node)))
+    .collect();
     (graph, overlays)
 }
 
@@ -156,9 +177,25 @@ impl Listeners {
 
     fn wheel(&self, event: web_sys::WheelEvent) {
         let Some(at) = self.graph_point(event.client_x(), event.client_y()) else {
+            let rect = self.canvas.get_bounding_client_rect();
+            let zoom = (self.host.ui_zoom)();
+            let at = (
+                (event.client_x() as f64 - rect.x()) as f32 / zoom,
+                (event.client_y() as f64 - rect.y()) as f32 / zoom,
+            );
+            let gestures = self.shared.gestures.borrow();
+            if gestures.graph.is_some() && !gestures.overlays.iter().any(|rect| inside(*rect, at)) {
+                // The web host claims every notch. Keep ordinary chrome from
+                // trapping page scroll, while its actual scroll panes still work.
+                event.stop_propagation();
+            }
             return;
         };
-        let wheel = wheel_use(event.ctrl_key(), event.meta_key());
+        let wheel = wheel_use(
+            self.shared.wheel_mode.get(),
+            event.ctrl_key(),
+            event.meta_key(),
+        );
         self.shared.gestures.borrow_mut().last_wheel = Some(wheel);
         // The host never hears of it: unclaimed, the page scrolls.
         event.stop_propagation();
@@ -169,13 +206,37 @@ impl Listeners {
         if self.shared.selection_locked.get() {
             return;
         }
-        let (_, dy) = wheel_delta_from_dom(&event, WHEEL_LINE_PX, WHEEL_PAGE_PX);
-        wheel_zoom(&mut self.shared.canvas.borrow_mut(), at, dy);
+        let (dx, dy) = wheel_delta_from_dom(&event, WHEEL_LINE_PX, WHEEL_PAGE_PX);
+        let mut canvas = self.shared.canvas.borrow_mut();
+        if wheel == WheelUse::Zoom {
+            wheel_zoom(&mut canvas, at, dy);
+        } else {
+            canvas.set_ctrl(false);
+            canvas.wheel(dx, dy);
+        }
+        drop(canvas);
         self.redraw();
     }
 
     fn pointer_down(&self, event: PointerEvent) {
         if event.pointer_type() != "touch" {
+            if event.button() == 2
+                && let Some(at) = self.graph_point(event.client_x(), event.client_y())
+            {
+                event.stop_propagation();
+                event.prevent_default();
+                if self.shared.selection_locked.get() || self.shared.remote_shown.get() {
+                    return;
+                }
+                self.shared.canvas.borrow_mut().pointer_down(
+                    mere::canvas::PointerButton::Right,
+                    at.0,
+                    at.1,
+                );
+                self.shared.gestures.borrow_mut().right = Some(event.pointer_id());
+                self.canvas.set_pointer_capture(event.pointer_id()).ok();
+                self.redraw();
+            }
             return;
         }
         let Some(at) = self.graph_point(event.client_x(), event.client_y()) else {
@@ -196,6 +257,39 @@ impl Listeners {
 
     fn pointer_other(&self, event: PointerEvent, ends: bool) {
         let id = event.pointer_id();
+        if self.shared.gestures.borrow().right == Some(id) {
+            event.stop_propagation();
+            event.prevent_default();
+            let rect = self.canvas.get_bounding_client_rect();
+            let zoom = (self.host.ui_zoom)();
+            if let Some(graph) = self.shared.gestures.borrow().graph {
+                let at = (
+                    (event.client_x() as f64 - rect.x()) as f32 / zoom - graph.0,
+                    (event.client_y() as f64 - rect.y()) as f32 / zoom - graph.1,
+                );
+                let mut canvas = self.shared.canvas.borrow_mut();
+                if ends {
+                    canvas.pointer_up(mere::canvas::PointerButton::Right, at.0, at.1);
+                    let request = canvas.take_context_request();
+                    *self.shared.command_request.borrow_mut() =
+                        Some(match request.filter(|_| event.type_() == "pointerup") {
+                            Some(request) => commands::Request::Context {
+                                at: (graph.0 + at.0, graph.1 + at.1),
+                                node: request.node,
+                            },
+                            None => commands::Request::Selection,
+                        });
+                } else {
+                    canvas.cursor_moved(at.0, at.1);
+                }
+            }
+            if ends {
+                self.shared.gestures.borrow_mut().right = None;
+                self.canvas.release_pointer_capture(id).ok();
+            }
+            self.redraw();
+            return;
+        }
         let release = {
             let mut gestures = self.shared.gestures.borrow_mut();
             if gestures.withheld.contains(&id) {
@@ -318,6 +412,12 @@ pub(super) fn install(
     listen!("pointerup", PointerEvent, |l, e| l.pointer_other(e, true));
     listen!("pointercancel", PointerEvent, |l, e| l
         .pointer_other(e, true));
+    listen!("contextmenu", web_sys::MouseEvent, |l, e| {
+        if l.graph_point(e.client_x(), e.client_y()).is_some() {
+            e.prevent_default();
+            e.stop_propagation();
+        }
+    });
     listen!("touchstart", TouchEvent, |l, e| l.touch_start(e));
     listen!("touchmove", TouchEvent, |l, e| l.touch_move(e));
     listen!("touchend", TouchEvent, |l, e| l.touch_end(e));
