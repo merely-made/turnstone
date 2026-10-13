@@ -195,6 +195,10 @@ pub struct AppearanceConfig {
     pub ui_zoom: f32,
     /// Shared derived roles or exact authored CSS for host-owned surfaces.
     pub theme_presentation: Option<tabard::ThemePresentation>,
+    /// Optional authored role declarations for the shared outer pane furniture.
+    pub theme_typography: tabard::Typography,
+    /// Host-resolved Interface family requests; availability is never persisted.
+    pub interface_font_properties: String,
 }
 
 impl Default for AppearanceConfig {
@@ -204,6 +208,8 @@ impl Default for AppearanceConfig {
             theme_mode: ThemeMode::System,
             ui_zoom: 1.1,
             theme_presentation: None,
+            theme_typography: Default::default(),
+            interface_font_properties: String::new(),
         }
     }
 }

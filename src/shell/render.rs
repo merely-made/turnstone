@@ -1095,7 +1095,7 @@ impl Shell {
                     ));
                 }
             },
-            Some(Err(error)) => self.main_receipt.errors.push(error),
+            Some(Err(error)) => self.main_receipt.errors.push(error.to_string()),
             None if pending.started.elapsed() > std::time::Duration::from_secs(5) => {
                 self.main_receipt
                     .errors

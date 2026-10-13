@@ -38,6 +38,7 @@ mod download;
 mod feed;
 mod foreign_a11y;
 pub mod frame_timing;
+mod frame_style;
 mod frozen_projection_pane;
 mod gemini_identity;
 mod gemini_trust;

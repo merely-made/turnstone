@@ -1,0 +1,32 @@
+# Fresh TURNSTONE_ROOT, MERE_ROOT and TURNSTONE_THEME_LIBRARY.
+# TURNSTONE_THEME_SCENARIO=frame_fonts_workshop.scn.
+# Draft: headed execution/capture review remains a native-owner gate.
+settle 12
+key escape
+resize 1180 800
+settle 5
+act Open Settings pane
+settle 5
+capture frame_default
+click surface:settings .setting-apply @data-action=edit-themes
+wait 1800
+settle 8
+assert snap appearance-workshop-ok == true
+assert snap frame-header-height <= 60
+click surface:settings .radio TurnstoneFrameFonts
+click surface:settings .setting-apply @data-setting=theme.id
+settle 6
+assert snap frame-css ~ 42px
+assert snap frame-header-height >= 61
+capture frame_fonts_applied
+captures-differ frame_default frame_fonts_applied
+resize 320 500
+settle 5
+assert snap frame-header-height >= 61
+capture frame_fonts_narrow
+resize 1180 800
+settle 5
+click surface:frame .frisket-tab @data-tabkey=0
+settle 4
+capture frame_graph_activated
+assert snap capture-errors == 0

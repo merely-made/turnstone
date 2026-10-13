@@ -44,6 +44,7 @@ pub enum HeaderHit {
         area: Rect,
         axis: workbench::SplitAxis,
         shares: Vec<f32>,
+        gaps: Vec<f32>,
     },
 }
 
@@ -55,6 +56,7 @@ pub struct OuterFrame {
     current: Option<TileId>,
     size: (u32, u32),
     sheet: String,
+    appearance: crate::shell_services::AppearanceConfig,
 }
 impl Default for OuterFrame {
     fn default() -> Self {
@@ -69,11 +71,12 @@ impl Default for OuterFrame {
                 events: Vec::new(),
             },
         );
-        let sheet = format!(
-            "{} {} {} .frisket-content {{ background: transparent; }}",
-            crate::ui::CAMBIUM_SHEET,
-            cambium::FRISKET_CSS,
-            cambium::WORKSPACE_CSS
+        let appearance = crate::shell_services::AppearanceConfig::default();
+        let sheet = crate::frame_style::stylesheet(
+            None,
+            &appearance.theme_typography,
+            "",
+            appearance.zoom(),
         );
         Self {
             dom,
@@ -82,6 +85,7 @@ impl Default for OuterFrame {
             current: None,
             size: (1, 1),
             sheet,
+            appearance,
             layout: crate::ui::RetainedLayout::new(),
         }
     }
@@ -93,7 +97,17 @@ impl OuterFrame {
         current: Option<PaneId>,
         maximize: Option<PaneId>,
         size: (u32, u32),
+        appearance: &crate::shell_services::AppearanceConfig,
     ) -> Result<Vec<(PaneId, Rect)>, String> {
+        if &self.appearance != appearance {
+            self.sheet = crate::frame_style::stylesheet(
+                appearance.theme_presentation.as_ref(),
+                &appearance.theme_typography,
+                &appearance.interface_font_properties,
+                appearance.zoom(),
+            );
+            self.appearance = appearance.clone();
+        }
         let frame = layout.outer_workspace()?;
         let mut workspace = frame.workspace.clone();
         if let Some(id) = maximize {
@@ -133,6 +147,23 @@ impl OuterFrame {
             self.size.1,
         )
     }
+    pub(crate) fn stylesheet(&self) -> &str {
+        &self.sheet
+    }
+    pub(crate) fn dom_ref(&self) -> std::cell::Ref<'_, ScriptedDom> {
+        self.dom.borrow()
+    }
+    pub(crate) fn header_height(&self) -> f32 {
+        let dom = self.dom.borrow();
+        nodes(&dom)
+            .into_iter()
+            .filter(|n| {
+                attr(&dom, *n, "class")
+                    .is_some_and(|class| class.split_whitespace().any(|c| c == "frisket-tabbar"))
+            })
+            .filter_map(|n| self.layout.painted_rect(&dom, n).map(|(_, _, _, h)| h))
+            .fold(0.0, f32::max)
+    }
     pub fn hit(&mut self, x: f32, y: f32) -> Option<HeaderHit> {
         let hit = self.layout.hit_test(
             &mut self.dom.borrow_mut(),
@@ -165,11 +196,44 @@ impl OuterFrame {
             parent = dom.parent(parent)?;
         }
         let (x, y, w, h) = self.layout.painted_rect(&dom, parent)?;
+        let branches = dom
+            .dom_children(parent)
+            .into_iter()
+            .filter(|n| {
+                attr(&dom, *n, "class")
+                    .is_some_and(|class| class.split_whitespace().any(|c| c == "frisket-branch"))
+            })
+            .map(|n| self.layout.painted_rect(&dom, n))
+            .collect::<Option<Vec<_>>>()?;
+        if branches.len() != children.len() {
+            return None;
+        }
+        let row = *axis == workbench::SplitAxis::Row;
+        let first = branches.first()?;
+        let last = branches.last()?;
+        // Branch-to-branch gaps include authored divider width and margins;
+        // using their span also excludes split padding from distributable space.
+        let gaps = branches
+            .windows(2)
+            .map(|pair| {
+                if row {
+                    pair[1].0 - pair[0].0 - pair[0].2
+                } else {
+                    pair[1].1 - pair[0].1 - pair[0].3
+                }
+            })
+            .collect();
+        let area = if row {
+            Rect::new(first.0, y, last.0 + last.2 - first.0, h)
+        } else {
+            Rect::new(x, first.1, w, last.1 + last.3 - first.1)
+        };
         Some(HeaderHit::Divider {
             target,
-            area: Rect::new(x, y, w, h),
+            area,
             axis: *axis,
             shares: children.iter().map(|c| c.fraction).collect(),
+            gaps,
         })
     }
     pub fn drop_target(&mut self, x: f32, y: f32) -> Option<DropTarget> {

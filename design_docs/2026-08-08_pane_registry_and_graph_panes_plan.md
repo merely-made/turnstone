@@ -2,7 +2,7 @@
 
 **Date**: 2026-08-08
 
-**Status (2026-10-12)**: A4/S3 has a tiled Workspace and shared-frame implementation draft; native/inline-body/float/accessibility gates remain open. A0, A1 and A6 complete and verified. Lanes open: **A2** and
+**Status (2026-10-13)**: A4/S3 has tiled Workspace, shared-frame and Tabard appearance implementation drafts; native/inline-body/float/accessibility gates remain open. A0, A1 and A6 complete and verified. Lanes open: **A2** and
 **A7**; **A3** retains its A2 acceptance gate. The A4 draft below does not close A2/A3 or A5 acceptance.
 
 **2026-09-29 pane consolidation: qualified.** Mark accepted operational status
@@ -1143,3 +1143,63 @@ frame/windows fixtures once; corrupt a new file and verify explicit refusal
 without legacy resurrection. Compare native frame timing to the previous
 consumer and qualify the inline-body, floating and accessible-control joins
 before marking A4/S3 complete.
+
+
+## A4 shared-frame Tabard adoption draft — 2026-10-13
+
+**Consumer change.** The outer tiled frame now consumes the existing shell-owned
+live appearance snapshot in primary and lens windows. Tabard palette roles reach
+tabs, active labels, close controls and dividers. The ordinary shared workshop
+now supplies the installed-family picker and optional Interface family, CSS size
+and leading. Frame layout, body apertures, paint and header hits consume the same
+sheet. Automatic header height accommodates large type; clearing the override
+restores host defaults. UI zoom scales host defaults; explicit authored font sizes
+and exact CSS retain their cascade authority. Reading, Heading, Label and Code
+role bindings in pane bodies remain separate consumer work.
+
+**Selection and custody.** Appearance edits do not replace the Workspace, pane
+identities, content/graph bindings or retained body renderers. The existing
+save-versus-Apply distinction includes typography: saving a new definition under
+the selected id leaves the currently applied value intact until explicit theme
+Apply. Unrelated settings writes preserve the applied fonts as well as CSS.
+Theme/mode changes retain ordered `ThemeChoice.fonts`, including unavailable
+requests. Host inventory is process-local, requested names stay saved, fallback
+notices are visible in Settings, and generic fallbacks reach Livery. Application
+Interface family requests override generated theme defaults; exact authored CSS
+remains last. Independent application-family picker mounting remains open; the
+ordinary theme workshop is the font-authoring entry point in this slice.
+
+**Geometry and gestures.** Divider drag arithmetic now uses actual retained DOM
+gaps rather than a ten-pixel assumption, so authored divider widths participate
+in the same geometry. An appearance change cancels an in-flight header drag
+before old captured geometry can mutate the layout. The shared frame is exposed
+as `surface:frame` to the existing scenario driver; `frame-css` and
+`frame-header-height` observe the applied sheet and measured header.
+
+**Supplier intake.** Turnstone adopts the published Mere `8568f42f`, Genet
+`2c7ef73b`, Netrender `c74b7cb2`, maintained Classic Vello `2eae6243` and
+Knot `3af93add` family used for current typography adoption. Dramatis and
+Woodshed product pins are unchanged. Embedded Redshank's older Genet boundary
+crates are bridged through the HTTPS www alias to that same Genet revision; the
+resolved graph has no duplicate Genet package names and one Genet revision. The
+Mere source set has size one. This source intake does not qualify the complete
+engine, renderer recovery, Redshank, Knot or other contributed-surface lanes.
+
+**Qualification and handoff.** The actual consumer stylesheet/shared Workspace
+DOM/Livery CPU harness and default-feature Linux library/binary source checks
+are recorded in `docs/receipts/frame_appearance_20261013/qualification.json`.
+All 21 CPU tests pass (nine layout/cascade/font/scenario checks plus twelve
+actual custody/sidecar checks against the new Workbench pin). The library and
+binary typecheck passes with 92 warnings; warning-baseline equivalence is not
+claimed. No headed run, release build or whole-library test run is claimed.
+The provider's font-preservation/reopen unit test is defined for native owners;
+whole-library test execution and headed acceptance remain open. Native owners
+should run `frame_appearance.scn` with `frame_fonts_workshop.scn`, then reopen
+with `frame_appearance_reopen.scn`. Use separate fresh stores for the
+`frame_appearance_missing.scn`/`frame_fonts_missing_workshop.scn` pair and its
+reopen fixture. These are parse-qualified drafts pending execution and capture
+review. Use a lens to repeat live theme/font changes; test real installed faces,
+custom divider width, same-id save/unapplied/Apply, failed-save rollback, narrow
+windows, DPI, body continuity and the original floating/physics scenarios.
+Keyboard/AccessKit header dispatch, float unification, inline bodies and actual
+presented performance remain A4/S3 continuation gates.

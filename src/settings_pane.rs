@@ -33,6 +33,8 @@ pub struct ChromeSettings {
     theme_id: Option<String>,
     theme_mode: Option<String>,
     presentation: Option<tabard::ThemePresentation>,
+    typography: tabard::Typography,
+    interface_font_properties: String,
     ui_zoom: f32,
     shellbar_edge: ShellbarEdge,
     shellbar_hidden: bool,
@@ -58,6 +60,10 @@ impl ChromeSettings {
         settings: &ApplicationSettings,
         catalog: &crate::appearance::ThemeCatalog,
     ) -> Self {
+        let resolved = settings
+            .theme
+            .as_ref()
+            .and_then(|choice| catalog.resolve(choice).ok());
         Self {
             theme_id: settings
                 .theme
@@ -69,11 +75,16 @@ impl ChromeSettings {
                 .as_ref()
                 .and_then(|theme| theme.theme_mode.as_ref())
                 .map(|mode| mode.as_key()),
-            presentation: settings
+            typography: resolved
+                .as_ref()
+                .map(|r| r.theme.typography.clone())
+                .unwrap_or_default(),
+            interface_font_properties: settings
                 .theme
                 .as_ref()
-                .and_then(|choice| catalog.resolve(choice).ok())
-                .map(|resolved| resolved.presentation),
+                .map(|choice| catalog.interface_font_properties(&choice.fonts))
+                .unwrap_or_default(),
+            presentation: resolved.map(|r| r.presentation),
             ui_zoom: settings.ui_zoom,
             shellbar_edge: settings.shellbar_edge,
             shellbar_hidden: settings.shellbar_hidden,
@@ -125,6 +136,8 @@ impl ChromeSettings {
         chrome.appearance.theme_mode = ThemeMode::from_setting(self.theme_mode());
         chrome.appearance.ui_zoom = self.ui_zoom();
         chrome.appearance.theme_presentation = self.presentation.clone();
+        chrome.appearance.theme_typography = self.typography.clone();
+        chrome.appearance.interface_font_properties = self.interface_font_properties.clone();
     }
 }
 
@@ -186,6 +199,8 @@ impl LiveSettingsHandle {
             next.theme_id = state.snapshot.theme_id.clone();
             next.theme_mode = state.snapshot.theme_mode.clone();
             next.presentation = state.snapshot.presentation.clone();
+            next.typography = state.snapshot.typography.clone();
+            next.interface_font_properties = state.snapshot.interface_font_properties.clone();
         }
         state.snapshot = next;
         state.catalog_applied = true;

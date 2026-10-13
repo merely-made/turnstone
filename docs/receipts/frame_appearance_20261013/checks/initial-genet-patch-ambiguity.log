@@ -1,0 +1,5 @@
+    Updating git repository `https://www.github.com/merely-made/genet.git`
+error: patch for `layout-dom-api` in `https://www.github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947` resolved to more than one candidate
+note: found versions: 0.0.1, 0.1.1
+help: check `layout-dom-api` patch definition for `https://github.com/merely-made/genet.git` in `/home/markik/Code/repos/turnstone/Cargo.toml`
+help: select only one package using `version = "=0.1.1"`

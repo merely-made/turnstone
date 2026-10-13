@@ -1,0 +1,28 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.12s
+     Running unittests src/lib.rs (/home/markik/Code/testing/mere/forme-field-target/debug/deps/turnstone_frame_appearance_receipt-dfdae18e6dcd8321)
+
+running 21 tests
+test tests::native_scenarios_parse_through_the_published_driver ... ok
+test tests::missing_font_requests_survive_resolution_and_persistent_reopening ... ok
+test workspace::tests::duplicate_ids_and_missing_drop_targets_do_not_orphan_a_pane ... ok
+test workspace::tests::duplicate_station_is_rejected_before_a_close ... ok
+test workspace::tests::invalid_stack_drop_does_not_remove_source_custody ... ok
+test workspace::tests::malformed_or_orphaned_payloads_refuse_without_mutation ... ok
+test workspace::tests::non_finite_split_edit_is_refused_atomically ... ok
+test workspace::tests::outside_drop_retains_custody_until_host_accepts ... ok
+test workspace::tests::shared_float_and_dock_keep_the_same_host_payload ... ok
+test workspace::tests::stacking_switching_closing_and_restart_preserve_payload_identity ... ok
+test workspace_store::tests::absent_files_remain_absent ... ok
+test workspace_store::tests::corrupt_current_never_resurrects_the_legacy_copy ... ok
+test workspace_store::tests::import_preserves_legacy_bytes_and_future_loads_use_current_choice ... ok
+test workspace_store::tests::unsupported_version_and_validation_failure_do_not_publish ... ok
+test tests::application_family_overrides_generated_theme_defaults_on_authored_mode ... ok
+test tests::exact_authored_css_wins_over_roles_and_application_family ... ok
+test tests::narrow_large_type_retains_body_and_close_apertures ... ok
+test tests::selected_palette_reaches_shared_furniture ... ok
+test tests::authored_fonts_move_body_aperture_without_changing_workspace_or_dom_identity ... ok
+test tests::unrelated_roles_do_not_restyle_frame_and_omissions_keep_defaults ... ok
+test tests::removing_font_override_restores_geometry_and_zoom_changes_host_defaults ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.54s
+

@@ -307,6 +307,15 @@ impl taproot::Automatable for Shell {
                 sheet,
             }
         }));
+        let frames = self.outer_frames.borrow();
+        let frame = frames.get(&0).filter(|_| self.app.blueprint_space(crate::action::SpaceRef::Primary).is_none());
+        let frame_dom = frame.map(|frame| frame.dom_ref());
+        if let (Some(frame), Some(dom)) = (frame, frame_dom.as_ref()) {
+            surfaces.push(taproot::ProbeSurface {
+                name: "frame", dom, sheet: frame.stylesheet(),
+                rect: [0.0, 0.0, self.width as f32, self.height as f32],
+            });
+        }
         f(&surfaces)
     }
 
@@ -550,6 +559,12 @@ impl taproot::Automatable for Shell {
             _ => String::new(),
         };
         out = out.with_field("appearance-css", appearance_sheet);
+        if self.app.blueprint_space(crate::action::SpaceRef::Primary).is_none() {
+            if let Some(frame) = self.outer_frames.borrow().get(&0) {
+                out = out.with_field("frame-css", frame.stylesheet())
+                    .with_field("frame-header-height", frame.header_height().to_string());
+            }
+        }
         #[cfg(all(feature = "scry", windows))]
         {
             let ready = self

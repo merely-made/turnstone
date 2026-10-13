@@ -96,11 +96,15 @@ impl ApplicationSettingsProvider {
                     #[derive(serde::Deserialize)]
                     struct LegacyMode {
                         theme_mode: Option<String>,
+                        #[serde(default)]
+                        fonts: tabard::FontPreferences,
                     }
                     let legacy: LegacyMode = serde_json::from_str(&json)
                         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
                     if let Some(mode) = legacy.theme_mode.as_deref().and_then(Mode::from_key) {
-                        settings.theme = Some(ThemeChoice::new("", Some(mode)));
+                        let mut choice = ThemeChoice::new("", Some(mode));
+                        choice.fonts = legacy.fonts;
+                        settings.theme = Some(choice);
                     }
                 }
                 settings
@@ -427,8 +431,17 @@ impl SettingsProvider for ApplicationSettingsProvider {
                     .theme
                     .as_ref()
                     .and_then(|theme| theme.theme_mode.clone());
+                let fonts = candidate
+                    .theme
+                    .as_ref()
+                    .map(|t| t.fonts.clone())
+                    .unwrap_or_default();
                 candidate.theme =
-                    (!value.is_empty() || mode.is_some()).then(|| ThemeChoice::new(value, mode));
+                    (!value.is_empty() || mode.is_some() || !fonts.is_empty()).then(|| {
+                        let mut choice = ThemeChoice::new(value, mode);
+                        choice.fonts = fonts;
+                        choice
+                    });
             },
             ("theme.mode", SettingValue::Text(value)) => {
                 if let Some(error) = &self.theme_catalog.error {
@@ -449,8 +462,17 @@ impl SettingsProvider for ApplicationSettingsProvider {
                     .map(|theme| theme.theme_id.clone())
                     .unwrap_or_default();
                 let mode = Mode::from_key(&value);
+                let fonts = candidate
+                    .theme
+                    .as_ref()
+                    .map(|t| t.fonts.clone())
+                    .unwrap_or_default();
                 candidate.theme =
-                    (!id.is_empty() || mode.is_some()).then(|| ThemeChoice::new(id, mode));
+                    (!id.is_empty() || mode.is_some() || !fonts.is_empty()).then(|| {
+                        let mut choice = ThemeChoice::new(id, mode);
+                        choice.fonts = fonts;
+                        choice
+                    });
             },
             ("ui.zoom", SettingValue::Number(value))
                 if value.is_finite() && (0.5..=3.0).contains(&value) =>
@@ -579,6 +601,47 @@ mod tests {
             std::fs::read(target).unwrap(),
             b"unreadable application settings"
         );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn theme_and_mode_edits_preserve_family_requests_through_reopening() {
+        let root = scratch_root("frame-font-requests");
+        let mut choice = ThemeChoice::new("theme:dark", Some(Mode::Dark));
+        choice.fonts = serde_json::from_str(
+            r#"{"interface":["Absent face","serif"],"reading":["monospace"]}"#,
+        )
+        .unwrap();
+        let mut settings = ApplicationSettings::default();
+        settings.theme = Some(choice.clone());
+        let mut provider = ApplicationSettingsProvider::from_settings(&root, settings);
+        let reference = SettingsRef(APPLICATION_REFERENCE.into());
+        provider
+            .apply(
+                &reference,
+                "theme.id",
+                SettingValue::Text("theme:light".into()),
+            )
+            .unwrap();
+        provider
+            .apply(&reference, "theme.mode", SettingValue::Text("light".into()))
+            .unwrap();
+        provider
+            .apply(&reference, "theme.id", SettingValue::Text(String::new()))
+            .unwrap();
+        provider
+            .apply(
+                &reference,
+                "theme.mode",
+                SettingValue::Text("system".into()),
+            )
+            .unwrap();
+        assert_eq!(
+            provider.settings().theme.as_ref().unwrap().fonts,
+            choice.fonts
+        );
+        let reopened = ApplicationSettingsProvider::load(&root).unwrap();
+        assert_eq!(reopened.settings().theme, provider.settings().theme);
         std::fs::remove_dir_all(root).unwrap();
     }
 

@@ -1,0 +1,11 @@
+# Fresh process reopening frame_appearance_missing.scn's exact stores.
+settle 12
+key escape
+resize 1180 800
+settle 5
+assert snap appearance-theme == theme:copy-1
+assert snap frame-css ~ Turnstone Intentionally Absent 20261013
+assert snap frame-css ~ sans-serif
+assert snap frame-header-height >= 51
+capture frame_missing_font_reopened
+assert snap capture-errors == 0

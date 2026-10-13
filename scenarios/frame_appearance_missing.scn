@@ -1,0 +1,18 @@
+# Fresh private stores; TURNSTONE_THEME_SCENARIO=frame_fonts_missing_workshop.scn.
+settle 12
+key escape
+resize 1180 800
+act Open Settings pane
+settle 5
+click surface:settings .setting-apply @data-action=edit-themes
+wait 1800
+settle 8
+click surface:settings .radio TurnstoneMissingFont
+click surface:settings .setting-apply @data-setting=theme.id
+settle 6
+assert snap appearance-theme == theme:copy-1
+assert snap frame-css ~ Turnstone Intentionally Absent 20261013
+assert snap frame-css ~ sans-serif
+assert snap frame-header-height >= 51
+capture frame_missing_font_fallback
+assert snap capture-errors == 0

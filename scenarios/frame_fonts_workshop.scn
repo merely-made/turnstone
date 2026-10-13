@@ -1,0 +1,16 @@
+# TURNSTONE_THEME_SCENARIO for a fresh private frame-fonts profile.
+settle 4
+click role:textbox @data-field=name
+input-text TurnstoneFrameFonts
+click role:button @data-font-role=interface
+click .font-family-serif
+key tab-until data-field=font-size
+input-text 42
+key tab-until data-field=font-line-height
+input-text 1.5
+click role:button @data-action=apply-fonts
+capture frame_fonts_editor
+click role:button @data-action=save
+settle 3
+assert snap dirty == false
+assert snap theme == theme:copy-1

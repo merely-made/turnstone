@@ -16,6 +16,7 @@ pub(super) enum OuterCapture {
         id: TileId,
         start: (f32, f32),
         session: uuid::Uuid,
+        appearance: crate::shell_services::AppearanceConfig,
     },
     Divider {
         slot: usize,
@@ -24,7 +25,9 @@ pub(super) enum OuterCapture {
         area: Rect,
         axis: workbench::SplitAxis,
         shares: Vec<f32>,
+        gaps: Vec<f32>,
         session: uuid::Uuid,
+        appearance: crate::shell_services::AppearanceConfig,
     },
 }
 fn space(slot: usize) -> SpaceRef {
@@ -46,7 +49,13 @@ impl Shell {
             .borrow_mut()
             .entry(slot)
             .or_default()
-            .prepare(layout, self.app.active_pane, maximize, size)
+            .prepare(
+                layout,
+                self.app.active_pane,
+                maximize,
+                size,
+                &self.app.shell_chrome_config().appearance,
+            )
             .unwrap_or_default()
     }
     pub(super) fn outer_scene(&self, slot: usize) -> netrender::Scene {
@@ -95,6 +104,7 @@ impl Shell {
                     id,
                     start: (x, y),
                     session: *self.app.session_id.as_uuid(),
+                    appearance: self.app.shell_chrome_config().appearance.clone(),
                 });
             },
             Some(HeaderHit::Divider {
@@ -102,6 +112,7 @@ impl Shell {
                 area,
                 axis,
                 shares,
+                gaps,
             }) => {
                 self.outer_capture = Some(OuterCapture::Divider {
                     slot,
@@ -110,7 +121,9 @@ impl Shell {
                     area,
                     axis,
                     shares,
+                    gaps,
                     session: *self.app.session_id.as_uuid(),
+                    appearance: self.app.shell_chrome_config().appearance.clone(),
                 })
             },
             None => return false,
@@ -122,8 +135,18 @@ impl Shell {
             .outer_capture
             .as_ref()
             .is_some_and(|capture| match capture {
-                OuterCapture::Tab { session, .. } | OuterCapture::Divider { session, .. } => {
+                OuterCapture::Tab {
+                    session,
+                    appearance,
+                    ..
+                }
+                | OuterCapture::Divider {
+                    session,
+                    appearance,
+                    ..
+                } => {
                     *session != *self.app.session_id.as_uuid()
+                        || appearance != &self.app.shell_chrome_config().appearance
                 },
             })
         {
@@ -142,14 +165,14 @@ impl Shell {
                 area,
                 axis,
                 shares,
+                gaps,
                 ..
             } => {
                 if *owner != slot || *index + 1 >= shares.len() {
                     return false;
                 }
                 let row = *axis == workbench::SplitAxis::Row;
-                let available = (if row { area.w } else { area.h })
-                    - 10.0 * shares.len().saturating_sub(1) as f32;
+                let available = (if row { area.w } else { area.h }) - gaps.iter().sum::<f32>();
                 if available <= 0.0 {
                     return true;
                 }
@@ -157,7 +180,8 @@ impl Shell {
                 let before: f32 = shares[..*index].iter().sum();
                 let pair = shares[*index] + shares[*index + 1];
                 let point = if row { x - area.x } else { y - area.y };
-                let left = ((point - 10.0 * (*index as f32)) / available * total - before)
+                let left = ((point - gaps[..*index].iter().sum::<f32>()) / available * total
+                    - before)
                     .clamp(pair * 0.05, pair * 0.95);
                 let mut next = shares.clone();
                 next[*index] = left;
@@ -179,8 +203,18 @@ impl Shell {
             .outer_capture
             .as_ref()
             .is_some_and(|capture| match capture {
-                OuterCapture::Tab { session, .. } | OuterCapture::Divider { session, .. } => {
+                OuterCapture::Tab {
+                    session,
+                    appearance,
+                    ..
+                }
+                | OuterCapture::Divider {
+                    session,
+                    appearance,
+                    ..
+                } => {
                     *session != *self.app.session_id.as_uuid()
+                        || appearance != &self.app.shell_chrome_config().appearance
                 },
             })
         {
@@ -196,6 +230,7 @@ impl Shell {
                 id,
                 start,
                 session,
+                appearance,
             } => {
                 if owner != slot {
                     self.outer_capture = Some(OuterCapture::Tab {
@@ -203,6 +238,7 @@ impl Shell {
                         id,
                         start,
                         session,
+                        appearance,
                     });
                     return false;
                 }
