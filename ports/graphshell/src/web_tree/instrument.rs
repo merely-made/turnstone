@@ -12,6 +12,7 @@ use super::{Child, TreePage};
 use cambium::{WorkspacePaneStatus, el, title_bar, workspace_pane_header};
 
 pub(super) const SHEET: &str = r#"
+.tree-instrument { --workspace-font-interface:Roboto,sans-serif; --workspace-font-reading:Roboto,sans-serif; }
 .tree-instrument > .cambium-title-bar h1 { margin:0; font-size:17px; font-weight:500; }
 .tree-instrument .workspace-app-context { margin:2px 0 0; font-size:12px; color:var(--workspace-muted); }
 .tree-instrument .workspace-app-identity { display:flex; flex-direction:column; }
@@ -27,8 +28,8 @@ pub(super) const SHEET: &str = r#"
 .tree-instrument .tree-tools .detail-key { font-size:12px; color:var(--workspace-muted); }
 .tree-instrument .tree-tools .detail-value { margin-bottom:10px; }
 .tree-instrument .tools-section + .tools-section { padding-top:10px; }
-.tree-instrument .reading-pane { font-family:var(--tabard-font-reading, serif); font-size:var(--tabard-font-reading-size, 16px); line-height:var(--tabard-font-reading-line-height, 1.6); }
-.tree-instrument .reading-pane button { font-family:var(--tabard-font-interface, sans-serif); font-size:var(--tabard-font-interface-size, 13px); }
+.tree-instrument .reading-pane { font-family:var(--tabard-font-reading, var(--workspace-font-reading)),var(--workspace-font-reading); font-size:var(--tabard-font-reading-size, 16px); line-height:var(--tabard-font-reading-line-height, 1.6); }
+.tree-instrument .reading-pane button { font-family:var(--tabard-font-interface, var(--workspace-font-interface)),var(--workspace-font-interface); font-size:var(--tabard-font-interface-size, 13px); }
 .tree-instrument .tree-product, .tree-instrument .tree-detail { border-radius:0; }
 "#;
 
