@@ -1,0 +1,5 @@
+RESULT ok
+captured 09_unselected_note_unavailable
+Unselected note reference refused locally without acquiring its source
+presentation frames=84 captures=1 blank=0
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/onward-omitted\09_unselected_note_unavailable.png digest=c088d04957c1185d blank=false

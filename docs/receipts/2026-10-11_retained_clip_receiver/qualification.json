@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "scope": "Windows default-feature receiving host; plain text and local WAV selected bodies",
+  "source_commit": "d2fb07c1ccb70edb3943986432905aa7f5247e46",
+  "binary_sha256": "6a22672bad68eac6921455a69a2d8f8b5b905ad6c7edf634492b2a99a845d63a",
+  "package_producer_binary_sha256": "3c8fcd2add73f2e10ede7a5c540b5c88938e175a646b464e5ab952d338a9eebd",
+  "custody_fixture_binary_sha256": "5bb95a9f23ae534faae898e34452bb033f3e47305b0d2ef907523888aa5ad88d",
+  "cargo_lock_sha256": "859ea5eca09eb43d2b076c0e9193c19380543f85bbe02fa2a5bc94d908d98676",
+  "automated": {
+    "broad_library": {
+      "passed": 789,
+      "failed": 0,
+      "ignored": 10,
+      "scope": "before focus repair and subsequent host-only read hardening"
+    },
+    "final_receiver": {
+      "passed": 6,
+      "failed": 0
+    },
+    "final_offline": {
+      "passed": 1,
+      "failed": 0
+    }
+  },
+  "native": [
+    {
+      "stage": "seed-final",
+      "result": "ok",
+      "captures": 4,
+      "socket_samples": 28,
+      "sampled_tcp_udp_endpoints": 0,
+      "acquisition_attempts": 0,
+      "eager_peer_services": 0
+    },
+    {
+      "stage": "reopen",
+      "result": "ok",
+      "captures": 4,
+      "socket_samples": 25,
+      "sampled_tcp_udp_endpoints": 0,
+      "acquisition_attempts": 0,
+      "eager_peer_services": 0
+    },
+    {
+      "stage": "missing",
+      "result": "ok",
+      "captures": 1,
+      "socket_samples": 9,
+      "sampled_tcp_udp_endpoints": 0,
+      "acquisition_attempts": 0,
+      "eager_peer_services": 0
+    }
+  ],
+  "reopen_packages_unavailable": true,
+  "physical_audio_quality": "not qualified; synthetic 500 ms PCM tone",
+  "custody": "synthetic Djinn fixture; retained store explicitly unsealed"
+}

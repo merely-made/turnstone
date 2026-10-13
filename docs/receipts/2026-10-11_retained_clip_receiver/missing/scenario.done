@@ -1,0 +1,5 @@
+RESULT ok
+captured 09_missing_clip_refused
+Missing local retained identity refused without acquisition
+presentation frames=84 captures=1 blank=0
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/missing\09_missing_clip_refused.png digest=9adb13d8c502f12f blank=false

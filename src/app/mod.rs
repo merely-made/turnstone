@@ -833,6 +833,16 @@ impl App {
         self.events.push(AppEvent::PlaceRefused(reason));
     }
 
+    pub(crate) fn note_retained_clip_refusal(&mut self, reason: String) {
+        self.events.push(AppEvent::AffordanceUnavailable { what: "retained-clip", target: reason });
+    }
+
+    pub(crate) fn note_clip_package_exported(&mut self, clip: eidetic::ManifestId, path: &std::path::Path) {
+        self.events.push(AppEvent::ClipPackageExported {
+            clip: crate::retained_clip::address(clip), path: path.display().to_string(),
+        });
+    }
+
     /// What this session has open as Knot documents, for observation.
     pub fn knot_documents(&self) -> &[crate::observe::KnotDocumentFacts] {
         &self.knot_documents
@@ -1152,6 +1162,12 @@ impl App {
         match action {
             Action::OpenThemeWorkshop => vec![Effect::OpenThemeWorkshop],
             Action::OpenAddress(url) => self.open_address(url),
+            Action::ChooseClipPackageFile => vec![Effect::ChooseClipPackageFile],
+            Action::ImportClipPackage(path) => vec![Effect::ImportClipPackage(path)],
+            Action::ChooseClipExportFile => self.choose_retained_clip_export(),
+            Action::ExportClipPackage { clip, path, replace } => {
+                vec![Effect::ExportClipPackage { clip, path, replace }]
+            },
             Action::ComposeFocusedSmolwebSubmission => self.compose_focused_smolweb_submission(),
             Action::ComposeFocusedMicronForm => self.compose_focused_micron_form(),
             Action::BeginSmolwebSubmission { source, target } => {

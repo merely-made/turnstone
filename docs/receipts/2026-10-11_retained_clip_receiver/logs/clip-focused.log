@@ -1,0 +1,419 @@
+error: invalid type: boolean `true`, expected a map
+ --> ..\..\..\.cargo\git\checkouts\servo-e53a6e7b994a25fe\aac43a3\python\tidy\tests\lints-configuration\no-workspace\Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+warning: patch `burn-remote v0.22.0 (https://www.github.com/merely-made/mere.git?rev=74c1d810c4cb983cd8362ccfb99014543e9900a0#74c1d810)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://www.github.com/merely-made/mere.git?rev=74c1d810c4cb983cd8362ccfb99014543e9900a0#74c1d810)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261011#d8acabc9)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling turnstone v0.1.0 (C:\Users\mark_\Code\repos\turnstone)
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src\app\mod.rs:20:31
+   |
+20 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `browse`
+  --> src\app\mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\app\omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src\app\session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src\app\session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: unused import: `Update`
+    --> src\denizen.rs:1141:33
+     |
+1141 |     use crate::action::{Action, Update};
+     |                                 ^^^^^^
+
+warning: unused import: `NodeKind`
+    --> src\knot_authoring.rs:3013:37
+     |
+3013 |     use layout_dom_api::{LayoutDom, NodeKind};
+     |                                     ^^^^^^^^
+
+warning: unused imports: `MOOT_ACT_ACTION` and `MOOT_DELEGATION_DOMAIN`
+    --> src\place\worker.rs:2730:44
+     |
+2730 |         CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
+     |                                            ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilityScope`, `DelegationCertificate`, `DelegationParent`, and `delegation_signing_salt`
+    --> src\place\worker.rs:2743:9
+     |
+2743 |         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+     |         ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+2744 |         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
+     |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+   --> src\shell\drive.rs:868:13
+    |
+868 |         use crate::action::CaretMove;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src\shell\effects.rs:14:5
+   |
+14 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src\shell\effects.rs:16:13
+   |
+16 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src\shell\effects.rs:18:46
+   |
+18 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\shell\effects.rs:23:5
+   |
+23 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::surface::SurfaceKind`
+  --> src\shell\render.rs:26:5
+   |
+26 | use crate::surface::SurfaceKind;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `NodeSessions`
+  --> src\shell\lens.rs:14:13
+   |
+14 | use super::{NodeSessions, NodeSurfaces};
+   |             ^^^^^^^^^^^^
+
+warning: unused import: `PhysicalPosition`
+  --> src\shell\lens.rs:20:18
+   |
+20 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\input.rs:17:23
+   |
+17 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `SessionScrollKey`
+  --> src\shell\input.rs:21:27
+   |
+21 | use inker::{SessionClick, SessionScrollKey};
+   |                           ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\shell\input.rs:25:29
+   |
+25 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src\shell\input.rs:28:20
+   |
+28 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: unused import: `input::pointer_button`
+  --> src\shell\mod.rs:42:5
+   |
+42 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src\shell\mod.rs:45:5
+   |
+45 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src\shell\mod.rs:52:5
+   |
+52 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src\shell\mod.rs:54:5
+   |
+54 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src\shell\mod.rs:60:17
+   |
+60 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src\shell\mod.rs:61:5
+   |
+61 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src\shell\mod.rs:62:18
+   |
+62 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src\shell\mod.rs:63:20
+   |
+63 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\mod.rs:65:23
+   |
+65 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src\shell\mod.rs:74:29
+   |
+74 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src\shell\mod.rs:77:21
+   |
+77 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: unused import: `mere::canvas::palette`
+  --> src\swatch_pane\mod.rs:32:5
+   |
+32 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src\swatch_pane\mod.rs:33:17
+   |
+33 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src\swatch_pane\mod.rs:37:5
+   |
+37 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src\swatch_pane\mod.rs:38:5
+   |
+38 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `genet_clipboard::TextClipboard`
+   --> src\shell\effects.rs:856:25
+    |
+856 |                     use genet_clipboard::TextClipboard as _;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> src\place\worker.rs:3882:13
+     |
+3882 |         let mut welcome = |open: &mut OpenPlace, seed: u8| {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+    --> src\shell\drive.rs:1043:21
+     |
+1043 |                 let mut diagnostic = self.surface_a11y.publication_diagnostic(public_fixture);
+     |                     ----^^^^^^^^^^
+     |                     |
+     |                     help: remove this `mut`
+
+warning: unused variable: `caption`
+   --> src\shell\render.rs:758:13
+    |
+758 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `save_certs` is never used
+   --> src\denizen.rs:741:8
+    |
+741 | pub fn save_certs(session_dir: &Path, subject_hex: &str, certs: &[SignedDelegationCertificate]) {
+    |        ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `projection_input_binding` and `runtime_projection_source` are never used
+    --> src\knot_authoring.rs:2624:12
+     |
+2414 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2624 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2634 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `spawn_bin` is never used
+   --> src\recycle.rs:166:8
+    |
+166 | pub fn spawn_bin(wake: Wake, dir: PathBuf) -> (ActorHandle<BinCommand>, Receiver<Update>) {
+    |        ^^^^^^^^^
+
+warning: function `granted_ring_names` is never used
+   --> src\ring.rs:388:8
+    |
+388 | pub fn granted_ring_names(authority: &impl AuthorityProvider, subject: Subject) -> Vec<String> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `roster_grid_rows` is never used
+   --> src\roster_view.rs:101:8
+    |
+101 | pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+   --> src\scenario.rs:247:12
+    |
+247 |     Settle(u32),
+    |     ------ ^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+247 -     Settle(u32),
+247 +     Settle(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:281:17
+    |
+281 |     AssertEvent(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+281 -     AssertEvent(String),
+281 +     AssertEvent(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:301:9
+    |
+301 |     Log(String),
+    |     --- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+301 -     Log(String),
+301 +     Log(()),
+    |
+
+warning: method `publish` is never used
+   --> src\settings_pane.rs:158:8
+    |
+144 | impl LiveSettingsHandle {
+    | ----------------------- method in this implementation
+...
+158 |     fn publish(&self, settings: &ApplicationSettings) {
+    |        ^^^^^^^
+
+warning: variant `Imported` is never constructed
+   --> src\shell\mod.rs:583:5
+    |
+581 | enum PlannedLayer {
+    |      ------------ variant in this enum
+582 |     Scene(PlannedScene),
+583 |     Imported(CompositeLayer),
+    |     ^^^^^^^^
+
+warning: method `pane_label` is never used
+    --> src\shell\mod.rs:1743:8
+     |
+ 898 | impl Shell {
+     | ---------- method in this implementation
+...
+1743 |     fn pane_label(&self, id: crate::panes::PaneId) -> String {
+     |        ^^^^^^^^^^
+
+warning: function `ime_cursor_area` is never used
+    --> src\ui.rs:1139:8
+     |
+1139 | pub fn ime_cursor_area(state: &OmnibarState, w: u32) -> ((f32, f32), (f32, f32)) {
+     |        ^^^^^^^^^^^^^^^
+
+warning: function `chrome_has_content` is never used
+    --> src\ui.rs:1157:8
+     |
+1157 | pub fn chrome_has_content(state: &OmnibarState, caption: Option<&str>) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_with_leaves` is never used
+    --> src\ui.rs:2339:8
+     |
+2339 | pub fn scene_from_dom_with_leaves(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `turnstone` (lib test) generated 56 warnings (run `cargo fix --lib -p turnstone --tests` to apply 41 suggestions)
+    Finished `test` profile [unoptimized] target(s) in 33.29s
+     Running unittests src\lib.rs (C:/t/cargo-targets/turnstone\debug\deps\turnstone-f3578a3e6cc7219e.exe)
+
+running 6 tests
+test retained_clip::tests::internal_play_controls_are_host_only_and_refuse_paths_or_foreign_shapes ... ok
+test retained_clip::tests::custody_and_session_refusals_cannot_create_clip_storage ... ok
+test retained_clip::tests::missing_unsupported_or_oversized_material_creates_no_receiver_store ... ok
+test retained_clip::tests::clip_opens_target_the_new_reference_while_workbench_has_another_member ... ok
+test retained_clip::tests::voice_bytes_are_local_and_recording_stays_unavailable ... ok
+test retained_clip::tests::native_export_renders_through_real_session_after_receiver_reopen ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 794 filtered out; finished in 0.79s
+

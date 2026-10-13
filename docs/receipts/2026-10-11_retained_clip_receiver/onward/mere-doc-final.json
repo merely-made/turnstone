@@ -1,0 +1,3228 @@
+{
+  "active_docs": 264,
+  "indexed_active_docs": 263,
+  "index_orphans": [],
+  "index_ghosts": [],
+  "memory_directory_links": [],
+  "statusless_plans": [],
+  "broken_relative_links": [],
+  "historical_broken_relative_links": [
+    {
+      "source": "2026-05-04_lexicon_brief.md",
+      "subject": "../../graphshell/design_docs/2026-05-03_lexicon_brief.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "2026-05-04_lexicon_brief.md",
+      "subject": "../../graphshell/design_docs/verse_docs/implementation_strategy/engram_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "2026-05-04_lexicon_brief.md",
+      "subject": "../../graphshell/design_docs/TERMINOLOGY.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "2026-05-04_lexicon_brief.md",
+      "subject": "../../graphshell/design_docs/verse_docs/implementation_strategy/engram_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "2026-05-04_lexicon_brief.md",
+      "subject": "../../graphshell/design_docs/verso_docs/technical_architecture/VERSO_AS_PEER.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "2026-05-04_lexicon_brief.md",
+      "subject": "../../graphshell/design_docs/verso_docs/implementation_strategy/2026-03-28_cable_coop_minichat_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "2026-05-04_lexicon_brief.md",
+      "subject": "../../graphshell/design_docs/graphshell_docs/implementation_strategy/social/comms/COMMS_AS_APPLETS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "2026-06-21_substrate_parallelism_composition_brief.md",
+      "subject": "../crates/meerkat/src/content/transfer.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "2026-06-21_substrate_parallelism_composition_brief.md",
+      "subject": "../crates/meerkat/src/content/actor.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "2026-06-21_substrate_parallelism_composition_brief.md",
+      "subject": "../crates/meerkat/src/constellation/mod.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "2026-07-02_data_oriented_doctrine_brief.md",
+      "subject": "../crates/meerkat/src/content/transfer.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/design/2026-06-07_graph_roster_and_frame_taxonomy.md",
+      "subject": "../implementation_strategy/2026-06-07_card_system_and_staging_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/technical_architecture/2026-03-30_protocol_modularity_and_host_capability_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_mods/SUBSYSTEM_MODS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_mods/2026-03-08_unified_mods_architecture_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/social/comms/COMMS_AS_APPLETS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/system/coop_session_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_mods/2026-03-08_unified_mods_architecture_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/2026-03-11_boa_scripting_engine_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_mods/2026-03-08_unified_mods_architecture_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/technical_architecture/2026-03-30_protocol_modularity_and_host_capability_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-07_event_dag_substrate_brief.md",
+      "subject": "../../../crates/moot/gemot/src/tessera",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-07_event_dag_substrate_brief.md",
+      "subject": "../../../crates/probes/p2panda-encryption-fit",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-10_graph_cluster_namespaces_brief.md",
+      "subject": "../../graphshell_docs/implementation_strategy/2026-05-07_graph_canvas_field_algebra_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-05_node_navigation_lineage_wiring_plan.md",
+      "subject": "2026-05-11_node_per_tile_lineage_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-05_node_navigation_lineage_wiring_plan.md",
+      "subject": "2026-05-18_node_identity_and_duplicates_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-05_node_navigation_lineage_wiring_plan.md",
+      "subject": "../../../crates/graph/node-lineage",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-05_node_navigation_lineage_wiring_plan.md",
+      "subject": "../../../crates/orrery-host/src/lib.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-13_scriptable_field_regions_plan.md",
+      "subject": "../../../crates/graph/graph-kernel/src/graph/field.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-13_scriptable_field_regions_plan.md",
+      "subject": "../../../crates/orrery/gyre/src/coupling_force.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-13_scriptable_field_regions_plan.md",
+      "subject": "../../../crates/orrery/aether/src/projection.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_node_body_face_model_plan.md",
+      "subject": "../../../crates/orrery/orrery/src/types.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_node_body_face_model_plan.md",
+      "subject": "../../../crates/meerkat/src/window_view.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_node_body_face_model_plan.md",
+      "subject": "../../../crates/orrery/orrery/src/lib.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_node_body_face_model_plan.md",
+      "subject": "../../../crates/orrery/orrery/src/frame.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_node_body_face_model_plan.md",
+      "subject": "../../../crates/meerkat/src/scrying_host.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_node_body_face_model_plan.md",
+      "subject": "../../../crates/meerkat/src/render.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_node_body_face_model_plan.md",
+      "subject": "../../../crates/orrery/aether/src/rhai_bindings.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-24_alembic_implementation_plan.md",
+      "subject": "../../../crates/eidetic/eidetic-core/src/engram.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-24_alembic_implementation_plan.md",
+      "subject": "../../../crates/moot/gemot/src/tessera/store.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-24_meaningful_physics_signals_plan.md",
+      "subject": "../../../crates/meerkat/src/fetch.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-24_meaningful_physics_signals_plan.md",
+      "subject": "../../../crates/meerkat/src/sync.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-24_meaningful_physics_signals_plan.md",
+      "subject": "../../../crates/meerkat/src/observability.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-24_meaningful_physics_signals_plan.md",
+      "subject": "../../../crates/orrery/cartography/src/signals.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-24_meaningful_physics_signals_plan.md",
+      "subject": "../../../crates/orrery/orrery/src/lib.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-25_operator_presence_overlay_plan.md",
+      "subject": "../../../crates/meerkat/src/agent_harness.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-25_operator_presence_overlay_plan.md",
+      "subject": "../../../crates/meerkat/src/find.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-25_persona_transport_unlinkability_plan.md",
+      "subject": "../../../crates/moot/gemot/src/tessera/persona_chain.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-25_persona_transport_unlinkability_plan.md",
+      "subject": "../../../crates/moot/gemot/src/tessera/gate.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../graphshell_docs/implementation_strategy/IMPLEMENTATION_ROADMAP.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "VERSE.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-01-29/PROJECT_PHILOSOPHY.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../graphshell_docs/implementation_strategy/IMPLEMENTATION_ROADMAP.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-01-29/PROJECT_PHILOSOPHY.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-01-29/PROJECT_PHILOSOPHY.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-01-29/PROJECT_PHILOSOPHY.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-01-29/COMPREHENSIVE_SYNTHESIS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-01-29/PROJECT_PHILOSOPHY.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "VERSE.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "VERSE.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../graphshell_docs/implementation_strategy/IMPLEMENTATION_ROADMAP.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../graphshell_docs/implementation_strategy/IMPLEMENTATION_ROADMAP.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../graphshell_docs/implementation_strategy/IMPLEMENTATION_ROADMAP.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../graphshell_docs/implementation_strategy/IMPLEMENTATION_ROADMAP.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../graphshell_docs/implementation_strategy/IMPLEMENTATION_ROADMAP.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../graphshell_docs/implementation_strategy/IMPLEMENTATION_ROADMAP.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../graphshell_docs/implementation_strategy/IMPLEMENTATION_ROADMAP.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../graphshell_docs/implementation_strategy/IMPLEMENTATION_ROADMAP.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-01-29/PROJECT_PHILOSOPHY.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-02-01/technical_architecture/ARCHITECTURE_DECISIONS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../graphshell_docs/implementation_strategy/IMPLEMENTATION_ROADMAP.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../graphshell_docs/implementation_strategy/IMPLEMENTATION_ROADMAP.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-01-29/PROJECT_PHILOSOPHY.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-01-29/COMPREHENSIVE_SYNTHESIS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-01-29/PROJECT_PHILOSOPHY.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-01-29/PROJECT_PHILOSOPHY.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-01-29/COMPREHENSIVE_SYNTHESIS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-01-29/PROJECT_PHILOSOPHY.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "../../archive_docs/checkpoint_2026-01-29/COMPREHENSIVE_SYNTHESIS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-28_libp2p_nostr_synergy_for_verse.md",
+      "subject": "../technical_architecture/VERSE_AS_NETWORK.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-28_libp2p_nostr_synergy_for_verse.md",
+      "subject": "../technical_architecture/2026-02-23_verse_tier2_architecture.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-28_libp2p_nostr_synergy_for_verse.md",
+      "subject": "../technical_architecture/2026-03-05_verse_nostr_dvm_integration.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-28_libp2p_nostr_synergy_for_verse.md",
+      "subject": "../../graphshell_docs/implementation_strategy/system/2026-03-05_network_architecture.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-28_libp2p_nostr_synergy_for_verse.md",
+      "subject": "../../nostr_docs/technical_architecture/nostr_relay_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-28_libp2p_nostr_synergy_for_verse.md",
+      "subject": "../technical_architecture/2026-03-05_verse_economic_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-29_middlenet_engine_spec.md",
+      "subject": "2026-03-29_portable_web_core_host_envelopes.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-29_middlenet_engine_spec.md",
+      "subject": "2026-03-29_workspace_restructuring_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-29_middlenet_engine_spec.md",
+      "subject": "2026-03-30_protocol_modularity_and_host_capability_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-29_middlenet_engine_spec.md",
+      "subject": "2026-04-09_identity_convergence_and_person_node_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-29_middlenet_engine_spec.md",
+      "subject": "2026-04-09_graphshell_verse_uri_scheme.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-29_middlenet_engine_spec.md",
+      "subject": "2026-02-18_universal_node_content_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-29_middlenet_engine_spec.md",
+      "subject": "../../verso_docs/technical_architecture/VERSO_AS_PEER.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-29_middlenet_engine_spec.md",
+      "subject": "../../verso_docs/research/2026-03-28_smolnet_follow_on_audit.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-29_middlenet_engine_spec.md",
+      "subject": "../../verso_docs/research/2026-04-16_smolnet_capability_model_and_scroll_alignment.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-29_middlenet_engine_spec.md",
+      "subject": "../research/2026-03-01_webrender_wgpu_renderer_research.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-29_middlenet_engine_spec.md",
+      "subject": "2026-03-30_protocol_modularity_and_host_capability_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../technical_architecture/2026-03-29_portable_web_core_host_envelopes.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../technical_architecture/2026-03-30_protocol_modularity_and_host_capability_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../technical_architecture/2026-04-09_identity_convergence_and_person_node_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../technical_architecture/2026-04-09_graphshell_verse_uri_scheme.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../technical_architecture/GRAPHSHELL_AS_BROWSER.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../technical_architecture/2026-03-08_graphshell_core_extraction_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../../verso_docs/research/2026-03-28_smolnet_follow_on_audit.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../../verso_docs/research/2026-03-28_smolnet_dependency_health_audit.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../implementation_strategy/system/2026-03-05_network_architecture.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../../verso_docs/implementation_strategy/coop_session_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../../matrix_docs/implementation_strategy/2026-03-17_matrix_layer_positioning.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../technical_architecture/2026-03-30_protocol_modularity_and_host_capability_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../technical_architecture/GRAPHSHELL_AS_BROWSER.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../technical_architecture/2026-03-29_portable_web_core_host_envelopes.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../implementation_strategy/system/2026-03-05_network_architecture.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "../../verso_docs/implementation_strategy/coop_session_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-16_middlenet_lane_architecture_spec.md",
+      "subject": "2026-03-30_protocol_modularity_and_host_capability_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-16_middlenet_lane_architecture_spec.md",
+      "subject": "2026-02-18_universal_node_content_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-16_middlenet_lane_architecture_spec.md",
+      "subject": "../implementation_strategy/viewer/universal_content_model_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-16_middlenet_lane_architecture_spec.md",
+      "subject": "../implementation_strategy/viewer/viewer_presentation_and_fallback_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-16_middlenet_lane_architecture_spec.md",
+      "subject": "../research/2026-04-10_ui_framework_alternatives_and_graph_tree_discovery.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-16_middlenet_lane_architecture_spec.md",
+      "subject": "../research/2026-04-14_wasm_portable_renderer_feasibility.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_distributed_index_protocol_v0_1.md",
+      "subject": "../../../crates/graph-memory/src/lib.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_distributed_index_protocol_v0_1.md",
+      "subject": "../../../crates/graphshell-core/src/graph/mod.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_distributed_index_protocol_v0_1.md",
+      "subject": "../../../mods/native/verse/mod.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_distributed_index_protocol_v0_1.md",
+      "subject": "../../../model/archive.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_distributed_index_protocol_v0_1.md",
+      "subject": "../../../app/clip_capture.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_distributed_index_protocol_v0_1.md",
+      "subject": "../../../services/query/mod.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_distributed_index_protocol_v0_1.md",
+      "subject": "../../../services/facts/mod.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_distributed_index_protocol_v0_1.md",
+      "subject": "../../../../verse_docs/technical_architecture/2026-04-16_verse_index_protocol_drafts.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_distributed_index_protocol_v0_1.md",
+      "subject": "../../../../verse_docs/technical_architecture/VERSE_AS_NETWORK.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_distributed_index_protocol_v0_1.md",
+      "subject": "../../../../verse_docs/technical_architecture/2026-02-23_verse_tier2_architecture.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_graph_contribution_protocol_v0_1.md",
+      "subject": "../../../mods/native/verse/mod.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_graph_contribution_protocol_v0_1.md",
+      "subject": "../../../model/archive.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_graph_contribution_protocol_v0_1.md",
+      "subject": "../../../app/clip_capture.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_graph_contribution_protocol_v0_1.md",
+      "subject": "../../../services/query/mod.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_graph_contribution_protocol_v0_1.md",
+      "subject": "../../../services/facts/mod.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-10_cartography_layer_brief.md",
+      "subject": "../../graphshell_docs/implementation_strategy/2026-05-07_graph_canvas_field_algebra_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-10_cartography_layer_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/graph/2026-02-24_physics_engine_extensibility_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-10_cartography_layer_brief.md",
+      "subject": "../../graphshell_docs/implementation_strategy/2026-05-07_graph_canvas_field_algebra_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-11_memory_tiers_brief.md",
+      "subject": "../../../crates/eidetic/src/engram.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-11_tearout_operations_brief.md",
+      "subject": "../../../crates/mere-host/src/tearout.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-11_tearout_operations_brief.md",
+      "subject": "../../../crates/forme/forme/src/graphlet.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-11_tearout_operations_brief.md",
+      "subject": "../../../crates/eidetic/src/engram.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-11_tearout_operations_brief.md",
+      "subject": "../../../crates/mere-host/src/host_helpers.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-11_tearout_operations_brief.md",
+      "subject": "../../../crates/mere-host/src/host_navigation.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-14_capability_gate_catalogue_brief.md",
+      "subject": "../implementation_strategy/2026-05-27_adoption_roadmap.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-14_capability_gate_catalogue_brief.md",
+      "subject": "../implementation_strategy/2026-05-11_typed_action_bus_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-14_capability_gate_catalogue_brief.md",
+      "subject": "../../../crates/system/session-runtime/src/manifest.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../implementation_strategy/2026-05-15_spatial_chrome_modular_adoption_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "2026-05-15_renderer_registry_contract_brief.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/core-interaction-model-plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_storage/SUBSYSTEM_STORAGE.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../implementation_strategy/2026-05-11_typed_action_bus_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../implementation_strategy/2026-05-11_relation_taxonomy_and_edge_mutation_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/technical_architecture/ARCHITECTURAL_OVERVIEW.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/aspect_render/ASPECT_RENDER.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_diagnostics/SUBSYSTEM_DIAGNOSTICS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_diagnostics/SUBSYSTEM_DIAGNOSTICS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/core-interaction-model-plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/technical_architecture/2026-04-09_browser_envelope_coop_and_degradation_policy.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_security/SUBSYSTEM_SECURITY.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/aspect_projection/ASPECT_PROJECTION.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/aspect_projection/ASPECT_PROJECTION.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../implementation_strategy/2026-05-14_view_intent_sidecar_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/research/2026-04-02_scene_mode_ux_sketch.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../graphshell_docs/implementation_strategy/2026-05-07_graph_canvas_field_algebra_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/technical_architecture/2026-02-18_universal_node_content_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/technical_architecture/2026-04-09_graph_object_classification_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/research/2026-04-09_smolweb_discovery_and_aggregation_signal_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/research/2026-02-20_edge_traversal_model_research.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_ux_semantics/SUBSYSTEM_UX_SEMANTICS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_ux_semantics/SUBSYSTEM_UX_SEMANTICS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "2026-05-15_xilem_embedding_spike.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_focus/SUBSYSTEM_FOCUS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "2026-05-15_os_plumbing_reuse_audit_brief.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/technical_architecture/2026-04-20_graphshell_gpu_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/technical_architecture/2026-04-20_graphshell_gpu_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/2026-05-01_workspace_architecture_proposal.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/design/surface_behavior_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/design/command_semantics_matrix.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/design/command_semantics_matrix.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/design/command_semantics_matrix.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/design/surface_behavior_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/research/2026-03-27_ambient_graph_visual_effects.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/research/2026-03-29_graph_interaction_brainstorm.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/research/2026-02-24_interaction_and_semantic_design_schemes.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/aspect_input/ASPECT_INPUT.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/aspect_command/ASPECT_COMMAND.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/aspect_control/ASPECT_CONTROL.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/technical_architecture/2026-04-09_identity_convergence_and_person_node_model.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/technical_architecture/2026-04-09_graphshell_verse_uri_scheme.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/research/2026-02-20_edge_traversal_model_research.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/core-interaction-model-plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/technical_architecture/2026-04-16_middlenet_lane_architecture_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_storage/SUBSYSTEM_STORAGE.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_storage/SUBSYSTEM_STORAGE.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_mods/SUBSYSTEM_MODS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/subsystem_security/SUBSYSTEM_SECURITY.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/technical_architecture/2026-02-27_presentation_provider_and_ai_orchestration.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "2026-05-15_renderer_registry_contract_brief.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "2026-05-15_browser_taxonomy_translation_brief.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "2026-05-15_os_plumbing_reuse_audit_brief.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../implementation_strategy/2026-05-14_view_intent_sidecar_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../implementation_strategy/2026-05-14_switcher_thumbnails_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../implementation_strategy/2026-05-11_relation_taxonomy_and_edge_mutation_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../../graphshell_docs/implementation_strategy/2026-05-07_graph_canvas_field_algebra_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../implementation_strategy/2026-05-11_typed_action_bus_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "2026-05-15_xilem_embedding_spike.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-17_graphshell_harvest_brief.md",
+      "subject": "../implementation_strategy/2026-05-15_spatial_chrome_modular_adoption_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-30_two_natured_kernel_brief.md",
+      "subject": "../technical_architecture/2026-05-29_genet_as_host_evaluation.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-30_two_natured_kernel_brief.md",
+      "subject": "../technical_architecture/2026-05-29_genet_as_host_evaluation.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-05-30_two_natured_kernel_brief.md",
+      "subject": "../technical_architecture/2026-05-29_genet_as_host_evaluation.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-06-13_edge_system_audit.md",
+      "subject": "../../../crates/inker/src/statements.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-06-13_edge_system_audit.md",
+      "subject": "../../../crates/orrery/orrery/src/input.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-06-13_edge_system_audit.md",
+      "subject": "../../../crates/orrery/orrery/src/input.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-06-13_edge_system_audit.md",
+      "subject": "../../../crates/meerkat/src/roster.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-06-15_contact_identity_model_brief.md",
+      "subject": "../../../crates/murm/gazette/src/lib.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-06-15_contact_identity_model_brief.md",
+      "subject": "../../../crates/murm/misfin/src/lib.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-06-15_contact_identity_model_brief.md",
+      "subject": "../../../crates/persona/identity/src/lib.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-06-15_contact_identity_model_brief.md",
+      "subject": "../../../crates/murm/gazette/src/lib.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/research/2026-07-03_agent_harness_brief.md",
+      "subject": "../../../crates/meerkat/src/agent_harness.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-05-22_statements_over_schema_stance.md",
+      "subject": "../implementation_strategy/2026-05-22_linked_data_ingest_export_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-05-22_statements_over_schema_stance.md",
+      "subject": "../implementation_strategy/2026-05-22_linked_data_ingest_export_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-06-06_peripheral_panes_architecture.md",
+      "subject": "../../mere_docs/implementation_strategy/2026-06-04_multi_window_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-07-08_g5_mere_rebase_progress.md",
+      "subject": "../../../chartulary/src/graph.rs",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-07-18_one_node_facets_layer_map.md",
+      "subject": "../implementation_strategy/2026-07-09_mere_turnstone_boundary_pass_plan.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "murm_docs/technical_architecture/MURM_AS_BILATERAL.md",
+      "subject": "../../../../graphshell/design_docs/verso_docs/implementation_strategy/2026-03-28_cable_coop_minichat_spec.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "murm_docs/technical_architecture/MURM_AS_BILATERAL.md",
+      "subject": "../../../../graphshell/design_docs/verso_docs/technical_architecture/VERSO_AS_PEER.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "murm_docs/technical_architecture/MURM_AS_BILATERAL.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/social/comms/COMMS_AS_APPLETS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "murm_docs/technical_architecture/MURM_AS_BILATERAL.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/social/comms/COMMS_AS_APPLETS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    },
+    {
+      "source": "murm_docs/technical_architecture/MURM_AS_BILATERAL.md",
+      "subject": "../../../../graphshell/design_docs/graphshell_docs/implementation_strategy/social/comms/COMMS_AS_APPLETS.md",
+      "detail": "unresolved relative link is explicitly historical"
+    }
+  ],
+  "planned_broken_relative_links": [],
+  "ambiguous_known_root_paths": [
+    {
+      "source": "2026-08-12_family_composition_thesis_brief.md",
+      "subject": "src/action.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "2026-08-12_family_composition_thesis_brief.md",
+      "subject": "src/shell/page_capture.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "2026-08-12_family_composition_thesis_brief.md",
+      "subject": "src/shell/page_capture.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "2026-08-12_family_composition_thesis_brief.md",
+      "subject": "src/lib.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "2026-10-06_data_formats_brief.md",
+      "subject": "src/wallet_grant/mod.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "tests/boundary.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "dramatis_docs/implementation_strategy/2026-10-08_secret_service_plan.md",
+      "subject": "tests/secret_service_linux.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "eidetic_docs/research/2026-05-09_eidetic_design_pass.md",
+      "subject": "src/blob.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "eidetic_docs/research/2026-05-09_eidetic_design_pass.md",
+      "subject": "src/manifest.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "eidetic_docs/research/2026-05-09_eidetic_design_pass.md",
+      "subject": "src/typed.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "eidetic_docs/research/2026-05-09_eidetic_design_pass.md",
+      "subject": "src/schema.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "eidetic_docs/research/2026-05-09_eidetic_design_pass.md",
+      "subject": "src/engram.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "eidetic_docs/research/2026-05-09_eidetic_design_pass.md",
+      "subject": "src/models/",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "eidetic_docs/research/2026-05-09_eidetic_design_pass.md",
+      "subject": "src/browsing/",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "eidetic_docs/research/2026-05-09_eidetic_design_pass.md",
+      "subject": "src/lib.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "eidetic_docs/research/2026-09-04_eidetic_review_brief.md",
+      "subject": "src/**/*.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "eidetic_docs/research/2026-09-04_eidetic_review_brief.md",
+      "subject": "examples/eidetic-recall.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "intel_docs/research/2026-07-07_vates_founding_proposal.md",
+      "subject": "tests/eidetic_corridor.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "intel_docs/technical_architecture/vates_README.md",
+      "subject": "tests/tinyllama_real.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/design/2026-07-05_one_state_n_windows_design.md",
+      "subject": "tests/wpt/tests/dom/nodes/moveBefore/",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-26_illume_text_lexer_plan.md",
+      "subject": "src/syntax.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-26_illume_text_lexer_plan.md",
+      "subject": "src/highlight.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-03_archived_plan_tails_plan.md",
+      "subject": "src/place/",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-24_low_power_managed_network_plan.md",
+      "subject": "tests/over_transport.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-09_burn_0_22_migration_plan.md",
+      "subject": "tests/iroh.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-09_burn_0_22_migration_plan.md",
+      "subject": "tests/iroh.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-09_burn_0_22_migration_plan.md",
+      "subject": "src/lib.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-09_burn_0_22_migration_plan.md",
+      "subject": "src/lib.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-09_burn_0_22_migration_plan.md",
+      "subject": "tests/iroh.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-09_burn_0_22_migration_plan.md",
+      "subject": "src/lib.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-09_burn_0_22_migration_plan.md",
+      "subject": "src/backend/webgpu.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-09_burn_0_22_migration_plan.md",
+      "subject": "tests/fixtures/wordnet.xml",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-12_search_surface_wiring_plan.md",
+      "subject": "src/trail_memory.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md",
+      "subject": "src/denizen.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md",
+      "subject": "src/component.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md",
+      "subject": "src/denizen.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md",
+      "subject": "src/ring.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md",
+      "subject": "src/component.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md",
+      "subject": "src/watch.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md",
+      "subject": "src/behaviors.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-15_projection_grammar_adoption_plan.md",
+      "subject": "src/adapters/",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-15_projection_grammar_adoption_plan.md",
+      "subject": "tests/ledger_parity.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-15_projection_grammar_adoption_plan.md",
+      "subject": "src/trace.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-15_projection_grammar_adoption_plan.md",
+      "subject": "tests/history.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-15_projection_grammar_adoption_plan.md",
+      "subject": "tests/m7_showcase.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-25_browser_webrtc_carrier_plan.md",
+      "subject": "tests/c4_host_signaling.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-25_browser_webrtc_carrier_plan.md",
+      "subject": "tests/native_loopback.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-02_distillery_projection_walk_plan.md",
+      "subject": "src/shell/mod.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-02_distillery_projection_walk_plan.md",
+      "subject": "src/surface.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-02_distillery_projection_walk_plan.md",
+      "subject": "tests/walk_fixtures.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-02_distillery_projection_walk_plan.md",
+      "subject": "tests/fixtures/chronicle/{distillery_board,djinn_board}.json",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-02_distillery_projection_walk_plan.md",
+      "subject": "tests/fixtures/circuit/workspace_graph.json",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-02_physics_catalog_plan.md",
+      "subject": "tests/density.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-23_crate_consolidation_plan.md",
+      "subject": "src/recycle.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-23_reservoir_plan.md",
+      "subject": "tests/host_routing.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-02_device_pairing_by_key_plan.md",
+      "subject": "tests/ssh_ca_live.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-02_device_pairing_by_key_plan.md",
+      "subject": "src/bin/sim.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-02_dynamics_grammar_plan.md",
+      "subject": "src/remote_projection.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-02_dynamics_grammar_plan.md",
+      "subject": "src/lib.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-02_dynamics_grammar_plan.md",
+      "subject": "src/runtime.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-02_dynamics_grammar_plan.md",
+      "subject": "tests/grouped.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-02_dynamics_grammar_plan.md",
+      "subject": "src/remote_projection.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-02_dynamics_grammar_plan.md",
+      "subject": "src/app/mod.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-02_dynamics_grammar_plan.md",
+      "subject": "src/host/projection.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-02_dynamics_grammar_plan.md",
+      "subject": "tests/meaning_device.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-02_dynamics_grammar_plan.md",
+      "subject": "tests/physics_device.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-02_dynamics_grammar_plan.md",
+      "subject": "tests/through_view.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-04_graph_semantics_plan.md",
+      "subject": "src/app/node_arms.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-04_graph_semantics_plan.md",
+      "subject": "src/app/feed_arms.rs:44,70,98,236,279",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-04_stack_seams_plan.md",
+      "subject": "tests/support/recipe.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-05_djinn_test_harness_plan.md",
+      "subject": "tests/common/mod.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-07_scenograph_editor_plan.md",
+      "subject": "src/shell/input.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-07_scenograph_editor_plan.md",
+      "subject": "src/app/palette.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-07_scenograph_editor_plan.md",
+      "subject": "src/app/palette.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-07_scenograph_editor_plan.md",
+      "subject": "src/shell/input.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-07_scenograph_editor_plan.md",
+      "subject": "src/session.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-07_scenograph_editor_plan.md",
+      "subject": "src/ui.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/research/2026-06-19_cross_platform_parallelism_strategy.md",
+      "subject": "examples/phase_timing.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/research/2026-07-04_burn_utilization_brief.md",
+      "subject": "tests/bert_full_pipeline.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/research/2026-08-16_carriage_against_stickleback_epochs.md",
+      "subject": "src/bin/h7_sync_peer.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/research/2026-08-16_mer3ly_stack_consumer_survey.md",
+      "subject": "tests/m5_repo_graph.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/research/2026-10-03_upstream_candidates_ledger.md",
+      "subject": "src/lib.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/research/2026-10-03_upstream_candidates_ledger.md",
+      "subject": "src/block.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-06-06_peripheral_panes_architecture.md",
+      "subject": "src/lib.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-08-14_epoch_carriage_retention_leases.md",
+      "subject": "src/bin/h7_sync_peer.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/testing/2026-09-25_mere_view_headed_receipt.md",
+      "subject": "tests/host_routing.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/testing/receipts/2026-09-08_stack_pillar_probes/custody-backend/2026-09-08_custody_backend_receipt.md",
+      "subject": "src/lib.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/testing/receipts/2026-09-09_s10_custody_transact_receipt.md",
+      "subject": "src/lib.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/testing/receipts/2026-09-09_s10_custody_transact_receipt.md",
+      "subject": "src/tree_store/page_store/file_backend/windows.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "mere_docs/testing/receipts/2026-09-09_s10_custody_transact_receipt.md",
+      "subject": "examples/redb_cross_process_lock.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "moothold_docs/implementation_strategy/2026-06-12_moot_object_m1_plan.md",
+      "subject": "examples/moot-peer.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "moothold_docs/research/2026-08-12_radio_scopes_as_moots.md",
+      "subject": "src/moot/constitution/",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "moothold_docs/research/2026-08-12_radio_scopes_as_moots.md",
+      "subject": "src/moot/tessera/",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "nematic_docs/implementation_strategy/2026-07-01_smolweb_fidelity_plan.md",
+      "subject": "src/html.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "nematic_docs/implementation_strategy/2026-09-15_micron_navigation_plan.md",
+      "subject": "src/nomadnet.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "nematic_docs/implementation_strategy/2026-09-15_micron_navigation_plan.md",
+      "subject": "src/nomadnet.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "nematic_docs/implementation_strategy/2026-09-15_micron_navigation_plan.md",
+      "subject": "src/shell/effects.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "nematic_docs/implementation_strategy/2026-09-15_micron_navigation_plan.md",
+      "subject": "src/shell/input.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "nematic_docs/implementation_strategy/2026-09-15_micron_navigation_plan.md",
+      "subject": "src/shell/lens.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "nematic_docs/implementation_strategy/2026-09-15_micron_navigation_plan.md",
+      "subject": "src/shell/keys.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    },
+    {
+      "source": "nematic_docs/implementation_strategy/2026-09-15_micron_navigation_plan.md",
+      "subject": "src/nomadnet.rs",
+      "detail": "bare src/tests/examples path has no crate context"
+    }
+  ],
+  "ignored_known_root_patterns": [
+    {
+      "source": "DOC_POLICY.md",
+      "subject": "crates/*/design_docs/",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "DOC_POLICY.md",
+      "subject": "components/{inker,nematic,verso-tile}",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "DOC_POLICY.md",
+      "subject": "crates/*/design_docs/",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "ports/distillery/{alembic,athanor}",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "inker_docs/research/2026-09-03_web_surface_contract_assessment.md",
+      "subject": "crates/system/surface-api/{lib.rs,surface.rs,settings.rs}",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-05_theme_modes_plan.md",
+      "subject": "crates/system/tabard/tests/fixtures/**",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md",
+      "subject": "crates/graphshell/*",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-09_burn_0_22_migration_plan.md",
+      "subject": "crates/probes/*",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-09_burn_0_22_migration_plan.md",
+      "subject": "design_docs/.../testing/receipts",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-02_distillery_projection_walk_plan.md",
+      "subject": "ports/distillery/{alembic,athanor}",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-02_distillery_projection_walk_plan.md",
+      "subject": "ports/distillery/tests/fixtures/**",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-02_distillery_projection_walk_plan.md",
+      "subject": "crates/cambium/*",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-02_dynamics_grammar_plan.md",
+      "subject": "ports/graphshell/web/fixtures/*.json",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-07_scenograph_editor_plan.md",
+      "subject": "crates/.../curation",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/research/2026-06-19_cross_platform_parallelism_strategy.md",
+      "subject": "mere/crates/meerkat/src/content/{mod.rs,actor.rs,transfer.rs}",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/research/2026-06-19_cross_platform_parallelism_strategy.md",
+      "subject": "mere/crates/meerkat/src/main.rs:{775,919-926}",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/research/2026-06-19_cross_platform_parallelism_strategy.md",
+      "subject": "mere/crates/orrery/orrery/src/physics.rs:{11,25}",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/research/2026-07-21_projection_engine_prior_art_brief.md",
+      "subject": "crates/canvas/arrangements/src/{lib,registry}.rs",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/research/2026-09-01_frontier_sync_over_reticulum_brief.md",
+      "subject": "crates/stickleback/src/{drop,drop_io,receipt,causal}.rs",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-05-19_workspace_topology_status.md",
+      "subject": "crates/graphshell/{Cargo.toml,src/}",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "mere_docs/testing/receipts/2026-10-11_classic_browser_gates/browser-preparation.md",
+      "subject": "ports/graphshell/web/tree.html?app=local",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "moothold_docs/implementation_strategy/2026-06-12_moot_object_m1_plan.md",
+      "subject": "ports/graphshell/web/co_op.*",
+      "detail": "glob or pattern syntax is not a concrete path"
+    },
+    {
+      "source": "TERMINOLOGY.md",
+      "subject": "crates/eidetic/*",
+      "detail": "glob or pattern syntax is not a concrete path"
+    }
+  ],
+  "reserved_identifier_paths": [
+    {
+      "source": "DOC_README.md",
+      "subject": "mere/misfin/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "mere/cable/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "mere/coop/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "mere/mls/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "mere/blobs/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "mere/gossip/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "mere/docs/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "mere/moothold/primitive-node/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "mere/webfinger-bridge/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "mere/webfinger-bridge/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "mere/moothold/primitive-node/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "mere/moothold/primitive-node/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "mere/webfinger-bridge/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "mere/moothold/primitive-node/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "mere/moothold/primitive-node/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-03_archived_plan_tails_plan.md",
+      "subject": "mere/misfin/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-27_commons_calls_plan.md",
+      "subject": "mere/commons-call/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-27_commons_calls_plan.md",
+      "subject": "mere/commons-call/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-08_knot_mark_read_adapter.md",
+      "subject": "mere/knot-publish/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "mere_docs/research/2026-06-15_in_the_wings_and_browser_bar_audit.md",
+      "subject": "mere/coop/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "murm_docs/technical_architecture/MURM_AS_BILATERAL.md",
+      "subject": "mere/cable/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "murm_docs/technical_architecture/MURM_AS_BILATERAL.md",
+      "subject": "mere/mls/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "murm_docs/technical_architecture/MURM_AS_BILATERAL.md",
+      "subject": "mere/coop/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    },
+    {
+      "source": "TERMINOLOGY.md",
+      "subject": "mere/cable/v1",
+      "detail": "versioned Mere protocol/schema identifier is not a filesystem path"
+    }
+  ],
+  "missing_known_root_paths": [],
+  "historical_missing_known_root_paths": [
+    {
+      "source": "2026-05-24_external_deps_topology_brief.md",
+      "subject": "repos/mere/.cargo/config.toml",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\.cargo\\config.toml"
+    },
+    {
+      "source": "2026-05-24_external_deps_topology_brief.md",
+      "subject": "crates/weave",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\weave"
+    },
+    {
+      "source": "2026-07-02_data_oriented_doctrine_brief.md",
+      "subject": "components/genet-layout/box_tree.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\genet-layout\\box_tree.rs"
+    },
+    {
+      "source": "2026-07-02_data_oriented_doctrine_brief.md",
+      "subject": "components/xilem-serval/src/lib.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\xilem-serval\\src\\lib.rs"
+    },
+    {
+      "source": "2026-07-04_dependency_footprint_brief.md",
+      "subject": "components/fonts",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\fonts"
+    },
+    {
+      "source": "2026-07-04_dependency_footprint_brief.md",
+      "subject": "components/malloc_size_of",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\malloc_size_of"
+    },
+    {
+      "source": "2026-08-12_family_composition_thesis_brief.md",
+      "subject": "apps/signalman-desktop",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\apps\\signalman-desktop"
+    },
+    {
+      "source": "2026-08-12_family_composition_thesis_brief.md",
+      "subject": "crates/isometry-runtime/src/render.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\isometry-runtime\\src\\render.rs"
+    },
+    {
+      "source": "2026-08-12_family_composition_thesis_brief.md",
+      "subject": "genet/design_docs/receipts/2026-09-09_g5_ortet/receipt.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\design_docs\\receipts\\2026-09-09_g5_ortet\\receipt.md"
+    },
+    {
+      "source": "2026-08-22_license_posture_brief.md",
+      "subject": "components/genet-layout/Cargo.toml",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\genet-layout\\Cargo.toml"
+    },
+    {
+      "source": "2026-08-22_turnstone_suite_composition_and_capability_census.md",
+      "subject": "ports/distillery/alembic",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\distillery\\alembic"
+    },
+    {
+      "source": "2026-08-22_turnstone_suite_composition_and_capability_census.md",
+      "subject": "ports/distillery/alembic",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\distillery\\alembic"
+    },
+    {
+      "source": "2026-08-23_projection_scenes_and_graph_native_platform.md",
+      "subject": "components/cambium/ARCHITECTURE.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\cambium\\ARCHITECTURE.md"
+    },
+    {
+      "source": "2026-08-24_standards_survey_brief.md",
+      "subject": "repos/iconvg",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\iconvg"
+    },
+    {
+      "source": "armillary_docs/research/2026-07-07_armillary_founding_proposal.md",
+      "subject": "repos/vates/design_docs/2026-07-07_vates_founding_proposal.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\vates\\design_docs\\2026-07-07_vates_founding_proposal.md"
+    },
+    {
+      "source": "cambium_docs/implementation_strategy/2026-07-07_chisel_widget_leaf_design.md",
+      "subject": "components/chisel",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\chisel"
+    },
+    {
+      "source": "cambium_docs/implementation_strategy/2026-07-07_chisel_widget_leaf_design.md",
+      "subject": "components/chisel",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\chisel"
+    },
+    {
+      "source": "cambium_docs/implementation_strategy/2026-07-08_chisel_widget_catalog.md",
+      "subject": "ports/pelt-desktop/smoke_chisel.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\pelt-desktop\\smoke_chisel.rs"
+    },
+    {
+      "source": "DOC_POLICY.md",
+      "subject": "crates/cambium/docs/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\cambium\\docs"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "crates/dramatis/gazette",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\dramatis\\gazette"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "ports/alembic",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\alembic"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "crates/persona/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\persona"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "ports/knot",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\knot"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "crates/meerkat/src/graphlets.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\meerkat\\src\\graphlets.rs"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "crates/probes/rdf-kernel-bench/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\probes\\rdf-kernel-bench"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "crates/graph/glossary/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\glossary"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "crates/xilem-woodshed",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\xilem-woodshed"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "crates/murm/misfin",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\murm\\misfin"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "crates/meerkat",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\meerkat"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "crates/cambium/docs/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\cambium\\docs"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "crates/cambium/ARCHITECTURE.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\cambium\\ARCHITECTURE.md"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "components/inker/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\inker"
+    },
+    {
+      "source": "DOC_README.md",
+      "subject": "components/verso-tile",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\verso-tile"
+    },
+    {
+      "source": "eidetic_docs/research/2026-05-09_eidetic_design_pass.md",
+      "subject": "repos/graphshell/design_docs/verse_docs/implementation_strategy/2026-02-26_intelligence_memory_architecture_stm_ltm_engrams_plan.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\graphshell\\design_docs\\verse_docs\\implementation_strategy\\2026-02-26_intelligence_memory_architecture_stm_ltm_engrams_plan.md"
+    },
+    {
+      "source": "eidetic_docs/research/2026-05-09_eidetic_design_pass.md",
+      "subject": "repos/graphshell/design_docs/verse_docs/implementation_strategy/engram_spec.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\graphshell\\design_docs\\verse_docs\\implementation_strategy\\engram_spec.md"
+    },
+    {
+      "source": "eidetic_docs/research/2026-05-09_eidetic_design_pass.md",
+      "subject": "repos/graphshell/design_docs/graphshell_docs/implementation_strategy/aspect_distillery/distillation_request_and_artifact_contract_spec.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\graphshell\\design_docs\\graphshell_docs\\implementation_strategy\\aspect_distillery\\distillation_request_and_artifact_contract_spec.md"
+    },
+    {
+      "source": "eidetic_docs/research/2026-05-09_eidetic_design_pass.md",
+      "subject": "repos/mere/crates/eidetic/src/lib.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\eidetic\\src\\lib.rs"
+    },
+    {
+      "source": "eidetic_docs/research/2026-05-09_eidetic_design_pass.md",
+      "subject": "repos/mere/crates/eidetic/src/lib.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\eidetic\\src\\lib.rs"
+    },
+    {
+      "source": "eidetic_docs/research/2026-09-04_eidetic_review_brief.md",
+      "subject": "crates/eidetic/eidetic-fjall",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\eidetic\\eidetic-fjall"
+    },
+    {
+      "source": "eidetic_docs/research/2026-09-04_eidetic_review_brief.md",
+      "subject": "crates/eidetic/eidetic-https-fetcher",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\eidetic\\eidetic-https-fetcher"
+    },
+    {
+      "source": "eidetic_docs/research/2026-09-04_eidetic_review_brief.md",
+      "subject": "crates/eidetic/eidetic-iroh-fetcher",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\eidetic\\eidetic-iroh-fetcher"
+    },
+    {
+      "source": "intel_docs/research/2026-07-07_sibylla_founding_proposal.md",
+      "subject": "design_docs/2026-07-07_optional_intelligence_vision.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\2026-07-07_optional_intelligence_vision.md"
+    },
+    {
+      "source": "intel_docs/research/2026-07-07_sibylla_founding_proposal.md",
+      "subject": "mere/crates/intel/embed",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\intel\\embed"
+    },
+    {
+      "source": "intel_docs/research/2026-07-07_sibylla_founding_proposal.md",
+      "subject": "mere/crates/intel/embed",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\intel\\embed"
+    },
+    {
+      "source": "intel_docs/research/2026-07-07_sibylla_founding_proposal.md",
+      "subject": "repos/vates/design_docs/2026-07-07_vates_founding_proposal.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\vates\\design_docs\\2026-07-07_vates_founding_proposal.md"
+    },
+    {
+      "source": "intel_docs/research/2026-07-07_sibylla_founding_proposal.md",
+      "subject": "design_docs/2026-07-07_optional_intelligence_vision.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\2026-07-07_optional_intelligence_vision.md"
+    },
+    {
+      "source": "intel_docs/research/2026-07-07_vates_founding_proposal.md",
+      "subject": "design_docs/2026-07-07_optional_intelligence_vision.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\2026-07-07_optional_intelligence_vision.md"
+    },
+    {
+      "source": "intel_docs/research/2026-07-07_vates_founding_proposal.md",
+      "subject": "mere/crates/intel/infer",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\intel\\infer"
+    },
+    {
+      "source": "intel_docs/research/2026-07-07_vates_founding_proposal.md",
+      "subject": "repos/armillary",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\armillary"
+    },
+    {
+      "source": "intel_docs/research/2026-07-07_vates_founding_proposal.md",
+      "subject": "repos/armillary/design_docs/2026-07-07_armillary_founding_proposal.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\armillary\\design_docs\\2026-07-07_armillary_founding_proposal.md"
+    },
+    {
+      "source": "intel_docs/research/2026-07-07_vates_founding_proposal.md",
+      "subject": "repos/armillary",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\armillary"
+    },
+    {
+      "source": "intel_docs/research/2026-07-07_vates_founding_proposal.md",
+      "subject": "mere/crates/intel/infer",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\intel\\infer"
+    },
+    {
+      "source": "intel_docs/research/2026-07-07_vates_founding_proposal.md",
+      "subject": "design_docs/2026-07-07_optional_intelligence_vision.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\2026-07-07_optional_intelligence_vision.md"
+    },
+    {
+      "source": "intel_docs/technical_architecture/sibylla_README.md",
+      "subject": "crates/intel/vates",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\intel\\vates"
+    },
+    {
+      "source": "intel_docs/technical_architecture/sibylla_README.md",
+      "subject": "crates/intel/embed",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\intel\\embed"
+    },
+    {
+      "source": "intel_docs/technical_architecture/vates_README.md",
+      "subject": "crates/intel/sibylla",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\intel\\sibylla"
+    },
+    {
+      "source": "mere_docs/design/2026-07-05_one_state_n_windows_design.md",
+      "subject": "genet/components/xilem-serval/src/runner.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\xilem-serval\\src\\runner.rs"
+    },
+    {
+      "source": "mere_docs/design/2026-07-05_one_state_n_windows_design.md",
+      "subject": "genet/components/genet-layout/incremental.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\genet-layout\\incremental.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "crates/mere/mere-transport/src/iroh_transport.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\mere\\mere-transport\\src\\iroh_transport.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-05_protocol_architecture_plan.md",
+      "subject": "crates/mere/mere-identity/src/vault.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\mere\\mere-identity\\src\\vault.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-07_moot_tiers_and_voluntary_hosting_brief.md",
+      "subject": "design_docs/moothold_docs/implementation_strategy/2026-05-05_irc_mod_plan.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\moothold_docs\\implementation_strategy\\2026-05-05_irc_mod_plan.md"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-07_moot_tiers_and_voluntary_hosting_brief.md",
+      "subject": "crates/meerkat",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\meerkat"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-07_moot_tiers_and_voluntary_hosting_brief.md",
+      "subject": "crates/persona/identity",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\persona\\identity"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-07_moot_tiers_and_voluntary_hosting_brief.md",
+      "subject": "crates/murm/murmuring",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\murm\\murmuring"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-09_post_engine_layer_priorities.md",
+      "subject": "repos/graphshell/crates/graph-cartography/src/lib.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\graphshell\\crates\\graph-cartography\\src\\lib.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-09_post_engine_layer_priorities.md",
+      "subject": "crates/graphshell/shell-state",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graphshell\\shell-state"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-09_post_engine_layer_priorities.md",
+      "subject": "crates/mere-domain/graphshell",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\mere-domain\\graphshell"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-05-10_graph_cluster_namespaces_brief.md",
+      "subject": "crates/probes/willow-cluster-cap",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\probes\\willow-cluster-cap"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-06_moot_constitution_brief.md",
+      "subject": "crates/probes/willow-cluster-cap",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\probes\\willow-cluster-cap"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-08_system_diagnostics_and_accessibility_plan.md",
+      "subject": "crates/shell/frame",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\shell\\frame"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_gloss_outline_lens_plan.md",
+      "subject": "crates/graph/glossary/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\glossary"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_gloss_outline_lens_plan.md",
+      "subject": "crates/orrery/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\orrery"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_gloss_outline_lens_plan.md",
+      "subject": "crates/graph/glossary/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\glossary"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_gloss_outline_lens_plan.md",
+      "subject": "crates/graph/glossary/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\glossary"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_gloss_outline_lens_plan.md",
+      "subject": "crates/graph/glossary/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\glossary"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_gloss_outline_lens_plan.md",
+      "subject": "crates/graph/glossary/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\glossary"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_native_session_store_plan.md",
+      "subject": "components/shared/net",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\shared\\net"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_node_body_face_model_plan.md",
+      "subject": "crates/orrery/orrery",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\orrery\\orrery"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_node_body_face_model_plan.md",
+      "subject": "crates/orrery/gyre",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\orrery\\gyre"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-23_node_body_face_model_plan.md",
+      "subject": "crates/meerkat",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\meerkat"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-25_persona_transport_unlinkability_plan.md",
+      "subject": "crates/persona/identity",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\persona\\identity"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-25_persona_transport_unlinkability_plan.md",
+      "subject": "crates/moot/gemot/src/tessera",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\moot\\gemot\\src\\tessera"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-06-30_runtime_mod_authoring_loop_plan.md",
+      "subject": "crates/meerkat/src/shell_eval.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\meerkat\\src\\shell_eval.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-05_theme_modes_plan.md",
+      "subject": "repos/tincture",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\tincture"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-05_theme_modes_plan.md",
+      "subject": "crates/meerkat/src/theme_sheets.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\meerkat\\src\\theme_sheets.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-05_theme_modes_plan.md",
+      "subject": "repos/tincture",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\tincture"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-05_theme_modes_plan.md",
+      "subject": "repos/tincture",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\tincture"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-12_murm_peer_runtime_and_moot_domain_plan.md",
+      "subject": "repos/murm",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\murm"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-12_murm_peer_runtime_and_moot_domain_plan.md",
+      "subject": "repos/moot",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\moot"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-12_murm_peer_runtime_and_moot_domain_plan.md",
+      "subject": "repos/murm",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\murm"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-12_murm_peer_runtime_and_moot_domain_plan.md",
+      "subject": "repos/moot",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\moot"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-12_murm_peer_runtime_and_moot_domain_plan.md",
+      "subject": "repos/murm",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\murm"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-12_murm_peer_runtime_and_moot_domain_plan.md",
+      "subject": "repos/moot",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\moot"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-24_low_power_managed_network_plan.md",
+      "subject": "crates/persona/personae/src/delegation.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\persona\\personae\\src\\delegation.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-24_low_power_managed_network_plan.md",
+      "subject": "crates/tulle/src/direct_phy_serial.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\tulle\\src\\direct_phy_serial.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-24_low_power_managed_network_plan.md",
+      "subject": "crates/retinue/src/endpoint.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\retinue\\src\\endpoint.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-24_low_power_managed_network_plan.md",
+      "subject": "crates/retinue/src/endpoint.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\retinue\\src\\endpoint.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md",
+      "subject": "ports/graphshell/src/native/personae_host.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\graphshell\\src\\native\\personae_host.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md",
+      "subject": "ports/graphshell/src/bin/graphshell_device_host.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\graphshell\\src\\bin\\graphshell_device_host.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md",
+      "subject": "ports/graphshell/install-device-host-windows.ps1",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\graphshell\\install-device-host-windows.ps1"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md",
+      "subject": "repos/dramatis/crates/personae/src/agent.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\dramatis\\crates\\personae\\src\\agent.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md",
+      "subject": "crates/system/session-runtime/src/wallet_store.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\system\\session-runtime\\src\\wallet_store.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-03_graph_view_curation_and_interaction_plan.md",
+      "subject": "crates/system/session-runtime/src/view_intent_store.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\system\\session-runtime\\src\\view_intent_store.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-03_graph_view_curation_and_interaction_plan.md",
+      "subject": "components/cambium/cambium/src/pointer.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\cambium\\cambium\\src\\pointer.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-03_graph_view_curation_and_interaction_plan.md",
+      "subject": "crates/isometry-views/src/overmap.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\isometry-views\\src\\overmap.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-03_graph_view_curation_and_interaction_plan.md",
+      "subject": "crates/repo-graph",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\repo-graph"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-08_knot_mark_read_adapter.md",
+      "subject": "ports/knot",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\knot"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-08_knot_mark_read_adapter.md",
+      "subject": "ports/knot/src/mark.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\knot\\src\\mark.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-15_projection_grammar_adoption_plan.md",
+      "subject": "genet/design_docs/2026-08-31_workbench_component_plan.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\design_docs\\2026-08-31_workbench_component_plan.md"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-15_projection_grammar_adoption_plan.md",
+      "subject": "crates/scenograph/sceno/src/score.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\scenograph\\sceno\\src\\score.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-15_projection_grammar_adoption_plan.md",
+      "subject": "genet/components/cambium/docs/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\cambium\\docs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-15_projection_grammar_adoption_plan.md",
+      "subject": "crates/canvas/arrangements/src/registry.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\canvas\\arrangements\\src\\registry.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-15_projection_grammar_adoption_plan.md",
+      "subject": "genet/design_docs/2026-08-31_workbench_component_plan.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\design_docs\\2026-08-31_workbench_component_plan.md"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-22_conatus_engine_plan.md",
+      "subject": "crates/cargo-gpu",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\cargo-gpu"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-22_conatus_engine_plan.md",
+      "subject": "crates/crabslab",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\crabslab"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-22_conatus_engine_plan.md",
+      "subject": "crates/kiss3d",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\kiss3d"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-22_license_sweep_plan.md",
+      "subject": "components/cambium/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\cambium"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-22_license_sweep_plan.md",
+      "subject": "crates/canvas/arrangements",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\canvas\\arrangements"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-22_license_sweep_plan.md",
+      "subject": "components/inker/Cargo.toml",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\inker\\Cargo.toml"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-22_license_sweep_plan.md",
+      "subject": "crates/paredros-identity",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\paredros-identity"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-08-22_license_sweep_plan.md",
+      "subject": "components/cambium/cambium/src/lib.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\cambium\\cambium\\src\\lib.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-02_physics_catalog_plan.md",
+      "subject": "design_docs/graphshell_docs/implementation_strategy/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\graphshell_docs\\implementation_strategy"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-02_physics_catalog_plan.md",
+      "subject": "crates/nexus",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\nexus"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-02_physics_catalog_plan.md",
+      "subject": "crates/cargo-gpu/crates/cargo-gpu-install/src/install.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\cargo-gpu\\crates\\cargo-gpu-install\\src\\install.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-16_lattice_sync_pass_plan.md",
+      "subject": "crates/cargo-gpu",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\cargo-gpu"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-20_ranged_fetch_plan.md",
+      "subject": "ports/redshank/Cargo.lock",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\redshank\\Cargo.lock"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-09-23_crate_consolidation_plan.md",
+      "subject": "crates/system/pandect/src/athanor.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\system\\pandect\\src\\athanor.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-02_device_pairing_by_key_plan.md",
+      "subject": "crates/p2panda",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\p2panda"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-04_stack_seams_plan.md",
+      "subject": "crates/cambium/cambium/src/nematic.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\cambium\\cambium\\src\\nematic.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-04_stack_seams_plan.md",
+      "subject": "crates/graph/subgraph",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\subgraph"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-07_scenograph_editor_plan.md",
+      "subject": "crates/shell/chrome/src/command_palette.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\shell\\chrome\\src\\command_palette.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-07_scenograph_editor_plan.md",
+      "subject": "crates/graph/curation",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\curation"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-07_scenograph_editor_plan.md",
+      "subject": "components/script-engine-api/value.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\script-engine-api\\value.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-10-07_scenograph_editor_plan.md",
+      "subject": "crates/shell/chrome/src/command_palette.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\shell\\chrome\\src\\command_palette.rs"
+    },
+    {
+      "source": "mere_docs/research/2026-02-04_donor_docs_search_findings_summary.md",
+      "subject": "design_docs/verse_docs/research/SEARCH_FINDINGS_SUMMARY.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\verse_docs\\research\\SEARCH_FINDINGS_SUMMARY.md"
+    },
+    {
+      "source": "mere_docs/research/2026-02-22_aspirational_protocols_and_tools.md",
+      "subject": "design_docs/verse_docs/research/2026-02-22_aspirational_protocols_and_tools.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\verse_docs\\research\\2026-02-22_aspirational_protocols_and_tools.md"
+    },
+    {
+      "source": "mere_docs/research/2026-02-23_modern_yacy_gap_analysis.md",
+      "subject": "design_docs/verse_docs/research/2026-02-23_modern_yacy_gap_analysis.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\verse_docs\\research\\2026-02-23_modern_yacy_gap_analysis.md"
+    },
+    {
+      "source": "mere_docs/research/2026-02-23_storage_economy_and_indices.md",
+      "subject": "design_docs/verse_docs/research/2026-02-23_storage_economy_and_indices.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\verse_docs\\research\\2026-02-23_storage_economy_and_indices.md"
+    },
+    {
+      "source": "mere_docs/research/2026-02-27_freenet_takeaways_for_verse.md",
+      "subject": "design_docs/verse_docs/research/2026-02-27_freenet_takeaways_for_verse.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\verse_docs\\research\\2026-02-27_freenet_takeaways_for_verse.md"
+    },
+    {
+      "source": "mere_docs/research/2026-03-24_tool_comparison_product_lessons.md",
+      "subject": "design_docs/graphshell_docs/research/2026-03-24_tool_comparison_product_lessons.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\graphshell_docs\\research\\2026-03-24_tool_comparison_product_lessons.md"
+    },
+    {
+      "source": "mere_docs/research/2026-03-28_libp2p_nostr_synergy_for_verse.md",
+      "subject": "design_docs/verse_docs/research/2026-03-28_libp2p_nostr_synergy_for_verse.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\verse_docs\\research\\2026-03-28_libp2p_nostr_synergy_for_verse.md"
+    },
+    {
+      "source": "mere_docs/research/2026-03-29_middlenet_engine_spec.md",
+      "subject": "design_docs/graphshell_docs/technical_architecture/2026-03-29_middlenet_engine_spec.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\graphshell_docs\\technical_architecture\\2026-03-29_middlenet_engine_spec.md"
+    },
+    {
+      "source": "mere_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "subject": "design_docs/graphshell_docs/research/2026-03-30_middlenet_vision_synthesis.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\graphshell_docs\\research\\2026-03-30_middlenet_vision_synthesis.md"
+    },
+    {
+      "source": "mere_docs/research/2026-04-11_linked_data_over_middlenet_relevance_note.md",
+      "subject": "design_docs/graphshell_docs/research/2026-04-11_linked_data_over_middlenet_relevance_note.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\graphshell_docs\\research\\2026-04-11_linked_data_over_middlenet_relevance_note.md"
+    },
+    {
+      "source": "mere_docs/research/2026-04-11_tabfs_tablab_graphshell_relevance_note.md",
+      "subject": "design_docs/graphshell_docs/research/2026-04-11_tabfs_tablab_graphshell_relevance_note.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\graphshell_docs\\research\\2026-04-11_tabfs_tablab_graphshell_relevance_note.md"
+    },
+    {
+      "source": "mere_docs/research/2026-04-16_middlenet_lane_architecture_spec.md",
+      "subject": "design_docs/graphshell_docs/technical_architecture/2026-04-16_middlenet_lane_architecture_spec.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\graphshell_docs\\technical_architecture\\2026-04-16_middlenet_lane_architecture_spec.md"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_distributed_index_protocol_v0_1.md",
+      "subject": "design_docs/archive_docs/checkpoint_2026-04-17/verse_docs/technical_architecture/2026-04-17_verse_distributed_index_protocol_v0.1.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\archive_docs\\checkpoint_2026-04-17\\verse_docs\\technical_architecture\\2026-04-17_verse_distributed_index_protocol_v0.1.md"
+    },
+    {
+      "source": "mere_docs/research/2026-04-17_verse_graph_contribution_protocol_v0_1.md",
+      "subject": "design_docs/verse_docs/technical_architecture/2026-04-17_verse_graph_contribution_protocol_v0_1.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\verse_docs\\technical_architecture\\2026-04-17_verse_graph_contribution_protocol_v0_1.md"
+    },
+    {
+      "source": "mere_docs/research/2026-05-08_local_intelligence_integration_research.md",
+      "subject": "repos/graphshell/design_docs/graphshell_docs/research/2026-04-02_intelligence_taxonomy.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\graphshell\\design_docs\\graphshell_docs\\research\\2026-04-02_intelligence_taxonomy.md"
+    },
+    {
+      "source": "mere_docs/research/2026-05-08_local_intelligence_integration_research.md",
+      "subject": "repos/graphshell/design_docs/graphshell_docs/research/2026-04-02_intelligence_capability_tiers_and_blockers.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\graphshell\\design_docs\\graphshell_docs\\research\\2026-04-02_intelligence_capability_tiers_and_blockers.md"
+    },
+    {
+      "source": "mere_docs/research/2026-05-08_local_intelligence_integration_research.md",
+      "subject": "repos/graphshell/design_docs/verse_docs/research/2026-02-24_local_intelligence_research.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\graphshell\\design_docs\\verse_docs\\research\\2026-02-24_local_intelligence_research.md"
+    },
+    {
+      "source": "mere_docs/research/2026-05-08_local_intelligence_integration_research.md",
+      "subject": "repos/graphshell/design_docs/verse_docs/implementation_strategy/self_hosted_model_spec.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\graphshell\\design_docs\\verse_docs\\implementation_strategy\\self_hosted_model_spec.md"
+    },
+    {
+      "source": "mere_docs/research/2026-05-08_local_intelligence_integration_research.md",
+      "subject": "repos/graphshell/design_docs/graphshell_docs/implementation_strategy/aspect_distillery/ASPECT_DISTILLERY.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\graphshell\\design_docs\\graphshell_docs\\implementation_strategy\\aspect_distillery\\ASPECT_DISTILLERY.md"
+    },
+    {
+      "source": "mere_docs/research/2026-05-08_local_intelligence_integration_research.md",
+      "subject": "repos/graphshell/design_docs/graphshell_docs/implementation_strategy/aspect_distillery/distillation_request_and_artifact_contract_spec.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\graphshell\\design_docs\\graphshell_docs\\implementation_strategy\\aspect_distillery\\distillation_request_and_artifact_contract_spec.md"
+    },
+    {
+      "source": "mere_docs/research/2026-05-08_local_intelligence_integration_research.md",
+      "subject": "repos/graphshell/design_docs/graphshell_docs/implementation_strategy/aspect_distillery/semantic_scene_scaffolding_note.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\graphshell\\design_docs\\graphshell_docs\\implementation_strategy\\aspect_distillery\\semantic_scene_scaffolding_note.md"
+    },
+    {
+      "source": "mere_docs/research/2026-05-08_local_intelligence_integration_research.md",
+      "subject": "repos/mere/design_docs/graphshell_docs/implementation_strategy/2026-05-07_graph_canvas_field_algebra_plan.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\graphshell_docs\\implementation_strategy\\2026-05-07_graph_canvas_field_algebra_plan.md"
+    },
+    {
+      "source": "mere_docs/research/2026-05-08_local_intelligence_integration_research.md",
+      "subject": "repos/mere/crates/graphshell/graph/graph-canvas/Cargo.toml",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graphshell\\graph\\graph-canvas\\Cargo.toml"
+    },
+    {
+      "source": "mere_docs/research/2026-05-08_local_intelligence_integration_research.md",
+      "subject": "crates/intel/embed/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\intel\\embed"
+    },
+    {
+      "source": "mere_docs/research/2026-05-08_local_intelligence_integration_research.md",
+      "subject": "crates/intelligence-embeddings/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\intelligence-embeddings"
+    },
+    {
+      "source": "mere_docs/research/2026-05-08_local_intelligence_integration_research.md",
+      "subject": "crates/intel/embed/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\intel\\embed"
+    },
+    {
+      "source": "mere_docs/research/2026-05-10_cartography_layer_brief.md",
+      "subject": "crates/graph/graph-canvas/src/simulate.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\graph-canvas\\src\\simulate.rs"
+    },
+    {
+      "source": "mere_docs/research/2026-05-10_cartography_layer_brief.md",
+      "subject": "crates/graph/graph-layout/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\graph-layout"
+    },
+    {
+      "source": "mere_docs/research/2026-05-10_cartography_layer_brief.md",
+      "subject": "crates/graph/graph-canvas/src/layout/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\graph-canvas\\src\\layout"
+    },
+    {
+      "source": "mere_docs/research/2026-05-10_cartography_layer_brief.md",
+      "subject": "crates/graph/graph-canvas/src/layout/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\graph-canvas\\src\\layout"
+    },
+    {
+      "source": "mere_docs/research/2026-05-10_cartography_layer_brief.md",
+      "subject": "crates/cartography/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\cartography"
+    },
+    {
+      "source": "mere_docs/research/2026-05-10_cartography_layer_brief.md",
+      "subject": "crates/graph/graph-canvas/src/layout/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\graph-canvas\\src\\layout"
+    },
+    {
+      "source": "mere_docs/research/2026-05-10_cartography_layer_brief.md",
+      "subject": "crates/graph/graph-layout/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\graph-layout"
+    },
+    {
+      "source": "mere_docs/research/2026-05-11_browser_multiplexer_framing.md",
+      "subject": "crates/mere-host/src/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\mere-host\\src"
+    },
+    {
+      "source": "mere_docs/research/2026-05-11_tearout_operations_brief.md",
+      "subject": "crates/mere-host/src/tearout.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\mere-host\\src\\tearout.rs"
+    },
+    {
+      "source": "mere_docs/research/2026-05-27_understory_orrery_graduation_brief.md",
+      "subject": "mere/app/src/camera.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\app\\src\\camera.rs"
+    },
+    {
+      "source": "mere_docs/research/2026-05-27_understory_orrery_graduation_brief.md",
+      "subject": "mere/app/src/camera.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\app\\src\\camera.rs"
+    },
+    {
+      "source": "mere_docs/research/2026-05-27_understory_orrery_graduation_brief.md",
+      "subject": "mere/app/src/camera.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\app\\src\\camera.rs"
+    },
+    {
+      "source": "mere_docs/research/2026-05-31_murm_p2p_landscape_brief.md",
+      "subject": "crates/persona/identity",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\persona\\identity"
+    },
+    {
+      "source": "mere_docs/research/2026-05-31_murm_p2p_landscape_brief.md",
+      "subject": "crates/murm/misfin",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\murm\\misfin"
+    },
+    {
+      "source": "mere_docs/research/2026-05-31_murm_p2p_landscape_brief.md",
+      "subject": "crates/murm/webfinger",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\murm\\webfinger"
+    },
+    {
+      "source": "mere_docs/research/2026-06-15_in_the_wings_and_browser_bar_audit.md",
+      "subject": "crates/meerkat",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\meerkat"
+    },
+    {
+      "source": "mere_docs/research/2026-06-15_in_the_wings_and_browser_bar_audit.md",
+      "subject": "crates/meerkat",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\meerkat"
+    },
+    {
+      "source": "mere_docs/research/2026-06-18_rdf_native_kernel_feasibility.md",
+      "subject": "crates/orrery/arrangements",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\orrery\\arrangements"
+    },
+    {
+      "source": "mere_docs/research/2026-06-18_rdf_native_kernel_feasibility.md",
+      "subject": "crates/probes/rdf-kernel-bench/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\probes\\rdf-kernel-bench"
+    },
+    {
+      "source": "mere_docs/research/2026-06-19_cross_platform_parallelism_strategy.md",
+      "subject": "genet/components/genet-layout/examples/phase_timing.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\genet-layout\\examples\\phase_timing.rs"
+    },
+    {
+      "source": "mere_docs/research/2026-06-19_cross_platform_parallelism_strategy.md",
+      "subject": "mere/design_docs/mere_docs/implementation_strategy/2026-06-03_actor_constellation_plan.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\mere_docs\\implementation_strategy\\2026-06-03_actor_constellation_plan.md"
+    },
+    {
+      "source": "mere_docs/research/2026-06-22_graph_projections_research.md",
+      "subject": "crates/graph/node-lineage",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\node-lineage"
+    },
+    {
+      "source": "mere_docs/research/2026-06-22_graph_projections_research.md",
+      "subject": "crates/orrery/cartography",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\orrery\\cartography"
+    },
+    {
+      "source": "mere_docs/research/2026-06-22_graph_projections_research.md",
+      "subject": "crates/meerkat",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\meerkat"
+    },
+    {
+      "source": "mere_docs/research/2026-06-22_graph_projections_research.md",
+      "subject": "crates/orrery/arrangements",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\orrery\\arrangements"
+    },
+    {
+      "source": "mere_docs/research/2026-06-22_orrery_physics_environments_research.md",
+      "subject": "crates/orrery/gyre",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\orrery\\gyre"
+    },
+    {
+      "source": "mere_docs/research/2026-06-22_orrery_physics_environments_research.md",
+      "subject": "crates/orrery/aether",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\orrery\\aether"
+    },
+    {
+      "source": "mere_docs/research/2026-07-04_burn_utilization_brief.md",
+      "subject": "crates/intel/embed",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\intel\\embed"
+    },
+    {
+      "source": "mere_docs/research/2026-07-04_burn_utilization_brief.md",
+      "subject": "crates/eidetic/eidetic-search",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\eidetic\\eidetic-search"
+    },
+    {
+      "source": "mere_docs/research/2026-07-04_burn_utilization_brief.md",
+      "subject": "crates/orrery/aether",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\orrery\\aether"
+    },
+    {
+      "source": "mere_docs/research/2026-07-04_burn_utilization_brief.md",
+      "subject": "crates/orrery/gyre",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\orrery\\gyre"
+    },
+    {
+      "source": "mere_docs/research/2026-07-04_burn_utilization_brief.md",
+      "subject": "crates/intel/infer",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\intel\\infer"
+    },
+    {
+      "source": "mere_docs/research/2026-07-05_xilem_serval_directions_brief.md",
+      "subject": "genet/components/xilem-serval/src/lib.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\xilem-serval\\src\\lib.rs"
+    },
+    {
+      "source": "mere_docs/research/2026-07-21_projection_engine_prior_art_brief.md",
+      "subject": "crates/canvas/arrangements",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\canvas\\arrangements"
+    },
+    {
+      "source": "mere_docs/research/2026-08-10_sited_device_identity_brief.md",
+      "subject": "crates/postilion/src/lib.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\postilion\\src\\lib.rs"
+    },
+    {
+      "source": "mere_docs/research/2026-08-15_projection_grammar_catalog.md",
+      "subject": "crates/canvas/arrangements",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\canvas\\arrangements"
+    },
+    {
+      "source": "mere_docs/research/2026-08-16_mer3ly_stack_consumer_survey.md",
+      "subject": "crates/canvas/arrangements/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\canvas\\arrangements"
+    },
+    {
+      "source": "mere_docs/research/2026-08-16_mer3ly_stack_consumer_survey.md",
+      "subject": "crates/repo-graph/src/lib.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\repo-graph\\src\\lib.rs"
+    },
+    {
+      "source": "mere_docs/research/2026-08-16_mer3ly_stack_consumer_survey.md",
+      "subject": "crates/canvas/arrangements/src/registry.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\canvas\\arrangements\\src\\registry.rs"
+    },
+    {
+      "source": "mere_docs/research/2026-08-18_scenograph_lane_handoffs.md",
+      "subject": "mere/ports/knot",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\knot"
+    },
+    {
+      "source": "mere_docs/research/2026-08-19_knot_lane_brief.md",
+      "subject": "ports/knot",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\knot"
+    },
+    {
+      "source": "mere_docs/research/2026-09-01_frontier_sync_over_reticulum_brief.md",
+      "subject": "crates/p2panda",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\p2panda"
+    },
+    {
+      "source": "mere_docs/research/2026-09-02_port_gui_composition_and_comparable_stacks_brief.md",
+      "subject": "design_docs/2026-07-18_meerkat_harvest.md",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\design_docs\\2026-07-18_meerkat_harvest.md"
+    },
+    {
+      "source": "mere_docs/research/2026-09-02_port_gui_composition_and_comparable_stacks_brief.md",
+      "subject": "ports/knot",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\knot"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-05-19_workspace_topology_status.md",
+      "subject": "crates/workbench/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\workbench"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-05-19_workspace_topology_status.md",
+      "subject": "crates/mere/host/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\mere\\host"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-05-19_workspace_topology_status.md",
+      "subject": "crates/verso/masonry-renderer/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\verso\\masonry-renderer"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-05-19_workspace_topology_status.md",
+      "subject": "crates/verso/masonry-renderer",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\verso\\masonry-renderer"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-05-19_workspace_topology_status.md",
+      "subject": "mere/host",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\host"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-05-19_workspace_topology_status.md",
+      "subject": "mere/host",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\host"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-05-19_workspace_topology_status.md",
+      "subject": "mere/host/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\host"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-05-19_workspace_topology_status.md",
+      "subject": "crates/mere/host",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\mere\\host"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-05-19_workspace_topology_status.md",
+      "subject": "crates/mere/host-substrate",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\mere\\host-substrate"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-05-19_workspace_topology_status.md",
+      "subject": "crates/orrery/arrangements",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\orrery\\arrangements"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-05-19_workspace_topology_status.md",
+      "subject": "crates/verso/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\verso"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-06-18_interaction_model_spine.md",
+      "subject": "crates/meerkat/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\meerkat"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-06-18_interaction_model_spine.md",
+      "subject": "crates/orrery/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\orrery"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-06-18_interaction_model_spine.md",
+      "subject": "crates/inker/engines/nematic",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\inker\\engines\\nematic"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-06-18_interaction_model_spine.md",
+      "subject": "crates/meerkat/src/fetch.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\meerkat\\src\\fetch.rs"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-06-18_interaction_model_spine.md",
+      "subject": "crates/orrery/arrangements",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\orrery\\arrangements"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-07-18_one_node_facets_layer_map.md",
+      "subject": "repos/conatus",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\conatus"
+    },
+    {
+      "source": "mere_docs/technical_architecture/2026-08-16_facet_signaling_and_control_loops.md",
+      "subject": "crates/eidetic/scholia/src/project.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\eidetic\\scholia\\src\\project.rs"
+    },
+    {
+      "source": "mere_docs/testing/receipts/2026-09-09_s10_custody_transact_receipt.md",
+      "subject": "mere/.cargo/config.toml",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\.cargo\\config.toml"
+    },
+    {
+      "source": "mere_docs/testing/receipts/2026-09-20_resource_resolution_probes/2026-09-20_resource_resolution_receipt.md",
+      "subject": "ports/redshank/Cargo.toml",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\redshank\\Cargo.toml"
+    },
+    {
+      "source": "murm_docs/technical_architecture/MURM_AS_BILATERAL.md",
+      "subject": "mere/crates/murmuring/src/protocols/cable/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\murmuring\\src\\protocols\\cable"
+    },
+    {
+      "source": "nematic_docs/implementation_strategy/2026-05-08_polyglot_knot_design.md",
+      "subject": "crates/middlenet-core/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\middlenet-core"
+    },
+    {
+      "source": "nematic_docs/implementation_strategy/2026-05-08_polyglot_knot_design.md",
+      "subject": "crates/middlenet-core/src/document.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\middlenet-core\\src\\document.rs"
+    },
+    {
+      "source": "nematic_docs/implementation_strategy/2026-05-08_polyglot_knot_design.md",
+      "subject": "components/inker/src/document/render/html.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\inker\\src\\document\\render\\html.rs"
+    },
+    {
+      "source": "nematic_docs/implementation_strategy/2026-09-15_micron_navigation_plan.md",
+      "subject": "crates/import/src/history.rs",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\import\\src\\history.rs"
+    },
+    {
+      "source": "TERMINOLOGY.md",
+      "subject": "crates/graph/subgraph",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\graph\\subgraph"
+    },
+    {
+      "source": "verso_docs/implementation_strategy/2026-06-23_genet_scrying_flipcarrier_plan.md",
+      "subject": "components/verso-tile",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\verso-tile"
+    },
+    {
+      "source": "verso_docs/implementation_strategy/2026-06-23_genet_scrying_flipcarrier_plan.md",
+      "subject": "crates/verso-api",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\verso-api"
+    },
+    {
+      "source": "verso_docs/implementation_strategy/2026-06-23_genet_scrying_flipcarrier_plan.md",
+      "subject": "crates/verso-genet",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\verso-genet"
+    },
+    {
+      "source": "verso_docs/implementation_strategy/2026-06-23_genet_scrying_flipcarrier_plan.md",
+      "subject": "crates/verso",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\verso"
+    },
+    {
+      "source": "verso_docs/implementation_strategy/2026-06-23_genet_scrying_flipcarrier_plan.md",
+      "subject": "crates/verso-scry",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\verso-scry"
+    },
+    {
+      "source": "verso_docs/technical_architecture/2026-06-10_compatibility_view_charter.md",
+      "subject": "components/verso-tile",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\genet\\components\\verso-tile"
+    },
+    {
+      "source": "verso_docs/technical_architecture/2026-06-10_compatibility_view_charter.md",
+      "subject": "crates/verso/",
+      "detail": "unresolved known-root path is explicitly historical: C:\\Users\\mark_\\Code\\repos\\mere\\crates\\verso"
+    }
+  ],
+  "planned_missing_known_root_paths": [
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md",
+      "subject": "ports/retinue-agent",
+      "detail": "unresolved known-root path is an explicit planned target: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\retinue-agent"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md",
+      "subject": "ports/retinue-agent/Cargo.toml",
+      "detail": "unresolved known-root path is an explicit planned target: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\retinue-agent\\Cargo.toml"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md",
+      "subject": "ports/retinue-agent/src/main.rs",
+      "detail": "unresolved known-root path is an explicit planned target: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\retinue-agent\\src\\main.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md",
+      "subject": "ports/retinue-agent/src/endpoint.rs",
+      "detail": "unresolved known-root path is an explicit planned target: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\retinue-agent\\src\\endpoint.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md",
+      "subject": "ports/retinue-agent/src/projection.rs",
+      "detail": "unresolved known-root path is an explicit planned target: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\retinue-agent\\src\\projection.rs"
+    },
+    {
+      "source": "mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md",
+      "subject": "ports/retinue-agent/src/intents.rs",
+      "detail": "unresolved known-root path is an explicit planned target: C:\\Users\\mark_\\Code\\repos\\mere\\ports\\retinue-agent\\src\\intents.rs"
+    }
+  ],
+  "invalid_historical_annotations": [],
+  "stale_historical_annotations": [],
+  "unheaded_owned_sources": [],
+  "exhibit_b_sources": [],
+  "counts": {
+    "active_docs": 264,
+    "indexed_active_docs": 263,
+    "index_orphans": 0,
+    "index_ghosts": 0,
+    "memory_directory_links": 0,
+    "statusless_plans": 0,
+    "broken_relative_links": 0,
+    "historical_broken_relative_links": 245,
+    "planned_broken_relative_links": 0,
+    "ambiguous_known_root_paths": 101,
+    "ignored_known_root_patterns": 23,
+    "reserved_identifier_paths": 24,
+    "missing_known_root_paths": 0,
+    "historical_missing_known_root_paths": 237,
+    "planned_missing_known_root_paths": 6,
+    "invalid_historical_annotations": 0,
+    "stale_historical_annotations": 0,
+    "unheaded_owned_sources": 0,
+    "exhibit_b_sources": 0
+  }
+}

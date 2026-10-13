@@ -271,6 +271,9 @@ impl App {
                 Action::ComposeFocusedMicronForm,
             ));
         }
+        if self.clip_export_target().is_ok() {
+            rows.push(("Export retained clip".into(), Action::ChooseClipExportFile));
+        }
         rows.extend(crate::action::palette_actions());
         rows
     }

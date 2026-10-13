@@ -1,0 +1,37 @@
+# Fresh process over the receiving mere, with the package files unavailable.
+settle 20
+key escape
+assert snap network-offline == true
+assert snap peer-services == 0
+open ${CLIP_KNOT}
+settle 15
+settle 20
+act Open node in Workbench
+settle 20
+assert content-live
+assert snap browser-current ~ ${CLIP_KNOT}
+capture 05_knot_reopened
+open ${CLIP_NOTE}
+settle 15
+settle 20
+act Open node in Workbench
+settle 20
+assert content-live
+assert snap browser-current ~ ${CLIP_NOTE}
+capture 06_note_reopened
+open ${CLIP_VOICE}
+settle 15
+settle 20
+act Open node in Workbench
+settle 20
+assert content-live
+assert snap browser-current ~ ${CLIP_VOICE}
+capture 07_voice_reopened
+# Physical pointer activation of the visible link in the reviewed 1024x600
+# three-cell Workbench, through the ordinary content-session navigation path.
+click-at 930 180
+settle 150
+assert snap retained-voice ~ Ended
+assert snap offline-acquisition-attempts == 0
+capture 08_voice_replayed
+log Receiver-only restart retains text and playable voice-body bytes

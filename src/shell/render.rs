@@ -766,8 +766,9 @@ impl Shell {
     /// layer (transparent-cleared, alpha-blended) above when the omnibar is
     /// open. Chains another redraw while the canvas is still animating.
     pub(super) fn render(&mut self) -> bool {
+        self.refresh_retained_clip_playback();
         self.poll_capture_readback();
-        if self.host.is_none() {
+        if !self.poll_render_recovery() || self.host.is_none() {
             return false;
         }
         self.refresh_diagnostic_inspection();
@@ -969,30 +970,45 @@ impl Shell {
         // host.
         let mut surface_raster = crate::frame_timing::SurfaceRasterSplit::default();
         let raster_started = std::time::Instant::now();
-        let layers: Vec<CompositeLayer> = scenes
+        let generation = host.core().generation();
+        // Keep each returned texture alive through composition and capture.
+        let mut raster_textures = Vec::new();
+        let layers: Result<Vec<CompositeLayer>, (u64, genet_render_host::RasterizeFailure)> = scenes
             .into_iter()
             .map(|source| match source {
                 PlannedLayer::Scene(scene) => {
-                    let (_tex, view) = host.core().rasterize_for(
+                    let (texture, view) = host.core().try_rasterize_scaled_for(
                         scene.id,
                         &scene.scene,
                         scene.dims.0,
                         scene.dims.1,
                         ColorLoad::Clear(scene.clear),
-                    );
+                        1.0,
+                    ).map_err(|failure| (scene.id, failure))?;
+                    raster_textures.push(texture);
                     surface_raster.note(
                         scene.kind,
                         host.renderer().vello_last_dirty_count().unwrap_or(0),
                     );
-                    CompositeLayer {
+                    Ok(CompositeLayer {
                         kind: scene.kind,
                         view,
                         placement: scene.placement,
-                    }
+                    })
                 },
-                PlannedLayer::Imported(layer) => layer,
+                PlannedLayer::Imported(layer) => Ok(layer),
             })
             .collect();
+        let layers = match layers {
+            Ok(layers) => layers,
+            Err((source, failure)) => {
+                drop(raster_textures);
+                #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+                drop((surface_device, surface_queue));
+                self.refuse_raster_frame(0, generation, source, failure);
+                return false;
+            }
+        };
         let raster_elapsed = raster_started.elapsed();
 
         // Stage 6: composition and present. If the surface cannot be acquired
@@ -1002,8 +1018,25 @@ impl Shell {
         // dropped with it. A dropped frame is worth knowing about, but it is
         // the swapchain's story, not the chrome path's.
         let compose_started = std::time::Instant::now();
-        let Some(frame) = host.acquire() else {
-            return false;
+        let frame = match host.acquire_status() {
+            genet_render_host::SurfaceAcquire::Frame(frame) => frame,
+            genet_render_host::SurfaceAcquire::DeviceLost(loss) => {
+                drop(layers);
+                drop(raster_textures);
+                #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+                drop((surface_device, surface_queue));
+                self.refuse_raster_frame(0, generation, 0, genet_render_host::RasterizeFailure::DeviceLost(loss));
+                return false;
+            },
+            genet_render_host::SurfaceAcquire::SurfaceLost => {
+                drop(layers);
+                drop(raster_textures);
+                #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+                drop((surface_device, surface_queue));
+                self.detach_render_surface(0);
+                return false;
+            },
+            genet_render_host::SurfaceAcquire::Unavailable { .. } => return false,
         };
         let target = frame
             .texture
@@ -1017,6 +1050,16 @@ impl Shell {
                 h,
                 layer.placement,
             );
+        }
+        if let Some(loss) = host.core().device_failure() {
+            drop(frame);
+            drop(target);
+            drop(layers);
+            drop(raster_textures);
+            #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+            drop((surface_device, surface_queue));
+            self.refuse_raster_frame(0, generation, 0, genet_render_host::RasterizeFailure::DeviceLost(loss));
+            return false;
         }
         // wgpu 30 moved presentation from SurfaceTexture to Queue.
         host.queue().present(frame);
@@ -1124,7 +1167,7 @@ impl Shell {
         }
     }
 
-    fn poll_capture_readback(&mut self) {
+    pub(super) fn poll_capture_readback(&mut self) {
         let Some(mut pending) = self.pending_capture_readback.take() else {
             return;
         };
@@ -1142,7 +1185,7 @@ impl Shell {
                     ));
                 }
             },
-            Some(Err(error)) => self.main_receipt.errors.push(error),
+            Some(Err(error)) => self.main_receipt.errors.push(format!("capture {}: {error}", pending.path.display())),
             None if pending.started.elapsed() > std::time::Duration::from_secs(5) => {
                 self.main_receipt
                     .errors
@@ -1203,7 +1246,7 @@ pub(super) fn capture_composed(
     h: u32,
     path: &Path,
 ) -> bool {
-    let frame = capture_target(host, layers, w, h);
+    let Ok(frame) = capture_target(host, layers, w, h) else { return false; };
     let rgba = read_texture_rgba(host, &frame, w, h);
     if rgba.is_empty() {
         return false;
@@ -1216,7 +1259,8 @@ pub(super) fn capture_composed(
         .is_ok()
 }
 
-fn capture_target(host: &SurfaceHost, layers: &[CompositeLayer], w: u32, h: u32) -> wgpu::Texture {
+fn capture_target(host: &SurfaceHost, layers: &[CompositeLayer], w: u32, h: u32) -> Result<wgpu::Texture, String> {
+    if let Some(loss) = host.core().device_failure() { return Err(format!("capture refused: DeviceLost({loss:?})")); }
     let target = host.device().create_texture(&wgpu::TextureDescriptor {
         label: Some("turnstone scenario capture"),
         size: wgpu::Extent3d {
@@ -1242,7 +1286,8 @@ fn capture_target(host: &SurfaceHost, layers: &[CompositeLayer], w: u32, h: u32)
             layer.placement,
         );
     }
-    target
+    if let Some(loss) = host.core().device_failure() { return Err(format!("capture refused: DeviceLost({loss:?})")); }
+    Ok(target)
 }
 
 fn start_capture_composed(
@@ -1251,7 +1296,7 @@ fn start_capture_composed(
     w: u32,
     h: u32,
 ) -> Result<cambium_rootstock::PendingFrame, String> {
-    let target = capture_target(host, layers, w, h);
+    let target = capture_target(host, layers, w, h)?;
     host.shared_core().start_rgba8_readback(&target, w, h)
 }
 

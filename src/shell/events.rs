@@ -32,6 +32,7 @@ use super::Shell;
 
 impl ApplicationHandler for Shell {
     fn new_events(&mut self, _event_loop: &ActiveEventLoop, _cause: StartCause) {
+        self.poll_render_recovery();
         self.observe_physics_display_rate(false);
         #[cfg(all(feature = "servo", windows))]
         if let Err(error) = super::servo::pump() {
@@ -165,7 +166,10 @@ impl ApplicationHandler for Shell {
             ..Default::default()
         };
         match SurfaceHost::boot(window.clone(), self.width, self.height, options) {
-            Ok(host) => self.host = Some(host),
+            Ok(host) => {
+                self.host = Some(host);
+                self.ensure_render_recovery();
+            }
             Err(err) => {
                 eprintln!("[turnstone] {err}");
                 event_loop.exit();

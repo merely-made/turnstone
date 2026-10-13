@@ -35,7 +35,8 @@ use super::{CompositeLayer, PlannedLayer, PlannedScene, Shell, capture_composed}
 /// cursor, and graph gesture capture.
 pub(super) struct LensWindow {
     pub(super) window: Arc<Window>,
-    pub(super) host: SurfaceHost,
+    pub(super) host: Option<SurfaceHost>,
+    pub(super) recovery: super::WindowRecovery,
     pub(super) width: u32,
     pub(super) height: u32,
     pub(super) cursor: (f32, f32),
@@ -119,6 +120,7 @@ impl Shell {
     /// handlers, where an `ActiveEventLoop` is in scope. Its graph panes
     /// install their own view state on their first render/input pass.
     pub(super) fn drain_pending_windows(&mut self, event_loop: &ActiveEventLoop) {
+        if !self.poll_render_recovery() { return; }
         while let Some(ordinal) = self.pending_windows.pop() {
             let Some(primary) = self.host.as_ref() else {
                 tracing::warn!("lens requires the primary render core");
@@ -152,11 +154,17 @@ impl Shell {
                     );
                     window.set_visible(true);
                     window.request_redraw();
+                    let owner = self.render_recovery.as_ref().expect("primary recovery owner").clone();
+                    let proxy = self.proxy.clone();
+                    let recovery = super::WindowRecovery::new(&owner, Arc::new(move || {
+                        let _ = proxy.send_event(());
+                    }));
                     self.lens_windows.insert(
                         window.id(),
                         LensWindow {
                             window,
-                            host,
+                            host: Some(host),
+                            recovery,
                             width: size.width.max(1),
                             height: size.height.max(1),
                             cursor: (0.0, 0.0),
@@ -303,6 +311,8 @@ impl Shell {
     /// out to a lens keeps its DOM, widget state, and scroll because the
     /// runner never moved — only its leaf changed trees.
     pub(super) fn render_lens(&mut self, id: WindowId) {
+        if !self.poll_render_recovery() { return; }
+        self.bind_lens_capture();
         if self.poll_live_settings() {
             self.request_redraw();
         }
@@ -310,9 +320,10 @@ impl Shell {
             return;
         };
         let (lw, lh, ordinal) = (lens.width, lens.height, lens.ordinal);
+        let Some(host) = lens.host.as_ref() else { return; };
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         let (surface_device, surface_queue) =
-            (lens.host.device().clone(), lens.host.queue().clone());
+            (host.device().clone(), host.queue().clone());
         let surfaces = self.lens_plan(ordinal, lw, lh);
         if surfaces.is_empty() {
             return;
@@ -424,53 +435,77 @@ impl Shell {
         if self.fail_surface_frames(surface_failures) {
             return;
         }
-        // Pass 2 (immutable host): rasterize + compose, keyed per surface.
-        let Some(lens) = self.lens_windows.get_mut(&id) else {
-            return;
-        };
-        let layers: Vec<CompositeLayer> = scenes
+        // Pass 2 is all-or-refused; keep textures alive until presentation/capture.
+        let Some(lens) = self.lens_windows.get_mut(&id) else { return; };
+        let Some(host) = lens.host.as_ref() else { return; };
+        let generation = host.core().generation();
+        let mut raster_textures = Vec::new();
+        let layers: Result<Vec<CompositeLayer>, (u64, genet_render_host::RasterizeFailure)> = scenes
             .into_iter()
             .map(|source| match source {
                 PlannedLayer::Scene(scene) => {
-                    let (_tex, view) = lens.host.core().rasterize_for(
-                        scene.id,
-                        &scene.scene,
-                        scene.dims.0,
-                        scene.dims.1,
-                        ColorLoad::Clear(scene.clear),
-                    );
-                    CompositeLayer {
-                        kind: scene.kind,
-                        view,
-                        placement: scene.placement,
-                    }
+                    let (texture, view) = host.core().try_rasterize_scaled_for(
+                        scene.id, &scene.scene, scene.dims.0, scene.dims.1,
+                        ColorLoad::Clear(scene.clear), 1.0,
+                    ).map_err(|failure| (scene.id, failure))?;
+                    raster_textures.push(texture);
+                    Ok(CompositeLayer { kind: scene.kind, view, placement: scene.placement })
                 },
-                PlannedLayer::Imported(layer) => layer,
-            })
-            .collect();
-        let Some(frame) = lens.host.acquire() else {
-            return;
+                PlannedLayer::Imported(layer) => Ok(layer),
+            }).collect();
+        let layers = match layers {
+            Ok(layers) => layers,
+            Err((source, failure)) => {
+                drop(raster_textures);
+                #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+                drop((surface_device, surface_queue));
+                self.refuse_raster_frame(ordinal as u64 + 1, generation, source, failure);
+                return;
+            }
         };
-        let target = frame
-            .texture
-            .create_view(&wgpu::TextureViewDescriptor::default());
+        let frame = match host.acquire_status() {
+            genet_render_host::SurfaceAcquire::Frame(frame) => frame,
+            genet_render_host::SurfaceAcquire::DeviceLost(loss) => {
+                drop(layers);
+                drop(raster_textures);
+                #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+                drop((surface_device, surface_queue));
+                self.refuse_raster_frame(ordinal as u64 + 1, generation, 0, genet_render_host::RasterizeFailure::DeviceLost(loss));
+                return;
+            },
+            genet_render_host::SurfaceAcquire::SurfaceLost => {
+                drop(layers);
+                drop(raster_textures);
+                #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+                drop((surface_device, surface_queue));
+                self.detach_render_surface(ordinal as u64 + 1);
+                return;
+            },
+            genet_render_host::SurfaceAcquire::Unavailable { .. } => return,
+        };
+        let target = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
         for layer in &layers {
-            lens.host.renderer().compose_external_texture(
-                &layer.view,
-                &target,
-                lens.host.format(),
-                lw,
-                lh,
-                layer.placement,
-            );
+            host.renderer().compose_external_texture(&layer.view, &target, host.format(), lw, lh, layer.placement);
         }
-        // wgpu 30 moved presentation from SurfaceTexture to Queue.
-        lens.host.queue().present(frame);
-        // A lens self-capture composes the SAME presented layers (the primary
-        // capture discipline, per window).
-        if let Some(path) = self.pending_lens_capture.take() {
-            if !capture_composed(&lens.host, &layers, lw, lh, &path) {
-                tracing::warn!(path = ?path, "lens capture failed");
+        if let Some(loss) = host.core().device_failure() {
+            drop(frame);
+            drop(target);
+            drop(layers);
+            drop(raster_textures);
+            #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+            drop((surface_device, surface_queue));
+            self.refuse_raster_frame(ordinal as u64 + 1, generation, 0, genet_render_host::RasterizeFailure::DeviceLost(loss));
+            return;
+        }
+        host.queue().present(frame);
+        // Only the request's chosen Lens may consume it. Failure participates
+        // in the same scenario receipt as the primary, rather than warning only.
+        if self.pending_lens_capture_window == Some(id) {
+            self.pending_lens_capture_window = None;
+            if let Some(path) = self.pending_lens_capture.take() {
+                if !capture_composed(host, &layers, lw, lh, &path) {
+                    self.main_receipt.errors.push(format!("lens capture {} window={}: readback or PNG failed", path.display(), ordinal + 1));
+                }
             }
         }
         if animating {
@@ -570,6 +605,13 @@ impl Shell {
             },
             WindowEvent::CloseRequested => {
                 let ordinal = lens.ordinal;
+                self.bind_lens_capture();
+                if self.pending_lens_capture_window == Some(id) {
+                    let generation = self.lens_windows.get(&id).and_then(|lens| lens.host.as_ref()).map_or(0, |host| host.core().generation());
+                    self.refuse_window_capture(ordinal as u64 + 1, cambium_rootstock::CaptureRefusal::SurfaceUnavailable {
+                        generation, error: "capture target Lens closed".into(),
+                    });
+                }
                 self.native_input_focus(ordinal as u64 + 1, false);
                 self.window_focus.remove(&(ordinal as u64 + 1));
                 self.lens_windows.remove(&id);
@@ -599,7 +641,7 @@ impl Shell {
             WindowEvent::Resized(size) => {
                 lens.width = size.width.max(1);
                 lens.height = size.height.max(1);
-                lens.host.resize(lens.width, lens.height);
+                if let Some(host) = lens.host.as_mut() { host.resize(lens.width, lens.height); }
                 lens.window.request_redraw();
                 return;
             },

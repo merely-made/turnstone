@@ -25,6 +25,7 @@ mod keys;
 mod nomadnet_fetch;
 mod page_capture;
 mod reader_observe;
+mod retained_clips;
 mod render;
 mod renderers;
 #[cfg(all(feature = "scry", windows))]
@@ -199,6 +200,7 @@ pub(crate) fn standard_content_engines() -> SessionRegistry<Scene> {
     )));
     engines.register(Box::new(ReaderSessionEngine::new(SmolwebTheme::System)));
     engines.register(Box::new(crate::nomadnet::MicronSessionEngine::new()));
+    engines.register(Box::new(crate::retained_clip::ClipSessionEngine));
     for engine_id in SMOLWEB_SESSION_ENGINE_IDS {
         engines.register(Box::new(
             SmolwebSessionEngine::new(
@@ -425,11 +427,11 @@ impl Shell {
         self.unlock_rx = None;
         let effects = self.app.adopt_profile_root(root.clone());
         self.place_handle
-            .command(crate::place::worker::PlaceWorkerCommand::AdoptIdentity(
-                root.clone(),
-            ));
-        self.shared_knot_service = start_share_reader(root.clone());
-        if let Some(source) = self.pending_publish_source.take() {
+            .command(crate::place::worker::PlaceWorkerCommand::AdoptIdentity(root.clone()));
+        if !self.network_offline {
+            self.shared_knot_service = start_share_reader(root.clone());
+        }
+        if let Some(source) = self.pending_publish_source.take().filter(|_| !self.network_offline) {
             self.publish_service = start_publishing(source, root);
         }
         self.renderers.publish.clear();
@@ -591,6 +593,280 @@ struct CompositeLayer {
     placement: ExternalTexturePlacement,
 }
 
+/// One physical window's participation in the existing shared-core barrier.
+/// GPU resources stay in the host, never in this recovery record.
+struct WindowRecovery {
+    subscription: genet_render_host::RecoverySubscription,
+    detached_generation: Option<u64>,
+    surface_failure: Option<(u64, String)>,
+}
+
+impl WindowRecovery {
+    fn new(owner: &genet_render_host::SharedRenderCore, wake: Arc<dyn Fn() + Send + Sync>) -> Self {
+        Self {
+            subscription: owner.subscribe(wake),
+            detached_generation: None,
+            surface_failure: None,
+        }
+    }
+
+    fn detach(
+        &mut self,
+        owner: &genet_render_host::SharedRenderCore,
+        generation: u64,
+        can_replace: bool,
+        release: impl FnOnce(),
+    ) {
+        if self.detached_generation != Some(generation) {
+            release();
+            self.detached_generation = Some(generation);
+            self.surface_failure = None;
+        }
+        // A callback may still be cancelling readbacks on another thread.
+        // Retry acknowledgement after it enters Waiting, without releasing twice.
+        if can_replace {
+            owner.acknowledge_detached(&self.subscription, generation);
+        }
+    }
+}
+
+fn take_window_capture(
+    window: u64,
+    lens_target: Option<u64>,
+    primary: &mut Option<std::path::PathBuf>,
+    lens: &mut Option<std::path::PathBuf>,
+) -> Option<std::path::PathBuf> {
+    if window == 0 { primary.take() }
+    else if lens_target == Some(window) { lens.take() }
+    else { None }
+}
+
+fn raster_capture_refusal(
+    failure: genet_render_host::RasterizeFailure,
+    generation: u64,
+    source_key: u64,
+) -> cambium_rootstock::CaptureRefusal {
+    match failure {
+        genet_render_host::RasterizeFailure::DeviceLost(notice) => cambium_rootstock::CaptureRefusal::DeviceLost(notice),
+        genet_render_host::RasterizeFailure::ProviderError(error) => cambium_rootstock::CaptureRefusal::ProviderError {
+            generation, source_key: Some(source_key), error,
+        },
+    }
+}
+
+fn admit_recovered_core(status: genet_render_host::RecoveryStatus, errors: &mut Vec<String>) -> bool {
+    match status {
+        genet_render_host::RecoveryStatus::Ready { .. } => true,
+        genet_render_host::RecoveryStatus::Failed { loss, error } => {
+            let terminal = format!("device-loss recovery failed generation={}: {error}", loss.generation);
+            if !errors.contains(&terminal) {
+                tracing::warn!(generation = loss.generation, %error, "shared render-core recovery failed");
+                errors.push(terminal);
+            }
+            false
+        },
+        _ => false,
+    }
+}
+
+impl Shell {
+    pub(super) fn ensure_render_recovery(&mut self) {
+        if self.render_recovery.is_none() {
+            let Some(host) = &self.host else { return; };
+            self.render_recovery = Some(host.shared_core().shared_recovery());
+        }
+        if self.primary_recovery.is_none() {
+            let proxy = self.proxy.clone();
+            self.primary_recovery = Some(WindowRecovery::new(
+                self.render_recovery.as_ref().expect("shared owner"),
+                Arc::new(move || { let _ = proxy.send_event(()); }),
+            ));
+        }
+    }
+
+    fn bind_lens_capture(&mut self) {
+        if self.pending_lens_capture.is_none() {
+            self.pending_lens_capture_window = None;
+        } else if self.pending_lens_capture_window.is_none() {
+            self.pending_lens_capture_window = self.lens_windows.iter()
+                .min_by_key(|(_, lens)| lens.ordinal).map(|(id, _)| *id);
+        }
+    }
+
+    fn refuse_window_capture(&mut self, window: u64, refusal: cambium_rootstock::CaptureRefusal) {
+        self.bind_lens_capture();
+        let target = self.pending_lens_capture_window.and_then(|id| self.lens_windows.get(&id))
+            .map(|lens| lens.ordinal as u64 + 1);
+        let path = take_window_capture(window, target, &mut self.pending_capture, &mut self.pending_lens_capture);
+        if window != 0 && path.is_some() { self.pending_lens_capture_window = None; }
+        if let Some(path) = path {
+            self.main_receipt.errors.push(format!("capture {} window={window}: {refusal}", path.display()));
+        }
+    }
+
+    pub(super) fn refuse_lens_captures_before_clear(&mut self, reason: &str) {
+        self.bind_lens_capture();
+        if let Some(id) = self.pending_lens_capture_window {
+            if let Some(lens) = self.lens_windows.get(&id) {
+                let window = lens.ordinal as u64 + 1;
+                let generation = lens.host.as_ref().map_or(0, |host| host.core().generation());
+                self.refuse_window_capture(window, cambium_rootstock::CaptureRefusal::SurfaceUnavailable {
+                    generation, error: reason.into(),
+                });
+            }
+        }
+    }
+
+    /// Retire this physical host's actual admissions without blurring another
+    /// window or destroying a retained controller, pane runner or authored draft.
+    fn retire_render_receivers(&mut self, window: u64) {
+        let graph = if window == 0 {
+            match self.pointer_capture { Some(SurfaceKind::Graph(pane)) => Some(pane), _ => None }
+        } else {
+            self.lens_windows.values().find(|lens| lens.ordinal as u64 + 1 == window)
+                .and_then(|lens| lens.pointer_graph)
+        };
+        self.touch_input.cancel_window(&mut self.content_sessions.pool, window);
+        if self.contributed_pointer.is_some_and(|held| held.window == window) {
+            let held = self.contributed_pointer.take().expect("admitted receiver");
+            if let SurfaceKind::Pane(pane) = held.surface.kind {
+                if let Some(surface) = self.renderers.contributed.get_mut(pane) {
+                    surface.mouse_cancel(0., 0.);
+                }
+            }
+            self.pointer_capture = None;
+        }
+        if let Some(pane) = graph { let _ = self.app.with_graph_pane(pane, |canvas| canvas.pointer_cancel()); }
+        if window == 0 {
+            self.pointer_capture = None;
+            self.divider_drag = None;
+            self.wb_divider_drag = None;
+            self.wb_tab_drag = None;
+        } else {
+            if self.lens_divider_drag.as_ref().is_some_and(|(ordinal, _)| *ordinal as u64 + 1 == window) {
+                self.lens_divider_drag = None;
+            }
+            if let Some(lens) = self.lens_windows.values_mut().find(|lens| lens.ordinal as u64 + 1 == window) {
+                lens.pointer_graph = None;
+            }
+        }
+    }
+
+    /// Every subscribed window participates on wakes, including hidden lenses.
+    /// The owner alone replaces the device after real resource detachment.
+    pub(super) fn poll_render_recovery(&mut self) -> bool {
+        self.ensure_render_recovery();
+        let Some(owner) = self.render_recovery.clone() else { return false; };
+        if let Some(loss) = owner.status().loss().cloned() {
+            let mut can_replace = true;
+            #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+            {
+                can_replace = ![inker::routing::ENGINE_WELD_CHROMIUM,
+                    inker::routing::ENGINE_SCRYING_WEB, inker::routing::ENGINE_GRAFT_SERVO]
+                    .iter().any(|engine| self.surface_engines.contains(engine));
+                // These caches detach, but registered factories/live native
+                // producers still retain Device/Queue. Do not acknowledge them.
+                self.surface_frames.clear();
+                #[cfg(feature = "scry")]
+                self.scry_frame_importers.clear();
+            }
+            if !can_replace && self.render_recovery_blocked.is_none() {
+                let error = "device-loss recovery refused: registered Windows producers require explicit device rebinding".to_owned();
+                tracing::warn!(%error);
+                self.main_receipt.errors.push(error.clone());
+                self.render_recovery_blocked = Some(error);
+            }
+            self.refuse_window_capture(0, cambium_rootstock::CaptureRefusal::DeviceLost(loss.clone()));
+            self.retire_render_receivers(0);
+            if let Some(mut participation) = self.primary_recovery.take() {
+                participation.detach(&owner, loss.generation, can_replace, || { self.host = None; });
+                self.primary_recovery = Some(participation);
+            }
+            let windows: Vec<_> = self.lens_windows.iter().map(|(id, lens)| (*id, lens.ordinal as u64 + 1)).collect();
+            for (id, window) in windows {
+                self.refuse_window_capture(window, cambium_rootstock::CaptureRefusal::DeviceLost(loss.clone()));
+                self.retire_render_receivers(window);
+                if let Some(lens) = self.lens_windows.get_mut(&id) {
+                    lens.recovery.detach(&owner, loss.generation, can_replace, || { lens.host = None; });
+                }
+            }
+            // The installed monitor cancelled handles before Waiting. Collect
+            // its original typed terminal once; never replace it with a timeout.
+            self.poll_capture_readback();
+            if let Some(editor) = self.theme_editor.as_mut() { editor.host.wake_turn(); }
+            if !can_replace { return false; }
+        }
+        if !admit_recovered_core(owner.recover(), &mut self.main_receipt.errors) { return false; }
+        let Ok(core) = owner.current() else { return false; };
+        let generation = core.generation();
+        if self.host.is_none() {
+            if let Some((failed, error)) = self.primary_recovery.as_ref().and_then(|state| state.surface_failure.clone()) {
+                if failed == generation {
+                    self.refuse_window_capture(0, cambium_rootstock::CaptureRefusal::SurfaceUnavailable { generation, error });
+                }
+            } else if let Some(window) = self.window.clone() {
+                match SurfaceHost::from_shared_core(window.clone(), self.width, self.height, core.clone()) {
+                    Ok(host) => { self.host = Some(host); window.request_redraw(); },
+                    Err(error) => {
+                        self.primary_recovery.as_mut().expect("primary subscription").surface_failure = Some((generation, error.clone()));
+                        self.refuse_window_capture(0, cambium_rootstock::CaptureRefusal::SurfaceUnavailable { generation, error });
+                    }
+                }
+            }
+        }
+        let mut refusals = Vec::new();
+        for lens in self.lens_windows.values_mut() {
+            if lens.host.is_some() { continue; }
+            if let Some((failed, error)) = &lens.recovery.surface_failure {
+                if *failed == generation { refusals.push((lens.ordinal as u64 + 1, error.clone())); continue; }
+            }
+            match SurfaceHost::from_shared_core(lens.window.clone(), lens.width, lens.height, core.clone()) {
+                Ok(host) => { lens.host = Some(host); lens.recovery.surface_failure = None; lens.window.request_redraw(); },
+                Err(error) => {
+                    lens.recovery.surface_failure = Some((generation, error.clone()));
+                    refusals.push((lens.ordinal as u64 + 1, error));
+                }
+            }
+        }
+        drop(core);
+        for (window, error) in refusals {
+            self.refuse_window_capture(window, cambium_rootstock::CaptureRefusal::SurfaceUnavailable { generation, error });
+        }
+        true
+    }
+
+    fn refuse_raster_frame(&mut self, window: u64, generation: u64, source_key: u64, failure: genet_render_host::RasterizeFailure) {
+        let failure = if matches!(&failure, genet_render_host::RasterizeFailure::ProviderError(_)) {
+            self.render_recovery.as_ref().and_then(|owner| owner.status().loss().cloned())
+                .map(genet_render_host::RasterizeFailure::DeviceLost).unwrap_or(failure)
+        } else { failure };
+        let loss = matches!(&failure, genet_render_host::RasterizeFailure::DeviceLost(_));
+        let refusal = raster_capture_refusal(failure, generation, source_key);
+        let error = format!("window={window} surface={source_key}: {refusal}");
+        if !self.main_receipt.errors.contains(&error) { self.main_receipt.errors.push(error); }
+        self.refuse_window_capture(window, refusal);
+        if loss { self.poll_render_recovery(); }
+    }
+
+    fn detach_render_surface(&mut self, window: u64) {
+        let generation = if window == 0 {
+            self.host.as_ref().map_or(0, |host| host.core().generation())
+        } else {
+            self.lens_windows.values().find(|lens| lens.ordinal as u64 + 1 == window)
+                .and_then(|lens| lens.host.as_ref()).map_or(0, |host| host.core().generation())
+        };
+        // A capture admitted to this surface cannot silently become a capture
+        // of its replacement. The caller may explicitly arm a fresh request.
+        self.refuse_window_capture(window, cambium_rootstock::CaptureRefusal::SurfaceUnavailable {
+            generation, error: "surface lost before its requested presentation".into(),
+        });
+        self.retire_render_receivers(window);
+        if window == 0 { self.host = None; } else if let Some(lens) = self.lens_windows.values_mut()
+            .find(|lens| lens.ordinal as u64 + 1 == window) { lens.host = None; }
+        self.poll_render_recovery();
+    }
+}
+
 #[derive(Default)]
 struct HostFileDrag {
     files: Vec<std::path::PathBuf>,
@@ -608,6 +884,8 @@ pub struct Shell {
     proxy: EventLoopProxy<()>,
     /// The fetch actor's command handle; dropping it ends the actor.
     fetch_handle: armillary::ActorHandle<FetchCommand>,
+    network_offline: bool,
+    offline_attempts: Arc<std::sync::atomic::AtomicUsize>,
     /// Durable Gemini server pins. The protocol verifier shares this exact
     /// instance; the shell retains it for explicit change acceptance.
     gemini_trust: Arc<crate::gemini_trust::GeminiTrustStore>,
@@ -688,6 +966,7 @@ pub struct Shell {
     /// A capture the next LENS render fulfills (the scenario's capture-lens
     /// verb; targets the first live lens window).
     pending_lens_capture: Option<std::path::PathBuf>,
+    pending_lens_capture_window: Option<WindowId>,
     window: Option<Arc<Window>>,
     /// The OS AccessKit bridge for the primary window, when installed.
     a11y_adapter: Option<genet_winit_host::AccessKitBridge>,
@@ -700,6 +979,9 @@ pub struct Shell {
     a11y_epoch: Option<u64>,
     surface_a11y: crate::foreign_a11y::ForeignA11y,
     host: Option<SurfaceHost>,
+    render_recovery: Option<Arc<genet_render_host::SharedRenderCore>>,
+    primary_recovery: Option<WindowRecovery>,
+    render_recovery_blocked: Option<String>,
     width: u32,
     height: u32,
     /// The content port (rung 4, session-engines plan phase 4): the session
@@ -927,10 +1209,14 @@ impl Shell {
         // same cookies as the pages (ranged fetch plan, lane T1). Keying the
         // set by persona is lane T2.
         let stores = fetch::session_stores().clone();
-        let (fetch_handle, fetch_rx) = fetch::spawn_fetcher_with(fetch_wake, stores.clone());
-        let blocking_fetch: Arc<dyn fetch::Fetch> = Arc::new(
-            fetch::NetFetch::new(&stores).expect("Turnstone could not build its fetch handle"),
-        );
+        let network_offline = crate::offline::enabled();
+        let offline_attempts = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let (fetch_handle, fetch_rx) = if network_offline {
+            crate::offline::spawn(fetch_wake, offline_attempts.clone())
+        } else { fetch::spawn_fetcher_with(fetch_wake, stores.clone()) };
+        let blocking_fetch: Arc<dyn fetch::Fetch> = if network_offline {
+            Arc::new(crate::offline::NoNetwork(offline_attempts.clone()))
+        } else { Arc::new(fetch::NetFetch::new(&stores).expect("Turnstone could not build its fetch handle")) };
 
         let download_proxy = proxy.clone();
         let download_wake: armillary::Wake = Arc::new(move || {
@@ -1002,7 +1288,8 @@ impl Shell {
         });
         let mut knot_clip = None;
         let mut publish_service = None;
-        let shared_knot_service = app.identity.clone().and_then(start_share_reader);
+        let shared_knot_service = app.identity.clone()
+            .filter(|_| !network_offline).and_then(start_share_reader);
         let device_receipts_service =
             match crate::device_receipts_service::DeviceReceiptsService::start() {
                 Ok(service) => Some(Arc::new(service)),
@@ -1017,7 +1304,8 @@ impl Shell {
                 knot_clip = engine.clip_handle();
                 if let Some(source) = engine.take_publish_source() {
                     match app.identity.clone() {
-                        Some(root) => publish_service = start_publishing(source, root),
+                        Some(root) if !network_offline => publish_service = start_publishing(source, root),
+                        Some(_) => {},
                         None => pending_publish_source = Some(source),
                     }
                 }
@@ -1080,6 +1368,8 @@ impl Shell {
             live_settings,
             proxy,
             fetch_handle,
+            network_offline,
+            offline_attempts,
             gemini_trust,
             fetch_rx,
             cookie_custody,
@@ -1115,6 +1405,7 @@ impl Shell {
             pending_capture_readback: None,
             main_receipt: Default::default(),
             pending_lens_capture: None,
+            pending_lens_capture_window: None,
             window: None,
             a11y_adapter: None,
             a11y_routes: crate::a11y::A11yRoutes::new(),
@@ -1122,6 +1413,9 @@ impl Shell {
             a11y_epoch: None,
             surface_a11y: crate::foreign_a11y::ForeignA11y::new(),
             host: None,
+            render_recovery: None,
+            primary_recovery: None,
+            render_recovery_blocked: None,
             width: 1024,
             height: 600,
             content_engines: Arc::new(content_engines),
@@ -2840,3 +3134,104 @@ fn dispatch_contributed_action(
 #[cfg(test)]
 #[path = "contributed_window_a11y_tests.rs"]
 mod contributed_window_a11y_tests;
+
+
+#[cfg(test)]
+mod render_recovery_tests {
+    use super::*;
+    use genet_render_host::{DeviceLossNotice, RecoveryStatus, SharedRenderCore};
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    fn loss() -> DeviceLossNotice {
+        DeviceLossNotice { generation: 908, reason: wgpu::DeviceLostReason::Unknown,
+            message: "CPU-only recovery protocol control".into() }
+    }
+    fn owner() -> (Arc<SharedRenderCore>, Arc<AtomicUsize>, Arc<AtomicUsize>) {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let bindings = Arc::new(AtomicUsize::new(2));
+        let counted = calls.clone();
+        let alive = bindings.clone();
+        let owner = SharedRenderCore::from_detached_loss(loss(), Arc::new(move || {
+            assert_eq!(alive.load(Ordering::SeqCst), 0, "factory precedes released host bindings");
+            counted.fetch_add(1, Ordering::SeqCst);
+            Err("bounded failed factory, no GPU boot claimed".into())
+        }));
+        (owner, calls, bindings)
+    }
+    fn window(owner: &SharedRenderCore) -> WindowRecovery {
+        WindowRecovery::new(owner, Arc::new(|| {}))
+    }
+
+    #[test]
+    fn render_recovery_both_windows_release_before_one_sticky_factory() {
+        let (owner, calls, bindings) = owner();
+        let mut primary = window(&owner);
+        let mut hidden_lens = window(&owner);
+        primary.detach(&owner, 908, true, || { bindings.fetch_sub(1, Ordering::SeqCst); });
+        assert!(matches!(owner.recover(), RecoveryStatus::Waiting { remaining_hosts: 1, .. }));
+        assert_eq!(calls.load(Ordering::SeqCst), 0);
+        primary.detach(&owner, 908, true, || panic!("duplicate notice released the host twice"));
+        hidden_lens.detach(&owner, 908, true, || { bindings.fetch_sub(1, Ordering::SeqCst); });
+        let mut errors = Vec::new();
+        assert!(!admit_recovered_core(owner.recover(), &mut errors));
+        assert!(!admit_recovered_core(owner.recover(), &mut errors));
+        assert_eq!(errors, ["device-loss recovery failed generation=908: bounded failed factory, no GPU boot claimed"]);
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+    }
+
+    #[test]
+    fn render_recovery_closed_lens_leaves_barrier_and_stale_ack_does_not() {
+        let (owner, calls, bindings) = owner();
+        let mut primary = window(&owner);
+        let lens = window(&owner);
+        primary.detach(&owner, 907, true, || {});
+        assert!(matches!(owner.recover(), RecoveryStatus::Waiting { remaining_hosts: 2, .. }));
+        // Actual close drops the subscription only after its host bindings.
+        bindings.fetch_sub(1, Ordering::SeqCst);
+        drop(lens);
+        primary.detach(&owner, 908, true, || { bindings.fetch_sub(1, Ordering::SeqCst); });
+        assert!(matches!(owner.recover(), RecoveryStatus::Failed { .. }));
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+    }
+
+    #[test]
+    fn render_recovery_unsupported_binding_never_opens_replacement_barrier() {
+        let (owner, calls, bindings) = owner();
+        let mut primary = window(&owner);
+        let mut lens = window(&owner);
+        primary.detach(&owner, 908, false, || { bindings.fetch_sub(1, Ordering::SeqCst); });
+        lens.detach(&owner, 908, true, || { bindings.fetch_sub(1, Ordering::SeqCst); });
+        assert!(matches!(owner.recover(), RecoveryStatus::Waiting { remaining_hosts: 1, .. }));
+        assert_eq!(calls.load(Ordering::SeqCst), 0, "unsupported consumer was falsely detached");
+    }
+
+    #[test]
+    fn render_capture_terminal_takes_only_its_window_once() {
+        let mut main = Some(std::path::PathBuf::from("primary.png"));
+        let mut lens = Some(std::path::PathBuf::from("lens.png"));
+        assert!(take_window_capture(3, Some(2), &mut main, &mut lens).is_none());
+        assert!(main.is_some() && lens.is_some());
+        assert_eq!(take_window_capture(2, Some(2), &mut main, &mut lens), Some(std::path::PathBuf::from("lens.png")));
+        assert!(take_window_capture(2, Some(2), &mut main, &mut lens).is_none());
+        assert!(main.is_some());
+        assert_eq!(take_window_capture(0, Some(2), &mut main, &mut lens), Some(std::path::PathBuf::from("primary.png")));
+        assert!(take_window_capture(0, Some(2), &mut main, &mut lens).is_none());
+    }
+
+    #[test]
+    fn render_capture_refusal_preserves_provider_and_installed_loss_identity() {
+        let error = Arc::new(netrender::VelloError::CurveQualityReadbackFailed);
+        match raster_capture_refusal(genet_render_host::RasterizeFailure::ProviderError(error.clone()), 23, 71) {
+            cambium_rootstock::CaptureRefusal::ProviderError { generation, source_key, error: actual } => {
+                assert_eq!(generation, 23);
+                assert_eq!(source_key, Some(71));
+                assert!(Arc::ptr_eq(&error, &actual));
+            },
+            other => panic!("provider failure was misclassified: {other:?}"),
+        }
+        match raster_capture_refusal(genet_render_host::RasterizeFailure::DeviceLost(loss()), 23, 71) {
+            cambium_rootstock::CaptureRefusal::DeviceLost(actual) => assert_eq!(actual, loss()),
+            other => panic!("installed loss was misclassified: {other:?}"),
+        }
+    }
+}

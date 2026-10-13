@@ -1,0 +1,11 @@
+RESULT ok
+captured 05_knot_reopened
+captured 06_note_reopened
+captured 07_voice_reopened
+captured 08_voice_replayed
+Receiver-only restart retains text and playable voice-body bytes
+presentation frames=376 captures=4 blank=0
+capture C:\t\cargo-targets\turnstone\retained-clip-runtime/reopen\05_knot_reopened.png digest=14668bb2b14397c0 blank=false
+capture C:\t\cargo-targets\turnstone\retained-clip-runtime/reopen\06_note_reopened.png digest=60c6fcbf05aa8d5d blank=false
+capture C:\t\cargo-targets\turnstone\retained-clip-runtime/reopen\07_voice_reopened.png digest=8cf766991f4483c7 blank=false
+capture C:\t\cargo-targets\turnstone\retained-clip-runtime/reopen\08_voice_replayed.png digest=ca89504b9d99ba56 blank=false

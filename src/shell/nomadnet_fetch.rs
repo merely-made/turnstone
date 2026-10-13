@@ -106,6 +106,7 @@ pub(super) fn spawn_submissions(
 
 impl super::Shell {
     pub(super) fn command_fetch(&self, command: FetchCommand) {
+        if self.network_offline { self.fetch_handle.command(command); return; }
         match command {
             FetchCommand::Page { ref url, .. } if crate::nomadnet::parse_address(url).is_some() => {
                 self.nomadnet_handle.command(command);

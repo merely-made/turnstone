@@ -1,0 +1,7 @@
+RESULT ok
+captured 01_knot_exported
+captured 02_voice_exported
+Selected held clips exported through the host path with acquisition disabled
+presentation frames=148 captures=2 blank=0
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/onward-export\01_knot_exported.png digest=735b77c6e0c08596 blank=false
+capture C:/t/cargo-targets/turnstone/retained-clip-runtime/onward-export\02_voice_exported.png digest=b7b85c3fbe4496cb blank=false

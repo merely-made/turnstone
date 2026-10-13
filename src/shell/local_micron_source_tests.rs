@@ -58,7 +58,7 @@ fn prepare(app: &App, spawn: &(Uuid, String)) -> Result<Option<PreparedContentCo
     });
     assert_eq!(decision.engine_id, crate::nomadnet::ENGINE_ID);
     assert_eq!(dispatch_content_spawn(&decision.engine_id, false, &mut Vec::new(), spawn.0, &spawn.1), ContentSpawnDispatch::Session);
-    prepare_content_controller(app, spawn.0, &spawn.1, &decision.engine_id, fetched, (480, 320))
+    prepare_content_controller(app, spawn.0, &spawn.1, &decision.engine_id, fetched, None, (480, 320))
 }
 
 fn open(app: &App, prepared: PreparedContentController) -> Result<Option<OpenedContentController>, String> {
@@ -234,5 +234,82 @@ fn local_micron_spawn_failed_controller_does_not_publish_prepared_source() {
         super::super::ShellClock(std::time::Instant::now()),
     );
     assert!(result.is_err(), "actual registry failure never yields accepted source");
+    assert!(app.content.fetched(spawn.0, &spawn.1).is_none());
+}
+
+#[test]
+fn retained_clip_spawn_uses_held_document_through_standard_pelt_controller() {
+    let directory = tempfile::tempdir().unwrap();
+    let mut app = App::test_stub_at(directory.path().join("app"));
+    let address = crate::retained_clip::address(eidetic::ManifestId::from_hash(
+        eidetic::Hash::of(b"retained clip host composition fixture"),
+    ));
+    // Retained clips request content in OpenAddress itself; toggling here
+    // would close the actual request before host preparation can receive it.
+    let spawn = spawn_from(app.update(Action::OpenAddress(address.clone())));
+    assert_eq!(spawn.1, address);
+    assert!(content_spawn_is_current(&app, spawn.0, &spawn.1));
+    let document = inker::EngineDocument {
+        address: address.clone(),
+        title: Some("Retained café".into()),
+        content_type: "application/vnd.mere.clip+json".into(),
+        lang: None,
+        provenance: inker::DocumentProvenance::for_engine(crate::retained_clip::ENGINE_ID, &address),
+        trust: inker::DocumentTrustState::Unknown,
+        diagnostics: vec![],
+        navigation: Default::default(),
+        blocks: vec![
+            inker::Block::Heading {
+                level: 1,
+                spans: vec![inker::InlineSpan::Text("Retained café".into())],
+            },
+            inker::Block::Paragraph {
+                spans: vec![inker::InlineSpan::Text("Selected café payload".into())],
+            },
+        ],
+    };
+    // A clip's host-resolved document must win over any fetched-body fallback.
+    let fetched_body = "<html><title>Unrelated fetched body</title></html>";
+    let fetched = crate::content::FetchedDocument {
+        bytes: fetched_body.as_bytes().to_vec(),
+        body: fetched_body.into(),
+        content_type: Some("text/html".into()),
+        effective_url: Some(address.clone()),
+        acquired_at_ms: 1,
+    };
+    let decision = super::super::standard_route_policy().route(&inker::EngineRouteRequest {
+        workspace_id: inker::WorkspaceRouteId::new("turnstone"),
+        view: None,
+        node: None,
+        address: address.clone(),
+        content_type: fetched.content_type.clone(),
+        pinned_engine: Some(crate::retained_clip::ENGINE_ID.into()),
+    });
+    assert_eq!(decision.engine_id, crate::retained_clip::ENGINE_ID);
+    assert_eq!(dispatch_content_spawn(&decision.engine_id, false, &mut Vec::new(), spawn.0, &spawn.1), ContentSpawnDispatch::Session);
+    let prepared = prepare_content_controller(
+        &app, spawn.0, &spawn.1, &decision.engine_id,
+        Some(fetched), Some(document.clone()), (480, 320),
+    ).unwrap().unwrap();
+    assert!(prepared.source.is_none(), "a held clip does not fabricate captured fetched source");
+    assert!(prepared.config.request.body.is_some(), "the registered clip engine receives host-held JSON");
+    assert_eq!(prepared.config.request.content_type.as_deref(), Some(document.content_type.as_str()));
+    let engines = super::super::standard_content_engines();
+    assert!(engines.contains(crate::retained_clip::ENGINE_ID));
+    let mut opened = open_prepared_content_controller(
+        &app, prepared, Arc::new(engines),
+        Arc::new(inker::SurfaceEngineRegistry::new()),
+        super::super::ShellClock(std::time::Instant::now()),
+    ).unwrap().unwrap();
+    assert!(opened.source.is_none());
+    assert_eq!(opened.controller.session().inspect().unwrap().title.as_deref(), Some("Retained café"));
+    {
+        let native = opened.controller.session_mut().as_any()
+            .downcast_mut::<mere_document_lanes::SmolwebDocumentSession>()
+            .expect("the standard registered clip engine constructed the real retained session");
+        assert_eq!(native.document_mut().document(), &document);
+    }
+    let scene = opened.controller.session_mut().frame(480, 320);
+    assert!(scene.ops.iter().any(|op| matches!(op, netrender::SceneOp::GlyphRun(_))));
     assert!(app.content.fetched(spawn.0, &spawn.1).is_none());
 }

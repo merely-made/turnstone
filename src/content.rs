@@ -64,6 +64,7 @@ pub fn engine_label(id: &str) -> String {
     match id {
         "genet.livery" => "Genet",
         "genet.reader" => "Reader",
+        crate::retained_clip::ENGINE_ID => "Retained clip",
         "scrying.web" => "System webview",
         "graft.servo" => "Servo",
         "weld.chromium" => "Chromium",
