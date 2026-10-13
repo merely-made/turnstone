@@ -9,6 +9,7 @@ members = [".", "sandbox_bootstrap_win"]
 exclude = ["vendor/mozjs-icu-collator", "vendor/mozjs-icu-normalizer"]
 
 [package]
+rust-version = "1.97.1"
 name = "turnstone"
 version = "0.1.0"
 edition = "2024"
@@ -519,3 +520,6 @@ servo-media-player = { git = "https://www.github.com/merely-made/genet.git", rev
 servo-media-streams = { git = "https://www.github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
 layout-dom-api = { version = "=0.1.1", git = "https://www.github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
 regress = { git = "https://www.github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+
+[workspace.package]
+rust-version = "1.97.1"
