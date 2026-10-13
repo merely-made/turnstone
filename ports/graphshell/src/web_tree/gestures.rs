@@ -62,12 +62,22 @@ pub(super) struct HostHandle {
 }
 
 /// Whether the page asks for reduced motion: the root's
-/// `data-reduced-motion` when it says, else the browser's
+/// `data-reduced-motion` when it says, then the page-local `?motion=normal`
+/// or `?motion=reduced` override, else the browser's
 /// `prefers-reduced-motion`.
 pub(super) fn reduced_motion(root: &Element) -> bool {
     match root.get_attribute("data-reduced-motion").as_deref() {
         Some("true") => return true,
         Some("false") => return false,
+        _ => {},
+    }
+    let motion = web_sys::window()
+        .and_then(|window| window.location().search().ok())
+        .and_then(|search| web_sys::UrlSearchParams::new_with_str(&search).ok())
+        .and_then(|params| params.get("motion"));
+    match motion.as_deref() {
+        Some("normal") => return false,
+        Some("reduced") => return true,
         _ => {},
     }
     web_sys::window()
@@ -284,8 +294,10 @@ pub(super) fn install(
         ($name:literal, $ty:ty, $handler:expr) => {{
             let listeners = listeners.clone();
             let handler: fn(&Listeners, $ty) = $handler;
-            let closure =
-                Closure::<dyn FnMut($ty)>::new(move |event: $ty| handler(&listeners, event));
+            let closure = Closure::<dyn FnMut($ty)>::new(move |event: $ty| {
+                super::lane::overlay_observation::before_event(&listeners.shared, event.as_ref());
+                handler(&listeners, event);
+            });
             root.add_event_listener_with_callback_and_add_event_listener_options(
                 $name,
                 closure.as_ref().unchecked_ref(),

@@ -1,0 +1,31 @@
+# Fresh page/process after the ladder case, retained origin/profile, normal motion.
+# Same logical 860x720 viewport; Graph tools begins collapsed.
+assert snap source == saved graph
+assert snap rules-count == 4
+assert snap rules-generation == 3
+assert snap rules-live-enabled == false
+assert snap node-rules-ready == false
+assert snap dynamics-inspector-open == false
+assert snap forme-accesses == 1
+click role:button Pause physics
+settle 3
+click-node file:///Graphshell/reference-notes.md
+settle 2
+remember reopened
+click role:button Graph tools
+settle 2
+reveal role:button Presentation rules
+click role:button Presentation rules
+reveal role:button Enable saved rules in this view
+click role:button Enable saved rules in this view
+settle 3
+assert snap node-rules-ready == true
+assert snap node-rules-glyphs >= 1
+assert snap node-rules-attributes == 1
+reveal role:button Explain selected dynamics
+click role:button Explain selected dynamics
+settle 2
+assert snap dynamics-inspector-rule-faces == 1
+assert snap dynamics-inspector-forme-holds == 1
+same reopened nodes graph-session detail-member forme forme-accesses forme-geometry forme-bounds forme-locked
+capture node_ladder_reopened_rules

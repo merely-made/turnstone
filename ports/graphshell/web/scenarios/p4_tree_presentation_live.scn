@@ -1,11 +1,13 @@
+# Use ?motion=normal for this normal-motion qualification.
 # Fresh dedicated origin/profile, normal motion, product build:
 # tree.html?app=local&fixture=field-inspection&scenario=scenarios/p4_tree_presentation_live.scn
 # Follow with the reopen case on this retained origin. Captures need review.
 assert snap source == saved graph
+assert snap reduced-motion == false
 assert snap field-inspection-fixture == true
 assert snap rules-count == 0
 assert snap rules-live-enabled == false
-click role:button Pause physics
+assert snap physics-paused == true
 click role:button Restore arrangement
 settle 3
 click-node file:///Graphshell/reference-notes.md

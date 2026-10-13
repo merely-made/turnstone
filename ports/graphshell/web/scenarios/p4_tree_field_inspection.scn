@@ -29,12 +29,14 @@ click role:button Inspect fields
 settle 2
 click role:button Inspect field: Region study
 settle 2
+assert snap field-inspector-focus == field
 assert snap field-inspector-ready == true
 assert snap field-inspector-kind == numen
 assert snap field-inspector-id == 00000000-0000-0000-0000-000000000065
 assert snap field-inspector-couplings == 2
 click role:button Inspect coupling: 00000000-0000-0000-0000-0000000000c9
 settle 2
+assert snap field-inspector-focus == coupling
 assert snap coupling-inspector-ready == true
 assert snap coupling-inspector-strength == 0.02
 assert snap coupling-inspector-eligibility == Recognized

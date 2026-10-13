@@ -3,11 +3,13 @@
 assert snap source == saved graph
 assert snap dynamics-inspector-open == false
 assert snap forme-accesses == 1
-click role:button Pause physics
+assert snap physics-paused == true
 settle 3
 click-node https://example.test/i2p-port
 settle 2
 remember reopened
+click role:button Graph tools
+settle 2
 reveal role:button Explain selected dynamics
 click role:button Explain selected dynamics
 settle 2
@@ -15,4 +17,9 @@ assert snap dynamics-inspector-ready == true
 assert snap dynamics-inspector-forme-holds == 1
 assert snap dynamics-inspector-explicit-pins == 0
 same reopened detail-member nodes graph-session forme forme-accesses forme-geometry forme-bounds
+reveal .detail-section-title Current view
+settle 2
 capture dynamics_reopened_forme_owner
+reveal .detail-key Axis locks
+settle 2
+capture dynamics_reopened_placement_constraints

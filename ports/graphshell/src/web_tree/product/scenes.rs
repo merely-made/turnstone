@@ -59,12 +59,24 @@ impl SavedProduct {
         self.scenes.imported_nodes
     }
 
+    /// Preserve the ordinary command path without inventing UI observation context.
     pub(super) fn scene_action(
         &mut self,
         canvas: &mut Canvas,
         layout: &str,
         viewport: (u32, u32),
         action: &str,
+    ) -> Result<(), String> {
+        self.scene_action_observed(canvas, layout, viewport, action, None)
+    }
+
+    pub(super) fn scene_action_observed(
+        &mut self,
+        canvas: &mut Canvas,
+        layout: &str,
+        viewport: (u32, u32),
+        action: &str,
+        waypoint: Option<super::super::owner_waypoint::OpenContext>,
     ) -> Result<(), String> {
         if self.selection_locked() {
             return Err("A save is still pending".into());
@@ -129,9 +141,13 @@ impl SavedProduct {
                 self.status = format!("Exported {} bytes", self.scenes.export_bytes);
             },
             "open" => {
+                let previous_session = app.host.graph_session().id().0;
+                super::super::owner_waypoint::pre_open(waypoint.as_ref(), previous_session);
                 let accepted = graphshell::local_scene::open_codicil(
                     &mut app.host, canvas, self.scenes.codicil.text().as_bytes(), viewport,
                 )?;
+                // Acceptance may precede a view error; count actual owner truth.
+                self.observed_session_changes += u64::from(previous_session != accepted.owner);
                 self.session = accepted.owner.to_string();
                 self.forme_new_session = Some(accepted.owner);
                 self.scenes.imported_nodes = accepted.receipt.nodes;
@@ -191,12 +207,14 @@ pub(in crate::web_tree) fn section(page: &TreePage) -> Child {
 }
 fn action_button(label: &'static str, action: &'static str) -> Child {
     Box::new(button(label, move |page: &mut TreePage, _| {
+        let waypoint = if action == "open" { super::super::owner_waypoint::context(page) } else { None };
         if let Some(product) = &mut page.product {
-            if let Err(error) = product.scene_action(
+            if let Err(error) = product.scene_action_observed(
                 &mut page.shared.canvas.borrow_mut(),
                 &page.physics.layout_id,
                 page.size,
                 action,
+                waypoint,
             ) {
                 product.status = error;
             }

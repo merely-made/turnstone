@@ -12,6 +12,7 @@ use graphshell::local_edit::{
 };
 use graphshell::local_intake::{create_address, create_file, persist_intake, sync_canvas_intake};
 use mere::canvas::Role;
+use mere::kernel::graph::CouplingId;
 use muniment::IndexedDbBackend;
 use uuid::Uuid;
 mod commands;
@@ -38,10 +39,18 @@ enum CompletedEdit {
 }
 type Completion = (App, CompletedEdit, Result<NodeMetadata, String>);
 type OperationCompletion = (App, Result<(), String>);
+type CouplingCompletion = (App, CouplingId, Result<Option<String>, String>);
+
+pub(super) enum CouplingOperation {
+    Apply(graphshell::coupling_edit::StrengthDraft),
+    History(CouplingId, bool),
+}
 
 pub(super) struct SavedProduct {
     app: Option<App>,
     completed: Rc<RefCell<Option<Completion>>>,
+    coupling_completed: Rc<RefCell<Option<CouplingCompletion>>>,
+    pub(super) coupling_result: Option<Result<Option<String>, String>>,
     pub(super) selected: Option<Uuid>,
     pub(super) title: TextInput,
     pub(super) tags: TextInput,
@@ -57,6 +66,8 @@ pub(super) struct SavedProduct {
     pub(super) storage: String,
     pub(super) save_state: &'static str,
     pub(super) session: String,
+    /// Read-only count of accepted actual codicil owner replacements.
+    pub(super) observed_session_changes: u64,
     pub(super) reopened: bool,
     pub(super) inspection_fixture: bool,
     intake_open: bool,
@@ -137,6 +148,8 @@ pub(super) async fn open(root: &Element) -> Result<Option<SavedProduct>, String>
     Ok(Some(SavedProduct {
         app: Some(app),
         completed: Rc::new(RefCell::new(None)),
+        coupling_completed: Rc::new(RefCell::new(None)),
+        coupling_result: None,
         selected: None,
         title: TextInput::new(""),
         tags: TextInput::new(""),
@@ -148,6 +161,7 @@ pub(super) async fn open(root: &Element) -> Result<Option<SavedProduct>, String>
         storage,
         save_state: "idle",
         session,
+        observed_session_changes: 0,
         reopened,
         inspection_fixture,
         intake_open: false,
@@ -175,6 +189,12 @@ fn now_secs() -> u64 {
 }
 
 impl SavedProduct {
+    pub(super) fn actual_session(&self) -> Option<Uuid> {
+        self.app.as_ref().map(|app| app.host.graph_session().id().0)
+    }
+    pub(super) fn actual_graph_nodes(&self) -> Option<usize> {
+        self.app.as_ref().map(|app| app.host.graph().nodes().count())
+    }
     pub(super) fn forme_source(&self) -> Option<(IndexedDbBackend, Uuid)> {
         let app = self.app.as_ref()?;
         Some((app.host.store(), app.host.graph_session().id().0))
@@ -183,6 +203,7 @@ impl SavedProduct {
         self.forme_reconcile_session.is_some()
             || self.forme_new_session.is_some()
             || self.completed.borrow().is_some()
+            || self.coupling_completed.borrow().is_some()
             || self.operation_completed.borrow().is_some()
             || self.projection.changed()
             || self.projection.needs_frame()
@@ -255,6 +276,13 @@ impl SavedProduct {
         self.app
             .as_ref()
             .map(|app| app.host.graph())
+            .ok_or_else(|| "Source inspection will resume when the current save finishes".into())
+    }
+
+    pub(super) fn source_session_id(&self) -> Result<Uuid, String> {
+        self.app
+            .as_ref()
+            .map(|app| app.host.graph_session().id().0)
             .ok_or_else(|| "Source inspection will resume when the current save finishes".into())
     }
 
@@ -335,6 +363,55 @@ impl SavedProduct {
             let result = save_metadata(&mut app, member, &title, &tags, now_secs()).await;
             *completed.borrow_mut() = Some((app, CompletedEdit::Metadata, result));
         });
+    }
+
+    pub(super) fn save_coupling(&mut self, operation: CouplingOperation) -> Result<(), String> {
+        if self.selection_locked() {
+            return Err("Another graph save or intake is pending".into());
+        }
+        let Some(mut app) = self.app.take() else {
+            return Err("Local source is unavailable".into());
+        };
+        self.saving = true;
+        self.save_state = "saving";
+        let completed = self.coupling_completed.clone();
+        wasm_bindgen_futures::spawn_local(async move {
+            let (id, result) = match operation {
+                CouplingOperation::Apply(draft) => {
+                    let id = draft.baseline.id;
+                    (
+                        id,
+                        app.host
+                            .save_coupling_strength(&draft, now_secs())
+                            .await
+                            .map(|_| ()),
+                    )
+                },
+                CouplingOperation::History(id, redo) => {
+                    let result = app
+                        .host
+                        .coupling_history(id, redo, now_secs())
+                        .await
+                        .and_then(|changed| {
+                            if changed {
+                                Ok(())
+                            } else {
+                                Err("No saved coupling step is available".into())
+                            }
+                        });
+                    (id, result)
+                },
+            };
+            // Keep the portable local client current as well as the Canvas.
+            // A refresh error after acknowledgement must not be called a
+            // failed storage write; failed writes still display the old graph.
+            let warning = app
+                .mount_local()
+                .err()
+                .map(|error| format!("Local projection refresh needs retry: {error}"));
+            *completed.borrow_mut() = Some((app, id, result.map(|_| warning)));
+        });
+        Ok(())
     }
 
     fn add_address(&mut self) {
@@ -428,6 +505,40 @@ impl SavedProduct {
         if projection_changed {
             self.projection.apply_fields();
         }
+        let coupling = self.coupling_completed.borrow_mut().take();
+        if let Some((app, id, result)) = coupling {
+            let owner = app.host.graph_session().id().0;
+            let previous_owner = self.session.parse().ok();
+            // Reconciliation installs the complete returned owner graph. Capture
+            // an acknowledged coupling change first: its new force inputs must
+            // restart settling, unlike an ordinary metadata-only completion.
+            let coupling_changed = result.is_ok()
+                && previous_owner == Some(owner)
+                && app.host.graph().couplings().find(|coupling| coupling.id == id)
+                    .is_some_and(|coupling| {
+                        !canvas.graph().couplings().any(|held| held == coupling)
+                    });
+            graphshell::local_scene::reconcile_completed_graph(
+                canvas, previous_owner, owner, app.host.graph(),
+            );
+            if coupling_changed {
+                // The graph is already coherent; retain the coupling editor's
+                // deliberate structural-refresh/settle boundary for changed
+                // force inputs without restarting failed writes or new owners.
+                canvas.ingest_graph(|graph| {
+                    *graph = app.host.graph().clone();
+                    true
+                });
+            }
+            self.session = owner.to_string();
+            self.forme_reconcile_session = Some(owner);
+            self.app = Some(app);
+            self.saving = false;
+            self.save_state = if result.is_ok() { "saved" } else { "error" };
+            self.coupling_result = Some(result);
+            return true;
+        }
+
         let operation = self.operation_completed.borrow_mut().take();
         if let Some((app, result)) = operation {
             let owner = app.host.graph_session().id().0;

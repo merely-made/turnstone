@@ -1,0 +1,98 @@
+# Fresh dedicated normal-motion profile/origin, logical viewport 860x720.
+# Product, tree.html?app=local; Graph tools begins collapsed at this width.
+# Follow with reopen on the retained origin. Snapshot rendering remains unsupported.
+assert snap source == saved graph
+assert snap rules-count == 0
+assert snap rules-live-enabled == false
+click role:button Pause physics
+click role:button Restore arrangement
+settle 3
+click-node file:///Graphshell/reference-notes.md
+settle 2
+click role:button Open selected in workbench
+wait 120
+click role:button Return to Mere
+settle 2
+remember original-scene
+click role:button Graph tools
+settle 2
+reveal role:button Presentation rules
+click role:button Presentation rules
+reveal role:button Begin rule draft
+click role:button Begin rule draft
+reveal role:button Add node ladder defaults
+click role:button Add node ladder defaults
+assert snap rules-count == 4
+assert snap rules-valid == true
+assert snap node-rules-ready == false
+# Large thresholds make the browser fixture independent of viewport-fit zoom.
+# Native model checks qualify the normal 40/56 hysteresis thresholds separately.
+reveal role:button Edit rule 2: Compact node face
+click role:button Edit rule 2: Compact node face
+reveal role:textbox Rule condition JSON
+click role:textbox Rule condition JSON
+input-text {"kind":"all","conditions":[{"kind":"screen_size","enter_below":10000,"exit_above":20000},{"kind":"not","condition":{"kind":"state","state":"position_pinned"}}]}
+reveal role:button Apply rules
+click role:button Apply rules
+wait 120
+assert snap rules-generation == 1
+assert snap node-rules-ready == false
+reveal role:button Enable saved rules in this view
+click role:button Enable saved rules in this view
+settle 3
+assert snap node-rules-ready == true
+assert snap node-rules-glyphs >= 1
+assert snap node-rules-cards >= 1
+assert snap node-rules-attributes == 1
+same original-scene nodes graph-session detail-member forme forme-accesses forme-geometry forme-bounds forme-locked
+capture node_ladder_selected_attributes
+reveal role:button Explain selected dynamics
+click role:button Explain selected dynamics
+settle 2
+assert snap dynamics-inspector-rule-faces == 1
+assert snap dynamics-inspector-face-treatments == gnode-representation-card
+remember exact
+click-node https://example.test/i2p-port
+settle 3
+same exact dynamics-inspector-target
+assert snap dynamics-inspector-face-treatments == gnode-representation-glyph
+assert snap node-rules-attributes == 1
+same original-scene nodes graph-session forme forme-accesses forme-geometry forme-bounds forme-locked
+capture node_ladder_independent_inspector
+# A winning unsupported representation must not silently select a lower rule.
+reveal role:button Begin rule draft
+click role:button Begin rule draft
+reveal role:button Add node rule
+click role:button Add node rule
+reveal role:textbox Rule priority
+click role:textbox Rule priority
+input-text 100
+reveal role:textbox Rule effects JSON
+click role:textbox Rule effects JSON
+input-text [{"kind":"representation","value":"Snapshot"}]
+reveal role:button Apply rules
+click role:button Apply rules
+wait 120
+settle 2
+assert snap rules-generation == 2
+assert snap node-rules-glyphs == 0
+assert snap node-rules-cards == 0
+assert snap node-rules-unsupported >= 1
+assert snap dynamics-inspector-rule-faces == 0
+same original-scene nodes graph-session forme forme-accesses forme-geometry forme-bounds forme-locked
+capture node_ladder_unsupported_snapshot
+reveal role:button Undo saved rules
+click role:button Undo saved rules
+wait 120
+settle 2
+assert snap rules-generation == 3
+assert snap rules-count == 4
+assert snap node-rules-glyphs >= 1
+assert snap node-rules-attributes == 1
+reveal role:button Disable saved rules in this view
+click role:button Disable saved rules in this view
+settle 2
+assert snap node-rules-ready == false
+assert snap node-rules-attributes == 0
+assert snap dynamics-inspector-rule-faces == 0
+same original-scene nodes graph-session forme forme-accesses forme-geometry forme-bounds forme-locked

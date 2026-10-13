@@ -1,0 +1,26 @@
+# Fresh page on retained strength origin, after the two saved-history cases.
+click role:button Inspect fields
+reveal role:button Inspect field: Region study
+click role:button Inspect field: Region study
+reveal role:button Inspect coupling: 00000000-0000-0000-0000-0000000000c9
+click role:button Inspect coupling: 00000000-0000-0000-0000-0000000000c9
+settle 2
+assert snap coupling-inspector-strength == 0.125
+capture final_saved_strength_details
+reveal role:button Edit coupling strength
+click role:button Edit coupling strength
+reveal role:textbox Coupling strength
+click role:textbox Coupling strength
+input-text 0.25
+reveal role:button Preview coupling strength
+click role:button Preview coupling strength
+reveal .tree-coupling
+settle 2
+assert snap coupling-preview-current == true
+assert snap coupling-inspector-strength == 0.125
+assert text 0.125 to 0.25
+capture final_strength_draft_controls
+reveal role:button Discard strength draft
+click role:button Discard strength draft
+assert snap coupling-editing == false
+assert snap coupling-inspector-strength == 0.125

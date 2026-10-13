@@ -1015,7 +1015,7 @@
       "name": "p4_tree_field_inspection.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "dcac836e1bf787b77cb271c45b0ff24e7ab59a050c01ad546186ae472bbcd84f",
+      "current_source_sha256": "47c2b6f074d1bb40699722574e6f6bbd513dde6fcfac3d475c714ad3cc9ad397",
       "original_source_sha256": "dcac836e1bf787b77cb271c45b0ff24e7ab59a050c01ad546186ae472bbcd84f",
       "dialect": "upstream-shared-retained",
       "expected_outcome": {
@@ -1044,7 +1044,8 @@
         "source": "ports/graphshell/web/scenarios/p4_tree_field_inspection.scn",
         "source_sha256": "dcac836e1bf787b77cb271c45b0ff24e7ab59a050c01ad546186ae472bbcd84f",
         "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
-      }
+      },
+      "current_update_record": "scenario-contract.json/source_updates/p4_tree_field_inspection.scn"
     },
     {
       "name": "p4_tree_field_inspection_reopen.scn",
@@ -1174,7 +1175,7 @@
       "name": "p4_tree_forme_draft.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "3576212eca4429b78d5fbf3f627336132f5e6ab5b38e4e20a18bc6f9ef51cc1a",
+      "current_source_sha256": "113302420ee378e6c3b7bfba756dc5ebd959a649a5c2b12ef462b4ea91e6112d",
       "original_source_sha256": "3576212eca4429b78d5fbf3f627336132f5e6ab5b38e4e20a18bc6f9ef51cc1a",
       "dialect": "upstream-shared-retained",
       "expected_outcome": {
@@ -1205,7 +1206,8 @@
         "source": "ports/graphshell/web/scenarios/p4_tree_forme_draft.scn",
         "source_sha256": "3576212eca4429b78d5fbf3f627336132f5e6ab5b38e4e20a18bc6f9ef51cc1a",
         "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
-      }
+      },
+      "current_update_record": "scenario-contract.json/source_updates/p4_tree_forme_draft.scn"
     },
     {
       "name": "p4_tree_forme_draft_reopen.scn",
@@ -1839,7 +1841,7 @@
       "name": "p4_tree_presentation_live.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "75029c26da556105f1d6759ede48185191164339f682da4f34ac2d59183f8ec8",
+      "current_source_sha256": "ffcf609666f1a1bef1c0c4157aa01b32eefc75c35b82fb1ee3d240d1525543c2",
       "original_source_sha256": "75029c26da556105f1d6759ede48185191164339f682da4f34ac2d59183f8ec8",
       "dialect": "upstream-shared-retained",
       "expected_outcome": {
@@ -1868,13 +1870,14 @@
         "source": "ports/graphshell/web/scenarios/p4_tree_presentation_live.scn",
         "source_sha256": "75029c26da556105f1d6759ede48185191164339f682da4f34ac2d59183f8ec8",
         "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
-      }
+      },
+      "current_update_record": "scenario-contract.json/source_updates/p4_tree_presentation_live.scn"
     },
     {
       "name": "p4_tree_presentation_live_reopen.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "ee35d030ff3347f56dd524640fdbde812277e54357ca5e8b4f8388d88b154b28",
+      "current_source_sha256": "91ac35c4322d8d74b7a2551219190a6f4625d5fa9e83d93edf21e27a6c1affb0",
       "original_source_sha256": "ee35d030ff3347f56dd524640fdbde812277e54357ca5e8b4f8388d88b154b28",
       "dialect": "upstream-shared-retained",
       "expected_outcome": {
@@ -1905,13 +1908,14 @@
         "source": "ports/graphshell/web/scenarios/p4_tree_presentation_live_reopen.scn",
         "source_sha256": "ee35d030ff3347f56dd524640fdbde812277e54357ca5e8b4f8388d88b154b28",
         "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
-      }
+      },
+      "current_update_record": "scenario-contract.json/source_updates/p4_tree_presentation_live_reopen.scn"
     },
     {
       "name": "p4_tree_presentation_rules.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "9e7ccef6a35186fa7ccc777c2643d58e3dad4a444fe9bcc5a512f815088812df",
+      "current_source_sha256": "cf07b3b5398216d26c6a20a5b6b3c9d42b016c12f632b4b3387794b885c54d43",
       "original_source_sha256": "9e7ccef6a35186fa7ccc777c2643d58e3dad4a444fe9bcc5a512f815088812df",
       "dialect": "upstream-shared-retained",
       "expected_outcome": {
@@ -1939,13 +1943,14 @@
         "source": "ports/graphshell/web/scenarios/p4_tree_presentation_rules.scn",
         "source_sha256": "9e7ccef6a35186fa7ccc777c2643d58e3dad4a444fe9bcc5a512f815088812df",
         "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
-      }
+      },
+      "current_update_record": "scenario-contract.json/source_updates/p4_tree_presentation_rules.scn"
     },
     {
       "name": "p4_tree_presentation_rules_reopen.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "2d5dd012836ca7743167868bd2873330542bc7c6d3818037097004e38c7ad98a",
+      "current_source_sha256": "7ce86a80dc96655736526c0e67ebcd018af58f10d8da9d1d6130b8f277c923d7",
       "original_source_sha256": "2d5dd012836ca7743167868bd2873330542bc7c6d3818037097004e38c7ad98a",
       "dialect": "upstream-shared-retained",
       "expected_outcome": {
@@ -1975,7 +1980,8 @@
         "source": "ports/graphshell/web/scenarios/p4_tree_presentation_rules_reopen.scn",
         "source_sha256": "2d5dd012836ca7743167868bd2873330542bc7c6d3818037097004e38c7ad98a",
         "status_basis": "Shipped retained-tree scenario and explicit upstream investigation/qualification input; live means intended parser/runtime input, not PASS."
-      }
+      },
+      "current_update_record": "scenario-contract.json/source_updates/p4_tree_presentation_rules_reopen.scn"
     },
     {
       "name": "p4_tree_profile.scn",
@@ -3521,6 +3527,348 @@
       "original_source_sha256": "2b7922c5537a9cfd2bd9c29f3aa3b8c6b0f0fd9263592c7afeddcf4d3bd25e6d",
       "dialect": "shared-retained-with-explicit-host-fixture",
       "translation_record": "tests/scenario-translations.json"
+    },
+    {
+      "name": "p4_tree_dynamics_inspection.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "b38a8d0c8d726ca4423ceb71541d4073a0622e46185c1a50b9d9f9df18b4cb65",
+      "original_source_sha256": "61b109ad341eb95005e4a13157efe1502b6a52612efcb715ae864f94316aa308",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local"
+        },
+        "same_origin_profile_after": [],
+        "fixture_namespace": null,
+        "host": "Fresh dedicated visible normal-motion app=local origin/profile; current product App ownership; preserve for dependent reopen.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "04a48c2d64752d5da56e523bdd0ed93b1ef2f37e",
+        "metadata": "current-upstream-classification/relationship-dynamics-qualification.json",
+        "metadata_sha256": "15b46526ed192648a7bfd699acb47d27ede297efcb85cff816b7eb986575d271",
+        "source": "ports/graphshell/web/scenarios/p4_tree_dynamics_inspection.scn",
+        "source_sha256": "61b109ad341eb95005e4a13157efe1502b6a52612efcb715ae864f94316aa308",
+        "status_basis": "Explicit upstream investigation chain on retained tree; live means intended parser/runtime input, not PASS."
+      },
+      "current_update_record": "scenario-contract.json/source_updates/p4_tree_dynamics_inspection.scn"
+    },
+    {
+      "name": "p4_tree_dynamics_inspection_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "eff213e46366304e0e1abb020089dc7cf212347e574db9775582765ba8ead0b5",
+      "original_source_sha256": "b90331f2420761eaeff84405f48c7641ba5008912edd2b7392fe35ed416ee6e7",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local"
+        },
+        "same_origin_profile_after": [
+          "p4_tree_dynamics_inspection.scn"
+        ],
+        "fixture_namespace": null,
+        "host": "Fresh page/process on identical retained normal-motion origin/profile after actual dynamics predecessor success.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "04a48c2d64752d5da56e523bdd0ed93b1ef2f37e",
+        "metadata": "current-upstream-classification/relationship-dynamics-qualification.json",
+        "metadata_sha256": "15b46526ed192648a7bfd699acb47d27ede297efcb85cff816b7eb986575d271",
+        "source": "ports/graphshell/web/scenarios/p4_tree_dynamics_inspection_reopen.scn",
+        "source_sha256": "b90331f2420761eaeff84405f48c7641ba5008912edd2b7392fe35ed416ee6e7",
+        "status_basis": "Explicit upstream investigation chain on retained tree; live means intended parser/runtime input, not PASS."
+      },
+      "current_update_record": "scenario-contract.json/source_updates/p4_tree_dynamics_inspection_reopen.scn"
+    },
+    {
+      "name": "renderer_acceptance.scn",
+      "status": "standalone-renderer-diagnostic",
+      "verification": "pending",
+      "current_source_sha256": "710296c8f4a88d2099aaf16462a840deccafff6efc40db841c7c76285115ac4e",
+      "original_source_sha256": "710296c8f4a88d2099aaf16462a840deccafff6efc40db841c7c76285115ac4e",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "owner_driver_required": true,
+        "canonical_parser_live": false,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local"
+        },
+        "same_origin_profile_after": [],
+        "fixture_namespace": null,
+        "host": "Dedicated Classicrenderer qualify.cjs owner driver changes appearance/viewport/page binding; actual composed-frame readback required.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "04a48c2d64752d5da56e523bdd0ed93b1ef2f37e",
+        "metadata": "current-upstream-classification/renderer-owner-README.md",
+        "metadata_sha256": "ee26b2f340160ac25a11ab69ee669bd1945d0398bf4c214ba86ac94481e67806",
+        "source": "ports/graphshell/web/scenarios/renderer_acceptance.scn",
+        "source_sha256": "710296c8f4a88d2099aaf16462a840deccafff6efc40db841c7c76285115ac4e",
+        "status_basis": "Dedicated explicitly invoked owner diagnostic; source census only, no canonical parser/live claim."
+      }
+    },
+    {
+      "name": "p4_tree_coupling_strength.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "15c25bed4ec35905171e66f318c609e3c472be19c2a4e223bcf5a8aebb8641dd",
+      "original_source_sha256": "15c25bed4ec35905171e66f318c609e3c472be19c2a4e223bcf5a8aebb8641dd",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local",
+          "motion": "normal",
+          "fixture": "field-inspection"
+        },
+        "same_origin_profile_after": [],
+        "fixture_namespace": "field-inspection",
+        "host": "Fresh dedicated visible normal-motion App-owned origin/profile; setup and current execution pending.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "050e7d54284f22943fd7ffe8297a3b736691bf17",
+        "metadata": "final-family-classification/field_editor_presentation_browser_20261011/qualification.json",
+        "metadata_sha256": "edd1b990ac391f6cfb8130b0832e810293f105efbfce0596ae88fd005154138c",
+        "source": "ports/graphshell/web/scenarios/p4_tree_coupling_strength.scn",
+        "source_sha256": "15c25bed4ec35905171e66f318c609e3c472be19c2a4e223bcf5a8aebb8641dd",
+        "status_basis": "Shipped source and explicit owner qualification route; live denotes intended input only. Historical receipts do not qualify current merge."
+      }
+    },
+    {
+      "name": "p4_tree_coupling_strength_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "436539394e90e94db3df27e3df6c2581733415bb7b51bde4a043717dd60aa318",
+      "original_source_sha256": "436539394e90e94db3df27e3df6c2581733415bb7b51bde4a043717dd60aa318",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local",
+          "motion": "normal",
+          "fixture": "field-inspection"
+        },
+        "same_origin_profile_after": [
+          "p4_tree_coupling_strength.scn"
+        ],
+        "fixture_namespace": "field-inspection",
+        "host": "Fresh dedicated visible normal-motion App-owned origin/profile; setup and current execution pending.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "050e7d54284f22943fd7ffe8297a3b736691bf17",
+        "metadata": "final-family-classification/field_editor_presentation_browser_20261011/qualification.json",
+        "metadata_sha256": "edd1b990ac391f6cfb8130b0832e810293f105efbfce0596ae88fd005154138c",
+        "source": "ports/graphshell/web/scenarios/p4_tree_coupling_strength_reopen.scn",
+        "source_sha256": "436539394e90e94db3df27e3df6c2581733415bb7b51bde4a043717dd60aa318",
+        "status_basis": "Shipped source and explicit owner qualification route; live denotes intended input only. Historical receipts do not qualify current merge."
+      }
+    },
+    {
+      "name": "p4_tree_coupling_strength_visual.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "02b324c892fe7035409e33c7daf12d96b7d820dbb7710d52ecbdf11e628136b1",
+      "original_source_sha256": "02b324c892fe7035409e33c7daf12d96b7d820dbb7710d52ecbdf11e628136b1",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local",
+          "motion": "normal",
+          "fixture": "field-inspection"
+        },
+        "same_origin_profile_after": [
+          "p4_tree_coupling_strength.scn",
+          "p4_tree_coupling_strength_reopen.scn"
+        ],
+        "fixture_namespace": "field-inspection",
+        "host": "Fresh dedicated visible normal-motion App-owned origin/profile; setup and current execution pending.",
+        "setup_verification": "pending"
+      },
+      "classification_provenance": {
+        "upstream_commit": "050e7d54284f22943fd7ffe8297a3b736691bf17",
+        "metadata": "final-family-classification/field_editor_presentation_browser_20261011/qualification.json",
+        "metadata_sha256": "edd1b990ac391f6cfb8130b0832e810293f105efbfce0596ae88fd005154138c",
+        "source": "ports/graphshell/web/scenarios/p4_tree_coupling_strength_visual.scn",
+        "source_sha256": "02b324c892fe7035409e33c7daf12d96b7d820dbb7710d52ecbdf11e628136b1",
+        "status_basis": "Shipped source and explicit owner qualification route; live denotes intended input only. Historical receipts do not qualify current merge."
+      }
+    },
+    {
+      "name": "p4_tree_field_inspection_narrow.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "cbce49f96550d808572ce2790344284a641951c6aa14dc121b0804217f529de3",
+      "original_source_sha256": "cbce49f96550d808572ce2790344284a641951c6aa14dc121b0804217f529de3",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local",
+          "motion": "normal",
+          "fixture": "field-inspection"
+        },
+        "same_origin_profile_after": [
+          "p4_tree_field_inspection.scn",
+          "p4_tree_field_inspection_reopen.scn"
+        ],
+        "fixture_namespace": "field-inspection",
+        "host": "Fresh dedicated visible normal-motion App-owned origin/profile; setup and current execution pending.",
+        "setup_verification": "pending",
+        "viewport": {
+          "logical_width": 420,
+          "logical_height": 800,
+          "basis": "Owner qualification narrow_viewport configured [420,800], capture DPR 1; current setup pending"
+        }
+      },
+      "classification_provenance": {
+        "upstream_commit": "050e7d54284f22943fd7ffe8297a3b736691bf17",
+        "metadata": "final-family-classification/field_editor_presentation_browser_20261011/qualification.json",
+        "metadata_sha256": "edd1b990ac391f6cfb8130b0832e810293f105efbfce0596ae88fd005154138c",
+        "source": "ports/graphshell/web/scenarios/p4_tree_field_inspection_narrow.scn",
+        "source_sha256": "cbce49f96550d808572ce2790344284a641951c6aa14dc121b0804217f529de3",
+        "status_basis": "Shipped source and explicit owner qualification route; live denotes intended input only. Historical receipts do not qualify current merge."
+      }
+    },
+    {
+      "name": "p4_tree_node_ladder.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "bd0c52b10deac14763ab15bbd2914a04bc2b25d6ae3158e60c0fc552eebfd0ce",
+      "original_source_sha256": "bd0c52b10deac14763ab15bbd2914a04bc2b25d6ae3158e60c0fc552eebfd0ce",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local",
+          "motion": "normal"
+        },
+        "same_origin_profile_after": [],
+        "fixture_namespace": null,
+        "host": "Fresh dedicated visible normal-motion App-owned origin/profile; setup and current execution pending.",
+        "setup_verification": "pending",
+        "viewport": {
+          "logical_width": 860,
+          "logical_height": 720
+        },
+        "precondition_note": "SCN still toggles Pause physics. Current analytic arrangement may already be paused; source left exact, investigate on actual qualification."
+      },
+      "classification_provenance": {
+        "upstream_commit": "050e7d54284f22943fd7ffe8297a3b736691bf17",
+        "metadata": "final-family-classification/node_ladder_20261011/qualification.json",
+        "metadata_sha256": "b3209ecd79ea22e3bd91a711e88e42a6a3442234f35b6e40482056f3d5c42fea",
+        "source": "ports/graphshell/web/scenarios/p4_tree_node_ladder.scn",
+        "source_sha256": "bd0c52b10deac14763ab15bbd2914a04bc2b25d6ae3158e60c0fc552eebfd0ce",
+        "status_basis": "Shipped source and explicit owner qualification route; live denotes intended input only. Historical receipts do not qualify current merge."
+      }
+    },
+    {
+      "name": "p4_tree_node_ladder_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "46df5c5dcf863c7ac9f3762f32c0cdf8d21401bdb98314ce07df4cf27ef7e135",
+      "original_source_sha256": "46df5c5dcf863c7ac9f3762f32c0cdf8d21401bdb98314ce07df4cf27ef7e135",
+      "dialect": "upstream-shared-retained",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": {
+          "app": "local",
+          "motion": "normal"
+        },
+        "same_origin_profile_after": [
+          "p4_tree_node_ladder.scn"
+        ],
+        "fixture_namespace": null,
+        "host": "Fresh dedicated visible normal-motion App-owned origin/profile; setup and current execution pending.",
+        "setup_verification": "pending",
+        "viewport": {
+          "logical_width": 860,
+          "logical_height": 720
+        },
+        "precondition_note": "SCN still toggles Pause physics. Current analytic arrangement may already be paused; source left exact, investigate on actual qualification."
+      },
+      "classification_provenance": {
+        "upstream_commit": "050e7d54284f22943fd7ffe8297a3b736691bf17",
+        "metadata": "final-family-classification/node_ladder_20261011/qualification.json",
+        "metadata_sha256": "b3209ecd79ea22e3bd91a711e88e42a6a3442234f35b6e40482056f3d5c42fea",
+        "source": "ports/graphshell/web/scenarios/p4_tree_node_ladder_reopen.scn",
+        "source_sha256": "46df5c5dcf863c7ac9f3762f32c0cdf8d21401bdb98314ce07df4cf27ef7e135",
+        "status_basis": "Shipped source and explicit owner qualification route; live denotes intended input only. Historical receipts do not qualify current merge."
+      }
     }
   ],
   "unmatched_prior_runs": [

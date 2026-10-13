@@ -1,6 +1,8 @@
+# Use ?motion=normal for this normal-motion qualification.
 # Fresh page/process, same retained origin/profile after the first scenario.
 assert snap source == saved graph
-click role:button Pause physics
+assert snap reduced-motion == false
+assert snap physics-paused == true
 assert snap rules-ready == true
 assert snap rules-count == 4
 assert snap rules-generation == 3

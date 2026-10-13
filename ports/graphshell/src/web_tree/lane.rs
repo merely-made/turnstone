@@ -6,6 +6,7 @@
 
 //! Product observations and actions for Mesquite on the tree page.
 use super::*;
+pub(super) mod overlay_observation;
 
 /// The tree page's half of the scenario lane.
 pub(super) struct TreeLane {
@@ -616,6 +617,7 @@ impl Product for TreeLane {
                 "address": product.address, "file": product.saved_file(),
                 "title": product.title.text(), "tags": product.tags.text(),
                 "save_state": product.save_state, "reopened": product.reopened,
+                "owner_observation": owner_receipt(ctx.runner.state()),
             })
         });
         publish(outcome.ok, &lines.join("\n"), &self.shared, saved);
@@ -679,6 +681,10 @@ impl Product for TreeLane {
         let step = canvas.elapsed_step_report().unwrap_or_default();
         let snapshot = self.remote_fields(ctx, self.physics_fields(ctx, ProbeSnapshot::default()));
         let snapshot = super::speed::fields(snapshot, &canvas, &self.shared);
+        let snapshot = snapshot.with_field(
+            "painted-overlay-geometry",
+            overlay_observation::observe(ctx, &self.shared).to_string(),
+        );
         #[cfg(feature = "product")]
         let snapshot = forme_fields(page, &canvas, snapshot);
         #[cfg(feature = "product")]
@@ -688,9 +694,18 @@ impl Product for TreeLane {
         #[cfg(feature = "product")]
         let snapshot = field_inspection::fields(page, &canvas, snapshot);
         #[cfg(feature = "product")]
+        let snapshot = coupling::fields(page, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = snapshot.with_field(
+            "field-inspector-focus",
+            field_inspection::focused_detail(ctx),
+        );
+        #[cfg(feature = "product")]
         let snapshot = presentation::fields(page, snapshot);
         #[cfg(feature = "product")]
         let snapshot = dynamics_inspection::fields(page, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = node_presentation::fields(page,snapshot);
         let snapshot = snapshot
             .with_field("physics-steps", step.steps.to_string())
             .with_field(
@@ -1613,8 +1628,36 @@ impl Product for TreeLane {
     }
 }
 
+/// Read actual authority/model/canvas owners once at canonical completion.
+#[cfg(feature = "product")]
+fn owner_receipt(page: &TreePage) -> serde_json::Value {
+    let actual = page.product.as_ref().and_then(|p| p.actual_session());
+    let model = page.forme.as_ref().map(|p| p.model().document.graph_id);
+    let canvas = page.shared.canvas.borrow();
+    json!({"schema":"graphshell.actual-owner-observation/v1",
+        "actual_app_present":actual.is_some(),"actual_graph_session":actual,
+        "forme_model_session":model,"forme_region_id":canvas.forme_region().map(|r|r.id),
+        "forme_session_matches":actual.zip(model).map(|(a,m)|a==m),
+        "actual_session_changes":page.product.as_ref().map_or(0,|p|p.observed_session_changes)})
+}
+#[cfg(not(feature = "product"))]
+fn owner_receipt(_page: &TreePage) -> serde_json::Value { serde_json::Value::Null }
+
 #[cfg(feature = "product")]
 fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> ProbeSnapshot {
+    let actual_owner = page.product.as_ref().and_then(|p| p.actual_session());
+    let model_owner = page.forme.as_ref().map(|p| p.model().document.graph_id);
+    let snapshot = snapshot
+        .with_field("actual-app-present", actual_owner.is_some().to_string())
+        .with_field("actual-graph-session", actual_owner.map(|id| id.to_string()).unwrap_or_else(|| "busy".into()))
+        .with_field("forme-model-session", model_owner.map(|id| id.to_string()).unwrap_or_else(|| "absent".into()))
+        .with_field("forme-session-matches", match (actual_owner, model_owner) {
+            (Some(actual), Some(model)) => (actual == model).to_string(),
+            (None, _) => "unknown".into(),
+            (Some(_), None) => "false".into(),
+        })
+        .with_field("actual-session-changes", page.product.as_ref().map_or(0, |p| p.observed_session_changes).to_string())
+        .with_field("forme-region-id", canvas.forme_region().map(|r| r.id.to_string()).unwrap_or_else(|| "absent".into()));
     let Some(pane) = &page.forme else {
         return snapshot.with_field(
             "forme",
