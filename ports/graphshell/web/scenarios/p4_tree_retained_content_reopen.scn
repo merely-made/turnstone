@@ -1,0 +1,19 @@
+# Same dedicated origin/profile after retained content acceptance.
+assert snap source == saved graph
+assert snap storage-reopened == true
+assert snap forme-accesses == 3
+click role:button Show workbench
+wait 120
+assert snap pelt-sessions == 3
+assert snap pelt-producers == 3
+assert snap pelt-pending == false
+assert snap pelt-glyph-runs >= 3
+capture pelt_retained_sources_reopened
+reader-click Play voice note | Activate
+wait 120
+assert snap pelt-status ~ Audio playback refused
+capture pelt_retained_voice_requires_gesture
+reader-click Stop voice note | Activate
+wait 120
+assert snap pelt-status ~ Retained audio stopped
+capture pelt_retained_voice_stopped

@@ -1162,6 +1162,12 @@ impl Product for TreeLane {
                 let group = document
                     .query_selector(&selector)
                     .map_err(|_| format!("reader-click: bad selector for {item:?}"))?
+                    .or(document
+                        .query_selector(&format!(
+                            "[data-cambium-mirror] [role=\"group\"][aria-label={}]",
+                            css_string(item)
+                        ))
+                        .map_err(|_| format!("reader-click: bad selector for {item:?}"))?)
                     .ok_or_else(|| format!("reader-click: no item {item:?} in the mirror"))?;
                 let mut child = group.first_element_child();
                 while let Some(element) = child {
@@ -1549,7 +1555,15 @@ fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> Pr
             "pelt-pending",
             page.shared.reading.borrow().busy().to_string(),
         )
-        .with_field("pelt-producers", page.shared.reading.borrow().registered_len().to_string())
+        .with_field(
+            "pelt-producers",
+            page.shared.reading.borrow().registered_len().to_string(),
+        )
+        .with_field(
+            "pelt-glyph-runs",
+            page.shared.reading.borrow().glyph_runs().to_string(),
+        )
+        .with_field("pelt-status", page.shared.reading.borrow().status_summary())
         .with_field("forme-placed", placed.to_string())
         .with_field("forme-locked", pane.current().locked.to_string())
         .with_field("forme-visible", pane.current().visible.to_string())

@@ -39,10 +39,22 @@ pub(super) struct Reading {
     requests: Vec<(Uuid, String)>,
 }
 impl Default for Reading {
-    fn default() -> Self { Self {
-        host: ContentHost::with_native_presentation(vec![include_bytes!("../../web/GraphshellSans.ttf").to_vec()], Some("Roboto".into())),
-        bindings: Default::default(), registered: Default::default(), statuses: Default::default(), clips: Default::default(), scope: String::new(), players: Default::default(), media_answers: Default::default(), requests: Default::default(),
-    } }
+    fn default() -> Self {
+        Self {
+            host: ContentHost::with_native_presentation(
+                vec![include_bytes!("../../web/GraphshellSans.ttf").to_vec()],
+                Some("Roboto".into()),
+            ),
+            bindings: Default::default(),
+            registered: Default::default(),
+            statuses: Default::default(),
+            clips: Default::default(),
+            scope: String::new(),
+            players: Default::default(),
+            media_answers: Default::default(),
+            requests: Default::default(),
+        }
+    }
 }
 
 pub(super) fn clip_limits() -> Result<mere_document_lanes::retained_clip::ClipLimits, String> {
@@ -191,9 +203,18 @@ impl Reading {
         }
         for binding in self.bindings.values() {
             if !ctx.producers.contains(binding.key) {
-                match ctx.producers.register(binding.key, binding.producer.clone(), &[]) {
-                    Ok(()) => { self.registered.insert(binding.key, binding.producer.clone()); },
-                    Err(error) => web_sys::console::error_1(&format!("Retained content producer registration refused: {error:?}").into()),
+                match ctx
+                    .producers
+                    .register(binding.key, binding.producer.clone(), &[])
+                {
+                    Ok(()) => {
+                        self.registered
+                            .insert(binding.key, binding.producer.clone());
+                    },
+                    Err(error) => web_sys::console::error_1(
+                        &format!("Retained content producer registration refused: {error:?}")
+                            .into(),
+                    ),
                 }
             }
         }
@@ -282,7 +303,9 @@ impl Reading {
                                                     )
                                                     .await
                                                     {
-                                                        Ok(_) => "Playing retained audio".into(),
+                                                        Ok(_) => {
+                                                            "Retained audio playback started".into()
+                                                        },
                                                         Err(error) => format!(
                                                             "Audio playback refused: {error:?}"
                                                         ),
@@ -354,7 +377,22 @@ impl Reading {
     pub(super) fn set_status(&mut self, id: Uuid, status: String) {
         self.statuses.insert(id, status);
     }
-    pub(super) fn registered_len(&self) -> usize { self.registered.len() }
+    pub(super) fn status_summary(&self) -> String {
+        self.statuses
+            .values()
+            .cloned()
+            .collect::<Vec<_>>()
+            .join(" | ")
+    }
+    pub(super) fn glyph_runs(&self) -> usize {
+        self.bindings
+            .values()
+            .map(|binding| binding.slot.borrow().glyph_runs())
+            .sum()
+    }
+    pub(super) fn registered_len(&self) -> usize {
+        self.registered.len()
+    }
     pub(super) fn len(&self) -> usize {
         self.host.len()
     }

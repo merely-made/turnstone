@@ -223,8 +223,12 @@ pub struct ContentSlot {
     pub(crate) revision: u64,
     pub(crate) effects: Vec<PeltHostEffect>,
     pub(crate) visible: bool,
+    glyph_runs: usize,
 }
 impl ContentSlot {
+    pub fn glyph_runs(&self) -> usize {
+        self.glyph_runs
+    }
     pub fn is_visible(&self) -> bool {
         self.visible
     }
@@ -299,7 +303,14 @@ impl ContentSlot {
             },
             1.,
         ) {
-            PeltLayer::Document(scene) => Ok(scene),
+            PeltLayer::Document(scene) => {
+                self.glyph_runs = scene
+                    .ops
+                    .iter()
+                    .filter(|op| matches!(op, netrender::SceneOp::GlyphRun(_)))
+                    .count();
+                Ok(scene)
+            },
             _ => Err("This content needs the host's external surface compositor".into()),
         }
     }
@@ -311,22 +322,34 @@ pub struct ContentHost {
     slots: BTreeMap<Uuid, Rc<RefCell<ContentSlot>>>,
 }
 impl Default for ContentHost {
-    fn default() -> Self { Self::with_native_fonts(Vec::new()) }
+    fn default() -> Self {
+        Self::with_native_fonts(Vec::new())
+    }
 }
 
 impl ContentHost {
-    pub fn with_native_fonts(fonts: Vec<Vec<u8>>) -> Self { Self::with_native_presentation(fonts, None) }
+    pub fn with_native_fonts(fonts: Vec<Vec<u8>>) -> Self {
+        Self::with_native_presentation(fonts, None)
+    }
     pub fn with_native_presentation(fonts: Vec<Vec<u8>>, family: Option<String>) -> Self {
-        Self::new(pelt_core::PeltRegistries::new(
-            pelt_core::native::sessions_with_presentation(pelt_core::native::HeldResources::default(), fonts, family),
-            inker::SurfaceEngineRegistry::new(),
-            pelt_core::native::route_policy(),
-            "graphshell.retained-content",
-            inker::routing::ENGINE_GENET_LIVERY,
-            EngineProfileBinding {
-                user_data_dir: String::new(),
-            },
-        ).with_host_history().with_host_loading())
+        Self::new(
+            pelt_core::PeltRegistries::new(
+                pelt_core::native::sessions_with_presentation(
+                    pelt_core::native::HeldResources::default(),
+                    fonts,
+                    family,
+                ),
+                inker::SurfaceEngineRegistry::new(),
+                pelt_core::native::route_policy(),
+                "graphshell.retained-content",
+                inker::routing::ENGINE_GENET_LIVERY,
+                EngineProfileBinding {
+                    user_data_dir: String::new(),
+                },
+            )
+            .with_host_history()
+            .with_host_loading(),
+        )
     }
     /// The existing Fleece/Eidetic owner verifies exact held parts without
     /// fetching. Its private sealer and custody backend remain caller supplied.
@@ -388,6 +411,7 @@ impl ContentHost {
             revision: 0,
             effects: Vec::new(),
             visible: false,
+            glyph_runs: 0,
         }));
         if let Some(old) = self.slots.insert(access, slot.clone()) {
             old.borrow_mut().visible = false;

@@ -931,8 +931,6 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 let title = node.title.clone();
                 let address = node.url().to_string();
                 let mut controls: Vec<Child> = vec![
-                    Box::new(el("h2", title.clone())),
-                    Box::new(el("p", address.clone()).attr("class", "reading-address")),
                     Box::new(button("Show in Mere", move |p: &mut TreePage, _| {
                         p.shared.canvas.borrow_mut().select_member(member);
                         if let Some(f) = &mut p.forme {
@@ -940,7 +938,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                         }
                         selection_changed(p);
                         p.shared.dirty.set(true);
-                    })),
+                    }).attr("aria-description", address.clone())),
                 ];
                 let mut tags: Vec<_> = graph
                     .node_content_tags(key)

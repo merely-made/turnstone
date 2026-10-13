@@ -448,4 +448,4 @@ mod tests {
 #[cfg(not(target_arch = "wasm32"))]
 mod owner;
 #[cfg(not(target_arch = "wasm32"))]
-pub use owner::{Error, Mount, Opened, Owners, Scope, Update};
+pub use owner::{Error, Mount, Opened, Owners, Scope, Update, View, view};

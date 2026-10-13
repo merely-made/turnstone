@@ -21,17 +21,26 @@ pub fn content_view<State: 'static, Action: 'static>(
         cambium::on_key(
             cambium::on_wheel(
                 cambium::on_pointer(
-                    custom_leaf::<State, Action>(key, width, height)
-                        .attr("class", "pelt-reading-slot")
-                        .attr("tabindex", "0")
-                        .attr(
-                            "aria-label",
-                            format!("Retained document {}", slot.borrow().source().title),
-                        )
-                        .attr(
-                            "style",
-                            format!("display:block;width:100%;height:{height}px;flex-shrink:0;"),
-                        ),
+                    cambium::on_click(
+                        custom_leaf::<State, Action>(key, width, height)
+                            .attr("class", "pelt-reading-slot")
+                            .attr("tabindex", "0")
+                            .attr(
+                                "aria-label",
+                                format!("Retained document {}", slot.borrow().source().title),
+                            )
+                            .attr(
+                                "style",
+                                format!(
+                                    "display:block;width:100%;height:{height}px;flex-shrink:0;"
+                                ),
+                            ),
+                        move |_: &mut State, click| {
+                            // The tile's activation click must not replace the
+                            // retained input target before pointer capture starts.
+                            click.stop_propagation();
+                        },
+                    ),
                     move |_: &mut State, event| {
                         let button = match event.button {
                             cambium::PointerButton::Primary => SessionPointerButton::Primary,
