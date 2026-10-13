@@ -1,0 +1,61 @@
+{
+  "policy": {
+    "enabled": true,
+    "accepted_schemes": [
+      "http",
+      "https"
+    ],
+    "excluded_origins": [],
+    "strip_query": true,
+    "strip_fragment": true,
+    "dedupe_window_ms": 1000,
+    "segment_size": 64,
+    "retention_traces": 2048,
+    "encounter_limit": 100000
+  },
+  "visits": [
+    {
+      "source": "chromium",
+      "visit_id": "from",
+      "source_scope": {
+        "product": "chromium",
+        "profile": "fixture-scope",
+        "generation": "fixture-scope"
+      },
+      "parent": {
+        "kind": "unknown"
+      },
+      "original_unix_micros": 1791860176759000,
+      "source_is_local": null,
+      "url": "https://example.net/from",
+      "title": "Source",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "typed",
+      "at_ms": 1791860176759,
+      "private": false
+    },
+    {
+      "source": "chromium",
+      "visit_id": "to",
+      "source_scope": {
+        "product": "chromium",
+        "profile": "fixture-scope",
+        "generation": "fixture-scope"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "from"
+      },
+      "original_unix_micros": 1791860177759000,
+      "source_is_local": null,
+      "url": "https://example.net/to",
+      "title": "Destination",
+      "favicon_url": null,
+      "referrer_url": "https://example.net/from",
+      "transition": "link",
+      "at_ms": 1791860177759,
+      "private": false
+    }
+  ]
+}

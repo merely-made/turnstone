@@ -1,0 +1,24 @@
+# Retained origin and native owner databases from the preceding handler scenario.
+assert snap community-readings == 2
+assert snap community-1-opened == false
+assert snap community-2-opened == false
+remember source
+click role:button @id=community-2-resource-1
+settle 2
+assert snap community-2-retained == true
+assert snap community-2-hosting == promise
+assert snap community-1-retained == false
+reveal .detail-value Promise:
+settle 2
+capture moot_signed_promise_reopened
+remember selected
+click role:button @id=community-2-resource-Open
+wait 3000
+assert snap community-2-outcome == accepted
+assert snap community-2-opened == true
+same selected community-2-resource
+same source community-1-resource nodes graph-session forme forme-accesses
+assert text Shared resource handler notes
+reveal .moot-opened-content Shared resource handler notes
+settle 2
+capture moot_retained_owner_reopened

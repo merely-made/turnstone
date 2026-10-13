@@ -1,0 +1,62 @@
+# Product+moot-resources build, explicit compiled local owner, dedicated origin.
+# tree.html?app=local&resource-owner=/moot-resource/read&scenario=...&sink=/scenario-receipt
+assert snap source == saved graph
+assert snap community-readings == 2
+assert snap community-1-resources == 2
+assert snap community-2-resources == 2
+assert snap community-1-opened == false
+assert snap community-2-opened == false
+remember graph
+click role:button @id=community-1-resource-1
+settle 2
+assert snap community-1-resource == 0303030303030303030303030303030303030303030303030303030303030303
+same graph community-2-resource nodes graph-session forme forme-accesses
+assert text Promise: fixture-host-promise; no retrieval receipt; availability unverified
+assert text Withheld: Owner storage quota is exhausted
+assert text Fork content: Unsupported
+assert text Offer hosting: Not disclosed
+click role:button @id=community-1-resource-Open
+wait 180
+assert snap community-1-outcome == accepted
+assert snap community-1-pending == false
+assert snap community-1-opened == true
+assert snap community-2-opened == false
+assert text verified by Eidetic
+reveal .moot-opened-content Shared protocol notes
+settle 2
+capture moot_verified_local_content
+# Independent contribution identity even when the underlying manifest is equal.
+click role:button @id=community-2-resource-2
+settle 2
+assert snap community-2-resource == 0404040404040404040404040404040404040404040404040404040404040404
+remember independent
+click role:button @id=community-2-resource-Open
+wait 180
+assert snap community-2-outcome == accepted
+assert snap community-2-opened == true
+same independent community-1-resource community-1-opened community-1-outcome
+click role:button @id=community-1-activity-1
+settle 2
+assert snap community-1-activity == session/protocol-notes
+assert text This reader has not joined
+assert text Join activity: Unsupported
+assert text Leave activity: Not disclosed
+same independent community-1-resource community-1-opened community-2-resource
+capture moot_activity_independent_attention
+click role:button @id=community-1-refresh
+wait 180
+assert snap community-1-pending == false
+assert snap community-1-outcome == none
+assert snap community-2-outcome == accepted
+same independent community-1-resource community-1-opened community-2-resource
+same graph nodes graph-session forme forme-accesses
+# Closing a reading is local attention, never a leave/hosting operation.
+click role:button Close community reading 1
+settle 2
+assert snap community-readings == 1
+assert snap community-2-opened == true
+same independent community-2-resource
+same graph nodes graph-session forme forme-accesses
+reveal .moot-opened-content Shared protocol notes
+settle 2
+capture moot_surviving_reading

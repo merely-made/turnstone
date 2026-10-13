@@ -164,6 +164,8 @@ async function refreshStatus() {
   setStatus(
     status.permission && status.policy.enabled
       ? `Capture enabled · ${status.queued} visit(s) waiting for Graphshell`
+        + (status.coverage?.omitted_queue ? ` · ${status.coverage.omitted_queue} omitted by queue limit` : "")
+        + (status.coverage?.candidate_limit_reached ? " · history candidate limit reached" : "")
       : "Capture is off. Graphshell has not requested browser history access.",
   );
   return status;
@@ -186,7 +188,8 @@ async function enableCapture() {
     days > 0
       ? await send({ type: "capture.import", days })
       : { queued: 0 };
-  setStatus(`Capture enabled · ${imported.queued} imported visit(s)`, "working");
+  setStatus(`Capture enabled · ${imported.queued} imported visit(s)`
+    + (imported.coverage?.candidate_limit_reached ? " · partial candidate range" : ""), "working");
   location.reload();
 }
 
@@ -248,7 +251,8 @@ async function prepareCapture() {
       }
       const accepted = Number(document.body.dataset.captureAccepted || 0);
       const dropped = Number(document.body.dataset.captureDropped || 0);
-      setStatus(`Graph updated · ${accepted} accepted · ${dropped} filtered`);
+      const buffered = Number(document.body.dataset.captureBuffered || 0);
+      setStatus(`Graph updated · ${accepted} visits · ${buffered} awaiting parents · ${dropped} filtered`);
     },
     { once: true },
   );

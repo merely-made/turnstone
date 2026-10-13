@@ -24,6 +24,7 @@ path = "../src/web.rs"
 # additive and on by default, so the default build is the full page. The viewer
 # is `--no-default-features`, with or without `canvas-gpu`.
 [features]
+moot-resources = ["graphshell/moot-resources", "dep:moot"]
 dynamics-receipt = []
 default = ["main-page", "product", "remote", "canvas-gpu", "image-decode"]
 # The H5 reference host and its `mount` export (`src/web_main.rs`). It drives
@@ -42,6 +43,10 @@ canvas-gpu = ["graphshell/canvas-gpu", "mere/canvas-gpu"]
 image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mesquite/image-decode", "cambium-genet-web-host/image-decode", "graphshell/image-decode", "mere/image-decode"]
 
 [dependencies]
+mere-document-lanes = { path = "../../../crates/system/document-lanes", features = ["retained-clips"] }
+fleece = { package = "mere-fleece", path = "../../../crates/fleece", features = ["portable-clip"] }
+eidetic = { path = "../../../crates/eidetic/eidetic-core", default-features = false }
+moot = { package = "mere-moot", path = "../../moot", default-features = false, features = ["presentation"], optional = true }
 # `webrtc-browser` is the C4 door's peer half (`webrtc_browser`, `webrtc_join`)
 # and needs `--cfg getrandom_backend="wasm_js"` in this target's rustflags:
 # personae's wasm32 identity stack sits on getrandom 0.3, whose `wasm_js`
@@ -109,7 +114,7 @@ web-sys = { version = "0.3", features = [
     "EventTarget",
     "File",
     "FileList",
-    "HtmlCanvasElement",
+    "HtmlCanvasElement", "HtmlAudioElement", "HtmlMediaElement",
     "HtmlIFrameElement",
     "CssStyleDeclaration",
     "HtmlElement",

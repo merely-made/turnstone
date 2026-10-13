@@ -1,0 +1,43 @@
+# product+moot-resources; compiled native handler owner with marker-owned redb state.
+assert snap community-readings == 2
+remember source
+click role:button @id=community-1-resource-1
+settle 2
+assert snap community-1-retained == false
+assert snap community-1-hosting == unknown
+assert text Retain in this profile
+assert text Offer to public
+remember selected
+click role:button @id=community-1-resource-RetainCopy
+wait 3000
+assert snap community-1-outcome == accepted
+# An accepted action receipt does not manufacture custody in the old read.
+assert snap community-1-retained == false
+click role:button @id=community-1-refresh
+wait 3000
+assert snap community-1-retained == true
+same selected community-1-resource
+same source community-2-resource nodes graph-session forme forme-accesses
+reveal .detail-key Local copy
+settle 2
+capture moot_retained_owner_copy
+click role:button @id=community-1-resource-OfferHosting
+wait 3000
+assert snap community-1-outcome == accepted
+assert snap community-1-hosting == unknown
+click role:button @id=community-1-refresh
+wait 3000
+assert snap community-1-hosting == promise
+assert text availability unverified
+same selected community-1-resource
+same source community-2-resource nodes graph-session forme forme-accesses
+reveal .detail-key Hosting
+settle 2
+capture moot_signed_hosting_promise
+click role:button @id=community-1-resource-Open
+wait 3000
+assert snap community-1-opened == true
+assert text A verified owner copy survives source absence and restart
+reveal .moot-opened-content Shared resource handler notes
+settle 2
+capture moot_retained_content_open

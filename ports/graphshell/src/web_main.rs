@@ -62,6 +62,7 @@ struct InitialCaptureSummary {
     active: bool,
     accepted: usize,
     dropped: usize,
+    buffered: usize,
 }
 
 #[derive(Clone, Debug, Default, Deserialize)]
@@ -1520,6 +1521,10 @@ async fn apply_initial_capture(
             .iter()
             .filter(|outcome| matches!(outcome, CaptureOutcome::Dropped(_)))
             .count(),
+        buffered: outcomes
+            .iter()
+            .filter(|outcome| matches!(outcome, CaptureOutcome::Buffered { .. }))
+            .count(),
     })
 }
 
@@ -1618,6 +1623,8 @@ fn publish_capture_receipt(
         .map_err(|_| "could not expose accepted capture count")?;
     body.set_attribute("data-capture-dropped", &summary.dropped.to_string())
         .map_err(|_| "could not expose dropped capture count")?;
+    body.set_attribute("data-capture-buffered", &summary.buffered.to_string())
+        .map_err(|_| "could not expose buffered capture count")?;
     document
         .dispatch_event(
             &web_sys::Event::new("graphshell-capture-complete")

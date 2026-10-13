@@ -50,6 +50,38 @@ Capture attribution comes from the `SelectedPersonaRef` and device reference
 injected by the composing host, not from the selected vault profile or a
 device-roster entry.
 
+## Encounter intake
+
+The extension persists a profile-instance and history-generation marker in its
+own storage. `capture.status` exposes that source scope for deliberate binding
+to a file export; the marker is independent of a Personae vault or persona.
+Reconciliation queues every available visit since live remembering was enabled,
+retaining referring visit IDs. Worker restart retains the scope and observation
+floor. Imports filter individual visits by the selected range; they report
+candidate saturation, queue omissions and unknown source completeness.
+
+Eidetic's encounter ledger uses Chartulary/Stemma explicit-parent admission.
+Children awaiting missing or outside-range parents remain durable intake, and
+the portal reports them as awaiting parents. Resolved visits project actual
+document traversals and `BrowserDocumentRelation` evidence with exact source
+handles. `MereHost::browser_relations` reads that evidence. The receiving graph's
+ledger, access records, traces and graph changes commit in one Muniment batch;
+live navigation cursors are not replayed through imported history.
+
+`BrowserVisit::from_imported` joins file exports to the same admission path.
+The Firefox exporter requires explicit `--profile-id` and
+`--history-generation`, and retains `from_visit` identity and microseconds.
+Bind these values deliberately to an extension's source scope when both describe
+one history source; a new file/run hash is not a profile identity.
+
+The 2026-10-12 slice has native automated and fresh-process Redb receipts,
+Chromium/Firefox API simulations and browser-target compilation. Its native
+fixture is synthetic and unsealed. Renewed headed browser/IndexedDB behavior,
+tab/document observation, automatic source-generation replacement handling,
+whole-input evidence retention, trace source handles, multi-writer admission and
+private custody remain open. Forget removes browser encounter/relationship
+evidence; the shared resource registry has independent identity ownership.
+
 ## Admission
 
 The extension and `graphshell_native_host` hold presentation and connection
