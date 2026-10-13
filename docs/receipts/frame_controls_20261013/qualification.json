@@ -1,0 +1,101 @@
+{
+  "date": "2026-10-13",
+  "status": "Shared frame keyboard and primary accessibility draft; headed and human AT acceptance open",
+  "base": "d5d4737882cea1d43a5e4edda3208be40a370397",
+  "upstream_intake": "d5d4737 adopted during this draft; shared native Pelt/retained clip source changes preserved; supplier pin unchanged from adopted parent",
+  "portable": {
+    "status": "passed",
+    "tests": 30,
+    "breakdown": {
+      "control_and_composition": 14,
+      "new_native_fixture_grammar": 1,
+      "actual_scenario_parser_regressions": 15
+    },
+    "scope": "Actual frame_controls/frame_a11y/frame_style/scenario modules; shared Workspace, Cambium DOM, Livery and neutral accessibility lowering; no App, native hardware, OS adapter or whole pane bodies",
+    "command": "cargo test --locked --offline --manifest-path docs/receipts/frame_controls_20261013/harness/Cargo.toml --lib",
+    "log": "checks/portable-tests.log"
+  },
+  "linux_source": {
+    "status": "passed",
+    "command": "cargo check --locked --offline --lib --bin turnstone",
+    "warnings": 95,
+    "scope": "Default-feature Linux library/binary typecheck; no headed run, release build or whole-library tests. Warning baseline not compared.",
+    "log": "checks/linux-source-check.log"
+  },
+  "supplier_closure": "supplier-closure.json",
+  "contracts": [
+    "Transient session/window-scoped header focus; shared tab callbacks lower through existing Panes/Workspace actions",
+    "Exact tab/close handle keyboard navigation; inactive closing preserves active body",
+    "Traversal/Escape return to pane lane; header keys/IME do not reach body/world hotkeys; modal input retains priority",
+    "Axis-aware N-ary pair resizing preserves other shares, clamps 5/95 and persists completed key/AT edits",
+    "Divider focus includes adjacent tile membership; scope/layout/style revisions refuse stale queued controls",
+    "Primary retained-fragment tree uses admission/revision namespace; body subtrees attach below apertures without inactive/orphan outlines",
+    "Tab Focus follows automatic selection; Close/Divider Focus performs no default action",
+    "Frame focus/revision changes bypass publication cadence; foreign body focus does not override active primary header"
+  ],
+  "remaining_gates": [
+    "Headed execution/capture review for keyboard/accessibility/reopen fixtures",
+    "Physical primary/lens focus transfer, body/editor/media continuity, IME/modifier/modal interplay and native-engine delivery",
+    "Narrator/VoiceOver/AT-SPI, queued-action races and actual focus ring; fixture queue is not OS/human AT proof",
+    "Per-window lens accessibility adapters; current adapter serves primary only",
+    "Nested/same-title accesses, N-ary/custom-hidden controls, move/close/profile races and narrow/DPI",
+    "Original floating/physics scenarios, full consumer/platform tests, A5 float unification, inline bodies and presented timing"
+  ],
+  "attempt_history": [
+    "Initial source errors: opaque child iterator reversal and two AccessKit numeric setter names; fixed",
+    "Imported real scenario parser required its real inker PointerPhase dependency; added published dependency without stub",
+    "Fast-forwarded upstream d5d4737, merged shell changes and preserved both appended plan sections",
+    "New upstream pin absent offline; fetched published source and reran all CPU and library/binary checks"
+  ],
+  "resource_controls": {
+    "cargo_jobs": 1,
+    "memory_max_mib": {
+      "portable": 1024,
+      "source": 1280
+    },
+    "swap_max_mib": 0,
+    "guard_min_available_mib": 256,
+    "native_setup": "Existing task-local development headers/runtime; no system install"
+  },
+  "documentation": "checks/doc-links.json",
+  "hash_policy": "Source SHA256 normalizes CRLF to LF; proof logs hash exact bytes",
+  "source_sha256_lf": {
+    ".gitattributes": "feded335d3392fabe61604bfb1f70c3495598e1ba606fce656bb7ec120ff6412",
+    "Cargo.lock": "41d5c6b10289017dee86e14fa50d1fe5dac002802e51d4017b2f020bc6fc6895",
+    "Cargo.toml": "a5f3fb881dbf4c8b0e100acebb18cf9f42b47843170101b08d796851090a3dda",
+    "design_docs/2026-08-08_pane_registry_and_graph_panes_plan.md": "d68a2681fb746ebcc9f3a43c294010d7f9b4ce59b4b982ab5b54aecd894ba868",
+    "design_docs/DOC_README.md": "acb7d142bfcb9fab54944a1d8661b6262efd7b0ae6b671176f01f537af5f2baf",
+    "docs/receipts/frame_controls_20261013/harness/Cargo.lock": "7b81aad89d1ff93f703c9a45b999a773c921ea37399d71e595c474060886c9b1",
+    "docs/receipts/frame_controls_20261013/harness/Cargo.toml": "47ba1cf0287a61d22f4035731d42b5decf67c11796ffb292f098de15a1c8909f",
+    "docs/receipts/frame_controls_20261013/harness/src/lib.rs": "073d3343eee57edda52e3da9bc47dbdde5bcd6560ad8d31f61f799aa45a3ddf5",
+    "scenarios/frame_controls_accessibility.scn": "405e1dbb1c8bd5c8b845df04ae3d8ac21264d5255a5650d9405f7c30359e56f2",
+    "scenarios/frame_controls_keyboard.scn": "4f3aa36992403f0c80a6f169d5a7ada2c14417169ed14aac175cf1aa2478643f",
+    "scenarios/frame_controls_reopen.scn": "fa9ebb912a928f127bef7fe18afb1ab94be8281823fb6569ccc39a605c4066de",
+    "src/a11y.rs": "38905aabbad19b3954d4e69a7c5d2b9d06dc34f30ce2549291ab40220273efa4",
+    "src/frame_a11y.rs": "e4ebd5e247973c27a8e8071a6948899c400e87cf4fe81bc8df0f2c14222dd013",
+    "src/frame_controls.rs": "5c7cad4636b6f14cdc810b874040f3281f6711d8589439af32adf408ab7bc774",
+    "src/frame_style.rs": "1b5ebec78264434ca0f8cef77b163644500d05f0eaa4e0c571fc93e7468fa501",
+    "src/lib.rs": "15e6a5d8129fa72ee7c77ef0b581b637307f7b1c6b90a43b850d9844c2dd4b6b",
+    "src/outer_frame.rs": "ccedfaebd897aeae5218c36d82a6de1826032c85a625926516e96abb31401d18",
+    "src/panes/mod.rs": "8bce53aff6cb2156d1e7b34350dd9dffcc6961f5531e9592f4beb73ae5c0003f",
+    "src/panes/projection.rs": "b25aa17dcc97b5218eb7dd52b375b6b8b28550c22b368fb691f22695449cbc8a",
+    "src/scenario.rs": "fc5fb8dc70799e77d0f00d73a6d3251997730d1db0ee060c2530236bb9f773ea",
+    "src/shell/drive.rs": "81f6db8986a435179fa9cfe9fd51f62eadfb6b2652952135de7f35f5f7763ec3",
+    "src/shell/events.rs": "13269da258ffb399eabe7dd7ece5bda19bffe5506be1e9502e50838914393baf",
+    "src/shell/frame_keys.rs": "9a107ec5a5e78faac0956fd735a1b2f69b1c7dc2d42fa037437bdd3e26204ebd",
+    "src/shell/input.rs": "f0c9db782cc2758e56b886e19aeb2f89512f75bf42575e88eedd8f126bda62d7",
+    "src/shell/keys.rs": "eaf4dbac93af4633f814dd6708a4036b1e7b61c977eb9a6d49971723ebf3a739",
+    "src/shell/lens.rs": "85b00f9b69d019acae4b436bc3e63308c9ef83dafc65041e7b0ee90b77573f8f",
+    "src/shell/mod.rs": "73b3f5dcfe677d87ed1e72a84250f2de5c64c5f1110f5ea7641f45f83a93c1da",
+    "src/shell/outer_workspace.rs": "26cd818d900c11de64de6d6d0992f6ae30a211b40a8ec1b95a955a3384d1cc71"
+  },
+  "proof_sha256_raw": {
+    "checks/doc-links.json": "6877e3237ab77025894a296b970b4eb1829afeea62111e2d7cc7bd10f7e7b35d",
+    "checks/initial-parser-harness.log": "c960f628270e55f1929badd64613a94195b21c6dcd06a1d1648fe08913747590",
+    "checks/initial-source-errors.log": "687cd63fe5ad60a0921123782fbda7b5e57912b5737fdf09c9c17853bd6d1d86",
+    "checks/initial-upstream-cache-miss.log": "3e6fec482fc9adc6e198493ba62613d08679ee99e9a49a01323a25fd0390189a",
+    "checks/linux-source-check.log": "a2e14121d4cfe202e00fe58492f07b7add48bf6404282b8b970351c8325062d4",
+    "checks/portable-tests.log": "ef1b0a94bd513d77799bf2537c2e15f60c366f6cc5172102017b8696a56d6e46"
+  },
+  "supplier_closure_sha256_lf": "eca3eddd90a3ce035c4a649ee5e6a0f137ef4063af9dce0a2e9be24425d1eaf7"
+}

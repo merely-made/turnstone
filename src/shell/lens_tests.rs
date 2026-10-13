@@ -440,3 +440,29 @@ fn native_surface_lens_document_plan_and_render_control_remains_live() {
         "existing document rendering stays admitted"
     );
 }
+
+#[test]
+fn header_return_focus_preserves_primary_and_lens_actual_appearance() {
+    let (mut app, contents, node, _) = fixture(Paint::Frame);
+    let primary = super::super::primary_content_plan(&app, &contents, 1200, 900);
+    let primary_body = content(&primary, node);
+    let owner = super::super::frame_keys::HeaderFocus {
+        slot: 0, session: *app.session_id.as_uuid(),
+        return_pane: app.active_pane,
+        return_focus: crate::surface::FocusTarget::Content { node, appearance: primary_body.id },
+    };
+    assert!(super::super::frame_keys::return_focus_is_valid(&app, &owner, app.active_pane, &primary));
+    let identity = contents.get(&node).unwrap().session_identity();
+    app.update(Action::TearOutActivePane);
+    let lens = lens_content_plan(&app, &contents, 0, 800, 600);
+    let lens_body = content(&lens, node);
+    let mut owner = super::super::frame_keys::HeaderFocus {
+        slot: 1, session: *app.session_id.as_uuid(), return_pane: app.active_pane,
+        return_focus: crate::surface::FocusTarget::Content { node, appearance: lens_body.id },
+    };
+    assert!(super::super::frame_keys::return_focus_is_valid(&app, &owner, app.active_pane, &lens));
+    assert!(!super::super::frame_keys::return_focus_is_valid(&app, &owner, app.active_pane, &[]));
+    owner.session = uuid::Uuid::from_u128(app.session_id.as_uuid().as_u128().wrapping_add(1));
+    assert!(!super::super::frame_keys::return_focus_is_valid(&app, &owner, app.active_pane, &lens));
+    assert_eq!(contents.get(&node).unwrap().session_identity(), identity);
+}

@@ -78,6 +78,7 @@ pub(crate) fn stylesheet(
         28.0 * zoom,
         4.0 * zoom,
     );
+    sheet.push_str("[data-frame-focus=true]{outline:2px solid var(--tabard-color-primary);outline-offset:-2px;}\n");
     // Only Interface is adopted here. Reading/Code belong to pane bodies.
     // Keep all variables available to explicit CSS, but bind only Interface.
     sheet.push_str(&typography.css_custom_properties());

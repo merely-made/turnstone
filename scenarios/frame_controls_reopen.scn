@@ -1,0 +1,17 @@
+# Reopen the accessibility fixture's stores in a fresh process.
+settle 12
+key escape
+resize 1180 800
+settle 5
+assert snap frame-focus-slot == none
+assert no-pane settings
+key ctrl+f6
+assert snap frame-control ~ Tab(TileId(0))
+key ctrl+w
+settle 5
+assert event The window must keep one pane
+assert snap frame-control ~ Tab(TileId(0))
+capture frame_last_pane_refusal
+key escape
+assert snap frame-focus-slot == none
+assert snap capture-errors == 0

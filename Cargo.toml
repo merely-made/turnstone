@@ -56,7 +56,7 @@ cartography = { package = "mere-cartography", git = "https://www.github.com/mere
 fetch = { package = "mere-fetch", git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4" }
 # Pelt's browsing controller and the sans-IO page load (SC, 2026-10-07): each
 # node's document is a PeltContent, and each node's load is a PageLoad.
-pelt-core = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4" }
+pelt-core = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4", features = ["genet", "image-decode"] }
 page-load = { package = "mere-page-load", git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4" }
 # Session persistence: the flat single-session `graph.json` beside the data
 # root (session_graph_store's blessed single-session shape). App-side
@@ -162,7 +162,7 @@ genet-documents = { git = "https://github.com/merely-made/genet.git", rev = "7a8
 # reader and smolweb lanes, and the remote fetcher that supplies the http(s)
 # schemes Genet's `LocalFetcher` no longer branches on. The two compose at
 # `LocalFetcher::with_fallback`, which is the seam the split introduced.
-mere-document-lanes = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4", features = ["netfetch", "smolweb"] }
+mere-document-lanes = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4", features = ["netfetch", "smolweb", "retained-clips"] }
 # The source-preserving Micron native projection. Turnstone adapts
 # its portable EngineDocument into the existing retained document session.
 nematic = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4" }

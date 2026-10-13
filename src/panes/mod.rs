@@ -50,6 +50,7 @@ mod tests;
 
 pub use blueprint::*;
 pub(crate) use layout::path_for_pane_id;
+pub(crate) use projection::pane_projection_ids;
 pub use legacy_bridge::blueprint_from_frisket;
 pub use projection::{
     project_frisket, project_frisket_with, project_space_blueprint,

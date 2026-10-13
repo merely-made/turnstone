@@ -71,3 +71,8 @@ docs/receipts/frame_appearance_20261013/checks/*.log -text -whitespace
 docs/receipts/frame_appearance_20261013/*.json text eol=lf
 docs/receipts/frame_appearance_20261013/harness/** text eol=lf
 scenarios/frame*.scn text eol=lf
+
+# Frame control qualification: raw compiler/test logs and portable source.
+docs/receipts/frame_controls_20261013/checks/*.log -text -whitespace
+docs/receipts/frame_controls_20261013/*.json text eol=lf
+docs/receipts/frame_controls_20261013/harness/** text eol=lf

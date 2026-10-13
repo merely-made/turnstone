@@ -1,0 +1,13 @@
+error: failed to get `cambium` as a dependency of package `turnstone-frame-controls-receipt v0.0.0 (/home/markik/Code/repos/turnstone/docs/receipts/frame_controls_20261013/harness)`
+
+Caused by:
+  failed to load source for dependency `cambium`
+
+Caused by:
+  unable to update https://www.github.com/merely-made/mere.git?rev=0d1dc1927859ff1aa2a43dd88a04391bc1086fd8
+
+Caused by:
+  failed to lookup reference in preexisting repository, and can't check for updates in offline mode (--offline)
+
+Caused by:
+  revspec '0d1dc1927859ff1aa2a43dd88a04391bc1086fd8' not found; class=Reference (4); code=NotFound (-3)

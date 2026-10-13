@@ -107,7 +107,7 @@ impl ActionQueueState {
             .is_some_and(|current| current.generation == captured.generation)
     }
 
-    fn enqueue(&mut self, request: ActionRequest) {
+    pub(super) fn enqueue(&mut self, request: ActionRequest) {
         let admission = self
             .published
             .get(&(request.target_tree, request.target_node))

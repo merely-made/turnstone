@@ -268,7 +268,8 @@ impl Shell {
         if !active {
             return false;
         }
-        if self.focus_in_window(window, self.app.focus) {
+        if super::frame_keys::header_focus_in_window(self.outer_focus.as_ref(), window, self.app.session_id.as_uuid())
+            || self.focus_in_window(window, self.app.focus) {
             return true;
         }
         if let Some(focus) = self
@@ -286,6 +287,7 @@ impl Shell {
         if focused {
             self.select_input_window(window);
         } else {
+            self.retire_frame_focus(window);
             super::outer_workspace::retire_outer_capture(&mut self.outer_capture, window);
             if self.focus_in_window(window, self.app.focus) {
                 self.window_focus.insert(window, self.app.focus);
@@ -330,7 +332,11 @@ impl Shell {
         }
         self.input_window = window;
         if !self.deliver_surface_key(key, pressed, text) && pressed {
-            self.on_key(key);
+            let size = if window == 0 { (self.width, self.height) } else {
+                self.lens_windows.values().find(|lens| lens.ordinal as u64 + 1 == window)
+                    .map(|lens| (lens.width, lens.height)).unwrap_or((1, 1))
+            };
+            self.on_key_in_window(window as usize, size, key);
         }
         if self.focus_in_window(window, self.app.focus) {
             self.window_focus.insert(window, self.app.focus);

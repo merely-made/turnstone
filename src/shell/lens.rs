@@ -670,6 +670,7 @@ impl Shell {
                 // camera-gesture block below.
                 let (x, y) = lens.cursor;
                 let (lw, lh, ordinal) = (lens.width, lens.height, lens.ordinal);
+                if button != MouseButton::Left { self.leave_frame_focus(); }
                 if reject_lens_pane_press(self) {
                     return;
                 }

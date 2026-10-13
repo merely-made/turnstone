@@ -482,6 +482,8 @@ fn outline_role(entry: &OutlineFact) -> Role {
 /// rebuilt where the projection actually lives now.
 #[derive(Clone, Debug, PartialEq)]
 pub enum A11yRoute {
+    /// Exact primary-window shared frame control at its current admission.
+    Frame(crate::frame_controls::FrameRoute),
     /// The chrome: open the omnibar in its find lane.
     OpenOmnibar,
     /// A chrome control: run this action through the update spine, exactly
@@ -576,7 +578,7 @@ pub(crate) fn apply_route(
                 Vec::new()
             }
         },
-        Some(A11yRoute::Contributed { .. }) => {
+        Some(A11yRoute::Contributed { .. }) | Some(A11yRoute::Frame(_)) => {
             // The shell owns retained sessions and intercepts this variant
             // before app-only route lowering. Keep a misplaced call loud.
             app.note(crate::observe::AppEvent::InteractionMissed {

@@ -563,11 +563,13 @@ impl taproot::Automatable for Shell {
             Some(tabard::ThemePresentation::AuthoredStylesheet(sheets)) => sheets.join("\n"),
             _ => String::new(),
         };
-        out = out.with_field("appearance-css", appearance_sheet);
+        out = out.with_field("appearance-css", appearance_sheet)
+            .with_field("frame-focus-slot",self.outer_focus.as_ref().map(|f|f.slot.to_string()).unwrap_or_else(||"none".into()));
         if self.app.blueprint_space(crate::action::SpaceRef::Primary).is_none() {
             if let Some(frame) = self.outer_frames.borrow().get(&0) {
                 out = out.with_field("frame-css", frame.stylesheet())
-                    .with_field("frame-header-height", frame.header_height().to_string());
+                    .with_field("frame-header-height", frame.header_height().to_string())
+                    .with_field("frame-control",frame.controls.focus().map(|c|format!("{c:?}")).unwrap_or_else(||"none".into()));
             }
         }
         #[cfg(all(feature = "scry", windows))]
@@ -853,6 +855,21 @@ impl taproot::Driveable for Shell {
     /// parser and run it against the Shell via `run_scenario_step`. An unknown
     /// verb fails loudly (parse returns Err), never a silent skip.
     fn app_step(&mut self, line: &str) -> Result<(), String> {
+        if let Some(args)=line.strip_prefix("frame-a11y ") {
+            let (action,target)=crate::frame_a11y::fixture_request(args)?;
+            let super::document_a11y::Projected { tree, routes, .. } = self.projected_a11y_tree();
+            let matches=routes.iter().filter_map(|(id,route)|match route {
+                crate::a11y::A11yRoute::Frame(route) if target.matches(&route.control)
+                    && tree.nodes.iter().any(|(node,n)|node==id&&n.supports_action(action))=>Some(*id),_=>None,
+            }).collect::<Vec<_>>();
+            if matches.len()!=1 {return Err("frame-a11y target is absent, ambiguous or does not support that action".into());}
+            self.a11y_routes=routes;
+            self.a11y_actions.lock().map_err(|_|"a11y queue poisoned")?.enqueue(accesskit::ActionRequest {
+                action,target_tree:accesskit::TreeId::ROOT,target_node:matches[0],data:None,
+            });
+            self.drain_a11y_actions();return Ok(());
+        }
+
         if let Some(size) = line.strip_prefix("resize ") {
             let mut values = size.split_whitespace();
             let width: f64 = values
@@ -972,7 +989,9 @@ impl Shell {
                 let (winit_key, ctrl) = match key {
                     EditKey::Enter => (WinitKey::Named(WinitNamedKey::Enter), false),
                     EditKey::Escape => (WinitKey::Named(WinitNamedKey::Escape), false),
-                    EditKey::Tab => (WinitKey::Named(WinitNamedKey::Tab), false),
+                    EditKey::Tab | EditKey::BackTab => (WinitKey::Named(WinitNamedKey::Tab), false),
+                    EditKey::FrameFocus => (WinitKey::Named(WinitNamedKey::F6), true),
+                    EditKey::FrameClose => (WinitKey::Character("w".into()), true),
                     EditKey::Backspace => (WinitKey::Named(WinitNamedKey::Backspace), false),
                     EditKey::Delete => (WinitKey::Named(WinitNamedKey::Delete), false),
                     EditKey::Up => (WinitKey::Named(WinitNamedKey::ArrowUp), false),
@@ -989,6 +1008,8 @@ impl Shell {
                     EditKey::KeepCommand => (WinitKey::Character("d".into()), true),
                 };
                 let previous_ctrl = self.ctrl;
+                let previous_shift = self.shift;
+                self.shift |= matches!(key,EditKey::BackTab);
                 self.ctrl |= ctrl;
                 // Match the text accompanying a native winit key press. In
                 // Chromium, Enter's carriage-return char event activates the
@@ -1004,6 +1025,7 @@ impl Shell {
                     self.on_key(&winit_key);
                 }
                 self.ctrl = previous_ctrl;
+                self.shift = previous_shift;
             },
             Step::Script(source) => self.run_scenario_script(source),
             Step::Click(x, y) => {

@@ -66,6 +66,7 @@ pub(super) fn frame_body_rects(
         if space == SpaceRef::Primary { app.maximized } else { None },
         size,
         &app.shell_chrome_config().appearance,
+        app.session_id.as_uuid().as_u128(),
     ).unwrap_or_default())
 }
 
@@ -122,6 +123,7 @@ impl Shell {
                 maximize,
                 size,
                 &self.app.shell_chrome_config().appearance,
+                self.app.session_id.as_uuid().as_u128(),
             )
             .unwrap_or_default()
     }
@@ -132,7 +134,7 @@ impl Shell {
             .or_default()
             .scene()
     }
-    fn prepare_outer(&self, slot: usize, size: (u32, u32)) -> bool {
+    pub(super) fn prepare_outer(&self, slot: usize, size: (u32, u32)) -> bool {
         if self.app.blueprint_space(space(slot)).is_some() {
             return false;
         }
@@ -166,6 +168,14 @@ impl Shell {
             .borrow_mut()
             .get_mut(&slot)
             .and_then(|frame| frame.hit(x, y));
+        if let Some(hit)=&hit {
+            let control=match hit {
+                HeaderHit::Tab(id)=>Some(crate::frame_controls::Control::Tab(*id)),
+                HeaderHit::Close(id)=>Some(crate::frame_controls::Control::Close(*id)),
+                HeaderHit::Divider {target,..}=>self.outer_frames.borrow().get(&slot).and_then(|frame|frame.controls.order().into_iter().find(|c|matches!(c,crate::frame_controls::Control::Divider{path,index,..} if *path==target.path && *index==target.index))),
+            };
+            if let Some(control)=control {self.enter_frame_focus(slot,Some(control));}
+        } else {self.leave_frame_focus();}
         match hit {
             Some(HeaderHit::Close(id)) => self.act(Action::OuterWorkspace {
                 space: space(slot),

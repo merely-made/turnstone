@@ -2,7 +2,7 @@
 
 **Date**: 2026-08-08
 
-**Status (2026-10-13)**: A4/S3 has tiled Workspace, shared-frame and Tabard appearance implementation drafts; native/inline-body/float/accessibility gates remain open. A0, A1 and A6 complete and verified. Lanes open: **A2** and
+**Status (2026-10-13)**: A4/S3 has tiled Workspace, shared-frame, Tabard appearance and keyboard/primary accessibility implementation drafts; native/inline-body/float/accessibility gates remain open. A0, A1 and A6 complete and verified. Lanes open: **A2** and
 **A7**; **A3** retains its A2 acceptance gate. The A4 draft below does not close A2/A3 or A5 acceptance.
 
 **2026-09-29 pane consolidation: qualified.** Mark accepted operational status
@@ -1203,3 +1203,106 @@ custom divider width, same-id save/unapplied/Apply, failed-save rollback, narrow
 windows, DPI, body continuity and the original floating/physics scenarios.
 Keyboard/AccessKit header dispatch, float unification, inline bodies and actual
 presented performance remain A4/S3 continuation gates.
+
+
+## Native Pelt baseline adoption — 2026-10-13
+
+**Status:** landed slice. Published Mere `0d1dc192` passes the normal Windows
+library source check, ten selected-clip tests and five pane-store tests with
+locked dependencies and no source overrides. The supplier closure has one Mere
+source, one Genet revision and no duplicate Genet package names.
+
+Turnstone now registers its native content engines through
+`pelt_core::native::sessions_with_fetcher`, extending that registry with its
+owned Micron and smolweb adapters. Transport, prompts, profile authority and
+browser history remain Turnstone's. Selected clip address parsing, verification,
+presentation and the retained document session now come from Mere's
+`mere-document-lanes/retained-clips`; receiving, custody, onward export and
+native audio actions remain in `src/retained_clip.rs` and the shell.
+
+This is the baseline shared with Graphshell's retained-content Workbench.
+Graphshell's browser host explicitly supplies its reading display fonts;
+Turnstone continues to own browser appearance and authored-content policy.
+The new `7d62a5a` Tabard/Interface-font frame draft is pulled in the same pass.
+Its supplier receipt remains distinct from current Windows source qualification.
+
+The adoption does not close A4's inline Component-body join, floats, physical
+assistive technology or the complete native theme/narrow/DPI/performance wall.
+It does not qualify optional external engine builds or simultaneous loading.
+The shared implementation and receipts live in
+`mere/ports/graphshell/docs/receipts/retained_content_20261012/`.
+
+
+## A4 shared-frame keyboard and accessibility draft — 2026-10-13
+
+**Interaction join.** `frame_controls` now owns the shared retained Workspace DOM
+and Cambium tab dispatch. Ctrl+F6 enters pane furniture in the receiving primary
+or lens window. Selected tabs use Cambium's arrow/Home/End automatic selection;
+Tab/Shift+Tab traverse selected tab handles, close buttons and dividers and return
+to the pane body at the ends. Escape and Ctrl+F6 also return to the body. Enter or
+Space activates the focused close control; Ctrl+W closes the exact focused tab
+handle. Existing last-pane refusal stays in the Panes action owner. Inactive
+close buttons remain usable without selecting their body. Divider arrows follow
+its axis, move one percent of the adjacent share pair (Shift: ten), and Home/End
+reach the existing five/ninety-five-percent limits. Other N-ary shares stay fixed.
+Keyboard and assistive divider edits use the existing Workspace action and save
+a completed edit. Pointer gesture routing keeps its existing reducer path.
+
+**Focus and session boundaries.** Header focus is transient shell state; it does
+not enter the saved Workspace or pane payloads. It retains a validated return
+target and otherwise chooses an active pane in its owning window. Closing or
+reparenting a tab repairs focus by stable TileId; a divider additionally names
+its adjacent tile groups so a reused split path cannot redirect old focus. A
+profile change retires the frame admission. Header-owned keys and IME do not
+reach body documents or the canvas. Modal input retains precedence. A body
+press or native focus departure clears header focus, and window-local keyboard
+routing avoids falling back into another window's frame. A Tab-boundary return
+restores the pane lane; body-specific sequential traversal remains with each
+body's existing input owner. Broader lens body/native-engine keyboard delivery
+is a separate acceptance gate.
+
+**Primary accessibility join.** Genet's neutral observation and AccessKit lowering
+read the exact retained frame fragments. The frame subtree is namespaced by its
+admission and revision, and existing active pane body subtrees attach beneath
+the actual content apertures. Former structural containers are retired; missing
+and inactive bodies are not retained as orphan outlines. Tab/close controls
+expose Focus/Click; separators expose Focus/Increment/Decrement with measured
+bounds, orientation and numeric values. Tab Focus follows Frisket's automatic
+selection policy; Close and Divider Focus never activate or resize. Queued
+actions revalidate scope, layout revision, visibility, modal ownership and
+control identity before delivery. Stale/hidden/unsupported requests emit an
+interaction miss. Frame focus/revision changes bypass the ordinary accessibility
+publication cadence, and foreign document focus cannot override a foregrounded
+primary frame control. The existing OS adapter still serves only the primary
+window: no native lens accessibility adoption is claimed.
+
+**Qualification.** The isolated harness imports the actual `frame_controls`,
+`frame_a11y`, stylesheet and scenario parser modules against the upstream Mere
+`0d1dc192` / Genet `2c7ef73b` supplier family. Turnstone `d5d4737` was
+fast-forwarded during this draft; its shared native Pelt/retained-clip adoption
+is preserved, and the final checks use that supplier pin. Thirty CPU tests pass: fourteen
+control/composition tests, one new fixture grammar test and fifteen existing
+scenario parser regressions. They cover actual shared tab callbacks, inactive
+close, traversal exit, axis/pair resizing, focus repair, independent namespaces,
+exact Livery bounds and separator actions, scope/revision rejection and tree
+connectivity. Linux default-feature library/binary source checks and exact logs
+are recorded in `docs/receipts/frame_controls_20261013/qualification.json`.
+The final Linux library/binary check passes with 95 warnings; no warning-baseline
+equivalence is claimed. Computed geometry and synthetic queue delivery do not qualify displayed focus,
+OS adapter delivery or a human screen reader. No headed run, release build or
+whole consumer test run is claimed.
+
+**Native handoff.** Run `frame_controls_keyboard.scn` and
+`frame_controls_accessibility.scn` in separate fresh private stores, then reopen
+the latter stores with `frame_controls_reopen.scn`. The fixture grammar
+`frame-a11y focus|click|inc|dec tab|close|divider ...` resolves one supported
+current control and routes an ActionRequest through the actual platform queue
+and drain; it is not an OS/screen-reader receipt. Review focus-ring captures,
+body continuity and last-pane refusal. Add native nested-tab arrow/close and
+N-ary divider cases, same-title independent accesses, custom theme hiding or
+resizing a control, pending actions across move/close/profile changes, modal
+ownership, DPI/narrow windows and actual Narrator/VoiceOver/AT-SPI delivery.
+Repeat keyboard entry and return in a lens with its physical native window
+focused. Session-scoped return to editors/media and original floating/physics
+scenarios remain consumer gates. Native lens AT, float unification, inline
+Component bodies and presented-frame timing remain open A4/S3 work.

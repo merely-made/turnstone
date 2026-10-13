@@ -43,6 +43,7 @@ use lens::LensWindow;
 mod input;
 pub(crate) mod window_input;
 mod outer_workspace;
+mod frame_keys;
 use input::pointer_button;
 
 use std::collections::{HashMap, VecDeque};
@@ -195,13 +196,10 @@ impl pelt_core::PeltClock for ShellClock {
 /// build. Keeping their construction together makes route availability an
 /// inspectable fact instead of an assumption split across shell setup.
 pub(crate) fn standard_content_engines() -> SessionRegistry<Scene> {
-    let mut engines = SessionRegistry::new();
-    engines.register(Box::new(genet_documents::LiverySessionEngine::new(
+    let mut engines = pelt_core::native::sessions_with_fetcher(
         LocalFetcher.with_fallback(RemoteFetcher::shared()),
-    )));
-    engines.register(Box::new(ReaderSessionEngine::new(SmolwebTheme::System)));
+    );
     engines.register(Box::new(crate::nomadnet::MicronSessionEngine::new()));
-    engines.register(Box::new(crate::retained_clip::ClipSessionEngine));
     for engine_id in SMOLWEB_SESSION_ENGINE_IDS {
         engines.register(Box::new(
             SmolwebSessionEngine::new(
@@ -708,6 +706,7 @@ impl Shell {
     pub(super) fn refuse_lens_captures_before_clear(&mut self, reason: &str) {
         let windows: Vec<_> = self.lens_windows.values().map(|lens| lens.ordinal as u64 + 1).collect();
         for window in windows {
+            self.retire_frame_focus(window);
             outer_workspace::retire_outer_capture(&mut self.outer_capture, window);
         }
         self.outer_frames.borrow_mut().retain(|slot, _| *slot == 0);
@@ -726,6 +725,7 @@ impl Shell {
     /// Retire this physical host's actual admissions without blurring another
     /// window or destroying a retained controller, pane runner or authored draft.
     fn retire_render_receivers(&mut self, window: u64) {
+        self.retire_frame_focus(window);
         outer_workspace::retire_outer_capture(&mut self.outer_capture, window);
         let graph = if window == 0 {
             match self.pointer_capture { Some(SurfaceKind::Graph(pane)) => Some(pane), _ => None }
@@ -1115,6 +1115,7 @@ pub struct Shell {
     renderers: renderers::PaneRenderers,
     outer_frames: std::cell::RefCell<HashMap<usize, crate::outer_frame::OuterFrame>>,
     outer_capture: Option<outer_workspace::OuterCapture>,
+    outer_focus: Option<frame_keys::HeaderFocus>,
     /// Runtime product surface factories. Concrete product state never enters
     /// the shell; admission yields the erased sessions retained above.
     surface_providers: crate::contributed_surface::SurfaceProviderRegistry,
@@ -1473,6 +1474,7 @@ impl Shell {
             renderers: Default::default(),
             outer_frames: Default::default(),
             outer_capture: None,
+            outer_focus: None,
             surface_providers,
             redshank_docks,
             hovered_pane: None,
@@ -1682,6 +1684,7 @@ impl Shell {
     }
 
     fn accepts_controlled_text(&self) -> bool {
+        if self.outer_focus.is_some() && !self.app.omnibar.open && !self.app.document_find.open && !self.app.user_agent_decision.is_open() {return false;}
         self.app.omnibar.open
             || self.app.document_find.open
             || self.app.user_agent_decision.accepts_text()
@@ -2011,9 +2014,25 @@ impl Shell {
                 .map(|(id, route)| (id, a11y_bridge::Admission::Contributed(route)))
                 .collect(),
         };
+        let header_focus = if self.app.blueprint_space(crate::action::SpaceRef::Primary).is_none() {
+            let focused = frame_keys::header_focus_in_window(self.outer_focus.as_ref(), 0, self.app.session_id.as_uuid());
+            self.outer_frames.borrow().get(&0).and_then(|outer| outer.accessibility(focused))
+                .and_then(|outer| {
+                    let parent = uxtree::node_id_for_path(&format!("frisket/{}", self.app.frisket.id.as_str()));
+                    let bodies = crate::panes::pane_projection_ids(&self.app.frisket);
+                    crate::frame_a11y::graft(&mut frame.tree, parent, &bodies, outer)
+                })
+                .and_then(|(routes, focus)| {
+                    frame.routes.extend(routes.into_iter().map(|(id, route)|
+                        (id, crate::a11y::A11yRoute::Frame(route))));
+                    focus
+                })
+        } else { None };
         let plan = self.surface_plan();
         self.project_document_accessibility(&mut frame, &plan);
-        frame.focus = crate::a11y::host_input_focus(&self.app).or(frame.focus);
+        frame.focus = frame_keys::accessibility_focus(crate::a11y::host_input_focus(&self.app),
+                                                     header_focus, frame.focus);
+        frame.focus = frame.focus.filter(|id| frame.tree.nodes.iter().any(|(current, _)| current == id));
         let mounted: std::collections::HashSet<_> = frame
             .tree
             .nodes
@@ -2104,7 +2123,7 @@ impl Shell {
                 }
                 tree.nodes.push((id, graft));
             }
-            if matches!(self.app.focus, crate::surface::FocusTarget::Content { node: focused, .. } if focused == node)
+            if !frame_keys::header_focus_in_window(self.outer_focus.as_ref(), 0, self.app.session_id.as_uuid()) && matches!(self.app.focus, crate::surface::FocusTarget::Content { node: focused, .. } if focused == node)
             {
                 focus = Some(id);
             }
@@ -2112,7 +2131,8 @@ impl Shell {
         }
         // An open host editor owns keyboard focus even while a document
         // remains the selected graph content behind it.
-        focus = crate::a11y::host_input_focus(&self.app).or(focus);
+        focus = frame_keys::accessibility_focus(crate::a11y::host_input_focus(&self.app), None, focus)
+            .filter(|id| tree.nodes.iter().any(|(current, _)| current == id));
         // Some app routes outlive their optional projected nodes. A route
         // becomes available to the platform only while its node is published.
         routes.retain(|id, _| tree.nodes.iter().any(|(current, _)| current == id));
@@ -2290,6 +2310,14 @@ impl Shell {
                     self.app.note(crate::observe::AppEvent::InteractionMissed {
                         what: "a11y-action",
                         target: reason,
+                    });
+                }
+                continue;
+            }
+            if let Some(crate::a11y::A11yRoute::Frame(route)) = self.a11y_routes.get(&request.target_node).cloned() {
+                if window.is_some() || !self.apply_frame_a11y(&route, request.action) {
+                    self.app.note(crate::observe::AppEvent::InteractionMissed {
+                        what: "a11y-action", target: "Shared frame control is stale, hidden or unsupported".into(),
                     });
                 }
                 continue;
