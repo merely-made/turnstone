@@ -16,8 +16,11 @@ or explicit refresh. Rebuilding the view performs no domain operation.
 
 The finite `moot-resource-proof` binary mounts two readings on the shared
 Cambium native host. Run `cargo run --locked -p graphshell --no-default-features
---features moot-resource-proof --bin moot-resource-host`; `--receipt DIRECTORY`
-executes the bounded native proof and closes its window. Its public, unsealed
+--features moot-resource-proof --bin moot-resource-host`; pass
+`-- --receipt DIRECTORY --size 1280x920` to execute the bounded native proof
+and close its window. Wide and compact native cases each passed four presented
+owner-state captures; these qualify paint/layout, not physical input or themes.
+Its public, unsealed
 in-memory fixtures use verified sans-I/O admission, with supplied carrier facts;
 they qualify no live peer, persistent community or private custody. Actual app
 session/coop routing remains open. The [Moot host plan](../../design_docs/moothold_docs/implementation_strategy/2026-06-12_moot_object_m1_plan.md#admitted-graphshell-resource-mount-2026-10-12)
