@@ -324,6 +324,11 @@ pub(super) fn view(page: &TreePage) -> Option<Child> {
                 )
                 .attr("id", format!("graph-command-{index}"))
                 .attr("role", "option")
+                .attr("aria-label", command.label.clone())
+                .attr(
+                    "aria-description",
+                    command.disabled_reason.clone().unwrap_or_default(),
+                )
                 .attr(
                     "aria-selected",
                     if session.selected == Some(index) {
