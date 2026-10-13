@@ -7,6 +7,23 @@ loops, hosts resident endpoints, and renders projections.
 Package name `graphshell`. It re-exports the stack as `graphshell::protocol`,
 `graphshell::client`, and `graphshell::endpoint`.
 
+The native opt-in `moot-resources` module composes the existing Moot resource
+view with verified retained Graphshell session authority and current Gemot and
+Eidetic owners. A mount holds independent inspection, pending feedback and
+opened bytes. The embedding host supplies current revocations, its clock,
+signer and stores, and schedules the asynchronous operation pump after input
+or explicit refresh. Rebuilding the view performs no domain operation.
+
+The finite `moot-resource-proof` binary mounts two readings on the shared
+Cambium native host. Run `cargo run --locked -p graphshell --no-default-features
+--features moot-resource-proof --bin moot-resource-host`; `--receipt DIRECTORY`
+executes the bounded native proof and closes its window. Its public, unsealed
+in-memory fixtures use verified sans-I/O admission, with supplied carrier facts;
+they qualify no live peer, persistent community or private custody. Actual app
+session/coop routing remains open. The [Moot host plan](../../design_docs/moothold_docs/implementation_strategy/2026-06-12_moot_object_m1_plan.md#admitted-graphshell-resource-mount-2026-10-12)
+and [qualification record](docs/receipts/moot_resources_host_20261012/qualification.json)
+retain the acceptance scope.
+
 The `personae-vault` binary is djinn's terminal custody client. From Mere, run
 `cargo run -p graphshell --bin personae-vault -- --help`. It accepts a broker
 endpoint and persona name; djinn owns the vault path, unlock gate and private
