@@ -19,6 +19,7 @@ pub(super) const SHEET: &str = r#"
 .tree-instrument .workspace-brand { font-size:14px; font-weight:500; color:var(--workspace-accent); }
 .tree-instrument .tree-status { color:var(--workspace-muted); font-size:12px; }
 .tree-instrument .tree-controls { padding:6px 12px; border-bottom:1px solid var(--workspace-rule); }
+.tree-instrument > .tree-product { position:static; flex:0 0 auto; max-width:none; max-height:140px; overflow-y:auto; padding:6px 12px; border-bottom:1px solid var(--workspace-rule); }
 .tree-instrument .tree-controls button, .tree-instrument .tree-tools button, .tree-instrument .tree-product button { border-radius:0; font-size:13px; }
 .tree-instrument .tree-body { border-top:1px solid var(--workspace-rule); }
 .tree-instrument .tree-tools { padding:0 10px 10px; border-left:1px solid var(--workspace-rule); }

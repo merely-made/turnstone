@@ -726,6 +726,7 @@ fn view(page: &TreePage) -> Child {
     );
     let workbench = forme_workbench(page);
     let showing_workbench = workbench.is_some();
+    let inline_product_controls = showing_workbench || !instrument_class(page).is_empty();
     #[cfg(feature = "product")]
     let scene_header = instrument::scene_header(page, showing_workbench);
     #[cfg(not(feature = "product"))]
@@ -772,11 +773,11 @@ fn view(page: &TreePage) -> Child {
                         controls::toolbar(page)
                     },
                     forme_toolbar(page),
-                    showing_workbench.then(|| product::controls(page)),
+                    inline_product_controls.then(|| product::controls(page)),
                     el(
                         "div",
                         (
-                            (!showing_workbench).then(|| product::controls(page)),
+                            (!inline_product_controls).then(|| product::controls(page)),
                             el(
                                 "div",
                                 (
