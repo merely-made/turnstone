@@ -11,6 +11,10 @@ autobins = false
 name = "projection_dynamics_receipt"
 required-features = ["web"]
 
+[[test]]
+name = "moot_resources"
+required-features = ["moot-resources"]
+
 [features]
 default = ["native", "image-decode", "document-layout"]
 # Document-capable hosts retain Platen's document producer. The read-only
@@ -119,6 +123,12 @@ applets = ["web", "eidetic/pack-signing", "dep:personae"]
 # the view's requests as the route's intents (reservoir plan V2b step 3, §7
 # item 42). It brings in `mere-view`, and with it Cambium, so it is opt-in.
 mere-route = ["web", "dep:mere-view"]
+# Native owner composition for admitted Moot resource readings. This does not
+# enter the ordinary browser cone or install an application activity owner.
+moot-resources = ["webrtc-join", "dep:cambium", "dep:moot", "dep:gemot", "dep:eidetic", "dep:muniment"]
+# Finite native owner-composition proof; ordinary consumers need no window or
+# fixture dependencies. It installs neither peer services nor an activity owner.
+moot-resource-proof = ["moot-resources", "dep:cambium-genet-winit-host", "dep:mien", "dep:proofs", "dep:servitor", "dep:tokio", "dep:pollster", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
 # Native device-agent composition for H7 personal graph synchronization. The
 # browser/PWA reaches this authority through its admitted device session.
 personal-sync = [
@@ -186,6 +196,17 @@ getrandom = { version = "0.3", optional = true }
 webrtc-carrier = { workspace = true, optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+cambium-genet-winit-host = { workspace = true, optional = true }
+mien = { workspace = true, optional = true }
+proofs = { workspace = true, optional = true }
+servitor = { workspace = true, optional = true }
+pollster = { version = "0.4", optional = true }
+genet-scripted-dom = { workspace = true, optional = true }
+layout_dom_api = { workspace = true, optional = true }
+image = { version = "0.25", default-features = false, features = ["png"], optional = true }
+cambium = { workspace = true, optional = true }
+moot = { package = "mere-moot", path = "../moot", features = ["resource-owner", "resource-view"], optional = true }
+gemot = { workspace = true, optional = true }
 blake3 = { workspace = true, optional = true }
 # The identity read model and intents (`identity`, `identity_projection`).
 # Graphshell no longer links castellan (dramatis repo plan, D4, D15): its
@@ -225,6 +246,11 @@ windows-sys = { version = "0.59", features = [
 name = "g1_receipt"
 path = "src/bin/g1_receipt.rs"
 required-features = ["native"]
+
+[[bin]]
+name = "moot-resource-host"
+path = "src/bin/moot_resources_host.rs"
+required-features = ["moot-resource-proof"]
 
 [[bin]]
 name = "personae-vault"
@@ -310,6 +336,11 @@ tokio = { version = "1", features = [
 # These fixtures lower into the native AccessKit host, not the browser mirror.
 # Cargo's browser cone includes dev dependencies, so keep this lane scoped.
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+servitor.workspace = true
+proofs.workspace = true
+mien.workspace = true
+genet-scripted-dom.workspace = true
+layout_dom_api.workspace = true
 accesskit = "0.24"
 cambium-genet-winit-host = { workspace = true }
 cambium-winit-a11y = { workspace = true }
