@@ -3,336 +3,449 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
+//! Retained owner bindings for independently mounted resource/coop readings.
+use moot::resource_coop::control::{Controller, Intent};
+use moot::resource_coop::{Outcome, Request, Snapshot, Target, validate_request};
+use serde::Serialize;
+use std::collections::BTreeMap;
 
-//! An admitted Graphshell mount over the actual Moot resource owners.
-//!
-//! The carrier supplies Notochord's verified retained authority and the host
-//! supplies its current ledger, signer, Moot and content store. No principal,
-//! grant, payload or activity session is fabricated from a displayed snapshot.
-//! The asynchronous owner calls are scheduled by the embedding application.
-
-use cambium::{AnyView, GenetCtx, GenetElement, button, el, lens};
-use eidetic::Store;
-use gemot::moot::Moot;
-use moot::resource_coop::{Outcome, ResourceRef, Snapshot};
-use moot::resource_owner::{self as owner, Applied, ForkDestination};
-use moot::resource_view::Reading;
-use muniment::Backend;
-use notochord::{RetainedAuthority, RevocationLedger};
-use personae::IdentityProvider;
-
-pub type View = Box<dyn AnyView<Mount, (), GenetCtx, GenetElement>>;
-
-/// Existing owners borrowed for one operation, with the current host clock and
-/// session revocation ledger. The caller retains all storage and key custody.
-pub struct Owners<'a, B, P: ?Sized> {
-    pub moot: &'a Moot<B>,
-    pub identity: &'a P,
-    pub store: &'a mut dyn Store,
-    pub revocations: &'a RevocationLedger,
-    pub at_ms: u64,
+#[derive(Serialize)]
+pub struct Command {
+    pub reading: u32,
+    pub token: u32,
+    pub reader: [u8; 32],
+    pub target: serde_json::Value,
 }
-
-pub struct Scope {
-    pub collection: [u8; 32],
-    pub fork_destination: Option<ForkDestination>,
+struct Pending {
+    reading: u32,
+    request: Request,
+    dispatched: bool,
 }
-
-#[derive(Debug)]
-pub enum Error {
-    Admission(String),
-    Owner(owner::Error),
-    View(String),
+#[derive(Default)]
+pub struct Host {
+    pub readings: BTreeMap<u32, Controller>,
+    pub opened: BTreeMap<u32, (moot::resource_coop::ResourceRef, String)>,
+    pending: BTreeMap<u32, Pending>,
+    queued: Vec<Command>,
+    next_token: u32,
+    pub version: u64,
 }
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Admission(reason) | Self::View(reason) => f.write_str(reason),
-            Self::Owner(error) => error.fmt(f),
+impl Host {
+    /// Awaited local owner requests count as work even while their commands are
+    /// outside the scene. Clearing a reading still makes no cancellation claim.
+    pub fn in_flight(&self) -> bool {
+        self.readings
+            .values()
+            .any(|reading| reading.pane.pending().is_some())
+    }
+    pub fn install(&mut self, id: u32, snapshot: Snapshot) -> Result<(), String> {
+        if let Some(reading) = self.readings.get_mut(&id) {
+            reading.refresh(snapshot).map_err(|e| e.to_string())?;
+        } else {
+            self.readings
+                .insert(id, Controller::new(snapshot).map_err(|e| e.to_string())?);
         }
-    }
-}
-impl std::error::Error for Error {}
-impl From<owner::Error> for Error {
-    fn from(error: owner::Error) -> Self {
-        Self::Owner(error)
-    }
-}
-
-/// Local reader output. Bytes remain owned by this particular mount. A plain
-/// UTF-8 preview is available; this does not install a document editor or execute
-/// embedded content. The embedding application may give the bytes to its reader.
-#[derive(Debug)]
-pub struct Opened {
-    pub reference: ResourceRef,
-    pub bytes: Vec<u8>,
-}
-
-#[derive(Debug)]
-pub enum Update {
-    Refreshed,
-    Dispatched {
-        outcome: Outcome,
-        feedback_applied: bool,
-        refreshed: bool,
-    },
-}
-
-/// One independent mount. Drop/selection/appearance never changes membership,
-/// hosting or resource custody. Closing this view cannot erase retained copies.
-#[derive(Debug)]
-pub struct Mount {
-    id: String,
-    authority: RetainedAuthority,
-    moot: [u8; 32],
-    collection: [u8; 32],
-    destination: Option<ForkDestination>,
-    reading: Reading,
-    opened: Option<Opened>,
-    closed: Option<String>,
-    refresh_requested: bool,
-    status: String,
-}
-
-impl Mount {
-    /// `authority` must come from the existing Graphshell admission path. For
-    /// carriers use `RetainedAuthority::from_admitted`; sans-I/O owners retain
-    /// their verified hello's chain. This is a local composition, not a second
-    /// admission protocol or a serialized credential.
-    pub async fn open<B: Backend + Clone, P: IdentityProvider + ?Sized>(
-        id: impl Into<String>,
-        authority: RetainedAuthority,
-        scope: Scope,
-        owners: &mut Owners<'_, B, P>,
-    ) -> Result<Self, Error> {
-        check_session(&authority, owners)?;
-        let snapshot = owner::snapshot(
-            owners.moot,
-            authority.principal().subject,
-            scope.collection,
-            scope.fork_destination.as_ref(),
-            vec![],
-            owners.store,
-            owners.at_ms,
-        )
-        .await?;
-        let id = id.into();
-        let reading = Reading::new(id.clone(), snapshot).map_err(Error::View)?;
-        Ok(Self {
-            id,
-            authority,
-            moot: owners.moot.moot_id().0,
-            collection: scope.collection,
-            destination: scope.fork_destination,
-            reading,
-            opened: None,
-            closed: None,
-            refresh_requested: false,
-            status: "Reading the owners' shared resource view".into(),
-        })
-    }
-
-    pub fn reading(&self) -> &Reading {
-        &self.reading
-    }
-    pub fn opened(&self) -> Option<&Opened> {
-        self.opened.as_ref()
-    }
-    pub fn closed_reason(&self) -> Option<&str> {
-        self.closed.as_deref()
-    }
-    pub fn request_refresh(&mut self) {
-        self.refresh_requested = true;
-    }
-
-    /// Pump after input, on an explicit refresh or when the host observes a
-    /// session ledger change. It returns immediately when there is no work;
-    /// it does not poll content stores on every rendering frame.
-    pub async fn poll<B: Backend + Clone, P: IdentityProvider + ?Sized>(
-        &mut self,
-        owners: &mut Owners<'_, B, P>,
-    ) -> Result<Option<Update>, Error> {
-        if let Some(reason) = &self.closed {
-            return Err(Error::Admission(reason.clone()));
-        }
-        if let Err(error) = check_session(&self.authority, owners) {
-            self.close(error.to_string());
-            return Err(error);
-        }
-        if owners.moot.moot_id().0 != self.moot {
-            let error = Error::Admission("This mount belongs to another Moot".into());
-            self.close(error.to_string());
-            return Err(error);
-        }
-        if self.refresh_requested {
-            self.refresh_requested = false;
-            self.refresh(owners).await?;
-            self.status = "Updated from the resource owners".into();
-            return Ok(Some(Update::Refreshed));
-        }
-        let Some(request) = self.reading.take_request() else {
-            return Ok(None);
-        };
-        let applied = owner::dispatch(
-            owners.moot,
-            owners.identity,
-            owners.store,
-            &request,
-            self.destination.as_ref(),
-            owners.at_ms,
-        )
-        .await;
-        let outcome = match &applied {
-            Ok(applied) => applied.outcome(),
-            Err(error) => error.outcome(),
-        };
-        let feedback_applied = self.reading.complete(&request, outcome.clone());
-        if feedback_applied {
-            self.status = match &applied {
-                Ok(Applied::Opened { .. }) => "Opened locally held content".into(),
-                Ok(Applied::CollectionForked { .. }) => {
-                    "The owner forked the reviewed collection references".into()
-                },
-                Err(error) => error.to_string(),
-            };
-            if let Ok(Applied::Opened { reference, bytes }) = applied {
-                self.opened = Some(Opened { reference, bytes });
-            }
-        }
-        // An accepted write remains accepted even if its subsequent read is
-        // refused. The owner's receipt remains in `outcome`; closing the local
-        // projection is never represented as undoing that command.
-        let refreshed = self.refresh(owners).await.is_ok();
-        Ok(Some(Update::Dispatched {
-            outcome,
-            feedback_applied,
-            refreshed,
-        }))
-    }
-
-    async fn refresh<B: Backend + Clone, P: IdentityProvider + ?Sized>(
-        &mut self,
-        owners: &mut Owners<'_, B, P>,
-    ) -> Result<(), Error> {
-        // Recheck retained authority after an awaited owner command as well.
-        // The clock and ledger are caller-held inputs for this operation, not
-        // a claim of an atomic transaction across independent owner stores.
-        let result: Result<(), Error> = async {
-            check_session(&self.authority, owners)?;
-            let snapshot = owner::snapshot(
-                owners.moot,
-                self.authority.principal().subject,
-                self.collection,
-                self.destination.as_ref(),
-                vec![],
-                owners.store,
-                owners.at_ms,
-            )
-            .await?;
-            let still_open = self.opened.as_ref().is_none_or(|opened| {
-                snapshot
+        self.opened.retain(|reading, (reference, _)| {
+            *reading != id
+                || self.readings[&id]
+                    .pane
+                    .snapshot()
                     .resources
                     .iter()
-                    .any(|r| r.reference == opened.reference)
-            });
-            self.reading
-                .refresh(snapshot)
-                .map_err(|e| Error::View(e.to_string()))?;
-            if !still_open {
-                self.opened = None;
-            }
-            Ok(())
-        }
-        .await;
-        if let Err(error) = &result {
-            self.close(error.to_string());
-        }
-        result
-    }
-
-    fn close(&mut self, reason: String) {
-        self.closed = Some(reason);
-        self.refresh_requested = false;
-        self.opened = None;
-        // Invalidate local attention and queued completions and remove cached
-        // disclosure. No content is deleted from an owner store.
-        let _ = self.reading.refresh(Snapshot {
-            moot: self.moot,
-            reader: self.authority.principal().subject,
-            collection: None,
-            resources: vec![],
-            activities: vec![],
+                    .any(|resource| {
+                        resource.reference == *reference
+                            && matches!(
+                                resource.content,
+                                moot::resource_coop::ContentRead::Resolved
+                            )
+                    })
         });
+        self.invalidate(id);
+        self.version += 1;
+        Ok(())
     }
-}
-
-fn check_session<B: Backend + Clone, P: IdentityProvider + ?Sized>(
-    authority: &RetainedAuthority,
-    owners: &Owners<'_, B, P>,
-) -> Result<(), Error> {
-    if !crate::admission::serves_action(authority.principal()) {
-        return Err(Error::Admission(
-            "This session was admitted for another service".into(),
-        ));
+    pub fn close(&mut self, id: u32) {
+        self.readings.remove(&id);
+        self.opened.remove(&id);
+        self.invalidate(id);
+        self.version += 1;
     }
-    if authority.principal().subject != owners.identity.master_public_key().to_bytes() {
-        return Err(Error::Admission(
-            "The current signer is not this admitted reader".into(),
-        ));
-    }
-    if let Some(reason) = authority.lapse(owners.revocations, owners.at_ms) {
-        return Err(Error::Admission(format!(
-            "Projection session authority ended: {reason:?}"
-        )));
-    }
-    Ok(())
-}
-
-pub const CSS: &str = moot::resource_view::CSS;
-/// Bound the ordinary text projection independently of the owner's byte limit.
-/// The exact opened bytes remain available to an application reader.
-pub const TEXT_PREVIEW_CHARACTERS: usize = 8_192;
-
-/// Ordinary Cambium composition. The embedding host supplies typography,
-/// theme, layout/paint and the operation pump. Rendering performs no I/O.
-pub fn view(mount: &Mount) -> View {
-    let mut children: Vec<View> = vec![Box::new(
-        el("p", mount.status.clone()).attr("role", "status"),
-    )];
-    if let Some(reason) = &mount.closed {
-        children.push(Box::new(el("p", format!("Reading closed: {reason}"))));
-    } else {
-        children.push(Box::new(
-            button("Refresh from owners", |mount: &mut Mount, _| {
-                mount.request_refresh();
-            })
-            .attr("id", format!("moot-{}-refresh", mount.id)),
-        ));
-        children.push(Box::new(lens(
-            |reading: &mut Reading| moot::resource_view::view(reading),
-            |mount: &mut Mount| &mut mount.reading,
-        )));
-        if let Some(opened) = &mount.opened {
-            children.push(Box::new(el("h2", "Local content")));
-            let text = match std::str::from_utf8(&opened.bytes) {
-                Ok(body) => {
-                    if let Some((end, _)) = body.char_indices().nth(TEXT_PREVIEW_CHARACTERS) {
-                        children.push(Box::new(el(
-                            "p",
-                            format!("Showing the first {TEXT_PREVIEW_CHARACTERS} characters"),
-                        )));
-                        body[..end].to_owned()
-                    } else {
-                        body.to_owned()
-                    }
-                },
-                Err(_) => "These bytes need their application's reader".into(),
+    pub fn begin(&mut self, id: u32, intent: Intent) {
+        let Some(reading) = self.readings.get_mut(&id) else {
+            return;
+        };
+        let request = reading.begin(intent);
+        if self
+            .opened
+            .get(&id)
+            .is_some_and(|(reference, _)| reading.pane.selected_resource() != Some(*reference))
+        {
+            self.opened.remove(&id);
+        }
+        if let Some(request) = request {
+            let Some(token) = self.next_token.checked_add(1) else {
+                reading.pane.complete(
+                    &request,
+                    Outcome::Refused {
+                        reason: "Owner request identifiers exhausted; open a new host".into(),
+                    },
+                );
+                self.version += 1;
+                return;
             };
-            children.push(Box::new(
-                el("pre", text).attr("id", format!("moot-{}-opened", mount.id)),
+            self.next_token = token;
+            let target = match &request.target {
+                Target::Refresh { .. } => serde_json::json!({"refresh":true}),
+                Target::Resource {
+                    reference,
+                    action,
+                    observed_terms,
+                } => {
+                    serde_json::json!({"resource":reference,"action":action,"observed_terms":observed_terms})
+                },
+                Target::Activity { reference, action } => {
+                    serde_json::json!({"activity":reference,"action":action})
+                },
+                Target::CollectionFork { moot, observed } => {
+                    serde_json::json!({"moot":moot,"fork_collection":observed})
+                },
+            };
+            self.queued.push(Command {
+                reading: id,
+                token,
+                reader: request.reader,
+                target,
+            });
+            self.pending.insert(
+                token,
+                Pending {
+                    reading: id,
+                    request,
+                    dispatched: false,
+                },
+            );
+        }
+        self.invalidate(id);
+        self.version += 1;
+    }
+    fn invalidate(&mut self, id: u32) {
+        self.pending.retain(|_, pending| {
+            pending.reading != id
+                || self
+                    .readings
+                    .get(&id)
+                    .is_some_and(|reading| reading.pane.is_pending(&pending.request))
+        });
+        self.queued
+            .retain(|command| self.pending.contains_key(&command.token));
+    }
+    pub fn take_commands(&mut self) -> Vec<Command> {
+        std::mem::take(&mut self.queued)
+    }
+    /// The supplying host obtains a fresh owner snapshot before executing the
+    /// intention. Domain dispatch still rechecks authority at the actual operation.
+    pub fn prepare_dispatch(
+        &mut self,
+        id: u32,
+        token: u32,
+        current: &Snapshot,
+    ) -> Result<(), String> {
+        let pending = self.pending.get_mut(&token).ok_or("Stale owner request")?;
+        if pending.reading != id || pending.dispatched {
+            return Err("Wrong reading or already dispatched request".into());
+        }
+        if !self
+            .readings
+            .get(&id)
+            .is_some_and(|reading| reading.pane.is_pending(&pending.request))
+        {
+            return Err("Stale reading attention or request".into());
+        }
+        if let Err(error) = validate_request(&pending.request, current) {
+            let reason = error.to_string();
+            if let Some(reading) = self.readings.get_mut(&id) {
+                reading.pane.complete(
+                    &pending.request,
+                    Outcome::Refused {
+                        reason: reason.clone(),
+                    },
+                );
+            }
+            self.pending.remove(&token);
+            self.version += 1;
+            return Err(reason);
+        }
+        pending.dispatched = true;
+        Ok(())
+    }
+    pub fn complete(&mut self, id: u32, token: u32, outcome: Outcome) -> bool {
+        let Some(pending) = self.pending.get(&token) else {
+            return false;
+        };
+        if pending.reading != id || !pending.dispatched {
+            return false;
+        }
+        let pending = self.pending.remove(&token).unwrap();
+        let accepted = self
+            .readings
+            .get_mut(&id)
+            .is_some_and(|reading| reading.pane.complete(&pending.request, outcome));
+        self.version += 1;
+        accepted
+    }
+    /// A failed owner read/transport ends this local request without granting or
+    /// dispatching anything. A stale or foreign failure cannot affect a reading.
+    pub fn fail(&mut self, id: u32, token: u32, reason: String) -> bool {
+        let Some(pending) = self.pending.get(&token) else {
+            return false;
+        };
+        if pending.reading != id {
+            return false;
+        }
+        let pending = self.pending.remove(&token).unwrap();
+        let accepted = self.readings.get_mut(&id).is_some_and(|reading| {
+            reading
+                .pane
+                .complete(&pending.request, Outcome::Refused { reason })
+        });
+        self.queued.retain(|command| command.token != token);
+        self.version += 1;
+        accepted
+    }
+    pub fn complete_refresh(
+        &mut self,
+        id: u32,
+        token: u32,
+        current: Snapshot,
+    ) -> Result<bool, String> {
+        let Some(pending) = self.pending.get(&token) else {
+            return Ok(false);
+        };
+        if pending.reading != id || !pending.dispatched {
+            return Ok(false);
+        }
+        let reading = self.readings.get_mut(&id).ok_or("Reading closed")?;
+        let accepted = reading
+            .pane
+            .complete_refresh(&pending.request, current)
+            .map_err(|e| e.to_string())?;
+        if accepted {
+            self.pending.remove(&token);
+            self.opened.retain(|key, (reference, _)| {
+                *key != id
+                    || reading.pane.snapshot().resources.iter().any(|r| {
+                        r.reference == *reference
+                            && matches!(r.content, moot::resource_coop::ContentRead::Resolved)
+                    })
+            });
+            self.version += 1;
+        }
+        Ok(accepted)
+    }
+    /// Text is supplied by the content owner after its successful verification,
+    /// and belongs only to the exact still-live Open request. It is transient.
+    pub fn complete_open(&mut self, id: u32, token: u32, outcome: Outcome, text: String) -> bool {
+        let Some(pending) = self.pending.get(&token) else {
+            return false;
+        };
+        let Target::Resource {
+            reference,
+            action: moot::resource_coop::ResourceAction::Open,
+            ..
+        } = pending.request.target
+        else {
+            return false;
+        };
+        if !matches!(outcome, Outcome::Accepted { .. }) {
+            return false;
+        }
+        if self.complete(id, token, outcome) {
+            self.opened.insert(id, (reference, text));
+            true
+        } else {
+            false
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use moot::resource_coop::*;
+    fn read() -> Snapshot {
+        Snapshot {
+            moot: [1; 32],
+            reader: [2; 32],
+            collection: None,
+            activities: vec![],
+            resources: vec![ResourceRead {
+                reference: ResourceRef {
+                    moot: [1; 32],
+                    contribution: [3; 32],
+                    manifest: [4; 32],
+                },
+                title: "Notebook".into(),
+                schema: "text/plain".into(),
+                content: ContentRead::AddressOnly,
+                retention: RetentionRead::Unknown,
+                terms: BTreeMap::new(),
+                hosting: HostingRead::Unknown,
+                offers: [(ResourceAction::Open, Offer::Offered)].into(),
+            }],
+        }
+    }
+    #[test]
+    fn owner_read_failure_ends_only_the_exact_pending_request() {
+        let current = read();
+        let mut host = Host::default();
+        host.install(1, current.clone()).unwrap();
+        host.install(2, current.clone()).unwrap();
+        assert!(!host.in_flight());
+        host.begin(1, Intent::Refresh);
+        assert!(host.in_flight());
+        let command = host.take_commands().pop().unwrap();
+        assert!(!host.fail(2, command.token, "foreign".into()));
+        assert!(host.fail(1, command.token, "Owner read unavailable".into()));
+        assert!(!host.in_flight());
+        assert!(host.readings[&1].pane.pending().is_none());
+        assert!(matches!(
+            host.readings[&1].pane.outcome(),
+            Some(Outcome::Refused { .. })
+        ));
+        assert!(host.readings[&2].pane.outcome().is_none());
+        assert_eq!(host.readings[&1].pane.snapshot(), &current);
+        assert!(!host.fail(1, command.token, "late".into()));
+    }
+    #[test]
+    fn two_readings_require_fresh_owner_reads_and_exact_local_completions() {
+        let current = read();
+        let mut host = Host::default();
+        host.install(1, current.clone()).unwrap();
+        host.install(2, current.clone()).unwrap();
+        for id in [1, 2] {
+            host.begin(id, Intent::InspectResource(current.resources[0].reference));
+            host.begin(id, Intent::Resource(ResourceAction::Open));
+        }
+        let commands = host.take_commands();
+        assert_eq!(commands.len(), 2);
+        assert!(!host.complete(
+            1,
+            commands[0].token,
+            Outcome::Accepted {
+                owner_receipt: "unvalidated".into()
+            }
+        ));
+        host.prepare_dispatch(1, commands[0].token, &current)
+            .unwrap();
+        assert!(!host.complete(
+            2,
+            commands[0].token,
+            Outcome::Accepted {
+                owner_receipt: "foreign".into()
+            }
+        ));
+        assert!(host.complete(
+            1,
+            commands[0].token,
+            Outcome::Refused {
+                reason: "quota".into()
+            }
+        ));
+        host.prepare_dispatch(2, commands[1].token, &current)
+            .unwrap();
+        host.install(2, current.clone()).unwrap();
+        assert!(!host.complete(
+            2,
+            commands[1].token,
+            Outcome::Accepted {
+                owner_receipt: "late".into()
+            }
+        ));
+        assert_eq!(host.readings[&1].pane.snapshot(), &current);
+        assert!(host.readings[&2].pane.outcome().is_none());
+    }
+    #[test]
+    fn withdrawing_an_offer_refuses_before_owner_dispatch() {
+        let mut current = read();
+        let mut host = Host::default();
+        host.install(1, current.clone()).unwrap();
+        host.begin(1, Intent::InspectResource(current.resources[0].reference));
+        host.begin(1, Intent::Resource(ResourceAction::Open));
+        let command = host.take_commands().pop().unwrap();
+        current.resources[0].offers.clear();
+        assert!(host.prepare_dispatch(1, command.token, &current).is_err());
+        assert!(!host.complete(
+            1,
+            command.token,
+            Outcome::Accepted {
+                owner_receipt: "ignored".into()
+            }
+        ));
+        assert!(matches!(
+            host.readings[&1].pane.outcome(),
+            Some(Outcome::Refused { .. })
+        ));
+    }
+
+    #[test]
+    fn opened_text_and_refresh_completions_stay_with_the_exact_reading() {
+        let mut current = read();
+        current.resources[0].content = ContentRead::Resolved;
+        let mut host = Host::default();
+        host.install(1, current.clone()).unwrap();
+        host.install(2, current.clone()).unwrap();
+        for id in [1, 2] {
+            host.begin(id, Intent::InspectResource(current.resources[0].reference));
+            host.begin(id, Intent::Resource(ResourceAction::Open));
+            let command = host.take_commands().pop().unwrap();
+            host.prepare_dispatch(id, command.token, &current).unwrap();
+            assert!(host.complete_open(
+                id,
+                command.token,
+                Outcome::Accepted {
+                    owner_receipt: "local content owner".into()
+                },
+                format!("body {id}")
             ));
         }
+        host.begin(1, Intent::Refresh);
+        let refresh = host.take_commands().pop().unwrap();
+        assert!(
+            !host
+                .complete_refresh(2, refresh.token, current.clone())
+                .unwrap()
+        );
+        current.resources[0].content = ContentRead::Unavailable {
+            reason: "Owner no longer discloses this reading".into(),
+        };
+        host.prepare_dispatch(1, refresh.token, &current).unwrap();
+        assert!(host.complete_refresh(1, refresh.token, current).unwrap());
+        assert!(!host.opened.contains_key(&1));
+        assert_eq!(host.opened[&2].1, "body 2");
+        assert!(!host.complete_refresh(1, refresh.token, read()).unwrap());
+        host.close(2);
+        assert!(host.opened.is_empty());
     }
-    Box::new(el("section", children).attr("aria-label", format!("Moot reading {}", mount.id)))
+
+    #[test]
+    fn a_direct_attention_change_also_invalidates_dispatch() {
+        let current = read();
+        let mut host = Host::default();
+        host.install(1, current.clone()).unwrap();
+        host.begin(1, Intent::InspectResource(current.resources[0].reference));
+        host.begin(1, Intent::Resource(ResourceAction::Open));
+        let command = host.take_commands().pop().unwrap();
+        host.readings
+            .get_mut(&1)
+            .unwrap()
+            .pane
+            .refresh(current.clone())
+            .unwrap();
+        assert!(host.prepare_dispatch(1, command.token, &current).is_err());
+    }
 }
+
+#[cfg(not(target_arch = "wasm32"))]
+mod owner;
+#[cfg(not(target_arch = "wasm32"))]
+pub use owner::{Error, Mount, Opened, Owners, Scope, Update, View, view};

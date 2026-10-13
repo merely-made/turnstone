@@ -55,6 +55,9 @@ impl Pane {
             cancelled_drag: false,
         }
     }
+    pub(super) fn projected_model(&self) -> &FormeWorkspace {
+        self.candidate.as_ref().unwrap_or_else(|| self.model())
+    }
     pub(super) fn model(&self) -> &FormeWorkspace {
         self.session.view()
     }
@@ -394,6 +397,14 @@ fn open_selected(page: &mut TreePage) {
             workspace.open(member, graph)?;
         }
         Ok(())
+    });
+    if let Some(pane) = &mut page.forme {
+        pane.workbench = true;
+    }
+}
+pub(super) fn open_retained(page: &mut TreePage, member: Uuid) {
+    edit(page, None, true, |workspace, graph| {
+        workspace.open(member, graph)
     });
     if let Some(pane) = &mut page.forme {
         pane.workbench = true;
@@ -1073,6 +1084,49 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
         Some(tree) => {
             let moving = pane.moving;
             let locked = pane.model().locked;
+            let reading_shared = page.shared.clone();
+            let reading_store = page.product.as_ref().and_then(|p| p.retained_store());
+            let mut appearances = std::collections::BTreeMap::new();
+            for member in super::reading::active_members(&tree) {
+                if let Some((_, node)) = graph.get_node_by_id(member) {
+                    let address = node.url().to_string();
+                    let appearance = if matches!(
+                        mere_document_lanes::retained_clip::request(&address),
+                        Ok(Some(mere_document_lanes::retained_clip::ClipRequest::Read(
+                            _
+                        )))
+                    ) {
+                        Some(super::reading::clip_appearance(
+                            &reading_shared,
+                            member,
+                            &address,
+                            reading_store.clone(),
+                        ))
+                    } else {
+                        node.body.as_ref().map(|body| {
+                            super::reading::appearance(
+                                &reading_shared,
+                                member,
+                                graphshell::retained_content::HeldContent {
+                                    address,
+                                    title: node.title.clone(),
+                                    media_type: node
+                                        .media_type
+                                        .clone()
+                                        .unwrap_or_else(|| "text/plain".into()),
+                                    bytes: body.as_bytes().to_vec(),
+                                    engine: None,
+                                    media: None,
+                                },
+                            )
+                        })
+                    };
+                    if let Some(appearance) = appearance {
+                        appearances.insert(member, appearance);
+                    }
+                }
+            }
+            super::reading::prepare(page);
             let reading = move |tile: &Tile| -> Slot<TreePage, ()> {
                 let ContentSource::Open { id, .. } = &tile.content else {
                     return Slot::Hole;
@@ -1088,8 +1142,6 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 let title = node.title.clone();
                 let address = node.url().to_string();
                 let mut controls: Vec<Child> = vec![
-                    Box::new(el("h2", title.clone())),
-                    Box::new(el("p", address).attr("class", "reading-address")),
                     Box::new(button("Show in Mere", move |p: &mut TreePage, _| {
                         p.shared.canvas.borrow_mut().select_member(member);
                         if let Some(f) = &mut p.forme {
@@ -1097,7 +1149,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                         }
                         selection_changed(p);
                         p.shared.dirty.set(true);
-                    })),
+                    }).attr("aria-description", address.clone())),
                 ];
                 let mut tags: Vec<_> = graph
                     .node_content_tags(key)
@@ -1108,11 +1160,8 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 if !tags.is_empty() {
                     controls.push(Box::new(el("p", tags.join(" · "))));
                 }
-                if let Some(body) = &node.body {
-                    controls.push(Box::new(
-                        el("pre", body.chars().take(16_384).collect::<String>())
-                            .attr("class", "reading-body"),
-                    ));
+                if let Some(appearance) = appearances.get(&member) {
+                    controls.push(super::reading::render(appearance.clone()));
                 }
                 if !locked {
                     controls.push(Box::new(

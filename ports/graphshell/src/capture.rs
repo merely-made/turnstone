@@ -18,6 +18,10 @@ use chartulary::FacetId;
 use eidetic::browsing::{
     BrowsingMemory, PageRef, TraceEvent, TraceTransition, bootstrap_browsing_schema,
 };
+use eidetic::import::encounters::{
+    BrowserEncounter, BrowserEncounterLedger, BrowserEncounterRef, BrowserParent,
+    BrowserSourceScope,
+};
 use eidetic::{NoFetcher, PrivacyClass, list_typed, load_typed, manifest::delete_manifest};
 use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
 use mere::kernel::graph::{EdgeFamily, NavigationTrigger, RelationKind, RelationSelector};
@@ -35,6 +39,11 @@ use crate::product::ProductError;
 
 pub const BROWSER_HISTORY_FACET: &str = "graphshell.browser-history/v1";
 pub const BROWSER_HISTORY_HANDLER_PREFIX: &str = "browser.history/";
+const ENCOUNTER_KEY_PREFIX: &str = "graphshell/browser-encounters/v1/";
+
+fn default_encounter_limit() -> usize {
+    100_000
+}
 
 #[cfg(not(target_arch = "wasm32"))]
 pub trait CaptureBackend: Backend + Sync {}
@@ -182,6 +191,8 @@ pub struct HistoryCapturePolicy {
     pub dedupe_window_ms: u64,
     pub segment_size: usize,
     pub retention_traces: usize,
+    #[serde(default = "default_encounter_limit")]
+    pub encounter_limit: usize,
 }
 
 impl HistoryCapturePolicy {
@@ -197,6 +208,7 @@ impl HistoryCapturePolicy {
             dedupe_window_ms: 1_000,
             segment_size: 64,
             retention_traces: 2_048,
+            encounter_limit: default_encounter_limit(),
         }
     }
 
@@ -216,6 +228,14 @@ impl HistoryCapturePolicy {
 pub struct BrowserVisit {
     pub source: String,
     pub visit_id: Option<String>,
+    #[serde(default)]
+    pub source_scope: Option<BrowserSourceScope>,
+    #[serde(default)]
+    pub parent: BrowserParent,
+    #[serde(default)]
+    pub original_unix_micros: Option<i64>,
+    #[serde(default)]
+    pub source_is_local: Option<bool>,
     pub url: String,
     pub title: Option<String>,
     pub favicon_url: Option<String>,
@@ -225,10 +245,52 @@ pub struct BrowserVisit {
     pub private: bool,
 }
 
+impl BrowserVisit {
+    /// File exports and extension observations join the same admission path.
+    pub fn from_imported(item: &eidetic::import::ImportedHistoryVisitItem, source: &str) -> Self {
+        use eidetic::import::HistoryTransitionKind as T;
+        let transition = match item.transition.as_ref() {
+            Some(T::Link) => "link",
+            Some(T::Typed) => "typed",
+            Some(T::Generated) => "generated",
+            Some(T::AutoBookmark) => "auto_bookmark",
+            Some(T::AutoSubframe) => "auto_subframe",
+            Some(T::Reload) => "reload",
+            Some(T::Redirect) => "redirect",
+            Some(T::Other(raw)) => raw.as_str(),
+            None => "unknown",
+        };
+        Self {
+            source: source.into(),
+            source_scope: item.source_scope.clone(),
+            visit_id: item.visit_id.clone(),
+            parent: item.parent.clone(),
+            original_unix_micros: item.visited_at_unix_micros,
+            source_is_local: None,
+            url: item.page.canonical_url.clone(),
+            title: item
+                .page
+                .normalized_title
+                .clone()
+                .or_else(|| item.page.raw_title.clone()),
+            favicon_url: item.page.favicon_url.clone(),
+            referrer_url: item.referring_url.clone(),
+            transition: transition.into(),
+            at_ms: eidetic::import::history_event(item).at_ms,
+            private: false,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NormalizedVisit {
     pub source: String,
     pub visit_id: Option<String>,
+    pub source_scope: Option<BrowserSourceScope>,
+    pub parent: BrowserParent,
+    pub raw_transition: String,
+    pub original_unix_micros: Option<i64>,
+    pub source_is_local: Option<bool>,
     pub url: String,
     pub title: Option<String>,
     pub favicon_url: Option<String>,
@@ -254,17 +316,18 @@ pub enum CaptureTransition {
 
 impl CaptureTransition {
     fn from_browser(value: &str) -> Self {
-        match value.trim().to_ascii_lowercase().as_str() {
-            "link" | "link_click" => Self::LinkClick,
-            "typed" | "url_typed" => Self::UrlTyped,
-            "back" => Self::Back,
-            "forward" => Self::Forward,
-            "reload" => Self::Reload,
-            "redirect" | "auto_subframe" | "manual_subframe" => Self::Redirect,
-            "tab_spawn" | "generated" => Self::TabSpawn,
-            "restore" | "reopen" => Self::Restore,
-            "imported" => Self::Imported,
-            _ => Self::Unknown,
+        use chartulary::stemma::TransitionKind as T;
+        match eidetic::import::encounters::browser_transition(value) {
+            T::LinkClick => Self::LinkClick,
+            T::UrlTyped => Self::UrlTyped,
+            T::Back => Self::Back,
+            T::Forward => Self::Forward,
+            T::Reload => Self::Reload,
+            T::Redirect => Self::Redirect,
+            T::TabSpawn => Self::TabSpawn,
+            T::Restore => Self::Restore,
+            T::Imported => Self::Imported,
+            T::Unknown => Self::Unknown,
         }
     }
 
@@ -322,11 +385,13 @@ pub enum CaptureDropReason {
     UnsupportedScheme,
     ExcludedOrigin,
     Duplicate,
+    InvalidIdentity,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum CaptureOutcome {
     Accepted { node: Uuid },
+    Buffered { identity: BrowserEncounterRef },
     Dropped(CaptureDropReason),
 }
 
@@ -349,6 +414,115 @@ pub struct BrowserHistoryFacetV1 {
     pub latest_favicon_url: Option<String>,
     pub last_transition: CaptureTransition,
     pub sources: BTreeSet<String>,
+    #[serde(default)]
+    pub encounters: Vec<BrowserEncounterRef>,
+    #[serde(default)]
+    pub relations: Vec<BrowserDocumentRelation>,
+}
+
+/// A document relation projection with exact source encounter handles.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct BrowserDocumentRelation {
+    pub kind: BrowserRelationKind,
+    pub parent: BrowserEncounterRef,
+    pub child: BrowserEncounterRef,
+    pub from_url: String,
+    pub to_url: String,
+    pub raw_transition: String,
+    pub at_ms: u64,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum BrowserRelationKind {
+    BrowserReferrer,
+    FollowedLink,
+    Redirect,
+    Reload,
+}
+
+impl<B: Backend> MereHost<B> {
+    /// Inspect exact encounter evidence for a directed document pair. The
+    /// facet is a projection; the source encounters remain in the ledger.
+    pub fn browser_relations(
+        &self,
+        from: &str,
+        to: &str,
+    ) -> Result<Vec<BrowserDocumentRelation>, CaptureError> {
+        let Some(value) = self.facet_value(to, BROWSER_HISTORY_FACET) else {
+            return Ok(Vec::new());
+        };
+        let facet: BrowserHistoryFacetV1 = serde_json::from_value(value.clone())
+            .map_err(|error| CaptureError::InvalidFacet(error.to_string()))?;
+        Ok(facet
+            .relations
+            .into_iter()
+            .filter(|relation| relation.from_url == from && relation.to_url == to)
+            .collect())
+    }
+}
+
+fn encounter_key<B: Backend>(host: &MereHost<B>) -> String {
+    format!(
+        "{ENCOUNTER_KEY_PREFIX}{}",
+        host.graph_session().manifest().root_graph_id.as_uuid()
+    )
+}
+
+/// Read the same durable visit authority used by admission, including unresolved
+/// source children. No fetcher, page request or live navigation is involved.
+pub async fn browser_encounters<B: Backend>(
+    host: &MereHost<B>,
+    store: &B,
+) -> Result<BrowserEncounterLedger, CaptureError> {
+    let bytes = store
+        .get(&encounter_key(host))
+        .await
+        .map_err(|error| CaptureError::Store(error.to_string()))?;
+    let ledger: BrowserEncounterLedger = bytes
+        .map(|bytes| {
+            serde_json::from_slice(&bytes)
+                .map_err(|error| CaptureError::InvalidFacet(error.to_string()))
+        })
+        .transpose()?
+        .unwrap_or_default();
+    ledger
+        .validate()
+        .map_err(|error| CaptureError::InvalidFacet(error.into()))?;
+    Ok(ledger)
+}
+
+fn source_key(source: &str, scope: Option<&BrowserSourceScope>) -> String {
+    scope.map_or_else(
+        || source.to_string(),
+        |scope| serde_json::to_string(scope).expect("browser scope serializes"),
+    )
+}
+
+impl NormalizedVisit {
+    fn trace(&self) -> TraceTransition {
+        match self.raw_transition.trim().to_ascii_lowercase().as_str() {
+            "auto_subframe" | "manual_subframe" | "download" => TraceTransition::Restore,
+            _ => self.transition.trace(),
+        }
+    }
+    fn from_encounter(visit: &BrowserEncounter, parent: Option<&BrowserEncounter>) -> Self {
+        Self {
+            source: visit.identity.scope.product.clone(),
+            visit_id: Some(visit.identity.visit_id.clone()),
+            source_scope: Some(visit.identity.scope.clone()),
+            parent: visit.parent.clone(),
+            raw_transition: visit.raw_transition.clone(),
+            original_unix_micros: visit.original_unix_micros,
+            source_is_local: visit.source_is_local,
+            url: visit.url.clone(),
+            title: visit.title.clone(),
+            favicon_url: None,
+            referrer_url: parent.map(|parent| parent.url.clone()),
+            transition: CaptureTransition::from_browser(&visit.raw_transition),
+            at_ms: visit.at_ms,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -461,11 +635,13 @@ impl BrowserHistoryCapture {
         saved_at_secs: u64,
     ) -> Result<Vec<CaptureOutcome>, CaptureError> {
         let memory_before = self.memory.clone();
+        let mut ledger = browser_encounters(host, store).await?;
         let mut batch = CaptureBatch::new(&*store);
         let staged = async {
             let mut outcomes = Vec::new();
             let mut pending_seen = HashSet::new();
             let mut pending_last = self.last_accepted.clone();
+            let mut scoped_outcomes = Vec::new();
             for visit in visits {
                 let normalized =
                     match self.normalize_against(visit, &pending_seen, pending_last.as_ref()) {
@@ -475,7 +651,38 @@ impl BrowserHistoryCapture {
                             continue;
                         },
                     };
-                let projected = host.project_browser_visit(&normalized, persona, device)?;
+                if let (Some(scope), Some(visit_id)) =
+                    (&normalized.source_scope, &normalized.visit_id)
+                {
+                    let encounter = BrowserEncounter {
+                        identity: BrowserEncounterRef {
+                            scope: scope.clone(),
+                            visit_id: visit_id.clone(),
+                        },
+                        parent: normalized.parent.clone(),
+                        url: normalized.url.clone(),
+                        title: normalized.title.clone(),
+                        raw_transition: normalized.raw_transition.clone(),
+                        at_ms: normalized.at_ms,
+                        original_unix_micros: normalized.original_unix_micros,
+                        source_is_local: normalized.source_is_local,
+                        persona: persona.to_string(),
+                        acquisition_device: device.to_string(),
+                        intake_at_ms: saved_at_secs.saturating_mul(1_000),
+                    };
+                    let identity = encounter.identity.clone();
+                    let received = ledger
+                        .receive(encounter, self.policy.encounter_limit)
+                        .map_err(|error| CaptureError::InvalidFacet(error.to_string()))?;
+                    if !received {
+                        outcomes.push(CaptureOutcome::Dropped(CaptureDropReason::Duplicate));
+                        continue;
+                    }
+                    scoped_outcomes.push((identity.clone(), outcomes.len()));
+                    outcomes.push(CaptureOutcome::Buffered { identity });
+                    continue;
+                }
+                let projected = host.project_browser_visit(&normalized, persona, device, None)?;
                 save_access_record(&mut batch, &projected.record)
                     .await
                     .map_err(|error| CaptureError::Store(error.to_string()))?;
@@ -490,7 +697,7 @@ impl BrowserHistoryCapture {
                             url: normalized.url.clone(),
                             title: normalized.title.clone(),
                         },
-                        transition: normalized.transition.trace(),
+                        transition: normalized.trace(),
                         at_ms: normalized.at_ms,
                         dwell_ms: None,
                         candidates: Vec::new(),
@@ -504,6 +711,73 @@ impl BrowserHistoryCapture {
                     node: projected.node,
                 });
             }
+            for encounter in ledger.resolve() {
+                let parent = match &encounter.parent {
+                    BrowserParent::Visit { visit_id }
+                    | BrowserParent::OutsideRange { visit_id } => {
+                        ledger.encounter(&BrowserEncounterRef {
+                            scope: encounter.identity.scope.clone(),
+                            visit_id: visit_id.clone(),
+                        })
+                    },
+                    _ => None,
+                };
+                let normalized = NormalizedVisit::from_encounter(&encounter, parent);
+                let relation = parent.map(|parent| BrowserDocumentRelation {
+                    kind: match normalized.transition {
+                        CaptureTransition::LinkClick => BrowserRelationKind::FollowedLink,
+                        CaptureTransition::Redirect => BrowserRelationKind::Redirect,
+                        CaptureTransition::Reload => BrowserRelationKind::Reload,
+                        _ => BrowserRelationKind::BrowserReferrer,
+                    },
+                    parent: parent.identity.clone(),
+                    child: encounter.identity.clone(),
+                    from_url: parent.url.clone(),
+                    to_url: encounter.url.clone(),
+                    raw_transition: encounter.raw_transition.clone(),
+                    at_ms: encounter.at_ms,
+                });
+                let projected = host.project_browser_visit(
+                    &normalized,
+                    &encounter.persona,
+                    &encounter.acquisition_device,
+                    relation.as_ref(),
+                )?;
+                if let Some((_, index)) = scoped_outcomes
+                    .iter()
+                    .find(|(id, _)| *id == encounter.identity)
+                {
+                    outcomes[*index] = CaptureOutcome::Accepted {
+                        node: projected.node,
+                    };
+                }
+                save_access_record(&mut batch, &projected.record)
+                    .await
+                    .map_err(|error| CaptureError::Store(error.to_string()))?;
+                self.memory.record_traversal(
+                    &encounter.persona,
+                    TraceEvent {
+                        from: normalized
+                            .referrer_url
+                            .clone()
+                            .map(|url| PageRef { url, title: None }),
+                        to: PageRef {
+                            url: encounter.url,
+                            title: encounter.title,
+                        },
+                        transition: normalized.trace(),
+                        at_ms: encounter.at_ms,
+                        dwell_ms: None,
+                        candidates: Vec::new(),
+                    },
+                );
+            }
+            let ledger_bytes = serde_json::to_vec(&ledger)
+                .map_err(|error| CaptureError::InvalidFacet(error.to_string()))?;
+            batch
+                .put(&encounter_key(host), &ledger_bytes)
+                .await
+                .map_err(|error| CaptureError::Store(error.to_string()))?;
             self.memory
                 .flush(&mut batch, saved_at_secs.saturating_mul(1_000))
                 .await
@@ -548,6 +822,8 @@ impl BrowserHistoryCapture {
         let canonical =
             canonical_url(url, &forget_policy).map_err(CaptureError::RejectedAddress)?;
         let memory_before = self.memory.clone();
+        let mut ledger = browser_encounters(host, store).await?;
+        ledger.forget_url(&canonical);
         let mut batch = CaptureBatch::new(&*store);
         let staged = async {
             let forgotten = self
@@ -581,6 +857,15 @@ impl BrowserHistoryCapture {
                     .map_err(|error| CaptureError::Store(error.to_string()))?;
             }
             host.forget_browser_history(&canonical, mode)?;
+            host.forget_related_browser_evidence(&canonical)?;
+            batch
+                .put(
+                    &encounter_key(host),
+                    &serde_json::to_vec(&ledger)
+                        .map_err(|error| CaptureError::InvalidFacet(error.to_string()))?,
+                )
+                .await
+                .map_err(|error| CaptureError::Store(error.to_string()))?;
             let written = host.stage(&batch, saved_at_secs).await?;
             Ok::<_, CaptureError>((forgotten, forgotten_source_events, written))
         }
@@ -620,17 +905,36 @@ impl BrowserHistoryCapture {
             return Err(CaptureDropReason::PrivateWindow);
         }
         let source = visit.source.trim().to_ascii_lowercase();
+        if visit
+            .source_scope
+            .as_ref()
+            .is_some_and(|scope| !scope.is_valid() || !scope.product.eq_ignore_ascii_case(&source))
+            || (visit.source_scope.is_some()
+                && visit
+                    .visit_id
+                    .as_deref()
+                    .is_none_or(|id| id.trim().is_empty()))
+        {
+            return Err(CaptureDropReason::InvalidIdentity);
+        }
+        let capture_source = source_key(&source, visit.source_scope.as_ref());
         if visit.visit_id.as_ref().is_some_and(|visit_id| {
-            self.seen_visit_ids
-                .contains(&(source.clone(), visit_id.clone()))
-                || pending_seen.contains(&(source.clone(), visit_id.clone()))
+            // Scoped encounters deduplicate and check source conflicts in the
+            // ledger. Legacy records keep their existing supported read path.
+            visit.source_scope.is_none()
+                && (self
+                    .seen_visit_ids
+                    .contains(&(capture_source.clone(), visit_id.clone()))
+                    || pending_seen.contains(&(capture_source.clone(), visit_id.clone())))
         }) {
             return Err(CaptureDropReason::Duplicate);
         }
         let url = canonical_url(&visit.url, &self.policy)?;
-        if pending_last.is_some_and(|(last_url, at_ms)| {
-            last_url == &url && visit.at_ms.abs_diff(*at_ms) <= self.policy.dedupe_window_ms
-        }) {
+        if visit.visit_id.is_none()
+            && pending_last.is_some_and(|(last_url, at_ms)| {
+                last_url == &url && visit.at_ms.abs_diff(*at_ms) <= self.policy.dedupe_window_ms
+            })
+        {
             return Err(CaptureDropReason::Duplicate);
         }
         let referrer_url = visit
@@ -640,6 +944,15 @@ impl BrowserHistoryCapture {
         Ok(NormalizedVisit {
             source,
             visit_id: visit.visit_id,
+            source_scope: visit.source_scope,
+            parent: if visit.referrer_url.is_some() && referrer_url.is_none() {
+                BrowserParent::Withheld
+            } else {
+                visit.parent
+            },
+            raw_transition: visit.transition.clone(),
+            original_unix_micros: visit.original_unix_micros,
+            source_is_local: visit.source_is_local,
             url,
             title: clean_optional(visit.title),
             favicon_url: clean_optional(visit.favicon_url),
@@ -678,6 +991,58 @@ fn clean_optional(value: Option<String>) -> Option<String> {
 }
 
 impl<B: Backend> MereHost<B> {
+    fn forget_related_browser_evidence(&mut self, address: &str) -> Result<(), CaptureError> {
+        let nodes: Vec<_> = self
+            .graph()
+            .nodes()
+            .map(|(key, node)| (key, node.id))
+            .collect();
+        for (key, id) in nodes {
+            if let Some(value) = self
+                .graph()
+                .facets()
+                .get(&id, &FacetId::new(BROWSER_HISTORY_FACET))
+                .cloned()
+            {
+                let mut facet: BrowserHistoryFacetV1 = serde_json::from_value(value)
+                    .map_err(|error| CaptureError::InvalidFacet(error.to_string()))?;
+                let before = facet.relations.len();
+                facet
+                    .relations
+                    .retain(|relation| relation.from_url != address && relation.to_url != address);
+                if facet.relations.len() != before {
+                    self.set_facet(
+                        key,
+                        BROWSER_HISTORY_FACET,
+                        serde_json::to_value(facet).unwrap(),
+                    )?;
+                }
+            }
+            if let Some(value) = self
+                .graph()
+                .facets()
+                .get(&id, &FacetId::new(ACCESS_HISTORY_FACET))
+                .cloned()
+            {
+                let mut history: AccessHistory = serde_json::from_value(value)
+                    .map_err(|error| CaptureError::InvalidFacet(error.to_string()))?;
+                let before = history.records.len();
+                history.records.retain(|record| {
+                    !(record.handler.starts_with(BROWSER_HISTORY_HANDLER_PREFIX)
+                        && record.referring_address.as_deref() == Some(address))
+                });
+                if history.records.len() != before {
+                    self.set_facet(
+                        key,
+                        ACCESS_HISTORY_FACET,
+                        serde_json::to_value(history).unwrap(),
+                    )?;
+                }
+            }
+        }
+        Ok(())
+    }
+
     /// Project one visit, its edits authored via the extension that captured
     /// it (reservoir plan §7 item 23).
     fn project_browser_visit(
@@ -685,9 +1050,10 @@ impl<B: Backend> MereHost<B> {
         visit: &NormalizedVisit,
         persona: &str,
         device: &str,
+        relation: Option<&BrowserDocumentRelation>,
     ) -> Result<ProjectedVisit, CaptureError> {
         self.through(format!("browser.extension.{}", visit.source), |host| {
-            host.project_visit(visit, persona, device)
+            host.project_visit(visit, persona, device, relation)
         })
     }
 
@@ -696,6 +1062,7 @@ impl<B: Backend> MereHost<B> {
         visit: &NormalizedVisit,
         persona: &str,
         device: &str,
+        relation: Option<&BrowserDocumentRelation>,
     ) -> Result<ProjectedVisit, CaptureError> {
         let created_by_capture = self.graph().get_node_by_url(&visit.url).is_none();
         let node = self.create_address(&visit.url, visit.title.as_deref().unwrap_or_default())?;
@@ -704,7 +1071,7 @@ impl<B: Backend> MereHost<B> {
             .get_node_key_by_id(node)
             .ok_or_else(|| CaptureError::InvalidFacet("created node is missing".to_string()))?;
         let referring_container_id = if let Some(referrer) = &visit.referrer_url
-            && referrer != &visit.url
+            && (relation.is_some() || referrer != &visit.url)
         {
             Some(self.create_address(referrer, "")?)
         } else {
@@ -712,7 +1079,7 @@ impl<B: Backend> MereHost<B> {
         };
         let source_identity = format!(
             "{}\u{0}{}\u{0}{}\u{0}{}",
-            visit.source,
+            source_key(&visit.source, visit.source_scope.as_ref()),
             visit.visit_id.as_deref().unwrap_or_default(),
             visit.url,
             visit.at_ms
@@ -733,7 +1100,7 @@ impl<B: Backend> MereHost<B> {
             referring_container_id,
             referring_address: visit.referrer_url.clone(),
             transition: visit.transition.access(),
-            capture_source: visit.source.clone(),
+            capture_source: source_key(&visit.source, visit.source_scope.as_ref()),
             source_event_id: visit.visit_id.clone(),
             privacy: PrivacyClass::LocalOnly,
         };
@@ -760,6 +1127,8 @@ impl<B: Backend> MereHost<B> {
                 latest_favicon_url: None,
                 last_transition: visit.transition,
                 sources: BTreeSet::new(),
+                encounters: Vec::new(),
+                relations: Vec::new(),
             });
         facet.first_seen_ms = facet.first_seen_ms.min(visit.at_ms);
         facet.last_seen_ms = facet.last_seen_ms.max(visit.at_ms);
@@ -772,6 +1141,15 @@ impl<B: Backend> MereHost<B> {
         }
         facet.last_transition = visit.transition;
         facet.sources.insert(visit.source.clone());
+        if let (Some(scope), Some(visit_id)) = (&visit.source_scope, &visit.visit_id) {
+            facet.encounters.push(BrowserEncounterRef {
+                scope: scope.clone(),
+                visit_id: visit_id.clone(),
+            });
+        }
+        if let Some(relation) = relation {
+            facet.relations.push(relation.clone());
+        }
         self.set_facet(
             key,
             BROWSER_HISTORY_FACET,
@@ -911,6 +1289,10 @@ mod tests {
         BrowserVisit {
             source: "Firefox".to_string(),
             visit_id: Some(id.to_string()),
+            source_scope: None,
+            parent: BrowserParent::Unknown,
+            original_unix_micros: None,
+            source_is_local: None,
             url: url.to_string(),
             title: Some(format!("  {id} title  ")),
             favicon_url: Some("https://assets.example/favicon.ico".to_string()),
@@ -919,6 +1301,678 @@ mod tests {
             at_ms,
             private: false,
         }
+    }
+
+    fn scoped(mut visit: BrowserVisit, profile: &str, parent: BrowserParent) -> BrowserVisit {
+        visit.source_scope = Some(BrowserSourceScope {
+            product: "firefox".into(),
+            profile: profile.into(),
+            generation: "history-1".into(),
+        });
+        visit.parent = parent;
+        visit
+    }
+
+    #[test]
+    #[ignore = "explicit marker-owned disk fixture; run seed and reopen in separate processes"]
+    fn disk_browser_history_receipt() {
+        pollster::block_on(async {
+            let root = std::path::PathBuf::from(
+                std::env::var("MERE_BROWSER_HISTORY_RECEIPT_ROOT").expect("explicit fixture root"),
+            );
+            assert_eq!(
+                std::fs::read_to_string(root.join(".owner")).unwrap().trim(),
+                "mere-browser-history-intake-fixture-v1"
+            );
+            let stage =
+                std::env::var("MERE_BROWSER_HISTORY_RECEIPT_STAGE").expect("seed or reopen");
+            let backend = muniment::RedbBackend::open(root.join("history.redb")).unwrap();
+            let mut store = backend.clone();
+            let mut host = if stage == "seed" {
+                MereHost::fixture(
+                    backend.clone(),
+                    selected(),
+                    crate::mere_host::fixture_handlers(),
+                )
+                .unwrap()
+            } else {
+                assert_eq!(stage, "reopen");
+                MereHost::open(
+                    backend.clone(),
+                    selected(),
+                    crate::mere_host::fixture_handlers(),
+                    crate::access::AccessContext {
+                        persona: PERSONA.into(),
+                        device: DEVICE.into(),
+                        at_ms: 9000,
+                    },
+                )
+                .await
+                .unwrap()
+            };
+            let a = "https://disk-history.example/a";
+            let b = "https://disk-history.example/b";
+            let c = "https://disk-history.example/c";
+            let visits = vec![
+                scoped(
+                    visit("2", b, Some(a), 1001),
+                    "p",
+                    BrowserParent::Visit {
+                        visit_id: "1".into(),
+                    },
+                ),
+                scoped(visit("1", a, None, 1000), "p", BrowserParent::Root),
+                scoped(
+                    visit("3", c, Some(a), 1002),
+                    "p",
+                    BrowserParent::Visit {
+                        visit_id: "1".into(),
+                    },
+                ),
+                scoped(
+                    visit("4", b, Some(b), 1003),
+                    "p",
+                    BrowserParent::Visit {
+                        visit_id: "2".into(),
+                    },
+                ),
+                scoped(
+                    visit("1", a, None, 1000),
+                    "another-profile",
+                    BrowserParent::Root,
+                ),
+            ];
+            let mut capture =
+                BrowserHistoryCapture::load(&mut store, HistoryCapturePolicy::consented())
+                    .await
+                    .unwrap();
+            if stage == "seed" {
+                capture
+                    .ingest_batch(
+                        &mut host,
+                        &mut store,
+                        [visits[0].clone()],
+                        PERSONA,
+                        DEVICE,
+                        1,
+                    )
+                    .await
+                    .unwrap();
+                assert_eq!(
+                    browser_encounters(&host, &store)
+                        .await
+                        .unwrap()
+                        .pending
+                        .len(),
+                    1
+                );
+                capture
+                    .ingest_batch(
+                        &mut host,
+                        &mut store,
+                        visits[1..].to_vec(),
+                        PERSONA,
+                        DEVICE,
+                        2,
+                    )
+                    .await
+                    .unwrap();
+            }
+            let ledger = browser_encounters(&host, &store).await.unwrap();
+            assert_eq!(ledger.snapshot.visits.len(), 5);
+            assert!(ledger.pending.is_empty());
+            let receipt = serde_json::json!({
+                "graph": host.graph_session().manifest().root_graph_id.as_uuid().to_string(),
+                "ledger": ledger, "a_to_b": host.browser_relations(a, b).unwrap(),
+                "a_to_c": host.browser_relations(a, c).unwrap(), "b_to_b": host.browser_relations(b, b).unwrap(),
+            });
+            if stage == "seed" {
+                std::fs::write(
+                    root.join("expected.json"),
+                    serde_json::to_vec_pretty(&receipt).unwrap(),
+                )
+                .unwrap();
+            } else {
+                assert!(host.was_reopened());
+                let expected: serde_json::Value =
+                    serde_json::from_slice(&std::fs::read(root.join("expected.json")).unwrap())
+                        .unwrap();
+                assert_eq!(receipt, expected);
+                let replay = capture
+                    .ingest_batch(&mut host, &mut store, visits, PERSONA, DEVICE, 9)
+                    .await
+                    .unwrap();
+                assert!(
+                    replay
+                        .iter()
+                        .all(|result| *result
+                            == CaptureOutcome::Dropped(CaptureDropReason::Duplicate))
+                );
+                assert_eq!(
+                    browser_encounters(&host, &store)
+                        .await
+                        .unwrap()
+                        .snapshot
+                        .visits
+                        .len(),
+                    5
+                );
+            }
+            println!(
+                "browser history {stage}: five visits, three relations, stable graph/source identity"
+            );
+        });
+    }
+
+    #[test]
+    fn stable_legacy_ids_survive_proximity_and_browser_transition_meanings_are_preserved() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let mut store = backend.clone();
+            let mut host = MereHost::fixture(
+                backend.clone(),
+                selected(),
+                crate::mere_host::fixture_handlers(),
+            )
+            .unwrap();
+            let mut capture =
+                BrowserHistoryCapture::load(&mut store, HistoryCapturePolicy::consented())
+                    .await
+                    .unwrap();
+            let address = "https://legacy.example/revisited";
+            let outcomes = capture
+                .ingest_batch(
+                    &mut host,
+                    &mut store,
+                    [
+                        visit("1", address, None, 1000),
+                        visit("2", address, None, 1001),
+                    ],
+                    PERSONA,
+                    DEVICE,
+                    1,
+                )
+                .await
+                .unwrap();
+            assert!(
+                outcomes
+                    .iter()
+                    .all(|outcome| matches!(outcome, CaptureOutcome::Accepted { .. }))
+            );
+            let facet: BrowserHistoryFacetV1 = serde_json::from_value(
+                host.facet_value(address, BROWSER_HISTORY_FACET)
+                    .unwrap()
+                    .clone(),
+            )
+            .unwrap();
+            assert_eq!(facet.visit_count, 2);
+            let mut generated = scoped(
+                visit("3", "https://legacy.example/generated", None, 1002),
+                "p",
+                BrowserParent::Root,
+            );
+            generated.transition = "generated".into();
+            let mut frame = scoped(
+                visit("4", "https://legacy.example/frame", None, 1003),
+                "p",
+                BrowserParent::Root,
+            );
+            frame.transition = "auto_subframe".into();
+            capture
+                .ingest_batch(
+                    &mut host,
+                    &mut store,
+                    [generated, frame],
+                    PERSONA,
+                    DEVICE,
+                    1,
+                )
+                .await
+                .unwrap();
+            let ledger = browser_encounters(&host, &store).await.unwrap();
+            assert_eq!(
+                ledger.snapshot.visits[0].inbound.unwrap().kind,
+                chartulary::stemma::TransitionKind::UrlTyped
+            );
+            assert_eq!(
+                ledger.snapshot.visits[1].inbound.unwrap().kind,
+                chartulary::stemma::TransitionKind::Unknown
+            );
+            assert_eq!(
+                ledger.snapshot.visits[1].context.raw_transition,
+                "auto_subframe"
+            );
+            assert_eq!(
+                capture
+                    .memory()
+                    .recent_corridor(4)
+                    .last()
+                    .unwrap()
+                    .transition,
+                TraceTransition::Restore
+            );
+        });
+    }
+
+    #[test]
+    fn extension_production_wire_fixture_enters_the_document_graph() {
+        pollster::block_on(async {
+            #[derive(Deserialize)]
+            struct Delivery {
+                policy: HistoryCapturePolicy,
+                visits: Vec<BrowserVisit>,
+            }
+            // Generated by the real background/model scripts against a synthetic
+            // browser API. This crosses the JS/Rust schema boundary.
+            let delivery: Delivery =
+                serde_json::from_str(include_str!("../web/fixtures/browser-history-intake.json"))
+                    .unwrap();
+            let backend = MemoryBackend::new();
+            let mut store = backend.clone();
+            let mut host = MereHost::fixture(
+                backend.clone(),
+                selected(),
+                crate::mere_host::fixture_handlers(),
+            )
+            .unwrap();
+            let mut capture = BrowserHistoryCapture::load(&mut store, delivery.policy)
+                .await
+                .unwrap();
+            capture
+                .ingest_batch(&mut host, &mut store, delivery.visits, PERSONA, DEVICE, 1)
+                .await
+                .unwrap();
+            let evidence = host
+                .browser_relations("https://example.net/from", "https://example.net/to")
+                .unwrap();
+            assert_eq!(evidence.len(), 1);
+            assert_eq!(evidence[0].parent.visit_id, "from");
+            assert_eq!(evidence[0].child.visit_id, "to");
+            assert_eq!(
+                browser_encounters(&host, &store)
+                    .await
+                    .unwrap()
+                    .snapshot
+                    .visits
+                    .len(),
+                2
+            );
+        });
+    }
+
+    #[test]
+    fn exported_history_adapter_keeps_source_parent_and_microsecond_evidence() {
+        let item: eidetic::import::ImportedHistoryVisitItem = serde_json::from_value(serde_json::json!({
+            "page": { "canonical_url": "https://example.org/b", "normalized_title": "B",
+                "raw_url": null, "raw_title": "B", "favicon_url": null },
+            "visit_id": "12", "source_scope": { "product": "firefox", "profile": "p", "generation": "g" },
+            "parent": { "kind": "visit", "visit_id": "11" }, "visited_at_unix_micros": 1_234_567,
+            "visited_at_unix_secs": 1, "visit_count_hint": 2, "transition": "Link",
+            "referring_url": "https://example.org/a", "session_context": null, "view_time_ms": null,
+        })).unwrap();
+        let visit = BrowserVisit::from_imported(&item, "firefox");
+        assert_eq!(
+            visit.parent,
+            BrowserParent::Visit {
+                visit_id: "11".into()
+            }
+        );
+        assert_eq!(visit.original_unix_micros, Some(1_234_567));
+        assert_eq!(visit.at_ms, 1234);
+        assert_eq!(visit.source_scope.unwrap().profile, "p");
+    }
+
+    #[test]
+    fn scoped_encounters_preserve_branches_rapid_revisits_evidence_and_reopen() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let mut store = backend.clone();
+            let mut host = MereHost::fixture(
+                backend.clone(),
+                selected(),
+                crate::mere_host::fixture_handlers(),
+            )
+            .unwrap();
+            let nav_before = host
+                .graph()
+                .to_snapshot()
+                .navigation
+                .snapshot()
+                .owners
+                .clone();
+            let mut capture =
+                BrowserHistoryCapture::load(&mut store, HistoryCapturePolicy::consented())
+                    .await
+                    .unwrap();
+            let a = "https://encounter.example/a";
+            let b = "https://encounter.example/b";
+            let c = "https://encounter.example/c";
+            let parent = |id: &str| BrowserParent::Visit {
+                visit_id: id.into(),
+            };
+            let child = scoped(visit("2", b, Some(a), 1001), "p", parent("1"));
+            let first = capture
+                .ingest_batch(&mut host, &mut store, [child.clone()], PERSONA, DEVICE, 1)
+                .await
+                .unwrap();
+            assert!(matches!(
+                first.as_slice(),
+                [CaptureOutcome::Buffered { .. }]
+            ));
+            assert_eq!(
+                browser_encounters(&host, &store)
+                    .await
+                    .unwrap()
+                    .pending
+                    .len(),
+                1
+            );
+            let visits = vec![
+                scoped(visit("1", a, None, 1000), "p", BrowserParent::Root),
+                scoped(visit("3", c, Some(a), 1002), "p", parent("1")),
+                scoped(visit("4", b, Some(b), 1003), "p", parent("2")),
+                scoped(visit("5", b, Some(b), 1004), "p", parent("4")),
+                scoped(
+                    visit("1", a, None, 1000),
+                    "other-profile",
+                    BrowserParent::Root,
+                ),
+            ];
+            capture
+                .ingest_batch(&mut host, &mut store, visits.clone(), PERSONA, DEVICE, 2)
+                .await
+                .unwrap();
+            let ledger = browser_encounters(&host, &store).await.unwrap();
+            assert_eq!(ledger.snapshot.visits.len(), 6);
+            assert!(ledger.pending.is_empty());
+            assert_eq!(
+                ledger
+                    .snapshot
+                    .visits
+                    .iter()
+                    .filter(|visit| visit.parent.is_some())
+                    .count(),
+                4
+            );
+            assert!(
+                ledger
+                    .snapshot
+                    .owners
+                    .iter()
+                    .all(|owner| owner.current.is_none())
+            );
+            let facet: BrowserHistoryFacetV1 =
+                serde_json::from_value(host.facet_value(b, BROWSER_HISTORY_FACET).unwrap().clone())
+                    .unwrap();
+            assert_eq!(facet.visit_count, 3);
+            assert_eq!(facet.encounters.len(), 3);
+            assert_eq!(facet.relations.len(), 3);
+            assert_eq!(facet.relations[0].parent.visit_id, "1");
+            assert_eq!(facet.relations[0].child.visit_id, "2");
+            assert_eq!(
+                host.browser_relations(a, b).unwrap()[0].kind,
+                BrowserRelationKind::FollowedLink
+            );
+            let a_key = host.graph().get_node_by_url(a).unwrap().0;
+            let b_key = host.graph().get_node_by_url(b).unwrap().0;
+            let c_key = host.graph().get_node_by_url(c).unwrap().0;
+            assert!(
+                host.graph()
+                    .relations()
+                    .any(|relation| relation.kind == RelationKind::Traversal
+                        && relation.from == a_key
+                        && relation.to == b_key)
+            );
+            assert!(
+                host.graph()
+                    .relations()
+                    .any(|relation| relation.kind == RelationKind::Traversal
+                        && relation.from == a_key
+                        && relation.to == c_key)
+            );
+            let nav_after = host.graph().to_snapshot().navigation;
+            for owner in nav_before {
+                let after = nav_after
+                    .snapshot()
+                    .owners
+                    .iter()
+                    .find(|after| after.identity == owner.identity)
+                    .unwrap();
+                assert_eq!(after.current, owner.current);
+            }
+            let reopened = MereHost::open(
+                backend.clone(),
+                selected(),
+                crate::mere_host::fixture_handlers(),
+                crate::access::AccessContext {
+                    persona: PERSONA.into(),
+                    device: DEVICE.into(),
+                    at_ms: 3000,
+                },
+            )
+            .await
+            .unwrap();
+            assert_eq!(
+                browser_encounters(&reopened, &store)
+                    .await
+                    .unwrap()
+                    .snapshot
+                    .visits
+                    .len(),
+                6
+            );
+            let reopened_facet: BrowserHistoryFacetV1 = serde_json::from_value(
+                reopened
+                    .facet_value(b, BROWSER_HISTORY_FACET)
+                    .unwrap()
+                    .clone(),
+            )
+            .unwrap();
+            assert_eq!(facet, reopened_facet);
+            let mut host = reopened;
+            let mut capture =
+                BrowserHistoryCapture::load(&mut store, HistoryCapturePolicy::consented())
+                    .await
+                    .unwrap();
+            let replay = capture
+                .ingest_batch(
+                    &mut host,
+                    &mut store,
+                    visits.into_iter().chain([child]),
+                    PERSONA,
+                    DEVICE,
+                    3,
+                )
+                .await
+                .unwrap();
+            assert!(
+                replay.iter().all(
+                    |outcome| *outcome == CaptureOutcome::Dropped(CaptureDropReason::Duplicate)
+                )
+            );
+            assert_eq!(
+                browser_encounters(&host, &store)
+                    .await
+                    .unwrap()
+                    .snapshot
+                    .visits
+                    .len(),
+                6
+            );
+            capture
+                .forget_url(
+                    &mut host,
+                    &mut store,
+                    a,
+                    ForgetMode::RemoveCapturedObject,
+                    4,
+                )
+                .await
+                .unwrap();
+            assert!(host.browser_relations(a, b).unwrap().is_empty());
+            assert!(
+                browser_encounters(&host, &store)
+                    .await
+                    .unwrap()
+                    .pending
+                    .iter()
+                    .all(|visit| visit.url != a)
+            );
+            assert!(host.graph().get_node_by_url(a).is_none());
+            let ledger_bytes = store.get(&encounter_key(&host)).await.unwrap().unwrap();
+            assert!(!String::from_utf8_lossy(&ledger_bytes).contains(a));
+            // Resource identity has independent ownership. Forgetting browser
+            // encounters does not erase the shared resource registry.
+        });
+    }
+
+    #[test]
+    fn scoped_pending_outside_range_withheld_parent_and_conflict_are_explicit() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let mut store = backend.clone();
+            let mut host = MereHost::fixture(
+                backend.clone(),
+                selected(),
+                crate::mere_host::fixture_handlers(),
+            )
+            .unwrap();
+            let mut policy = HistoryCapturePolicy::consented();
+            policy
+                .excluded_origins
+                .insert("https://private.example".into());
+            let mut capture = BrowserHistoryCapture::load(&mut store, policy)
+                .await
+                .unwrap();
+            let outside = scoped(
+                visit(
+                    "outside-child",
+                    "https://encounter.example/outside",
+                    None,
+                    42,
+                ),
+                "p",
+                BrowserParent::OutsideRange {
+                    visit_id: "missing".into(),
+                },
+            );
+            let withheld = scoped(
+                visit(
+                    "withheld",
+                    "https://encounter.example/withheld",
+                    Some("https://private.example/secret"),
+                    43,
+                ),
+                "p",
+                BrowserParent::Visit {
+                    visit_id: "private-parent".into(),
+                },
+            );
+            capture
+                .ingest_batch(
+                    &mut host,
+                    &mut store,
+                    [outside, withheld.clone()],
+                    PERSONA,
+                    DEVICE,
+                    1,
+                )
+                .await
+                .unwrap();
+            let ledger = browser_encounters(&host, &store).await.unwrap();
+            assert_eq!(ledger.pending.len(), 1);
+            assert_eq!(
+                ledger.snapshot.visits[0].context.parent,
+                BrowserParent::Withheld
+            );
+            assert!(
+                host.graph()
+                    .get_node_by_url("https://private.example/secret")
+                    .is_none()
+            );
+            let stored = store.get(&encounter_key(&host)).await.unwrap().unwrap();
+            assert!(!String::from_utf8_lossy(&stored).contains("private.example"));
+            let mut conflict = withheld;
+            conflict.at_ms += 1;
+            assert!(
+                capture
+                    .ingest_batch(&mut host, &mut store, [conflict], PERSONA, DEVICE, 2)
+                    .await
+                    .is_err()
+            );
+            assert_eq!(
+                store.get(&encounter_key(&host)).await.unwrap().unwrap(),
+                stored
+            );
+        });
+    }
+
+    #[test]
+    fn scoped_atomic_retry_does_not_duplicate_document_relations() {
+        pollster::block_on(async {
+            let backend = RejectingApplyBackend::new();
+            let mut store = backend.clone();
+            let mut host = MereHost::fixture(
+                backend.clone(),
+                selected(),
+                crate::mere_host::fixture_handlers(),
+            )
+            .unwrap();
+            let mut capture =
+                BrowserHistoryCapture::load(&mut store, HistoryCapturePolicy::consented())
+                    .await
+                    .unwrap();
+            let a = "https://retry.example/a";
+            let b = "https://retry.example/b";
+            let visits = vec![
+                scoped(visit("a", a, None, 1000), "p", BrowserParent::Root),
+                scoped(
+                    visit("b", b, Some(a), 1001),
+                    "p",
+                    BrowserParent::Visit {
+                        visit_id: "a".into(),
+                    },
+                ),
+            ];
+            backend.reject.store(true, Ordering::SeqCst);
+            assert!(
+                capture
+                    .ingest_batch(&mut host, &mut store, visits.clone(), PERSONA, DEVICE, 1)
+                    .await
+                    .is_err()
+            );
+            assert!(
+                browser_encounters(&host, &store)
+                    .await
+                    .unwrap()
+                    .snapshot
+                    .visits
+                    .is_empty()
+            );
+            backend.reject.store(false, Ordering::SeqCst);
+            capture
+                .ingest_batch(&mut host, &mut store, visits, PERSONA, DEVICE, 1)
+                .await
+                .unwrap();
+            assert_eq!(
+                browser_encounters(&host, &store)
+                    .await
+                    .unwrap()
+                    .snapshot
+                    .visits
+                    .len(),
+                2
+            );
+            let facet: BrowserHistoryFacetV1 =
+                serde_json::from_value(host.facet_value(b, BROWSER_HISTORY_FACET).unwrap().clone())
+                    .unwrap();
+            assert_eq!(facet.visit_count, 1);
+            assert_eq!(facet.relations.len(), 1);
+            assert_eq!(
+                list_typed::<AccessRecord>(&mut store).await.unwrap().len(),
+                2
+            );
+        });
     }
 
     #[derive(Clone)]

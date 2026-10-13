@@ -93,7 +93,7 @@ const SHEET: &str = "\
     .tree-tools h2 { font-size:14px; margin:2px 0 4px; } \
     .tree-tools h3 { font-size:13px; margin:4px 0 2px; } \
     .tree-rules [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
-    .tree-rules pre, .tree-dynamics pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
+    .tree-rules pre, .tree-dynamics pre, .moot-opened-content { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
     .tree-coupling [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
     .tree-inspection { overflow-wrap:anywhere; } \
     .tree-inspection p, .tree-inspection li { font-size:12px; } \
@@ -150,12 +150,21 @@ const SHEET: &str = "\
 
 // Applets retain their host stylesheet; application appearance enters last.
 fn tree_stylesheet(appearance: &str) -> String {
+    #[cfg(feature = "product")]
+    let workspace_sheet = format!(
+        "{}\n{}\n{}",
+        cambium::TITLE_BAR_CSS,
+        cambium::INSTRUMENT_CSS,
+        instrument::SHEET
+    );
+    #[cfg(not(feature = "product"))]
+    let workspace_sheet = "";
     #[cfg(feature = "applets")]
     let applet_sheet = applet::SHEET;
     #[cfg(not(feature = "applets"))]
     let applet_sheet = "";
     format!(
-        "{SHEET}\n{}\n{}\n{applet_sheet}\n{appearance}",
+        "{SHEET}\n{}\n{}\n{workspace_sheet}\n{applet_sheet}\n{appearance}",
         format!("{}\n{}", commands::SHEET, presenter::SHEET),
         forme_sheet()
     )
@@ -165,6 +174,10 @@ fn tree_stylesheet(appearance: &str) -> String {
 struct Shared {
     adapter_info: RefCell<Option<serde_json::Value>>,
     events: RefCell<Vec<String>>,
+    #[cfg(feature = "product")]
+    reading: RefCell<reading::Reading>,
+    #[cfg(feature = "moot-resources")]
+    moot_resources: RefCell<graphshell::moot_resources::Host>,
     wheel_mode: Cell<graphshell::canvas_gestures::WheelMode>,
     command_request: RefCell<Option<commands::Request>>,
     #[cfg(feature = "applets")]
@@ -512,6 +525,8 @@ impl TextureProducer for CanvasProducer {
 
 /// The application state the tree renders.
 pub(crate) struct TreePage {
+    #[cfg(feature = "moot-resources")]
+    moot_resources_seen: u64,
     commands: commands::State,
     presenter: Option<presenter::Pane>,
     #[cfg(feature = "product")]
@@ -744,6 +759,15 @@ fn view(page: &TreePage) -> Child {
     );
     let workbench = forme_workbench(page);
     let showing_workbench = workbench.is_some();
+    let inline_product_controls = showing_workbench || !instrument_class(page).is_empty();
+    #[cfg(feature = "product")]
+    let scene_header = instrument::scene_header(page, showing_workbench);
+    #[cfg(not(feature = "product"))]
+    let scene_header: Option<Child> = None;
+    #[cfg(feature = "product")]
+    let app_header = instrument::app_header(page);
+    #[cfg(not(feature = "product"))]
+    let app_header: Option<Child> = None;
     #[cfg(feature = "product")]
     let drop_feedback = (!showing_workbench)
         .then(|| forme::drop_feedback(page))
@@ -755,13 +779,15 @@ fn view(page: &TreePage) -> Child {
             el(
                 "main",
                 (
-                    el(
-                        "h1",
-                        page.presenter
-                            .as_ref()
-                            .map_or("Graphshell, one tree", |p| p.options.caption.as_str())
-                            .to_owned(),
-                    ),
+                    app_header.unwrap_or_else(|| {
+                        Box::new(el(
+                            "h1",
+                            page.presenter
+                                .as_ref()
+                                .map_or("Graphshell, one tree", |p| p.options.caption.as_str())
+                                .to_owned(),
+                        ))
+                    }),
                     el("p", page.status())
                         .attr("class", "tree-status")
                         .attr("role", "status"),
@@ -780,16 +806,20 @@ fn view(page: &TreePage) -> Child {
                         controls::toolbar(page)
                     },
                     forme_toolbar(page),
-                    showing_workbench.then(|| product::controls(page)),
+                    inline_product_controls.then(|| product::controls(page)),
                     el(
                         "div",
                         (
-                            (!showing_workbench).then(|| product::controls(page)),
+                            (!inline_product_controls).then(|| product::controls(page)),
                             product::projection_editor(page),
                             product::menu(page),
                             el(
                                 "div",
-                                (workbench.unwrap_or_else(|| Box::new(graph)), drop_feedback),
+                                (
+                                    scene_header,
+                                    workbench.unwrap_or_else(|| Box::new(graph)),
+                                    drop_feedback,
+                                ),
                             )
                             .attr("class", "tree-graph"),
                             presenter::panel(page),
@@ -819,7 +849,7 @@ fn view(page: &TreePage) -> Child {
             .attr(
                 "class",
                 format!(
-                    "{} {}",
+                    "{} {} {}",
                     if page.grouping.is_some() {
                         "tree-grouped"
                     } else {
@@ -829,7 +859,8 @@ fn view(page: &TreePage) -> Child {
                         "tree-presenter"
                     } else {
                         ""
-                    }
+                    },
+                    instrument_class(page)
                 ),
             )
             .attr(
@@ -845,6 +876,16 @@ fn view(page: &TreePage) -> Child {
     )
 }
 
+fn instrument_class(page: &TreePage) -> &'static str {
+    #[cfg(feature = "product")]
+    if instrument::enabled(page) {
+        return "instrument-workspace tree-instrument";
+    }
+    #[cfg(not(feature = "product"))]
+    let _ = page;
+    ""
+}
+
 /// Whether the Graph tools region docks beside the canvas at this width.
 fn tools_docked(page: &TreePage) -> bool {
     page.presenter.is_none() && page.size.0 >= TOOLS_DOCK_MIN_WIDTH
@@ -854,6 +895,12 @@ fn tools_docked(page: &TreePage) -> bool {
 fn tools_region(page: &TreePage) -> Child {
     let mut children: Vec<Child> = Vec::new();
     children.extend(appearance::view(page));
+    #[cfg(feature = "moot-resources")]
+    children.push(moot_resources::section(page));
+    #[cfg(feature = "product")]
+    if let Some(header) = instrument::inspector_header(page) {
+        children.push(header);
+    }
     if let Some(product) = &page.product {
         children.push(Box::new(
             el("p", format!("Storage: {}", product.storage))
@@ -883,7 +930,7 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(remote::section(page));
     Box::new(
         el("aside", children)
-            .attr("class", "tree-tools")
+            .attr("class", "tree-tools workspace-controls")
             .attr("aria-label", "Graph tools"),
     )
 }
@@ -1201,6 +1248,10 @@ async fn boot_inner(root: Element) -> Result<(), String> {
     let shared = Rc::new(Shared {
         adapter_info: RefCell::new(None),
         events: RefCell::new(Vec::new()),
+        #[cfg(feature = "product")]
+        reading: RefCell::new(reading::Reading::default()),
+        #[cfg(feature = "moot-resources")]
+        moot_resources: RefCell::new(graphshell::moot_resources::Host::default()),
         wheel_mode: Cell::new(gestures::requested_wheel(&root)?),
         command_request: RefCell::new(None),
         #[cfg(feature = "applets")]
@@ -1285,6 +1336,8 @@ async fn boot_inner(root: Element) -> Result<(), String> {
         options,
         move |_window, _commands, _wake| Init {
             state: TreePage {
+                #[cfg(feature = "moot-resources")]
+                moot_resources_seen: 0,
                 commands: commands::State::default(),
                 presenter,
                 #[cfg(feature = "product")]
@@ -1422,6 +1475,16 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                     practice::advance(page, now_ms() as f64);
                 });
             }
+            #[cfg(feature = "moot-resources")]
+            {
+                let version = frame_shared.moot_resources.borrow().version;
+                if version != ctx.runner.state().moot_resources_seen {
+                    ctx.runner.update(|page| {
+                        page.moot_resources_seen = version;
+                        page.tools_open = true;
+                    });
+                }
+            }
             if let Some(request) = frame_shared.command_request.borrow_mut().take() {
                 if matches!(&request, commands::Request::Selection) {
                     // Secondary capture bypasses the host's focus routing.
@@ -1517,7 +1580,8 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 }
                 presentation::install(ctx.runner.state());
                 if let Some(input) = node_presentation::refresh(ctx.runner.state()) {
-                    ctx.runner.update(|page| node_presentation::update(page,input));
+                    ctx.runner
+                        .update(|page| node_presentation::update(page, input));
                 }
                 node_presentation::install(ctx.runner.state());
                 if let Some(report) = dynamics_inspection::refresh(ctx.runner.state()) {
@@ -1576,6 +1640,58 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                     web_sys::console::error_1(
                         &format!("could not register the canvas producer: {error:?}").into(),
                     );
+                }
+            }
+            #[cfg(feature = "product")]
+            {
+                reading::prepare(ctx.runner.state());
+                frame_shared.reading.borrow_mut().register(ctx);
+                if frame_shared.reading.borrow_mut().poll() {
+                    ctx.runner.update(|_| {});
+                }
+                let requests = frame_shared.reading.borrow_mut().take_requests();
+                for (source, address) in requests {
+                    if matches!(
+                        mere_document_lanes::retained_clip::request(&address),
+                        Ok(Some(
+                            mere_document_lanes::retained_clip::ClipRequest::Export(_)
+                        ))
+                    ) {
+                        frame_shared.reading.borrow_mut().set_status(
+                            source,
+                            "Selected clip export needs a receiving host export adapter".into(),
+                        );
+                        ctx.runner.update(|_| {});
+                        continue;
+                    }
+                    let target =
+                        frame_shared
+                            .canvas
+                            .borrow()
+                            .graph()
+                            .nodes()
+                            .find_map(|(_, node)| {
+                                (node.url() == address
+                                    && (node.body.is_some()
+                                        || matches!(
+                                        mere_document_lanes::retained_clip::request(&address),
+                                        Ok(Some(
+                                            mere_document_lanes::retained_clip::ClipRequest::Read(
+                                                _
+                                            )
+                                        ))
+                                    )))
+                                .then_some(node.id)
+                            });
+                    if let Some(target) = target {
+                        ctx.runner.update(|page| forme::open_retained(page, target));
+                    } else {
+                        frame_shared.reading.borrow_mut().set_status(
+                            source,
+                            format!("That destination's content is not retained here: {address}"),
+                        );
+                        ctx.runner.update(|_| {});
+                    }
                 }
             }
             frame_shared.with_gpu(|gpu| frame_shared.timing.borrow_mut().frame_begin(gpu));
@@ -1789,11 +1905,11 @@ mod controls;
 #[cfg(feature = "product")]
 mod coupling;
 #[cfg(feature = "product")]
-mod node_presentation;
-#[cfg(feature = "product")]
 mod dynamics_inspection;
 #[cfg(feature = "product")]
 mod field_inspection;
+#[cfg(feature = "product")]
+mod node_presentation;
 #[cfg(feature = "product")]
 mod forme;
 #[cfg(feature = "product")]
@@ -1811,9 +1927,13 @@ mod practice;
 mod practice;
 #[cfg(feature = "product")]
 mod inspection;
+#[cfg(feature = "product")]
+mod instrument;
 mod lane;
 #[cfg(feature = "product")]
 mod link_inspection;
+#[cfg(feature = "moot-resources")]
+mod moot_resources;
 mod physics;
 #[cfg(feature = "product")]
 mod presentation;
@@ -1823,6 +1943,8 @@ mod product;
 #[cfg(not(feature = "product"))]
 #[path = "web_tree/product_off.rs"]
 mod product;
+#[cfg(feature = "product")]
+mod reading;
 #[cfg(feature = "remote")]
 mod remote;
 #[cfg(not(feature = "remote"))]

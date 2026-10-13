@@ -73,6 +73,7 @@ Under `web` (portable, builds for `wasm32-unknown-unknown`):
 | `app` | `GraphshellApp`, `AppError`: local and remote projections through one `ClientState` |
 | `mere_host` | `MereHost`, `SelectedPersonaRef`: Mere graph truth as a Graphshell endpoint |
 | `product` | Graph-product operations and facets: `TransferScope`, `RelationFamilyFilter`, `EditableRelation` |
+| `retained_content` | Pelt-backed held HTML/text/image/selected-clip sessions, portable content input and a shared-device texture/scene producer |
 | `handlers` | `HandlerRegistry`, `HandlerOffer`, `OpenAddressV1` |
 | `access` | `AccessRecord`, `AccessObservation`, `AccessTransition`, `save_access_record` |
 | `capture` | `HistoryCapturePolicy`, `BrowserVisit`, `NormalizedVisit`, `CaptureBackend` |
@@ -127,6 +128,23 @@ Turnstone, Genet host packages, and Servo runtime packages.
 `../src/web.rs`. It is a `cdylib` composing this port's `web` cone with Mere
 Canvas, Cambium over Genet's DOM and layout seam, and NetRender over a WebGPU
 canvas. Its browser dependencies stay out of the `graphshell` package.
+
+### Instrument retained-data reference workspace
+
+`web/workspace.html` opens the existing local-mere reference route
+(`tree.html?app=local`) with Instrument presentation. It reuses the current
+IndexedDB graph/session store and Forme workbench. Graph and tiled views show
+the same material, with a stable session caption and shared Cambium pane
+headers. The title, inspector and controls consume the existing Tabard
+application appearance. Read-only presenter and generated/fixture routes
+retain their existing framing; the Instrument authoring sheet is excluded
+from the no-default viewer build.
+
+This is a local retained-data reference entry, not a new store or a live
+cross-app resolver. An app's mere represents retained material using the
+app's useful views. Cross-domain use still requires the existing admitted
+source/owner and portable clip/live-entity paths; opening a scene does not
+copy data or grant another domain's operations.
 
 ### September 5 practice workspace proof
 
@@ -232,6 +250,37 @@ remain authoritative for Genet chrome; they do not redefine Canvas colors.
 The role bridge is the documented seam, with explicit shared defaults for
 omitted roles. It is not a separate renderer or CSS-to-seed conversion.
 
+### Read-only viewer delivery
+
+From the Mere root, build the read-only package with the pinned toolchain and
+`wasm-bindgen` 0.2.129:
+
+```sh
+python3 ports/graphshell/web/scripts/build-viewer.py --out-dir /tmp/graphshell-viewer-pkg
+python3 ports/graphshell/web/scripts/test_viewer_budget.py
+```
+
+The builder uses the standalone web lock, `--profile viewer` and
+`--no-default-features`. The viewer profile selects size optimization and full
+LTO; the full application's release profile remains separate. It writes
+`viewer-delivery.json` with source, compiler, profile, asset hashes and sizes,
+then rejects a package that exceeds any interaction cap at gzip level 6 or 9:
+Wasm 3.25 MiB, glue 20 KiB, mount 8 KiB, and the site history fixture 128 KiB.
+The report remains available when the gate refuses a package. `--target-dir`
+can keep a delivery lane's build artifacts isolated; `--offline` requires the
+locked dependencies to be available locally.
+The portable workflow's `viewer-delivery` job invokes this same builder and
+retains the package and report as `graphshell-viewer-delivery`.
+
+Portable Platen excludes the unused document scene producer from this viewer.
+Retained Pelt content is an explicit `retained-content` capability, enabled by
+native defaults and by the web `product` feature. Standalone retained-content
+examples must select that feature; plain `web` stays the portable graph model.
+Native and product builds retain document layout, including its text capability.
+Size acceptance does not establish browser acceptance or site deployment. A
+site host must retain its separately budgeted frozen first reading and load the
+qualified viewer only on interaction, with an explicit failure fallback.
+
 ### Appearance qualification commands
 
 Run standalone commands from `ports/graphshell/web` so its committed getrandom
@@ -275,3 +324,23 @@ Genet overlay and Canvas, and reopen again. Bare `tree.html` and `dataset.html`
 must expose `data-appearance-owner="host"` and no appearance picker. Review
 actual browser captures and GPU/error gates; successful WASM checks alone do
 not establish visual or reload acceptance.
+
+## Retained content
+
+The Workbench opens actual held bodies and verified selected text/WAV clips
+through Pelt and Genet. Sessions are keyed by reading access, survive projection
+rebuilds and tab hiding, and retire when that view closes or its source changes.
+Closing a view does not erase the supplying Mere's bytes. Link effects are
+resolved through existing retained graph addresses; other destinations report
+that their content is unavailable. `.mereclip` intake uses Fleece validation
+before admitting the bytes and creating the graph reference.
+
+The browser adapter reads the selected Mere's IndexedDB backend, plays verified
+WAV bytes with host audio controls, and exposes positive `clip-max-parts`,
+`clip-max-bytes` and `clip-max-record-bytes` options. Native consumers use the
+same content host, input view and producer. The explicit
+`?app=local&fixture=retained-content` acceptance source has its own database;
+it is not a default capture operation.
+
+Qualification and unresolved gates are recorded in the
+[one-tree plan](../../design_docs/mere_docs/implementation_strategy/2026-09-25_graphshell_one_tree_plan.md).

@@ -794,6 +794,10 @@ fn owner_lifecycle_actual_history_forget_completion_updates_canvas_before_projec
                 [BrowserVisit {
                     source: "firefox".into(),
                     visit_id: Some("forme-forget-1".into()),
+                    source_scope: None,
+                    parent: Default::default(),
+                    original_unix_micros: None,
+                    source_is_local: None,
                     url: address.into(),
                     title: Some("Captured".into()),
                     favicon_url: None,

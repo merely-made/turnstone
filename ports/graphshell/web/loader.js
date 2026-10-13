@@ -432,6 +432,15 @@ try {
   // the page-side scenario, so its verified fields and the remote carrier are
   // recorded together in the same headed receipt.
   await loadChronicleBindingReceipt(params);
+  // Optional, explicitly supplied local owner fixture for the community controls.
+  if (params.has("resource-owner")) {
+    const {mountResourceOwner} = await import('./moot_resource_host.js');
+    await new Promise((resolve) => {
+      const poll = () => graphshellRoot().dataset.ready === "true" ? resolve() : setTimeout(poll, 50);
+      poll();
+    });
+    await mountResourceOwner(module, params.get("resource-owner"));
+  }
   // The scenario lane: `?scenario=<path>` names a script the page runs on
   // itself once the host reports ready. Results land in the DOM (see
   // src/web_scenario.rs); nothing here interprets them.

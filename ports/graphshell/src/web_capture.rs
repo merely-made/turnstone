@@ -25,6 +25,7 @@ pub(crate) struct InitialCaptureSummary {
     pub(crate) active: bool,
     pub(crate) accepted: usize,
     pub(crate) dropped: usize,
+    pub(crate) buffered: usize,
 }
 
 #[derive(Clone, Debug, Default, Deserialize)]
@@ -124,6 +125,10 @@ pub(crate) async fn apply_initial_capture(
         dropped: outcomes
             .iter()
             .filter(|outcome| matches!(outcome, CaptureOutcome::Dropped(_)))
+            .count(),
+        buffered: outcomes
+            .iter()
+            .filter(|outcome| matches!(outcome, CaptureOutcome::Buffered { .. }))
             .count(),
     })
 }

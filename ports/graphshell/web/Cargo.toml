@@ -24,6 +24,7 @@ path = "../src/web.rs"
 # additive and on by default, so the default build is the full page. The viewer
 # is `--no-default-features`, with or without `canvas-gpu`.
 [features]
+moot-resources = ["graphshell/moot-resources", "dep:moot"]
 dynamics-receipt = []
 default = ["main-page", "product", "remote", "canvas-gpu", "image-decode"]
 # The H5 reference host and its `mount` export (`src/web_main.rs`). It drives
@@ -31,7 +32,7 @@ default = ["main-page", "product", "remote", "canvas-gpu", "image-decode"]
 main-page = ["product", "remote"]
 # What a page saves: IndexedDB, saved scenes, the tree's product mode,
 # `web_product` and `web_practice`.
-product = ["muniment/indexeddb", "dep:sha2"]
+product = ["muniment/indexeddb", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "dep:mere-document-lanes", "dep:fleece"]
 applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.
@@ -42,6 +43,10 @@ canvas-gpu = ["graphshell/canvas-gpu", "mere/canvas-gpu"]
 image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mesquite/image-decode", "cambium-genet-web-host/image-decode", "graphshell/image-decode", "mere/image-decode"]
 
 [dependencies]
+mere-document-lanes = { path = "../../../crates/system/document-lanes", features = ["retained-clips"], optional = true }
+fleece = { package = "mere-fleece", path = "../../../crates/fleece", features = ["portable-clip"], optional = true }
+eidetic = { path = "../../../crates/eidetic/eidetic-core", default-features = false }
+moot = { package = "mere-moot", path = "../../moot", default-features = false, features = ["presentation"], optional = true }
 # `webrtc-browser` is the C4 door's peer half (`webrtc_browser`, `webrtc_join`)
 # and needs `--cfg getrandom_backend="wasm_js"` in this target's rustflags:
 # personae's wasm32 identity stack sits on getrandom 0.3, whose `wasm_js`
@@ -111,7 +116,7 @@ web-sys = { version = "0.3", features = [
     "EventTarget",
     "File",
     "FileList",
-    "HtmlCanvasElement",
+    "HtmlCanvasElement", "HtmlAudioElement", "HtmlMediaElement",
     "HtmlIFrameElement",
     "CssStyleDeclaration",
     "HtmlElement",
@@ -177,6 +182,15 @@ lto = "thin"
 strip = "symbols"
 codegen-units = 1
 
+# The read-only interaction tier has a separate delivery budget. Keep the
+# established full-page release profile; optimize the viewer across the whole
+# selected cone instead of shipping document-host capabilities it does not use.
+# Build with `--profile viewer --no-default-features`.
+[profile.viewer]
+inherits = "release"
+opt-level = "z"
+lto = "fat"
+
 # The receipts settle physics for hundreds of frames, and the dynamics stack
 # at the dev profile's opt-level 0 was the slow part of every run. Optimize
 # just those crates in dev builds — never the crates edited here, so an
@@ -215,3 +229,13 @@ vello_shaders = { git = "https://github.com/mark-ik/vello", rev = "2eae6243881d5
 # (ruling 375). burn-cubecl takes the registry crate, as at the root, since
 # its selector was retired under ruling 410. Delete with the root's row.
 cubecl-runtime = { path = "../../../support/patches/cubecl-runtime" }
+
+# Match the root retained/admitted owner supplier closure.
+mere-p2panda-net = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+p2panda-auth = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+p2panda-core = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+p2panda-discovery = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+p2panda-encryption = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+p2panda-store = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+p2panda-stream = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+p2panda-sync = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }

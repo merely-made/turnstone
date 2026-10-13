@@ -1649,7 +1649,7 @@
       "name": "p4_tree_physics_keys.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "2b0e99e34c78c5f8bf192c2abdac7cfab611c2b35fa1e2516a7575b0b0c5a2a4",
+      "current_source_sha256": "497fb54d05e5d458c153a2ac287db1d9a302b2d12e2896578d6564f8467f6611",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,
@@ -1660,7 +1660,12 @@
       },
       "original_source_sha256": "2b0e99e34c78c5f8bf192c2abdac7cfab611c2b35fa1e2516a7575b0b0c5a2a4",
       "dialect": "shared-retained-with-explicit-host-fixture",
-      "translation_record": "tests/scenario-translations.json"
+      "translation_record": "tests/scenario-translations.json",
+      "source_extension_provenance": {
+        "before": "2b0e99e34c78c5f8bf192c2abdac7cfab611c2b35fa1e2516a7575b0b0c5a2a4",
+        "after": "497fb54d05e5d458c153a2ac287db1d9a302b2d12e2896578d6564f8467f6611",
+        "proof": "/home/markik/Code/testing/turnstone/integration-completion-20261011/graphshell-upstream-pipeline-v13/latest-4a747-source-updates/p4_tree_physics_keys.scn.proof.json"
+      }
     },
     {
       "name": "p4_tree_physics_kinds.scn",
@@ -3961,6 +3966,198 @@
         "source": "ports/graphshell/web/scenarios/viewer_commands.scn",
         "source_sha256": "8b65d92a1c1faa089243c364ab3965155a9942c71c810f4251501e735d8a2847",
         "status_basis": "Shipped retained-tree SCN; live denotes intended exact parser/runtime input, not qualification."
+      }
+    },
+    {
+      "name": "p4_tree_moot_resource_handlers.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "da712e15131493f89a72a04063a0af22f164379410d392aa57357e990bcfb75e",
+      "original_source_sha256": "da712e15131493f89a72a04063a0af22f164379410d392aa57357e990bcfb75e",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": "app=local&fixture=moot-resources",
+        "host": "Fresh dedicated same-origin/profile; follow with p4_tree_moot_resource_handlers_reopen.scn",
+        "setup_verification": "pending",
+        "same_origin_profile_after": [],
+        "optional_artifact_feature": "moot-resources",
+        "real_owner_server_required": true,
+        "native_owner_handlers_required": true
+      },
+      "dialect": "upstream-original-awaiting-retained-qualification",
+      "source_commit": "4a747ee09acfac7763c87e709f85c7a4ab93abdc",
+      "classification_provenance": {
+        "source": "ports/graphshell/web/scenarios/p4_tree_moot_resource_handlers.scn",
+        "source_sha256": "da712e15131493f89a72a04063a0af22f164379410d392aa57357e990bcfb75e",
+        "status_basis": "Intended canonical parser/runtime input, not qualification; optional Moot owner/artifact setup remains unmet."
+      }
+    },
+    {
+      "name": "p4_tree_moot_resource_handlers_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "13b85d3b0544d5ba1e2c3e85ee6906c5f5a39ccc379bdfaf1fba425b47636f6a",
+      "original_source_sha256": "13b85d3b0544d5ba1e2c3e85ee6906c5f5a39ccc379bdfaf1fba425b47636f6a",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": "app=local&fixture=moot-resources",
+        "host": "Dedicated same-origin/profile after p4_tree_moot_resource_handlers.scn",
+        "setup_verification": "pending",
+        "same_origin_profile_after": [
+          "p4_tree_moot_resource_handlers.scn"
+        ],
+        "optional_artifact_feature": "moot-resources",
+        "real_owner_server_required": true,
+        "native_owner_handlers_required": true
+      },
+      "dialect": "upstream-original-awaiting-retained-qualification",
+      "source_commit": "4a747ee09acfac7763c87e709f85c7a4ab93abdc",
+      "classification_provenance": {
+        "source": "ports/graphshell/web/scenarios/p4_tree_moot_resource_handlers_reopen.scn",
+        "source_sha256": "13b85d3b0544d5ba1e2c3e85ee6906c5f5a39ccc379bdfaf1fba425b47636f6a",
+        "status_basis": "Intended canonical parser/runtime input, not qualification; optional Moot owner/artifact setup remains unmet."
+      }
+    },
+    {
+      "name": "p4_tree_moot_resources.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "36074cd079864ccc9a3b42f5cff630fb080fc0fa0044400191d7fbef0e2d45ed",
+      "original_source_sha256": "36074cd079864ccc9a3b42f5cff630fb080fc0fa0044400191d7fbef0e2d45ed",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": "app=local&fixture=moot-resources",
+        "host": "Fresh dedicated same-origin/profile; follow with p4_tree_moot_resources_reopen.scn",
+        "setup_verification": "pending",
+        "same_origin_profile_after": [],
+        "optional_artifact_feature": "moot-resources",
+        "real_owner_server_required": true,
+        "native_owner_handlers_required": false
+      },
+      "dialect": "upstream-original-awaiting-retained-qualification",
+      "source_commit": "4a747ee09acfac7763c87e709f85c7a4ab93abdc",
+      "classification_provenance": {
+        "source": "ports/graphshell/web/scenarios/p4_tree_moot_resources.scn",
+        "source_sha256": "36074cd079864ccc9a3b42f5cff630fb080fc0fa0044400191d7fbef0e2d45ed",
+        "status_basis": "Intended canonical parser/runtime input, not qualification; optional Moot owner/artifact setup remains unmet."
+      }
+    },
+    {
+      "name": "p4_tree_moot_resources_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "8926d1d761fe01bd498381438ad13e7c7e93e8b9e4671d7da5815ca630ba50db",
+      "original_source_sha256": "8926d1d761fe01bd498381438ad13e7c7e93e8b9e4671d7da5815ca630ba50db",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": "app=local&fixture=moot-resources",
+        "host": "Dedicated same-origin/profile after p4_tree_moot_resources.scn",
+        "setup_verification": "pending",
+        "same_origin_profile_after": [
+          "p4_tree_moot_resources.scn"
+        ],
+        "optional_artifact_feature": "moot-resources",
+        "real_owner_server_required": true,
+        "native_owner_handlers_required": false
+      },
+      "dialect": "upstream-original-awaiting-retained-qualification",
+      "source_commit": "4a747ee09acfac7763c87e709f85c7a4ab93abdc",
+      "classification_provenance": {
+        "source": "ports/graphshell/web/scenarios/p4_tree_moot_resources_reopen.scn",
+        "source_sha256": "8926d1d761fe01bd498381438ad13e7c7e93e8b9e4671d7da5815ca630ba50db",
+        "status_basis": "Intended canonical parser/runtime input, not qualification; optional Moot owner/artifact setup remains unmet."
+      }
+    },
+    {
+      "name": "p4_tree_retained_content.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "458a7cfaf3cb2697ee6b07e8cd50a6d4bb5115e886c7620e6bb591750723c775",
+      "original_source_sha256": "458a7cfaf3cb2697ee6b07e8cd50a6d4bb5115e886c7620e6bb591750723c775",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": "app=local&fixture=retained-content",
+        "host": "Fresh dedicated same-origin/profile; follow with p4_tree_retained_content_reopen.scn",
+        "setup_verification": "pending",
+        "same_origin_profile_after": []
+      },
+      "dialect": "upstream-original-awaiting-retained-qualification",
+      "source_commit": "4a747ee09acfac7763c87e709f85c7a4ab93abdc",
+      "classification_provenance": {
+        "source": "ports/graphshell/web/scenarios/p4_tree_retained_content.scn",
+        "source_sha256": "458a7cfaf3cb2697ee6b07e8cd50a6d4bb5115e886c7620e6bb591750723c775",
+        "status_basis": "FullProduct retained-content SCN. Exact real owner/held source/PNG proof remains pending."
+      }
+    },
+    {
+      "name": "p4_tree_retained_content_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "a5531a96e9371fdf34e0a0c8d4ad011f946f46f9e466fe8269662dc778c116b6",
+      "original_source_sha256": "a5531a96e9371fdf34e0a0c8d4ad011f946f46f9e466fe8269662dc778c116b6",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": "app=local&fixture=retained-content",
+        "host": "Dedicated same-origin/profile after p4_tree_retained_content.scn",
+        "setup_verification": "pending",
+        "same_origin_profile_after": [
+          "p4_tree_retained_content.scn"
+        ]
+      },
+      "dialect": "upstream-original-awaiting-retained-qualification",
+      "source_commit": "4a747ee09acfac7763c87e709f85c7a4ab93abdc",
+      "classification_provenance": {
+        "source": "ports/graphshell/web/scenarios/p4_tree_retained_content_reopen.scn",
+        "source_sha256": "a5531a96e9371fdf34e0a0c8d4ad011f946f46f9e466fe8269662dc778c116b6",
+        "status_basis": "FullProduct retained-content SCN. Exact real owner/held source/PNG proof remains pending."
       }
     }
   ],

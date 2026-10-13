@@ -8,6 +8,10 @@ description = "Graphshell presentation host and loopback acceptance view."
 autobins = false
 
 [[example]]
+name = "retained_content_fixture"
+required-features = ["retained-content"]
+
+[[example]]
 name = "projection_dynamics_receipt"
 required-features = ["web"]
 
@@ -16,9 +20,16 @@ name = "moot_resources"
 required-features = ["moot-resources"]
 
 [features]
-default = ["native", "image-decode"]
+moot-resources = ["web", "webrtc-join", "dep:cambium", "dep:moot", "dep:gemot", "dep:eidetic", "dep:muniment"]
+default = ["native", "image-decode", "document-layout", "retained-content"]
+# Document-capable hosts retain Platen's document producer. The read-only
+# browser viewer uses its portable pane/geometry model alone.
+document-layout = ["platen?/document-layout"]
+# Retained document sessions belong to the application host, not the read-only
+# graph viewer. Product web builds opt in explicitly; native defaults retain it.
+retained-content = ["web", "document-layout", "dep:genet-render-host", "dep:cambium", "dep:fleece", "dep:wgpu", "dep:pelt-core", "dep:inker", "dep:netrender", "dep:mere-document-lanes"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
-image-decode = ["cambium-rootstock?/image-decode", "mere?/image-decode"]
+image-decode = ["cambium-rootstock?/image-decode", "mere?/image-decode", "pelt-core?/image-decode"]
 # Existing admitted sessions, transports, Personae composition, and receipt
 # binaries. This remains the default so current native callers keep working.
 native = [
@@ -122,7 +133,6 @@ applets = ["web", "eidetic/pack-signing", "dep:personae"]
 mere-route = ["web", "dep:mere-view"]
 # Native owner composition for admitted Moot resource readings. This does not
 # enter the ordinary browser cone or install an application activity owner.
-moot-resources = ["webrtc-join", "dep:cambium", "dep:moot", "dep:gemot", "dep:eidetic", "dep:muniment"]
 # Finite native owner-composition proof; ordinary consumers need no window or
 # fixture dependencies. It installs neither peer services nor an activity owner.
 moot-resource-proof = ["moot-resources", "dep:cambium-genet-winit-host", "dep:mien", "dep:proofs", "dep:servitor", "dep:tokio", "dep:pollster", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
@@ -138,6 +148,14 @@ personal-sync = [
 ]
 
 [dependencies]
+genet-render-host = { workspace = true, optional = true }
+cambium = { workspace = true, optional = true }
+fleece = { workspace = true, features = ["portable-clip"], optional = true }
+wgpu = { workspace = true, optional = true }
+pelt-core = { workspace = true, features = ["genet"], optional = true }
+inker = { workspace = true, optional = true }
+netrender = { workspace = true, optional = true }
+mere-document-lanes = { workspace = true, features = ["retained-clips"], optional = true }
 command-menu = { path = "../../crates/cambium/command-menu", optional = true }
 # The check conclusions and faults, named directly (insigne proofs plan, B).
 insigne = { workspace = true, features = ["verify"] }
@@ -159,7 +177,7 @@ muniment = { workspace = true, optional = true }
 # too, so it sits here rather than in the native-only table (reservoir plan
 # §7 item 26).
 pandect = { workspace = true, optional = true }
-platen = { workspace = true, optional = true }
+platen = { path = "../../crates/platen/platen", default-features = false, optional = true }
 scenograph.workspace = true
 sceno.workspace = true
 scenomise.workspace = true
@@ -202,7 +220,7 @@ genet-scripted-dom = { workspace = true, optional = true }
 layout_dom_api = { workspace = true, optional = true }
 image = { version = "0.25", default-features = false, features = ["png"], optional = true }
 cambium = { workspace = true, optional = true }
-moot = { package = "mere-moot", path = "../moot", features = ["resource-owner", "resource-view"], optional = true }
+moot = { package = "mere-moot", path = "../moot", features = ["resource-owner", "resource-view", "presentation"], optional = true }
 gemot = { workspace = true, optional = true }
 blake3 = { workspace = true, optional = true }
 # The identity read model and intents (`identity`, `identity_projection`).
@@ -333,6 +351,7 @@ tokio = { version = "1", features = [
 # These fixtures lower into the native AccessKit host, not the browser mirror.
 # Cargo's browser cone includes dev dependencies, so keep this lane scoped.
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+muniment = { workspace = true, features = ["redb"] }
 servitor.workspace = true
 proofs.workspace = true
 mien.workspace = true

@@ -88,6 +88,7 @@ pub(super) struct SavedProduct {
     pub(super) forme_reconcile_session: Option<Uuid>,
     pub(super) forme_new_session: Option<Uuid>,
     operation_success: Option<String>,
+    clip_member: Rc<Cell<Option<Uuid>>>,
 }
 
 /// The existing fixture and generated comparison routes remain unchanged.
@@ -116,7 +117,10 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         return Err("app=local cannot also select a generated graph".into());
     }
     let inspection_fixture = params.get("fixture").as_deref() == Some("field-inspection");
-    let database = if inspection_fixture {
+    let retained_fixture = params.get("fixture").as_deref() == Some("retained-content");
+    let database = if retained_fixture {
+        "graphshell-retained-content-acceptance"
+    } else if inspection_fixture {
         "graphshell-field-inspection-draft-v1"
     } else {
         "graphshell-reference-host-h5"
@@ -141,6 +145,10 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         .persist(now_secs())
         .await
         .map_err(|error| error.to_string())?;
+    if retained_fixture && !reopened {
+        graphshell::retained_content::fixture::seed(&mut app, super::reading::clip_limits()?)
+            .await?;
+    }
     app.mount_local().map_err(|error| error.to_string())?;
     let persistence = super::super::resolve_storage_persistence().await;
     let storage = graphshell::browser_storage::status_line(
@@ -189,6 +197,7 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         forme_reconcile_session: None,
         forme_new_session: None,
         operation_success: None,
+        clip_member: Rc::new(Cell::new(None)),
     }))
 }
 
@@ -438,6 +447,48 @@ impl SavedProduct {
         }
     }
 
+    pub(super) fn retained_store(&self) -> Option<IndexedDbBackend> {
+        self.app.as_ref().map(|app| app.host.store())
+    }
+    fn store_clip_file(&mut self, bytes: Vec<u8>) {
+        let limits = match super::reading::clip_limits() {
+            Ok(limits) => limits,
+            Err(error) => {
+                self.status = error;
+                return;
+            },
+        };
+        let Some(mut app) = self.app.take() else {
+            return;
+        };
+        self.saving = true;
+        self.save_state = "saving";
+        self.status = "Importing selected retained clip".into();
+        let completed = self.completed.clone();
+        let clip_member = self.clip_member.clone();
+        let context = fleece::portable_clip::CaptureContext {
+            source: eidetic::clip_profile::ClipSourceV1 {
+                owner: Some(app.host.selected_persona().persona.clone()),
+                entity: "selected-package-import".into(),
+                revision: None,
+            },
+            capture_id: Uuid::new_v4().to_string(),
+            provenance: eidetic::ProvenanceRecord::self_imported("explicit selected clip package"),
+            trust: eidetic::TrustEnvelope::self_asserted(),
+            captured_at: eidetic::Timestamp(now_secs() * 1000),
+        };
+        wasm_bindgen_futures::spawn_local(async move {
+            let result = async {
+                let member =
+                    graphshell::retained_content::import_clip(&mut app, &bytes, limits, &context)
+                        .await?;
+                clip_member.set(Some(member));
+                persist_intake(&mut app, member, now_secs()).await
+            }
+            .await;
+            *completed.borrow_mut() = Some((app, CompletedEdit::Intake, result));
+        });
+    }
     fn receive_file(&mut self, event: FileEvent) {
         self.file_requested = false;
         if self.saving || self.pending_intake.is_some() || self.pending_detail.is_some() {
@@ -447,6 +498,10 @@ impl SavedProduct {
             self.status = "File choice canceled".into();
             return;
         };
+        if file.name.to_ascii_lowercase().ends_with(".mereclip") {
+            self.store_clip_file(file.bytes);
+            return;
+        }
         let Some(app) = self.app.as_mut() else {
             return;
         };
@@ -585,6 +640,9 @@ impl SavedProduct {
         );
         self.session = owner.to_string();
         self.forme_reconcile_session = Some(owner);
+        if matches!(edit, CompletedEdit::Intake) && self.pending_intake.is_none() {
+            self.pending_intake = self.clip_member.take();
+        }
         self.app = Some(app);
         self.saving = false;
         match result {
@@ -940,9 +998,9 @@ pub(super) fn controls(page: &TreePage) -> Child {
             .attr(
                 "class",
                 if page.forme.as_ref().is_some_and(|pane| pane.workbench) {
-                    "tree-product tree-product-workbench"
+                    "tree-product tree-product-workbench workspace-controls"
                 } else {
-                    "tree-product"
+                    "tree-product workspace-controls"
                 },
             )
             .attr("aria-label", "Saved graph"),
