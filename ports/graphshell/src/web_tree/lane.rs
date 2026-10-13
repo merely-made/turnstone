@@ -792,6 +792,81 @@ impl Product for TreeLane {
                     .unwrap_or_else(|| "unavailable".into()),
             )
             .with_field("picked", page.picked.clone().unwrap_or_default())
+            .with_field("presenter", page.presenter.is_some().to_string())
+            .with_field(
+                "canvas-selection-count",
+                canvas.selected_members().len().to_string(),
+            )
+            .with_field(
+                "presenter-selection-count",
+                page.presenter
+                    .as_ref()
+                    .map_or(0, |p| p.model.selected.len())
+                    .to_string(),
+            )
+            .with_field(
+                "presenter-inspector-open",
+                page.presenter
+                    .as_ref()
+                    .is_some_and(|p| p.model.inspected.is_some())
+                    .to_string(),
+            )
+            .with_field(
+                "presenter-hidden-count",
+                page.presenter
+                    .as_ref()
+                    .map_or(0, |p| {
+                        p.model
+                            .selected
+                            .iter()
+                            .filter(|id| !p.model.visible.contains_key(*id))
+                            .count()
+                    })
+                    .to_string(),
+            )
+            .with_field(
+                "presenter-selected",
+                page.presenter
+                    .as_ref()
+                    .map(|p| {
+                        p.model
+                            .selected
+                            .iter()
+                            .cloned()
+                            .collect::<Vec<_>>()
+                            .join(",")
+                    })
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "presenter-inspected",
+                page.presenter
+                    .as_ref()
+                    .and_then(|p| p.model.inspected.clone())
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "presenter-hidden",
+                page.presenter
+                    .as_ref()
+                    .map(|p| {
+                        p.model
+                            .selected
+                            .iter()
+                            .filter(|id| !p.model.visible.contains_key(*id))
+                            .cloned()
+                            .collect::<Vec<_>>()
+                            .join(",")
+                    })
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "presenter-notice",
+                page.presenter
+                    .as_ref()
+                    .map(|p| p.model.notice.clone())
+                    .unwrap_or_default(),
+            )
             .with_field("nodes", page.nodes.to_string())
             .with_field("source", page.source.clone())
             // The host dataset (S1): its state, the edges the canvas draws,
@@ -839,6 +914,9 @@ impl Product for TreeLane {
             // The page's gestures and motion preference.
             .with_field("reduced-motion", self.shared.reduced_motion().to_string())
             .with_field("gesture", self.shared.gestures.borrow().probe.clone())
+            .with_field("wheel-mode", self.shared.wheel_mode.get().name())
+            .with_field("commands-open", page.commands.open.is_some().to_string())
+            .with_field("command-last", page.commands.last.clone())
             .with_field(
                 "wheel-use",
                 format!("{:?}", self.shared.gestures.borrow().last_wheel),
@@ -1318,14 +1396,25 @@ impl Product for TreeLane {
                 if !ctx.runner.state().field_inspector.picking {
                     return Err("Arm Pick field regions before the pointer step".into());
                 }
-                let args: Vec<f32> = rest.split_whitespace().map(str::parse).collect::<Result<_, _>>().map_err(|_| "pick-field-regions wants world x y")?;
+                let args: Vec<f32> = rest
+                    .split_whitespace()
+                    .map(str::parse)
+                    .collect::<Result<_, _>>()
+                    .map_err(|_| "pick-field-regions wants world x y")?;
                 if args.len() != 2 || !args.iter().all(|n| n.is_finite()) {
                     return Err("pick-field-regions wants finite world x y".into());
                 }
-                let (left, top, width, height) = leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
-                let (x, y) = self.shared.canvas.borrow().screen_point_of((args[0], args[1]));
+                let (left, top, width, height) =
+                    leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
+                let (x, y) = self
+                    .shared
+                    .canvas
+                    .borrow()
+                    .screen_point_of((args[0], args[1]));
                 if x < 0. || y < 0. || x >= width || y >= height {
-                    return Err("region point is outside the painted canvas; fit the view first".into());
+                    return Err(
+                        "region point is outside the painted canvas; fit the view first".into(),
+                    );
                 }
                 ctx.pointer.push(HostPointer::Press(left + x, top + y));
                 ctx.pointer.push(HostPointer::Release(left + x, top + y));
@@ -1333,26 +1422,45 @@ impl Product for TreeLane {
             },
             #[cfg(feature = "product")]
             "move-to-forme" => {
-                let (address, side) = rest.trim().rsplit_once(' ').ok_or("move-to-forme wants target address and left/right/top/bottom/center/outside")?;
+                let (address, side) = rest.trim().rsplit_once(' ').ok_or(
+                    "move-to-forme wants target address and left/right/top/bottom/center/outside",
+                )?;
                 let (left, top, _, _) = leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
-                let pane = ctx.runner.state().forme.as_ref().ok_or("no Forme workspace")?;
+                let pane = ctx
+                    .runner
+                    .state()
+                    .forme
+                    .as_ref()
+                    .ok_or("no Forme workspace")?;
                 let region = pane.session.view().region();
                 let canvas = self.shared.canvas.borrow();
-                let member = canvas.graph().nodes().find(|(_, node)| node.url() == address).map(|(_, node)| node.id).ok_or("unknown drop target")?;
-                let cell = region.cells.iter().find(|cell| cell.member == member).ok_or("target has no active tile region")?;
+                let member = canvas
+                    .graph()
+                    .nodes()
+                    .find(|(_, node)| node.url() == address)
+                    .map(|(_, node)| node.id)
+                    .ok_or("unknown drop target")?;
+                let cell = region
+                    .cells
+                    .iter()
+                    .find(|cell| cell.member == member)
+                    .ok_or("target has no active tile region")?;
                 let [x, y, r, b] = region.cell_world_bounds(cell);
                 let world = match side {
-                    "left" => (x + (r-x)*0.1, (y+b)*0.5),
-                    "right" => (r - (r-x)*0.1, (y+b)*0.5),
-                    "top" => ((x+r)*0.5, y + (b-y)*0.1),
-                    "bottom" => ((x+r)*0.5, b - (b-y)*0.1),
-                    "center" => ((x+r)*0.5, (y+b)*0.5),
-                    "outside" => (region.bounds[2]+50., region.bounds[3]+50.),
+                    "left" => (x + (r - x) * 0.1, (y + b) * 0.5),
+                    "right" => (r - (r - x) * 0.1, (y + b) * 0.5),
+                    "top" => ((x + r) * 0.5, y + (b - y) * 0.1),
+                    "bottom" => ((x + r) * 0.5, b - (b - y) * 0.1),
+                    "center" => ((x + r) * 0.5, (y + b) * 0.5),
+                    "outside" => (region.bounds[2] + 50., region.bounds[3] + 50.),
                     _ => return Err("unknown Forme drop region".into()),
                 };
                 let (x, y) = canvas.screen_point_of(world);
-                let point = self.pointer.as_mut().ok_or("move-to-forme needs press-node first")?;
-                *point = (left+x, top+y);
+                let point = self
+                    .pointer
+                    .as_mut()
+                    .ok_or("move-to-forme needs press-node first")?;
+                *point = (left + x, top + y);
                 ctx.pointer.push(HostPointer::Moved(point.0, point.1));
                 Ok(())
             },
@@ -1703,8 +1811,14 @@ fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> Pr
         .with_field("forme-dirty", pane.session.dirty().to_string())
         .with_field("forme-can-undo", pane.session.can_undo().to_string())
         .with_field("forme-can-redo", pane.session.can_redo().to_string())
-        .with_field("forme-committed-geometry", serde_json::to_string(&pane.session.committed().geometry).unwrap_or_default())
-        .with_field("forme-committed-bounds", serde_json::to_string(&pane.session.committed().bounds).unwrap_or_default())
+        .with_field(
+            "forme-committed-geometry",
+            serde_json::to_string(&pane.session.committed().geometry).unwrap_or_default(),
+        )
+        .with_field(
+            "forme-committed-bounds",
+            serde_json::to_string(&pane.session.committed().bounds).unwrap_or_default(),
+        )
         .with_field(
             "forme-geometry",
             serde_json::to_string(&pane.current().geometry).unwrap_or_default(),

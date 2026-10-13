@@ -14,6 +14,8 @@ pub type Rect = (f32, f32, f32, f32);
 // browser mirror bounds; inspectors can have multiple visible instances.
 const OVERLAY_CLASSES: &[&str] = &[
     "tools-overlay",
+    "tree-tools",
+    "tree-relations",
     "tree-product",
     "tree-projection",
     "tree-command-menu",
@@ -33,6 +35,11 @@ pub fn painted_overlays<I: IntoIterator<Item = Rect>>(
 
 fn inside((left, top, width, height): Rect, (x, y): (f32, f32)) -> bool {
     x >= left && y >= top && x < left + width && y < top + height
+}
+
+/// Test painted bounds with the same half-open law used for graph ownership.
+pub fn contains_point(rect: Rect, at: (f32, f32)) -> bool {
+    inside(rect, at)
 }
 
 /// Return graph-local coordinates only where the graph owns the point.
@@ -135,6 +142,33 @@ mod tests {
         assert_eq!(graph_point(Some(GRAPH), &overlays, (620., 100.)), None);
         assert_eq!(graph_point(Some(GRAPH), &overlays, (0., 0.)), None);
         assert_eq!(graph_point(None, &[], (110., 110.)), None);
+    }
+
+    #[test]
+    fn presenter_tools_and_relations_keep_every_painted_instance() {
+        for owner in ["tree-tools", "tree-relations"] {
+            let overlays = painted_overlays(|class| {
+                if class == owner {
+                    vec![(40., 50., 40., 40.), (140., 150., 40., 40.)]
+                } else {
+                    vec![]
+                }
+            });
+            assert_eq!(graph_point(Some(GRAPH), &overlays, (45., 55.)), None, "{owner}");
+            assert_eq!(graph_point(Some(GRAPH), &overlays, (150., 160.)), None, "{owner}");
+            assert_eq!(graph_point(Some(GRAPH), &overlays, (300., 200.)), Some((280., 170.)));
+        }
+    }
+
+    #[test]
+    fn wheel_containment_shares_the_graph_half_open_bounds() {
+        assert!(contains_point(GRAPH, (20., 30.)));
+        assert!(contains_point(GRAPH, (619., 429.)));
+        assert!(!contains_point(GRAPH, (620., 100.)));
+        assert!(!contains_point(GRAPH, (100., 430.)));
+        assert!(!contains_point(GRAPH, (19., 30.)));
+        assert!(!contains_point(GRAPH, (20., 29.)));
+        assert!(!contains_point((20., 30., 0., 0.), (20., 30.)));
     }
 
     #[test]

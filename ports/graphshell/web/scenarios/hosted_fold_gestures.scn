@@ -1,6 +1,7 @@
 # Host-page gesture routing with an entered Fold and selected member.
-# grouped-dataset.html
+# grouped-dataset.html?wheel=page (explicit embedding-page preference)
 assert snap ready == true
+assert snap wheel-mode == page
 settle 3
 click role:button Expand mere
 settle 2

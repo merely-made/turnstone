@@ -9,6 +9,9 @@
 //! G1 adds a native semantic view over the portable client state. Networking,
 //! product models, and source authority remain injected at the edge.
 
+#[cfg(all(feature = "moot-resources", not(target_arch = "wasm32")))]
+pub mod moot_resources;
+
 #[cfg(feature = "web")]
 pub mod access;
 #[cfg(feature = "web")]
@@ -46,6 +49,8 @@ pub mod canvas_faces;
 #[cfg(feature = "web")]
 pub mod canvas_gestures;
 #[cfg(feature = "web")]
+pub mod viewer_commands;
+#[cfg(feature = "web")]
 pub mod canvas_physics;
 #[cfg(feature = "web")]
 pub mod canvas_reader;
@@ -71,6 +76,8 @@ pub mod forme_session;
 pub mod handlers;
 #[cfg(feature = "web")]
 pub mod host_dataset_view;
+#[cfg(feature = "web")]
+pub mod host_presenter;
 #[cfg(feature = "web")]
 pub mod host_history_view;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]

@@ -90,6 +90,23 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
             Box::new(control) as Child
         })
         .collect();
+    buttons.push(Box::new(
+        button("Graph commands", |page: &mut TreePage, _| {
+            commands::open_keyboard(page)
+        })
+        .attr("aria-haspopup", "dialog")
+        .attr(
+            "aria-expanded",
+            if page.commands.open.is_some()
+                || page.product.as_ref().is_some_and(|product| product.menu_open())
+            {
+                "true"
+            } else {
+                "false"
+            },
+        )
+        .attr("aria-keyshortcuts", "Control+k Meta+k Shift+F10"),
+    ));
     // Collapsed, the Graph tools region opens over the canvas from here.
     if !tools_docked(page) {
         buttons.push(Box::new(
@@ -135,6 +152,13 @@ impl TreePage {
         {
             return;
         }
+        if event.button == PointerButton::Primary
+            && event.phase == PointerPhase::Down
+            && (self.commands.open.is_some()
+                || self.product.as_ref().is_some_and(|product| product.menu_open()))
+        {
+            commands::close(self);
+        }
         #[cfg(feature = "product")]
         if event.button == PointerButton::Primary && forme::pointer(self, &event) {
             event.prop.prevent_default();
@@ -150,6 +174,7 @@ impl TreePage {
         canvas.set_ctrl(event.modifiers.ctrl);
         canvas.set_shift(event.modifiers.shift);
         canvas.set_alt(event.modifiers.alt);
+        let mut context = None;
         match event.phase {
             PointerPhase::Down => {
                 // Canvas right-drag is a marquee; shared menu handlers retain
@@ -164,11 +189,7 @@ impl TreePage {
             },
             PointerPhase::Up => {
                 canvas.pointer_up(button, x, y);
-                if let Some(request) = canvas.take_context_request() {
-                    if let Some(product) = &mut self.product {
-                        product.open_menu(request, &mut canvas);
-                    }
-                }
+                context = canvas.take_context_request();
                 self.picked = canvas.focused_url().map(str::to_owned);
                 if let Some(product) = &mut self.product {
                     product.select(canvas.selected_members().first().copied());
@@ -180,6 +201,15 @@ impl TreePage {
         canvas.set_ctrl(false);
         canvas.set_shift(false);
         canvas.set_alt(false);
+        drop(canvas);
+        if let Some(request) = context {
+            commands::open(
+                self,
+                commands::Request::Context { at: request.at, node: request.node },
+            );
+        } else if event.phase == PointerPhase::Up && event.button == PointerButton::Secondary {
+            commands::open(self, commands::Request::Selection);
+        }
         self.shared.dirty.set(true);
     }
 }

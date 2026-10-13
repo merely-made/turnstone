@@ -13,11 +13,14 @@
   <body>
     <!-- The plain viewer as a host page mounts it (mer3ly site canvas plan,
          Rulings 121, 124 and 157): `viewer.js`, with no scenario lane or
-         receipt harness, and a host history named by data-dataset-src
-         (`?dataset=` overrides it). The page scrolls past the viewer: a plain
-         wheel scrolls it, Ctrl or Meta and the wheel zoom the graph. -->
-    <p>The site's published repository history, one checkpoint at a time.</p>
-    <graphshell-tree data-dataset-src="fixtures/site-repository-host-history.json"></graphshell-tree>
+         receipt harness, and a disclosed host dataset named by data-dataset-src
+         (`?dataset=` overrides it). The wheel zooms the graph by default.
+         Graph commands can choose wheel pan or page scroll; hosts can set
+         data-wheel-mode="page" or ?wheel=page. Ctrl/Meta always zooms. -->
+    <p>The site's public projects. <a href="./viewer.html?dataset=fixtures/site-repository-host-history.json">Browse the published project history</a>.</p>
+    <graphshell-tree data-dataset-src="fixtures/site-presenter-host-dataset.json"
+      data-presenter="inspector" data-caption="Project graph" data-summary-field="summary"
+      data-project-link-field="project_url" data-source-link-field="github_url"></graphshell-tree>
     <p>The page continues below the viewer.</p>
     <div style="height: 600px"></div>
     <script type="module" src="./viewer.js"></script>

@@ -448,7 +448,7 @@
       "name": "hosted_fold_gestures.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "7fab7faa152cfefc17dc65d6039d535ae14681abc7f52a60f2a99ca84eabb273",
+      "current_source_sha256": "123cd132994208304e76a5b62cdbcaf1ce01dac08d7f6cefdf5ae9e72d1499a9",
       "original_source_sha256": "7fab7faa152cfefc17dc65d6039d535ae14681abc7f52a60f2a99ca84eabb273",
       "expected_outcome": {
         "scenario": "pass",
@@ -459,11 +459,11 @@
         "frozen_before_run": true
       },
       "prerequisites": {
-        "host": "grouped-dataset.html; supplied fixtures/grouped-manifest-components.json; grouping=contains. Real page gesture routing through installed listeners; original scenario assertions unchanged.",
+        "host": "grouped-dataset.html?grouping=contains&wheel=page; supplied fixtures/grouped-manifest-components.json. Explicit page-wheel policy plus every retained gesture assertion; trusted companion remains pending.",
         "setup_verification": "pending"
       },
       "dialect": "upstream-original-awaiting-retained-qualification",
-      "source_commit": "b726955ed36df01912b123421b07669dd849a3ca"
+      "source_commit": "a454842ff8a507facaf80f8fdc8cc8e639e0ca9f"
     },
     {
       "name": "hosted_folds_history.scn",
@@ -3868,6 +3868,99 @@
         "source": "ports/graphshell/web/scenarios/p4_tree_node_ladder_reopen.scn",
         "source_sha256": "46df5c5dcf863c7ac9f3762f32c0cdf8d21401bdb98314ce07df4cf27ef7e135",
         "status_basis": "Shipped source and explicit owner qualification route; live denotes intended input only. Historical receipts do not qualify current merge."
+      }
+    },
+    {
+      "name": "hosted_presenter.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "297140df8e17337e15183bedecf52cbdd917e0190aab07116030babe3cf1366b",
+      "original_source_sha256": "297140df8e17337e15183bedecf52cbdd917e0190aab07116030babe3cf1366b",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "grouped-dataset.html",
+        "query": "grouping=contains&presenter=inspector",
+        "host": "Fresh retained viewer mount; no Product/App graph UUID is inferred. Supplied host dataset loaded by ordinary mount fetch before boot.",
+        "fixture": "fixtures/grouped-manifest-components.json",
+        "setup_verification": "pending",
+        "same_origin_profile_after": []
+      },
+      "dialect": "upstream-original-awaiting-retained-qualification",
+      "source_commit": "a454842ff8a507facaf80f8fdc8cc8e639e0ca9f",
+      "classification_provenance": {
+        "upstream_commit": "a454842ff8a507facaf80f8fdc8cc8e639e0ca9f",
+        "source": "ports/graphshell/web/scenarios/hosted_presenter.scn",
+        "source_sha256": "297140df8e17337e15183bedecf52cbdd917e0190aab07116030babe3cf1366b",
+        "status_basis": "Shipped retained-tree SCN; live denotes intended exact parser/runtime input, not qualification."
+      }
+    },
+    {
+      "name": "hosted_presenter_history.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "2a11c0d2baaa3ef442e9040e6b05a55f5554c7779a96f4828f9e14720549df77",
+      "original_source_sha256": "2a11c0d2baaa3ef442e9040e6b05a55f5554c7779a96f4828f9e14720549df77",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": "dataset=fixtures/grouped-host-history.json&grouping=contains&presenter=inspector",
+        "host": "Fresh retained viewer mount; no Product/App graph UUID is inferred. Supplied host dataset loaded by ordinary mount fetch before boot.",
+        "fixture": "fixtures/grouped-host-history.json",
+        "setup_verification": "pending",
+        "same_origin_profile_after": []
+      },
+      "dialect": "upstream-original-awaiting-retained-qualification",
+      "source_commit": "a454842ff8a507facaf80f8fdc8cc8e639e0ca9f",
+      "classification_provenance": {
+        "upstream_commit": "a454842ff8a507facaf80f8fdc8cc8e639e0ca9f",
+        "source": "ports/graphshell/web/scenarios/hosted_presenter_history.scn",
+        "source_sha256": "2a11c0d2baaa3ef442e9040e6b05a55f5554c7779a96f4828f9e14720549df77",
+        "status_basis": "Shipped retained-tree SCN; live denotes intended exact parser/runtime input, not qualification."
+      }
+    },
+    {
+      "name": "viewer_commands.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "8b65d92a1c1faa089243c364ab3965155a9942c71c810f4251501e735d8a2847",
+      "original_source_sha256": "8b65d92a1c1faa089243c364ab3965155a9942c71c810f4251501e735d8a2847",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "tree.html",
+        "query": "",
+        "host": "Fresh retained viewer mount; no Product/App graph UUID is inferred. Default retained tree mount, default wheel zoom policy.",
+        "fixture": null,
+        "setup_verification": "pending",
+        "same_origin_profile_after": []
+      },
+      "dialect": "upstream-original-awaiting-retained-qualification",
+      "source_commit": "a454842ff8a507facaf80f8fdc8cc8e639e0ca9f",
+      "classification_provenance": {
+        "upstream_commit": "a454842ff8a507facaf80f8fdc8cc8e639e0ca9f",
+        "source": "ports/graphshell/web/scenarios/viewer_commands.scn",
+        "source_sha256": "8b65d92a1c1faa089243c364ab3965155a9942c71c810f4251501e735d8a2847",
+        "status_basis": "Shipped retained-tree SCN; live denotes intended exact parser/runtime input, not qualification."
       }
     }
   ],

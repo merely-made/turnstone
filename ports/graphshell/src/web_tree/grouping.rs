@@ -159,10 +159,11 @@ pub(super) fn evidence(witness: &graphshell::projection_compile::DisclosedRelati
 }
 
 impl TreePage {
-    fn change_group(
+    pub(super) fn change_group(
         &mut self,
         change: impl FnOnce(&mut graphshell::host_dataset_view::FoldViewState),
     ) {
+        self.capture_host_selection();
         let Some(grouped) = &mut self.grouping else {
             return;
         };
@@ -188,5 +189,7 @@ impl TreePage {
                 self.grouping_error = Some(error);
             },
         }
+        drop(canvas);
+        self.restore_host_selection();
     }
 }
