@@ -273,6 +273,9 @@ The portable workflow's `viewer-delivery` job invokes this same builder and
 retains the package and report as `graphshell-viewer-delivery`.
 
 Portable Platen excludes the unused document scene producer from this viewer.
+Retained Pelt content is an explicit `retained-content` capability, enabled by
+native defaults and by the web `product` feature. Standalone retained-content
+examples must select that feature; plain `web` stays the portable graph model.
 Native and product builds retain document layout, including its text capability.
 Size acceptance does not establish browser acceptance or site deployment. A
 site host must retain its separately budgeted frozen first reading and load the

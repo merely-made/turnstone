@@ -32,7 +32,7 @@ default = ["main-page", "product", "remote", "canvas-gpu", "image-decode"]
 main-page = ["product", "remote"]
 # What a page saves: IndexedDB, saved scenes, the tree's product mode,
 # `web_product` and `web_practice`.
-product = ["muniment/indexeddb", "dep:sha2", "graphshell/document-layout"]
+product = ["muniment/indexeddb", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "dep:mere-document-lanes", "dep:fleece"]
 applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.
@@ -43,8 +43,8 @@ canvas-gpu = ["graphshell/canvas-gpu", "mere/canvas-gpu"]
 image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mesquite/image-decode", "cambium-genet-web-host/image-decode", "graphshell/image-decode", "mere/image-decode"]
 
 [dependencies]
-mere-document-lanes = { path = "../../../crates/system/document-lanes", features = ["retained-clips"] }
-fleece = { package = "mere-fleece", path = "../../../crates/fleece", features = ["portable-clip"] }
+mere-document-lanes = { path = "../../../crates/system/document-lanes", features = ["retained-clips"], optional = true }
+fleece = { package = "mere-fleece", path = "../../../crates/fleece", features = ["portable-clip"], optional = true }
 eidetic = { path = "../../../crates/eidetic/eidetic-core", default-features = false }
 moot = { package = "mere-moot", path = "../../moot", default-features = false, features = ["presentation"], optional = true }
 # `webrtc-browser` is the C4 door's peer half (`webrtc_browser`, `webrtc_join`)
@@ -227,3 +227,13 @@ vello_shaders = { git = "https://github.com/mark-ik/vello", rev = "2eae6243881d5
 # (ruling 375). burn-cubecl takes the registry crate, as at the root, since
 # its selector was retired under ruling 410. Delete with the root's row.
 cubecl-runtime = { path = "../../../support/patches/cubecl-runtime" }
+
+# The standalone web workspace must repeat the root compatibility source.
+mere-p2panda-net = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+p2panda-auth = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+p2panda-core = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+p2panda-discovery = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+p2panda-encryption = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+p2panda-store = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+p2panda-stream = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+p2panda-sync = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
