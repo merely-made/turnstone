@@ -9,6 +9,10 @@
 log Instrument workspace frame and domain specimens
 settle 4
 assert snap mode == light
+# A fresh authored definition is initially unsaved. Establish its baseline
+# through the existing Save action before testing the dirty/history cues.
+click role:button @data-action=save
+settle 3
 assert snap dirty == false
 remember original
 capture instrument_light
