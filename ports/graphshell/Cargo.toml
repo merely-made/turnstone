@@ -8,6 +8,10 @@ description = "Graphshell presentation host and loopback acceptance view."
 autobins = false
 
 [[example]]
+name = "retained_content_fixture"
+required-features = ["web"]
+
+[[example]]
 name = "projection_dynamics_receipt"
 required-features = ["web"]
 
@@ -15,7 +19,7 @@ required-features = ["web"]
 moot-resources = ["web", "dep:moot"]
 default = ["native", "image-decode"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
-image-decode = ["cambium-rootstock?/image-decode", "mere?/image-decode"]
+image-decode = ["cambium-rootstock?/image-decode", "mere?/image-decode", "pelt-core?/image-decode"]
 # Existing admitted sessions, transports, Personae composition, and receipt
 # binaries. This remains the default so current native callers keep working.
 native = [
@@ -93,6 +97,13 @@ webrtc-join = [
 # (physics catalog plan, P5c; mere `canvas-gpu`, ruled 2026-10-02).
 canvas-gpu = ["web", "mere/canvas-gpu"]
 web = [
+    "dep:cambium",
+    "dep:fleece",
+    "dep:wgpu",
+    "dep:pelt-core",
+    "dep:inker",
+    "dep:netrender",
+    "dep:mere-document-lanes",
     "dep:tabard",
     "dep:async-trait",
     # The canvas's producer semantics for a screen reader (`canvas_reader`;
@@ -128,6 +139,13 @@ personal-sync = [
 ]
 
 [dependencies]
+cambium = { workspace = true, optional = true }
+fleece = { workspace = true, features = ["portable-clip"], optional = true }
+wgpu = { workspace = true, optional = true }
+pelt-core = { workspace = true, features = ["genet"], optional = true }
+inker = { workspace = true, optional = true }
+netrender = { workspace = true, optional = true }
+mere-document-lanes = { workspace = true, features = ["retained-clips"], optional = true }
 moot = { workspace = true, optional = true }
 # The check conclusions and faults, named directly (insigne proofs plan, B).
 insigne = { workspace = true, features = ["verify"] }

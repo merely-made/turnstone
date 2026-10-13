@@ -53,6 +53,7 @@ Under `web` (portable, builds for `wasm32-unknown-unknown`):
 | `app` | `GraphshellApp`, `AppError`: local and remote projections through one `ClientState` |
 | `mere_host` | `MereHost`, `SelectedPersonaRef`: Mere graph truth as a Graphshell endpoint |
 | `product` | Graph-product operations and facets: `TransferScope`, `RelationFamilyFilter`, `EditableRelation` |
+| `retained_content` | Pelt-backed held HTML/text/image/selected-clip sessions, portable content input and a shared-device texture/scene producer |
 | `handlers` | `HandlerRegistry`, `HandlerOffer`, `OpenAddressV1` |
 | `access` | `AccessRecord`, `AccessObservation`, `AccessTransition`, `save_access_record` |
 | `capture` | `HistoryCapturePolicy`, `BrowserVisit`, `NormalizedVisit`, `CaptureBackend` |
@@ -255,3 +256,23 @@ Genet overlay and Canvas, and reopen again. Bare `tree.html` and `dataset.html`
 must expose `data-appearance-owner="host"` and no appearance picker. Review
 actual browser captures and GPU/error gates; successful WASM checks alone do
 not establish visual or reload acceptance.
+
+## Retained content
+
+The Workbench opens actual held bodies and verified selected text/WAV clips
+through Pelt and Genet. Sessions are keyed by reading access, survive projection
+rebuilds and tab hiding, and retire when that view closes or its source changes.
+Closing a view does not erase the supplying Mere's bytes. Link effects are
+resolved through existing retained graph addresses; other destinations report
+that their content is unavailable. `.mereclip` intake uses Fleece validation
+before admitting the bytes and creating the graph reference.
+
+The browser adapter reads the selected Mere's IndexedDB backend, plays verified
+WAV bytes with host audio controls, and exposes positive `clip-max-parts`,
+`clip-max-bytes` and `clip-max-record-bytes` options. Native consumers use the
+same content host, input view and producer. The explicit
+`?app=local&fixture=retained-content` acceptance source has its own database;
+it is not a default capture operation.
+
+Qualification and unresolved gates are recorded in the
+[one-tree plan](../../design_docs/mere_docs/implementation_strategy/2026-09-25_graphshell_one_tree_plan.md).

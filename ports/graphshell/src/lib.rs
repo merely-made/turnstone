@@ -12,6 +12,8 @@
 #[cfg(feature = "moot-resources")]
 pub mod moot_resources;
 #[cfg(feature = "web")]
+pub mod retained_content;
+#[cfg(feature = "web")]
 pub mod access;
 #[cfg(feature = "web")]
 pub mod access_inspection;

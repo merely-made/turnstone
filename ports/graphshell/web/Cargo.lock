@@ -580,6 +580,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "browsing-context-api"
+version = "0.1.0"
+source = "git+https://github.com/merely-made/genet.git?rev=4bc75583865c2fb862b7acd7fe16dc28eb591042#4bc75583865c2fb862b7acd7fe16dc28eb591042"
+
+[[package]]
 name = "buckram"
 version = "0.0.3"
 source = "git+https://github.com/merely-made/genet.git?rev=4bc75583865c2fb862b7acd7fe16dc28eb591042#4bc75583865c2fb862b7acd7fe16dc28eb591042"
@@ -2654,7 +2659,9 @@ version = "0.1.0"
 dependencies = [
  "genet-parley",
  "inker",
+ "netrender",
  "paint_list_api",
+ "paint_list_render",
  "serde",
 ]
 
@@ -3090,6 +3097,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "fleece"
+version = "0.5.0"
+source = "git+https://github.com/merely-made/genet.git?rev=4bc75583865c2fb862b7acd7fe16dc28eb591042#4bc75583865c2fb862b7acd7fe16dc28eb591042"
+dependencies = [
+ "layout-dom-api",
+ "sha2 0.10.9",
+ "unicode-bidi",
+ "unicode-segmentation",
+]
+
+[[package]]
 name = "float-ord"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3407,6 +3425,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "genet-documents"
+version = "0.1.0"
+source = "git+https://github.com/merely-made/genet.git?rev=4bc75583865c2fb862b7acd7fe16dc28eb591042#4bc75583865c2fb862b7acd7fe16dc28eb591042"
+dependencies = [
+ "browsing-context-api",
+ "data-url",
+ "document-session-api",
+ "fleece",
+ "genet-document-resources",
+ "genet-host-api",
+ "genet-livery",
+ "genet-render",
+ "genet-scripted-dom",
+ "genet-static-dom",
+ "genet-text",
+ "layout-dom-api",
+ "netrender",
+ "paint_list_api",
+ "paint_list_render",
+ "serde_json",
+ "url",
+]
+
+[[package]]
 name = "genet-fontique"
 version = "0.10.0"
 source = "git+https://github.com/merely-made/genet.git?rev=4bc75583865c2fb862b7acd7fe16dc28eb591042#4bc75583865c2fb862b7acd7fe16dc28eb591042"
@@ -3716,6 +3758,7 @@ version = "0.0.2"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
+ "cambium",
  "cambium-rootstock",
  "chartulary",
  "chirograph",
@@ -3724,13 +3767,18 @@ dependencies = [
  "getrandom 0.3.4",
  "graphshell-client",
  "graphshell-endpoint",
+ "inker",
  "insigne",
  "mere",
+ "mere-document-lanes",
+ "mere-fleece",
  "mere-moot",
  "mere-webrtc-carrier",
  "muniment",
+ "netrender",
  "notochord",
  "pandect",
+ "pelt-core",
  "personae",
  "platen",
  "sceno",
@@ -3744,6 +3792,7 @@ dependencies = [
  "thiserror 1.0.69",
  "url",
  "uuid",
+ "wgpu",
  "windows-sys 0.59.0",
  "workbench",
 ]
@@ -3774,6 +3823,7 @@ dependencies = [
  "cambium-genet-web-host",
  "cambium-rootstock",
  "console_error_panic_hook",
+ "eidetic",
  "futures-channel",
  "futures-util",
  "genet-render",
@@ -3783,6 +3833,8 @@ dependencies = [
  "graphshell-client",
  "js-sys",
  "mere",
+ "mere-document-lanes",
+ "mere-fleece",
  "mere-moot",
  "mesquite",
  "muniment",
@@ -4801,6 +4853,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "mere-document-lanes"
+version = "0.1.0"
+dependencies = [
+ "document-canvas",
+ "document-session-api",
+ "eidetic",
+ "genet-host-api",
+ "genet-static-dom",
+ "image",
+ "inker",
+ "mere-fleece",
+ "netrender",
+ "serde_json",
+ "tabard",
+ "tempfile",
+ "url",
+]
+
+[[package]]
+name = "mere-fleece"
+version = "0.0.1"
+dependencies = [
+ "eidetic",
+ "fleece",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "mere-forme"
 version = "0.1.0"
 dependencies = [
@@ -4845,6 +4926,10 @@ dependencies = [
  "mere-comms",
  "serde",
 ]
+
+[[package]]
+name = "mere-page-load"
+version = "0.0.1"
 
 [[package]]
 name = "mere-surface-api"
@@ -5976,6 +6061,21 @@ dependencies = [
  "hmac",
  "password-hash",
  "sha2 0.10.9",
+]
+
+[[package]]
+name = "pelt-core"
+version = "0.2.0"
+dependencies = [
+ "genet-documents",
+ "genet-host-api",
+ "inker",
+ "mere-document-lanes",
+ "mere-page-load",
+ "netrender",
+ "serde_json",
+ "url",
+ "workbench",
 ]
 
 [[package]]
@@ -8145,6 +8245,12 @@ name = "unicase"
 version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dbc4bc3a9f746d862c45cb89d705aa10f187bb96c76001afab07a0d35ce60142"
+
+[[package]]
+name = "unicode-bidi"
+version = "0.3.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c1cb5db39152898a79168971543b1cb5020dff7fe43c8dc468b0885f5e29df5"
 
 [[package]]
 name = "unicode-ident"

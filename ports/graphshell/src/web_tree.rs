@@ -150,6 +150,8 @@ fn tree_stylesheet(appearance: &str) -> String {
 
 /// What the page, its producer and its hooks share.
 struct Shared {
+    #[cfg(feature = "product")]
+    reading: RefCell<reading::Reading>,
     #[cfg(feature = "moot-resources")]
     moot_resources: RefCell<graphshell::moot_resources::Host>,
     #[cfg(feature = "applets")]
@@ -1002,6 +1004,8 @@ async fn boot(root: Element) -> Result<(), String> {
     let initial_sheet = tree_stylesheet(&appearance.borrow().sheet());
     let appearance_revision = Cell::new(appearance.borrow().revision);
     let shared = Rc::new(Shared {
+        #[cfg(feature = "product")]
+        reading: RefCell::new(reading::Reading::default()),
         #[cfg(feature = "moot-resources")]
         moot_resources: RefCell::new(graphshell::moot_resources::Host::default()),
         #[cfg(feature = "applets")]
@@ -1188,9 +1192,12 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
         frame: Box::new(move |ctx| {
             #[cfg(feature = "moot-resources")]
             {
-                let version=frame_shared.moot_resources.borrow().version;
-                if version!=ctx.runner.state().moot_resources_seen {
-                    ctx.runner.update(|page| {page.moot_resources_seen=version;page.tools_open=true;});
+                let version = frame_shared.moot_resources.borrow().version;
+                if version != ctx.runner.state().moot_resources_seen {
+                    ctx.runner.update(|page| {
+                        page.moot_resources_seen = version;
+                        page.tools_open = true;
+                    });
                 }
             }
             #[cfg(feature = "applets")]
@@ -1269,11 +1276,13 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 }
                 presentation::install(ctx.runner.state());
                 if let Some(input) = node_presentation::refresh(ctx.runner.state()) {
-                    ctx.runner.update(|page| node_presentation::update(page,input));
+                    ctx.runner
+                        .update(|page| node_presentation::update(page, input));
                 }
                 node_presentation::install(ctx.runner.state());
                 if let Some(report) = dynamics_inspection::refresh(ctx.runner.state()) {
-                    ctx.runner.update(|page| dynamics_inspection::update(page, report));
+                    ctx.runner
+                        .update(|page| dynamics_inspection::update(page, report));
                 }
             }
             // The remote session moves outside the runner (its channel's
@@ -1327,6 +1336,58 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                     web_sys::console::error_1(
                         &format!("could not register the canvas producer: {error:?}").into(),
                     );
+                }
+            }
+            #[cfg(feature = "product")]
+            {
+                reading::prepare(ctx.runner.state());
+                frame_shared.reading.borrow_mut().register(ctx);
+                if frame_shared.reading.borrow_mut().poll() {
+                    ctx.runner.update(|_| {});
+                }
+                let requests = frame_shared.reading.borrow_mut().take_requests();
+                for (source, address) in requests {
+                    if matches!(
+                        mere_document_lanes::retained_clip::request(&address),
+                        Ok(Some(
+                            mere_document_lanes::retained_clip::ClipRequest::Export(_)
+                        ))
+                    ) {
+                        frame_shared.reading.borrow_mut().set_status(
+                            source,
+                            "Selected clip export needs a receiving host export adapter".into(),
+                        );
+                        ctx.runner.update(|_| {});
+                        continue;
+                    }
+                    let target =
+                        frame_shared
+                            .canvas
+                            .borrow()
+                            .graph()
+                            .nodes()
+                            .find_map(|(_, node)| {
+                                (node.url() == address
+                                    && (node.body.is_some()
+                                        || matches!(
+                                        mere_document_lanes::retained_clip::request(&address),
+                                        Ok(Some(
+                                            mere_document_lanes::retained_clip::ClipRequest::Read(
+                                                _
+                                            )
+                                        ))
+                                    )))
+                                .then_some(node.id)
+                            });
+                    if let Some(target) = target {
+                        ctx.runner.update(|page| forme::open_retained(page, target));
+                    } else {
+                        frame_shared.reading.borrow_mut().set_status(
+                            source,
+                            format!("That destination's content is not retained here: {address}"),
+                        );
+                        ctx.runner.update(|_| {});
+                    }
                 }
             }
             frame_shared.with_gpu(|gpu| frame_shared.timing.borrow_mut().frame_begin(gpu));
@@ -1500,9 +1561,9 @@ mod controls;
 #[cfg(feature = "product")]
 mod coupling;
 #[cfg(feature = "product")]
-mod field_inspection;
+mod dynamics_inspection;
 #[cfg(feature = "product")]
-mod node_presentation;
+mod field_inspection;
 #[cfg(feature = "product")]
 mod forme;
 mod gesture_steps;
@@ -1514,18 +1575,20 @@ mod inspection;
 mod lane;
 #[cfg(feature = "product")]
 mod link_inspection;
-mod physics;
 #[cfg(feature = "moot-resources")]
 mod moot_resources;
 #[cfg(feature = "product")]
-mod presentation;
+mod node_presentation;
+mod physics;
 #[cfg(feature = "product")]
-mod dynamics_inspection;
+mod presentation;
 #[cfg(feature = "product")]
 mod product;
 #[cfg(not(feature = "product"))]
 #[path = "web_tree/product_off.rs"]
 mod product;
+#[cfg(feature = "product")]
+mod reading;
 #[cfg(feature = "remote")]
 mod remote;
 #[cfg(not(feature = "remote"))]
