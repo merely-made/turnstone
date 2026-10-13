@@ -40,6 +40,7 @@ mod lens;
 use lens::LensWindow;
 mod input;
 mod outer_workspace;
+mod frame_keys;
 use input::pointer_button;
 
 use std::collections::{HashMap, VecDeque};
@@ -847,6 +848,8 @@ pub struct Shell {
     renderers: renderers::PaneRenderers,
     outer_frames: std::cell::RefCell<HashMap<usize, crate::outer_frame::OuterFrame>>,
     outer_capture: Option<outer_workspace::OuterCapture>,
+    outer_focus: Option<frame_keys::HeaderFocus>,
+    a11y_frame_last: Option<crate::frame_controls::FrameStamp>,
     /// Runtime product surface factories. Concrete product state never enters
     /// the shell; admission yields the erased sessions retained above.
     surface_providers: crate::contributed_surface::SurfaceProviderRegistry,
@@ -1193,6 +1196,8 @@ impl Shell {
             renderers: Default::default(),
             outer_frames: Default::default(),
             outer_capture: None,
+            outer_focus: None,
+            a11y_frame_last: None,
             surface_providers,
             redshank_docks,
             hovered_pane: None,
@@ -1434,6 +1439,7 @@ impl Shell {
     }
 
     fn accepts_controlled_text(&self) -> bool {
+        if self.outer_focus.is_some() && !self.app.omnibar.open && !self.app.document_find.open && !self.app.user_agent_decision.is_open() {return false;}
         self.app.omnibar.open
             || self.app.document_find.open
             || self.app.user_agent_decision.accepts_text()
@@ -1927,7 +1933,7 @@ impl Shell {
                 trees.insert(pane, tree);
             }
         }
-        let (tree, mut routes) =
+        let (mut tree, mut routes) =
             crate::a11y::project_app_with_routes_and_contributions(&self.app, trees);
         routes.extend(contributed.routes.into_iter().map(|(id, route)| {
             (
@@ -1939,8 +1945,20 @@ impl Shell {
                 },
             )
         }));
-        let focus = contributed_focus
+        let mut focus = contributed_focus
             .filter(|focus| tree.nodes.iter().any(|(candidate, _)| candidate == focus));
+        if self.app.blueprint_space(crate::action::SpaceRef::Primary).is_none() {
+            let focused=self.outer_focus.as_ref().is_some_and(|owner|owner.slot==0);
+            if let Some(frame)=self.outer_frames.borrow().get(&0).and_then(|frame|frame.accessibility(focused)) {
+                let parent=uxtree::node_id_for_path(&format!("frisket/{}",self.app.frisket.id.as_str()));
+                let bodies=crate::panes::pane_projection_ids(&self.app.frisket);
+                if let Some((frame_routes,frame_focus))=crate::frame_a11y::graft(&mut tree,parent,&bodies,frame) {
+                    routes.extend(frame_routes.into_iter().map(|(id,route)|(id,crate::a11y::A11yRoute::Frame(route))));
+                    if focused {focus=frame_focus;}
+                }
+            }
+        }
+        focus=focus.filter(|f|tree.nodes.iter().any(|(id,_)|id==f));
         (tree, routes, focus)
     }
 
@@ -1964,7 +1982,8 @@ impl Shell {
             self.surface_a11y.reset_publication();
         }
         let placements = self.foreign_a11y_placements();
-        let changed = replay
+        let frame_stamp=self.outer_frames.borrow().get(&0).map(|frame|frame.stamp());
+        let changed = frame_stamp != self.a11y_frame_last || replay
             || self.surface_a11y.needs_publish()
             || placements != self.a11y_surface_layout
             || self.a11y_focus_last != Some(self.app.focus);
@@ -2028,7 +2047,7 @@ impl Shell {
                 }
                 tree.nodes.push((id, graft));
             }
-            if matches!(self.app.focus, crate::surface::FocusTarget::Content { node: focused, .. } if focused == node)
+            if self.outer_focus.as_ref().is_none_or(|owner|owner.slot!=0) && matches!(self.app.focus, crate::surface::FocusTarget::Content { node: focused, .. } if focused == node)
             {
                 focus = Some(id);
             }
@@ -2073,6 +2092,7 @@ impl Shell {
         };
         self.a11y_surface_layout = placements;
         self.a11y_focus_last = Some(self.app.focus);
+        self.a11y_frame_last=frame_stamp;
         self.a11y_routes = routes;
         *self.a11y_shared.lock().expect("a11y tree slot poisoned") = Some(initial.clone());
         let adapter = self
@@ -2135,6 +2155,12 @@ impl Shell {
                         what: "a11y-action",
                         target: reason,
                     });
+                }
+                continue;
+            }
+            if let Some(crate::a11y::A11yRoute::Frame(route))=self.a11y_routes.get(&request.target_node).cloned() {
+                if !self.apply_frame_a11y(&route,request.action) {
+                    self.app.note(crate::observe::AppEvent::InteractionMissed {what:"a11y-action",target:"Shared frame control is stale, hidden or unsupported".into()});
                 }
                 continue;
             }

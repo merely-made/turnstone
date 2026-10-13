@@ -1,0 +1,25 @@
+# Fixture actions use the OS action queue/dispatcher; this is not human AT proof.
+# Fresh private stores, same startup pane ids as the keyboard fixture.
+settle 12
+key escape
+resize 1180 800
+act Open Settings pane
+settle 5
+assert a11y Pane controls
+frame-a11y focus tab 0
+assert snap frame-focus-slot == 0
+assert snap frame-control ~ Tab(TileId(0))
+frame-a11y inc divider . 0
+settle 5
+assert a11y separator
+capture frame_accessible_resize
+frame-a11y focus close 1
+assert snap frame-control ~ Close(TileId(1))
+frame-a11y click close 1
+settle 5
+assert no-pane settings
+assert snap frame-control ~ Tab(TileId(0))
+capture frame_accessible_close
+key escape
+assert snap frame-focus-slot == none
+assert snap capture-errors == 0

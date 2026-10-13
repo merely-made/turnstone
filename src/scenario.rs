@@ -323,6 +323,9 @@ pub enum EditKey {
     Find,
     /// Ctrl+D: keep or drop the highlighted command in the `>` lane.
     KeepCommand,
+    FrameFocus,
+    FrameClose,
+    BackTab,
 }
 
 #[derive(Debug)]
@@ -391,6 +394,9 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 "enter" => Step::Key(EditKey::Enter),
                 "escape" => Step::Key(EditKey::Escape),
                 "tab" => Step::Key(EditKey::Tab),
+                "shift+tab" => Step::Key(EditKey::BackTab),
+                "ctrl+f6" => Step::Key(EditKey::FrameFocus),
+                "ctrl+w" => Step::Key(EditKey::FrameClose),
                 "backspace" => Step::Key(EditKey::Backspace),
                 "delete" => Step::Key(EditKey::Delete),
                 "up" => Step::Key(EditKey::Up),

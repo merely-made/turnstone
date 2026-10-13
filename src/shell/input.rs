@@ -341,6 +341,7 @@ impl Shell {
             self.pointer_capture = None;
             return;
         }
+        if button != MouseButton::Left {self.leave_frame_focus();}
         if button == MouseButton::Left && self.outer_press(0, (self.width.max(1),self.height.max(1)),x,y) {
             self.pointer_capture=None; self.request_redraw(); return;
         }

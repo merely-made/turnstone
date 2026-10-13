@@ -1,0 +1,52 @@
+   Compiling turnstone-frame-controls-receipt v0.0.0 (/home/markik/Code/repos/turnstone/docs/receipts/frame_controls_20261013/harness)
+error[E0433]: cannot find module or crate `inker` in this scope
+   --> src/../../../../../src/scenario.rs:513:42
+    |
+513 |                     Some("down") => Some(inker::PointerPhase::Down),
+    |                                          ^^^^^ use of unresolved module or unlinked crate `inker`
+    |
+    = help: if you wanted to use a crate named `inker`, use `cargo add inker` to add it to your `Cargo.toml`
+
+error[E0433]: cannot find module or crate `inker` in this scope
+   --> src/../../../../../src/scenario.rs:514:42
+    |
+514 |                     Some("move") => Some(inker::PointerPhase::Move),
+    |                                          ^^^^^ use of unresolved module or unlinked crate `inker`
+    |
+    = help: if you wanted to use a crate named `inker`, use `cargo add inker` to add it to your `Cargo.toml`
+
+error[E0433]: cannot find module or crate `inker` in this scope
+   --> src/../../../../../src/scenario.rs:515:40
+    |
+515 |                     Some("up") => Some(inker::PointerPhase::Up),
+    |                                        ^^^^^ use of unresolved module or unlinked crate `inker`
+    |
+    = help: if you wanted to use a crate named `inker`, use `cargo add inker` to add it to your `Cargo.toml`
+
+error[E0433]: cannot find module or crate `inker` in this scope
+   --> src/../../../../../src/scenario.rs:516:44
+    |
+516 |                     Some("cancel") => Some(inker::PointerPhase::Cancel),
+    |                                            ^^^^^ use of unresolved module or unlinked crate `inker`
+    |
+    = help: if you wanted to use a crate named `inker`, use `cargo add inker` to add it to your `Cargo.toml`
+
+warning: unused import: `TilePath`
+  --> src/lib.rs:25:82
+   |
+25 |         ContentSource, SplitAxis, TabStack, Tile, TileBranch, TileEvent, TileId, TilePath,
+   |                                                                                  ^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0433]: cannot find module or crate `inker` in this scope
+   --> src/../../../../../src/scenario.rs:156:16
+    |
+156 |     Touch(u64, inker::PointerPhase, f32, f32, Option<f32>),
+    |                ^^^^^ use of unresolved module or unlinked crate `inker`
+    |
+    = help: if you wanted to use a crate named `inker`, use `cargo add inker` to add it to your `Cargo.toml`
+
+For more information about this error, try `rustc --explain E0433`.
+warning: `turnstone-frame-controls-receipt` (lib test) generated 1 warning
+error: could not compile `turnstone-frame-controls-receipt` (lib test) due to 5 previous errors; 1 warning emitted

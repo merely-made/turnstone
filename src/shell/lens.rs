@@ -420,6 +420,14 @@ impl Shell {
                 WindowEvent::MouseInput {state:ElementState::Pressed,button:MouseButton::Left,..}=>self.outer_press(slot,size,cursor.0,cursor.1),
                 WindowEvent::MouseInput {state:ElementState::Released,button:MouseButton::Left,..}=>self.outer_release(slot,size,cursor.0,cursor.1),
                 WindowEvent::CursorMoved {position,..}=>self.outer_move(slot,position.x as f32,position.y as f32),
+                WindowEvent::ModifiersChanged(mods)=>{self.ctrl=mods.state().control_key();self.shift=mods.state().shift_key();self.alt=mods.state().alt_key();false},
+                WindowEvent::KeyboardInput {event,..} if event.state==ElementState::Pressed=>{
+                    if !self.deliver_frame_key(slot,size,&event.logical_key)
+                        && self.app.active_pane.and_then(|p|self.app.space_of(p))==Some(crate::action::SpaceRef::Lens(slot-1)) {self.on_key_in_window(slot,size,&event.logical_key);}
+                    true
+                },
+                WindowEvent::MouseInput {state:ElementState::Pressed,..}=>{self.leave_frame_focus();false},
+                WindowEvent::Focused(false)=>{if self.outer_focus.as_ref().is_some_and(|f|f.slot==slot) {self.leave_frame_focus();} false},
                 _=>false,
             };
             if consumed {if let Some(lens)=self.lens_windows.get_mut(&id) {lens.window.request_redraw();}return;}
@@ -430,6 +438,7 @@ impl Shell {
         match event {
             WindowEvent::CloseRequested => {
                 let ordinal = lens.ordinal;
+                if self.outer_focus.as_ref().is_some_and(|f|f.slot==ordinal+1) {self.leave_frame_focus();}
                 self.lens_windows.remove(&id);
                 self.outer_frames.borrow_mut().remove(&(ordinal+1));
                 let closed_panes: Vec<_> = self

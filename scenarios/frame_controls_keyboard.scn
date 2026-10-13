@@ -1,0 +1,26 @@
+# Fresh private stores; primary native keyboard draft, pending headed review.
+settle 12
+key escape
+resize 1180 800
+act Open Settings pane
+settle 5
+key ctrl+f6
+assert snap frame-focus-slot == 0
+assert snap frame-control ~ Tab
+capture frame_keyboard_entered
+key tab
+assert snap frame-control ~ Close
+key shift+tab
+assert snap frame-control ~ Tab
+key escape
+assert snap frame-focus-slot == none
+key ctrl+f6
+key ctrl+w
+settle 5
+assert no-pane settings
+assert snap frame-focus-slot == 0
+assert snap frame-control ~ Tab(TileId(0))
+capture frame_keyboard_closed
+key escape
+assert snap frame-focus-slot == none
+assert snap capture-errors == 0

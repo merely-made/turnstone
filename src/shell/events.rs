@@ -338,6 +338,7 @@ impl ApplicationHandler for Shell {
             // Continuous gestures map onto the canvas's semantic input methods
             // directly (they are already the right typed vocabulary); Actions
             // are the app-intent tier above. (Architecture plan, the spine.)
+            WindowEvent::Focused(false) => {if self.outer_focus.as_ref().is_some_and(|f|f.slot==0) {self.leave_frame_focus();}},
             WindowEvent::ModifiersChanged(mods) => {
                 self.ctrl = mods.state().control_key();
                 self.alt = mods.state().alt_key();

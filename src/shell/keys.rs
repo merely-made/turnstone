@@ -107,6 +107,7 @@ impl Shell {
         pressed: bool,
         text: Option<&str>,
     ) -> bool {
+        if self.outer_focus.is_some() || (self.ctrl && matches!(key,WinitKey::Named(WinitNamedKey::F6))) {return false;}
         let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
             return false;
         };
@@ -151,6 +152,7 @@ impl Shell {
     /// IME for the focused document goes through its browsing controller,
     /// as its keys do: Knot's editor and a page's form fields take it alike.
     pub(super) fn deliver_document_ime(&mut self, ime: &winit::event::Ime) -> bool {
+        if self.outer_focus.is_some() {return true;}
         let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
             return false;
         };
@@ -215,6 +217,7 @@ impl Shell {
     }
 
     pub(super) fn deliver_contributed_ime(&mut self, ime: &winit::event::Ime) -> bool {
+        if self.outer_focus.is_some() {return true;}
         let crate::surface::FocusTarget::Pane(pane_id) = self.app.focus else {
             return false;
         };
@@ -278,6 +281,10 @@ impl Shell {
     /// otherwise. Ephemeral content keys (scroll, blur) are delivered inline
     /// and consumed; everything else lowers to an Action through the spine.
     pub(super) fn on_key(&mut self, key: &WinitKey) {
+        self.on_key_in_window(0,(self.width,self.height),key);
+    }
+
+    pub(super) fn on_key_in_window(&mut self,slot:usize,size:(u32,u32),key:&WinitKey) {
         if let Some(decision) = self.app.user_agent_decision.active() {
             let request = decision.request();
             let action = match decision {
@@ -327,6 +334,7 @@ impl Shell {
             }
             return;
         }
+        if self.deliver_frame_key(slot,size,key) {return;}
         if matches!(key, WinitKey::Character(value) if self.ctrl && value.eq_ignore_ascii_case("f"))
         {
             self.act(Action::OpenDocumentFind);
