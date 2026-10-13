@@ -298,7 +298,6 @@ fn main() {
                     .chunks_exact(4)
                     .map(|pixel| [pixel[0], pixel[1], pixel[2], pixel[3]])
                     .collect();
-                assert!(colors.len() >= 8, "uniform or blank capture");
                 image::save_buffer(
                     &destination,
                     &frame.rgba,
@@ -307,13 +306,24 @@ fn main() {
                     image::ColorType::Rgba8,
                 )
                 .expect("PNG");
+                let pixel_report = serde_json::json!({"stage":stage,"width":frame.width,"height":frame.height,"unique_colors":colors.len(),"first_pixel":frame.rgba.get(..4),"presentation":format!("{presentation:?}")});
+                std::fs::write(
+                    destination.with_extension("json"),
+                    serde_json::to_vec_pretty(&pixel_report).unwrap(),
+                )
+                .expect("pixel evidence");
+                eprintln!("[moot-proof] capture {pixel_report}");
+                assert!(colors.len() >= 8, "uniform or blank capture");
                 captured.borrow_mut().push(serde_json::json!({"stage":stage,"path":destination,"width":frame.width,"height":frame.height,"unique_colors":colors.len(),"presentation":format!("{presentation:?}")}));
                 done.set(true);
             }));
         });
     }
+    // Genet mounts this composition's main directly under the document. The
+    // host owns its palette and typography, including an opaque surface for
+    // the native frame's black clear; no synthetic body selector can supply it.
     let sheet = format!(
-        "body{{font-family:sans-serif;font-size:16px;margin:16px}}h1{{font-size:24px}}h2{{font-size:20px}}h3{{font-size:18px}}.readings{{display:flex;flex-wrap:wrap;gap:20px}}.reading{{flex:1;min-width:300px;padding:12px;border:1px solid #999}}pre{{white-space:pre-wrap;overflow-wrap:anywhere}} {}",
+        "main{{font-family:sans-serif;font-size:16px;padding:16px;min-height:100vh;box-sizing:border-box;background:#f6f7f8;color:#20252b}}h1{{font-size:24px}}h2{{font-size:20px}}h3{{font-size:18px}}.readings{{display:flex;flex-wrap:wrap;gap:20px}}.reading{{flex:1;min-width:300px;padding:12px;border:1px solid #999;background:#fff}}button{{color:#20252b;background:#edf1f5;border:1px solid #6d7681;padding:4px 8px}}pre{{white-space:pre-wrap;overflow-wrap:anywhere}} {}",
         graphshell::moot_resources::CSS
     );
     let running = Arc::new(AtomicBool::new(true));
