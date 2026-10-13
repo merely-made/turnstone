@@ -109,10 +109,10 @@ notochord = { git = "https://github.com/merely-made/dramatis.git", rev = "0234e7
 # The in-process carrier and the Knot endpoint it hosts. Turnstone embeds the
 # endpoint rather than spawning it: a subprocess is unshippable in a browser
 # tab or an iOS app, so the spawn path cannot be the only one.
-knot = { package = "knot-editor", git = "https://github.com/merely-made/knot-editor.git", rev = "3af93adda472af2913a5d298f14deb10e85daee2" }
+knot = { package = "knot-editor", git = "https://github.com/merely-made/knot-editor.git", rev = "8ed49d43f049921d56ab5a0c091a2c37c0970ee7" }
 # The reusable one-document product surface. This stays separate from the
 # broad Knot port graph used by publishing and endpoint composition above.
-knot-document = { git = "https://github.com/merely-made/knot-editor.git", rev = "3af93adda472af2913a5d298f14deb10e85daee2" }
+knot-document = { git = "https://github.com/merely-made/knot-editor.git", rev = "8ed49d43f049921d56ab5a0c091a2c37c0970ee7" }
 # The installed Distillery projection surface: the independent second provider
 # proving the contributed-surface seam (Knot shared-surface plan P0).
 distillery = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4" }
@@ -157,7 +157,7 @@ rfd = "0.17.2"
 # plan phase 4: turnstone's content port spawns through the registry; the static
 # lane's netfetch feature gives LocalFetcher its https branch).
 inker = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4" }
-genet-documents = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947", features = ["livery"] }
+genet-documents = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc", features = ["livery"] }
 # The Mere half of the former `genet-documents` (boundary plan P1): the
 # reader and smolweb lanes, and the remote fetcher that supplies the http(s)
 # schemes Genet's `LocalFetcher` no longer branches on. The two compose at
@@ -178,8 +178,8 @@ getrandom = "0.2"
 errand = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4" }
 # Optional app-control scripting. Piccolo is a Turnstone mod/workflow backend,
 # not a browser-page engine; Vano/Boa remain the JavaScript lanes.
-script-engine-api = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947", optional = true }
-script-engine-piccolo = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947", optional = true }
+script-engine-api = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc", optional = true }
+script-engine-piccolo = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc", optional = true }
 # The app-core component host (mere): instantiates the envelope world and
 # backs `emit` with turnstone's ring gate. Optional — the `wasm` feature.
 app-host = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4", optional = true }
@@ -187,24 +187,24 @@ app-host = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42
 wasmtime = { version = "45", optional = true }
 # Clip/capture capability, with lightweight Genet extraction reexported.
 fleece = { package = "mere-fleece", git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4", features = ["clip", "eidetic-bridge", "portable-clip"] }
-genet-static-dom = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+genet-static-dom = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
 # Turnstone owns pane retention and composition; Genet supplies the clean-room
 # Livery cascade/Buckram layout state.
 # Portable Git/lock retain 0.0.3; explicit sibling mode also accepts tested 0.0.4.
-genet-livery = { version = ">=0.0.3, <0.0.5", git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+genet-livery = { version = ">=0.0.3, <0.0.5", git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
 # The retained pane accessibility projection is owned beside Livery's
 # fragments in Genet; Turnstone only namespaces and places the returned tree.
-document-session-api = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
-genet-render = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+document-session-api = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+genet-render = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
 # The chrome layer's document substrate + name types + paint vocabulary
 # (rung 3: the omnibar is turnstone's first DOM surface, composited above the
 # canvas by the layered present).
-genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
-taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
 # The shared clipboard service. The system backend lives behind the shell so
 # neither the app nor the place worker ever holds a clipboard handle.
-genet-clipboard = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
-layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+genet-clipboard = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
 paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "c74b7cb28090c28b1c6d80b08dcdea18aff48d3e" }
 paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "c74b7cb28090c28b1c6d80b08dcdea18aff48d3e" }
 # Suggestion rows key node identity by the graph's stable UUIDs.
@@ -213,8 +213,8 @@ uuid = "1"
 url = "2.5"
 # Rasterize + composite the canvas Scene through the shared present stack.
 netrender = { git = "https://github.com/merely-made/netrender.git", rev = "c74b7cb28090c28b1c6d80b08dcdea18aff48d3e" }
-genet-winit-host = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
-genet-render-host = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+genet-winit-host = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+genet-render-host = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
 # The view toolkit (rung 5 slice D, the toolkit adoption): cambium (the xilem
 # fork) + sprigging (its custom-paint leaves, incl. the data_grid and GraphCanvas
 # a Roster grid and a Gloss minimap swatch need). Git dep on cambium.git so the
@@ -234,7 +234,7 @@ sprigging = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f4
 mere-surface-api = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4" }
 # The extracted split/tab contract. It now carries the tile seam turnstone
 # names for splits and settings refs, and moved to mere with Cambium (P3).
-workbench = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4" }
+workbench = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4", features = ["serde"] }
 # Chromium surface-engine adapter. `weld-engine` is the neutral inker bridge;
 # the CEF runtime remains opt-in because it carries a bundled browser runtime.
 weld-engine = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4", features = ["welding-0-15"], optional = true }
@@ -298,7 +298,7 @@ mien = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf5
 transport = { package = "mere-transport", git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4", features = ["test-identity"] }
 # The cookie custody test speaks the jar's own types. Same Genet revision as
 # every other genet.git row here, so it adds no package to the graph.
-netfetcher = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+netfetcher = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
 
 [features]
 default = []
@@ -372,12 +372,12 @@ gemini-protocol = { git = "https://github.com/merely-made/smolweb.git", rev = "8
 # registry version. Keep a clean Turnstone consumer on the same Git type family
 # as its direct Genet dependencies instead of resolving the retired registry
 # paint/observable chain.
-engine-observables-api = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
-genet-paint-types = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
-genet-livery = { version = ">=0.0.3, <0.0.5", git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
-genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
-genet-static-dom = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
-layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+engine-observables-api = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+genet-paint-types = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+genet-livery = { version = ">=0.0.3, <0.0.5", git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+genet-static-dom = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
 # The renderer family is published, but Turnstone also consumes its current git
 # surface directly. Patch the four runtime crates together so Mere Canvas and
 # the host cannot receive source-distinct `Scene` or paint vocabulary types.
@@ -400,7 +400,7 @@ p2panda-store = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2
 p2panda-stream = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
 p2panda-sync = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
 # Livery/Buckram require Genet's current taffy fork.
-taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
 # No parley/fontique patch rows: as of genet 5ae30cad the text forks are
 # published as `genet-parley` and `genet-fontique` (lib names unchanged), so
 # nothing in genet answers to the name `parley` and a patch row here would
@@ -409,7 +409,7 @@ taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.co
 # resolve to the fork.
 # ipc-channel: in-process fork vendored in genet (single-process default,
 # unifies gpu-allocator's windows pin with wgpu-hal's).
-ipc-channel = { git = "https://github.com/merely-made/genet.git", rev = "2c7ef73bfa44c07744e0643e3c6f98be3cbd7947" }
+ipc-channel = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
 
 [profile.dev]
 # line-tables-only, because full debug info no longer fits: the dependency
@@ -504,3 +504,16 @@ tinct = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf
 uxtree = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4" }
 weld-engine = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4" }
 workbench = { git = "https://www.github.com/merely-made/mere.git", rev = "8568f42fdf57f997274c74e63bd4ee045fe1a2b4" }
+
+# Embedded Redshank still names an older Genet revision. Redirect its boundary
+# crates to the same immutable revision as this host; avoid duplicate DOM types.
+[patch."https://github.com/merely-made/genet.git"]
+engine-observables-api = { git = "https://www.github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+servo-media-traits = { git = "https://www.github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+genet-static-dom = { git = "https://www.github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+genet-paint-types = { git = "https://www.github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+genet-scripted-dom = { git = "https://www.github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+servo-media-player = { git = "https://www.github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+servo-media-streams = { git = "https://www.github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+layout-dom-api = { version = "=0.1.1", git = "https://www.github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
+regress = { git = "https://www.github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }

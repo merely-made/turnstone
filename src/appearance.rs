@@ -87,13 +87,66 @@ impl ThemeCatalog {
         if let Some(choice) = choice {
             match self.resolve(choice) {
                 Ok(resolved) => {
-                    notices.extend(resolved.diagnostics.iter().map(ToString::to_string))
+                    notices.extend(resolved.diagnostics.iter().map(ToString::to_string));
+                    if resolved
+                        .theme
+                        .typography
+                        .0
+                        .contains_key(&tabard::FontRole::Interface)
+                    {
+                        let mut fonts = tabard::Typography::default();
+                        fonts.0.insert(
+                            tabard::FontRole::Interface,
+                            resolved.theme.typography.0[&tabard::FontRole::Interface].clone(),
+                        );
+                        notices.extend(fonts.missing_families(installed_families()));
+                    }
+                    for role in interface_preferences(&choice.fonts)
+                        .resolve(installed_families(), &font_defaults())
+                    {
+                        if role.used_default {
+                            notices.push(format!(
+                                "Interface: requested families are unavailable; using {}.",
+                                role.family.name()
+                            ));
+                        }
+                    }
                 },
                 Err(error) => notices.push(error),
             }
         }
         notices.join(" ")
     }
+
+    pub(crate) fn interface_font_properties(&self, fonts: &tabard::FontPreferences) -> String {
+        let fonts = interface_preferences(fonts);
+        if fonts.is_empty() {
+            return String::new();
+        }
+        crate::frame_style::interface_font_properties(&fonts, installed_families())
+    }
+}
+
+fn installed_families() -> &'static [String] {
+    static FAMILIES: std::sync::OnceLock<Vec<String>> = std::sync::OnceLock::new();
+    FAMILIES.get_or_init(cambium_genet_winit_host::installed_font_families)
+}
+fn font_defaults() -> std::collections::BTreeMap<tabard::FontRole, tabard::FontFamily> {
+    [(
+        tabard::FontRole::Interface,
+        tabard::FontFamily::new("sans-serif").unwrap(),
+    )]
+    .into()
+}
+fn interface_preferences(fonts: &tabard::FontPreferences) -> tabard::FontPreferences {
+    tabard::FontPreferences(
+        fonts
+            .0
+            .iter()
+            .filter(|(role, _)| **role == tabard::FontRole::Interface)
+            .map(|(&role, families)| (role, families.clone()))
+            .collect(),
+    )
 }
 
 /// Supply shared variables, then exact authored rules. Arbitrary CSS remains

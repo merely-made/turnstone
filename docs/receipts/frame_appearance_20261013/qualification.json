@@ -1,0 +1,96 @@
+{
+  "date": "2026-10-13",
+  "status": "Shared tiled frame Tabard appearance draft; native acceptance open",
+  "base": "cee1f4d6ef39e27a6215d9ebe6ef92fce1e45a79",
+  "portable": {
+    "status": "passed",
+    "tests": 21,
+    "scope": "Actual frame_style, shared Workspace DOM and Livery cascade/layout; actual generic custody/sidecar modules with new Workbench pin; six native draft scenarios parse",
+    "command": "cargo test --locked --offline --manifest-path docs/receipts/frame_appearance_20261013/harness/Cargo.toml --lib",
+    "log": "checks/portable-tests.log"
+  },
+  "linux_source": {
+    "status": "passed",
+    "command": "cargo check --locked --offline --lib --bin turnstone",
+    "warnings": 92,
+    "log": "checks/linux-source-check.log",
+    "scope": "Default-feature library and binary typecheck; no native execution, release build or whole-library tests"
+  },
+  "supplier_closure": "supplier-closure.json",
+  "supplier_scope": "Mere source set size one; all Genet packages one revision and no duplicate package names. HTTPS www Genet alias bridges embedded Redshank. Dramatis and Woodshed pins unchanged. This does not qualify all contributed products/engines/recovery.",
+  "contracts": [
+    "Existing persisted selection and explicit Apply pipeline includes Interface typography and font properties",
+    "Same-id workshop save and unrelated settings writes retain the currently applied typography until deliberate theme Apply",
+    "Requested family spellings/stacks survive availability resolution and theme/mode writes",
+    "Authored CSS keeps final authority; application Interface families override generated theme defaults",
+    "Retained frame sheet drives paint, body apertures and header hit geometry; automatic header height accommodates large fonts",
+    "Divider arithmetic uses measured branch gaps including divider margins; style change cancels a drag with old captured geometry",
+    "No replacement of pane ids, payload custody or body renderers by appearance changes"
+  ],
+  "remaining_gates": [
+    "Headed author/apply/reset/fallback/reopen and reviewed captures for the six scenarios",
+    "Native provider font-preservation/reopen unit test execution; whole consumer tests and optional/platform features",
+    "Primary/lens live appearance, same-id save/Apply, failed-save rollback, real installed faces, DPI and narrowed layouts",
+    "Authored divider width/margins and capture cancellation with pointer continuity",
+    "Pane/body continuity, original floating/physics scenarios and supplier-wide consumer acceptance",
+    "Header keyboard/AccessKit dispatch, A5 float unification, inline Component bodies and presented-frame performance",
+    "Independent application-family picker mounting; other font-role/body adoption"
+  ],
+  "limitations": "No headed run on S-PC. Typeface coverage/realized face identity and presented performance not qualified by computed-style/layout assertions.",
+  "attempt_history": [
+    "Initial source check failed in embedded Redshank from mixed Genet revisions; exact revision bridge added",
+    "First Genet patch resolution refused ambiguous layout-dom-api versions; exact =0.1.1 specified",
+    "Next host check found two owned AppearanceConfig moves and typed ReadbackFailure/String adaptation; corrected",
+    "First portable compile lacked pkg-config; reused task-local fontconfig development setup, no system install"
+  ],
+  "resource_controls": {
+    "cargo_jobs": 1,
+    "memory_max_mib": {
+      "portable": 1024,
+      "source": 1280
+    },
+    "swap_max_mib": 0,
+    "guard_minimum_available_mib": 256,
+    "setup": "Existing task-local native development headers/runtime; system packages untouched"
+  },
+  "documentation": "checks/doc-links.json",
+  "hash_policy": "Source text SHA256 normalizes CRLF to LF; proof logs hash raw bytes",
+  "source_sha256_lf": {
+    ".gitattributes": "ed9c574f6e3e6308b9004eae9d9280719e6f527301c159959e71030bbb6401d1",
+    "Cargo.lock": "3205ab68441f225962db297b422d5a69c4f0d7bfdc55e78d4db154b3bf506b47",
+    "Cargo.toml": "fc3e6daa78ec823298988a05a8930806faaab94e6a3599e5994fc03073711973",
+    "design_docs/2026-08-08_pane_registry_and_graph_panes_plan.md": "7f44c0045ecac6d718123c789413243059af282f39eded70d737fcc26a1e652f",
+    "design_docs/DOC_README.md": "9bdf2a5050336a28b512047bced997fe2604617f5ae05a3c81da8f363b43c49f",
+    "docs/receipts/frame_appearance_20261013/harness/Cargo.lock": "636baa3a18dc1535ed1b9197b1a9702b354116ee166a90248843138cd57b4ad4",
+    "docs/receipts/frame_appearance_20261013/harness/Cargo.toml": "1e90a4b455b5f7d44c6b3f8fe16e010aa85132c1034a1c283e24d48f6ae7c4f6",
+    "docs/receipts/frame_appearance_20261013/harness/src/lib.rs": "9c96b8628831290c3adda832dbb0c74cb64d89d64edee40a00d51e1184d27500",
+    "scenarios/frame_appearance.scn": "3e10c5b3f6f7fb51819ad56c68060a891558e8fd2f1ef5352167964004cdf28d",
+    "scenarios/frame_appearance_missing.scn": "4e46f8063a0bf2ca05769981e2993e6a6749a6cd0bb5d22e26281731af018202",
+    "scenarios/frame_appearance_missing_reopen.scn": "dca3b0ee12db9e920913fb98371dfbeb2a5369b059770d7886c788ef3c83f0a5",
+    "scenarios/frame_appearance_reopen.scn": "3eb86e8caba8f767f1aeb50768d0b9e6bd9cea8f239914a304cf2822b313b74b",
+    "scenarios/frame_fonts_missing_workshop.scn": "b792f592cfb4c7bf46fe130cccd20277dbdb10bbe0beb5cf368b50afdad02bfc",
+    "scenarios/frame_fonts_workshop.scn": "6ce1f1aecf50a3db6a234a380908c64267fd0a7156afbb9f914e6180db45cee4",
+    "src/appearance.rs": "d4f17e87cb80ce05da7dd8a935f905e48b0a241165eea47311a439cf7ea8e474",
+    "src/frame_style.rs": "08c1be4a72bab2cd8c5c42068b3a9e7f81f0d043575457259b542bbc1be19877",
+    "src/lib.rs": "6b46d5b5f7a8fc657b44af974e8d68e945a997e42c21545e5134ff77caab6725",
+    "src/outer_frame.rs": "1312f0b9c5a1d50ece838347fbebaf55e598640ca7b79fe3f0a0ef5c2b2266b6",
+    "src/settings_pane.rs": "3c94c0c8426e86b39a5aa202c0e0b81b9e1e9afabcac1447d2913e634b908206",
+    "src/settings_provider.rs": "95dad06f772c5179de89d84c13875f17cd909b021c0264d2e2c00105b038d052",
+    "src/shell/drive.rs": "dff5d1a69712edad5bd4577de607586242e2ce0d3af189be7736392e5aa7376d",
+    "src/shell/outer_workspace.rs": "2b18d7652da9307a0c11838ae44862033dde49f5c5d30f58c2640b7beac0bc21",
+    "src/shell/render.rs": "52165e3cbb8db406e198f813fe0cc873fce926d5b7ce72eace4bd1cfcc4974e0",
+    "src/shell_services.rs": "54fe408ec2bccdc33afcfcf1583aa4512e933a858739443b1d0b51df8b3644ef",
+    "src/panes/workspace.rs": "0462b08baccaf8498919c611886db0cab8a4ac5dc2fbb3eebd550129212e6e55",
+    "src/panes/workspace_store.rs": "2c31db993c1fa8ce484e3ecca765dec91ee9237f6021ed8a45db54a4483bf275"
+  },
+  "proof_sha256_raw": {
+    "checks/doc-links.json": "0c5c5b89af2a49f2e0177b1440c863b321264d31e8ad6f0b04ae49b3f86f18db",
+    "checks/initial-fontconfig-setup.log": "0c6471656a43a0e7f67c65624ab15e7c0cd8466cb716d363814d0b6acbfc658b",
+    "checks/initial-genet-patch-ambiguity.log": "8a6ce24f4d6f7a2558bd50ff935d5f04fe9eb6f3777163fa3f8688c60067a634",
+    "checks/initial-host-errors.log": "fb4d6ba1408d6f46121838a7756065f7576229b5aa6682d312eea9d4f8ea4d6e",
+    "checks/initial-redshank-failure.log": "9178e0ee6f835440e5cde634b920260d2a255a435ad5ed41b47b798499cdc590",
+    "checks/linux-source-check.log": "28375c8da8cdc04a4773a79a3bd1e89bb4a3faa881c767a3bf8294d15c0137bb",
+    "checks/portable-tests.log": "bfebb866255122548dda18f16b42ba64e24625949982cb253db569a7df52bd5f"
+  },
+  "supplier_closure_sha256_lf": "e9bfadf3e0219902132baea611c7b9ed3d9a48c71b442abcdd89974b5b1be732"
+}

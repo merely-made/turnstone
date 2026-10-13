@@ -286,6 +286,7 @@ impl Shell {
         if focused {
             self.select_input_window(window);
         } else {
+            super::outer_workspace::retire_outer_capture(&mut self.outer_capture, window);
             if self.focus_in_window(window, self.app.focus) {
                 self.window_focus.insert(window, self.app.focus);
             }

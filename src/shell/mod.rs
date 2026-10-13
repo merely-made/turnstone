@@ -42,6 +42,7 @@ mod lens;
 use lens::LensWindow;
 mod input;
 pub(crate) mod window_input;
+mod outer_workspace;
 use input::pointer_button;
 
 use std::collections::{HashMap, VecDeque};
@@ -705,6 +706,11 @@ impl Shell {
     }
 
     pub(super) fn refuse_lens_captures_before_clear(&mut self, reason: &str) {
+        let windows: Vec<_> = self.lens_windows.values().map(|lens| lens.ordinal as u64 + 1).collect();
+        for window in windows {
+            outer_workspace::retire_outer_capture(&mut self.outer_capture, window);
+        }
+        self.outer_frames.borrow_mut().retain(|slot, _| *slot == 0);
         self.bind_lens_capture();
         if let Some(id) = self.pending_lens_capture_window {
             if let Some(lens) = self.lens_windows.get(&id) {
@@ -720,6 +726,7 @@ impl Shell {
     /// Retire this physical host's actual admissions without blurring another
     /// window or destroying a retained controller, pane runner or authored draft.
     fn retire_render_receivers(&mut self, window: u64) {
+        outer_workspace::retire_outer_capture(&mut self.outer_capture, window);
         let graph = if window == 0 {
             match self.pointer_capture { Some(SurfaceKind::Graph(pane)) => Some(pane), _ => None }
         } else {
@@ -1106,6 +1113,8 @@ pub struct Shell {
     /// Every retained per-pane Cambium renderer, keyed by `PaneId`.
     /// See [`renderers::PaneRenderers`] for why they live in one place.
     renderers: renderers::PaneRenderers,
+    outer_frames: std::cell::RefCell<HashMap<usize, crate::outer_frame::OuterFrame>>,
+    outer_capture: Option<outer_workspace::OuterCapture>,
     /// Runtime product surface factories. Concrete product state never enters
     /// the shell; admission yields the erased sessions retained above.
     surface_providers: crate::contributed_surface::SurfaceProviderRegistry,
@@ -1462,6 +1471,8 @@ impl Shell {
             shared_knot_service,
             device_receipts_service,
             renderers: Default::default(),
+            outer_frames: Default::default(),
+            outer_capture: None,
             surface_providers,
             redshank_docks,
             hovered_pane: None,
@@ -1650,9 +1661,11 @@ impl Shell {
     /// (a platform call, so it lives here, not in `update`).
     fn act(&mut self, action: Action) {
         let accepted_text = self.accepts_controlled_text();
-        let closing = matches!(&action, Action::CloseActivePane)
-            .then_some(self.app.active_pane)
-            .flatten();
+        let closing = match &action {
+            Action::CloseActivePane => self.app.active_pane,
+            Action::OuterWorkspace { event: workbench::WorkspaceEvent::Tile(workbench::TileEvent::Closed(id)), .. } => Some(crate::panes::PaneId(id.0)),
+            _ => None,
+        };
         let effects = self.app.update(action);
         if let Some(pane) = closing
             && self.app.space_of(pane).is_none()
@@ -1778,7 +1791,11 @@ impl Shell {
     /// every other leaf a pane. Content insets over the canvas; chrome sits on
     /// top.
     fn surface_plan(&self) -> Vec<crate::surface::Surface> {
-        primary_content_plan(&self.app, &self.content_sessions, self.width, self.height)
+        let frame = self.app.blueprint_space(crate::action::SpaceRef::Primary).is_none()
+            .then(|| self.outer_rects(0, &self.app.frisket, self.app.maximized,
+                (self.width.max(1), self.height.max(1))));
+        primary_content_plan_with_rects(&self.app, &self.content_sessions, self.width,
+            self.height, frame.as_deref())
     }
 
     /// A pane's `PaneContent`, looked up from the frisket tree by id.
@@ -2835,6 +2852,18 @@ fn primary_content_plan(
     width: u32,
     height: u32,
 ) -> Vec<crate::surface::Surface> {
+    let frame = outer_workspace::frame_body_rects(app, crate::action::SpaceRef::Primary,
+        (width.max(1), height.max(1)));
+    primary_content_plan_with_rects(app, contents, width, height, frame.as_deref())
+}
+
+fn primary_content_plan_with_rects(
+    app: &App,
+    contents: &NodeDocuments,
+    width: u32,
+    height: u32,
+    frame_rects: Option<&[(crate::panes::PaneId, Rect)]>,
+) -> Vec<crate::surface::Surface> {
     let area = Rect::full(width.max(1), height.max(1));
     // A5 promotes a space to its `SpaceBlueprint` only when it enters the
     // float layer. Its placements then drive this exact compositor path;
@@ -2865,22 +2894,7 @@ fn primary_content_plan(
                     .collect(),
             )
         },
-        None => {
-            let placements = crate::pane::place_panes(&app.frisket, area, app.maximized);
-            (
-                placements
-                    .panes
-                    .into_iter()
-                    .map(|pane| (pane.id, pane.rect))
-                    .collect(),
-                placements
-                    .dividers
-                    .into_iter()
-                    .map(|divider| (divider.index, divider.rect))
-                    .collect(),
-                Vec::new(),
-            )
-        },
+        None => (frame_rects.unwrap_or_default().to_vec(), Vec::new(), Vec::new()),
     };
     let mut graph_rects = Vec::new();
     let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
@@ -2902,6 +2916,9 @@ fn primary_content_plan(
             }
         })
         .collect();
+    if app.blueprint_space(crate::action::SpaceRef::Primary).is_none() {
+        base.insert(0, (SurfaceKind::Frame, area));
+    }
     // Each seam is its own thin surface, so it paints (an empty scene over
     // the seam clear colour) and takes the divider drag.
     base.extend(

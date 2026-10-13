@@ -1,0 +1,12 @@
+{
+  "design_docs/DOC_README.md": {
+    "relative_links": 49,
+    "preexisting_missing": 7,
+    "links_and_resolvability_unchanged": true
+  },
+  "design_docs/2026-08-08_pane_registry_and_graph_panes_plan.md": {
+    "relative_links": 31,
+    "preexisting_missing": 6,
+    "links_and_resolvability_unchanged": true
+  }
+}

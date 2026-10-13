@@ -14,31 +14,12 @@
 //! `cambium::frisket`, the family's shared pane *frame*, so keeping it on a
 //! turnstone crate would have collided with a component turnstone consumes.
 //!
-//! What is here is deliberately NOT that frame. Turnstone places **one composited
-//! surface per pane** (`shell::surface_plan`), which is how a live WebView, the
-//! Orrery's GPU canvas, and a cambium-rendered pane coexist in one window; the
-//! cambium frame renders one DOM with content holes instead. The two share what
-//! is genuinely one idea, the split geometry (`cambium::Split`'s state math,
-//! adopted 2026-07-17), and diverge on presentation on purpose. This tree is
-//! turnstone's own pane authority, the analog of forme in mere.
+//! The tiled runtime now adopts `workbench::Workspace`, with opaque host pane
+//! payloads held beside it by stable identity. Binary nodes remain readable
+//! for saved layouts and existing leaf-admission calls. Frisket draws the
+//! shared outer frame; pane bodies retain their existing surface owners in
+//! this A4 draft. The A5 blueprint float path remains a separate adoption gate.
 //!
-//! Its history before that: renamed from `frame` (2026-07-14), which was
-//! overloaded three ways in this family (a rendered frame, a `TileFrame`, a
-//! window's pane arrangement) and which also fused in the workspace id
-//! vocabulary. The ids live in `incipit`.
-//!
-//! The tiers, which nest rather than compete:
-//!
-//! - `frisket` is pane-ness: kinds, ids, the split tree, the persisted layout.
-//! - `platen` tiles graph nodes *inside* one [`PaneContent::Workbench`] leaf.
-//! - The host turns this ratio tree into rects. Frisket emits no geometry.
-//!
-//! Split across submodules to keep each file under the workspace's
-//! 600-LOC ceiling: [`layout`] holds the [`FrisketLayout`] operations
-//! ([`FrisketLayout::summon_leaf`], `reparent_leaf`, `close_leaf`, …);
-//! [`projection`] holds [`project_frisket`] + [`project_frisket_with`].
-//!
-
 use serde::{Deserialize, Serialize};
 
 mod blueprint;
@@ -47,6 +28,9 @@ mod legacy_bridge;
 mod projection;
 mod registry;
 mod saved_content;
+mod workspace;
+pub(crate) mod workspace_bridge;
+mod workspace_store;
 
 /// The frame-sidecar persistence (`frame.json` beside `graph.json`), moved
 /// here from `pandect::frisket_store` at meerkat's deletion. Native
@@ -65,6 +49,7 @@ mod blueprint_tests;
 mod tests;
 
 pub use blueprint::*;
+pub(crate) use layout::path_for_pane_id;
 pub use legacy_bridge::blueprint_from_frisket;
 pub use projection::{
     project_frisket, project_frisket_with, project_space_blueprint,
@@ -269,6 +254,8 @@ impl PaneContent {
 /// bound to a graph).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum PaneNode {
+    /// Canonical shared tiled/float topology; other variants are legacy input.
+    Workspace(Box<workspace_bridge::OuterWorkspace>),
     Split {
         axis: SplitAxis,
         /// Fraction of the parent occupied by `first`; `second` takes
@@ -298,6 +285,8 @@ pub enum PaneNode {
 /// One step into a [`PaneNode::Split`] when walking the layout tree.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum SplitChoice {
+    /// A child of an N-ary shared split beyond the old binary vocabulary.
+    Child(usize),
     First,
     Second,
 }
@@ -323,11 +312,11 @@ impl Default for FrisketLayout {
         FrisketLayout {
             id: FrisketId::new("content"),
             label: "content".to_string(),
-            root: PaneNode::Leaf {
-                pane_id: PaneId(0),
-                content: PaneContent::Orrery,
-                graph_id: GraphId::nil(),
-            },
+            root: PaneNode::Workspace(Box::new(workspace_bridge::OuterWorkspace::single(
+                0,
+                "Orrery".into(),
+                (PaneContent::Orrery, GraphId::nil()),
+            ))),
         }
     }
 }

@@ -1453,6 +1453,7 @@ impl App {
                 self.summon_contributed_pane(kind, source)
             }
             Action::CloseActivePane => self.close_active_pane(),
+            Action::OuterWorkspace { space, event } => self.outer_workspace_event(space, event),
             Action::SetSplitRatio { space, path, ratio } => {
                 if let Some(layout) = self.space_mut(space) {
                     layout.set_split_ratio(&path, ratio);
@@ -1522,6 +1523,7 @@ mod node_arms;
 mod omnibar_arms;
 mod palette;
 mod pane_arms;
+mod outer_workspace_arms;
 mod redshank_arms;
 mod session_lifecycle;
 #[cfg(test)]

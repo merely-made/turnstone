@@ -60,3 +60,14 @@ vendor/mozjs-icu-normalizer/** -text -whitespace
 # Fixed Sky V1 DTO goldens are hashed as their exact captured bytes.
 scenarios/fixtures/sky_receipt_v1_boston_2024-04-08.json -text
 scenarios/fixtures/sky_receipt_v1_boston_2024-04-09.json -text
+
+# Raw outer Workspace proof logs and portable text metadata.
+docs/receipts/outer_workspace_20261012/checks/*.log -text -whitespace
+docs/receipts/outer_workspace_20261012/qualification.json text eol=lf
+docs/receipts/outer_workspace_20261012/harness/** text eol=lf
+
+# Shared frame appearance qualification, preserving raw diagnostic bytes.
+docs/receipts/frame_appearance_20261013/checks/*.log -text -whitespace
+docs/receipts/frame_appearance_20261013/*.json text eol=lf
+docs/receipts/frame_appearance_20261013/harness/** text eol=lf
+scenarios/frame*.scn text eol=lf

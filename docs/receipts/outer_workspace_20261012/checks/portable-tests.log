@@ -1,0 +1,20 @@
+   Compiling turnstone-outer-workspace-receipt v0.0.0 (/home/markik/Code/repos/turnstone/docs/receipts/outer_workspace_20261012/harness)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.30s
+     Running unittests src/lib.rs (/home/markik/Code/testing/mere/forme-field-target/debug/deps/turnstone_outer_workspace_receipt-50ba3b1846f86673)
+
+running 12 tests
+test workspace::tests::duplicate_ids_and_missing_drop_targets_do_not_orphan_a_pane ... ok
+test workspace::tests::duplicate_station_is_rejected_before_a_close ... ok
+test workspace::tests::invalid_stack_drop_does_not_remove_source_custody ... ok
+test workspace::tests::malformed_or_orphaned_payloads_refuse_without_mutation ... ok
+test workspace::tests::non_finite_split_edit_is_refused_atomically ... ok
+test workspace::tests::outside_drop_retains_custody_until_host_accepts ... ok
+test workspace::tests::shared_float_and_dock_keep_the_same_host_payload ... ok
+test workspace_store::tests::absent_files_remain_absent ... ok
+test workspace::tests::stacking_switching_closing_and_restart_preserve_payload_identity ... ok
+test workspace_store::tests::corrupt_current_never_resurrects_the_legacy_copy ... ok
+test workspace_store::tests::import_preserves_legacy_bytes_and_future_loads_use_current_choice ... ok
+test workspace_store::tests::unsupported_version_and_validation_failure_do_not_publish ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

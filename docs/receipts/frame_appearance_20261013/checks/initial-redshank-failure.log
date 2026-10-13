@@ -1,0 +1,463 @@
+error: invalid type: boolean `true`, expected a map
+ --> ../../../.cargo/git/checkouts/servo-e53a6e7b994a25fe/aac43a3/python/tidy/tests/lints-configuration/no-workspace/Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+warning: patch `burn-remote v0.22.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261011#d8acabc9)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+    Checking muniment v0.1.2 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking document-session-api v0.1.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+   Compiling vello_shaders v0.11.0 (https://github.com/mark-ik/vello?rev=2eae6243881d5b24c984d5ee35dde509ca5db782#2eae6243)
+    Checking vello_encoding v0.11.0 (https://github.com/mark-ik/vello?rev=2eae6243881d5b24c984d5ee35dde509ca5db782#2eae6243)
+    Checking layout-dom-api v0.1.1 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking netrender-vello v0.11.0 (https://github.com/mark-ik/vello?rev=2eae6243881d5b24c984d5ee35dde509ca5db782#2eae6243)
+    Checking command-menu v0.1.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking chartulary v0.2.2 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking paint_list_api v0.1.2 (https://github.com/merely-made/netrender.git?rev=c74b7cb28090c28b1c6d80b08dcdea18aff48d3e#c74b7cb2)
+    Checking sceno v0.0.4 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking genet-static-dom v0.1.1 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking inker v0.1.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking tinct v0.1.2 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking genet-paint-types v0.2.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking mere-curation v0.1.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking genet-host-api v0.2.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking engine-observables-api v0.2.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking regress v0.11.1 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking genet-scripted-dom v0.1.2 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking workbench v0.1.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking netrender_device v0.1.2 (https://github.com/merely-made/netrender.git?rev=c74b7cb28090c28b1c6d80b08dcdea18aff48d3e#c74b7cb2)
+    Checking numen v0.2.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking genet-fontique v0.10.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking netrender v0.1.2 (https://github.com/merely-made/netrender.git?rev=c74b7cb28090c28b1c6d80b08dcdea18aff48d3e#c74b7cb2)
+    Checking mere-forme v0.1.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking genet-text v0.1.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking genet-parley v0.10.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking mere-kernel v0.0.2 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+   Compiling livery v0.0.5 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking edit-history v0.1.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking meristem v0.2.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking illume v0.0.2 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking cadency v0.0.1 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking eidetic v0.0.2 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking paint_list_render v0.1.2 (https://github.com/merely-made/netrender.git?rev=c74b7cb28090c28b1c6d80b08dcdea18aff48d3e#c74b7cb2)
+    Checking mere-surface-api v0.1.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking sprigging v0.2.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking genet-taffy v0.14.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking buckram v0.0.3 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking cambium v0.3.3 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking genet-document-resources v0.2.1 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking genet-livery v0.0.4 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking tabard v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking mere-proofs v0.1.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking stickleback v0.1.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking scenotime v0.0.4 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking errand v0.4.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking scenograph v0.0.4 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking scenomise v0.0.4 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking chirograph v0.0.2 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking mere-alembic v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking uxtree v0.0.2 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking incipit v0.2.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking armillary v0.1.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking fleece v0.5.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking pandect v0.1.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking genet-render v0.2.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking genet-render-host v0.2.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking netfetcher v0.1.1 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking nematic v0.1.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking cambium-winit v0.3.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking esp v0.1.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking seiche v0.0.6 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking cambium-rootstock v0.1.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking document-canvas v0.1.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking servitor v0.0.2 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking mere-page-load v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking luggage v0.1.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking mere-transport v0.0.2 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking genet-winit-host v0.2.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking mere-fleece v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking knot-file-catalog v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=3af93adda472af2913a5d298f14deb10e85daee2#3af93add)
+    Checking graphshell-endpoint v0.0.2 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking mien v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking taproot v0.1.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking mooting v0.1.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking gemot v0.1.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking knot-capture v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=3af93adda472af2913a5d298f14deb10e85daee2#3af93add)
+    Checking cambium-winit-a11y v0.3.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking mere-webrtc-carrier v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking mere-fetch v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking knot-editor-host v0.1.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking graphshell-client v0.0.2 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking mere-apparatus v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking mere-cartography v0.0.2 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking ipc-channel v0.22.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking reference-data v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking chatelaine v0.0.3 (https://github.com/merely-made/dramatis.git?rev=0234e7eea6f2ddf2330a71b9425da01b06ae0391#0234e7ee)
+    Checking cambium-genet-winit-host v0.1.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking mora-cmudict v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking pictograph v0.2.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking servo-media-player v0.2.0 (https://github.com/merely-made/genet.git?rev=4bc75583865c2fb862b7acd7fe16dc28eb591042#4bc75583)
+    Checking graphshell v0.0.2 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking knot-composition v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=3af93adda472af2913a5d298f14deb10e85daee2#3af93add)
+    Checking knot-document v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=3af93adda472af2913a5d298f14deb10e85daee2#3af93add)
+    Checking mere-linked-data v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking script-rhai v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking mere-document-lanes v0.1.0 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking platen v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking mere-mesh v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking eidetic-search v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking mere-comms v0.0.1 (https://www.github.com/merely-made/mere.git?rev=8568f42fdf57f997274c74e63bd4ee045fe1a2b4#8568f42f)
+    Checking browsing-context-api v0.1.0 (https://github.com/merely-made/genet.git?rev=2c7ef73bfa44c07744e0643e3c6f98be3cbd7947#2c7ef73b)
+    Checking redshank-surfaces v0.0.0 (https://github.com/merely-made/woodshed.git?rev=961731ace9ae9e687bdf8d40a032f2e1fbbf3321#961731ac)
+error[E0053]: method `root` has an incompatible type for trait
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:171:23
+    |
+171 |     fn root(&self) -> NodeId {
+    |                       ^^^^^^ expected `genet_scripted_dom::NodeId`, found `NodeId`
+    |
+    = note: expected signature `fn(&CompactDockSession<_>) -> genet_scripted_dom::NodeId`
+               found signature `fn(&CompactDockSession<_>) -> NodeId`
+help: change the output type to match the trait
+    |
+171 |     fn root(&self) -> genet_scripted_dom::NodeId {
+    |                       ++++++++++++++++++++
+
+error[E0053]: method `focus` has an incompatible type for trait
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:175:24
+    |
+175 |     fn focus(&self) -> Option<NodeId> {
+    |                        ^^^^^^^^^^^^^^ expected `genet_scripted_dom::NodeId`, found `NodeId`
+    |
+    = note: expected signature `fn(&CompactDockSession<_>) -> Option<genet_scripted_dom::NodeId>`
+               found signature `fn(&CompactDockSession<_>) -> Option<NodeId>`
+help: change the output type to match the trait
+    |
+175 |     fn focus(&self) -> Option<genet_scripted_dom::NodeId> {
+    |                               ++++++++++++++++++++
+
+error[E0053]: method `set_focus` has an incompatible type for trait
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:179:35
+    |
+179 |     fn set_focus(&mut self, node: Option<NodeId>) -> Vec<SurfaceEffect> {
+    |                                   ^^^^^^^^^^^^^^ expected `genet_scripted_dom::NodeId`, found `NodeId`
+    |
+    = note: expected signature `fn(&mut CompactDockSession<_>, Option<genet_scripted_dom::NodeId>) -> Vec<_>`
+               found signature `fn(&mut CompactDockSession<_>, Option<NodeId>) -> Vec<_>`
+help: change the parameter type to match the trait
+    |
+179 |     fn set_focus(&mut self, node: Option<genet_scripted_dom::NodeId>) -> Vec<SurfaceEffect> {
+    |                                          ++++++++++++++++++++
+
+error[E0053]: method `focusables` has an incompatible type for trait
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:189:29
+    |
+189 |     fn focusables(&self) -> Vec<NodeId> {
+    |                             ^^^^^^^^^^^ expected `genet_scripted_dom::NodeId`, found `NodeId`
+    |
+    = note: expected signature `fn(&CompactDockSession<_>) -> Vec<genet_scripted_dom::NodeId>`
+               found signature `fn(&CompactDockSession<_>) -> Vec<NodeId>`
+help: change the output type to match the trait
+    |
+189 |     fn focusables(&self) -> Vec<genet_scripted_dom::NodeId> {
+    |                                 ++++++++++++++++++++
+
+error[E0053]: method `pointer_capture` has an incompatible type for trait
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:193:34
+    |
+193 |     fn pointer_capture(&self) -> Option<NodeId> {
+    |                                  ^^^^^^^^^^^^^^ expected `genet_scripted_dom::NodeId`, found `NodeId`
+    |
+    = note: expected signature `fn(&CompactDockSession<_>) -> Option<genet_scripted_dom::NodeId>`
+               found signature `fn(&CompactDockSession<_>) -> Option<NodeId>`
+help: change the output type to match the trait
+    |
+193 |     fn pointer_capture(&self) -> Option<genet_scripted_dom::NodeId> {
+    |                                         ++++++++++++++++++++
+
+error[E0053]: method `pointer_target` has an incompatible type for trait
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:197:35
+    |
+197 |     fn pointer_target(&self, hit: NodeId) -> Option<NodeId> {
+    |                                   ^^^^^^ expected `genet_scripted_dom::NodeId`, found `NodeId`
+    |
+    = note: expected signature `fn(&CompactDockSession<_>, genet_scripted_dom::NodeId) -> Option<genet_scripted_dom::NodeId>`
+               found signature `fn(&CompactDockSession<_>, NodeId) -> Option<NodeId>`
+help: change the parameter type to match the trait
+    |
+197 |     fn pointer_target(&self, hit: genet_scripted_dom::NodeId) -> Option<NodeId> {
+    |                                   ++++++++++++++++++++
+
+error[E0053]: method `hover_target` has an incompatible type for trait
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:201:33
+    |
+201 |     fn hover_target(&self, hit: NodeId) -> Option<NodeId> {
+    |                                 ^^^^^^ expected `genet_scripted_dom::NodeId`, found `NodeId`
+    |
+    = note: expected signature `fn(&CompactDockSession<_>, genet_scripted_dom::NodeId) -> Option<genet_scripted_dom::NodeId>`
+               found signature `fn(&CompactDockSession<_>, NodeId) -> Option<NodeId>`
+help: change the parameter type to match the trait
+    |
+201 |     fn hover_target(&self, hit: genet_scripted_dom::NodeId) -> Option<NodeId> {
+    |                                 ++++++++++++++++++++
+
+error[E0053]: method `wheel_target` has an incompatible type for trait
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:205:33
+    |
+205 |     fn wheel_target(&self, hit: NodeId) -> Option<NodeId> {
+    |                                 ^^^^^^ expected `genet_scripted_dom::NodeId`, found `NodeId`
+    |
+    = note: expected signature `fn(&CompactDockSession<_>, genet_scripted_dom::NodeId) -> Option<genet_scripted_dom::NodeId>`
+               found signature `fn(&CompactDockSession<_>, NodeId) -> Option<NodeId>`
+help: change the parameter type to match the trait
+    |
+205 |     fn wheel_target(&self, hit: genet_scripted_dom::NodeId) -> Option<NodeId> {
+    |                                 ++++++++++++++++++++
+
+error[E0308]: mismatched types
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:172:9
+    |
+171 |     fn root(&self) -> NodeId {
+    |                       ------ expected `NodeId` because of return type
+172 |         self.runner.root()
+    |         ^^^^^^^^^^^^^^^^^^ expected `NodeId`, found `genet_scripted_dom::NodeId`
+    |
+note: there are multiple different versions of crate `genet_scripted_dom` in the dependency graph
+   --> /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/4bc7558/components/genet-scripted-dom/lib.rs:57:1
+    |
+ 57 | pub struct NodeId(u64);
+    | ^^^^^^^^^^^^^^^^^ this is the expected type
+    |
+   ::: /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/2c7ef73/components/genet-scripted-dom/lib.rs:57:1
+    |
+ 57 | pub struct NodeId(u64);
+    | ----------------- this is the found type
+    = help: you can use `cargo tree` to explore your dependency tree
+
+error[E0308]: mismatched types
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:176:9
+    |
+175 |     fn focus(&self) -> Option<NodeId> {
+    |                        -------------- expected `Option<NodeId>` because of return type
+176 |         self.runner.focus()
+    |         ^^^^^^^^^^^^^^^^^^^ expected `NodeId`, found `genet_scripted_dom::NodeId`
+    |
+note: there are multiple different versions of crate `genet_scripted_dom` in the dependency graph
+   --> /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/4bc7558/components/genet-scripted-dom/lib.rs:57:1
+    |
+ 57 | pub struct NodeId(u64);
+    | ^^^^^^^^^^^^^^^^^ this is the expected type
+    |
+   ::: /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/2c7ef73/components/genet-scripted-dom/lib.rs:57:1
+    |
+ 57 | pub struct NodeId(u64);
+    | ----------------- this is the found type
+    = help: you can use `cargo tree` to explore your dependency tree
+
+error[E0308]: mismatched types
+    --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:180:31
+     |
+ 180 |         self.runner.set_focus(node);
+     |                     --------- ^^^^ expected `genet_scripted_dom::NodeId`, found `NodeId`
+     |                     |
+     |                     arguments to this method are incorrect
+     |
+note: there are multiple different versions of crate `genet_scripted_dom` in the dependency graph
+    --> /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/2c7ef73/components/genet-scripted-dom/lib.rs:57:1
+     |
+  57 | pub struct NodeId(u64);
+     | ^^^^^^^^^^^^^^^^^ this is the expected type
+     |
+    ::: /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/4bc7558/components/genet-scripted-dom/lib.rs:57:1
+     |
+  57 | pub struct NodeId(u64);
+     | ----------------- this is the found type
+     = help: you can use `cargo tree` to explore your dependency tree
+note: method defined here
+    --> /home/markik/.cargo/git/checkouts/mere-94c568d388c329bf/8568f42/crates/cambium/cambium/src/runner.rs:1242:12
+     |
+1242 |     pub fn set_focus(&mut self, node: Option<NodeId>) {
+     |            ^^^^^^^^^
+
+error[E0308]: mismatched types
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:190:9
+    |
+189 |     fn focusables(&self) -> Vec<NodeId> {
+    |                             ----------- expected `Vec<NodeId>` because of return type
+190 |         self.runner.focusables()
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^ expected `NodeId`, found `genet_scripted_dom::NodeId`
+    |
+note: there are multiple different versions of crate `genet_scripted_dom` in the dependency graph
+   --> /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/4bc7558/components/genet-scripted-dom/lib.rs:57:1
+    |
+ 57 | pub struct NodeId(u64);
+    | ^^^^^^^^^^^^^^^^^ this is the expected type
+    |
+   ::: /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/2c7ef73/components/genet-scripted-dom/lib.rs:57:1
+    |
+ 57 | pub struct NodeId(u64);
+    | ----------------- this is the found type
+    = help: you can use `cargo tree` to explore your dependency tree
+
+error[E0308]: mismatched types
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:194:9
+    |
+193 |     fn pointer_capture(&self) -> Option<NodeId> {
+    |                                  -------------- expected `Option<NodeId>` because of return type
+194 |         self.runner.pointer_capture()
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `NodeId`, found `genet_scripted_dom::NodeId`
+    |
+note: there are multiple different versions of crate `genet_scripted_dom` in the dependency graph
+   --> /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/4bc7558/components/genet-scripted-dom/lib.rs:57:1
+    |
+ 57 | pub struct NodeId(u64);
+    | ^^^^^^^^^^^^^^^^^ this is the expected type
+    |
+   ::: /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/2c7ef73/components/genet-scripted-dom/lib.rs:57:1
+    |
+ 57 | pub struct NodeId(u64);
+    | ----------------- this is the found type
+    = help: you can use `cargo tree` to explore your dependency tree
+
+error[E0308]: mismatched types
+    --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:198:36
+     |
+ 198 |         self.runner.pointer_target(hit)
+     |                     -------------- ^^^ expected `genet_scripted_dom::NodeId`, found `NodeId`
+     |                     |
+     |                     arguments to this method are incorrect
+     |
+note: there are multiple different versions of crate `genet_scripted_dom` in the dependency graph
+    --> /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/2c7ef73/components/genet-scripted-dom/lib.rs:57:1
+     |
+  57 | pub struct NodeId(u64);
+     | ^^^^^^^^^^^^^^^^^ this is the expected type
+     |
+    ::: /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/4bc7558/components/genet-scripted-dom/lib.rs:57:1
+     |
+  57 | pub struct NodeId(u64);
+     | ----------------- this is the found type
+     = help: you can use `cargo tree` to explore your dependency tree
+note: method defined here
+    --> /home/markik/.cargo/git/checkouts/mere-94c568d388c329bf/8568f42/crates/cambium/cambium/src/runner.rs:1339:12
+     |
+1339 |     pub fn pointer_target(&self, hit: NodeId) -> Option<NodeId> {
+     |            ^^^^^^^^^^^^^^
+
+error[E0308]: mismatched types
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:198:9
+    |
+197 |     fn pointer_target(&self, hit: NodeId) -> Option<NodeId> {
+    |                                              -------------- expected `Option<NodeId>` because of return type
+198 |         self.runner.pointer_target(hit)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `NodeId`, found `genet_scripted_dom::NodeId`
+    |
+note: there are multiple different versions of crate `genet_scripted_dom` in the dependency graph
+   --> /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/4bc7558/components/genet-scripted-dom/lib.rs:57:1
+    |
+ 57 | pub struct NodeId(u64);
+    | ^^^^^^^^^^^^^^^^^ this is the expected type
+    |
+   ::: /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/2c7ef73/components/genet-scripted-dom/lib.rs:57:1
+    |
+ 57 | pub struct NodeId(u64);
+    | ----------------- this is the found type
+    = help: you can use `cargo tree` to explore your dependency tree
+
+error[E0308]: mismatched types
+    --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:202:34
+     |
+ 202 |         self.runner.hover_target(hit)
+     |                     ------------ ^^^ expected `genet_scripted_dom::NodeId`, found `NodeId`
+     |                     |
+     |                     arguments to this method are incorrect
+     |
+note: there are multiple different versions of crate `genet_scripted_dom` in the dependency graph
+    --> /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/2c7ef73/components/genet-scripted-dom/lib.rs:57:1
+     |
+  57 | pub struct NodeId(u64);
+     | ^^^^^^^^^^^^^^^^^ this is the expected type
+     |
+    ::: /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/4bc7558/components/genet-scripted-dom/lib.rs:57:1
+     |
+  57 | pub struct NodeId(u64);
+     | ----------------- this is the found type
+     = help: you can use `cargo tree` to explore your dependency tree
+note: method defined here
+    --> /home/markik/.cargo/git/checkouts/mere-94c568d388c329bf/8568f42/crates/cambium/cambium/src/runner.rs:1356:12
+     |
+1356 |     pub fn hover_target(&self, hit: NodeId) -> Option<NodeId> {
+     |            ^^^^^^^^^^^^
+
+error[E0308]: mismatched types
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:202:9
+    |
+201 |     fn hover_target(&self, hit: NodeId) -> Option<NodeId> {
+    |                                            -------------- expected `Option<NodeId>` because of return type
+202 |         self.runner.hover_target(hit)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `NodeId`, found `genet_scripted_dom::NodeId`
+    |
+note: there are multiple different versions of crate `genet_scripted_dom` in the dependency graph
+   --> /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/4bc7558/components/genet-scripted-dom/lib.rs:57:1
+    |
+ 57 | pub struct NodeId(u64);
+    | ^^^^^^^^^^^^^^^^^ this is the expected type
+    |
+   ::: /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/2c7ef73/components/genet-scripted-dom/lib.rs:57:1
+    |
+ 57 | pub struct NodeId(u64);
+    | ----------------- this is the found type
+    = help: you can use `cargo tree` to explore your dependency tree
+
+error[E0308]: mismatched types
+    --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:206:34
+     |
+ 206 |         self.runner.wheel_target(hit)
+     |                     ------------ ^^^ expected `genet_scripted_dom::NodeId`, found `NodeId`
+     |                     |
+     |                     arguments to this method are incorrect
+     |
+note: there are multiple different versions of crate `genet_scripted_dom` in the dependency graph
+    --> /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/2c7ef73/components/genet-scripted-dom/lib.rs:57:1
+     |
+  57 | pub struct NodeId(u64);
+     | ^^^^^^^^^^^^^^^^^ this is the expected type
+     |
+    ::: /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/4bc7558/components/genet-scripted-dom/lib.rs:57:1
+     |
+  57 | pub struct NodeId(u64);
+     | ----------------- this is the found type
+     = help: you can use `cargo tree` to explore your dependency tree
+note: method defined here
+    --> /home/markik/.cargo/git/checkouts/mere-94c568d388c329bf/8568f42/crates/cambium/cambium/src/runner.rs:1372:12
+     |
+1372 |     pub fn wheel_target(&self, hit: NodeId) -> Option<NodeId> {
+     |            ^^^^^^^^^^^^
+
+error[E0308]: mismatched types
+   --> /home/markik/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/961731a/ports/redshank/surfaces/src/surface_api.rs:206:9
+    |
+205 |     fn wheel_target(&self, hit: NodeId) -> Option<NodeId> {
+    |                                            -------------- expected `Option<NodeId>` because of return type
+206 |         self.runner.wheel_target(hit)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `NodeId`, found `genet_scripted_dom::NodeId`
+    |
+note: there are multiple different versions of crate `genet_scripted_dom` in the dependency graph
+   --> /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/4bc7558/components/genet-scripted-dom/lib.rs:57:1
+    |
+ 57 | pub struct NodeId(u64);
+    | ^^^^^^^^^^^^^^^^^ this is the expected type
+    |
+   ::: /home/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/2c7ef73/components/genet-scripted-dom/lib.rs:57:1
+    |
+ 57 | pub struct NodeId(u64);
+    | ----------------- this is the found type
+    = help: you can use `cargo tree` to explore your dependency tree
+
+Some errors have detailed explanations: E0053, E0308.
+For more information about an error, try `rustc --explain E0053`.
+error: could not compile `redshank-surfaces` (lib) due to 19 previous errors

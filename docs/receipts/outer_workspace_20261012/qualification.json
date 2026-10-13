@@ -1,0 +1,107 @@
+{
+  "date": "2026-10-12",
+  "status": "A4/S3 tiled Workspace and shared furniture draft; native acceptance open",
+  "base": "411ad0079e143c8dab5ea4b26ce6fbc3aff6062f",
+  "mere_pin": "74c1d810c4cb983cd8362ccfb99014543e9900a0",
+  "pin_change": false,
+  "lock_change": "Only three lines adding the Workbench serde edge; existing versions and source identities retained",
+  "portable": {
+    "status": "passed",
+    "tests": 12,
+    "scope": "Actual checked-in generic custody and atomic sidecar modules; not full PaneContent/legacy import or App/native UI",
+    "command": "cargo test --locked --offline --manifest-path docs/receipts/outer_workspace_20261012/harness/Cargo.toml --lib",
+    "log": "checks/portable-tests.log"
+  },
+  "native_source": {
+    "library": "passed",
+    "binary": "passed",
+    "warnings": 92,
+    "commands": [
+      "cargo check --locked --offline --lib",
+      "cargo check --locked --offline --bin turnstone"
+    ],
+    "logs": [
+      "checks/native-qualified-check.log",
+      "checks/native-bin-check.log"
+    ],
+    "scope": "Default features, Linux source typecheck; no headed run, library tests or release build"
+  },
+  "native_setup": {
+    "headers": "Ubuntu resolute libasound2-dev and libasound2t64 1.2.15.3-1ubuntu1.1 extracted to task testing directory",
+    "cargo_jobs": 1,
+    "memory_max_mib": 1280,
+    "swap_max_mib": 0,
+    "minimum_available_memory_mib": 256,
+    "target": "Existing forme-native-target dependency cache"
+  },
+  "attempt_history": [
+    "Initial sparse workspace member missing; required checkout paths added",
+    "Cold ICU/Servo and other pins fetched; offline/locked resolution attempts preceded the three-line serde lock update",
+    "Native check required staged ALSA headers",
+    "Root checker found two DropTarget field names and one missing raster match arm; corrected before passing source checks"
+  ],
+  "contracts": [
+    "Shared Workspace owns new tiled topology; stable pane-id keyed host payloads preserve content and graph references",
+    "Legacy binary input is converted; mutations/install/load validate exact custody",
+    "Retained inactive tabs have no painted content aperture; shared DOM supplies body apertures and header hit geometry",
+    "Typed Panes-ring actions handle primary/lens header operations; close chooses surviving focus and last-pane guard stays explicit",
+    "Outside drop does not remove a pane before existing host transfer accepts",
+    "Versioned workspace.json/window-workspaces.json; null slots and old recovery files retained; bad/newer current file never resurrects an older copy",
+    "Graph and inner Forme arrangement remain separate owners"
+  ],
+  "remaining_gates": [
+    "Full native consumer tests, actual legacy PaneContent import and headed restart",
+    "In-house Component membrane/one complete composition per window: bodies still use retained per-pane surface renderers",
+    "A5 blueprint-owned float stations and persistence: existing path retained, shared edits refused there",
+    "Header keyboard/AccessKit actions and shared frame accessibility grafting",
+    "Tabard themes/fonts, motion/drop previews, narrow/DPI/hardware input and presented-frame performance",
+    "Ordinary canvas/document/Workbench/body continuity and original floating/physics scenarios"
+  ],
+  "documentation": {
+    "owned_doc_relative_links_and_resolvability_unchanged": true,
+    "log": "checks/doc-links.json",
+    "scope": "Controlled two-document link/index review; inherited missing references retained; sparse checkout not a whole-docset audit"
+  },
+  "hash_policy": "SHA-256 of text bytes with CRLF normalized to LF for source; raw proof logs unchanged",
+  "source_sha256_lf": {
+    ".gitattributes": "d4faa09948d75819d39d3cf345658aba74bbe84812099ce4622bd6300be0efd0",
+    "Cargo.lock": "209893c9315979a92b3cbfb1dca681451936dc1d1502de35115f2f63df9bb6a3",
+    "Cargo.toml": "9347eec200ed86704cf8989522f8f31e21ca38f0bd17479a8aa2b626c9c286a4",
+    "design_docs/2026-08-08_pane_registry_and_graph_panes_plan.md": "67370181a777103771fdcc94c07b087681b64d9f88646d85e747891a9f377c28",
+    "design_docs/DOC_README.md": "4f56bfa7db1f553611a660f9cf4cfeecacc38221bcc8f9fded7376a53883ab08",
+    "docs/receipts/outer_workspace_20261012/harness/Cargo.lock": "0ada38b8a9fd8a9e30fb1dbb4a480ce2ba93b0273b990f4834468aa25c96cb61",
+    "docs/receipts/outer_workspace_20261012/harness/Cargo.toml": "e2c23f44056a1171229496f048f03fe6131a758acc7dde9dd0f4d8516b52506a",
+    "docs/receipts/outer_workspace_20261012/harness/src/lib.rs": "accbad24aab8e2198541a6b5f7e7ff5ff007c4f37f5a7ab91e25e0b4de058dee",
+    "src/action.rs": "8368927526fb03cba052280a5013d2c4d111cfa283eba75a7cbe482eeeecaa2c",
+    "src/app/mod.rs": "ddde71e6cf6b8d8d7dac29faf1990e9f85e304676321db3629bd97d481eb94d1",
+    "src/app/outer_workspace_arms.rs": "a0d027cf0a7853982ff9dab38c045246262c7de8671a318d243efb71011ebbe6",
+    "src/app/pane_arms.rs": "04e4b94adfb16260530283b0c4b2ead09c85f5001b58dd7c7d1e02014145013c",
+    "src/frame_timing.rs": "1350595dfd083eb91675c29a98654ca4980b87b7e3d233d8fa28f690a322215a",
+    "src/lib.rs": "53b8f76ba5453f8ee45f8f0e8ead366367ddfe90b02ce7b20cea3543ecb79160",
+    "src/observe.rs": "384ce48f6a5918757654c3d96c6387633f8d1951259d40b29b4815fe35c4a9d5",
+    "src/outer_frame.rs": "f7bf778e8559ea569bebd2b67a3faa7a5f601279d7c70c2756a0ce1ba9c71e84",
+    "src/pane.rs": "37cf15fef2f167dd73eefb4b3ab58d4dc89d4ddcdde7b96fcbc1752d2567b687",
+    "src/panes/layout.rs": "3a3c4b94d2ace97f7a1d82357e54150ad664c4d4c37354f8c9b4becb0c7458bb",
+    "src/panes/legacy_bridge.rs": "1fcfb34652189bdd73bedde8e10de91336c98976586eb12ed0cf1c2dea4814f1",
+    "src/panes/mod.rs": "5286c6cec28158db5c0f4121ca3fd26c95f0b82abff8a3328b545ae137a90bdc",
+    "src/panes/projection.rs": "eee2ab72735999ebbc1a5cfd8d01342234c2c57a52b4cdd1d8ccff3d1472a5f9",
+    "src/panes/store.rs": "7e617bfb21c1d60f5d839aab20a4d3fdfff3a7d8b7aae7d821db8108982d5120",
+    "src/panes/workspace.rs": "0462b08baccaf8498919c611886db0cab8a4ac5dc2fbb3eebd550129212e6e55",
+    "src/panes/workspace_bridge.rs": "5f661acfd736d6e81f9437d2829df5e551aaa686fa885af7b559ebaa2f412b4a",
+    "src/panes/workspace_store.rs": "2c31db993c1fa8ce484e3ecca765dec91ee9237f6021ed8a45db54a4483bf275",
+    "src/ring.rs": "0f6c19018cc04fa3fa7645409f28a9b470ca2df4cc8dcf67774f4bbb59004122",
+    "src/session.rs": "6112d64424e104dc92a0bf47873642dbe2042a686ba1a207cc25ebc07c8da1a4",
+    "src/shell/input.rs": "3b950bdf40cdfa92956dd15bd620acef8d95fc82e49d2b9aa0b0ee335906fcf0",
+    "src/shell/lens.rs": "0aa2c49964e3dae3b380c51ed6d3629d878e48aa34bc6df291c2a3ff7d13e8aa",
+    "src/shell/mod.rs": "5de2487fd504d297d297b95941f6e76c82b52910420083aa5370f3dbb21e4fd2",
+    "src/shell/outer_workspace.rs": "4acb4b7556485167e1c8be3799ebeb4a5a2cd5d14a96ae094bd73946cd03b1fd",
+    "src/shell/render.rs": "25efc41dd4eecbf4b5ff5cb6a57fb55707c8e3181d6a9be8cbf0c1be5095d1d9",
+    "src/surface.rs": "1274d082c28a5d86e4ddf2523aea0fd310be7dbd5e08980dba3027d994ad205e"
+  },
+  "check_sha256_raw": {
+    "checks/portable-tests.log": "74996d39fc5c4476ea89075fee338f1330f01f6fce58e0b63f55242d79726967",
+    "checks/native-qualified-check.log": "a2fd8dae7a970cb7ed28f8f3a6015d21f3c7a4e9333fdcca476278a56c3c458a",
+    "checks/doc-links.json": "8dc98199cf93fb9a9500478593e4a4fa427c822b4ad2e2be1ed097d0b30c0bd4",
+    "checks/native-bin-check.log": "b09ce498a59d45a060e29931a0213d57e3a962309bce23aaf7ba9cb267200460"
+  }
+}

@@ -161,6 +161,22 @@ fn content(plan: &[crate::surface::Surface], node: uuid::Uuid) -> crate::surface
         .find(|surface| surface.kind == SurfaceKind::Content(node))
         .expect("actual lens plan must admit the live native producer")
 }
+
+#[test]
+fn native_surface_body_apertures_reserve_primary_and_lens_headers() {
+    let (mut app, contents, node, _) = fixture(Paint::Frame);
+    let primary = super::super::primary_content_plan(&app, &contents, 1200, 900);
+    assert!(primary.iter().any(|surface| surface.kind == SurfaceKind::Frame));
+    assert!(primary.iter().filter(|surface| matches!(surface.kind,
+        SurfaceKind::Graph(_) | SurfaceKind::Pane(_))).all(|surface| surface.rect.y > 0.0));
+    let identity = contents.get(&node).unwrap().session_identity();
+    app.update(Action::TearOutActivePane);
+    let lens = lens_content_plan(&app, &contents, 0, 800, 600);
+    assert!(lens.iter().any(|surface| surface.kind == SurfaceKind::Frame));
+    let body = content(&lens, node).rect;
+    assert!(body.y > 0.0 && body.h > 0.0 && body.y + body.h <= 600.0);
+    assert_eq!(contents.get(&node).unwrap().session_identity(), identity);
+}
 fn check_transfer(app: &mut crate::app::App, contents: &mut NodeDocuments, node: uuid::Uuid) {
     let before = super::super::primary_content_plan(app, contents, 1200, 900);
     let original = content(&before, node);

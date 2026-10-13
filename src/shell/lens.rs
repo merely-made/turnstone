@@ -292,7 +292,11 @@ impl Shell {
     /// content in a lens (the tile IS the lens's content story); chrome
     /// composites separately in `render_lens`.
     pub(super) fn lens_plan(&self, ordinal: usize, w: u32, h: u32) -> Vec<crate::surface::Surface> {
-        lens_content_plan(&self.app, &self.content_sessions, ordinal, w, h)
+        let frame = self.app.lenses.get(ordinal).and_then(Option::as_ref)
+            .filter(|_| self.app.blueprint_space(crate::action::SpaceRef::Lens(ordinal)).is_none())
+            .map(|space| self.outer_rects(ordinal + 1, space, None, (w.max(1), h.max(1))));
+        lens_content_plan_with_rects(&self.app, &self.content_sessions, ordinal, w, h,
+            frame.as_deref())
     }
 
     /// A pane's `PaneContent` in a LENS window's space.
@@ -400,6 +404,7 @@ impl Shell {
                         None => continue,
                     }
                 },
+                crate::surface::SurfaceKind::Frame => (self.outer_scene(ordinal + 1), wgpu::Color::TRANSPARENT),
                 crate::surface::SurfaceKind::Divider(_) => {
                     (Scene::default(), crate::ui::SEAM_CLEAR)
                 },
@@ -615,6 +620,7 @@ impl Shell {
                 self.native_input_focus(ordinal as u64 + 1, false);
                 self.window_focus.remove(&(ordinal as u64 + 1));
                 self.lens_windows.remove(&id);
+                self.outer_frames.borrow_mut().remove(&(ordinal+1));
                 let closed_panes: Vec<_> = self
                     .app
                     .lenses
@@ -665,6 +671,12 @@ impl Shell {
                 let (x, y) = lens.cursor;
                 let (lw, lh, ordinal) = (lens.width, lens.height, lens.ordinal);
                 if reject_lens_pane_press(self) {
+                    return;
+                }
+                if button == MouseButton::Left && self.outer_press(ordinal + 1,
+                    (lw.max(1), lh.max(1)), x, y)
+                {
+                    if let Some(lens) = self.lens_windows.get(&id) { lens.window.request_redraw(); }
                     return;
                 }
                 let plan = self.lens_plan(ordinal, lw, lh);
@@ -785,6 +797,10 @@ impl Shell {
                     self.content_mouse(appearance, local, inker::PointerPhase::Move, None);
                     return;
                 }
+                if self.outer_move(ordinal + 1, x, y) {
+                    if let Some(lens) = self.lens_windows.get(&id) { lens.window.request_redraw(); }
+                    return;
+                }
                 // A held lens seam: each move becomes a ratio through the
                 // same component math as the primary's seam, lowered at the
                 // LENS's space. Falls through to the camera block otherwise.
@@ -810,11 +826,17 @@ impl Shell {
             } if super::input::surface_mouse_button(button)
                 .is_some_and(super::window_input::lens_button) =>
             {
-                let (cursor, ordinal) = (lens.cursor, lens.ordinal);
+                let (cursor, ordinal, lw, lh) = (lens.cursor, lens.ordinal, lens.width, lens.height);
                 if dispatch_lens_pane_release(self, ordinal as u64 + 1, cursor, button) {
                     return;
                 }
                 if mouse_delivered {
+                    return;
+                }
+                if button == MouseButton::Left && self.outer_release(ordinal + 1,
+                    (lw.max(1), lh.max(1)), cursor.0, cursor.1)
+                {
+                    if let Some(lens) = self.lens_windows.get(&id) { lens.window.request_redraw(); }
                     return;
                 }
                 // Like the primary seam: moves rode Redraw; persist once.
@@ -964,6 +986,19 @@ pub(super) fn lens_content_plan(
     w: u32,
     h: u32,
 ) -> Vec<crate::surface::Surface> {
+    let frame = super::outer_workspace::frame_body_rects(app,
+        crate::action::SpaceRef::Lens(ordinal), (w.max(1), h.max(1)));
+    lens_content_plan_with_rects(app, contents, ordinal, w, h, frame.as_deref())
+}
+
+fn lens_content_plan_with_rects(
+    app: &crate::app::App,
+    contents: &super::NodeDocuments,
+    ordinal: usize,
+    w: u32,
+    h: u32,
+    frame_rects: Option<&[(PaneId, Rect)]>,
+) -> Vec<crate::surface::Surface> {
     let Some(Some(space)) = app.lenses.get(ordinal) else {
         return Vec::new();
     };
@@ -993,22 +1028,7 @@ pub(super) fn lens_content_plan(
                     .collect(),
             )
         },
-        None => {
-            let placements = crate::pane::place_panes(space, area, None);
-            (
-                placements
-                    .panes
-                    .into_iter()
-                    .map(|pane| (pane.id, pane.rect))
-                    .collect(),
-                placements
-                    .dividers
-                    .into_iter()
-                    .map(|divider| (divider.index, divider.rect))
-                    .collect(),
-                Vec::new(),
-            )
-        },
+        None => (frame_rects.unwrap_or_default().to_vec(), Vec::new(), Vec::new()),
     };
     let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
         .iter()
@@ -1029,6 +1049,9 @@ pub(super) fn lens_content_plan(
             }
         })
         .collect();
+    if app.blueprint_space(crate::action::SpaceRef::Lens(ordinal)).is_none() {
+        base.insert(0, (SurfaceKind::Frame, area));
+    }
     base.extend(
         divider_rects
             .iter()

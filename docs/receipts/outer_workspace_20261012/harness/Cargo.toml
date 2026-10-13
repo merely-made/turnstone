@@ -1,0 +1,9 @@
+[package]
+name = "turnstone-outer-workspace-receipt"
+version = "0.0.0"
+edition = "2024"
+[workspace]
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+workbench = { git = "https://www.github.com/merely-made/mere.git", rev = "74c1d810c4cb983cd8362ccfb99014543e9900a0", features = ["serde"] }

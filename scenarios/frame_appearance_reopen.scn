@@ -1,0 +1,17 @@
+# Fresh process reopening the exact profile from frame_appearance.scn.
+settle 12
+key escape
+resize 1180 800
+settle 5
+assert snap appearance-theme == theme:copy-1
+assert snap frame-css ~ 42px
+assert snap frame-header-height >= 61
+capture frame_fonts_reopened
+act Open Settings pane
+settle 5
+click surface:settings .radio Turnstone default
+click surface:settings .setting-apply @data-setting=theme.id
+settle 6
+assert snap frame-header-height <= 60
+capture frame_fonts_reset
+assert snap capture-errors == 0

@@ -593,6 +593,9 @@ impl Shell {
         if reject_primary_omnibar_press(self) {
             return;
         }
+        if button == MouseButton::Left && self.outer_press(0, (self.width.max(1),self.height.max(1)),x,y) {
+            self.pointer_capture=None; self.request_redraw(); return;
+        }
         let plan = self.surface_plan();
         let hit = crate::surface::hit_test(&plan, self.app.focus, x, y);
         // Right-click is the context menu the palette registry names: the
@@ -978,7 +981,7 @@ impl Shell {
                         self.request_redraw();
                     }
                 },
-                crate::surface::SurfaceKind::Chrome => {},
+                crate::surface::SurfaceKind::Chrome | crate::surface::SurfaceKind::Frame => {},
             }
         }
     }
@@ -1087,6 +1090,10 @@ impl Shell {
             return;
         }
         if dispatch_primary_content_move(self, x, y) {
+            return;
+        }
+        if self.pointer_capture.is_none() && self.outer_move(0, x, y) {
+            self.request_redraw();
             return;
         }
         if let Some(crate::surface::SurfaceKind::Pane(pane)) = self.pointer_capture
@@ -1265,6 +1272,7 @@ impl Shell {
 
     /// Focus loss cancels actual retained custody, without manufacturing Up.
     pub(super) fn cancel_content_pointer(&mut self) {
+        self.outer_capture = None;
         // Retire host custody first: pool input synchronizes placements and
         // may otherwise recursively discover the same invalid admission.
         let mut windows = vec![0];
@@ -1431,6 +1439,12 @@ impl Shell {
         else {
             return;
         };
+        if captured.is_none() && button == MouseButton::Left
+            && self.outer_release(0, (self.width.max(1), self.height.max(1)), x, y)
+        {
+            self.request_redraw();
+            return;
+        }
         let graph_capture = match captured {
             Some(crate::surface::SurfaceKind::Graph(pane)) => Some(pane),
             _ => None,

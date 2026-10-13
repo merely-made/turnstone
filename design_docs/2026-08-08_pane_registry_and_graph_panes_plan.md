@@ -2,9 +2,8 @@
 
 **Date**: 2026-08-08
 
-**Status**: A0, A1 and A6 complete and verified. Lanes open: **A2** and
-**A7**; **A3** is gated on A2; **A4** and **A5** are held until A2/A3 report
-what the tree must carry.
+**Status (2026-10-13)**: A4/S3 has tiled Workspace, shared-frame and Tabard appearance implementation drafts; native/inline-body/float/accessibility gates remain open. A0, A1 and A6 complete and verified. Lanes open: **A2** and
+**A7**; **A3** retains its A2 acceptance gate. The A4 draft below does not close A2/A3 or A5 acceptance.
 
 **2026-09-29 pane consolidation: qualified.** Mark accepted operational status
 in Gloss, document and graph-object analysis in Inspector, and `mere-apparatus`
@@ -662,7 +661,8 @@ Workbench rather than a global canvas.
 
 ### A4. Containers, tabs, and shared-tree decision
 
-**Held** until A2/A3 report what the tree must carry. This is the tree
+**Status (2026-10-12): implementation draft for the tiled path; acceptance open.**
+The earlier held checkpoint is superseded for this bounded draft. The tree
 decision, not the tab decision: Turnstone's tree is binary, `TileTree` is
 N-ary and recursive, and nested splits and nested panes both want that
 recursion.
@@ -1062,3 +1062,144 @@ binding guards that fail, and native persisted viewer plus source-bound Clip
 receipts. The displayed A's body/provenance must reach the actual endpoint while
 B and unrelated destination authority remain untouched. Human AT and immutable
 presented-frame observations retain separate gates.
+
+
+## A4/S3 tiled Workspace adoption draft — 2026-10-12
+
+**Status:** implementation draft for review and native qualification. Mark asked
+for the draft to be pushed to make the adoption concrete. This is the first
+consumer step; it does not claim W5/S3's complete one-composition outcome.
+
+**Findings.** Inspected current Turnstone main `411ad007`: outer panes still used
+binary `PaneNode`/`FrisketLayout`, separate retained renderer maps and the
+`frame.json`/`windows.json` sidecars. The inner Workbench pane already presents
+Forme-backed content tiles. Its arrangement is a different owner from the
+window's pane arrangement. Mere pin `74c1d810` already includes the shared
+Workspace and Frisket frame; the pin remains unchanged.
+
+**Implemented phase.** `src/panes/workspace.rs` holds the shared Workspace beside
+opaque host payloads keyed one-to-one by the existing pane id. Pane content and
+graph bindings stay in those payloads. `workspace_bridge.rs` imports binary
+nodes without retargeting those bindings; `PaneNode::Workspace` becomes the
+tiled runtime after import or an accepted legacy arrangement operation. Old
+Leaf/Split constructors remain for actual legacy input and current pane
+admission calls. There is no second mutable tiled topology inside that variant.
+All retained tabs are enumerated for custody; only active tabs have bodies.
+Unknown targets, duplicate stations and missing payloads refuse atomically;
+outside drops keep custody until the existing host tear-out accepts it.
+
+`src/outer_frame.rs` renders shared `cambium::workspace_view` furniture. Primary
+and lens surface plans use its retained DOM content apertures. Header hits use
+the shared close/tab/divider readers; tab-bar drops use the shared insertion
+reader. Pointer activation, close, stacking, edge splitting and divider edits
+lower through `Action::OuterWorkspace`, assigned to the existing Panes ring.
+Closing preserves a surviving prior focus or chooses a surviving active body;
+the existing last-pane guard remains and produces an attributable refusal.
+Divider motion redraws and saves on release; captured gestures are discarded
+if session authority changes. The new furniture has its own raster counters. The graph's selection, Forme
+arrangement and content sessions are not reconstructed by these frame edits.
+
+`workspace.json` and `window-workspaces.json` use a version-1 envelope. Load
+validates the entire layout before writing a migrated sidecar, retains the old
+files as recovery copies, and preserves null lens slots. Present malformed or
+unsupported current files refuse rather than reviving the recovery copy. Both
+current and legacy filenames remain in session-directory custody transfers.
+Workbench serialization adds only its serde dependency edge to Cargo.lock.
+
+**Qualification.** The standalone harness compiles the actual checked-in
+custody and atomic-storage modules against the exact published Workbench pin.
+Twelve portable tests pass: tab activation/close/restart, inactive custody,
+invalid targets and shares, duplicate stations, retained tear-out custody,
+shared model float/dock identity, legacy-file preservation, current-file
+precedence, refusal without publication and absence without writes. These
+prove those modules, not the complete PaneContent import, App or native frame.
+The locked default-feature library and binary source checks pass, with 92
+compiler warnings; no broad green-suite claim. Matching ALSA 1.2.15.3 Ubuntu
+headers/runtime were staged in the task testing directory to complete those
+checks. Full source-check results and hashes are recorded in
+`docs/receipts/outer_workspace_20261012/qualification.json`; headed acceptance
+has not run on S-PC. Native consumer tests in `panes::store` retain the actual
+legacy content migration and are separate gates.
+
+**Required continuation.** The native draft deliberately keeps pane bodies in
+their existing per-PaneId retained surface renderers, as Frisket Surface slots.
+A4's ruled in-house Component membrane and one composition per window are still
+the target, not replaced by this checkpoint. Existing A5 blueprint-owned spaces
+keep their current compositor and refuse shared-frame mutations; merge their
+stations and persistence into Workspace before removing the blueprint/legacy
+bridge. Shared model float/dock tests do not qualify that host join. Keyboard
+and AccessKit header actions, exact frame-derived accessibility grafting,
+Tabard theme/typography on the new furniture, motion previews, narrow/DPI
+layout and presented-frame timing remain open.
+
+**Native done-conditions for the next pass.** Compile/test the complete consumer
+and run the original floating and physics scenarios unchanged in intent. In a
+fresh disposable profile, summon graph/Inspector/Workbench/document panes;
+stack and switch them, close an inactive and then active tab, resize an N-ary
+split, edge-split a tab, and tear it into a lens and onward. Verify identities,
+source bindings, retained scroll/editor state and the last-pane refusal. Restart
+and check active tabs, nesting, ratios and lens null slots. Import real legacy
+frame/windows fixtures once; corrupt a new file and verify explicit refusal
+without legacy resurrection. Compare native frame timing to the previous
+consumer and qualify the inline-body, floating and accessible-control joins
+before marking A4/S3 complete.
+
+
+## A4 shared-frame Tabard adoption draft — 2026-10-13
+
+**Consumer change.** The outer tiled frame now consumes the existing shell-owned
+live appearance snapshot in primary and lens windows. Tabard palette roles reach
+tabs, active labels, close controls and dividers. The ordinary shared workshop
+now supplies the installed-family picker and optional Interface family, CSS size
+and leading. Frame layout, body apertures, paint and header hits consume the same
+sheet. Automatic header height accommodates large type; clearing the override
+restores host defaults. UI zoom scales host defaults; explicit authored font sizes
+and exact CSS retain their cascade authority. Reading, Heading, Label and Code
+role bindings in pane bodies remain separate consumer work.
+
+**Selection and custody.** Appearance edits do not replace the Workspace, pane
+identities, content/graph bindings or retained body renderers. The existing
+save-versus-Apply distinction includes typography: saving a new definition under
+the selected id leaves the currently applied value intact until explicit theme
+Apply. Unrelated settings writes preserve the applied fonts as well as CSS.
+Theme/mode changes retain ordered `ThemeChoice.fonts`, including unavailable
+requests. Host inventory is process-local, requested names stay saved, fallback
+notices are visible in Settings, and generic fallbacks reach Livery. Application
+Interface family requests override generated theme defaults; exact authored CSS
+remains last. Independent application-family picker mounting remains open; the
+ordinary theme workshop is the font-authoring entry point in this slice.
+
+**Geometry and gestures.** Divider drag arithmetic now uses actual retained DOM
+gaps rather than a ten-pixel assumption, so authored divider widths participate
+in the same geometry. An appearance change cancels an in-flight header drag
+before old captured geometry can mutate the layout. The shared frame is exposed
+as `surface:frame` to the existing scenario driver; `frame-css` and
+`frame-header-height` observe the applied sheet and measured header.
+
+**Supplier intake.** Turnstone adopts the published Mere `8568f42f`, Genet
+`2c7ef73b`, Netrender `c74b7cb2`, maintained Classic Vello `2eae6243` and
+Knot `3af93add` family used for current typography adoption. Dramatis and
+Woodshed product pins are unchanged. Embedded Redshank's older Genet boundary
+crates are bridged through the HTTPS www alias to that same Genet revision; the
+resolved graph has no duplicate Genet package names and one Genet revision. The
+Mere source set has size one. This source intake does not qualify the complete
+engine, renderer recovery, Redshank, Knot or other contributed-surface lanes.
+
+**Qualification and handoff.** The actual consumer stylesheet/shared Workspace
+DOM/Livery CPU harness and default-feature Linux library/binary source checks
+are recorded in `docs/receipts/frame_appearance_20261013/qualification.json`.
+All 21 CPU tests pass (nine layout/cascade/font/scenario checks plus twelve
+actual custody/sidecar checks against the new Workbench pin). The library and
+binary typecheck passes with 92 warnings; warning-baseline equivalence is not
+claimed. No headed run, release build or whole-library test run is claimed.
+The provider's font-preservation/reopen unit test is defined for native owners;
+whole-library test execution and headed acceptance remain open. Native owners
+should run `frame_appearance.scn` with `frame_fonts_workshop.scn`, then reopen
+with `frame_appearance_reopen.scn`. Use separate fresh stores for the
+`frame_appearance_missing.scn`/`frame_fonts_missing_workshop.scn` pair and its
+reopen fixture. These are parse-qualified drafts pending execution and capture
+review. Use a lens to repeat live theme/font changes; test real installed faces,
+custom divider width, same-id save/unapplied/Apply, failed-save rollback, narrow
+windows, DPI, body continuity and the original floating/physics scenarios.
+Keyboard/AccessKit header dispatch, float unification, inline bodies and actual
+presented performance remain A4/S3 continuation gates.

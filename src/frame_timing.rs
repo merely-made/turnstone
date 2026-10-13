@@ -123,6 +123,7 @@ pub struct SurfaceRasterSplit {
     pub content: SurfaceRaster,
     pub pane: SurfaceRaster,
     pub divider: SurfaceRaster,
+    pub frame: SurfaceRaster,
     pub chrome: SurfaceRaster,
 }
 
@@ -141,6 +142,7 @@ impl SurfaceRasterSplit {
             SurfaceKind::Content(_) => &mut self.content,
             SurfaceKind::Pane(_) => &mut self.pane,
             SurfaceKind::Divider(_) => &mut self.divider,
+            SurfaceKind::Frame => &mut self.frame,
             SurfaceKind::Chrome => &mut self.chrome,
         }
     }
@@ -153,6 +155,7 @@ impl SurfaceRasterSplit {
             self.content,
             self.pane,
             self.divider,
+            self.frame,
             self.chrome,
         ] {
             total.add(class);
@@ -165,6 +168,7 @@ impl SurfaceRasterSplit {
         self.content.add(other.content);
         self.pane.add(other.pane);
         self.divider.add(other.divider);
+        self.frame.add(other.frame);
         self.chrome.add(other.chrome);
     }
 }
@@ -236,7 +240,6 @@ mod tests {
     fn raster_totals_are_derived_from_the_split() {
         use crate::panes::PaneId;
         use crate::surface::SurfaceKind;
-
 
         let mut split = SurfaceRasterSplit::default();
         split.note(SurfaceKind::Chrome, 3);

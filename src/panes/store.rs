@@ -4,103 +4,64 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! Pane-layout sidecar: the pane split tree ([`crate::panes::FrisketLayout`])
-//! persisted beside `graph.json`, so a window's pane arrangement (which panes
-//! are open, their split ratios) survives a restart.
-//!
-//! ```text
-//! <session_dir>/
-//! ├── graph.json            ← session_graph_store
-//! ├── settings.json         ← settings_store
-//! └── frame.json            ← this module (the on-disk tag is still `frame`)
-//! ```
-//!
-//! Moved here from `pandect::frisket_store` at meerkat's deletion
-//! (2026-07-18) — the pane-coupled half of pandect, relocated with
-//! the pane model exactly as the boundary-pass plan parked it. v0 stores the
-//! single content layout as one file; per-window files arrive with
-//! multi-window (the `FrisketId` would key a subdirectory the way `views/`
-//! keys view-intent).
+//! Versioned shared-Workspace sidecars beside graph.json. Legacy frame.json
+//! and windows.json are read once, validated and retained as recovery copies.
+//! A present invalid current file refuses; it never revives an older layout.
 
+#[cfg(test)]
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
 use crate::panes::FrisketLayout;
 
-/// Filename for the pane layout's sidecar (beside `graph.json`).
-///
-/// The on-disk tag is still `frame`, deliberately. Renaming the file is a
-/// format migration and it travels with the other one this rename left in
-/// place, `PaneContent::Orrery` (a serde variant name, and so also on-disk).
-/// Both are parked as a single vocabulary decision rather than two silent
-/// breaks.
-pub const FRAME_FILE: &str = "frame.json";
+/// Current primary layout. The old public constant name remains for callers
+/// that enumerate session sidecars; its value names the versioned format.
+pub const FRAME_FILE: &str = "workspace.json";
+pub const LEGACY_FRAME_FILE: &str = "frame.json";
+pub const WINDOWS_FILE: &str = "window-workspaces.json";
+pub const LEGACY_WINDOWS_FILE: &str = "windows.json";
 
-/// The frame sidecar path under `session_dir`.
+use super::workspace_store::{invalid, load, write};
+fn canonical(layout: &FrisketLayout) -> io::Result<FrisketLayout> {
+    let mut layout = layout.clone();
+    layout.adopt_workspace().map_err(invalid)?;
+    layout.outer_workspace().map_err(invalid)?;
+    Ok(layout)
+}
 pub fn frame_layout_path(session_dir: &Path) -> PathBuf {
     session_dir.join(FRAME_FILE)
 }
-
-/// Serialize `layout` to JSON and write it atomically (tmp + rename).
 pub fn save_frisket_layout(session_dir: &Path, layout: &FrisketLayout) -> io::Result<()> {
-    let target = frame_layout_path(session_dir);
-    if let Some(parent) = target.parent() {
-        fs::create_dir_all(parent)?;
-    }
-    let json = serde_json::to_string_pretty(layout)
-        .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-    let tmp = target.with_extension("json.tmp");
-    fs::write(&tmp, json)?;
-    fs::rename(&tmp, &target)?;
-    Ok(())
+    write(&frame_layout_path(session_dir), canonical(layout)?)
 }
-
-/// Read + parse the frame sidecar. `Ok(None)` when it doesn't exist (fresh
-/// session — the host falls back to its default single-pane layout).
 pub fn load_frisket_layout(session_dir: &Path) -> io::Result<Option<FrisketLayout>> {
-    let path = frame_layout_path(session_dir);
-    if !path.exists() {
-        return Ok(None);
-    }
-    let text = fs::read_to_string(&path)?;
-    let layout: FrisketLayout =
-        serde_json::from_str(&text).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-    Ok(Some(layout))
+    load(
+        session_dir,
+        FRAME_FILE,
+        LEGACY_FRAME_FILE,
+        |layout: FrisketLayout| canonical(&layout),
+    )
 }
-
-/// Filename for the lens-window sidecar (beside `frame.json`): each lens
-/// window's frisket space by ordinal, `null` holding a closed window's slot
-/// so ordinals stay stable. One file for the whole set (the per-window
-/// subdirectory keyed by `FrisketId` is parked with multi-window, per the
-/// module note above).
-pub const WINDOWS_FILE: &str = "windows.json";
-
-/// Serialize the lens spaces and write them atomically (tmp + rename).
 pub fn save_lens_spaces(session_dir: &Path, lenses: &[Option<FrisketLayout>]) -> io::Result<()> {
-    let target = session_dir.join(WINDOWS_FILE);
-    if let Some(parent) = target.parent() {
-        fs::create_dir_all(parent)?;
-    }
-    let json = serde_json::to_string_pretty(lenses)
-        .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-    let tmp = target.with_extension("json.tmp");
-    fs::write(&tmp, json)?;
-    fs::rename(&tmp, &target)?;
-    Ok(())
+    let canonical: Vec<_> = lenses
+        .iter()
+        .map(|layout| layout.as_ref().map(canonical).transpose())
+        .collect::<io::Result<_>>()?;
+    write(&session_dir.join(WINDOWS_FILE), canonical)
 }
-
-/// Read + parse the lens-window sidecar. `Ok(None)` when it doesn't exist
-/// (no lens windows were open — the common single-window session).
 pub fn load_lens_spaces(session_dir: &Path) -> io::Result<Option<Vec<Option<FrisketLayout>>>> {
-    let path = session_dir.join(WINDOWS_FILE);
-    if !path.exists() {
-        return Ok(None);
-    }
-    let text = fs::read_to_string(&path)?;
-    let lenses: Vec<Option<FrisketLayout>> =
-        serde_json::from_str(&text).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-    Ok(Some(lenses))
+    load(
+        session_dir,
+        WINDOWS_FILE,
+        LEGACY_WINDOWS_FILE,
+        |lenses: Vec<Option<FrisketLayout>>| {
+            lenses
+                .iter()
+                .map(|layout| layout.as_ref().map(canonical).transpose())
+                .collect::<io::Result<Vec<_>>>()
+        },
+    )
 }
 
 #[cfg(test)]
@@ -181,8 +142,8 @@ mod tests {
             .unwrap()
             .replace("\"Workbench\"", "\"Apparatus\"")
             .replace("\"Roster\"", "\"Steward\"");
-        fs::write(frame_layout_path(&dir), &old).unwrap();
-        fs::write(dir.join(WINDOWS_FILE), format!("[{old},null]")).unwrap();
+        fs::write(dir.join(LEGACY_FRAME_FILE), &old).unwrap();
+        fs::write(dir.join(LEGACY_WINDOWS_FILE), format!("[{old},null]")).unwrap();
         let restored = load_frisket_layout(&dir).unwrap().unwrap();
         let panes: Vec<_> = restored.iter_leaves().collect();
         assert_eq!(panes[0].0, PaneId(0));
@@ -193,10 +154,7 @@ mod tests {
             vec!["downloads"]
         );
         assert_eq!(panes[0].2, GraphId::from_uuid(uuid::Uuid::from_u128(1)));
-        let PaneNode::Split { ratio, .. } = restored.root else {
-            panic!("split retained")
-        };
-        assert_eq!(ratio, 0.66);
+        assert_eq!(restored.split_at(&[]).unwrap().1, 0.66);
         let lenses = load_lens_spaces(&dir).unwrap().unwrap();
         assert_eq!(lenses, vec![Some(restored.clone()), None]);
         save_frisket_layout(&dir, &restored).unwrap();
@@ -213,9 +171,10 @@ mod tests {
     fn configured_gloss_section_order_survives_frame_and_lens_save() {
         let dir = temp_session_dir("gloss-order");
         let mut layout = sample_layout();
-        *layout.content_mut(PaneId(1)).unwrap() = PaneContent::Gloss(super::super::PaneComposition {
-            sections: vec!["recent".into(), "downloads".into(), "removed".into()],
-        });
+        *layout.content_mut(PaneId(1)).unwrap() =
+            PaneContent::Gloss(super::super::PaneComposition {
+                sections: vec!["recent".into(), "downloads".into(), "removed".into()],
+            });
         save_frisket_layout(&dir, &layout).unwrap();
         save_lens_spaces(&dir, &[Some(layout.clone())]).unwrap();
         assert_eq!(load_frisket_layout(&dir).unwrap(), Some(layout.clone()));

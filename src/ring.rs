@@ -127,6 +127,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | ReturnActivePaneToPrimary
         | SummonPane(_)
         | CloseActivePane
+        | OuterWorkspace { .. }
         | SetActivePaneDivider(_)
         | SetSplitRatio { .. }
         | ToggleMaximizePane
