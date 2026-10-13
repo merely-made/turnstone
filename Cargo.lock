@@ -19328,6 +19328,9 @@ checksum = "2b1b1e28ac6301b1c097d21c11130090f7ecc5db9d5ef4e52595ab942f8d76d5"
 name = "workbench"
 version = "0.1.0"
 source = "git+https://www.github.com/merely-made/mere.git?rev=74c1d810c4cb983cd8362ccfb99014543e9900a0#74c1d810c4cb983cd8362ccfb99014543e9900a0"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "wr_glyph_rasterizer"

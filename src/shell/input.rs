@@ -341,6 +341,9 @@ impl Shell {
             self.pointer_capture = None;
             return;
         }
+        if button == MouseButton::Left && self.outer_press(0, (self.width.max(1),self.height.max(1)),x,y) {
+            self.pointer_capture=None; self.request_redraw(); return;
+        }
         let plan = self.surface_plan();
         let hit = crate::surface::hit_test(&plan, self.app.focus, x, y);
         // Right-click is the context menu the palette registry names: the
@@ -788,7 +791,7 @@ impl Shell {
                         self.request_redraw();
                     }
                 },
-                crate::surface::SurfaceKind::Chrome => {},
+                crate::surface::SurfaceKind::Chrome | crate::surface::SurfaceKind::Frame => {},
             }
         }
     }
@@ -881,6 +884,7 @@ impl Shell {
     }
 
     pub(super) fn deliver_move(&mut self, x: f32, y: f32) {
+        if self.outer_move(0,x,y) {self.request_redraw();return;}
         if let Some(crate::surface::SurfaceKind::Graph(pane)) = self.pointer_capture {
             let local = self.surface_plan().into_iter().find_map(|surface| {
                 (surface.kind == crate::surface::SurfaceKind::Graph(pane))
@@ -1082,6 +1086,9 @@ impl Shell {
 
     pub(super) fn deliver_release(&mut self, x: f32, y: f32, button: MouseButton) {
         self.surface_pointer_buttons.0 &= !surface_button_mask(button).0;
+        if button == MouseButton::Left && self.outer_release(0,(self.width.max(1),self.height.max(1)),x,y) {
+            self.pointer_capture=None; self.request_redraw(); return;
+        }
         let captured = self.pointer_capture;
         let graph_capture = match captured {
             Some(crate::surface::SurfaceKind::Graph(pane)) => Some(pane),

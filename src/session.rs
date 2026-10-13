@@ -172,12 +172,14 @@ pub const PLACE_COLLECTION_FILE: &str = "place-collection.json";
 /// `Left` reads on.
 pub const PLACE_LEFT_FILE: &str = "place-left.json";
 
-const SESSION_FILES: [&str; 9] = [
+const SESSION_FILES: [&str; 11] = [
     session_graph_store::GRAPH_FILE,
     frisket_store::FRAME_FILE,
+    frisket_store::LEGACY_FRAME_FILE,
     WORKBENCH_FILE,
     pandect::browser_node_state::BROWSER_NODES_FILE,
     frisket_store::WINDOWS_FILE,
+    frisket_store::LEGACY_WINDOWS_FILE,
     PROJECTION_SCORE_FILE,
     VIEW_INTENT_FILE,
     PLACE_FILE,

@@ -237,7 +237,7 @@ sprigging = { git = "https://www.github.com/merely-made/mere.git", rev = "74c1d8
 mere-surface-api = { git = "https://www.github.com/merely-made/mere.git", rev = "74c1d810c4cb983cd8362ccfb99014543e9900a0" }
 # The extracted split/tab contract. It now carries the tile seam turnstone
 # names for splits and settings refs, and moved to mere with Cambium (P3).
-workbench = { git = "https://www.github.com/merely-made/mere.git", rev = "74c1d810c4cb983cd8362ccfb99014543e9900a0" }
+workbench = { git = "https://www.github.com/merely-made/mere.git", rev = "74c1d810c4cb983cd8362ccfb99014543e9900a0", features = ["serde"] }
 # Chromium surface-engine adapter. `weld-engine` is the neutral inker bridge;
 # the CEF runtime remains opt-in because it carries a bundled browser runtime.
 weld-engine = { git = "https://www.github.com/merely-made/mere.git", rev = "74c1d810c4cb983cd8362ccfb99014543e9900a0", features = ["welding-0-15"], optional = true }

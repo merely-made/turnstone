@@ -866,6 +866,7 @@ impl Shell {
                     let scene = self.pane_scene_by_kind(id, content.as_ref(), rw, rh);
                     (scene, wgpu::Color::TRANSPARENT)
                 }
+                crate::surface::SurfaceKind::Frame => (self.outer_scene(0), wgpu::Color::TRANSPARENT),
                 crate::surface::SurfaceKind::Divider(_) => {
                     // The band is the clear colour; nothing to draw over it.
                     (Scene::default(), crate::ui::SEAM_CLEAR)
@@ -1055,6 +1056,8 @@ impl Shell {
             pane_tiles = split.pane.dirty_tiles,
             divider_rast = split.divider.rasterized,
             divider_tiles = split.divider.dirty_tiles,
+            frame_rast = split.frame.rasterized,
+            frame_tiles = split.frame.dirty_tiles,
             chrome_rast = split.chrome.rasterized,
             chrome_tiles = split.chrome.dirty_tiles,
             compose_ms = ms(timings.compose),

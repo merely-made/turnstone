@@ -115,6 +115,46 @@ where
     F: FnMut(&PaneContent, PaneId) -> Option<UxTree>,
 {
     match node {
+        PaneNode::Workspace(frame) => {
+            fn active(tree: &workbench::TileTree, out: &mut Vec<workbench::TileId>) {
+                match tree {
+                    workbench::TileTree::Stack(stack) => {
+                        if let Some(tile) = stack.tabs.get(stack.active) {
+                            out.push(tile.id);
+                        }
+                    },
+                    workbench::TileTree::Split { children, .. } => {
+                        for child in children {
+                            active(&child.tree, out);
+                        }
+                    },
+                }
+            }
+            let mut ids = Vec::new();
+            active(frame.workspace.tiled(), &mut ids);
+            let children = ids
+                .into_iter()
+                .filter_map(|id| {
+                    let (content, graph_id) = frame.panes.get(&id.0)?;
+                    Some(project_node(
+                        &PaneNode::Leaf {
+                            pane_id: PaneId(id.0),
+                            content: content.clone(),
+                            graph_id: *graph_id,
+                        },
+                        path,
+                        nodes,
+                        content_for,
+                    ))
+                })
+                .collect::<Vec<_>>();
+            let id = node_id_for_path(&format!("{path}/workspace"));
+            let mut group = Node::new(Role::Group);
+            group.set_label("Workspace");
+            group.set_children(children);
+            nodes.push((id, group));
+            id
+        },
         PaneNode::Split {
             axis,
             ratio,
@@ -132,7 +172,7 @@ where
             split_node.set_children(vec![first_id, second_id]);
             nodes.push((split_id, split_node));
             split_id
-        }
+        },
         PaneNode::Leaf {
             pane_id, content, ..
         } => {
@@ -150,7 +190,7 @@ where
             leaf_node.set_children(leaf_children);
             nodes.push((leaf_id, leaf_node));
             leaf_id
-        }
+        },
     }
 }
 
@@ -182,7 +222,7 @@ fn project_blueprint_node(
             split.set_children(children);
             nodes.push((split_id, split));
             split_id
-        }
+        },
         LayoutNode::Tabs { children, active } => {
             let tabs_path = format!("{path}/tabs");
             let tabs_id = node_id_for_path(&tabs_path);
@@ -195,7 +235,7 @@ fn project_blueprint_node(
             tabs.set_children(active_child.into_iter().collect::<Vec<_>>());
             nodes.push((tabs_id, tabs));
             tabs_id
-        }
+        },
         LayoutNode::Grid {
             children, columns, ..
         } => {
@@ -213,7 +253,7 @@ fn project_blueprint_node(
             grid.set_children(children);
             nodes.push((grid_id, grid));
             grid_id
-        }
+        },
     }
 }
 

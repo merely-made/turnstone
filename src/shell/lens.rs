@@ -137,20 +137,7 @@ impl Shell {
                 )
             }
             None => {
-                let placements = crate::pane::place_panes(space, area, None);
-                (
-                    placements
-                        .panes
-                        .into_iter()
-                        .map(|pane| (pane.id, pane.rect))
-                        .collect(),
-                    placements
-                        .dividers
-                        .into_iter()
-                        .map(|divider| (divider.index, divider.rect))
-                        .collect(),
-                    Vec::new(),
-                )
+                (self.outer_rects(ordinal+1, space, None, (w.max(1), h.max(1))), Vec::new(), Vec::new())
             }
         };
         let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
@@ -173,6 +160,7 @@ impl Shell {
                 }
             })
             .collect();
+        if self.app.blueprint_space(crate::action::SpaceRef::Lens(ordinal)).is_none() { base.insert(0,(SurfaceKind::Frame,area)); }
         base.extend(
             divider_rects
                 .iter()
@@ -338,6 +326,7 @@ impl Shell {
                     };
                     (scene, wgpu::Color::WHITE)
                 }
+                crate::surface::SurfaceKind::Frame => (self.outer_scene(ordinal+1), wgpu::Color::TRANSPARENT),
                 crate::surface::SurfaceKind::Divider(_) => {
                     (Scene::default(), crate::ui::SEAM_CLEAR)
                 }
@@ -425,6 +414,16 @@ impl Shell {
     /// gestures run with the lens's own camera installed around the pass
     /// (pan, zoom, grab); resize, close.
     pub(super) fn lens_event(&mut self, id: WindowId, event: WindowEvent) {
+        if let Some(lens)=self.lens_windows.get(&id) {
+            let (slot,size,cursor)=(lens.ordinal+1,(lens.width,lens.height),lens.cursor);
+            let consumed=match &event {
+                WindowEvent::MouseInput {state:ElementState::Pressed,button:MouseButton::Left,..}=>self.outer_press(slot,size,cursor.0,cursor.1),
+                WindowEvent::MouseInput {state:ElementState::Released,button:MouseButton::Left,..}=>self.outer_release(slot,size,cursor.0,cursor.1),
+                WindowEvent::CursorMoved {position,..}=>self.outer_move(slot,position.x as f32,position.y as f32),
+                _=>false,
+            };
+            if consumed {if let Some(lens)=self.lens_windows.get_mut(&id) {lens.window.request_redraw();}return;}
+        }
         let Some(lens) = self.lens_windows.get_mut(&id) else {
             return;
         };
@@ -432,6 +431,7 @@ impl Shell {
             WindowEvent::CloseRequested => {
                 let ordinal = lens.ordinal;
                 self.lens_windows.remove(&id);
+                self.outer_frames.borrow_mut().remove(&(ordinal+1));
                 let closed_panes: Vec<_> = self
                     .app
                     .lenses

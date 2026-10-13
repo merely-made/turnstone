@@ -126,8 +126,8 @@ impl App {
         let removed = self
             .space_mut(source)
             .and_then(|layout| {
-                let path = crate::pane::path_of(layout, active)?;
-                layout.close_leaf(&path).then_some(())
+                let _path = crate::pane::path_of(layout, active)?;
+                layout.close_pane(active).then_some(())
             })
             .is_some();
         if !removed {
@@ -191,10 +191,10 @@ impl App {
         let Some(layout) = self.space_mut(source) else {
             return vec![Effect::Redraw];
         };
-        let Some(path) = crate::pane::path_of(layout, active) else {
+        let Some(_path) = crate::pane::path_of(layout, active) else {
             return vec![Effect::Redraw];
         };
-        if !layout.close_leaf(&path) {
+        if !layout.close_pane(active) {
             return vec![Effect::Redraw];
         }
         if self.maximized == Some(active) {
@@ -489,10 +489,10 @@ impl App {
         let Some(layout) = self.space_mut(space) else {
             return vec![Effect::Redraw];
         };
-        let Some(path) = crate::pane::path_of(layout, active) else {
+        let Some(_path) = crate::pane::path_of(layout, active) else {
             return vec![Effect::Redraw];
         };
-        if layout.close_leaf(&path) {
+        if layout.close_pane(active) {
             if self.maximized == Some(active) {
                 self.maximized = None;
             }

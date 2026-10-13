@@ -99,30 +99,14 @@ pub fn place_panes(layout: &FrisketLayout, area: Rect, maximized: Option<PaneId>
 /// Empty path = the whole tree is that leaf. Used to aim a summon/close/divider
 /// op (frisket's ops take a `SplitPath`).
 pub fn path_of(layout: &FrisketLayout, id: PaneId) -> Option<Vec<SplitChoice>> {
-    fn find(node: &PaneNode, id: PaneId, path: &mut Vec<SplitChoice>) -> bool {
-        match node {
-            PaneNode::Leaf { pane_id, .. } => *pane_id == id,
-            PaneNode::Split { first, second, .. } => {
-                path.push(SplitChoice::First);
-                if find(first, id, path) {
-                    return true;
-                }
-                path.pop();
-                path.push(SplitChoice::Second);
-                if find(second, id, path) {
-                    return true;
-                }
-                path.pop();
-                false
-            }
-        }
-    }
-    let mut path = Vec::new();
-    find(&layout.root, id, &mut path).then_some(path)
+    crate::panes::path_for_pane_id(&layout.root, id)
 }
 
 fn walk(node: &PaneNode, area: Rect, path: &mut Vec<SplitChoice>, out: &mut PaneTiling) {
     match node {
+        PaneNode::Workspace(frame) => {
+            walk_workspace(frame, frame.workspace.tiled(), area, path, out)
+        },
         PaneNode::Leaf {
             pane_id,
             content,
@@ -160,7 +144,77 @@ fn walk(node: &PaneNode, area: Rect, path: &mut Vec<SplitChoice>, out: &mut Pane
             path.push(SplitChoice::Second);
             walk(second, at(b), path, out);
             path.pop();
-        }
+        },
+    }
+}
+
+fn walk_workspace(
+    frame: &crate::panes::workspace_bridge::OuterWorkspace,
+    tree: &workbench::TileTree,
+    area: Rect,
+    path: &mut Vec<SplitChoice>,
+    out: &mut PaneTiling,
+) {
+    match tree {
+        workbench::TileTree::Stack(stack) => {
+            if let Some(tile) = stack.tabs.get(stack.active) {
+                if let Some((content, graph_id)) = frame.panes.get(&tile.id.0) {
+                    out.panes.push(PanePlacement {
+                        id: PaneId(tile.id.0),
+                        content: content.clone(),
+                        graph_id: *graph_id,
+                        rect: area,
+                        path: path.clone(),
+                    });
+                }
+            }
+        },
+        workbench::TileTree::Split { axis, children } => {
+            let row = *axis == workbench::SplitAxis::Row;
+            let span = if row { area.w } else { area.h };
+            let available = (span - 10.0 * children.len().saturating_sub(1) as f32).max(0.0);
+            let total: f32 = children.iter().map(|child| child.fraction).sum();
+            let mut offset = 0.0;
+            for (i, child) in children.iter().enumerate() {
+                let size = available * child.fraction / total;
+                let rect = if row {
+                    Rect::new(area.x + offset, area.y, size, area.h)
+                } else {
+                    Rect::new(area.x, area.y + offset, area.w, size)
+                };
+                path.push(match i {
+                    0 => SplitChoice::First,
+                    1 => SplitChoice::Second,
+                    i => SplitChoice::Child(i),
+                });
+                walk_workspace(frame, &child.tree, rect, path, out);
+                path.pop();
+                offset += size;
+                if i + 1 < children.len() {
+                    // Legacy ratio commands are retained for binary splits;
+                    // the shared retained frame handles N-ary divider input.
+                    if children.len() == 2 {
+                        out.dividers.push(DividerPlacement {
+                            index: out.dividers.len() as u32,
+                            rect: if row {
+                                Rect::new(area.x + offset, area.y, 10.0, area.h)
+                            } else {
+                                Rect::new(area.x, area.y + offset, area.w, 10.0)
+                            },
+                            area,
+                            path: path.clone(),
+                            axis: if row {
+                                SplitAxis::Horizontal
+                            } else {
+                                SplitAxis::Vertical
+                            },
+                            ratio: children[0].fraction / total,
+                        });
+                    }
+                    offset += 10.0;
+                }
+            }
+        },
     }
 }
 

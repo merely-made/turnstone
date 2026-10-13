@@ -455,6 +455,8 @@ pub enum Action {
     },
     /// Close the active pane, collapsing its split back into its sibling.
     CloseActivePane,
+    /// Shared outer-frame intent; exact window and pane identity.
+    OuterWorkspace { space: SpaceRef, event: workbench::WorkspaceEvent },
     /// Set the divider ratio of the active pane's split (drag the seam). Clamped
     /// by the geometry walker so neither side collapses.
     SetActivePaneDivider(f32),

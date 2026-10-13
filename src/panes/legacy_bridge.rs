@@ -42,6 +42,7 @@ pub fn blueprint_from_frisket(layout: &FrisketLayout) -> SpaceBlueprint {
 
 fn project_node(node: &PaneNode, panes: &mut Vec<PaneSpec>) -> LayoutNode {
     match node {
+        PaneNode::Workspace(frame) => project_workspace(frame, frame.workspace.tiled(), panes),
         PaneNode::Leaf {
             pane_id,
             content,
@@ -49,7 +50,7 @@ fn project_node(node: &PaneNode, panes: &mut Vec<PaneSpec>) -> LayoutNode {
         } => {
             panes.push(project_spec(*pane_id, content, *graph_id));
             LayoutNode::Pane(*pane_id)
-        }
+        },
         PaneNode::Split {
             axis,
             ratio,
@@ -67,6 +68,45 @@ fn project_node(node: &PaneNode, panes: &mut Vec<PaneSpec>) -> LayoutNode {
                     tree: project_node(second, panes),
                 },
             ],
+        },
+    }
+}
+
+fn project_workspace(
+    frame: &super::workspace_bridge::OuterWorkspace,
+    tree: &workbench::TileTree,
+    panes: &mut Vec<PaneSpec>,
+) -> LayoutNode {
+    match tree {
+        workbench::TileTree::Stack(stack) => {
+            let children: Vec<_> = stack
+                .tabs
+                .iter()
+                .filter_map(|tile| {
+                    let (content, graph) = frame.panes.get(&tile.id.0)?;
+                    let id = PaneId(tile.id.0);
+                    panes.push(project_spec(id, content, *graph));
+                    Some(LayoutNode::Pane(id))
+                })
+                .collect();
+            LayoutNode::Tabs {
+                children,
+                active: stack.active,
+            }
+        },
+        workbench::TileTree::Split { axis, children } => LayoutNode::Split {
+            axis: if *axis == workbench::SplitAxis::Row {
+                super::SplitAxis::Horizontal
+            } else {
+                super::SplitAxis::Vertical
+            },
+            children: children
+                .iter()
+                .map(|child| LayoutBranch {
+                    fraction: child.fraction,
+                    tree: project_workspace(frame, &child.tree, panes),
+                })
+                .collect(),
         },
     }
 }

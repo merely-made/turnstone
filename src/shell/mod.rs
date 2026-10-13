@@ -39,6 +39,7 @@ use render::{capture_composed, decode_sprite};
 mod lens;
 use lens::LensWindow;
 mod input;
+mod outer_workspace;
 use input::pointer_button;
 
 use std::collections::{HashMap, VecDeque};
@@ -847,6 +848,8 @@ pub struct Shell {
     /// Every retained per-pane Cambium renderer, keyed by `PaneId`.
     /// See [`renderers::PaneRenderers`] for why they live in one place.
     renderers: renderers::PaneRenderers,
+    outer_frames: std::cell::RefCell<HashMap<usize, crate::outer_frame::OuterFrame>>,
+    outer_capture: Option<outer_workspace::OuterCapture>,
     /// Runtime product surface factories. Concrete product state never enters
     /// the shell; admission yields the erased sessions retained above.
     surface_providers: crate::contributed_surface::SurfaceProviderRegistry,
@@ -1191,6 +1194,8 @@ impl Shell {
             shared_knot_service,
             device_receipts_service,
             renderers: Default::default(),
+            outer_frames: Default::default(),
+            outer_capture: None,
             surface_providers,
             redshank_docks,
             hovered_pane: None,
@@ -1411,9 +1416,11 @@ impl Shell {
     /// (a platform call, so it lives here, not in `update`).
     fn act(&mut self, action: Action) {
         let accepted_text = self.accepts_controlled_text();
-        let closing = matches!(&action, Action::CloseActivePane)
-            .then_some(self.app.active_pane)
-            .flatten();
+        let closing = match &action {
+            Action::CloseActivePane => self.app.active_pane,
+            Action::OuterWorkspace { event: workbench::WorkspaceEvent::Tile(workbench::TileEvent::Closed(id)), .. } => Some(crate::panes::PaneId(id.0)),
+            _ => None,
+        };
         let effects = self.app.update(action);
         if let Some(pane) = closing
             && self.app.space_of(pane).is_none()
@@ -1510,21 +1517,7 @@ impl Shell {
                 )
             }
             None => {
-                let placements =
-                    crate::pane::place_panes(&self.app.frisket, area, self.app.maximized);
-                (
-                    placements
-                        .panes
-                        .into_iter()
-                        .map(|pane| (pane.id, pane.rect))
-                        .collect(),
-                    placements
-                        .dividers
-                        .into_iter()
-                        .map(|divider| (divider.index, divider.rect))
-                        .collect(),
-                    Vec::new(),
-                )
+                (self.outer_rects(0, &self.app.frisket, self.app.maximized, (self.width.max(1), self.height.max(1))), Vec::new(), Vec::new())
             }
         };
         let mut graph_rects = Vec::new();
@@ -1551,6 +1544,7 @@ impl Shell {
                 }
             })
             .collect();
+        if self.app.blueprint_space(crate::action::SpaceRef::Primary).is_none() { base.insert(0,(SurfaceKind::Frame, area)); }
         // Each seam is its own thin surface, so it paints (an empty scene over
         // the seam clear colour) and takes the divider drag.
         base.extend(

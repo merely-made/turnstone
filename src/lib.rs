@@ -94,6 +94,7 @@ mod trail_pane;
 mod trail_view;
 mod transcript_pane;
 mod ui;
+pub(crate) mod outer_frame;
 pub mod user_agent_decision;
 pub mod web_policy;
 mod workbench_pane;

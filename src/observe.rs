@@ -941,7 +941,7 @@ pub fn snapshot(app: &App) -> Snapshot {
         })
         .collect();
     // A split tree has seams: one divider surface per split node.
-    if matches!(app.frisket.root, crate::panes::PaneNode::Split { .. }) && app.maximized.is_none() {
+    if app.frisket.split_at(&[]).is_some() && app.maximized.is_none() {
         surfaces.push("divider".to_string());
     }
     // Content surfaces, honestly: a live tile composites where its workbench
@@ -1147,6 +1147,7 @@ pub fn snapshot(app: &App) -> Snapshot {
         split_ratio: match &app.frisket.root {
             crate::panes::PaneNode::Split { ratio, .. } => Some(*ratio),
             crate::panes::PaneNode::Leaf { .. } => None,
+            crate::panes::PaneNode::Workspace(_) => app.frisket.split_at(&[]).map(|(_, ratio)| ratio),
         },
         workbench_cells: workbench_cells(app),
         workbench_fractions: app

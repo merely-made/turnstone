@@ -92,6 +92,8 @@ pub enum SurfaceKind {
     Divider(u32),
     /// The chrome layer: the omnibar and caption, composited on top.
     Chrome,
+    /// Shared Frisket furniture; pointer headers are resolved through its DOM.
+    Frame,
 }
 
 /// One entry in the surface plan: a class, the rect it occupies, and a stable
@@ -116,6 +118,7 @@ impl SurfaceKind {
             SurfaceKind::Pane(_) => "pane",
             SurfaceKind::Divider(_) => "divider",
             SurfaceKind::Chrome => "chrome",
+            SurfaceKind::Frame => "frame",
         }
     }
 }
@@ -172,6 +175,7 @@ impl SurfaceId {
         match kind {
             SurfaceKind::Graph(pane) => Self::graph(pane),
             SurfaceKind::Chrome => Self::CHROME,
+            SurfaceKind::Frame => SurfaceId(0x0054_4652_0000_0000),
             SurfaceKind::Content(node) => Self::content(node),
             SurfaceKind::Pane(id) => Self::pane(id),
             SurfaceKind::Divider(i) => Self::divider(i),
@@ -282,6 +286,7 @@ pub fn content_rect(full: Rect) -> Rect {
 /// meant for the canvas or content beneath it.
 pub fn hit_test(surfaces: &[Surface], focus: FocusTarget, px: f32, py: f32) -> Option<HitResult> {
     for surface in surfaces.iter().rev() {
+        if surface.kind == SurfaceKind::Frame { continue; }
         if matches!(surface.kind, SurfaceKind::Chrome) && focus != FocusTarget::Chrome {
             continue;
         }
@@ -322,7 +327,7 @@ pub fn focus_for_press(surfaces: &[Surface], focus: FocusTarget, px: f32, py: f3
             // preserve keyboard focus. The shell promotes a registered
             // contributed pane to `FocusTarget::Pane` after admission. A seam
             // press likewise stays a pointer gesture.
-            SurfaceKind::Pane(_) | SurfaceKind::Divider(_) => focus,
+            SurfaceKind::Pane(_) | SurfaceKind::Divider(_) | SurfaceKind::Frame => focus,
         },
         None => focus,
     }
