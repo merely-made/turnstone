@@ -67,7 +67,11 @@ pub(super) fn requested() -> Result<Option<RefCell<Visibility>>, String> {
         }))
 }
 
-pub(super) fn install(shared: &Rc<Shared>, document: &web_sys::Document) -> Result<(), String> {
+pub(super) fn install(
+    shared: &Rc<Shared>,
+    document: &web_sys::Document,
+    lifetime: &MountLifetime,
+) -> Result<(), String> {
     let Some(state) = &shared.visibility else {
         return Ok(());
     };
@@ -115,7 +119,16 @@ pub(super) fn install(shared: &Rc<Shared>, document: &web_sys::Document) -> Resu
     document
         .add_event_listener_with_callback("visibilitychange", listener.as_ref().unchecked_ref())
         .map_err(|_| "could not observe headed visibility")?;
-    listener.forget();
+    // This optional observer precedes graphics acquisition. A refused startup
+    // must release its Shared/worker handles too, without activating a host.
+    let document = document.clone();
+    lifetime.on_dispose(move || {
+        let _ = document.remove_event_listener_with_callback(
+            "visibilitychange",
+            listener.as_ref().unchecked_ref(),
+        );
+        drop(listener);
+    });
     Ok(())
 }
 

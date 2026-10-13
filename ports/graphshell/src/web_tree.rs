@@ -26,7 +26,7 @@ use std::rc::Rc;
 use cambium::{
     AnyView, GenetCtx, GenetElement, Key, NamedKey, custom_leaf, el, on_key, on_pointer,
 };
-use cambium_genet_web_host::{WebCapture, WebWindow, mount};
+use cambium_genet_web_host::{MountLifetime, WebCapture, WebWindow, mount_with_lifetime};
 use cambium_rootstock::{
     AppCtx, CloseDisposition, Frame, HostFont, HostHooks, HostOptions, HostPointer, HostWindow,
     Init, ProducedTexture, ProducerContext, SourceAlpha, SourceEncoding, TextureProducer,
@@ -1097,6 +1097,9 @@ fn main_page_mounted() -> bool {
 /// Mount the one-tree page into `root`.
 #[wasm_bindgen]
 pub fn mount_tree(root: Element) -> Result<(), JsValue> {
+    if !root.is_connected() {
+        return Err(JsValue::from_str("the mount root is not connected"));
+    }
     if mounted() || main_page_mounted() {
         return Err(JsValue::from_str(
             "Graphshell is already mounted on this page",
@@ -1104,7 +1107,11 @@ pub fn mount_tree(root: Element) -> Result<(), JsValue> {
     }
     let owns_title = root.has_attribute("data-owns-title");
     wasm_bindgen_futures::spawn_local(async move {
-        if let Err(error) = boot(root).await {
+        if let Err(error) = boot(root.clone()).await {
+            if !root.is_connected() {
+                let _ = root.set_attribute("data-mount-state", "cancelled");
+                return;
+            }
             web_sys::console::error_1(&error.clone().into());
             if let Some(document) = web_sys::window()
                 .and_then(|window| window.document())
@@ -1125,6 +1132,11 @@ fn boot(
 }
 
 async fn boot_inner(root: Element) -> Result<(), String> {
+    // The embedding root owns startup admission. Keep the checkpoint passive:
+    // a late private acquisition reaches the host's post-boot destruction
+    // path; default mounts retain their off-document canvas contract.
+    let live_root = root.clone();
+    let lifetime = MountLifetime::with_liveness(move || live_root.is_connected());
     #[cfg(feature = "product")]
     owner_waypoint::configure(&root);
     let document = root.owner_document().ok_or("the root has no document")?;
@@ -1317,7 +1329,7 @@ async fn boot_inner(root: Element) -> Result<(), String> {
         shared.speed,
         &shared.frame_budget.borrow(),
     );
-    visibility::install(&shared, &document)?;
+    visibility::install(&shared, &document, &lifetime)?;
     let options = HostOptions {
         title: "Graphshell, one tree".into(),
         netrender: Box::new(|| NetrenderOptions {
@@ -1331,9 +1343,10 @@ async fn boot_inner(root: Element) -> Result<(), String> {
     let page_shared = shared.clone();
     let page_root = root.clone();
     let physics = physics::PhysicsPanel::new(&shared.canvas.borrow(), web_graphs::LAYOUT);
-    let mounted = mount(
+    let mounted = mount_with_lifetime(
         canvas.clone(),
         options,
+        lifetime,
         move |_window, _commands, _wake| Init {
             state: TreePage {
                 #[cfg(feature = "moot-resources")]
