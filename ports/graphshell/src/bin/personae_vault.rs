@@ -12,7 +12,7 @@ use graphshell::native::custody_client::BlockingCustodyClient;
 use personae::ProfileId;
 
 const USAGE: &str = "usage: personae-vault [--app-endpoint <endpoint>] [--profile <name>] <command> [args]\n\
-commands: profiles, new-profile, list, show, add-ssh, pub, remove, ca, mint, enroll-host, face, revoke, krl, cxf-preview, cxf-import\n\
+commands: profiles, new-profile, list, show, generate-ssh, add-ssh, pub, remove, ca, mint, enroll-host, face, revoke, krl, cxf-preview, cxf-import\n\
 Unlock through djinn's own surface. Vault location and passphrase belong to djinn.";
 
 fn main() {
