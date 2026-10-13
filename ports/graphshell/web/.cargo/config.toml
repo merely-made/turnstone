@@ -14,3 +14,6 @@
 # Reserve 4 MiB of Wasm linear stack; this is independent of machine RAM caps.
 # Adjust this build budget here when changing the startup path or build profile.
 rustflags = ['--cfg', 'getrandom_backend="wasm_js"', '-C', 'link-arg=-zstack-size=4194304']
+
+[build]
+build-dir = "{workspace-root}/target/build"
