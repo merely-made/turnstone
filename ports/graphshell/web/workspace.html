@@ -1,0 +1,32 @@
+<!doctype html>
+<!-- Copyright 2026 Mark Alan Boykin
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this
+     file, You can obtain one at https://mozilla.org/MPL/2.0/.
+     SPDX-License-Identifier: MPL-2.0 -->
+<html lang="en" class="full-page">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Graphshell — local mere</title>
+    <link rel="stylesheet" href="./styles.css?h3=1">
+  </head>
+  <body class="full-page">
+    <!-- The retained-data reference entry uses the existing local Graphshell
+         store and session, not an additional entry-screen collection. -->
+    <graphshell-tree id="graphshell" data-owns-title data-appearance-application data-ready="false"></graphshell-tree>
+    <section id="scenario-host" aria-hidden="true" hidden>
+      <pre id="scenario-log"></pre>
+      <pre id="scenario-result"></pre>
+      <div id="scenario-captures"></div>
+    </section>
+    <script>
+      const entry = new URL(window.location.href);
+      if (!entry.searchParams.has("app")) {
+        entry.searchParams.set("app", "local");
+        window.history.replaceState(null, "", entry);
+      }
+    </script>
+    <script type="module" src="./loader.js"></script>
+  </body>
+</html>

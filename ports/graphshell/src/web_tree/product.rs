@@ -873,9 +873,9 @@ pub(super) fn controls(page: &TreePage) -> Child {
             .attr(
                 "class",
                 if page.forme.as_ref().is_some_and(|pane| pane.workbench) {
-                    "tree-product tree-product-workbench"
+                    "tree-product tree-product-workbench workspace-controls"
                 } else {
-                    "tree-product"
+                    "tree-product workspace-controls"
                 },
             )
             .attr("aria-label", "Saved graph"),

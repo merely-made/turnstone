@@ -444,3 +444,8 @@ mod tests {
         assert!(host.prepare_dispatch(1, command.token, &current).is_err());
     }
 }
+
+#[cfg(not(target_arch = "wasm32"))]
+mod owner;
+#[cfg(not(target_arch = "wasm32"))]
+pub use owner::{Error, Mount, Opened, Owners, Scope, Update};

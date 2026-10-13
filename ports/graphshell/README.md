@@ -7,6 +7,26 @@ loops, hosts resident endpoints, and renders projections.
 Package name `graphshell`. It re-exports the stack as `graphshell::protocol`,
 `graphshell::client`, and `graphshell::endpoint`.
 
+The native opt-in `moot-resources` module composes the existing Moot resource
+view with verified retained Graphshell session authority and current Gemot and
+Eidetic owners. A mount holds independent inspection, pending feedback and
+opened bytes. The embedding host supplies current revocations, its clock,
+signer and stores, and schedules the asynchronous operation pump after input
+or explicit refresh. Rebuilding the view performs no domain operation.
+
+The finite `moot-resource-proof` binary mounts two readings on the shared
+Cambium native host. Run `cargo run --locked -p graphshell --no-default-features
+--features moot-resource-proof --bin moot-resource-host`; pass
+`-- --receipt DIRECTORY --size 1280x920` to execute the bounded native proof
+and close its window. Wide and compact native cases each passed four presented
+owner-state captures; these qualify paint/layout, not physical input or themes.
+Its public, unsealed
+in-memory fixtures use verified sans-I/O admission, with supplied carrier facts;
+they qualify no live peer, persistent community or private custody. Actual app
+session/coop routing remains open. The [Moot host plan](../../design_docs/moothold_docs/implementation_strategy/2026-06-12_moot_object_m1_plan.md#admitted-graphshell-resource-mount-2026-10-12)
+and [qualification record](docs/receipts/moot_resources_host_20261012/qualification.json)
+retain the acceptance scope.
+
 The `personae-vault` binary is djinn's terminal custody client. From Mere, run
 `cargo run -p graphshell --bin personae-vault -- --help`. It accepts a broker
 endpoint and persona name; djinn owns the vault path, unlock gate and private
@@ -108,6 +128,23 @@ Turnstone, Genet host packages, and Servo runtime packages.
 `../src/web.rs`. It is a `cdylib` composing this port's `web` cone with Mere
 Canvas, Cambium over Genet's DOM and layout seam, and NetRender over a WebGPU
 canvas. Its browser dependencies stay out of the `graphshell` package.
+
+### Instrument retained-data reference workspace
+
+`web/workspace.html` opens the existing local-mere reference route
+(`tree.html?app=local`) with Instrument presentation. It reuses the current
+IndexedDB graph/session store and Forme workbench. Graph and tiled views show
+the same material, with a stable session caption and shared Cambium pane
+headers. The title, inspector and controls consume the existing Tabard
+application appearance. Read-only presenter and generated/fixture routes
+retain their existing framing; the Instrument authoring sheet is excluded
+from the no-default viewer build.
+
+This is a local retained-data reference entry, not a new store or a live
+cross-app resolver. An app's mere represents retained material using the
+app's useful views. Cross-domain use still requires the existing admitted
+source/owner and portable clip/live-entity paths; opening a scene does not
+copy data or grant another domain's operations.
 
 ### September 5 practice workspace proof
 
