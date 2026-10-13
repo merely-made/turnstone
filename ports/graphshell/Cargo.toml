@@ -97,6 +97,7 @@ webrtc-join = [
 # (physics catalog plan, P5c; mere `canvas-gpu`, ruled 2026-10-02).
 canvas-gpu = ["web", "mere/canvas-gpu"]
 web = [
+    "dep:genet-render-host",
     "dep:cambium",
     "dep:fleece",
     "dep:wgpu",
@@ -104,6 +105,7 @@ web = [
     "dep:inker",
     "dep:netrender",
     "dep:mere-document-lanes",
+    "dep:command-menu",
     "dep:tabard",
     "dep:async-trait",
     # The canvas's producer semantics for a screen reader (`canvas_reader`;
@@ -139,6 +141,7 @@ personal-sync = [
 ]
 
 [dependencies]
+genet-render-host = { workspace = true, optional = true }
 cambium = { workspace = true, optional = true }
 fleece = { workspace = true, features = ["portable-clip"], optional = true }
 wgpu = { workspace = true, optional = true }
@@ -147,6 +150,7 @@ inker = { workspace = true, optional = true }
 netrender = { workspace = true, optional = true }
 mere-document-lanes = { workspace = true, features = ["retained-clips"], optional = true }
 moot = { workspace = true, optional = true }
+command-menu = { path = "../../crates/cambium/command-menu", optional = true }
 # The check conclusions and faults, named directly (insigne proofs plan, B).
 insigne = { workspace = true, features = ["verify"] }
 async-trait = { version = "0.1", optional = true }

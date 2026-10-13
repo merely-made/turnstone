@@ -289,6 +289,10 @@ fn portable_content_view_reserves_the_requested_paint_box() {
         )
         .unwrap();
     content.show_only(&[member]);
+    let producer_key = ContentProducer::allocate_key();
+    let mut producers = cambium_rootstock::ProducerRegistry::new();
+    producers.register(producer_key, ContentProducer::new(slot.clone(), producer_key), &[]).unwrap();
+    assert!(producers.contains(producer_key));
     let mut state = HostState::<State, Logic, Child>::new();
     state.runner = Some(GenetAppRunner::new(
         Rc::new(RefCell::new(ScriptedDom::new())),
@@ -313,4 +317,15 @@ fn portable_content_view_reserves_the_requested_paint_box() {
     let node = projection.nodes().iter().find(|node| node.name.as_deref() == Some("Retained document Layout")).unwrap();
     let bounds = node.bounds.unwrap();
     assert_eq!((bounds.width, bounds.height), (400., 217.));
+}
+
+#[test]
+fn native_factory_passes_host_font_bytes_into_document_resource_custody() {
+    let font = include_bytes!("../../web/GraphshellSans.ttf").to_vec();
+    let engines = pelt_core::native::sessions_with_fetcher_and_fonts(pelt_core::native::HeldResources::default(), vec![font.clone()]);
+    let mut session = engines.spawn(inker::routing::ENGINE_GENET_LIVERY,
+        &SessionSpawnRequest::new("https://held.example/font").with_body(r#"<p style="font-family:Roboto">Held text</p>"#).with_content_type("text/html")).unwrap();
+    let scene = session.frame(400,217);
+    assert!(scene.ops.iter().any(|op| matches!(op, netrender::SceneOp::GlyphRun(_))));
+    assert!(scene.fonts.iter().any(|face| face.data.as_ref() == font.as_slice()));
 }

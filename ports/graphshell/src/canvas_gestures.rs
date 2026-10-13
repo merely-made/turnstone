@@ -7,8 +7,9 @@
 //! How the plain viewer's canvas shares the page's gestures (mer3ly site
 //! canvas plan, P2 parity with the repository sandbox).
 //!
-//! An embedded canvas must not trap the page: the wheel scrolls the page
-//! unless Ctrl or Meta is held, when it zooms at the pointer. Touch splits by
+//! The wheel zooms at the pointer by default; a host or reader can choose
+//! graph panning or surrounding-page scrolling instead. Ctrl/Meta always
+//! zoom (including trackpad pinch). Touch splits by
 //! fingers: one finger on empty canvas is the page's scroll, one finger on a
 //! node drags it, and two fingers pan and pinch-zoom the camera. Reduced
 //! motion moves the camera at once rather than gliding. This module is the
@@ -23,24 +24,59 @@ pub enum WheelUse {
     Page,
     /// The canvas zooms at the pointer.
     Zoom,
+    /// The canvas pans in both wheel axes.
+    Pan,
 }
 
-/// A plain wheel belongs to the page; Ctrl or Meta claims it for zoom. A
-/// trackpad pinch arrives as a Ctrl wheel, so it zooms too.
-pub fn wheel_use(ctrl: bool, meta: bool) -> WheelUse {
-    if ctrl || meta {
-        WheelUse::Zoom
-    } else {
-        WheelUse::Page
+/// The view's plain-wheel preference. It does not change touch routing.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum WheelMode {
+    #[default]
+    Zoom,
+    Pan,
+    Page,
+}
+
+impl WheelMode {
+    pub fn parse(value: &str) -> Result<Self, String> {
+        match value {
+            "zoom" => Ok(Self::Zoom),
+            "pan" => Ok(Self::Pan),
+            "page" => Ok(Self::Page),
+            _ => Err(format!(
+                "Unknown graph wheel mode {value:?}; choose zoom, pan or page"
+            )),
+        }
+    }
+
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Zoom => "zoom",
+            Self::Pan => "pan",
+            Self::Page => "page",
+        }
     }
 }
 
-/// Zoom by a wheel notch `dy` (logical px) about canvas-local `at`, through
-/// the canvas's own cursor-anchored zoom.
+/// Modifiers retain pointer zoom in every plain-wheel mode.
+pub fn wheel_use(mode: WheelMode, ctrl: bool, meta: bool) -> WheelUse {
+    if ctrl || meta {
+        WheelUse::Zoom
+    } else {
+        match mode {
+            WheelMode::Zoom => WheelUse::Zoom,
+            WheelMode::Pan => WheelUse::Pan,
+            WheelMode::Page => WheelUse::Page,
+        }
+    }
+}
+
+/// Zoom by a DOM wheel notch `dy` (positive down, logical px) about canvas-local
+/// `at`, translating to the canvas's positive-up cursor-anchored zoom.
 pub fn wheel_zoom(canvas: &mut Canvas, at: (f32, f32), dy: f32) {
     canvas.cursor_moved(at.0, at.1);
     canvas.set_ctrl(true);
-    canvas.wheel(0.0, dy);
+    canvas.wheel(0.0, -dy);
     canvas.set_ctrl(false);
 }
 
@@ -144,10 +180,19 @@ mod tests {
     }
 
     #[test]
-    fn a_plain_wheel_is_the_pages_and_a_modified_one_zooms() {
-        assert_eq!(wheel_use(false, false), WheelUse::Page);
-        assert_eq!(wheel_use(true, false), WheelUse::Zoom);
-        assert_eq!(wheel_use(false, true), WheelUse::Zoom);
+    fn the_wheel_preference_preserves_modified_zoom_in_every_mode() {
+        for (mode, plain) in [
+            (WheelMode::Zoom, WheelUse::Zoom),
+            (WheelMode::Pan, WheelUse::Pan),
+            (WheelMode::Page, WheelUse::Page),
+        ] {
+            assert_eq!(wheel_use(mode, false, false), plain);
+            for (ctrl, meta) in [(true, false), (false, true), (true, true)] {
+                assert_eq!(wheel_use(mode, ctrl, meta), WheelUse::Zoom);
+            }
+        }
+        assert_eq!(WheelMode::default(), WheelMode::Zoom);
+        assert!(WheelMode::parse("unknown").is_err());
     }
 
     #[test]
@@ -157,8 +202,12 @@ mod tests {
         let at = (200.0, 150.0);
         let before = world_at(&canvas, at);
         let zoom = canvas.camera().zoom;
-        wheel_zoom(&mut canvas, at, 40.0);
+        wheel_zoom(&mut canvas, at, -40.0);
         assert!(canvas.camera().zoom > zoom, "wheeling up enlarges");
+        assert!(close(world_at(&canvas, at), before));
+        let enlarged = canvas.camera().zoom;
+        wheel_zoom(&mut canvas, at, 40.0);
+        assert!(canvas.camera().zoom < enlarged, "wheeling down reduces");
         assert!(close(world_at(&canvas, at), before));
     }
 

@@ -83,6 +83,14 @@ impl HostedHistory {
         self.history.revisions.len()
     }
 
+    pub(super) fn envelope_at(
+        &self,
+        index: usize,
+    ) -> Result<graphshell::projection_compile::HostDatasetV1, String> {
+        revision_envelope(&self.history, index)
+            .ok_or_else(|| format!("No disclosed checkpoint {}", index + 1))
+    }
+
     /// The shown checkpoint's text value.
     pub(super) fn checkpoint(&self) -> String {
         checkpoint_text(&self.history, self.index)
@@ -118,6 +126,7 @@ impl TreePage {
     /// the camera and the selection that still exists, and keep a chosen
     /// arrangement.
     pub(super) fn show_checkpoint(&mut self, index: usize) {
+        self.capture_host_selection();
         let Some(hosted) = &mut self.history else {
             return;
         };
@@ -139,6 +148,15 @@ impl TreePage {
                 return;
             },
         };
+        if let Some(pane) = &mut self.presenter {
+            if let Err(error) = hosted
+                .envelope_at(index)
+                .and_then(|envelope| pane.model.rebind(envelope))
+            {
+                hosted.error = Some(error);
+                return;
+            }
+        }
         let view = shown.view;
         {
             let mut canvas = self.shared.canvas.borrow_mut();
@@ -165,6 +183,7 @@ impl TreePage {
         self.dataset = HostedDataset::Loaded(view.relations);
         self.grouping = grouped;
         self.grouping_error = None;
+        self.restore_host_selection();
         if self.physics.layout_id != web_graphs::LAYOUT {
             self.reapply_arrangement();
         }

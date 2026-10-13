@@ -311,17 +311,23 @@ pub struct ContentHost {
     slots: BTreeMap<Uuid, Rc<RefCell<ContentSlot>>>,
 }
 impl Default for ContentHost {
-    fn default() -> Self {
-        Self::new(pelt_core::native::registries(
-            "graphshell.retained-content",
+    fn default() -> Self { Self::with_native_fonts(Vec::new()) }
+}
+
+impl ContentHost {
+    pub fn with_native_fonts(fonts: Vec<Vec<u8>>) -> Self { Self::with_native_presentation(fonts, None) }
+    pub fn with_native_presentation(fonts: Vec<Vec<u8>>, family: Option<String>) -> Self {
+        Self::new(pelt_core::PeltRegistries::new(
+            pelt_core::native::sessions_with_presentation(pelt_core::native::HeldResources::default(), fonts, family),
+            inker::SurfaceEngineRegistry::new(),
             pelt_core::native::route_policy(),
+            "graphshell.retained-content",
+            inker::routing::ENGINE_GENET_LIVERY,
             EngineProfileBinding {
                 user_data_dir: String::new(),
             },
-        ))
+        ).with_host_history().with_host_loading())
     }
-}
-impl ContentHost {
     /// The existing Fleece/Eidetic owner verifies exact held parts without
     /// fetching. Its private sealer and custody backend remain caller supplied.
     pub async fn open_clip(

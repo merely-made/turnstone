@@ -24,4 +24,5 @@ click role:button Open selected in workbench
 wait 1000
 assert snap pelt-sessions == 3
 assert snap pelt-pending == false
+assert snap pelt-producers == 3
 capture pelt_retained_voice_controls

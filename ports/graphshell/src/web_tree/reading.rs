@@ -27,7 +27,6 @@ impl Drop for MediaPlayer {
         let _ = self.element.pause();
     }
 }
-#[derive(Default)]
 pub(super) struct Reading {
     host: ContentHost,
     bindings: BTreeMap<Uuid, Binding>,
@@ -39,6 +38,13 @@ pub(super) struct Reading {
     media_answers: BTreeMap<Uuid, (u64, Rc<RefCell<Option<String>>>)>,
     requests: Vec<(Uuid, String)>,
 }
+impl Default for Reading {
+    fn default() -> Self { Self {
+        host: ContentHost::with_native_presentation(vec![include_bytes!("../../web/GraphshellSans.ttf").to_vec()], Some("Roboto".into())),
+        bindings: Default::default(), registered: Default::default(), statuses: Default::default(), clips: Default::default(), scope: String::new(), players: Default::default(), media_answers: Default::default(), requests: Default::default(),
+    } }
+}
+
 pub(super) fn clip_limits() -> Result<mere_document_lanes::retained_clip::ClipLimits, String> {
     let params = web_sys::UrlSearchParams::new_with_str(
         &web_sys::window()
@@ -152,15 +158,7 @@ impl Reading {
         {
             return Ok((binding.key, slot));
         }
-        static NEXT: std::sync::atomic::AtomicU64 =
-            std::sync::atomic::AtomicU64::new(0x7065_6c74_0000_0000);
-        let key = NEXT
-            .fetch_update(
-                std::sync::atomic::Ordering::Relaxed,
-                std::sync::atomic::Ordering::Relaxed,
-                |n| n.checked_add(1),
-            )
-            .expect("reading producer keys exhausted");
+        let key = ContentProducer::allocate_key();
         let producer = Rc::new(RefCell::new(ContentProducer::new(slot.clone(), key)));
         self.bindings.insert(
             member,
@@ -192,14 +190,11 @@ impl Reading {
             self.registered.remove(&key);
         }
         for binding in self.bindings.values() {
-            if !ctx.producers.contains(binding.key)
-                && ctx
-                    .producers
-                    .register(binding.key, binding.producer.clone(), &[])
-                    .is_ok()
-            {
-                self.registered
-                    .insert(binding.key, binding.producer.clone());
+            if !ctx.producers.contains(binding.key) {
+                match ctx.producers.register(binding.key, binding.producer.clone(), &[]) {
+                    Ok(()) => { self.registered.insert(binding.key, binding.producer.clone()); },
+                    Err(error) => web_sys::console::error_1(&format!("Retained content producer registration refused: {error:?}").into()),
+                }
             }
         }
     }
@@ -359,6 +354,7 @@ impl Reading {
     pub(super) fn set_status(&mut self, id: Uuid, status: String) {
         self.statuses.insert(id, status);
     }
+    pub(super) fn registered_len(&self) -> usize { self.registered.len() }
     pub(super) fn len(&self) -> usize {
         self.host.len()
     }

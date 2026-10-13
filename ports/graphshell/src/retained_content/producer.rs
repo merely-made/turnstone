@@ -25,6 +25,13 @@ pub struct ContentProducer {
     actions: BTreeMap<u64, (pelt_core::PeltSessionIdentity, u64, DocumentA11yNodeId)>,
 }
 impl ContentProducer {
+    /// Keys fit the host's 62-bit producer namespace and browser integer range.
+    pub fn allocate_key() -> u64 {
+        static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0x0000_7065_0000_0000);
+        NEXT.fetch_update(std::sync::atomic::Ordering::Relaxed, std::sync::atomic::Ordering::Relaxed,
+            |n| n.checked_add(1).filter(|next| *next < (1_u64 << 53)))
+            .expect("content producer keys exhausted")
+    }
     pub fn new(slot: Rc<RefCell<ContentSlot>>, raster_key: u64) -> Self {
         Self {
             slot,
@@ -71,27 +78,30 @@ impl TextureProducer for ContentProducer {
         })
     }
     fn render(&mut self, cx: &ProducerContext<'_>) -> Option<ProducedTexture> {
-        let scene = self.scene(cx.frame).ok()?;
+        self.render_checked(cx).ok().flatten()
+    }
+    fn render_checked(&mut self, cx: &ProducerContext<'_>) -> Result<Option<ProducedTexture>, genet_render_host::RasterizeFailure> {
+        let Ok(scene) = self.scene(cx.frame) else { return Ok(None); };
         let [width, height] = cx.frame.physical_size;
-        let (texture, view) = cx.core.rasterize_scaled_for(
+        let (texture, view) = cx.core.try_rasterize_scaled_for(
             self.raster_key,
             &scene,
             width,
             height,
             netrender::ColorLoad::Clear(wgpu::Color::TRANSPARENT),
             cx.frame.layout_scale,
-        );
+        )?;
         self.texture = Some(texture);
         self.generation = self
             .generation
             .checked_add(1)
             .expect("content producer generation exhausted");
-        Some(ProducedTexture {
+        Ok(Some(ProducedTexture {
             view,
             generation: self.generation,
             alpha: SourceAlpha::Straight,
             encoding: SourceEncoding::Srgb,
-        })
+        }))
     }
     fn suspend(&mut self) {
         self.texture = None;

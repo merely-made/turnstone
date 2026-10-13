@@ -742,6 +742,81 @@ impl Product for TreeLane {
                     .unwrap_or_else(|| "unavailable".into()),
             )
             .with_field("picked", page.picked.clone().unwrap_or_default())
+            .with_field("presenter", page.presenter.is_some().to_string())
+            .with_field(
+                "canvas-selection-count",
+                canvas.selected_members().len().to_string(),
+            )
+            .with_field(
+                "presenter-selection-count",
+                page.presenter
+                    .as_ref()
+                    .map_or(0, |p| p.model.selected.len())
+                    .to_string(),
+            )
+            .with_field(
+                "presenter-inspector-open",
+                page.presenter
+                    .as_ref()
+                    .is_some_and(|p| p.model.inspected.is_some())
+                    .to_string(),
+            )
+            .with_field(
+                "presenter-hidden-count",
+                page.presenter
+                    .as_ref()
+                    .map_or(0, |p| {
+                        p.model
+                            .selected
+                            .iter()
+                            .filter(|id| !p.model.visible.contains_key(*id))
+                            .count()
+                    })
+                    .to_string(),
+            )
+            .with_field(
+                "presenter-selected",
+                page.presenter
+                    .as_ref()
+                    .map(|p| {
+                        p.model
+                            .selected
+                            .iter()
+                            .cloned()
+                            .collect::<Vec<_>>()
+                            .join(",")
+                    })
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "presenter-inspected",
+                page.presenter
+                    .as_ref()
+                    .and_then(|p| p.model.inspected.clone())
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "presenter-hidden",
+                page.presenter
+                    .as_ref()
+                    .map(|p| {
+                        p.model
+                            .selected
+                            .iter()
+                            .filter(|id| !p.model.visible.contains_key(*id))
+                            .cloned()
+                            .collect::<Vec<_>>()
+                            .join(",")
+                    })
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "presenter-notice",
+                page.presenter
+                    .as_ref()
+                    .map(|p| p.model.notice.clone())
+                    .unwrap_or_default(),
+            )
             .with_field("nodes", page.nodes.to_string())
             .with_field("source", page.source.clone())
             // The host dataset (S1): its state, the edges the canvas draws,
@@ -789,6 +864,9 @@ impl Product for TreeLane {
             // The page's gestures and motion preference.
             .with_field("reduced-motion", self.shared.reduced_motion().to_string())
             .with_field("gesture", self.shared.gestures.borrow().probe.clone())
+            .with_field("wheel-mode", self.shared.wheel_mode.get().name())
+            .with_field("commands-open", page.commands.open.is_some().to_string())
+            .with_field("command-last", page.commands.last.clone())
             .with_field(
                 "wheel-use",
                 format!("{:?}", self.shared.gestures.borrow().last_wheel),
@@ -1471,6 +1549,7 @@ fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> Pr
             "pelt-pending",
             page.shared.reading.borrow().busy().to_string(),
         )
+        .with_field("pelt-producers", page.shared.reading.borrow().registered_len().to_string())
         .with_field("forme-placed", placed.to_string())
         .with_field("forme-locked", pane.current().locked.to_string())
         .with_field("forme-visible", pane.current().visible.to_string())
