@@ -1,0 +1,27 @@
+[
+  {
+    "command": [
+      "node",
+      "ports/graphshell/web/extension/smoke-capture-model.mjs"
+    ],
+    "exit_code": 0,
+    "output": "Graphshell capture policy smoke passed\n"
+  },
+  {
+    "command": [
+      "node",
+      "ports/graphshell/web/extension/smoke-capture-background.mjs"
+    ],
+    "exit_code": 0,
+    "output": "Graphshell capture background smoke passed\n"
+  },
+  {
+    "command": [
+      "python",
+      "-B",
+      "scripts/test_firefox_history_export.py"
+    ],
+    "exit_code": 0,
+    "output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.004s\n\nOK\n"
+  }
+]

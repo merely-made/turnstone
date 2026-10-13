@@ -1,0 +1,347 @@
+{
+  "a_to_b": [
+    {
+      "at_ms": 1001,
+      "child": {
+        "scope": {
+          "generation": "history-1",
+          "product": "firefox",
+          "profile": "p"
+        },
+        "visit_id": "2"
+      },
+      "from_url": "https://disk-history.example/a",
+      "kind": "followed_link",
+      "parent": {
+        "scope": {
+          "generation": "history-1",
+          "product": "firefox",
+          "profile": "p"
+        },
+        "visit_id": "1"
+      },
+      "raw_transition": "link",
+      "to_url": "https://disk-history.example/b"
+    }
+  ],
+  "a_to_c": [
+    {
+      "at_ms": 1002,
+      "child": {
+        "scope": {
+          "generation": "history-1",
+          "product": "firefox",
+          "profile": "p"
+        },
+        "visit_id": "3"
+      },
+      "from_url": "https://disk-history.example/a",
+      "kind": "followed_link",
+      "parent": {
+        "scope": {
+          "generation": "history-1",
+          "product": "firefox",
+          "profile": "p"
+        },
+        "visit_id": "1"
+      },
+      "raw_transition": "link",
+      "to_url": "https://disk-history.example/c"
+    }
+  ],
+  "b_to_b": [
+    {
+      "at_ms": 1003,
+      "child": {
+        "scope": {
+          "generation": "history-1",
+          "product": "firefox",
+          "profile": "p"
+        },
+        "visit_id": "4"
+      },
+      "from_url": "https://disk-history.example/b",
+      "kind": "followed_link",
+      "parent": {
+        "scope": {
+          "generation": "history-1",
+          "product": "firefox",
+          "profile": "p"
+        },
+        "visit_id": "2"
+      },
+      "raw_transition": "link",
+      "to_url": "https://disk-history.example/b"
+    }
+  ],
+  "graph": "040f956b-c3de-488c-aabd-df9c834cc89b",
+  "ledger": {
+    "pending": [],
+    "snapshot": {
+      "entries": [
+        {
+          "first_seen_at_ms": 1000,
+          "key": "https://disk-history.example/a",
+          "last_seen_at_ms": 1000,
+          "payload": "https://disk-history.example/a",
+          "privacy": "LocalOnly",
+          "visit_count": 2
+        },
+        {
+          "first_seen_at_ms": 1002,
+          "key": "https://disk-history.example/c",
+          "last_seen_at_ms": 1002,
+          "payload": "https://disk-history.example/c",
+          "privacy": "LocalOnly",
+          "visit_count": 1
+        },
+        {
+          "first_seen_at_ms": 1001,
+          "key": "https://disk-history.example/b",
+          "last_seen_at_ms": 1003,
+          "payload": "https://disk-history.example/b",
+          "privacy": "LocalOnly",
+          "visit_count": 2
+        }
+      ],
+      "owners": [
+        {
+          "creator": null,
+          "current": null,
+          "identity": {
+            "generation": "history-1",
+            "product": "firefox",
+            "profile": "p"
+          },
+          "origin": null,
+          "owned_visits": [
+            1,
+            0,
+            3,
+            4
+          ],
+          "pending_origin_parent": null
+        },
+        {
+          "creator": null,
+          "current": null,
+          "identity": {
+            "generation": "history-1",
+            "product": "firefox",
+            "profile": "another-profile"
+          },
+          "origin": null,
+          "owned_visits": [
+            2
+          ],
+          "pending_origin_parent": null
+        }
+      ],
+      "visits": [
+        {
+          "bindings": [
+            {
+              "forward_child": null,
+              "last_accessed_at_ms": 1000,
+              "owner": 0
+            }
+          ],
+          "children": [
+            1,
+            3
+          ],
+          "context": {
+            "acquisition_device": "personae://device/browser",
+            "at_ms": 1000,
+            "identity": {
+              "scope": {
+                "generation": "history-1",
+                "product": "firefox",
+                "profile": "p"
+              },
+              "visit_id": "1"
+            },
+            "intake_at_ms": 2000,
+            "original_unix_micros": null,
+            "parent": {
+              "kind": "root"
+            },
+            "persona": "personae://persona/capture",
+            "raw_transition": "link",
+            "source_is_local": null,
+            "title": "1 title",
+            "url": "https://disk-history.example/a"
+          },
+          "created_at_ms": 1000,
+          "entry": 0,
+          "inbound": {
+            "at_ms": 1000,
+            "kind": "LinkClick"
+          },
+          "parent": null
+        },
+        {
+          "bindings": [
+            {
+              "forward_child": null,
+              "last_accessed_at_ms": 1002,
+              "owner": 0
+            }
+          ],
+          "children": [],
+          "context": {
+            "acquisition_device": "personae://device/browser",
+            "at_ms": 1002,
+            "identity": {
+              "scope": {
+                "generation": "history-1",
+                "product": "firefox",
+                "profile": "p"
+              },
+              "visit_id": "3"
+            },
+            "intake_at_ms": 2000,
+            "original_unix_micros": null,
+            "parent": {
+              "kind": "visit",
+              "visit_id": "1"
+            },
+            "persona": "personae://persona/capture",
+            "raw_transition": "link",
+            "source_is_local": null,
+            "title": "3 title",
+            "url": "https://disk-history.example/c"
+          },
+          "created_at_ms": 1002,
+          "entry": 1,
+          "inbound": {
+            "at_ms": 1002,
+            "kind": "LinkClick"
+          },
+          "parent": 0
+        },
+        {
+          "bindings": [
+            {
+              "forward_child": null,
+              "last_accessed_at_ms": 1000,
+              "owner": 1
+            }
+          ],
+          "children": [],
+          "context": {
+            "acquisition_device": "personae://device/browser",
+            "at_ms": 1000,
+            "identity": {
+              "scope": {
+                "generation": "history-1",
+                "product": "firefox",
+                "profile": "another-profile"
+              },
+              "visit_id": "1"
+            },
+            "intake_at_ms": 2000,
+            "original_unix_micros": null,
+            "parent": {
+              "kind": "root"
+            },
+            "persona": "personae://persona/capture",
+            "raw_transition": "link",
+            "source_is_local": null,
+            "title": "1 title",
+            "url": "https://disk-history.example/a"
+          },
+          "created_at_ms": 1000,
+          "entry": 0,
+          "inbound": {
+            "at_ms": 1000,
+            "kind": "LinkClick"
+          },
+          "parent": null
+        },
+        {
+          "bindings": [
+            {
+              "forward_child": null,
+              "last_accessed_at_ms": 1001,
+              "owner": 0
+            }
+          ],
+          "children": [
+            4
+          ],
+          "context": {
+            "acquisition_device": "personae://device/browser",
+            "at_ms": 1001,
+            "identity": {
+              "scope": {
+                "generation": "history-1",
+                "product": "firefox",
+                "profile": "p"
+              },
+              "visit_id": "2"
+            },
+            "intake_at_ms": 1000,
+            "original_unix_micros": null,
+            "parent": {
+              "kind": "visit",
+              "visit_id": "1"
+            },
+            "persona": "personae://persona/capture",
+            "raw_transition": "link",
+            "source_is_local": null,
+            "title": "2 title",
+            "url": "https://disk-history.example/b"
+          },
+          "created_at_ms": 1001,
+          "entry": 2,
+          "inbound": {
+            "at_ms": 1001,
+            "kind": "LinkClick"
+          },
+          "parent": 0
+        },
+        {
+          "bindings": [
+            {
+              "forward_child": null,
+              "last_accessed_at_ms": 1003,
+              "owner": 0
+            }
+          ],
+          "children": [],
+          "context": {
+            "acquisition_device": "personae://device/browser",
+            "at_ms": 1003,
+            "identity": {
+              "scope": {
+                "generation": "history-1",
+                "product": "firefox",
+                "profile": "p"
+              },
+              "visit_id": "4"
+            },
+            "intake_at_ms": 2000,
+            "original_unix_micros": null,
+            "parent": {
+              "kind": "visit",
+              "visit_id": "2"
+            },
+            "persona": "personae://persona/capture",
+            "raw_transition": "link",
+            "source_is_local": null,
+            "title": "4 title",
+            "url": "https://disk-history.example/b"
+          },
+          "created_at_ms": 1003,
+          "entry": 2,
+          "inbound": {
+            "at_ms": 1003,
+            "kind": "LinkClick"
+          },
+          "parent": 3
+        }
+      ]
+    }
+  }
+}
