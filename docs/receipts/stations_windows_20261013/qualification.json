@@ -1,0 +1,133 @@
+{
+  "date": "2026-10-13",
+  "status": "Shared floating/docking and per-window accessibility implementation drafts; native and human AT acceptance open",
+  "base": "74325ab77c49a3d6e12988dc6812823c8a727ea8",
+  "upstream": {
+    "turnstone_parent": "74325ab77c49a3d6e12988dc6812823c8a727ea8",
+    "mere_design_checkout": "5b3442dd",
+    "supplier_pins": "Unchanged from adopted parent: Mere 0d1dc192, Genet 2c7ef73b; shared native Pelt/retained-clip baseline retained"
+  },
+  "portable": {
+    "status": "passed",
+    "tests": 69,
+    "module_test_counts": {
+      "foreign_a11y": 18,
+      "scenario": 15,
+      "tests": 17,
+      "window_projection": 2,
+      "workspace": 12,
+      "workspace_store": 5
+    },
+    "command": "cargo test --locked --offline --manifest-path docs/receipts/stations_windows_20261013/harness/Cargo.toml --lib",
+    "log": "checks/portable-tests.log",
+    "scope": "Actual generic custody/sidecar, frame_controls/frame_a11y/frame_style/scenario, window_projection and foreign_a11y modules. Real shared Cambium/Livery/neutral semantics, current AccessKit consumer and pinned Windows/Unix consumer libraries. No Shell/App native execution or OS adapter/human AT proof; native fixtures parse only."
+  },
+  "linux_source": {
+    "status": "passed",
+    "command": "CARGO_INCREMENTAL=0 cargo check --locked --offline --lib --bin turnstone",
+    "warnings": 95,
+    "log": "checks/linux-source-check.log",
+    "scope": "Default-feature Linux library/binary typecheck; not a native run, release build, optional/platform feature build or whole-library test run. The final added workspace_store regression is cfg(test) only and CPU-executed; production code did not change after this check. Warning-baseline equivalence not compared."
+  },
+  "supplier_closure": "supplier-closure.json",
+  "contracts": [
+    "One shared Workspace station authority; descriptors travel with host payloads and are checked before provider use",
+    "Transfers preserve identity, payload, descriptor, proportional rectangle, constraints, pin and visibility; destination z is window-local; both spaces validate before a move",
+    "Version 2 writes preserve floats/descriptors; version 1 loads remain readable; future/corrupt current never revives legacy files",
+    "Compatible live blueprints import once; invalid/unsupported legacy shapes refuse and whole-window save preflight restores former authorities",
+    "Measured Surface slots are the only body apertures; floated bodies and shared furniture interleave above tiled bodies via one retained frame texture",
+    "Explicit handle movement and Ctrl-docking; Alt move/resize and save; appearance/session/window-size capture refusals; no-op raise/rect changes do not save",
+    "Lens adapters install while hidden; each owns event delivery, activation snapshot, action queue, route table, namespace and replay",
+    "Window instance/session namespaces remap host references and selection; routes revalidate owner visibility, frame admission or provider generation/source",
+    "One producer mailbox with shared immutable retained nodes; each window keeps independent publication/mount/replay state",
+    "Repeated producer semantics choose focused or deterministic first appearance; departures detach before arrivals; retirement/navigation withdraw all mirrors"
+  ],
+  "remaining_gates": [
+    "Execute and review frame_stations, matching reopen, and isolated frame_lens_accessibility native fixtures; retain original A5 scenario intent/captures",
+    "Run native App workspace_stations and contributed_pane_arms regressions on capable hardware; their source is supplied but not executed locally",
+    "Physical CtrlF6/Tab/Escape/Alt/Ctrl-drag interactions across primary and multiple lenses; editor/media/scroll continuity",
+    "Real Narrator/VoiceOver/Orca/AT-SPI activation, focus, announcements and stale queued actions; queued fixture delivery is not OS proof",
+    "Repeated content appearances and ordered publication swaps; activation/deactivation during batches; close/reopen/profile/session changes",
+    "Lens native-engine pixels and body keyboard/input delivery, platform/optional-feature builds and full consumer tests",
+    "Authored/constrained float layout, shadows, narrow/DPI changes, drop-region/overlay previews, inline Component bodies and presented frame/performance acceptance"
+  ],
+  "attempt_history": [
+    "Initial bounded stations-only library/binary check passed",
+    "First portable harness compile found UxTree has no Clone; the test snapshot explicitly copies nodes",
+    "Full incremental source checks hit the 1280 MiB cgroup, with OOM results retained; disabling incremental compilation passed under the same cap",
+    "Expanded actual-source CPU suite passed 69 tests; no production edit followed successful final source qualification"
+  ],
+  "resource_controls": {
+    "cargo_jobs": 1,
+    "memory_max_mib": {
+      "portable": 1024,
+      "source": 1280
+    },
+    "swap_max_mib": 0,
+    "guard_min_available_mib": 256,
+    "source_incremental": false,
+    "setup": "Existing task-local development headers/runtime; no system install or user-process termination"
+  },
+  "documentation": "checks/doc-links.json",
+  "hash_policy": "Source SHA256 normalizes CRLF to LF; proof logs hash exact bytes",
+  "source_sha256_lf": {
+    ".gitattributes": "fc2a715e6ca9f004b1bcdfd7aa02df924fa714ff1b8f5e723a27c11bbbfe3af6",
+    "Cargo.lock": "41d5c6b10289017dee86e14fa50d1fe5dac002802e51d4017b2f020bc6fc6895",
+    "Cargo.toml": "a5f3fb881dbf4c8b0e100acebb18cf9f42b47843170101b08d796851090a3dda",
+    "design_docs/2026-08-08_pane_registry_and_graph_panes_plan.md": "15eb4e2e1636b05a5e6b91078abb4d1a737ba7fd28b8e2f89824af7ae9b592b4",
+    "design_docs/DOC_README.md": "04d7f2f372bba199dbf86926e3b9ea812f6113a74701fbfeafa73fef042af513",
+    "docs/receipts/stations_windows_20261013/harness/Cargo.lock": "cfca955f122f877b20b09dceafca5ee55004a13cf80982db148643977b987e77",
+    "docs/receipts/stations_windows_20261013/harness/Cargo.toml": "09ba5266dd7b4d309d6e2455fa88979e9bc8514e129418770416b5b36e16da39",
+    "docs/receipts/stations_windows_20261013/harness/src/lib.rs": "370f20cfb7d56de2ad4ad14264da04d6be01a16a6ea44a41763aec6c9339b513",
+    "scenarios/a5_floating_pane.scn": "70bea8dc1b19ebd41e115486a1945ef129c9c0a8232f144c9753e96714d0c531",
+    "scenarios/frame_controls_accessibility.scn": "405e1dbb1c8bd5c8b845df04ae3d8ac21264d5255a5650d9405f7c30359e56f2",
+    "scenarios/frame_lens_accessibility.scn": "c63240a8b20b071a6a71455dd78d775f04c5466287c6d4ab5c833cc94195fc5b",
+    "scenarios/frame_stations.scn": "a977122e397710c7bf8bfa9f4ce4812a6237fde1f4b3e2c866f93d49d095b734",
+    "scenarios/frame_stations_reopen.scn": "6b07b384a1d58b4f65e5c6f1744cca929f2e6d3d7b260a301b8cf46798df83b0",
+    "src/a11y.rs": "7bf57970300326ee22cb0d030e4eb4833bacff3c7acaad43191e9144654958a9",
+    "src/app/contributed_pane_arms.rs": "c35c11768ad19c852d040be7f0f759fa775be7ce022566ebf0d8adc3b6c1d71a",
+    "src/app/mod.rs": "348589b02135175dd6db27408f438523053dd5976b61f8263e33bd3bc65fa959",
+    "src/app/outer_workspace_arms.rs": "7665fad3760768f929c2e0540bc3b8991b634ed89691912d6b24d45594e22bfd",
+    "src/app/pane_arms.rs": "76e64050b459a86752849c787613bda9791f5dfa0667078424a28453b0a4824b",
+    "src/app/workspace_stations.rs": "8409e261707a2c3f4cee0558bc5a7ae5b6ba8878497510bf290d4048d85ea9c2",
+    "src/contributed_a11y.rs": "bd362f033d1cbdcf142f0b1fbdee23bcd24908f68c3f024b2bcfa9369500d2c0",
+    "src/foreign_a11y.rs": "65238509a134c3e158e49a0466ea1d736dce4f357a3ae6c4d8ffdf23f394ea66",
+    "src/frame_a11y.rs": "58ac55b139b08bf313d74e6b96371e971afe7a09c571d0d555d943975ae93bab",
+    "src/frame_controls.rs": "f715c3a3c980897776a78636d3ec3425bc981f07aaddc050384151c3c138eb06",
+    "src/frame_timing.rs": "1fc6aee1deafdef4cdf2a4409b015f01226d5bc7b41e3acc7b2322726b523111",
+    "src/lib.rs": "39918e0da5761b0206038be4baf6b534581022c5d90e9926f8455cd20d5cf903",
+    "src/observe.rs": "c5ee7eaf1208e35a2ce5c945f6d7fcdb1e99e530b78c9742e4f129eff1903790",
+    "src/outer_frame.rs": "23ac73d7736555229cc6415e3f50d91ca0dfeda2a52e61af126fb23041796772",
+    "src/panes/layout.rs": "aa0146fac628873746ef7a7f092fa93bfcddd2aae651335dcfa9b386af52ecb7",
+    "src/panes/mod.rs": "4d96cc17866253270bcbd6d7571dfc2da5789a1ebfbea648d501f9b9c180cde6",
+    "src/panes/projection.rs": "bb46c1e13b8f080d0b1cc96afdeafa1ee9fb6b1ecd8366ca338f76f097717263",
+    "src/panes/workspace.rs": "ac7a46b492180a43dae3441dcb5f3cf430bbf888aac1558231d3da5a3b047b34",
+    "src/panes/workspace_blueprint.rs": "6fae697372cd137789dd14986f07ef0c5e9e0d5723e592c853991f620cf96c13",
+    "src/panes/workspace_bridge.rs": "5a84a886e608483ff547eb1448a8af295bdb0dbf56a62363974ad36988be4b8f",
+    "src/panes/workspace_store.rs": "27e21c7d8ac666f7600d6d397339bc13b14f3d51360328bacc0c4f7d88944f0f",
+    "src/shell/drive.rs": "c24dddc3402e4a521ce19044644b7403f3606fd494341b4734ccc1b518c4a2f5",
+    "src/shell/effects.rs": "8977011898e7904a50826ff97a7195bf7cc723cf982f1324884ae35a41ff636c",
+    "src/shell/events.rs": "2382e06e54483f691eb09458f5d2f2e4bc657c7815a7e4d58a215a437b4e2f5a",
+    "src/shell/foreign_a11y.rs": "9deb832b5a5a24aa4ef618b115fe70c21c7e558df4f6ed73a8d1d4b008b295f1",
+    "src/shell/frame_keys.rs": "84135f9b4a13e38ce49fc71e1c860c32a3eb44393223071ebeee5f849f695a89",
+    "src/shell/input.rs": "96b7b03266299161083f0d44cb04b77ca8b414d099098de4724fb42d585d68a2",
+    "src/shell/lens.rs": "743f856fb47993d7c8989eb5e8333ba133fd832d4e9c6a82961846920a87514c",
+    "src/shell/mod.rs": "464f7a64321cbe7a923037120881e990618ca6f9f4d3a6c5ef0784f8fc306d8f",
+    "src/shell/outer_workspace.rs": "dcaf194ba6fa89614c0b2c2580b7809f5d832a6d496a99d4d4106881a9337a8c",
+    "src/shell/render.rs": "ea85bab642ffae2746a6564170bebbb786c71711a5e992876d07e5588ca47052",
+    "src/shell/window_a11y.rs": "47ddba4b1c42803760848e78a333c87edbe06ba35dcbf743f070638bb3cba7dc",
+    "src/surface.rs": "695974ed00506cb133a3b9b0113fe63dde76222537f5a7d22a8ca817e4caa631",
+    "src/window_projection.rs": "db81f9cf04a2cbd3e0dee27bd4856ca6d5a24d87d67f4009e8f9f279f4b76a23"
+  },
+  "proof_sha256_raw": {
+    "checks/doc-links.json": "35a1f14cf45c723645ba74a492dd271f273c88c7384c81f293cea6bb7220615c",
+    "checks/incremental-scope-oom-r2.log": "a9a66cc01403e29402afaef9c0c03870204ee33794bbc592dd331506ac701afe",
+    "checks/incremental-scope-oom-r3.log": "3714b00d893b8d80b27d9c93c0accbc626ecaaacac2de1e999fe9801b05ca157",
+    "checks/initial-portable-harness.log": "f5919b35e1e1de903b8412c44edb10e289920c03ab1a807a0b3b6042455e6164",
+    "checks/initial-stations-source-check.log": "97b473c19dde64b30d0d328f6b496a37a34d0f432aeaa821f9352d072ade2e82",
+    "checks/linux-source-check.log": "7b5f22840a114e0bbec376fc6c9b4358533b61577ee9a428e5c981f5756bd0f0",
+    "checks/portable-tests.log": "263fd8bde6b50d357b270025e8f08316b4679b4fe6c14ae57cce64bf1b1e256a",
+    "checks/resource-attempts.json": "f747f744a348cdd82b0423fe5b16a9be06c160a15a24a64537b314e531ffc2f6"
+  },
+  "supplier_closure_sha256_lf": "e8bb14504cb11cc6e1d25549c68ccf426112bfdaab186ce652731b216eb611bf"
+}

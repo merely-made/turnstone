@@ -7,9 +7,7 @@
 //! Product-neutral admission of provider-owned panes.
 
 use crate::action::{Effect, SpaceRef};
-use crate::panes::{
-    GraphId, InsertSide, PaneContent, PaneId, PaneKindId, PaneNode, PaneSource, PaneSpec, SplitAxis,
-};
+use crate::panes::{GraphId, PaneContent, PaneId, PaneKindId, PaneSource, PaneSpec};
 
 use super::App;
 
@@ -35,31 +33,16 @@ impl App {
         let Some(anchor) = anchor else {
             return vec![Effect::Redraw];
         };
-        let Some(legacy) = self.space(space).cloned() else {
-            return vec![Effect::Redraw];
-        };
-        let Some(anchor_path) = crate::pane::path_of(&legacy, anchor) else {
-            return vec![Effect::Redraw];
-        };
-        let pane = PaneId(self.next_pane_id);
-        let content = PaneContent::Registered(kind.clone());
-        let mut next_legacy = legacy;
-        if !next_legacy.summon_leaf(
-            &anchor_path,
-            InsertSide::Right,
-            PaneNode::Leaf {
-                pane_id: pane,
-                content: content.clone(),
-                graph_id: GraphId::nil(),
-            },
-        ) {
+        if let Err(reason) = self.ensure_shared_space(space) {
+            self.events
+                .push(crate::observe::AppEvent::InteractionMissed {
+                    what: "summon-pane",
+                    target: reason,
+                });
             return vec![Effect::Redraw];
         }
-
-        let mut blueprint = self
-            .blueprint_space(space)
-            .cloned()
-            .unwrap_or_else(|| crate::panes::blueprint_from_frisket(self.space(space).unwrap()));
+        let pane = PaneId(self.next_pane_id);
+        let content = PaneContent::Registered(kind.clone());
         let spec = PaneSpec {
             id: pane,
             kind,
@@ -70,26 +53,41 @@ impl App {
                 content.kind_id().as_str()
             )),
         };
-        if blueprint
-            .insert_tiled_beside(spec, anchor, SplitAxis::Horizontal, true)
-            .is_err()
+        let Ok(descriptor) = serde_json::to_value(spec) else {
+            return vec![Effect::Redraw];
+        };
+        let Some(frame) = self
+            .space_mut(space)
+            .and_then(|layout| layout.workspace_mut())
+        else {
+            return vec![Effect::Redraw];
+        };
+        let target = if frame
+            .workspace
+            .tiled()
+            .find(workbench::TileId(anchor.0))
+            .is_some()
         {
+            anchor.0
+        } else {
+            frame
+                .workspace
+                .tiled()
+                .tiles()
+                .last()
+                .map(|t| t.id.0)
+                .unwrap_or(anchor.0)
+        };
+        if !frame.insert_beside(
+            target,
+            workbench::Edge::Right,
+            pane.0,
+            content.tag().into(),
+            (content, GraphId::nil()),
+        ) {
             return vec![Effect::Redraw];
         }
-
-        match space {
-            SpaceRef::Primary => self.frisket = next_legacy,
-            SpaceRef::Lens(ordinal) => {
-                let Some(slot) = self.lenses.get_mut(ordinal) else {
-                    return vec![Effect::Redraw];
-                };
-                let Some(slot) = slot.as_mut() else {
-                    return vec![Effect::Redraw];
-                };
-                *slot = next_legacy;
-            }
-        }
-        self.restore_blueprint_space(space, blueprint);
+        frame.descriptors.insert(pane.0, descriptor);
         self.next_pane_id += 1;
         self.active_pane = Some(pane);
         self.index_pane_spaces();
@@ -129,12 +127,14 @@ mod tests {
             app.pane_content(pane),
             Some(PaneContent::Registered(kind)) if kind.as_str() == "test.contributed"
         ));
-        let space = app
-            .blueprint_space(SpaceRef::Primary)
-            .expect("summon promotes the active space");
-        let spec = space.pane(pane).expect("matching durable spec");
+        assert!(app.blueprint_space(SpaceRef::Primary).is_none());
+        let frame = app.frisket.outer_workspace().unwrap();
+        let spec: PaneSpec = serde_json::from_value(frame.descriptors[&pane.0].clone()).unwrap();
         assert_eq!(spec.source, source);
-        assert_eq!(space.tiled_panes().last(), Some(&pane));
+        assert_eq!(
+            frame.workspace.tiled().tiles().last().map(|t| t.id.0),
+            Some(pane.0)
+        );
     }
 
     #[test]
@@ -178,8 +178,9 @@ mod tests {
         let pane = app.active_pane.expect("lens contribution is active");
         assert_eq!(app.space_of(pane), Some(SpaceRef::Lens(0)));
         assert!(
-            app.blueprint_space(SpaceRef::Lens(0))
-                .is_some_and(|space| space.pane(pane).is_some())
+            app.space(SpaceRef::Lens(0))
+                .and_then(|s| s.outer_workspace().ok())
+                .is_some_and(|frame| frame.descriptors.contains_key(&pane.0))
         );
     }
 

@@ -232,12 +232,11 @@ fn native_surface_lens_floating_tile_keeps_actual_appearance() {
     let plan = lens_content_plan(&app, &contents, 0, 800, 600);
     let moved = content(&plan, node);
     assert!(
-        app.blueprint_space(crate::action::SpaceRef::Lens(0))
-            .unwrap()
-            .floating
-            .iter()
-            .any(|pane| Some(pane.pane) == app.active_pane)
+        app.lenses[0].as_ref().unwrap().outer_workspace().unwrap().workspace
+            .floating().iter().any(|float| Some(crate::panes::PaneId(float.tile.id.0)) == app.active_pane)
     );
+    let frame = plan.iter().find(|s| matches!(s.kind, crate::surface::SurfaceKind::FloatFrame(_))).expect("shared float frame is present");
+    assert!(moved.rect.y > frame.rect.y, "content keeps the retained header aperture");
     sync(&mut contents, &plan, 1);
     assert_eq!(contents.pool.placement(&moved.id).unwrap().window, 1);
 }

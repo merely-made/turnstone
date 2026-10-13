@@ -276,11 +276,10 @@ pub struct App {
     /// `frisket` above. Persisted at `windows.json` (rung 7 depth), so the
     /// windows come back as windows.
     pub lenses: Vec<Option<FrisketLayout>>,
-    /// The A5 station authority for a space after it first enters the floating
-    /// layer. Frisket remains the pre-A8 durable payload and renderer lookup;
-    /// this blueprint is the live compositor topology for that active space.
+    /// Legacy live station authority, imported transactionally into Workspace.
+    /// Retained only when an unsupported or invalid legacy shape refuses import.
     pub(crate) primary_blueprint: Option<SpaceBlueprint>,
-    /// The matching A5 bridge state for lens spaces. Tombstones mirror
+    /// Matching legacy import state for lens spaces. Tombstones mirror
     /// `lenses`, keeping window ordinals stable while a lens is closed.
     pub(crate) lens_blueprints: Vec<Option<SpaceBlueprint>>,
     /// Which Roster tab is showing. A MIRROR, not the truth: cambium's tab strip
@@ -927,22 +926,11 @@ impl App {
         ordinal
     }
 
-    /// The live blueprint for a window space, after an A5 operation has
-    /// promoted that space out of legacy Frisket presentation.
+    /// A legacy station authority still awaiting supported Workspace import.
     pub(crate) fn blueprint_space(&self, space: SpaceRef) -> Option<&SpaceBlueprint> {
         match space {
             SpaceRef::Primary => self.primary_blueprint.as_ref(),
             SpaceRef::Lens(ordinal) => self.lens_blueprints.get(ordinal).and_then(Option::as_ref),
-        }
-    }
-
-    fn blueprint_space_mut(&mut self, space: SpaceRef) -> Option<&mut SpaceBlueprint> {
-        match space {
-            SpaceRef::Primary => self.primary_blueprint.as_mut(),
-            SpaceRef::Lens(ordinal) => self
-                .lens_blueprints
-                .get_mut(ordinal)
-                .and_then(Option::as_mut),
         }
     }
 
@@ -953,79 +941,13 @@ impl App {
         }
     }
 
-    fn restore_blueprint_space(&mut self, space: SpaceRef, blueprint: SpaceBlueprint) {
-        match space {
-            SpaceRef::Primary => self.primary_blueprint = Some(blueprint),
-            SpaceRef::Lens(ordinal) => {
-                while self.lens_blueprints.len() <= ordinal {
-                    self.lens_blueprints.push(None);
-                }
-                self.lens_blueprints[ordinal] = Some(blueprint);
-            }
-        }
-    }
-
-    /// Transfer a floating station between two live blueprint spaces. The
-    /// legacy trees move their payloads separately; this preserves the float
-    /// rectangle and z-scoped station that the compositor is actually using.
-    pub(crate) fn transfer_floating_blueprint(
-        &mut self,
-        source: SpaceRef,
-        destination: SpaceRef,
-        pane: PaneId,
-    ) -> bool {
-        if source == destination || self.ensure_blueprint_space(destination).is_none() {
-            return false;
-        }
-        let (Some(mut source_blueprint), Some(mut destination_blueprint)) = (
-            self.take_blueprint_space(source),
-            self.take_blueprint_space(destination),
-        ) else {
-            return false;
-        };
-        let moved = source_blueprint
-            .tear_out_floating_pane(pane, &mut destination_blueprint)
-            .is_ok();
-        self.restore_blueprint_space(source, source_blueprint);
-        self.restore_blueprint_space(destination, destination_blueprint);
-        moved
-    }
-
-    /// Start using the blueprint projection for this space. The conversion is
-    /// delayed until an A5 station gesture occurs so ordinary Frisket-only
-    /// sessions retain their established persistence behavior.
-    pub(crate) fn ensure_blueprint_space(
-        &mut self,
-        space: SpaceRef,
-    ) -> Option<&mut SpaceBlueprint> {
-        match space {
-            SpaceRef::Primary => {
-                if self.primary_blueprint.is_none() {
-                    self.primary_blueprint =
-                        Some(crate::panes::blueprint_from_frisket(&self.frisket));
-                }
-                self.primary_blueprint.as_mut()
-            }
-            SpaceRef::Lens(ordinal) => {
-                let legacy = self.lenses.get(ordinal)?.as_ref()?;
-                while self.lens_blueprints.len() <= ordinal {
-                    self.lens_blueprints.push(None);
-                }
-                if self.lens_blueprints[ordinal].is_none() {
-                    self.lens_blueprints[ordinal] =
-                        Some(crate::panes::blueprint_from_frisket(legacy));
-                }
-                self.lens_blueprints[ordinal].as_mut()
-            }
-        }
-    }
-
     /// A pointer press promotes the clicked float above its siblings. Tiled
     /// panes deliberately do not instantiate a blueprint by being clicked.
     pub(crate) fn raise_floating_pane(&mut self, pane: PaneId) -> bool {
-        self.space_of(pane)
-            .and_then(|space| self.blueprint_space_mut(space))
-            .is_some_and(|space| space.raise_float(pane))
+        let Some(space) = self.space_of(pane) else {return false};
+        if self.ensure_shared_space(space).is_err() { return false; }
+        self.space_mut(space).and_then(|layout|layout.workspace_mut())
+            .is_some_and(|frame|frame.apply(&workbench::FloatEvent::Raise(workbench::TileId(pane.0)).into()).is_ok_and(|outcome|outcome.changed()))
     }
 
     /// Choose the newest live lens that is not `exclude`, spawning a lens when
@@ -1524,6 +1446,7 @@ mod omnibar_arms;
 mod palette;
 mod pane_arms;
 mod outer_workspace_arms;
+mod workspace_stations;
 mod redshank_arms;
 mod session_lifecycle;
 #[cfg(test)]

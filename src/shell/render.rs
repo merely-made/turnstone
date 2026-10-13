@@ -744,18 +744,10 @@ impl Shell {
         let PaneContent::Registered(kind) = content? else {
             return None;
         };
-        let spec = self
-            .app
-            .primary_blueprint
-            .as_ref()
-            .and_then(|space| space.pane(pane_id))
-            .or_else(|| {
-                self.app
-                    .lens_blueprints
-                    .iter()
-                    .filter_map(Option::as_ref)
-                    .find_map(|space| space.pane(pane_id))
-            })?;
+        let spec = self.app.space(self.app.space_of(pane_id)?)?.outer_workspace().ok()
+            .and_then(|frame|frame.descriptors.get(&pane_id.0).cloned())
+            .and_then(|value|serde_json::from_value::<crate::panes::PaneSpec>(value).ok())
+            .or_else(||self.app.blueprint_space(self.app.space_of(pane_id)?)?.pane(pane_id).cloned())?;
         (&spec.kind == kind && self.surface_providers.contains_pane_kind(&spec.kind))
             .then(|| spec.clone())
     }
@@ -908,7 +900,7 @@ impl Shell {
                     let scene = self.pane_scene_by_kind(id, content.as_ref(), rw, rh);
                     (scene, wgpu::Color::TRANSPARENT)
                 },
-                crate::surface::SurfaceKind::Frame => (self.outer_scene(0), wgpu::Color::TRANSPARENT),
+                crate::surface::SurfaceKind::Frame | crate::surface::SurfaceKind::FloatFrame(_) => (self.outer_scene(0), wgpu::Color::TRANSPARENT),
                 crate::surface::SurfaceKind::Divider(_) => {
                     // The band is the clear colour; nothing to draw over it.
                     (Scene::default(), crate::ui::SEAM_CLEAR)
@@ -943,10 +935,10 @@ impl Shell {
                 self.app.frame_timings.pane_scenes += scene_started.elapsed();
             }
             scenes.push(PlannedLayer::Scene(PlannedScene {
-                id: surface.id.0,
+                id: if matches!(surface.kind,SurfaceKind::FloatFrame(_)) {crate::surface::SurfaceId::for_kind(SurfaceKind::Frame).0} else {surface.id.0},
                 kind: surface.kind,
-                placement: ExternalTexturePlacement::new(rect.dest()),
-                dims: (rw, rh),
+                placement: super::frame_placement(surface,w,h),
+                dims: if matches!(surface.kind,SurfaceKind::FloatFrame(_)) {(w,h)} else {(rw,rh)},
                 scene,
                 clear,
             }));

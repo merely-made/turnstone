@@ -2,7 +2,7 @@
 
 **Date**: 2026-08-08
 
-**Status (2026-10-13)**: A4/S3 has tiled Workspace, shared-frame, Tabard appearance and keyboard/primary accessibility implementation drafts; native/inline-body/float/accessibility gates remain open. A0, A1 and A6 complete and verified. Lanes open: **A2** and
+**Status (2026-10-13)**: A4/S3 has shared Workspace, Tabard appearance, keyboard, floating/docking and per-window accessibility implementation drafts; native/inline-body/physical accessibility gates remain open. A0, A1 and A6 complete and verified. Lanes open: **A2** and
 **A7**; **A3** retains its A2 acceptance gate. The A4 draft below does not close A2/A3 or A5 acceptance.
 
 **2026-09-29 pane consolidation: qualified.** Mark accepted operational status
@@ -1306,3 +1306,120 @@ Repeat keyboard entry and return in a lens with its physical native window
 focused. Session-scoped return to editors/media and original floating/physics
 scenarios remain consumer gates. Native lens AT, float unification, inline
 Component bodies and presented-frame timing remain open A4/S3 work.
+
+
+## A4/A5 shared float and lens accessibility drafts — 2026-10-13
+
+**Status: both implementations pushed as drafts; native acceptance remains open.**
+This continuation replaces the preceding float-unification and lens-adapter
+implementation gaps. It does not close A4/S3's inline Component-body join or
+qualify physical UI, native engine delivery or human assistive technology.
+
+**Shared stations and custody.** Float, dock, raise, tear-out and return now use
+`workbench::Workspace` in primary and lens windows. Transfers clone and validate
+both spaces before changing either station, preserving the same tile/PaneId,
+host payload, provider descriptor, proportional rectangle, constraints, pin
+and visibility. The destination assigns its own z-order. The shell's retained
+body sessions remain keyed by PaneId; a station move does not evict them. Each
+window keeps one pane. An unsuccessful destination or invalid geometry leaves
+custody intact. No-op raises/rectangle edits do not produce a save.
+
+Provider source/config descriptions now travel in the Workspace's optional
+host descriptor map. Contributed panes no longer create a separate blueprint
+station authority, and their saved descriptors are decoded and checked against
+their owning pane before use. Existing compatible live blueprints import once,
+including their float policy and provider descriptions. Unsupported legacy
+grid/nested tab-sublayout shapes and invalid custody refuse before adoption;
+all-window save preflight restores the former authorities if any import fails.
+The unused blueprint float/transfer writers are retired. Legacy types and
+read-only fallback presentation remain while their separate removal gate is
+open.
+
+New `workspace.json` and `window-workspaces.json` saves use **version 2**. Version
+1 remains readable; missing descriptor maps default empty. New saves preserve
+floating stations and provider descriptions. The older version-1 consumer
+refuses the new version rather than discarding these descriptions. Invalid or
+future current files still refuse without resurrecting the retained legacy
+`frame.json` / `windows.json` recovery files.
+
+**Float presentation and gestures.** Body apertures and floating outer boxes
+come from the same retained Workspace DOM used for header hits and semantics.
+Only actual Surface slots are body apertures; the floating container cannot
+claim a second body. The compositor reuses the full-window shared frame texture
+and crops it at each measured float box, interleaving float furniture and body
+surfaces above tiled bodies in model z-order. Floating Workbench content slots
+follow the same order. Appearance IDs and body owners remain intact. This is
+still the host-composited body draft, not the ruled inline Component completion.
+
+Drag a float's tab handle to move it. Hold Ctrl on release to dock through a
+tiled body's centre (tab) or edge (split); an empty tiled root accepts docking.
+An outside release tears out. The Dock command remains available. With a
+floating tab focused, Alt+arrows move by one percent; Alt+Shift+arrows resize;
+Ctrl adds a ten-percent step. Keyboard edits save immediately and pointer moves
+save when the gesture completes. A session/appearance change cancels captured
+geometry; float drags also reject changed window size. Body presses raise and
+save a changed float order. Pinning, visibility and size constraints remain
+shared typed Workspace events; this draft does not mount an additional controls
+panel for them. Drop-region previews and authored shadow/constraint behavior in
+narrow/DPI-changing windows still need native review.
+
+**Per-window accessibility.** A lens is created hidden and receives its own
+AccessKit adapter, activation snapshot, queue, route table and replay state
+before being shown. Native events reach that adapter. Lens projection contains
+that window's panes, actual contributed retained semantics and the same measured
+shared frame controls; it does not import primary chrome or primary graph
+outlines. Lens host NodeIds include window instance and session identity.
+Child, label, control, focus and text-selection references are remapped together;
+frame and contributed primary namespaces now use the same reference lowering.
+Both windows lower header actions through the existing typed Workspace reducer.
+Contributed actions additionally verify current pane/window visibility, source
+and generation. Header focus returns to the owning window's body appearance.
+
+Producer semantics are still polled once on the UI thread. Lens publication
+caches share immutable retained node storage with that authoritative stream,
+while mounting, action admission and activation replay remain independent.
+A producer shown in multiple appearances has one semantic owner: the exact
+focused appearance, otherwise the deterministic first window/appearance.
+Losing parents are withdrawn before destination publication, including a
+window-to-window swap. Navigation/retirement clears every mirror; old-window,
+hidden and retired actions refuse. Consumer-library tests cover independent
+mount/replay, retained deltas, shared storage and retirement. They do not prove
+OS activation, screen-reader behavior or simultaneous visual appearances.
+
+**Evidence and limits.** The actual-source CPU harness and preserved logs are
+in `docs/receipts/stations_windows_20261013/qualification.json`. All 69 CPU tests
+pass; the library/binary check reports 95 warnings. It includes the
+shared controller/layout/semantic tests, exact generic custody and sidecar
+modules, window namespace/appearance ownership, and the retained foreign forest
+with current and pinned Windows/Unix consumer libraries. The default-feature
+Linux library and binary source check passes with incremental compilation off;
+warning-baseline equivalence is not claimed. Initial full-draft source attempts
+hit the 1280 MiB compiler scope; disabling incremental compilation passed under
+the same cap. One compiler, one Cargo job, no compiler swap, and the task memory
+guard remain the local controls. No native run, release build, optional/platform
+feature build or whole-library test run is claimed. Native App station/provider
+regressions are supplied for a capable host; they have not been executed here.
+
+**Handoff.** Run `frame_stations.scn` in fresh private stores, then
+`frame_stations_reopen.scn` with those same stores. Separately run
+`frame_lens_accessibility.scn` in fresh stores. Their grammar is CPU-qualified;
+`frame-a11y-window <slot> ...` uses the window's actual published route and action
+queue (0 primary, ordinal+1 lens). It remains a queued-action fixture, not a
+screen-reader receipt. Re-run `a5_floating_pane.scn` with its original intent and
+captures, plus the existing shared-frame keyboard/theme and physics fixtures.
+On a capable host also run the native App `workspace_stations` and contributed
+pane regressions, then review real pointer/Alt-key movement and resizing,
+float-to-tab/split/window/reopen identity and editor/media/scroll continuity.
+Exercise at least two lenses, node appearances repeated across windows,
+activation/deactivation during ordered foreign batches, close/reopen/session
+changes with queued old actions, and physical Narrator/VoiceOver/Orca focus and
+announcements. Lens native-engine pixel/input delivery, constrained/authored
+float layout, overlay/drop previews, inline bodies and presented performance
+remain explicit acceptance work.
+
+Upstream was checked before this continuation: Turnstone main contains the
+shared native Pelt/retained-clip adoption (`d5d4737`) and preceding frame draft
+(`74325ab`). The Mere design checkout was fast-forwarded to `5b3442dd`, including
+viewer qualification and frame-window timings. This consumer keeps its already
+adopted `0d1dc192` Mere and `2c7ef73b` Genet supplier family; no further supplier
+pin change is part of these drafts.

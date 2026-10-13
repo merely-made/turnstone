@@ -837,7 +837,7 @@ impl Shell {
             // synchronization before a replacement can emit an equal epoch.
             self.content_sessions.remove(&node);
             self.clear_reader_appearances(node);
-            self.surface_a11y.retire(node);
+            self.retire_surface_semantics(node);
             self.surface_find_requests.remove(&node);
             self.page_captures.remove_surface(node);
             #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
@@ -1570,7 +1570,7 @@ impl Shell {
                             // node's one content entry, so what the shell
                             // kept beside the surface retires with it.
                             if self.content_sessions.has_surface(&node) {
-                                self.surface_a11y.retire(node);
+                                self.retire_surface_semantics(node);
                                 self.surface_find_requests.remove(&node);
                                 self.retire_surface_extras(node);
                             }
@@ -1918,7 +1918,7 @@ impl Shell {
                     self.sync_ime_allowed();
                 }
                 Effect::CloseContent { node } => {
-                    self.surface_a11y.retire(node);
+                    self.retire_surface_semantics(node);
                     self.withdraw_user_agent_requests(node, "surface-closed");
                     self.clear_reader_appearances(node);
                     self.surface_find_requests.remove(&node);
@@ -2130,6 +2130,11 @@ impl Shell {
     /// (`sessions/<id>/`) — the SaveSession effect's body, shared by the
     /// session switch (which must save the DEPARTING session first).
     pub(super) fn save_session(&mut self) {
+        if let Err(reason)=self.app.prepare_shared_stations_for_save() {
+            tracing::warn!(%reason,"pane station persistence refused; session save skipped");
+            self.app.note(crate::observe::AppEvent::InteractionMissed {what:"save-pane-stations",target:reason});
+            return;
+        }
         let sdir = self.app.session_dir();
         if let Err(error) = self.app.persist_session_graph() {
             tracing::warn!(%error, "session persistence refused or failed; sidecars and image collection skipped");
@@ -2152,7 +2157,7 @@ impl Shell {
         if swept > 0 {
             tracing::info!(swept, "reclaimed orphaned session image blobs");
         }
-        // The pane layout persists to frame.json alongside the graph
+        // The shared pane stations persist to workspace.json alongside the graph
         // (rung 5 slice C), so summon/close/divider survive a restart.
         session::save_frisket_layout(&sdir, &self.app.frisket);
         // The workbench tiling persists as platen's canonical pair

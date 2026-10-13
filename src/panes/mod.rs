@@ -30,6 +30,7 @@ mod registry;
 mod saved_content;
 mod workspace;
 pub(crate) mod workspace_bridge;
+pub(crate) mod workspace_blueprint;
 mod workspace_store;
 
 /// The frame-sidecar persistence (`frame.json` beside `graph.json`), moved

@@ -14,219 +14,12 @@ use uuid::Uuid;
 use crate::action::{Action, Effect, SpaceRef, WbAxis};
 use crate::observe::AppEvent;
 use crate::panes::{
-    FloatDockTarget, GraphId, InsertSide, PaneContent, PaneId, PaneKindId, PaneMultiplicity,
-    PaneNode, RelativeRect, SplitAxis, kind,
+    GraphId, InsertSide, PaneContent, PaneId, PaneKindId, PaneMultiplicity, PaneNode, kind,
 };
 
 use super::App;
 
 impl App {
-    pub(super) fn float_active_pane(&mut self) -> Vec<Effect> {
-        let Some(active) = self.active_pane else {
-            return vec![Effect::Redraw];
-        };
-        let Some(space) = self.space_of(active) else {
-            return vec![Effect::Redraw];
-        };
-        let floated = self.ensure_blueprint_space(space).is_some_and(|blueprint| {
-            // A command-created float gets a deterministic free station. A
-            // pointer drag replaces this with the user's exact rectangle;
-            // the cascade merely prevents a second command float from hiding
-            // the first before a drag affordance lands.
-            let rect = if blueprint.floating.len() % 2 == 0 {
-                RelativeRect {
-                    x: 0.54,
-                    y: 0.12,
-                    width: 0.42,
-                    height: 0.48,
-                }
-            } else {
-                RelativeRect {
-                    x: 0.08,
-                    y: 0.16,
-                    width: 0.42,
-                    height: 0.48,
-                }
-            };
-            blueprint.float_pane(active, rect)
-        });
-        if !floated {
-            return vec![Effect::Redraw];
-        }
-        self.maximized = None;
-        if let Some(content) = self.pane_content(active) {
-            self.events
-                .push(AppEvent::PaneFloated(content.tag().to_string()));
-        }
-        vec![Effect::Redraw]
-    }
-
-    pub(super) fn dock_active_pane(&mut self) -> Vec<Effect> {
-        let Some(active) = self.active_pane else {
-            return vec![Effect::Redraw];
-        };
-        let Some(space) = self.space_of(active) else {
-            return vec![Effect::Redraw];
-        };
-        let Some(blueprint) = self.ensure_blueprint_space(space) else {
-            return vec![Effect::Redraw];
-        };
-        let docked = match blueprint
-            .tiled_panes()
-            .into_iter()
-            .find(|pane| *pane != active)
-        {
-            Some(target) => blueprint.dock_floating_pane(
-                active,
-                FloatDockTarget::Beside {
-                    target,
-                    axis: SplitAxis::Horizontal,
-                    after: true,
-                },
-            ),
-            None => blueprint.dock_floating_pane(active, FloatDockTarget::TiledRoot),
-        };
-        if !docked {
-            return vec![Effect::Redraw];
-        }
-        if let Some(content) = self.pane_content(active) {
-            self.events
-                .push(AppEvent::PaneDocked(content.tag().to_string()));
-        }
-        vec![Effect::Redraw]
-    }
-
-    pub(super) fn return_active_pane_to_primary(&mut self) -> Vec<Effect> {
-        let Some(active) = self.active_pane else {
-            return vec![Effect::Redraw];
-        };
-        let Some(source @ SpaceRef::Lens(_)) = self.space_of(active) else {
-            return vec![Effect::Redraw];
-        };
-        if !self
-            .blueprint_space(source)
-            .is_some_and(|blueprint| blueprint.floating.iter().any(|item| item.pane == active))
-        {
-            return vec![Effect::Redraw];
-        }
-        // Read before changing either tree. The visual station transfer is
-        // transactional, and a failed transfer must not strand the retained
-        // renderer in an unreachable legacy tree.
-        let Some((pane_id, content, graph_id)) = self.space(source).and_then(|layout| {
-            layout
-                .iter_leaves()
-                .find(|(id, _, _)| *id == active)
-                .map(|(id, content, graph)| (id, content.clone(), graph))
-        }) else {
-            return vec![Effect::Redraw];
-        };
-        if !self.transfer_floating_blueprint(source, SpaceRef::Primary, active) {
-            return vec![Effect::Redraw];
-        }
-        let removed = self
-            .space_mut(source)
-            .and_then(|layout| {
-                let _path = crate::pane::path_of(layout, active)?;
-                layout.close_pane(active).then_some(())
-            })
-            .is_some();
-        if !removed {
-            return vec![Effect::Redraw];
-        }
-        let Some(primary) = self.space_mut(SpaceRef::Primary) else {
-            return vec![Effect::Redraw];
-        };
-        let anchor = primary.iter_leaves().next().map(|(id, _, _)| id);
-        let path = anchor
-            .and_then(|id| crate::pane::path_of(primary, id))
-            .unwrap_or_default();
-        if !primary.summon_leaf(
-            &path,
-            InsertSide::Right,
-            PaneNode::Leaf {
-                pane_id,
-                content: content.clone(),
-                graph_id,
-            },
-        ) {
-            return vec![Effect::Redraw];
-        }
-        self.active_pane = Some(pane_id);
-        self.index_pane_spaces();
-        self.events
-            .push(AppEvent::PaneReturned(content.tag().to_string()));
-        vec![Effect::Redraw]
-    }
-
-    pub(super) fn tear_out_active_pane(&mut self) -> Vec<Effect> {
-        let Some(active) = self.active_pane else {
-            return vec![Effect::Redraw];
-        };
-        // The pane leaves whichever window's tree holds it (a lens
-        // pane tears out onward, not just primary panes out).
-        let Some(source) = self.space_of(active) else {
-            return vec![Effect::Redraw];
-        };
-        // Read the leaf wholesale (id + content + graph binding), then choose
-        // the destination before either representation changes. An A5 float
-        // moves its blueprint station first, retaining its relative geometry
-        // and runner key across the OS-window boundary.
-        let Some((pane_id, content, graph_id)) = self.space(source).and_then(|layout| {
-            layout
-                .iter_leaves()
-                .find(|(id, _, _)| *id == active)
-                .map(|(id, c, g)| (id, c.clone(), g))
-        }) else {
-            return vec![Effect::Redraw];
-        };
-        let (destination, mut effects) = self.target_lens(Some(source));
-        let destination = SpaceRef::Lens(destination);
-        let source_float = self
-            .blueprint_space(source)
-            .is_some_and(|blueprint| blueprint.floating.iter().any(|item| item.pane == active));
-        if source_float && !self.transfer_floating_blueprint(source, destination, active) {
-            return vec![Effect::Redraw];
-        }
-        // Remove the legacy payload only after the blueprint transfer passed.
-        let Some(layout) = self.space_mut(source) else {
-            return vec![Effect::Redraw];
-        };
-        let Some(_path) = crate::pane::path_of(layout, active) else {
-            return vec![Effect::Redraw];
-        };
-        if !layout.close_pane(active) {
-            return vec![Effect::Redraw];
-        }
-        if self.maximized == Some(active) {
-            self.maximized = None;
-        }
-        let SpaceRef::Lens(destination) = destination else {
-            unreachable!("tear-out always targets a lens")
-        };
-        self.land_leaf_at_lens(
-            PaneNode::Leaf {
-                pane_id,
-                content: content.clone(),
-                graph_id,
-            },
-            destination,
-        );
-        // The moved pane STAYS active: it kept living (same runner,
-        // same id), so pane-anchored ops now follow it to its new
-        // window — summon-beside lands there, the divider op reweights
-        // there (the lens-frisket-ops receipt's hinge).
-        self.active_pane = Some(pane_id);
-        self.events
-            .push(AppEvent::PaneTornOut(content.tag().to_string()));
-        // The move is durable structure in TWO trees; persist it (the
-        // lens-window sidecar is what makes the window survive a
-        // restart).
-        self.index_pane_spaces();
-        effects.push(Effect::SaveSession);
-        effects.push(Effect::Redraw);
-        effects
-    }
-
     pub(super) fn summon_pane(&mut self, kind: PaneKindId) -> Vec<Effect> {
         let Some(definition) = crate::panes::pane_definition(kind.as_str()) else {
             self.events.push(AppEvent::InteractionMissed {
@@ -260,6 +53,13 @@ impl App {
                     .map(|(id, _, _)| id),
             ),
         };
+        if let Err(reason) = self.ensure_shared_space(space) {
+            self.events.push(AppEvent::InteractionMissed {
+                what: "summon-pane",
+                target: reason,
+            });
+            return vec![Effect::Redraw];
+        }
         let existing = (definition.multiplicity != PaneMultiplicity::Many)
             .then(|| {
                 self.space(space)?
@@ -428,7 +228,7 @@ impl App {
             None => {
                 effects.extend(self.update(Action::SummonPane(PaneKindId::new(kind::WORKBENCH))));
                 self.active_pane.unwrap_or(graph_pane)
-            }
+            },
         };
         self.active_pane = Some(workbench_pane);
         self.publish_member_context(workbench_pane, Some(member));
@@ -472,7 +272,7 @@ impl App {
                 self.events
                     .push(AppEvent::PaneSectionToggled { section, added });
                 vec![Effect::SaveSession, Effect::Redraw]
-            }
+            },
             None => vec![Effect::Redraw],
         }
     }
@@ -486,10 +286,14 @@ impl App {
         else {
             return vec![Effect::Redraw];
         };
-        let Some(layout) = self.space_mut(space) else {
+        if let Err(reason) = self.ensure_shared_space(space) {
+            self.events.push(AppEvent::InteractionMissed {
+                what: "close-pane",
+                target: reason,
+            });
             return vec![Effect::Redraw];
-        };
-        let Some(_path) = crate::pane::path_of(layout, active) else {
+        }
+        let Some(layout) = self.space_mut(space) else {
             return vec![Effect::Redraw];
         };
         if layout.close_pane(active) {
@@ -638,30 +442,46 @@ mod tests {
         let roster = app.active_pane.expect("summoned roster is active");
 
         app.update(Action::FloatActivePane);
-        assert!(
-            app.blueprint_space(SpaceRef::Primary)
-                .is_some_and(|space| space.floating.iter().any(|item| item.pane == roster))
-        );
+        assert!(app.frisket.outer_workspace().ok().is_some_and(|frame| {
+            frame
+                .workspace
+                .floating()
+                .iter()
+                .any(|f| f.tile.id.0 == roster.0)
+        }));
 
         app.update(Action::DockActivePane);
-        assert!(app.blueprint_space(SpaceRef::Primary).is_some_and(
-            |space| space.floating.is_empty() && space.tiled_panes().contains(&roster)
-        ));
+        assert!(app.frisket.outer_workspace().is_ok_and(|frame| {
+            frame.workspace.floating().is_empty()
+                && frame
+                    .workspace
+                    .tiled()
+                    .find(workbench::TileId(roster.0))
+                    .is_some()
+        }));
 
         app.update(Action::FloatActivePane);
         app.update(Action::TearOutActivePane);
         assert_eq!(app.space_of(roster), Some(SpaceRef::Lens(0)));
         assert!(
-            app.blueprint_space(SpaceRef::Lens(0))
-                .is_some_and(|space| space.floating.iter().any(|item| item.pane == roster))
+            app.space(SpaceRef::Lens(0))
+                .and_then(|s| s.outer_workspace().ok())
+                .is_some_and(|frame| frame
+                    .workspace
+                    .floating()
+                    .iter()
+                    .any(|f| f.tile.id.0 == roster.0))
         );
 
         app.update(Action::ReturnActivePaneToPrimary);
         assert_eq!(app.space_of(roster), Some(SpaceRef::Primary));
-        assert!(
-            app.blueprint_space(SpaceRef::Primary)
-                .is_some_and(|space| space.floating.iter().any(|item| item.pane == roster))
-        );
+        assert!(app.frisket.outer_workspace().ok().is_some_and(|frame| {
+            frame
+                .workspace
+                .floating()
+                .iter()
+                .any(|f| f.tile.id.0 == roster.0)
+        }));
         let events: Vec<_> = app
             .take_events()
             .into_iter()

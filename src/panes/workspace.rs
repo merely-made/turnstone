@@ -13,6 +13,9 @@ use workbench::{
 pub struct PaneWorkspace<C> {
     pub workspace: Workspace,
     pub panes: BTreeMap<u64, C>,
+    /// Optional host-owned descriptors travel with the payload, never its station.
+    #[serde(default)]
+    pub descriptors: BTreeMap<u64, serde_json::Value>,
 }
 
 impl<C: Clone> PaneWorkspace<C> {
@@ -20,6 +23,7 @@ impl<C: Clone> PaneWorkspace<C> {
         Self {
             workspace: Workspace::new(TileTree::single(Self::tile(id, title))),
             panes: BTreeMap::from([(id, payload)]),
+            descriptors: BTreeMap::new(),
         }
     }
 
@@ -58,6 +62,31 @@ impl<C: Clone> PaneWorkspace<C> {
         if seen.len() != self.panes.len() {
             return Err("Unplaced pane payload".into());
         }
+        if self
+            .descriptors
+            .keys()
+            .any(|id| !self.panes.contains_key(id))
+        {
+            return Err("Unplaced pane descriptor".into());
+        }
+        for float in self.workspace.floating() {
+            let r = float.rect;
+            let c = float.constraints;
+            if ![r.x, r.y, r.width, r.height, c.min_width, c.min_height]
+                .into_iter()
+                .all(f32::is_finite)
+                || r.width <= 0.0
+                || r.height <= 0.0
+                || c.min_width < 0.0
+                || c.min_height < 0.0
+                || c.max_width
+                    .is_some_and(|v| !v.is_finite() || v < c.min_width)
+                || c.max_height
+                    .is_some_and(|v| !v.is_finite() || v < c.min_height)
+            {
+                return Err("Invalid floating pane geometry".into());
+            }
+        }
         validate_tree(self.workspace.tiled())
     }
 
@@ -67,8 +96,12 @@ impl<C: Clone> PaneWorkspace<C> {
         let outcome = next.workspace.apply(event);
         next.panes
             .retain(|id, _| next.workspace.contains(TileId(*id)));
+        next.descriptors.retain(|id, _| next.panes.contains_key(id));
         next.validate()?;
         if outcome.changed() {
+            if next.workspace == self.workspace {
+                return Ok(WorkbenchOutcome::Unchanged);
+            }
             *self = next;
         }
         Ok(outcome)
@@ -87,7 +120,7 @@ impl<C: Clone> PaneWorkspace<C> {
         }
         let mut next = self.clone();
         let tile = Self::tile(id, title);
-        if next.workspace.tiles().is_empty() {
+        if next.workspace.tiled().is_empty() {
             *next.workspace.tiled_mut() = TileTree::single(tile);
         } else if !next
             .workspace
@@ -104,8 +137,19 @@ impl<C: Clone> PaneWorkspace<C> {
         true
     }
 
-    /// Visible tiled bodies, independently of retained inactive-tab custody.
+    /// Visible bodies, independently of retained inactive-tab custody.
     pub fn active_ids(&self) -> Vec<TileId> {
+        let mut out = self.active_tiled_ids();
+        out.extend(
+            self.workspace
+                .visible_floating(true)
+                .iter()
+                .map(|f| f.tile.id),
+        );
+        out
+    }
+
+    pub fn active_tiled_ids(&self) -> Vec<TileId> {
         fn walk(tree: &TileTree, out: &mut Vec<TileId>) {
             match tree {
                 TileTree::Stack(stack) => {
@@ -127,7 +171,55 @@ impl<C: Clone> PaneWorkspace<C> {
 
     pub fn take(&mut self, id: u64) -> Option<C> {
         self.workspace.take_tile(TileId(id))?;
+        self.descriptors.remove(&id);
         self.panes.remove(&id)
+    }
+
+    /// Move one station and all its host custody atomically between windows.
+    /// Floats retain geometry and policy; the destination assigns local z.
+    pub fn transfer_to(
+        &mut self,
+        destination: &mut Self,
+        id: u64,
+        target: Option<u64>,
+    ) -> Result<(), String> {
+        self.validate()?;
+        destination.validate()?;
+        if destination.workspace.contains(TileId(id)) {
+            return Err("Destination already owns pane".into());
+        }
+        let mut source = self.clone();
+        let mut next = destination.clone();
+        let payload = source.panes.remove(&id).ok_or("Source pane is absent")?;
+        let descriptor = source.descriptors.remove(&id);
+        if let Some(float) = source.workspace.take_floating(TileId(id)) {
+            if !next.workspace.insert_floating(float) {
+                return Err("Float transfer refused".into());
+            }
+        } else {
+            let tile = source
+                .workspace
+                .take_tile(TileId(id))
+                .ok_or("Source station is absent")?;
+            if next.workspace.tiled().is_empty() {
+                *next.workspace.tiled_mut() = TileTree::single(tile);
+            } else if !target.is_some_and(|target| {
+                next.workspace
+                    .tiled_mut()
+                    .split_beside(TileId(target), Edge::Right, tile)
+            }) {
+                return Err("Destination tiled anchor is absent".into());
+            }
+        }
+        next.panes.insert(id, payload);
+        if let Some(descriptor) = descriptor {
+            next.descriptors.insert(id, descriptor);
+        }
+        source.validate()?;
+        next.validate()?;
+        *self = source;
+        *destination = next;
+        Ok(())
     }
 }
 
@@ -312,5 +404,177 @@ mod tests {
         assert!(frame.workspace.floating().is_empty());
         assert_eq!(frame.panes.len(), 2);
         frame.validate().unwrap();
+    }
+    #[test]
+    fn float_transfer_and_reopen_preserve_payload_descriptor_geometry_and_policy() {
+        let mut source = two();
+        source.descriptors.insert(
+            2,
+            serde_json::json!({"source":"same address, this access","draft":"retained"}),
+        );
+        source
+            .apply(
+                &workbench::FloatEvent::Float {
+                    tile: TileId(2),
+                    rect: workbench::RelativeRect {
+                        x: 0.12,
+                        y: 0.23,
+                        width: 0.45,
+                        height: 0.56,
+                    },
+                }
+                .into(),
+            )
+            .unwrap();
+        source
+            .apply(
+                &workbench::FloatEvent::SetConstraints {
+                    tile: TileId(2),
+                    constraints: workbench::FloatSizeConstraints {
+                        min_width: 220.0,
+                        min_height: 90.0,
+                        max_width: Some(800.0),
+                        max_height: None,
+                    },
+                }
+                .into(),
+            )
+            .unwrap();
+        source
+            .apply(
+                &workbench::FloatEvent::SetPinned {
+                    tile: TileId(2),
+                    pinned: true,
+                }
+                .into(),
+            )
+            .unwrap();
+        let station = source.workspace.floating()[0].clone();
+        let mut lens = PaneWorkspace::single(9, "Lens".into(), "other".into());
+        source.transfer_to(&mut lens, 2, Some(9)).unwrap();
+        assert_eq!(source.panes.len(), 1);
+        assert!(source.descriptors.is_empty());
+        let moved = &lens.workspace.floating()[0];
+        assert_eq!(moved.tile, station.tile);
+        assert_eq!(moved.rect, station.rect);
+        assert_eq!(moved.constraints, station.constraints);
+        assert!(moved.pinned);
+        let mut reopened: PaneWorkspace<String> =
+            serde_json::from_str(&serde_json::to_string(&lens).unwrap()).unwrap();
+        reopened.validate().unwrap();
+        reopened.transfer_to(&mut source, 2, Some(1)).unwrap();
+        source
+            .apply(
+                &workbench::FloatEvent::Dock {
+                    tile: TileId(2),
+                    target: workbench::FloatDockTarget::Tab { target: TileId(1) },
+                }
+                .into(),
+            )
+            .unwrap();
+        assert_eq!(source.active_ids(), vec![TileId(2)]);
+        assert_eq!(source.panes[&2], "inspector");
+        assert_eq!(source.descriptors[&2]["draft"], "retained");
+        assert_eq!(reopened.panes.len(), 1);
+    }
+    #[test]
+    fn failed_cross_window_transfer_changes_neither_custody() {
+        let mut source = two();
+        let mut destination = PaneWorkspace::single(9, "Lens".into(), "other".into());
+        let before = (source.clone(), destination.clone());
+        assert!(source.transfer_to(&mut destination, 2, Some(999)).is_err());
+        assert_eq!((source.clone(), destination.clone()), before);
+        assert!(source.transfer_to(&mut destination, 999, Some(9)).is_err());
+        assert_eq!((source, destination), before);
+    }
+    #[test]
+    fn malformed_float_geometry_is_refused_before_publish() {
+        let mut frame = two();
+        let before = frame.clone();
+        assert!(
+            frame
+                .apply(
+                    &workbench::FloatEvent::Float {
+                        tile: TileId(2),
+                        rect: workbench::RelativeRect {
+                            x: 0.0,
+                            y: f32::NAN,
+                            width: 0.5,
+                            height: 0.5
+                        }
+                    }
+                    .into()
+                )
+                .is_err()
+        );
+        assert_eq!(frame, before);
+        frame
+            .apply(
+                &workbench::FloatEvent::Float {
+                    tile: TileId(2),
+                    rect: workbench::RelativeRect {
+                        x: 0.0,
+                        y: 0.0,
+                        width: 0.5,
+                        height: 0.5,
+                    },
+                }
+                .into(),
+            )
+            .unwrap();
+        let before = frame.clone();
+        assert!(
+            frame
+                .apply(
+                    &workbench::FloatEvent::SetConstraints {
+                        tile: TileId(2),
+                        constraints: workbench::FloatSizeConstraints {
+                            min_width: 200.0,
+                            min_height: 0.0,
+                            max_width: Some(100.0),
+                            max_height: None
+                        }
+                    }
+                    .into()
+                )
+                .is_err()
+        );
+        assert_eq!(frame, before);
+    }
+    #[test]
+    fn closing_a_float_retires_its_descriptor_and_invisible_float_keeps_custody() {
+        let mut frame = two();
+        frame
+            .descriptors
+            .insert(2, serde_json::json!({"draft":true}));
+        frame
+            .apply(
+                &workbench::FloatEvent::Float {
+                    tile: TileId(2),
+                    rect: workbench::RelativeRect {
+                        x: 0.0,
+                        y: 0.0,
+                        width: 0.5,
+                        height: 0.5,
+                    },
+                }
+                .into(),
+            )
+            .unwrap();
+        frame
+            .apply(
+                &workbench::FloatEvent::SetVisible {
+                    tile: TileId(2),
+                    visible: false,
+                }
+                .into(),
+            )
+            .unwrap();
+        assert_eq!(frame.active_ids(), vec![TileId(1)]);
+        assert_eq!(frame.panes.len(), 2);
+        frame.validate().unwrap();
+        frame.apply(&TileEvent::Closed(TileId(2)).into()).unwrap();
+        assert!(frame.descriptors.is_empty());
+        assert_eq!(frame.panes.len(), 1);
     }
 }

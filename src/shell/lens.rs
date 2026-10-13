@@ -29,7 +29,7 @@ use crate::surface::{Rect, SurfaceKind};
 use inker::SessionClick;
 
 use super::input::pointer_button;
-use super::{CompositeLayer, PlannedLayer, PlannedScene, Shell, capture_composed};
+use super::{CompositeLayer, PlannedLayer, PlannedScene, Shell, capture_composed, frame_placement};
 
 /// One lens window's record: its platform window, present stack, size,
 /// cursor, and graph gesture capture.
@@ -50,6 +50,10 @@ pub(super) struct LensWindow {
     pub(super) a11y_actions: super::a11y_bridge::ActionQueue,
     pub(super) a11y_epoch: Option<u64>,
     pub(super) a11y_forest: crate::foreign_a11y::ForeignA11y,
+    pub(super) a11y_scope: crate::window_projection::WindowScope,
+    pub(super) a11y_routes: crate::a11y::A11yRoutes,
+    pub(super) a11y_tree: Option<accesskit::TreeUpdate>,
+    pub(super) a11y_placements: Vec<(uuid::Uuid, accesskit::Rect)>,
 }
 
 /// The actual Lens press resolver before Pane/Content/Divider dispatch.
@@ -152,15 +156,15 @@ impl Shell {
                         self.proxy.clone(),
                         &format!("Turnstone lens {ordinal}"),
                     );
-                    window.set_visible(true);
                     window.request_redraw();
                     let owner = self.render_recovery.as_ref().expect("primary recovery owner").clone();
                     let proxy = self.proxy.clone();
                     let recovery = super::WindowRecovery::new(&owner, Arc::new(move || {
                         let _ = proxy.send_event(());
                     }));
+                    let id = window.id();
                     self.lens_windows.insert(
-                        window.id(),
+                        id,
                         LensWindow {
                             window,
                             host: Some(host),
@@ -175,114 +179,19 @@ impl Shell {
                             a11y_actions,
                             a11y_epoch: None,
                             a11y_forest: crate::foreign_a11y::ForeignA11y::new(),
+                            a11y_scope: super::window_a11y::scope(ordinal + 1, self.app.session_id.as_uuid().as_u128()),
+                            a11y_routes: Default::default(),
+                            a11y_tree: None,
+                            a11y_placements: Vec::new(),
                         },
                     );
+                    self.push_a11y_tree();
+                    if let Some(lens) = self.lens_windows.get(&id) { lens.window.set_visible(true); }
                 },
                 Err(err) => tracing::warn!(%err, "lens surface boot failed"),
             }
         }
         self.app.window_count = 1 + self.lens_windows.len();
-    }
-
-    pub(super) fn push_lens_a11y_trees(&mut self) {
-        let mut windows: Vec<_> = self
-            .lens_windows
-            .iter()
-            .map(|(id, lens)| (*id, lens.ordinal, lens.width, lens.height))
-            .collect();
-        windows.sort_by_key(|(_, ordinal, _, _)| *ordinal);
-        for (id, ordinal, width, height) in windows {
-            let plan = self.lens_plan(ordinal, width, height);
-            let pane_rects = plan
-                .iter()
-                .filter_map(|surface| match surface.kind {
-                    SurfaceKind::Pane(pane) => Some((pane, surface.rect)),
-                    _ => None,
-                })
-                .collect();
-            let focused_pane = match self.app.focus {
-                crate::surface::FocusTarget::Pane(pane) => Some(pane),
-                _ => None,
-            };
-            let contributed = crate::contributed_a11y::project(
-                &self.renderers.contributed,
-                &pane_rects,
-                focused_pane,
-            );
-            let root = accesskit::NodeId(0);
-            let mut node = accesskit::Node::new(accesskit::Role::Window);
-            node.set_label(format!("Turnstone lens {ordinal}"));
-            node.set_bounds(accesskit::Rect::new(0.0, 0.0, width as f64, height as f64));
-            let mut trees: Vec<_> = contributed.trees.into_iter().collect();
-            trees.sort_by_key(|(pane, _)| pane.0);
-            node.set_children(trees.iter().map(|(_, tree)| tree.root).collect::<Vec<_>>());
-            let mut nodes = vec![(root, node)];
-            for (_, tree) in trees {
-                nodes.extend(tree.nodes);
-            }
-            let mut frame = super::document_a11y::Projected {
-                tree: uxtree::UxTree { root, nodes },
-                routes: Default::default(),
-                focus: contributed.focus,
-                guests: contributed.guests,
-                admissions: contributed
-                    .routes
-                    .into_iter()
-                    .map(|(id, route)| (id, super::a11y_bridge::Admission::Contributed(route)))
-                    .collect(),
-            };
-            self.project_document_accessibility(&mut frame, &plan);
-            let foreign_placements = self.foreign_a11y_placements_in(&plan);
-            let Some(lens) = self.lens_windows.get_mut(&id) else {
-                continue;
-            };
-            lens.a11y_forest.sync_retained_from(&self.surface_a11y);
-            let epoch = lens.a11y.activation_epoch();
-            if lens.a11y_epoch != Some(epoch) {
-                lens.a11y_forest.reset_publication();
-                lens.a11y_actions
-                    .lock()
-                    .expect("lens a11y queue poisoned")
-                    .publish(Default::default());
-                lens.a11y_epoch = Some(epoch);
-            }
-            let visible = append_foreign_lens(
-                &mut frame,
-                &lens.a11y_forest,
-                foreign_placements,
-                self.app.focus,
-            );
-            let update = frame.tree.to_tree_update(frame.focus);
-            let initial = super::a11y_bridge::safe_initial(&update);
-            let updates = match lens
-                .a11y_forest
-                .frame_with_guests(update, &visible, &frame.guests)
-            {
-                Ok(updates) => updates,
-                Err(error) => {
-                    tracing::warn!(%error, "lens accessibility composition refused");
-                    continue;
-                },
-            };
-            let served = lens
-                .a11y
-                .update_batch_at(epoch, initial, updates)
-                .unwrap_or_else(|error| {
-                    tracing::warn!(%error, "lens accessibility publication refused");
-                    false
-                });
-            lens.a11y_actions
-                .lock()
-                .expect("lens a11y queue poisoned")
-                .publish(if served {
-                    frame.admissions
-                } else {
-                    Default::default()
-                });
-            if !served {
-                lens.a11y_forest.retry_publication();
-            }
-        }
     }
 
     /// A lens window's surface plan: its OWN pane space (`App::lenses`) walked
@@ -296,7 +205,7 @@ impl Shell {
             .filter(|_| self.app.blueprint_space(crate::action::SpaceRef::Lens(ordinal)).is_none())
             .map(|space| self.outer_rects(ordinal + 1, space, None, (w.max(1), h.max(1))));
         lens_content_plan_with_rects(&self.app, &self.content_sessions, ordinal, w, h,
-            frame.as_deref())
+            frame.as_deref(), &self.outer_float_rects(ordinal + 1))
     }
 
     /// A pane's `PaneContent` in a LENS window's space.
@@ -404,7 +313,7 @@ impl Shell {
                         None => continue,
                     }
                 },
-                crate::surface::SurfaceKind::Frame => (self.outer_scene(ordinal + 1), wgpu::Color::TRANSPARENT),
+                crate::surface::SurfaceKind::Frame | crate::surface::SurfaceKind::FloatFrame(_) => (self.outer_scene(ordinal + 1), wgpu::Color::TRANSPARENT),
                 crate::surface::SurfaceKind::Divider(_) => {
                     (Scene::default(), crate::ui::SEAM_CLEAR)
                 },
@@ -413,10 +322,10 @@ impl Shell {
                 _ => continue,
             };
             scenes.push(PlannedLayer::Scene(PlannedScene {
-                id: surface.id.0,
+                id: if matches!(surface.kind, SurfaceKind::FloatFrame(_)) {crate::surface::SurfaceId::for_kind(SurfaceKind::Frame).0} else {surface.id.0},
                 kind: surface.kind,
-                placement: ExternalTexturePlacement::new(rect.dest()),
-                dims: (rw, rh),
+                placement: frame_placement(surface,lw,lh),
+                dims: if matches!(surface.kind,SurfaceKind::FloatFrame(_)) {(lw,lh)} else {(rw,rh)},
                 scene,
                 clear,
             }));
@@ -953,7 +862,7 @@ impl Shell {
                     }) {
                         redraw = match state {
                             ElementState::Pressed => {
-                                self.app.raise_floating_pane(pane);
+                                self.raise_shared_float(pane);
                                 let handled = self
                                     .app
                                     .graph_pane_pointer_down(pane, button, local_x, local_y);
@@ -987,9 +896,9 @@ pub(super) fn lens_content_plan(
     w: u32,
     h: u32,
 ) -> Vec<crate::surface::Surface> {
-    let frame = super::outer_workspace::frame_body_rects(app,
+    let frame = super::outer_workspace::frame_body_geometry(app,
         crate::action::SpaceRef::Lens(ordinal), (w.max(1), h.max(1)));
-    lens_content_plan_with_rects(app, contents, ordinal, w, h, frame.as_deref())
+    lens_content_plan_with_rects(app, contents, ordinal, w, h, frame.as_ref().map(|(b,_)| b.as_slice()), frame.as_ref().map(|(_,f)| f.as_slice()).unwrap_or_default())
 }
 
 fn lens_content_plan_with_rects(
@@ -999,6 +908,7 @@ fn lens_content_plan_with_rects(
     w: u32,
     h: u32,
     frame_rects: Option<&[(PaneId, Rect)]>,
+    frame_floats: &[(PaneId, Rect, Rect)],
 ) -> Vec<crate::surface::Surface> {
     let Some(Some(space)) = app.lenses.get(ordinal) else {
         return Vec::new();
@@ -1029,7 +939,7 @@ fn lens_content_plan_with_rects(
                     .collect(),
             )
         },
-        None => (frame_rects.unwrap_or_default().to_vec(), Vec::new(), Vec::new()),
+        None => (frame_rects.unwrap_or_default().to_vec(), Vec::new(), frame_floats.iter().map(|(id,_,body)| (*id,*body)).collect()),
     };
     let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
         .iter()
@@ -1122,21 +1032,29 @@ fn lens_content_plan_with_rects(
             }
         }),
     );
-    surfaces.extend(float_rects.into_iter().filter_map(|(id, rect)| {
-        let content = lens_pane_content(app, ordinal, id)?;
-        let kind = match content {
+    for (id, rect) in float_rects {
+        let Some(content) = lens_pane_content(app, ordinal, id) else { continue; };
+        if let Some((_, outer, _)) = frame_floats.iter().find(|(pane,_,_)| *pane == id) {
+            let kind = SurfaceKind::FloatFrame(id);
+            surfaces.push(crate::surface::Surface { id: crate::surface::SurfaceId::for_kind(kind), kind, rect: *outer });
+        }
+        let kind = match &content {
             PaneContent::Orrery => SurfaceKind::Graph(id),
-            PaneContent::Tile(member) if contents.contains_key(&member) => {
-                SurfaceKind::Content(member)
-            },
+            PaneContent::Tile(member) if contents.contains_key(member) => SurfaceKind::Content(*member),
             _ => SurfaceKind::Pane(id),
         };
-        Some(crate::surface::Surface {
-            id: crate::surface::SurfaceId::for_kind(kind),
-            kind,
-            rect,
-        })
-    }));
+        surfaces.push(crate::surface::Surface { id: crate::surface::SurfaceId::for_kind(kind), kind, rect });
+        if matches!(content, PaneContent::Workbench) {
+            let geom = app.workbench_for_pane(id).and_then(|w| w.to_arrangement().1);
+            for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), rect).cells {
+                if let Some(node) = cell.active_member().filter(|n| contents.contains_key(n)) {
+                    let body = cell.body();
+                    appearance_roles.push((node, crate::surface::appearance::workbench_appearance_role(id,node), body));
+                    surfaces.push(crate::surface::Surface { id: crate::surface::SurfaceId::content(node), kind: SurfaceKind::Content(node), rect: body });
+                }
+            }
+        }
+    }
     crate::surface::appearance::assign_content_appearance_ids(
         &mut surfaces,
         ordinal as u32 + 1,
@@ -1161,7 +1079,7 @@ fn lens_pane_content(app: &crate::app::App, ordinal: usize, id: PaneId) -> Optio
 #[path = "lens_tests.rs"]
 mod tests;
 
-fn append_foreign_lens(
+pub(super) fn append_foreign_lens(
     frame: &mut super::document_a11y::Projected,
     forest: &crate::foreign_a11y::ForeignA11y,
     placements: Vec<(uuid::Uuid, accesskit::Rect)>,
@@ -1174,17 +1092,28 @@ fn append_foreign_lens(
         };
         graft.set_label("browser page");
         let graft_id = uxtree::node_id_for_path(&format!("turnstone/doc/{node}"));
-        if let Some((_, root)) = frame
-            .tree
-            .nodes
-            .iter_mut()
-            .find(|(id, _)| *id == frame.tree.root)
-        {
-            let mut children = root.children().to_vec();
-            children.push(graft_id);
-            root.set_children(children);
+        // Replace any structural outline, retaining its existing pane parent.
+        let mut pending = frame.tree.nodes.iter().find(|(id,_)| *id == graft_id)
+            .map(|(_,n)| n.children().to_vec()).unwrap_or_default();
+        let mut retired = std::collections::HashSet::new();
+        while let Some(child) = pending.pop() {
+            if retired.insert(child) {
+                if let Some((_,n)) = frame.tree.nodes.iter().find(|(id,_)| *id == child) {
+                    pending.extend(n.children().iter().copied());
+                }
+            }
         }
-        frame.tree.nodes.push((graft_id, graft));
+        frame.tree.nodes.retain(|(id,_)| !retired.contains(id));
+        frame.routes.retain(|id,_| !retired.contains(id));
+        if let Some((_,old)) = frame.tree.nodes.iter_mut().find(|(id,_)| *id == graft_id) {
+            *old = graft;
+        } else {
+            if let Some((_,root)) = frame.tree.nodes.iter_mut().find(|(id,_)| *id == frame.tree.root) {
+                let mut children = root.children().to_vec();
+                children.push(graft_id); root.set_children(children);
+            }
+            frame.tree.nodes.push((graft_id,graft));
+        }
         if matches!(focus, crate::surface::FocusTarget::Content { node: current, .. } if current == node)
         {
             frame.focus = Some(graft_id);

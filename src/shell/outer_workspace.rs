@@ -8,9 +8,18 @@ use crate::{
     panes::{FrisketLayout, PaneId},
     surface::Rect,
 };
-use workbench::{TileEvent, TileId, TilePath};
+use workbench::{FloatEvent, RelativeRect, TileEvent, TileId, TilePath, WorkspaceEvent};
 
 pub(super) enum OuterCapture {
+    Float {
+        slot: usize,
+        id: TileId,
+        start: (f32, f32),
+        rect: RelativeRect,
+        size: (u32, u32),
+        session: uuid::Uuid,
+        appearance: crate::shell_services::AppearanceConfig,
+    },
     Tab {
         slot: usize,
         id: TileId,
@@ -41,7 +50,9 @@ fn space(slot: usize) -> SpaceRef {
 /// Withdraw only the physical window that owned this header gesture.
 pub(super) fn retire_outer_capture(capture: &mut Option<OuterCapture>, window: u64) -> bool {
     let owned = capture.as_ref().is_some_and(|capture| match capture {
-        OuterCapture::Tab { slot, .. } | OuterCapture::Divider { slot, .. } => *slot as u64 == window,
+        OuterCapture::Float { slot, .. }
+        | OuterCapture::Tab { slot, .. }
+        | OuterCapture::Divider { slot, .. } => *slot as u64 == window,
     });
     if owned {
         *capture = None;
@@ -51,23 +62,41 @@ pub(super) fn retire_outer_capture(capture: &mut Option<OuterCapture>, window: u
 
 /// Portable owner validation uses the same retained frame aperture calculation
 /// as the live Shell, without booting a native host or another render core.
+pub(super) fn frame_body_geometry(
+    app: &crate::app::App,
+    space: SpaceRef,
+    size: (u32, u32),
+) -> Option<(Vec<(PaneId, Rect)>, Vec<(PaneId, Rect, Rect)>)> {
+    if app.blueprint_space(space).is_some() {
+        return None;
+    }
+    let layout = app.space(space)?;
+    let mut frame = crate::outer_frame::OuterFrame::default();
+    let docked = frame
+        .prepare(
+            layout,
+            app.active_pane,
+            if space == SpaceRef::Primary {
+                app.maximized
+            } else {
+                None
+            },
+            size,
+            &app.shell_chrome_config().appearance,
+            app.session_id.as_uuid().as_u128(),
+        )
+        .unwrap_or_default();
+    let floats = frame.floats();
+    Some((docked, floats))
+}
+
+/// Compatibility projection for callers that need only docked pane bodies.
 pub(super) fn frame_body_rects(
     app: &crate::app::App,
     space: SpaceRef,
     size: (u32, u32),
 ) -> Option<Vec<(PaneId, Rect)>> {
-    if app.blueprint_space(space).is_some() {
-        return None;
-    }
-    let layout = app.space(space)?;
-    Some(crate::outer_frame::OuterFrame::default().prepare(
-        layout,
-        app.active_pane,
-        if space == SpaceRef::Primary { app.maximized } else { None },
-        size,
-        &app.shell_chrome_config().appearance,
-        app.session_id.as_uuid().as_u128(),
-    ).unwrap_or_default())
+    frame_body_geometry(app, space, size).map(|(docked, _)| docked)
 }
 
 #[cfg(test)]
@@ -86,7 +115,10 @@ mod tests {
         assert!(!retire_outer_capture(&mut tab, 1));
         assert!(tab.is_some(), "another window retains its gesture");
         assert!(retire_outer_capture(&mut tab, 2));
-        assert!(tab.take().is_none(), "a late Up cannot revive withdrawn custody");
+        assert!(
+            tab.take().is_none(),
+            "a late Up cannot revive withdrawn custody"
+        );
         assert!(!retire_outer_capture(&mut tab, 2));
 
         let mut divider = Some(OuterCapture::Divider {
@@ -103,6 +135,39 @@ mod tests {
         assert!(!retire_outer_capture(&mut divider, 2));
         assert!(retire_outer_capture(&mut divider, 0));
         assert!(divider.is_none());
+
+        let mut floating = Some(OuterCapture::Float {
+            slot: 3,
+            id: TileId(9),
+            start: (20.0, 30.0),
+            rect: RelativeRect {
+                x: 0.1,
+                y: 0.1,
+                width: 0.5,
+                height: 0.5,
+            },
+            size: (400, 300),
+            session: uuid::Uuid::nil(),
+            appearance: Default::default(),
+        });
+        assert!(!retire_outer_capture(&mut floating, 2));
+        assert!(
+            matches!(
+                floating.as_ref(),
+                Some(OuterCapture::Float {
+                    slot: 3,
+                    id: TileId(9),
+                    ..
+                })
+            ),
+            "another window retains its floating gesture"
+        );
+        assert!(retire_outer_capture(&mut floating, 3));
+        assert!(
+            floating.take().is_none(),
+            "a late Up cannot revive withdrawn floating custody"
+        );
+        assert!(!retire_outer_capture(&mut floating, 3));
     }
 }
 impl Shell {
@@ -134,6 +199,13 @@ impl Shell {
             .or_default()
             .scene()
     }
+    pub(super) fn outer_float_rects(&self, slot: usize) -> Vec<(PaneId, Rect, Rect)> {
+        self.outer_frames
+            .borrow()
+            .get(&slot)
+            .map(|f| f.floats())
+            .unwrap_or_default()
+    }
     pub(super) fn prepare_outer(&self, slot: usize, size: (u32, u32)) -> bool {
         if self.app.blueprint_space(space(slot)).is_some() {
             return false;
@@ -151,9 +223,13 @@ impl Shell {
     }
     pub(super) fn outer_press(&mut self, slot: usize, size: (u32, u32), x: f32, y: f32) -> bool {
         // Headers never steal an already admitted pane, document or graph gesture.
-        if self.contributed_pointer.is_some() || self.pointer_capture.is_some()
+        if self.contributed_pointer.is_some()
+            || self.pointer_capture.is_some()
             || super::window_input::captured_mouse(&self.content_sessions.pool).is_some()
-            || self.lens_windows.values().any(|lens| lens.pointer_graph.is_some())
+            || self
+                .lens_windows
+                .values()
+                .any(|lens| lens.pointer_graph.is_some())
         {
             return false;
         }
@@ -168,14 +244,18 @@ impl Shell {
             .borrow_mut()
             .get_mut(&slot)
             .and_then(|frame| frame.hit(x, y));
-        if let Some(hit)=&hit {
+        if let Some(hit) = &hit {
             let control=match hit {
                 HeaderHit::Tab(id)=>Some(crate::frame_controls::Control::Tab(*id)),
                 HeaderHit::Close(id)=>Some(crate::frame_controls::Control::Close(*id)),
                 HeaderHit::Divider {target,..}=>self.outer_frames.borrow().get(&slot).and_then(|frame|frame.controls.order().into_iter().find(|c|matches!(c,crate::frame_controls::Control::Divider{path,index,..} if *path==target.path && *index==target.index))),
             };
-            if let Some(control)=control {self.enter_frame_focus(slot,Some(control));}
-        } else {self.leave_frame_focus();}
+            if let Some(control) = control {
+                self.enter_frame_focus(slot, Some(control));
+            }
+        } else {
+            self.leave_frame_focus();
+        }
         match hit {
             Some(HeaderHit::Close(id)) => self.act(Action::OuterWorkspace {
                 space: space(slot),
@@ -186,12 +266,36 @@ impl Shell {
                     space: space(slot),
                     event: TileEvent::Activated(id).into(),
                 });
-                self.outer_capture = Some(OuterCapture::Tab {
-                    slot,
-                    id,
-                    start: (x, y),
-                    session: *self.app.session_id.as_uuid(),
-                    appearance: self.app.shell_chrome_config().appearance.clone(),
+                let floating = self
+                    .app
+                    .space(space(slot))
+                    .and_then(|s| s.outer_workspace().ok())
+                    .and_then(|frame| {
+                        frame
+                            .workspace
+                            .floating()
+                            .iter()
+                            .find(|f| f.tile.id == id)
+                            .map(|f| f.rect)
+                    });
+                self.outer_capture = Some(if let Some(rect) = floating {
+                    OuterCapture::Float {
+                        slot,
+                        id,
+                        start: (x, y),
+                        rect,
+                        size,
+                        session: *self.app.session_id.as_uuid(),
+                        appearance: self.app.shell_chrome_config().appearance.clone(),
+                    }
+                } else {
+                    OuterCapture::Tab {
+                        slot,
+                        id,
+                        start: (x, y),
+                        session: *self.app.session_id.as_uuid(),
+                        appearance: self.app.shell_chrome_config().appearance.clone(),
+                    }
                 });
             },
             Some(HeaderHit::Divider {
@@ -222,7 +326,12 @@ impl Shell {
             .outer_capture
             .as_ref()
             .is_some_and(|capture| match capture {
-                OuterCapture::Tab {
+                OuterCapture::Float {
+                    session,
+                    appearance,
+                    ..
+                }
+                | OuterCapture::Tab {
                     session,
                     appearance,
                     ..
@@ -244,6 +353,43 @@ impl Shell {
             return false;
         };
         let event = match capture {
+            OuterCapture::Float {
+                slot: owner,
+                id,
+                start,
+                rect,
+                size,
+                ..
+            } => {
+                if *owner != slot {
+                    return false;
+                }
+                let current = if slot == 0 {
+                    (self.width, self.height)
+                } else {
+                    self.lens_windows
+                        .values()
+                        .find(|w| w.ordinal + 1 == slot)
+                        .map(|w| (w.width, w.height))
+                        .unwrap_or_default()
+                };
+                if current != *size {
+                    self.outer_capture = None;
+                    return true;
+                }
+                if (x - start.0).hypot(y - start.1) < 5.0 {
+                    return true;
+                }
+                let mut next = *rect;
+                next.x = (rect.x + (x - start.0) / size.0.max(1) as f32)
+                    .clamp(0.0, (1.0 - rect.width).max(0.0));
+                next.y = (rect.y + (y - start.1) / size.1.max(1) as f32)
+                    .clamp(0.0, (1.0 - rect.height).max(0.0));
+                WorkspaceEvent::Float(FloatEvent::SetRect {
+                    tile: *id,
+                    rect: next,
+                })
+            },
             OuterCapture::Tab { slot: owner, .. } => return *owner == slot,
             OuterCapture::Divider {
                 slot: owner,
@@ -277,11 +423,12 @@ impl Shell {
                     split: path.clone(),
                     fractions: next,
                 }
+                .into()
             },
         };
         self.act(Action::OuterWorkspace {
             space: space(slot),
-            event: event.into(),
+            event,
         });
         true
     }
@@ -290,7 +437,12 @@ impl Shell {
             .outer_capture
             .as_ref()
             .is_some_and(|capture| match capture {
-                OuterCapture::Tab {
+                OuterCapture::Float {
+                    session,
+                    appearance,
+                    ..
+                }
+                | OuterCapture::Tab {
                     session,
                     appearance,
                     ..
@@ -312,6 +464,45 @@ impl Shell {
             return false;
         };
         match capture {
+            capture @ OuterCapture::Float { slot: owner, .. } if owner != slot => {
+                self.outer_capture = Some(capture);
+                return false;
+            },
+            OuterCapture::Float {
+                id,
+                start,
+                size: captured,
+                ..
+            } => {
+                if captured != size {
+                    return true;
+                }
+                if (x - start.0).hypot(y - start.1) >= 5.0 && self.prepare_outer(slot, size) {
+                    if x < 0.0 || y < 0.0 || x >= size.0 as f32 || y >= size.1 as f32 {
+                        self.act(Action::OuterWorkspace {
+                            space: space(slot),
+                            event: TileEvent::Dragged {
+                                tile: id,
+                                to: workbench::DropTarget::Outside,
+                            }
+                            .into(),
+                        });
+                    } else if self.ctrl {
+                        let target = self
+                            .outer_frames
+                            .borrow()
+                            .get(&slot)
+                            .and_then(|f| f.float_dock_target(x, y));
+                        if let Some(target) = target {
+                            self.act(Action::OuterWorkspace {
+                                space: space(slot),
+                                event: FloatEvent::Dock { tile: id, target }.into(),
+                            });
+                        }
+                    }
+                    self.act(Action::SaveSession);
+                }
+            },
             OuterCapture::Tab {
                 slot: owner,
                 id,

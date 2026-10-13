@@ -94,6 +94,8 @@ pub enum SurfaceKind {
     Chrome,
     /// Shared Frisket furniture; pointer headers are resolved through its DOM.
     Frame,
+    /// A measured shared-frame float, interleaved above tiled body surfaces.
+    FloatFrame(PaneId),
 }
 
 /// One entry in the surface plan: a class, the rect it occupies, and a stable
@@ -119,6 +121,7 @@ impl SurfaceKind {
             SurfaceKind::Divider(_) => "divider",
             SurfaceKind::Chrome => "chrome",
             SurfaceKind::Frame => "frame",
+            SurfaceKind::FloatFrame(_) => "float-frame",
         }
     }
 }
@@ -176,6 +179,7 @@ impl SurfaceId {
             SurfaceKind::Graph(pane) => Self::graph(pane),
             SurfaceKind::Chrome => Self::CHROME,
             SurfaceKind::Frame => SurfaceId(0x0054_4652_0000_0000),
+            SurfaceKind::FloatFrame(id) => SurfaceId(0x0054_464c_0000_0000 | id.0),
             SurfaceKind::Content(node) => Self::content(node),
             SurfaceKind::Pane(id) => Self::pane(id),
             SurfaceKind::Divider(i) => Self::divider(i),
@@ -327,7 +331,7 @@ pub fn focus_for_press(surfaces: &[Surface], focus: FocusTarget, px: f32, py: f3
             // preserve keyboard focus. The shell promotes a registered
             // contributed pane to `FocusTarget::Pane` after admission. A seam
             // press likewise stays a pointer gesture.
-            SurfaceKind::Pane(_) | SurfaceKind::Divider(_) | SurfaceKind::Frame => focus,
+            SurfaceKind::Pane(_) | SurfaceKind::Divider(_) | SurfaceKind::Frame | SurfaceKind::FloatFrame(_) => focus,
         },
         None => focus,
     }

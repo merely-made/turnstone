@@ -78,6 +78,17 @@ pub(crate) fn fixture_request(text: &str) -> Result<(Action, FixtureTarget), Str
     Ok((action, target))
 }
 
+pub(crate) fn fixture_window_request(text: &str) -> Result<(usize, Action, FixtureTarget), String> {
+    let (window, args) = text
+        .split_once(char::is_whitespace)
+        .ok_or("frame-a11y-window wants a window slot and action")?;
+    let slot = window
+        .parse::<usize>()
+        .map_err(|_| "invalid frame window slot")?;
+    let (action, target) = fixture_request(args)?;
+    Ok((slot, action, target))
+}
+
 pub(crate) struct FrameProjection {
     root: NodeId,
     nodes: Vec<(NodeId, accesskit::Node)>,
@@ -112,12 +123,7 @@ pub(crate) fn project(
     let dom = controls.dom.borrow();
     for (local, mut node) in update.nodes {
         let global = remap[&local];
-        node.set_children(
-            node.children()
-                .iter()
-                .filter_map(|id| remap.get(id).copied())
-                .collect::<Vec<_>>(),
-        );
+        crate::window_projection::remap_node(&mut node, &remap);
         if local == local_root {
             node.set_role(Role::Group);
             node.set_label("Pane controls");
@@ -130,6 +136,7 @@ pub(crate) fn project(
                     &LocalName::from(cambium::FRISKET_TILE_ATTR),
                 )
                 .and_then(|s| s.parse::<u64>().ok())
+                .filter(|_| cambium::slot_kind(&*dom, dom_node).is_some())
             {
                 slots.insert(TileId(id), global);
             }

@@ -1099,13 +1099,9 @@ pub fn snapshot(app: &App) -> Snapshot {
                 .find(|(pid, _, _)| *pid == id)
                 .map(|(_, content, _)| content.tag().to_string())
         }),
-        floating_panes: app
-            .blueprint_space(crate::action::SpaceRef::Primary)
-            .into_iter()
-            .flat_map(|space| space.visible_floating_panes(true))
-            .filter_map(|floating| app.pane_content(floating.pane).map(|content| content.tag()))
-            .map(str::to_string)
-            .collect(),
+        floating_panes: app.frisket.outer_workspace().ok().into_iter()
+            .flat_map(|frame|frame.workspace.visible_floating(true).into_iter().map(|f|crate::panes::PaneId(f.tile.id.0)).collect::<Vec<_>>())
+            .filter_map(|pane|app.pane_content(pane).map(|c|c.tag().to_string())).collect(),
         maximized: app.maximized.is_some(),
         trail_rows: app
             .frisket
@@ -1193,22 +1189,9 @@ pub fn snapshot(app: &App) -> Snapshot {
                     .collect::<Vec<_>>()
             })
             .collect(),
-        lens_floating_panes: app
-            .lens_blueprints
-            .iter()
-            .enumerate()
-            .filter_map(|(ordinal, space)| space.as_ref().map(|space| (ordinal, space)))
-            .flat_map(|(ordinal, space)| {
-                space
-                    .visible_floating_panes(true)
-                    .into_iter()
-                    .filter_map(move |floating| {
-                        app.pane_content(floating.pane)
-                            .map(|content| format!("{ordinal}:{}", content.tag()))
-                    })
-                    .collect::<Vec<_>>()
-            })
-            .collect(),
+        lens_floating_panes: app.lenses.iter().enumerate().filter_map(|(i,s)|s.as_ref().map(|s|(i,s)))
+            .flat_map(|(i,space)|space.outer_workspace().ok().into_iter().flat_map(|frame|frame.workspace.visible_floating(true).iter().map(|f|crate::panes::PaneId(f.tile.id.0)).collect::<Vec<_>>())
+                .filter_map(move |pane|app.pane_content(pane).map(|c|format!("{i}:{}",c.tag()))).collect::<Vec<_>>()).collect(),
         session: app.session_label(app.session_id),
         session_count: app.sessions.len(),
         active_ratio: app.active_pane.and_then(|active| {

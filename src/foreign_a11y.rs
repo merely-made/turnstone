@@ -29,7 +29,7 @@ pub(crate) fn activation_safe_update(
 #[derive(Clone)]
 struct RetainedTree {
     tree: Tree,
-    nodes: BTreeMap<NodeId, Node>,
+    nodes: std::sync::Arc<BTreeMap<NodeId, Node>>,
     focus: NodeId,
     publication: Grafts,
 }
@@ -57,7 +57,7 @@ impl RetainedTree {
                         "initial foreign update has no tree data".into(),
                     )
                 })?,
-                nodes: BTreeMap::new(),
+                nodes: std::sync::Arc::new(BTreeMap::new()),
                 focus: update.focus,
                 publication: Grafts::new(),
             },
@@ -73,7 +73,7 @@ impl RetainedTree {
                     "duplicate local node {id:?}"
                 )));
             }
-            retained.nodes.insert(id, node);
+            std::sync::Arc::make_mut(&mut retained.nodes).insert(id, node);
         }
         let mut live = HashSet::new();
         let mut pending = vec![retained.tree.root];
@@ -110,7 +110,7 @@ impl RetainedTree {
         }
         // Nodes omitted after their parent's child-list change are retired,
         // including their action masks. They are never retained as targets.
-        retained.nodes.retain(|id, _| live.contains(id));
+        std::sync::Arc::make_mut(&mut retained.nodes).retain(|id, _| live.contains(id));
         Ok(retained)
     }
 
@@ -261,7 +261,7 @@ impl ForeignA11y {
         }
         self.mounted.retain(|surface| {
             self.surfaces.get(surface).is_some_and(|current| {
-                previous
+                current.ready() && previous
                     .get(surface)
                     .is_some_and(|old| old.root == current.root)
             })
@@ -269,7 +269,7 @@ impl ForeignA11y {
         self.published.retain(|surface, published| {
             self.surfaces
                 .get(surface)
-                .is_some_and(|current| current.root == published.root)
+                .is_some_and(|current| current.ready() && current.root == published.root)
         });
         self.dirty = true;
     }
@@ -1743,5 +1743,66 @@ mod tests {
         assert!(!public.contains("secret"));
         assert_eq!(foreign.published_text(), "public fixture marker");
         assert_eq!(foreign.published_counts(), (1, 1, 3));
+    }
+    #[test]
+    fn window_publishers_share_retained_nodes_and_keep_mount_and_replay_independent() {
+        let mut primary = nested();
+        let mut lens = ForeignA11y::new();
+        lens.sync_retained_from(&primary);
+        let visible = [surface(1)];
+        assert!(std::sync::Arc::ptr_eq(
+            &primary.surfaces[&surface(1)].trees[&tree(103)].nodes,
+            &lens.surfaces[&surface(1)].trees[&tree(103)].nodes
+        ));
+        let mut primary_consumer = activate(&mut primary, &visible, 10);
+        let mut lens_consumer = activate(&mut lens, &[], 0);
+        send(
+            &mut primary_consumer,
+            primary.frame(host(&primary, &[], 0), &[]).unwrap(),
+        );
+        send(
+            &mut lens_consumer,
+            lens.frame(host(&lens, &visible, 10), &visible).unwrap(),
+        );
+        assert!(
+            primary
+                .action_target(&request(tree(103), 1, Action::Click))
+                .is_err()
+        );
+        assert_eq!(
+            lens.action_target(&request(tree(103), 1, Action::Click)),
+            Ok(surface(1))
+        );
+        primary
+            .apply(
+                surface(1),
+                TreeUpdate {
+                    nodes: vec![(NodeId(1), button("moved and updated"))],
+                    tree: None,
+                    tree_id: tree(103),
+                    focus: NodeId(1),
+                },
+            )
+            .unwrap();
+        lens.sync_retained_from(&primary);
+        send(
+            &mut lens_consumer,
+            lens.frame(host(&lens, &visible, 10), &visible).unwrap(),
+        );
+        assert!(lens.published_text().contains("moved and updated"));
+        let before = lens.published_counts();
+        primary.reset_publication();
+        assert_eq!(lens.published_counts(), before);
+        primary.retire(surface(1));
+        lens.sync_retained_from(&primary);
+        send(
+            &mut lens_consumer,
+            lens.frame(host(&lens, &[], 0), &[]).unwrap(),
+        );
+        assert!(
+            lens.action_target(&request(tree(103), 1, Action::Click))
+                .is_err()
+        );
+        assert_eq!(lens.published_counts(), (0, 0, 0));
     }
 }

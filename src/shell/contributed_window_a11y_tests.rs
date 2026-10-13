@@ -27,12 +27,8 @@ fn fixture() -> Fixture {
     app.update(Action::FloatActivePane);
     app.update(Action::TearOutActivePane);
     assert_eq!(app.space_of(pane), Some(SpaceRef::Lens(0)));
-    let spec = app
-        .blueprint_space(SpaceRef::Lens(0))
-        .unwrap()
-        .pane(pane)
-        .unwrap()
-        .clone();
+    let spec = shared_spec(&app, pane);
+    assert_eq!(spec.source, source("fake.v1"));
     let mut registry = SurfaceProviderRegistry::new();
     registry
         .register_provider(provider("fake", "fake.v1", "fake.surface"))
@@ -61,14 +57,17 @@ fn pane_rect(plan: &[crate::surface::Surface], pane: PaneId) -> Option<Rect> {
     plan.iter()
         .find_map(|surface| (surface.kind == SurfaceKind::Pane(pane)).then_some(surface.rect))
 }
-fn spec(f: &Fixture) -> PaneSpec {
-    f.app
-        .blueprint_space(f.app.space_of(f.pane).unwrap())
-        .unwrap()
-        .pane(f.pane)
-        .unwrap()
-        .clone()
+fn shared_spec(app: &App, pane: PaneId) -> PaneSpec {
+    let space = app.space_of(pane).expect("pane retains its actual window");
+    assert!(app.blueprint_space(space).is_none(), "shipping transfers keep shared Workspace authority");
+    let frame = app.space(space).unwrap().outer_workspace().unwrap();
+    let spec: PaneSpec = serde_json::from_value(frame.descriptors.get(&pane.0).expect("shared source descriptor").clone()).unwrap();
+    assert_eq!(spec.id,pane);
+    assert_eq!(app.pane_content(pane).unwrap().kind_id(),spec.kind);
+    spec
 }
+fn spec(f: &Fixture) -> PaneSpec { shared_spec(&f.app,f.pane) }
+
 fn publish(
     f: &Fixture,
     origin: SpaceRef,

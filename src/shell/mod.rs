@@ -71,6 +71,7 @@ use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 use winit::window::{Window, WindowId};
 
 pub(crate) mod a11y_bridge;
+mod window_a11y;
 
 use crate::panes::PaneContent;
 use crate::settings_pane::LiveSettingsHandle;
@@ -562,6 +563,16 @@ fn shared_out_dir_from_env() -> std::path::PathBuf {
     dir
 }
 
+/// Reuse one full-window frame texture for each measured float crop. This
+/// preserves the DOM's paint/clip coordinates without a second layout owner.
+fn frame_placement(surface: &crate::surface::Surface,w:u32,h:u32)->ExternalTexturePlacement {
+    let r=surface.rect;
+    let placement=ExternalTexturePlacement::new(r.dest());
+    if matches!(surface.kind,SurfaceKind::FloatFrame(_)) {
+        placement.with_uv([r.x/w.max(1) as f32,r.y/h.max(1) as f32,(r.x+r.w)/w.max(1) as f32,(r.y+r.h)/h.max(1) as f32])
+    } else {placement}
+}
+
 /// One surface's scene, produced by render's mutable first pass and consumed by
 /// its immutable rasterization pass. Splitting the two keeps a content session's
 /// mutable borrow off the immutable `host` borrow.
@@ -984,6 +995,7 @@ pub struct Shell {
     a11y_actions: crate::shell::a11y_bridge::ActionQueue,
     /// Activation occurs on a platform thread; replay subtrees on the UI thread.
     a11y_epoch: Option<u64>,
+    a11y_surface_layout: Vec<(uuid::Uuid, accesskit::Rect)>,
     surface_a11y: crate::foreign_a11y::ForeignA11y,
     host: Option<SurfaceHost>,
     render_recovery: Option<Arc<genet_render_host::SharedRenderCore>>,
@@ -1421,6 +1433,7 @@ impl Shell {
             a11y_routes: crate::a11y::A11yRoutes::new(),
             a11y_actions: std::sync::Arc::new(std::sync::Mutex::new(Default::default())),
             a11y_epoch: None,
+            a11y_surface_layout: Vec::new(),
             surface_a11y: crate::foreign_a11y::ForeignA11y::new(),
             host: None,
             render_recovery: None,
@@ -1509,7 +1522,7 @@ impl Shell {
     fn clear_surface_content(&mut self) {
         self.cancel_content_pointer();
         self.content_sessions.retain_appearances(|_, _| false);
-        self.surface_a11y.clear();
+        self.clear_surface_semantics();
         self.content_sessions
             .retain(|_, content| content.lane() != pelt_core::PeltLane::Surface);
         self.surface_find_requests.clear();
@@ -1798,7 +1811,7 @@ impl Shell {
             .then(|| self.outer_rects(0, &self.app.frisket, self.app.maximized,
                 (self.width.max(1), self.height.max(1))));
         primary_content_plan_with_rects(&self.app, &self.content_sessions, self.width,
-            self.height, frame.as_deref())
+            self.height, frame.as_deref(), &self.outer_float_rects(0))
     }
 
     /// A pane's `PaneContent`, looked up from the frisket tree by id.
@@ -2053,6 +2066,17 @@ impl Shell {
     fn push_a11y_tree(&mut self) {
         self.sync_content_placements();
         self.drain_surface_accessibility();
+        // All losing native parents detach before any destination attaches.
+        let current = self.foreign_a11y_placements();
+        if self.a11y_surface_layout.iter().any(|(node,_)| !current.iter().any(|(n,_)| n == node)) {
+            let retained = current.into_iter().filter(|(node,_)| self.a11y_surface_layout.iter().any(|(n,_)| n == node)).collect();
+            self.push_primary_a11y_tree(Some(retained));
+        }
+        self.withdraw_lens_a11y_departures();
+        self.push_primary_a11y_tree(None);
+        self.push_lens_a11y_trees();
+    }
+    fn push_primary_a11y_tree(&mut self, override_placements: Option<Vec<(uuid::Uuid,accesskit::Rect)>>) {
         let epoch = self
             .a11y_adapter
             .as_ref()
@@ -2065,7 +2089,7 @@ impl Shell {
                 .publish(Default::default());
             self.a11y_epoch = epoch;
         }
-        let placements = self.foreign_a11y_placements();
+        let placements = override_placements.unwrap_or_else(|| self.foreign_a11y_placements());
         let document_a11y::Projected {
             mut tree,
             mut routes,
@@ -2187,7 +2211,7 @@ impl Shell {
         if !served {
             self.surface_a11y.retry_publication();
         }
-        self.push_lens_a11y_trees();
+        self.a11y_surface_layout = placements;
     }
 
     /// Drain assistive actions queued by the platform thread and lower each
@@ -2288,11 +2312,7 @@ impl Shell {
                     Some(id) => match self.lens_windows.get(&id) {
                         Some(lens) => (
                             lens.a11y_forest.action_target(&request),
-                            self.foreign_a11y_placements_in(&self.lens_plan(
-                                lens.ordinal,
-                                lens.width,
-                                lens.height,
-                            )),
+                            self.window_foreign_a11y_placements(lens.ordinal + 1),
                         ),
                         None => (
                             Err("native accessibility window closed".to_owned()),
@@ -2314,8 +2334,15 @@ impl Shell {
                 }
                 continue;
             }
-            if let Some(crate::a11y::A11yRoute::Frame(route)) = self.a11y_routes.get(&request.target_node).cloned() {
-                if window.is_some() || !self.apply_frame_a11y(&route, request.action) {
+            let (slot, route) = match window {
+                None => (0, self.a11y_routes.get(&request.target_node).cloned()),
+                Some(id) => match self.lens_windows.get(&id) {
+                    Some(lens) => (lens.ordinal + 1, lens.a11y_routes.get(&request.target_node).cloned()),
+                    None => continue,
+                },
+            };
+            if let Some(crate::a11y::A11yRoute::Frame(route)) = &route {
+                if !self.apply_frame_a11y(slot, route, request.action) {
                     self.app.note(crate::observe::AppEvent::InteractionMissed {
                         what: "a11y-action", target: "Shared frame control is stale, hidden or unsupported".into(),
                     });
@@ -2328,9 +2355,8 @@ impl Shell {
             ) {
                 continue;
             }
-            let route = self.a11y_routes.get(&request.target_node).cloned();
             if request.action == accesskit::Action::Focus
-                && crate::a11y::focus_host_input(&mut self.app, request.target_node)
+                && slot == 0 && crate::a11y::focus_host_input(&mut self.app, request.target_node)
             {
                 self.request_redraw();
                 continue;
@@ -2339,6 +2365,12 @@ impl Shell {
             // across them must not perform their default action.
             if request.action != accesskit::Action::Click {
                 continue;
+            }
+            if let Some(crate::a11y::A11yRoute::SelectMember{pane,..})=&route {
+                if self.app.space_of(*pane)!=Some(frame_keys::space(slot)) {
+                    self.app.note(crate::observe::AppEvent::InteractionMissed {what:"a11y-action",target:"Graph projection moved to another window".into()});
+                    continue;
+                }
             }
             let effects =
                 crate::a11y::apply_route(&mut self.app, route.as_ref(), request.target_node);
@@ -2880,9 +2912,9 @@ fn primary_content_plan(
     width: u32,
     height: u32,
 ) -> Vec<crate::surface::Surface> {
-    let frame = outer_workspace::frame_body_rects(app, crate::action::SpaceRef::Primary,
+    let frame = outer_workspace::frame_body_geometry(app, crate::action::SpaceRef::Primary,
         (width.max(1), height.max(1)));
-    primary_content_plan_with_rects(app, contents, width, height, frame.as_deref())
+    primary_content_plan_with_rects(app, contents, width, height, frame.as_ref().map(|(b,_)| b.as_slice()), frame.as_ref().map(|(_,f)| f.as_slice()).unwrap_or_default())
 }
 
 fn primary_content_plan_with_rects(
@@ -2891,6 +2923,7 @@ fn primary_content_plan_with_rects(
     width: u32,
     height: u32,
     frame_rects: Option<&[(crate::panes::PaneId, Rect)]>,
+    frame_floats: &[(crate::panes::PaneId, Rect, Rect)],
 ) -> Vec<crate::surface::Surface> {
     let area = Rect::full(width.max(1), height.max(1));
     // A5 promotes a space to its `SpaceBlueprint` only when it enters the
@@ -2922,7 +2955,7 @@ fn primary_content_plan_with_rects(
                     .collect(),
             )
         },
-        None => (frame_rects.unwrap_or_default().to_vec(), Vec::new(), Vec::new()),
+        None => (frame_rects.unwrap_or_default().to_vec(), Vec::new(), frame_floats.iter().map(|(id,_,body)| (*id,*body)).collect()),
     };
     let mut graph_rects = Vec::new();
     let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
@@ -3089,21 +3122,29 @@ fn primary_content_plan_with_rects(
             _ => None,
         }
     }));
-    surfaces.extend(float_rects.into_iter().filter_map(|(id, rect)| {
-        let content = app.pane_content(id)?;
-        let kind = match content {
+    for (id, rect) in float_rects {
+        let Some(content) = app.pane_content(id).cloned() else { continue; };
+        if let Some((_, outer, _)) = frame_floats.iter().find(|(pane,_,_)| *pane == id) {
+            let kind = SurfaceKind::FloatFrame(id);
+            surfaces.push(crate::surface::Surface { id: crate::surface::SurfaceId::for_kind(kind), kind, rect: *outer });
+        }
+        let kind = match &content {
             PaneContent::Orrery => SurfaceKind::Graph(id),
-            PaneContent::Tile(member) if contents.contains_key(member) => {
-                SurfaceKind::Content(*member)
-            },
+            PaneContent::Tile(member) if contents.contains_key(member) => SurfaceKind::Content(*member),
             _ => SurfaceKind::Pane(id),
         };
-        Some(crate::surface::Surface {
-            id: crate::surface::SurfaceId::for_kind(kind),
-            kind,
-            rect,
-        })
-    }));
+        surfaces.push(crate::surface::Surface { id: crate::surface::SurfaceId::for_kind(kind), kind, rect });
+        if matches!(content, PaneContent::Workbench) {
+            let geom = app.workbench_for_pane(id).and_then(|w| w.to_arrangement().1);
+            for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), rect).cells {
+                if let Some(node) = cell.active_member().filter(|n| contents.contains_key(n)) {
+                    let body = cell.body();
+                    appearance_roles.push((node, crate::surface::appearance::workbench_appearance_role(id,node), body));
+                    surfaces.push(crate::surface::Surface { id: crate::surface::SurfaceId::content(node), kind: SurfaceKind::Content(node), rect: body });
+                }
+            }
+        }
+    }
     if let Some(rect) = chrome {
         surfaces.push(crate::surface::Surface {
             id: crate::surface::SurfaceId::CHROME,

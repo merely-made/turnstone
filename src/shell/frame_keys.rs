@@ -17,7 +17,7 @@ pub(super) struct HeaderFocus {
     pub(super) return_focus: FocusTarget,
     pub(super) return_pane: Option<PaneId>,
 }
-fn space(slot: usize) -> SpaceRef {
+pub(super) fn space(slot: usize) -> SpaceRef {
     if slot == 0 {
         SpaceRef::Primary
     } else {
@@ -54,6 +54,9 @@ pub(super) fn return_focus_is_valid(
 }
 
 impl Shell {
+    pub(super) fn raise_shared_float(&mut self, pane: PaneId) {
+        if self.app.raise_floating_pane(pane) { self.act(Action::SaveSession); }
+    }
     /// Withdrawal cannot restore old body focus into a different physical window.
     pub(super) fn retire_frame_focus(&mut self, window: u64) {
         if let Some(owner) = retire_header_focus(&mut self.outer_focus, window) {
@@ -166,9 +169,13 @@ impl Shell {
         events: Vec<WorkspaceEvent>,
         save_dividers: bool,
     ) {
-        let divider = events
-            .iter()
-            .any(|e| matches!(e, WorkspaceEvent::Tile(TileEvent::DividerMoved { .. })));
+        let divider = events.iter().any(|e| {
+            matches!(
+                e,
+                WorkspaceEvent::Tile(TileEvent::DividerMoved { .. })
+                    | WorkspaceEvent::Float(workbench::FloatEvent::SetRect { .. })
+            )
+        });
         for event in events {
             self.act(Action::OuterWorkspace {
                 space: space(slot),
@@ -242,6 +249,7 @@ impl Shell {
     }
     pub(super) fn apply_frame_a11y(
         &mut self,
+        slot: usize,
         route: &crate::frame_controls::FrameRoute,
         action: accesskit::Action,
     ) -> bool {
@@ -251,20 +259,28 @@ impl Shell {
         {
             return false;
         }
-        if !self.prepare_outer(0, (self.width, self.height)) {
+        let size = if slot == 0 {
+            (self.width, self.height)
+        } else {
+            let Some(lens) = self.lens_windows.values().find(|l| l.ordinal + 1 == slot) else {
+                return false;
+            };
+            (lens.width, lens.height)
+        };
+        if !self.prepare_outer(slot, size) {
             return false;
         }
         let events = self
             .outer_frames
             .borrow_mut()
-            .get_mut(&0)
+            .get_mut(&slot)
             .and_then(|frame| frame.accessibility_action(route, action));
         let Some(events) = events else { return false };
-        if !self.enter_frame_focus(0, Some(route.control.clone())) {
+        if !self.enter_frame_focus(slot, Some(route.control.clone())) {
             return false;
         }
-        self.apply_frame_events(0, events, true);
-        self.prepare_outer(0, (self.width, self.height));
+        self.apply_frame_events(slot, events, true);
+        self.prepare_outer(slot, size);
         self.request_redraw();
         true
     }

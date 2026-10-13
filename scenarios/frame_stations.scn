@@ -1,0 +1,25 @@
+# Fresh private profile/session stores. Shared floats now persist in v2 sidecars.
+settle 30
+key escape
+act Open Roster pane
+settle 5
+act Float pane
+settle 5
+assert event pane-floated roster
+assert snap floats == roster
+capture 01_shared_float
+act Tear out pane
+settle 30
+assert windows == 2
+assert lens-pane 0:roster
+assert snap lens-floats == 0:roster
+assert snap a11y-lens-windows == 1
+capture-lens 02_shared_float_lens
+act Return pane to primary
+settle 10
+assert pane roster
+assert snap floats == roster
+assert snap lens-float-count == 0
+capture 03_shared_float_returned
+# Leave the floating station saved for the reopen fixture.
+log shared pane station draft saved

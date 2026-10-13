@@ -1,0 +1,1076 @@
+   Compiling turnstone-stations-windows-receipt v0.0.0 (/home/markik/Code/repos/turnstone/docs/receipts/stations_windows_20261013/harness)
+warning: unused import: `TilePath`
+  --> src/lib.rs:34:82
+   |
+34 |         ContentSource, SplitAxis, TabStack, Tile, TileBranch, TileEvent, TileId, TilePath,
+   |                                                                                  ^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `0` is never read
+  --> src/../../../../../src/frame_a11y.rs:17:9
+   |
+17 |     Tab(u64),
+   |     --- ^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+17 -     Tab(u64),
+17 +     Tab(()),
+   |
+
+warning: field `0` is never read
+  --> src/../../../../../src/frame_a11y.rs:18:11
+   |
+18 |     Close(u64),
+   |     ----- ^^^
+   |     |
+   |     field in this variant
+   |
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+18 -     Close(u64),
+18 +     Close(()),
+   |
+
+warning: fields `0` and `1` are never read
+  --> src/../../../../../src/frame_a11y.rs:19:13
+   |
+19 |     Divider(Vec<usize>, usize),
+   |     ------- ^^^^^^^^^^  ^^^^^
+   |     |
+   |     fields in this variant
+   |
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+   |
+19 -     Divider(Vec<usize>, usize),
+19 +     Divider((), ()),
+   |
+
+warning: method `matches` is never used
+  --> src/../../../../../src/frame_a11y.rs:22:12
+   |
+21 | impl FixtureTarget {
+   | ------------------ method in this implementation
+22 |     pub fn matches(&self, control: &crate::frame_controls::Control) -> bool {
+   |            ^^^^^^^
+
+warning: method `root` is never used
+  --> src/../../../../../src/frame_controls.rs:94:19
+   |
+93 | impl FrameControls {
+   | ------------------ method in this implementation
+94 |     pub(crate) fn root(&self) -> NodeId {
+   |                   ^^^^
+
+warning: function `interface_font_properties` is never used
+  --> src/../../../../../src/frame_style.rs:13:15
+   |
+13 | pub(crate) fn interface_font_properties(
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:132:10
+    |
+132 |     Open(String),
+    |     ---- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+132 -     Open(String),
+132 +     Open(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:133:16
+    |
+133 |     ImportClip(String),
+    |     ---------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+133 -     ImportClip(String),
+133 +     ImportClip(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:134:16
+    |
+134 |     ExportClip(String),
+    |     ---------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+134 -     ExportClip(String),
+134 +     ExportClip(()),
+    |
+
+warning: field `command` is never read
+   --> src/../../../../../src/scenario.rs:136:9
+    |
+135 |     Omnibar {
+    |     ------- field in this variant
+136 |         command: bool,
+    |         ^^^^^^^
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:139:12
+    |
+139 |     Insert(String),
+    |     ------ ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+139 -     Insert(String),
+139 +     Insert(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:141:9
+    |
+141 |     Act(String),
+    |     --- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+141 -     Act(String),
+141 +     Act(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:144:12
+    |
+144 |     Script(String),
+    |     ------ ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+144 -     Script(String),
+144 +     Script(()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:148:11
+    |
+148 |     Click(f32, f32),
+    |     ----- ^^^  ^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+148 -     Click(f32, f32),
+148 +     Click((), ()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:149:11
+    |
+149 |     Press(f32, f32),
+    |     ----- ^^^  ^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+149 -     Press(f32, f32),
+149 +     Press((), ()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:150:13
+    |
+150 |     Release(f32, f32),
+    |     ------- ^^^  ^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+150 -     Release(f32, f32),
+150 +     Release((), ()),
+    |
+
+warning: fields `0`, `1`, `2`, `3`, and `4` are never read
+   --> src/../../../../../src/scenario.rs:156:11
+    |
+156 |     Touch(u64, inker::PointerPhase, f32, f32, Option<f32>),
+    |     ----- ^^^  ^^^^^^^^^^^^^^^^^^^  ^^^  ^^^  ^^^^^^^^^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+156 -     Touch(u64, inker::PointerPhase, f32, f32, Option<f32>),
+156 +     Touch((), (), (), (), ()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:159:16
+    |
+159 |     RightClick(f32, f32),
+    |     ---------- ^^^  ^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+159 -     RightClick(f32, f32),
+159 +     RightClick((), ()),
+    |
+
+warning: fields `0`, `1`, `2`, and `3` are never read
+   --> src/../../../../../src/scenario.rs:161:12
+    |
+161 |     Scroll(f32, f32, f32, f32),
+    |     ------ ^^^  ^^^  ^^^  ^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+161 -     Scroll(f32, f32, f32, f32),
+161 +     Scroll((), (), (), ()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:165:18
+    |
+165 |     ScrollReader(String, f32),
+    |     ------------ ^^^^^^  ^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+165 -     ScrollReader(String, f32),
+165 +     ScrollReader((), ()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:168:29
+    |
+168 |     RecordReaderAppearances(String),
+    |     ----------------------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+168 -     RecordReaderAppearances(String),
+168 +     RecordReaderAppearances(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:175:14
+    |
+175 |     ClickRow(String),
+    |     -------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+175 -     ClickRow(String),
+175 +     ClickRow(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:177:14
+    |
+177 |     ClickTab(String),
+    |     -------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+177 -     ClickTab(String),
+177 +     ClickTab(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:179:15
+    |
+179 |     ClickNode(String),
+    |     --------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+179 -     ClickNode(String),
+179 +     ClickNode(()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:181:10
+    |
+181 |     Drag((f32, f32), (f32, f32)),
+    |     ---- ^^^^^^^^^^  ^^^^^^^^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+181 -     Drag((f32, f32), (f32, f32)),
+181 +     Drag((), ()),
+    |
+
+warning: fields `0`, `1`, and `2` are never read
+   --> src/../../../../../src/scenario.rs:185:13
+    |
+185 |     DragTab(String, String, Option<String>),
+    |     ------- ^^^^^^  ^^^^^^  ^^^^^^^^^^^^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+185 -     DragTab(String, String, Option<String>),
+185 +     DragTab((), (), ()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:188:16
+    |
+188 |     DragTabOut(String),
+    |     ---------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+188 -     DragTabOut(String),
+188 +     DragTabOut(()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:197:19
+    |
+197 |     AssertWbCells(CmpOp, usize),
+    |     ------------- ^^^^^  ^^^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+197 -     AssertWbCells(CmpOp, usize),
+197 +     AssertWbCells((), ()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:199:18
+    |
+199 |     AssertWbCell(String),
+    |     ------------ ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+199 -     AssertWbCell(String),
+199 +     AssertWbCell(()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:201:22
+    |
+201 |     AssertWbFraction(CmpOp, f32),
+    |     ---------------- ^^^^^  ^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+201 -     AssertWbFraction(CmpOp, f32),
+201 +     AssertWbFraction((), ()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:203:16
+    |
+203 |     AssertA11y(String),
+    |     ---------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+203 -     AssertA11y(String),
+203 +     AssertA11y(()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:205:19
+    |
+205 |     AssertWindows(CmpOp, usize),
+    |     ------------- ^^^^^  ^^^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+205 -     AssertWindows(CmpOp, usize),
+205 +     AssertWindows((), ()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:207:20
+    |
+207 |     AssertLensPane(String),
+    |     -------------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+207 -     AssertLensPane(String),
+207 +     AssertLensPane(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:210:23
+    |
+210 |     AssertLensSurface(String),
+    |     ----------------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+210 -     AssertLensSurface(String),
+210 +     AssertLensSurface(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:213:18
+    |
+213 |     AssertNoPane(String),
+    |     ------------ ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+213 -     AssertNoPane(String),
+213 +     AssertNoPane(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:216:21
+    |
+216 |     AssertNoSurface(String),
+    |     --------------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+216 -     AssertNoSurface(String),
+216 +     AssertNoSurface(()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:217:29
+    |
+217 |     AssertReaderAppearances(CmpOp, usize),
+    |     ----------------------- ^^^^^  ^^^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+217 -     AssertReaderAppearances(CmpOp, usize),
+217 +     AssertReaderAppearances((), ()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:218:25
+    |
+218 |     AssertReaderSources(CmpOp, usize),
+    |     ------------------- ^^^^^  ^^^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+218 -     AssertReaderSources(CmpOp, usize),
+218 +     AssertReaderSources((), ()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:219:22
+    |
+219 |     AssertReaderRole(String),
+    |     ---------------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+219 -     AssertReaderRole(String),
+219 +     AssertReaderRole(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:220:26
+    |
+220 |     AssertReaderViewport(String),
+    |     -------------------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+220 -     AssertReaderViewport(String),
+220 +     AssertReaderViewport(()),
+    |
+
+warning: fields `0`, `1`, and `2` are never read
+   --> src/../../../../../src/scenario.rs:221:24
+    |
+221 |     AssertReaderScroll(String, CmpOp, f32),
+    |     ------------------ ^^^^^^  ^^^^^  ^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+221 -     AssertReaderScroll(String, CmpOp, f32),
+221 +     AssertReaderScroll((), (), ()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:228:22
+    |
+228 |     AssertNoLensPane(String),
+    |     ---------------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+228 -     AssertNoLensPane(String),
+228 +     AssertNoLensPane(()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:231:23
+    |
+231 |     AssertActiveRatio(CmpOp, f32),
+    |     ----------------- ^^^^^  ^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+231 -     AssertActiveRatio(CmpOp, f32),
+231 +     AssertActiveRatio((), ()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:233:20
+    |
+233 |     AssertSessions(CmpOp, usize),
+    |     -------------- ^^^^^  ^^^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+233 -     AssertSessions(CmpOp, usize),
+233 +     AssertSessions((), ()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:235:19
+    |
+235 |     AssertSession(String),
+    |     ------------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+235 -     AssertSession(String),
+235 +     AssertSession(()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:238:17
+    |
+238 |     AssertNodes(CmpOp, usize),
+    |     ----------- ^^^^^  ^^^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+238 -     AssertNodes(CmpOp, usize),
+238 +     AssertNodes((), ()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:241:18
+    |
+241 |     AssertEnergy(CmpOp, f32),
+    |     ------------ ^^^^^  ^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+241 -     AssertEnergy(CmpOp, f32),
+241 +     AssertEnergy((), ()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:243:26
+    |
+243 |     AssertPhysicsRunning(bool),
+    |     -------------------- ^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+243 -     AssertPhysicsRunning(bool),
+243 +     AssertPhysicsRunning(()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:244:20
+    |
+244 |     AssertOverlaps(CmpOp, usize),
+    |     -------------- ^^^^^  ^^^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+244 -     AssertOverlaps(CmpOp, usize),
+244 +     AssertOverlaps((), ()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:246:17
+    |
+246 |     CaptureLens(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+246 -     CaptureLens(String),
+246 +     CaptureLens(()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:248:17
+    |
+248 |     AssertRatio(CmpOp, f32),
+    |     ----------- ^^^^^  ^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+248 -     AssertRatio(CmpOp, f32),
+248 +     AssertRatio((), ()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:249:12
+    |
+249 |     Settle(u32),
+    |     ------ ^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+249 -     Settle(u32),
+249 +     Settle(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:250:13
+    |
+250 |     Capture(String),
+    |     ------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+250 -     Capture(String),
+250 +     Capture(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:251:19
+    |
+251 |     AssertOmnibar(bool),
+    |     ------------- ^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+251 -     AssertOmnibar(bool),
+251 +     AssertOmnibar(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:254:20
+    |
+254 |     AssertScrolled(bool),
+    |     -------------- ^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+254 -     AssertScrolled(bool),
+254 +     AssertScrolled(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:255:16
+    |
+255 |     AssertText(String),
+    |     ---------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+255 -     AssertText(String),
+255 +     AssertText(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:256:19
+    |
+256 |     AssertFocused(String),
+    |     ------------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+256 -     AssertFocused(String),
+256 +     AssertFocused(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:262:19
+    |
+262 |     AssertSurface(String),
+    |     ------------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+262 -     AssertSurface(String),
+262 +     AssertSurface(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:264:17
+    |
+264 |     AssertFocus(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+264 -     AssertFocus(String),
+264 +     AssertFocus(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:266:16
+    |
+266 |     AssertPane(String),
+    |     ---------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+266 -     AssertPane(String),
+266 +     AssertPane(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:268:21
+    |
+268 |     AssertMaximized(bool),
+    |     --------------- ^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+268 -     AssertMaximized(bool),
+268 +     AssertMaximized(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:270:15
+    |
+270 |     AssertRow(String),
+    |     --------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+270 -     AssertRow(String),
+270 +     AssertRow(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:272:17
+    |
+272 |     AssertNoRow(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+272 -     AssertNoRow(String),
+272 +     AssertNoRow(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:273:15
+    |
+273 |     AssertTab(String),
+    |     --------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+273 -     AssertTab(String),
+273 +     AssertTab(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:275:13
+    |
+275 |     Divider(f32),
+    |     ------- ^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+275 -     Divider(f32),
+275 +     Divider(()),
+    |
+
+warning: fields `0` and `1` are never read
+   --> src/../../../../../src/scenario.rs:276:23
+    |
+276 |     AssertSuggestions(CmpOp, usize),
+    |     ----------------- ^^^^^  ^^^^^
+    |     |
+    |     fields in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+    |
+276 -     AssertSuggestions(CmpOp, usize),
+276 +     AssertSuggestions((), ()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:283:17
+    |
+283 |     AssertEvent(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+283 -     AssertEvent(String),
+283 +     AssertEvent(()),
+    |
+
+warning: field `0` is never read
+   --> src/../../../../../src/scenario.rs:303:9
+    |
+303 |     Log(String),
+    |     --- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+303 -     Log(String),
+303 +     Log(()),
+    |
+
+warning: `turnstone-stations-windows-receipt` (lib test) generated 69 warnings (run `cargo fix --lib -p turnstone-stations-windows-receipt --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.71s
+     Running unittests src/lib.rs (/home/markik/Code/testing/mere/forme-field-target/debug/deps/turnstone_stations_windows_receipt-cfe4fd213b3fa253)
+
+running 69 tests
+test foreign_a11y::tests::inactive_adapter_does_not_consume_pending_activation ... ok
+test foreign_a11y::tests::malformed_known_tree_withdraws_but_unknown_tree_cannot_corrupt ... ok
+test foreign_a11y::tests::duplicate_ownership_cycles_invalid_focus_and_local_graphs_fail_closed ... ok
+test foreign_a11y::tests::idle_delta_reaches_consumer_without_a_pixel_frame ... ok
+test foreign_a11y::tests::incomplete_tree_waits_and_invalid_host_frame_keeps_publication_pending ... ok
+test foreign_a11y::tests::navigation_prunes_old_nested_trees_and_ignores_stale_callbacks ... ok
+test foreign_a11y::tests::fixture_text_optin_never_exposes_password_nodes_or_descendants ... ok
+test foreign_a11y::tests::hidden_remount_and_adapter_reactivation_replay_all_descendants ... ok
+test foreign_a11y::tests::nested_focus_and_two_panes_keep_identical_local_ids_distinct ... ok
+test foreign_a11y::tests::publication_diagnostic_uses_emitted_frame_not_pending_supplier_delta ... ok
+test foreign_a11y::tests::publication_diagnostic_withdraws_hidden_retired_malformed_and_reset_trees ... ok
+test scenario::tests::browser_receipt_assertions_are_typed_steps ... ok
+test foreign_a11y::tests::unix_consumer::recursive_frame_orders_descendants_and_preserves_two_pane_ids ... ok
+test scenario::tests::env_substitution_expands_at_parse_time_backslashes_and_colons_intact ... ok
+test scenario::tests::env_substitution_names_the_missing_variable_and_line ... ok
+test scenario::tests::file_hover_and_drop_are_distinct_ui_turns ... ok
+test foreign_a11y::tests::windows_consumer::recursive_frame_orders_descendants_and_preserves_two_pane_ids ... ok
+test foreign_a11y::tests::removed_local_nodes_retire_their_actions ... ok
+test scenario::tests::idle_diagnostics_and_document_idle_are_typed_steps ... ok
+test scenario::tests::find_chord_is_one_focus_routed_key_step ... ok
+test scenario::tests::parse_errors_name_their_line ... ok
+test foreign_a11y::tests::retirement_and_new_root_reject_old_generation_actions_and_updates ... ok
+test scenario::tests::pointer_move_is_a_distinct_scenario_step ... ok
+test scenario::tests::record_place_is_a_typed_step ... ok
+test scenario::tests::save_chord_is_one_focus_routed_key_step ... ok
+test scenario::tests::tab_is_a_focus_routed_key_step ... ok
+test foreign_a11y::tests::window_publishers_share_retained_nodes_and_keep_mount_and_replay_independent ... ok
+test scenario::tests::touch_is_a_typed_step ... ok
+test scenario::tests::type_preserves_backslashes_and_colons_unchanged ... ok
+test scenario::tests::wait_knot_is_a_typed_step ... ok
+test scenario::tests::wait_row_wait_status_wait_file_are_typed_steps ... ok
+test tests::ctrl_w_closes_the_exact_focused_handle ... ok
+test tests::close_control_enter_closes_only_its_tile_then_repairs_focus ... ok
+test tests::escape_exits_and_plain_body_hotkeys_do_not_emit_workspace_edits ... ok
+test tests::changed_divider_membership_does_not_retarget_old_focus ... ok
+test tests::inactive_close_does_not_activate_or_drop_other_accesses ... ok
+test foreign_a11y::tests::unix_consumer::activation_at_every_batch_boundary_restarts_nested_replay ... ok
+test tests::native_fixture_controls_and_keys_parse_through_actual_parsers ... ok
+test foreign_a11y::tests::windows_consumer::activation_at_every_batch_boundary_restarts_nested_replay ... ok
+test tests::scope_and_revision_changes_reject_old_platform_routes ... ok
+test tests::nary_keyboard_resize_preserves_other_shares_and_boundary_focus ... ok
+test tests::unchanged_sync_keeps_revision_and_focus ... ok
+test tests::traversal_uses_roving_tabs_and_exits_in_both_directions ... ok
+test window_projection::tests::repeated_producer_has_one_owner_and_follows_exact_focused_appearance ... ok
+test tests::shared_tab_arrows_emit_host_events_and_reconcile_focus_to_selected_tile ... ok
+test window_projection::tests::window_instance_and_session_namespace_all_local_references ... ok
+test workspace::tests::duplicate_ids_and_missing_drop_targets_do_not_orphan_a_pane ... ok
+test workspace::tests::closing_a_float_retires_its_descriptor_and_invisible_float_keeps_custody ... ok
+test workspace::tests::duplicate_station_is_rejected_before_a_close ... ok
+test workspace::tests::failed_cross_window_transfer_changes_neither_custody ... ok
+test workspace::tests::invalid_stack_drop_does_not_remove_source_custody ... ok
+test workspace::tests::float_transfer_and_reopen_preserve_payload_descriptor_geometry_and_policy ... ok
+test workspace::tests::malformed_float_geometry_is_refused_before_publish ... ok
+test workspace::tests::malformed_or_orphaned_payloads_refuse_without_mutation ... ok
+test workspace::tests::non_finite_split_edit_is_refused_atomically ... ok
+test workspace::tests::shared_float_and_dock_keep_the_same_host_payload ... ok
+test workspace::tests::outside_drop_retains_custody_until_host_accepts ... ok
+test workspace::tests::stacking_switching_closing_and_restart_preserve_payload_identity ... ok
+test workspace_store::tests::absent_files_remain_absent ... ok
+test tests::vertical_divider_uses_vertical_keys_and_shift_step ... ok
+test workspace_store::tests::corrupt_current_never_resurrects_the_legacy_copy ... ok
+test workspace_store::tests::import_preserves_legacy_bytes_and_future_loads_use_current_choice ... ok
+test workspace_store::tests::unsupported_version_and_validation_failure_do_not_publish ... ok
+test workspace_store::tests::v1_remains_readable_and_new_writes_publish_v2 ... ok
+test tests::floating_header_keyboard_moves_and_resizes_without_changing_station_or_payload_key ... ok
+test tests::exact_bounds_focus_and_separator_actions_reach_the_platform_projection ... ok
+test tests::composed_tree_preserves_body_once_and_has_no_orphans_or_inactive_body ... ok
+test tests::floating_body_grafts_below_its_actual_surface_slot_only_once ... ok
+test tests::independent_frame_doms_get_disjoint_namespaces ... ok
+
+test result: ok. 69 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+

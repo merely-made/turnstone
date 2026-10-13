@@ -277,10 +277,11 @@ mod tests {
         };
         // Summon a Roster to the right of the Orrery: a horizontal split.
         assert!(layout.summon_leaf(&[], InsertSide::Right, leaf(2, PaneContent::Roster)));
+        assert!(matches!(&layout.root, PaneNode::Workspace(_)), "summon publishes shared Workspace");
         let tiling = place_panes(&layout, area(), None);
         assert_eq!(tiling.panes.len(), 2);
         assert_eq!(tiling.dividers.len(), 1, "one split, one seam");
-        // Default ratio 0.5 over the width minus the 6px seam: 497 each.
+        // Shared Workspace ratio0.5 over width minus its10px seam:495 each.
         let orrery = tiling
             .panes
             .iter()
@@ -292,9 +293,9 @@ mod tests {
             .find(|p| p.content == PaneContent::Roster)
             .unwrap();
         let seam = &tiling.dividers[0];
-        assert_eq!(orrery.rect, Rect::new(0.0, 0.0, 497.0, 800.0));
-        assert_eq!(seam.rect, Rect::new(497.0, 0.0, 6.0, 800.0));
-        assert_eq!(roster.rect, Rect::new(503.0, 0.0, 497.0, 800.0));
+        assert_eq!(orrery.rect, Rect::new(0.0, 0.0, 495.0, 800.0));
+        assert_eq!(seam.rect, Rect::new(495.0, 0.0, 10.0, 800.0));
+        assert_eq!(roster.rect, Rect::new(505.0, 0.0, 495.0, 800.0));
         // Panes + seam tile the area exactly: no gap, no overlap.
         assert_eq!(orrery.rect.x + orrery.rect.w, seam.rect.x);
         assert_eq!(seam.rect.x + seam.rect.w, roster.rect.x);
@@ -314,14 +315,19 @@ mod tests {
         };
         layout.summon_leaf(&[], InsertSide::Right, leaf(2, PaneContent::Roster));
         assert!(layout.set_split_ratio(&[], 0.7));
+        assert!(matches!(&layout.root, PaneNode::Workspace(_)), "ratio operation keeps shared Workspace");
         let tiling = place_panes(&layout, area(), None);
         let orrery = tiling
             .panes
             .iter()
             .find(|p| p.content == PaneContent::Orrery)
             .unwrap();
-        // 0.7 of the width minus the seam: round(994 * 0.7) = 696.
-        assert_eq!(orrery.rect.w, 696.0);
+        // Shared Workspace fractions allocate0.7 of990 usable pixels:693.
+        assert_eq!(orrery.rect.w, 693.0);
+        assert_eq!(tiling.dividers[0].rect, Rect::new(693.0, 0.0, 10.0, 800.0));
+        let roster = tiling.panes.iter().find(|p| p.content == PaneContent::Roster).unwrap();
+        assert_eq!(roster.rect, Rect::new(703.0, 0.0, 297.0, 800.0));
+        assert_eq!(roster.rect.x + roster.rect.w, area().w);
         assert_eq!(tiling.dividers[0].ratio, 0.7);
     }
 
@@ -351,6 +357,7 @@ mod tests {
             root: leaf(1, PaneContent::Orrery),
         };
         layout.summon_leaf(&[], InsertSide::Below, leaf(2, PaneContent::Trail));
+        assert!(matches!(&layout.root, PaneNode::Workspace(_)), "vertical summon publishes shared Workspace");
         let tiling = place_panes(&layout, area(), None);
         let top = tiling
             .panes
@@ -362,9 +369,32 @@ mod tests {
             .iter()
             .find(|p| p.content == PaneContent::Trail)
             .unwrap();
-        // 0.5 of the height minus the seam: 397 each, seam at 397..403.
-        assert_eq!(top.rect, Rect::new(0.0, 0.0, 1000.0, 397.0));
-        assert_eq!(bottom.rect, Rect::new(0.0, 403.0, 1000.0, 397.0));
-        assert_eq!(tiling.dividers[0].rect, Rect::new(0.0, 397.0, 1000.0, 6.0));
+        // Shared Workspace ratio0.5 gives395 each, with seam395..405.
+        assert_eq!(top.rect, Rect::new(0.0, 0.0, 1000.0, 395.0));
+        assert_eq!(bottom.rect, Rect::new(0.0, 405.0, 1000.0, 395.0));
+        assert_eq!(tiling.dividers[0].rect, Rect::new(0.0, 395.0, 1000.0, 10.0));
     }
+    #[test]
+    fn legacy_binary_splits_keep_cambium_six_pixel_geometry() {
+        for (axis, ratio, first, seam, second) in [
+            (SplitAxis::Horizontal, 0.5, Rect::new(0.0,0.0,497.0,800.0), Rect::new(497.0,0.0,6.0,800.0), Rect::new(503.0,0.0,497.0,800.0)),
+            (SplitAxis::Vertical, 0.5, Rect::new(0.0,0.0,1000.0,397.0), Rect::new(0.0,397.0,1000.0,6.0), Rect::new(0.0,403.0,1000.0,397.0)),
+            (SplitAxis::Horizontal, 0.7, Rect::new(0.0,0.0,696.0,800.0), Rect::new(696.0,0.0,6.0,800.0), Rect::new(702.0,0.0,298.0,800.0)),
+        ] {
+            // A persisted legacy Split is not the new summon-operation fixture.
+            let layout = FrisketLayout {
+                id: crate::panes::FrisketId::new("legacy"), label: "legacy".into(),
+                root: PaneNode::Split { axis, ratio, first: Box::new(leaf(1,PaneContent::Orrery)), second: Box::new(leaf(2,PaneContent::Roster)) },
+            };
+            assert!(matches!(&layout.root, PaneNode::Split { .. }));
+            let placed = place_panes(&layout, area(), None);
+            assert_eq!(placed.panes.len(),2); assert_eq!(placed.dividers.len(),1);
+            assert_eq!(placed.panes[0].rect,first); assert_eq!(placed.dividers[0].rect,seam); assert_eq!(placed.panes[1].rect,second);
+            assert_eq!(placed.panes[0].path,vec![SplitChoice::First]); assert_eq!(placed.panes[1].path,vec![SplitChoice::Second]);
+            assert_eq!(placed.dividers[0].ratio,ratio);
+            if axis == SplitAxis::Horizontal { assert_eq!(first.x+first.w,seam.x); assert_eq!(seam.x+seam.w,second.x); assert_eq!(second.x+second.w,area().w); }
+            else { assert_eq!(first.y+first.h,seam.y); assert_eq!(seam.y+seam.h,second.y); assert_eq!(second.y+second.h,area().h); }
+        }
+    }
+
 }

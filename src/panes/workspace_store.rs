@@ -16,14 +16,14 @@ pub fn write<T: Serialize>(target: &Path, layout: T) -> io::Result<()> {
     if let Some(parent) = target.parent() {
         fs::create_dir_all(parent)?;
     }
-    let json = serde_json::to_string_pretty(&Saved { version: 1, layout }).map_err(invalid)?;
+    let json = serde_json::to_string_pretty(&Saved { version: 2, layout }).map_err(invalid)?;
     let tmp = target.with_extension("json.tmp");
     fs::write(&tmp, json)?;
     fs::rename(tmp, target)
 }
 fn read<T: DeserializeOwned>(path: &Path) -> io::Result<T> {
     let saved: Saved<T> = serde_json::from_str(&fs::read_to_string(path)?).map_err(invalid)?;
-    if saved.version != 1 {
+    if !matches!(saved.version, 1 | 2) {
         return Err(invalid("Unsupported pane workspace version"));
     }
     Ok(saved.layout)
@@ -95,7 +95,7 @@ mod tests {
     #[test]
     fn unsupported_version_and_validation_failure_do_not_publish() {
         let dir = dir("version");
-        fs::write(dir.join("new"), r#"{"version":2,"layout":[1]}"#).unwrap();
+        fs::write(dir.join("new"), r#"{"version":3,"layout":[1]}"#).unwrap();
         assert!(load::<Vec<u64>>(&dir, "new", "old", Ok).is_err());
         fs::remove_file(dir.join("new")).unwrap();
         fs::write(dir.join("old"), "[1]").unwrap();
@@ -114,6 +114,24 @@ mod tests {
         let dir = dir("absent");
         assert!(load::<Vec<u64>>(&dir, "new", "old", Ok).unwrap().is_none());
         assert_eq!(fs::read_dir(&dir).unwrap().count(), 0);
+        fs::remove_dir_all(dir).unwrap();
+    }
+    #[test]
+    fn v1_remains_readable_and_new_writes_publish_v2() {
+        let dir = dir("v1-v2");
+        fs::write(dir.join("new"), r#"{"version":1,"layout":[7,null]}"#).unwrap();
+        assert_eq!(
+            load::<Vec<Option<u64>>>(&dir, "new", "old", Ok).unwrap(),
+            Some(vec![Some(7), None])
+        );
+        write(&dir.join("new"), vec![Some(9), None]).unwrap();
+        let saved: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(dir.join("new")).unwrap()).unwrap();
+        assert_eq!(saved["version"], 2);
+        assert_eq!(
+            load::<Vec<Option<u64>>>(&dir, "new", "old", Ok).unwrap(),
+            Some(vec![Some(9), None])
+        );
         fs::remove_dir_all(dir).unwrap();
     }
 }
