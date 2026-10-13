@@ -10,4 +10,7 @@
 # Do not also export CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS: Cargo joins
 # that variable with this array, and the duplicate flag changes the bundle.
 [target.wasm32-unknown-unknown]
-rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
+# Debug startup crosses the shared Genet host with large Rust future frames.
+# Reserve 4 MiB of Wasm linear stack; this is independent of machine RAM caps.
+# Adjust this build budget here when changing the startup path or build profile.
+rustflags = ['--cfg', 'getrandom_backend="wasm_js"', '-C', 'link-arg=-zstack-size=4194304']

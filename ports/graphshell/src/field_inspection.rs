@@ -44,8 +44,8 @@ pub enum ForceEligibility {
 pub struct CouplingInspection {
     pub coupling: Coupling,
     pub owner: Option<Field>,
-    /// Current held selector matches; extent is not used as a membership filter
-    /// by the Canvas force bridge. No action or field AST is evaluated here.
+    /// Authored selector matches. Canvas evaluates spatial eligibility and
+    /// field clocks separately; no action or field AST is evaluated here.
     pub selector_members: Vec<AccessSummary>,
     pub rebuild_eligibility: ForceEligibility,
 }
@@ -166,7 +166,7 @@ pub fn inspect_forme(
 
 /// Discover active, visible rectangular boundaries at one world point using
 /// the existing inclusive Region bounds test. This is boundary discovery only,
-/// not the pending spatial membership policy. Other extents remain in the roster.
+/// separate from Canvas runtime spatial eligibility. Other extents remain in the roster.
 /// A Forme retains its arrangement owner; no Numen field is manufactured for it.
 pub fn region_candidates(
     graph: &Graph,

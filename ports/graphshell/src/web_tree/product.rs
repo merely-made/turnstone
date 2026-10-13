@@ -92,7 +92,15 @@ pub(super) struct SavedProduct {
 
 /// The existing fixture and generated comparison routes remain unchanged.
 /// `?app=local` is the opt-in migration route onto the existing browser store.
-pub(super) async fn open(root: &Element) -> Result<Option<SavedProduct>, String> {
+#[inline(never)]
+pub(super) fn open(
+    root: &Element,
+) -> std::pin::Pin<Box<impl std::future::Future<Output = Result<Option<SavedProduct>, String>> + '_>>
+{
+    Box::pin(open_inner(root))
+}
+
+async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     let search = super::super::window()?
         .location()
         .search()

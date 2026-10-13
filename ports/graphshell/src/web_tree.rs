@@ -1002,7 +1002,14 @@ pub fn mount_tree(root: Element) -> Result<(), JsValue> {
     Ok(())
 }
 
-async fn boot(root: Element) -> Result<(), String> {
+#[inline(never)]
+fn boot(
+    root: Element,
+) -> std::pin::Pin<Box<impl std::future::Future<Output = Result<(), String>>>> {
+    Box::pin(boot_inner(root))
+}
+
+async fn boot_inner(root: Element) -> Result<(), String> {
     #[cfg(feature = "product")]
     owner_waypoint::configure(&root);
     let document = root.owner_document().ok_or("the root has no document")?;

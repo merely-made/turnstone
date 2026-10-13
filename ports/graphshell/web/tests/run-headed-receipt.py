@@ -26,11 +26,21 @@ def cpu_ticks():
     return sum(ticks), ticks[3] + ticks[4]
 
 
+DEFAULT_SINK = pathlib.Path(__file__).resolve().with_name('receipt_sink.py')
+
+
+def sink_command(args, origin):
+    command = ['python3', str(args.sink), '--web', str(args.web), '--out', str(args.out), '--port', str(args.port)]
+    if args.sink.resolve() == DEFAULT_SINK:
+        command.extend(['--allowed-origin', origin])
+    return command
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--web', required=True, type=pathlib.Path)
     parser.add_argument('--out', required=True, type=pathlib.Path)
-    parser.add_argument('--sink', required=True, type=pathlib.Path)
+    parser.add_argument('--sink', type=pathlib.Path, default=DEFAULT_SINK)
     parser.add_argument('--scenario', required=True)
     parser.add_argument('--page', default='tree.html')
     parser.add_argument('--query', required=True)
@@ -83,7 +93,7 @@ def main():
     started = time.monotonic()
     try:
         with (args.out / 'sink.log').open('w') as sink_log, (args.out / 'chrome.log').open('w') as chrome_log:
-            sink = subprocess.Popen(['python3', str(args.sink), '--web', str(args.web), '--out', str(args.out), '--port', str(args.port)], stdout=sink_log, stderr=sink_log, start_new_session=True)
+            sink = subprocess.Popen(sink_command(args, origin), stdout=sink_log, stderr=sink_log, start_new_session=True)
             deadline = time.monotonic() + 10
             while True:
                 if sink.poll() is not None:
