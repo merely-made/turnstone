@@ -698,7 +698,10 @@ impl Gate {
                     .as_ref()
                     .ok_or("old core detached before controlled notice")?;
                 let _ = core.device().poll(wgpu::PollType::Poll);
-                if let Some(notice) = core.device_failure() {
+                // The detach barrier accepts acknowledgments only after loss
+                // invalidation and readback cancellation have completed.
+                // device_failure() can expose the earlier pending notice.
+                if let Some(notice) = core.loss_notice() {
                     require(
                         notice.generation == self.lost_generation
                             && notice.reason == wgpu::DeviceLostReason::Destroyed,
