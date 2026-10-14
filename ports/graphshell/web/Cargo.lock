@@ -4308,6 +4308,7 @@ dependencies = [
  "mere-document-lanes",
  "mere-fleece",
  "mere-moot",
+ "mere-view",
  "mere-webrtc-carrier",
  "muniment",
  "netrender",
@@ -4372,6 +4373,7 @@ dependencies = [
  "mere-document-lanes",
  "mere-fleece",
  "mere-moot",
+ "mere-view",
  "mesquite",
  "muniment",
  "netrender",
@@ -6156,6 +6158,19 @@ name = "mere-surface-api"
 version = "0.1.0"
 dependencies = [
  "workbench",
+]
+
+[[package]]
+name = "mere-view"
+version = "0.1.0"
+dependencies = [
+ "cambium",
+ "incipit",
+ "mere-cartography",
+ "mere-kernel",
+ "pictograph",
+ "sprigging",
+ "uuid",
 ]
 
 [[package]]

@@ -183,6 +183,8 @@ pub struct MereHost<B> {
 
 #[path = "mere_host_coupling.rs"]
 mod coupling;
+#[path = "mere_host_resident.rs"]
+mod resident_transaction;
 
 /// Changes not yet stored, taken as one batch: what [`MereHost::stage`] put
 /// in a batch, or what [`MereHost::prepare_store`] took for its caller to
@@ -856,7 +858,27 @@ impl<B: Backend> MereHost<B> {
                 hit: None,
                 channels: Vec::new(),
             });
-            let card = session_item::card(&self.graph_session);
+            let graph_bytes = serde_json::to_vec(&session_item::SessionGraphV1 {
+                schema: session_item::SESSION_GRAPH_SCHEMA.into(),
+                application: self.via.clone(),
+                views: self
+                    .graph_session
+                    .views()
+                    .filter(|(key, _)| key.app() == self.via)
+                    .map(|(key, state)| (key.view().to_owned(), state.clone()))
+                    .collect(),
+                session: self.graph_session.id(),
+                read_only: self.graph_session.manifest().codicil_read_only,
+                epoch: self.projection_epoch(),
+                revision: self.projection_revision(),
+                graph: self.graph().to_snapshot_at(0),
+                facets: self.graph().facets().clone(),
+            })
+            .expect("the session graph always serializes");
+            let graph_resource = ContentHash::of(&graph_bytes);
+            resources.insert(graph_resource, graph_bytes);
+            let mut card = session_item::card(&self.graph_session);
+            card.media.push(graph_resource);
             let bytes = serde_json::to_vec(&card).expect("PortableCardV1 always serializes");
             let resource = ContentHash::of(&bytes);
             let key = PresentationKey(format!("{}:{id}", session_item::SESSION_ITEM_SOURCE));

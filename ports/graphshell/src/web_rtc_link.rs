@@ -12,8 +12,7 @@
 //! `BrowserSession`), the two pumps that move lines between the channel and
 //! the session, rejoining as the same subject, and the fixture's `/nudge`
 //! hook. A page implements [`RemoteHost`] over wherever it keeps the session;
-//! the old page keeps it in its `BrowserHost`, the tree page in its shared
-//! state.
+//! the retained page keeps it in its shared state.
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -68,6 +67,18 @@ pub(crate) struct LiveRemote {
 }
 
 impl LiveRemote {
+    pub(crate) fn send_lines(
+        &mut self,
+        lines: impl IntoIterator<Item = String>,
+    ) -> Result<(), String> {
+        for line in lines {
+            self.transport
+                .outbox
+                .unbounded_send(line)
+                .map_err(|_| "The resident route writer is gone.".to_string())?;
+        }
+        Ok(())
+    }
     /// Put whatever the session queued onto the channel, in order.
     pub(crate) fn flush(&mut self) {
         for line in self.session.take_outgoing() {
@@ -91,6 +102,24 @@ pub(crate) trait RemoteHost: 'static {
     fn join_failed(&mut self, error: String);
     /// Something changed: flush the session, mirror it, draw it.
     fn changed(&mut self);
+    fn received(&mut self, line: &str) {
+        if let Some(live) = self.live() {
+            live.session.on_line(line);
+        }
+    }
+    fn stream_closed(&mut self, reason: Option<String>) {
+        if let Some(live) = self.live() {
+            match reason {
+                Some(reason) => live.session.link_failed(reason),
+                None => live.session.channel_closed(),
+            }
+        }
+    }
+    fn rejoined(&mut self) {
+        if let Some(live) = self.live() {
+            live.session.rejoined();
+        }
+    }
 }
 
 /// Join a host over WebRTC and make it the page's remote session.
@@ -191,20 +220,19 @@ fn spawn_pumps<H: RemoteHost>(
         loop {
             let read = session.next_line().await;
             let mut host = state.borrow_mut();
-            let done = match (read, host.live()) {
-                (Ok(Some(line)), Some(live)) => {
-                    live.session.on_line(&line);
+            let done = match read {
+                Ok(Some(line)) => {
+                    host.received(&line);
                     false
                 },
-                (Ok(None), Some(live)) => {
-                    live.session.channel_closed();
+                Ok(None) => {
+                    host.stream_closed(None);
                     true
                 },
-                (Err(error), Some(live)) => {
-                    live.session.link_failed(format!("recv: {error}"));
+                Err(error) => {
+                    host.stream_closed(Some(format!("recv: {error}")));
                     true
                 },
-                (_, None) => true,
             };
             host.changed();
             if done {
@@ -221,9 +249,7 @@ fn spawn_pumps<H: RemoteHost>(
 /// Close the channel from this end. The session retires when the close
 /// lands; the session and its mount are kept for a reconnect.
 pub(crate) fn disconnect<H: RemoteHost>(host: &mut H) -> Result<(), String> {
-    let live = host
-        .live()
-        .ok_or("Failed · no WebRTC link to disconnect")?;
+    let live = host.live().ok_or("Failed · no WebRTC link to disconnect")?;
     live.session.disconnect();
     live.transport.writer.close();
     Ok(())
@@ -317,13 +343,11 @@ async fn rejoin<H: RemoteHost>(
     let (outbox, inbox) = unbounded::<String>();
     {
         let mut host = state.borrow_mut();
-        let live = host
-            .live()
-            .ok_or("the link went away during the rejoin")?;
+        let live = host.live().ok_or("the link went away during the rejoin")?;
         live.transport.outbox = outbox;
         live.transport.writer = writer.clone();
         live.transport.session_id = session_id;
-        live.session.rejoined();
+        host.rejoined();
         host.changed();
     }
     spawn_pumps(state, session, writer, inbox);

@@ -22,17 +22,18 @@ use chirograph::{
 };
 use mere::canvas::MERE_GRAPH_ADAPTER;
 use mere_view::{
-    GraphModel, MereViewModel, MereViewRequest, NodeEntry, NodeState, Provenance, RelationEntry,
-    SessionEntry, SessionStep,
+    ArchiveEntry, ArchiveModel, ArchiveRequest, GraphModel, MereViewModel, MereViewRequest,
+    NodeEntry, NodeState, Provenance, RelationEntry, SessionEntry, SessionStep,
 };
 use pandect::SessionId;
 use sceno::{InstanceId, SourceRef};
 use uuid::Uuid;
 
 use crate::session_item::{
-    ATTACH_SESSION_INTENT, FORK_SESSION_INTENT, MERE_GRAPH, MERE_SESSIONS, MINT_SESSION_INTENT,
-    RESTORE_SESSION_INTENT, SESSION_ITEM_SOURCE, SESSIONS_SOURCE, SessionsActionV1,
-    TRASH_SESSION_INTENT,
+    ARCHIVE_SOURCE, ATTACH_SESSION_INTENT, ArchiveActionV1, COMPOSE_CODICILS_INTENT,
+    FORK_SESSION_INTENT, MERE_ARCHIVE, MERE_GRAPH, MERE_SESSIONS, MINT_SESSION_INTENT,
+    OPEN_CODICIL_INTENT, RESTORE_SESSION_INTENT, SAVE_CODICIL_INTENT, SESSION_ITEM_SOURCE,
+    SESSIONS_SOURCE, SessionsActionV1, TRASH_SESSION_INTENT,
 };
 
 /// Each step a session's card can offer, and the intent that takes it.
@@ -55,6 +56,131 @@ pub fn requests(descriptor: &EndpointDescriptor) -> Option<(ProjectionRequest, P
     Some((find(MERE_SESSIONS)?, find(MERE_GRAPH)?))
 }
 
+/// The optional immutable archive reading, through the same admitted route.
+pub fn archive_request(descriptor: &EndpointDescriptor) -> Option<ProjectionRequest> {
+    descriptor
+        .projections
+        .iter()
+        .find(|offer| offer.request.session.0 == MERE_ARCHIVE)
+        .map(|offer| offer.request.clone())
+}
+
+fn advertises(snapshot: &ProjectionSnapshot, instance: InstanceId, intent: &str) -> bool {
+    offer(snapshot, instance).is_some_and(|offer| {
+        offer
+            .semantics
+            .actions
+            .iter()
+            .any(|action| action.intent.0 == intent)
+    })
+}
+
+/// Populate archive controls only from actions the owner advertised. Reading
+/// these cards grants no additional authority and owns no persistence.
+pub fn fill_archive(
+    model: &mut MereViewModel,
+    sessions: &ProjectionSnapshot,
+    archive: &ProjectionSnapshot,
+    cards: &HashMap<ContentHash, Vec<u8>>,
+) {
+    let mut result = ArchiveModel::default();
+    result.save_sessions = items(sessions, SESSIONS_SOURCE)
+        .filter_map(|(instance, source)| {
+            advertises(sessions, instance, SAVE_CODICIL_INTENT)
+                .then(|| Uuid::parse_str(&source.id).ok().map(SessionId))
+                .flatten()
+        })
+        .collect();
+    for (instance, source) in items(archive, ARCHIVE_SOURCE) {
+        if source.id == "archive" {
+            result.can_compose = advertises(archive, instance, COMPOSE_CODICILS_INTENT);
+            continue;
+        }
+        let card = offer(archive, instance)
+            .and_then(|offer| cards.get(&offer.resource))
+            .and_then(|bytes| serde_json::from_slice::<PortableCardV1>(bytes).ok());
+        result.entries.push(ArchiveEntry {
+            key: source.id.clone(),
+            name: card
+                .as_ref()
+                .map(|card| card.title.clone())
+                .unwrap_or_else(|| source.id.clone()),
+            detail: card
+                .as_ref()
+                .map(|card| card.badges.join(", "))
+                .unwrap_or_default(),
+            can_open: advertises(archive, instance, OPEN_CODICIL_INTENT),
+        });
+    }
+    model.archive = Some(result);
+}
+
+/// Translate an archive request against the exact advertised projection.
+/// Stable ids, rather than list indices, survive refreshed and reordered rows.
+pub fn archive_intent(
+    request: &MereViewRequest,
+    sessions: &ProjectionSnapshot,
+    archive: &ProjectionSnapshot,
+) -> Option<IntentInvocation> {
+    let MereViewRequest::Archive(request) = request else {
+        return None;
+    };
+    let (snapshot, target, intent, payload) = match request {
+        ArchiveRequest::Save(id) => {
+            let (target, _) = items(sessions, SESSIONS_SOURCE)
+                .find(|(_, source)| Uuid::parse_str(&source.id).ok() == Some(*id.as_uuid()))?;
+            (
+                sessions,
+                target,
+                SAVE_CODICIL_INTENT,
+                ArchiveActionV1::save(*id),
+            )
+        },
+        ArchiveRequest::Open(id) => {
+            let (target, _) =
+                items(archive, ARCHIVE_SOURCE).find(|(_, source)| &source.id == id)?;
+            (
+                archive,
+                target,
+                OPEN_CODICIL_INTENT,
+                ArchiveActionV1::on(vec![id.clone()]),
+            )
+        },
+        ArchiveRequest::Compose(ids) => {
+            if ids.len() < 2 {
+                return None;
+            }
+            let mut unique = std::collections::HashSet::new();
+            if !ids.iter().all(|id| {
+                unique.insert(id)
+                    && items(archive, ARCHIVE_SOURCE)
+                        .any(|(_, source)| &source.id == id && source.id != "archive")
+            }) {
+                return None;
+            }
+            let (target, _) =
+                items(archive, ARCHIVE_SOURCE).find(|(_, source)| source.id == "archive")?;
+            (
+                archive,
+                target,
+                COMPOSE_CODICILS_INTENT,
+                ArchiveActionV1::on(ids.clone()),
+            )
+        },
+    };
+    if !advertises(snapshot, target, intent) {
+        return None;
+    }
+    Some(IntentInvocation {
+        session: snapshot.session.clone(),
+        target,
+        observed_epoch: snapshot.scene.epoch,
+        observed_revision: snapshot.scene.revision,
+        intent: intent.into(),
+        payload: serde_json::to_vec(&payload).expect("ArchiveActionV1 always serializes"),
+    })
+}
+
 /// The cards to read before [`fill`]: the mere's and each session's.
 pub fn card_requests(sessions: &ProjectionSnapshot) -> Vec<ResourceRequest> {
     sessions
@@ -67,6 +193,37 @@ pub fn card_requests(sessions: &ProjectionSnapshot) -> Vec<ResourceRequest> {
             resource: offer.resource,
         })
         .collect()
+}
+
+/// Readable cards keyed by domain node identity. The synthetic session item
+/// is deliberately excluded from both the graph and selected-record reader.
+pub fn node_cards(
+    graph: &ProjectionSnapshot,
+    cards: &HashMap<ContentHash, Vec<u8>>,
+) -> HashMap<String, PortableCardV1> {
+    items(graph, MERE_GRAPH_ADAPTER)
+        .filter_map(|(instance, source)| {
+            let card = offer(graph, instance)
+                .and_then(|offer| cards.get(&offer.resource))
+                .and_then(|bytes| serde_json::from_slice(bytes).ok())?;
+            Some((source.id.clone(), card))
+        })
+        .collect()
+}
+
+/// The complete explicit session reading, named by its owner-advertised card.
+/// This does not synthesize an address or make ambient readings more capable.
+pub fn session_graph_request(
+    graph: &ProjectionSnapshot,
+    cards: &HashMap<ContentHash, Vec<u8>>,
+) -> Option<ResourceRequest> {
+    let (instance, _) = items(graph, SESSION_ITEM_SOURCE).next()?;
+    let card: PortableCardV1 =
+        serde_json::from_slice(cards.get(&offer(graph, instance)?.resource)?).ok()?;
+    Some(ResourceRequest {
+        session: graph.session.clone(),
+        resource: *card.media.first()?,
+    })
 }
 
 /// Fill `model` from the route's projections and the cards
@@ -185,7 +342,10 @@ pub fn intent(
                 .map_or_else(|| mere_card(sessions), |(instance, _)| instance);
             (intent, SessionsActionV1::on(*id), card)
         },
-        MereViewRequest::Activate(_) | MereViewRequest::Host(_) | MereViewRequest::Layout(_) => {
+        MereViewRequest::Archive(_)
+        | MereViewRequest::Activate(_)
+        | MereViewRequest::Host(_)
+        | MereViewRequest::Layout(_) => {
             return None;
         },
     };
@@ -237,4 +397,56 @@ fn mere_card(sessions: &ProjectionSnapshot) -> InstanceId {
     items(sessions, SESSIONS_SOURCE)
         .find(|(_, source)| Uuid::parse_str(&source.id).is_err())
         .map_or(InstanceId(0), |(instance, _)| instance)
+}
+
+/// A generic readable record over owner-disclosed facets. It preserves unknown
+/// fields as text without interpreting or rewriting a domain's sealed values.
+pub fn add_node_facets(
+    cards: &mut HashMap<String, PortableCardV1>,
+    facets: &mere::kernel::graph::NodeFacetStore,
+) -> Result<(), String> {
+    for (key, card) in cards {
+        let id = Uuid::parse_str(key).map_err(|e| e.to_string())?;
+        if let Some(facets) = facets.facets_of(&id) {
+            let mut values = Vec::new();
+            for (_, value) in facets.iter() {
+                record_values("", value, &mut values);
+            }
+            values.append(&mut card.values);
+            card.values = values;
+        }
+    }
+    Ok(())
+}
+fn record_values(
+    prefix: &str,
+    value: &serde_json::Value,
+    values: &mut Vec<chirograph::CardValueV1>,
+) {
+    match value {
+        serde_json::Value::Object(fields) => {
+            for (label, value) in fields {
+                let label = label.replace('_', " ");
+                let label = if prefix.is_empty() {
+                    label
+                } else {
+                    format!("{prefix} · {label}")
+                };
+                record_values(&label, value, values);
+            }
+        },
+        serde_json::Value::Array(items) => {
+            for (index, value) in items.iter().enumerate() {
+                record_values(&format!("{prefix} {}", index + 1), value, values);
+            }
+        },
+        serde_json::Value::Null => {},
+        value => values.push(chirograph::CardValueV1 {
+            label: prefix.into(),
+            value: value
+                .as_str()
+                .map(str::to_owned)
+                .unwrap_or_else(|| value.to_string()),
+        }),
+    }
 }

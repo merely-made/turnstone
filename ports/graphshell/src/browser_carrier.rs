@@ -675,6 +675,24 @@ impl BrowserSessionClient {
         self.notices.pop_front()
     }
 
+    /// Take a queued notice, or briefly read the admitted stream for an
+    /// idle notice. `Lines::next_line` is cancel safe: when the bounded wait
+    /// expires, any partial frame stays buffered for a subsequent read.
+    /// There is no outstanding request here, so a response is a protocol
+    /// error rather than something this poll can silently discard.
+    pub async fn poll_notice(
+        &mut self,
+        wait: std::time::Duration,
+    ) -> Result<Option<CarrierNotice>, BrowserCarrierError> {
+        if let Some(notice) = self.take_notice() {
+            return Ok(Some(notice));
+        }
+        match tokio::time::timeout(wait, self.wait_for_notice()).await {
+            Ok(result) => result.map(Some),
+            Err(_) => Ok(None),
+        }
+    }
+
     pub async fn wait_for_notice(&mut self) -> Result<CarrierNotice, BrowserCarrierError> {
         if let Some(notice) = self.take_notice() {
             return Ok(notice);
@@ -769,6 +787,52 @@ mod tests {
         ));
         assert_eq!(client.take_notice(), Some(expected));
         server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn idle_notice_poll_reads_without_a_request_and_retains_cancelled_partial_frames() {
+        let (client_stream, mut server_stream) = tokio::io::duplex(4096);
+        let mut client = BrowserSessionClient::new(client_stream);
+        let notice = CarrierNotice {
+            session: chirograph::ProjectionSession("resident:knot".into()),
+            epoch: chirograph::SceneEpoch(3),
+            revision: chirograph::Revision(8),
+        };
+        let mut frame = serde_json::to_vec(&CarrierOutput::Notice(notice.clone())).unwrap();
+        frame.push(b'\n');
+        let split = frame.len() / 2;
+        server_stream.write_all(&frame[..split]).await.unwrap();
+        assert_eq!(
+            client
+                .poll_notice(std::time::Duration::from_millis(1))
+                .await
+                .unwrap(),
+            None
+        );
+        server_stream.write_all(&frame[split..]).await.unwrap();
+        assert_eq!(
+            client
+                .poll_notice(std::time::Duration::from_secs(1))
+                .await
+                .unwrap(),
+            Some(notice)
+        );
+        // No request was sent in either poll, and closing an idle admitted
+        // stream is surfaced instead of reporting an empty queue forever.
+        let mut unexpected = [0u8; 1];
+        assert!(
+            tokio::time::timeout(
+                std::time::Duration::from_millis(1),
+                server_stream.read(&mut unexpected)
+            )
+            .await
+            .is_err()
+        );
+        drop(server_stream);
+        assert!(matches!(
+            client.poll_notice(std::time::Duration::from_secs(1)).await,
+            Err(BrowserCarrierError::ApplicationEnded)
+        ));
     }
 
     const NETWORK: NetworkId = NetworkId([0x41; 32]);

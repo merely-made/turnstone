@@ -45,7 +45,10 @@ use taproot::Selector;
 use wasm_bindgen::prelude::*;
 use web_sys::{Element, Event, HtmlCanvasElement};
 
-use super::web_gpu::SHELL_CLEAR;
+// The retained canvas's clear colour, independent of any presentation adapter.
+const SHELL_CLEAR: wgpu::Color = wgpu::Color {
+    r: 0.027, g: 0.047, b: 0.059, a: 1.0,
+};
 use super::web_graphs;
 use super::web_scenario;
 use super::web_timing::{FrameTiming, now_ms};
@@ -163,8 +166,12 @@ fn tree_stylesheet(appearance: &str) -> String {
     let applet_sheet = applet::SHEET;
     #[cfg(not(feature = "applets"))]
     let applet_sheet = "";
+    #[cfg(feature="remote")]
+    let reservoir_sheet=mere_view::MERE_VIEW_CSS;
+    #[cfg(not(feature="remote"))]
+    let reservoir_sheet="";
     format!(
-        "{SHEET}\n{}\n{}\n{workspace_sheet}\n{applet_sheet}\n{appearance}",
+        "{SHEET}\n{}\n{}\n{workspace_sheet}\n{applet_sheet}\n{reservoir_sheet}\n{appearance}",
         format!("{}\n{}", commands::SHEET, presenter::SHEET),
         forme_sheet()
     )
@@ -585,6 +592,8 @@ pub(crate) struct TreePage {
     draft: remote::DraftControls,
     /// The remote generation the view last rebuilt for.
     remote_seen: u64,
+    #[cfg(feature="remote")]
+    mere_view: mere_view::MereViewState,
     /// Whether a remote link has been seen, so its section opens once.
     remote_link_seen: bool,
     /// Whether the collapsed Graph tools region is open over the canvas.
@@ -908,6 +917,8 @@ fn tools_region(page: &TreePage) -> Child {
                 .attr("role", "status"),
         ));
     }
+    #[cfg(feature="remote")]
+    children.extend(reservoir::view(page));
     children.push(physics::section(page));
     children.push(product::find_section(page));
     children.push(product::scenes_section(page));
@@ -1086,21 +1097,13 @@ pub(crate) fn mounted() -> bool {
     TREE.with(|tree| tree.borrow().is_some())
 }
 
-/// Whether the H5 reference host already owns this page.
-fn main_page_mounted() -> bool {
-    #[cfg(feature = "main-page")]
-    return web_scenario::host().is_some();
-    #[cfg(not(feature = "main-page"))]
-    false
-}
-
 /// Mount the one-tree page into `root`.
 #[wasm_bindgen]
 pub fn mount_tree(root: Element) -> Result<(), JsValue> {
     if !root.is_connected() {
         return Err(JsValue::from_str("the mount root is not connected"));
     }
-    if mounted() || main_page_mounted() {
+    if mounted() {
         return Err(JsValue::from_str(
             "Graphshell is already mounted on this page",
         ));
@@ -1399,6 +1402,8 @@ async fn boot_inner(root: Element) -> Result<(), String> {
                 sections: remote::Sections::default(),
                 draft: remote::DraftControls::default(),
                 remote_seen: 0,
+                #[cfg(feature="remote")]
+                mere_view: mere_view::MereViewState::default(),
                 remote_link_seen: false,
                 size: (width, height),
             },
@@ -1611,6 +1616,8 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             if ctx.runner.state().remote_seen != generation {
                 ctx.runner.update(|page| {
                     page.remote_seen = generation;
+                    #[cfg(feature="remote")]
+                    reservoir::relayout(page);
                     // The section starts closed and opens when a link exists.
                     if linked && !page.remote_link_seen {
                         page.remote_link_seen = true;
@@ -1933,9 +1940,9 @@ mod grouping;
 mod history;
 mod host_boundary;
 mod observe;
-#[cfg(feature = "main-page")]
+#[cfg(feature = "product")]
 mod practice;
-#[cfg(not(feature = "main-page"))]
+#[cfg(not(feature = "product"))]
 #[path = "web_tree/practice_off.rs"]
 mod practice;
 #[cfg(feature = "product")]
@@ -1960,6 +1967,8 @@ mod product;
 mod reading;
 #[cfg(feature = "remote")]
 mod remote;
+#[cfg(feature="remote")]
+mod reservoir;
 #[cfg(not(feature = "remote"))]
 #[path = "web_tree/remote_off.rs"]
 mod remote;

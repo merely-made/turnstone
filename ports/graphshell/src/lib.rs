@@ -105,6 +105,8 @@ pub mod mere_host;
 mod mere_host_fixture;
 #[cfg(feature = "mere-route")]
 pub mod mere_route;
+#[cfg(feature = "mere-route")]
+pub mod mere_route_session;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod native;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]

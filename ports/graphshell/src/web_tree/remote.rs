@@ -62,6 +62,7 @@ pub(super) enum Session {
 
 /// The tree's remote session: absent until a join completes.
 pub(super) struct TreeRemote {
+    pub(super) reservoir: Option<graphshell::mere_route_session::MereRouteSession>,
     pub(super) live: Option<LiveRemote>,
     /// A first join in flight, before any session exists.
     joining: bool,
@@ -81,6 +82,7 @@ pub(super) struct TreeRemote {
 impl TreeRemote {
     pub(super) fn new() -> Self {
         Self {
+            reservoir: None,
             live: None,
             joining: false,
             status: "no link".to_string(),
@@ -99,7 +101,30 @@ impl TreeRemote {
     /// Send what the session queued and collect its events.
     pub(super) fn pump(&mut self) {
         if let Some(live) = &mut self.live {
-            live.flush();
+            if self.reservoir.is_none() && !live.session.in_flight() {
+                if let Some(descriptor) = live
+                    .session
+                    .driver()
+                    .core()
+                    .map(|core| core.descriptor())
+                    .filter(|descriptor| graphshell::mere_route::requests(descriptor).is_some())
+                {
+                    match graphshell::mere_route_session::MereRouteSession::from_descriptor(
+                        descriptor.clone(),
+                        live.session.profile().clone(),
+                    ) {
+                        Ok(session) => self.reservoir = Some(session),
+                        Err(reason) => live.session.fail(reason),
+                    }
+                }
+            }
+            if let Some(session) = &mut self.reservoir {
+                if let Err(reason) = live.send_lines(session.take_outgoing()) {
+                    session.fail(reason);
+                }
+            } else {
+                live.flush();
+            }
             self.events.extend(live.session.take_events());
         }
         self.generation = self.generation.wrapping_add(1);
@@ -119,12 +144,18 @@ impl TreeRemote {
     }
 
     pub(super) fn status(&self) -> &str {
+        if let Some(session) = &self.reservoir {
+            return session.status();
+        }
         self.live
             .as_ref()
             .map_or(&self.status, |live| live.session.status())
     }
 
     pub(super) fn in_flight(&self) -> bool {
+        if let Some(session) = &self.reservoir {
+            return self.joining || session.in_flight();
+        }
         self.joining
             || self
                 .live
@@ -133,20 +164,38 @@ impl TreeRemote {
     }
 
     pub(super) fn mounted(&self) -> Option<&MountedScene> {
+        if let Some(session) = &self.reservoir {
+            return session.primary();
+        }
         self.live.as_ref()?.session.mounted()
     }
 
     pub(super) fn card_labels(&self) -> Vec<String> {
+        if let Some(session) = &self.reservoir {
+            return session
+                .model()
+                .graph
+                .nodes
+                .iter()
+                .map(|node| node.label.clone())
+                .collect();
+        }
         self.live
             .as_ref()
             .map(|live| live.session.card_labels())
             .unwrap_or_default()
     }
     pub(super) fn revision(&self) -> Option<u64> {
+        if let Some(session) = &self.reservoir {
+            return session.primary().map(|mounted| mounted.scene.revision.0);
+        }
         self.live.as_ref()?.session.revision()
     }
 
     pub(super) fn label(&self) -> String {
+        if let Some(session) = &self.reservoir {
+            return format!("Shared mere · {}", session.model().title);
+        }
         match &self.live {
             Some(live) => live.session.label(),
             None => format!("Remote projection · {}", self.status),
@@ -155,6 +204,9 @@ impl TreeRemote {
 
     /// The labels and descriptions of the advertised intents, in order.
     pub(super) fn actions(&self) -> Vec<(String, String)> {
+        if self.reservoir.is_some() {
+            return Vec::new();
+        }
         self.live.as_ref().map_or_else(Vec::new, |live| {
             live.session
                 .actions()
@@ -172,17 +224,74 @@ impl TreeRemote {
         speed: mere::canvas::Speed,
     ) {
         let revision = self.revision();
-        let mounted = self.live.as_ref().and_then(|live| live.session.mounted());
-        self.board.sync(mounted, revision, stage.as_ref(), speed);
+        let identity = self
+            .reservoir
+            .as_ref()
+            .and_then(|session| session.model().sessions.iter().find(|entry| entry.attached))
+            .map(|entry| {
+                format!(
+                    "{}:{}",
+                    entry.id.as_uuid(),
+                    self.reservoir.as_ref().unwrap().model().layout
+                )
+            });
+        let mounted = match &self.reservoir {
+            Some(session) => session.primary(),
+            None => self.live.as_ref().and_then(|live| live.session.mounted()),
+        };
+        self.board.sync_scoped(
+            mounted,
+            revision,
+            identity.as_deref(),
+            stage.as_ref(),
+            speed,
+        );
+        if let Some(session) = &self.reservoir {
+            self.board.set_focus(session.focus_instance().as_deref());
+        }
     }
 }
 
 impl RemoteHost for TreeRemote {
+    fn received(&mut self, line: &str) {
+        if let Some(session) = &mut self.reservoir {
+            session.on_line(line);
+        } else if let Some(live) = &mut self.live {
+            live.session.on_line(line);
+        }
+    }
+    fn stream_closed(&mut self, reason: Option<String>) {
+        if let Some(session) = &mut self.reservoir {
+            session.fail(
+                reason
+                    .clone()
+                    .unwrap_or_else(|| "The resident route closed.".into()),
+            );
+        }
+        if let Some(live) = &mut self.live {
+            match reason {
+                Some(reason) => live.session.link_failed(reason),
+                None => live.session.channel_closed(),
+            }
+        }
+    }
+    fn rejoined(&mut self) {
+        if self.reservoir.take().is_some() {
+            if let Some(live) = &mut self.live {
+                live.session =
+                    graphshell_client::RemoteSession::new(web_rtc_link::remote_profile());
+                live.session.joined();
+            }
+        } else if let Some(live) = &mut self.live {
+            live.session.rejoined();
+        }
+    }
     fn live(&mut self) -> Option<&mut LiveRemote> {
         self.live.as_mut()
     }
 
     fn adopt(&mut self, mut live: LiveRemote) {
+        self.reservoir = None;
         live.session.form = std::mem::take(&mut self.form);
         self.live = Some(live);
         self.joining = false;
@@ -268,6 +377,9 @@ impl TreePage {
     }
 
     fn invoke(&mut self, index: usize) {
+        if self.shared.remote.borrow().reservoir.is_some() {
+            return;
+        }
         self.with_remote(|remote| match &mut remote.live {
             Some(live) => live.session.invoke_action(index),
             None => remote.form.status = "Failed · no remote link".to_string(),
@@ -276,6 +388,9 @@ impl TreePage {
 
     /// Carry the selects into the draft, then submit it.
     fn submit(&mut self) {
+        if self.shared.remote.borrow().reservoir.is_some() {
+            return;
+        }
         let chosen: Vec<usize> = self
             .draft
             .fields
@@ -477,10 +592,7 @@ pub(super) fn section(page: &TreePage) -> Child {
     }
     // The board's cards by title, in the scene's order.
     let titles: Vec<Child> = remote
-        .live
-        .as_ref()
-        .map(|live| live.session.card_labels())
-        .unwrap_or_default()
+        .card_labels()
         .into_iter()
         .map(|title| Box::new(el("li", title).attr("role", "listitem")) as Child)
         .collect();
@@ -517,18 +629,18 @@ pub(super) fn section(page: &TreePage) -> Child {
         children.push(draft_form(page, &draft));
     }
     if remote.live.is_some() {
+        let mut link = vec![
+            command("Disconnect", TreePage::disconnect),
+            command("Reconnect", TreePage::reconnect),
+        ];
+        if remote.reservoir.is_none() {
+            link.push(command("Nudge host", TreePage::nudge));
+        }
         children.push(Box::new(
-            el(
-                "div",
-                vec![
-                    command("Disconnect", TreePage::disconnect),
-                    command("Reconnect", TreePage::reconnect),
-                    command("Nudge host", TreePage::nudge),
-                ],
-            )
-            .attr("class", "tools-link")
-            .attr("role", "group")
-            .attr("aria-label", "Link"),
+            el("div", link)
+                .attr("class", "tools-link")
+                .attr("role", "group")
+                .attr("aria-label", "Link"),
         ));
     }
     children.push(Box::new(
