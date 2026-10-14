@@ -87,8 +87,8 @@ layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "7a8c
 # Named genet-probe until genet 7baa554c (2026-09-14).
 taproot = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc", default-features = false }
 js-sys = "0.3"
-netrender = { git = "https://www.github.com/merely-made/netrender.git", rev = "b40f40628529e9ce58c419233fe3a758914be10a" }
-netrender_device = { git = "https://www.github.com/merely-made/netrender.git", rev = "b40f40628529e9ce58c419233fe3a758914be10a" }
+netrender = { git = "https://www.github.com/merely-made/netrender.git", rev = "cbdbf1e6dd3c86c37871eb8f98dbc6121f501601" }
+netrender_device = { git = "https://www.github.com/merely-made/netrender.git", rev = "cbdbf1e6dd3c86c37871eb8f98dbc6121f501601" }
 serde_json = "1"
 # The remote link's outbound queue: the host enqueues lines synchronously,
 # a task drains them onto the channel.
@@ -247,8 +247,8 @@ rust-version = "1.97.1"
 # Forward Genet and older consumers to the same immutable renderer contracts.
 # The HTTPS alias avoids Cargo's same-source patch restriction.
 [patch."https://github.com/merely-made/netrender.git"]
-netrender = { git = "https://www.github.com/merely-made/netrender.git", rev = "b40f40628529e9ce58c419233fe3a758914be10a" }
-netrender_device = { git = "https://www.github.com/merely-made/netrender.git", rev = "b40f40628529e9ce58c419233fe3a758914be10a" }
-netrender_text = { git = "https://www.github.com/merely-made/netrender.git", rev = "b40f40628529e9ce58c419233fe3a758914be10a" }
-paint_list_api = { git = "https://www.github.com/merely-made/netrender.git", rev = "b40f40628529e9ce58c419233fe3a758914be10a" }
-paint_list_render = { git = "https://www.github.com/merely-made/netrender.git", rev = "b40f40628529e9ce58c419233fe3a758914be10a" }
+netrender = { git = "https://www.github.com/merely-made/netrender.git", rev = "cbdbf1e6dd3c86c37871eb8f98dbc6121f501601" }
+netrender_device = { git = "https://www.github.com/merely-made/netrender.git", rev = "cbdbf1e6dd3c86c37871eb8f98dbc6121f501601" }
+netrender_text = { git = "https://www.github.com/merely-made/netrender.git", rev = "cbdbf1e6dd3c86c37871eb8f98dbc6121f501601" }
+paint_list_api = { git = "https://www.github.com/merely-made/netrender.git", rev = "cbdbf1e6dd3c86c37871eb8f98dbc6121f501601" }
+paint_list_render = { git = "https://www.github.com/merely-made/netrender.git", rev = "cbdbf1e6dd3c86c37871eb8f98dbc6121f501601" }

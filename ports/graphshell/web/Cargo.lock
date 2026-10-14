@@ -6895,7 +6895,7 @@ dependencies = [
 [[package]]
 name = "netrender"
 version = "0.1.2"
-source = "git+https://www.github.com/merely-made/netrender.git?rev=b40f40628529e9ce58c419233fe3a758914be10a#b40f40628529e9ce58c419233fe3a758914be10a"
+source = "git+https://www.github.com/merely-made/netrender.git?rev=cbdbf1e6dd3c86c37871eb8f98dbc6121f501601#cbdbf1e6dd3c86c37871eb8f98dbc6121f501601"
 dependencies = [
  "glifo",
  "log",
@@ -6936,7 +6936,7 @@ dependencies = [
 [[package]]
 name = "netrender_device"
 version = "0.1.2"
-source = "git+https://www.github.com/merely-made/netrender.git?rev=b40f40628529e9ce58c419233fe3a758914be10a#b40f40628529e9ce58c419233fe3a758914be10a"
+source = "git+https://www.github.com/merely-made/netrender.git?rev=cbdbf1e6dd3c86c37871eb8f98dbc6121f501601#cbdbf1e6dd3c86c37871eb8f98dbc6121f501601"
 dependencies = [
  "log",
  "pollster",
@@ -7839,7 +7839,7 @@ dependencies = [
 [[package]]
 name = "paint_list_api"
 version = "0.1.2"
-source = "git+https://www.github.com/merely-made/netrender.git?rev=b40f40628529e9ce58c419233fe3a758914be10a#b40f40628529e9ce58c419233fe3a758914be10a"
+source = "git+https://www.github.com/merely-made/netrender.git?rev=cbdbf1e6dd3c86c37871eb8f98dbc6121f501601#cbdbf1e6dd3c86c37871eb8f98dbc6121f501601"
 dependencies = [
  "euclid",
  "serde",
@@ -7848,7 +7848,7 @@ dependencies = [
 [[package]]
 name = "paint_list_render"
 version = "0.1.2"
-source = "git+https://www.github.com/merely-made/netrender.git?rev=b40f40628529e9ce58c419233fe3a758914be10a#b40f40628529e9ce58c419233fe3a758914be10a"
+source = "git+https://www.github.com/merely-made/netrender.git?rev=cbdbf1e6dd3c86c37871eb8f98dbc6121f501601#cbdbf1e6dd3c86c37871eb8f98dbc6121f501601"
 dependencies = [
  "log",
  "netrender",
@@ -12646,4 +12646,4 @@ source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-
 [[patch.unused]]
 name = "netrender_text"
 version = "0.1.1"
-source = "git+https://www.github.com/merely-made/netrender.git?rev=b40f40628529e9ce58c419233fe3a758914be10a#b40f40628529e9ce58c419233fe3a758914be10a"
+source = "git+https://www.github.com/merely-made/netrender.git?rev=cbdbf1e6dd3c86c37871eb8f98dbc6121f501601#cbdbf1e6dd3c86c37871eb8f98dbc6121f501601"

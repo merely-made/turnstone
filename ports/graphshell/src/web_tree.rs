@@ -949,6 +949,30 @@ struct Tree {
     requested_presenter: Option<String>,
 }
 
+/// Startup owns a mounted host until all viewer listeners are installed.
+struct MountedTreeGuard(Option<cambium_genet_web_host::Mounted<TreePage, Logic, Child>>);
+impl std::ops::Deref for MountedTreeGuard {
+    type Target = cambium_genet_web_host::Mounted<TreePage, Logic, Child>;
+    fn deref(&self) -> &Self::Target {
+        self.0.as_ref().expect("startup owns host")
+    }
+}
+impl Drop for MountedTreeGuard {
+    #[inline(never)]
+    fn drop(&mut self) {
+        if let Some(mounted) = &self.0 {
+            mounted.dispose();
+        }
+    }
+}
+fn remove_epoch_canvas(root: &Element, epoch: u64) {
+    if let Ok(Some(canvas)) =
+        root.query_selector(&format!("canvas[data-graphshell-canvas='{epoch}']"))
+    {
+        canvas.remove();
+    }
+}
+
 thread_local! {
     static TREE: RefCell<Option<Tree>> = const { RefCell::new(None) };
     static TREE_EPOCH: Cell<u64> = const { Cell::new(0) };
@@ -985,7 +1009,8 @@ pub fn dispose_tree(root: Element) {
     if pending {
         TREE_EPOCH.with(|epoch| epoch.set(epoch.get().wrapping_add(1)));
         TREE_PENDING_CANVAS.with(|canvas| {
-            if let Some((_, canvas)) = canvas.borrow_mut().take() {
+            if let Some((epoch, canvas)) = canvas.borrow_mut().take() {
+                remove_epoch_canvas(&root, epoch);
                 canvas.remove();
             }
         });
@@ -1039,16 +1064,12 @@ pub fn mount_tree(root: Element) -> Result<(), JsValue> {
     TREE_PENDING.with(|pending| *pending.borrow_mut() = Some(root.clone()));
     wasm_bindgen_futures::spawn_local(async move {
         if let Err(error) = boot(root, epoch).await {
+            remove_epoch_canvas(&failure_root, epoch);
             if TREE_EPOCH.with(|current| current.get() != epoch) {
                 return;
             }
             TREE_PENDING.with(|pending| pending.borrow_mut().take());
             TREE_PENDING_CANVAS.with(|pending| pending.borrow_mut().take());
-            if let Ok(Some(canvas)) =
-                failure_root.query_selector(&format!("canvas[data-graphshell-canvas='{epoch}']"))
-            {
-                canvas.remove();
-            }
             let _ = failure_root.set_attribute("data-mount-error", &error);
             web_sys::console::error_1(&error.clone().into());
             if let Some(document) = web_sys::window()
@@ -1371,6 +1392,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         hooks(shared.clone()),
     )
     .await?;
+    let mut mounted = MountedTreeGuard(Some(mounted));
     if !root.is_connected() || TREE_EPOCH.with(|current| current.get() != epoch) {
         mounted.dispose();
         return Err("appearance boot cancelled".into());
@@ -1421,13 +1443,17 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
             window: mounted.window().clone(),
         },
     )?;
+    root.set_attribute("data-presenter", "tree")
+        .map_err(|_| "could not identify presenter")?;
+    root.set_attribute("data-ready", "true")
+        .map_err(|_| "could not mark the page ready")?;
     TREE.with(|tree| {
         *tree.borrow_mut() = Some(Tree {
             shared,
             window: mounted.window().clone(),
             lane: None,
             root: root.clone(),
-            appearance: mounted,
+            appearance: mounted.0.take().expect("viewer takes mounted host"),
             gestures: gesture_owner,
             requested_presenter,
         })
@@ -1441,10 +1467,6 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
     }
     TREE_PENDING.with(|pending| pending.borrow_mut().take());
     TREE_PENDING_CANVAS.with(|pending| pending.borrow_mut().take());
-    root.set_attribute("data-presenter", "tree")
-        .map_err(|_| "could not identify presenter")?;
-    root.set_attribute("data-ready", "true")
-        .map_err(|_| "could not mark the page ready")?;
     Ok(())
 }
 
