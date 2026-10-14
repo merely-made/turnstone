@@ -156,7 +156,7 @@ Go `view-mu` v0.119.0 receives the tested compressible 128 KiB pages exactly.
 For the same deterministic incompressible 128 KiB body, Go emits zero bytes
 from both Retinue and stock NomadNet while Python succeeds against both.
 That plain multipart compatibility limit remains open; see the
-[Retinue receipt](https://github.com/merely-made/retinue/blob/ef1c47a602cb742293c109b0c443a9ceb8c1dce7/design_docs/2026-09-13_nomadnet_go_resource_compression_receipt.md).
+[Retinue receipt](https://github.com/merely-made/murm/blob/ef1c47a602cb742293c109b0c443a9ceb8c1dce7/design_docs/2026-09-13_nomadnet_go_resource_compression_receipt.md).
 
 The earlier Knot outer-canvas margin and clipboard-paste receipts concern
 separate host work. Persistent NomadNet identities and resident/public hosting
