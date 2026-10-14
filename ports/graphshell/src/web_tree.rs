@@ -691,14 +691,21 @@ impl TreePage {
                     .map_or(model.layout.as_str(), |(_, label)| label.as_str());
                 let focus = session.focus_key();
                 let record = focus.as_ref().and_then(|key| session.records().get(key));
+                let layout = if layout.is_empty() {
+                    String::new()
+                } else {
+                    format!(" · {layout}")
+                };
                 return format!(
-                    "Resident mere: {} · {} records · {} · {} · record: {} · {}",
+                    "Resident mere: {} · {} records · {}{} · record: {} · {}",
                     model.title,
                     model.graph.nodes.len(),
                     remote.status(),
                     layout,
                     record.map_or("none", |card| card.title.as_str()),
-                    if session.read_only() {
+                    if session.primary().is_none() {
+                        "no attachment"
+                    } else if session.read_only() {
                         "read-only"
                     } else {
                         "writable"
