@@ -764,7 +764,7 @@ pub(super) fn render(appearance: Appearance) -> Child {
         Appearance::Message(message) => Box::new(el("p", message).attr("role", "status")),
         Appearance::Ready { key, slot, status } => {
             let leaf =
-                graphshell::retained_content::content_view::<TreePage, ()>(key, slot, 480, 300);
+                graphshell::retained_content::filling_content_view::<TreePage, ()>(key, slot);
             Box::new(
                 el("div", (leaf, el("p", status).attr("role", "status")))
                     .attr("class", "pelt-reading"),

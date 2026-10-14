@@ -381,6 +381,130 @@ fn portable_content_view_reserves_the_requested_paint_box() {
 }
 
 #[test]
+fn filling_content_view_reserves_headers_and_scrolls_to_export_in_short_panels() {
+    use cambium::{AnyView, GenetAppRunner, GenetCtx, GenetElement};
+    use cambium_rootstock::{
+        Host, HostHooks, HostOptions, HostState, HostTree as _, HostWake, ScriptedDom, WindowDom,
+    };
+    use std::sync::Arc;
+    struct State(Rc<RefCell<ContentSlot>>, u32);
+    type Child = Box<dyn AnyView<State, (), GenetCtx, GenetElement>>;
+    type Logic = fn(&State) -> Child;
+    fn view(state: &State) -> Child {
+        Box::new(cambium::el("article", (
+            cambium::el("div", "Header").attr("style", "height:33px;flex-shrink:0;"),
+            cambium::el("div", (
+                filling_content_view::<State, ()>(74, state.0.clone()),
+                cambium::el("div", "Status").attr("style", "height:26px;flex-shrink:0;"),
+            )).attr("style", "display:flex;flex-direction:column;flex-grow:1;flex-shrink:1;flex-basis:0px;min-height:0;"),
+        )).attr("style", format!("width:400px;height:{}px;padding:16px;box-sizing:border-box;display:flex;flex-direction:column;min-height:0;overflow:hidden;", state.1)))
+    }
+    for panel_height in [217, 150] {
+        let mut content = ContentHost::default();
+        let member = Uuid::new_v4();
+        let slot = content
+            .open(
+                member,
+                HeldContent {
+                    address: "https://held.example/short".into(),
+                    title: "Short panel".into(),
+                    media_type: "text/html".into(),
+                    bytes: format!(
+                        "{}<a href='/export'>Export selected clip</a>",
+                        "<p>Retained passage</p>".repeat(12)
+                    )
+                    .into_bytes(),
+                    engine: None,
+                    media: None,
+                },
+            )
+            .unwrap();
+        content.show_only(&[member]);
+        let mut state = HostState::<State, Logic, Child>::new();
+        state.runner = Some(GenetAppRunner::new(
+            Rc::new(RefCell::new(ScriptedDom::new())),
+            view as Logic,
+            State(slot.clone(), panel_height),
+        ));
+        let wake = HostWake::new(state.wake_pending.clone(), Arc::new(|| {}));
+        let mut host = Host::new(
+            HostOptions::default(),
+            None,
+            HostHooks::inert(),
+            state,
+            wake,
+        );
+        host.set_surface_size(400., panel_height as f32);
+        host.relayout(400., panel_height as f32);
+        let bounds = {
+            let runner = host.s.runner.as_ref().unwrap();
+            let dom = runner.dom();
+            let dom = dom.borrow();
+            let dom = WindowDom::new(&dom, runner.mount());
+            let projection =
+                cambium_rootstock::document_projection(&dom, host.s.layout.as_ref().unwrap(), None);
+            projection
+                .nodes()
+                .iter()
+                .find(|node| node.name.as_deref() == Some("Retained document Short panel"))
+                .unwrap()
+                .bounds
+                .unwrap()
+        };
+        assert_eq!(bounds.width, 368.);
+        assert_eq!(bounds.height, panel_height as f32 - 32. - 33. - 26.);
+        assert!(bounds.y + bounds.height + 26. <= panel_height as f32 - 16.);
+        slot.borrow_mut()
+            .frame(bounds.width, bounds.height, 1.)
+            .unwrap();
+        assert!(slot.borrow_mut().scroll_key(SessionScrollKey::End));
+        slot.borrow_mut()
+            .frame(bounds.width, bounds.height, 2.)
+            .unwrap();
+        host.pointer_moved(bounds.x + 5., bounds.y + 5.);
+        host.wheel(0., 639.);
+        assert!(
+            host.s.runner.as_ref().unwrap().default_prevented(),
+            "bounded reader keeps wheel custody at its scroll limit"
+        );
+        content.show_only(&[]);
+        host.wheel(0., 639.);
+        assert!(
+            !host.s.runner.as_ref().unwrap().default_prevented(),
+            "a hidden or retired reader cannot consume wheel input"
+        );
+        content.show_only(&[member]);
+        let point = {
+            let slot = slot.borrow();
+            let document = slot.content.document().unwrap();
+            let projection = document.accessibility_projection().unwrap();
+            let export = projection
+                .nodes()
+                .iter()
+                .find(|node| node.actions.contains(&inker::DocumentA11yAction::Click))
+                .unwrap();
+            document
+                .accessibility_click_target(export.id)
+                .unwrap()
+                .point
+        };
+        assert!(
+            point.y >= 0. && point.y < bounds.height,
+            "export must be inside actual short viewport"
+        );
+        host.pointer_moved(bounds.x + point.x, bounds.y + point.y);
+        host.click();
+        host.release();
+        assert!(slot.borrow_mut().take_effects().iter().any(|effect| {
+            effect
+                .navigation
+                .as_ref()
+                .is_some_and(|nav| nav.request.address == "https://held.example/export")
+        }));
+    }
+}
+
+#[test]
 fn native_factory_passes_host_font_bytes_into_document_resource_custody() {
     let font = include_bytes!("../../web/GraphshellSans.ttf").to_vec();
     let engines = pelt_core::native::sessions_with_fetcher_and_fonts(
@@ -556,7 +680,12 @@ fn content_view_cancel_with_auxiliary_button_retires_actual_genet_press_before_r
     host.pointer_moved(bounds.x + point.x, bounds.y + point.y);
     host.click();
     assert!(host.s.runner.as_ref().unwrap().pointer_capture().is_some());
-    assert!(slot.borrow_mut().take_effects().iter().all(|effect| effect.navigation.is_none()));
+    assert!(
+        slot.borrow_mut()
+            .take_effects()
+            .iter()
+            .all(|effect| effect.navigation.is_none())
+    );
     {
         let runner = host.s.runner.as_mut().unwrap();
         runner.dispatch_pointer_cancel(
@@ -579,9 +708,18 @@ fn content_view_cancel_with_auxiliary_button_retires_actual_genet_press_before_r
         state: SessionButtonState::Released,
         modifiers: SessionModifiers::default(),
     });
-    assert!(slot.borrow_mut().take_effects().iter().all(|effect| effect.navigation.is_none()),
-        "cancelled content must not emit navigation on a later release");
-    assert_eq!(parent_clicks.get(), 0, "content cancellation does not activate its parent");
+    assert!(
+        slot.borrow_mut()
+            .take_effects()
+            .iter()
+            .all(|effect| effect.navigation.is_none()),
+        "cancelled content must not emit navigation on a later release"
+    );
+    assert_eq!(
+        parent_clicks.get(),
+        0,
+        "content cancellation does not activate its parent"
+    );
     host.pointer_moved(bounds.x + point.x, bounds.y + point.y);
     host.click();
     host.release();

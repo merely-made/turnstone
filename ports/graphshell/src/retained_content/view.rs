@@ -13,6 +13,43 @@ pub fn content_view<State: 'static, Action: 'static>(
     width: u32,
     height: u32,
 ) -> impl View<State, Action, GenetCtx, Element = GenetElement> {
+    content_view_with_style(
+        key,
+        slot,
+        width,
+        height,
+        format!("display:block;width:100%;height:{height}px;flex-shrink:0;"),
+        false,
+    )
+}
+
+/// Fill the space allocated by a column host, after its header and status.
+/// The producer receives the actual layout size rather than a fixed minimum.
+/// Wheel input stays in this bounded reader, including at its limits. The
+/// fixed-size `content_view` remains available for hosts that want chaining.
+pub fn filling_content_view<State: 'static, Action: 'static>(
+    key: u64,
+    slot: Rc<RefCell<ContentSlot>>,
+) -> impl View<State, Action, GenetCtx, Element = GenetElement> {
+    content_view_with_style(
+        key,
+        slot,
+        0,
+        0,
+        "display:block;width:100%;height:0;min-height:0;flex-grow:1;flex-shrink:1;flex-basis:0px;"
+            .into(),
+        true,
+    )
+}
+
+fn content_view_with_style<State: 'static, Action: 'static>(
+    key: u64,
+    slot: Rc<RefCell<ContentSlot>>,
+    width: u32,
+    height: u32,
+    style: String,
+    contain_wheel: bool,
+) -> impl View<State, Action, GenetCtx, Element = GenetElement> {
     let pointer_slot = slot.clone();
     let wheel_slot = slot.clone();
     let key_slot = slot.clone();
@@ -29,12 +66,7 @@ pub fn content_view<State: 'static, Action: 'static>(
                                 "aria-label",
                                 format!("Retained document {}", slot.borrow().source().title),
                             )
-                            .attr(
-                                "style",
-                                format!(
-                                    "display:block;width:100%;height:{height}px;flex-shrink:0;"
-                                ),
-                            ),
+                            .attr("style", style),
                         move |_: &mut State, click| {
                             // The tile's activation click must not replace the
                             // retained input target before pointer capture starts.
@@ -46,8 +78,12 @@ pub fn content_view<State: 'static, Action: 'static>(
                             cambium::PointerPhase::Cancel => SessionInput::Cancel,
                             cambium::PointerPhase::Down | cambium::PointerPhase::Up => {
                                 let button = match event.button {
-                                    cambium::PointerButton::Primary => SessionPointerButton::Primary,
-                                    cambium::PointerButton::Secondary => SessionPointerButton::Secondary,
+                                    cambium::PointerButton::Primary => {
+                                        SessionPointerButton::Primary
+                                    },
+                                    cambium::PointerButton::Secondary => {
+                                        SessionPointerButton::Secondary
+                                    },
                                     _ => return,
                                 };
                                 SessionInput::PointerButton {
@@ -74,7 +110,9 @@ pub fn content_view<State: 'static, Action: 'static>(
                     },
                 ),
                 move |_: &mut State, event| {
-                    if wheel_slot.borrow_mut().scroll(event.delta.0, event.delta.1) {
+                    let mut slot = wheel_slot.borrow_mut();
+                    let changed = slot.scroll(event.delta.0, event.delta.1);
+                    if changed || (contain_wheel && slot.is_visible()) {
                         event.prevent_default();
                     }
                 },

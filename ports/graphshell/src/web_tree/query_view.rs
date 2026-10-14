@@ -310,7 +310,10 @@ pub(super) fn section(page: &TreePage) -> Child {
             }
         }
         children.push(Box::new(button(
-            format!("Appearances: {:?}", pane.options.appearances),
+            match pane.options.appearances {
+                AppearancePolicy::AllHeldAccesses => "Show Resources and held appearances",
+                AppearancePolicy::ResourcesOnly => "Show Resources only",
+            },
             |p: &mut TreePage, _| {
                 let v = &mut p.query_views.options.appearances;
                 *v = if *v == AppearancePolicy::AllHeldAccesses {
@@ -492,8 +495,14 @@ pub(super) fn render(snapshot: (Result<QueryProjection, String>, Option<(Uuid, S
         let (dx, dy) = (bx - ax, by - ay);
         let length = dx.hypot(dy);
         let angle = dy.atan2(dx).to_degrees();
-        let cue = relation.kind.cue(&projection.spec.styles).css();
-        diagram.push(Box::new(el("div", ()).attr("role", "img").attr("aria-label", format!("{}: {} to {}; source {:?} to {:?}", relation.kind.label(), relation.from.id, relation.to.id, relation.source_from.stratum, relation.source_to.stratum)).attr("data-query-relation", format!("{:?}", relation.kind)).attr("style", format!("position:absolute;left:{}px;top:{}px;width:{length}px;border-top:3px {cue} currentColor;transform-origin:0 0;transform:rotate({angle}deg)", ax+145.0, ay+48.0))));
+        let cue = relation.kind.cue(&projection.spec.styles);
+        let pieces: Vec<Child> = model::stroke_parts(cue, length).into_iter().map(|part| {
+                Box::new(el("div", ()).attr("aria-hidden", "true").attr("style", format!(
+                    "display:block;position:absolute;left:{}px;top:{}px;width:{}px;height:{}px;background:currentColor;border-radius:{}px",
+                part.offset, part.top, part.width, part.height, if part.rounded { 1.5 } else { 0.0 }
+            ))) as Child
+        }).collect();
+        diagram.push(Box::new(el("div", pieces).attr("role", "img").attr("aria-label", format!("{}: {} to {}; source {:?} to {:?}", relation.kind.label(), relation.from.id, relation.to.id, relation.source_from.stratum, relation.source_to.stratum)).attr("data-query-relation", format!("{:?}", relation.kind)).attr("style", format!("position:absolute;left:{}px;top:{}px;width:{length}px;height:3px;transform-origin:0 0;transform:rotate({angle}deg)", ax+145.0, ay+48.0))));
     }
     for (node, (_, x, y)) in projection.nodes.iter().zip(&positions) {
         let mut content: Vec<Child> = vec![
@@ -542,18 +551,36 @@ pub(super) fn render(snapshot: (Result<QueryProjection, String>, Option<(Uuid, S
                 )));
             }
         }
-        diagram.push(Box::new(el("article", content).attr("aria-label", format!("{:?}: {}", node.identity.stratum, node.title)).attr("style", format!("position:absolute;left:{x}px;top:{y}px;width:290px;height:140px;overflow:auto;border:1px solid currentColor;background:var(--tabard-color-surface);padding:6px;overflow-wrap:anywhere"))));
+        diagram.push(Box::new(el("article", content).attr("aria-label", format!("{:?}: {}", node.identity.stratum, node.title)).attr("style", format!("position:absolute;z-index:1;left:{x}px;top:{y}px;width:290px;height:140px;overflow:auto;border:1px solid currentColor;background:var(--tabard-color-surface);padding:6px;overflow-wrap:anywhere"))));
     }
+    let coverage = if projection.coverage.limits.is_empty() {
+        "No known gaps in the supplied graph.".to_owned()
+    } else {
+        format!(
+            "Known coverage limits: {}.",
+            projection
+                .coverage
+                .limits
+                .iter()
+                .map(|limit| {
+                    match limit.count {
+                        Some(count) => format!("{} ({count})", limit.reason),
+                        None => limit.reason.clone(),
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join("; ")
+        )
+    };
     let mut children: Vec<Child> = vec![
         Box::new(el("h3", projection.spec.title.clone())),
         Box::new(el(
             "p",
             format!(
-                "{} selected Resources; {} unavailable; source revision {}. Coverage: {:?}",
+                "{} selected Resources; {} unavailable; source revision {}. {coverage}",
                 projection.members.len(),
                 projection.missing_resources.len(),
-                projection.source_revision,
-                projection.coverage
+                projection.source_revision
             ),
         )),
         Box::new(el(
@@ -626,11 +653,11 @@ pub(super) fn render(snapshot: (Result<QueryProjection, String>, Option<(Uuid, S
         move |p: &mut TreePage, _| {
             let result = scope
                 .as_ref()
-                .ok_or("Query owner unavailable".into())
+                .ok_or_else(|| String::from("Query owner unavailable"))
                 .and_then(|scope| {
                     p.product
                         .as_mut()
-                        .ok_or("Saved graph unavailable".into())?
+                        .ok_or_else(|| String::from("Saved graph unavailable"))?
                         .freeze_query(scope, &source)
                 });
             match result {
@@ -653,6 +680,14 @@ pub(super) fn render(snapshot: (Result<QueryProjection, String>, Option<(Uuid, S
 
 pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot {
     let pane = &page.query_views;
+    let inspection = pane.inspection.as_ref().filter(|(scope, revision, _)| {
+        page.product.as_ref().is_some_and(|p| {
+            p.retained_scope().as_ref() == Some(scope)
+                && p.source_graph().is_ok_and(|g| g.revision() == *revision)
+        })
+    });
+    let inspected =
+        inspection.and_then(|(_, _, text)| serde_json::from_str::<QueryRelation>(text).ok());
     let frozen: Vec<_> = page
         .product
         .as_ref()
@@ -721,6 +756,47 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
             pane.owner.map(|id| id.to_string()).unwrap_or_default(),
         )
         .with_field("query-view-status", pane.status.clone())
+        .with_field(
+            "query-inspection-kind",
+            inspected
+                .as_ref()
+                .map(|r| r.kind.label())
+                .unwrap_or_default(),
+        )
+        .with_field(
+            "query-inspection-from",
+            inspected
+                .as_ref()
+                .map(|r| format!("{:?}", r.from.stratum))
+                .unwrap_or_default(),
+        )
+        .with_field(
+            "query-inspection-source-from",
+            inspected
+                .as_ref()
+                .map(|r| format!("{:?}", r.source_from.stratum))
+                .unwrap_or_default(),
+        )
+        .with_field(
+            "query-inspection-hop-cost",
+            inspected
+                .as_ref()
+                .map(|r| r.hop_cost.to_string())
+                .unwrap_or_default(),
+        )
+        .with_field(
+            "query-inspection",
+            pane.inspection
+                .as_ref()
+                .filter(|(scope, revision, _)| {
+                    page.product.as_ref().is_some_and(|p| {
+                        p.retained_scope().as_ref() == Some(scope)
+                            && p.source_graph().is_ok_and(|g| g.revision() == *revision)
+                    })
+                })
+                .map(|(_, _, text)| text.clone())
+                .unwrap_or_default(),
+        )
         .with_field(
             "query-view-pending",
             (pane.pending.is_some() || pane.pending_freeze.is_some()).to_string(),

@@ -1,0 +1,33 @@
+# Reopened source, exact UI inspection of lifted links and cross-stratum edges.
+assert snap storage-reopened == true
+assert snap query-frozen-count == 1
+reveal role:button Edit query: Source view
+click role:button Edit query: Source view
+reveal role:button Show workbench
+click role:button Show workbench
+wait 300
+assert snap query-members == 2
+assert snap query-resource-nodes == 4
+assert snap query-surface-nodes == 3
+reveal role:button Open Query source
+capture query_dotted_bindings
+reveal role:button Inspect query relation 7: Resource link
+click role:button Inspect query relation 7: Resource link
+assert snap query-inspection-kind == Resource link
+assert snap query-inspection-from == Surface
+assert snap query-inspection-source-from == Resource
+assert snap query-inspection-hop-cost == 1
+capture query_lifted_resource_link_inspected
+reveal role:button Inspect query relation 9: Surface link
+click role:button Inspect query relation 9: Surface link
+assert snap query-inspection-kind == Surface link
+assert snap query-inspection-from == Surface
+assert snap query-inspection-source-from == Surface
+assert snap query-inspection-hop-cost == 1
+reveal role:button Inspect query relation 1: Cross-stratum edge: shown binding
+click role:button Inspect query relation 1: Cross-stratum edge: shown binding
+assert snap query-inspection-kind == Cross-stratum edge: shown binding
+assert snap query-inspection-from == Surface
+assert snap query-inspection-source-from == Surface
+assert snap query-inspection-hop-cost == 0
+capture query_shown_binding_inspected

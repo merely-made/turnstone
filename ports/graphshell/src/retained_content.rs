@@ -27,7 +27,7 @@ use std::{
 use uuid::Uuid;
 
 mod view;
-pub use view::content_view;
+pub use view::{content_view, filling_content_view};
 mod producer;
 pub use producer::ContentProducer;
 pub mod fixture;
