@@ -154,7 +154,7 @@ impl Shell {
                         &window,
                         a11y_actions.clone(),
                         self.proxy.clone(),
-                        &format!("Turnstone lens {ordinal}"),
+                        &crate::a11y::lens_window_label(ordinal),
                     );
                     window.request_redraw();
                     let owner = self.render_recovery.as_ref().expect("primary recovery owner").clone();
