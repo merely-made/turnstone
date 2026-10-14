@@ -1049,6 +1049,23 @@ impl Product for TreeLane {
             snapshot.with_field(name, value)
         });
         if let Some(product) = &page.product {
+            // Detail observations describe the selected node. Before selection,
+            // observe the faces actually on the canvas rather than conflating
+            // an absent detail selection with an absent representation.
+            let face = if let Some(id) = product.selected {
+                canvas
+                    .graph()
+                    .get_node_by_id(id)
+                    .map(|(key, _)| canvas.node_face(key).as_code())
+                    .unwrap_or("none")
+            } else {
+                let mut faces = canvas.graph().nodes().map(|(key, _)| canvas.node_face(key));
+                match faces.next() {
+                    Some(face) if faces.all(|other| other == face) => face.as_code(),
+                    Some(_) => "mixed",
+                    None => "none",
+                }
+            };
             product
                 .history_fields(product.projection_fields(snapshot))
                 .with_field(
@@ -1091,14 +1108,7 @@ impl Product for TreeLane {
                     "selected-count",
                     canvas.selected_members().len().to_string(),
                 )
-                .with_field(
-                    "face",
-                    product
-                        .selected
-                        .and_then(|id| canvas.graph().get_node_by_id(id))
-                        .map(|(key, _)| canvas.node_face(key).as_code())
-                        .unwrap_or("none"),
-                )
+                .with_field("face", face)
                 .with_field(
                     "item-role",
                     product
