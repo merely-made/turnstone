@@ -27,35 +27,18 @@ mod web_appearance;
 mod web_dataset;
 #[cfg(feature = "product")]
 mod web_capture;
-#[cfg(feature = "main-page")]
-mod web_events;
-mod web_gpu;
 mod web_graphs;
 mod web_period_worker;
-#[cfg(feature = "main-page")]
+#[cfg(feature = "product")]
 mod web_practice;
-#[cfg(feature = "main-page")]
-mod web_product;
-#[cfg(feature = "main-page")]
-mod web_projection;
-#[cfg(feature = "main-page")]
-mod web_remote;
 #[cfg(feature = "remote")]
 mod web_rtc_link;
 mod web_scenario;
 #[cfg(feature = "product")]
 mod web_command_catalog;
-#[cfg(feature = "main-page")]
-mod web_commands;
-#[cfg(feature = "main-page")]
-mod web_session;
-#[cfg(feature = "main-page")]
-mod web_options;
 mod web_speed;
 mod web_timing;
 mod web_tree;
-#[cfg(feature = "main-page")]
-mod web_view;
 
 #[cfg(feature = "product")]
 use graphshell::browser_storage::{StoragePersistence, decide};
@@ -137,11 +120,9 @@ pub fn projection_coordinates_receipt(bound: u32) -> Result<String, JsValue> {
 }
 
 /// Join a host over WebRTC as the tree's remote session; `loader.js` calls this
-/// from `?signal=` once the page is ready. Without the reference host this is
-/// the tree's only route (with it, `web_remote`'s export also serves the old
-/// page). Without `remote` the tree has no session, so it says so on the
+/// from `?signal=` once the page is ready. Without `remote` the tree has no
+/// session, so it says so on the
 /// console and the link simply never comes up: a refusal, not a page error.
-#[cfg(not(feature = "main-page"))]
 #[wasm_bindgen]
 pub fn connect_remote(signal_url: String, invite: Option<String>) -> Result<(), JsValue> {
     if let Err(error) = web_tree::connect_remote(signal_url, invite) {
@@ -151,18 +132,17 @@ pub fn connect_remote(signal_url: String, invite: Option<String>) -> Result<(), 
 }
 
 /// Parse and arm a scenario on the tree page; `loader.js` calls this from
-/// `?scenario=`. With the reference host, `web_scenario`'s export serves both
-/// pages; without it, this is the tree's.
-#[cfg(not(feature = "main-page"))]
+/// `?scenario=`. Mesquite owns stepping and observations on every public page.
 #[wasm_bindgen]
 pub fn run_scenario(text: &str) -> Result<(), JsValue> {
     web_tree::run(text).map_err(|error| JsValue::from_str(&error))
 }
 
-// Legacy reference-host implementation remains available until parity closes.
-// Its public `mount` export delegates to the retained tree.
-#[cfg(feature = "main-page")]
-include!("web_main.rs");
+/// Mount the same retained component used by all public pages.
+#[wasm_bindgen]
+pub fn mount(root: web_sys::Element) -> Result<(), JsValue> {
+    web_tree::mount_tree(root)
+}
 
 /// Preflight the same parser used by the retained lane without running the scenario.
 #[wasm_bindgen]

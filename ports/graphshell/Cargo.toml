@@ -142,6 +142,9 @@ applets = ["web", "eidetic/pack-signing", "dep:personae"]
 # the view's requests as the route's intents (reservoir plan V2b step 3, §7
 # item 42). It brings in `mere-view`, and with it Cambium, so it is opt-in.
 mere-route = ["web", "dep:mere-view"]
+# Ordinary native reservoir viewer: shared panel over the admitted resident
+# route. Its worker holds a client only; no persona graph files are opened.
+mere-view-host = ["native", "mere-route", "dep:cambium", "dep:cambium-genet-winit-host", "dep:mesquite", "dep:sprigging", "dep:taproot"]
 # Native owner composition for admitted Moot resource readings. This does not
 # enter the ordinary browser cone or install an application activity owner.
 # Finite native owner-composition proof; ordinary consumers need no window or
@@ -161,6 +164,7 @@ personal-sync = [
 [dependencies]
 genet-render-host = { workspace = true, optional = true }
 cambium = { workspace = true, optional = true }
+moot = { package = "mere-moot", path = "../moot", features = ["resource-view", "presentation"], optional = true }
 fleece = { workspace = true, features = ["portable-clip"], optional = true }
 wgpu = { workspace = true, optional = true }
 pelt-core = { workspace = true, features = ["genet"], optional = true }
@@ -182,6 +186,9 @@ chirograph.workspace = true
 mere = { path = "../../crates/mere", default-features = false, features = ["graph", "canvas"], optional = true }
 # The mere view's model and requests, for `mere-route`.
 mere-view = { workspace = true, optional = true }
+mesquite = { workspace = true, optional = true }
+sprigging = { workspace = true, optional = true }
+taproot = { workspace = true, optional = true }
 mesh = { workspace = true, optional = true }
 muniment = { workspace = true, optional = true }
 # The session core. MereHost's truth is a pandect GraphSession in the browser
@@ -231,7 +238,7 @@ genet-scripted-dom = { workspace = true, optional = true }
 layout_dom_api = { workspace = true, optional = true }
 image = { version = "0.25", default-features = false, features = ["png"], optional = true }
 cambium = { workspace = true, optional = true }
-moot = { package = "mere-moot", path = "../moot", features = ["resource-owner", "resource-view", "presentation"], optional = true }
+moot = { package = "mere-moot", path = "../moot", features = ["resource-owner"], optional = true }
 gemot = { workspace = true, optional = true }
 blake3 = { workspace = true, optional = true }
 # The identity read model and intents (`identity`, `identity_projection`).
@@ -314,17 +321,16 @@ path = "src/bin/graphshell_native_host.rs"
 required-features = ["native"]
 
 [[bin]]
+name = "graphshell_mere"
+path = "src/bin/graphshell_mere.rs"
+required-features = ["mere-view-host"]
+
+[[bin]]
 name = "receipt_ingest"
 path = "src/bin/receipt_ingest.rs"
 # Needs the personal-graph event vocabulary and muniment's redb backend, both
 # of which arrive with personal-sync.
 required-features = ["personal-sync"]
-
-[[bin]]
-name = "h4f_agent_probe"
-path = "src/bin/h4f_agent_probe.rs"
-required-features = ["native"]
-
 [dev-dependencies]
 # Tests and examples bind throwaway identities (vault lock plan, ruling 96).
 transport = { workspace = true, features = ["test-identity"] }
@@ -376,6 +382,10 @@ cambium-winit-a11y = { workspace = true }
 name = "c4_webrtc_host"
 path = "src/bin/c4_webrtc_host.rs"
 required-features = ["webrtc-session"]
+[[bin]]
+name = "h4f_agent_probe"
+path = "src/bin/h4f_agent_probe.rs"
+required-features = ["native"]
 
 [[test]]
 name = "webrtc_join_loopback"

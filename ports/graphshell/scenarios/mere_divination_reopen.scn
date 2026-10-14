@@ -1,0 +1,9 @@
+# A new Graphshell process restores only its own acknowledged view.
+settle 3
+wait
+assert snap status == ready
+assert snap record == Reading session
+assert snap record-data ~ context digest
+assert snap view-saved == true
+assert snap layout == grid.default
+capture 01_shared_mere_own_view_reopened

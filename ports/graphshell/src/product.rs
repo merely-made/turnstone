@@ -3737,6 +3737,15 @@ mod tests {
             mere::canvas::dynamics_spec::bind(&spec).expect("a runnable spec binds");
             let scene = SavedSceneV3 {
                 selected: vec![web],
+                // Fractional positions from the headed Save failure must survive
+                // the JSON facet capture before the typed f32 scene is reopened.
+                cartography: CartographyGeometry::from_positions([(
+                    web,
+                    (
+                        21.345783233642578_f64 as f32,
+                        -26.827743530273438_f64 as f32,
+                    ),
+                )]),
                 ..scene(&spec)
             };
             host.save_product_scene("mere://scene/spec", &scene)
@@ -3757,6 +3766,16 @@ mod tests {
                     .is_none()
             );
             assert_eq!(SAVED_SCENE_FACET, "graphshell.saved-scene/v4");
+            pollster::block_on(host.persist(4)).expect("store the scene and its journal");
+            let stored = pollster::block_on(crate::app::GraphshellApp::open_or_fixture(
+                host.store(),
+                selected_persona(),
+            ))
+            .expect("reopen the stored scene through the application owner");
+            assert_eq!(
+                stored.host.product_scene("mere://scene/spec").unwrap(),
+                scene
+            );
             // Through the codicil, as JSON text, opened as a session.
             let bytes = codicil(&host, scene);
             let text: serde_json::Value = serde_json::from_slice(&bytes).unwrap();

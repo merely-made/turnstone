@@ -1,0 +1,33 @@
+# Ordinary Graphshell reading of the same resident-owned divination mere.
+# Run after the Cleromancy synthetic occasion has been durably sealed.
+settle 3
+wait
+assert snap status == ready
+capture 01_shared_mere
+click .graph-canvas-swatch-node @aria-label=Cleromancy and Turquet
+settle 2
+wait
+assert snap record == Cleromancy and Turquet
+assert snap record-data ~ What deserves attention
+capture 02_context_record
+click .graph-canvas-swatch-node @aria-label=Reading session
+settle 2
+wait
+assert snap record == Reading session
+assert snap record-data ~ context digest
+capture 03_reading_record
+click role:button @data-action=refresh
+settle 2
+wait
+assert snap status == ready
+assert snap record == Reading session
+assert snap record-data ~ context digest
+capture 04_refreshed_record
+assert snap view-saved == true
+
+click role:button @data-layout=grid.default
+settle 2
+wait
+assert snap layout == grid.default
+assert snap view-saved == true
+capture 05_saved_grid_view

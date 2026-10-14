@@ -45,7 +45,10 @@ use taproot::Selector;
 use wasm_bindgen::prelude::*;
 use web_sys::{Element, Event, HtmlCanvasElement};
 
-use super::web_gpu::SHELL_CLEAR;
+// The retained canvas's clear colour, independent of any presentation adapter.
+const SHELL_CLEAR: wgpu::Color = wgpu::Color {
+    r: 0.027, g: 0.047, b: 0.059, a: 1.0,
+};
 use super::web_graphs;
 use super::web_scenario;
 use super::web_timing::{FrameTiming, now_ms};
@@ -164,8 +167,12 @@ fn tree_stylesheet(appearance: &str) -> String {
     let applet_sheet = applet::SHEET;
     #[cfg(not(feature = "applets"))]
     let applet_sheet = "";
+    #[cfg(feature = "remote")]
+    let reservoir_sheet = mere_view::MERE_VIEW_CSS;
+    #[cfg(not(feature = "remote"))]
+    let reservoir_sheet = "";
     format!(
-        "{SHEET}\n{}\n{}\n{workspace_sheet}\n{applet_sheet}\n{appearance}",
+        "{SHEET}\n{}\n{}\n{workspace_sheet}\n{applet_sheet}\n{reservoir_sheet}\n{appearance}",
         format!("{}\n{}", commands::SHEET, presenter::SHEET),
         forme_sheet()
     )
@@ -588,6 +595,8 @@ pub(crate) struct TreePage {
     draft: remote::DraftControls,
     /// The remote generation the view last rebuilt for.
     remote_seen: u64,
+    #[cfg(feature = "remote")]
+    mere_view: mere_view::MereViewState,
     /// Whether a remote link has been seen, so its section opens once.
     remote_link_seen: bool,
     /// Whether the collapsed Graph tools region is open over the canvas.
@@ -664,7 +673,55 @@ fn hosted_dataset(page: &TreePage) -> Option<Child> {
 }
 
 impl TreePage {
+    fn resident_mere_shown(&self) -> bool {
+        #[cfg(feature = "remote")]
+        return self.session == remote::Session::Remote
+            && self.shared.remote.borrow().reservoir.is_some();
+        #[cfg(not(feature = "remote"))]
+        false
+    }
+
     fn status(&self) -> String {
+        if self.session == remote::Session::Remote {
+            let remote = self.shared.remote.borrow();
+            #[cfg(feature = "remote")]
+            if let Some(session) = &remote.reservoir {
+                let model = session.model();
+                let layout = model
+                    .layouts
+                    .iter()
+                    .find(|(id, _)| id == &model.layout)
+                    .map_or(model.layout.as_str(), |(_, label)| label.as_str());
+                let focus = session.focus_key();
+                let record = focus.as_ref().and_then(|key| session.records().get(key));
+                let layout = if layout.is_empty() {
+                    String::new()
+                } else {
+                    format!(" · {layout}")
+                };
+                return format!(
+                    "Resident mere: {} · {} records · {}{} · record: {} · {}",
+                    model.title,
+                    model.graph.nodes.len(),
+                    remote.status(),
+                    layout,
+                    record.map_or("none", |card| card.title.as_str()),
+                    if session.primary().is_none() {
+                        "no attachment"
+                    } else if session.read_only() {
+                        "read-only"
+                    } else {
+                        "writable"
+                    },
+                );
+            }
+            return format!(
+                "{} · {} cards · {}",
+                remote.label(),
+                remote.card_labels().len(),
+                remote.status(),
+            );
+        }
         if let Some(pane) = &self.presenter {
             return format!(
                 "{} visible of {} disclosed · {} selected",
@@ -727,6 +784,9 @@ fn view(page: &TreePage) -> Child {
                         } else {
                             event.local
                         };
+                        if page.resident_mere_shown() {
+                            return;
+                        }
                         page.shared.canvas.borrow_mut().cursor_moved(x, y);
                         page.shared.dirty.set(true);
                         event.defer_rebuild();
@@ -913,7 +973,11 @@ fn tools_region(page: &TreePage) -> Child {
                 .attr("role", "status"),
         ));
     }
-    children.push(physics::section(page));
+    #[cfg(feature = "remote")]
+    children.extend(reservoir::view(page));
+    if !page.resident_mere_shown() {
+        children.push(physics::section(page));
+    }
     children.push(product::find_section(page));
     children.push(product::scenes_section(page));
     children.push(product::projection_section(page));
@@ -955,6 +1019,9 @@ impl TreePage {
                 .push(format!("command {command}"));
             return true;
         }
+        if self.resident_mere_shown() {
+            return false;
+        }
         if let Some(action) = controls::named_command(command) {
             if let CanvasCommand::Pan { dx, dy } = action {
                 self.shared.pan(dx, dy);
@@ -994,6 +1061,9 @@ impl TreePage {
 }
 
 fn keys(page: &mut TreePage, key: &Key) -> bool {
+    if page.resident_mere_shown() {
+        return false;
+    }
     if matches!(key, Key::Named(NamedKey::Escape)) {
         if let Some(product) = &mut page.product {
             if product.menu_open() {
@@ -1093,21 +1163,13 @@ pub(crate) fn mounted() -> bool {
     TREE.with(|tree| tree.borrow().is_some())
 }
 
-/// Whether the H5 reference host already owns this page.
-fn main_page_mounted() -> bool {
-    #[cfg(feature = "main-page")]
-    return web_scenario::host().is_some();
-    #[cfg(not(feature = "main-page"))]
-    false
-}
-
 /// Mount the one-tree page into `root`.
 #[wasm_bindgen]
 pub fn mount_tree(root: Element) -> Result<(), JsValue> {
     if !root.is_connected() {
         return Err(JsValue::from_str("the mount root is not connected"));
     }
-    if mounted() || main_page_mounted() {
+    if mounted() {
         return Err(JsValue::from_str(
             "Graphshell is already mounted on this page",
         ));
@@ -1411,6 +1473,8 @@ async fn boot_inner(root: Element) -> Result<(), String> {
                 sections: remote::Sections::default(),
                 draft: remote::DraftControls::default(),
                 remote_seen: 0,
+                #[cfg(feature = "remote")]
+                mere_view: mere_view::MereViewState::default(),
                 remote_link_seen: false,
                 size: (width, height),
             },
@@ -1627,6 +1691,8 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             if ctx.runner.state().remote_seen != generation {
                 ctx.runner.update(|page| {
                     page.remote_seen = generation;
+                    #[cfg(feature = "remote")]
+                    reservoir::relayout(page);
                     // The section starts closed and opens when a link exists.
                     if linked && !page.remote_link_seen {
                         page.remote_link_seen = true;
@@ -1982,6 +2048,8 @@ mod query_view;
 mod reading;
 #[cfg(feature = "remote")]
 mod remote;
+#[cfg(feature="remote")]
+mod reservoir;
 #[cfg(not(feature = "remote"))]
 #[path = "web_tree/remote_off.rs"]
 mod remote;

@@ -27,23 +27,21 @@ path = "../src/web.rs"
 [features]
 moot-resources = ["graphshell/moot-resources", "dep:moot"]
 dynamics-receipt = []
-default = ["main-page", "product", "remote", "canvas-gpu", "image-decode"]
-# The H5 reference host and its `mount` export (`src/web_main.rs`). It drives
-# the product modules and the remote link, so it needs both.
-main-page = ["product", "remote"]
+default = ["product", "remote", "canvas-gpu", "image-decode"]
 # What a page saves: IndexedDB, saved scenes, the tree's product mode,
 # `web_product` and `web_practice`.
 product = ["muniment/indexeddb", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "graphshell/query-views", "mere/query", "dep:mere-document-lanes", "dep:fleece"]
 applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.
-remote = ["graphshell/webrtc-browser", "dep:futures-channel", "dep:futures-util"]
+remote = ["graphshell/webrtc-browser", "graphshell/mere-route", "dep:mere-view", "dep:futures-channel", "dep:futures-util"]
 # The canvas's repulsion on the page's own WebGPU device (physics catalog P5c).
 canvas-gpu = ["graphshell/canvas-gpu", "mere/canvas-gpu"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
 image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mesquite/image-decode", "cambium-genet-web-host/image-decode", "graphshell/image-decode", "mere/image-decode"]
 
 [dependencies]
+mere-view = { path="../../../crates/cambium/mere-view", optional=true }
 mere-document-lanes = { path = "../../../crates/system/document-lanes", features = ["retained-clips"], optional = true }
 fleece = { package = "mere-fleece", path = "../../../crates/fleece", features = ["portable-clip"], optional = true }
 eidetic = { path = "../../../crates/eidetic/eidetic-core", default-features = false }

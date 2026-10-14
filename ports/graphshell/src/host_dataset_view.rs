@@ -730,6 +730,7 @@ mod tests {
             .collect();
         assert_eq!(
             digest,
+            // 9c734945e canonicalized the fixture's Murm repository URLs.
             "83b1bdd6491c0d636a364dc479153208f3ddbcca8180410c431ddff347ba1525"
         );
         let envelope = parse_host_dataset(std::str::from_utf8(bytes).unwrap()).unwrap();

@@ -435,6 +435,8 @@ impl TreeLane {
         let remote = self.shared.remote.borrow();
         let board = &remote.board;
         let live = remote.live.as_ref();
+        #[cfg(feature = "remote")]
+        let snapshot = reservoir::fields(page, snapshot);
         snapshot
             .with_field(
                 "session",
@@ -1049,6 +1051,23 @@ impl Product for TreeLane {
             snapshot.with_field(name, value)
         });
         if let Some(product) = &page.product {
+            // Detail observations describe the selected node. Before selection,
+            // observe the faces actually on the canvas rather than conflating
+            // an absent detail selection with an absent representation.
+            let face = if let Some(id) = product.selected {
+                canvas
+                    .graph()
+                    .get_node_by_id(id)
+                    .map(|(key, _)| canvas.node_face(key).as_code())
+                    .unwrap_or("none")
+            } else {
+                let mut faces = canvas.graph().nodes().map(|(key, _)| canvas.node_face(key));
+                match faces.next() {
+                    Some(face) if faces.all(|other| other == face) => face.as_code(),
+                    Some(_) => "mixed",
+                    None => "none",
+                }
+            };
             product
                 .history_fields(product.projection_fields(snapshot))
                 .with_field(
@@ -1091,14 +1110,7 @@ impl Product for TreeLane {
                     "selected-count",
                     canvas.selected_members().len().to_string(),
                 )
-                .with_field(
-                    "face",
-                    product
-                        .selected
-                        .and_then(|id| canvas.graph().get_node_by_id(id))
-                        .map(|(key, _)| canvas.node_face(key).as_code())
-                        .unwrap_or("none"),
-                )
+                .with_field("face", face)
                 .with_field(
                     "item-role",
                     product
@@ -1705,7 +1717,12 @@ impl Product for TreeLane {
             && leaf_rect(ctx).is_some_and(|(_, _, width, height)| width > 0. && height > 0.);
         #[cfg(feature = "product")]
         let workspace_saving = super::forme::owner_busy(ctx.runner.state())
-            || ctx.runner.state().forme.as_ref().is_some_and(|pane| pane.saving)
+            || ctx
+                .runner
+                .state()
+                .forme
+                .as_ref()
+                .is_some_and(|pane| pane.saving)
             || ctx.runner.state().presentation.busy();
         #[cfg(not(feature = "product"))]
         let workspace_saving = false;
@@ -1774,7 +1791,9 @@ fn owner_receipt(page: &TreePage) -> serde_json::Value {
         "actual_session_changes":page.product.as_ref().map_or(0,|p|p.observed_session_changes)})
 }
 #[cfg(not(feature = "product"))]
-fn owner_receipt(_page: &TreePage) -> serde_json::Value { serde_json::Value::Null }
+fn owner_receipt(_page: &TreePage) -> serde_json::Value {
+    serde_json::Value::Null
+}
 
 #[cfg(feature = "product")]
 fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> ProbeSnapshot {
@@ -1782,15 +1801,40 @@ fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> Pr
     let model_owner = page.forme.as_ref().map(|p| p.model().document.graph_id);
     let snapshot = snapshot
         .with_field("actual-app-present", actual_owner.is_some().to_string())
-        .with_field("actual-graph-session", actual_owner.map(|id| id.to_string()).unwrap_or_else(|| "busy".into()))
-        .with_field("forme-model-session", model_owner.map(|id| id.to_string()).unwrap_or_else(|| "absent".into()))
-        .with_field("forme-session-matches", match (actual_owner, model_owner) {
-            (Some(actual), Some(model)) => (actual == model).to_string(),
-            (None, _) => "unknown".into(),
-            (Some(_), None) => "false".into(),
-        })
-        .with_field("actual-session-changes", page.product.as_ref().map_or(0, |p| p.observed_session_changes).to_string())
-        .with_field("forme-region-id", canvas.forme_region().map(|r| r.id.to_string()).unwrap_or_else(|| "absent".into()));
+        .with_field(
+            "actual-graph-session",
+            actual_owner
+                .map(|id| id.to_string())
+                .unwrap_or_else(|| "busy".into()),
+        )
+        .with_field(
+            "forme-model-session",
+            model_owner
+                .map(|id| id.to_string())
+                .unwrap_or_else(|| "absent".into()),
+        )
+        .with_field(
+            "forme-session-matches",
+            match (actual_owner, model_owner) {
+                (Some(actual), Some(model)) => (actual == model).to_string(),
+                (None, _) => "unknown".into(),
+                (Some(_), None) => "false".into(),
+            },
+        )
+        .with_field(
+            "actual-session-changes",
+            page.product
+                .as_ref()
+                .map_or(0, |p| p.observed_session_changes)
+                .to_string(),
+        )
+        .with_field(
+            "forme-region-id",
+            canvas
+                .forme_region()
+                .map(|r| r.id.to_string())
+                .unwrap_or_else(|| "absent".into()),
+        );
     let Some(pane) = &page.forme else {
         return snapshot.with_field(
             "forme",

@@ -91,7 +91,7 @@ pub enum AppMessage {
     },
     /// One carrier request against the admitted endpoint.
     Request { request: CarrierRequest },
-    /// Take one notice the session already received, without waiting.
+    /// Poll for one available notice with bounded stream intake.
     TakeNotice,
     /// Wait until the admitted endpoint rings with a revision notice.
     WaitNotice,
@@ -392,7 +392,12 @@ where
                 }
             },
             AppMessage::TakeNotice => {
-                let notice = carrier.take_notice();
+                // Notices from a quiet endpoint are still in its duplex
+                // stream until read. Bounded, cancel-safe intake makes idle
+                // polls receive them without issuing a user command.
+                let notice = carrier
+                    .poll_notice(std::time::Duration::from_millis(1))
+                    .await?;
                 write_native_message_async(writer, &AppHostMessage::Notice { notice }).await?;
             },
             AppMessage::WaitNotice => {

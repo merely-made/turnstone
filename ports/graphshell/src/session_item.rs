@@ -19,9 +19,46 @@
 
 use chirograph::{AdvertisedAction, CardValueV1, IntentEffect, IntentReference, PortableCardV1};
 use mere::kernel::graph::CapturedDelta;
+use mere::kernel::graph::{Graph, NodeFacetStore};
+use mere::kernel::persistence::GraphSnapshot;
 use muniment::Backend;
 use pandect::{GraphSession, SessionId, ViewIntent};
+use scenotime::{Revision, SceneEpoch};
 use serde::{Deserialize, Serialize};
+
+/// Complete owner-disclosed graph material for an explicit attached session.
+/// The session card names this resource in `media`. It is an ephemeral read
+/// cache, not a client-owned persistence format. Facets are separate because
+/// the kernel snapshot deliberately externalizes them.
+pub const SESSION_GRAPH_SCHEMA: &str = "mere.session.graph/v1";
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SessionGraphV1 {
+    pub schema: String,
+    /// The admitted application's own parallel view state only.
+    pub application: String,
+    pub views: std::collections::BTreeMap<String, ViewIntent>,
+    pub session: SessionId,
+    /// A thaw remains immutable; the first explicit edit forks it.
+    pub read_only: bool,
+    pub epoch: SceneEpoch,
+    pub revision: Revision,
+    pub graph: GraphSnapshot,
+    pub facets: NodeFacetStore,
+}
+
+impl SessionGraphV1 {
+    /// Hydrate only the disclosed graph, with its facet sidecar intact.
+    pub fn into_graph(self) -> Result<Graph, String> {
+        if self.schema != SESSION_GRAPH_SCHEMA {
+            return Err(format!("unknown session graph schema {:?}", self.schema));
+        }
+        let mut graph = Graph::try_from_snapshot(&self.graph).map_err(|error| error.to_string())?;
+        *graph.facets_mut() = self.facets;
+        Ok(graph)
+    }
+}
 
 /// A mere route's projection of its sessions: the mere's card, then one card
 /// per session, oldest first.
@@ -114,6 +151,10 @@ pub const SET_VIEW_SCHEMA: &str = "mere.session.view/v1";
 pub struct ApplyEditsV1 {
     pub schema: String,
     pub edits: Vec<CapturedDelta>,
+    /// Candidate-derived edits must match the graph revision they read.
+    /// Absence preserves the existing stable-id action semantics.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expected_revision: Option<Revision>,
 }
 
 impl ApplyEditsV1 {
@@ -121,6 +162,14 @@ impl ApplyEditsV1 {
         Self {
             schema: APPLY_EDITS_SCHEMA.to_string(),
             edits,
+            expected_revision: None,
+        }
+    }
+
+    pub fn checked(revision: Revision, edits: Vec<CapturedDelta>) -> Self {
+        Self {
+            expected_revision: Some(revision),
+            ..Self::new(edits)
         }
     }
 }

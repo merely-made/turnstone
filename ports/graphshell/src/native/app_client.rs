@@ -49,6 +49,8 @@ pub enum AppClientError {
     MismatchedResponse { expected: u64, got: u64 },
     #[error("a card resource was not valid PortableCardV1 JSON: {0}")]
     MalformedCard(#[from] serde_json::Error),
+    #[error("the resident resource has another scope or content address")]
+    InvalidResourceAddress,
     #[error("transport failed: {0}")]
     Io(#[from] std::io::Error),
 }
@@ -179,6 +181,7 @@ impl AppBrokerClient {
         session: chirograph::ProjectionSession,
         resource: ContentHash,
     ) -> Result<Vec<u8>, AppClientError> {
+        let expected_session = session.clone();
         let body = self
             .request_body(CarrierRequestBody::Resource(ResourceRequest {
                 session,
@@ -186,7 +189,9 @@ impl AppBrokerClient {
             }))
             .await?;
         match body {
-            CarrierResponseBody::Resource(response) => Ok(response.bytes),
+            CarrierResponseBody::Resource(response) => {
+                checked_resource(response, &expected_session, resource)
+            },
             other => Err(unexpected_body("the resource", &other)),
         }
     }
@@ -404,4 +409,44 @@ fn unexpected_body(expected: &'static str, got: &CarrierResponseBody) -> AppClie
         _ => "another response",
     };
     AppClientError::UnexpectedAnswer { expected, got }
+}
+
+fn checked_resource(
+    response: chirograph::ResourceResponse,
+    expected_session: &chirograph::ProjectionSession,
+    expected_hash: ContentHash,
+) -> Result<Vec<u8>, AppClientError> {
+    if &response.session != expected_session
+        || response.resource != expected_hash
+        || !response.has_valid_address()
+    {
+        return Err(AppClientError::InvalidResourceAddress);
+    }
+    Ok(response.bytes)
+}
+#[cfg(test)]
+mod resource_boundary_tests {
+    use super::*;
+    #[test]
+    fn native_resource_bytes_require_the_requested_scope_and_verified_address() {
+        let session = chirograph::ProjectionSession("mere.graph".into());
+        let bytes = b"scoped graph material".to_vec();
+        let response = chirograph::ResourceResponse::new(session.clone(), bytes.clone());
+        assert_eq!(
+            checked_resource(response.clone(), &session, response.resource).unwrap(),
+            bytes
+        );
+        for failure in 0..3 {
+            let mut invalid = response.clone();
+            match failure {
+                0 => invalid.session = chirograph::ProjectionSession("another".into()),
+                1 => invalid.resource = ContentHash::of(b"another"),
+                _ => invalid.bytes.push(0),
+            }
+            assert!(matches!(
+                checked_resource(invalid, &session, response.resource),
+                Err(AppClientError::InvalidResourceAddress)
+            ));
+        }
+    }
 }

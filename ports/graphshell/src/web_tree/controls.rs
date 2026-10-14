@@ -9,6 +9,7 @@ use super::*;
 use cambium::{PointerButton, PointerEvent, PointerPhase, button, focusable_if, on_click};
 
 pub(super) fn toolbar(page: &TreePage) -> Child {
+    let resident = page.resident_mere_shown();
     let paused = page.shared.canvas.borrow().physics_paused();
     let can_fit_selection = page.shared.canvas.borrow().can_fit_selection();
     let hosted = matches!(page.dataset, HostedDataset::Loaded(_));
@@ -61,12 +62,16 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
     ];
     let mut buttons: Vec<Child> = commands
         .into_iter()
+        .filter(|_| !resident)
         .map(|(label, command)| {
             let enabled = command != CanvasCommand::FitSelection || can_fit_selection;
             let mut control = focusable_if(
                 on_click(
                     el("button", label.to_owned()),
                     move |page: &mut TreePage, _| {
+                        if page.resident_mere_shown() {
+                            return;
+                        }
                         if let CanvasCommand::Pan { dx, dy } = command {
                             page.shared.pan(dx, dy);
                             return;
@@ -90,23 +95,36 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
             Box::new(control) as Child
         })
         .collect();
-    buttons.push(Box::new(
-        button("Graph commands", |page: &mut TreePage, _| {
-            commands::open_keyboard(page)
-        })
-        .attr("aria-haspopup", "dialog")
-        .attr(
-            "aria-expanded",
-            if page.commands.open.is_some()
-                || page.product.as_ref().is_some_and(|product| product.menu_open())
-            {
-                "true"
-            } else {
-                "false"
-            },
-        )
-        .attr("aria-keyshortcuts", "Control+k Meta+k Shift+F10"),
-    ));
+    if resident {
+        buttons.push(Box::new(
+            el(
+                "p",
+                "Resident graph · use the Mere panel to choose a layout or read a record",
+            )
+            .attr("role", "status"),
+        ));
+    } else {
+        buttons.push(Box::new(
+            button("Graph commands", |page: &mut TreePage, _| {
+                commands::open_keyboard(page)
+            })
+            .attr("aria-haspopup", "dialog")
+            .attr(
+                "aria-expanded",
+                if page.commands.open.is_some()
+                    || page
+                        .product
+                        .as_ref()
+                        .is_some_and(|product| product.menu_open())
+                {
+                    "true"
+                } else {
+                    "false"
+                },
+            )
+            .attr("aria-keyshortcuts", "Control+k Meta+k Shift+F10"),
+        ));
+    }
     // Collapsed, the Graph tools region opens over the canvas from here.
     if !tools_docked(page) {
         buttons.push(Box::new(
@@ -122,7 +140,14 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
     Box::new(
         el("nav", buttons)
             .attr("class", "tree-controls workspace-controls")
-            .attr("aria-label", "Graph controls"),
+            .attr(
+                "aria-label",
+                if resident {
+                    "Resident graph controls"
+                } else {
+                    "Graph controls"
+                },
+            ),
     )
 }
 
@@ -140,6 +165,9 @@ impl TreePage {
             self.shared.dirty.set(true);
             return;
         }
+        if self.resident_mere_shown() {
+            return;
+        }
         #[cfg(feature = "product")]
         if field_inspection::pointer(self, &event) {
             event.prop.prevent_default();
@@ -155,7 +183,10 @@ impl TreePage {
         if event.button == PointerButton::Primary
             && event.phase == PointerPhase::Down
             && (self.commands.open.is_some()
-                || self.product.as_ref().is_some_and(|product| product.menu_open()))
+                || self
+                    .product
+                    .as_ref()
+                    .is_some_and(|product| product.menu_open()))
         {
             commands::close(self);
         }
@@ -205,7 +236,10 @@ impl TreePage {
         if let Some(request) = context {
             commands::open(
                 self,
-                commands::Request::Context { at: request.at, node: request.node },
+                commands::Request::Context {
+                    at: request.at,
+                    node: request.node,
+                },
             );
         } else if event.phase == PointerPhase::Up && event.button == PointerButton::Secondary {
             commands::open(self, commands::Request::Selection);

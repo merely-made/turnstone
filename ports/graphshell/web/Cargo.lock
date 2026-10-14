@@ -4308,6 +4308,7 @@ dependencies = [
  "mere-document-lanes",
  "mere-fleece",
  "mere-moot",
+ "mere-view",
  "mere-webrtc-carrier",
  "muniment",
  "netrender",
@@ -4372,6 +4373,7 @@ dependencies = [
  "mere-document-lanes",
  "mere-fleece",
  "mere-moot",
+ "mere-view",
  "mesquite",
  "muniment",
  "netrender",
@@ -6194,9 +6196,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "mere-view"
+version = "0.1.0"
+dependencies = [
+ "cambium",
+ "incipit",
+ "mere-cartography",
+ "mere-kernel",
+ "pictograph",
+ "sprigging",
+ "uuid",
+]
+
+[[package]]
 name = "mere-webrtc-carrier"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/murm.git?rev=b49df894635bac95823284efee6c445885eaf62a#b49df894635bac95823284efee6c445885eaf62a"
+source = "git+https://github.com/merely-made/murm.git?rev=3d9e799fe06d2a58754569b8dc11b2dbc7d506e9#3d9e799fe06d2a58754569b8dc11b2dbc7d506e9"
 dependencies = [
  "blake3",
  "futures-channel",
