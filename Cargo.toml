@@ -81,7 +81,7 @@ commons = { package = "commons-spine", git = "https://www.github.com/merely-made
 # The live-lane carrier: ticket import, overlay tagging, and the sync parts
 # the domain join helpers take. The place worker owns the handles; sessions
 # are assembled by stickleback's JoinedSpace inside the domain crates.
-transport = { package = "mere-transport", git = "https://github.com/merely-made/retinue.git", rev = "b49df894635bac95823284efee6c445885eaf62a" }
+transport = { package = "mere-transport", git = "https://github.com/merely-made/murm.git", rev = "b49df894635bac95823284efee6c445885eaf62a" }
 # The place worker's lane runtime: transport binding and JoinedSpace tasks
 # need a reactor. Scoped to the worker thread; the app and panes stay sync.
 tokio = { version = "1", features = ["rt-multi-thread", "sync", "time"] }
@@ -169,7 +169,7 @@ mere-document-lanes = { git = "https://www.github.com/merely-made/mere.git", rev
 nematic = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b7a9b218579f1f36cc1ab05a51b2a13128f1d" }
 # Native Reticulum page transport.  The NomadNet adapter owns only the public
 # destination and opaque page bytes; Turnstone owns navigation and rendering.
-retinue = { git = "https://github.com/merely-made/retinue.git", rev = "b49df894635bac95823284efee6c445885eaf62a" }
+retinue = { git = "https://github.com/merely-made/murm.git", rev = "b49df894635bac95823284efee6c445885eaf62a" }
 # An ephemeral Reticulum client identity is generated per NomadNet page fetch;
 # it is never persisted as a browsing preference or discovery record.
 getrandom = "0.2"
@@ -296,7 +296,7 @@ accesskit-consumer-unix = { package = "accesskit_consumer", version = "=0.36.0" 
 mien = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b7a9b218579f1f36cc1ab05a51b2a13128f1d" }
 # The place tests bind a transport from a fixture master; Mere gates that
 # builder behind `test-identity` (vault lock ruling 97).
-transport = { package = "mere-transport", git = "https://github.com/merely-made/retinue.git", rev = "b49df894635bac95823284efee6c445885eaf62a", features = ["test-identity"] }
+transport = { package = "mere-transport", git = "https://github.com/merely-made/murm.git", rev = "b49df894635bac95823284efee6c445885eaf62a", features = ["test-identity"] }
 # The cookie custody test speaks the jar's own types. Same Genet revision as
 # every other genet.git row here, so it adds no package to the graph.
 netfetcher = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
@@ -447,7 +447,7 @@ insigne = { git = "https://github.com/merely-made/dramatis.git", rev = "0234e7ee
 knot-editor-host = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b7a9b218579f1f36cc1ab05a51b2a13128f1d" }
 mere-proofs = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b7a9b218579f1f36cc1ab05a51b2a13128f1d" }
 mere-surface-api = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b7a9b218579f1f36cc1ab05a51b2a13128f1d" }
-mere-transport = { git = "https://github.com/merely-made/retinue.git", rev = "b49df894635bac95823284efee6c445885eaf62a" }
+mere-transport = { git = "https://github.com/merely-made/murm.git", rev = "b49df894635bac95823284efee6c445885eaf62a" }
 mora-cmudict = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b7a9b218579f1f36cc1ab05a51b2a13128f1d" }
 reference-data = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b7a9b218579f1f36cc1ab05a51b2a13128f1d" }
 muniment = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b7a9b218579f1f36cc1ab05a51b2a13128f1d" }
@@ -483,7 +483,7 @@ mere-fleece = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b
 mere-forme = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b7a9b218579f1f36cc1ab05a51b2a13128f1d" }
 mere-kernel = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b7a9b218579f1f36cc1ab05a51b2a13128f1d" }
 mere-page-load = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b7a9b218579f1f36cc1ab05a51b2a13128f1d" }
-mere-webrtc-carrier = { git = "https://github.com/merely-made/retinue.git", rev = "b49df894635bac95823284efee6c445885eaf62a" }
+mere-webrtc-carrier = { git = "https://github.com/merely-made/murm.git", rev = "b49df894635bac95823284efee6c445885eaf62a" }
 meristem = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b7a9b218579f1f36cc1ab05a51b2a13128f1d" }
 mesquite = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b7a9b218579f1f36cc1ab05a51b2a13128f1d" }
 mien = { git = "https://www.github.com/merely-made/mere.git", rev = "0b9b7a9b218579f1f36cc1ab05a51b2a13128f1d" }
@@ -512,3 +512,10 @@ regress = { git = "https://www.github.com/merely-made/genet.git", rev = "7a8c5b8
 
 [workspace.package]
 rust-version = "1.97.1"
+
+# Compatibility source keys for immutable suppliers published before the
+# repository rename. Targets and current direct dependencies use Murm.
+[patch."https://github.com/merely-made/retinue.git"]
+mere-transport = { git = "https://github.com/merely-made/murm.git", rev = "b49df894635bac95823284efee6c445885eaf62a" }
+mere-webrtc-carrier = { git = "https://github.com/merely-made/murm.git", rev = "b49df894635bac95823284efee6c445885eaf62a" }
+retinue = { git = "https://github.com/merely-made/murm.git", rev = "b49df894635bac95823284efee6c445885eaf62a" }

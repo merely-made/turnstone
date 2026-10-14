@@ -8611,7 +8611,7 @@ dependencies = [
 [[package]]
 name = "mere-transport"
 version = "0.0.2"
-source = "git+https://github.com/merely-made/retinue.git?rev=b49df894635bac95823284efee6c445885eaf62a#b49df894635bac95823284efee6c445885eaf62a"
+source = "git+https://github.com/merely-made/murm.git?rev=b49df894635bac95823284efee6c445885eaf62a#b49df894635bac95823284efee6c445885eaf62a"
 dependencies = [
  "bytes",
  "hkdf 0.13.0",
@@ -8636,7 +8636,7 @@ dependencies = [
 [[package]]
 name = "mere-webrtc-carrier"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/retinue.git?rev=b49df894635bac95823284efee6c445885eaf62a#b49df894635bac95823284efee6c445885eaf62a"
+source = "git+https://github.com/merely-made/murm.git?rev=b49df894635bac95823284efee6c445885eaf62a#b49df894635bac95823284efee6c445885eaf62a"
 dependencies = [
  "blake3",
  "luggage",
@@ -12681,7 +12681,7 @@ dependencies = [
 [[package]]
 name = "retinue"
 version = "0.3.0"
-source = "git+https://github.com/merely-made/retinue.git?rev=b49df894635bac95823284efee6c445885eaf62a#b49df894635bac95823284efee6c445885eaf62a"
+source = "git+https://github.com/merely-made/murm.git?rev=b49df894635bac95823284efee6c445885eaf62a#b49df894635bac95823284efee6c445885eaf62a"
 dependencies = [
  "aes 0.9.3",
  "bzip2",
