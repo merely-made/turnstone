@@ -20,6 +20,7 @@ use moot::resource_view::Reading;
 use muniment::Backend;
 use notochord::{RetainedAuthority, RevocationLedger};
 use personae::IdentityProvider;
+use serde::{Deserialize, Serialize};
 
 pub type View = Box<dyn AnyView<Mount, (), GenetCtx, GenetElement>>;
 
@@ -43,13 +44,18 @@ pub enum Error {
     Admission(String),
     Owner(owner::Error),
     View(String),
+    Resume(String),
+    Persistence(muniment::StoreError),
 }
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Admission(reason) | Self::View(reason) => f.write_str(reason),
+            Self::Admission(reason) | Self::View(reason) | Self::Resume(reason) => {
+                f.write_str(reason)
+            },
             Self::Owner(error) => error.fmt(f),
+            Self::Persistence(error) => error.fmt(f),
         }
     }
 }
@@ -95,7 +101,117 @@ pub struct Mount {
     status: String,
 }
 
+/// Host-local attention, never a credential or replicated community record.
+/// No owner snapshot, grant, payload, destination or queued command is saved.
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct SavedReading {
+    version: u16,
+    moot: [u8; 32],
+    reader: [u8; 32],
+    collection: [u8; 32],
+    selected: Option<ResourceRef>,
+    reopen_content: bool,
+}
+
 impl Mount {
+    /// Save local attention to an explicitly chosen host-owned Muniment slot.
+    /// Persistence is opt-in; rendering and dropping a mount never writes it.
+    /// The host supplies a separate slot for each independent reading and owns
+    /// its privacy, retention and deletion policy.
+    pub async fn save<B: Backend + Clone>(&self, backend: B, key: &str) -> Result<(), Error> {
+        if self.closed.is_some() {
+            return Err(Error::Resume("A closed reading cannot be saved".into()));
+        }
+        let selected = self.reading.pane().selected_resource();
+        let saved = SavedReading {
+            version: 1,
+            moot: self.moot,
+            reader: self.authority.principal().subject,
+            collection: self.collection,
+            selected,
+            reopen_content: self
+                .opened
+                .as_ref()
+                .is_some_and(|opened| Some(opened.reference) == selected),
+        };
+        muniment::JsonSlots::new(backend)
+            .save(key, &saved)
+            .await
+            .map_err(Error::Persistence)
+    }
+
+    /// Reopen saved attention using newly supplied admitted authority, current
+    /// owners, ledger and clock. The caller supplies the expected collection
+    /// and any freshly reviewed fork destination; saved bytes cannot redirect
+    /// either. Missing, malformed, future-version and mismatched slots refuse.
+    /// A withdrawn selection is cleared. Previously opened content is fetched
+    /// and verified again through its owner, never restored from cached bytes.
+    pub async fn reopen<B: Backend + Clone, P: IdentityProvider + ?Sized, S: Backend + Clone>(
+        id: impl Into<String>,
+        authority: RetainedAuthority,
+        scope: Scope,
+        owners: &mut Owners<'_, B, P>,
+        backend: S,
+        key: &str,
+    ) -> Result<Self, Error> {
+        check_session(&authority, owners)?;
+        let saved: SavedReading = muniment::JsonSlots::new(backend)
+            .load(key)
+            .await
+            .map_err(Error::Persistence)?
+            .ok_or_else(|| Error::Resume("No saved resource reading in this slot".into()))?;
+        if saved.version != 1 {
+            return Err(Error::Resume(format!(
+                "Unsupported saved reading version {}",
+                saved.version
+            )));
+        }
+        if saved.moot != owners.moot.moot_id().0
+            || saved.reader != authority.principal().subject
+            || saved.collection != scope.collection
+            || saved
+                .selected
+                .is_some_and(|reference| reference.moot != saved.moot)
+            || (saved.reopen_content && saved.selected.is_none())
+        {
+            return Err(Error::Resume(
+                "Saved reading does not match this reader, Moot or collection".into(),
+            ));
+        }
+        let mut mount = Self::open(id, authority, scope, owners).await?;
+        if let Some(reference) = saved.selected {
+            if mount
+                .reading
+                .pane()
+                .snapshot()
+                .resources
+                .iter()
+                .any(|r| r.reference == reference)
+            {
+                mount.reading.select_resource(reference);
+                if saved.reopen_content {
+                    // Prepare a new read from the newly minted owner offers.
+                    // No saved intention or side-effecting command is replayed.
+                    match mount
+                        .reading
+                        .request_resource(moot::resource_coop::ResourceAction::Open)
+                    {
+                        Ok(()) => {
+                            mount.poll(owners).await?;
+                        },
+                        Err(error) => {
+                            mount.status = format!("Saved content could not be reopened: {error}")
+                        },
+                    }
+                }
+            } else {
+                mount.status = "The saved resource is no longer in the current collection".into();
+            }
+        }
+        Ok(mount)
+    }
+
     /// `authority` must come from the existing Graphshell admission path. For
     /// carriers use `RetainedAuthority::from_admitted`; sans-I/O owners retain
     /// their verified hello's chain. This is a local composition, not a second
@@ -231,10 +347,10 @@ impl Mount {
             )
             .await?;
             let still_open = self.opened.as_ref().is_none_or(|opened| {
-                snapshot
-                    .resources
-                    .iter()
-                    .any(|r| r.reference == opened.reference)
+                snapshot.resources.iter().any(|r| {
+                    r.reference == opened.reference
+                        && matches!(r.content, moot::resource_coop::ContentRead::Resolved)
+                })
             });
             self.reading
                 .refresh(snapshot)

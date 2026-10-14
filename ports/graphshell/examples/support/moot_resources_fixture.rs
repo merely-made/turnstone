@@ -4,9 +4,9 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! Shared proof setup only: actual signed owners, unsealed in-memory public
-//! content and Notochord's verified sans-I/O admission. No live carrier or
-//! persistent custody is qualified by these supplied carrier facts.
+//! Shared proof setup: actual signed owners, caller-selected public unsealed
+//! storage and Notochord's verified sans-I/O admission. The default is memory;
+//! durable mount tests select redb. No live carrier or private custody is proved.
 #![allow(dead_code)]
 
 use eidetic::manifest::save_manifest;
@@ -47,16 +47,42 @@ pub const BODY: &[u8] = b"# Our notebook\n\nAlice owns this local notebook contr
 const NETWORK: NetworkId = NetworkId([3; 32]);
 const ROOT: [u8; 32] = [7; 32];
 
-pub struct Fixture {
+pub struct Fixture<B = MemoryBackend> {
     pub alice: InMemoryProvider,
     pub bob: InMemoryProvider,
-    pub moot: Moot<MemoryBackend>,
-    pub blobs: MemoryBackend,
+    pub moot: Moot<B>,
+    pub blobs: B,
     pub rules: ConstitutionRules,
+}
+
+pub fn retention() -> MootRetentionSettings {
+    MootRetentionSettings {
+        revision: PolicyRevision(Digest::blake3(b"moot-host-proof")),
+        availability: AvailabilityPolicy {
+            promised_floor: KeepBound::Forever,
+        },
+        erasure: ErasurePolicy {
+            history_ceiling: KeepBound::UntilCheckpoint,
+        },
+    }
 }
 
 impl Fixture {
     pub async fn new() -> Self {
+        let founder = InMemoryProvider::from_seed([11; 32])
+            .master_public_key()
+            .to_bytes();
+        Self::seed(
+            Moot::in_memory(MootId(MOOT), founder, retention()),
+            MemoryBackend::new(),
+        )
+        .await
+    }
+}
+
+impl<B: Backend + Clone> Fixture<B> {
+    /// Seed the same signed owner fixture into a caller-owned backend.
+    pub async fn seed(moot: Moot<B>, blobs: B) -> Self {
         let alice = InMemoryProvider::from_seed([11; 32]);
         let bob = InMemoryProvider::from_seed([12; 32]);
         let a = alice.master_public_key().to_bytes();
@@ -79,19 +105,6 @@ impl Fixture {
                 delegation_depth: 0,
             });
         }
-        let moot = Moot::in_memory(
-            MootId(MOOT),
-            a,
-            MootRetentionSettings {
-                revision: PolicyRevision(Digest::blake3(b"moot-host-proof")),
-                availability: AvailabilityPolicy {
-                    promised_floor: KeepBound::Forever,
-                },
-                erasure: ErasurePolicy {
-                    history_ceiling: KeepBound::UntilCheckpoint,
-                },
-            },
-        );
         moot.found(
             alice.master_keypair().to_seed(),
             None,
@@ -118,7 +131,6 @@ impl Fixture {
         )
         .await
         .unwrap();
-        let blobs = MemoryBackend::new();
         let id = ManifestId::of_blob(BODY);
         blobs.put("blob:notebook", BODY).await.unwrap();
         save_manifest(
@@ -218,6 +230,15 @@ impl Fixture {
     }
 
     pub fn authority(&self, reader: &InMemoryProvider, expires: u64) -> RetainedAuthority {
+        self.authority_at(reader, expires, 20)
+    }
+
+    pub fn authority_at(
+        &self,
+        reader: &InMemoryProvider,
+        expires: u64,
+        at_ms: u64,
+    ) -> RetainedAuthority {
         let grant = self.grant(reader, expires);
         let profile = ProfileRef {
             id: "mere.base".into(),
@@ -255,7 +276,7 @@ impl Fixture {
             &RevocationLedger::default(),
             &bytes,
             &SessionFacts::new(PROJECTION_PROTOCOL, CarrierKind::P2panda),
-            20,
+            at_ms,
             0,
         );
         RetainedAuthority::new(principal.expect("actual Graphshell admission"), vec![grant])
