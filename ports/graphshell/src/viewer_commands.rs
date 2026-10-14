@@ -27,6 +27,14 @@ pub enum Action {
     History,
 }
 
+/// A small retained menu page keeps every command reachable without relying
+/// on touch scrolling in the embedding browser host. Keyboard selection drives
+/// the same page, and callers preserve the full catalogue for search.
+pub fn browsing_page(selected: Option<usize>, count: usize) -> std::ops::Range<usize> {
+    let start = selected.unwrap_or(0).min(count.saturating_sub(1)) / 2 * 2;
+    start..(start + 2).min(count)
+}
+
 pub fn action(id: &str, hosted: bool) -> Option<Action> {
     Some(match id {
         ids::VIEW_FIT => Action::Canvas(if hosted {
@@ -114,6 +122,24 @@ pub fn commands(available: Availability) -> CommandSet {
 mod tests {
     use super::*;
     use command_menu::{CommandChoices, MenuSession};
+
+    #[test]
+    fn browsing_pages_cover_commands_and_follow_keyboard_selection() {
+        for count in 0..40 {
+            let mut covered = Vec::new();
+            for first in (0..count).step_by(2) {
+                let page = browsing_page(Some(first), count);
+                assert!(page.len() <= 2);
+                covered.extend(page);
+            }
+            assert_eq!(covered, (0..count).collect::<Vec<_>>());
+            for selected in 0..count {
+                assert!(browsing_page(Some(selected), count).contains(&selected));
+            }
+        }
+        assert_eq!(browsing_page(None, 0), 0..0);
+        assert_eq!(browsing_page(Some(99), 3), 2..3);
+    }
 
     #[test]
     fn history_command_is_only_offered_by_a_host_with_history() {
