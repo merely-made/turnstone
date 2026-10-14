@@ -64,6 +64,11 @@ set.
   selected-package admission, local Inker reading and Redshank voice-body
   playback in the receiving mere; automated/native restart and selected onward
   export into a second mere qualify text/WAV, with browser/structured/custody gates retained.
+- [q-pc lane handoff, 2026-10-14](2026-10-14_qpc_lane_handoff.md): the lane's
+  resume point on Windows. Main is the only live line after the ThinkPad
+  branch/worktree reconciliation; lists pins, the lens-label fix, ordered open
+  gates and what stays on the ThinkPad (evidence, Mere's unpublished
+  three-lanes half).
 - [Browser/resource handoff, 2026-10-08](2026-10-08_browser_resource_handoff.md):
   resume point for browser adoption and applied resource-graph integration.
   Mere P2 is qualified at `3b3afa289`; per-view controls, retained session
