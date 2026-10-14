@@ -20,6 +20,10 @@ required-features = ["web"]
 name = "moot_resources"
 required-features = ["moot-resources"]
 
+[[test]]
+name = "moot_resources_reopen"
+required-features = ["moot-resources"]
+
 [features]
 moot-resources = ["web", "webrtc-join", "dep:cambium", "dep:moot", "dep:gemot", "dep:eidetic", "dep:muniment"]
 default = ["native", "image-decode", "document-layout", "retained-content"]
