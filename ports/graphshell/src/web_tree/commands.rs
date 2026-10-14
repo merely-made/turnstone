@@ -56,6 +56,16 @@ fn catalog(page: &TreePage) -> CommandSet {
         selection: canvas.can_fit_selection(),
         locked,
         paused: canvas.physics_paused(),
+        history: page
+            .presenter
+            .as_ref()
+            .filter(|pane| pane.options.browsing)
+            .filter(|_| {
+                page.history
+                    .as_ref()
+                    .is_some_and(|history| history.len() > 1)
+            })
+            .map(|pane| pane.history_open),
     });
     if let Some(grouped) = &page.grouping {
         let picked = canvas
@@ -230,6 +240,11 @@ fn run(page: &mut TreePage, id: &str) {
                 .ok();
         },
         Some(Action::Tools) => page.tools_open = !page.tools_open,
+        Some(Action::History) => {
+            if let Some(pane) = &mut page.presenter {
+                pane.history_open = !pane.history_open;
+            }
+        },
         None if id == "whole-graph" => page.change_group(|state| state.entered = None),
         None if id == "relationship-evidence" => page.grouping_evidence = !page.grouping_evidence,
         None => {

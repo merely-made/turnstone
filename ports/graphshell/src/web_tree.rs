@@ -855,7 +855,9 @@ fn view(page: &TreePage) -> Child {
                     } else {
                         ""
                     },
-                    if page.presenter.is_some() {
+                    if presenter::browsing(page) {
+                        "tree-presenter tree-browsing"
+                    } else if page.presenter.is_some() {
                         "tree-presenter"
                     } else {
                         ""
@@ -1233,6 +1235,9 @@ async fn boot_inner(root: Element) -> Result<(), String> {
                 roster_open: false,
                 evidence_open: false,
                 folds_open: false,
+                history_open: false,
+                checkpoint_source_open: false,
+                selection_open: false,
             })
         },
         None => None,

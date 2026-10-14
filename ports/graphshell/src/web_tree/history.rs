@@ -96,6 +96,23 @@ impl HostedHistory {
         checkpoint_text(&self.history, self.index)
     }
 
+    fn caption(&self, browsing: bool) -> String {
+        if browsing {
+            format!(
+                "{}checkpoint {} of {}",
+                if self.index + 1 == self.len() {
+                    "Current "
+                } else {
+                    ""
+                },
+                self.index + 1,
+                self.len()
+            )
+        } else {
+            self.checkpoint()
+        }
+    }
+
     /// The counts with their marks, as the page shows them.
     pub(super) fn summary(&self) -> Option<String> {
         let changes = self.changes.as_ref()?;
@@ -200,7 +217,7 @@ impl TreePage {
 
 /// The checkpoint slider: arrows and Page keys step, Home and End go to the
 /// ends, and a press or drag picks the checkpoint under the pointer.
-fn slider(hosted: &HostedHistory) -> Child {
+fn slider(hosted: &HostedHistory, browsing: bool) -> Child {
     let count = hosted.len();
     let last = count.saturating_sub(1).max(1);
     let percent = hosted.index as f32 / last as f32 * 100.0;
@@ -214,7 +231,7 @@ fn slider(hosted: &HostedHistory) -> Child {
         .attr("aria-valuemin", "1")
         .attr("aria-valuemax", count.to_string())
         .attr("aria-valuenow", (hosted.index + 1).to_string())
-        .attr("aria-valuetext", hosted.checkpoint())
+        .attr("aria-valuetext", hosted.caption(browsing))
         .attr("tabindex", "0");
     let pointer = on_pointer(
         track,
@@ -247,6 +264,9 @@ fn slider(hosted: &HostedHistory) -> Child {
 /// counts with their marks, and every change as a list item. Absent below
 /// two checkpoints, as the sandbox hides its slider.
 pub(super) fn region(page: &TreePage) -> Option<Child> {
+    if presenter::browsing(page) && !page.presenter.as_ref()?.history_open {
+        return None;
+    }
     let hosted = page.history.as_ref()?;
     if hosted.len() < 2 {
         return None;
@@ -259,7 +279,7 @@ pub(super) fn region(page: &TreePage) -> Option<Child> {
                     page.step_checkpoint(-1)
                 })
                 .attr("aria-disabled", (hosted.index == 0).to_string()),
-                slider(hosted),
+                slider(hosted, presenter::browsing(page)),
                 button("Later checkpoint", |page: &mut TreePage, _| {
                     page.step_checkpoint(1)
                 })
@@ -272,10 +292,33 @@ pub(super) fn region(page: &TreePage) -> Option<Child> {
         .attr("class", "history-control"),
     )];
     children.push(Box::new(
-        el("p", hosted.checkpoint())
+        el("p", hosted.caption(presenter::browsing(page)))
             .attr("class", "history-value")
             .attr("role", "status"),
     ));
+    if presenter::browsing(page) {
+        let shown = page.presenter.as_ref()?.checkpoint_source_open;
+        children.push(Box::new(
+            button(
+                if shown {
+                    "Hide checkpoint source"
+                } else {
+                    "Show checkpoint source"
+                },
+                |page: &mut TreePage, _| {
+                    if let Some(pane) = &mut page.presenter {
+                        pane.checkpoint_source_open = !pane.checkpoint_source_open;
+                    }
+                },
+            )
+            .attr("aria-expanded", shown.to_string()),
+        ));
+        if shown {
+            children.push(Box::new(
+                el("p", hosted.checkpoint()).attr("class", "presenter-evidence"),
+            ));
+        }
+    }
     if let Some(error) = &hosted.error {
         children.push(Box::new(
             el("p", error.clone())
