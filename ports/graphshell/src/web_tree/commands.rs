@@ -56,6 +56,16 @@ fn catalog(page: &TreePage) -> CommandSet {
         selection: canvas.can_fit_selection(),
         locked,
         paused: canvas.physics_paused(),
+        history: page
+            .presenter
+            .as_ref()
+            .filter(|pane| pane.options.browsing)
+            .filter(|_| {
+                page.history
+                    .as_ref()
+                    .is_some_and(|history| history.len() > 1)
+            })
+            .map(|pane| pane.history_open),
     });
     if let Some(grouped) = &page.grouping {
         let picked = canvas
@@ -230,6 +240,11 @@ fn run(page: &mut TreePage, id: &str) {
                 .ok();
         },
         Some(Action::Tools) => page.tools_open = !page.tools_open,
+        Some(Action::History) => {
+            if let Some(pane) = &mut page.presenter {
+                pane.history_open = !pane.history_open;
+            }
+        },
         None if id == "whole-graph" => page.change_group(|state| state.entered = None),
         None if id == "relationship-evidence" => page.grouping_evidence = !page.grouping_evidence,
         None => {
@@ -303,6 +318,18 @@ pub(super) fn view(page: &TreePage) -> Option<Child> {
     let mut session = menu.session.clone();
     session.set_query(menu.search.text());
     let rows = session.rows(&set, &page.commands.choices);
+    let browsing = page
+        .presenter
+        .as_ref()
+        .is_some_and(|pane| pane.options.browsing);
+    let visible = if browsing {
+        viewer_commands::browsing_page(session.selected, rows.len())
+    } else {
+        0..rows.len()
+    };
+    let start = visible.start;
+    let end = visible.end;
+    let count = rows.len();
     let active = session
         .selected
         .map(|index| format!("graph-command-{index}"));
@@ -329,6 +356,8 @@ pub(super) fn view(page: &TreePage) -> Option<Child> {
     let items: Vec<Child> = rows
         .iter()
         .enumerate()
+        .skip(start)
+        .take(end - start)
         .map(|(index, command)| {
             let id = command.id.clone();
             let enabled = command.disabled_reason.is_none();
@@ -402,18 +431,44 @@ pub(super) fn view(page: &TreePage) -> Option<Child> {
         ),
         !rows.is_empty(),
     );
+    let paging = browsing.then(|| {
+        el(
+            "div",
+            (
+                (start > 0).then(|| {
+                    button("Previous commands", move |page: &mut TreePage, _| {
+                        if let Some(menu) = &mut page.commands.open {
+                            menu.session.set_query(menu.search.text());
+                            menu.session.selected = Some(start.saturating_sub(2));
+                        }
+                    })
+                }),
+                (end < count).then(|| {
+                    button("Next commands", move |page: &mut TreePage, _| {
+                        if let Some(menu) = &mut page.commands.open {
+                            menu.session.set_query(menu.search.text());
+                            menu.session.selected = Some(end);
+                        }
+                    })
+                }),
+            ),
+        )
+        .attr("class", "command-actions")
+    });
     Some(Box::new(on_key(el("section", (
         el("h2", "Graph commands"),
+        browsing.then(|| el("div", button("Close commands", |page: &mut TreePage, _| close(page))).attr("class", "command-actions")),
         on_key(el("label", (el("span", "Search commands"), search)), key).focusable(false),
         el("div", items).attr("id", "graph-command-items").attr("role", "listbox").attr("aria-label", "Graph commands"),
         rows.is_empty().then(|| el("p", "No command matches")),
+        paging,
         el("div", (
             button("All commands", |page: &mut TreePage, _| { if let Some(menu) = &mut page.commands.open { menu.session.expand_all(); } }),
-            choice,
-            button("Close commands", |page: &mut TreePage, _| close(page)),
+            (!browsing).then_some(choice),
+            (!browsing).then(|| button("Close commands", |page: &mut TreePage, _| close(page))),
         )).attr("class", "command-actions"),
-        el("p", format!("Wheel: {} · {}", page.shared.wheel_mode.get().name(), page.commands.last)).attr("role", "status"),
-        el("p", "Menu choices apply while this viewer is open."),
+        el("p", if browsing { format!("Commands {}–{} of {}", if count == 0 { 0 } else { start + 1 }, end, count) } else { format!("Wheel: {} · {}", page.shared.wheel_mode.get().name(), page.commands.last) }).attr("role", "status"),
+        (!browsing).then(|| el("p", "Menu choices apply while this viewer is open.")),
     )).attr("class", "tree-command-menu").attr("role", "dialog").attr("aria-label", "Graph commands")
         .attr("style", format!("position:absolute;left:{left}px;top:{top}px;width:{width}px;max-height:{height}px;overflow-y:auto;")), |page: &mut TreePage, event: cambium::KeyEvent| {
             if matches!(event.key, Key::Named(NamedKey::Escape)) {

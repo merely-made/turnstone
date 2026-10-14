@@ -13,6 +13,8 @@ use std::collections::BTreeMap;
 
 pub(super) const WIDTH: u32 = 304;
 pub(super) const SHEET: &str = "\
+.tree-browsing .tree-command-menu [role=option], .tree-browsing .command-actions button, .tree-browsing .tree-presenter-panel button { min-height:44px; } \
+.tree-browse-menu button { min-height:44px; min-width:44px; padding:8px 12px; } \
 .tree-presenter-panel { width:304px; box-sizing:border-box; padding:12px; } \
 .tree-presenter-panel h2 { font-size:16px; margin:0 0 8px; } \
 .tree-presenter-panel h3 { margin:8px 0 4px; font-size:14px; } \
@@ -30,6 +32,7 @@ pub(super) const SHEET: &str = "\
 
 pub(super) struct Options {
     pub caption: String,
+    pub browsing: bool,
     pub summary_field: String,
     pub links: Vec<(String, String)>,
 }
@@ -39,6 +42,9 @@ pub(super) struct Pane {
     pub roster_open: bool,
     pub evidence_open: bool,
     pub folds_open: bool,
+    pub history_open: bool,
+    pub checkpoint_source_open: bool,
+    pub selection_open: bool,
 }
 
 pub(super) fn requested(root: &Element) -> Result<Option<Options>, String> {
@@ -54,8 +60,12 @@ pub(super) fn requested(root: &Element) -> Result<Option<Options>, String> {
         .or_else(|| root.get_attribute("data-presenter"));
     match profile.as_deref() {
         None => return Ok(None),
-        Some("inspector") => {},
-        Some(other) => return Err(format!("Unknown presenter {other}; expected inspector")),
+        Some("inspector" | "browse") => {},
+        Some(other) => {
+            return Err(format!(
+                "Unknown presenter {other}; expected inspector or browse"
+            ));
+        },
     }
     let caption = root
         .get_attribute("data-caption")
@@ -73,6 +83,7 @@ pub(super) fn requested(root: &Element) -> Result<Option<Options>, String> {
     .collect();
     Ok(Some(Options {
         caption,
+        browsing: profile.as_deref() == Some("browse"),
         summary_field,
         links,
     }))
@@ -148,7 +159,27 @@ fn remove(page: &mut TreePage, id: &str) {
     }
 }
 
+pub(super) fn browsing(page: &TreePage) -> bool {
+    page.presenter
+        .as_ref()
+        .is_some_and(|pane| pane.options.browsing)
+}
+
 pub(super) fn toolbar(page: &TreePage) -> Child {
+    if browsing(page) {
+        return Box::new(
+            el(
+                "div",
+                button("Graph menu", |page: &mut TreePage, _| {
+                    commands::open_keyboard(page)
+                })
+                .attr("aria-haspopup", "dialog")
+                .attr("aria-expanded", page.commands.open.is_some().to_string())
+                .attr("aria-keyshortcuts", "Control+k Meta+k Shift+F10"),
+            )
+            .attr("class", "tree-browse-menu"),
+        );
+    }
     Box::new(
         el(
             "div",
@@ -259,12 +290,13 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
             el("ul", choices).attr("aria-label", "Disclosed projects"),
         ));
     }
+    let mut selection_rows: Vec<Child> = Vec::new();
     if !p.selected.is_empty() {
-        rows.push(Box::new(el("h3", "Selected projects")));
+        selection_rows.push(Box::new(el("h3", "Selected projects")));
         for id in &p.selected {
             let inspect_id = id.clone();
             let remove_id = id.clone();
-            rows.push(Box::new(el(
+            selection_rows.push(Box::new(el(
                 "div",
                 (
                     el(
@@ -298,7 +330,7 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
                 ),
             )));
         }
-        rows.push(Box::new(button(
+        selection_rows.push(Box::new(button(
             "Clear project selection",
             |page: &mut TreePage, _| {
                 if let Some(pane) = &mut page.presenter {
@@ -308,6 +340,9 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
                 *page.shared.command_request.borrow_mut() = Some(commands::Request::Selection);
             },
         )));
+    }
+    if !pane.options.browsing {
+        rows.append(&mut selection_rows);
     }
     if !p.notice.is_empty() {
         rows.push(Box::new(el("p", p.notice.clone()).attr("role", "status")));
@@ -461,6 +496,26 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
                 "Choose Inspect for a selected project to read its details."
             },
         )));
+    }
+    if pane.options.browsing && !p.selected.is_empty() {
+        rows.push(Box::new(
+            button(
+                if pane.selection_open {
+                    "Hide selection controls"
+                } else {
+                    "Manage selection"
+                },
+                |page: &mut TreePage, _| {
+                    if let Some(pane) = &mut page.presenter {
+                        pane.selection_open = !pane.selection_open;
+                    }
+                },
+            )
+            .attr("aria-expanded", pane.selection_open.to_string()),
+        ));
+        if pane.selection_open {
+            rows.extend(selection_rows);
+        }
     }
     rows.extend(disclosure_rows);
     Some(Box::new(
