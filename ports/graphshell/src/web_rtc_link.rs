@@ -395,13 +395,9 @@ async fn offer_and_signal(
     JsFuture::from(Promise::race(&JsValue::from(race)))
         .await
         .map_err(|error| describe(&error))?;
-    if candidates.borrow().is_empty() {
-        return Err(
-            "offer has no usable ICE candidates (mDNS .local names only) — \
-                    disable chrome://flags/#enable-webrtc-hide-local-ips-with-mdns"
-                .to_string(),
-        );
-    }
+    // Default Chrome can keep every host candidate private behind mDNS.
+    // Signal the original offer: the native answer's real candidate permits
+    // authenticated peer-reflexive ICE without changing browser privacy.
     let full_offer = offer_with_candidates(&offer, &candidates.borrow());
     status("posting the offer");
     http("POST", &format!("{signal_url}/offer"), Some(&full_offer))

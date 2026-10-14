@@ -1,5 +1,9 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
+
 //! Event-driven shared mere panel over one admitted endpoint. SessionDriver
 //! owns wire correlation and resource validation; this adapter sequences the
 //! sessions, graph and optional archive readings and never owns a store.
@@ -181,6 +185,12 @@ impl MereRouteSession {
     }
     pub fn in_flight(&self) -> bool {
         self.current.is_some() || !self.tasks.is_empty() || self.driver.is_awaiting()
+    }
+    /// A mounted panel may be idle or purged while its carrier is reconnecting.
+    /// Scenario waits must also hold through the transport's real admission,
+    /// before the replacement projection driver has any requests to await.
+    pub fn in_flight_with_transport(&self, transport: &graphshell_client::RemoteSession) -> bool {
+        self.in_flight() || transport.in_flight()
     }
     pub fn status(&self) -> &str {
         if self.closed {
@@ -629,5 +639,77 @@ impl MereRouteSession {
             },
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod busy_tests {
+    use super::*;
+    use chirograph::{PresentationCapability, ProjectionOffer, ProjectionRequest};
+    use sceno::score::{Arrangement, Score};
+
+    fn closed_panel() -> MereRouteSession {
+        let descriptor = EndpointDescriptor {
+            label: "Resident mere".into(),
+            projections: [MERE_SESSIONS, MERE_GRAPH]
+                .into_iter()
+                .map(|name| ProjectionOffer {
+                    label: name.into(),
+                    request: ProjectionRequest {
+                        version: ProtocolVersion::V1,
+                        session: ProjectionSession(name.into()),
+                        score: Score::new(Arrangement::Spiral(Default::default())),
+                    },
+                })
+                .collect(),
+        };
+        let mut panel = MereRouteSession::from_descriptor(
+            descriptor,
+            CapabilityProfile::new([PresentationCapability::PortableCard]),
+        )
+        .unwrap();
+        panel.fail("The resident route closed.".into());
+        assert!(!panel.in_flight());
+        assert_eq!(panel.status(), "unavailable");
+        panel
+    }
+
+    #[test]
+    fn purged_panel_waits_immediately_through_reconnect_and_admission() {
+        let panel = closed_panel();
+        let mut transport = graphshell_client::RemoteSession::new(CapabilityProfile::new([
+            PresentationCapability::PortableCard,
+        ]));
+        transport.channel_closed();
+        assert!(!panel.in_flight_with_transport(&transport));
+
+        transport.reconnecting();
+        assert!(panel.in_flight_with_transport(&transport));
+        transport.set_status("rejoining: challenge, admission");
+        assert!(panel.in_flight_with_transport(&transport));
+        assert!(
+            !panel.in_flight(),
+            "no replacement panel requests exist yet"
+        );
+
+        transport.rejoined();
+        assert!(
+            panel.in_flight_with_transport(&transport),
+            "new discovery is pending after transport admission"
+        );
+    }
+
+    #[test]
+    fn refused_reconnect_releases_wait_and_keeps_panel_purged() {
+        let panel = closed_panel();
+        let mut transport = graphshell_client::RemoteSession::new(CapabilityProfile::default());
+        transport.reconnecting();
+        assert!(panel.in_flight_with_transport(&transport));
+        transport.link_failed("rejoin refused: grant revoked");
+        assert!(!panel.in_flight_with_transport(&transport));
+        assert_eq!(panel.status(), "unavailable");
+        assert!(panel.model().sessions.is_empty());
+        assert!(panel.records().is_empty());
+        assert!(panel.primary().is_none());
     }
 }

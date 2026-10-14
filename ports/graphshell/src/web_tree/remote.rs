@@ -145,6 +145,11 @@ impl TreeRemote {
 
     pub(super) fn status(&self) -> &str {
         if let Some(session) = &self.reservoir {
+            if let Some(live) = &self.live
+                && live.session.in_flight()
+            {
+                return live.session.status();
+            }
             return session.status();
         }
         self.live
@@ -154,7 +159,11 @@ impl TreeRemote {
 
     pub(super) fn in_flight(&self) -> bool {
         if let Some(session) = &self.reservoir {
-            return self.joining || session.in_flight();
+            return self.joining
+                || self.live.as_ref().map_or_else(
+                    || session.in_flight(),
+                    |live| session.in_flight_with_transport(&live.session),
+                );
         }
         self.joining
             || self
@@ -239,13 +248,18 @@ impl TreeRemote {
             Some(session) => session.primary(),
             None => self.live.as_ref().and_then(|live| live.session.mounted()),
         };
-        self.board.sync_scoped(
-            mounted,
-            revision,
-            identity.as_deref(),
-            stage.as_ref(),
-            speed,
-        );
+        if self.reservoir.is_some() {
+            self.board
+                .sync_reading(mounted, revision, identity.as_deref());
+        } else {
+            self.board.sync_scoped(
+                mounted,
+                revision,
+                identity.as_deref(),
+                stage.as_ref(),
+                speed,
+            );
+        }
         if let Some(session) = &self.reservoir {
             self.board.set_focus(session.focus_instance().as_deref());
         }
@@ -478,7 +492,14 @@ pub(super) fn board_semantics(
     };
     ProducerSemantics {
         role: Some(ProducerRole::List),
-        name: Some(format!("Remote board · {} cards", children.len())),
+        name: Some(match &remote.reservoir {
+            Some(session) => format!(
+                "Resident graph · {} · {} records",
+                session.model().title,
+                children.len(),
+            ),
+            None => format!("Remote board · {} cards", children.len()),
+        }),
         children,
     }
 }
@@ -644,9 +665,16 @@ pub(super) fn section(page: &TreePage) -> Child {
         ));
     }
     children.push(Box::new(
-        el("p", remote.form().status.clone())
-            .attr("class", "tools-status")
-            .attr("role", "status"),
+        el(
+            "p",
+            if remote.reservoir.is_some() {
+                remote.status().to_owned()
+            } else {
+                remote.form().status.clone()
+            },
+        )
+        .attr("class", "tools-status")
+        .attr("role", "status"),
     ));
     drop(remote);
     Box::new(

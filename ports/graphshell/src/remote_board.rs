@@ -110,6 +110,24 @@ impl RemoteBoard {
         self.sync_scoped(mounted, revision, None, stage, speed)
     }
 
+    /// Read the acknowledged score's layout exactly. A resident mere has its
+    /// own saved layout; simulated bodies from another attachment or layout
+    /// cannot determine this reading, nor can the hidden local canvas's law.
+    pub fn sync_reading(
+        &mut self,
+        mounted: Option<&MountedScene>,
+        revision: Option<u64>,
+        identity: Option<&str>,
+    ) {
+        let position =
+            mounted.map(|mounted| (mounted.scene.epoch, revision, identity.map(str::to_owned)));
+        if position != self.position {
+            self.board.sync(Vec::new());
+        }
+        self.sync_scoped(mounted, revision, identity, None, Speed::REAL_TIME);
+        self.board.halt();
+    }
+
     /// An attached session is a separate identity even when an endpoint reuses
     /// its projection name, epoch or revision. It owns no durable graph here.
     pub fn sync_scoped(
@@ -317,6 +335,65 @@ mod scoped_session_tests {
     use crate::live_endpoint::LiveEndpoint;
     use graphshell_client::ClientState;
     use graphshell_endpoint::{ProjectionCatalog, ProjectionSource};
+    #[test]
+    fn resident_reused_cards_take_new_owner_slots_and_stay_fitted_without_local_dynamics() {
+        let mut endpoint = LiveEndpoint::new();
+        for _ in 0..7 {
+            endpoint.append();
+        }
+        let snapshot = endpoint
+            .snapshot(endpoint.describe().projections[0].request.clone())
+            .unwrap();
+        let mut client = ClientState::default();
+        client.apply_snapshot(snapshot.clone()).unwrap();
+        let mut thaw = client.mounted(&snapshot.session).unwrap().clone();
+        for item in thaw.scene.tables.items.iter_mut().flatten() {
+            item.transform.translate.x += 6000.0;
+            item.transform.translate.y += 3000.0;
+        }
+        let mut remote = RemoteBoard::new();
+        remote.sync_scoped(
+            Some(&thaw),
+            Some(1),
+            Some("thaw:spectral.default"),
+            Some(&mere::canvas::PhysicsChoice::default().into_spec()),
+            Speed::REAL_TIME,
+        );
+        let mut original = thaw.clone();
+        for (index, item) in original.scene.tables.items.iter_mut().flatten().enumerate() {
+            item.transform.translate.x = (index % 4) as f32 * 180.0;
+            item.transform.translate.y = (index / 4) as f32 * 120.0;
+        }
+        remote.sync_reading(Some(&original), Some(1), Some("original:grid.default"));
+        for _ in 0..120 {
+            remote.tick();
+        }
+        for card in &remote.scene().cards {
+            assert_eq!(remote.board().position(&card.id), Some(card.slot));
+        }
+        assert!(!remote.is_settling());
+        for (width, height) in [(1100, 762), (1400, 900), (420, 600)] {
+            let fit = mere::canvas::BoardFit::new(24.0, 24.0, 24.0, 24.0);
+            let rects = remote
+                .scene()
+                .card_rects(remote.board(), width, height, fit);
+            assert_eq!(rects.len(), 8);
+            for (_, _, rect) in rects {
+                assert!(rect.x >= 23.99 && rect.y >= 23.99);
+                assert!(rect.x + rect.width <= width as f32 - 23.99);
+                assert!(rect.y + rect.height <= height as f32 - 23.99);
+            }
+        }
+        // An external same-layout edit can change slots at a new revision.
+        original.scene.tables.items[0]
+            .as_mut()
+            .unwrap()
+            .transform
+            .translate
+            .y = 240.0;
+        remote.sync_reading(Some(&original), Some(2), Some("original:grid.default"));
+        assert_eq!(remote.board().position("0"), Some((0.0, 240.0)));
+    }
     #[test]
     fn epoch_and_attached_session_are_independent_of_revision_and_close_clears_the_board() {
         let mut endpoint = LiveEndpoint::new();

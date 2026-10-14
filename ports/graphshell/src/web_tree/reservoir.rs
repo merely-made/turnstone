@@ -1,5 +1,9 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
+
 //! The ordinary shared mere component beside the selected resident graph.
 use super::*;
 pub(super) fn view(page: &TreePage) -> Option<Child> {
@@ -32,16 +36,43 @@ pub(super) fn view(page: &TreePage) -> Option<Child> {
         .into_iter()
         .flat_map(|card| card.values.iter())
         .map(|value| {
-            Box::new(el::<_, TreePage, ()>(
-                "p",
-                format!("{}: {}", value.label, value.value),
-            )) as Child
+            Box::new(
+                el::<_, TreePage, ()>("p", format!("{}: {}", value.label, value.value))
+                    .attr("style", "margin:4px 0;overflow-wrap:anywhere;"),
+            ) as Child
         })
         .collect();
     Some(Box::new(
         el(
             "section",
             (
+                el(
+                    "section",
+                    (
+                        el(
+                            "h3",
+                            record
+                                .map(|card| card.title.clone())
+                                .unwrap_or_else(|| "Select a record".into()),
+                        ),
+                        el(
+                            "p",
+                            if session.view_saved() {
+                                "View saved"
+                            } else {
+                                "View not saved"
+                            },
+                        ),
+                        el("div", values)
+                            .attr("class", "resident-record-values")
+                            .attr("style", "max-height:128px;overflow-y:auto;overflow-wrap:anywhere;white-space:pre-wrap;"),
+                    ),
+                )
+                .attr("aria-label", "Selected resident record"),
+                el("div", buttons)
+                    .attr("aria-label", "Resident records")
+                    .attr("class", "resident-record-choices")
+                    .attr("style", "max-height:96px;overflow-y:auto;margin:4px 0;"),
                 mere_view::mere_view(
                     mere_view::MereView {
                         model: session.model(),
@@ -53,28 +84,7 @@ pub(super) fn view(page: &TreePage) -> Option<Child> {
                     |page: &mut TreePage, event| page.mere_view.apply(event),
                     |page: &mut TreePage, action| request(page, action),
                 ),
-                el("div", buttons).attr("aria-label", "Resident records"),
-                el(
-                    "section",
-                    (
-                        el(
-                            "h3",
-                            record
-                                .map(|card| card.title.clone())
-                                .unwrap_or_else(|| "Select a record".into()),
-                        ),
-                        values,
-                        el(
-                            "p",
-                            if session.view_saved() {
-                                "View saved"
-                            } else {
-                                "View not saved"
-                            },
-                        ),
-                    ),
-                )
-                .attr("aria-label", "Selected resident record"),
+
             ),
         )
         .attr("class", "resident-mere-panel"),
@@ -118,6 +128,15 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
     let focus = session.focus_key();
     let record = focus.as_ref().and_then(|key| session.records().get(key));
     snapshot
+        .with_field("mere-primary-caption", page.status())
+        .with_field(
+            "mere-local-controls",
+            if page.resident_mere_shown() {
+                "hidden"
+            } else {
+                "shown"
+            },
+        )
         .with_field("mere-status", session.status())
         .with_field(
             "mere-attached",
