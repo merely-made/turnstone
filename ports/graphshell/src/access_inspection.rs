@@ -139,14 +139,16 @@ mod tests {
     #[test]
     fn shared_source_keeps_distinct_accesses_and_inspection_is_read_only() {
         let (graph, a, b) = graph();
-        let before = serde_json::to_value(graph.to_snapshot()).unwrap();
+        // A read-only comparison fixes the serialization time rather than
+        // comparing two independent wall-clock stamps.
+        let before = serde_json::to_value(graph.to_snapshot_at(0)).unwrap();
         let first = inspect_access(&graph, a).unwrap();
         let second = inspect_access(&graph, b).unwrap();
         assert_eq!(first.resource_id, second.resource_id);
         assert_ne!(first.access, second.access);
         assert_eq!(first.resource.unwrap().other_accesses, vec![second.access]);
         assert_eq!(second.resource.unwrap().other_accesses, vec![first.access]);
-        assert_eq!(serde_json::to_value(graph.to_snapshot()).unwrap(), before);
+        assert_eq!(serde_json::to_value(graph.to_snapshot_at(0)).unwrap(), before);
     }
 
     #[test]
