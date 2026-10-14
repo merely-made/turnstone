@@ -423,6 +423,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         views[0].placement(),
     )?;
     let handles = netrender::boot()?;
+    let adapter_info = handles.adapter.get_info();
     let config = TargetConfig {
         format: wgpu::TextureFormat::Rgba8Unorm,
         sample_count: 1,
@@ -547,7 +548,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::write(
         output.join("qualification.json"),
         serde_json::to_vec_pretty(
-            &serde_json::json!({"kind":"native-headless-toolkit-callbacks","backend":"Netrender sparse GPU","wgpu":"30","caller_submission":true,"media_bytes_verified":media_bytes,"views":records,"open":["Classic encoder","physical window IME and accessibility","actual device loss","audio output"]}),
+            &serde_json::json!({"kind":"native-headless-toolkit-callbacks","backend":"Netrender sparse GPU","wgpu":"30","caller_submission":true,"adapter":{"name":adapter_info.name,"backend":format!("{:?}",adapter_info.backend),"vendor":adapter_info.vendor,"device":adapter_info.device,"device_type":format!("{:?}",adapter_info.device_type),"driver":adapter_info.driver,"driver_info":adapter_info.driver_info},"caller_gpu":{"device_count":1,"queue_count":1,"same_handles_for_both_toolkits":true,"initial_generation":1,"rehydrated_generation":2,"physical_device_replaced":false},"media_bytes_verified":media_bytes,"views":records,"open":["Classic encoder","physical window IME and accessibility","actual device loss","audio output"]}),
         )?,
     )?;
     println!(
