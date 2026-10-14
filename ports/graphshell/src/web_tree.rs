@@ -317,7 +317,10 @@ impl TextureProducer for CanvasProducer {
             cx.frame.layout_scale,
         );
         if let Some(start) = raster_start {
-            self.shared.timing.borrow_mut().stages([("rasterize", now_ms() - start)]);
+            self.shared
+                .timing
+                .borrow_mut()
+                .stages([("rasterize", now_ms() - start)]);
         }
         self.texture = Some(texture);
         Some(ProducedTexture {
@@ -327,14 +330,27 @@ impl TextureProducer for CanvasProducer {
             encoding: output.encoding,
         })
     }
-    fn portable_scene(&mut self, frame: &cambium_rootstock::ProducerFrameInfo)
-        -> Result<cambium_rootstock::ProducedScene, cambium_rootstock::PortableProducerError>
-    {
+    fn portable_scene(
+        &mut self,
+        frame: &cambium_rootstock::ProducerFrameInfo,
+    ) -> Result<cambium_rootstock::ProducedScene, cambium_rootstock::PortableProducerError> {
         self.produce(frame)
     }
     fn suspend(&mut self) {
         self.shared.canvas.borrow_mut().reset_frame_time();
         self.texture = None;
+        self.shared.gpu.borrow_mut().take();
+        self.shared.physics_device.borrow_mut().take();
+        #[cfg(feature = "canvas-gpu")]
+        {
+            self.shared.canvas.borrow_mut().set_physics_device(None);
+            self.shared
+                .remote
+                .borrow_mut()
+                .board
+                .set_physics_device(None);
+        }
+        self.shared.timing.borrow_mut().release_device();
     }
 
     /// While the board is shown, the slot is a list of its cards, each named
@@ -927,10 +943,17 @@ struct Tree {
     shared: Rc<Shared>,
     window: WebWindow,
     lane: Option<Lane<TreeLane>>,
+    appearance: cambium_genet_web_host::Mounted<TreePage, Logic, Child>,
+    gestures: gestures::GestureOwner,
+    root: Element,
+    requested_presenter: Option<String>,
 }
 
 thread_local! {
     static TREE: RefCell<Option<Tree>> = const { RefCell::new(None) };
+    static TREE_EPOCH: Cell<u64> = const { Cell::new(0) };
+    static TREE_PENDING: RefCell<Option<Element>> = const { RefCell::new(None) };
+    static TREE_PENDING_CANVAS: RefCell<Option<(u64, HtmlCanvasElement)>> = const { RefCell::new(None) };
 }
 
 /// Whether the tree page is mounted, rather than the main page.
@@ -946,17 +969,87 @@ fn main_page_mounted() -> bool {
     false
 }
 
+/// Dispose only the appearance (or pending boot) owned by this element.
+#[wasm_bindgen]
+pub fn dispose_tree(root: Element) {
+    let pending = TREE_PENDING.with(|pending| {
+        let matches = pending
+            .borrow()
+            .as_ref()
+            .is_some_and(|owner| owner.is_same_node(Some(&root)));
+        if matches {
+            pending.borrow_mut().take();
+        }
+        matches
+    });
+    if pending {
+        TREE_EPOCH.with(|epoch| epoch.set(epoch.get().wrapping_add(1)));
+        TREE_PENDING_CANVAS.with(|canvas| {
+            if let Some((_, canvas)) = canvas.borrow_mut().take() {
+                canvas.remove();
+            }
+        });
+    }
+    TREE.with(|tree| {
+        let matches = tree
+            .borrow()
+            .as_ref()
+            .is_some_and(|tree| tree.root.is_same_node(Some(&root)));
+        if matches {
+            if let Some(tree) = tree.borrow_mut().take() {
+                tree.appearance.dispose();
+                tree.window.canvas().remove();
+                match &tree.requested_presenter {
+                    Some(value) => {
+                        let _ = root.set_attribute("data-presenter", value);
+                    },
+                    None => {
+                        let _ = root.remove_attribute("data-presenter");
+                    },
+                }
+            }
+        }
+    });
+    for attribute in [
+        "data-ready",
+        "data-context-generation",
+        "data-presentation-sequence",
+        "data-selected-render-backend",
+        "data-compute-available",
+    ] {
+        let _ = root.remove_attribute(attribute);
+    }
+}
+
 /// Mount the one-tree page into `root`.
 #[wasm_bindgen]
 pub fn mount_tree(root: Element) -> Result<(), JsValue> {
-    if mounted() || main_page_mounted() {
+    if mounted() || main_page_mounted() || TREE_PENDING.with(|pending| pending.borrow().is_some()) {
         return Err(JsValue::from_str(
             "Graphshell is already mounted on this page",
         ));
     }
     let owns_title = root.has_attribute("data-owns-title");
+    let failure_root = root.clone();
+    let epoch = TREE_EPOCH.with(|epoch| {
+        let next = epoch.get().wrapping_add(1);
+        epoch.set(next);
+        next
+    });
+    TREE_PENDING.with(|pending| *pending.borrow_mut() = Some(root.clone()));
     wasm_bindgen_futures::spawn_local(async move {
-        if let Err(error) = boot(root).await {
+        if let Err(error) = boot(root, epoch).await {
+            if TREE_EPOCH.with(|current| current.get() != epoch) {
+                return;
+            }
+            TREE_PENDING.with(|pending| pending.borrow_mut().take());
+            TREE_PENDING_CANVAS.with(|pending| pending.borrow_mut().take());
+            if let Ok(Some(canvas)) =
+                failure_root.query_selector(&format!("canvas[data-graphshell-canvas='{epoch}']"))
+            {
+                canvas.remove();
+            }
+            let _ = failure_root.set_attribute("data-mount-error", &error);
             web_sys::console::error_1(&error.clone().into());
             if let Some(document) = web_sys::window()
                 .and_then(|window| window.document())
@@ -972,11 +1065,15 @@ pub fn mount_tree(root: Element) -> Result<(), JsValue> {
 #[inline(never)]
 fn boot(
     root: Element,
+    epoch: u64,
 ) -> std::pin::Pin<Box<impl std::future::Future<Output = Result<(), String>>>> {
-    Box::pin(boot_inner(root))
+    Box::pin(boot_inner(root, epoch))
 }
 
-async fn boot_inner(root: Element) -> Result<(), String> {
+async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
+    if !root.is_connected() || TREE_EPOCH.with(|current| current.get() != epoch) {
+        return Err("appearance boot cancelled".into());
+    }
     #[cfg(feature = "product")]
     owner_waypoint::configure(&root);
     let document = root.owner_document().ok_or("the root has no document")?;
@@ -986,6 +1083,9 @@ async fn boot_inner(root: Element) -> Result<(), String> {
         .dyn_into()
         .map_err(|_| "the canvas is not a canvas")?;
     canvas.set_id("gs-graphshell-canvas");
+    canvas
+        .set_attribute("data-graphshell-canvas", &epoch.to_string())
+        .map_err(|_| "cannot identify owned canvas")?;
     // One finger may scroll the page; pinching is the viewer's (`gestures`).
     canvas
         .set_attribute(
@@ -995,6 +1095,7 @@ async fn boot_inner(root: Element) -> Result<(), String> {
         .map_err(|_| "could not size the canvas")?;
     root.append_child(&canvas)
         .map_err(|_| "could not place the canvas")?;
+    TREE_PENDING_CANVAS.with(|pending| *pending.borrow_mut() = Some((epoch, canvas.clone())));
     let width = canvas.client_width().max(1) as u32;
     let height = canvas.client_height().max(1) as u32;
 
@@ -1089,6 +1190,7 @@ async fn boot_inner(root: Element) -> Result<(), String> {
         },
         None => None,
     };
+    let requested_presenter = root.get_attribute("data-presenter");
     let speed_options = crate::web_speed::options()?;
     let appearance = crate::web_appearance::mount_retained(
         root.clone(),
@@ -1170,7 +1272,23 @@ async fn boot_inner(root: Element) -> Result<(), String> {
         &shared.frame_budget.borrow(),
     );
     visibility::install(&shared, &document)?;
+    let choice = match root
+        .get_attribute("data-render-backend")
+        .as_deref()
+        .unwrap_or("auto")
+    {
+        "auto" => cambium_rootstock::PresentationChoice::Auto,
+        "webgpu" => cambium_rootstock::PresentationChoice::WebGpu,
+        "webgl2" => cambium_rootstock::PresentationChoice::WebGl2,
+        value => return Err(format!("invalid render_backend: {value}")),
+    };
+    if root.has_attribute("data-presentation-diagnostics") {
+        canvas
+            .set_attribute("data-presentation-diagnostics", "true")
+            .map_err(|_| "cannot enable presentation diagnostics")?;
+    }
     let options = HostOptions {
+        presentation_choice: choice,
         title: "Graphshell, one tree".into(),
         netrender: Box::new(|| NetrenderOptions {
             tile_cache_size: Some(1024),
@@ -1253,11 +1371,49 @@ async fn boot_inner(root: Element) -> Result<(), String> {
         hooks(shared.clone()),
     )
     .await?;
+    if !root.is_connected() || TREE_EPOCH.with(|current| current.get() != epoch) {
+        mounted.dispose();
+        return Err("appearance boot cancelled".into());
+    }
+    let backend = mounted
+        .host()
+        .borrow()
+        .s
+        .presentation_driver
+        .as_ref()
+        .map(|driver| driver.backend());
+    let selected = if backend == Some(cambium_rootstock::PresentationBackend::WebGl2) {
+        "webgl2"
+    } else {
+        "webgpu"
+    };
+    root.set_attribute("data-selected-render-backend", selected)
+        .map_err(|_| "cannot report backend")?;
+    root.set_attribute(
+        "data-compute-available",
+        if selected == "webgpu" {
+            "true"
+        } else {
+            "false"
+        },
+    )
+    .map_err(|_| "cannot report compute")?;
+    if selected == "webgl2"
+        && web_sys::window()
+            .and_then(|w| w.location().search().ok())
+            .and_then(|search| web_sys::UrlSearchParams::new_with_str(&search).ok())
+            .and_then(|params| params.get("gpu"))
+            .as_deref()
+            == Some("on")
+    {
+        mounted.dispose();
+        return Err("GPU physics requires the WebGPU presentation backend".into());
+    }
     let zoom_host = mounted.host().clone();
     let release_host = mounted.host().clone();
-    gestures::install(
+    let gesture_owner = gestures::install(
         &root,
-        canvas,
+        mounted.window().canvas().clone(),
         shared.clone(),
         gestures::HostHandle {
             ui_zoom: Rc::new(move || zoom_host.borrow().ui_zoom()),
@@ -1270,6 +1426,10 @@ async fn boot_inner(root: Element) -> Result<(), String> {
             shared,
             window: mounted.window().clone(),
             lane: None,
+            root: root.clone(),
+            appearance: mounted,
+            gestures: gesture_owner,
+            requested_presenter,
         })
     });
     if root.has_attribute("data-owns-title") {
@@ -1279,6 +1439,8 @@ async fn boot_inner(root: Element) -> Result<(), String> {
             "Graphshell, one tree"
         });
     }
+    TREE_PENDING.with(|pending| pending.borrow_mut().take());
+    TREE_PENDING_CANVAS.with(|pending| pending.borrow_mut().take());
     root.set_attribute("data-presenter", "tree")
         .map_err(|_| "could not identify presenter")?;
     root.set_attribute("data-ready", "true")
@@ -1572,6 +1734,28 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             );
         }),
         after_frame: Box::new(move |ctx| {
+            if ctx
+                .runner
+                .state()
+                .root
+                .has_attribute("data-presentation-diagnostics")
+            {
+                let _ = ctx.runner.state().root.set_attribute(
+                    "data-physics-moving",
+                    &after_shared.moving.get().to_string(),
+                );
+            }
+            if let Some(stamp) = ctx.presentation {
+                let _ = ctx.runner.state().root.set_attribute(
+                    "data-context-generation",
+                    &stamp.context_generation.0.to_string(),
+                );
+                let _ = ctx
+                    .runner
+                    .state()
+                    .root
+                    .set_attribute("data-presentation-sequence", &stamp.sequence.to_string());
+            }
             // The Chronicle loader waits on the same live session that the
             // retained board presents. This is host-boundary observation only.
             {
@@ -1762,22 +1946,12 @@ mod dynamics_inspection;
 #[cfg(feature = "product")]
 mod field_inspection;
 #[cfg(feature = "product")]
-mod node_presentation;
-#[cfg(feature = "product")]
 mod forme;
-#[cfg(feature = "product")]
-mod owner_waypoint;
 mod gesture_steps;
 mod gestures;
 mod grouping;
 mod history;
 mod host_boundary;
-mod observe;
-#[cfg(feature = "main-page")]
-mod practice;
-#[cfg(not(feature = "main-page"))]
-#[path = "web_tree/practice_off.rs"]
-mod practice;
 #[cfg(feature = "product")]
 mod inspection;
 #[cfg(feature = "product")]
@@ -1787,7 +1961,17 @@ mod lane;
 mod link_inspection;
 #[cfg(feature = "moot-resources")]
 mod moot_resources;
+#[cfg(feature = "product")]
+mod node_presentation;
+mod observe;
+#[cfg(feature = "product")]
+mod owner_waypoint;
 mod physics;
+#[cfg(feature = "main-page")]
+mod practice;
+#[cfg(not(feature = "main-page"))]
+#[path = "web_tree/practice_off.rs"]
+mod practice;
 #[cfg(feature = "product")]
 mod presentation;
 mod presenter;

@@ -12,7 +12,7 @@
 mod fixture;
 
 use cambium::{AnyView, GenetAppRunner, GenetCtx, GenetElement, PointerClick, el, lens};
-use cambium_genet_winit_host::{HostOptions, Init, ScrollAlign, inert_hooks, read_frame, run};
+use cambium_genet_winit_host::{HostOptions, Init, ScrollAlign, inert_hooks, run};
 use fixture::{BODY, DESTINATION, Fixture};
 use genet_scripted_dom::NodeId;
 use graphshell::moot_resources::{Mount, Update};
@@ -165,12 +165,46 @@ fn main() {
     if let Some(out) = receipt {
         let done = Rc::new(Cell::new(false));
         let captured = Rc::new(RefCell::new(Vec::new()));
+        let pending = Rc::new(RefCell::new(
+            None::<(usize, std::path::PathBuf, cambium_rootstock::CaptureFrame)>,
+        ));
         let mut stage = 0_usize;
         let mut frames = 0_u32;
         let mut entered = 0_u32;
         let mut armed = false;
         let fixture = f.clone();
         hooks.after_frame = Box::new(move |ctx| {
+            let completed = pending
+                .borrow_mut()
+                .as_mut()
+                .and_then(|(_, _, job)| job.poll());
+            if let Some(result) = completed {
+                let (stage, destination, _) = pending.borrow_mut().take().unwrap();
+                let (presentation, frame) = result.expect("native readback");
+                let colors: std::collections::HashSet<_> = frame
+                    .rgba
+                    .chunks_exact(4)
+                    .map(|pixel| [pixel[0], pixel[1], pixel[2], pixel[3]])
+                    .collect();
+                image::save_buffer(
+                    &destination,
+                    &frame.rgba,
+                    frame.width,
+                    frame.height,
+                    image::ColorType::Rgba8,
+                )
+                .expect("PNG");
+                let pixel_report = serde_json::json!({"stage":stage,"width":frame.width,"height":frame.height,"unique_colors":colors.len(),"first_pixel":frame.rgba.get(..4),"presentation":format!("{presentation:?}")});
+                std::fs::write(
+                    destination.with_extension("json"),
+                    serde_json::to_vec_pretty(&pixel_report).unwrap(),
+                )
+                .expect("pixel evidence");
+                eprintln!("[moot-proof] capture {pixel_report}");
+                assert!(colors.len() >= 8, "uniform or blank capture");
+                captured.borrow_mut().push(serde_json::json!({"stage":stage,"path":destination,"width":frame.width,"height":frame.height,"unique_colors":colors.len(),"presentation":format!("{presentation:?}")}));
+                done.set(true);
+            }
             frames += 1;
             if frames <= 5 {
                 eprintln!(
@@ -285,37 +319,13 @@ fn main() {
             }
             armed = true;
             let destination = out.join(format!("stage-{stage}.png"));
-            let done = done.clone();
-            let captured = captured.clone();
-            let presentation = ctx.presentation.clone().unwrap();
+            let sink = pending.clone();
             *ctx.capture = Some(Box::new(move |capture| {
-                let capture = capture.expect("native presentation capture");
-                let frame =
-                    read_frame(capture.surface, capture.view, capture.width, capture.height)
-                        .expect("native readback");
-                let colors: std::collections::HashSet<_> = frame
-                    .rgba
-                    .chunks_exact(4)
-                    .map(|pixel| [pixel[0], pixel[1], pixel[2], pixel[3]])
-                    .collect();
-                image::save_buffer(
-                    &destination,
-                    &frame.rgba,
-                    frame.width,
-                    frame.height,
-                    image::ColorType::Rgba8,
-                )
-                .expect("PNG");
-                let pixel_report = serde_json::json!({"stage":stage,"width":frame.width,"height":frame.height,"unique_colors":colors.len(),"first_pixel":frame.rgba.get(..4),"presentation":format!("{presentation:?}")});
-                std::fs::write(
-                    destination.with_extension("json"),
-                    serde_json::to_vec_pretty(&pixel_report).unwrap(),
-                )
-                .expect("pixel evidence");
-                eprintln!("[moot-proof] capture {pixel_report}");
-                assert!(colors.len() >= 8, "uniform or blank capture");
-                captured.borrow_mut().push(serde_json::json!({"stage":stage,"path":destination,"width":frame.width,"height":frame.height,"unique_colors":colors.len(),"presentation":format!("{presentation:?}")}));
-                done.set(true);
+                *sink.borrow_mut() = Some((
+                    stage,
+                    destination,
+                    capture.expect("native presentation capture"),
+                ));
             }));
         });
     }
@@ -324,7 +334,7 @@ fn main() {
     // the native frame's black clear; no synthetic body selector can supply it.
     let sheet = format!(
         "main{{font-family:sans-serif;font-size:16px;padding:16px;min-height:100vh;box-sizing:border-box;background:#f6f7f8;color:#20252b}}h1{{font-size:24px}}h2{{font-size:20px}}h3{{font-size:18px}}.readings{{display:flex;flex-wrap:wrap;gap:20px}}.reading{{flex:1;min-width:300px;padding:12px;border:1px solid #999;background:#fff}}button{{color:#20252b;background:#edf1f5;border:1px solid #6d7681;padding:4px 8px}}pre{{white-space:pre-wrap;overflow-wrap:anywhere}} {}",
-        graphshell::moot_resources::CSS
+        moot::resource_view::CSS
     );
     let running = Arc::new(AtomicBool::new(true));
     let thread_running = running.clone();
