@@ -717,8 +717,9 @@ mod tests {
         ));
     }
 
-    /// The site exporter's output (merelyllc.com `9df5e96`), pinned by its
-    /// sha256 so a changed export is a deliberate fixture update.
+    /// The site exporter's output (merelyllc.com `9df5e96`), with the
+    /// canonical Murm URLs adopted by the published 2026-10-13 fixture.
+    /// Pin its bytes so later export changes remain deliberate fixture updates.
     #[test]
     fn the_site_export_compiles_with_every_relation_drawn() {
         use sha2::{Digest, Sha256};
@@ -729,7 +730,7 @@ mod tests {
             .collect();
         assert_eq!(
             digest,
-            "1b16d990958c3fd1fe9cd17a3fa4a98bc62441f28d23fb92ecd7f9d7abf7eca0"
+            "83b1bdd6491c0d636a364dc479153208f3ddbcca8180410c431ddff347ba1525"
         );
         let envelope = parse_host_dataset(std::str::from_utf8(bytes).unwrap()).unwrap();
         let view = host_dataset_view(&envelope).unwrap();

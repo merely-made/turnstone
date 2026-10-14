@@ -232,14 +232,14 @@ vello_shaders = { git = "https://github.com/mark-ik/vello", rev = "2eae6243881d5
 cubecl-runtime = { path = "../../../support/patches/cubecl-runtime" }
 
 # Match the root retained/admitted owner supplier closure.
-mere-p2panda-net = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
-p2panda-auth = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
-p2panda-core = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
-p2panda-discovery = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
-p2panda-encryption = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
-p2panda-store = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
-p2panda-stream = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
-p2panda-sync = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+mere-p2panda-net = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-auth = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-core = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-discovery = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-encryption = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-store = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-stream = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-sync = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
 
 [workspace.package]
 rust-version = "1.97.1"
@@ -247,6 +247,9 @@ rust-version = "1.97.1"
 # The standalone host uses the same release-identity contract as the parent
 # workspace when Murm's carrier names its published compatibility dependency.
 [patch."https://github.com/merely-made/mere.git"]
+muniment = { path = "../../../crates/eidetic/muniment" }
+stickleback = { path = "../../../crates/stickleback" }
+mere-proofs = { path = "../../../crates/system/proofs" }
 luggage = { path = "../../../crates/system/luggage" }
 
 # Published shadow-resource repair across Genet and host renderer contracts.

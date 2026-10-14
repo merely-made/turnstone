@@ -6148,7 +6148,7 @@ dependencies = [
 [[package]]
 name = "mere-p2panda-net"
 version = "0.7.5"
-source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261011#d8acabc96ecc59016e40edf4a47ed5eaf5360285"
+source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bcb9f2a9d798b1c25b2ec2f47c0416bd65"
 dependencies = [
  "futures-channel",
  "futures-util",
@@ -7629,7 +7629,7 @@ dependencies = [
 [[package]]
 name = "p2panda-auth"
 version = "0.7.1"
-source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261011#d8acabc96ecc59016e40edf4a47ed5eaf5360285"
+source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bcb9f2a9d798b1c25b2ec2f47c0416bd65"
 dependencies = [
  "p2panda-core",
  "petgraph",
@@ -7640,7 +7640,7 @@ dependencies = [
 [[package]]
 name = "p2panda-core"
 version = "0.7.1"
-source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261011#d8acabc96ecc59016e40edf4a47ed5eaf5360285"
+source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bcb9f2a9d798b1c25b2ec2f47c0416bd65"
 dependencies = [
  "blake3",
  "cbor-core",
@@ -7655,7 +7655,7 @@ dependencies = [
 [[package]]
 name = "p2panda-discovery"
 version = "0.7.1"
-source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261011#d8acabc96ecc59016e40edf4a47ed5eaf5360285"
+source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bcb9f2a9d798b1c25b2ec2f47c0416bd65"
 dependencies = [
  "blake3",
  "futures-util",
@@ -7670,7 +7670,7 @@ dependencies = [
 [[package]]
 name = "p2panda-encryption"
 version = "0.7.1"
-source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261011#d8acabc96ecc59016e40edf4a47ed5eaf5360285"
+source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bcb9f2a9d798b1c25b2ec2f47c0416bd65"
 dependencies = [
  "chacha20poly1305 0.10.1",
  "curve25519-dalek 5.0.0",
@@ -7693,7 +7693,7 @@ dependencies = [
 [[package]]
 name = "p2panda-store"
 version = "0.7.1"
-source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261011#d8acabc96ecc59016e40edf4a47ed5eaf5360285"
+source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bcb9f2a9d798b1c25b2ec2f47c0416bd65"
 dependencies = [
  "async-stream",
  "futures-util",
@@ -7703,7 +7703,7 @@ dependencies = [
 [[package]]
 name = "p2panda-sync"
 version = "0.7.1"
-source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261011#d8acabc96ecc59016e40edf4a47ed5eaf5360285"
+source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bcb9f2a9d798b1c25b2ec2f47c0416bd65"
 dependencies = [
  "futures-channel",
  "futures-util",
@@ -12495,4 +12495,4 @@ dependencies = [
 [[patch.unused]]
 name = "p2panda-stream"
 version = "0.7.1"
-source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261011#d8acabc96ecc59016e40edf4a47ed5eaf5360285"
+source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bcb9f2a9d798b1c25b2ec2f47c0416bd65"
