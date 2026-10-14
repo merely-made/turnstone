@@ -1,0 +1,15 @@
+# Fresh page on the same dedicated origin; no reseeding or automatic query save.
+assert snap storage-reopened == true
+assert snap query-frozen-count == 1
+reveal role:button Edit query: Source view
+click role:button Edit query: Source view
+assert snap query-view-edge-stroke == dotted
+reveal role:button Show workbench
+click role:button Show workbench
+wait 300
+assert snap workbench == true
+assert snap query-frozen-count == 1
+assert snap query-members == 2
+assert snap query-resource-nodes == 4
+assert snap query-surface-nodes == 3
+capture query_resource_reopened

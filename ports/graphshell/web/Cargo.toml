@@ -33,7 +33,7 @@ default = ["main-page", "product", "remote", "canvas-gpu", "image-decode"]
 main-page = ["product", "remote"]
 # What a page saves: IndexedDB, saved scenes, the tree's product mode,
 # `web_product` and `web_practice`.
-product = ["muniment/indexeddb", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "dep:mere-document-lanes", "dep:fleece"]
+product = ["muniment/indexeddb", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "graphshell/query-views", "mere/query", "dep:mere-document-lanes", "dep:fleece"]
 applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.
@@ -243,3 +243,13 @@ p2panda-sync = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2p
 
 [workspace.package]
 rust-version = "1.97.1"
+
+# The standalone host uses the same release-identity contract as the parent
+# workspace when Murm's carrier names its published compatibility dependency.
+[patch."https://github.com/merely-made/mere.git"]
+luggage = { path = "../../../crates/system/luggage" }
+
+# SELECT evaluation's rand 0.8 uses getrandom 0.2, independently of the
+# persona stack's newer backend. Browser entropy is supplied by this host.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom02 = { package = "getrandom", version = "0.2", features = ["js"] }

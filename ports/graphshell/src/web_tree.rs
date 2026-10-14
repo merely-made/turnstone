@@ -95,6 +95,7 @@ const SHEET: &str = "\
     .tree-rules [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
     .tree-rules pre, .tree-dynamics pre, .moot-opened-content { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
     .tree-coupling [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
+    .tree-query [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
     .tree-inspection { overflow-wrap:anywhere; } \
     .tree-inspection p, .tree-inspection li { font-size:12px; } \
     .tree-tools .detail-section-title { font-weight:bold; margin:6px 0 4px; } \
@@ -546,6 +547,8 @@ pub(crate) struct TreePage {
     #[cfg(feature = "product")]
     presentation: presentation::Pane,
     #[cfg(feature = "product")]
+    query_views: query_view::Pane,
+    #[cfg(feature = "product")]
     dynamics_inspector: dynamics_inspection::Pane,
     #[cfg(feature = "product")]
     node_presentation: node_presentation::Pane,
@@ -923,6 +926,8 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(field_inspection::section(page));
     #[cfg(feature = "product")]
     children.push(presentation::section(page));
+    #[cfg(feature = "product")]
+    children.push(query_view::section(page));
     #[cfg(feature = "product")]
     children.push(node_presentation::section(page));
     #[cfg(feature = "product")]
@@ -1357,6 +1362,8 @@ async fn boot_inner(root: Element) -> Result<(), String> {
                 #[cfg(feature = "product")]
                 presentation,
                 #[cfg(feature = "product")]
+                query_views: query_view::Pane::default(),
+                #[cfg(feature = "product")]
                 dynamics_inspector: dynamics_inspection::Pane::default(),
                 #[cfg(feature = "product")]
                 node_presentation: node_presentation::Pane::default(),
@@ -1558,6 +1565,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             #[cfg(feature = "product")]
             coupling::poll(ctx);
             #[cfg(feature = "product")]
+            if query_view::ready(ctx.runner.state()) {
+                ctx.runner.update(query_view::poll);
+            }
+            #[cfg(feature = "product")]
             field_inspection::reveal(ctx);
             #[cfg(feature = "product")]
             coupling::reveal(ctx);
@@ -1651,16 +1662,16 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 }
                 let requests = frame_shared.reading.borrow_mut().take_requests();
                 for (source, address) in requests {
-                    if matches!(
-                        mere_document_lanes::retained_clip::request(&address),
-                        Ok(Some(
-                            mere_document_lanes::retained_clip::ClipRequest::Export(_)
-                        ))
-                    ) {
-                        frame_shared.reading.borrow_mut().set_status(
-                            source,
-                            "Selected clip export needs a receiving host export adapter".into(),
-                        );
+                    if let Ok(Some(mere_document_lanes::retained_clip::ClipRequest::Export(clip))) =
+                        mere_document_lanes::retained_clip::request(&address)
+                    {
+                        let product = ctx.runner.state().product.as_ref();
+                        let owner = product.and_then(|p| p.retained_scope());
+                        let store = product.and_then(|p| p.retained_store());
+                        frame_shared
+                            .reading
+                            .borrow_mut()
+                            .export_clip(source, clip, owner, store);
                         ctx.runner.update(|_| {});
                         continue;
                     }
@@ -1783,6 +1794,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             }
             #[cfg(feature = "product")]
             if let Some(slot) = presentation::focused_text(runner) {
+                return Some(slot);
+            }
+            #[cfg(feature = "product")]
+            if let Some(slot) = query_view::focused_text(runner) {
                 return Some(slot);
             }
             appearance::focused_text(runner)
@@ -1909,22 +1924,12 @@ mod dynamics_inspection;
 #[cfg(feature = "product")]
 mod field_inspection;
 #[cfg(feature = "product")]
-mod node_presentation;
-#[cfg(feature = "product")]
 mod forme;
-#[cfg(feature = "product")]
-mod owner_waypoint;
 mod gesture_steps;
 mod gestures;
 mod grouping;
 mod history;
 mod host_boundary;
-mod observe;
-#[cfg(feature = "main-page")]
-mod practice;
-#[cfg(not(feature = "main-page"))]
-#[path = "web_tree/practice_off.rs"]
-mod practice;
 #[cfg(feature = "product")]
 mod inspection;
 #[cfg(feature = "product")]
@@ -1934,7 +1939,17 @@ mod lane;
 mod link_inspection;
 #[cfg(feature = "moot-resources")]
 mod moot_resources;
+#[cfg(feature = "product")]
+mod node_presentation;
+mod observe;
+#[cfg(feature = "product")]
+mod owner_waypoint;
 mod physics;
+#[cfg(feature = "main-page")]
+mod practice;
+#[cfg(not(feature = "main-page"))]
+#[path = "web_tree/practice_off.rs"]
+mod practice;
 #[cfg(feature = "product")]
 mod presentation;
 mod presenter;
@@ -1943,6 +1958,8 @@ mod product;
 #[cfg(not(feature = "product"))]
 #[path = "web_tree/product_off.rs"]
 mod product;
+#[cfg(feature = "product")]
+mod query_view;
 #[cfg(feature = "product")]
 mod reading;
 #[cfg(feature = "remote")]

@@ -703,6 +703,8 @@ impl Product for TreeLane {
         #[cfg(feature = "product")]
         let snapshot = presentation::fields(page, snapshot);
         #[cfg(feature = "product")]
+        let snapshot = super::query_view::fields(page, snapshot);
+        #[cfg(feature = "product")]
         let snapshot = dynamics_inspection::fields(page, snapshot);
         #[cfg(feature = "product")]
         let snapshot = node_presentation::fields(page, snapshot);

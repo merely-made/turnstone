@@ -13,6 +13,10 @@ name = "retained_content_fixture"
 required-features = ["retained-content"]
 
 [[example]]
+name = "caller_owned_toolkits"
+required-features = ["caller-owned-toolkit-bench"]
+
+[[example]]
 name = "projection_dynamics_receipt"
 required-features = ["web"]
 
@@ -25,6 +29,8 @@ name = "moot_resources_reopen"
 required-features = ["moot-resources"]
 
 [features]
+query-views = ["web", "mere/query", "dep:cambium"]
+caller-owned-toolkit-bench = ["retained-content", "cambium-rootstock/embedding-egui", "cambium-rootstock/embedding-iced", "dep:image"]
 moot-resources = ["web", "webrtc-join", "dep:cambium", "dep:moot", "dep:gemot", "dep:eidetic", "dep:muniment"]
 default = ["native", "image-decode", "document-layout", "retained-content"]
 # Document-capable hosts retain Platen's document producer. The read-only

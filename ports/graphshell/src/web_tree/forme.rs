@@ -1086,8 +1086,10 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
             let locked = pane.model().locked;
             let reading_shared = page.shared.clone();
             let reading_store = page.product.as_ref().and_then(|p| p.retained_store());
+            let mut query_appearances = std::collections::BTreeMap::new();
             let mut appearances = std::collections::BTreeMap::new();
             for member in super::reading::active_members(&tree) {
+                if let Some(snapshot) = super::query_view::appearance(page, member) { query_appearances.insert(member, snapshot); continue; }
                 if let Some((_, node)) = graph.get_node_by_id(member) {
                     let address = node.url().to_string();
                     let appearance = if matches!(
@@ -1160,6 +1162,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 if !tags.is_empty() {
                     controls.push(Box::new(el("p", tags.join(" · "))));
                 }
+                if let Some(snapshot) = query_appearances.get(&member) { controls.push(super::query_view::render(snapshot.clone())); }
                 if let Some(appearance) = appearances.get(&member) {
                     controls.push(super::reading::render(appearance.clone()));
                 }

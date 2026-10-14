@@ -11,6 +11,8 @@
 
 #[cfg(feature = "retained-content")]
 pub mod retained_content;
+#[cfg(feature = "query-views")]
+pub mod query_views;
 #[cfg(feature = "moot-resources")]
 pub mod moot_resources;
 

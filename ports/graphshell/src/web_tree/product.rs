@@ -21,6 +21,8 @@ mod fields;
 mod find;
 mod history;
 mod projection;
+#[cfg(feature = "product")]
+mod query;
 mod scenes;
 pub(super) use commands::menu;
 use fields::TextField;
@@ -117,8 +119,12 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         return Err("app=local cannot also select a generated graph".into());
     }
     let inspection_fixture = params.get("fixture").as_deref() == Some("field-inspection");
-    let retained_fixture = params.get("fixture").as_deref() == Some("retained-content");
-    let database = if retained_fixture {
+    let query_fixture = params.get("fixture").as_deref() == Some("retained-content-query");
+    let retained_fixture =
+        query_fixture || params.get("fixture").as_deref() == Some("retained-content");
+    let database = if query_fixture {
+        "graphshell-retained-content-query-acceptance"
+    } else if retained_fixture {
         "graphshell-retained-content-acceptance"
     } else if inspection_fixture {
         "graphshell-field-inspection-draft-v1"
@@ -148,6 +154,9 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     if retained_fixture && !reopened {
         graphshell::retained_content::fixture::seed(&mut app, super::reading::clip_limits()?)
             .await?;
+    }
+    if query_fixture && !reopened {
+        graphshell::query_views::seed_fixture(&mut app).await?;
     }
     app.mount_local().map_err(|error| error.to_string())?;
     let persistence = super::super::resolve_storage_persistence().await;
@@ -210,7 +219,9 @@ impl SavedProduct {
         self.app.as_ref().map(|app| app.host.graph_session().id().0)
     }
     pub(super) fn actual_graph_nodes(&self) -> Option<usize> {
-        self.app.as_ref().map(|app| app.host.graph().nodes().count())
+        self.app
+            .as_ref()
+            .map(|app| app.host.graph().nodes().count())
     }
     pub(super) fn forme_source(&self) -> Option<(IndexedDbBackend, Uuid)> {
         let app = self.app.as_ref()?;
@@ -450,6 +461,13 @@ impl SavedProduct {
     pub(super) fn retained_store(&self) -> Option<IndexedDbBackend> {
         self.app.as_ref().map(|app| app.host.store())
     }
+    pub(super) fn retained_scope(&self) -> Option<(Uuid, String)> {
+        let app = self.app.as_ref()?;
+        Some((
+            app.host.graph_session().id().0,
+            app.host.selected_persona().persona.clone(),
+        ))
+    }
     fn store_clip_file(&mut self, bytes: Vec<u8>) {
         let limits = match super::reading::clip_limits() {
             Ok(limits) => limits,
@@ -577,12 +595,19 @@ impl SavedProduct {
             // restart settling, unlike an ordinary metadata-only completion.
             let coupling_changed = result.is_ok()
                 && previous_owner == Some(owner)
-                && app.host.graph().couplings().find(|coupling| coupling.id == id)
+                && app
+                    .host
+                    .graph()
+                    .couplings()
+                    .find(|coupling| coupling.id == id)
                     .is_some_and(|coupling| {
                         !canvas.graph().couplings().any(|held| held == coupling)
                     });
             graphshell::local_scene::reconcile_completed_graph(
-                canvas, previous_owner, owner, app.host.graph(),
+                canvas,
+                previous_owner,
+                owner,
+                app.host.graph(),
             );
             if coupling_changed {
                 // The graph is already coherent; retain the coupling editor's
@@ -606,7 +631,10 @@ impl SavedProduct {
         if let Some((app, result)) = operation {
             let owner = app.host.graph_session().id().0;
             graphshell::local_scene::reconcile_completed_graph(
-                canvas, self.session.parse().ok(), owner, app.host.graph(),
+                canvas,
+                self.session.parse().ok(),
+                owner,
+                app.host.graph(),
             );
             self.session = owner.to_string();
             self.forme_reconcile_session = Some(owner);
@@ -636,7 +664,10 @@ impl SavedProduct {
         };
         let owner = app.host.graph_session().id().0;
         graphshell::local_scene::reconcile_completed_graph(
-            canvas, self.session.parse().ok(), owner, app.host.graph(),
+            canvas,
+            self.session.parse().ok(),
+            owner,
+            app.host.graph(),
         );
         self.session = owner.to_string();
         self.forme_reconcile_session = Some(owner);
