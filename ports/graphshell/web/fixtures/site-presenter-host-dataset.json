@@ -719,11 +719,11 @@
           },
           "github_url": {
             "kind": "text",
-            "value": "https://github.com/merely-made/retinue"
+            "value": "https://github.com/merely-made/murm"
           },
           "homepage": {
             "kind": "text",
-            "value": "https://github.com/merely-made/retinue"
+            "value": "https://github.com/merely-made/murm"
           },
           "label": {
             "kind": "text",
@@ -1710,7 +1710,7 @@
       "to_occurrence": "retinue",
       "kind": "depends_on",
       "label": "Mere depends on Retinue",
-      "explanation": "Mere's root Cargo manifest uses Retinue from merely-made/retinue. Verification recorded on 2026-07-29 (derived).",
+      "explanation": "Mere's root Cargo manifest uses Retinue from merely-made/murm. Verification recorded on 2026-07-29 (derived).",
       "provenance": {
         "source": {
           "authority": "https://merelyllc.com",
