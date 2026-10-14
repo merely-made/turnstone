@@ -554,6 +554,16 @@ fn main() {
             cambium_genet_winit_host::read_file,
         )
         .expect("scenario")
+        // A headed acceptance lane may need time to establish real foreground
+        // visibility. Keep the same finite allowance as Cleromancy; ordinary
+        // windows have no lane and the default scenario deadline stays 10s.
+        .with_presentation_timeout(std::time::Duration::from_secs(
+            std::env::var("GRAPHSHELL_MERE_PRESENTATION_TIMEOUT_SECS")
+                .ok()
+                .and_then(|value| value.parse::<u64>().ok())
+                .unwrap_or(10)
+                .clamp(10, 60),
+        ))
     });
     let lane = Rc::new(RefCell::new(lane));
     let mut hooks = inert_hooks::<App, Logic, Child>();
