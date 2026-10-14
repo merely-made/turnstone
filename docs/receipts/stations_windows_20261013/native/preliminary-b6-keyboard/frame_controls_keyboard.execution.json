@@ -1,0 +1,13 @@
+{
+  "scenario": "frame_controls_keyboard",
+  "case": "preliminary-b6-keyboard",
+  "workshop": "",
+  "started_utc": "2026-10-14T09:06:18.5148215Z",
+  "finished_utc": "2026-10-14T09:06:34.1088179Z",
+  "exit": 0,
+  "result_ok": true,
+  "default_surface_poll": true,
+  "executable_sha256": "3b092486e050698001aea3f3589ab57b7153b246e1c5661586c9ef6cd7283ae3",
+  "fixture_sha256": "4f3aa36992403f0c80a6f169d5a7ada2c14417169ed14aac175cf1aa2478643f",
+  "primary_lock_sha256": "432883312ec370221f2a383e98ffb1e3a2bf735a235ab35c32621cc9901a2fb3"
+}

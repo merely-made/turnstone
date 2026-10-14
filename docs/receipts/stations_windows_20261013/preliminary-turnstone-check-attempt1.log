@@ -1,0 +1,2130 @@
+error: invalid type: boolean `true`, expected a map
+ --> ..\..\..\.cargo\git\checkouts\servo-e53a6e7b994a25fe\aac43a3\python\tidy\tests\lints-configuration\no-workspace\Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+    Updating git repository `https://github.com/merely-made/genet.git`
+    Updating crates.io index
+    Updating git repository `https://github.com/merely-made/mere.git`
+    Updating git repository `https://github.com/merely-made/mere.git`
+    Updating git repository `https://github.com/merely-made/mere.git`
+warning: patch `engine-observables-api v0.2.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `genet-paint-types v0.2.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `genet-scripted-dom v0.1.2 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `genet-static-dom v0.1.1 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `layout-dom-api v0.1.1 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `burn-remote v0.22.0 (C:\Users\mark_\Code\repos\mere\support\patches\burn-remote)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (C:\Users\mark_\Code\repos\mere\support\patches\cubecl-runtime)` was not used in the crate graph
+warning: patch `burn-remote v0.22.0 (C:\Users\mark_\Code\repos\mere\support\patches\burn-remote)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (C:\Users\mark_\Code\repos\mere\support\patches\cubecl-runtime)` was not used in the crate graph
+warning: patch `burn-remote v0.22.0 (C:\Users\mark_\Code\repos\mere\support\patches\burn-remote)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (C:\Users\mark_\Code\repos\mere\support\patches\cubecl-runtime)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+     Locking 76 packages to highest Rust 1.97.1 compatible versions
+      Adding app-host v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\script\app-host)
+      Adding armillary v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\armillary)
+      Adding cambium v0.3.3 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium)
+      Adding cambium-genet-winit-host v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-genet-winit-host)
+      Adding cambium-rootstock v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-rootstock)
+      Adding cambium-winit v0.3.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-winit)
+      Adding cambium-winit-a11y v0.3.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-winit-a11y)
+      Adding chartulary v0.2.2 (C:\Users\mark_\Code\repos\mere\crates\eidetic\chartulary)
+      Adding chirograph v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\chirograph)
+      Adding command-menu v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\command-menu)
+      Adding commons-spine v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\moot\commons)
+      Adding distillery v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\distillery)
+      Adding document-canvas v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\inker\document-canvas)
+      Adding edit-history v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\edit-history)
+      Adding eidetic v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\eidetic\eidetic-core)
+      Adding eidetic-search v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\intel\eidetic-search)
+      Adding errand v0.4.0 (C:\Users\mark_\Code\repos\mere\crates\system\errand)
+      Adding esp v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\intel\esp)
+      Adding gemot v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\moot\gemot)
+      Adding graft-engine v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\inker\engines\graft-engine)
+      Adding graphshell v0.0.2 (C:\Users\mark_\Code\repos\mere\ports\graphshell)
+      Adding graphshell-client v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\graphshell\graphshell-client)
+      Adding graphshell-endpoint v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\graphshell\graphshell-endpoint)
+      Adding illume v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\nematic\illume)
+      Adding incipit v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\incipit)
+      Adding inker v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\inker\inker)
+      Adding knot-editor-host v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\inker\knot-editor-host)
+      Adding luggage v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\system\luggage)
+      Adding mere v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\mere)
+      Adding mere-alembic v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\distillery\alembic)
+      Adding mere-apparatus v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\domain\apparatus)
+      Adding mere-athanor v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\distillery\athanor)
+      Adding mere-cartography v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\canvas\cartography)
+      Adding mere-chrome v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\shell\chrome)
+      Adding mere-comms v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\shell\comms)
+      Adding mere-curation v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\forme\curation)
+      Adding mere-document-lanes v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\system\document-lanes)
+      Adding mere-fetch v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\fetch)
+      Adding mere-fleece v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\fleece)
+      Adding mere-forme v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\forme\forme)
+      Adding mere-kernel v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel)
+      Adding mere-linked-data v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\graph\linked-data)
+      Adding mere-mesh v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\mesh\mesh)
+      Adding mere-moot v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\moot)
+      Adding mere-page-load v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\page-load)
+      Adding mere-proofs v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\system\proofs)
+      Adding mere-surface-api v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\system\surface-api)
+      Adding meristem v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\meristem)
+      Adding mesquite v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\mesquite)
+      Adding mien v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\moot\mien)
+      Adding mooting v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\moot\mooting)
+      Adding mora-cmudict v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\intel\mora-cmudict)
+      Adding muniment v0.1.2 (C:\Users\mark_\Code\repos\mere\crates\eidetic\muniment)
+      Adding nematic v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\nematic\nematic)
+      Adding numen v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\conatus\numen)
+      Adding pandect v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\system\pandect)
+      Adding pelt-core v0.2.0 (C:\Users\mark_\Code\repos\mere\ports\pelt\core)
+      Adding pictograph v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\canvas\pictograph)
+      Adding platen v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\platen\platen)
+      Adding reference-data v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\intel\reference-data)
+      Adding sceno v0.0.4 (C:\Users\mark_\Code\repos\mere\crates\cambium\scenes\sceno)
+      Adding scenograph v0.0.4 (C:\Users\mark_\Code\repos\mere\crates\cambium\scenes\scenograph)
+      Adding scenomise v0.0.4 (C:\Users\mark_\Code\repos\mere\crates\cambium\scenes\scenomise)
+      Adding scenotime v0.0.4 (C:\Users\mark_\Code\repos\mere\crates\cambium\scenes\scenotime)
+      Adding script-rhai v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\script\rhai)
+      Adding scrying-engine v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\inker\engines\scrying-engine)
+      Adding seiche v0.0.6 (C:\Users\mark_\Code\repos\mere\crates\conatus\seiche)
+      Adding servitor v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\servitor)
+      Adding sprigging v0.2.1 (C:\Users\mark_\Code\repos\mere\crates\cambium\sprigging)
+      Adding stickleback v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\stickleback)
+      Adding tabard v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\tabard)
+      Adding tabard-workshop v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\cambium\tabard-workshop)
+      Adding tinct v0.1.2 (C:\Users\mark_\Code\repos\mere\crates\cambium\tinct)
+      Adding uxtree v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\forme\uxtree)
+      Adding weld-engine v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\inker\engines\weld-engine)
+      Adding workbench v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\workbench)
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.26
+   Compiling quote v1.0.47
+   Compiling syn v3.0.6
+   Compiling syn v2.0.119
+   Compiling serde_core v1.0.229
+   Compiling serde_derive v1.0.229
+   Compiling serde v1.0.229
+    Checking cfg-if v1.0.5
+    Checking windows-link v0.2.1
+    Checking log v0.4.34
+    Checking typenum v1.20.1
+    Checking smallvec v1.16.1
+   Compiling zeroize_derive v1.5.0
+    Checking zeroize v1.9.0
+   Compiling libm v0.2.16
+   Compiling autocfg v1.5.1
+   Compiling portable-atomic v1.15.0
+    Checking rand_core v0.10.1
+    Checking memchr v2.8.3
+   Compiling getrandom v0.4.3
+    Checking critical-section v1.2.0
+    Checking once_cell v1.21.4
+   Compiling num-traits v0.2.19
+    Checking pin-project-lite v0.2.17
+   Compiling version_check v0.9.5
+    Checking windows-sys v0.61.2
+   Compiling jobserver v0.1.35
+   Compiling find-msvc-tools v0.1.14
+   Compiling shlex v2.0.1
+   Compiling cc v1.6.0
+    Checking arrayvec v0.7.8
+    Checking foldhash v0.2.0
+    Checking scopeguard v1.2.0
+    Checking stable_deref_trait v1.2.1
+    Checking equivalent v1.0.2
+    Checking allocator-api2 v0.2.21
+    Checking lock_api v0.4.14
+   Compiling thiserror-impl v2.0.20
+    Checking subtle v2.6.1
+    Checking itoa v1.0.18
+   Compiling thiserror v2.0.20
+   Compiling cfg_aliases v0.2.2
+    Checking cpufeatures v0.3.1
+   Compiling synstructure v0.14.0
+   Compiling zerofrom-derive v0.1.8
+    Checking hybrid-array v0.4.15
+    Checking bytes v1.12.1
+    Checking futures-core v0.3.34
+    Checking zerofrom v0.1.8
+   Compiling yoke-derive v0.8.3
+   Compiling generic-array v0.14.7
+    Checking yoke v0.8.3
+    Checking hashbrown v0.17.1
+   Compiling zerocopy v0.8.57
+   Compiling zerocopy-derive v0.8.57
+   Compiling zerovec-derive v0.11.6
+    Checking zerovec v0.11.8
+    Checking crypto-common v0.2.2
+   Compiling displaydoc v0.2.7
+    Checking getrandom v0.2.17
+    Checking writeable v0.6.4
+    Checking tinystr v0.8.4
+    Checking block-buffer v0.12.1
+    Checking litemap v0.8.3
+    Checking icu_locale_core v2.3.0
+    Checking potential_utf v0.1.6
+    Checking zerotrie v0.2.5
+    Checking tracing-core v0.1.36
+    Checking icu_provider v2.3.1
+    Checking crypto-common v0.1.7
+    Checking indexmap v2.14.2
+   Compiling tracing-attributes v0.1.31
+    Checking utf8_iter v1.0.4
+    Checking icu_collections v2.3.0
+    Checking tracing v0.1.44
+   Compiling icu_properties_data v2.3.0
+   Compiling semver v1.0.28
+   Compiling libc v0.2.189
+   Compiling rustc_version v0.4.1
+   Compiling icu_normalizer_data v2.3.0
+    Checking icu_properties v2.3.0
+   Compiling parking_lot_core v0.9.12
+    Checking icu_normalizer v2.3.0
+    Checking bitflags v2.13.2
+    Checking sha1_smol v1.0.1
+    Checking socket2 v0.6.5
+    Checking percent-encoding v2.3.2
+    Checking idna_adapter v1.2.2
+    Checking hashbrown v0.16.1
+    Checking idna v1.1.0
+    Checking form_urlencoded v1.2.2
+    Checking mio v1.2.3
+   Compiling tokio-macros v2.7.2
+   Compiling zmij v1.0.23
+    Checking tokio v1.53.1
+    Checking url v2.5.8
+   Compiling serde_json v1.0.151
+    Checking byteorder v1.5.0
+   Compiling bytemuck_derive v1.12.1
+    Checking bytemuck v1.25.2
+   Compiling crossbeam-utils v0.8.23
+    Checking uuid v1.27.0
+    Checking slab v0.4.12
+    Checking spin v0.9.9
+    Checking windows-strings v0.5.1
+    Checking windows-result v0.4.1
+    Checking const-oid v0.10.2
+    Checking cmov v0.5.4
+    Checking ctutils v0.4.2
+    Checking const-oid v0.9.6
+    Checking futures-io v0.3.34
+    Checking cpufeatures v0.2.17
+    Checking num-integer v0.1.47
+    Checking parking_lot v0.12.5
+    Checking digest v0.11.3
+   Compiling windows-interface v0.59.3
+   Compiling windows-implement v0.60.2
+    Checking futures-sink v0.3.34
+    Checking futures-channel v0.3.34
+    Checking windows-core v0.62.2
+    Checking block-buffer v0.10.4
+    Checking block-padding v0.4.2
+   Compiling futures-macro v0.3.34
+    Checking futures-task v0.3.34
+    Checking futures-util v0.3.34
+    Checking inout v0.2.2
+    Checking digest v0.10.7
+    Checking siphasher v1.0.3
+    Checking windows-threading v0.2.1
+    Checking windows-future v0.3.2
+    Checking cipher v0.5.2
+    Checking windows-collections v0.3.2
+    Checking windows-numerics v0.3.1
+   Compiling blake3 v1.8.7
+    Checking simdutf8 v0.1.5
+    Checking windows v0.62.2
+    Checking sha2 v0.11.0
+    Checking constant_time_eq v0.4.2
+    Checking fastrand v2.5.0
+   Compiling anyhow v1.0.104
+    Checking chacha20 v0.10.2
+    Checking serde_bytes v0.11.19
+   Compiling crossbeam-epoch v0.9.21
+   Compiling ring v0.17.14
+    Checking base64ct v1.8.3
+    Checking rand_core v0.6.4
+   Compiling curve25519-dalek-derive v0.1.1
+   Compiling time-core v0.1.9
+   Compiling num-conv v0.2.2
+   Compiling time-macros v0.2.32
+    Checking rustc-hash v2.1.3
+   Compiling rustversion v1.0.23
+    Checking deranged v0.5.8
+    Checking powerfmt v0.2.0
+    Checking time v0.3.55
+    Checking rustls-pki-types v1.15.1
+    Checking untrusted v0.9.0
+    Checking ppv-lite86 v0.2.21
+    Checking block-padding v0.3.3
+    Checking base64 v0.22.1
+    Checking inout v0.1.4
+   Compiling winnow v1.0.4
+   Compiling toml_parser v1.1.3+spec-1.1.0
+    Checking cipher v0.4.4
+    Checking pem-rfc7468 v1.0.0
+    Checking der v0.8.2
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling curve25519-dalek v5.0.0
+    Checking euclid v0.22.14
+   Compiling rustls v0.23.45
+    Checking fixedbitset v0.5.7
+    Checking spki v0.8.0
+    Checking rustls-webpki v0.103.15
+   Compiling heapless v0.7.17
+    Checking base16ct v1.0.0
+    Checking serdect v0.4.3
+    Checking pkcs8 v0.11.0
+    Checking rand v0.10.3
+    Checking hash32 v0.2.1
+    Checking universal-hash v0.5.1
+    Checking signature v3.0.0
+   Compiling profiling-procmacros v1.0.18
+    Checking opaque-debug v0.3.1
+    Checking simd-adler32 v0.3.10
+    Checking profiling v1.0.18
+    Checking ed25519 v3.0.0
+    Checking sha2 v0.10.9
+    Checking cobs v0.3.0
+   Compiling postcard-derive v0.2.2
+    Checking adler2 v2.0.1
+   Compiling crc32fast v1.5.2
+   Compiling phf_shared v0.13.1
+    Checking postcard v1.1.3
+    Checking ed25519-dalek v3.0.0
+    Checking lazy_static v1.5.0
+   Compiling enumn v0.1.14
+   Compiling getrandom v0.3.4
+    Checking fnv v1.0.7
+   Compiling phf_generator v0.13.1
+    Checking accesskit v0.24.1
+    Checking miniz_oxide v0.9.1
+    Checking polyval v0.6.2
+    Checking tokio-util v0.7.19
+    Checking aead v0.5.2
+   Compiling heck v0.5.0
+    Checking ghash v0.5.1
+    Checking flate2 v1.1.10
+    Checking ctr v0.9.2
+    Checking aes v0.8.4
+    Checking num-bigint v0.4.8
+    Checking http v1.5.0
+    Checking foldhash v0.1.5
+    Checking static_assertions v1.1.0
+    Checking hashbrown v0.15.5
+    Checking num-rational v0.4.2
+    Checking aes-gcm v0.10.3
+    Checking der v0.7.10
+    Checking half v2.7.1
+    Checking new_debug_unreachable v1.0.6
+    Checking petgraph v0.8.3
+   Compiling khronos_api v3.1.0
+   Compiling phf_macros v0.13.1
+    Checking rand_chacha v0.3.1
+    Checking hmac v0.12.1
+    Checking path-dedot v3.1.1
+    Checking compare v0.0.6
+    Checking self_cell v1.3.0
+    Checking hashbrown v0.14.5
+    Checking dashmap v6.2.1
+    Checking interval-heap v0.0.5
+    Checking path-absolutize v3.1.1
+    Checking rand v0.8.8
+    Checking phf v0.13.1
+    Checking miniz_oxide v0.8.9
+    Checking fdeflate v0.3.7
+    Checking tokio-rustls v0.26.5
+    Checking ff v0.13.1
+    Checking tempfile v3.27.0
+    Checking ordered-float v5.5.0
+    Checking varint-rs v2.2.1
+    Checking byteview v0.6.1
+    Checking base16ct v0.2.0
+    Checking rustc-hash v1.1.0
+   Compiling httparse v1.10.1
+   Compiling xml-rs v0.8.29
+    Checking xxhash-rust v0.8.18
+    Checking raw-window-handle v0.6.2
+    Checking value-log v1.9.0
+   Compiling gl_generator v0.14.0
+    Checking naga-types v30.0.1
+    Checking sec1 v0.7.3
+    Checking group v0.13.0
+    Checking hkdf v0.12.4
+    Checking spki v0.7.3
+   Compiling phf_codegen v0.13.1
+   Compiling string_cache_codegen v0.6.1
+    Checking signature v2.2.0
+    Checking crypto-bigint v0.5.5
+    Checking crossbeam-skiplist v0.1.3
+   Compiling enum_dispatch v0.3.13
+    Checking quick_cache v0.6.24
+   Compiling naga v30.0.1
+    Checking libloading v0.8.9
+   Compiling async-trait v0.1.92
+   Compiling redb v2.6.3
+    Checking guardian v1.3.0
+    Checking double-ended-peekable v0.1.0
+    Checking unicode-width v0.2.2
+    Checking lz4_flex v0.11.6
+    Checking bit-vec v0.9.1
+   Compiling ash v0.38.0+1.3.281
+    Checking bit-set v0.10.0
+    Checking lsm-tree v2.10.4
+    Checking codespan-reporting v0.13.1
+    Checking elliptic-curve v0.13.8
+   Compiling web_atoms v0.2.6
+   Compiling glutin_wgl_sys v0.6.1
+    Checking png v0.18.1
+   Compiling strum_macros v0.28.0
+    Checking linebender_resource_handle v0.1.1
+    Checking spirv v0.4.0+sdk-1.4.341.0
+    Checking ipnet v2.12.2
+   Compiling khronos-egl v6.0.0
+    Checking precomputed-hash v0.1.1
+    Checking std-semaphore v0.1.0
+    Checking fjall v2.11.2
+    Checking string_cache v0.9.0
+    Checking strum v0.28.0
+    Checking wgpu-types v30.0.1
+    Checking http-body v1.1.0
+   Compiling curve25519-dalek v4.1.3
+   Compiling wgpu-hal v30.0.1
+    Checking num-complex v0.4.6
+    Checking atomic-waker v1.1.2
+    Checking presser v0.3.1
+    Checking gpu-allocator v0.28.0
+    Checking wgpu-naga-bridge v30.0.1
+    Checking muniment v0.1.2 (C:\Users\mark_\Code\repos\mere\crates\eidetic\muniment)
+    Checking rfc6979 v0.4.0
+    Checking tendril v0.5.1
+    Checking rustls-platform-verifier v0.7.0
+    Checking nom v8.0.0
+    Checking range-alloc v0.1.5
+    Checking renderdoc-sys v1.1.0
+    Checking glow v0.17.0
+    Checking spin v0.10.1
+    Checking try-lock v0.2.5
+    Checking tower-service v0.3.3
+    Checking want v0.3.1
+    Checking markup5ever v0.39.0
+    Checking ecdsa v0.16.9
+    Checking h2 v0.4.19
+    Checking primeorder v0.13.6
+    Checking poly1305 v0.8.0
+    Checking chacha20 v0.9.1
+    Checking num-iter v0.1.46
+    Checking font-types v0.12.5
+   Compiling wgpu-core v30.0.1
+    Checking polycool v0.4.0
+    Checking httpdate v1.0.3
+   Compiling pkg-config v0.3.34
+   Compiling litrs v1.0.0
+    Checking data-encoding v2.11.1
+   Compiling unicode-segmentation v1.13.3
+    Checking tinyvec v1.13.3
+   Compiling convert_case v0.10.0
+   Compiling document-features v0.2.12
+    Checking hyper v1.11.1
+    Checking kurbo v0.13.1
+    Checking read-fonts v0.41.0
+    Checking wgpu-core-deps-windows-linux-android v30.0.1
+   Compiling toml_edit v0.25.15+spec-1.1.0
+    Checking futures-executor v0.3.34
+   Compiling wgpu v30.0.1
+   Compiling slotmap v1.1.1
+    Checking color v0.3.3
+   Compiling ptr_meta_derive v0.3.2
+   Compiling thiserror v1.0.69
+   Compiling unicode-xid v0.2.6
+    Checking svg_fmt v0.4.5
+    Checking either v1.18.0
+    Checking guillotiere v0.7.0
+   Compiling derive_more-impl v2.1.1
+    Checking ptr_meta v0.3.2
+    Checking peniko v0.6.1
+    Checking futures v0.3.34
+    Checking skrifa v0.44.0
+    Checking hyper-util v0.1.20
+   Compiling vello_shaders v0.11.0 (https://github.com/mark-ik/vello?rev=2eae6243881d5b24c984d5ee35dde509ca5db782#2eae6243)
+   Compiling encoding_rs v0.8.41
+   Compiling multiversion-macros v0.9.0
+    Checking webpki-roots v1.0.9
+    Checking fastbloom v0.17.0
+    Checking rand_pcg v0.10.2
+   Compiling thiserror-impl v1.0.69
+    Checking lru-slab v0.1.3
+   Compiling num-bigint-dig v0.8.6
+    Checking multiversion v0.9.0
+    Checking vello_encoding v0.11.0 (https://github.com/mark-ik/vello?rev=2eae6243881d5b24c984d5ee35dde509ca5db782#2eae6243)
+    Checking rancor v0.1.3
+    Checking derive_more v2.1.1
+    Checking p384 v0.13.1
+    Checking p256 v0.13.2
+    Checking layout-dom-api v0.1.1 (https://www.github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking http-body-util v0.1.5
+    Checking pkcs8 v0.10.2
+    Checking pem-rfc7468 v0.7.0
+    Checking document-session-api v0.1.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+   Compiling pin-project-internal v1.1.13
+   Compiling bytecheck_derive v0.8.3
+   Compiling multiversion_no_op v1.0.0
+   Compiling crossbeam-deque v0.8.8
+    Checking core_detect v1.0.0
+    Checking parking v2.2.1
+    Checking futures-lite v2.6.1
+    Checking bytecheck v0.8.3
+    Checking pin-project v1.1.13
+    Checking ssh-encoding v0.2.0
+    Checking pkcs1 v0.7.5
+    Checking ed25519 v2.2.3
+    Checking cbc v0.1.2
+    Checking blowfish v0.9.1
+    Checking pbkdf2 v0.12.2
+    Checking futures-intrusive v0.5.0
+   Compiling equator-macro v0.4.2
+   Compiling munge_macro v0.4.7
+   Compiling n0-error-macros v1.0.1
+   Compiling spez v0.1.2
+   Compiling rayon-core v1.13.0
+    Checking n0-error v1.0.1
+    Checking munge v0.4.7
+    Checking equator v0.4.2
+    Checking netrender-vello v0.11.0 (https://github.com/mark-ik/vello?rev=2eae6243881d5b24c984d5ee35dde509ca5db782#2eae6243)
+    Checking bcrypt-pbkdf v0.10.0
+    Checking ssh-cipher v0.2.0
+    Checking ed25519-dalek v2.2.0
+    Checking rsa v0.9.10
+    Checking rend v0.5.4
+    Checking hyper-rustls v0.27.9
+    Checking p521 v0.13.3
+    Checking rand_core v0.9.5
+    Checking universal-hash v0.6.1
+   Compiling rkyv_derive v0.8.18
+    Checking alloc-no-stdlib v2.0.4
+    Checking alloc-stdlib v0.2.4
+    Checking rkyv v0.8.18
+    Checking poly1305 v0.9.1
+    Checking rand_chacha v0.9.0
+    Checking ssh-key v0.6.7
+    Checking aligned-vec v0.6.4
+    Checking html5ever v0.39.0
+    Checking xml5ever v0.39.0
+    Checking paint_list_api v0.1.2 (https://github.com/merely-made/netrender.git?rev=c74b7cb28090c28b1c6d80b08dcdea18aff48d3e#c74b7cb2)
+    Checking aead v0.6.1
+   Compiling n0-future v0.3.2
+    Checking cordyceps v0.3.5
+    Checking diatomic-waker v0.2.3
+    Checking futures-buffered v0.2.13
+    Checking chacha20poly1305 v0.11.0
+    Checking genet-static-dom v0.1.1 (https://www.github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking v_frame v0.3.9
+    Checking rayon v1.12.0
+    Checking chartulary v0.2.2 (C:\Users\mark_\Code\repos\mere\crates\eidetic\chartulary)
+    Checking brotli-decompressor v5.0.3
+    Checking insigne v0.0.2 (https://github.com/merely-made/dramatis.git?rev=0234e7eea6f2ddf2330a71b9425da01b06ae0391#0234e7ee)
+    Checking sync_wrapper v1.0.2
+    Checking as-slice v0.2.1
+    Checking gethostname v1.1.0
+    Checking command-menu v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\command-menu)
+    Checking hex v0.4.3
+   Compiling av-scenechange v0.14.1
+   Compiling built v0.8.1
+   Compiling paste v1.0.15
+   Compiling rav1e v0.8.1
+    Checking personae v0.3.0 (https://github.com/merely-made/dramatis.git?rev=0234e7eea6f2ddf2330a71b9425da01b06ae0391#0234e7ee)
+    Checking aligned v0.4.3
+    Checking sceno v0.0.4 (C:\Users\mark_\Code\repos\mere\crates\cambium\scenes\sceno)
+   Compiling noq-udp v1.3.0
+    Checking no_std_io2 v0.9.4
+   Compiling arg_enum_proc_macro v0.3.4
+    Checking tower-layer v0.3.3
+   Compiling windows_x86_64_msvc v0.52.6
+    Checking base64 v0.23.1
+   Compiling pastey v0.1.1
+   Compiling crunchy v0.2.4
+    Checking y4m v0.8.0
+    Checking bitstream-io v4.10.0
+    Checking maybe-rayon v0.1.1
+    Checking av1-grain v0.2.5
+    Checking itertools v0.14.0
+    Checking font-types v0.11.3
+    Checking app_units v0.7.8
+    Checking aho-corasick v1.1.5
+    Checking tinct v0.1.2 (C:\Users\mark_\Code\repos\mere\crates\cambium\tinct)
+   Compiling num-derive v0.4.2
+   Compiling simd_helpers v0.1.0
+    Checking web-time v1.1.0
+    Checking quick-error v2.0.1
+    Checking regex-syntax v0.8.11
+   Compiling object v0.39.1
+    Checking unicase v2.9.0
+    Checking imgref v1.12.3
+   Compiling icu_locale_fallback_data v2.3.0
+   Compiling noop_proc_macro v0.3.0
+   Compiling tiny-keccak v2.0.2
+    Checking loop9 v0.1.5
+    Checking regex-automata v0.4.18
+   Compiling data-encoding-macro-internal v0.1.19
+    Checking genet-paint-types v0.2.0 (https://www.github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking read-fonts v0.39.2
+    Checking tower v0.5.3
+    Checking inker v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\inker\inker)
+   Compiling proc-macro-crate v3.5.0
+    Checking avif-serialize v0.8.9
+    Checking weezl v0.1.12
+    Checking zune-core v0.5.3
+   Compiling icu_segmenter_data v2.3.0
+    Checking byteorder-lite v0.1.0
+    Checking pxfm v0.1.30
+   Compiling ipconfig v0.3.4
+    Checking color_quant v1.1.0
+    Checking rgb v0.8.53
+    Checking ravif v0.13.0
+    Checking gif v0.14.2
+    Checking moxcms v0.8.1
+    Checking image-webp v0.2.4
+    Checking zune-jpeg v0.5.15
+    Checking tower-http v0.6.11
+    Checking windows-targets v0.52.6
+    Checking engine-observables-api v0.2.0 (https://www.github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking data-encoding-macro v0.1.21
+    Checking tokio-stream v0.1.19
+    Checking windows-registry v0.6.1
+    Checking regress v0.11.1 (https://www.github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+   Compiling noq v1.3.0
+   Compiling enum-assoc v1.4.1
+    Checking genet-host-api v0.2.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking pollster v1.0.1
+   Compiling netdev v0.45.1
+    Checking widestring v1.2.1
+    Checking sorted-index-buffer v0.2.1
+    Checking identity-hash v0.1.0
+   Compiling n0-dns-resolver v0.1.0
+    Checking noq-proto v1.3.0
+    Checking netrender_device v0.1.2 (https://github.com/merely-made/netrender.git?rev=c74b7cb28090c28b1c6d80b08dcdea18aff48d3e#c74b7cb2)
+   Compiling const-random-macro v0.1.16
+    Checking genet-scripted-dom v0.1.2 (https://www.github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking icu_locale_fallback v2.3.0
+   Compiling ar_archive_writer v0.5.3
+    Checking iroh-base v1.3.0
+    Checking reqwest v0.13.5
+    Checking image v0.25.10
+   Compiling num_enum_derive v0.7.6
+   Compiling iroh-metrics-derive v1.0.1
+    Checking simple-dns v0.12.0
+    Checking lru v0.18.4
+   Compiling netwatch v0.19.3
+   Compiling iroh-dns v1.3.0
+   Compiling ahash v0.8.12
+    Checking chrono v0.4.45
+    Checking mere-curation v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\forme\curation)
+    Checking mac-addr v0.3.0
+   Compiling vcpkg v0.2.15
+    Checking parlance v0.1.0
+    Checking ryu v1.0.23
+    Checking memmap2 v0.9.11
+    Checking genet-fontique v0.10.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking xmltree v0.10.3
+    Checking iroh-metrics v1.0.2
+   Compiling libz-sys v1.1.29
+    Checking wmi v0.18.4
+    Checking num_enum v0.7.6
+    Checking icu_segmenter v2.3.0
+   Compiling psm v0.1.32
+    Checking const-random v0.1.18
+    Checking netrender v0.1.2 (https://github.com/merely-made/netrender.git?rev=c74b7cb28090c28b1c6d80b08dcdea18aff48d3e#c74b7cb2)
+    Checking skrifa v0.42.1
+    Checking harfrust v0.8.4
+    Checking n0-watcher v1.0.0
+    Checking attohttpc v0.30.1
+   Compiling serde_spanned v1.1.1
+    Checking arc-swap v1.9.2
+    Checking parley_data v0.10.0
+   Compiling iroh-relay v1.3.0
+    Checking cbor-core v0.10.1
+    Checking dtoa v1.0.11
+   Compiling hax-lib v0.3.7
+   Compiling wuff-capi v0.2.0
+   Compiling toml_writer v1.1.2+spec-1.1.0
+   Compiling toml v1.1.6+spec-1.1.0
+    Checking dtoa-short v0.3.5
+    Checking p2panda-core v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)
+    Checking genet-parley v0.10.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking igd-next v0.17.1
+    Checking genet-text v0.1.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking tokio-websockets v0.13.3
+   Compiling iroh v1.3.0
+   Compiling stacker v0.1.25
+    Checking workbench v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\workbench)
+   Compiling hax-lib-macros v0.3.7
+   Compiling cssparser-macros v0.7.1
+    Checking jotdown v0.10.0
+   Compiling strsim v0.11.1
+    Checking seize v0.5.1
+   Compiling glob v0.3.4
+   Compiling ident_case v1.0.1
+    Checking bit-vec v0.6.3
+    Checking grid v1.0.1
+    Checking taffy v0.11.0-experimental-cache-fix.3
+    Checking bit-set v0.5.3
+   Compiling logos-codegen v0.16.1
+   Compiling darling_core v0.24.1
+   Compiling fontsan v0.7.0
+    Checking papaya v0.2.5
+   Compiling mime_guess v2.0.5
+    Checking cssparser v0.37.0
+   Compiling livery v0.0.5 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking portmapper v0.19.3
+    Checking wuff v0.2.9
+    Checking num v0.4.3
+    Checking numen v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\conatus\numen)
+    Checking backon v1.6.0
+    Checking crossbeam-channel v0.5.17
+   Compiling prettyplease v0.3.0
+    Checking fraction v0.15.4
+    Checking cadency v0.0.1 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+   Compiling darling_macro v0.24.1
+   Compiling logos-derive v0.16.1
+    Checking fancy-regex v0.13.0
+    Checking mere-forme v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\forme\forme)
+    Checking paint_list_render v0.1.2 (https://github.com/merely-made/netrender.git?rev=c74b7cb28090c28b1c6d80b08dcdea18aff48d3e#c74b7cb2)
+    Checking regex v1.13.1
+    Checking pem v4.0.0
+    Checking rand v0.9.5
+   Compiling zstd-sys v2.1.0+zstd.1.5.7
+    Checking iso8601 v0.6.6
+    Checking cfb v0.7.3
+    Checking yasna v0.6.0
+   Compiling acto v0.8.2
+    Checking genet-taffy v0.14.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+   Compiling async-stream-impl v0.3.6
+    Checking bytecount v0.6.9
+    Checking num-cmp v0.1.0
+   Compiling libcrux-intrinsics v0.0.8
+    Checking mime v0.3.17
+    Checking jsonschema v0.18.3
+    Checking async-stream v0.3.6
+    Checking buckram v0.0.3 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking rcgen v0.14.10
+    Checking infer v0.19.0
+    Checking logos v0.16.1
+   Compiling darling v0.24.1
+    Checking libcrux-secrets v0.0.6
+    Checking genet-document-resources v0.2.1 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking hmac v0.13.0
+   Compiling irpc-derive v0.17.0
+    Checking smol_str v0.1.24
+    Checking data-url v0.3.2
+   Compiling syn v1.0.109
+   Compiling libcrux-sha3 v0.0.10
+    Checking anymore v1.0.0
+    Checking meristem v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\meristem)
+    Checking genet-livery v0.0.4 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking irpc v0.17.0
+    Checking hkdf v0.13.0
+    Checking libcrux-traits v0.0.8
+   Compiling bon-macros v3.10.2
+    Checking illume v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\nematic\illume)
+    Checking mere-kernel v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel)
+warning: unused imports: `astar`, `dijkstra`, `has_path_connecting`, and `kosaraju_scc`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:21:22
+   |
+21 | use petgraph::algo::{astar, dijkstra, has_path_connecting, kosaraju_scc};
+   |                      ^^^^^  ^^^^^^^^  ^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `Archived`, `Place`, and `Resolver`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:25:21
+   |
+25 | use rkyv::{Archive, Archived, Deserialize, Place, Resolver, Serialize, rancor::Fallible};
+   |                     ^^^^^^^^               ^^^^^  ^^^^^^^^
+
+warning: unused import: `HashSet`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:26:43
+   |
+26 | use std::collections::{BTreeMap, HashMap, HashSet};
+   |                                           ^^^^^^^
+
+warning: unused imports: `GraphSnapshot`, `PersistedAddress`, `PersistedArrangementEdgeData`, `PersistedArrangementSubKind`, `PersistedContainmentEdgeData`, `PersistedContainmentSubKind`, `PersistedEdgeFamily`, `PersistedEdge`, `PersistedImportedEdgeData`, `PersistedImportedSubKind`, `PersistedNavigationTrigger`, `PersistedNodeSessionState`, `PersistedNode`, `PersistedProvenanceEdgeData`, `PersistedProvenanceSubKind`, `PersistedSemanticEdgeData`, `PersistedSemanticSubKind`, `PersistedTraversalEdgeData`, `PersistedTraversalMetrics`, and `PersistedTraversalRecord`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:35:5
+   |
+35 |     GraphSnapshot, PersistedAddress, PersistedArrangementEdgeData, PersistedArrangementSubKind,
+   |     ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+36 |     PersistedContainmentEdgeData, PersistedContainmentSubKind, PersistedEdge, PersistedEdgeFamily,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+37 |     PersistedImportedEdgeData, PersistedImportedSubKind, PersistedNavigationTrigger, PersistedNode,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^
+38 |     PersistedNodeSessionState, PersistedProvenanceEdgeData, PersistedProvenanceSubKind,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+39 |     PersistedSemanticEdgeData, PersistedSemanticSubKind, PersistedTraversalEdgeData,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+40 |     PersistedTraversalMetrics, PersistedTraversalRecord,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `NodeTagPresentationState`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\node_facets.rs:17:54
+   |
+17 | use crate::types::{NodeClassification, NodeProperty, NodeTagPresentationState};
+   |                                                      ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `EdgeRef`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:24:23
+   |
+24 | use petgraph::visit::{EdgeRef, IntoEdgeReferences};
+   |                       ^^^^^^^
+
+warning: unused import: `rancor::Fallible`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:25:72
+   |
+25 | use rkyv::{Archive, Archived, Deserialize, Place, Resolver, Serialize, rancor::Fallible};
+   |                                                                        ^^^^^^^^^^^^^^^^
+
+warning: methods `navigate_node`, `branch_history`, `node_history_back`, and `node_history_forward` are never used
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:707:19
+    |
+404 | impl Graph {
+    | ---------- methods in this implementation
+...
+707 |     pub(crate) fn navigate_node(&mut self, key: NodeKey, url: &str) {
+    |                   ^^^^^^^^^^^^^
+...
+721 |     pub(crate) fn branch_history(&mut self, child: NodeKey, parent: NodeKey) {
+    |                   ^^^^^^^^^^^^^^
+...
+733 |     pub(crate) fn node_history_back(&mut self, key: NodeKey) -> Option<String> {
+    |                   ^^^^^^^^^^^^^^^^^
+...
+743 |     pub(crate) fn node_history_forward(&mut self, key: NodeKey) -> Option<String> {
+    |                   ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `assert_semantic_predicate`, `assert_semantic_relation_in_scope`, and `assert_semantic_predicate_in_scope` are never used
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\edge_payload.rs:258:19
+    |
+ 45 | impl EdgePayload {
+    | ---------------- methods in this implementation
+...
+258 |     pub(crate) fn assert_semantic_predicate(&mut self, predicate: String) -> bool {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+262 |     pub(crate) fn assert_semantic_relation_in_scope(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+271 |     pub(crate) fn assert_semantic_predicate_in_scope(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `LogIdAsString` is never constructed
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\identity.rs:160:19
+    |
+160 | pub(crate) struct LogIdAsString;
+    |                   ^^^^^^^^^^^^^
+
+warning: multiple methods are never used
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\resource_content.rs:86:19
+    |
+ 85 | impl Graph {
+    | ---------- methods in this implementation
+ 86 |     pub(crate) fn insert_node_tag(&mut self, key: NodeKey, tag: String) -> bool {
+    |                   ^^^^^^^^^^^^^^^
+...
+ 89 |     pub(crate) fn remove_node_tag(&mut self, key: NodeKey, tag: &str) -> bool {
+    |                   ^^^^^^^^^^^^^^^
+...
+ 92 |     pub(crate) fn append_node_property(&mut self, key: NodeKey, property: NodeProperty) -> bool {
+    |                   ^^^^^^^^^^^^^^^^^^^^
+...
+ 95 |     pub(crate) fn add_node_classification(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^
+...
+102 |     pub(crate) fn remove_node_classification(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+116 |     pub(crate) fn set_node_classification_status(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+131 |     pub(crate) fn set_node_primary_classification(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: multiple methods are never used
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\edge_ops.rs:177:19
+    |
+ 32 | impl Graph {
+    | ---------- methods in this implementation
+...
+177 |     pub(crate) fn assert_semantic_predicate(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+244 |     pub(crate) fn replay_assert_relation_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+261 |     pub(crate) fn replay_set_edge_semantic_predicate_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+279 |     pub(crate) fn replay_assert_semantic_predicate_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+307 |     pub(crate) fn dissolve_remove_node_collect_traversals(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+418 |     pub(crate) fn assert_surface_persisted_semantic_statement(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+601 |     pub(crate) fn set_edge_semantic_predicate(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `get_node_mut` is never used
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\query.rs:227:19
+    |
+220 | impl Graph {
+    | ---------- method in this implementation
+...
+227 |     pub(crate) fn get_node_mut(&mut self, key: NodeKey) -> Option<&mut Node> {
+    |                   ^^^^^^^^^^^^
+
+warning: `mere-kernel` (lib) generated 13 warnings (run `cargo fix --lib -p mere-kernel` to apply 5 suggestions)
+    Checking p2panda-store v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)
+    Checking eidetic v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\eidetic\eidetic-core)
+    Checking mere-surface-api v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\system\surface-api)
+    Checking sprigging v0.2.1 (C:\Users\mark_\Code\repos\mere\crates\cambium\sprigging)
+    Checking hickory-proto v0.26.3
+    Checking chacha20poly1305 v0.10.1
+    Checking hpke-rs-crypto v0.7.0
+    Checking pem v3.0.6
+    Checking rand_chacha v0.10.0
+    Checking yasna v0.5.2
+    Checking libcrux-platform v0.0.3
+   Compiling windows_x86_64_msvc v0.48.5
+   Compiling zstd-safe v8.0.0
+    Checking edit-history v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\edit-history)
+    Checking cambium v0.3.3 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium)
+    Checking rcgen v0.13.2
+    Checking swarm-discovery v0.6.3
+    Checking bon v3.10.2
+    Checking futures-concurrency v7.7.1
+    Checking x25519-dalek v2.0.1
+    Checking k256 v0.13.4
+    Checking gemini-protocol v0.1.7 (https://github.com/merely-made/smolweb.git?rev=882baeb1b59bbdbb305e475f6675f69af997c4f4#882baeb1)
+    Checking x25519-dalek v3.0.0
+    Checking safe_arch v1.2.0
+   Compiling quinn-udp v0.5.15
+   Compiling proc-macro-error-attr v0.4.12
+    Checking approx v0.5.1
+    Checking quick-xml v0.39.4
+   Compiling matrixmultiply v0.3.11
+    Checking bitflags v1.3.2
+    Checking wide v1.7.1
+    Checking scroll-protocol v0.1.0
+    Checking hpke-rs-rust-crypto v0.7.0
+    Checking iroh-gossip v0.101.0
+   Compiling syn-mid v0.5.4
+    Checking ractor v0.16.5
+    Checking iroh-mdns-address-lookup v0.6.0
+    Checking misfin v0.0.4
+    Checking hpke-rs v0.7.0
+    Checking p2panda-discovery v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)
+    Checking p2panda-sync v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)
+    Checking tabard v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\tabard)
+    Checking nex-protocol v0.1.1
+    Checking spartan-protocol v0.1.1
+    Checking finger-protocol v0.1.1
+    Checking guppy-protocol v0.1.1
+    Checking gopher-protocol v0.2.0
+   Compiling winit v0.30.13
+   Compiling quinn v0.11.12
+   Compiling proc-macro-error v0.4.12
+    Checking rawpointer v0.2.1
+    Checking option-ext v0.2.0
+   Compiling proc-macro-hack v0.5.20+deprecated
+    Checking errand v0.4.0 (C:\Users\mark_\Code\repos\mere\crates\system\errand)
+    Checking mere-p2panda-net v0.7.5 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)
+    Checking windows-targets v0.48.5
+    Checking p2panda-encryption v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)
+    Checking zstd v0.14.0
+    Checking simba v0.10.2
+    Checking glam v0.33.8
+    Checking windows-sys v0.59.0
+    Checking windows-sys v0.52.0
+    Checking brotli v8.0.4
+    Checking mere-proofs v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\system\proofs)
+    Checking quinn-proto v0.11.18
+    Checking sha1 v0.10.7
+   Compiling cookie v0.18.2
+   Compiling nalgebra-macros v0.3.0
+   Compiling winapi v0.3.9
+    Checking smol_str v0.2.2
+    Checking dpi v0.1.2
+   Compiling portable-atomic-util v0.2.8
+   Compiling ref-cast v1.0.27
+    Checking compression-core v0.4.33
+    Checking cursor-icon v1.2.0
+    Checking audio-codec-algorithms v0.8.1
+   Compiling pulldown-cmark v0.13.4
+    Checking audioadapter-sample v5.2.0
+    Checking compression-codecs v0.4.43
+    Checking nalgebra v0.35.0
+    Checking tungstenite v0.29.0
+    Checking stickleback v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\stickleback)
+    Checking windows-sys v0.48.0
+    Checking symphonia-core v0.5.5
+    Checking genet-render v0.2.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking scenotime v0.0.4 (C:\Users\mark_\Code\repos\mere\crates\cambium\scenes\scenotime)
+    Checking notochord v0.1.1 (https://github.com/merely-made/dramatis.git?rev=0234e7eea6f2ddf2330a71b9425da01b06ae0391#0234e7ee)
+    Checking webpki-roots v0.26.11
+    Checking h3 v0.0.8
+   Compiling ref-cast-impl v1.0.27
+    Checking ciborium-io v0.2.2
+    Checking robust v1.2.0
+    Checking unicode-bidi v0.3.18
+    Checking strength_reduce v0.2.4
+    Checking psl-types v2.0.11
+    Checking audioadapter v5.0.0
+    Checking audioadapter-buffers v5.2.0
+    Checking psl v2.1.234
+    Checking transpose v0.2.3
+    Checking fleece v0.5.0 (https://www.github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking spade v2.15.1
+    Checking ciborium-ll v0.2.2
+    Checking h3-quinn v0.0.10
+    Checking tokio-tungstenite v0.29.0
+   Compiling genawaiter-proc-macro v0.99.1
+    Checking dirs-sys v0.4.1
+    Checking glamx v0.3.1
+    Checking async-compression v0.4.48
+    Checking genet-render-host v0.2.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking scenograph v0.0.4 (C:\Users\mark_\Code\repos\mere\crates\cambium\scenes\scenograph)
+    Checking primal-check v0.3.4
+    Checking armillary v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\armillary)
+    Checking inplace-vec-builder v0.1.1
+    Checking ena v0.14.4
+   Compiling num-derive v0.5.1
+   Compiling redb v4.3.0
+   Compiling toml_datetime v0.7.5+spec-1.1.0
+   Compiling winnow v0.7.15
+    Checking downcast-rs v2.0.2
+    Checking binary-merge v0.1.2
+    Checking genawaiter-macro v0.99.1
+    Checking genawaiter v0.99.1
+    Checking range-collections v0.4.6
+    Checking parry2d v0.31.1
+   Compiling toml_edit v0.23.10+spec-1.0.0
+    Checking rustfft v6.4.1
+    Checking scenomise v0.0.4 (C:\Users\mark_\Code\repos\mere\crates\cambium\scenes\scenomise)
+    Checking nematic v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\nematic\nematic)
+warning: unused imports: `BlockProvenanceMap`, `DocumentProvenance`, and `DocumentTrustState`
+  --> C:\Users\mark_\Code\repos\mere\crates\nematic\nematic\src\knot\expand.rs:20:12
+   |
+20 |     Block, BlockProvenanceMap, DocumentProvenance, DocumentTrustState, Engine, EngineInput,
+   |            ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `EngineDocument`
+ --> C:\Users\mark_\Code\repos\mere\crates\nematic\nematic\src\knot\expand\build.rs:7:80
+  |
+7 | use inker::{Block, BlockProvenanceMap, DocumentProvenance, DocumentTrustState, EngineDocument};
+  |                                                                                ^^^^^^^^^^^^^^
+
+warning: `nematic` (lib) generated 2 warnings (run `cargo fix --lib -p nematic` to apply 2 suggestions)
+    Checking netfetcher v0.1.1 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking ringbuf v0.5.3
+    Checking positioned-io v0.3.5
+    Checking dirs v5.0.1
+    Checking ciborium v0.2.2
+    Checking chirograph v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\chirograph)
+    Checking cambium-winit v0.3.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-winit)
+    Checking mere-alembic v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\distillery\alembic)
+    Checking document-canvas v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\inker\document-canvas)
+    Checking uxtree v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\forme\uxtree)
+    Checking iroh-io v0.6.2
+   Compiling bevy_macro_utils v0.19.1
+    Checking incipit v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\incipit)
+   Compiling snow v0.10.0
+   Compiling iroh-blobs v0.103.0
+    Checking oxiri v0.2.11
+    Checking oxilangtag v0.1.6
+    Checking oxrdf v0.3.4
+    Checking pandect v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\system\pandect)
+warning: unused import: `std::io`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\pairing.rs:10:5
+   |
+10 | use std::io;
+   |     ^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `std::io`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\records.rs:10:5
+   |
+10 | use std::io;
+   |     ^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\records.rs:11:5
+   |
+11 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `IdentityProvider`, `InMemoryProvider`, and `PersonaId`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\records.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused import: `Ed25519Signature`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\types.rs:14:16
+   |
+14 | use identity::{Ed25519Signature, PersonaId};
+   |                ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `DEVICE_GRANT_SCHEMA_VERSION` and `DeviceGrantError`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\types.rs:19:5
+   |
+19 |     DEVICE_GRANT_SCHEMA_VERSION, DeviceExposure, DeviceGrantError, DeviceId, DevicePublicKey,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^                  ^^^^^^^^^^^^^^^^
+
+warning: method `into_graph` is never used
+   --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\graph_codicil.rs:149:19
+    |
+148 | impl GraphCodicil {
+    | ----------------- method in this implementation
+149 |     pub(crate) fn into_graph(self) -> Result<Graph> {
+    |                   ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pandect` (lib) generated 7 warnings (run `cargo fix --lib -p pandect` to apply 6 suggestions)
+   Compiling firewheel-macros v0.14.0 (https://github.com/mark-ik/firewheel.git?rev=2b03846d2e0dcc6ded2a85367bb8c5071ae99cdc#2b03846d)
+    Checking bao-tree v0.16.1
+    Checking cambium-rootstock v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-rootstock)
+warning: use of deprecated method `std::sync::atomic::Atomic::<usize>::fetch_update`: renamed to `try_update` for consistency
+   --> C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-rootstock\src\host.rs:109:10
+    |
+109 |     NEXT.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |          ^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+    |
+109 -     NEXT.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+109 +     NEXT.try_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |
+
+warning: `cambium-rootstock` (lib) generated 1 warning (run `cargo fix --lib -p cambium-rootstock` to apply 1 suggestion)
+    Checking realfft v3.5.0
+    Checking rapier2d v0.36.0
+    Checking mere-fleece v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\fleece)
+    Checking symphonia-metadata v0.5.5
+    Checking bevy_platform v0.19.1
+    Checking iroh-util v0.6.0
+    Checking iroh-tickets v1.0.0
+   Compiling nested_enum_utils v0.2.3
+    Checking reflink-copy v0.1.30
+    Checking blake2 v0.10.6
+    Checking serde_path_to_error v0.1.20
+    Checking windowfunctions v0.1.1
+    Checking esp v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\intel\esp)
+   Compiling visibility v0.1.1
+    Checking thunderdome v0.6.1
+   Compiling windows_x86_64_msvc v0.53.1
+    Checking pollster v0.4.0
+    Checking firewheel-core v0.14.0 (https://github.com/mark-ik/firewheel.git?rev=2b03846d2e0dcc6ded2a85367bb8c5071ae99cdc#2b03846d)
+    Checking rubato v5.0.1
+    Checking seiche v0.0.6 (C:\Users\mark_\Code\repos\mere\crates\conatus\seiche)
+    Checking matchers v0.2.0
+    Checking accesskit_consumer v0.35.0
+    Checking sharded-slab v0.1.7
+    Checking tracing-log v0.2.0
+    Checking winapi-util v0.1.11
+    Checking nu-ansi-term v0.50.3
+   Compiling smartstring v1.0.1
+    Checking thread_local v1.1.10
+    Checking mere-page-load v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\page-load)
+   Compiling cpal v0.18.2
+    Checking ryu-js v1.0.3
+    Checking json-event-parser v0.2.3
+    Checking lexical-util v1.0.7
+    Checking lexical-parse-integer v1.0.6
+    Checking oxjsonld v0.2.6
+    Checking tracing-subscriber v0.3.23
+    Checking same-file v1.0.6
+    Checking accesskit_windows v0.32.1
+    Checking mere-transport v0.0.2 (https://github.com/merely-made/murm.git?rev=b49df894635bac95823284efee6c445885eaf62a#b49df894)
+    Checking fixed-resample v0.13.0
+    Checking mere-document-lanes v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\system\document-lanes)
+    Checking oxttl v0.2.4
+    Checking mere-apparatus v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\domain\apparatus)
+    Checking mere-cartography v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\canvas\cartography)
+    Checking servitor v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\servitor)
+    Checking triple_buffer v9.0.0
+    Checking emblem v0.2.0
+    Checking browsing-context-api v0.1.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking dasp_sample v0.11.0
+    Checking luggage v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\system\luggage)
+    Checking genet-documents v0.1.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking pictograph v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\canvas\pictograph)
+warning: function `build_affinity_spring` is never used
+  --> C:\Users\mark_\Code\repos\mere\crates\canvas\pictograph\src\canvas.rs:66:4
+   |
+66 | fn build_affinity_spring(scores: &crate::signals::AffinityScores) -> AffinitySpring {
+   |    ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pictograph` (lib) generated 1 warning
+    Checking firewheel-graph v0.14.0 (https://github.com/mark-ik/firewheel.git?rev=2b03846d2e0dcc6ded2a85367bb8c5071ae99cdc#2b03846d)
+    Checking mere-linked-data v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\graph\linked-data)
+    Checking windows-targets v0.53.5
+    Checking genet-winit-host v0.2.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking lexical-parse-float v1.0.6
+    Checking knot-file-catalog v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=8ed49d43f049921d56ab5a0c091a2c37c0970ee7#8ed49d43)
+    Checking symphonia-utils-xiph v0.5.5
+    Checking platen v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\platen\platen)
+    Checking graphshell-endpoint v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\graphshell\graphshell-endpoint)
+    Checking mien v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\moot\mien)
+    Checking taproot v0.1.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking p2panda-auth v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)
+    Checking mooting v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\moot\mooting)
+   Compiling snafu-derive v0.9.2
+    Checking redshank-model v0.0.0 (https://github.com/merely-made/woodshed.git?rev=961731ace9ae9e687bdf8d40a032f2e1fbbf3321#961731ac)
+    Checking secrecy v0.10.3
+   Compiling rhai_codegen v3.2.0
+    Checking error-code v3.4.0
+    Checking service-binding v3.0.0
+    Checking thin-vec v0.2.20
+    Checking extended v0.1.0
+   Compiling heapless v0.9.3
+    Checking symphonia-format-riff v0.5.5
+    Checking rhai v1.26.1
+    Checking ssh-agent-lib v0.6.0
+    Checking clipboard-win v5.4.1
+    Checking snafu v0.9.2
+    Checking gemot v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\moot\gemot)
+    Checking mere v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\mere)
+    Checking symphonia-format-isomp4 v0.5.5
+    Checking knot-capture v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=8ed49d43f049921d56ab5a0c091a2c37c0970ee7#8ed49d43)
+    Checking lexical-core v1.0.6
+    Checking cambium-winit-a11y v0.3.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-winit-a11y)
+    Checking windows-sys v0.60.2
+    Checking firewheel-cpal v0.14.0 (https://github.com/mark-ik/firewheel.git?rev=2b03846d2e0dcc6ded2a85367bb8c5071ae99cdc#2b03846d)
+    Checking pelt-core v0.2.0 (C:\Users\mark_\Code\repos\mere\ports\pelt\core)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> C:\Users\mark_\Code\repos\mere\ports\pelt\core\src\pool_a11y.rs:65:18
+   |
+65 |                 .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+   |                  ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+65 -                 .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+65 +                 .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+   --> C:\Users\mark_\Code\repos\mere\ports\pelt\core\src\lib.rs:206:10
+    |
+206 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+    |          ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+206 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+206 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+    |
+
+warning: `pelt-core` (lib) generated 2 warnings (run `cargo fix --lib -p pelt-core` to apply 2 suggestions)
+    Checking mere-webrtc-carrier v0.0.1 (https://github.com/merely-made/murm.git?rev=b49df894635bac95823284efee6c445885eaf62a#b49df894)
+    Checking firewheel-nodes v0.14.0 (https://github.com/mark-ik/firewheel.git?rev=2b03846d2e0dcc6ded2a85367bb8c5071ae99cdc#2b03846d)
+    Checking walkdir v2.5.0
+    Checking mere-fetch v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\fetch)
+    Checking symphonia-bundle-mp3 v0.5.5
+    Checking graphshell-client v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\graphshell\graphshell-client)
+    Checking knot-editor-host v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\inker\knot-editor-host)
+    Checking symphonia-codec-aac v0.5.5
+    Checking symphonia-codec-pcm v0.5.5
+    Checking ipc-channel v0.22.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking dramatis v0.0.3 (https://github.com/merely-made/dramatis.git?rev=0234e7eea6f2ddf2330a71b9425da01b06ae0391#0234e7ee)
+    Checking reference-data v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\intel\reference-data)
+    Checking servo-media-streams v0.2.0 (https://www.github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking chatelaine v0.0.3 (https://github.com/merely-made/dramatis.git?rev=0234e7eea6f2ddf2330a71b9425da01b06ae0391#0234e7ee)
+    Checking hash32 v0.3.1
+    Checking notify-types v2.1.0
+    Checking light-file-dialog v3.21.3
+    Checking servo-media-traits v0.2.0 (https://www.github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking mora v0.1.0
+   Compiling rfd v0.17.2
+    Checking jiff-tzdb v0.1.8
+    Checking cpubits v0.1.1
+    Checking libbz2-rs-sys v0.2.5
+    Checking bzip2 v0.6.1
+    Checking aes v0.9.3
+    Checking jiff-tzdb-platform v0.1.3
+    Checking mora-cmudict v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\intel\mora-cmudict)
+    Checking servo-media-player v0.2.0 (https://www.github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking cambium-genet-winit-host v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-genet-winit-host)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-genet-winit-host\src\scene_producer.rs:25:10
+   |
+25 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |value| {
+   |          ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+25 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |value| {
+25 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |value| {
+   |
+
+warning: `cambium-genet-winit-host` (lib) generated 1 warning (run `cargo fix --lib -p cambium-genet-winit-host` to apply 1 suggestion)
+    Checking notify v8.2.0
+    Checking graphshell v0.0.2 (C:\Users\mark_\Code\repos\mere\ports\graphshell)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> C:\Users\mark_\Code\repos\mere\ports\graphshell\src\retained_content\producer.rs:32:14
+   |
+32 |         NEXT.fetch_update(
+   |              ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+32 -         NEXT.fetch_update(
+32 +         NEXT.try_update(
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+   --> C:\Users\mark_\Code\repos\mere\ports\graphshell\src\retained_content\producer.rs:136:30
+    |
+136 |                         NEXT.fetch_update(
+    |                              ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+136 -                         NEXT.fetch_update(
+136 +                         NEXT.try_update(
+    |
+
+warning: unused import: `personae::AttestationKeys`
+  --> C:\Users\mark_\Code\repos\mere\ports\graphshell\src\webrtc_door.rs:78:5
+   |
+78 | use personae::AttestationKeys;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `begin_session` is never used
+   --> C:\Users\mark_\Code\repos\mere\ports\graphshell\src\mere_host.rs:386:19
+    |
+225 | impl<B: Backend + Clone> MereHost<B> {
+    | ------------------------------------ method in this implementation
+...
+386 |     pub(crate) fn begin_session(&mut self, graph: Graph) {
+    |                   ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `codicil_graph` is never used
+    --> C:\Users\mark_\Code\repos\mere\ports\graphshell\src\product.rs:1102:4
+     |
+1102 | fn codicil_graph(snapshot: GraphSnapshot, facets: NodeFacetStore) -> Result<Graph, ProductError> {
+     |    ^^^^^^^^^^^^^
+
+warning: function `decode_codicil` is never used
+    --> C:\Users\mark_\Code\repos\mere\ports\graphshell\src\product.rs:1504:15
+     |
+1504 | pub(crate) fn decode_codicil(bytes: &[u8]) -> Result<ProductCodicilV3, ProductError> {
+     |               ^^^^^^^^^^^^^^
+
+warning: `graphshell` (lib) generated 6 warnings (run `cargo fix --lib -p graphshell` to apply 2 suggestions)
+    Checking knot-composition v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=8ed49d43f049921d56ab5a0c091a2c37c0970ee7#8ed49d43)
+    Checking symphonia v0.5.5
+    Checking knot-document v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=8ed49d43f049921d56ab5a0c091a2c37c0970ee7#8ed49d43)
+    Checking firewheel v0.14.0 (https://github.com/mark-ik/firewheel.git?rev=2b03846d2e0dcc6ded2a85367bb8c5071ae99cdc#2b03846d)
+    Checking hifitime v4.3.1
+    Checking arboard v3.6.1 (https://github.com/mark-ik/arboard.git?branch=custom-formats#57a68d03)
+    Checking script-rhai v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\script\rhai)
+    Checking mere-mesh v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\mesh\mesh)
+    Checking dirs-sys v0.5.0
+    Checking png v0.17.16
+    Checking eidetic-search v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\intel\eidetic-search)
+    Checking mere-comms v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\shell\comms)
+    Checking cbc v0.2.1
+    Checking timed-text v0.1.0 (https://github.com/merely-made/woodshed.git?rev=961731ace9ae9e687bdf8d40a032f2e1fbbf3321#961731ac)
+    Checking jiff-core v0.1.1
+    Checking sofars v0.6.1
+    Checking audio-primitives v0.1.0 (https://github.com/merely-made/woodshed.git?rev=961731ace9ae9e687bdf8d40a032f2e1fbbf3321#961731ac)
+    Checking similar v2.7.0
+    Checking knot-editor v0.0.3 (https://github.com/merely-made/knot-editor.git?rev=8ed49d43f049921d56ab5a0c091a2c37c0970ee7#8ed49d43)
+    Checking redshank-playback v0.0.0 (https://github.com/merely-made/woodshed.git?rev=961731ace9ae9e687bdf8d40a032f2e1fbbf3321#961731ac)
+    Checking turquet v0.13.0 (https://github.com/merely-made/turquet.git?rev=bc3c454f755d0bfd70ab48bd9556a1cda2213d41#bc3c454f)
+    Checking jiff v0.2.37
+    Checking redshank-surfaces v0.0.0 (https://github.com/merely-made/woodshed.git?rev=961731ace9ae9e687bdf8d40a032f2e1fbbf3321#961731ac)
+    Checking retinue v0.3.0 (https://github.com/merely-made/murm.git?rev=b49df894635bac95823284efee6c445885eaf62a#b49df894)
+    Checking mere-moot v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\moot)
+    Checking mesquite v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\mesquite)
+    Checking dirs v6.0.0
+    Checking distillery v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\distillery)
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\courier.rs:42:5
+   |
+42 |     MalformedDigest,
+   |     ^^^^^^^^^^^^^^^
+   |
+note: the lint level is defined here
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\lib.rs:45:9
+   |
+45 | #![warn(missing_docs)]
+   |         ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\courier.rs:44:5
+   |
+44 |     Store(String),
+   |     ^^^^^
+
+warning: missing documentation for a method
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\courier.rs:131:5
+    |
+131 |     pub async fn has(&self, blob: &BlobRef) -> bool {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\courier.rs:219:5
+    |
+219 |     pub fn new(transport: Arc<P2pandaTransport>, blobs: Arc<BlobStore>) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:32:5
+   |
+32 |     fn as_source(&self) -> &dyn BlobSource;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:33:5
+   |
+33 |     fn as_sink(&self) -> &dyn BlobSink;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:47:5
+   |
+47 |     pub registry: ResourceRegistry,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:48:5
+   |
+48 |     pub blobs: Arc<dyn BlobSpace>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:51:5
+   |
+51 |     pub clock: Arc<dyn Clock>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:52:5
+   |
+52 |     pub conditions: Arc<dyn ConditionSource>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:53:5
+   |
+53 |     pub facts: HostFacts,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:54:5
+   |
+54 |     pub policy: DevicePolicy,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:55:5
+   |
+55 |     pub lease: LeasePolicy,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:83:5
+   |
+83 |     Claimed {
+   |     ^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:84:9
+   |
+84 |         job: JobId,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:86:5
+   |
+86 |     Granted {
+   |     ^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:87:9
+   |
+87 |         job: JobId,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:88:9
+   |
+88 |         epoch: u32,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:89:9
+   |
+89 |         lease: LeaseId,
+   |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:91:5
+   |
+91 |     Heartbeat {
+   |     ^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:92:9
+   |
+92 |         job: JobId,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:93:9
+   |
+93 |         lease: LeaseId,
+   |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:94:9
+   |
+94 |         progress: LeaseProgress,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:98:9
+   |
+98 |         job: JobId,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:99:9
+   |
+99 |         lease: Option<LeaseId>,
+   |         ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:101:5
+    |
+101 |     Completed {
+    |     ^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:102:9
+    |
+102 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:103:9
+    |
+103 |         lease: Option<LeaseId>,
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:105:5
+    |
+105 |     Released {
+    |     ^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:106:9
+    |
+106 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:107:9
+    |
+107 |         lease: LeaseId,
+    |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:108:9
+    |
+108 |         reason: ReleaseReason,
+    |         ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:113:9
+    |
+113 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:118:9
+    |
+118 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:119:9
+    |
+119 |         lease: LeaseId,
+    |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:120:9
+    |
+120 |         reason: ReclaimReason,
+    |         ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:121:9
+    |
+121 |         stopped_at: LeaseProgress,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:127:9
+    |
+127 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:128:9
+    |
+128 |         lease: LeaseId,
+    |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:130:5
+    |
+130 |     Idle,
+    |     ^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:137:5
+    |
+137 |     Sync(#[from] MeshSyncError),
+    |     ^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:139:5
+    |
+139 |     Store(#[from] MeshStoreError),
+    |     ^^^^^
+
+warning: missing documentation for an associated function
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:157:5
+    |
+157 |     pub fn new(synced: SyncedMesh<B>, keypair: Ed25519Keypair, config: HostConfig) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:168:5
+    |
+168 |     pub fn me(&self) -> [u8; 32] {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:172:5
+    |
+172 |     pub fn synced(&self) -> &SyncedMesh<B> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:186:5
+    |
+186 |     pub fn policy(&self) -> &DevicePolicy {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\inflight.rs:30:5
+   |
+30 |     pub reason: ReclaimReason,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\inflight.rs:41:5
+   |
+41 |     pub handle: JobControlHandle,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\inflight.rs:42:5
+   |
+42 |     pub task: JoinHandle<Result<RunOutcome, RunError>>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\inflight.rs:45:5
+   |
+45 |     pub reclaim: Option<Reclaiming>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\sense.rs:27:5
+   |
+27 |     fn now_ms(&self) -> u64;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\sense.rs:52:5
+   |
+52 |     pub fn at(now_ms: u64) -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\sense.rs:58:5
+   |
+58 |     pub fn set(&self, now_ms: u64) {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\sense.rs:62:5
+   |
+62 |     pub fn advance(&self, by_ms: u64) {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\sense.rs:80:5
+   |
+80 |     fn conditions(&self) -> DeviceConditions;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\sense.rs:91:5
+   |
+91 |     pub fn new(conditions: DeviceConditions) -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\sense.rs:102:5
+    |
+102 |     pub fn set(&self, conditions: DeviceConditions) {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `distillery` (lib) generated 57 warnings
+    Checking genet-clipboard v0.1.0 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)
+    Checking tabard-workshop v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\cambium\tabard-workshop)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> C:\Users\mark_\Code\repos\mere\crates\cambium\tabard-workshop\src\native_host.rs:61:14
+   |
+61 |             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |key| {
+   |              ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+61 -             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |key| {
+61 +             .try_update(Ordering::Relaxed, Ordering::Relaxed, |key| {
+   |
+
+warning: `tabard-workshop` (lib) generated 1 warning (run `cargo fix --lib -p tabard-workshop` to apply 1 suggestion)
+    Checking commons-spine v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\moot\commons)
+    Checking redshank-storage v0.0.0 (https://github.com/merely-made/woodshed.git?rev=961731ace9ae9e687bdf8d40a032f2e1fbbf3321#961731ac)
+    Checking mere-athanor v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\distillery\athanor)
+    Checking mere-chrome v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\shell\chrome)
+    Checking turnstone v0.1.0 (C:\Users\mark_\Code\repos\turnstone)
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src\app\mod.rs:20:31
+   |
+20 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Update`
+  --> src\app\mod.rs:22:47
+   |
+22 | use crate::action::{Action, Effect, SpaceRef, Update};
+   |                                               ^^^^^^
+
+warning: unused imports: `browse` and `session`
+  --> src\app\mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^  ^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\app\omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src\app\session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src\app\session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: unused import: `Hash`
+  --> src\retained_clip.rs:12:15
+   |
+12 | use eidetic::{Hash, ManifestId, ProvenanceRecord, Timestamp, TrustEnvelope};
+   |               ^^^^
+
+warning: unused import: `Write`
+  --> src\retained_clip.rs:16:16
+   |
+16 |     io::{Read, Write},
+   |                ^^^^^
+
+warning: unused import: `NodeSessions`
+  --> src\shell\controller_input.rs:17:13
+   |
+17 | use super::{NodeSessions, NodeSurfaces, Shell, content_link_target};
+   |             ^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\drive.rs:17:23
+   |
+17 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+    --> src\shell\drive.rs:1198:13
+     |
+1198 |         use crate::action::CaretMove;
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `EditKey`
+    --> src\shell\drive.rs:1199:38
+     |
+1199 |         use crate::scenario::{CmpOp, EditKey, Step};
+     |                                      ^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src\shell\effects.rs:14:5
+   |
+14 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src\shell\effects.rs:16:13
+   |
+16 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src\shell\effects.rs:18:46
+   |
+18 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\shell\effects.rs:23:5
+   |
+23 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `netrender::external_texture::ExternalTexturePlacement`
+  --> src\shell\render.rs:20:5
+   |
+20 | use netrender::external_texture::ExternalTexturePlacement;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::NodeSessions`
+  --> src\shell\lens.rs:14:5
+   |
+14 | use super::NodeSessions;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `inker::SessionClick`
+  --> src\shell\lens.rs:29:5
+   |
+29 | use inker::SessionClick;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `NodeSessions`
+  --> src\shell\input.rs:15:13
+   |
+15 | use super::{NodeSessions, NodeSurfaces};
+   |             ^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\input.rs:17:23
+   |
+17 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `SessionClick` and `SessionScrollKey`
+  --> src\shell\input.rs:21:13
+   |
+21 | use inker::{SessionClick, SessionScrollKey};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\shell\input.rs:25:29
+   |
+25 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src\shell\input.rs:28:20
+   |
+28 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: unused import: `input::pointer_button`
+  --> src\shell\mod.rs:47:5
+   |
+47 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src\shell\mod.rs:50:5
+   |
+50 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src\shell\mod.rs:57:5
+   |
+57 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `SessionClick` and `SessionSpawnRequest`
+  --> src\shell\mod.rs:58:30
+   |
+58 | use inker::{DocumentSession, SessionClick, SessionRegistry, SessionSpawnRequest};
+   |                              ^^^^^^^^^^^^                   ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src\shell\mod.rs:59:5
+   |
+59 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ReaderSessionEngine`
+  --> src\shell\mod.rs:61:5
+   |
+61 |     ReaderSessionEngine, RemoteFetcher, SmolwebInlineMediaPolicy, SmolwebSessionEngine,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src\shell\mod.rs:65:17
+   |
+65 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src\shell\mod.rs:66:5
+   |
+66 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src\shell\mod.rs:67:18
+   |
+67 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src\shell\mod.rs:68:20
+   |
+68 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\mod.rs:70:23
+   |
+70 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `A11yRoutes`
+ --> src\shell\window_a11y.rs:6:23
+  |
+6 |     a11y::{A11yRoute, A11yRoutes},
+  |                       ^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src\shell\mod.rs:80:29
+   |
+80 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src\shell\mod.rs:83:21
+   |
+83 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: unused import: `mere::canvas::palette`
+  --> src\swatch_pane\mod.rs:32:5
+   |
+32 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src\swatch_pane\mod.rs:33:17
+   |
+33 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src\swatch_pane\mod.rs:37:5
+   |
+37 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src\swatch_pane\mod.rs:38:5
+   |
+38 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+error[E0599]: no variant, associated function, or constant named `None` found for enum `FocusTarget` in the current scope
+   --> src\shell\keys.rs:220:61
+    |
+220 |                     .unwrap_or(crate::surface::FocusTarget::None);
+    |                                                             ^^^^ variant, associated function, or constant not found in `FocusTarget`
+    |
+   ::: src\surface.rs:200:1
+    |
+200 | pub enum FocusTarget {
+    | -------------------- variant, associated function, or constant `None` not found for this enum
+    |
+help: there is a method `ne` with a similar name
+   --> /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\cmp.rs:275:4
+
+error[E0599]: no method named `drain_mutations` found for struct `RefMut<'_, ScriptedDom>` in the current scope
+   --> src\shell\outer_workspace.rs:386:13
+    |
+386 |         dom.drain_mutations(&mut mutations);
+    |             ^^^^^^^^^^^^^^^
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: there is a method `pending_mutations` with a similar name, but with different arguments
+   --> C:\Users\mark_\.cargo\git\checkouts\genet-9f159fb031513491\7a8c5b8\components\genet-scripted-dom\lib.rs:660:5
+    |
+660 |     pub fn pending_mutations(&self) -> (u64, &[DomMutation<NodeId>]) {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: trait `LayoutDomMut` which provides `drain_mutations` is implemented but not in scope; perhaps you want to import it
+    |
+  4 + use layout_dom_api::LayoutDomMut;
+    |
+
+warning: unused import: `genet_clipboard::TextClipboard`
+   --> src\shell\effects.rs:969:25
+    |
+969 |                     use genet_clipboard::TextClipboard as _;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> src\shell\drive.rs:1343:21
+     |
+1343 |                 let mut diagnostic = self.surface_a11y.publication_diagnostic(public_fixture);
+     |                     ----^^^^^^^^^^
+     |                     |
+     |                     help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `lens`
+   --> src\shell\events.rs:320:25
+    |
+320 |             if let Some(lens)=self.lens_windows.get_mut(&window_id) {
+    |                         ^^^^ help: if this is intentional, prefix it with an underscore: `_lens`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `caption`
+   --> src\shell\render.rs:850:13
+    |
+850 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+
+warning: unused variable: `node`
+   --> src\shell\render.rs:898:54
+    |
+898 |                 crate::surface::SurfaceKind::Content(node) => {
+    |                                                      ^^^^ help: if this is intentional, prefix it with an underscore: `_node`
+
+warning: variable `surface_frame` is assigned to, but never used
+   --> src\shell\render.rs:899:25
+    |
+899 |                     let mut surface_frame = None;
+    |                         ^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_surface_frame` instead
+
+warning: value assigned to `surface_frame` is never read
+   --> src\shell\render.rs:903:29
+    |
+903 | ...                   surface_frame = Some(frame);
+    |                       ^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `host`
+   --> src\shell\lens.rs:271:18
+    |
+271 |         let Some(host) = lens.host.as_ref() else {
+    |                  ^^^^ help: if this is intentional, prefix it with an underscore: `_host`
+
+warning: unused variable: `space`
+    --> src\shell\lens.rs:1053:19
+     |
+1053 |     let Some(Some(space)) = app.lenses.get(ordinal) else {
+     |                   ^^^^^ help: if this is intentional, prefix it with an underscore: `_space`
+
+warning: variable does not need to be mutable
+   --> src\shell\mod.rs:869:17
+    |
+869 |             let mut can_replace = true;
+    |                 ----^^^^^^^^^^^
+    |                 |
+    |                 help: remove this `mut`
+
+For more information about this error, try `rustc --explain E0599`.
+warning: `turnstone` (lib) generated 54 warnings
+error: could not compile `turnstone` (lib) due to 2 previous errors; 54 warnings emitted

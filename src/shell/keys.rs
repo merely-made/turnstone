@@ -80,6 +80,23 @@ impl Shell {
     /// Self-drive committed text exercises producer dispatch without claiming
     /// a platform IME composition or physical-keyboard acceptance receipt.
     pub(super) fn type_surface_text(&mut self, text: &str) -> bool {
+        if let crate::surface::FocusTarget::Pane(pane) = self.app.focus {
+            if !self.inline_text_in_window(self.input_window) {
+                return false;
+            }
+            for character in text.chars() {
+                let key = WinitKey::Character(character.to_string().into());
+                let Some(event) =
+                    cambium_winit::key_event_from_winit(&key, cambium::Modifiers::default())
+                else {
+                    return false;
+                };
+                if !self.deliver_inline_event(pane, event) {
+                    return false;
+                }
+            }
+            return true;
+        }
         let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
             return false;
         };
@@ -107,7 +124,12 @@ impl Shell {
         pressed: bool,
         text: Option<&str>,
     ) -> bool {
-        if super::frame_keys::header_focus_in_window(self.outer_focus.as_ref(), self.input_window, self.app.session_id.as_uuid()) || (self.ctrl && matches!(key, WinitKey::Named(WinitNamedKey::F6))) {
+        if super::frame_keys::header_focus_in_window(
+            self.outer_focus.as_ref(),
+            self.input_window,
+            self.app.session_id.as_uuid(),
+        ) || (self.ctrl && matches!(key, WinitKey::Named(WinitNamedKey::F6)))
+        {
             return false;
         }
         let crate::surface::FocusTarget::Content { node, appearance } = self.app.focus else {
@@ -151,7 +173,13 @@ impl Shell {
     /// IME for the focused document goes through its browsing controller,
     /// as its keys do: Knot's editor and a page's form fields take it alike.
     pub(super) fn deliver_document_ime(&mut self, ime: &winit::event::Ime) -> bool {
-        if super::frame_keys::header_focus_in_window(self.outer_focus.as_ref(), self.input_window, self.app.session_id.as_uuid()) {return true;}
+        if super::frame_keys::header_focus_in_window(
+            self.outer_focus.as_ref(),
+            self.input_window,
+            self.app.session_id.as_uuid(),
+        ) {
+            return true;
+        }
         let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
             return false;
         };
@@ -166,6 +194,48 @@ impl Shell {
         let crate::surface::FocusTarget::Pane(pane_id) = self.app.focus else {
             return false;
         };
+        if self.renderers.inline_mount(pane_id).is_some() {
+            if matches!(key, WinitKey::Named(WinitNamedKey::Escape)) {
+                self.renderers.blur_inline(pane_id);
+                let plan = if self.input_window == 0 {
+                    self.surface_plan()
+                } else {
+                    let Some(lens) = self
+                        .lens_windows
+                        .values()
+                        .find(|lens| lens.ordinal as u64 + 1 == self.input_window)
+                    else {
+                        return false;
+                    };
+                    self.lens_plan(lens.ordinal, lens.width, lens.height)
+                };
+                self.app.focus = plan
+                    .iter()
+                    .find_map(|surface| match surface.kind {
+                        crate::surface::SurfaceKind::Graph(pane) => {
+                            Some(crate::surface::FocusTarget::Graph(pane))
+                        },
+                        _ => None,
+                    })
+                    .unwrap_or(crate::surface::FocusTarget::Pane(pane_id));
+            } else {
+                let modifiers = cambium::Modifiers {
+                    shift: self.shift,
+                    ctrl: self.ctrl,
+                    alt: self.alt,
+                    meta: self.meta,
+                };
+                let Some(event) = cambium_winit::key_event_from_winit(key, modifiers) else {
+                    return false;
+                };
+                if !self.deliver_inline_event(pane_id, event) {
+                    return false;
+                }
+            }
+            self.sync_ime_allowed();
+            self.request_redraw();
+            return true;
+        }
         if let Some(pane) = self.renderers.settings.get_mut(&pane_id) {
             if matches!(key, WinitKey::Named(WinitNamedKey::Escape)) {
                 pane.blur();
@@ -216,10 +286,20 @@ impl Shell {
     }
 
     pub(super) fn deliver_contributed_ime(&mut self, ime: &winit::event::Ime) -> bool {
-        if super::frame_keys::header_focus_in_window(self.outer_focus.as_ref(), self.input_window, self.app.session_id.as_uuid()) {return true;}
+        if super::frame_keys::header_focus_in_window(
+            self.outer_focus.as_ref(),
+            self.input_window,
+            self.app.session_id.as_uuid(),
+        ) {
+            return true;
+        }
         let crate::surface::FocusTarget::Pane(pane_id) = self.app.focus else {
             return false;
         };
+        if self.renderers.inline_mount(pane_id).is_some() {
+            return self.renderers.inline_accepts_text(pane_id)
+                && self.deliver_inline_event(pane_id, cambium_winit::ime_event_from_winit(ime));
+        }
         self.renderers
             .contributed
             .get_mut(pane_id)
@@ -280,10 +360,10 @@ impl Shell {
     /// otherwise. Ephemeral content keys (scroll, blur) are delivered inline
     /// and consumed; everything else lowers to an Action through the spine.
     pub(super) fn on_key(&mut self, key: &WinitKey) {
-        self.on_key_in_window(0,(self.width,self.height),key);
+        self.on_key_in_window(0, (self.width, self.height), key);
     }
 
-    pub(super) fn on_key_in_window(&mut self,slot:usize,size:(u32,u32),key:&WinitKey) {
+    pub(super) fn on_key_in_window(&mut self, slot: usize, size: (u32, u32), key: &WinitKey) {
         if let Some(decision) = self.app.user_agent_decision.active() {
             let request = decision.request();
             let action = match decision {
@@ -333,7 +413,9 @@ impl Shell {
             }
             return;
         }
-        if self.deliver_frame_key(slot,size,key) {return;}
+        if self.deliver_frame_key(slot, size, key) {
+            return;
+        }
         if matches!(key, WinitKey::Character(value) if self.ctrl && value.eq_ignore_ascii_case("f"))
         {
             self.act(Action::OpenDocumentFind);

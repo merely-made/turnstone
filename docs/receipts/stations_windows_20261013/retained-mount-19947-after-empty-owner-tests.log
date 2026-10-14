@@ -1,0 +1,16 @@
+
+running 11 tests
+test retained_mount::tests::final_owner_releases_after_actual_runner_state_and_cleans_parking ... ok
+test retained_mount::tests::unrelated_document_cannot_mount_a_foreign_owner_identity - should panic ... ok
+test retained_mount::tests::explicit_focus_request_outranks_deferred_stock_tab_motion ... ok
+test retained_mount::tests::reused_key_event_cannot_carry_a_tab_request_between_dispatches ... ok
+test retained_mount::tests::tab_focus_request_cannot_escape_into_a_foreign_host_group ... ok
+test retained_mount::tests::custom_tab_selection_change_does_not_imply_a_focus_request ... ok
+test retained_mount::tests::prevented_manual_tab_arrow_retains_the_unselected_focus_owner ... ok
+test retained_mount::tests::retired_target_cannot_satisfy_a_deferred_tab_request ... ok
+test retained_mount::tests::source_first_withdrawal_gc_and_remount_preserve_actual_runner ... ok
+test retained_mount::tests::handled_tab_arrows_move_real_focus_but_programmatic_sync_does_not ... ok
+test retained_mount::tests::actual_owner_keeps_dom_and_state_after_destination_first_mount ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 257 filtered out; finished in 0.00s
+

@@ -1,0 +1,7 @@
+RESULT fail
+captured 01_inline_roster
+captured 02_inline_float
+FAIL: no successful main presentation for ten seconds
+presentation frames=60 captures=2 blank=0
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-a4-raw\captures\01_inline_roster.png digest=f08df2125fd96b8e blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-a4-raw\captures\02_inline_float.png digest=e47309a01345df9e blank=false

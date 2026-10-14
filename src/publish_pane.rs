@@ -15,6 +15,7 @@ use cambium::{
     text, text_field_typed,
 };
 use genet_scripted_dom::ScriptedDom;
+use layout_dom_api::LayoutDom;
 
 use crate::publish_service::{KnotPublishingService, PublishSnapshot};
 
@@ -38,7 +39,7 @@ fn refresh(state: &mut PublishPaneState, _: cambium::PointerClick) {
         Some(service) => {
             service.refresh();
             state.local_status = "Refreshing retained source eligibility…".into();
-        }
+        },
         None => state.local_status = "Publishing needs TURNSTONE_KNOT_MODE=persona-vault.".into(),
     }
 }
@@ -62,14 +63,14 @@ fn issue_share(state: &mut PublishPaneState, _: cambium::PointerClick) {
             state.local_status =
                 "Reader key must be the 64-hex key shown by their Shared Knot pane.".into();
             return;
-        }
+        },
     };
     let hours = match state.hours.text().trim().parse::<u64>() {
         Ok(hours) if hours > 0 => hours,
         _ => {
             state.local_status = "Expiry must be a positive whole number of hours.".into();
             return;
-        }
+        },
     };
     let expires_at_ms = now_ms().saturating_add(hours.saturating_mul(3_600_000));
     if let Some(service) = &state.service {
@@ -85,11 +86,11 @@ fn revoke_latest(state: &mut PublishPaneState, _: cambium::PointerClick) {
         (Some(service), Some(share)) => {
             service.revoke(share);
             state.local_status = "Revoking the latest share…".into();
-        }
+        },
         (_, None) => state.local_status = "No retained share is selected for revocation.".into(),
         (None, _) => {
             state.local_status = "Publishing needs TURNSTONE_KNOT_MODE=persona-vault.".into()
-        }
+        },
     }
 }
 
@@ -98,11 +99,11 @@ fn withdraw_selected(state: &mut PublishPaneState, _: cambium::PointerClick) {
         (Some(service), Some(publication)) => {
             service.unpublish(publication);
             state.local_status = "Withdrawing publication…".into();
-        }
+        },
         (_, None) => state.local_status = "Select a publication before withdrawing it.".into(),
         (None, _) => {
             state.local_status = "Publishing needs TURNSTONE_KNOT_MODE=persona-vault.".into()
-        }
+        },
     }
 }
 
@@ -254,12 +255,24 @@ pub struct PublishPane {
     /// re-shaped the whole pane to draw an unchanged screen; see
     /// [`crate::ui::RetainedLayout`] for the measurement.
     layout: crate::ui::RetainedLayout,
+    // Drop the runner and its widget resources before final mount custody.
+    mount: Option<cambium::RetainedMount>,
 }
 
 impl PublishPane {
     pub fn new(service: Option<Arc<KnotPublishingService>>) -> Self {
+        Self::new_in(None, service)
+    }
+
+    pub(crate) fn new_in(
+        mount: Option<cambium::RetainedMount>,
+        service: Option<Arc<KnotPublishingService>>,
+    ) -> Self {
         let default_hours = KnotPublishingService::default_share_hours().to_string();
-        let dom: DomHandle = Rc::new(RefCell::new(ScriptedDom::new()));
+        let dom: DomHandle = mount
+            .as_ref()
+            .map(cambium::RetainedMount::dom)
+            .unwrap_or_else(|| Rc::new(RefCell::new(ScriptedDom::new())));
         let state = PublishPaneState {
             service,
             snapshot: PublishSnapshot::default(),
@@ -270,16 +283,22 @@ impl PublishPane {
             viewport_w: 0.0,
             viewport_h: 0.0,
         };
-        let runner = PublishPaneRunner::new(
+        let runner = PublishPaneRunner::new_at(
             dom.clone(),
+            mount
+                .as_ref()
+                .map_or_else(|| dom.borrow().document(), cambium::RetainedMount::node),
             publish_pane_view as fn(&PublishPaneState) -> PublishPaneView,
             state,
         );
         Self {
+            mount: mount.clone(),
             dom,
             runner,
             scroll: crate::ui::PaneScroll::new(),
-            layout: crate::ui::RetainedLayout::new(),
+            layout: crate::ui::RetainedLayout::new_at(
+                mount.as_ref().map(cambium::RetainedMount::node),
+            ),
         }
     }
 
@@ -302,6 +321,51 @@ impl PublishPane {
             h,
             &mut self.scroll,
         )
+    }
+
+    pub(crate) fn inline_focus(&self) -> Option<genet_scripted_dom::NodeId> {
+        self.runner.focus()
+    }
+    pub(crate) fn focus_inline(&mut self, node: genet_scripted_dom::NodeId) -> bool {
+        let Some(mount) = &self.mount else {
+            return false;
+        };
+        if !cambium_rootstock::WindowDom::new(&self.dom.borrow(), mount.node()).contains(node) {
+            return false;
+        }
+        self.runner.set_focus(Some(node));
+        true
+    }
+    pub(crate) fn inline_selector(
+        &self,
+        selector: &taproot::Selector,
+    ) -> Result<Option<(f32, f32)>, &'static str> {
+        self.layout.selector_point(&self.dom.borrow(), selector)
+    }
+    pub(crate) fn key_inline(&mut self, event: cambium::KeyEvent) {
+        let _: Vec<()> = self.runner.dispatch_key(event);
+    }
+    pub(crate) fn blur_inline(&mut self) {
+        self.runner.set_focus(None);
+    }
+    pub(crate) fn inline_accepts_text(&self) -> bool {
+        self.layout
+            .editable_focus(&self.dom.borrow(), self.runner.focus())
+    }
+    pub(crate) fn inline_cursor_area(&self) -> Option<(f32, f32, f32, f32)> {
+        self.layout
+            .cursor_area(&self.dom.borrow(), self.runner.focus())
+    }
+    pub(crate) fn inline_mount(&self) -> Option<cambium::RetainedMount> {
+        self.mount.clone()
+    }
+    pub(crate) fn unbind_inline(&mut self) {
+        self.layout.unbind_inline();
+    }
+    pub(crate) fn bind_inline(&mut self, layout: &crate::ui::InlineLayoutHandle) {
+        if let Some(mount) = &self.mount {
+            self.layout.bind_inline(layout, mount);
+        }
     }
 
     /// Wheel delta from the shell.

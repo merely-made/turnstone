@@ -1,0 +1,229 @@
+{
+  "scope": "local Mere paths final-source native qualification; published Genetb6/Netrender6a suppliers; ordinary published Mere77fd binary pending",
+  "source_qualification": "final-a4-source-qualification.json",
+  "native_binary_sha256": "4851ee2c1aaa46d9c33d0aeb706b0ab7f4b4c92c50ccd474206460cc619a25dc",
+  "primary_lock_during_capture": "Parent was resolving permanent published Mere77fd lock during these local binary runs; execution lock hashes are not the running binary supplier identity",
+  "cases": [
+    {
+      "case": "final-source-a4-scoped",
+      "scenario": "a4_inline_components",
+      "result_ok": true,
+      "exit": 0,
+      "executable_sha256": "4851ee2c1aaa46d9c33d0aeb706b0ab7f4b4c92c50ccd474206460cc619a25dc",
+      "fixture_sha256": "bac82d218f49cf01a7af9acad90e128751ba4249db263199e0a9329992982d72",
+      "capture_files": [
+        {
+          "path": "00_inline_nodes.png",
+          "sha256": "3cd6160bc381d5ed1b82685d64bf23615a4406112f9ee2aa109034073eeceafe"
+        },
+        {
+          "path": "01_inline_roster.png",
+          "sha256": "77e112b32e3a4d07259b83bbe3d8de1d2c23973fcf023977a4bdf7e03c725e8c"
+        },
+        {
+          "path": "02_inline_float.png",
+          "sha256": "b9b86c482f80459e3c39efbe75ab5cc541b8d2c3abf40d6b9055e6ec51b6995f"
+        },
+        {
+          "path": "03_inline_lens.png",
+          "sha256": "1090a2e7dfc6d0549c2f6e197c91dd3e3b0990df3ecb0a66f5c1e43cf77eafb5"
+        },
+        {
+          "path": "04_inline_returned.png",
+          "sha256": "b9b86c482f80459e3c39efbe75ab5cc541b8d2c3abf40d6b9055e6ec51b6995f"
+        }
+      ],
+      "scenario_done": "RESULT ok\ncaptured 00_inline_nodes\ncaptured 01_inline_roster\ncaptured 02_inline_float\ncaptured 04_inline_returned\npresentation frames=114 captures=4 blank=0\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-a4-scoped\\captures\\a4_inline_components\\00_inline_nodes.png digest=dededeb926e8845b blank=false\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-a4-scoped\\captures\\a4_inline_components\\01_inline_roster.png digest=f08df2125fd96b8e blank=false\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-a4-scoped\\captures\\a4_inline_components\\02_inline_float.png digest=e47309a01345df9e blank=false\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-a4-scoped\\captures\\a4_inline_components\\04_inline_returned.png digest=e47309a01345df9e blank=false\n"
+    },
+    {
+      "case": "final-source-alpha",
+      "scenario": "a4_native_overlap",
+      "result_ok": true,
+      "exit": 0,
+      "executable_sha256": "4851ee2c1aaa46d9c33d0aeb706b0ab7f4b4c92c50ccd474206460cc619a25dc",
+      "fixture_sha256": "973f8fcd89d06a9aad359b501a371e3948c80b51726b52d3d3bb94396bf966e0",
+      "capture_files": [
+        {
+          "path": "01_inline_alpha_over_native_graph.png",
+          "sha256": "46c9fa2ce69dfeea1a3907fe7b5a4becff9f00baca2b6d3539b2f74c6b1174ac"
+        },
+        {
+          "path": "02_native_alpha_over_inline_body.png",
+          "sha256": "e9223bf5470b36fd7720af8f5ed92299ee886b1687b27b4c7fbd291be2333d15"
+        },
+        {
+          "path": "03_overlap_resized.png",
+          "sha256": "1ffaf1d4bdd3856f618251690984047974800e9be54034e0d2d64ff70e5cc833"
+        },
+        {
+          "path": "04_overlap_settled.png",
+          "sha256": "e9223bf5470b36fd7720af8f5ed92299ee886b1687b27b4c7fbd291be2333d15"
+        }
+      ],
+      "scenario_done": "RESULT ok\nwaited 0 frames\ncaptured 01_inline_alpha_over_native_graph\ncaptured 02_native_alpha_over_inline_body\ncaptured 03_overlap_resized\ncaptured 04_overlap_settled\npresentation frames=160 captures=4 blank=0\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-alpha\\captures\\a4_native_overlap\\01_inline_alpha_over_native_graph.png digest=61a4fb6967fd494f blank=false\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-alpha\\captures\\a4_native_overlap\\02_native_alpha_over_inline_body.png digest=46829fc0d994ee57 blank=false\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-alpha\\captures\\a4_native_overlap\\03_overlap_resized.png digest=d18e93abce7f8e37 blank=false\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-alpha\\captures\\a4_native_overlap\\04_overlap_settled.png digest=46829fc0d994ee57 blank=false\n"
+    },
+    {
+      "case": "final-source-lens-accessibility",
+      "scenario": "frame_lens_accessibility",
+      "result_ok": true,
+      "exit": 0,
+      "executable_sha256": "4851ee2c1aaa46d9c33d0aeb706b0ab7f4b4c92c50ccd474206460cc619a25dc",
+      "fixture_sha256": "c63240a8b20b071a6a71455dd78d775f04c5466287c6d4ab5c833cc94195fc5b",
+      "capture_files": [
+        {
+          "path": "01_lens_close_focus.png",
+          "sha256": "ddc7d60bfb09953bffce4cc35f7c2d593cdd9a6d9b19a054a99662ac41abee50"
+        },
+        {
+          "path": "02_lens_close_repaired.png",
+          "sha256": "65944e62483c6ae723c843d5a7614492e908c02b46814cb904076492c7c688e6"
+        },
+        {
+          "path": "03_primary_frame_focus.png",
+          "sha256": "c22d217cb7fecbdcf64ad3fc9f810b51766fdf45ea164b01d698bdae2974b6c5"
+        }
+      ],
+      "scenario_done": "RESULT ok\ncaptured 03_primary_frame_focus\nprimary and lens accessibility dispatch draft complete\npresentation frames=107 captures=1 blank=0\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-lens-accessibility\\captures\\frame_lens_accessibility\\03_primary_frame_focus.png digest=a536180eff055c92 blank=false\n"
+    },
+    {
+      "case": "final-source-lens-scroll-repaired",
+      "scenario": "frame_lens_scroll",
+      "result_ok": true,
+      "exit": 0,
+      "executable_sha256": "4851ee2c1aaa46d9c33d0aeb706b0ab7f4b4c92c50ccd474206460cc619a25dc",
+      "fixture_sha256": "053cf2082139d262b8c673a4b24c5fcd5a45998b8b411a3b238b5d6e7970c075",
+      "capture_files": [
+        {
+          "path": "01_lens_before_scroll.png",
+          "sha256": "0a5b44a32f426f666722abdbf8718aee02b610ccd8b4e0008c9605f597c12a76"
+        },
+        {
+          "path": "02_lens_scrolled.png",
+          "sha256": "8c81ca5ec346be7b7c9e707eaf07e2d9726c4627bfa27d4c34728b0a1884c7ab"
+        },
+        {
+          "path": "03_lens_scrollbar_faded.png",
+          "sha256": "8c81ca5ec346be7b7c9e707eaf07e2d9726c4627bfa27d4c34728b0a1884c7ab"
+        }
+      ],
+      "scenario_done": "RESULT ok\nwaited 0 frames\npresentation frames=68 captures=0 blank=0\n"
+    },
+    {
+      "case": "final-source-lens-scroll-immediate",
+      "scenario": "frame_lens_scroll",
+      "result_ok": true,
+      "exit": 0,
+      "executable_sha256": "4851ee2c1aaa46d9c33d0aeb706b0ab7f4b4c92c50ccd474206460cc619a25dc",
+      "fixture_sha256": "bd01007ee358a661a3135ddc565855c46731b6d12214a0e2cf8e7aec147192ff",
+      "capture_files": [
+        {
+          "path": "01_lens_before_scroll.png",
+          "sha256": "64d2540491a32beba2d1497c0174a1dfcfe2cc06afde55fb9e254c4b4b6b1fba"
+        },
+        {
+          "path": "02_lens_scrolled.png",
+          "sha256": "8c81ca5ec346be7b7c9e707eaf07e2d9726c4627bfa27d4c34728b0a1884c7ab"
+        },
+        {
+          "path": "03_lens_scrollbar_faded.png",
+          "sha256": "8c81ca5ec346be7b7c9e707eaf07e2d9726c4627bfa27d4c34728b0a1884c7ab"
+        }
+      ],
+      "scenario_done": "RESULT ok\nwaited 0 frames\npresentation frames=65 captures=0 blank=0\n"
+    },
+    {
+      "case": "final-source-fonts",
+      "scenario": "frame_appearance_reopen",
+      "result_ok": true,
+      "exit": 0,
+      "executable_sha256": "4851ee2c1aaa46d9c33d0aeb706b0ab7f4b4c92c50ccd474206460cc619a25dc",
+      "fixture_sha256": "716a04c286ab6cc5e143e8f1eb53579d134049c589aa609a9e3448aa1b9fa3e5",
+      "capture_files": [
+        {
+          "path": "frame_fonts_reopened.png",
+          "sha256": "e5600b7f5c183c0e3584b732ee05a078b6c404eb98ec536cf96a3a566ebe96e7"
+        },
+        {
+          "path": "frame_fonts_reset.png",
+          "sha256": "bfa58b002a14c4cfb1d489048e4e1e980228bd4af5c5585d034eb913d8a504e1"
+        }
+      ],
+      "scenario_done": "RESULT ok\ncaptured frame_fonts_reopened\ncaptured frame_fonts_reset\npresentation frames=47 captures=2 blank=0\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-fonts\\captures\\frame_appearance_reopen\\frame_fonts_reopened.png digest=1a843b14f5f8df07 blank=false\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-fonts\\captures\\frame_appearance_reopen\\frame_fonts_reset.png digest=0ab0e542f11f2fed blank=false\n"
+    },
+    {
+      "case": "final-source-fonts",
+      "scenario": "frame_appearance",
+      "result_ok": true,
+      "exit": 0,
+      "executable_sha256": "4851ee2c1aaa46d9c33d0aeb706b0ab7f4b4c92c50ccd474206460cc619a25dc",
+      "fixture_sha256": "ff37ad65b97c011f5eb1e09192bfb76d548fd5823179e7c7eba1861e7896dc53",
+      "capture_files": [
+        {
+          "path": "frame_default.png",
+          "sha256": "f7736b6cffb9ab1fad089ae4db174adfe1c426a8e4171366d7c4522becf46ba2"
+        },
+        {
+          "path": "frame_fonts_applied.png",
+          "sha256": "00bb3d682c032ee33830e9daa8f9016916e56ba8204c793c8ab74ca2fac73765"
+        },
+        {
+          "path": "frame_fonts_narrow.png",
+          "sha256": "e16ce427ea66dfa4280c0ccb8cc2a9142c7966c64f85fd8815048d1238c7bf68"
+        },
+        {
+          "path": "frame_graph_activated.png",
+          "sha256": "a62f70899e4cf897badad795935ffe399f66e64a3a0bd78ebb5df7f97c3bd3e6"
+        }
+      ],
+      "scenario_done": "RESULT ok\ncaptured frame_default\nwaited 0 frames\ncaptured frame_fonts_applied\ncaptured frame_fonts_narrow\ncaptured frame_graph_activated\npresentation frames=84 captures=4 blank=0\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-fonts\\captures\\frame_appearance\\frame_default.png digest=e22c9f1add853b43 blank=false\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-fonts\\captures\\frame_appearance\\frame_fonts_applied.png digest=96a44694dd1a00f8 blank=false\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-fonts\\captures\\frame_appearance\\frame_fonts_narrow.png digest=e68bcadd55d8e4e2 blank=false\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-fonts\\captures\\frame_appearance\\frame_graph_activated.png digest=9809724ed939dc3f blank=false\n"
+    },
+    {
+      "case": "final-source-missing-fonts",
+      "scenario": "frame_appearance_missing_reopen",
+      "result_ok": true,
+      "exit": 0,
+      "executable_sha256": "4851ee2c1aaa46d9c33d0aeb706b0ab7f4b4c92c50ccd474206460cc619a25dc",
+      "fixture_sha256": "dca3b0ee12db9e920913fb98371dfbeb2a5369b059770d7886c788ef3c83f0a5",
+      "capture_files": [
+        {
+          "path": "frame_missing_font_reopened.png",
+          "sha256": "bedcd4543c45ce7cac3792f2e62a0f32546dd251f2a27020df71245be8c8e16b"
+        }
+      ],
+      "scenario_done": "RESULT ok\ncaptured frame_missing_font_reopened\npresentation frames=29 captures=1 blank=0\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-missing-fonts\\captures\\frame_appearance_missing_reopen\\frame_missing_font_reopened.png digest=70dfba855de7aec2 blank=false\n"
+    },
+    {
+      "case": "final-source-missing-fonts",
+      "scenario": "frame_appearance_missing",
+      "result_ok": true,
+      "exit": 0,
+      "executable_sha256": "4851ee2c1aaa46d9c33d0aeb706b0ab7f4b4c92c50ccd474206460cc619a25dc",
+      "fixture_sha256": "4e46f8063a0bf2ca05769981e2993e6a6749a6cd0bb5d22e26281731af018202",
+      "capture_files": [
+        {
+          "path": "frame_missing_font_fallback.png",
+          "sha256": "3c5f9e651f6b8cf2847722ba7d7cea1b40762047be687115dfddcbc4d5c92086"
+        }
+      ],
+      "scenario_done": "RESULT ok\nwaited 0 frames\ncaptured frame_missing_font_fallback\npresentation frames=50 captures=1 blank=0\ncapture C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\final-source-missing-fonts\\captures\\frame_appearance_missing\\frame_missing_font_fallback.png digest=11a60f069390443a blank=false\n"
+    }
+  ],
+  "lens_scroll": {
+    "actual_body_changed_pixels": 35977,
+    "headed_early_bar_pixels_qualified": false,
+    "wheel_utc": "2026-10-14T09:58:11.721000Z",
+    "next_capture_dispatch_utc": "2026-10-14T09:58:13.117488Z",
+    "dispatch_gap_ms": 1396,
+    "existing_hold_ms": 900,
+    "existing_fade_ms": 250,
+    "unit_control": "scrollbar_continuation_is_scoped_to_actual_window_pane_plan"
+  },
+  "negative_controls": "preliminary-b6-observer-root-controls.json",
+  "open": [
+    "normal published Mere consumer gates",
+    "human assistive technology",
+    "physical OS activation",
+    "monitor DPI transition",
+    "early headed scrollbar fade pixel timing"
+  ]
+}

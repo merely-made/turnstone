@@ -1,0 +1,15 @@
+
+running 1 test
+
+thread 'shell::content_pool::tests::terminal_document_turn_paints_its_last_change_without_polling_quiet_windows' (53432) panicked at src\shell\content_pool.rs:515:9:
+assertion failed: pool.pump()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test shell::content_pool::tests::terminal_document_turn_paints_its_last_change_without_polling_quiet_windows ... FAILED
+
+failures:
+
+failures:
+    shell::content_pool::tests::terminal_document_turn_paints_its_last_change_without_polling_quiet_windows
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 949 filtered out; finished in 0.03s
+

@@ -1,0 +1,14 @@
+# Private library selected by the production Settings/Workshop workflow.
+settle 4
+click role:textbox @data-field=name
+input-text TurnstoneInlineAlpha
+click role:button @data-mode=dark
+click role:button @data-action=toggle-stylesheet
+click role:textbox @data-field=mode-sheet
+input-text :root{--tabard-color-bg:#18263C;--tabard-color-surface:#274260;--tabard-color-surface-2:#426D97;--tabard-color-text:#FFFFFF;--tabard-color-text-header:#FFFFFF;--tabard-color-text-dim:#B4CEE8;--tabard-color-primary:#F2BD50;} .workspace-float{opacity:0.55;box-shadow:10px 12px 18px rgba(255,64,0,0.75);} .frisket-tabbar{border-bottom:3px solid #F2BD50;}
+click role:button @data-action=apply-stylesheet
+click role:button @data-action=save
+settle 3
+assert snap dirty == false
+assert snap name == TurnstoneInlineAlpha
+assert snap theme == theme:copy-1

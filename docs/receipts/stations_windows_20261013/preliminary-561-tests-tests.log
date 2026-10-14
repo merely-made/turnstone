@@ -1,0 +1,55 @@
+
+running 48 tests
+test contributed_surface::tests::source_schema_is_only_external_schema ... ok
+test contributed_surface::tests::registration_asserts_the_descriptor_source_kind_matches_the_schema ... ok
+test contributed_surface::tests::typed_unavailability_becomes_a_generic_retained_surface ... ok
+test contributed_surface::tests::registry_rejects_duplicate_and_validates_schema ... ok
+test contributed_surface::tests::content_pool_contributed_cancel_preserves_move_and_retires_capture ... ok
+test distillery_installed_surface::tests::payload_version_is_checked_before_the_snapshot_is_built ... ok
+test contributed_surface::tests::admission_generations_never_wrap_or_reuse_removed_identity ... ok
+test contributed_surface::tests::erased_sessions_dispatch_and_sync_independently_and_drop_from_map ... ok
+test distillery_installed_surface::tests::malformed_mesh_ids_and_spinning_cadences_are_refused_before_admission ... ok
+test contributed_surface::tests::retained_map_reuses_one_source_and_replaces_a_repinned_source ... ok
+test distillery_installed_surface::tests::registry_admits_the_published_distillery_surface_from_a_versioned_source ... ok
+test knot_document_surface::tests::payload_version_is_checked_before_file_authority_is_opened ... ok
+test knot_document_surface::tests::absent_file_is_a_generic_typed_unavailable_surface ... ok
+test redshank_episode_surface::tests::a_wrong_version_or_a_missing_enclosure_is_refused_before_admission ... ok
+test redshank_episode_surface::tests::a_host_projection_reaches_the_tile_through_the_viewport_pump ... ok
+test knot_document_surface::tests::read_only_source_opens_a_read_only_document_session ... ok
+test redshank_episode_surface::tests::the_registry_admits_the_published_redshank_dock_from_a_versioned_source ... ok
+test sky_surface::tests::duplicate_body_and_bad_zone_are_rejected_before_calculation ... ok
+test knot_document_surface::tests::registry_admits_the_published_knot_surface_from_a_versioned_file_source ... ok
+test knot_document_surface::tests::native_protocol_sources_are_admitted_by_extension ... ok
+test contributed_surface::tests::retained_projection_and_actions_share_the_live_dom_session ... ok
+test sky_surface::tests::source_version_and_unknown_fields_fail_closed ... ok
+test surface::tests::a_content_surface_keeps_its_id_across_frames ... ok
+test surface::tests::abutting_rects_never_both_claim_a_point ... ok
+test surface::tests::canvas_only_when_nothing_else_present ... ok
+test contributed_surface::tests::admitted_pane_exposes_its_retained_dom_and_complete_probe_stylesheet ... ok
+test surface::tests::chrome_swallows_input_only_when_focused ... ok
+test contributed_surface::tests::content_pool_host_contributed_mouse_waits_for_release_and_cancel_never_activates ... ok
+test surface::tests::content_and_chrome_ids_do_not_alias_the_reserved_ones ... ok
+test surface::tests::content_is_inset_so_the_canvas_stays_visible ... ok
+test surface::tests::pressing_a_surface_focuses_it ... ok
+test surface::tests::workbench_tiles_compose_as_content_surfaces ... ok
+test surface::tests::z_order_is_canvas_then_content_then_chrome ... ok
+test surface::tests::dest_emits_corners_not_offset_plus_size ... ok
+test surface::tests::pointer_over_content_hits_content_in_local_space ... ok
+test contributed_surface::tests::review_input_small_motion_clicks_but_recognized_drag_and_cancel_do_not ... ok
+test distillery_installed_surface::tests::retained_accessibility_projects_a_generic_status_surface ... ok
+test distillery_installed_surface::tests::resident_cadences_round_trip_through_the_versioned_source ... ok
+test knot_document_surface::tests::native_protocol_file_sessions_edit_and_save_exact_source_bytes ... ok
+test distillery_installed_surface::tests::admitted_surface_renders_the_projected_profile_and_paths ... ok
+test knot_document_surface::tests::retained_accessibility_distinguishes_editable_and_read_only_documents ... ok
+test redshank_episode_surface::tests::the_admitted_surface_renders_the_episode_title_and_a_play_control ... ok
+test redshank_episode_surface::tests::the_dock_emits_the_same_commands_through_turnstones_registry ... ok
+test sky_surface::tests::polar_empty_crossings_are_described_without_visibility_inference ... ok
+test sky_surface::tests::provider_admits_semantic_controls_and_provenance ... ok
+test sky_surface::tests::reference_source_reproduces_the_p0_receipt ... ok
+test sky_surface::tests::changing_date_or_policy_rebuilds_a_distinct_receipt has been running for over 60 seconds
+test sky_surface::tests::next_day_replaces_one_retained_projection_without_rewriting_opening_provenance has been running for over 60 seconds
+test sky_surface::tests::changing_date_or_policy_rebuilds_a_distinct_receipt ... ok
+test sky_surface::tests::next_day_replaces_one_retained_projection_without_rewriting_opening_provenance ... ok
+
+test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 898 filtered out; finished in 97.54s
+

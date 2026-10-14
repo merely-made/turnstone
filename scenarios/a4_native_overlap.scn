@@ -1,0 +1,70 @@
+# Fresh private stores/library; TURNSTONE_THEME_SCENARIO=frame_alpha_workshop.scn.
+# Captures are the required GPU/visual half. Geometry and RESULT alone do not
+# qualify alpha, shadows, ordinary image ordering or native producer pixels.
+settle 20
+key escape
+resize 1180 800
+open mere://a4-native-overlap
+settle 5
+assert nodes >= 1
+assert visible
+key escape
+act Fit to view
+settle 5
+act Open Settings pane
+settle 4
+click surface:settings .setting-apply @data-action=edit-themes
+wait 1800
+settle 8
+assert snap appearance-workshop-ok == true
+click surface:settings .radio TurnstoneInlineAlpha
+click surface:settings .setting-apply @data-setting=theme.id
+settle 5
+# Controlled radio keys choose Dark through its real owner, then Apply.
+click surface:settings .radio High contrast light
+click surface:settings .radio High contrast light
+key up
+key tab
+key enter
+settle 5
+assert snap appearance-mode == dark
+assert snap frame-css ~ opacity:0.55
+key ctrl+f6
+key ctrl+w
+key escape
+act Open Roster pane
+settle 5
+click surface:roster .tab Links
+act Float pane
+settle 5
+assert snap floats ~ roster
+assert snap inline-component-count == 1
+assert snap native-texture-count >= 1
+# Actual physical header coordinates at native scale 2. Put Roster over
+# existing graph nodes so this capture witnesses underlying producer pixels.
+drag 1300 215 60 160
+settle 6
+capture 01_inline_alpha_over_native_graph
+# The existing graph pane becomes a real foreign producer in a second float.
+click surface:frame .frisket-tab @data-tabkey=0
+act Float pane
+settle 5
+assert snap floats ~ orrery
+# Current measured default stations: drag the graph header over Roster.
+drag 220 280 100 180
+settle 6
+act Fit to view
+settle 5
+assert snap float-count == 2
+assert snap native-texture-count >= 1
+capture 02_native_alpha_over_inline_body
+resize 900 650
+settle 5
+capture 03_overlap_resized
+resize 1180 800
+settle 5
+# Return keyboard control to the actual near graph's receiving window.
+key ctrl+f6
+key escape
+capture 04_overlap_settled
+assert snap capture-errors == 0

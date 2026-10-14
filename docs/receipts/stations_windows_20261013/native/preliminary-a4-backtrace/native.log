@@ -1,0 +1,270 @@
+2026-10-14T05:17:13.342447Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:14.471682Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:15.473468Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:16.474715Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:17.475938Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:18.477624Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:19.478919Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:20.480268Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:21.481657Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:22.482792Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:23.483960Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:24.484993Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:25.486407Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:26.487706Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:27.489033Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:28.490227Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:29.491730Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:17:30.492961Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+
+thread 'main' (51112) panicked at C:\Users\mark_\.cargo\git\checkouts\genet-9f159fb031513491\5618326\components\genet-scripted-dom\lib.rs:1111:14:
+NodeId is not stored in this document (foreign or retired)
+stack backtrace:
+2026-10-14T05:17:31.494343Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+   0: std::panicking::panic_handler
+             at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:679
+   1: core::panicking::panic_fmt
+             at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\panicking.rs:80
+   2: core::panicking::panic_display
+             at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\panicking.rs:259
+   3: core::option::expect_failed
+             at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\option.rs:2257
+   4: <core::option::Option<&genet_scripted_dom::Node>>::expect
+   5: <genet_scripted_dom::ScriptedDom>::node
+   6: <genet_scripted_dom::ScriptedDom as layout_dom_api::LayoutDomMut>::insert_before
+   7: <cambium::retained_mount::RetainedMountView<(), ()> as meristem::view::View<(), (), cambium::context::GenetCtx>>::build
+   8: <cambium::retained_mount::RetainedMountView<(), ()> as meristem::views::any_view::AnyView<(), (), cambium::context::GenetCtx, cambium::pod::GenetElement>>::dyn_build::{closure#0}
+   9: RINvYNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtCshzXvraWhR36_8meristem8view_ctx15ViewPathTracker7with_idTNtNtB7_3pod12GenetElementuENCNvXNtNtBO_5views8any_viewINtNtB7_14retained_mount17RetainedMountViewuuEINtB2g_7AnyViewuuB3_B1K_E9dyn_build0ECsiwgLetj
+  10: <cambium::retained_mount::RetainedMountView<(), ()> as meristem::views::any_view::AnyView<(), (), cambium::context::GenetCtx, cambium::pod::GenetElement>>::dyn_build
+  11: <dyn meristem::views::any_view::AnyView<(), (), cambium::context::GenetCtx, cambium::pod::GenetElement> as meristem::view::View<(), (), cambium::context::GenetCtx>>::build
+  12: <alloc::boxed::Box<dyn meristem::views::any_view::AnyView<(), (), cambium::context::GenetCtx, cambium::pod::GenetElement>> as meristem::view::View<(), (), cambium::context::GenetCtx>>::build
+  13: RNvXs0_NtCscn7q4dh40g5_7cambium9componentINtB5_9ComponentNtNtB7_14retained_mount13RetainedMountuuNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuuNCNCNvB1z_4views_00NCB2p_s_0NCB2p_s0_0NCB2p_s1_0EINtNtCshzXvraWhR36_8meristem4view4ViewB1x_uNtNtB7_7context
+  14: RNCNvXNtNtCshzXvraWhR36_8meristem5views8any_viewINtNtCscn7q4dh40g5_7cambium9component9ComponentNtNtBP_14retained_mount13RetainedMountuuNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuuNCNCNvB2b_4views_00NCB31_s_0NCB31_s0_0NCB31_s1_0EINtB4_7AnyViewB29_uN
+  15: RINvYNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtCshzXvraWhR36_8meristem8view_ctx15ViewPathTracker7with_idTNtNtB7_3pod12GenetElementINtNtB7_9component14ComponentStateuuEENCNvXNtNtBO_5views8any_viewINtB2c_9ComponentNtNtB7_14retained_mount13RetainedMountu
+  16: RNvXNtNtCshzXvraWhR36_8meristem5views8any_viewINtNtCscn7q4dh40g5_7cambium9component9ComponentNtNtBN_14retained_mount13RetainedMountuuNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuuNCNCNvB29_4views_00NCB2Z_s_0NCB2Z_s0_0NCB2Z_s1_0EINtB2_7AnyViewB27_uNtN
+  17: <dyn meristem::views::any_view::AnyView<turnstone::frame_controls::State, (), cambium::context::GenetCtx, cambium::pod::GenetElement> as meristem::view::View<turnstone::frame_controls::State, (), cambium::context::GenetCtx>>::build
+  18: RNvXs_NtNtCshzXvraWhR36_8meristem5views8impl_boxINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtB6_8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2C_3pod12GenetElementEEL_EINtNtB8_4view4ViewB1J_
+  19: RNvXs_NtCshzXvraWhR36_8meristem13view_sequenceINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtB6_5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2I_3pod12GenetElementEEL_EINtB4_12ViewSequ
+  20: RNCNvXNtNtCshzXvraWhR36_8meristem14view_sequences11impl_optionINtNtCs9rw95XCWuke_4core6option6OptionINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtB8_5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8G
+  21: RINvYNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtCshzXvraWhR36_8meristem8view_ctx15ViewPathTracker7with_idNtNtNtBO_5views8any_view12AnyViewStateNCNvXNtNtBO_14view_sequences11impl_optionINtNtCs9rw95XCWuke_4core6option6OptionINtNtCs89r4j2vouvF_5alloc5boxe
+  22: RNvXNtNtCshzXvraWhR36_8meristem14view_sequences11impl_optionINtNtCs9rw95XCWuke_4core6option6OptionINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtB6_5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8Gen
+  23: RNvXs0_NtCscn7q4dh40g5_7cambium7elementINtB5_2ElINtNtCs9rw95XCWuke_4core6option6OptionINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtB7_7context8GenetCtxNtNtB7
+  24: RNvXs_NtCshzXvraWhR36_8meristem13view_sequenceINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs9rw95XCWuke_4core6option6OptionINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtB6_5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBN_7contex
+  25: RNCNvXs0_NtNtCshzXvraWhR36_8meristem14view_sequences11impl_tuplesTINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB17_9focusable9FocusableINtNtB17_3key5OnKeyINtNtB17_5event7OnClickIB13_TINtNtCs9rw95XCWuke_4core6option6OptionNtNt
+  26: RINvYNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtCshzXvraWhR36_8meristem8view_ctx15ViewPathTracker7with_idTjINtNtB7_7element12ElementStateINtNtNtBO_14view_sequences11impl_option14OptionSeqStateNtNtNtBO_5views8any_view12AnyViewStateEEENCNvXs0_NtB2k_11imp
+  27: RNvXs0_NtNtCshzXvraWhR36_8meristem14view_sequences11impl_tuplesTINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB15_9focusable9FocusableINtNtB15_3key5OnKeyINtNtB15_5event7OnClickIB11_TINtNtCs9rw95XCWuke_4core6option6OptionNtNtB1
+  28: RNvXs0_NtCscn7q4dh40g5_7cambium7elementINtB5_2ElTIBC_INtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB7_9focusable9FocusableINtNtB7_3key5OnKeyINtNtB7_5event7OnClickIBC_TINtNtCs9rw95XCWuke_4core6option6OptionNtNtBU_6string6StringEIB2y_IBC_B39_NtNtCsiwgLetjuZcE_9turns
+  29: RNCNvXNtNtCshzXvraWhR36_8meristem5views8any_viewINtNtCscn7q4dh40g5_7cambium7element2ElTIBL_INtNtCs89r4j2vouvF_5alloc3vec3VecINtNtBP_9focusable9FocusableINtNtBP_3key5OnKeyINtNtBP_5event7OnClickIBL_TINtNtCs9rw95XCWuke_4core6option6OptionNtNtB1w_6string6Strin
+  30: RINvYNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtCshzXvraWhR36_8meristem8view_ctx15ViewPathTracker7with_idTNtNtB7_3pod12GenetElementINtNtB7_7element12ElementStateTTjIB2a_INtNtNtBO_14view_sequences8impl_vec12VecViewStateINtNtB7_9focusable14FocusableState
+  31: RNvXNtNtCshzXvraWhR36_8meristem5views8any_viewINtNtCscn7q4dh40g5_7cambium7element2ElTIBJ_INtNtCs89r4j2vouvF_5alloc3vec3VecINtNtBN_9focusable9FocusableINtNtBN_3key5OnKeyINtNtBN_5event7OnClickIBJ_TINtNtCs9rw95XCWuke_4core6option6OptionNtNtB1u_6string6StringE
+  32: <dyn meristem::views::any_view::AnyView<turnstone::frame_controls::State, (), cambium::context::GenetCtx, cambium::pod::GenetElement> as meristem::view::View<turnstone::frame_controls::State, (), cambium::context::GenetCtx>>::build
+  33: RNvXs_NtNtCshzXvraWhR36_8meristem5views8impl_boxINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtB6_8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2C_3pod12GenetElementEEL_EINtNtB8_4view4ViewB1J_
+  34: RNvXs_NtCshzXvraWhR36_8meristem13view_sequenceINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtB6_5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2I_3pod12GenetElementEEL_EINtB4_12ViewSequ
+  35: RNCNCNCINvXNtNtCshzXvraWhR36_8meristem14view_sequences8impl_vecINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB14_5boxed3BoxDINtNtNtBd_5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB3g_3pod1
+  36: RINvYNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtCshzXvraWhR36_8meristem8view_ctx15ViewPathTracker7with_idNtNtNtBO_5views8any_view12AnyViewStateNCNCNCINvXNtNtBO_14view_sequences8impl_vecINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB36_5boxed3BoxDINtB1L_7AnyVie
+  37: RNCNCINvXNtNtCshzXvraWhR36_8meristem14view_sequences8impl_vecINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB12_5boxed3BoxDINtNtNtBb_5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB3e_3pod12G
+  38: RNCINvNtNtNtCs9rw95XCWuke_4core4iter8adapters3map8map_foldTjTRINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB3i_3po
+  39: RNCINvNvXs_NtNtNtCs9rw95XCWuke_4core4iter8adapters9enumerateINtB9_9EnumeratepENtNtNtBd_6traits8iterator8Iterator4fold9enumerateTRINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_co
+  40: RINvXs2_NtNtNtCs9rw95XCWuke_4core4iter8adapters3zipINtB6_3ZipINtNtNtBc_5slice4iter4IterINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7co
+  41: RINvXs_NtNtNtCs9rw95XCWuke_4core4iter8adapters3zipINtB5_3ZipINtNtNtBb_5slice4iter4IterINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7con
+  42: RINvXs_NtNtNtCs9rw95XCWuke_4core4iter8adapters9enumerateINtB5_9EnumerateINtNtB7_3zip3ZipINtNtNtBb_5slice4iter4IterINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNt
+  43: RINvXs0_NtNtNtCs9rw95XCWuke_4core4iter8adapters3mapINtB6_3MapINtNtB8_9enumerate9EnumerateINtNtB8_3zip3ZipINtNtNtBc_5slice4iter4IterINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_
+  44: RINvYINtNtNtNtCs9rw95XCWuke_4core4iter8adapters3map3MapINtNtB8_9enumerate9EnumerateINtNtB8_3zip3ZipINtNtNtBc_5slice4iter4IterINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_contro
+  45: RINvMsk_NtCs89r4j2vouvF_5alloc3vecINtB6_3VecTjNtNtNtCshzXvraWhR36_8meristem5views8any_view12AnyViewStateEE14extend_trustedINtNtNtNtCs9rw95XCWuke_4core4iter8adapters3map3MapINtNtB21_9enumerate9EnumerateINtNtB21_3zip3ZipINtNtNtB25_5slice4iter4IterINtNtB8_5bo
+  46: RNvXs_NtNtCs89r4j2vouvF_5alloc3vec11spec_extendINtB6_3VecTjNtNtNtCshzXvraWhR36_8meristem5views8any_view12AnyViewStateEEINtB4_10SpecExtendBT_INtNtNtNtCs9rw95XCWuke_4core4iter8adapters3map3MapINtNtB2j_9enumerate9EnumerateINtNtB2j_3zip3ZipINtNtNtB2n_5slice4it
+  47: RINvXsj_NtCs89r4j2vouvF_5alloc3vecINtB6_3VecTjNtNtNtCshzXvraWhR36_8meristem5views8any_view12AnyViewStateEEINtNtNtNtCs9rw95XCWuke_4core4iter6traits7collect6ExtendBG_E6extendINtNtNtB1N_8adapters3map3MapINtNtB2P_9enumerate9EnumerateINtNtB2P_3zip3ZipINtNtNtB1P
+  48: RNCINvXNtNtCshzXvraWhR36_8meristem14view_sequences8impl_vecINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB10_5boxed3BoxDINtNtNtB9_5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB3c_3pod12Gen
+  49: RINvXs0_NtCscn7q4dh40g5_7cambium6spliceNtB6_19GenetChildrenSpliceINtNtCshzXvraWhR36_8meristem14element_splice13ElementSpliceNtNtB8_3pod12GenetElementE12with_scratchuNCINvXNtNtB16_14view_sequences8impl_vecINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB3l_5boxed3Box
+  50: RINvXNtNtCshzXvraWhR36_8meristem14view_sequences8impl_vecINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtBY_5boxed3BoxDINtNtNtB7_5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB39_3pod12GenetE
+  51: RNvXs0_NtCscn7q4dh40g5_7cambium7elementINtB5_2ElINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtBP_5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtB7_7context8GenetCtxNtNtB7_3pod12GenetElementEEL
+  52: RNCNCINvXs_NtCshzXvraWhR36_8meristem13view_sequenceINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB1u_5boxed3BoxDINtNtNtBb_5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBS_7context8GenetCtxNtNtBS
+  53: RINvXs2_NtCscn7q4dh40g5_7cambium3podNtB6_12GenetElementINtNtCshzXvraWhR36_8meristem7element12SuperElementBy_NtNtB8_7context8GenetCtxE17with_downcast_valuNCNCINvXs_NtBW_13view_sequenceINtNtB8_7element2ElINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB3j_5boxed3BoxDI
+  54: RINvYNtNtCscn7q4dh40g5_7cambium3pod12GenetElementINtNtCshzXvraWhR36_8meristem7element12SuperElementB3_NtNtB7_7context8GenetCtxE13with_downcastNCNCINvXs_NtBQ_13view_sequenceINtNtB7_7element2ElINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB38_5boxed3BoxDINtNtNtBQ_5v
+  55: RNCINvXs_NtCshzXvraWhR36_8meristem13view_sequenceINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB1s_5boxed3BoxDINtNtNtB9_5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBQ_7context8GenetCtxNtNtBQ_3
+  56: RINvXs0_NtCscn7q4dh40g5_7cambium6spliceNtB6_19GenetChildrenSpliceINtNtCshzXvraWhR36_8meristem14element_splice13ElementSpliceNtNtB8_3pod12GenetElementE6mutateuNCINvXs_NtB16_13view_sequenceINtNtB8_7element2ElINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB3n_5boxed3B
+  57: RINvXs_NtCshzXvraWhR36_8meristem13view_sequenceINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB1q_5boxed3BoxDINtNtNtB7_5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBO_7context8GenetCtxNtNtBO_3po
+  58: RNCINvXs0_NtNtCshzXvraWhR36_8meristem14view_sequences11impl_tuplesTINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtBc_5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtB18_7context8GenetCtxNtNtB1
+  59: RINvYNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtCshzXvraWhR36_8meristem8view_ctx15ViewPathTracker7with_iduNCINvXs0_NtNtBO_14view_sequences11impl_tuplesTINtNtB7_7element2ElINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtBO_5views8any_view7AnyViewNtNtCsiwgLet
+  60: RINvXs0_NtNtCshzXvraWhR36_8meristem14view_sequences11impl_tuplesTINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtBa_5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtB16_7context8GenetCtxNtNtB16_
+  61: RNvXs0_NtCscn7q4dh40g5_7cambium7elementINtB5_2ElTIBC_INtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtB7_7context8GenetCtxNtNtB7_3pod12GenetElementEEL_EB2g_uEIBC
+  62: RNCNCNvXNtNtCshzXvraWhR36_8meristem5views8any_viewINtNtCscn7q4dh40g5_7cambium7element2ElTIBN_INtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtB6_7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBR_7context8GenetCtxNtNtBR_3pod12GenetElementEEL_EB2h_uEIB
+  63: RINvYNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtCshzXvraWhR36_8meristem8view_ctx15ViewPathTracker7with_iduNCNCNvXNtNtBO_5views8any_viewINtNtB7_7element2ElTIB2e_INtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtB1R_7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_contr
+  64: RNCNvXNtNtCshzXvraWhR36_8meristem5views8any_viewINtNtCscn7q4dh40g5_7cambium7element2ElTIBL_INtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtB4_7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBP_7context8GenetCtxNtNtBP_3pod12GenetElementEEL_EB2f_uEIBL_
+  65: RINvXs2_NtCscn7q4dh40g5_7cambium3podNtB6_12GenetElementINtNtCshzXvraWhR36_8meristem7element12SuperElementBy_NtNtB8_7context8GenetCtxE17with_downcast_valuNCNvXNtNtBW_5views8any_viewINtNtB8_7element2ElTIB2T_INtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtB2w_7AnyView
+  66: RINvYNtNtCscn7q4dh40g5_7cambium3pod12GenetElementINtNtCshzXvraWhR36_8meristem7element12SuperElementB3_NtNtB7_7context8GenetCtxE13with_downcastNCNvXNtNtBQ_5views8any_viewINtNtB7_7element2ElTIB2I_INtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtB2l_7AnyViewNtNtCsiwgLe
+  67: RNvXNtNtCshzXvraWhR36_8meristem5views8any_viewINtNtCscn7q4dh40g5_7cambium7element2ElTIBJ_INtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtB2_7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBN_7context8GenetCtxNtNtBN_3pod12GenetElementEEL_EB2d_uEIBJ_IN
+  68: <dyn meristem::views::any_view::AnyView<turnstone::frame_controls::State, (), cambium::context::GenetCtx, cambium::pod::GenetElement> as meristem::view::View<turnstone::frame_controls::State, (), cambium::context::GenetCtx>>::rebuild
+  69: RNvXs_NtNtCshzXvraWhR36_8meristem5views8impl_boxINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtB6_8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2C_3pod12GenetElementEEL_EINtNtB8_4view4ViewB1J_
+  70: RINvMNtCscn7q4dh40g5_7cambium6runnerINtB3_10RunnerTreeNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewBQ_uNtNtB5_7context8GenetCtxNtNtB5_3pod12GenetElementEEL_EuE7re
+  71: RINvMs_NtCscn7q4dh40g5_7cambium6runnerINtB5_14GenetAppRunnerNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateFG_RL0_BW_EINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewBW_uNtNtB7_7context8GenetCtxNtNtB7_3pod12Genet
+  72: <turnstone::frame_controls::FrameControls>::sync
+  73: <turnstone::outer_frame::OuterFrame>::prepare
+  74: <turnstone::shell::Shell>::outer_rects
+  75: <turnstone::shell::Shell>::outer_rects
+  76: <turnstone::shell::Shell>::outer_rects
+  77: <turnstone::shell::Shell>::answer_authentication_request
+  78: <turnstone::shell::Shell as winit::application::ApplicationHandler>::window_event
+  79: <winit::event_loop::EventLoop<()>>::run_app::<turnstone::shell::Shell>::{closure#0}
+  80: <winit::platform_impl::windows::event_loop::EventLoop<()>>::run_on_demand::<<winit::event_loop::EventLoop<()>>::run_app<turnstone::shell::Shell>::{closure#0}>::{closure#0}
+  81: <alloc::boxed::Box<dyn core::ops::function::FnMut<(winit::event::Event<winit::platform_impl::windows::event_loop::UserEventPlaceholder>,), Output = ()>> as core::ops::function::FnMut<(winit::event::Event<winit::platform_impl::windows::event_loop::UserEventPlaceholder>,)>>::call_mut
+  82: <winit::platform_impl::windows::event_loop::runner::EventLoopRunner<winit::platform_impl::windows::event_loop::UserEventPlaceholder>>::call_event_handler::{closure#0}
+  83: RNvXsn_NtNtCs9rw95XCWuke_4core5panic11unwind_safeINtB5_16AssertUnwindSafeNCNvMs1_NtNtNtNtCs6dw1xufHlMS_5winit13platform_impl7windows10event_loop6runnerINtB1h_15EventLoopRunnerNtB1j_20UserEventPlaceholderE18call_event_handler0EINtNtNtB9_3ops8function6FnOnce
+  84: RINvNvNtCsljvfXcM3w8L_3std9panicking12catch_unwind7do_callINtNtNtCs9rw95XCWuke_4core5panic11unwind_safe16AssertUnwindSafeNCNvMs1_NtNtNtNtCs6dw1xufHlMS_5winit13platform_impl7windows10event_loop6runnerINtB23_15EventLoopRunnerNtB25_20UserEventPlaceholderE18ca
+  85: <f64 as core::cmp::PartialEq>::eq
+  86: RINvNtCsljvfXcM3w8L_3std5panic12catch_unwindINtNtNtCs9rw95XCWuke_4core5panic11unwind_safe16AssertUnwindSafeNCNvMs1_NtNtNtNtCs6dw1xufHlMS_5winit13platform_impl7windows10event_loop6runnerINtB1P_15EventLoopRunnerNtB1R_20UserEventPlaceholderE18call_event_handl
+  87: <winit::platform_impl::windows::event_loop::runner::EventLoopRunner<winit::platform_impl::windows::event_loop::UserEventPlaceholder>>::catch_unwind::<(), <winit::platform_impl::windows::event_loop::runner::EventLoopRunner<winit::platform_impl::windows::event_loop::UserEventPlaceholder>>::call_event_handler::{closure#0}>
+  88: <winit::platform_impl::windows::event_loop::runner::EventLoopRunner<winit::platform_impl::windows::event_loop::UserEventPlaceholder>>::call_event_handler
+  89: <winit::platform_impl::windows::event_loop::runner::EventLoopRunner<winit::platform_impl::windows::event_loop::UserEventPlaceholder>>::send_event
+  90: <*mut winit::platform_impl::windows::event_loop::ThreadMsgTargetData>::is_null
+  91: winit::platform_impl::windows::event_loop::public_window_callback_inner::{closure#4}
+  92: <winit::platform_impl::windows::event_loop::public_window_callback_inner::{closure#4} as core::ops::function::FnOnce<()>>::call_once
+  93: <core::panic::unwind_safe::AssertUnwindSafe<winit::platform_impl::windows::event_loop::public_window_callback_inner::{closure#4}> as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+thread 'main' (51112) panicked at C:\Users\mark_\.cargo\git\checkouts\genet-9f159fb031513491\5618326\components\genet-scripted-dom\lib.rs:1111:14:
+NodeId is not stored in this document (foreign or retired)
+stack backtrace:
+   0:     0x7ff65a6a8019 - std::backtrace_rs::backtrace::win64::trace
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\..\..\backtrace\src\backtrace\win64.rs:85
+   1:     0x7ff65a6a8019 - std::backtrace_rs::backtrace::trace_unsynchronized
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\..\..\backtrace\src\backtrace\mod.rs:66
+   2:     0x7ff65a6a8019 - std::sys::backtrace::_print_fmt
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\sys\backtrace.rs:74
+   3:     0x7ff65a6a8019 - std::sys::backtrace::impl$0::print::impl$0::fmt
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\sys\backtrace.rs:44
+   4:     0x7ff65a6bedde - core::fmt::write
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\fmt\mod.rs:0
+   5:     0x7ff65a6ae334 - core::io::write::default_write_fmt
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\io\write.rs:402
+   6:     0x7ff65a6ae334 - core::io::write::Write::write_fmt<std::sys::stdio::windows::Stderr>
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\io\write.rs:335
+   7:     0x7ff65a6899d5 - std::sys::backtrace::BacktraceLock::print
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\sys\backtrace.rs:47
+   8:     0x7ff65a6899d5 - std::panicking::default_hook::closure$0
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:292
+   9:     0x7ff65a69db18 - std::panicking::default_hook
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:319
+  10:     0x7ff65a69def3 - std::panicking::panic_with_hook
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:815
+  11:     0x7ff65a689aae - std::panicking::panic_handler::closure$0
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:688
+  12:     0x7ff65a6872cf - std::sys::backtrace::__rust_end_short_backtrace<std::panicking::panic_handler::closure_env$0,never$>
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\sys\backtrace.rs:182
+  13:     0x7ff65a68a70e - std::panicking::panic_handler
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:679
+  14:     0x7ff65a7d88ad - core::panicking::panic_fmt
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\panicking.rs:80
+  15:     0x7ff65a7d8525 - core::panicking::panic_display
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\panicking.rs:259
+  16:     0x7ff65a7d8525 - core::option::expect_failed
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\option.rs:2257
+  17:     0x7ff65a3f49b2 - <core[6dff922281fde550]::option::Option<&genet_scripted_dom[7375c647e44dab9f]::Node>>::expect
+  18:     0x7ff65a3e83a1 - <genet_scripted_dom[7375c647e44dab9f]::ScriptedDom>::node
+  19:     0x7ff65a3efe10 - <genet_scripted_dom[7375c647e44dab9f]::ScriptedDom as layout_dom_api[aa47ea57672c2e09]::LayoutDomMut>::remove
+  20:     0x7ff6594f86f2 - <cambium[901d635c1d4ae837]::retained_mount::Owner as core[6dff922281fde550]::ops::drop::Drop>::drop
+  21:     0x7ff6594f55ab - core[6dff922281fde550]::ptr::drop_glue::<cambium[901d635c1d4ae837]::retained_mount::Owner>
+  22:     0x7ff65120d450 - <alloc[5ef4293888d15ed5]::rc::Rc<cambium[901d635c1d4ae837]::retained_mount::Owner>>::drop_slow
+  23:     0x7ff65043a709 - <alloc[5ef4293888d15ed5]::rc::Rc<cambium[901d635c1d4ae837]::retained_mount::Owner> as core[6dff922281fde550]::ops::drop::Drop>::drop
+  24:     0x7ff650268749 - core[6dff922281fde550]::ptr::drop_glue::<alloc[5ef4293888d15ed5]::rc::Rc<cambium[901d635c1d4ae837]::retained_mount::Owner>>
+  25:     0x7ff6503a6429 - core[6dff922281fde550]::ptr::drop_glue::<cambium[901d635c1d4ae837]::retained_mount::RetainedMount>
+  26:     0x7ff6503ce24d - core[6dff922281fde550]::ptr::drop_glue::<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::retained_mount::RetainedMount)>
+  27:     0x7ff65107c7ec - <hashbrown[20b706e42d87b97d]::raw::RawTableInner>::drop_elements::<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::retained_mount::RetainedMount)>
+2026-10-14T05:17:32.495575Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+  28:     0x7ff6510879b9 - <hashbrown[20b706e42d87b97d]::raw::RawTableInner>::drop_inner_table::<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::retained_mount::RetainedMount), alloc[5ef4293888d15ed5]::alloc::Global>
+  29:     0x7ff650434499 - <hashbrown[20b706e42d87b97d]::raw::RawTable<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::retained_mount::RetainedMount)> as core[6dff922281fde550]::ops::drop::Drop>::drop
+  30:     0x7ff650264d59 - core[6dff922281fde550]::ptr::drop_glue::<hashbrown[20b706e42d87b97d]::raw::RawTable<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::retained_mount::RetainedMount)>>
+  31:     0x7ff650264009 - core[6dff922281fde550]::ptr::drop_glue::<hashbrown[20b706e42d87b97d]::map::HashMap<workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::retained_mount::RetainedMount, std[f8439e2c5135d149]::hash::random::RandomState>>
+  32:     0x7ff6502c6b69 - core[6dff922281fde550]::ptr::drop_glue::<std[f8439e2c5135d149]::collections::hash::map::HashMap<workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::retained_mount::RetainedMount>>
+  33:     0x7ff650381619 - core[6dff922281fde550]::ptr::drop_glue::<turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>
+  34:     0x7ff65029423b - core[6dff922281fde550]::ptr::drop_glue::<cambium[901d635c1d4ae837]::frisket::SlotChild<turnstone[d7b8377f87a9cda6]::frame_controls::State, (), turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>>
+  35:     0x7ff6503ce22d - core[6dff922281fde550]::ptr::drop_glue::<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::frisket::SlotChild<turnstone[d7b8377f87a9cda6]::frame_controls::State, (), turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>)>
+  36:     0x7ff6503c730b - core[6dff922281fde550]::ptr::drop_glue::<[(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::frisket::SlotChild<turnstone[d7b8377f87a9cda6]::frame_controls::State, (), turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>)]>
+  37:     0x7ff650439cb4 - <alloc[5ef4293888d15ed5]::vec::Vec<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::frisket::SlotChild<turnstone[d7b8377f87a9cda6]::frame_controls::State, (), turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>)> as core[6dff922281fde550]::ops::drop::Drop>::drop
+  38:     0x7ff65026e13b - core[6dff922281fde550]::ptr::drop_glue::<alloc[5ef4293888d15ed5]::vec::Vec<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::frisket::SlotChild<turnstone[d7b8377f87a9cda6]::frame_controls::State, (), turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>)>>
+  39:     0x7ff650294479 - core[6dff922281fde550]::ptr::drop_glue::<cambium[901d635c1d4ae837]::portable::PortableKeyed<workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::frisket::SlotChild<turnstone[d7b8377f87a9cda6]::frame_controls::State, (), turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>>>
+  40:     0x7ff65029073b - core[6dff922281fde550]::ptr::drop_glue::<cambium[901d635c1d4ae837]::element::El<cambium[901d635c1d4ae837]::portable::PortableKeyed<workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::frisket::SlotChild<turnstone[d7b8377f87a9cda6]::frame_controls::State, (), turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>>, turnstone[d7b8377f87a9cda6]::frame_controls::State, ()>>
+  41:     0x7ff6503cc9ab - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueTINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtBH_9focusable9FocusableINtNtBH_3key5OnKeyINtNtBH_5event7OnClickIBD_TINtNtB4_6option6OptionNtNtB1j_6string6StringEIB2X_IBD_B3i_NtNtCsiwgLetju
+  42:     0x7ff65029303b - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCscn7q4dh40g5_7cambium7element2ElTIBC_INtNtCs89r4j2vouvF_5alloc3vec3VecINtNtBG_9focusable9FocusableINtNtBG_3key5OnKeyINtNtBG_5event7OnClickIBC_TINtNtB4_6option6OptionNtNtB1n_6string6StringEIB31_IBC_B3m_NtNtCsiwgL
+  43:     0x7ff650273348 - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2V_3pod12GenetElementEEL_EEB2
+  44:     0x7ff65029186b - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBG_7context8GenetCtxNtNtBG_3pod12Ge
+  45:     0x7ff650273348 - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2V_3pod12GenetElementEEL_EEB2
+  46:     0x7ff6503bf79a - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueSINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2W_3pod12GenetElementEEL_EEB
+  47:     0x7ff650437ed4 - RNvXsp_NtCs89r4j2vouvF_5alloc3vecINtB5_3VecINtNtB7_5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2I_3pod12GenetElementEEL_EENtNtNtCs9rw95XC
+  48:     0x7ff650268dcb - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtBG_5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB3b_3pod12Gene
+  49:     0x7ff650290d6b - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB1i_5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBG_7context8GenetC
+  50:     0x7ff650273348 - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2V_3pod12GenetElementEEL_EEB2
+  51:     0x7ff65029186b - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBG_7context8GenetCtxNtNtBG_3pod12Ge
+  52:     0x7ff6503cca7b - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueTINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBH_7context8GenetCtxNtNtBH_3pod12G
+  53:     0x7ff65029319b - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCscn7q4dh40g5_7cambium7element2ElTIBC_INtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBG_7context8GenetCtxNtNtBG_3po
+  54:     0x7ff650273348 - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2V_3pod12GenetElementEEL_EEB2
+  55:     0x7ff65028d795 - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCscn7q4dh40g5_7cambium6runner10RunnerTreeNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewB1l_uNtNtBG_7context8GenetCtxNtN
+  56:     0x7ff65028eaae - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCscn7q4dh40g5_7cambium6runner14GenetAppRunnerNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateFG_RL0_B1p_EINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewB1p_uNtNtBG_7con
+  57:     0x7ff6503aba02 - core[6dff922281fde550]::ptr::drop_glue::<turnstone[d7b8377f87a9cda6]::frame_controls::FrameControls>
+  58:     0x7ff6503a88da - core[6dff922281fde550]::ptr::drop_glue::<turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame>
+  59:     0x7ff6503d65fd - core[6dff922281fde550]::ptr::drop_glue::<(usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame)>
+  60:     0x7ff6510850ae - <hashbrown[20b706e42d87b97d]::raw::RawTableInner>::drop_elements::<(usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame)>
+  61:     0x7ff65108bab9 - <hashbrown[20b706e42d87b97d]::raw::RawTableInner>::drop_inner_table::<(usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame), alloc[5ef4293888d15ed5]::alloc::Global>
+  62:     0x7ff650435cac - <hashbrown[20b706e42d87b97d]::raw::RawTable<(usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame)> as core[6dff922281fde550]::ops::drop::Drop>::drop
+  63:     0x7ff650265579 - core[6dff922281fde550]::ptr::drop_glue::<hashbrown[20b706e42d87b97d]::raw::RawTable<(usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame)>>
+  64:     0x7ff650264829 - core[6dff922281fde550]::ptr::drop_glue::<hashbrown[20b706e42d87b97d]::map::HashMap<usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame, std[f8439e2c5135d149]::hash::random::RandomState>>
+  65:     0x7ff6502c72f9 - core[6dff922281fde550]::ptr::drop_glue::<std[f8439e2c5135d149]::collections::hash::map::HashMap<usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame>>
+  66:     0x7ff65024b2e9 - core[6dff922281fde550]::ptr::drop_glue::<core[6dff922281fde550]::cell::UnsafeCell<std[f8439e2c5135d149]::collections::hash::map::HashMap<usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame>>>
+  67:     0x7ff65024b86d - core[6dff922281fde550]::ptr::drop_glue::<core[6dff922281fde550]::cell::RefCell<std[f8439e2c5135d149]::collections::hash::map::HashMap<usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame>>>
+  68:     0x7ff6503b2dae - core[6dff922281fde550]::ptr::drop_glue::<turnstone[d7b8377f87a9cda6]::shell::Shell>
+  69:     0x7ff65023cbed - turnstone[d7b8377f87a9cda6]::launch::run_direct
+  70:     0x7fff7b23bb00 - _CxxFrameHandler3
+  71:     0x7fff7b223a9d - is_exception_typeof
+  72:     0x7fff7b23ae8d - _C_specific_handler
+  73:     0x7fff7b222ce2 - is_exception_typeof
+  74:     0x7fff7b23b8f8 - _CxxFrameHandler3
+  75:     0x7fff98f7a9cf - _chkstk
+  76:     0x7fff98e2dd30 - RtlUnwindEx
+  77:     0x7fff7b23b3d6 - _C_specific_handler
+  78:     0x7fff7b221c20 - is_exception_typeof
+  79:     0x7fff7b222dd8 - is_exception_typeof
+  80:     0x7fff7b23b8f8 - _CxxFrameHandler3
+  81:     0x7fff98f7a94f - _chkstk
+  82:     0x7fff98ed6955 - RtlWow64GetCurrentMachine
+  83:     0x7fff98e29f3d - RtlRaiseException
+  84:     0x7fff967a4efa - RaiseException
+  85:     0x7fff7b2255a9 - CxxThrowException
+  86:     0x7ff65a6ae74d - panic_unwind::imp::throw_exception
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\panic_unwind\src\seh.rs:368
+  87:     0x7ff65a6ae625 - panic_unwind::imp::panic
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\panic_unwind\src\seh.rs:302
+  88:     0x7ff65a6ae625 - panic_unwind::__rust_start_panic
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\panic_unwind\src\lib.rs:95
+  89:     0x7ff65a68a4bf - std::panicking::rust_panic
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:887
+  90:     0x7ff65a69dd1c - std::panicking::resume_unwind
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:878
+  91:     0x7ff65a69d95f - std::panic::resume_unwind
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panic.rs:391
+  92:     0x7ff6512773a2 - <winit[486ccc3c441ea9c4]::platform_impl::windows::event_loop::EventLoop<()>>::dispatch_peeked_messages
+  93:     0x7ff65126e777 - <winit[486ccc3c441ea9c4]::platform_impl::windows::event_loop::EventLoop<()>>::run_on_demand::<<winit[486ccc3c441ea9c4]::event_loop::EventLoop<()>>::run_app<turnstone[d7b8377f87a9cda6]::shell::Shell>::{closure#0}>
+  94:     0x7ff65126e832 - <winit[486ccc3c441ea9c4]::platform_impl::windows::event_loop::EventLoop<()>>::run::<<winit[486ccc3c441ea9c4]::event_loop::EventLoop<()>>::run_app<turnstone[d7b8377f87a9cda6]::shell::Shell>::{closure#0}>
+  95:     0x7ff6509cc72a - <winit[486ccc3c441ea9c4]::event_loop::EventLoop<()>>::run_app::<turnstone[d7b8377f87a9cda6]::shell::Shell>
+  96:     0x7ff65023cb0b - turnstone[d7b8377f87a9cda6]::launch::run_direct
+  97:     0x7ff65023be08 - turnstone[d7b8377f87a9cda6]::launch::run_direct
+  98:     0x7ff65023103e - turnstone[3ba7a3b6e1aaf229]::main
+  99:     0x7ff6502313a6 - <fn() as core[6dff922281fde550]::ops::function::FnOnce<()>>::call_once
+ 100:     0x7ff650231269 - std[f8439e2c5135d149]::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+ 101:     0x7ff65023121c - std[f8439e2c5135d149]::rt::lang_start::<()>::{closure#0}
+ 102:     0x7ff65a69c1d0 - std::rt::lang_start_internal::closure$0
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\rt.rs:175
+ 103:     0x7ff65a69c1d0 - std::panicking::catch_unwind::do_call
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:576
+ 104:     0x7ff65a69c1d0 - std::panicking::catch_unwind
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:544
+ 105:     0x7ff65a69c1d0 - std::panic::catch_unwind
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panic.rs:359
+ 106:     0x7ff65a69c1d0 - std::rt::lang_start_internal
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\rt.rs:171
+ 107:     0x7ff650231207 - std[f8439e2c5135d149]::rt::lang_start::<()>
+ 108:     0x7ff650231099 - main
+ 109:     0x7ff65a7d49ff - invoke_main
+                               at D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl:78
+ 110:     0x7ff65a7d49ff - __scrt_common_main_seh
+                               at D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl:288
+ 111:     0x7fff97c0cdf7 - BaseThreadInitThunk
+ 112:     0x7fff98ed9c2c - RtlUserThreadStart

@@ -246,7 +246,7 @@ impl Shell {
                 .unwrap_or_default()
         }
     }
-    fn focus_in_window(&self, window: u64, focus: crate::surface::FocusTarget) -> bool {
+    pub(super) fn focus_in_window(&self, window: u64, focus: crate::surface::FocusTarget) -> bool {
         use crate::surface::{FocusTarget, SurfaceKind};
         self.input_plan(window).iter().any(|surface| match focus {
             FocusTarget::Content { node, appearance } => {
@@ -268,8 +268,12 @@ impl Shell {
         if !active {
             return false;
         }
-        if super::frame_keys::header_focus_in_window(self.outer_focus.as_ref(), window, self.app.session_id.as_uuid())
-            || self.focus_in_window(window, self.app.focus) {
+        if super::frame_keys::header_focus_in_window(
+            self.outer_focus.as_ref(),
+            window,
+            self.app.session_id.as_uuid(),
+        ) || self.focus_in_window(window, self.app.focus)
+        {
             return true;
         }
         if let Some(focus) = self
@@ -281,7 +285,27 @@ impl Shell {
             self.app.focus = focus;
             return true;
         }
+        if let Some(focus) = self.fallback_window_focus(window) {
+            self.app.focus = focus;
+            self.window_focus.insert(window, focus);
+            return true;
+        }
         false
+    }
+    pub(super) fn fallback_window_focus(&self, window: u64) -> Option<crate::surface::FocusTarget> {
+        use crate::surface::{FocusTarget, SurfaceKind};
+        let plan = self.input_plan(window);
+        let focus = |surface: &crate::surface::Surface| match surface.kind {
+            SurfaceKind::Pane(pane) => Some(FocusTarget::Pane(pane)),
+            SurfaceKind::Graph(pane) => Some(FocusTarget::Graph(pane)),
+            SurfaceKind::Content(node) => Some(FocusTarget::Content {
+                node,
+                appearance: surface.id,
+            }),
+            _ => None,
+        };
+        plan.iter().find(|surface| matches!(surface.kind, SurfaceKind::Pane(pane)|SurfaceKind::Graph(pane) if Some(pane)==self.app.active_pane))
+            .and_then(focus).or_else(|| plan.iter().find_map(focus))
     }
     pub(super) fn native_input_focus(&mut self, window: u64, focused: bool) {
         if focused {
@@ -332,9 +356,14 @@ impl Shell {
         }
         self.input_window = window;
         if !self.deliver_surface_key(key, pressed, text) && pressed {
-            let size = if window == 0 { (self.width, self.height) } else {
-                self.lens_windows.values().find(|lens| lens.ordinal as u64 + 1 == window)
-                    .map(|lens| (lens.width, lens.height)).unwrap_or((1, 1))
+            let size = if window == 0 {
+                (self.width, self.height)
+            } else {
+                self.lens_windows
+                    .values()
+                    .find(|lens| lens.ordinal as u64 + 1 == window)
+                    .map(|lens| (lens.width, lens.height))
+                    .unwrap_or((1, 1))
             };
             self.on_key_in_window(window as usize, size, key);
         }

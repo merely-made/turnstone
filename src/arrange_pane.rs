@@ -29,16 +29,17 @@ use std::rc::Rc;
 use cambium::{
     AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, PointerClick, el, setting_row,
 };
-use mere_surface_api::settings::{
-    SettingControl, SettingMovement, SettingMutability, SettingOption, SettingScope,
-    SettingSecurity, SettingSpec, SettingValue,
-};
 use genet_scripted_dom::ScriptedDom;
+use layout_dom_api::LayoutDom;
 use mere::canvas::{
     CANVAS_LAYOUT_STRATEGIES, CANVAS_PHYSICS_DEPTH_SOURCES, CANVAS_PHYSICS_KIND_SOURCES,
     CANVAS_PHYSICS_LAWS, CANVAS_PHYSICS_MASS_SOURCES, CANVAS_PHYSICS_OVERLAYS,
     CANVAS_PHYSICS_PROFILES, PhysicsDepthSource, PhysicsKindSource, PhysicsLaw, PhysicsMassSource,
     PhysicsOverlay,
+};
+use mere_surface_api::settings::{
+    SettingControl, SettingMovement, SettingMutability, SettingOption, SettingScope,
+    SettingSecurity, SettingSpec, SettingValue,
 };
 
 use crate::action::Action;
@@ -77,14 +78,14 @@ impl ArrangeIntent {
         match self {
             ArrangeIntent::SetLayout(id) if id == FREE_LAYOUT_ID => {
                 Some(Action::SetLayoutStrategy(None))
-            }
+            },
             ArrangeIntent::SetLayout(id) => CANVAS_LAYOUT_STRATEGIES
                 .iter()
                 .find(|(known, _)| *known == id)
                 .map(|(known, _)| Action::SetLayoutStrategy(Some(known))),
             ArrangeIntent::SetLaw(id) => {
                 PhysicsLaw::parse(&id).map(|law| Action::SetPhysicsLaw(law.id()))
-            }
+            },
             ArrangeIntent::SetOverlay { id, on } => PhysicsOverlay::parse(&id)
                 .map(|overlay| Action::SetPhysicsOverlay(overlay.id(), on)),
             ArrangeIntent::SetKindSource(id) => PhysicsKindSource::parse(&id)
@@ -404,6 +405,8 @@ pub struct ArrangePane {
     runner: ArrangeRunner,
     scroll: crate::ui::PaneScroll,
     layout: crate::ui::RetainedLayout,
+    // Drop the runner and its widget resources before final mount custody.
+    mount: Option<cambium::RetainedMount>,
 }
 
 impl Default for ArrangePane {
@@ -414,7 +417,14 @@ impl Default for ArrangePane {
 
 impl ArrangePane {
     pub fn new() -> Self {
-        let dom: DomHandle = Rc::new(RefCell::new(ScriptedDom::new()));
+        Self::new_in(None)
+    }
+
+    pub(crate) fn new_in(mount: Option<cambium::RetainedMount>) -> Self {
+        let dom: DomHandle = mount
+            .as_ref()
+            .map(cambium::RetainedMount::dom)
+            .unwrap_or_else(|| Rc::new(RefCell::new(ScriptedDom::new())));
         let state = ArrangeState {
             choice: Choice {
                 layout: FREE_LAYOUT_ID.to_string(),
@@ -429,16 +439,67 @@ impl ArrangePane {
             viewport_w: 0.0,
             viewport_h: 0.0,
         };
-        let runner = ArrangeRunner::new(
+        let runner = ArrangeRunner::new_at(
             dom.clone(),
+            mount
+                .as_ref()
+                .map_or_else(|| dom.borrow().document(), cambium::RetainedMount::node),
             arrange_view as fn(&ArrangeState) -> ArrangeView,
             state,
         );
         Self {
+            mount: mount.clone(),
             dom,
             runner,
             scroll: crate::ui::PaneScroll::new(),
-            layout: crate::ui::RetainedLayout::new(),
+            layout: crate::ui::RetainedLayout::new_at(
+                mount.as_ref().map(cambium::RetainedMount::node),
+            ),
+        }
+    }
+
+    pub(crate) fn inline_focus(&self) -> Option<genet_scripted_dom::NodeId> {
+        self.runner.focus()
+    }
+    pub(crate) fn focus_inline(&mut self, node: genet_scripted_dom::NodeId) -> bool {
+        let Some(mount) = &self.mount else {
+            return false;
+        };
+        if !cambium_rootstock::WindowDom::new(&self.dom.borrow(), mount.node()).contains(node) {
+            return false;
+        }
+        self.runner.set_focus(Some(node));
+        true
+    }
+    pub(crate) fn inline_selector(
+        &self,
+        selector: &taproot::Selector,
+    ) -> Result<Option<(f32, f32)>, &'static str> {
+        self.layout.selector_point(&self.dom.borrow(), selector)
+    }
+    pub(crate) fn key_inline(&mut self, event: cambium::KeyEvent) -> Vec<ArrangeIntent> {
+        self.runner.dispatch_key(event)
+    }
+    pub(crate) fn blur_inline(&mut self) {
+        self.runner.set_focus(None);
+    }
+    pub(crate) fn inline_accepts_text(&self) -> bool {
+        self.layout
+            .editable_focus(&self.dom.borrow(), self.runner.focus())
+    }
+    pub(crate) fn inline_cursor_area(&self) -> Option<(f32, f32, f32, f32)> {
+        self.layout
+            .cursor_area(&self.dom.borrow(), self.runner.focus())
+    }
+    pub(crate) fn inline_mount(&self) -> Option<cambium::RetainedMount> {
+        self.mount.clone()
+    }
+    pub(crate) fn unbind_inline(&mut self) {
+        self.layout.unbind_inline();
+    }
+    pub(crate) fn bind_inline(&mut self, layout: &crate::ui::InlineLayoutHandle) {
+        if let Some(mount) = &self.mount {
+            self.layout.bind_inline(layout, mount);
         }
     }
 

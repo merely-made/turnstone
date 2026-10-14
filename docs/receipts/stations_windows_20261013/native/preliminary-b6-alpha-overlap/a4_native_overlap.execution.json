@@ -1,0 +1,13 @@
+{
+  "scenario": "a4_native_overlap",
+  "case": "preliminary-b6-alpha-overlap",
+  "workshop": "frame_alpha_workshop",
+  "started_utc": "2026-10-14T08:58:41.8971142Z",
+  "finished_utc": "2026-10-14T08:59:25.1924532Z",
+  "exit": 0,
+  "result_ok": true,
+  "default_surface_poll": true,
+  "executable_sha256": "3b092486e050698001aea3f3589ab57b7153b246e1c5661586c9ef6cd7283ae3",
+  "fixture_sha256": "973f8fcd89d06a9aad359b501a371e3948c80b51726b52d3d3bb94396bf966e0",
+  "primary_lock_sha256": "432883312ec370221f2a383e98ffb1e3a2bf735a235ab35c32621cc9901a2fb3"
+}

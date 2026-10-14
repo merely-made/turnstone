@@ -1,0 +1,110 @@
+RESULT fail
+captured frame_default
+waited 0 frames
+FAIL: assert snap appearance-workshop-ok Eq 'true': got 'false'
+FAIL: assert snap frame-header-height Le '60': got '62'
+FAIL: assert snap frame-css Contains '42px': got '.grid { background-color: rgb(22, 27, 40); color: rgb(210, 216, 230); font-size: 13px; } .grid-header { background-color: rgb(28, 34, 50); } .grid-header-cell { color: rgb(150, 160, 180); font-size: 12px; padding: 6px 10px; white-space: nowrap; overflow: hidden; } .grid-row-odd { background-color: rgb(25, 30, 44); } .grid-row-selected { background-color: rgb(232, 150, 40); } .grid-cell { color: rgb(200, 208, 224); padding: 5px 10px; white-space: nowrap; overflow: hidden; } .grid-row-selected .grid-cell { color: rgb(28, 22, 10); } .pane { background-color: rgb(22, 27, 40); } 
+    .tablist { display: flex; height: 30px; background-color: rgb(18, 22, 33); } .tab { color: rgb(150, 160, 180); font-size: 12px; padding: 8px 14px; white-space: nowrap; } .tab.selected { color: rgb(232, 150, 40); background-color: rgb(22, 27, 40); } .pane-empty { color: rgb(120, 130, 150); font-size: 12px; padding: 12px; } .list-section-title { color: rgb(150, 160, 180); font-size: 12px;                           padding: 10px 14px 4px 14px; white-space: nowrap; }     .list-row { color: rgb(200, 208, 224); font-size: 13px;                 padding: 5px 14px; white-space: nowrap; overflow: hidden; }     .list-row.muted { color: rgb(120, 130, 150); }     .list-row.action { color: rgb(232, 150, 40); }     .detail-section-title { color: rgb(150, 160, 180); font-size: 12px; padding: 10px 14px 4px 14px; white-space: nowrap; } .detail-row { display: flex; padding: 3px 14px; } .detail-key { color: rgb(150, 160, 180); font-size: 12px; width: 130px; white-space: nowrap; overflow: hidden; } .detail-value { color: rgb(200, 208, 224); font-size: 12px; white-space: nowrap; overflow: hidden; } .wb-body { color: rgb(120, 130, 150); font-size: 12px; padding: 12px; background-color: rgb(25, 30, 44); white-space: nowrap; overflow: hidden; } .graph-canvas-swatch { background-color: rgb(18, 22, 33); border: 1px solid rgb(52, 62, 86); border-radius: 7px; } .graph-canvas-swatch-node { background-color: transparent; border: 0; padding: 0; }     .graph-canvas-swatch-label { color: rgb(196, 204, 220); font-size: 10px; } .graph-canvas-swatch-expand { color: rgb(150, 160, 180); font-size: 10px; background-color: rgb(28, 34, 50); border: 0; border-radius: 4px; padding: 2px 5px; } .radio { color: rgb(220, 226, 238); font-size: 14px; } .toggle { color: rgb(220, 226, 238); font-size: 14px; } .radio.selected { color: rgb(232, 150, 40); } .pane, .grid { background-color: var(--tabard-color-bg, rgb(22, 27, 40)); color: var(--tabard-color-text, rgb(216, 222, 234)); font-size: 14.30px; } .list-section-title, .setting-label { color: var(--tabard-color-text-dim, rgb(140, 148, 165)); font-size: 13.20px; } .list-row, .setting-row { color: var(--tabard-color-text, rgb(216, 222, 234)); font-size: 14.30px; } .list-row.muted, .setting-unsupported { color: var(--tabard-color-text-dim, rgb(140, 148, 165)); } .setting-apply { color: var(--tabard-color-text-header, rgb(238, 242, 250)); background-color: var(--tabard-color-surface, rgb(28, 34, 50)); border: 1px solid var(--tabard-color-text-dim, rgb(70, 82, 110)); font-size: 14.30px; } .radio { color: var(--tabard-color-text, rgb(216, 222, 234)); font-size: 14.30px; } .toggle { color: var(--tabard-color-text, rgb(216, 222, 234)); font-size: 14.30px; } .radio.selected { color: var(--tabard-color-primary, rgb(232, 150, 40)); } .slider-track { background-color: var(--tabard-color-text-dim, rgb(70, 82, 110)); } .slider-thumb { background-color: var(--tabard-color-primary, rgb(232, 150, 40)); border-color: var(--tabard-color-text-dim, rgb(70, 82, 110)); }
+/* Tabard derived mode: dark; harmony applied; Tinct explicit-mode base and syntax palettes. */
+:root {
+  --tabard-color-bg: #090C1A;
+  --tabard-color-surface: #131826;
+  --tabard-color-surface-2: #1F2332;
+  --tabard-color-surface-hover: #2D3242;
+  --tabard-color-text-header: #E7EEFF;
+  --tabard-color-text: #E7EEFF;
+  --tabard-color-text-dim: #A3AABA;
+  --tabard-color-text-disabled: #686E7D;
+  --tabard-color-primary: #3366C8;
+  --tabard-color-on-primary: #F4F4F8;
+  --tabard-color-secondary: #2E9DA6;
+  --tabard-color-on-secondary: #14141A;
+  --tabard-color-tertiary: #E0A846;
+  --tabard-color-on-tertiary: #14141A;
+  --tabard-color-success: #4FB36E;
+  --tabard-color-danger: #D54E4E;
+  --tabard-syntax-heading: #73A9FF;
+  --tabard-syntax-emphasis: #E7EEFF;
+  --tabard-syntax-strong: #E7EEFF;
+  --tabard-syntax-link: #24BCE5;
+  --tabard-syntax-quote: #A3AABA;
+  --tabard-syntax-verbatim: #D4A23B;
+  --tabard-syntax-keyword: #7DAAFD;
+  --tabard-syntax-type: #E288C2;
+  --tabard-syntax-function: #BA96EF;
+  --tabard-syntax-string: #EB9259;
+  --tabard-syntax-number: #ADB348;
+  --tabard-syntax-comment: #A3AABA;
+  --tabard-syntax-punctuation: #A3AABA;
+  --tabard-syntax-url: #24BCE5;
+  --tabard-syntax-mention: #F1878D;
+  --tabard-syntax-tag: #6FC179;
+}
+:root {
+  --tabard-font-interface: serif;
+}
+
+.frisket-split { width: 100%; height: 100%; } .frisket-branch { display: flex; } .frisket-stack { width: 100%; height: 100%; } .frisket-tabbar { display: flex; flex-grow: 0; flex-shrink: 0; flex-basis: 44px; align-items: stretch; height: 44px; padding: 4px 2px 0 2px; background: #33333a; } .frisket-tab { display: flex; align-items: center; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; min-width: 0; max-width: 360px; overflow: hidden; padding: 8px 10px; font-size: 15px; line-height: 1.2; color: #cccccc; background: #2a2a30; margin-right: 3px; } .frisket-tab.active { color: #ffffff; background: #4a4a55; } .frisket-label { flex-grow: 1; flex-shrink: 1; flex-basis: 0px; min-width: 0; overflow: hidden; white-space: nowrap; } .frisket-close { flex-grow: 0; flex-shrink: 0; flex-basis: 28px; width: 28px; height: 28px; margin-left: 4px; padding: 4px 0; text-align: center; font-size: 15px; color: #999999; } .frisket-content { flex-grow: 1; flex-shrink: 1; flex-basis: 0px; min-height: 0; background: #ffffff; } .frisket-divider { flex-grow: 0; flex-shrink: 0; flex-basis: 10px; background: #1a1a1f; }
+.workspace-floats { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; } .workspace-float { overflow: hidden; pointer-events: auto; }
+/* Tabard derived mode: dark; harmony applied; Tinct explicit-mode base and syntax palettes. */
+:root {
+  --tabard-color-bg: #090C1A;
+  --tabard-color-surface: #131826;
+  --tabard-color-surface-2: #1F2332;
+  --tabard-color-surface-hover: #2D3242;
+  --tabard-color-text-header: #E7EEFF;
+  --tabard-color-text: #E7EEFF;
+  --tabard-color-text-dim: #A3AABA;
+  --tabard-color-text-disabled: #686E7D;
+  --tabard-color-primary: #3366C8;
+  --tabard-color-on-primary: #F4F4F8;
+  --tabard-color-secondary: #2E9DA6;
+  --tabard-color-on-secondary: #14141A;
+  --tabard-color-tertiary: #E0A846;
+  --tabard-color-on-tertiary: #14141A;
+  --tabard-color-success: #4FB36E;
+  --tabard-color-danger: #D54E4E;
+  --tabard-syntax-heading: #73A9FF;
+  --tabard-syntax-emphasis: #E7EEFF;
+  --tabard-syntax-strong: #E7EEFF;
+  --tabard-syntax-link: #24BCE5;
+  --tabard-syntax-quote: #A3AABA;
+  --tabard-syntax-verbatim: #D4A23B;
+  --tabard-syntax-keyword: #7DAAFD;
+  --tabard-syntax-type: #E288C2;
+  --tabard-syntax-function: #BA96EF;
+  --tabard-syntax-string: #EB9259;
+  --tabard-syntax-number: #ADB348;
+  --tabard-syntax-comment: #A3AABA;
+  --tabard-syntax-punctuation: #A3AABA;
+  --tabard-syntax-url: #24BCE5;
+  --tabard-syntax-mention: #F1878D;
+  --tabard-syntax-tag: #6FC179;
+}
+:root {
+  --tabard-font-interface: serif;
+}
+
+.frisket-tabbar { background:var(--tabard-color-surface); height:auto; flex-basis:auto; min-height:48.40px; padding:4.40px 2.20px 0; }
+.frisket-tab { color:var(--tabard-color-text); background:var(--tabard-color-surface-2); padding:8.80px 11.00px; font-size:16.50px; line-height:1.2; }
+.frisket-tab.active { color:var(--tabard-color-text-header); background:var(--tabard-color-bg); }
+.frisket-close { color:var(--tabard-color-text-dim); font-size:16.50px; width:30.80px; flex-basis:30.80px; min-height:30.80px; height:auto; padding:4.40px 0; }
+.frisket-divider { background:var(--tabard-color-text-dim); }
+.frisket-content { background:transparent; }
+.turnstone-window-root { background:var(--tabard-color-bg); }
+[data-frame-focus=true]{outline:2px solid var(--tabard-color-primary);outline-offset:-2px;}
+:root {
+  --tabard-font-interface: serif;
+}
+.frisket-tab,.frisket-label,.frisket-close{font-family:var(--tabard-font-interface);}
+'
+captured frame_fonts_applied
+FAIL: line 1: unknown verb: 'captures-differ frame_default frame_fonts_applied'
+captured frame_fonts_narrow
+captured frame_graph_activated
+presentation frames=84 captures=4 blank=0
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-b6-appearance\captures\frame_appearance\frame_default.png digest=bbb4c2d5a08c2448 blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-b6-appearance\captures\frame_appearance\frame_fonts_applied.png digest=311cd800a6f7faee blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-b6-appearance\captures\frame_appearance\frame_fonts_narrow.png digest=f1305e2d3e0e2f1f blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-b6-appearance\captures\frame_appearance\frame_graph_activated.png digest=311cd800a6f7faee blank=false
+FAIL: workshop scenario did not complete successfully

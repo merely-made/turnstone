@@ -4,9 +4,9 @@ click role:textbox @data-field=name
 input-text TurnstoneFrameFonts
 click role:button @data-font-role=interface
 click .font-family-serif
-key tab-until data-field=font-size
+click role:textbox @data-field=font-size
 input-text 42
-key tab-until data-field=font-line-height
+click role:textbox @data-field=font-line-height
 input-text 1.5
 click role:button @data-action=apply-fonts
 capture frame_fonts_editor

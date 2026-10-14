@@ -1,0 +1,30 @@
+[
+  {
+    "blur_radius_px": 18.0,
+    "bounds": [
+      982.0000610351562,
+      168.0,
+      1738.0,
+      792.0
+    ],
+    "corner_radius": 0.0,
+    "device_generation": 1,
+    "dim": 1800,
+    "invert": false,
+    "key": 18446555314191859713
+  },
+  {
+    "blur_radius_px": 18.0,
+    "bounds": [
+      154.0,
+      220.0,
+      910.0,
+      844.0
+    ],
+    "corner_radius": 0.0,
+    "device_generation": 1,
+    "dim": 1800,
+    "invert": false,
+    "key": 18446555314191859714
+  }
+]

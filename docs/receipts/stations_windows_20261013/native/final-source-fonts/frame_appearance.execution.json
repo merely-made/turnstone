@@ -1,0 +1,13 @@
+{
+  "scenario": "frame_appearance",
+  "case": "final-source-fonts",
+  "workshop": "frame_fonts_workshop",
+  "started_utc": "2026-10-14T09:55:27.1228912Z",
+  "finished_utc": "2026-10-14T09:55:58.7433325Z",
+  "exit": 0,
+  "result_ok": true,
+  "default_surface_poll": true,
+  "executable_sha256": "4851ee2c1aaa46d9c33d0aeb706b0ab7f4b4c92c50ccd474206460cc619a25dc",
+  "fixture_sha256": "ff37ad65b97c011f5eb1e09192bfb76d548fd5823179e7c7eba1861e7896dc53",
+  "primary_lock_sha256": "d418c6ca39048e6927226d8646d6fc14a3feda4cba0ee9877d130bfff32204e6"
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "file": "00_inline_nodes.png",
+    "size": [
+      2360,
+      1600
+    ],
+    "transparent_pixels": 0,
+    "raw_equals_final": true
+  },
+  {
+    "file": "01_inline_roster.png",
+    "size": [
+      2360,
+      1600
+    ],
+    "transparent_pixels": 0,
+    "raw_equals_final": true
+  },
+  {
+    "file": "02_inline_float.png",
+    "size": [
+      2360,
+      1600
+    ],
+    "transparent_pixels": 0,
+    "raw_equals_final": true
+  },
+  {
+    "file": "04_inline_returned.png",
+    "size": [
+      2360,
+      1600
+    ],
+    "transparent_pixels": 0,
+    "raw_equals_final": true
+  }
+]

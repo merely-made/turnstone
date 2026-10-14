@@ -1,0 +1,27 @@
+[
+  {
+    "adapter": {
+      "backend": "Vulkan",
+      "device": 10464,
+      "device_type": "DiscreteGpu",
+      "name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "vendor": 4318
+    },
+    "alpha": "Straight",
+    "content_generation": 110,
+    "device_generation": 1,
+    "dimensions": [
+      991,
+      703
+    ],
+    "file": "04_overlap_settled.source-1176657005713031169.png",
+    "format": "Rgba8Unorm",
+    "image_key": 15011715060995194881,
+    "native_window_scale": 2.0,
+    "producer_key": 1176657005713031169,
+    "raster_scale": 1.0,
+    "session": "182a4c2c-d64f-4955-98df-7f78e460caae",
+    "surface_id": 20075162472808448,
+    "window": 0
+  }
+]

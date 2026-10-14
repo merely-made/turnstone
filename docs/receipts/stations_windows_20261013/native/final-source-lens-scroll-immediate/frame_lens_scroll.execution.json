@@ -1,0 +1,13 @@
+{
+  "scenario": "frame_lens_scroll",
+  "case": "final-source-lens-scroll-immediate",
+  "workshop": "",
+  "started_utc": "2026-10-14T09:57:50.4479934Z",
+  "finished_utc": "2026-10-14T09:58:16.3900256Z",
+  "exit": 0,
+  "result_ok": true,
+  "default_surface_poll": true,
+  "executable_sha256": "4851ee2c1aaa46d9c33d0aeb706b0ab7f4b4c92c50ccd474206460cc619a25dc",
+  "fixture_sha256": "bd01007ee358a661a3135ddc565855c46731b6d12214a0e2cf8e7aec147192ff",
+  "primary_lock_sha256": "d418c6ca39048e6927226d8646d6fc14a3feda4cba0ee9877d130bfff32204e6"
+}

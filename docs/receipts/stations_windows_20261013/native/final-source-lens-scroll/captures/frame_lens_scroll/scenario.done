@@ -1,0 +1,5 @@
+RESULT fail
+FAIL: assert lens-pane '0:settings': the lens spaces hold ["0:orrery", "0:turnstone.settings"]
+FAIL: window 1: no current pane owns wheel at 1400,400
+waited 0 frames
+presentation frames=68 captures=0 blank=0

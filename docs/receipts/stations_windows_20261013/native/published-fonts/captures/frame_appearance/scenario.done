@@ -1,0 +1,11 @@
+RESULT ok
+captured frame_default
+waited 0 frames
+captured frame_fonts_applied
+captured frame_fonts_narrow
+captured frame_graph_activated
+presentation frames=84 captures=4 blank=0
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\published-fonts\captures\frame_appearance\frame_default.png digest=b74550de99fdfda3 blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\published-fonts\captures\frame_appearance\frame_fonts_applied.png digest=9809724ed939dc3f blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\published-fonts\captures\frame_appearance\frame_fonts_narrow.png digest=e68bcadd55d8e4e2 blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\published-fonts\captures\frame_appearance\frame_graph_activated.png digest=96a44694dd1a00f8 blank=false

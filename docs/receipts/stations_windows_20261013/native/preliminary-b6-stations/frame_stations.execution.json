@@ -1,0 +1,13 @@
+{
+  "scenario": "frame_stations",
+  "case": "preliminary-b6-stations",
+  "workshop": "",
+  "started_utc": "2026-10-14T09:05:27.1425355Z",
+  "finished_utc": "2026-10-14T09:05:57.3404819Z",
+  "exit": 0,
+  "result_ok": true,
+  "default_surface_poll": true,
+  "executable_sha256": "3b092486e050698001aea3f3589ab57b7153b246e1c5661586c9ef6cd7283ae3",
+  "fixture_sha256": "a977122e397710c7bf8bfa9f4ce4812a6237fde1f4b3e2c866f93d49d095b734",
+  "primary_lock_sha256": "432883312ec370221f2a383e98ffb1e3a2bf735a235ab35c32621cc9901a2fb3"
+}

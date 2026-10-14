@@ -1,0 +1,5 @@
+RESULT ok
+waited 0 frames
+captured frame_missing_font_fallback
+presentation frames=50 captures=1 blank=0
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\final-source-missing-fonts\captures\frame_appearance_missing\frame_missing_font_fallback.png digest=11a60f069390443a blank=false

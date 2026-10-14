@@ -205,14 +205,12 @@ pub(super) fn dispatch_primary_chrome_press(
     host: &mut impl PrimaryPressAdmissionHost,
     intent: Option<crate::chrome_view::ChromeIntent>,
 ) -> bool {
-    let Some(intent) = intent else { return false; };
+    let Some(intent) = intent else {
+        return false;
+    };
     let action = match intent {
-        crate::chrome_view::ChromeIntent::CommitRow(index) => {
-            Action::OmnibarCommitRow(index)
-        },
-        crate::chrome_view::ChromeIntent::ToggleKeep(index) => {
-            Action::OmnibarToggleKeepRow(index)
-        },
+        crate::chrome_view::ChromeIntent::CommitRow(index) => Action::OmnibarCommitRow(index),
+        crate::chrome_view::ChromeIntent::ToggleKeep(index) => Action::OmnibarToggleKeepRow(index),
         crate::chrome_view::ChromeIntent::NavBack => Action::NavBack,
         crate::chrome_view::ChromeIntent::NavForward => Action::NavForward,
         crate::chrome_view::ChromeIntent::Reload => Action::Reload,
@@ -246,7 +244,9 @@ pub(super) fn dispatch_primary_chrome_press(
 }
 
 pub(super) fn reject_primary_omnibar_press(host: &mut impl PrimaryPressAdmissionHost) -> bool {
-    if !host.pointer_omnibar_open() { return false; }
+    if !host.pointer_omnibar_open() {
+        return false;
+    }
     dispatch_primary_action_press(host, Action::OmnibarClose);
     true
 }
@@ -258,15 +258,23 @@ pub(super) fn dispatch_primary_context_press(
 ) -> bool {
     if button != MouseButton::Right
         || hit.is_some_and(|hit| matches!(hit.kind, crate::surface::SurfaceKind::Graph(_)))
-    { return false; }
+    {
+        return false;
+    }
     dispatch_primary_action_press(host, Action::OmnibarOpen { command: true });
     true
 }
 
 impl PrimaryPressAdmissionHost for Shell {
-    fn pointer_press_action(&mut self, action: Action) { self.act(action); }
-    fn pointer_omnibar_open(&self) -> bool { self.app.omnibar.open }
-    fn pointer_retire_primary_pointers(&mut self) { self.pointer_cancel_primary_content(); }
+    fn pointer_press_action(&mut self, action: Action) {
+        self.act(action);
+    }
+    fn pointer_omnibar_open(&self) -> bool {
+        self.app.omnibar.open
+    }
+    fn pointer_retire_primary_pointers(&mut self) {
+        self.pointer_cancel_primary_content();
+    }
 }
 
 /// The actual primary UA admission gate, after chrome has offered the press.
@@ -428,11 +436,14 @@ impl PrimaryPointerHost for Shell {
         super::window_input::captured_mouse(&self.content_sessions.pool)
             .and_then(|id| self.content_sessions.pool.placement(&id))
             .is_some_and(|placement| placement.window != 0)
-            || self.contributed_pointer.is_some_and(|admitted| admitted.window != 0)
+            || self
+                .contributed_pointer
+                .is_some_and(|admitted| admitted.window != 0)
     }
     fn pointer_cancel_primary_content(&mut self) {
         // Interception retires custody; only physical Up changes button masks.
-        self.touch_input.cancel_window(&mut self.content_sessions.pool, 0);
+        self.touch_input
+            .cancel_window(&mut self.content_sessions.pool, 0);
     }
     fn pointer_has_contributed_capture(&self) -> bool {
         self.contributed_pointer.is_some()
@@ -579,6 +590,14 @@ impl Shell {
             .click(0, x, y, self.width.max(1), self.height.max(1))
             .into_iter()
             .next();
+        tracing::debug!(
+            x,
+            y,
+            ?button,
+            ?chrome_intent,
+            omnibar = self.app.omnibar.open,
+            "physical pane press admission"
+        );
         if dispatch_primary_chrome_press(self, chrome_intent) {
             return;
         }
@@ -593,12 +612,19 @@ impl Shell {
         if reject_primary_omnibar_press(self) {
             return;
         }
-        if button != MouseButton::Left {self.leave_frame_focus();}
-        if button == MouseButton::Left && self.outer_press(0, (self.width.max(1),self.height.max(1)),x,y) {
-            self.pointer_capture=None; self.request_redraw(); return;
+        if button != MouseButton::Left {
+            self.leave_frame_focus();
+        }
+        if button == MouseButton::Left
+            && self.outer_press(0, (self.width.max(1), self.height.max(1)), x, y)
+        {
+            self.pointer_capture = None;
+            self.request_redraw();
+            return;
         }
         let plan = self.surface_plan();
         let hit = crate::surface::hit_test(&plan, self.app.focus, x, y);
+        tracing::debug!(x, y, ?hit, "physical surface press selected");
         // Right-click is the context menu the palette registry names: the
         // command palette (the `>` actions lane). On the canvas the press goes
         // to the canvas, so a right-drag selects (Scenograph editor plan
@@ -639,6 +665,10 @@ impl Shell {
                             pane.mouse_press(hit.local.0, hit.local.1);
                             self.request_redraw();
                             return;
+                        }
+                        if self.renderers.inline_mount(id).is_some() {
+                            self.app.focus = crate::surface::FocusTarget::Pane(id);
+                            self.input_window = 0;
                         }
                         match self.pane_content(id) {
                             Some(PaneContent::Trail) => {
@@ -958,6 +988,7 @@ impl Shell {
                             _ => {},
                         }
                     }
+                    self.sync_ime_allowed();
                     self.request_redraw();
                     return;
                 },
@@ -982,7 +1013,9 @@ impl Shell {
                         self.request_redraw();
                     }
                 },
-                crate::surface::SurfaceKind::Chrome | crate::surface::SurfaceKind::Frame | crate::surface::SurfaceKind::FloatFrame(_) => {},
+                crate::surface::SurfaceKind::Chrome
+                | crate::surface::SurfaceKind::Frame
+                | crate::surface::SurfaceKind::FloatFrame(_) => {},
             }
         }
     }
@@ -1440,7 +1473,8 @@ impl Shell {
         else {
             return;
         };
-        if captured.is_none() && button == MouseButton::Left
+        if captured.is_none()
+            && button == MouseButton::Left
             && self.outer_release(0, (self.width.max(1), self.height.max(1)), x, y)
         {
             self.request_redraw();

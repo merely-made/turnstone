@@ -1,0 +1,13 @@
+{
+  "scenario": "frame_appearance_missing",
+  "case": "published-missing-fonts",
+  "workshop": "frame_fonts_missing_workshop",
+  "started_utc": "2026-10-14T10:11:23.5043327Z",
+  "finished_utc": "2026-10-14T10:11:48.8763803Z",
+  "exit": 0,
+  "result_ok": true,
+  "default_surface_poll": true,
+  "executable_sha256": "8a129e076def7c18da1eac4e8a3d604fcea186203021920053c64ff5bb48704f",
+  "fixture_sha256": "4e46f8063a0bf2ca05769981e2993e6a6749a6cd0bb5d22e26281731af018202",
+  "primary_lock_sha256": "d418c6ca39048e6927226d8646d6fc14a3feda4cba0ee9877d130bfff32204e6"
+}

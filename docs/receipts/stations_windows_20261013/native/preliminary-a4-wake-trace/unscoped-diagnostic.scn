@@ -1,0 +1,50 @@
+# Fresh private profile/session stores. Real in-house body input, stations and
+# shared-frame paint; native captures still require review by the owning host.
+settle 20
+key escape
+resize 1180 800
+act Open Roster pane
+settle 5
+assert snap inline-component-count == 1
+click .tab Links
+settle 5
+assert snap roster-tab == Links
+assert snap inline-roster-tabs ~ Links
+capture 01_inline_roster
+act Float pane
+settle 5
+assert snap inline-component-count == 1
+assert snap floats == roster
+assert snap roster-tab == Links
+assert snap inline-roster-tabs ~ Links
+capture 02_inline_float
+inline-a11y-window 0 click tab Nodes
+assert snap roster-tab == Nodes
+inline-a11y-window 0 click tab Links
+assert snap roster-tab == Links
+act Tear out pane
+settle 15
+assert windows == 2
+assert lens-pane 0:roster
+assert snap roster-tab == Links
+key-window 1 ctrl+f6
+assert snap frame-focus-slot == 1
+key-window 1 escape
+assert snap frame-focus-slot == none
+inline-a11y-window 1 click tab Nodes
+assert snap roster-tab == Nodes
+inline-a11y-window 1 click tab Links
+assert snap roster-tab == Links
+key-window 1 left
+assert snap roster-tab == Nodes
+key-window 1 right
+assert snap roster-tab == Links
+assert snap inline-roster-tabs ~ Links
+capture-lens 03_inline_lens
+act Return pane to primary
+settle 10
+assert snap inline-component-count == 1
+assert snap roster-tab == Links
+assert snap inline-roster-tabs ~ Links
+capture 04_inline_returned
+assert snap capture-errors == 0

@@ -1,0 +1,7 @@
+RESULT fail
+waited 0 frames
+captured 01_inline_alpha_over_native_graph
+FAIL: no successful main presentation for ten seconds
+presentation frames=97 captures=1 blank=0
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-19947-alpha\captures\01_inline_alpha_over_native_graph.png digest=17f733744f29d1d3 blank=false
+FAIL: window=0 generation=1 native source=20075162472808448: retained appearance aperture is absent or ambiguous

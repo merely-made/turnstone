@@ -1,0 +1,222 @@
+{
+  "scope": "Final Turnstone A4 source freeze; normal published Mere77fd/Genetb6/Netrender6a consumer qualification without local path overrides",
+  "status": "passed17 affected normal-source tests/native build;14 headedcases/40primary+lensPNG/1141primaryframes; physical and earlyfade timing gates named separately",
+  "source_owner": "/root/a4_composition",
+  "source_paths": [
+    {
+      "path": "src/arrange_pane.rs",
+      "sha256": "b21c6fdaff8b1d10065701bd9a4a2472bf5f3fb799665f87878b26d2fb29e32b"
+    },
+    {
+      "path": "src/cambium_pane.rs",
+      "sha256": "6c6d3ebbc3486ca8ed84ef573d7a69cd03cf01c01ba869e3da664f92efbf5cb3"
+    },
+    {
+      "path": "src/device_receipts_pane.rs",
+      "sha256": "d2272e75ffafcb9b9e9b606c9879200199219de9ddbddb6412c8183b17c2a2d1"
+    },
+    {
+      "path": "src/frame_a11y.rs",
+      "sha256": "96171246a46a09af9bff414a22c77fb6ce5f9c20024249b3b2538642a567c32a"
+    },
+    {
+      "path": "src/frame_controls.rs",
+      "sha256": "28e1b512c544c322690fbcd6d9a3446f046d32d10ae920e91e35edeb4e1d7f37"
+    },
+    {
+      "path": "src/frame_style.rs",
+      "sha256": "59ebd0d1677408b4344abd692d7241150d22906c16501d72df3d1f9300ddcc74"
+    },
+    {
+      "path": "src/frozen_projection_pane.rs",
+      "sha256": "3afb25f751fa4b98d4546e57c0240f487e1c6fd5b486e32ffba76e4bd1c9852b"
+    },
+    {
+      "path": "src/inline_pane.rs",
+      "sha256": "d87d2c0a96023d4aca89f493c39b0b1fc6d441e72ea0e1d0e18c8ece857aa5cb"
+    },
+    {
+      "path": "src/inspector_pane.rs",
+      "sha256": "4cb9140817507958a7a1cb98712dc75560586eec3973d98d5b45cfefb5ae955e"
+    },
+    {
+      "path": "src/lib.rs",
+      "sha256": "9a92094bf4857c8a12cfa56daa350a4fcd95e3d85cbf838d9874c5302c348dc2"
+    },
+    {
+      "path": "src/outer_frame.rs",
+      "sha256": "77734b810fd57c315ce6c380dacf6dba185da5500181167385ea841c20c8f2c9"
+    },
+    {
+      "path": "src/publish_pane.rs",
+      "sha256": "f2a04ebb452fc62c6e63e5b16ac867f5009d22e967d511ea0e369b8ac8193af9"
+    },
+    {
+      "path": "src/scenario.rs",
+      "sha256": "a467d5a45deeba3a11668cd1054dae4894ab50ee6d114c636502a293393ca59c"
+    },
+    {
+      "path": "src/settings_pane.rs",
+      "sha256": "c848319f65a1e36ddec346f03dd4595d2ed063716edb6010ec5b7dbafdd41aaf"
+    },
+    {
+      "path": "src/share_reader_pane.rs",
+      "sha256": "783bc7d4b0b4e7fd7f1d3d3459a2b0fcaabb4360192cd424c66338c1d67af421"
+    },
+    {
+      "path": "src/surface.rs",
+      "sha256": "6be28f9f2254b4aa9d8e993f7e67b6002c7bdb9399b2119deb3385eff9616808"
+    },
+    {
+      "path": "src/trail_pane.rs",
+      "sha256": "75eb4f8de085242250858584b4d60181a806aefc092d2ef5f7dfe1712c646bff"
+    },
+    {
+      "path": "src/transcript_pane.rs",
+      "sha256": "a102a576c484e8c122085ee88db2c50a129c863c4593274befa0b86e4066b57d"
+    },
+    {
+      "path": "src/ui.rs",
+      "sha256": "7c7d150a155e6a3e2330fbba7197ad6ce7638e7adb1c4c64376df3e9c0363015"
+    },
+    {
+      "path": "src/workbench_pane.rs",
+      "sha256": "de250dbcd0bbeb13d8983627eeab48cee9782fbc873f217225757c81521d437a"
+    },
+    {
+      "path": "src/swatch_pane/mod.rs",
+      "sha256": "00158cc5075b9263b206742195966f2b69634eb4f7afd845e5c6aff0caf5b8b9"
+    },
+    {
+      "path": "src/shell/content_pool.rs",
+      "sha256": "80d0e604ae848d9e6f60721ea9dff2e16a52481baa57c63c23d9c42c9a12cbfe"
+    },
+    {
+      "path": "src/shell/controller_input.rs",
+      "sha256": "62fef1bce4332951f4af494c62b0b6cabfcb6b3f9cb2cb592e2ab42bcbae7de6"
+    },
+    {
+      "path": "src/shell/drive.rs",
+      "sha256": "d162046e099b1aef429e2e7e165f1e58061c96e618482e9f85043ef9909b11ff"
+    },
+    {
+      "path": "src/shell/events.rs",
+      "sha256": "f72332f6de80b6519f9f05e5af285e5c900c34eb2a619a6d399c3d17256c9110"
+    },
+    {
+      "path": "src/shell/frame_keys.rs",
+      "sha256": "07241bc88d32188f716b4317c652654bbd31c8b04ce2efc5b795bf131600ffcb"
+    },
+    {
+      "path": "src/shell/input.rs",
+      "sha256": "9a9acd431c6b500c66ff2154278b472774ae44d39c2ef154c8cc9a8d25897ed6"
+    },
+    {
+      "path": "src/shell/keys.rs",
+      "sha256": "0bf806b0bbc2da0a60011835edb2e89c76baef29559131521912fd15f0ae9684"
+    },
+    {
+      "path": "src/shell/lens.rs",
+      "sha256": "02c4397563fe2d878b4a1c41273244089a6229aac867250dc14f7cc45352c038"
+    },
+    {
+      "path": "src/shell/mod.rs",
+      "sha256": "5245bac5d6466a7285be8e6d7e2160329b9682bed3613b7c284c1e4fa6bc6ebf"
+    },
+    {
+      "path": "src/shell/outer_workspace.rs",
+      "sha256": "ed12575cb16f4ce07f4852a7f2a9395c382b7ad1e62820e75ea1ec8b6004bf69"
+    },
+    {
+      "path": "src/shell/render.rs",
+      "sha256": "1a99d8a769d61dcd2efa5361c7ebcb251ef6c5589f1f175a8d407d2408467ce8"
+    },
+    {
+      "path": "src/shell/renderers.rs",
+      "sha256": "bdb737adfdb4390f65aa7fda300c1d821ac964a79a7df4a1e582b8a7b1aefbad"
+    },
+    {
+      "path": "src/shell/window_a11y.rs",
+      "sha256": "e9ca9e7fc986e3e02b3043c71a011031798123b5ba227ae6be548cf3c02c7afd"
+    },
+    {
+      "path": "src/shell/surface_frames.rs",
+      "sha256": "e0e7971c1d2a42ad6aa4fe16dba593a1525f995cb56c80d6789696e650811a76"
+    },
+    {
+      "path": "src/shell/native_composition.rs",
+      "sha256": "2d6098774d820d87c5b8e0f8c8ec3fe685da9d01d4ab576d1637c24265a33f2d"
+    }
+  ],
+  "fixture_paths": [
+    {
+      "path": "scenarios/a4_inline_components.scn",
+      "sha256": "bac82d218f49cf01a7af9acad90e128751ba4249db263199e0a9329992982d72"
+    },
+    {
+      "path": "scenarios/a4_native_overlap.scn",
+      "sha256": "973f8fcd89d06a9aad359b501a371e3948c80b51726b52d3d3bb94396bf966e0"
+    },
+    {
+      "path": "scenarios/frame_alpha_workshop.scn",
+      "sha256": "87c86d4895ddcec69353d6ebf2745c37d6ae79f465a8dd2b08a65ec145bc5cbd"
+    },
+    {
+      "path": "scenarios/frame_lens_scroll.scn",
+      "sha256": "bd01007ee358a661a3135ddc565855c46731b6d12214a0e2cf8e7aec147192ff"
+    },
+    {
+      "path": "scenarios/frame_controls_accessibility.scn",
+      "sha256": "2341d550f75518080a3d8a873fed52cdb037e1e72bddbec2798afa058fa0e930"
+    },
+    {
+      "path": "scenarios/frame_fonts_workshop.scn",
+      "sha256": "f70233f21f55fd9669515276233d90322f16c627e493b50582e166f0cd7f3475"
+    },
+    {
+      "path": "scenarios/frame_fonts_missing_workshop.scn",
+      "sha256": "52b4c1dfd93c4e3029e5a9245740193e393b034ed59532bf12466f8703fd2c44"
+    },
+    {
+      "path": "scenarios/frame_appearance.scn",
+      "sha256": "ff37ad65b97c011f5eb1e09192bfb76d548fd5823179e7c7eba1861e7896dc53"
+    },
+    {
+      "path": "scenarios/frame_appearance_reopen.scn",
+      "sha256": "716a04c286ab6cc5e143e8f1eb53579d134049c589aa609a9e3448aa1b9fa3e5"
+    }
+  ],
+  "control_receipt": "preliminary-b6-observer-root-controls.json",
+  "native_encoding": "Scene/frame/source readbacks straight RGBA; final target readbacks premultiplied RGBA over transparent clear, or opaque when authored root backdrop covers viewport",
+  "physical_gates_open": [
+    "human assistive technology",
+    "physical OS activation",
+    "monitor DPI transitions",
+    "early headed scrollbar fade pixel timing"
+  ],
+  "published_executable": {
+    "lock_sha256": "d418c6ca39048e6927226d8646d6fc14a3feda4cba0ee9877d130bfff32204e6",
+    "executable": "C:/t/cargo-targets/turnstone/debug/turnstone.exe",
+    "sha256": "8a129e076def7c18da1eac4e8a3d604fcea186203021920053c64ff5bb48704f",
+    "finished_utc": "2026-10-14T10:05:04.4420818Z",
+    "manifest_sha256": "85f66cb16eb0610dd7747e7eff0b18b6fb168b60d26e51211a7d28e587b462e9"
+  },
+  "documentation_paths": [
+    {
+      "path": "design_docs/DOC_README.md",
+      "sha256": "ccca1cb0bb5411148c2bd1b247786e931a82662ffcfa45ecc50bd2b6439b7c31"
+    },
+    {
+      "path": "design_docs/2026-08-08_pane_registry_and_graph_panes_plan.md",
+      "sha256": "a346494f3d69dc50003ec5727c8b8d19380b7b9b2e907cdca71a859143146560"
+    },
+    {
+      "path": "docs/receipts/stations_windows_20261013/a4-native-plan.md",
+      "sha256": "458ca9055e652b5148745fafe7e89b2ce4c23055f353c7dcc4a38bfeaaf0d628"
+    },
+    {
+      "path": "docs/receipts/stations_windows_20261013/a4-document-wake-audit.md",
+      "sha256": "6ed3771e138dba4e772e6e291ace243b5cff6f86c253dededdc9f3cd935579af"
+    }
+  ]
+}

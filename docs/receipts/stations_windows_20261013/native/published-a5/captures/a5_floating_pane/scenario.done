@@ -1,0 +1,15 @@
+RESULT ok
+captured 01_gloss_float
+captured 02_gloss_raised
+captured 03_gloss_docked_nested
+captured 04_primary_after_tearout
+captured 06_gloss_returned_float
+captured 07_gloss_returned_docked
+A5 floating pane desktop receipt complete
+presentation frames=176 captures=6 blank=0
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\published-a5\captures\a5_floating_pane\01_gloss_float.png digest=18b6805158d15b06 blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\published-a5\captures\a5_floating_pane\02_gloss_raised.png digest=9aa48480f4f24f98 blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\published-a5\captures\a5_floating_pane\03_gloss_docked_nested.png digest=908800c415c49cb1 blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\published-a5\captures\a5_floating_pane\04_primary_after_tearout.png digest=feb25722c8af12fe blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\published-a5\captures\a5_floating_pane\06_gloss_returned_float.png digest=8cd6a93122003c09 blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\published-a5\captures\a5_floating_pane\07_gloss_returned_docked.png digest=908800c415c49cb1 blank=false

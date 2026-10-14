@@ -1,0 +1,11 @@
+RESULT fail
+FAIL: assert snap roster-tab Eq 'Links': got 'Nodes'
+FAIL: assert snap inline-roster-tabs Contains 'Links': got '1:Nodes'
+captured 01_inline_roster
+FAIL: assert snap roster-tab Eq 'Links': got 'Nodes'
+FAIL: assert snap inline-roster-tabs Contains 'Links': got '1:Nodes'
+captured 02_inline_float
+FAIL: no successful main presentation for ten seconds
+presentation frames=60 captures=2 blank=0
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-a4-inputtrace\captures\01_inline_roster.png digest=2cc52d33a8e41240 blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-a4-inputtrace\captures\02_inline_float.png digest=e450bcd813746631 blank=false

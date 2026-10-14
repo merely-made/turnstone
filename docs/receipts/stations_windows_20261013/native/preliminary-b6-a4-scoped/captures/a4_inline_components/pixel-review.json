@@ -1,0 +1,122 @@
+[
+  {
+    "capture": "00_inline_nodes",
+    "size": [
+      2360,
+      1600
+    ],
+    "transparent_pixels": 0,
+    "raw_equals_final_rgba": true,
+    "rgba_sha256": "021e0e566d179744e614343affc2b259007e98b541136fdfc112e8d1efbacc06",
+    "samples": {
+      "(0, 0)": [
+        19,
+        24,
+        38,
+        255
+      ],
+      "(32, 32)": [
+        140,
+        145,
+        161,
+        255
+      ],
+      "(1720, 1440)": [
+        22,
+        27,
+        40,
+        255
+      ]
+    }
+  },
+  {
+    "capture": "01_inline_roster",
+    "size": [
+      2360,
+      1600
+    ],
+    "transparent_pixels": 0,
+    "raw_equals_final_rgba": true,
+    "rgba_sha256": "16f71008112e381503f994d0dc101faeadd5f9d0d46740bc79d165308abd3fc3",
+    "samples": {
+      "(0, 0)": [
+        19,
+        24,
+        38,
+        255
+      ],
+      "(32, 32)": [
+        140,
+        145,
+        161,
+        255
+      ],
+      "(1720, 1440)": [
+        22,
+        27,
+        40,
+        255
+      ]
+    }
+  },
+  {
+    "capture": "02_inline_float",
+    "size": [
+      2360,
+      1600
+    ],
+    "transparent_pixels": 0,
+    "raw_equals_final_rgba": true,
+    "rgba_sha256": "c926180ebb2694bedb3622d176a14cdaed1d233f543168d736fca666231d9d94",
+    "samples": {
+      "(0, 0)": [
+        19,
+        24,
+        38,
+        255
+      ],
+      "(32, 32)": [
+        140,
+        145,
+        161,
+        255
+      ],
+      "(1720, 1440)": [
+        17,
+        20,
+        26,
+        255
+      ]
+    }
+  },
+  {
+    "capture": "04_inline_returned",
+    "size": [
+      2360,
+      1600
+    ],
+    "transparent_pixels": 0,
+    "raw_equals_final_rgba": true,
+    "rgba_sha256": "c926180ebb2694bedb3622d176a14cdaed1d233f543168d736fca666231d9d94",
+    "samples": {
+      "(0, 0)": [
+        19,
+        24,
+        38,
+        255
+      ],
+      "(32, 32)": [
+        140,
+        145,
+        161,
+        255
+      ],
+      "(1720, 1440)": [
+        17,
+        20,
+        26,
+        255
+      ]
+    }
+  }
+]

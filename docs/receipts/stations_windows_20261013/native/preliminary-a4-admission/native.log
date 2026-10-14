@@ -1,0 +1,1235 @@
+2026-10-14T05:49:45.922488Z  INFO turnstone::launch: turnstone starting
+2026-10-14T05:49:45.934162Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:49:45.957867Z  INFO turnstone::app::session_lifecycle: no session graph; starting on the sample graph
+2026-10-14T05:49:46.070301Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-14T05:49:47.043564Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:49:48.044753Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:49:48.326832Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-14T05:49:48.326981Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:48.338775Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-14T05:49:48.338814Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:48.340973Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=41 resized=true resheeted=true full_rebuild=true
+2026-10-14T05:49:48.375021Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.377415Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-14T05:49:48.377444Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:48.398205Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.403656Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.408015Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.412291Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.416436Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.421191Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.425365Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.429522Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.434221Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.436421Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:48.436453Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:48.436482Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:48.485577Z DEBUG turnstone::ui: chrome subtree layout rebuilt dirty=true resized=true resheeted=true rebuilds=1
+2026-10-14T05:49:48.656370Z DEBUG turnstone::shell::render: frame frame_ms=219.84620666503906 surfaces=3 palette=true suggestions_ms=66.11060333251953 suggestion_runs=4 suggestion_refits=0 chrome_sync_ms=0.357699990272522 chrome_scene_ms=67.97129821777344 chrome_syncs=1 pane_scenes_ms=44.99189758300781 raster_ms=91.22950744628906 rasterized=3 dirty_tiles=464 graph_rast=1 graph_tiles=144 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=160 chrome_rast=1 chrome_tiles=160 compose_ms=11.583700180053711 w=1024 h=600
+2026-10-14T05:49:48.656612Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:48.659672Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.661625Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:48.661743Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:48.664731Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.669395Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.673444Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.677470Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.682340Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.687209Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.691646Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.696217Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.701354Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.706180Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.710686Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.715507Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.719755Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.724039Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.728909Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.733548Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.737629Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.741853Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.743832Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:48.743871Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:48.743885Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:48.810095Z DEBUG turnstone::shell::render: frame frame_ms=66.16809844970703 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.12250000238418579 chrome_scene_ms=0.6948999762535095 chrome_syncs=1 pane_scenes_ms=7.758500099182129 raster_ms=47.69600296020508 rasterized=3 dirty_tiles=304 graph_rast=1 graph_tiles=144 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=160 compose_ms=2.6132001876831055 w=1024 h=600
+2026-10-14T05:49:48.810309Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:48.813350Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.814930Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:48.814976Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:48.817687Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.821741Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.825921Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.830040Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.835055Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.837641Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:48.837684Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:48.837715Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:48.889839Z DEBUG turnstone::shell::render: frame frame_ms=52.07429885864258 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.09999999403953552 chrome_scene_ms=0.5924000144004822 chrome_syncs=1 pane_scenes_ms=7.6579999923706055 raster_ms=36.47829818725586 rasterized=3 dirty_tiles=11 graph_rast=1 graph_tiles=11 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.522700071334839 w=1024 h=600
+2026-10-14T05:49:48.890059Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:48.892866Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.894531Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:48.894576Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:48.897377Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.901737Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.905921Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.910126Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.915128Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.917462Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:48.917496Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:48.917505Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:48.968731Z DEBUG turnstone::shell::render: frame frame_ms=51.1968994140625 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.11600000411272049 chrome_scene_ms=0.6639000177383423 chrome_syncs=1 pane_scenes_ms=8.529600143432617 raster_ms=35.394500732421875 rasterized=3 dirty_tiles=11 graph_rast=1 graph_tiles=11 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.6454999446868896 w=1024 h=600
+2026-10-14T05:49:48.968977Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:48.971692Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.973138Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:48.973173Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:48.975643Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.979493Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.983464Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.987338Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:48.988927Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:48.988952Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:48.988960Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:49.038905Z DEBUG turnstone::shell::render: frame frame_ms=49.91889953613281 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.10489999502897263 chrome_scene_ms=0.588100016117096 chrome_syncs=1 pane_scenes_ms=8.098100662231445 raster_ms=34.884300231933594 rasterized=3 dirty_tiles=8 graph_rast=1 graph_tiles=8 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.459400177001953 w=1024 h=600
+2026-10-14T05:49:49.039107Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:49.041828Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.043369Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:49.043437Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:49.045943Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:49:49.046033Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.050106Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.054252Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.058456Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.060213Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:49.060245Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:49.060254Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:49.108680Z DEBUG turnstone::shell::render: frame frame_ms=48.39820098876953 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.09480000287294388 chrome_scene_ms=0.5997000336647034 chrome_syncs=1 pane_scenes_ms=7.821200370788574 raster_ms=33.66019821166992 rasterized=3 dirty_tiles=8 graph_rast=1 graph_tiles=8 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.387200117111206 w=1024 h=600
+2026-10-14T05:49:49.108889Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:49.111731Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.113377Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:49.113414Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:49.116574Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.120895Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.124986Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.129297Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.133635Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.135298Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:49.135325Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:49.135333Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:49.183582Z DEBUG turnstone::shell::render: frame frame_ms=48.22330093383789 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.11290000379085541 chrome_scene_ms=0.8428000211715698 chrome_syncs=1 pane_scenes_ms=7.684300422668457 raster_ms=33.41060256958008 rasterized=3 dirty_tiles=7 graph_rast=1 graph_tiles=7 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.5375001430511475 w=1024 h=600
+2026-10-14T05:49:49.183790Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:49.186514Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.188112Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:49.188150Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:49.190892Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.195099Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.199235Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.203427Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.205384Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:49.205422Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:49.205431Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:49.256425Z DEBUG turnstone::shell::render: frame frame_ms=50.96479797363281 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.09759999811649323 chrome_scene_ms=0.5845000147819519 chrome_syncs=1 pane_scenes_ms=8.007699966430664 raster_ms=34.586299896240234 rasterized=3 dirty_tiles=5 graph_rast=1 graph_tiles=5 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=3.368799924850464 w=1024 h=600
+2026-10-14T05:49:49.256651Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:49.259517Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.261185Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:49.261225Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:49.264105Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.268435Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.272700Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.276925Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.278584Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:49.278608Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:49.278616Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:49.328383Z DEBUG turnstone::shell::render: frame frame_ms=49.7400016784668 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0989999994635582 chrome_scene_ms=0.597100019454956 chrome_syncs=1 pane_scenes_ms=8.196499824523926 raster_ms=34.42329788208008 rasterized=3 dirty_tiles=5 graph_rast=1 graph_tiles=5 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.686199903488159 w=1024 h=600
+2026-10-14T05:49:49.328586Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:49.331392Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.333136Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:49.333178Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:49.336186Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.340396Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.344372Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.348645Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.353604Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.355164Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:49.355187Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:49.355195Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:49.405987Z DEBUG turnstone::shell::render: frame frame_ms=50.76580047607422 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.1007000058889389 chrome_scene_ms=0.5990999937057495 chrome_syncs=1 pane_scenes_ms=8.785799980163574 raster_ms=34.474700927734375 rasterized=3 dirty_tiles=5 graph_rast=1 graph_tiles=5 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.7304999828338623 w=1024 h=600
+2026-10-14T05:49:49.406199Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:49.409060Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.410800Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:49.410851Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:49.413560Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.417576Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.421689Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.425810Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.428321Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:49.428370Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:49.428382Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:49.478222Z DEBUG turnstone::shell::render: frame frame_ms=49.79140090942383 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.09160000085830688 chrome_scene_ms=0.6002999544143677 chrome_syncs=1 pane_scenes_ms=7.310100078582764 raster_ms=34.620201110839844 rasterized=3 dirty_tiles=7 graph_rast=1 graph_tiles=7 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.919100046157837 w=1024 h=600
+2026-10-14T05:49:49.478437Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:49.481370Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.483108Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:49.483153Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:49.485813Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.489844Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.494028Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.498207Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.499864Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:49.499888Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:49.499900Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:49.550221Z DEBUG turnstone::shell::render: frame frame_ms=50.295902252197266 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.09380000084638596 chrome_scene_ms=0.5634999871253967 chrome_syncs=1 pane_scenes_ms=8.018500328063965 raster_ms=35.23429870605469 rasterized=3 dirty_tiles=9 graph_rast=1 graph_tiles=9 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.6886000633239746 w=1024 h=600
+2026-10-14T05:49:49.550430Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:49.553416Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.555077Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:49.555118Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:49.558056Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.562229Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.566598Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.570845Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.574950Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.576678Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:49.576705Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:49.576714Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:49.642852Z DEBUG turnstone::shell::render: frame frame_ms=66.1093978881836 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.10830000042915344 chrome_scene_ms=0.597000002861023 chrome_syncs=1 pane_scenes_ms=8.564599990844727 raster_ms=50.23609924316406 rasterized=3 dirty_tiles=9 graph_rast=1 graph_tiles=9 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.7908999919891357 w=1024 h=600
+2026-10-14T05:49:49.643042Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:49.645892Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.647768Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:49.647820Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:49.650530Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.654448Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.658436Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.662646Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.666728Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.668419Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:49.668444Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:49.668452Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:49.720194Z DEBUG turnstone::shell::render: frame frame_ms=51.70840072631836 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.10050000250339508 chrome_scene_ms=0.6008999943733215 chrome_syncs=1 pane_scenes_ms=7.931600093841553 raster_ms=36.674102783203125 rasterized=3 dirty_tiles=9 graph_rast=1 graph_tiles=9 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.5434000492095947 w=1024 h=600
+2026-10-14T05:49:49.720378Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:49.722849Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.724343Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:49.724386Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:49.727488Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.731566Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.736115Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.740301Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.744410Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.746073Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:49.746104Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:49.746114Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:49.796374Z DEBUG turnstone::shell::render: frame frame_ms=50.233402252197266 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.10499999672174454 chrome_scene_ms=0.6365000009536743 chrome_syncs=1 pane_scenes_ms=8.18790054321289 raster_ms=35.03759765625 rasterized=3 dirty_tiles=9 graph_rast=1 graph_tiles=9 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.4521000385284424 w=1024 h=600
+2026-10-14T05:49:49.796573Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:49.799768Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.801513Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:49.801562Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:49.804667Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.808963Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.813172Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.817337Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.819097Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:49.819125Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:49.819133Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:49.869100Z DEBUG turnstone::shell::render: frame frame_ms=49.936500549316406 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.10130000114440918 chrome_scene_ms=0.6303000450134277 chrome_syncs=1 pane_scenes_ms=8.321700096130371 raster_ms=34.06100082397461 rasterized=3 dirty_tiles=9 graph_rast=1 graph_tiles=9 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.9865000247955322 w=1024 h=600
+2026-10-14T05:49:49.869303Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:49.872145Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.873671Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:49.873710Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:49.876131Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.879947Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.883851Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.887640Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.889194Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:49.889219Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:49.889227Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:49.940191Z DEBUG turnstone::shell::render: frame frame_ms=50.939701080322266 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.09830000251531601 chrome_scene_ms=0.623699963092804 chrome_syncs=1 pane_scenes_ms=9.072200775146484 raster_ms=35.269901275634766 rasterized=3 dirty_tiles=7 graph_rast=1 graph_tiles=7 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.220599889755249 w=1024 h=600
+2026-10-14T05:49:49.940386Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:49.943078Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.944790Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:49.944841Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:49.947485Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.951351Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.954926Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.958529Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:49.959922Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:49.959945Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:49.959952Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:50.008058Z DEBUG turnstone::shell::render: frame frame_ms=48.081600189208984 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.08789999783039093 chrome_scene_ms=0.548799991607666 chrome_syncs=1 pane_scenes_ms=7.138000011444092 raster_ms=34.13959884643555 rasterized=3 dirty_tiles=7 graph_rast=1 graph_tiles=7 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.5667998790740967 w=1024 h=600
+2026-10-14T05:49:50.008271Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:50.011113Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.012608Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:50.012646Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:50.015049Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.018818Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.022655Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.026617Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.028253Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:50.028275Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:50.028284Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:50.047168Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:49:50.077250Z DEBUG turnstone::shell::render: frame frame_ms=48.93729782104492 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.09880000352859497 chrome_scene_ms=0.7179999947547913 chrome_syncs=1 pane_scenes_ms=7.682600021362305 raster_ms=34.38019943237305 rasterized=3 dirty_tiles=7 graph_rast=1 graph_tiles=7 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.36460018157959 w=1024 h=600
+2026-10-14T05:49:50.077452Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:50.080271Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.081942Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:50.081980Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:50.084824Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.089338Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.093368Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.097872Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.102068Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.103715Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:50.103741Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:50.103749Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:50.153693Z DEBUG turnstone::shell::render: frame frame_ms=49.91450119018555 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.10199999809265137 chrome_scene_ms=0.5806000232696533 chrome_syncs=1 pane_scenes_ms=7.339799880981445 raster_ms=35.90590286254883 rasterized=3 dirty_tiles=7 graph_rast=1 graph_tiles=7 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.376300096511841 w=1024 h=600
+2026-10-14T05:49:50.153877Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:50.156621Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.158187Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:50.158228Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:50.160791Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.165127Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.169834Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.174462Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.176417Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:50.176454Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:50.176462Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:50.226836Z DEBUG turnstone::shell::render: frame frame_ms=50.346500396728516 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.09719999879598618 chrome_scene_ms=0.6416999697685242 chrome_syncs=1 pane_scenes_ms=8.35509967803955 raster_ms=34.78239822387695 rasterized=3 dirty_tiles=7 graph_rast=1 graph_tiles=7 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.3791000843048096 w=1024 h=600
+2026-10-14T05:49:50.227164Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:50.230389Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.232209Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:50.232255Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:50.235076Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.239242Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.244034Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.248026Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.249693Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:50.249720Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:50.249729Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:50.299463Z DEBUG turnstone::shell::render: frame frame_ms=49.70819854736328 surfaces=3 palette=true suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.09560000151395798 chrome_scene_ms=0.5843000411987305 chrome_syncs=1 pane_scenes_ms=7.75 raster_ms=34.97480010986328 rasterized=3 dirty_tiles=7 graph_rast=1 graph_tiles=7 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.696000099182129 w=1024 h=600
+2026-10-14T05:49:50.299673Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:50.302783Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.304461Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:50.304531Z DEBUG turnstone::selfdrive: begin app step verb="key"
+2026-10-14T05:49:50.306228Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-14T05:49:50.306264Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:50.309098Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.313867Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.317961Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.322979Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.327418Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.329328Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:50.329355Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:50.329366Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:50.359023Z DEBUG turnstone::shell::render: frame frame_ms=29.622800827026367 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=8.374799728393555 raster_ms=15.740200996398926 rasterized=2 dirty_tiles=7 graph_rast=1 graph_tiles=7 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.4587000608444214 w=1024 h=600
+2026-10-14T05:49:50.359202Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:50.361816Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.363410Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:50.365331Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:50.365744Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-14T05:49:50.365765Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:50.381570Z DEBUG turnstone::ui: pane Livery layout refreshed structural=false mutations=0 resized=true resheeted=false full_rebuild=true
+2026-10-14T05:49:50.395343Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.400143Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.404981Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.408961Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.412869Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.414825Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-14T05:49:50.414850Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:50.414872Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-14T05:49:50.414878Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:50.416814Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:50.416841Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:50.416860Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:50.512377Z DEBUG turnstone::shell::render: frame frame_ms=95.49099731445313 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=28.98400115966797 raster_ms=61.10599899291992 rasterized=2 dirty_tiles=1850 graph_rast=1 graph_tiles=925 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=925 chrome_rast=0 chrome_tiles=0 compose_ms=2.0764000415802 w=2360 h=1600
+2026-10-14T05:49:50.512580Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:50.515830Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:49:50.517357Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:50.530705Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:50.532889Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=80 resized=false resheeted=false full_rebuild=true
+2026-10-14T05:49:50.554070Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.564897Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.573310Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.581476Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.589709Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.597732Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.606435Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.614176Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.621871Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.629492Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.637296Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.645202Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.653105Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.660998Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.668855Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:50.672234Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:49:50.672262Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:49:50.672271Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:49:50.678111Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=412 resized=true resheeted=true full_rebuild=true
+2026-10-14T05:49:50.729497Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=343 resized=false resheeted=false full_rebuild=true
+2026-10-14T05:49:51.048397Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:49:51.079689Z DEBUG turnstone::shell::render: frame frame_ms=407.4003601074219 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=31.95440101623535 raster_ms=249.28379821777344 rasterized=2 dirty_tiles=1400 graph_rast=1 graph_tiles=475 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=925 chrome_rast=0 chrome_tiles=0 compose_ms=2.073899984359741 w=2360 h=1600
+2026-10-14T05:49:51.080308Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:49:51.100062Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.124657Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:49:51.124721Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:49:51.145035Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.187097Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.229182Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.271585Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.318549Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.363606Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.407499Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.454798Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.497910Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.539280Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.580478Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.623934Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.663557Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.705563Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.747677Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.790078Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.834639Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.878764Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.920012Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:51.961853Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.001757Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.043710Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.049949Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:49:52.087498Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.130228Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.171991Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.214218Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.256774Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.298865Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.340296Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.383737Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.427327Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.467375Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.508740Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.551708Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.594888Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.639541Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.682334Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.727670Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.771398Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.813231Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.857755Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.900974Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.944573Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:52.989270Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.031951Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.051362Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:49:53.077130Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.120607Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.164398Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.207153Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.250367Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.293464Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.338468Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.381880Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.426435Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.471007Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.513249Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.556960Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.605301Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.652685Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.693795Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.739924Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.781387Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.824777Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.870078Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.913858Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:53.957806Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.001960Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.047132Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.052597Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:49:54.090252Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.134498Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.178742Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.222386Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.266568Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.309938Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.356709Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.398717Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.441709Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.486501Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.531260Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.577376Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.626046Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.675529Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.723242Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.774972Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.826627Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.875891Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.922568Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:54.971775Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.020059Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.053875Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:49:55.069702Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.114888Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.159910Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.204476Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.248095Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.291601Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.336253Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.383775Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.428874Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.470415Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.515376Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.561336Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.608206Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.653906Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.698607Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.743073Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.784960Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.830143Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.873599Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.917173Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:55.961228Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.003497Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.048354Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.055080Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:49:56.089618Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.131415Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.173865Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.216309Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.258213Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.301951Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.344948Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.387824Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.429581Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.473054Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.517936Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.564451Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.609099Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.653918Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.695789Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.738582Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.781418Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.827128Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.869465Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.918258Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:56.961689Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.006156Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.051782Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.056296Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:49:57.095948Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.142097Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.185445Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.235145Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.279529Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.321521Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.362625Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.404093Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.446828Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.487779Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.532294Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.576904Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.622127Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.666977Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.712700Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.755759Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.799338Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.841341Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.886340Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.932988Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:57.979804Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.026236Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.057585Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:49:58.074465Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.121826Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.168970Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.220088Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.273694Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.319880Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.368420Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.423821Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.477196Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.527172Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.577194Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.629354Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.680861Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.726744Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.772794Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.817843Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.864870Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.911889Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:58.958139Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.002365Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.048109Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.059108Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:49:59.092317Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.139489Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.185167Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.232308Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.276902Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.319746Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.362639Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.408264Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.451391Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.494404Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.539560Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.586102Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.631318Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.672598Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.717621Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.761334Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.804058Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.849031Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.891754Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.935250Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:49:59.979461Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.032311Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.060444Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:00.077674Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.121679Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.164431Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.208656Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.255032Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.303104Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.350800Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.394893Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.438788Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.481471Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.526296Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.572290Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.618837Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.662236Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.708861Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.753911Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.799248Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.846755Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.889754Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.935517Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:00.977570Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:01.023735Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:01.048541Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:01.048585Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:01.048606Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:01.061753Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:01.366766Z DEBUG turnstone::shell::render: frame frame_ms=318.1353759765625 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=11.998600006103516 raster_ms=273.2079772949219 rasterized=2 dirty_tiles=475 graph_rast=1 graph_tiles=475 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.124000072479248 w=2360 h=1600
+2026-10-14T05:50:01.367214Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:01.391025Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:01.416342Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:01.416408Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:01.416723Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:01.416743Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:01.416751Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:01.657548Z DEBUG turnstone::shell::render: frame frame_ms=240.7742156982422 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=5.213900089263916 raster_ms=199.7659912109375 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.940600037574768 w=2360 h=1600
+2026-10-14T05:50:01.657983Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:01.681475Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:01.706936Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:01.707013Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:01.707292Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:01.707311Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:01.707318Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:01.928479Z DEBUG turnstone::shell::render: frame frame_ms=221.13870239257813 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=5.104099750518799 raster_ms=180.37420654296875 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.8447999954223633 w=2360 h=1600
+2026-10-14T05:50:01.928881Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:01.950723Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:01.972750Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:01.972811Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:01.973055Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:01.973075Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:01.973082Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:02.062959Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:02.195091Z DEBUG turnstone::shell::render: frame frame_ms=221.99139404296875 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=5.012400150299072 raster_ms=185.03729248046875 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.0146000385284424 w=2360 h=1600
+2026-10-14T05:50:02.195553Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:02.216165Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:02.239992Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:02.240122Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:02.240623Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:02.240646Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:02.240655Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:02.456438Z DEBUG turnstone::shell::render: frame frame_ms=215.75680541992188 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=4.482499599456787 raster_ms=180.70111083984375 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.0699000358581543 w=2360 h=1600
+2026-10-14T05:50:02.456841Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:02.477973Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:02.501539Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:02.501615Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:02.501912Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:02.501931Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:02.501939Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:02.759666Z DEBUG turnstone::shell::render: frame frame_ms=257.7012023925781 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=5.136300086975098 raster_ms=214.25660705566406 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.9678001403808594 w=2360 h=1600
+2026-10-14T05:50:02.760185Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:02.787974Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:02.817997Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:02.834866Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:02.843033Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:02.843351Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:02.843377Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:02.843386Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:03.064157Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:03.069088Z DEBUG turnstone::shell::render: frame frame_ms=225.68209838867188 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.074499607086182 raster_ms=180.88380432128906 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.9735000133514404 w=2360 h=1600
+2026-10-14T05:50:03.069530Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:03.092481Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:03.114512Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:03.120486Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:03.120763Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:03.120781Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:03.120788Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:03.337063Z DEBUG turnstone::shell::render: frame frame_ms=216.25450134277344 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=4.4542999267578125 raster_ms=179.5780029296875 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.313499927520752 w=2360 h=1600
+2026-10-14T05:50:03.337630Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:03.361545Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:03.388708Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:03.388777Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:03.389066Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:03.389086Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:03.389094Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:03.623831Z DEBUG turnstone::shell::render: frame frame_ms=234.71839904785156 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=5.823800086975098 raster_ms=188.489501953125 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.221400022506714 w=2360 h=1600
+2026-10-14T05:50:03.624283Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:03.650161Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:03.679980Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:03.680061Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:03.680377Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:03.680408Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:03.680419Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:03.930589Z DEBUG turnstone::shell::render: frame frame_ms=250.1468048095703 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.954300403594971 raster_ms=200.64990234375 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.9097000360488892 w=2360 h=1600
+2026-10-14T05:50:03.931045Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:03.952373Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:03.978171Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:03.978244Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:03.978478Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:03.978496Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:03.978503Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:04.065586Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:04.197258Z DEBUG turnstone::shell::render: frame frame_ms=218.73519897460938 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=5.321099758148193 raster_ms=179.79180908203125 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.1563000679016113 w=2360 h=1600
+2026-10-14T05:50:04.197812Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:04.218572Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:04.243085Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:04.243159Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:04.243507Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:04.243525Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:04.243534Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:04.469284Z DEBUG turnstone::shell::render: frame frame_ms=225.72549438476563 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=5.354899883270264 raster_ms=186.32591247558594 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.9512999057769775 w=2360 h=1600
+2026-10-14T05:50:04.469734Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:04.490939Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:04.515337Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:04.515414Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:04.515789Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:04.515816Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:04.515825Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:04.774462Z DEBUG turnstone::shell::render: frame frame_ms=258.6016845703125 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=4.65910005569458 raster_ms=220.4427947998047 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.957200050354004 w=2360 h=1600
+2026-10-14T05:50:04.774870Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:04.793905Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:04.816945Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:04.817011Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:04.817251Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:04.817271Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:04.817278Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:05.032415Z DEBUG turnstone::shell::render: frame frame_ms=215.11839294433594 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=4.482399940490723 raster_ms=177.71949768066406 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.9021000862121582 w=2360 h=1600
+2026-10-14T05:50:05.032907Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:05.054976Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:05.067033Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:05.079935Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:05.093755Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:05.099997Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:05.100348Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:05.100365Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:05.100374Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:05.319315Z DEBUG turnstone::shell::render: frame frame_ms=218.91879272460938 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=5.183700084686279 raster_ms=179.42669677734375 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.9962999820709229 w=2360 h=1600
+2026-10-14T05:50:05.319791Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:05.341695Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:05.365487Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:05.378565Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:05.384602Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:05.384886Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:05.384907Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:05.384915Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:05.598073Z DEBUG turnstone::shell::render: frame frame_ms=213.13778686523438 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=4.37369966506958 raster_ms=176.8542938232422 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.0204999446868896 w=2360 h=1600
+2026-10-14T05:50:05.598528Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:05.619241Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:05.642443Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:05.642530Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:05.642811Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:05.642837Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:05.642845Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:05.868398Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=1 chrome=false nodes=12
+2026-10-14T05:50:05.877917Z DEBUG turnstone::shell::render: frame frame_ms=235.0467987060547 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=5.111599922180176 raster_ms=186.1883087158203 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.4156999588012695 w=2360 h=1600
+2026-10-14T05:50:05.878446Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:05.902296Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:05.926212Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:05.926281Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:05.926582Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:05.926617Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:05.926630Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:06.068325Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:06.543262Z DEBUG turnstone::shell::render: frame frame_ms=213.77679443359375 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=5.014800071716309 raster_ms=174.70111083984375 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.9462000131607056 w=2360 h=1600
+2026-10-14T05:50:06.543703Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:06.565032Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:06.587833Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:06.602721Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:06.603056Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:06.603084Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:06.603094Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:06.605836Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=70 resized=false resheeted=false full_rebuild=true
+2026-10-14T05:50:06.662933Z DEBUG turnstone::ui: pane Livery layout refreshed structural=false mutations=2 resized=false resheeted=false full_rebuild=false
+2026-10-14T05:50:07.034021Z DEBUG turnstone::shell::render: frame frame_ms=430.89959716796875 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=32.4203987121582 raster_ms=272.6729736328125 rasterized=2 dirty_tiles=1850 graph_rast=1 graph_tiles=925 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=925 chrome_rast=0 chrome_tiles=0 compose_ms=1.9437999725341797 w=2360 h=1600
+2026-10-14T05:50:07.034483Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:07.054324Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:07.069773Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:07.079606Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:07.079671Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:07.079984Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:07.080010Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:07.080020Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:07.326445Z DEBUG turnstone::shell::render: frame frame_ms=246.3975067138672 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.605600357055664 raster_ms=206.41409301757813 rasterized=2 dirty_tiles=925 graph_rast=1 graph_tiles=925 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.2400999069213867 w=2360 h=1600
+2026-10-14T05:50:07.326995Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:07.349489Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:07.373308Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:07.373462Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:07.373935Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:07.373960Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:07.373970Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:07.607218Z DEBUG turnstone::shell::render: frame frame_ms=233.22430419921875 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=9.286700248718262 raster_ms=188.5303955078125 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.9271000623703003 w=2360 h=1600
+2026-10-14T05:50:07.607692Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:07.628750Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:07.651796Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:07.651869Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:07.652359Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:07.652385Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:07.652393Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:07.894205Z DEBUG turnstone::shell::render: frame frame_ms=241.7855987548828 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=9.184800148010254 raster_ms=198.06329345703125 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.9501999616622925 w=2360 h=1600
+2026-10-14T05:50:07.894665Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:07.915537Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:07.938632Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:07.938702Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:07.938959Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:07.938979Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:07.938987Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:08.071158Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:08.169733Z DEBUG turnstone::shell::render: frame frame_ms=230.72689819335938 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=8.472599983215332 raster_ms=187.52088928222656 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.091200113296509 w=2360 h=1600
+2026-10-14T05:50:08.170151Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:08.191799Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:08.218416Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:08.218508Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:08.218790Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:08.218812Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:08.218821Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:08.459631Z DEBUG turnstone::shell::render: frame frame_ms=240.783203125 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=10.78909969329834 raster_ms=191.189697265625 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.109600067138672 w=2360 h=1600
+2026-10-14T05:50:08.460035Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:08.483648Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:08.510016Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:08.510084Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:08.510332Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:08.510351Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:08.510358Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:08.773236Z DEBUG turnstone::shell::render: frame frame_ms=262.85870361328125 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=9.227200508117676 raster_ms=221.33840942382813 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.722499966621399 w=2360 h=1600
+2026-10-14T05:50:08.773669Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:08.794556Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:08.816316Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:08.829005Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:08.834863Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:08.835137Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:08.835155Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:08.835162Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:09.059532Z DEBUG turnstone::shell::render: frame frame_ms=224.3513946533203 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.728899955749512 raster_ms=187.2523956298828 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.998400092124939 w=2360 h=1600
+2026-10-14T05:50:09.059951Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:09.072373Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:09.081528Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:09.107471Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:09.122417Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:09.130430Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:09.130742Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:09.130767Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:09.130776Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:09.370148Z DEBUG turnstone::shell::render: frame frame_ms=239.3515167236328 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=8.86520004272461 raster_ms=196.9582977294922 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.0791001319885254 w=2360 h=1600
+2026-10-14T05:50:09.370664Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:09.392235Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:09.415425Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:09.429747Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:09.437708Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:09.438100Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:09.438133Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:09.438143Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:09.706270Z DEBUG turnstone::shell::render: frame frame_ms=268.10382080078125 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=13.34160041809082 raster_ms=216.36048889160156 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.1928999423980713 w=2360 h=1600
+2026-10-14T05:50:09.706737Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:09.733151Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:09.758145Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:09.771051Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:09.777351Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:09.777747Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:09.777773Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:09.777781Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:10.029717Z DEBUG turnstone::shell::render: frame frame_ms=251.91331481933594 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=11.919300079345703 raster_ms=198.07150268554688 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.2603001594543457 w=2360 h=1600
+2026-10-14T05:50:10.030132Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:10.049523Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:10.072045Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:10.072118Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:10.072384Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:10.072413Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:10.072422Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:10.073699Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:10.305809Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=1 chrome=false nodes=12
+2026-10-14T05:50:10.308364Z DEBUG turnstone::shell::render: frame frame_ms=235.91990661621094 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.843099594116211 raster_ms=194.11769104003906 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.9996999502182007 w=2360 h=1600
+2026-10-14T05:50:10.308813Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:10.329113Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:10.351341Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:10.351398Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:10.351633Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:10.351651Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:10.351658Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:10.966772Z DEBUG turnstone::shell::render: frame frame_ms=226.5718994140625 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.588199615478516 raster_ms=188.16070556640625 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.9007999897003174 w=2360 h=1600
+2026-10-14T05:50:10.967151Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:10.985534Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:11.007222Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:11.026900Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:11.052002Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:11.075179Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:11.136909Z DEBUG turnstone::cambium_pane: roster grid click x=31.5 y=15.0 w=991 h=706 hit=Some(6597069766693) rows=12 viewport_h=706.0 actions=0
+2026-10-14T05:50:11.137102Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:11.137346Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:11.137367Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:11.137374Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:11.404948Z DEBUG turnstone::shell::render: frame frame_ms=267.55078125 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=8.188799858093262 raster_ms=196.4376983642578 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.0604000091552734 w=2360 h=1600
+2026-10-14T05:50:11.405375Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:11.424732Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:11.446945Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:11.459224Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:11.464982Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:11.465242Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:11.465261Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:11.465268Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:11.763584Z DEBUG turnstone::shell::render: frame frame_ms=298.3011779785156 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.6342997550964355 raster_ms=224.34201049804688 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.8422000408172607 w=2360 h=1600
+2026-10-14T05:50:11.763979Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:11.783131Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:11.804944Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:11.822993Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:11.849046Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:11.933620Z DEBUG turnstone::cambium_pane: roster grid click x=91.0 y=15.0 w=991 h=706 hit=Some(6597069766695) rows=12 viewport_h=706.0 actions=0
+2026-10-14T05:50:11.933743Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:11.933950Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:11.933974Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:11.933981Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:11.934302Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=10 resized=false resheeted=false full_rebuild=true
+2026-10-14T05:50:12.052168Z DEBUG turnstone::shell::render: frame frame_ms=118.15809631347656 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=2.6317999362945557 raster_ms=80.85689544677734 rasterized=2 dirty_tiles=926 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=925 chrome_rast=0 chrome_tiles=0 compose_ms=2.012199878692627 w=2360 h=1600
+2026-10-14T05:50:12.052441Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:12.059315Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:12.066655Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:12.076722Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:12.079821Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:12.082143Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:12.082604Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T05:50:12.082632Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:12.082642Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T05:50:12.159336Z DEBUG turnstone::shell::render: frame frame_ms=76.66099548339844 surfaces=4 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=2.7910001277923584 raster_ms=58.22330093383789 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.031899929046631 w=2360 h=1600
+2026-10-14T05:50:12.159584Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T05:50:12.166847Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=5
+2026-10-14T05:50:12.170984Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T05:50:12.173995Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=3 resized=false resheeted=false full_rebuild=true
+2026-10-14T05:50:12.196488Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T05:50:12.247615Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-14T05:50:12.250299Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=77 resized=true resheeted=true full_rebuild=true
+2026-10-14T05:50:12.281097Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=74 resized=false resheeted=false full_rebuild=true
+2026-10-14T05:50:12.295962Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:12.301268Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:12.326280Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-14T05:50:12.326323Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:12.326340Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-14T05:50:12.326347Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T05:50:12.336339Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:12.341216Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:12.354470Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:12.359084Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:12.375938Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=8 resized=false resheeted=false full_rebuild=true
+2026-10-14T05:50:12.401257Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=8 resized=false resheeted=false full_rebuild=true
+2026-10-14T05:50:12.484096Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:12.490489Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:12.509227Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:12.514754Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:12.574148Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:12.580306Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:12.635594Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:12.641461Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:12.714452Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:12.719593Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:12.771103Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:12.775931Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:12.829590Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:12.835201Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:12.886550Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:12.891641Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:12.940220Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:12.946527Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:12.998922Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.004368Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.056763Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.061943Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.077831Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:13.115281Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.120382Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.166898Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.171886Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.225143Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.230849Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.284612Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.290421Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.343267Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.348312Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.398942Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.404440Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.458447Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.463846Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.515262Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.521602Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.573512Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.579557Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.635586Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.641915Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.725910Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.731424Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.783429Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.789690Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.841317Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.847075Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.899608Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.905105Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:13.953247Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:13.958602Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.010387Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.015972Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.070599Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.076072Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.079161Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:14.128030Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.133299Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.189968Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.194975Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.247087Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.252889Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.304417Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.310193Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.361462Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.367211Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.421588Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.426763Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.478320Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.483578Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.534067Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.539376Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.596293Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.602287Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.657141Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.662843Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.717068Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.722802Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.778204Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.783743Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.839040Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.845084Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.896209Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.901895Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:14.952687Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:14.957911Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.007218Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.012886Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.067823Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.073530Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.080507Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:15.129319Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.135454Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.195402Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.202568Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.262323Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.270017Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.335369Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.341275Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.398416Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.404141Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.461690Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.467797Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.524731Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.530287Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.588996Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.595060Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.652228Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.657796Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.742717Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.748764Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.800598Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.806649Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.862384Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.869742Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.924579Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.930231Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:15.984230Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:15.989827Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.046874Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.052800Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.081512Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:16.106520Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.111955Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.167377Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.172992Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.229645Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.235185Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.294493Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.300356Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.357858Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.363388Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.420295Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.426084Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.481492Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.486783Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.544047Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.550175Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.618294Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.624913Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.727846Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.734429Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.791624Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.799079Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.859257Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.864627Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.918804Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.924873Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:16.987333Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:16.996976Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:17.069405Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:17.077167Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:17.082908Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:17.150366Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:17.159634Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:17.246317Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:17.256864Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:17.329779Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:17.337348Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:17.406344Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:17.412248Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:17.478938Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:17.485031Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:17.546928Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:17.553817Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:17.618452Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:17.625119Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:17.737702Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:17.744001Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:17.804286Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:17.809836Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:17.865007Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:17.870869Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:17.927409Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:17.932976Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:17.991999Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:17.997689Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:18.056226Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:18.061686Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:18.084202Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:18.117998Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:18.123522Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:18.180891Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:18.186282Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:18.241579Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:18.247019Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:18.302132Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:18.307861Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:18.364052Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:18.369339Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:18.425669Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:18.431927Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:18.488806Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:18.494988Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:18.555796Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:18.561487Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:18.618354Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:18.624363Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:18.736761Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:18.744240Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:18.803626Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:18.810137Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:18.875115Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:18.881248Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:18.939704Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:18.945772Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.004586Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.010361Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.065882Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.071493Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.085661Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:19.126214Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.132267Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.190278Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.196369Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.251925Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.257630Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.310799Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.316015Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.371588Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.377488Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.433851Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.439915Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.500969Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.507325Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.568472Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.574055Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.636230Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.642197Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.774107Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.779354Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.838354Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.844313Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.904101Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.909911Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:19.971545Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:19.977751Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:20.039591Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:20.045674Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:20.087070Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:20.103753Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:20.109488Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:20.172533Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:20.178161Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:20.235723Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:20.241270Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:20.300071Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:20.306132Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:20.368173Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:20.374324Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:20.432870Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:20.438332Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:20.495290Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:20.500598Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:20.561767Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:20.567313Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:20.631420Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:20.638160Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:20.774200Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:20.779990Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:20.845812Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:20.851638Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:20.911437Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:20.916736Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:20.977674Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:20.983179Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.043888Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:21.049250Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.088422Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:21.105555Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:21.111112Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.171705Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:21.178113Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.239224Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:21.245216Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.301795Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:21.307373Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.368926Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:21.374743Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.434783Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:21.440487Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.501487Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:21.506991Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.566901Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:21.572283Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.632583Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:21.638457Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.732271Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:21.737632Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.803993Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:21.809558Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.867982Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:21.873998Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.932998Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:21.938860Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:21.997982Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:22.003367Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:22.065216Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:22.071066Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:22.089527Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:50:22.128328Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:22.133741Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5
+2026-10-14T05:50:22.191009Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T05:50:22.196692Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=5

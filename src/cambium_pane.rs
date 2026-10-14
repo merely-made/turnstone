@@ -29,6 +29,7 @@ use cambium::{
     TabStrip, data_grid, el, lens, on_click, tab_strip,
 };
 use genet_scripted_dom::ScriptedDom;
+use layout_dom_api::LayoutDom;
 
 use crate::app::App;
 use crate::roster_view::{RosterGridRow, roster_grid_rows_for_pane};
@@ -190,27 +191,87 @@ pub struct RosterGrid {
     /// re-shaped the whole pane to draw an unchanged screen; see
     /// [`crate::ui::RetainedLayout`] for the measurement.
     layout: crate::ui::RetainedLayout,
+    // Drop the runner and its widget resources before final mount custody.
+    mount: Option<cambium::RetainedMount>,
 }
 
 impl RosterGrid {
     pub fn new() -> Self {
-        let dom: DomHandle = Rc::new(RefCell::new(ScriptedDom::new()));
+        Self::new_in(None)
+    }
+
+    pub(crate) fn new_in(mount: Option<cambium::RetainedMount>) -> Self {
+        let dom: DomHandle = mount
+            .as_ref()
+            .map(cambium::RetainedMount::dom)
+            .unwrap_or_else(|| Rc::new(RefCell::new(ScriptedDom::new())));
         let state = RosterState {
             tabs: TabStrip::new(0).with_label("Roster"),
             rows: Vec::new(),
             viewport_w: 0.0,
             viewport_h: 0.0,
         };
-        let runner = RosterRunner::new(
+        let runner = RosterRunner::new_at(
             dom.clone(),
+            mount
+                .as_ref()
+                .map_or_else(|| dom.borrow().document(), cambium::RetainedMount::node),
             roster_pane as fn(&RosterState) -> RosterView,
             state,
         );
         Self {
+            mount: mount.clone(),
             dom,
             runner,
             scroll: crate::ui::PaneScroll::new(),
-            layout: crate::ui::RetainedLayout::new(),
+            layout: crate::ui::RetainedLayout::new_at(
+                mount.as_ref().map(cambium::RetainedMount::node),
+            ),
+        }
+    }
+
+    pub(crate) fn inline_focus(&self) -> Option<genet_scripted_dom::NodeId> {
+        self.runner.focus()
+    }
+    pub(crate) fn focus_inline(&mut self, node: genet_scripted_dom::NodeId) -> bool {
+        let Some(mount) = &self.mount else {
+            return false;
+        };
+        if !cambium_rootstock::WindowDom::new(&self.dom.borrow(), mount.node()).contains(node) {
+            return false;
+        }
+        self.runner.set_focus(Some(node));
+        true
+    }
+    pub(crate) fn inline_selector(
+        &self,
+        selector: &taproot::Selector,
+    ) -> Result<Option<(f32, f32)>, &'static str> {
+        self.layout.selector_point(&self.dom.borrow(), selector)
+    }
+    pub(crate) fn key_inline(&mut self, event: cambium::KeyEvent) -> Vec<RosterAction> {
+        self.runner.dispatch_key(event)
+    }
+    pub(crate) fn blur_inline(&mut self) {
+        self.runner.set_focus(None);
+    }
+    pub(crate) fn inline_accepts_text(&self) -> bool {
+        self.layout
+            .editable_focus(&self.dom.borrow(), self.runner.focus())
+    }
+    pub(crate) fn inline_cursor_area(&self) -> Option<(f32, f32, f32, f32)> {
+        self.layout
+            .cursor_area(&self.dom.borrow(), self.runner.focus())
+    }
+    pub(crate) fn inline_mount(&self) -> Option<cambium::RetainedMount> {
+        self.mount.clone()
+    }
+    pub(crate) fn unbind_inline(&mut self) {
+        self.layout.unbind_inline();
+    }
+    pub(crate) fn bind_inline(&mut self, layout: &crate::ui::InlineLayoutHandle) {
+        if let Some(mount) = &self.mount {
+            self.layout.bind_inline(layout, mount);
         }
     }
 
@@ -315,6 +376,126 @@ mod tests {
     use super::*;
     use layout_dom_api::LayoutDom;
 
+    #[test]
+    fn inline_roster_uses_shared_fragments_and_preserves_owner_across_windows() {
+        use layout_dom_api::LayoutDomMut;
+        use workbench::{ContentSource, Tile, TileId, TileTree, Workspace};
+        let dom = Rc::new(RefCell::new(ScriptedDom::new()));
+        let mount = cambium::RetainedMount::new(dom.clone());
+        let mut grid = RosterGrid::new_in(Some(mount.clone()));
+        grid.runner.update(|state| {
+            state.rows = vec![row("alpha"), row("beta")];
+            state.viewport_w = 512.0;
+            state.viewport_h = 400.0;
+        });
+        let root = grid.runner.root();
+        let window = dom.borrow_mut().create_element(cambium::html_qual("div"));
+        let document = dom.borrow().document();
+        dom.borrow_mut().append_child(document, window);
+        let mut frame = crate::frame_controls::FrameControls::new_at(dom.clone(), window);
+        let tile = Tile {
+            id: TileId(7),
+            title: "Roster".into(),
+            accent: None,
+            content: ContentSource::Open {
+                kind: "roster".into(),
+                id: "7".into(),
+            },
+        };
+        let mut workspace = Workspace::new(TileTree::single(tile));
+        frame.set_mounts([(TileId(7), mount.clone())].into());
+        frame.sync(11, workspace.clone(), Some(TileId(7)));
+        let layout = Rc::new(RefCell::new(crate::ui::RetainedLayout::new_at(Some(
+            window,
+        ))));
+        grid.bind_inline(&layout);
+        let sheet = format!("{} {}", crate::ui::CAMBIUM_SHEET, cambium::FRISKET_CSS);
+        let scene = layout
+            .borrow_mut()
+            .scene(&mut dom.borrow_mut(), &sheet, 512, 480);
+        assert!(
+            !scene.ops.is_empty(),
+            "the shared scene paints actual body content"
+        );
+        let (x, y) = grid
+            .inline_selector(&taproot::Selector::class("tab").containing("Links"))
+            .unwrap()
+            .unwrap();
+        grid.click(x, y, 512, 400);
+        assert_eq!(grid.selected_tab().0, 1);
+        assert_eq!(grid.runner.root(), root);
+
+        // A real source-first withdrawal must keep the runner through eager
+        // subtree removal and a host GC cycle, before the next station mounts.
+        frame.set_mounts(Default::default());
+        dom.borrow_mut().collect([]);
+        assert!(dom.borrow().is_live(root));
+        assert_eq!(grid.selected_tab().0, 1);
+        frame.set_mounts([(TileId(7), mount.clone())].into());
+
+        workspace.apply(
+            &workbench::FloatEvent::Float {
+                tile: TileId(7),
+                rect: workbench::RelativeRect {
+                    x: 0.2,
+                    y: 0.2,
+                    width: 0.65,
+                    height: 0.65,
+                },
+            }
+            .into(),
+        );
+        frame.sync(11, workspace.clone(), Some(TileId(7)));
+        layout
+            .borrow_mut()
+            .scene(&mut dom.borrow_mut(), &sheet, 512, 480);
+        assert_eq!(
+            grid.selected_tab().0,
+            1,
+            "floating preserves actual widget state"
+        );
+        assert_eq!(grid.runner.root(), root);
+        assert!(
+            dom.borrow().is_live(root),
+            "actual body survives the float rebuild"
+        );
+
+        grid.unbind_inline();
+        assert!(
+            !grid.scene(512, 400).ops.is_empty(),
+            "the same scoped owner can render a legacy station"
+        );
+        assert_eq!(grid.runner.root(), root);
+        assert_eq!(grid.selected_tab().0, 1);
+        grid.bind_inline(&layout);
+
+        let next_window = dom.borrow_mut().create_element(cambium::html_qual("div"));
+        dom.borrow_mut().append_child(document, next_window);
+        let mut destination =
+            crate::frame_controls::FrameControls::new_at(dom.clone(), next_window);
+        destination.set_mounts([(TileId(7), mount.clone())].into());
+        destination.sync(11, workspace, Some(TileId(7)));
+        // Source withdrawal follows destination presentation. It must not
+        // detach the current owner or rebuild its widget state.
+        frame.set_mounts(Default::default());
+        assert!(cambium_rootstock::WindowDom::new(&dom.borrow(), next_window).contains(root));
+        assert!(!cambium_rootstock::WindowDom::new(&dom.borrow(), window).contains(root));
+        assert_eq!(grid.selected_tab().0, 1);
+        assert_eq!(grid.runner.root(), root);
+        let destination_layout = Rc::new(RefCell::new(crate::ui::RetainedLayout::new_at(Some(
+            next_window,
+        ))));
+        grid.bind_inline(&destination_layout);
+        destination_layout
+            .borrow_mut()
+            .scene(&mut dom.borrow_mut(), &sheet, 640, 480);
+        assert!(
+            grid.inline_selector(&taproot::Selector::class("tab").containing("Nodes"))
+                .unwrap()
+                .is_some()
+        );
+    }
+
     fn row(title: &str) -> RosterGridRow {
         RosterGridRow {
             title: title.to_string(),
@@ -393,8 +574,9 @@ mod tests {
         rows.push(RosterGridRow {
             title: "field.knot".into(),
             kind: "text/djot".into(),
-            url: "knot://ff23f774bd2cb1adfe0887e3f8701ab195e925c0e9082573fb3f1d2e60070fb6/field.knot"
-                .into(),
+            url:
+                "knot://ff23f774bd2cb1adfe0887e3f8701ab195e925c0e9082573fb3f1d2e60070fb6/field.knot"
+                    .into(),
             selected: false,
         });
         rows.extend((0..12).map(|i| row(&format!("node{i}"))));

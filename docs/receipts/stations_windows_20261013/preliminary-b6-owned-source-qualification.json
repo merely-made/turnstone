@@ -1,0 +1,168 @@
+{
+  "scope": "preliminary Turnstone local Mere paths; final published Genet b6 and Netrender6a suppliers",
+  "status": "source compiled; scoped native captures pending; published Mere consumer gates pending",
+  "source_owner": "/root/a4_composition",
+  "source_paths": [
+    {
+      "path": "src/arrange_pane.rs",
+      "sha256": "b21c6fdaff8b1d10065701bd9a4a2472bf5f3fb799665f87878b26d2fb29e32b"
+    },
+    {
+      "path": "src/cambium_pane.rs",
+      "sha256": "6c6d3ebbc3486ca8ed84ef573d7a69cd03cf01c01ba869e3da664f92efbf5cb3"
+    },
+    {
+      "path": "src/device_receipts_pane.rs",
+      "sha256": "d2272e75ffafcb9b9e9b606c9879200199219de9ddbddb6412c8183b17c2a2d1"
+    },
+    {
+      "path": "src/frame_a11y.rs",
+      "sha256": "96171246a46a09af9bff414a22c77fb6ce5f9c20024249b3b2538642a567c32a"
+    },
+    {
+      "path": "src/frame_controls.rs",
+      "sha256": "28e1b512c544c322690fbcd6d9a3446f046d32d10ae920e91e35edeb4e1d7f37"
+    },
+    {
+      "path": "src/frame_style.rs",
+      "sha256": "59ebd0d1677408b4344abd692d7241150d22906c16501d72df3d1f9300ddcc74"
+    },
+    {
+      "path": "src/frozen_projection_pane.rs",
+      "sha256": "3afb25f751fa4b98d4546e57c0240f487e1c6fd5b486e32ffba76e4bd1c9852b"
+    },
+    {
+      "path": "src/inline_pane.rs",
+      "sha256": "d87d2c0a96023d4aca89f493c39b0b1fc6d441e72ea0e1d0e18c8ece857aa5cb"
+    },
+    {
+      "path": "src/inspector_pane.rs",
+      "sha256": "4cb9140817507958a7a1cb98712dc75560586eec3973d98d5b45cfefb5ae955e"
+    },
+    {
+      "path": "src/lib.rs",
+      "sha256": "9a92094bf4857c8a12cfa56daa350a4fcd95e3d85cbf838d9874c5302c348dc2"
+    },
+    {
+      "path": "src/outer_frame.rs",
+      "sha256": "a37e3c9104811f4f2e50c7448a03833d6cf200b45a3525302ac073067c0bc3d6"
+    },
+    {
+      "path": "src/publish_pane.rs",
+      "sha256": "f2a04ebb452fc62c6e63e5b16ac867f5009d22e967d511ea0e369b8ac8193af9"
+    },
+    {
+      "path": "src/scenario.rs",
+      "sha256": "ff728a95d3d032a9b83e62753835d442e9512c14d8a2a01520b6ad58971f91fe"
+    },
+    {
+      "path": "src/settings_pane.rs",
+      "sha256": "c848319f65a1e36ddec346f03dd4595d2ed063716edb6010ec5b7dbafdd41aaf"
+    },
+    {
+      "path": "src/share_reader_pane.rs",
+      "sha256": "783bc7d4b0b4e7fd7f1d3d3459a2b0fcaabb4360192cd424c66338c1d67af421"
+    },
+    {
+      "path": "src/surface.rs",
+      "sha256": "6be28f9f2254b4aa9d8e993f7e67b6002c7bdb9399b2119deb3385eff9616808"
+    },
+    {
+      "path": "src/trail_pane.rs",
+      "sha256": "75eb4f8de085242250858584b4d60181a806aefc092d2ef5f7dfe1712c646bff"
+    },
+    {
+      "path": "src/transcript_pane.rs",
+      "sha256": "a102a576c484e8c122085ee88db2c50a129c863c4593274befa0b86e4066b57d"
+    },
+    {
+      "path": "src/ui.rs",
+      "sha256": "7c7d150a155e6a3e2330fbba7197ad6ce7638e7adb1c4c64376df3e9c0363015"
+    },
+    {
+      "path": "src/workbench_pane.rs",
+      "sha256": "de250dbcd0bbeb13d8983627eeab48cee9782fbc873f217225757c81521d437a"
+    },
+    {
+      "path": "src/swatch_pane/mod.rs",
+      "sha256": "00158cc5075b9263b206742195966f2b69634eb4f7afd845e5c6aff0caf5b8b9"
+    },
+    {
+      "path": "src/shell/content_pool.rs",
+      "sha256": "e2a4a2fdee0954ec5ac86e8f6fdcb7af1e6ddcca0a5761ccc7dc7f4aa07b85f6"
+    },
+    {
+      "path": "src/shell/controller_input.rs",
+      "sha256": "62fef1bce4332951f4af494c62b0b6cabfcb6b3f9cb2cb592e2ab42bcbae7de6"
+    },
+    {
+      "path": "src/shell/drive.rs",
+      "sha256": "76b42895866a6d9abcf6287d18cc8d700b3d8318b558ef49f4c8963051d9d889"
+    },
+    {
+      "path": "src/shell/events.rs",
+      "sha256": "3d09a1e924ea363bfaf5206e6f82f000904d30db3ccd425716260c8f189d649b"
+    },
+    {
+      "path": "src/shell/frame_keys.rs",
+      "sha256": "07241bc88d32188f716b4317c652654bbd31c8b04ce2efc5b795bf131600ffcb"
+    },
+    {
+      "path": "src/shell/input.rs",
+      "sha256": "9a9acd431c6b500c66ff2154278b472774ae44d39c2ef154c8cc9a8d25897ed6"
+    },
+    {
+      "path": "src/shell/keys.rs",
+      "sha256": "0bf806b0bbc2da0a60011835edb2e89c76baef29559131521912fd15f0ae9684"
+    },
+    {
+      "path": "src/shell/lens.rs",
+      "sha256": "de1c0973114bfa46ea5002122dae809c25c0eb5079c0b18dfdd23da1175b1c3f"
+    },
+    {
+      "path": "src/shell/mod.rs",
+      "sha256": "6d88cf4589d4c8c1ee2a729de44e9e982c65a7e379acb1ae58c4ba04fd32a688"
+    },
+    {
+      "path": "src/shell/outer_workspace.rs",
+      "sha256": "ed12575cb16f4ce07f4852a7f2a9395c382b7ad1e62820e75ea1ec8b6004bf69"
+    },
+    {
+      "path": "src/shell/render.rs",
+      "sha256": "2c3dc1729b3032cbf57aeb632b76e8a5f63ed477ba55bfa71fd70beea7ed1969"
+    },
+    {
+      "path": "src/shell/renderers.rs",
+      "sha256": "fbe56e0c4a2da9f3178d388502829275f7a6242a32c7cc35d1087cf8bc8b4f13"
+    },
+    {
+      "path": "src/shell/window_a11y.rs",
+      "sha256": "e9ca9e7fc986e3e02b3043c71a011031798123b5ba227ae6be548cf3c02c7afd"
+    },
+    {
+      "path": "src/shell/surface_frames.rs",
+      "sha256": "e0e7971c1d2a42ad6aa4fe16dba593a1525f995cb56c80d6789696e650811a76"
+    },
+    {
+      "path": "src/shell/native_composition.rs",
+      "sha256": "2d6098774d820d87c5b8e0f8c8ec3fe685da9d01d4ab576d1637c24265a33f2d"
+    }
+  ],
+  "binary": {
+    "path": "C:/t/cargo-targets/turnstone/debug/turnstone.exe",
+    "sha256": "3b092486e050698001aea3f3589ab57b7153b246e1c5661586c9ef6cd7283ae3"
+  },
+  "primary_lock_restored_sha256": "432883312ec370221f2a383e98ffb1e3a2bf735a235ab35c32621cc9901a2fb3",
+  "temporary_lock_sha256": "5374810c621dbdcc0bc58b4825f73e882fd418694d78bca7efb8fae9c1e38032",
+  "source_graph": "preliminary-b6-source-graph.json",
+  "build_log": "preliminary-b6-native-build.log",
+  "terminal_control": "preliminary-b6-terminal-control.json",
+  "tests": {
+    "hidden_document": 1,
+    "inline": 4,
+    "apertures": 2,
+    "frame_keys": 3,
+    "terminal_document": 1,
+    "masks": 3
+  }
+}

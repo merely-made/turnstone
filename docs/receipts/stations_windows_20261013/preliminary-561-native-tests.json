@@ -1,0 +1,81 @@
+{
+  "kind": "Preliminary native test harness using local Mere package overrides; published Genet561; not final published Mere qualification",
+  "cargo_command": "cargo +1.99.0 --config docs/receipts/stations_windows_20261013/preliminary-mere-paths.toml test --lib inline_ --locked --offline -j1",
+  "cargo_exit_code": 0,
+  "cargo_log": "preliminary-561-inline-tests-repaired2.log",
+  "harness": "C:/t/cargo-targets/turnstone/build/debug/deps/turnstone-662a9a9f4a4e08cc.exe",
+  "harness_sha256": "8f0fd244e5f89e15755d367d7923a338fc55b8798d6bd92acdbdf00010a01230",
+  "harness_filters": [
+    {
+      "filter": "inline_",
+      "passed": 4
+    },
+    {
+      "filter": "native_aperture_tests",
+      "passed": 1
+    },
+    {
+      "filter": "allocated_producers_preserve_custody_and_rootstock_range",
+      "passed": 1
+    },
+    {
+      "filter": "shell::frame_keys::tests",
+      "passed": 3
+    },
+    {
+      "filter": "shell::contributed_window_a11y_tests",
+      "passed": 3
+    },
+    {
+      "filter": "shell::outer_workspace::tests",
+      "passed": 1
+    },
+    {
+      "filter": "surface::tests",
+      "passed": 48
+    }
+  ],
+  "all_failed": 0,
+  "primary_lock_restored_sha256": "432883312ec370221f2a383e98ffb1e3a2bf735a235ab35c32621cc9901a2fb3",
+  "temporary_lock_sha256": "28c65a017f3932baa75c1fff394d7267362b830bc2d9a7116a415d6fe4346181",
+  "turnstone_head": "81d9f8bc2b6284f29d7013445ce709c8a3cec948",
+  "mere_head": "f7e0a09788ad2304254bb4afaf4e77cc9a94ae21",
+  "genet_rev": "5618326d287e7f7ef0c1cc3545587d64cedb22a7",
+  "owned_source_sha256": {
+    "src/arrange_pane.rs": "e7bf66043325dbcdb2d7843e93124d622aa0ea438497e45d9e32a48032ad03ef",
+    "src/cambium_pane.rs": "481ed7fda0adfb9665d404c39d980bd59c04d63c0cd2d00581787ffe8b851fba",
+    "src/device_receipts_pane.rs": "04a73f55a77f25e29c663a24846f99592e79f9903a17f027ef9a145c7bb0e177",
+    "src/frame_a11y.rs": "96171246a46a09af9bff414a22c77fb6ce5f9c20024249b3b2538642a567c32a",
+    "src/frame_controls.rs": "04920a3bcda432158f57a26a33c2986ae4c534d21fa92477117ef791769f69c3",
+    "src/frame_style.rs": "59ebd0d1677408b4344abd692d7241150d22906c16501d72df3d1f9300ddcc74",
+    "src/frozen_projection_pane.rs": "fc44d594a31fb0fcc87f18eebd3996716e11fe27d844ab0249ad8d14925af5fb",
+    "src/inline_pane.rs": "c261fffcbb089058ecea401b11673c9225b627ce6ed671faf20991e131a7df0c",
+    "src/inspector_pane.rs": "18c7391ec1ce51b5def0090f8753a307e8213fed0c4a8e5b980ab1775e012870",
+    "src/lib.rs": "9a92094bf4857c8a12cfa56daa350a4fcd95e3d85cbf838d9874c5302c348dc2",
+    "src/outer_frame.rs": "c38441a2eb453ddd47762d8dcdb6fdbb20c6a245b348051966f117212ef21b85",
+    "src/publish_pane.rs": "49d2d8af8de870d57cb242b35680652916beb303eb2a8fc14411e10eb064bb37",
+    "src/scenario.rs": "ff728a95d3d032a9b83e62753835d442e9512c14d8a2a01520b6ad58971f91fe",
+    "src/settings_pane.rs": "8f7e81301e61913129aabe49f2927bbca61086dd91c7a1c1584d32f491f1df05",
+    "src/share_reader_pane.rs": "593b1663bb37224cce75016b7a27bf419af76f7e970f2f547265fff84c7bd8e3",
+    "src/surface.rs": "6be28f9f2254b4aa9d8e993f7e67b6002c7bdb9399b2119deb3385eff9616808",
+    "src/trail_pane.rs": "c629f503b78713ff6500618dfd5015169d33dca098582bbfb96a0a751442fde7",
+    "src/transcript_pane.rs": "c7f6abf4badbdeb87635656a9f99129bf28eb6122b99668c984254d1304f6fb3",
+    "src/ui.rs": "f9ac0f0ed3f56f3dbf2f2b9bf2a12b9b8d5c6a45e45698681c9c5fd54ae4cde1",
+    "src/workbench_pane.rs": "8f21ca33f50d7d145bae604ad64435a306ef3756abc99583b27af1e5ecf8f1f7",
+    "src/swatch_pane/mod.rs": "3c4d52d57097d0fdb45ed7f671d87b913f8e847b90999d207bda28e7a2f355bb",
+    "src/shell/controller_input.rs": "62fef1bce4332951f4af494c62b0b6cabfcb6b3f9cb2cb592e2ab42bcbae7de6",
+    "src/shell/drive.rs": "851fdc3db3ea9e25103ae6e6fc60d224b5229b07019fe76efe87dc6bbd5a21df",
+    "src/shell/frame_keys.rs": "07241bc88d32188f716b4317c652654bbd31c8b04ce2efc5b795bf131600ffcb",
+    "src/shell/input.rs": "1c233126fc7522f53c18668f0a6b5d33dccf84fd8e3b4e838febe14ee9404b97",
+    "src/shell/keys.rs": "0bf806b0bbc2da0a60011835edb2e89c76baef29559131521912fd15f0ae9684",
+    "src/shell/lens.rs": "e3880eb8b25c33e1d50cbe4003f332dbc0d9bcf93dc4727645f3f893f31136eb",
+    "src/shell/mod.rs": "696068364d8cba6a1f580b09d7c63f25a097610dbd4c4e3a1013ab887baaf278",
+    "src/shell/outer_workspace.rs": "c072bf384e6478bb36db9a642657d619590b10339f9ce5e70f7c0a5830bba9d3",
+    "src/shell/render.rs": "0a295cdcfce474d2e0173815b8259fa46b6c621440391305f58b772b1a8d9c88",
+    "src/shell/renderers.rs": "775a647a8e4e34eb745fac58904140bbc38ba2f97f0a44c7d97dfa830b991e64",
+    "src/shell/window_a11y.rs": "e9ca9e7fc986e3e02b3043c71a011031798123b5ba227ae6be548cf3c02c7afd",
+    "src/shell/surface_frames.rs": "e0e7971c1d2a42ad6aa4fe16dba593a1525f995cb56c80d6789696e650811a76",
+    "src/shell/native_composition.rs": "e2268e54a9c2b82fd958fc7c0803958ecc621ce14907e357fc918116c5f0635b"
+  },
+  "boundaries": "Logical ownership, retained DOM/control state, editable field keys/composition/caret, same-source appearance identity, actual key-domain assertion, focus/drag/window AT route retirement and schema/admission tests. Does not qualify native pixels, human AT, OS activation or physical DPI."
+}

@@ -1,0 +1,12 @@
+RESULT fail
+waited 0 frames
+captured 01_inline_alpha_over_native_graph
+FAIL: assert snap floats Contains 'canvas': got 'roster,orrery'
+captured 02_native_alpha_over_inline_body
+captured 03_overlap_resized
+captured 04_overlap_settled
+presentation frames=152 captures=4 blank=0
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-b6-alpha\captures\a4_native_overlap\01_inline_alpha_over_native_graph.png digest=ae992a297bee24e4 blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-b6-alpha\captures\a4_native_overlap\02_native_alpha_over_inline_body.png digest=e30072e4a68649e4 blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-b6-alpha\captures\a4_native_overlap\03_overlap_resized.png digest=12bd6337db4a5326 blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-b6-alpha\captures\a4_native_overlap\04_overlap_settled.png digest=e30072e4a68649e4 blank=false

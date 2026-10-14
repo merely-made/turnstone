@@ -1,0 +1,6 @@
+RESULT ok
+captured frame_fonts_reopened
+captured frame_fonts_reset
+presentation frames=47 captures=2 blank=0
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\published-fonts\captures\frame_appearance_reopen\frame_fonts_reopened.png digest=9803f86b5e749c74 blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\published-fonts\captures\frame_appearance_reopen\frame_fonts_reset.png digest=436b88113e54cec2 blank=false

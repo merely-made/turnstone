@@ -1,0 +1,28 @@
+{
+  "scope": "Shared owner identity source gate; native/published consumer acceptance stays separate.",
+  "supplier": "Genet19947 + published Netrenderc74 baseline",
+  "source_sha256": {
+    "crates/cambium/cambium/src/frisket.rs": "b7f66f0ae8c11de91c89cc61144d68665b3660a4846df2f9e5276a2a8344fec7",
+    "crates/cambium/cambium/src/workspace.rs": "6c10277119dd1394e551de96495f520342671f6cb7190fafb8ff631b3d224ef6",
+    "crates/cambium/cambium/src/runner.rs": "420e4d7ae425ec15b722f6ae311771b4df85d1921e81f7db2068e27e2e64ebec",
+    "crates/cambium/cambium/src/retained_mount.rs": "f17db3957b7b33d7f55ce3c648eff20137a185a4b87176ecd5e0a6bc1a403c48",
+    "crates/cambium/cambium/src/key.rs": "699ecafddfa6bf7c663de5453a9cd660e80d44ad33115527b6c58cc08ddd41ec",
+    "crates/cambium/cambium/src/propagation.rs": "9f0c9015545d27e9d973f255df558e71a42934e25677371d39d032471fc0936f",
+    "crates/cambium/cambium/src/tabs.rs": "3f494bb22ce4d913006aa0dc8212dda1695b564e4fadba413baadd72b94287ab"
+  },
+  "negative_control": {
+    "restored": "Absent active tile wrongly publishes FRISKET_TILE_ATTR=0",
+    "result": "expected test failure exit101; empty stack resolves Some(TileId0), expected None",
+    "log": "frisket-19947-empty-owner-negative-control.log",
+    "restore": "fixed source bytes restored in finally before positive compile"
+  },
+  "positive": {
+    "workspace_passed": 7,
+    "mount_focus_passed": 11,
+    "failed": 0,
+    "logs": [
+      "frisket-19947-workspace-restored-tests.log",
+      "retained-mount-19947-after-empty-owner-tests.log"
+    ]
+  }
+}

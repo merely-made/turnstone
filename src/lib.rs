@@ -49,6 +49,7 @@ mod host_journal;
 mod identity;
 mod inspector_controls;
 mod inspector_pane;
+mod inline_pane;
 mod inspector_view;
 mod knot_authoring;
 pub mod knot_document_surface;

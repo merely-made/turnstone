@@ -1,0 +1,8 @@
+
+running 3 tests
+test shell::contributed_window_a11y_tests::contributed_window_action_unchanged_lens_focus_and_click_controls ... ok
+test shell::contributed_window_a11y_tests::contributed_window_action_same_drain_moved_focus_rejects_old_lens ... ok
+test shell::contributed_window_a11y_tests::contributed_window_action_same_drain_moved_click_rejects_old_lens ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 943 filtered out; finished in 0.39s
+

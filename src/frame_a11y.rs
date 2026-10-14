@@ -88,12 +88,42 @@ pub(crate) fn fixture_window_request(text: &str) -> Result<(usize, Action, Fixtu
     let (action, target) = fixture_request(args)?;
     Ok((slot, action, target))
 }
+pub(crate) fn fixture_body_request(
+    text: &str,
+) -> Result<(usize, Action, taproot::Selector), String> {
+    let mut words = text.splitn(4, char::is_whitespace);
+    let window = words
+        .next()
+        .ok_or("missing window")?
+        .parse()
+        .map_err(|_| "invalid window")?;
+    let action = match words.next() {
+        Some("focus") => Action::Focus,
+        Some("click") => Action::Click,
+        _ => return Err("inline-a11y-window wants focus|click".into()),
+    };
+    let role = words
+        .next()
+        .filter(|s| !s.is_empty())
+        .ok_or("missing role")?;
+    let name = words
+        .next()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .ok_or("missing label")?;
+    Ok((
+        window,
+        action,
+        taproot::Selector::role(role).containing(name),
+    ))
+}
 
 pub(crate) struct FrameProjection {
     root: NodeId,
-    nodes: Vec<(NodeId, accesskit::Node)>,
+    pub(crate) nodes: Vec<(NodeId, accesskit::Node)>,
     pub routes: HashMap<NodeId, FrameRoute>,
     slots: HashMap<TileId, NodeId>,
+    inline_tiles: HashSet<TileId>,
     pub focus: Option<NodeId>,
 }
 pub(crate) fn project(
@@ -142,29 +172,66 @@ pub(crate) fn project(
             }
             if !node.is_hidden() {
                 if let Some(control) = controls.control_at(dom_node) {
-                    node.add_action(Action::Focus);
-                    if let Some(value) = controls.divider_value(&control) {
-                        node.set_numeric_value(value);
-                        node.set_min_numeric_value(5.0);
-                        node.set_max_numeric_value(95.0);
-                        node.set_numeric_value_step(1.0);
-                        node.add_action(Action::Increment);
-                        node.add_action(Action::Decrement);
+                    if matches!(control, crate::frame_controls::Control::Body { .. }) {
+                        // Body dispatch currently owns focus and the native click
+                        // path. Do not advertise document-session actions without
+                        // a corresponding owner handler.
+                        node.clear_actions();
+                        if !node.is_disabled()
+                            && matches!(
+                                node.role(),
+                                Role::Button
+                                    | Role::Link
+                                    | Role::Tab
+                                    | Role::CheckBox
+                                    | Role::RadioButton
+                                    | Role::TextInput
+                                    | Role::MultilineTextInput
+                                    | Role::Slider
+                                    | Role::ComboBox
+                            )
+                        {
+                            node.add_action(Action::Focus);
+                            if matches!(
+                                node.role(),
+                                Role::Button
+                                    | Role::Link
+                                    | Role::Tab
+                                    | Role::CheckBox
+                                    | Role::RadioButton
+                            ) {
+                                node.add_action(Action::Click);
+                            }
+                            routes.insert(global, controls.route(control));
+                        }
                     } else {
-                        node.add_action(Action::Click);
+                        node.add_action(Action::Focus);
+                        if let Some(value) = controls.divider_value(&control) {
+                            node.set_numeric_value(value);
+                            node.set_min_numeric_value(5.0);
+                            node.set_max_numeric_value(95.0);
+                            node.set_numeric_value_step(1.0);
+                            node.add_action(Action::Increment);
+                            node.add_action(Action::Decrement);
+                        } else {
+                            node.add_action(Action::Click);
+                        }
+                        routes.insert(global, controls.route(control));
                     }
-                    routes.insert(global, controls.route(control));
                 }
             }
         }
         nodes.push((global, node));
     }
-    let focus = focused.then(|| remap.get(&update.focus).copied()).flatten();
+    let focus = (focused || update.focus != local_root)
+        .then(|| remap.get(&update.focus).copied())
+        .flatten();
     FrameProjection {
         root: remap[&local_root],
         nodes,
         routes,
         slots,
+        inline_tiles: controls.inline_tiles(),
         focus,
     }
 }
@@ -180,6 +247,7 @@ pub(crate) fn graft(
     let keep: HashSet<_> = frame
         .slots
         .keys()
+        .filter(|tile| !frame.inline_tiles.contains(tile))
         .filter_map(|tile| pane_roots.get(tile).copied())
         .collect();
     let mut pending = old.children().to_vec();
@@ -193,6 +261,9 @@ pub(crate) fn graft(
         }
     }
     for (tile, slot) in &frame.slots {
+        if frame.inline_tiles.contains(tile) {
+            continue;
+        }
         if let Some(body) = pane_roots
             .get(tile)
             .filter(|body| tree.nodes.iter().any(|(id, _)| id == *body))

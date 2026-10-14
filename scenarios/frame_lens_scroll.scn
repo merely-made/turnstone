@@ -1,0 +1,19 @@
+# Uses the same receiving-window pane wheel handler as native input.
+# Actual captures qualify content movement and the existing scrollbar fade.
+settle 20
+key escape
+resize 1180 800
+act Open Settings pane
+settle 5
+act Tear out pane
+settle 20
+assert windows == 2
+assert lens-pane 0:turnstone.settings
+capture-lens 01_lens_before_scroll
+scroll-pane-window 1 600 400 0 300
+# Capture the queued receiving-window redraw within the existing fade hold.
+capture-lens 02_lens_scrolled
+wait 1800
+settle 3
+capture-lens 03_lens_scrollbar_faded
+assert snap capture-errors == 0

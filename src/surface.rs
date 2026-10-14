@@ -173,6 +173,12 @@ impl SurfaceId {
         SurfaceId(0x0044_4956_0000_0000 | index as u64)
     }
 
+    /// One shared frame raster per native window. Floating apertures reuse
+    /// their owning window raster; independent windows retain independent caches.
+    pub(crate) fn frame_window(slot: usize) -> Self {
+        SurfaceId(0x0054_4652_0000_0000 | slot as u64)
+    }
+
     /// The id for a surface of `kind`.
     pub fn for_kind(kind: SurfaceKind) -> Self {
         match kind {
@@ -290,7 +296,9 @@ pub fn content_rect(full: Rect) -> Rect {
 /// meant for the canvas or content beneath it.
 pub fn hit_test(surfaces: &[Surface], focus: FocusTarget, px: f32, py: f32) -> Option<HitResult> {
     for surface in surfaces.iter().rev() {
-        if surface.kind == SurfaceKind::Frame { continue; }
+        if surface.kind == SurfaceKind::Frame {
+            continue;
+        }
         if matches!(surface.kind, SurfaceKind::Chrome) && focus != FocusTarget::Chrome {
             continue;
         }
@@ -331,7 +339,10 @@ pub fn focus_for_press(surfaces: &[Surface], focus: FocusTarget, px: f32, py: f3
             // preserve keyboard focus. The shell promotes a registered
             // contributed pane to `FocusTarget::Pane` after admission. A seam
             // press likewise stays a pointer gesture.
-            SurfaceKind::Pane(_) | SurfaceKind::Divider(_) | SurfaceKind::Frame | SurfaceKind::FloatFrame(_) => focus,
+            SurfaceKind::Pane(_)
+            | SurfaceKind::Divider(_)
+            | SurfaceKind::Frame
+            | SurfaceKind::FloatFrame(_) => focus,
         },
         None => focus,
     }

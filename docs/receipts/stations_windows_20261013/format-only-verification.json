@@ -1,0 +1,107 @@
+[
+  {
+    "path": "src/shell/appearance_receipt.rs",
+    "worktree": "c9faa9787cb05d519196f9fb01349f55755f0513",
+    "index": "c9faa9787cb05d519196f9fb01349f55755f0513",
+    "head": "c9faa9787cb05d519196f9fb01349f55755f0513",
+    "equal": true
+  },
+  {
+    "path": "src/shell/effects.rs",
+    "worktree": "f11591230d9bd379b825ac22d335d0087b0df7f7",
+    "index": "f11591230d9bd379b825ac22d335d0087b0df7f7",
+    "head": "f11591230d9bd379b825ac22d335d0087b0df7f7",
+    "equal": true
+  },
+  {
+    "path": "src/shell/contributed_window_a11y_tests.rs",
+    "worktree": "65a0f326a5fb7fc05ebf384b6fa81b70b2055c44",
+    "index": "65a0f326a5fb7fc05ebf384b6fa81b70b2055c44",
+    "head": "65a0f326a5fb7fc05ebf384b6fa81b70b2055c44",
+    "equal": true
+  },
+  {
+    "path": "src/shell/events.rs",
+    "worktree": "0f5efb6d63f1c6717f0035095a29b9d3fd609ae3",
+    "index": "0f5efb6d63f1c6717f0035095a29b9d3fd609ae3",
+    "head": "0f5efb6d63f1c6717f0035095a29b9d3fd609ae3",
+    "equal": true
+  },
+  {
+    "path": "src/shell/gestures.rs",
+    "worktree": "e8c22b943659720c193d5674077efc4ca2d5df8d",
+    "index": "e8c22b943659720c193d5674077efc4ca2d5df8d",
+    "head": "e8c22b943659720c193d5674077efc4ca2d5df8d",
+    "equal": true
+  },
+  {
+    "path": "src/shell/lens_tests.rs",
+    "worktree": "7367d5cb1a16a1fbc4ae17059c92877c298c59f3",
+    "index": "7367d5cb1a16a1fbc4ae17059c92877c298c59f3",
+    "head": "7367d5cb1a16a1fbc4ae17059c92877c298c59f3",
+    "equal": true
+  },
+  {
+    "path": "src/shell/local_micron_source_tests.rs",
+    "worktree": "011ff59c562a04ffcf571612a13e03327dfd9c6b",
+    "index": "011ff59c562a04ffcf571612a13e03327dfd9c6b",
+    "head": "011ff59c562a04ffcf571612a13e03327dfd9c6b",
+    "equal": true
+  },
+  {
+    "path": "src/shell/nomadnet_fetch.rs",
+    "worktree": "eee7bb5c2846cec616a930297378f2fc69fc85ba",
+    "index": "eee7bb5c2846cec616a930297378f2fc69fc85ba",
+    "head": "eee7bb5c2846cec616a930297378f2fc69fc85ba",
+    "equal": true
+  },
+  {
+    "path": "src/shell/page_capture.rs",
+    "worktree": "861ee7ae8c3d22722e661938157a6b57669f9151",
+    "index": "861ee7ae8c3d22722e661938157a6b57669f9151",
+    "head": "861ee7ae8c3d22722e661938157a6b57669f9151",
+    "equal": true
+  },
+  {
+    "path": "src/shell/reader_observe.rs",
+    "worktree": "f83497f1f7edb9a2b79a6b87153c201d99b475ae",
+    "index": "f83497f1f7edb9a2b79a6b87153c201d99b475ae",
+    "head": "f83497f1f7edb9a2b79a6b87153c201d99b475ae",
+    "equal": true
+  },
+  {
+    "path": "src/shell/scry.rs",
+    "worktree": "402712a910d00936a868a72b311bcfb685db7333",
+    "index": "402712a910d00936a868a72b311bcfb685db7333",
+    "head": "402712a910d00936a868a72b311bcfb685db7333",
+    "equal": true
+  },
+  {
+    "path": "src/shell/servo.rs",
+    "worktree": "fb4395ed85e0d4a6fcfa0debf19a63ba8a1bb63a",
+    "index": "fb4395ed85e0d4a6fcfa0debf19a63ba8a1bb63a",
+    "head": "fb4395ed85e0d4a6fcfa0debf19a63ba8a1bb63a",
+    "equal": true
+  },
+  {
+    "path": "src/shell/window_a11y.rs",
+    "worktree": "af748d58eff0c902b644508fb5f687b383c8147c",
+    "index": "22c2bb3bc63831645349d3ba6a3e70685e011a74",
+    "head": "22c2bb3bc63831645349d3ba6a3e70685e011a74",
+    "equal": false
+  },
+  {
+    "path": "src/shell/window_input.rs",
+    "worktree": "b0d467e148583ab9b47802a1a5a411ab71b3c4d7",
+    "index": "b0d467e148583ab9b47802a1a5a411ab71b3c4d7",
+    "head": "b0d467e148583ab9b47802a1a5a411ab71b3c4d7",
+    "equal": true
+  },
+  {
+    "path": "src/shell/window_input_tests.rs",
+    "worktree": "2ff04a9b637c0f15ee340ac39aae0f8c5bc1ef16",
+    "index": "2ff04a9b637c0f15ee340ac39aae0f8c5bc1ef16",
+    "head": "2ff04a9b637c0f15ee340ac39aae0f8c5bc1ef16",
+    "equal": true
+  }
+]

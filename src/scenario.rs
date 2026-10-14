@@ -138,6 +138,7 @@ pub enum Step {
     Type(String),
     Insert(String),
     Key(EditKey),
+    KeyWindow(usize, EditKey),
     Act(String),
     /// A Piccolo control script whose emitted Actions lower through the spine
     /// (the "one description, two runners" automation lane). Piccolo-gated.
@@ -248,6 +249,8 @@ pub enum Step {
     AssertRatio(CmpOp, f32),
     Settle(u32),
     Capture(String),
+    CapturesDiffer(String, String),
+    ScrollPaneWindow(u64, f32, f32, f32, f32),
     AssertOmnibar(bool),
     /// Whether the last content scroll key moved the focused page (`moved`) or
     /// was an honest no-op at the end (`still`).
@@ -357,8 +360,8 @@ pub(crate) fn expand_env(line: &str, line_no: usize) -> Result<String, String> {
             continue;
         };
         let name = &rest[start + 2..start + 2 + end];
-        let value = std::env::var(name)
-            .map_err(|_| format!("line {line_no}: ${{{name}}} is not set"))?;
+        let value =
+            std::env::var(name).map_err(|_| format!("line {line_no}: ${{{name}}} is not set"))?;
         out.push_str(&rest[..start]);
         out.push_str(&value);
         rest = &rest[start + 2 + end + 1..];
@@ -390,6 +393,13 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
             },
             "type" if !rest.is_empty() => Step::Type(rest.to_string()),
             "insert" if !rest.is_empty() => Step::Insert(rest.to_string()),
+            "key-window" => {
+                let (window, key) = rest.split_once(char::is_whitespace).ok_or_else(|| format!("line {}: key-window wants '<slot> <key>'", i+1))?;
+                let window = window.parse().map_err(|_| format!("line {}: invalid window slot", i+1))?;
+                let mut key = parse(&format!("key {}", key.trim()))?;
+                let Some(Step::Key(key)) = key.pop() else { return err("unsupported window key"); };
+                Step::KeyWindow(window, key)
+            },
             "key" => match rest {
                 "enter" => Step::Key(EditKey::Enter),
                 "escape" => Step::Key(EditKey::Escape),
@@ -567,6 +577,20 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 Step::Divider(ratio)
             }
             "capture" if !rest.is_empty() => Step::Capture(rest.to_string()),
+            "captures-differ" => {
+                let names: Vec<_> = rest.split_whitespace().collect();
+                if names.len() != 2 { return err("captures-differ wants two completed capture names"); }
+                Step::CapturesDiffer(names[0].into(), names[1].into())
+            }
+            "scroll-pane-window" => {
+                let fields: Vec<_> = rest.split_whitespace().collect();
+                if fields.len() != 5 { return err("scroll-pane-window wants window x y dx dy"); }
+                let window = fields[0].parse().map_err(|_| format!("line {}: invalid window", i + 1))?;
+                let values: Vec<f32> = fields[1..].iter().map(|value| value.parse::<f32>())
+                    .collect::<Result<_, _>>().map_err(|_| format!("line {}: invalid pane wheel", i + 1))?;
+                if values.iter().any(|value| !value.is_finite()) { return err("pane wheel values must be finite"); }
+                Step::ScrollPaneWindow(window, values[0], values[1], values[2], values[3])
+            }
             "capture-lens" if !rest.is_empty() => Step::CaptureLens(rest.to_string()),
             "record-reader-appearances" if !rest.is_empty() => {
                 Step::RecordReaderAppearances(rest.to_string())
@@ -930,10 +954,38 @@ drop-file 350 280 receipt.txt",
 
     #[test]
     fn idle_diagnostics_and_document_idle_are_typed_steps() {
-        let steps = parse("record-idle after-fetch\nassert content-sessions-idle\nassert content-ready").unwrap();
+        let steps =
+            parse("record-idle after-fetch\nassert content-sessions-idle\nassert content-ready")
+                .unwrap();
         assert!(matches!(
             steps.as_slice(),
             [Step::RecordIdle(name), Step::AssertContentSessionsIdle, Step::AssertContentReady] if name == "after-fetch"
         ));
+    }
+    #[test]
+    fn inline_component_station_fixture_uses_supported_grammar() {
+        taproot::Scenario::parse(include_str!("../scenarios/a4_inline_components.scn")).unwrap();
+        taproot::Scenario::parse(include_str!("../scenarios/a4_native_overlap.scn")).unwrap();
+        taproot::Scenario::parse(include_str!("../scenarios/frame_lens_scroll.scn")).unwrap();
+        taproot::Scenario::parse(include_str!("../scenarios/frame_appearance.scn")).unwrap();
+        taproot::Scenario::parse(include_str!("../scenarios/frame_appearance_reopen.scn")).unwrap();
+        taproot::Scenario::parse(include_str!("../scenarios/frame_fonts_workshop.scn")).unwrap();
+        taproot::Scenario::parse(include_str!(
+            "../scenarios/frame_fonts_missing_workshop.scn"
+        ))
+        .unwrap();
+        assert!(matches!(
+            parse("captures-differ before after\nscroll-pane-window 1 1400 400 0 300")
+                .unwrap()
+                .as_slice(),
+            [Step::CapturesDiffer(before, after), Step::ScrollPaneWindow(1, ..)]
+                if before == "before" && after == "after"
+        ));
+        assert!(matches!(
+            parse("key-window 1 ctrl+f6").unwrap().as_slice(),
+            [Step::KeyWindow(1, EditKey::FrameFocus)]
+        ));
+        crate::frame_a11y::fixture_body_request("1 click tab Links").unwrap();
+        assert!(crate::frame_a11y::fixture_body_request("1 replace tab Links").is_err());
     }
 }

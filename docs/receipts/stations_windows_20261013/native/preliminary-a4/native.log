@@ -1,0 +1,173 @@
+2026-10-14T05:14:22.741729Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:23.876199Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:24.877718Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:25.878955Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:26.880192Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:27.881383Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:28.882609Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:29.884355Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:30.885769Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:31.887217Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:32.888502Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:33.890555Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:34.891733Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:35.892862Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:36.894147Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:37.895616Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:38.897024Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:39.898572Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:40.899953Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:41.901315Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T05:14:42.902842Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+
+thread 'main' (13896) panicked at C:\Users\mark_\.cargo\git\checkouts\genet-9f159fb031513491\5618326\components\genet-scripted-dom\lib.rs:1111:14:
+NodeId is not stored in this document (foreign or retired)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-10-14T05:14:43.904266Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+
+thread 'main' (13896) panicked at C:\Users\mark_\.cargo\git\checkouts\genet-9f159fb031513491\5618326\components\genet-scripted-dom\lib.rs:1111:14:
+NodeId is not stored in this document (foreign or retired)
+stack backtrace:
+   0:     0x7ff65a6a8019 - std::backtrace_rs::backtrace::win64::trace
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\..\..\backtrace\src\backtrace\win64.rs:85
+   1:     0x7ff65a6a8019 - std::backtrace_rs::backtrace::trace_unsynchronized
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\..\..\backtrace\src\backtrace\mod.rs:66
+   2:     0x7ff65a6a8019 - std::sys::backtrace::_print_fmt
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\sys\backtrace.rs:74
+   3:     0x7ff65a6a8019 - std::sys::backtrace::impl$0::print::impl$0::fmt
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\sys\backtrace.rs:44
+   4:     0x7ff65a6bedde - core::fmt::write
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\fmt\mod.rs:0
+   5:     0x7ff65a6ae334 - core::io::write::default_write_fmt
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\io\write.rs:402
+   6:     0x7ff65a6ae334 - core::io::write::Write::write_fmt<std::sys::stdio::windows::Stderr>
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\io\write.rs:335
+   7:     0x7ff65a6899d5 - std::sys::backtrace::BacktraceLock::print
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\sys\backtrace.rs:47
+   8:     0x7ff65a6899d5 - std::panicking::default_hook::closure$0
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:292
+   9:     0x7ff65a69db18 - std::panicking::default_hook
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:319
+  10:     0x7ff65a69def3 - std::panicking::panic_with_hook
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:815
+  11:     0x7ff65a689aae - std::panicking::panic_handler::closure$0
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:688
+  12:     0x7ff65a6872cf - std::sys::backtrace::__rust_end_short_backtrace<std::panicking::panic_handler::closure_env$0,never$>
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\sys\backtrace.rs:182
+  13:     0x7ff65a68a70e - std::panicking::panic_handler
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:679
+  14:     0x7ff65a7d88ad - core::panicking::panic_fmt
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\panicking.rs:80
+  15:     0x7ff65a7d8525 - core::panicking::panic_display
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\panicking.rs:259
+  16:     0x7ff65a7d8525 - core::option::expect_failed
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\core\src\option.rs:2257
+  17:     0x7ff65a3f49b2 - <core[6dff922281fde550]::option::Option<&genet_scripted_dom[7375c647e44dab9f]::Node>>::expect
+  18:     0x7ff65a3e83a1 - <genet_scripted_dom[7375c647e44dab9f]::ScriptedDom>::node
+  19:     0x7ff65a3efe10 - <genet_scripted_dom[7375c647e44dab9f]::ScriptedDom as layout_dom_api[aa47ea57672c2e09]::LayoutDomMut>::remove
+  20:     0x7ff6594f86f2 - <cambium[901d635c1d4ae837]::retained_mount::Owner as core[6dff922281fde550]::ops::drop::Drop>::drop
+  21:     0x7ff6594f55ab - core[6dff922281fde550]::ptr::drop_glue::<cambium[901d635c1d4ae837]::retained_mount::Owner>
+  22:     0x7ff65120d450 - <alloc[5ef4293888d15ed5]::rc::Rc<cambium[901d635c1d4ae837]::retained_mount::Owner>>::drop_slow
+  23:     0x7ff65043a709 - <alloc[5ef4293888d15ed5]::rc::Rc<cambium[901d635c1d4ae837]::retained_mount::Owner> as core[6dff922281fde550]::ops::drop::Drop>::drop
+  24:     0x7ff650268749 - core[6dff922281fde550]::ptr::drop_glue::<alloc[5ef4293888d15ed5]::rc::Rc<cambium[901d635c1d4ae837]::retained_mount::Owner>>
+  25:     0x7ff6503a6429 - core[6dff922281fde550]::ptr::drop_glue::<cambium[901d635c1d4ae837]::retained_mount::RetainedMount>
+  26:     0x7ff6503ce24d - core[6dff922281fde550]::ptr::drop_glue::<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::retained_mount::RetainedMount)>
+  27:     0x7ff65107c7ec - <hashbrown[20b706e42d87b97d]::raw::RawTableInner>::drop_elements::<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::retained_mount::RetainedMount)>
+  28:     0x7ff6510879b9 - <hashbrown[20b706e42d87b97d]::raw::RawTableInner>::drop_inner_table::<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::retained_mount::RetainedMount), alloc[5ef4293888d15ed5]::alloc::Global>
+  29:     0x7ff650434499 - <hashbrown[20b706e42d87b97d]::raw::RawTable<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::retained_mount::RetainedMount)> as core[6dff922281fde550]::ops::drop::Drop>::drop
+  30:     0x7ff650264d59 - core[6dff922281fde550]::ptr::drop_glue::<hashbrown[20b706e42d87b97d]::raw::RawTable<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::retained_mount::RetainedMount)>>
+  31:     0x7ff650264009 - core[6dff922281fde550]::ptr::drop_glue::<hashbrown[20b706e42d87b97d]::map::HashMap<workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::retained_mount::RetainedMount, std[f8439e2c5135d149]::hash::random::RandomState>>
+  32:     0x7ff6502c6b69 - core[6dff922281fde550]::ptr::drop_glue::<std[f8439e2c5135d149]::collections::hash::map::HashMap<workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::retained_mount::RetainedMount>>
+  33:     0x7ff650381619 - core[6dff922281fde550]::ptr::drop_glue::<turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>
+  34:     0x7ff65029423b - core[6dff922281fde550]::ptr::drop_glue::<cambium[901d635c1d4ae837]::frisket::SlotChild<turnstone[d7b8377f87a9cda6]::frame_controls::State, (), turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>>
+  35:     0x7ff6503ce22d - core[6dff922281fde550]::ptr::drop_glue::<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::frisket::SlotChild<turnstone[d7b8377f87a9cda6]::frame_controls::State, (), turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>)>
+  36:     0x7ff6503c730b - core[6dff922281fde550]::ptr::drop_glue::<[(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::frisket::SlotChild<turnstone[d7b8377f87a9cda6]::frame_controls::State, (), turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>)]>
+  37:     0x7ff650439cb4 - <alloc[5ef4293888d15ed5]::vec::Vec<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::frisket::SlotChild<turnstone[d7b8377f87a9cda6]::frame_controls::State, (), turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>)> as core[6dff922281fde550]::ops::drop::Drop>::drop
+  38:     0x7ff65026e13b - core[6dff922281fde550]::ptr::drop_glue::<alloc[5ef4293888d15ed5]::vec::Vec<(workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::frisket::SlotChild<turnstone[d7b8377f87a9cda6]::frame_controls::State, (), turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>)>>
+  39:     0x7ff650294479 - core[6dff922281fde550]::ptr::drop_glue::<cambium[901d635c1d4ae837]::portable::PortableKeyed<workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::frisket::SlotChild<turnstone[d7b8377f87a9cda6]::frame_controls::State, (), turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>>>
+  40:     0x7ff65029073b - core[6dff922281fde550]::ptr::drop_glue::<cambium[901d635c1d4ae837]::element::El<cambium[901d635c1d4ae837]::portable::PortableKeyed<workbench[203c4a97696c2847]::TileId, cambium[901d635c1d4ae837]::frisket::SlotChild<turnstone[d7b8377f87a9cda6]::frame_controls::State, (), turnstone[d7b8377f87a9cda6]::frame_controls::view::{closure#1}>>, turnstone[d7b8377f87a9cda6]::frame_controls::State, ()>>
+  41:     0x7ff6503cc9ab - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueTINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtBH_9focusable9FocusableINtNtBH_3key5OnKeyINtNtBH_5event7OnClickIBD_TINtNtB4_6option6OptionNtNtB1j_6string6StringEIB2X_IBD_B3i_NtNtCsiwgLetju
+  42:     0x7ff65029303b - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCscn7q4dh40g5_7cambium7element2ElTIBC_INtNtCs89r4j2vouvF_5alloc3vec3VecINtNtBG_9focusable9FocusableINtNtBG_3key5OnKeyINtNtBG_5event7OnClickIBC_TINtNtB4_6option6OptionNtNtB1n_6string6StringEIB31_IBC_B3m_NtNtCsiwgL
+  43:     0x7ff650273348 - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2V_3pod12GenetElementEEL_EEB2
+  44:     0x7ff65029186b - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBG_7context8GenetCtxNtNtBG_3pod12Ge
+  45:     0x7ff650273348 - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2V_3pod12GenetElementEEL_EEB2
+  46:     0x7ff6503bf79a - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueSINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2W_3pod12GenetElementEEL_EEB
+  47:     0x7ff650437ed4 - RNvXsp_NtCs89r4j2vouvF_5alloc3vecINtB5_3VecINtNtB7_5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2I_3pod12GenetElementEEL_EENtNtNtCs9rw95XC
+  48:     0x7ff650268dcb - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtBG_5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB3b_3pod12Gene
+  49:     0x7ff650290d6b - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc3vec3VecINtNtB1i_5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBG_7context8GenetC
+  50:     0x7ff650273348 - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2V_3pod12GenetElementEEL_EEB2
+  51:     0x7ff65029186b - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBG_7context8GenetCtxNtNtBG_3pod12Ge
+  52:     0x7ff6503cca7b - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueTINtNtCscn7q4dh40g5_7cambium7element2ElINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBH_7context8GenetCtxNtNtBH_3pod12G
+  53:     0x7ff65029319b - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCscn7q4dh40g5_7cambium7element2ElTIBC_INtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtBG_7context8GenetCtxNtNtBG_3po
+  54:     0x7ff650273348 - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateuNtNtCscn7q4dh40g5_7cambium7context8GenetCtxNtNtB2V_3pod12GenetElementEEL_EEB2
+  55:     0x7ff65028d795 - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCscn7q4dh40g5_7cambium6runner10RunnerTreeNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewB1l_uNtNtBG_7context8GenetCtxNtN
+  56:     0x7ff65028eaae - RINvNtCs9rw95XCWuke_4core3ptr9drop_glueINtNtCscn7q4dh40g5_7cambium6runner14GenetAppRunnerNtNtCsiwgLetjuZcE_9turnstone14frame_controls5StateFG_RL0_B1p_EINtNtCs89r4j2vouvF_5alloc5boxed3BoxDINtNtNtCshzXvraWhR36_8meristem5views8any_view7AnyViewB1p_uNtNtBG_7con
+  57:     0x7ff6503aba02 - core[6dff922281fde550]::ptr::drop_glue::<turnstone[d7b8377f87a9cda6]::frame_controls::FrameControls>
+  58:     0x7ff6503a88da - core[6dff922281fde550]::ptr::drop_glue::<turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame>
+  59:     0x7ff6503d65fd - core[6dff922281fde550]::ptr::drop_glue::<(usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame)>
+  60:     0x7ff6510850ae - <hashbrown[20b706e42d87b97d]::raw::RawTableInner>::drop_elements::<(usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame)>
+  61:     0x7ff65108bab9 - <hashbrown[20b706e42d87b97d]::raw::RawTableInner>::drop_inner_table::<(usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame), alloc[5ef4293888d15ed5]::alloc::Global>
+  62:     0x7ff650435cac - <hashbrown[20b706e42d87b97d]::raw::RawTable<(usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame)> as core[6dff922281fde550]::ops::drop::Drop>::drop
+  63:     0x7ff650265579 - core[6dff922281fde550]::ptr::drop_glue::<hashbrown[20b706e42d87b97d]::raw::RawTable<(usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame)>>
+  64:     0x7ff650264829 - core[6dff922281fde550]::ptr::drop_glue::<hashbrown[20b706e42d87b97d]::map::HashMap<usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame, std[f8439e2c5135d149]::hash::random::RandomState>>
+  65:     0x7ff6502c72f9 - core[6dff922281fde550]::ptr::drop_glue::<std[f8439e2c5135d149]::collections::hash::map::HashMap<usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame>>
+  66:     0x7ff65024b2e9 - core[6dff922281fde550]::ptr::drop_glue::<core[6dff922281fde550]::cell::UnsafeCell<std[f8439e2c5135d149]::collections::hash::map::HashMap<usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame>>>
+  67:     0x7ff65024b86d - core[6dff922281fde550]::ptr::drop_glue::<core[6dff922281fde550]::cell::RefCell<std[f8439e2c5135d149]::collections::hash::map::HashMap<usize, turnstone[d7b8377f87a9cda6]::outer_frame::OuterFrame>>>
+  68:     0x7ff6503b2dae - core[6dff922281fde550]::ptr::drop_glue::<turnstone[d7b8377f87a9cda6]::shell::Shell>
+  69:     0x7ff65023cbed - turnstone[d7b8377f87a9cda6]::launch::run_direct
+  70:     0x7fff7b23bb00 - _CxxFrameHandler3
+  71:     0x7fff7b223a9d - is_exception_typeof
+  72:     0x7fff7b23ae8d - _C_specific_handler
+  73:     0x7fff7b222ce2 - is_exception_typeof
+  74:     0x7fff7b23b8f8 - _CxxFrameHandler3
+  75:     0x7fff98f7a9cf - _chkstk
+  76:     0x7fff98e2dd30 - RtlUnwindEx
+  77:     0x7fff7b23b3d6 - _C_specific_handler
+  78:     0x7fff7b221c20 - is_exception_typeof
+  79:     0x7fff7b222dd8 - is_exception_typeof
+  80:     0x7fff7b23b8f8 - _CxxFrameHandler3
+  81:     0x7fff98f7a94f - _chkstk
+  82:     0x7fff98ed6955 - RtlWow64GetCurrentMachine
+  83:     0x7fff98e29f3d - RtlRaiseException
+  84:     0x7fff967a4efa - RaiseException
+  85:     0x7fff7b2255a9 - CxxThrowException
+  86:     0x7ff65a6ae74d - panic_unwind::imp::throw_exception
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\panic_unwind\src\seh.rs:368
+  87:     0x7ff65a6ae625 - panic_unwind::imp::panic
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\panic_unwind\src\seh.rs:302
+  88:     0x7ff65a6ae625 - panic_unwind::__rust_start_panic
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\panic_unwind\src\lib.rs:95
+  89:     0x7ff65a68a4bf - std::panicking::rust_panic
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:887
+  90:     0x7ff65a69dd1c - std::panicking::resume_unwind
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:878
+  91:     0x7ff65a69d95f - std::panic::resume_unwind
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panic.rs:391
+  92:     0x7ff6512773a2 - <winit[486ccc3c441ea9c4]::platform_impl::windows::event_loop::EventLoop<()>>::dispatch_peeked_messages
+  93:     0x7ff65126e777 - <winit[486ccc3c441ea9c4]::platform_impl::windows::event_loop::EventLoop<()>>::run_on_demand::<<winit[486ccc3c441ea9c4]::event_loop::EventLoop<()>>::run_app<turnstone[d7b8377f87a9cda6]::shell::Shell>::{closure#0}>
+  94:     0x7ff65126e832 - <winit[486ccc3c441ea9c4]::platform_impl::windows::event_loop::EventLoop<()>>::run::<<winit[486ccc3c441ea9c4]::event_loop::EventLoop<()>>::run_app<turnstone[d7b8377f87a9cda6]::shell::Shell>::{closure#0}>
+  95:     0x7ff6509cc72a - <winit[486ccc3c441ea9c4]::event_loop::EventLoop<()>>::run_app::<turnstone[d7b8377f87a9cda6]::shell::Shell>
+  96:     0x7ff65023cb0b - turnstone[d7b8377f87a9cda6]::launch::run_direct
+  97:     0x7ff65023be08 - turnstone[d7b8377f87a9cda6]::launch::run_direct
+  98:     0x7ff65023103e - turnstone[3ba7a3b6e1aaf229]::main
+  99:     0x7ff6502313a6 - <fn() as core[6dff922281fde550]::ops::function::FnOnce<()>>::call_once
+ 100:     0x7ff650231269 - std[f8439e2c5135d149]::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+ 101:     0x7ff65023121c - std[f8439e2c5135d149]::rt::lang_start::<()>::{closure#0}
+ 102:     0x7ff65a69c1d0 - std::rt::lang_start_internal::closure$0
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\rt.rs:175
+ 103:     0x7ff65a69c1d0 - std::panicking::catch_unwind::do_call
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:576
+ 104:     0x7ff65a69c1d0 - std::panicking::catch_unwind
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panicking.rs:544
+ 105:     0x7ff65a69c1d0 - std::panic::catch_unwind
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\panic.rs:359
+ 106:     0x7ff65a69c1d0 - std::rt::lang_start_internal
+                               at /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library\std\src\rt.rs:171
+ 107:     0x7ff650231207 - std[f8439e2c5135d149]::rt::lang_start::<()>
+ 108:     0x7ff650231099 - main
+ 109:     0x7ff65a7d49ff - invoke_main
+                               at D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl:78
+ 110:     0x7ff65a7d49ff - __scrt_common_main_seh
+                               at D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl:288
+ 111:     0x7fff97c0cdf7 - BaseThreadInitThunk
+ 112:     0x7fff98ed9c2c - RtlUserThreadStart

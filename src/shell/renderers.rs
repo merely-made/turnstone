@@ -6,7 +6,7 @@
 
 //! The retained per-pane renderers, and the one place that owns their lifetime.
 //!
-//! Each Cambium pane keeps a `GenetAppRunner` whose DOM, widget state, and
+//! Each Cambium pane keeps a `GenetAppRunner` whose shared DOM, widget state, and
 //! scroll persist between the frame that draws it and the click that hits it.
 //! They are `!Send`, so they live in the shell rather than in `App`.
 //!
@@ -19,7 +19,7 @@
 //!
 //! Keying by `PaneId` fixes that without giving up the property the old shape
 //! had by accident. A pane torn out to a lens window keeps its `PaneId`, so it
-//! keeps its runner, so it keeps its DOM and scroll across the move -- which is
+//! keeps its runner, actual mounted subtree and scroll across the move -- which is
 //! what makes tear-out identity-preserving. Sharing a runner across one pane's
 //! stations is the feature; sharing it across two panes was the bug.
 //!
@@ -38,6 +38,11 @@ use crate::panes::PaneId;
 /// Every retained pane renderer, keyed by the pane instance that owns it.
 #[derive(Default)]
 pub(crate) struct PaneRenderers {
+    /// One forest document; each native window lays out its own subtree.
+    pub(crate) dom: cambium::DomHandle,
+    pub(crate) native_images: super::native_composition::Images,
+    pub(crate) native_masks: super::native_composition::Masks,
+    pub(crate) placeholder: HashMap<PaneId, crate::inline_pane::InlinePane>,
     /// Product-contributed retained sessions. This is the only dynamic map;
     /// concrete product state stays erased behind the shared surface contract.
     pub(crate) contributed: crate::contributed_surface::ContributedSurfaceSessions,
@@ -72,6 +77,244 @@ pub(crate) struct PaneRenderers {
 }
 
 impl PaneRenderers {
+    /// Refresh host leaf paint and scroll from the measured shared fragments.
+    /// State/data sync already ran before mounting, so this does not rebuild owners.
+    pub(crate) fn refresh_inline_paint(&mut self, pane: PaneId, width: u32, height: u32) {
+        macro_rules! find { ($($map:ident),+) => { $(if let Some(view)=self.$map.get_mut(&pane) { view.scene(width, height); return; })+ }; }
+        find!(
+            roster,
+            gloss,
+            overmap,
+            trail,
+            inspector,
+            workbench,
+            settings,
+            arrange,
+            publish,
+            shared_knot,
+            device_receipts,
+            frozen_projection,
+            transcript
+        );
+    }
+    pub(crate) fn blur_inline(&mut self, pane: PaneId) {
+        macro_rules! find { ($($map:ident),+) => { $(if let Some(view)=self.$map.get_mut(&pane) { view.blur_inline(); return; })+ }; }
+        find!(
+            placeholder,
+            roster,
+            gloss,
+            overmap,
+            trail,
+            inspector,
+            workbench,
+            settings,
+            arrange,
+            publish,
+            shared_knot,
+            device_receipts,
+            frozen_projection,
+            transcript
+        );
+    }
+    pub(crate) fn inline_accepts_text(&self, pane: PaneId) -> bool {
+        macro_rules! find { ($($map:ident),+) => { $(if let Some(view)=self.$map.get(&pane) { return view.inline_accepts_text(); })+ }; }
+        find!(
+            placeholder,
+            roster,
+            gloss,
+            overmap,
+            trail,
+            inspector,
+            workbench,
+            settings,
+            arrange,
+            publish,
+            shared_knot,
+            device_receipts,
+            frozen_projection,
+            transcript
+        );
+        false
+    }
+    pub(crate) fn inline_cursor_area(&self, pane: PaneId) -> Option<(f32, f32, f32, f32)> {
+        macro_rules! find { ($($map:ident),+) => { $(if let Some(view)=self.$map.get(&pane) { return view.inline_cursor_area(); })+ }; }
+        find!(
+            placeholder,
+            roster,
+            gloss,
+            overmap,
+            trail,
+            inspector,
+            workbench,
+            settings,
+            arrange,
+            publish,
+            shared_knot,
+            device_receipts,
+            frozen_projection,
+            transcript
+        );
+        None
+    }
+    pub(crate) fn inline_focus(&self, pane: PaneId) -> Option<genet_scripted_dom::NodeId> {
+        macro_rules! find { ($($map:ident),+) => { $(
+            if let Some(view) = self.$map.get(&pane) { return view.inline_focus(); }
+        )+ }; }
+        find!(
+            placeholder,
+            roster,
+            gloss,
+            overmap,
+            trail,
+            inspector,
+            workbench,
+            settings,
+            arrange,
+            publish,
+            shared_knot,
+            device_receipts,
+            frozen_projection,
+            transcript
+        );
+        None
+    }
+    pub(crate) fn focus_inline(&mut self, pane: PaneId, node: genet_scripted_dom::NodeId) -> bool {
+        macro_rules! find { ($($map:ident),+) => { $(
+            if let Some(view) = self.$map.get_mut(&pane) { return view.focus_inline(node); }
+        )+ }; }
+        find!(
+            placeholder,
+            roster,
+            gloss,
+            overmap,
+            trail,
+            inspector,
+            workbench,
+            settings,
+            arrange,
+            publish,
+            shared_knot,
+            device_receipts,
+            frozen_projection,
+            transcript
+        );
+        false
+    }
+    pub(crate) fn inline_selector(
+        &self,
+        pane: PaneId,
+        selector: &taproot::Selector,
+    ) -> Result<Option<(f32, f32)>, &'static str> {
+        macro_rules! find { ($($map:ident),+) => { $(
+            if let Some(view) = self.$map.get(&pane) { return view.inline_selector(selector); }
+        )+ }; }
+        find!(
+            placeholder,
+            roster,
+            gloss,
+            overmap,
+            trail,
+            inspector,
+            workbench,
+            settings,
+            arrange,
+            publish,
+            shared_knot,
+            device_receipts,
+            frozen_projection,
+            transcript
+        );
+        Ok(None)
+    }
+    pub(crate) fn owner_roots(&self) -> Vec<genet_scripted_dom::NodeId> {
+        let mut roots = Vec::new();
+        macro_rules! roots { ($($map:ident),+) => { $(
+            roots.extend(self.$map.values().filter_map(|view| view.inline_mount().map(|m| m.node())));
+        )+ }; }
+        roots!(
+            placeholder,
+            roster,
+            gloss,
+            overmap,
+            trail,
+            inspector,
+            workbench,
+            settings,
+            arrange,
+            publish,
+            shared_knot,
+            device_receipts,
+            frozen_projection,
+            transcript
+        );
+        roots
+    }
+    pub(crate) fn inline_mount(&self, pane: PaneId) -> Option<cambium::RetainedMount> {
+        macro_rules! find { ($($map:ident),+) => { $(
+            if let Some(view) = self.$map.get(&pane) {
+                if let Some(mount) = view.inline_mount() { return Some(mount); }
+            }
+        )+ }; }
+        find!(
+            placeholder,
+            roster,
+            gloss,
+            overmap,
+            trail,
+            inspector,
+            workbench,
+            settings,
+            arrange,
+            publish,
+            shared_knot,
+            device_receipts,
+            frozen_projection,
+            transcript
+        );
+        None
+    }
+    pub(crate) fn bind_inline(&mut self, pane: PaneId, layout: &crate::ui::InlineLayoutHandle) {
+        macro_rules! bind { ($($map:ident),+) => { $(
+            if let Some(view) = self.$map.get_mut(&pane) { view.bind_inline(layout); return; }
+        )+ }; }
+        bind!(
+            placeholder,
+            roster,
+            gloss,
+            overmap,
+            trail,
+            inspector,
+            workbench,
+            settings,
+            arrange,
+            publish,
+            shared_knot,
+            device_receipts,
+            frozen_projection,
+            transcript
+        );
+    }
+    pub(crate) fn unbind_inline(&mut self, pane: PaneId) {
+        macro_rules! unbind { ($($map:ident),+) => { $(
+            if let Some(view) = self.$map.get_mut(&pane) { view.unbind_inline(); return; }
+        )+ }; }
+        unbind!(
+            placeholder,
+            roster,
+            gloss,
+            overmap,
+            trail,
+            inspector,
+            workbench,
+            settings,
+            arrange,
+            publish,
+            shared_knot,
+            device_receipts,
+            frozen_projection,
+            transcript
+        );
+    }
     /// Drop every renderer belonging to `pane`.
     ///
     /// Called when a pane closes and when a lens window tears down. The
@@ -80,6 +323,10 @@ impl PaneRenderers {
     /// one-per-kind shape could not have had.
     pub(crate) fn evict(&mut self, pane: PaneId) {
         let Self {
+            dom: _,
+            native_images: _,
+            native_masks: _,
+            placeholder,
             contributed,
             roster,
             gloss,
@@ -99,6 +346,7 @@ impl PaneRenderers {
         // compile until it is named here, which a list of `self.x.remove(..)`
         // lines would not.
         contributed.remove(pane);
+        placeholder.remove(&pane);
         roster.remove(&pane);
         gloss.remove(&pane);
         trail.remove(&pane);
@@ -177,11 +425,41 @@ impl PaneRenderers {
         false
     }
 
+    /// Fade activity belongs only to panes admitted in this window's plan.
+    pub(crate) fn bars_visible_in(&mut self, surfaces: &[crate::surface::Surface]) -> bool {
+        surfaces.iter().any(|surface| {
+            let crate::surface::SurfaceKind::Pane(pane) = surface.kind else {
+                return false;
+            };
+            if let Some(view) = self.contributed.get_mut(pane) {
+                return view.bars_visible();
+            }
+            macro_rules! visible { ($($map:ident),+ $(,)?) => { $(
+                if let Some(view) = self.$map.get_mut(&pane) { return view.bars_visible(); }
+            )+ }; }
+            visible!(
+                device_receipts,
+                frozen_projection,
+                roster,
+                trail,
+                inspector,
+                workbench,
+                settings,
+                arrange,
+                publish,
+                shared_knot,
+                transcript
+            );
+            false
+        })
+    }
+
     /// How many renderers are retained across every kind. Test seam: it is how
     /// a receipt observes retention and eviction without reaching into fields.
     #[cfg(test)]
     pub(crate) fn retained(&self) -> usize {
         self.contributed.len()
+            + self.placeholder.len()
             + self.roster.len()
             + self.gloss.len()
             + self.trail.len()
@@ -209,6 +487,35 @@ mod tests {
 
     fn pane(n: u64) -> PaneId {
         PaneId(n)
+    }
+
+    #[test]
+    fn scrollbar_continuation_is_scoped_to_actual_window_pane_plan() {
+        let mut renderers = PaneRenderers::default();
+        let scrolled = pane(7);
+        let quiet = pane(8);
+        renderers.roster.insert(scrolled, RosterGrid::new());
+        renderers.roster.insert(quiet, RosterGrid::new());
+        assert!(renderers.scroll_pane(scrolled, 0.0, 40.0));
+        let surface = |pane| crate::surface::Surface {
+            id: crate::surface::SurfaceId::pane(pane),
+            kind: crate::surface::SurfaceKind::Pane(pane),
+            rect: crate::surface::Rect::new(0.0, 0.0, 512.0, 480.0),
+        };
+        assert!(
+            !renderers.bars_visible_in(&[surface(quiet)]),
+            "an unrelated quiet lens owns no fade"
+        );
+        assert!(
+            renderers.bars_visible_in(&[surface(scrolled)]),
+            "the scrolled receiving lens keeps painting its fade"
+        );
+        assert!(
+            !renderers.bars_visible_in(&[]),
+            "closed or withdrawn pane has no window admission"
+        );
+        renderers.evict(scrolled);
+        assert!(!renderers.bars_visible_in(&[surface(scrolled)]));
     }
 
     /// Click a Roster grid's tab by label, through the same resolver the

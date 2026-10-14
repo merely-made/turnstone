@@ -25,9 +25,9 @@ mod keys;
 mod nomadnet_fetch;
 mod page_capture;
 mod reader_observe;
-mod retained_clips;
 mod render;
 mod renderers;
+mod retained_clips;
 #[cfg(all(feature = "scry", windows))]
 mod scry;
 #[cfg(all(feature = "servo", windows))]
@@ -40,10 +40,11 @@ pub(crate) mod weld;
 use render::{capture_composed, decode_sprite};
 mod lens;
 use lens::LensWindow;
-mod input;
-pub(crate) mod window_input;
-mod outer_workspace;
 mod frame_keys;
+mod input;
+mod native_composition;
+mod outer_workspace;
+pub(crate) mod window_input;
 use input::pointer_button;
 
 use std::collections::{HashMap, VecDeque};
@@ -427,11 +428,17 @@ impl Shell {
         self.unlock_rx = None;
         let effects = self.app.adopt_profile_root(root.clone());
         self.place_handle
-            .command(crate::place::worker::PlaceWorkerCommand::AdoptIdentity(root.clone()));
+            .command(crate::place::worker::PlaceWorkerCommand::AdoptIdentity(
+                root.clone(),
+            ));
         if !self.network_offline {
             self.shared_knot_service = start_share_reader(root.clone());
         }
-        if let Some(source) = self.pending_publish_source.take().filter(|_| !self.network_offline) {
+        if let Some(source) = self
+            .pending_publish_source
+            .take()
+            .filter(|_| !self.network_offline)
+        {
             self.publish_service = start_publishing(source, root);
         }
         self.renderers.publish.clear();
@@ -565,12 +572,19 @@ fn shared_out_dir_from_env() -> std::path::PathBuf {
 
 /// Reuse one full-window frame texture for each measured float crop. This
 /// preserves the DOM's paint/clip coordinates without a second layout owner.
-fn frame_placement(surface: &crate::surface::Surface,w:u32,h:u32)->ExternalTexturePlacement {
-    let r=surface.rect;
-    let placement=ExternalTexturePlacement::new(r.dest());
-    if matches!(surface.kind,SurfaceKind::FloatFrame(_)) {
-        placement.with_uv([r.x/w.max(1) as f32,r.y/h.max(1) as f32,(r.x+r.w)/w.max(1) as f32,(r.y+r.h)/h.max(1) as f32])
-    } else {placement}
+fn frame_placement(surface: &crate::surface::Surface, w: u32, h: u32) -> ExternalTexturePlacement {
+    let r = surface.rect;
+    let placement = ExternalTexturePlacement::new(r.dest());
+    if matches!(surface.kind, SurfaceKind::FloatFrame(_)) {
+        placement.with_uv([
+            r.x / w.max(1) as f32,
+            r.y / h.max(1) as f32,
+            (r.x + r.w) / w.max(1) as f32,
+            (r.y + r.h) / h.max(1) as f32,
+        ])
+    } else {
+        placement
+    }
 }
 
 /// One surface's scene, produced by render's mutable first pass and consumed by
@@ -598,8 +612,14 @@ enum PlannedLayer {
 /// frame. The self-capture path composes the same list, so the receipt is the
 /// presented frame.
 struct CompositeLayer {
+    id: u64,
+    changed: bool,
+    dimensions: [u32; 2],
+    alpha: Result<netrender::SourceAlpha, String>,
     kind: SurfaceKind,
     view: wgpu::TextureView,
+    /// Actual owned scene raster; imports retain their texture at the importer.
+    raster: Option<wgpu::Texture>,
     placement: ExternalTexturePlacement,
 }
 
@@ -646,9 +666,13 @@ fn take_window_capture(
     primary: &mut Option<std::path::PathBuf>,
     lens: &mut Option<std::path::PathBuf>,
 ) -> Option<std::path::PathBuf> {
-    if window == 0 { primary.take() }
-    else if lens_target == Some(window) { lens.take() }
-    else { None }
+    if window == 0 {
+        primary.take()
+    } else if lens_target == Some(window) {
+        lens.take()
+    } else {
+        None
+    }
 }
 
 fn raster_capture_refusal(
@@ -657,18 +681,30 @@ fn raster_capture_refusal(
     source_key: u64,
 ) -> cambium_rootstock::CaptureRefusal {
     match failure {
-        genet_render_host::RasterizeFailure::DeviceLost(notice) => cambium_rootstock::CaptureRefusal::DeviceLost(notice),
-        genet_render_host::RasterizeFailure::ProviderError(error) => cambium_rootstock::CaptureRefusal::ProviderError {
-            generation, source_key: Some(source_key), error,
+        genet_render_host::RasterizeFailure::DeviceLost(notice) => {
+            cambium_rootstock::CaptureRefusal::DeviceLost(notice)
+        },
+        genet_render_host::RasterizeFailure::ProviderError(error) => {
+            cambium_rootstock::CaptureRefusal::ProviderError {
+                generation,
+                source_key: Some(source_key),
+                error,
+            }
         },
     }
 }
 
-fn admit_recovered_core(status: genet_render_host::RecoveryStatus, errors: &mut Vec<String>) -> bool {
+fn admit_recovered_core(
+    status: genet_render_host::RecoveryStatus,
+    errors: &mut Vec<String>,
+) -> bool {
     match status {
         genet_render_host::RecoveryStatus::Ready { .. } => true,
         genet_render_host::RecoveryStatus::Failed { loss, error } => {
-            let terminal = format!("device-loss recovery failed generation={}: {error}", loss.generation);
+            let terminal = format!(
+                "device-loss recovery failed generation={}: {error}",
+                loss.generation
+            );
             if !errors.contains(&terminal) {
                 tracing::warn!(generation = loss.generation, %error, "shared render-core recovery failed");
                 errors.push(terminal);
@@ -682,14 +718,18 @@ fn admit_recovered_core(status: genet_render_host::RecoveryStatus, errors: &mut 
 impl Shell {
     pub(super) fn ensure_render_recovery(&mut self) {
         if self.render_recovery.is_none() {
-            let Some(host) = &self.host else { return; };
+            let Some(host) = &self.host else {
+                return;
+            };
             self.render_recovery = Some(host.shared_core().shared_recovery());
         }
         if self.primary_recovery.is_none() {
             let proxy = self.proxy.clone();
             self.primary_recovery = Some(WindowRecovery::new(
                 self.render_recovery.as_ref().expect("shared owner"),
-                Arc::new(move || { let _ = proxy.send_event(()); }),
+                Arc::new(move || {
+                    let _ = proxy.send_event(());
+                }),
             ));
         }
     }
@@ -698,37 +738,79 @@ impl Shell {
         if self.pending_lens_capture.is_none() {
             self.pending_lens_capture_window = None;
         } else if self.pending_lens_capture_window.is_none() {
-            self.pending_lens_capture_window = self.lens_windows.iter()
-                .min_by_key(|(_, lens)| lens.ordinal).map(|(id, _)| *id);
+            self.pending_lens_capture_window = self
+                .lens_windows
+                .iter()
+                .min_by_key(|(_, lens)| lens.ordinal)
+                .map(|(id, _)| *id);
         }
     }
 
     fn refuse_window_capture(&mut self, window: u64, refusal: cambium_rootstock::CaptureRefusal) {
         self.bind_lens_capture();
-        let target = self.pending_lens_capture_window.and_then(|id| self.lens_windows.get(&id))
+        let target = self
+            .pending_lens_capture_window
+            .and_then(|id| self.lens_windows.get(&id))
             .map(|lens| lens.ordinal as u64 + 1);
-        let path = take_window_capture(window, target, &mut self.pending_capture, &mut self.pending_lens_capture);
-        if window != 0 && path.is_some() { self.pending_lens_capture_window = None; }
+        let path = take_window_capture(
+            window,
+            target,
+            &mut self.pending_capture,
+            &mut self.pending_lens_capture,
+        );
+        if window != 0 && path.is_some() {
+            self.pending_lens_capture_window = None;
+        }
         if let Some(path) = path {
-            self.main_receipt.errors.push(format!("capture {} window={window}: {refusal}", path.display()));
+            self.main_receipt.errors.push(format!(
+                "capture {} window={window}: {refusal}",
+                path.display()
+            ));
         }
     }
 
     pub(super) fn refuse_lens_captures_before_clear(&mut self, reason: &str) {
-        let windows: Vec<_> = self.lens_windows.values().map(|lens| lens.ordinal as u64 + 1).collect();
+        let windows: Vec<_> = self
+            .lens_windows
+            .values()
+            .map(|lens| lens.ordinal as u64 + 1)
+            .collect();
         for window in windows {
             self.retire_frame_focus(window);
             outer_workspace::retire_outer_capture(&mut self.outer_capture, window);
+            if let Some(host) = self.host.as_ref() {
+                native_composition::retire(
+                    host.core(),
+                    &mut self.renderers.native_images,
+                    &mut self.renderers.native_masks,
+                    window as usize,
+                );
+                if let Some(frame) = self.outer_frames.borrow_mut().get_mut(&(window as usize)) {
+                    frame
+                        .layout
+                        .borrow_mut()
+                        .set_native_sources(Default::default());
+                }
+                host.core()
+                    .invalidate_surface(crate::surface::SurfaceId::frame_window(window as usize).0);
+            }
         }
         self.outer_frames.borrow_mut().retain(|slot, _| *slot == 0);
         self.bind_lens_capture();
         if let Some(id) = self.pending_lens_capture_window {
             if let Some(lens) = self.lens_windows.get(&id) {
                 let window = lens.ordinal as u64 + 1;
-                let generation = lens.host.as_ref().map_or(0, |host| host.core().generation());
-                self.refuse_window_capture(window, cambium_rootstock::CaptureRefusal::SurfaceUnavailable {
-                    generation, error: reason.into(),
-                });
+                let generation = lens
+                    .host
+                    .as_ref()
+                    .map_or(0, |host| host.core().generation());
+                self.refuse_window_capture(
+                    window,
+                    cambium_rootstock::CaptureRefusal::SurfaceUnavailable {
+                        generation,
+                        error: reason.into(),
+                    },
+                );
             }
         }
     }
@@ -736,16 +818,50 @@ impl Shell {
     /// Retire this physical host's actual admissions without blurring another
     /// window or destroying a retained controller, pane runner or authored draft.
     fn retire_render_receivers(&mut self, window: u64) {
+        let host = if window == 0 {
+            self.host.as_ref()
+        } else {
+            self.lens_windows
+                .values()
+                .find(|lens| lens.ordinal as u64 + 1 == window)
+                .and_then(|lens| lens.host.as_ref())
+                .or(self.host.as_ref())
+        };
+        if let Some(host) = host {
+            native_composition::retire(
+                host.core(),
+                &mut self.renderers.native_images,
+                &mut self.renderers.native_masks,
+                window as usize,
+            );
+            if let Some(frame) = self.outer_frames.borrow_mut().get_mut(&(window as usize)) {
+                frame
+                    .layout
+                    .borrow_mut()
+                    .set_native_sources(Default::default());
+            }
+            host.core()
+                .invalidate_surface(crate::surface::SurfaceId::frame_window(window as usize).0);
+        }
         self.retire_frame_focus(window);
         outer_workspace::retire_outer_capture(&mut self.outer_capture, window);
         let graph = if window == 0 {
-            match self.pointer_capture { Some(SurfaceKind::Graph(pane)) => Some(pane), _ => None }
+            match self.pointer_capture {
+                Some(SurfaceKind::Graph(pane)) => Some(pane),
+                _ => None,
+            }
         } else {
-            self.lens_windows.values().find(|lens| lens.ordinal as u64 + 1 == window)
+            self.lens_windows
+                .values()
+                .find(|lens| lens.ordinal as u64 + 1 == window)
                 .and_then(|lens| lens.pointer_graph)
         };
-        self.touch_input.cancel_window(&mut self.content_sessions.pool, window);
-        if self.contributed_pointer.is_some_and(|held| held.window == window) {
+        self.touch_input
+            .cancel_window(&mut self.content_sessions.pool, window);
+        if self
+            .contributed_pointer
+            .is_some_and(|held| held.window == window)
+        {
             let held = self.contributed_pointer.take().expect("admitted receiver");
             if let SurfaceKind::Pane(pane) = held.surface.kind {
                 if let Some(surface) = self.renderers.contributed.get_mut(pane) {
@@ -754,17 +870,29 @@ impl Shell {
             }
             self.pointer_capture = None;
         }
-        if let Some(pane) = graph { let _ = self.app.with_graph_pane(pane, |canvas| canvas.pointer_cancel()); }
+        if let Some(pane) = graph {
+            let _ = self
+                .app
+                .with_graph_pane(pane, |canvas| canvas.pointer_cancel());
+        }
         if window == 0 {
             self.pointer_capture = None;
             self.divider_drag = None;
             self.wb_divider_drag = None;
             self.wb_tab_drag = None;
         } else {
-            if self.lens_divider_drag.as_ref().is_some_and(|(ordinal, _)| *ordinal as u64 + 1 == window) {
+            if self
+                .lens_divider_drag
+                .as_ref()
+                .is_some_and(|(ordinal, _)| *ordinal as u64 + 1 == window)
+            {
                 self.lens_divider_drag = None;
             }
-            if let Some(lens) = self.lens_windows.values_mut().find(|lens| lens.ordinal as u64 + 1 == window) {
+            if let Some(lens) = self
+                .lens_windows
+                .values_mut()
+                .find(|lens| lens.ordinal as u64 + 1 == window)
+            {
                 lens.pointer_graph = None;
             }
         }
@@ -774,14 +902,20 @@ impl Shell {
     /// The owner alone replaces the device after real resource detachment.
     pub(super) fn poll_render_recovery(&mut self) -> bool {
         self.ensure_render_recovery();
-        let Some(owner) = self.render_recovery.clone() else { return false; };
+        let Some(owner) = self.render_recovery.clone() else {
+            return false;
+        };
         if let Some(loss) = owner.status().loss().cloned() {
             let mut can_replace = true;
             #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
             {
-                can_replace = ![inker::routing::ENGINE_WELD_CHROMIUM,
-                    inker::routing::ENGINE_SCRYING_WEB, inker::routing::ENGINE_GRAFT_SERVO]
-                    .iter().any(|engine| self.surface_engines.contains(engine));
+                can_replace = ![
+                    inker::routing::ENGINE_WELD_CHROMIUM,
+                    inker::routing::ENGINE_SCRYING_WEB,
+                    inker::routing::ENGINE_GRAFT_SERVO,
+                ]
+                .iter()
+                .any(|engine| self.surface_engines.contains(engine));
                 // These caches detach, but registered factories/live native
                 // producers still retain Device/Queue. Do not acknowledge them.
                 self.surface_frames.clear();
@@ -794,93 +928,191 @@ impl Shell {
                 self.main_receipt.errors.push(error.clone());
                 self.render_recovery_blocked = Some(error);
             }
-            self.refuse_window_capture(0, cambium_rootstock::CaptureRefusal::DeviceLost(loss.clone()));
+            self.refuse_window_capture(
+                0,
+                cambium_rootstock::CaptureRefusal::DeviceLost(loss.clone()),
+            );
             self.retire_render_receivers(0);
             if let Some(mut participation) = self.primary_recovery.take() {
-                participation.detach(&owner, loss.generation, can_replace, || { self.host = None; });
+                participation.detach(&owner, loss.generation, can_replace, || {
+                    self.host = None;
+                });
                 self.primary_recovery = Some(participation);
             }
-            let windows: Vec<_> = self.lens_windows.iter().map(|(id, lens)| (*id, lens.ordinal as u64 + 1)).collect();
+            let windows: Vec<_> = self
+                .lens_windows
+                .iter()
+                .map(|(id, lens)| (*id, lens.ordinal as u64 + 1))
+                .collect();
             for (id, window) in windows {
-                self.refuse_window_capture(window, cambium_rootstock::CaptureRefusal::DeviceLost(loss.clone()));
+                self.refuse_window_capture(
+                    window,
+                    cambium_rootstock::CaptureRefusal::DeviceLost(loss.clone()),
+                );
                 self.retire_render_receivers(window);
                 if let Some(lens) = self.lens_windows.get_mut(&id) {
-                    lens.recovery.detach(&owner, loss.generation, can_replace, || { lens.host = None; });
+                    lens.recovery
+                        .detach(&owner, loss.generation, can_replace, || {
+                            lens.host = None;
+                        });
                 }
             }
             // The installed monitor cancelled handles before Waiting. Collect
             // its original typed terminal once; never replace it with a timeout.
             self.poll_capture_readback();
-            if let Some(editor) = self.theme_editor.as_mut() { editor.host.wake_turn(); }
-            if !can_replace { return false; }
+            if let Some(editor) = self.theme_editor.as_mut() {
+                editor.host.wake_turn();
+            }
+            if !can_replace {
+                return false;
+            }
         }
-        if !admit_recovered_core(owner.recover(), &mut self.main_receipt.errors) { return false; }
-        let Ok(core) = owner.current() else { return false; };
+        if !admit_recovered_core(owner.recover(), &mut self.main_receipt.errors) {
+            return false;
+        }
+        let Ok(core) = owner.current() else {
+            return false;
+        };
         let generation = core.generation();
         if self.host.is_none() {
-            if let Some((failed, error)) = self.primary_recovery.as_ref().and_then(|state| state.surface_failure.clone()) {
+            if let Some((failed, error)) = self
+                .primary_recovery
+                .as_ref()
+                .and_then(|state| state.surface_failure.clone())
+            {
                 if failed == generation {
-                    self.refuse_window_capture(0, cambium_rootstock::CaptureRefusal::SurfaceUnavailable { generation, error });
+                    self.refuse_window_capture(
+                        0,
+                        cambium_rootstock::CaptureRefusal::SurfaceUnavailable { generation, error },
+                    );
                 }
             } else if let Some(window) = self.window.clone() {
-                match SurfaceHost::from_shared_core(window.clone(), self.width, self.height, core.clone()) {
-                    Ok(host) => { self.host = Some(host); window.request_redraw(); },
+                match SurfaceHost::from_shared_core(
+                    window.clone(),
+                    self.width,
+                    self.height,
+                    core.clone(),
+                ) {
+                    Ok(host) => {
+                        self.host = Some(host);
+                        window.request_redraw();
+                    },
                     Err(error) => {
-                        self.primary_recovery.as_mut().expect("primary subscription").surface_failure = Some((generation, error.clone()));
-                        self.refuse_window_capture(0, cambium_rootstock::CaptureRefusal::SurfaceUnavailable { generation, error });
-                    }
+                        self.primary_recovery
+                            .as_mut()
+                            .expect("primary subscription")
+                            .surface_failure = Some((generation, error.clone()));
+                        self.refuse_window_capture(
+                            0,
+                            cambium_rootstock::CaptureRefusal::SurfaceUnavailable {
+                                generation,
+                                error,
+                            },
+                        );
+                    },
                 }
             }
         }
         let mut refusals = Vec::new();
         for lens in self.lens_windows.values_mut() {
-            if lens.host.is_some() { continue; }
-            if let Some((failed, error)) = &lens.recovery.surface_failure {
-                if *failed == generation { refusals.push((lens.ordinal as u64 + 1, error.clone())); continue; }
+            if lens.host.is_some() {
+                continue;
             }
-            match SurfaceHost::from_shared_core(lens.window.clone(), lens.width, lens.height, core.clone()) {
-                Ok(host) => { lens.host = Some(host); lens.recovery.surface_failure = None; lens.window.request_redraw(); },
+            if let Some((failed, error)) = &lens.recovery.surface_failure {
+                if *failed == generation {
+                    refusals.push((lens.ordinal as u64 + 1, error.clone()));
+                    continue;
+                }
+            }
+            match SurfaceHost::from_shared_core(
+                lens.window.clone(),
+                lens.width,
+                lens.height,
+                core.clone(),
+            ) {
+                Ok(host) => {
+                    lens.host = Some(host);
+                    lens.recovery.surface_failure = None;
+                    lens.window.request_redraw();
+                },
                 Err(error) => {
                     lens.recovery.surface_failure = Some((generation, error.clone()));
                     refusals.push((lens.ordinal as u64 + 1, error));
-                }
+                },
             }
         }
         drop(core);
         for (window, error) in refusals {
-            self.refuse_window_capture(window, cambium_rootstock::CaptureRefusal::SurfaceUnavailable { generation, error });
+            self.refuse_window_capture(
+                window,
+                cambium_rootstock::CaptureRefusal::SurfaceUnavailable { generation, error },
+            );
         }
         true
     }
 
-    fn refuse_raster_frame(&mut self, window: u64, generation: u64, source_key: u64, failure: genet_render_host::RasterizeFailure) {
-        let failure = if matches!(&failure, genet_render_host::RasterizeFailure::ProviderError(_)) {
-            self.render_recovery.as_ref().and_then(|owner| owner.status().loss().cloned())
-                .map(genet_render_host::RasterizeFailure::DeviceLost).unwrap_or(failure)
-        } else { failure };
+    fn refuse_raster_frame(
+        &mut self,
+        window: u64,
+        generation: u64,
+        source_key: u64,
+        failure: genet_render_host::RasterizeFailure,
+    ) {
+        let failure = if matches!(
+            &failure,
+            genet_render_host::RasterizeFailure::ProviderError(_)
+        ) {
+            self.render_recovery
+                .as_ref()
+                .and_then(|owner| owner.status().loss().cloned())
+                .map(genet_render_host::RasterizeFailure::DeviceLost)
+                .unwrap_or(failure)
+        } else {
+            failure
+        };
         let loss = matches!(&failure, genet_render_host::RasterizeFailure::DeviceLost(_));
         let refusal = raster_capture_refusal(failure, generation, source_key);
         let error = format!("window={window} surface={source_key}: {refusal}");
-        if !self.main_receipt.errors.contains(&error) { self.main_receipt.errors.push(error); }
+        if !self.main_receipt.errors.contains(&error) {
+            self.main_receipt.errors.push(error);
+        }
         self.refuse_window_capture(window, refusal);
-        if loss { self.poll_render_recovery(); }
+        if loss {
+            self.poll_render_recovery();
+        }
     }
 
     fn detach_render_surface(&mut self, window: u64) {
         let generation = if window == 0 {
-            self.host.as_ref().map_or(0, |host| host.core().generation())
+            self.host
+                .as_ref()
+                .map_or(0, |host| host.core().generation())
         } else {
-            self.lens_windows.values().find(|lens| lens.ordinal as u64 + 1 == window)
-                .and_then(|lens| lens.host.as_ref()).map_or(0, |host| host.core().generation())
+            self.lens_windows
+                .values()
+                .find(|lens| lens.ordinal as u64 + 1 == window)
+                .and_then(|lens| lens.host.as_ref())
+                .map_or(0, |host| host.core().generation())
         };
         // A capture admitted to this surface cannot silently become a capture
         // of its replacement. The caller may explicitly arm a fresh request.
-        self.refuse_window_capture(window, cambium_rootstock::CaptureRefusal::SurfaceUnavailable {
-            generation, error: "surface lost before its requested presentation".into(),
-        });
+        self.refuse_window_capture(
+            window,
+            cambium_rootstock::CaptureRefusal::SurfaceUnavailable {
+                generation,
+                error: "surface lost before its requested presentation".into(),
+            },
+        );
         self.retire_render_receivers(window);
-        if window == 0 { self.host = None; } else if let Some(lens) = self.lens_windows.values_mut()
-            .find(|lens| lens.ordinal as u64 + 1 == window) { lens.host = None; }
+        if window == 0 {
+            self.host = None;
+        } else if let Some(lens) = self
+            .lens_windows
+            .values_mut()
+            .find(|lens| lens.ordinal as u64 + 1 == window)
+        {
+            lens.host = None;
+        }
         self.poll_render_recovery();
     }
 }
@@ -980,6 +1212,7 @@ pub struct Shell {
     /// (never a re-rasterization — the receipt must be the presented frame).
     pending_capture: Option<std::path::PathBuf>,
     pending_capture_readback: Option<appearance_receipt::PendingCapture>,
+    pending_native_diagnostics: Vec<appearance_receipt::PendingCapture>,
     main_receipt: appearance_receipt::MainReceipt,
     /// A capture the next LENS render fulfills (the scenario's capture-lens
     /// verb; targets the first live lens window).
@@ -1235,10 +1468,16 @@ impl Shell {
         let offline_attempts = Arc::new(std::sync::atomic::AtomicUsize::new(0));
         let (fetch_handle, fetch_rx) = if network_offline {
             crate::offline::spawn(fetch_wake, offline_attempts.clone())
-        } else { fetch::spawn_fetcher_with(fetch_wake, stores.clone()) };
+        } else {
+            fetch::spawn_fetcher_with(fetch_wake, stores.clone())
+        };
         let blocking_fetch: Arc<dyn fetch::Fetch> = if network_offline {
             Arc::new(crate::offline::NoNetwork(offline_attempts.clone()))
-        } else { Arc::new(fetch::NetFetch::new(&stores).expect("Turnstone could not build its fetch handle")) };
+        } else {
+            Arc::new(
+                fetch::NetFetch::new(&stores).expect("Turnstone could not build its fetch handle"),
+            )
+        };
 
         let download_proxy = proxy.clone();
         let download_wake: armillary::Wake = Arc::new(move || {
@@ -1292,11 +1531,9 @@ impl Shell {
         };
         let unlock_rx = app.identity.is_none().then(|| {
             let unlock_proxy = proxy.clone();
-            crate::identity::watch_for_unlock(
-                Arc::new(move || {
-                    let _ = unlock_proxy.send_event(());
-                }),
-            )
+            crate::identity::watch_for_unlock(Arc::new(move || {
+                let _ = unlock_proxy.send_event(());
+            }))
         });
         let mut pending_publish_source = None;
 
@@ -1310,8 +1547,11 @@ impl Shell {
         });
         let mut knot_clip = None;
         let mut publish_service = None;
-        let shared_knot_service = app.identity.clone()
-            .filter(|_| !network_offline).and_then(start_share_reader);
+        let shared_knot_service = app
+            .identity
+            .clone()
+            .filter(|_| !network_offline)
+            .and_then(start_share_reader);
         let device_receipts_service =
             match crate::device_receipts_service::DeviceReceiptsService::start() {
                 Ok(service) => Some(Arc::new(service)),
@@ -1326,7 +1566,9 @@ impl Shell {
                 knot_clip = engine.clip_handle();
                 if let Some(source) = engine.take_publish_source() {
                     match app.identity.clone() {
-                        Some(root) if !network_offline => publish_service = start_publishing(source, root),
+                        Some(root) if !network_offline => {
+                            publish_service = start_publishing(source, root)
+                        },
                         Some(_) => {},
                         None => pending_publish_source = Some(source),
                     }
@@ -1425,6 +1667,7 @@ impl Shell {
             shared_out_dir: shared_out_dir_from_env(),
             pending_capture: None,
             pending_capture_readback: None,
+            pending_native_diagnostics: Vec::new(),
             main_receipt: Default::default(),
             pending_lens_capture: None,
             pending_lens_capture_window: None,
@@ -1678,7 +1921,10 @@ impl Shell {
         let accepted_text = self.accepts_controlled_text();
         let closing = match &action {
             Action::CloseActivePane => self.app.active_pane,
-            Action::OuterWorkspace { event: workbench::WorkspaceEvent::Tile(workbench::TileEvent::Closed(id)), .. } => Some(crate::panes::PaneId(id.0)),
+            Action::OuterWorkspace {
+                event: workbench::WorkspaceEvent::Tile(workbench::TileEvent::Closed(id)),
+                ..
+            } => Some(crate::panes::PaneId(id.0)),
             _ => None,
         };
         let effects = self.app.update(action);
@@ -1697,8 +1943,15 @@ impl Shell {
     }
 
     fn accepts_controlled_text(&self) -> bool {
-        if self.outer_focus.is_some() && !self.app.omnibar.open && !self.app.document_find.open && !self.app.user_agent_decision.is_open() {return false;}
-        self.app.omnibar.open
+        if self.outer_focus.is_some()
+            && !self.app.omnibar.open
+            && !self.app.document_find.open
+            && !self.app.user_agent_decision.is_open()
+        {
+            return false;
+        }
+        self.inline_text_in_window(0)
+            || self.app.omnibar.open
             || self.app.document_find.open
             || self.app.user_agent_decision.accepts_text()
     }
@@ -1707,6 +1960,56 @@ impl Shell {
         if let Some(window) = self.window.as_ref() {
             window.set_ime_allowed(self.accepts_controlled_text());
         }
+        for lens in self.lens_windows.values() {
+            if matches!(self.app.focus, crate::surface::FocusTarget::Pane(pane) if self.renderers.inline_mount(pane).is_some())
+            {
+                lens.window
+                    .set_ime_allowed(self.inline_text_in_window(lens.ordinal as u64 + 1));
+            }
+        }
+    }
+    fn inline_text_in_window(&self, window: u64) -> bool {
+        if frame_keys::header_focus_in_window(
+            self.outer_focus.as_ref(),
+            window,
+            self.app.session_id.as_uuid(),
+        ) {
+            return false;
+        }
+        match self.app.focus {
+            crate::surface::FocusTarget::Pane(pane) => {
+                self.focus_in_window(window, self.app.focus)
+                    && self.renderers.inline_accepts_text(pane)
+            },
+            _ => false,
+        }
+    }
+    fn inline_cursor_area(&self, window: u64) -> Option<crate::surface::Rect> {
+        if !self.inline_text_in_window(window) {
+            return None;
+        }
+        let crate::surface::FocusTarget::Pane(pane) = self.app.focus else {
+            return None;
+        };
+        let plan = if window == 0 {
+            self.surface_plan()
+        } else {
+            let lens = self
+                .lens_windows
+                .values()
+                .find(|lens| lens.ordinal as u64 + 1 == window)?;
+            self.lens_plan(lens.ordinal, lens.width, lens.height)
+        };
+        let surface = plan
+            .iter()
+            .find(|s| s.kind == crate::surface::SurfaceKind::Pane(pane))?;
+        let (x, y, width, height) = self.renderers.inline_cursor_area(pane)?;
+        Some(crate::surface::Rect::new(
+            surface.rect.x + x,
+            surface.rect.y + y,
+            width.max(1.0),
+            height.max(1.0),
+        ))
     }
 
     fn evict_pane_renderer(&mut self, pane: crate::panes::PaneId) {
@@ -1795,9 +2098,23 @@ impl Shell {
 
     fn pump_visible_documents(&mut self) -> bool {
         self.sync_content_placements();
-        let pending = self.content_sessions.pool.pump();
-        self.document_clock.observe(pending);
-        self.content_sessions.pool.visible_needs_frame()
+        let pump_started = std::time::Instant::now();
+        let mut visible_pending = false;
+        content_pool::pump_document_turn(self, Self::request_pending_document_redraws, |host| {
+            let pending = host.content_sessions.pool.pump();
+            // A pump during another window's render can cross a timer's
+            // deadline and settle it. Keep that old receiver's final paint
+            // before replacing its scheduling observation.
+            let due = host.document_clock.due_work(std::time::Instant::now());
+            host.request_document_work_redraws(&due);
+            host.document_clock.observe_work(
+                pending,
+                host.content_sessions.pool.document_work(),
+                pump_started,
+            );
+            visible_pending = host.content_sessions.pool.visible_needs_frame();
+        });
+        visible_pending
     }
 
     /// The current surface plan, from app truth plus the window size. The one
@@ -1807,11 +2124,26 @@ impl Shell {
     /// every other leaf a pane. Content insets over the canvas; chrome sits on
     /// top.
     fn surface_plan(&self) -> Vec<crate::surface::Surface> {
-        let frame = self.app.blueprint_space(crate::action::SpaceRef::Primary).is_none()
-            .then(|| self.outer_rects(0, &self.app.frisket, self.app.maximized,
-                (self.width.max(1), self.height.max(1))));
-        primary_content_plan_with_rects(&self.app, &self.content_sessions, self.width,
-            self.height, frame.as_deref(), &self.outer_float_rects(0))
+        let frame = self
+            .app
+            .blueprint_space(crate::action::SpaceRef::Primary)
+            .is_none()
+            .then(|| {
+                self.outer_rects(
+                    0,
+                    &self.app.frisket,
+                    self.app.maximized,
+                    (self.width.max(1), self.height.max(1)),
+                )
+            });
+        primary_content_plan_with_rects(
+            &self.app,
+            &self.content_sessions,
+            self.width,
+            self.height,
+            frame.as_deref(),
+            &self.outer_float_rects(0),
+        )
     }
 
     /// A pane's `PaneContent`, looked up from the frisket tree by id.
@@ -1845,13 +2177,31 @@ impl Shell {
         local: (f32, f32),
         dims: (u32, u32),
     ) -> Vec<Action> {
+        self.pane_input_actions(pane_id, content, local, dims, None)
+    }
+    fn pane_input_actions(
+        &mut self,
+        pane_id: crate::panes::PaneId,
+        content: &PaneContent,
+        local: (f32, f32),
+        dims: (u32, u32),
+        key: Option<cambium::KeyEvent>,
+    ) -> Vec<Action> {
         let (lx, ly) = local;
         let (rw, rh) = dims;
         let mut out = Vec::new();
+        macro_rules! input {
+            ($pane:expr) => {
+                match key.clone() {
+                    Some(event) => $pane.key_inline(event),
+                    None => $pane.click(lx, ly, rw, rh),
+                }
+            };
+        }
         match content {
             PaneContent::Trail => {
                 if let Some(pane) = self.renderers.trail.get_mut(&pane_id) {
-                    for action in pane.click(lx, ly, rw, rh) {
+                    for action in input!(pane) {
                         match action {
                             crate::trail_pane::TrailPaneAction::Navigate(url) => {
                                 out.push(Action::OpenAddress(url))
@@ -1880,7 +2230,7 @@ impl Shell {
             },
             PaneContent::Roster => {
                 if let Some(grid) = self.renderers.roster.get_mut(&pane_id) {
-                    let actions = grid.click(lx, ly, rw, rh);
+                    let actions = input!(grid);
                     self.app.roster_tab = grid.selected_tab().0;
                     for action in actions {
                         match action {
@@ -1891,9 +2241,14 @@ impl Shell {
                     }
                 }
             },
-            PaneContent::Gloss(_) => {
-                if let Some(pane) = self.renderers.gloss.get_mut(&pane_id) {
-                    for intent in pane.click(lx, ly, rw, rh) {
+            PaneContent::Gloss(_) | PaneContent::Overmap(_) => {
+                let panes = if matches!(content, PaneContent::Gloss(_)) {
+                    &mut self.renderers.gloss
+                } else {
+                    &mut self.renderers.overmap
+                };
+                if let Some(pane) = panes.get_mut(&pane_id) {
+                    for intent in input!(pane) {
                         match intent {
                             crate::swatch_pane::SwatchIntent::Activate(
                                 crate::swatch_pane::SwatchActivate::Open(url),
@@ -1916,40 +2271,57 @@ impl Shell {
             },
             PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::ARRANGE => {
                 if let Some(pane) = self.renderers.arrange.get_mut(&pane_id) {
-                    for intent in pane.click(lx, ly, rw, rh) {
+                    for intent in input!(pane) {
                         if let Some(action) = intent.into_action() {
                             out.push(action);
                         }
                     }
                 }
             },
+            PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::TRANSCRIPT => {
+                if let Some(pane) = self.renderers.transcript.get_mut(&pane_id) {
+                    for action in input!(pane) {
+                        let crate::transcript_pane::TranscriptPaneAction::Repeat(entry) = action;
+                        out.push(Action::RepeatShellEntry(entry));
+                    }
+                }
+            },
+            PaneContent::Workbench => {
+                if let Some(pane) = self.renderers.workbench.get_mut(&pane_id) {
+                    out.extend(
+                        input!(pane)
+                            .into_iter()
+                            .map(|event| Action::WorkbenchActivate(event.0)),
+                    );
+                }
+            },
             PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::SETTINGS => {
                 if let Some(pane) = self.renderers.settings.get_mut(&pane_id) {
-                    pane.click(lx, ly, rw, rh);
+                    input!(pane);
                 }
             },
             PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::PUBLISHING => {
                 if let Some(pane) = self.renderers.publish.get_mut(&pane_id) {
-                    pane.click(lx, ly, rw, rh);
+                    input!(pane);
                 }
             },
             PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::SHARED_KNOT => {
                 if let Some(pane) = self.renderers.shared_knot.get_mut(&pane_id) {
-                    pane.click(lx, ly, rw, rh);
+                    input!(pane);
                 }
             },
             PaneContent::Registered(kind)
                 if kind.as_str() == crate::panes::kind::DEVICE_RECEIPTS =>
             {
                 if let Some(pane) = self.renderers.device_receipts.get_mut(&pane_id) {
-                    pane.click(lx, ly, rw, rh);
+                    input!(pane);
                 }
             },
             PaneContent::Registered(kind)
                 if kind.as_str() == crate::panes::kind::FROZEN_PROJECTION =>
             {
                 if let Some(pane) = self.renderers.frozen_projection.get_mut(&pane_id) {
-                    pane.click(lx, ly, rw, rh);
+                    input!(pane);
                 }
             },
             PaneContent::Inspector => {
@@ -1957,7 +2329,7 @@ impl Shell {
                     .renderers
                     .inspector
                     .get_mut(&pane_id)
-                    .map(|pane| pane.click(lx, ly, rw, rh))
+                    .map(|pane| input!(pane))
                     .unwrap_or_default();
                 for intent in intents {
                     match intent {
@@ -1973,6 +2345,56 @@ impl Shell {
             _ => {},
         }
         out
+    }
+    fn deliver_inline_event(
+        &mut self,
+        pane: crate::panes::PaneId,
+        event: cambium::KeyEvent,
+    ) -> bool {
+        if self.renderers.inline_mount(pane).is_none()
+            || !self.focus_in_window(self.input_window, self.app.focus)
+        {
+            return false;
+        }
+        let plan = if self.input_window == 0 {
+            self.surface_plan()
+        } else {
+            let Some(lens) = self
+                .lens_windows
+                .values()
+                .find(|lens| lens.ordinal as u64 + 1 == self.input_window)
+            else {
+                return false;
+            };
+            self.lens_plan(lens.ordinal, lens.width, lens.height)
+        };
+        let Some(surface) = plan
+            .iter()
+            .find(|s| s.kind == crate::surface::SurfaceKind::Pane(pane))
+        else {
+            return false;
+        };
+        let Some(content) = self.pane_content(pane) else {
+            return false;
+        };
+        self.app.active_pane = Some(pane);
+        let dims = (
+            surface.rect.w.round().max(1.0) as u32,
+            surface.rect.h.round().max(1.0) as u32,
+        );
+        for action in self.pane_input_actions(pane, &content, (0.0, 0.0), dims, Some(event)) {
+            self.act(action);
+        }
+        if let Some(frame) = self
+            .outer_frames
+            .borrow_mut()
+            .get_mut(&(self.input_window as usize))
+        {
+            frame.body_focus = self.renderers.inline_focus(pane);
+            frame.controls.observe_body_mutations();
+        }
+        self.request_redraw();
+        true
     }
 
     fn projected_a11y_tree(&mut self) -> document_a11y::Projected {
@@ -2027,25 +2449,52 @@ impl Shell {
                 .map(|(id, route)| (id, a11y_bridge::Admission::Contributed(route)))
                 .collect(),
         };
-        let header_focus = if self.app.blueprint_space(crate::action::SpaceRef::Primary).is_none() {
-            let focused = frame_keys::header_focus_in_window(self.outer_focus.as_ref(), 0, self.app.session_id.as_uuid());
-            self.outer_frames.borrow().get(&0).and_then(|outer| outer.accessibility(focused))
+        let header_focus = if self
+            .app
+            .blueprint_space(crate::action::SpaceRef::Primary)
+            .is_none()
+        {
+            let focused = frame_keys::header_focus_in_window(
+                self.outer_focus.as_ref(),
+                0,
+                self.app.session_id.as_uuid(),
+            );
+            self.outer_frames
+                .borrow()
+                .get(&0)
+                .and_then(|outer| outer.accessibility(focused))
                 .and_then(|outer| {
-                    let parent = uxtree::node_id_for_path(&format!("frisket/{}", self.app.frisket.id.as_str()));
+                    let parent = uxtree::node_id_for_path(&format!(
+                        "frisket/{}",
+                        self.app.frisket.id.as_str()
+                    ));
                     let bodies = crate::panes::pane_projection_ids(&self.app.frisket);
                     crate::frame_a11y::graft(&mut frame.tree, parent, &bodies, outer)
                 })
                 .and_then(|(routes, focus)| {
-                    frame.routes.extend(routes.into_iter().map(|(id, route)|
-                        (id, crate::a11y::A11yRoute::Frame(route))));
+                    frame.routes.extend(
+                        routes
+                            .into_iter()
+                            .map(|(id, route)| (id, crate::a11y::A11yRoute::Frame(route))),
+                    );
                     focus
                 })
-        } else { None };
+        } else {
+            None
+        };
         let plan = self.surface_plan();
         self.project_document_accessibility(&mut frame, &plan);
-        frame.focus = frame_keys::accessibility_focus(crate::a11y::host_input_focus(&self.app),
-                                                     header_focus, frame.focus);
-        frame.focus = frame.focus.filter(|id| frame.tree.nodes.iter().any(|(current, _)| current == id));
+        frame.focus = frame_keys::accessibility_focus(
+            crate::a11y::host_input_focus(&self.app),
+            header_focus,
+            frame.focus,
+        );
+        frame.focus = frame
+            .focus
+            .filter(|id| frame.tree.nodes.iter().any(|(current, _)| current == id));
+        frame
+            .routes
+            .retain(|id, _| frame.tree.nodes.iter().any(|(node, _)| node == id));
         let mounted: std::collections::HashSet<_> = frame
             .tree
             .nodes
@@ -2068,15 +2517,25 @@ impl Shell {
         self.drain_surface_accessibility();
         // All losing native parents detach before any destination attaches.
         let current = self.foreign_a11y_placements();
-        if self.a11y_surface_layout.iter().any(|(node,_)| !current.iter().any(|(n,_)| n == node)) {
-            let retained = current.into_iter().filter(|(node,_)| self.a11y_surface_layout.iter().any(|(n,_)| n == node)).collect();
+        if self
+            .a11y_surface_layout
+            .iter()
+            .any(|(node, _)| !current.iter().any(|(n, _)| n == node))
+        {
+            let retained = current
+                .into_iter()
+                .filter(|(node, _)| self.a11y_surface_layout.iter().any(|(n, _)| n == node))
+                .collect();
             self.push_primary_a11y_tree(Some(retained));
         }
         self.withdraw_lens_a11y_departures();
         self.push_primary_a11y_tree(None);
         self.push_lens_a11y_trees();
     }
-    fn push_primary_a11y_tree(&mut self, override_placements: Option<Vec<(uuid::Uuid,accesskit::Rect)>>) {
+    fn push_primary_a11y_tree(
+        &mut self,
+        override_placements: Option<Vec<(uuid::Uuid, accesskit::Rect)>>,
+    ) {
         let epoch = self
             .a11y_adapter
             .as_ref()
@@ -2147,7 +2606,11 @@ impl Shell {
                 }
                 tree.nodes.push((id, graft));
             }
-            if !frame_keys::header_focus_in_window(self.outer_focus.as_ref(), 0, self.app.session_id.as_uuid()) && matches!(self.app.focus, crate::surface::FocusTarget::Content { node: focused, .. } if focused == node)
+            if !frame_keys::header_focus_in_window(
+                self.outer_focus.as_ref(),
+                0,
+                self.app.session_id.as_uuid(),
+            ) && matches!(self.app.focus, crate::surface::FocusTarget::Content { node: focused, .. } if focused == node)
             {
                 focus = Some(id);
             }
@@ -2155,8 +2618,9 @@ impl Shell {
         }
         // An open host editor owns keyboard focus even while a document
         // remains the selected graph content behind it.
-        focus = frame_keys::accessibility_focus(crate::a11y::host_input_focus(&self.app), None, focus)
-            .filter(|id| tree.nodes.iter().any(|(current, _)| current == id));
+        focus =
+            frame_keys::accessibility_focus(crate::a11y::host_input_focus(&self.app), None, focus)
+                .filter(|id| tree.nodes.iter().any(|(current, _)| current == id));
         // Some app routes outlive their optional projected nodes. A route
         // becomes available to the platform only while its node is published.
         routes.retain(|id, _| tree.nodes.iter().any(|(current, _)| current == id));
@@ -2337,14 +2801,18 @@ impl Shell {
             let (slot, route) = match window {
                 None => (0, self.a11y_routes.get(&request.target_node).cloned()),
                 Some(id) => match self.lens_windows.get(&id) {
-                    Some(lens) => (lens.ordinal + 1, lens.a11y_routes.get(&request.target_node).cloned()),
+                    Some(lens) => (
+                        lens.ordinal + 1,
+                        lens.a11y_routes.get(&request.target_node).cloned(),
+                    ),
                     None => continue,
                 },
             };
             if let Some(crate::a11y::A11yRoute::Frame(route)) = &route {
                 if !self.apply_frame_a11y(slot, route, request.action) {
                     self.app.note(crate::observe::AppEvent::InteractionMissed {
-                        what: "a11y-action", target: "Shared frame control is stale, hidden or unsupported".into(),
+                        what: "a11y-action",
+                        target: "Shared frame control is stale, hidden or unsupported".into(),
                     });
                 }
                 continue;
@@ -2356,7 +2824,8 @@ impl Shell {
                 continue;
             }
             if request.action == accesskit::Action::Focus
-                && slot == 0 && crate::a11y::focus_host_input(&mut self.app, request.target_node)
+                && slot == 0
+                && crate::a11y::focus_host_input(&mut self.app, request.target_node)
             {
                 self.request_redraw();
                 continue;
@@ -2366,9 +2835,12 @@ impl Shell {
             if request.action != accesskit::Action::Click {
                 continue;
             }
-            if let Some(crate::a11y::A11yRoute::SelectMember{pane,..})=&route {
-                if self.app.space_of(*pane)!=Some(frame_keys::space(slot)) {
-                    self.app.note(crate::observe::AppEvent::InteractionMissed {what:"a11y-action",target:"Graph projection moved to another window".into()});
+            if let Some(crate::a11y::A11yRoute::SelectMember { pane, .. }) = &route {
+                if self.app.space_of(*pane) != Some(frame_keys::space(slot)) {
+                    self.app.note(crate::observe::AppEvent::InteractionMissed {
+                        what: "a11y-action",
+                        target: "Graph projection moved to another window".into(),
+                    });
                     continue;
                 }
             }
@@ -2459,7 +2931,7 @@ impl Shell {
             event_loop.exit();
             return;
         }
-        if self.pending_capture_readback.is_some() {
+        if self.pending_capture_readback.is_some() || !self.pending_native_diagnostics.is_empty() {
             self.request_redraw();
             return;
         }
@@ -2503,6 +2975,7 @@ impl Shell {
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
 
     #[test]
@@ -2912,9 +3385,22 @@ fn primary_content_plan(
     width: u32,
     height: u32,
 ) -> Vec<crate::surface::Surface> {
-    let frame = outer_workspace::frame_body_geometry(app, crate::action::SpaceRef::Primary,
-        (width.max(1), height.max(1)));
-    primary_content_plan_with_rects(app, contents, width, height, frame.as_ref().map(|(b,_)| b.as_slice()), frame.as_ref().map(|(_,f)| f.as_slice()).unwrap_or_default())
+    let frame = outer_workspace::frame_body_geometry(
+        app,
+        crate::action::SpaceRef::Primary,
+        (width.max(1), height.max(1)),
+    );
+    primary_content_plan_with_rects(
+        app,
+        contents,
+        width,
+        height,
+        frame.as_ref().map(|(b, _)| b.as_slice()),
+        frame
+            .as_ref()
+            .map(|(_, f)| f.as_slice())
+            .unwrap_or_default(),
+    )
 }
 
 fn primary_content_plan_with_rects(
@@ -2955,7 +3441,14 @@ fn primary_content_plan_with_rects(
                     .collect(),
             )
         },
-        None => (frame_rects.unwrap_or_default().to_vec(), Vec::new(), frame_floats.iter().map(|(id,_,body)| (*id,*body)).collect()),
+        None => (
+            frame_rects.unwrap_or_default().to_vec(),
+            Vec::new(),
+            frame_floats
+                .iter()
+                .map(|(id, _, body)| (*id, *body))
+                .collect(),
+        ),
     };
     let mut graph_rects = Vec::new();
     let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
@@ -2977,7 +3470,10 @@ fn primary_content_plan_with_rects(
             }
         })
         .collect();
-    if app.blueprint_space(crate::action::SpaceRef::Primary).is_none() {
+    if app
+        .blueprint_space(crate::action::SpaceRef::Primary)
+        .is_none()
+    {
         base.insert(0, (SurfaceKind::Frame, area));
     }
     // Each seam is its own thin surface, so it paints (an empty scene over
@@ -3123,24 +3619,46 @@ fn primary_content_plan_with_rects(
         }
     }));
     for (id, rect) in float_rects {
-        let Some(content) = app.pane_content(id).cloned() else { continue; };
-        if let Some((_, outer, _)) = frame_floats.iter().find(|(pane,_,_)| *pane == id) {
+        let Some(content) = app.pane_content(id).cloned() else {
+            continue;
+        };
+        if let Some((_, outer, _)) = frame_floats.iter().find(|(pane, _, _)| *pane == id) {
             let kind = SurfaceKind::FloatFrame(id);
-            surfaces.push(crate::surface::Surface { id: crate::surface::SurfaceId::for_kind(kind), kind, rect: *outer });
+            surfaces.push(crate::surface::Surface {
+                id: crate::surface::SurfaceId::for_kind(kind),
+                kind,
+                rect: *outer,
+            });
         }
         let kind = match &content {
             PaneContent::Orrery => SurfaceKind::Graph(id),
-            PaneContent::Tile(member) if contents.contains_key(member) => SurfaceKind::Content(*member),
+            PaneContent::Tile(member) if contents.contains_key(member) => {
+                SurfaceKind::Content(*member)
+            },
             _ => SurfaceKind::Pane(id),
         };
-        surfaces.push(crate::surface::Surface { id: crate::surface::SurfaceId::for_kind(kind), kind, rect });
+        surfaces.push(crate::surface::Surface {
+            id: crate::surface::SurfaceId::for_kind(kind),
+            kind,
+            rect,
+        });
         if matches!(content, PaneContent::Workbench) {
-            let geom = app.workbench_for_pane(id).and_then(|w| w.to_arrangement().1);
+            let geom = app
+                .workbench_for_pane(id)
+                .and_then(|w| w.to_arrangement().1);
             for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), rect).cells {
                 if let Some(node) = cell.active_member().filter(|n| contents.contains_key(n)) {
                     let body = cell.body();
-                    appearance_roles.push((node, crate::surface::appearance::workbench_appearance_role(id,node), body));
-                    surfaces.push(crate::surface::Surface { id: crate::surface::SurfaceId::content(node), kind: SurfaceKind::Content(node), rect: body });
+                    appearance_roles.push((
+                        node,
+                        crate::surface::appearance::workbench_appearance_role(id, node),
+                        body,
+                    ));
+                    surfaces.push(crate::surface::Surface {
+                        id: crate::surface::SurfaceId::content(node),
+                        kind: SurfaceKind::Content(node),
+                        rect: body,
+                    });
                 }
             }
         }
@@ -3221,7 +3739,6 @@ fn dispatch_contributed_action(
 #[path = "contributed_window_a11y_tests.rs"]
 mod contributed_window_a11y_tests;
 
-
 #[cfg(test)]
 mod render_recovery_tests {
     use super::*;
@@ -3229,19 +3746,29 @@ mod render_recovery_tests {
     use std::sync::atomic::{AtomicUsize, Ordering};
 
     fn loss() -> DeviceLossNotice {
-        DeviceLossNotice { generation: 908, reason: wgpu::DeviceLostReason::Unknown,
-            message: "CPU-only recovery protocol control".into() }
+        DeviceLossNotice {
+            generation: 908,
+            reason: wgpu::DeviceLostReason::Unknown,
+            message: "CPU-only recovery protocol control".into(),
+        }
     }
     fn owner() -> (Arc<SharedRenderCore>, Arc<AtomicUsize>, Arc<AtomicUsize>) {
         let calls = Arc::new(AtomicUsize::new(0));
         let bindings = Arc::new(AtomicUsize::new(2));
         let counted = calls.clone();
         let alive = bindings.clone();
-        let owner = SharedRenderCore::from_detached_loss(loss(), Arc::new(move || {
-            assert_eq!(alive.load(Ordering::SeqCst), 0, "factory precedes released host bindings");
-            counted.fetch_add(1, Ordering::SeqCst);
-            Err("bounded failed factory, no GPU boot claimed".into())
-        }));
+        let owner = SharedRenderCore::from_detached_loss(
+            loss(),
+            Arc::new(move || {
+                assert_eq!(
+                    alive.load(Ordering::SeqCst),
+                    0,
+                    "factory precedes released host bindings"
+                );
+                counted.fetch_add(1, Ordering::SeqCst);
+                Err("bounded failed factory, no GPU boot claimed".into())
+            }),
+        );
         (owner, calls, bindings)
     }
     fn window(owner: &SharedRenderCore) -> WindowRecovery {
@@ -3253,15 +3780,32 @@ mod render_recovery_tests {
         let (owner, calls, bindings) = owner();
         let mut primary = window(&owner);
         let mut hidden_lens = window(&owner);
-        primary.detach(&owner, 908, true, || { bindings.fetch_sub(1, Ordering::SeqCst); });
-        assert!(matches!(owner.recover(), RecoveryStatus::Waiting { remaining_hosts: 1, .. }));
+        primary.detach(&owner, 908, true, || {
+            bindings.fetch_sub(1, Ordering::SeqCst);
+        });
+        assert!(matches!(
+            owner.recover(),
+            RecoveryStatus::Waiting {
+                remaining_hosts: 1,
+                ..
+            }
+        ));
         assert_eq!(calls.load(Ordering::SeqCst), 0);
-        primary.detach(&owner, 908, true, || panic!("duplicate notice released the host twice"));
-        hidden_lens.detach(&owner, 908, true, || { bindings.fetch_sub(1, Ordering::SeqCst); });
+        primary.detach(&owner, 908, true, || {
+            panic!("duplicate notice released the host twice")
+        });
+        hidden_lens.detach(&owner, 908, true, || {
+            bindings.fetch_sub(1, Ordering::SeqCst);
+        });
         let mut errors = Vec::new();
         assert!(!admit_recovered_core(owner.recover(), &mut errors));
         assert!(!admit_recovered_core(owner.recover(), &mut errors));
-        assert_eq!(errors, ["device-loss recovery failed generation=908: bounded failed factory, no GPU boot claimed"]);
+        assert_eq!(
+            errors,
+            [
+                "device-loss recovery failed generation=908: bounded failed factory, no GPU boot claimed"
+            ]
+        );
         assert_eq!(calls.load(Ordering::SeqCst), 1);
     }
 
@@ -3271,11 +3815,19 @@ mod render_recovery_tests {
         let mut primary = window(&owner);
         let lens = window(&owner);
         primary.detach(&owner, 907, true, || {});
-        assert!(matches!(owner.recover(), RecoveryStatus::Waiting { remaining_hosts: 2, .. }));
+        assert!(matches!(
+            owner.recover(),
+            RecoveryStatus::Waiting {
+                remaining_hosts: 2,
+                ..
+            }
+        ));
         // Actual close drops the subscription only after its host bindings.
         bindings.fetch_sub(1, Ordering::SeqCst);
         drop(lens);
-        primary.detach(&owner, 908, true, || { bindings.fetch_sub(1, Ordering::SeqCst); });
+        primary.detach(&owner, 908, true, || {
+            bindings.fetch_sub(1, Ordering::SeqCst);
+        });
         assert!(matches!(owner.recover(), RecoveryStatus::Failed { .. }));
         assert_eq!(calls.load(Ordering::SeqCst), 1);
     }
@@ -3285,10 +3837,24 @@ mod render_recovery_tests {
         let (owner, calls, bindings) = owner();
         let mut primary = window(&owner);
         let mut lens = window(&owner);
-        primary.detach(&owner, 908, false, || { bindings.fetch_sub(1, Ordering::SeqCst); });
-        lens.detach(&owner, 908, true, || { bindings.fetch_sub(1, Ordering::SeqCst); });
-        assert!(matches!(owner.recover(), RecoveryStatus::Waiting { remaining_hosts: 1, .. }));
-        assert_eq!(calls.load(Ordering::SeqCst), 0, "unsupported consumer was falsely detached");
+        primary.detach(&owner, 908, false, || {
+            bindings.fetch_sub(1, Ordering::SeqCst);
+        });
+        lens.detach(&owner, 908, true, || {
+            bindings.fetch_sub(1, Ordering::SeqCst);
+        });
+        assert!(matches!(
+            owner.recover(),
+            RecoveryStatus::Waiting {
+                remaining_hosts: 1,
+                ..
+            }
+        ));
+        assert_eq!(
+            calls.load(Ordering::SeqCst),
+            0,
+            "unsupported consumer was falsely detached"
+        );
     }
 
     #[test]
@@ -3297,25 +3863,43 @@ mod render_recovery_tests {
         let mut lens = Some(std::path::PathBuf::from("lens.png"));
         assert!(take_window_capture(3, Some(2), &mut main, &mut lens).is_none());
         assert!(main.is_some() && lens.is_some());
-        assert_eq!(take_window_capture(2, Some(2), &mut main, &mut lens), Some(std::path::PathBuf::from("lens.png")));
+        assert_eq!(
+            take_window_capture(2, Some(2), &mut main, &mut lens),
+            Some(std::path::PathBuf::from("lens.png"))
+        );
         assert!(take_window_capture(2, Some(2), &mut main, &mut lens).is_none());
         assert!(main.is_some());
-        assert_eq!(take_window_capture(0, Some(2), &mut main, &mut lens), Some(std::path::PathBuf::from("primary.png")));
+        assert_eq!(
+            take_window_capture(0, Some(2), &mut main, &mut lens),
+            Some(std::path::PathBuf::from("primary.png"))
+        );
         assert!(take_window_capture(0, Some(2), &mut main, &mut lens).is_none());
     }
 
     #[test]
     fn render_capture_refusal_preserves_provider_and_installed_loss_identity() {
         let error = Arc::new(netrender::VelloError::CurveQualityReadbackFailed);
-        match raster_capture_refusal(genet_render_host::RasterizeFailure::ProviderError(error.clone()), 23, 71) {
-            cambium_rootstock::CaptureRefusal::ProviderError { generation, source_key, error: actual } => {
+        match raster_capture_refusal(
+            genet_render_host::RasterizeFailure::ProviderError(error.clone()),
+            23,
+            71,
+        ) {
+            cambium_rootstock::CaptureRefusal::ProviderError {
+                generation,
+                source_key,
+                error: actual,
+            } => {
                 assert_eq!(generation, 23);
                 assert_eq!(source_key, Some(71));
                 assert!(Arc::ptr_eq(&error, &actual));
             },
             other => panic!("provider failure was misclassified: {other:?}"),
         }
-        match raster_capture_refusal(genet_render_host::RasterizeFailure::DeviceLost(loss()), 23, 71) {
+        match raster_capture_refusal(
+            genet_render_host::RasterizeFailure::DeviceLost(loss()),
+            23,
+            71,
+        ) {
             cambium_rootstock::CaptureRefusal::DeviceLost(actual) => assert_eq!(actual, loss()),
             other => panic!("installed loss was misclassified: {other:?}"),
         }

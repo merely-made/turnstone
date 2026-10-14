@@ -3,9 +3,9 @@ settle 4
 click role:textbox @data-field=name
 input-text TurnstoneMissingFont
 click role:button @data-font-role=interface
-key tab-until data-field=font-family
+click role:textbox @data-field=font-family
 input-text Turnstone Intentionally Absent 20261013
-key tab-until data-field=font-size
+click role:textbox @data-field=font-size
 input-text 38
 click role:button @data-action=apply-fonts
 click role:button @data-action=save

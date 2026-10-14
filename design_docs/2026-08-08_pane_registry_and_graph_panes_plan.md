@@ -2,7 +2,7 @@
 
 **Date**: 2026-08-08
 
-**Status (2026-10-13)**: A4/S3 has shared Workspace, Tabard appearance, keyboard, floating/docking and per-window accessibility implementation drafts; native/inline-body/physical accessibility gates remain open. A0, A1 and A6 complete and verified. Lanes open: **A2** and
+**Status (2026-10-14)**: A4/S3 implements shared Workspace custody, Tabard appearance, keyboard, floating/docking, per-window accessibility, retained inline component bodies and native image apertures in one window scene. Ordinary published Mere/Genet/Netrender suppliers pass eight affected test groups, the native build and fourteen headed cases. Local-source receipts retain their measured basis. Physical accessibility, OS activation, monitor DPI and early scrollbar-fade pixel timing remain open. A0, A1 and A6 complete and verified. Lanes open: **A2** and
 **A7**; **A3** retains its A2 acceptance gate. The A4 draft below does not close A2/A3 or A5 acceptance.
 
 **2026-09-29 pane consolidation: qualified.** Mark accepted operational status
@@ -1423,3 +1423,71 @@ shared native Pelt/retained-clip adoption (`d5d4737`) and preceding frame draft
 viewer qualification and frame-window timings. This consumer keeps its already
 adopted `0d1dc192` Mere and `2c7ef73b` Genet supplier family; no further supplier
 pin change is part of these drafts.
+
+## A4 retained inline bodies and final supplier adoption — 2026-10-14
+
+This continuation supersedes the October 13 host-composited body draft above.
+All thirteen in-house pane owners mount their existing retained bodies into the
+receiving window's shared Workspace/Frisket DOM, cascade, fragments and paint
+list. PaneId still owns the widget/app state. The shared Cambium retained mount
+keeps the actual runner subtree through tree, float and lens moves; source-first
+withdrawal parks it under a live hidden document root before collection. Runtime
+teardown precedes final mount destruction. Custom/manual tab widgets retain their
+focus behavior; only the stock tab widget explicitly requests roving focus.
+
+Foreign Surface producers retain their acquisition, session, input, accessibility
+and media owners. Their actual same-device views are staged as ordinary image
+commands at exact appearance apertures inside the retained body's CSS clips,
+transforms and opacity groups. The window scene is rasterized once. The former
+cropped-frame replay compositor is replaced; equal source UUIDs and rectangles
+cannot substitute for appearance identity. Classic raster sources declare
+straight alpha, while supported native imports retain their explicit producer
+convention. Unsupported hardware-decoded sRGB import views refuse staging.
+Mask resources have window/session custody, reuse exact requests and explicitly
+retire on withdrawal, replacement, recovery or window closure. An empty tiled
+root remains an inert Hole rather than claiming a floating tile's body identity.
+
+Each window uses a neutral layout scope with a real styled window-root child.
+That child owns the viewport-sized authored backdrop even when every pane floats.
+Theme Interface typography reaches the shared frame controls; authored font size
+and line height, narrow resize, reset, persisted selection and unavailable-family
+fallback use the real theme workshop and current owner routes. Body input, IME
+and accessibility remain tied to the current receiving owner. Header focus does
+not intercept an unrelated body gesture; lens accessibility snapshots read the
+actual focused window rather than the primary window.
+
+The bounded host wake repair preserves the final document paint before and after
+a pump, observes Pelt's existing pending work without invalidating prepared routes,
+and anchors supplied future timer delays at the actual pump start. Only current
+admitted receiver windows are queued. Runnable work retains the configured clock
+cadence; quiet lenses are not redrawn by a blanket timer. Lens pane wheel input
+uses the actual receiving-window plan, and existing scrollbar continuation is
+scoped to panes in that plan. This introduces no durable retention or destruction
+policy.
+
+The normal published consumer graph adopts Mere
+`77fd235fe659c513dd0463ed57be32f02fb2e71a`, Genet
+`b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084`, and the single Netrender family
+`6a24ae08f55129b474282b8e4911564f875ce5fd`. Its eight affected test groups pass
+all 17 tests, and the default native binary builds with locked/offline source
+resolution and no local path override. Earlier full-suite and local-path receipts
+keep their original supplier authority; this continuation does not claim another
+unfiltered or optional-engine suite. The restored old scope-root and timer-blind
+controls fail as expected, and exact candidate bytes pass after restoration.
+
+All fourteen final headed scenarios pass against that normal published binary:
+inline tree/float/lens continuity, actual alpha/shadow overlap and resize, A5
+float/dock/return, station reopening, keyboard and primary/lens accessibility
+actions, pane wheel delivery, authored typography/reset and missing-family
+fallback/reopening. The runs present 1,141 primary frames and produce forty
+primary/lens captures, plus one real theme-editor capture. All forty targets were
+visually reviewed, and eight actual shared-raster/final pairs additionally pass
+the authored backdrop and pixel comparison checks. Alpha comparisons exclude
+the independently composed chrome overlays rather than claiming whole-target
+identity. Source, executable, normal manifest/lock, fixtures and artifact hashes
+are bound by `docs/receipts/stations_windows_20261013/published-final-native-qualification.json`.
+Preserved local-source runs retain their separate authority.
+Physical OS activation, human assistive technology and monitor DPI transitions
+remain separate gates. The immediate lens-scroll fixture's capture dispatch can
+land after the existing scrollbar fade interval; actual body movement and the
+scoped continuation control do not claim early scrollbar opacity pixels.

@@ -1,0 +1,15 @@
+{
+  "kind": "preliminary local Mere overrides with exact published Genet561 supplier, not final published Mere pin acceptance",
+  "command": "cargo +1.99.0 --config docs/receipts/stations_windows_20261013/preliminary-mere-paths.toml check --lib --bin turnstone -j1",
+  "exit_code": 0,
+  "duration": "10m32s including exact pinned supplier fetch/cache population",
+  "log": "preliminary-561-check-online.log",
+  "turnstone_head": "81d9f8bc2b6284f29d7013445ce709c8a3cec948",
+  "mere_head": "f7e0a09788ad2304254bb4afaf4e77cc9a94ae21",
+  "genet_rev": "5618326d287e7f7ef0c1cc3545587d64cedb22a7",
+  "published_primary_lock_restored_sha256": "432883312ec370221f2a383e98ffb1e3a2bf735a235ab35c32621cc9901a2fb3",
+  "preliminary_lock_sha256": "28c65a017f3932baa75c1fff394d7267362b830bc2d9a7116a415d6fe4346181",
+  "config_sha256": "e6a5a0522bc6c6daca17d71f8daa338eb98d423e0fc3635e7bf8674f3a2e5c57",
+  "scope": "Default library/binary including retained owner migrations, exact-aperture staged native image composition, retirement, legacy station transitions and target clearing. Optional trio importer features, runtime pixels and physical AT/DPI remain unqualified.",
+  "subsequent_source_changes": "Controlled field editable/value projection, projection-withdrawal header focus/capture retirement, direct importer premul placement and explicit aperture capture refusal landed afterward; default library test compilation and focused gates qualify those updates separately."
+}

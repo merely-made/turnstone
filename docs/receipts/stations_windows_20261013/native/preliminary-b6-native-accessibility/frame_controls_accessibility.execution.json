@@ -1,0 +1,13 @@
+{
+  "scenario": "frame_controls_accessibility",
+  "case": "preliminary-b6-native-accessibility",
+  "workshop": "",
+  "started_utc": "2026-10-14T09:12:25.4875293Z",
+  "finished_utc": "2026-10-14T09:12:41.3749468Z",
+  "exit": 0,
+  "result_ok": true,
+  "default_surface_poll": true,
+  "executable_sha256": "3b092486e050698001aea3f3589ab57b7153b246e1c5661586c9ef6cd7283ae3",
+  "fixture_sha256": "2341d550f75518080a3d8a873fed52cdb037e1e72bddbec2798afa058fa0e930",
+  "primary_lock_sha256": "432883312ec370221f2a383e98ffb1e3a2bf735a235ab35c32621cc9901a2fb3"
+}

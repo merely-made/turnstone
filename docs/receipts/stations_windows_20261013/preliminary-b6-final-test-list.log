@@ -1,0 +1,2336 @@
+error: invalid type: boolean `true`, expected a map
+ --> ..\..\..\.cargo\git\checkouts\servo-e53a6e7b994a25fe\aac43a3\python\tidy\tests\lints-configuration\no-workspace\Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+warning: patch `engine-observables-api v0.2.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `genet-paint-types v0.2.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `genet-scripted-dom v0.1.2 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `genet-static-dom v0.1.1 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `layout-dom-api v0.1.1 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `burn-remote v0.22.0 (C:\Users\mark_\Code\repos\mere\support\patches\burn-remote)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (C:\Users\mark_\Code\repos\mere\support\patches\cubecl-runtime)` was not used in the crate graph
+warning: patch `burn-remote v0.22.0 (C:\Users\mark_\Code\repos\mere\support\patches\burn-remote)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (C:\Users\mark_\Code\repos\mere\support\patches\cubecl-runtime)` was not used in the crate graph
+warning: patch `burn-remote v0.22.0 (C:\Users\mark_\Code\repos\mere\support\patches\burn-remote)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (C:\Users\mark_\Code\repos\mere\support\patches\cubecl-runtime)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+warning: unused imports: `astar`, `dijkstra`, `has_path_connecting`, and `kosaraju_scc`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:21:22
+   |
+21 | use petgraph::algo::{astar, dijkstra, has_path_connecting, kosaraju_scc};
+   |                      ^^^^^  ^^^^^^^^  ^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `Archived`, `Place`, and `Resolver`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:25:21
+   |
+25 | use rkyv::{Archive, Archived, Deserialize, Place, Resolver, Serialize, rancor::Fallible};
+   |                     ^^^^^^^^               ^^^^^  ^^^^^^^^
+
+warning: unused import: `HashSet`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:26:43
+   |
+26 | use std::collections::{BTreeMap, HashMap, HashSet};
+   |                                           ^^^^^^^
+
+warning: unused imports: `GraphSnapshot`, `PersistedAddress`, `PersistedArrangementEdgeData`, `PersistedArrangementSubKind`, `PersistedContainmentEdgeData`, `PersistedContainmentSubKind`, `PersistedEdgeFamily`, `PersistedEdge`, `PersistedImportedEdgeData`, `PersistedImportedSubKind`, `PersistedNavigationTrigger`, `PersistedNodeSessionState`, `PersistedNode`, `PersistedProvenanceEdgeData`, `PersistedProvenanceSubKind`, `PersistedSemanticEdgeData`, `PersistedSemanticSubKind`, `PersistedTraversalEdgeData`, `PersistedTraversalMetrics`, and `PersistedTraversalRecord`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:35:5
+   |
+35 |     GraphSnapshot, PersistedAddress, PersistedArrangementEdgeData, PersistedArrangementSubKind,
+   |     ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+36 |     PersistedContainmentEdgeData, PersistedContainmentSubKind, PersistedEdge, PersistedEdgeFamily,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+37 |     PersistedImportedEdgeData, PersistedImportedSubKind, PersistedNavigationTrigger, PersistedNode,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^
+38 |     PersistedNodeSessionState, PersistedProvenanceEdgeData, PersistedProvenanceSubKind,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+39 |     PersistedSemanticEdgeData, PersistedSemanticSubKind, PersistedTraversalEdgeData,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+40 |     PersistedTraversalMetrics, PersistedTraversalRecord,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `NodeTagPresentationState`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\node_facets.rs:17:54
+   |
+17 | use crate::types::{NodeClassification, NodeProperty, NodeTagPresentationState};
+   |                                                      ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `EdgeRef`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:24:23
+   |
+24 | use petgraph::visit::{EdgeRef, IntoEdgeReferences};
+   |                       ^^^^^^^
+
+warning: unused import: `rancor::Fallible`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:25:72
+   |
+25 | use rkyv::{Archive, Archived, Deserialize, Place, Resolver, Serialize, rancor::Fallible};
+   |                                                                        ^^^^^^^^^^^^^^^^
+
+warning: methods `navigate_node`, `branch_history`, `node_history_back`, and `node_history_forward` are never used
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:707:19
+    |
+404 | impl Graph {
+    | ---------- methods in this implementation
+...
+707 |     pub(crate) fn navigate_node(&mut self, key: NodeKey, url: &str) {
+    |                   ^^^^^^^^^^^^^
+...
+721 |     pub(crate) fn branch_history(&mut self, child: NodeKey, parent: NodeKey) {
+    |                   ^^^^^^^^^^^^^^
+...
+733 |     pub(crate) fn node_history_back(&mut self, key: NodeKey) -> Option<String> {
+    |                   ^^^^^^^^^^^^^^^^^
+...
+743 |     pub(crate) fn node_history_forward(&mut self, key: NodeKey) -> Option<String> {
+    |                   ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `assert_semantic_predicate`, `assert_semantic_relation_in_scope`, and `assert_semantic_predicate_in_scope` are never used
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\edge_payload.rs:268:19
+    |
+ 55 | impl EdgePayload {
+    | ---------------- methods in this implementation
+...
+268 |     pub(crate) fn assert_semantic_predicate(&mut self, predicate: String) -> bool {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+272 |     pub(crate) fn assert_semantic_relation_in_scope(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+281 |     pub(crate) fn assert_semantic_predicate_in_scope(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `LogIdAsString` is never constructed
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\identity.rs:160:19
+    |
+160 | pub(crate) struct LogIdAsString;
+    |                   ^^^^^^^^^^^^^
+
+warning: multiple methods are never used
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\resource_content.rs:86:19
+    |
+ 85 | impl Graph {
+    | ---------- methods in this implementation
+ 86 |     pub(crate) fn insert_node_tag(&mut self, key: NodeKey, tag: String) -> bool {
+    |                   ^^^^^^^^^^^^^^^
+...
+ 89 |     pub(crate) fn remove_node_tag(&mut self, key: NodeKey, tag: &str) -> bool {
+    |                   ^^^^^^^^^^^^^^^
+...
+ 92 |     pub(crate) fn append_node_property(&mut self, key: NodeKey, property: NodeProperty) -> bool {
+    |                   ^^^^^^^^^^^^^^^^^^^^
+...
+ 95 |     pub(crate) fn add_node_classification(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^
+...
+102 |     pub(crate) fn remove_node_classification(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+116 |     pub(crate) fn set_node_classification_status(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+131 |     pub(crate) fn set_node_primary_classification(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: multiple methods are never used
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\edge_ops.rs:177:19
+    |
+ 32 | impl Graph {
+    | ---------- methods in this implementation
+...
+177 |     pub(crate) fn assert_semantic_predicate(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+244 |     pub(crate) fn replay_assert_relation_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+261 |     pub(crate) fn replay_set_edge_semantic_predicate_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+279 |     pub(crate) fn replay_assert_semantic_predicate_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+307 |     pub(crate) fn dissolve_remove_node_collect_traversals(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+418 |     pub(crate) fn assert_surface_persisted_semantic_statement(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+601 |     pub(crate) fn set_edge_semantic_predicate(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `get_node_mut` is never used
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\query.rs:227:19
+    |
+220 | impl Graph {
+    | ---------- method in this implementation
+...
+227 |     pub(crate) fn get_node_mut(&mut self, key: NodeKey) -> Option<&mut Node> {
+    |                   ^^^^^^^^^^^^
+
+warning: `mere-kernel` (lib) generated 13 warnings (run `cargo fix --lib -p mere-kernel` to apply 5 suggestions)
+warning: unused imports: `BlockProvenanceMap`, `DocumentProvenance`, and `DocumentTrustState`
+  --> C:\Users\mark_\Code\repos\mere\crates\nematic\nematic\src\knot\expand.rs:20:12
+   |
+20 |     Block, BlockProvenanceMap, DocumentProvenance, DocumentTrustState, Engine, EngineInput,
+   |            ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `EngineDocument`
+ --> C:\Users\mark_\Code\repos\mere\crates\nematic\nematic\src\knot\expand\build.rs:7:80
+  |
+7 | use inker::{Block, BlockProvenanceMap, DocumentProvenance, DocumentTrustState, EngineDocument};
+  |                                                                                ^^^^^^^^^^^^^^
+
+warning: `nematic` (lib) generated 2 warnings (run `cargo fix --lib -p nematic` to apply 2 suggestions)
+warning: unused import: `std::io`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\pairing.rs:10:5
+   |
+10 | use std::io;
+   |     ^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `std::io`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\records.rs:10:5
+   |
+10 | use std::io;
+   |     ^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\records.rs:11:5
+   |
+11 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `IdentityProvider`, `InMemoryProvider`, and `PersonaId`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\records.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused import: `Ed25519Signature`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\types.rs:14:16
+   |
+14 | use identity::{Ed25519Signature, PersonaId};
+   |                ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `DEVICE_GRANT_SCHEMA_VERSION` and `DeviceGrantError`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\types.rs:19:5
+   |
+19 |     DEVICE_GRANT_SCHEMA_VERSION, DeviceExposure, DeviceGrantError, DeviceId, DevicePublicKey,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^                  ^^^^^^^^^^^^^^^^
+
+warning: method `into_graph` is never used
+   --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\graph_codicil.rs:149:19
+    |
+148 | impl GraphCodicil {
+    | ----------------- method in this implementation
+149 |     pub(crate) fn into_graph(self) -> Result<Graph> {
+    |                   ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pandect` (lib) generated 7 warnings (run `cargo fix --lib -p pandect` to apply 6 suggestions)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-rootstock\src\producer\registry.rs:36:10
+   |
+36 |     next.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |key| {
+   |          ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+36 -     next.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |key| {
+36 +     next.try_update(Ordering::Relaxed, Ordering::Relaxed, |key| {
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-rootstock\src\scene_producer.rs:25:10
+   |
+25 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |value| {
+   |          ^^^^^^^^^^^^
+   |
+help: replace the use of the deprecated method
+   |
+25 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |value| {
+25 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |value| {
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<usize>::fetch_update`: renamed to `try_update` for consistency
+   --> C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-rootstock\src\host.rs:114:10
+    |
+114 |     NEXT.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |          ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+114 -     NEXT.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+114 +     NEXT.try_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |
+
+warning: `cambium-rootstock` (lib) generated 3 warnings (run `cargo fix --lib -p cambium-rootstock` to apply 3 suggestions)
+warning: function `build_affinity_spring` is never used
+  --> C:\Users\mark_\Code\repos\mere\crates\canvas\pictograph\src\canvas.rs:66:4
+   |
+66 | fn build_affinity_spring(scores: &crate::signals::AffinityScores) -> AffinitySpring {
+   |    ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pictograph` (lib) generated 1 warning
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> C:\Users\mark_\Code\repos\mere\ports\pelt\core\src\pool_a11y.rs:65:18
+   |
+65 |                 .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+   |                  ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+65 -                 .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+65 +                 .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+   --> C:\Users\mark_\Code\repos\mere\ports\pelt\core\src\lib.rs:206:10
+    |
+206 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+    |          ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+206 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+206 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+    |
+
+warning: `pelt-core` (lib) generated 2 warnings (run `cargo fix --lib -p pelt-core` to apply 2 suggestions)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> C:\Users\mark_\Code\repos\mere\ports\graphshell\src\retained_content\producer.rs:32:14
+   |
+32 |         NEXT.fetch_update(
+   |              ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+32 -         NEXT.fetch_update(
+32 +         NEXT.try_update(
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+   --> C:\Users\mark_\Code\repos\mere\ports\graphshell\src\retained_content\producer.rs:136:30
+    |
+136 |                         NEXT.fetch_update(
+    |                              ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+136 -                         NEXT.fetch_update(
+136 +                         NEXT.try_update(
+    |
+
+warning: unused import: `personae::AttestationKeys`
+  --> C:\Users\mark_\Code\repos\mere\ports\graphshell\src\webrtc_door.rs:78:5
+   |
+78 | use personae::AttestationKeys;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `begin_session` is never used
+   --> C:\Users\mark_\Code\repos\mere\ports\graphshell\src\mere_host.rs:386:19
+    |
+225 | impl<B: Backend + Clone> MereHost<B> {
+    | ------------------------------------ method in this implementation
+...
+386 |     pub(crate) fn begin_session(&mut self, graph: Graph) {
+    |                   ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `codicil_graph` is never used
+    --> C:\Users\mark_\Code\repos\mere\ports\graphshell\src\product.rs:1102:4
+     |
+1102 | fn codicil_graph(snapshot: GraphSnapshot, facets: NodeFacetStore) -> Result<Graph, ProductError> {
+     |    ^^^^^^^^^^^^^
+
+warning: function `decode_codicil` is never used
+    --> C:\Users\mark_\Code\repos\mere\ports\graphshell\src\product.rs:1504:15
+     |
+1504 | pub(crate) fn decode_codicil(bytes: &[u8]) -> Result<ProductCodicilV3, ProductError> {
+     |               ^^^^^^^^^^^^^^
+
+warning: `graphshell` (lib) generated 6 warnings (run `cargo fix --lib -p graphshell` to apply 2 suggestions)
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\courier.rs:42:5
+   |
+42 |     MalformedDigest,
+   |     ^^^^^^^^^^^^^^^
+   |
+note: the lint level is defined here
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\lib.rs:45:9
+   |
+45 | #![warn(missing_docs)]
+   |         ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\courier.rs:44:5
+   |
+44 |     Store(String),
+   |     ^^^^^
+
+warning: missing documentation for a method
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\courier.rs:131:5
+    |
+131 |     pub async fn has(&self, blob: &BlobRef) -> bool {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\courier.rs:219:5
+    |
+219 |     pub fn new(transport: Arc<P2pandaTransport>, blobs: Arc<BlobStore>) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:32:5
+   |
+32 |     fn as_source(&self) -> &dyn BlobSource;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:33:5
+   |
+33 |     fn as_sink(&self) -> &dyn BlobSink;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:47:5
+   |
+47 |     pub registry: ResourceRegistry,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:48:5
+   |
+48 |     pub blobs: Arc<dyn BlobSpace>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:51:5
+   |
+51 |     pub clock: Arc<dyn Clock>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:52:5
+   |
+52 |     pub conditions: Arc<dyn ConditionSource>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:53:5
+   |
+53 |     pub facts: HostFacts,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:54:5
+   |
+54 |     pub policy: DevicePolicy,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:55:5
+   |
+55 |     pub lease: LeasePolicy,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:83:5
+   |
+83 |     Claimed {
+   |     ^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:84:9
+   |
+84 |         job: JobId,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:86:5
+   |
+86 |     Granted {
+   |     ^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:87:9
+   |
+87 |         job: JobId,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:88:9
+   |
+88 |         epoch: u32,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:89:9
+   |
+89 |         lease: LeaseId,
+   |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:91:5
+   |
+91 |     Heartbeat {
+   |     ^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:92:9
+   |
+92 |         job: JobId,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:93:9
+   |
+93 |         lease: LeaseId,
+   |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:94:9
+   |
+94 |         progress: LeaseProgress,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:98:9
+   |
+98 |         job: JobId,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:99:9
+   |
+99 |         lease: Option<LeaseId>,
+   |         ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:101:5
+    |
+101 |     Completed {
+    |     ^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:102:9
+    |
+102 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:103:9
+    |
+103 |         lease: Option<LeaseId>,
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:105:5
+    |
+105 |     Released {
+    |     ^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:106:9
+    |
+106 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:107:9
+    |
+107 |         lease: LeaseId,
+    |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:108:9
+    |
+108 |         reason: ReleaseReason,
+    |         ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:113:9
+    |
+113 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:118:9
+    |
+118 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:119:9
+    |
+119 |         lease: LeaseId,
+    |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:120:9
+    |
+120 |         reason: ReclaimReason,
+    |         ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:121:9
+    |
+121 |         stopped_at: LeaseProgress,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:127:9
+    |
+127 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:128:9
+    |
+128 |         lease: LeaseId,
+    |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:130:5
+    |
+130 |     Idle,
+    |     ^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:137:5
+    |
+137 |     Sync(#[from] MeshSyncError),
+    |     ^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:139:5
+    |
+139 |     Store(#[from] MeshStoreError),
+    |     ^^^^^
+
+warning: missing documentation for an associated function
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:157:5
+    |
+157 |     pub fn new(synced: SyncedMesh<B>, keypair: Ed25519Keypair, config: HostConfig) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:168:5
+    |
+168 |     pub fn me(&self) -> [u8; 32] {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:172:5
+    |
+172 |     pub fn synced(&self) -> &SyncedMesh<B> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\host.rs:186:5
+    |
+186 |     pub fn policy(&self) -> &DevicePolicy {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\inflight.rs:30:5
+   |
+30 |     pub reason: ReclaimReason,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\inflight.rs:41:5
+   |
+41 |     pub handle: JobControlHandle,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\inflight.rs:42:5
+   |
+42 |     pub task: JoinHandle<Result<RunOutcome, RunError>>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\inflight.rs:45:5
+   |
+45 |     pub reclaim: Option<Reclaiming>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\sense.rs:27:5
+   |
+27 |     fn now_ms(&self) -> u64;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\sense.rs:52:5
+   |
+52 |     pub fn at(now_ms: u64) -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\sense.rs:58:5
+   |
+58 |     pub fn set(&self, now_ms: u64) {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\sense.rs:62:5
+   |
+62 |     pub fn advance(&self, by_ms: u64) {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\sense.rs:80:5
+   |
+80 |     fn conditions(&self) -> DeviceConditions;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+  --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\sense.rs:91:5
+   |
+91 |     pub fn new(conditions: DeviceConditions) -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> C:\Users\mark_\Code\repos\mere\ports\distillery\src\mesh_host\sense.rs:102:5
+    |
+102 |     pub fn set(&self, conditions: DeviceConditions) {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `distillery` (lib) generated 57 warnings
+warning: unused imports: `READER_LEAF_KEY` and `STYLESHEET_LEAF_KEY`
+  --> C:\Users\mark_\Code\repos\mere\crates\cambium\tabard-workshop\src\native_host.rs:13:21
+   |
+13 |     ExportArtifact, READER_LEAF_KEY, STYLESHEET_LEAF_KEY, WorkshopState, WorkshopView,
+   |                     ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> C:\Users\mark_\Code\repos\mere\crates\cambium\tabard-workshop\src\preview_bindings.rs:47:14
+   |
+47 |             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |key| {
+   |              ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+47 -             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |key| {
+47 +             .try_update(Ordering::Relaxed, Ordering::Relaxed, |key| {
+   |
+
+warning: `tabard-workshop` (lib) generated 2 warnings (run `cargo fix --lib -p tabard-workshop` to apply 2 suggestions)
+   Compiling turnstone v0.1.0 (C:\Users\mark_\Code\repos\turnstone)
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src\app\mod.rs:20:31
+   |
+20 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `browse`
+  --> src\app\mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\app\omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src\app\session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src\app\session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: unused import: `Update`
+    --> src\denizen.rs:1141:33
+     |
+1141 |     use crate::action::{Action, Update};
+     |                                 ^^^^^^
+
+warning: unused import: `NodeKind`
+    --> src\knot_authoring.rs:3013:37
+     |
+3013 |     use layout_dom_api::{LayoutDom, NodeKind};
+     |                                     ^^^^^^^^
+
+warning: unused imports: `MOOT_ACT_ACTION` and `MOOT_DELEGATION_DOMAIN`
+    --> src\place\worker.rs:2730:44
+     |
+2730 |         CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
+     |                                            ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilityScope`, `DelegationCertificate`, `DelegationParent`, and `delegation_signing_salt`
+    --> src\place\worker.rs:2743:9
+     |
+2743 |         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+     |         ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+2744 |         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
+     |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Hash`
+  --> src\retained_clip.rs:12:15
+   |
+12 | use eidetic::{Hash, ManifestId, ProvenanceRecord, Timestamp, TrustEnvelope};
+   |               ^^^^
+
+warning: unused import: `Write`
+  --> src\retained_clip.rs:16:16
+   |
+16 |     io::{Read, Write},
+   |                ^^^^^
+
+warning: unused import: `NodeSessions`
+  --> src\shell\controller_input.rs:17:13
+   |
+17 | use super::{NodeSessions, NodeSurfaces, Shell, content_link_target};
+   |             ^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\drive.rs:17:23
+   |
+17 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+    --> src\shell\drive.rs:1213:13
+     |
+1213 |         use crate::action::CaretMove;
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `EditKey`
+    --> src\shell\drive.rs:1214:38
+     |
+1214 |         use crate::scenario::{CmpOp, EditKey, Step};
+     |                                      ^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src\shell\effects.rs:14:5
+   |
+14 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src\shell\effects.rs:16:13
+   |
+16 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src\shell\effects.rs:18:46
+   |
+18 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\shell\effects.rs:23:5
+   |
+23 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `netrender::external_texture::ExternalTexturePlacement`
+  --> src\shell\render.rs:20:5
+   |
+20 | use netrender::external_texture::ExternalTexturePlacement;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `inker::SessionClick`
+  --> src\shell\lens.rs:29:5
+   |
+29 | use inker::SessionClick;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ContentKey`
+ --> src\shell\lens_tests.rs:7:20
+  |
+7 |     content_pool::{ContentKey, HostPlacement, NodeDocuments},
+  |                    ^^^^^^^^^^
+
+warning: unused import: `NodeSessions`
+  --> src\shell\input.rs:15:13
+   |
+15 | use super::{NodeSessions, NodeSurfaces};
+   |             ^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\input.rs:17:23
+   |
+17 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `SessionClick` and `SessionScrollKey`
+  --> src\shell\input.rs:21:13
+   |
+21 | use inker::{SessionClick, SessionScrollKey};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\shell\input.rs:25:29
+   |
+25 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src\shell\input.rs:28:20
+   |
+28 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: unused imports: `SessionNavigationCommand` and `SessionSpawnRequest`
+  --> src\shell\window_input_tests.rs:17:53
+   |
+17 |     Cookie, FocusReason, KeyboardEvent, MouseEvent, SessionNavigationCommand, SessionSpawnRequest,
+   |                                                     ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `PeltLane`
+  --> src\shell\window_input_tests.rs:20:30
+   |
+20 | use pelt_core::{PeltContent, PeltLane, PeltRoute, PeltRouteSource, PeltRouteState};
+   |                              ^^^^^^^^
+
+warning: unused import: `input::pointer_button`
+  --> src\shell\mod.rs:48:5
+   |
+48 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src\shell\mod.rs:51:5
+   |
+51 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src\shell\mod.rs:58:5
+   |
+58 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src\shell\mod.rs:60:5
+   |
+60 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ReaderSessionEngine`
+  --> src\shell\mod.rs:62:5
+   |
+62 |     ReaderSessionEngine, RemoteFetcher, SmolwebInlineMediaPolicy, SmolwebSessionEngine,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src\shell\mod.rs:66:17
+   |
+66 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src\shell\mod.rs:67:5
+   |
+67 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src\shell\mod.rs:68:18
+   |
+68 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src\shell\mod.rs:69:20
+   |
+69 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\mod.rs:71:23
+   |
+71 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `A11yRoutes`
+ --> src\shell\window_a11y.rs:6:23
+  |
+6 |     a11y::{A11yRoute, A11yRoutes},
+  |                       ^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src\shell\mod.rs:81:29
+   |
+81 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src\shell\mod.rs:84:21
+   |
+84 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: unused import: `mere::canvas::palette`
+  --> src\swatch_pane\mod.rs:32:5
+   |
+32 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src\swatch_pane\mod.rs:33:17
+   |
+33 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src\swatch_pane\mod.rs:37:5
+   |
+37 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src\swatch_pane\mod.rs:38:5
+   |
+38 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> src\shell\native_composition.rs:63:10
+   |
+63 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+   |          ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+63 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+63 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+   --> src\shell\native_composition.rs:133:10
+    |
+133 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |          ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+133 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+133 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |
+
+warning: unused import: `genet_clipboard::TextClipboard`
+   --> src\shell\effects.rs:969:25
+    |
+969 |                     use genet_clipboard::TextClipboard as _;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::NodeSessions`
+  --> src\shell\lens.rs:14:5
+   |
+14 | use super::NodeSessions;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> src\place\worker.rs:3882:13
+     |
+3882 |         let mut welcome = |open: &mut OpenPlace, seed: u8| {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+    --> src\shell\drive.rs:1358:21
+     |
+1358 |                 let mut diagnostic = self.surface_a11y.publication_diagnostic(public_fixture);
+     |                     ----^^^^^^^^^^
+     |                     |
+     |                     help: remove this `mut`
+
+warning: unused variable: `lens`
+   --> src\shell\events.rs:357:25
+    |
+357 |             if let Some(lens) = self.lens_windows.get_mut(&window_id) {
+    |                         ^^^^ help: if this is intentional, prefix it with an underscore: `_lens`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `caption`
+   --> src\shell\render.rs:883:13
+    |
+883 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+
+warning: unused variable: `node`
+   --> src\shell\render.rs:931:54
+    |
+931 |                 crate::surface::SurfaceKind::Content(node) => {
+    |                                                      ^^^^ help: if this is intentional, prefix it with an underscore: `_node`
+
+warning: variable `surface_frame` is assigned to, but never used
+   --> src\shell\render.rs:932:25
+    |
+932 |                     let mut surface_frame = None;
+    |                         ^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_surface_frame` instead
+
+warning: value assigned to `surface_frame` is never read
+   --> src\shell\render.rs:936:29
+    |
+936 | ...                   surface_frame = Some(frame);
+    |                       ^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `host`
+   --> src\shell\lens.rs:306:18
+    |
+306 |         let Some(host) = lens.host.as_ref() else {
+    |                  ^^^^ help: if this is intentional, prefix it with an underscore: `_host`
+
+warning: unused variable: `space`
+    --> src\shell\lens.rs:1137:19
+     |
+1137 |     let Some(Some(space)) = app.lenses.get(ordinal) else {
+     |                   ^^^^^ help: if this is intentional, prefix it with an underscore: `_space`
+
+warning: variable does not need to be mutable
+   --> src\shell\mod.rs:909:17
+    |
+909 |             let mut can_replace = true;
+    |                 ----^^^^^^^^^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: function `save_certs` is never used
+   --> src\denizen.rs:741:8
+    |
+741 | pub fn save_certs(session_dir: &Path, subject_hex: &str, certs: &[SignedDelegationCertificate]) {
+    |        ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: associated function `new` is never used
+   --> src\device_receipts_pane.rs:130:12
+    |
+129 | impl DeviceReceiptsPane {
+    | ----------------------- associated function in this implementation
+130 |     pub fn new(service: Option<Arc<DeviceReceiptsService>>) -> Self {
+    |            ^^^
+
+warning: associated function `new` is never used
+   --> src\frozen_projection_pane.rs:159:12
+    |
+158 | impl FrozenProjectionPane {
+    | ------------------------- associated function in this implementation
+159 |     pub fn new() -> Self {
+    |            ^^^
+
+warning: method `key_inline` is never used
+  --> src\inline_pane.rs:71:12
+   |
+36 | impl InlinePane {
+   | --------------- method in this implementation
+...
+71 |     pub fn key_inline(&mut self, event: cambium::KeyEvent) -> Vec<()> {
+   |            ^^^^^^^^^^
+
+warning: methods `projection_input_binding` and `runtime_projection_source` are never used
+    --> src\knot_authoring.rs:2624:12
+     |
+2414 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2624 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2634 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `split_axis` and `new_is_first` are never used
+   --> src\panes\mod.rs:341:19
+    |
+340 | impl InsertSide {
+    | --------------- methods in this implementation
+341 |     pub(crate) fn split_axis(self) -> SplitAxis {
+    |                   ^^^^^^^^^^
+...
+350 |     pub(crate) fn new_is_first(self) -> bool {
+    |                   ^^^^^^^^^^^^
+
+warning: function `spawn_bin` is never used
+   --> src\recycle.rs:166:8
+    |
+166 | pub fn spawn_bin(wake: Wake, dir: PathBuf) -> (ActorHandle<BinCommand>, Receiver<Update>) {
+    |        ^^^^^^^^^
+
+warning: function `granted_ring_names` is never used
+   --> src\ring.rs:391:8
+    |
+391 | pub fn granted_ring_names(authority: &impl AuthorityProvider, subject: Subject) -> Vec<String> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `roster_grid_rows` is never used
+   --> src\roster_view.rs:101:8
+    |
+101 | pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+   --> src\scenario.rs:250:12
+    |
+250 |     Settle(u32),
+    |     ------ ^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+250 -     Settle(u32),
+250 +     Settle(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:286:17
+    |
+286 |     AssertEvent(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+286 -     AssertEvent(String),
+286 +     AssertEvent(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:306:9
+    |
+306 |     Log(String),
+    |     --- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+306 -     Log(String),
+306 +     Log(()),
+    |
+
+warning: method `publish` is never used
+   --> src\settings_pane.rs:172:8
+    |
+158 | impl LiveSettingsHandle {
+    | ----------------------- method in this implementation
+...
+172 |     fn publish(&self, settings: &ApplicationSettings) {
+    |        ^^^^^^^
+
+warning: associated function `new` is never used
+   --> src\share_reader_pane.rs:145:12
+    |
+144 | impl SharedKnotPane {
+    | ------------------- associated function in this implementation
+145 |     pub fn new(service: Option<Arc<KnotShareReaderService>>) -> Self {
+    |            ^^^
+
+warning: variant `Imported` is never constructed
+   --> src\shell\mod.rs:608:5
+    |
+606 | enum PlannedLayer {
+    |      ------------ variant in this enum
+607 |     Scene(PlannedScene),
+608 |     Imported(CompositeLayer),
+    |     ^^^^^^^^
+
+warning: methods `has_live_content`, `has_independent_reader_appearance`, `all_content_plans`, and `pane_label` are never used
+    --> src\shell\mod.rs:1753:8
+     |
+1412 | impl Shell {
+     | ---------- methods in this implementation
+...
+1753 |     fn has_live_content(&self, node: &uuid::Uuid) -> bool {
+     |        ^^^^^^^^^^^^^^^^
+...
+1757 |     fn has_independent_reader_appearance(&self, node: &uuid::Uuid) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2038 |     fn all_content_plans(&self) -> Vec<crate::surface::Surface> {
+     |        ^^^^^^^^^^^^^^^^^
+...
+2155 |     fn pane_label(&self, id: crate::panes::PaneId) -> String {
+     |        ^^^^^^^^^^
+
+warning: method `foreign_a11y_placements_in` is never used
+  --> src\shell\foreign_a11y.rs:65:19
+   |
+ 9 | impl Shell {
+   | ---------- method in this implementation
+...
+65 |     pub(super) fn foreign_a11y_placements_in(
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `on_key` is never used
+   --> src\shell\keys.rs:362:19
+    |
+ 79 | impl Shell {
+    | ---------- method in this implementation
+...
+362 |     pub(super) fn on_key(&mut self, key: &WinitKey) {
+    |                   ^^^^^^
+
+warning: function `frame_body_rects` is never used
+  --> src\shell\outer_workspace.rs:95:15
+   |
+95 | pub(super) fn frame_body_rects(
+   |               ^^^^^^^^^^^^^^^^
+
+warning: function `ime_cursor_area` is never used
+    --> src\ui.rs:1139:8
+     |
+1139 | pub fn ime_cursor_area(state: &OmnibarState, w: u32) -> ((f32, f32), (f32, f32)) {
+     |        ^^^^^^^^^^^^^^^
+
+warning: function `chrome_has_content` is never used
+    --> src\ui.rs:1157:8
+     |
+1157 | pub fn chrome_has_content(state: &OmnibarState, caption: Option<&str>) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_with_leaves` is never used
+    --> src\ui.rs:2712:8
+     |
+2712 | pub fn scene_from_dom_with_leaves(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `stamp` is never used
+   --> src\outer_frame.rs:194:19
+    |
+ 90 | impl OuterFrame {
+    | --------------- method in this implementation
+...
+194 |     pub(crate) fn stamp(&self) -> FrameStamp {
+    |                   ^^^^^
+
+warning: `turnstone` (lib test) generated 85 warnings (run `cargo fix --lib -p turnstone --tests` to apply 58 suggestions)
+    Finished `test` profile [unoptimized] target(s) in 21.25s
+     Running unittests src\lib.rs (C:/t/cargo-targets/turnstone/build\debug\deps\turnstone-da16fef710a4cdbb.exe)
+a11y::bridge_integrity::a_contributed_tree_attaches_below_its_registered_pane: test
+a11y::bridge_integrity::diagnostic_gloss_rows_attach_without_routes_and_retire_after_removal: test
+a11y::bridge_integrity::the_pushed_tree_has_no_dangling_children_and_no_duplicate_ids: test
+a11y::micron_form_tests::micron_host_editor_exposes_current_field_and_prompt_without_secrets: test
+a11y::reading_order_tests::reading_order_follows_children_and_excludes_orphans: test
+a11y::route_table::a_routed_selection_changes_the_app_and_a_miss_says_so: test
+a11y::route_table::an_omnibar_route_opens_the_omnibar_through_the_spine: test
+a11y::route_table::every_graph_member_is_reachable_by_route_when_an_orrery_exists: test
+a11y::tests::panes_workbench_and_documents_project_under_one_root: test
+a11y::tests::the_omnibar_projects_while_open: test
+a11y::tests::the_stitched_tree_is_coherent: test
+app::contributed_pane_arms::tests::contributed_summon_preserves_source_and_mints_one_identity: test
+app::contributed_pane_arms::tests::contributed_summon_rolls_back_when_blueprint_cannot_place_target: test
+app::contributed_pane_arms::tests::contributed_summon_targets_the_active_lens: test
+app::contributed_pane_arms::tests::knot_file_choices_are_palette_actions_lowered_to_shell_effects: test
+app::document_find_arms::tests::captured_target_and_request_drop_late_find_results: test
+app::document_find_arms::tests::current_match_is_observable_and_accessible: test
+app::document_find_arms::tests::engine_managed_count_is_observed_without_synthetic_matches: test
+app::document_find_arms::tests::unsupported_engine_neither_offers_nor_opens_find: test
+app::document_find_arms::tests::workbench_find_and_zoom_follow_the_browser_page_with_an_independent_graph_cursor: test
+app::feed_arms::tests::guid_stable_episode_url_change_navigates_the_existing_member: test
+app::feed_arms::tests::host_tick_runs_the_persisted_cadence: test
+app::feed_arms::tests::subscription_refresh_projects_unread_entries_once: test
+app::journal_origin_tests::equal_resource_and_surface_ids_cannot_transfer_scopes_across_runtimes: test
+app::journal_origin_tests::exhausted_saved_cursor_refuses_capture_binding_and_allows_fresh_retry: test
+app::journal_origin_tests::loaded_new_watch_table_survives_old_cascade_restore_attempt: test
+app::journal_origin_tests::restored_graph_watch_cursor_cannot_hide_first_new_edit: test
+app::journal_origin_tests::same_graph_reload_excludes_old_generation_even_with_equal_ids: test
+app::journal_origin_tests::sample_canvas_replacement_rebinds_once_and_retains_display_budget: test
+app::journal_origin_tests::scratch_fork_assembly_cannot_record_into_live_stream: test
+app::node_arms::tests::committed_content_navigation_grows_the_same_members_lineage: test
+app::node_arms::tests::opening_an_address_keeps_the_new_selection_through_pane_rendering: test
+app::node_arms::tests::page_zoom_steps_the_chromium_ladder_and_persists_the_request: test
+app::node_arms::tests::the_ladder_ends_report_rather_than_stepping_past_themselves: test
+app::node_arms::tests::zoom_rows_appear_only_for_a_live_engine_that_reports_the_control: test
+app::omnibar_arms::tests::captured_page_mode_drops_results_after_stale_or_empty_refresh: test
+app::omnibar_arms::tests::captured_page_mode_finds_body_text_without_recall_rows: test
+app::omnibar_arms::tests::captured_search_respects_a_single_row_setting: test
+app::omnibar_arms::tests::committing_a_captured_source_opens_its_source_address: test
+app::palette::command_menu_tests::a_bare_lane_shows_context_then_kept_then_all_commands: test
+app::palette::command_menu_tests::a_command_run_from_the_palette_becomes_recent: test
+app::palette::command_menu_tests::a_label_keyed_choice_for_a_shared_verb_falls_away: test
+app::palette::command_menu_tests::a_right_click_asks_for_the_menu_and_a_right_drag_does_not: test
+app::palette::command_menu_tests::all_commands_expands_the_lane_and_keeps_the_palette_open: test
+app::palette::command_menu_tests::keeping_and_dropping_change_the_lane_and_save: test
+app::palette::command_menu_tests::palette_rows_and_their_keep_controls_are_accessible: test
+app::palette::command_menu_tests::search_reaches_every_command: test
+app::palette::command_menu_tests::shared_verbs_register_under_catalogue_ids: test
+app::palette::command_menu_tests::the_all_commands_row_survives_a_short_lane: test
+app::palette::command_menu_tests::the_highlighted_command_toggles_with_ctrl_d: test
+app::palette::command_menu_tests::the_lane_highlight_moves_through_its_menu_session: test
+app::palette::tests::captured_collection_rows_preserve_worker_versions_and_mark_selection: test
+app::palette::tests::committing_a_captured_collection_row_emits_its_exact_version: test
+app::palette::tests::duplicate_collection_names_have_stable_distinct_palette_labels: test
+app::palette::tests::stale_captured_collection_selection_offers_the_latest_version: test
+app::pane_arms::tests::floating_pane_moves_through_live_primary_and_lens_projections: test
+app::redshank_arms::tests::a_note_and_progress_project_into_the_graph_and_reopen_after_a_restart: test
+app::redshank_arms::tests::opening_an_enclosure_yields_a_redshank_episode_pane: test
+app::resident_admission_tests::duplicate_subjects_refuse_manual_routing_without_actions: test
+app::resident_admission_tests::pause_skips_manual_runs_and_resume_is_durable: test
+app::resident_admission_tests::uninstall_persists_revocation_and_rebuild_rejects_lagging_binding: test
+app::resident_run_tests::adopting_foreign_run_records_clears_the_live_table_without_rewriting_them: test
+app::resident_run_tests::malformed_run_store_refuses_before_manual_body_mutation: test
+app::runtime_pool::tests::display_budget_survives_graph_replacement_and_unknown_rate: test
+app::runtime_pool::tests::forme_runtime_key_keeps_graph_and_forme_separate: test
+app::runtime_pool::tests::graph_pool_keeps_two_graph_authorities_independent: test
+app::runtime_pool::tests::pane_selections_do_not_alias_on_one_graph: test
+app::runtime_pool::tests::pane_viewports_do_not_alias_on_one_graph: test
+app::runtime_pool::tests::workbenches_are_owned_by_their_forme_runtime: test
+app::session_persistence_tests::host_session_facet_write_failure_does_not_replace_graph_or_migration_evidence: test
+app::session_persistence_tests::host_session_fork_manifest_failure_never_publishes_or_switches: test
+app::session_persistence_tests::host_session_fork_preserves_resource_records_and_tag_assertions: test
+app::session_persistence_tests::host_session_graph_write_failure_preserves_original_and_returns_failure: test
+app::session_persistence_tests::host_session_interrupted_replacement_never_overwrites_its_backup: test
+app::session_persistence_tests::host_session_recorded_and_absent_ordinary_save_reopen_and_replacement: test
+app::session_persistence_tests::host_session_refusal_blocks_save_fork_background_and_survives_graph_replacement: test
+app::surface_control_tests::surface_controls_duplicate_feed_views_have_independent_read_state: test
+app::surface_control_tests::surface_controls_keep_is_local_idempotent_and_durable: test
+app::surface_control_tests::surface_controls_resource_label_is_not_membership_evidence: test
+app::surface_control_tests::unchanged_feed_repairs_missing_binding_as_a_new_read_view: test
+app::tests::a_held_document_is_refused_outside_a_place_and_its_node_stays: test
+app::tests::a_left_place_refuses_reconnect_and_rejoins_by_clearing_its_mark: test
+app::tests::a_locked_vault_holds_participants_until_the_root_is_adopted: test
+app::tests::a_profile_with_no_vault_still_registers_a_knot_engine: test
+app::tests::a_refused_invitation_leaves_no_binding_in_app_state: test
+app::tests::a_rerooted_profile_refuses_automatic_certificate_reissue: test
+app::tests::a_shared_knot_address_needs_no_path_of_its_own: test
+app::tests::a_stale_join_answer_cannot_bind_a_session: test
+app::tests::actor_fetched_body_is_retained_for_the_requested_content_spawn: test
+app::tests::adopt_session_restores_the_saved_canvas_layout_from_facets: test
+app::tests::an_expired_invitation_is_reported_with_its_time: test
+app::tests::available_actions_lead_with_the_contextual_rows: test
+app::tests::back_forward_and_reload_flow_through_the_spine: test
+app::tests::binary_page_response_becomes_durable_download_custody: test
+app::tests::boot_launch_fetch_precedes_the_restored_content_spawn: test
+app::tests::browser_states_refresh_and_round_trip: test
+app::tests::capture_action_preserves_explicit_member_for_the_host: test
+app::tests::changed_gemini_certificate_requires_an_explicit_trust_commit_before_refetch: test
+app::tests::close_session_trashes_and_recover_restores_identity: test
+app::tests::committing_a_node_row_selects_without_fetch_effects: test
+app::tests::committing_an_action_row_runs_the_action_and_closes: test
+app::tests::composing_a_gloss_pane_toggles_sections_on_its_own_leaf: test
+app::tests::configured_row_limit_applies_to_the_live_omnibar_projection: test
+app::tests::content_flip_lowers_and_fails_honestly: test
+app::tests::copying_the_local_rendezvous_carries_the_whole_ticket: test
+app::tests::corrupt_admission_state_refuses_install_without_replacing_tombstones: test
+app::tests::delete_stages_into_the_bin_and_recover_restores_identity: test
+app::tests::deleting_a_denizen_archives_its_world_and_recovery_restores_residency: test
+app::tests::denizen_installs_after_visible_review: test
+app::tests::dr_c_turnstone_identity_stays_pending: test
+app::tests::empty_recycle_bin_forgets_on_command: test
+app::tests::every_surface_engine_takes_reload_and_stop_on_its_web_plane: test
+app::tests::failed_leave_from_joining_cannot_adopt_a_late_join_answer: test
+app::tests::fork_carries_denizen_worlds_as_real_copies: test
+app::tests::fork_session_snapshots_the_component_with_its_facets: test
+app::tests::gemini_identity_is_confirmed_once_and_reused_only_for_its_capsule: test
+app::tests::graph_views_workbenches_and_followers_are_pane_scoped: test
+app::tests::install_delegates_from_the_profile_identity_and_uninstall_revokes_it: test
+app::tests::keep_action_is_target_bound_idempotent_and_observable: test
+app::tests::leave_place_is_correlated_and_failure_keeps_a_retryable_degraded_binding: test
+app::tests::lens_ops_close_removes_the_summoned_pane: test
+app::tests::live_settings_snapshot_reconfigures_the_running_chrome_value_once: test
+app::tests::malformed_place_binding_is_visible_without_hiding_cached_graph: test
+app::tests::micron_form_editor_is_explicit_redacts_masked_input_and_emits_one_request: test
+app::tests::micron_form_fixed_variable_action_selection_and_visible_edit_errors: test
+app::tests::micron_form_navigation_reload_and_close_cancel_and_ignore_late_reply: test
+app::tests::micron_form_refuses_submission_after_source_address_changes: test
+app::tests::micron_form_rejects_refreshed_source_before_send_and_on_reply: test
+app::tests::moving_a_composed_section_reorders_that_leaf_and_clamps: test
+app::tests::nomadnet_omnibar_stop_and_reload_keep_native_request_identity: test
+app::tests::omnibar_transcript_freezes_its_open_context_and_repeats_it: test
+app::tests::ordinary_smolweb_input_navigates_and_refetches_with_a_percent_encoded_query: test
+app::tests::place_artifacts_are_written_where_the_person_asked: test
+app::tests::place_binding_survives_switch_and_restart_as_a_worker_open: test
+app::tests::place_collection_completion_is_correlated_and_failure_keeps_the_snapshot: test
+app::tests::place_collection_selection_lowers_the_exact_version_and_clear: test
+app::tests::place_founding_prompts_commit_escape_and_refuse: test
+app::tests::place_invite_lifetime_suffix_is_read_from_the_right: test
+app::tests::place_prekey_offer_is_written_beside_its_card: test
+app::tests::place_reader_invitation_and_share_rows_act_only_inside_a_place: test
+app::tests::place_revoke_rows_are_a_founders_one_per_other_member: test
+app::tests::place_status_leaves_the_omnibar_open_over_a_pane_open: test
+app::tests::place_status_refresh_is_local_filtered_and_generation_scoped: test
+app::tests::publishing_pane_is_a_summonable_window_control: test
+app::tests::recall_keeps_a_footing_inside_the_row_budget: test
+app::tests::recall_never_outranks_the_typed_address: test
+app::tests::reconnect_hint_cleanup_can_fail_at_binding_removal_without_losing_history: test
+app::tests::reconnect_metadata_failure_does_not_remove_the_admitted_binding: test
+app::tests::reconnect_place_requires_binding_and_ignores_departed_generation: test
+app::tests::reload_after_a_failed_native_fetch_replaces_the_error_with_a_content_spawn: test
+app::tests::rename_session_through_the_omnibar_mode: test
+app::tests::requested_page_scale_round_trips_through_the_store: test
+app::tests::resident_petitions_run_through_the_gate: test
+app::tests::resource_content_inspector_follows_shared_resource_and_navigation: test
+app::tests::resource_content_recycle_capture_keeps_exact_labels_and_live_sibling: test
+app::tests::retired_static_viewer_pins_migrate_to_livery: test
+app::tests::sensitive_smolweb_input_is_masked_and_never_enters_graph_or_events: test
+app::tests::session_restore_applies_law_before_overlays_and_records_refusal: test
+app::tests::shared_knot_pane_is_a_summonable_reader_control: test
+app::tests::shared_nodes_arrive_without_disturbing_the_local_canvas: test
+app::tests::source_capture_carries_current_target_without_requesting_png: test
+app::tests::source_capture_completion_attaches_an_ordered_node_reference_series: test
+app::tests::source_capture_refuses_a_member_without_a_current_target: test
+app::tests::spartan_prompt_target_resolves_against_its_source_member: test
+app::tests::stale_or_failed_source_capture_completion_never_attaches_a_reference: test
+app::tests::stale_place_update_from_a_departed_session_is_ignored: test
+app::tests::stop_cancels_only_the_focused_request_and_rejects_its_late_answer: test
+app::tests::streamed_page_spawns_from_a_prefix_then_replaces_and_settles: test
+app::tests::summon_enforces_registry_multiplicity_in_one_space: test
+app::tests::superseded_recall_answers_drop: test
+app::tests::swapped_script_body_is_refused_before_runtime_execution: test
+app::tests::tear_out_moves_the_leaf_and_keeps_its_id: test
+app::tests::the_actions_lane_and_short_needles_never_recall: test
+app::tests::the_cascade_budget_arrives_from_settings_and_changes_live: test
+app::tests::the_overmap_composes_sections_too: test
+app::tests::the_row_count_follows_the_viewport_under_the_configured_ceiling: test
+app::tests::titan_address_opens_an_explicit_composer_without_uploading: test
+app::tests::titan_composer_stages_body_mime_hidden_token_and_literal_confirmation: test
+app::tests::typing_asks_for_recall_and_the_answer_becomes_rows: test
+app::tests::workbench_actions_flow_through_the_spine: test
+app::tests::workbench_browser_commands_preserve_the_independent_graph_selection: test
+app::tests::workbench_persists_and_restores_pruned: test
+app::user_agent_decision_arms::tests::authentication_secrets_are_redacted_and_absent_from_observation: test
+app::user_agent_decision_arms::tests::permission_choice_is_retained_and_lowers_the_captured_request: test
+app::user_agent_decision_arms::tests::withdrawn_request_cannot_answer_a_later_navigation: test
+app::workspace_stations::tests::compatible_legacy_stations_import_once_and_invalid_blueprints_refuse_without_mutation: test
+app::workspace_stations::tests::failed_multiwindow_save_preflight_preserves_every_authority: test
+app::workspace_stations::tests::last_pane_tearout_does_not_create_a_window_or_orphan_a_float: test
+app::workspace_stations::tests::provider_source_stays_with_one_pane_through_float_window_return_and_save: test
+arrange_pane::tests::current_refusal_attaches_to_the_platform_tree_and_clears_without_dom_sync: test
+arrange_pane::tests::intents_lower_to_the_palette_actions_by_id: test
+arrange_pane::tests::refused_overlays_are_visible_and_keep_the_applied_law: test
+arrange_pane::tests::the_rows_read_the_canvas_back: test
+behaviors::tests::a_delta_naming_one_node_yields_that_node: test
+behaviors::tests::a_digest_names_the_nodes_that_changed_not_their_containers: test
+behaviors::tests::a_field_delta_names_no_node: test
+behaviors::tests::a_malformed_id_yields_no_scope_rather_than_a_bogus_one: test
+behaviors::tests::a_node_the_graph_does_not_hold_falls_back_to_its_bare_id: test
+behaviors::tests::a_relation_delta_yields_both_ends: test
+behaviors::tests::an_unwoken_context_is_empty_rather_than_absent: test
+behaviors::tests::concept_record_changes_wake_incoming_tag_sources_even_after_facet_removal: test
+behaviors::tests::resource_and_surface_containment_both_contribute_current_watch_ancestry: test
+behaviors::tests::resource_projection_preserves_journal_author_and_no_self_wake: test
+behaviors::tests::resource_record_wakes_each_current_view_without_resource_uuid_scopes: test
+behaviors::tests::retracted_resource_pair_still_wakes_both_endpoint_views_once: test
+behaviors::tests::shown_resource_changes_keep_the_surface_even_after_detach_or_removal: test
+behaviors::tests::typed_journal_authors_preserve_no_self_wake_subject_matching: test
+browse::tests::certificate_request_prompts_once_then_reports_rejection: test
+browse::tests::changed_certificate_preserves_the_fetch_target_and_both_fingerprints: test
+browse::tests::enrichment_stamps_the_requesting_node_among_url_twins: test
+browse::tests::failed_favicon_completion_clears_its_pending_request: test
+browse::tests::favicon_completions_remove_only_their_own_request: test
+browse::tests::favicon_write_stores_png_bytes_under_their_digest: test
+browse::tests::input_response_keeps_actor_target_separate_from_graph_owner: test
+browse::tests::page_progress_keeps_the_request_pending_until_terminal_answer: test
+browse::tests::pending_table_correlates_and_refuses_to_guess: test
+browse::tests::subresource_waiters_share_one_fetch_and_clear_together: test
+browse::tests::superseded_node_drops_the_late_result: test
+browse::tests::superseding_and_stopping_cancel_only_the_named_request: test
+cambium_pane::tests::a_roster_cell_resolves_by_text: test
+cambium_pane::tests::a_row_in_a_long_narrow_roster_navigates_to_its_own_url: test
+cambium_pane::tests::clicking_a_tab_switches_the_body: test
+cambium_pane::tests::every_tab_is_drawn_in_the_strip: test
+cambium_pane::tests::grid_dom_is_hit_testable: test
+cambium_pane::tests::inline_roster_uses_shared_fragments_and_preserves_owner_across_windows: test
+cambium_pane::tests::tablist_height_matches_the_sheet: test
+cambium_pane::tests::two_roster_runners_keep_independent_selection: test
+chrome_view::tests::a_changed_chrome_cascades_again: test
+chrome_view::tests::a_command_rows_keep_control_is_its_own_target: test
+chrome_view::tests::a_press_hit_tests_without_cascading_again: test
+chrome_view::tests::active_fetch_switches_reload_to_stop_and_projects_link_preview: test
+chrome_view::tests::an_unchanged_chrome_paints_without_cascading_again: test
+chrome_view::tests::authentication_card_debug_withholds_credential_fields: test
+chrome_view::tests::authentication_card_masks_password_and_a11y_withholds_credentials: test
+chrome_view::tests::browser_strip_routes_per_node_back_forward_and_reload: test
+chrome_view::tests::browser_strip_targets_the_workbench_member_without_moving_graph_selection: test
+chrome_view::tests::chrome_windows_are_forest_siblings_with_scoped_layout: test
+chrome_view::tests::clicking_a_suggestion_row_bubbles_its_index: test
+chrome_view::tests::document_find_projects_controlled_input_status_and_controls: test
+chrome_view::tests::hidden_shellbar_is_removed_from_the_chrome_and_a11y_projections: test
+chrome_view::tests::install_review_wraps_intact_and_keeps_card_and_click_geometry: test
+chrome_view::tests::keep_button_targets_the_member_then_projects_kept_state: test
+chrome_view::tests::live_appearance_is_applied_to_the_retained_chrome_surface: test
+chrome_view::tests::one_mutation_invalidates_every_window_root: test
+chrome_view::tests::permission_decision_projects_origin_choices_and_accessibility: test
+chrome_view::tests::the_caret_split_mirrors_omnibar_state: test
+content::tests::fetched_documents_are_member_and_address_scoped: test
+content::tests::flip_toggles_and_failure_retries: test
+content::tests::live_nodes_lists_only_live: test
+content::tests::source_candidates_are_html_and_address_scoped: test
+content::tests::streamed_documents_accumulate_exact_bytes_before_decoding: test
+content_classes::tests::download_record_displaces_the_generic_web_page_class: test
+content_classes::tests::reconciliation_is_idempotent: test
+content_classes::tests::web_and_note_classes_coexist_and_are_admitted_in_one_graph: test
+contributed_a11y::tests::a_new_admission_never_reuses_the_old_platform_action_id: test
+contributed_a11y::tests::an_unfocused_dom_does_not_invent_focus_and_its_root_uses_the_pane_rect: test
+contributed_a11y::tests::contributed_relations_resolve_inside_the_published_tree: test
+contributed_a11y::tests::current_runner_focus_is_admitted_repeatedly_without_activation: test
+contributed_a11y::tests::equal_dom_ids_in_two_panes_never_collide: test
+contributed_a11y::tests::helper_refuses_hidden_disabled_and_unsupported_runner_actions: test
+contributed_a11y::tests::namespacing_places_bounds_and_preserves_distinct_actions: test
+contributed_a11y::tests::native_graft_composes_nested_transforms_and_keeps_dom_focus: test
+contributed_a11y::tests::queued_old_admission_cannot_activate_a_current_runner_control: test
+contributed_a11y::tests::test_provider_without_host_effects_still_admits_current_actions: test
+contributed_surface::tests::admission_generations_never_wrap_or_reuse_removed_identity: test
+contributed_surface::tests::admitted_pane_exposes_its_retained_dom_and_complete_probe_stylesheet: test
+contributed_surface::tests::content_pool_contributed_cancel_preserves_move_and_retires_capture: test
+contributed_surface::tests::content_pool_host_contributed_mouse_waits_for_release_and_cancel_never_activates: test
+contributed_surface::tests::erased_sessions_dispatch_and_sync_independently_and_drop_from_map: test
+contributed_surface::tests::registration_asserts_the_descriptor_source_kind_matches_the_schema: test
+contributed_surface::tests::registry_rejects_duplicate_and_validates_schema: test
+contributed_surface::tests::retained_map_reuses_one_source_and_replaces_a_repinned_source: test
+contributed_surface::tests::retained_projection_and_actions_share_the_live_dom_session: test
+contributed_surface::tests::review_input_small_motion_clicks_but_recognized_drag_and_cancel_do_not: test
+contributed_surface::tests::source_schema_is_only_external_schema: test
+contributed_surface::tests::typed_unavailability_becomes_a_generic_retained_surface: test
+cookie_custody::tests::a_cookie_set_in_one_run_is_there_in_the_next: test
+denizen::tests::a_deadband_is_strictly_parsed_and_named_in_review: test
+denizen::tests::a_legacy_binding_rebuilds_and_asks_for_a_heal: test
+denizen::tests::nested_logs_round_trip_through_disk: test
+denizen::tests::staged_installs_are_content_derived_and_reviewable: test
+diagnostic_observations::tests::byte_limit_accounts_the_encoded_category_and_envelope: test
+diagnostic_observations::tests::event_copy_omits_urls_paths_titles_prompts_and_errors: test
+diagnostic_observations::tests::inspection_age_and_disabled_status_are_actual_store_readings: test
+diagnostic_observations::tests::inspection_keeps_loss_redaction_and_receipt_reader_independent: test
+diagnostic_observations::tests::inspection_settings_are_independent_of_retention: test
+diagnostic_observations::tests::overflow_is_visible_to_independent_readers: test
+diagnostic_observations::tests::requested_export_failure_fails_the_scenario_sentinel: test
+diagnostic_observations::tests::successful_requested_receipt_exports_records_and_loss: test
+diagnostic_observations::tests::zero_configuration_reports_disabled_retention: test
+distillery_installed_surface::tests::admitted_surface_renders_the_projected_profile_and_paths: test
+distillery_installed_surface::tests::malformed_mesh_ids_and_spinning_cadences_are_refused_before_admission: test
+distillery_installed_surface::tests::payload_version_is_checked_before_the_snapshot_is_built: test
+distillery_installed_surface::tests::registry_admits_the_published_distillery_surface_from_a_versioned_source: test
+distillery_installed_surface::tests::resident_cadences_round_trip_through_the_versioned_source: test
+distillery_installed_surface::tests::retained_accessibility_projects_a_generic_status_surface: test
+document_pump::tests::a_hidden_unsettled_document_keeps_its_clock_without_forcing_redraw: test
+document_pump::tests::a_lens_only_document_is_visible_and_keeps_its_clock_live: test
+document_pump::tests::hidden_pending_work_can_reach_quiescence_without_a_redraw: test
+document_pump::tests::hiding_and_showing_retains_identity_and_scroll_state: test
+document_pump::tests::repeated_placements_pump_one_retained_controller: test
+document_pump::tests::settled_documents_do_not_keep_redraw_alive: test
+document_pump::tests::surface_polling_is_not_driven_by_the_document_pump: test
+download::tests::attachment_and_unrenderable_media_download_but_text_stays_a_document: test
+download::tests::filename_prefers_disposition_and_removes_path_authority: test
+download::tests::store_writes_a_collision_free_copy_and_retrievable_blob: test
+feed::tests::gemtext_feed_preserves_relative_urls_dates_and_dedupes: test
+feed::tests::guid_identity_survives_an_enclosure_or_link_change: test
+feed::tests::podcast_facts_resolve_against_the_caller_base_and_guid_wins_deduplication: test
+feed::tests::rss_and_json_feed_share_the_entry_shape: test
+feed::tests::schedule_survives_restart_and_suppresses_unchanged_entries: test
+feed::tests::separate_guid_entries_with_one_url_keep_distinct_bindings: test
+feed::tests::unchanged_unbound_entry_gets_an_explicit_view_without_adopting_a_sibling: test
+feed::tests::unread_entry_missing_binding_retains_status_through_restart_and_repair: test
+foreign_a11y::tests::duplicate_ownership_cycles_invalid_focus_and_local_graphs_fail_closed: test
+foreign_a11y::tests::fixture_text_optin_never_exposes_password_nodes_or_descendants: test
+foreign_a11y::tests::foreign_lens_retains_native_forest_with_independent_publication_and_retirement: test
+foreign_a11y::tests::hidden_remount_and_adapter_reactivation_replay_all_descendants: test
+foreign_a11y::tests::idle_delta_reaches_consumer_without_a_pixel_frame: test
+foreign_a11y::tests::inactive_adapter_does_not_consume_pending_activation: test
+foreign_a11y::tests::incomplete_tree_waits_and_invalid_host_frame_keeps_publication_pending: test
+foreign_a11y::tests::local_guests_and_nested_native_guests_share_one_observed_forest: test
+foreign_a11y::tests::malformed_known_tree_withdraws_but_unknown_tree_cannot_corrupt: test
+foreign_a11y::tests::navigation_prunes_old_nested_trees_and_ignores_stale_callbacks: test
+foreign_a11y::tests::nested_focus_and_two_panes_keep_identical_local_ids_distinct: test
+foreign_a11y::tests::publication_diagnostic_uses_emitted_frame_not_pending_supplier_delta: test
+foreign_a11y::tests::publication_diagnostic_withdraws_hidden_retired_malformed_and_reset_trees: test
+foreign_a11y::tests::removed_local_nodes_retire_their_actions: test
+foreign_a11y::tests::retirement_and_new_root_reject_old_generation_actions_and_updates: test
+foreign_a11y::tests::unix_consumer::activation_at_every_batch_boundary_restarts_nested_replay: test
+foreign_a11y::tests::unix_consumer::recursive_frame_orders_descendants_and_preserves_two_pane_ids: test
+foreign_a11y::tests::window_publishers_share_retained_nodes_and_keep_mount_and_replay_independent: test
+foreign_a11y::tests::windows_consumer::activation_at_every_batch_boundary_restarts_nested_replay: test
+foreign_a11y::tests::windows_consumer::recursive_frame_orders_descendants_and_preserves_two_pane_ids: test
+frame_timing::tests::ms_reports_the_frame_log_unit: test
+frame_timing::tests::raster_totals_are_derived_from_the_split: test
+frame_timing::tests::reset_clears_between_frame_accumulation: test
+frame_timing::tests::suggestion_runs_and_refits_count_separately: test
+gemini_identity::tests::approval_is_persona_and_capsule_scoped_and_persists_without_secrets: test
+gemini_identity::tests::identity_is_stable_per_persona_and_unlinkable_across_capsules: test
+gemini_trust::tests::a_change_requires_the_current_pin_and_persists_the_decision: test
+gemini_trust::tests::an_interrupted_replace_recovers_the_previous_pin: test
+gemini_trust::tests::first_contact_survives_reopen: test
+host_journal::journal_tests::append_exhaustion_is_latched_without_wrapping: test
+host_journal::journal_tests::complete_typed_author_is_retained: test
+host_journal::journal_tests::equal_node_ids_keep_distinct_runtime_origins: test
+host_journal::journal_tests::exhausted_restored_cursor_refuses_without_poisoning_other_sessions: test
+host_journal::journal_tests::final_captured_ordinal_refuses_the_next_execution_before_any_write: test
+host_journal::journal_tests::foreign_only_tail_still_advances_scan_boundary: test
+host_journal::journal_tests::generation_exhaustion_refuses_and_latches: test
+host_journal::journal_tests::graph_owned_recorder_records_once_and_clone_scratch_is_silent: test
+host_journal::journal_tests::interrupted_cascade_keeps_new_watch_table_after_same_session_reload: test
+host_journal::journal_tests::nested_author_guards_restore_all_fields_even_on_unwind: test
+host_journal::journal_tests::poisoned_capture_is_visible_and_cannot_supply_fresh_triggers: test
+host_journal::journal_tests::reloaded_graph_and_session_get_new_generation: test
+host_journal::journal_tests::restored_cursor_is_a_floor_not_a_vector_index: test
+host_journal::journal_tests::runtime_binding_requires_exact_generation_and_session: test
+host_journal::journal_tests::typed_subject_projection_preserves_no_self_wake: test
+identity::tests::a_fixture_root_speaks_as_its_seed: test
+identity::tests::the_unlock_watch_adopts_the_root_once_djinn_answers: test
+inspector_pane::tests::clip_button_bubbles_a_typed_inspector_intent: test
+inspector_pane::tests::engine_inventory_human_label_keeps_engine_id_scenario_target: test
+inspector_pane::tests::engine_inventory_mapping_preserves_unknown_saved_pin: test
+inspector_pane::tests::engine_inventory_new_registration_reaches_picker_and_observation: test
+inspector_pane::tests::engine_inventory_resync_discards_focus_request_when_rows_change: test
+inspector_pane::tests::engine_inventory_saved_unknown_is_selected_disabled_and_refuses_click: test
+inspector_pane::tests::engine_inventory_survives_session_adoption: test
+inspector_pane::tests::engine_inventory_valid_selection_recovers_failed_pin_but_keeps_at_rest_closed: test
+inspector_pane::tests::focused_document_capabilities_sit_beside_the_viewer_picker: test
+inspector_pane::tests::narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a: test
+inspector_pane::tests::picking_a_viewer_reports_the_intent_and_mirrors_back: test
+inspector_pane::tests::probe_resolved_clip_button_reaches_the_pane_at_receipt_size: test
+inspector_pane::tests::synced_sections_reach_the_dom: test
+inspector_pane::tests::the_requested_page_zoom_is_mirrored_beside_the_capability: test
+inspector_pane::tests::viewer_controls_write_the_followed_member_instead_of_the_runtime_cursor: test
+inspector_view::tests::a_lane_without_introspection_is_reported_not_synthesized: test
+inspector_view::tests::closing_content_drops_the_facts: test
+inspector_view::tests::content_tags_are_sorted_and_follow_tag_removal: test
+inspector_view::tests::focused_node_with_live_content_reports_both_sections: test
+inspector_view::tests::livery_and_weld_capability_limits_are_presented_honestly: test
+inspector_view::tests::no_focus_reports_none_honestly: test
+inspector_view::tests::only_a_person_with_the_ui_id_renders_as_you: test
+knot_authoring::tests::a_blank_path_setting_reads_as_unset: test
+knot_authoring::tests::a_member_with_no_vault_visits_but_holds_nothing: test
+knot_authoring::tests::a_place_held_address_matches_the_holder_own_disclosed_address: test
+knot_authoring::tests::a_place_held_address_names_its_holder_and_stays_a_knot_address: test
+knot_authoring::tests::a_visit_only_engine_offers_no_clip_target: test
+knot_authoring::tests::dom_ranges_only_name_an_observed_representation: test
+knot_authoring::tests::inspector_clip_crosses_the_typed_endpoint_action: test
+knot_authoring::tests::inspector_clip_retains_livery_source_evidence_end_to_end: test
+knot_authoring::tests::knot_addresses_are_selected_without_claiming_other_files: test
+knot_authoring::tests::knot_clip_preserves_micron_local_jump_as_label_text: test
+knot_authoring::tests::marked_div_text_control_is_discovered_without_a_native_tag: test
+knot_authoring::tests::neutral_session_keys_become_cambium_key_events: test
+knot_authoring::tests::only_a_personae_root_is_read_as_a_holder: test
+knot_authoring::tests::projected_action_is_probe_drivable_by_instance_identity: test
+knot_authoring::tests::real_knot_consumer_saves_rejects_stale_and_reopens: test
+knot_authoring::tests::received_communal_auto_run_waits_for_explicit_confirmation: test
+knot_authoring::tests::resolve_and_run_cross_the_consented_authoring_path: test
+knot_authoring::tests::sealed_cache_age_uses_readable_units: test
+knot_authoring::tests::sealed_cache_attribution_is_visible_in_the_derived_preview: test
+knot_authoring::tests::semantic_clip_body_omits_document_frontmatter: test
+knot_authoring::tests::sharing_rewrites_a_locally_held_document_to_its_holder: test
+knot_authoring::tests::synced_knot_head_becomes_public_scenograph_revision_without_save_token: test
+knot_authoring::tests::unversioned_knot_source_requires_a_runtime_witness_without_durable_token: test
+knot_document_surface::tests::absent_file_is_a_generic_typed_unavailable_surface: test
+knot_document_surface::tests::native_protocol_file_sessions_edit_and_save_exact_source_bytes: test
+knot_document_surface::tests::native_protocol_sources_are_admitted_by_extension: test
+knot_document_surface::tests::payload_version_is_checked_before_file_authority_is_opened: test
+knot_document_surface::tests::read_only_source_opens_a_read_only_document_session: test
+knot_document_surface::tests::registry_admits_the_published_knot_surface_from_a_versioned_file_source: test
+knot_document_surface::tests::retained_accessibility_distinguishes_editable_and_read_only_documents: test
+nomadnet::tests::micron_form_explicit_interface_sends_map_and_bounds_resource_reply: test
+nomadnet::tests::micron_session_preserves_source_and_produces_scene: test
+nomadnet::tests::native_address_keeps_destination_and_opaque_path: test
+nomadnet::tests::native_projection_qualifies_same_node_page_links: test
+nomadnet::tests::unresolved_aliases_are_rejected_in_every_retained_container: test
+observe::tests::semantic_actions_emit_events: test
+observe::tests::snapshot_projects_focused_document_capabilities: test
+observe::tests::snapshot_reads_focus_omnibar_and_content_coherently: test
+observe::tests::snapshot_reports_a_retained_engine_applied_page_zoom: test
+observe::tests::snapshot_reports_the_requested_page_zoom: test
+offline::tests::blocking_port_refuses_acquisition_and_records_attempts: test
+outer_frame::native_aperture_tests::identical_source_rectangles_keep_exact_appearance_owners: test
+outer_frame::native_aperture_tests::the_final_floating_canvas_keeps_one_actual_native_aperture: test
+overmap::tests::a_label_less_session_titles_by_id_prefix: test
+overmap::tests::duplicate_container_ids_collapse_rather_than_corrupt: test
+overmap::tests::session_of_url_rejects_foreign_urls: test
+overmap::tests::sessions_project_as_container_nodes_with_lineage: test
+pane::tests::a_divider_ratio_moves_the_seam: test
+pane::tests::a_horizontal_split_halves_the_width_by_ratio: test
+pane::tests::a_single_leaf_takes_the_whole_area: test
+pane::tests::a_vertical_split_halves_the_height: test
+pane::tests::legacy_binary_splits_keep_cambium_six_pixel_geometry: test
+pane::tests::maximize_gives_one_pane_the_whole_area: test
+pane::tests::placement_carries_the_leaf_graph_binding: test
+panes::blueprint_tests::a_named_layout_carries_a_non_default_chrome_composition: test
+panes::blueprint_tests::context_following_resolves_focus_and_pin_makes_it_fixed: test
+panes::blueprint_tests::floating_pane_relocates_through_dock_and_window_without_losing_identity: test
+panes::blueprint_tests::floating_relocates_the_same_pane_and_survives_serde: test
+panes::blueprint_tests::nary_tabs_mixed_surfaces_drag_resize_save_reload_and_tear_out: test
+panes::blueprint_tests::normalization_prunes_unknowns_joins_splits_and_repairs_fractions: test
+panes::blueprint_tests::tearout_moves_one_pane_spec_between_spaces_without_changing_identity: test
+panes::blueprint_tests::validation_rejects_duplicate_stations_and_forme_graph_mismatch: test
+panes::blueprint_tests::validation_rejects_one_pane_id_in_two_spaces: test
+panes::legacy_bridge::tests::conversion_preserves_leaf_identity_and_binary_ratios: test
+panes::registry::tests::built_in_ids_and_schemas_are_unique_and_namespaced: test
+panes::registry::tests::publishing_workflows_are_typed_registrations: test
+panes::registry::tests::registration_is_the_legacy_content_factory: test
+panes::registry::tests::retired_system_and_placeholder_are_not_registered: test
+panes::registry::tests::source_shapes_validate_fixed_and_following_sources: test
+panes::store::tests::configured_gloss_section_order_survives_frame_and_lens_save: test
+panes::store::tests::load_returns_none_when_no_file: test
+panes::store::tests::malformed_json_is_invalid_data: test
+panes::store::tests::retired_panes_restore_their_content_and_arrangement_in_frame_and_lenses: test
+panes::store::tests::save_then_load_round_trips_layout: test
+panes::tests::dedupe_graph_panes_keeps_one_orrery_per_graph: test
+panes::tests::each_leaf_emits_a_pane_node_with_content_tag_label: test
+panes::tests::frame_layout_round_trips_through_serde: test
+panes::tests::graph_bound_panes_are_classified_apart_from_window_chrome: test
+panes::tests::ids_are_deterministic_across_runs: test
+panes::tests::project_frame_with_attaches_subtree_to_matching_leaf: test
+panes::tests::reparent_leaf_moves_leaf_without_losing_pane_id: test
+panes::tests::reparent_leaf_refuses_self_move: test
+panes::tests::reparent_leaf_refuses_when_target_is_not_a_leaf: test
+panes::tests::retag_graph_bound_from_repoints_only_the_outgoing_graph: test
+panes::tests::retag_graph_bound_repoints_only_graph_bound_leaves: test
+panes::tests::root_carries_frame_label: test
+panes::tests::set_split_ratio_clamps_and_finds_path: test
+panes::tests::split_nodes_carry_axis_and_ratio_in_description: test
+panes::workspace::tests::closing_a_float_retires_its_descriptor_and_invisible_float_keeps_custody: test
+panes::workspace::tests::duplicate_ids_and_missing_drop_targets_do_not_orphan_a_pane: test
+panes::workspace::tests::duplicate_station_is_rejected_before_a_close: test
+panes::workspace::tests::failed_cross_window_transfer_changes_neither_custody: test
+panes::workspace::tests::float_transfer_and_reopen_preserve_payload_descriptor_geometry_and_policy: test
+panes::workspace::tests::invalid_stack_drop_does_not_remove_source_custody: test
+panes::workspace::tests::malformed_float_geometry_is_refused_before_publish: test
+panes::workspace::tests::malformed_or_orphaned_payloads_refuse_without_mutation: test
+panes::workspace::tests::non_finite_split_edit_is_refused_atomically: test
+panes::workspace::tests::outside_drop_retains_custody_until_host_accepts: test
+panes::workspace::tests::shared_float_and_dock_keep_the_same_host_payload: test
+panes::workspace::tests::stacking_switching_closing_and_restart_preserve_payload_identity: test
+panes::workspace_store::tests::absent_files_remain_absent: test
+panes::workspace_store::tests::corrupt_current_never_resurrects_the_legacy_copy: test
+panes::workspace_store::tests::import_preserves_legacy_bytes_and_future_loads_use_current_choice: test
+panes::workspace_store::tests::unsupported_version_and_validation_failure_do_not_publish: test
+panes::workspace_store::tests::v1_remains_readable_and_new_writes_publish_v2: test
+place::captured_collection::tests::local_records_group_search_and_survive_cold_reopen: test
+place::captured_collection::tests::missing_and_unavailable_manifest_statuses_never_become_text: test
+place::captured_collection::tests::targeted_withdrawal_remints_only_the_selected_contribution_away: test
+place::contract::tests::every_place_state_maps_to_a_report_that_holds_its_invariants: test
+place::contract::tests::grant_expired_maps_to_expired_with_reading_unknown: test
+place::contract::tests::grant_revoked_maps_to_revoked_with_reading_cut: test
+place::contract::tests::left_maps_to_the_left_verdict_with_reading_unknown_and_no_membership: test
+place::contract::tests::member_standing_maps_to_joined_with_membership_and_a_grant: test
+place::contract::tests::membership_revoked_maps_to_revoked_with_reading_cut: test
+place::invite::tests::a_projection_grant_is_optional_and_digest_checked_like_the_rest: test
+place::invite::tests::a_tampered_artifact_is_refused_by_its_own_digest: test
+place::invite::tests::a_well_formed_invitation_round_trips_and_validates: test
+place::invite::tests::an_addressed_artifact_never_reads_as_verified_empty: test
+place::invite::tests::an_oversized_inline_artifact_is_refused_before_it_is_trusted: test
+place::invite::tests::an_unknown_carrier_survives_parsing_but_is_never_dialed: test
+place::invite::tests::rendezvous_bounds_refuse_a_flooded_envelope: test
+place::invite::tests::version_and_binding_faults_are_named_distinctly: test
+place::lanes::tests::a_bounded_writer_grant_expires_while_connected_and_reconnect_still_admits: test
+place::lanes::tests::a_closed_live_bind_releases_the_store_lock_for_a_reopen: test
+place::lanes::tests::a_founder_binds_listen_only_and_reports_its_own_rendezvous: test
+place::lanes::tests::a_founder_reconnects_through_an_empty_descriptor: test
+place::lanes::tests::a_joined_member_reads_chat_authored_after_a_later_invite: test
+place::lanes::tests::a_joiner_catches_up_on_a_live_place_over_one_ticket: test
+place::lanes::tests::a_live_share_withdrawal_empties_the_receiver_selected_collection: test
+place::lanes::tests::a_membership_admission_and_a_shared_node_race_to_a_connected_joiner: test
+place::lanes::tests::a_partition_heals_and_both_sides_converge: test
+place::lanes::tests::a_projection_session_nudges_the_founder_the_way_a_lane_arrival_does: test
+place::lanes::tests::a_reader_is_refused_at_the_projection_door: test
+place::lanes::tests::a_replayed_operation_adds_no_place_state: test
+place::lanes::tests::a_restarted_place_keeps_what_it_converged_on: test
+place::lanes::tests::a_revoke_with_no_group_recipient_is_refused_and_changes_nothing: test
+place::lanes::tests::a_revoked_member_cannot_read_shared_nodes_authored_after_the_rotation: test
+place::lanes::tests::a_revoked_member_stops_reading_while_the_others_follow_the_rotation: test
+place::lanes::tests::a_revoked_writer_sees_it_live_and_cannot_write_dial_or_reconnect: test
+place::lanes::tests::a_visited_document_reports_unavailable_when_the_holder_dies_without_closing: test
+place::lanes::tests::a_visited_document_reports_unavailable_when_the_holder_goes_silent: test
+place::lanes::tests::a_writer_admission_carries_its_delegation_to_a_connected_joiner: test
+place::lanes::tests::a_writer_edits_the_document_its_founder_holds: test
+place::lanes::tests::a_writer_invited_after_the_founder_is_already_live_is_admitted: test
+place::lanes::tests::a_writer_visits_a_held_document_and_is_told_when_the_holder_goes: test
+place::lanes::tests::an_unauthorized_profile_is_refused_before_it_authors: test
+place::lanes::tests::content_authored_the_instant_after_a_revoke_still_reaches_the_remaining_member: test
+place::lanes::tests::the_group_key_overlay_names_the_topic_stickleback_stores_under: test
+place::lanes::tests::the_place_worker_conforms_to_the_coop_lifecycle_contract: test
+place::projection_host::tests::projection_revocation_checks_before_folding_and_keeps_the_issuer_boundary: test
+place::rendezvous::tests::rendezvous_failed_replacement_keeps_previous_descriptor: test
+place::rendezvous::tests::rendezvous_refuses_expiry_wrong_scope_unknown_carriers_and_oversize_hints: test
+place::rendezvous::tests::rendezvous_requires_binding_and_preserves_only_contact_metadata: test
+place::tests::a_withdrawn_standing_names_itself_in_one_row: test
+place::tests::binding_json_uses_distinct_readable_hex_ids: test
+place::tests::binding_validation_rejects_version_and_channel_ambiguity: test
+place::tests::elide_middle_keeps_the_ends_and_leaves_short_values_alone: test
+place::tests::every_status_row_fits_one_palette_row: test
+place::tests::serialized_id_requires_exact_hex: test
+place::tests::the_projection_row_names_what_is_served_and_what_was_refused: test
+place::worker::tests::a_founded_place_invites_an_offered_prekey_and_admits_it: test
+place::worker::tests::a_live_place_reconnects_into_a_new_generation_in_one_process: test
+place::worker::tests::a_pending_worker_holds_commands_until_the_root_arrives: test
+place::worker::tests::a_place_with_only_a_plaintext_graph_is_refused_by_name: test
+place::worker::tests::a_reader_invitation_admits_a_member_that_cannot_author: test
+place::worker::tests::a_revoked_member_reaches_no_projected_place_state: test
+place::worker::tests::a_valid_invitation_admits_and_a_refused_one_leaves_nothing_behind: test
+place::worker::tests::an_authored_invitation_admits_on_the_other_side: test
+place::worker::tests::reconnect_for_a_released_generation_is_refused: test
+place::worker::tests::reconnect_refuses_removed_local_membership_before_dialing_and_keeps_cache: test
+place::worker::tests::revoking_a_writer_withdraws_every_grant_its_admission_issued: test
+place::worker::tests::stale_reconnect_cannot_disturb_a_newer_open_scope: test
+place::worker::tests::two_profiles_reopen_their_own_retained_place_state: test
+place::worker::tests::worker_authority_shrink_keeps_the_exact_version_and_withholds_its_share: test
+place::worker::tests::worker_collection_save_failure_keeps_the_previous_scope: test
+place::worker::tests::worker_exact_collection_version_returns_only_its_ready_capture: test
+place::worker::tests::worker_rejects_a_departed_generation_without_rescoping_the_open_place: test
+place::worker::tests::worker_releases_files_before_reopen_and_advances_generation: test
+place::worker::tests::worker_sets_and_clears_an_exact_collection_selection: test
+place::worker::tests::worker_stale_collection_version_withholds_available_capture: test
+publish_pane::tests::unavailable_panel_is_an_honest_configured_surface: test
+redshank_episode_surface::tests::a_host_projection_reaches_the_tile_through_the_viewport_pump: test
+redshank_episode_surface::tests::a_wrong_version_or_a_missing_enclosure_is_refused_before_admission: test
+redshank_episode_surface::tests::the_admitted_surface_renders_the_episode_title_and_a_play_control: test
+redshank_episode_surface::tests::the_dock_emits_the_same_commands_through_turnstones_registry: test
+redshank_episode_surface::tests::the_registry_admits_the_published_redshank_dock_from_a_versioned_source: test
+redshank_host::tests::aligned_points_require_the_loaded_digest_and_never_remap_span_ends: test
+redshank_host::tests::another_items_note_loads_paused_at_zero_and_holds_saved_progress: test
+redshank_host::tests::capturing_cancels_a_pending_open_and_compact_projection_keeps_its_warning: test
+redshank_host::tests::missing_replacement_note_cancels_the_old_deferred_open_and_span: test
+redshank_host::tests::new_transport_supersedes_an_unacknowledged_note_seek_when_delivery_succeeds: test
+redshank_host::tests::note_opens_require_ready_matching_receipts_or_explicit_approximation: test
+redshank_host::tests::only_the_latest_seek_acknowledgement_releases_saved_progress: test
+redshank_host::tests::refused_replacement_and_failed_runtime_dispatch_keep_the_progress_hold: test
+redshank_host::tests::suspended_host_keeps_output_and_fetch_without_opening_storage: test
+redshank_host::tests::the_shells_fetch_handle_survives_a_session_reopen: test
+remote_projection::tests::committed_receipt_matches_the_live_turnstone_endpoint: test
+remote_projection::tests::coverage_survives_disclosure_and_snapshot_refusal: test
+remote_projection::tests::disclosed_scene_retains_every_scoped_coverage_layer: test
+remote_projection::tests::live_mere_graph_becomes_cards_and_routed_relations: test
+remote_projection::tests::projected_grant_accepts_view_and_refuses_graph_change: test
+remote_projection::tests::score_five_accepts_and_score_four_refuses_without_replacing_snapshot: test
+remote_projection::tests::the_endpoint_holds_a_delegation_from_the_profile_identity: test
+resident_admission::tests::corrupt_state_is_not_treated_as_empty: test
+resident_admission::tests::loader_rejects_duplicate_members: test
+resident_admission::tests::loader_rejects_mismatched_member_and_id: test
+resident_admission::tests::loader_rejects_unknown_version_and_fields: test
+resident_admission::tests::non_ascii_hex_is_refused_without_panicking: test
+resident_admission::tests::state_round_trips_paused_and_revoked_records: test
+resident_runs_tests::configured_read_bound_and_repeated_atomic_save_preserve_receipts: test
+resident_runs_tests::malformed_or_mismatched_persisted_facts_are_rejected: test
+resident_runs_tests::reopening_recovers_uncertainty_even_after_clock_rollback: test
+retained_clip::tests::clip_opens_target_the_new_reference_while_workbench_has_another_member: test
+retained_clip::tests::custody_and_session_refusals_cannot_create_clip_storage: test
+retained_clip::tests::export_freezes_the_workbench_clip_and_requires_host_custody: test
+retained_clip::tests::export_refuses_missing_over_budget_and_existing_targets_without_replacement: test
+retained_clip::tests::internal_play_controls_are_host_only_and_refuse_paths_or_foreign_shapes: test
+retained_clip::tests::missing_unsupported_or_oversized_material_creates_no_receiver_store: test
+retained_clip::tests::native_export_renders_through_real_session_after_receiver_reopen: test
+retained_clip::tests::onward_copy_keeps_selected_identity_source_facts_and_distinct_tag_owners: test
+retained_clip::tests::onward_export_omits_private_backing_and_unselected_material: test
+retained_clip::tests::voice_bytes_are_local_and_recording_stays_unavailable: test
+ring::tests::a_covered_emission_passes_and_an_uncovered_one_names_its_ring: test
+ring::tests::contributed_source_authority_resists_a_total_app_grant: test
+ring::tests::decoded_envelopes_classify_across_all_grantable_rings: test
+ring::tests::envelopes_decode_and_misfires_are_loud: test
+ring::tests::every_ring_but_host_only_names_a_grantable_path: test
+ring::tests::gate_management_resists_even_a_total_app_grant: test
+scenario::tests::browser_receipt_assertions_are_typed_steps: test
+scenario::tests::env_substitution_expands_at_parse_time_backslashes_and_colons_intact: test
+scenario::tests::env_substitution_names_the_missing_variable_and_line: test
+scenario::tests::file_hover_and_drop_are_distinct_ui_turns: test
+scenario::tests::find_chord_is_one_focus_routed_key_step: test
+scenario::tests::idle_diagnostics_and_document_idle_are_typed_steps: test
+scenario::tests::inline_component_station_fixture_uses_supported_grammar: test
+scenario::tests::parse_errors_name_their_line: test
+scenario::tests::pointer_move_is_a_distinct_scenario_step: test
+scenario::tests::record_place_is_a_typed_step: test
+scenario::tests::save_chord_is_one_focus_routed_key_step: test
+scenario::tests::tab_is_a_focus_routed_key_step: test
+scenario::tests::touch_is_a_typed_step: test
+scenario::tests::type_preserves_backslashes_and_colons_unchanged: test
+scenario::tests::wait_knot_is_a_typed_step: test
+scenario::tests::wait_row_wait_status_wait_file_are_typed_steps: test
+sections::tests::by_id_resolves_the_registered_providers: test
+sections::tests::completed_download_projects_from_durable_graph_facets: test
+sections::tests::diagnostic_rows_are_optional_read_only_and_preserve_explicit_unavailable_state: test
+sections::tests::download_status_and_error_rows_keep_custody_order_and_inert_activation: test
+sections::tests::removed_section_gathers_absent_bin_records_only: test
+session::tests::a_routine_save_updates_a_binding_but_never_mints_one: test
+session::tests::command_menu_rides_the_view_sidecar_and_old_sidecars_default_it: test
+session::tests::current_session_marker_round_trips_and_falls_back: test
+session::tests::flat_layout_migrates_into_sessions_once: test
+session::tests::image_gc_keeps_live_blobs_and_drops_only_hash_named_orphans: test
+session::tests::legacy_node_columns_migrate_on_load_and_existing_facets_win: test
+session::tests::marking_a_place_left_preserves_the_binding_and_retained_session_files: test
+session::tests::place_binding_round_trips_as_a_distinct_public_sidecar: test
+session::tests::place_collection_sidecar_is_exact_and_refuses_corruption: test
+session::tests::projection_score_sidecar_round_trips_without_becoming_graph_truth: test
+session::tests::removing_place_binding_preserves_retained_session_files: test
+session::tests::session_profile_absent_migration_does_not_mint_qualification: test
+session::tests::session_profile_corrupt_facets_preserve_graph_labels_and_deposit_no_images: test
+session::tests::session_profile_invalid_resource_and_declared_legacy_refuse_without_rewrite: test
+session::tests::session_profile_migration_write_failure_preserves_raw_control_evidence: test
+session::tests::session_profile_recorded_load_and_migration_preserve_held_relations: test
+session::tests::the_persisted_strategy_is_an_id_never_a_display_name: test
+session::tests::the_physics_choice_rides_the_view_intent_by_id: test
+session::tests::unsupported_place_binding_stays_a_visible_error: test
+session::tests::view_intent_round_trips_and_survives_a_corrupt_sidecar: test
+session_persistence::tests::facet_write_failure_preserves_actual_graph_bytes_and_evidence_retry: test
+session_persistence::tests::failed_facets_prevent_graph_write_and_graph_failure_is_returned: test
+session_persistence::tests::graph_replacement_clears_qualification_but_cannot_clear_refusal: test
+session_persistence::tests::interrupted_replacement_is_not_a_fresh_writable_session: test
+session_persistence::tests::ordinary_save_keeps_optional_placement_and_writes_facets_first: test
+session_persistence::tests::refused_unbound_and_wrong_destination_write_nothing: test
+settings_pane::tests::actual_edit_themes_button_requests_host_work_without_changing_selection: test
+settings_pane::tests::mode_radio_keyboard_stays_in_its_group_and_enter_applies_only_after_tab: test
+settings_pane::tests::painted_settings_targets_drive_physical_edit_and_apply_at_wide_and_narrow_sizes: test
+settings_pane::tests::pane_renders_controls_from_setting_control_not_setting_ids: test
+settings_pane::tests::provider_owner_is_available_to_host_after_projection_construction: test
+settings_pane::tests::saved_same_identity_waits_for_explicit_apply_and_reopens_latest_definition: test
+settings_pane::tests::snapshot_projects_every_live_application_axis_to_chrome: test
+settings_pane::tests::stale_settings_panes_cannot_apply_saved_definition_or_overwrite_selected_theme: test
+settings_pane::tests::successful_apply_publishes_a_value_snapshot_for_the_shell: test
+settings_provider::tests::application_projection_describes_owner_axes_and_controls: test
+settings_provider::tests::authored_custom_modes_are_offered_only_by_the_selected_definition: test
+settings_provider::tests::combined_saved_choice_does_not_publish_when_application_write_fails: test
+settings_provider::tests::failed_load_projection_refuses_to_overwrite_the_corrupt_settings_file: test
+settings_provider::tests::failed_setting_write_keeps_the_owner_and_cannot_leak_into_a_later_save: test
+settings_provider::tests::invalid_reference_and_value_do_not_write: test
+settings_provider::tests::legacy_mode_without_id_survives_load_and_an_unrelated_write: test
+settings_provider::tests::malformed_library_blocks_theme_changes_and_preserves_both_owners: test
+settings_provider::tests::missing_identity_and_custom_mode_remain_stored_while_visible_fallback_is_used: test
+settings_provider::tests::saved_workshop_definition_becomes_available_without_selecting_it_until_apply: test
+settings_provider::tests::theme_and_mode_edits_preserve_family_requests_through_reopening: test
+settings_provider::tests::theme_id_and_mode_edits_preserve_the_other_value: test
+settings_provider::tests::typed_writes_update_the_owner_and_persist: test
+share_reader_pane::tests::inline_ticket_field_routes_keys_composition_and_caret_in_shared_layout: test
+shell::a11y_bridge::tests::content_pool_activation_starts_on_guest_free_root_before_window_replay: test
+shell::a11y_bridge::tests::queued_admission_stays_on_its_published_revision_and_placement: test
+shell::appearance_editor::tests::editor_deadline_composes_with_document_polling_without_idle_starvation: test
+shell::appearance_editor::tests::shared_wait_yields_during_request_and_open_workshop_then_resumes: test
+shell::appearance_receipt::tests::child_acceptance_suspends_deadline_and_resume_grants_a_fresh_budget: test
+shell::appearance_receipt::tests::completed_script_cannot_hide_capture_failure_or_absent_presentation: test
+shell::appearance_receipt::tests::receipt_preserves_capture_identity_and_failed_workshop_result: test
+shell::appearance_receipt::tests::shipped_appearance_fixtures_parse_through_the_existing_driver: test
+shell::appearance_receipt::tests::unreadable_workshop_script_fails_before_constructing_a_native_window: test
+shell::content_pool::tests::hidden_finite_livery_work_schedules_ticks_until_settled_without_paints: test
+shell::content_pool::tests::physical_placements_do_not_apply_native_dpi_twice: test
+shell::content_pool::tests::reader_placements_share_source_and_retain_independent_scroll_after_hide: test
+shell::content_pool::tests::repeated_real_viewports_change_projection_revision_even_when_returning_to_the_first_size: test
+shell::content_pool::tests::settled_timer_deadline_survives_early_events_and_uses_configured_runnable_cadence: test
+shell::content_pool::tests::settled_timer_turn_mutates_its_actual_receiver_and_queues_only_current_visible_window: test
+shell::content_pool::tests::terminal_document_turn_paints_its_last_change_without_polling_quiet_windows: test
+shell::contributed_automation::tests::below_fold_click_waits_for_new_paint_then_lands_once: test
+shell::contributed_automation::tests::first_layout_miss_and_explicit_dom_filters_keep_their_meanings: test
+shell::contributed_automation::tests::hidden_renamed_disabled_and_removed_pending_targets_never_activate: test
+shell::contributed_automation::tests::referenced_name_selection_and_platform_action_route_share_the_live_button: test
+shell::contributed_automation::tests::replacement_and_removal_recreation_reject_reused_local_dom_ids: test
+shell::contributed_automation::tests::scoped_request_counter_refuses_exhaustion_without_reusing_identity: test
+shell::contributed_automation::tests::two_contributed_panes_with_equal_names_and_local_ids_are_ambiguous: test
+shell::contributed_automation::tests::viewport_reveal_cannot_activate_a_target_outside_an_ancestor_clip: test
+shell::contributed_window_a11y_tests::contributed_window_action_same_drain_moved_click_rejects_old_lens: test
+shell::contributed_window_a11y_tests::contributed_window_action_same_drain_moved_focus_rejects_old_lens: test
+shell::contributed_window_a11y_tests::contributed_window_action_unchanged_lens_focus_and_click_controls: test
+shell::controller_input::tests::winit_keys_map_to_the_neutral_vocabulary: test
+shell::document_a11y::tests::actual_field_semantics_keep_value_and_supported_actions: test
+shell::document_a11y::tests::document_action_admission_checks_identity_revision_and_visible_placement: test
+shell::document_a11y::tests::document_namespaces_separate_keys_instances_generations_and_placements: test
+shell::document_a11y::tests::micron_fields_remain_partial_inert_source_text: test
+shell::document_a11y::tests::projected_focus_never_performs_a_link_click: test
+shell::document_a11y::tests::real_field_accepts_value_once_then_refuses_the_stale_admission: test
+shell::document_a11y::tests::real_protocol_projections_keep_link_names_in_document_order: test
+shell::document_a11y::tests::replacing_an_outline_removes_retired_descendants_and_hidden_document: test
+shell::document_a11y::tests::source_click_uses_neutral_pointer_and_hands_navigation_to_the_host_once: test
+shell::drive::foreign_a11y_receipt_tests::page_text_requires_exact_public_fixture_optin: test
+shell::effects::browser_profile_path_tests::canonical_drive_and_unc_paths_keep_the_resolved_location: test
+shell::effects::browser_profile_path_tests::unsupported_device_paths_are_refused: test
+shell::effects::content_spawn_dispatch_tests::browser_dispatch_preserves_other_surfaces_and_retained_sessions: test
+shell::effects::content_spawn_dispatch_tests::graft_spawn_waits_for_host_in_browser_surface_queue: test
+shell::effects::local_micron_source_tests::local_micron_spawn_failed_controller_does_not_publish_prepared_source: test
+shell::effects::local_micron_source_tests::local_micron_spawn_opens_field_mask_and_confirm_from_real_file: test
+shell::effects::local_micron_source_tests::local_micron_spawn_rejects_stale_uuid_and_address_before_open: test
+shell::effects::local_micron_source_tests::local_micron_spawn_reload_missing_file_keeps_source_absent: test
+shell::effects::local_micron_source_tests::local_micron_spawn_source_update_binds_uuid_and_current_address: test
+shell::effects::local_micron_source_tests::local_micron_spawn_uses_one_held_body_after_file_changes: test
+shell::effects::local_micron_source_tests::retained_clip_spawn_uses_held_document_through_standard_pelt_controller: test
+shell::effects::reader_lineage_tests::reader_lineage_projects_and_reextract_updates_the_node_facet: test
+shell::effects::retained_page_zoom_tests::a_fresh_retained_session_is_seeded_with_the_persisted_request: test
+shell::effects::retained_page_zoom_tests::a_live_livery_session_is_offered_the_zoom_rows: test
+shell::effects::retained_page_zoom_tests::an_unsupported_retained_lane_is_absorbed_quietly: test
+shell::effects::retained_page_zoom_tests::reset_returns_a_live_retained_session_to_the_default_scale: test
+shell::frame_keys::tests::actual_frame_prepare_uses_session_identity_and_refuses_retired_route: test
+shell::frame_keys::tests::header_accessibility_focus_precedes_body_but_keeps_host_editor_priority: test
+shell::frame_keys::tests::header_focus_retirement_is_window_scoped_and_terminal: test
+shell::input::contributed_custody_tests::content_pool_host_contributed_custody_checks_placement_and_provider: test
+shell::input::cursor_tests::web_cursor_shapes_map_to_host_cursor_icons: test
+shell::keys::tests::content_scroll_keys_map_page_navigation: test
+shell::keys::tests::page_zoom_chords_bind_the_browser_keys_and_are_claimed: test
+shell::lens::tests::header_return_focus_preserves_primary_and_lens_actual_appearance: test
+shell::lens::tests::native_surface_body_apertures_reserve_primary_and_lens_headers: test
+shell::lens::tests::native_surface_lens_actual_plan_controls_supplier_forest_action_and_retirement: test
+shell::lens::tests::native_surface_lens_document_plan_and_render_control_remains_live: test
+shell::lens::tests::native_surface_lens_floating_tile_keeps_actual_appearance: test
+shell::lens::tests::native_surface_lens_pinned_tile_moves_actual_placement_to_lens: test
+shell::lens::tests::native_surface_lens_render_seam_preserves_owned_empty_and_error_frames: test
+shell::lens::tests::native_surface_lens_workbench_moves_actual_placement_to_lens: test
+shell::native_composition::tests::allocated_producers_preserve_custody_and_rootstock_range: test
+shell::native_composition::tests::equal_mask_ordinals_keep_distinct_window_and_session_custody: test
+shell::native_composition::tests::mask_cache_reuses_exact_requests_and_refreshes_changed_blur_or_device: test
+shell::outer_workspace::tests::outer_capture_retirement_is_window_scoped_and_terminal: test
+shell::page_capture::tests::admission_failure_spends_id_and_allocator_exhaustion_refuses: test
+shell::page_capture::tests::exact_completion_is_single_use: test
+shell::page_capture::tests::generation_exhaustion_rotates_surface_and_retires_pending: test
+shell::page_capture::tests::navigation_and_surface_replacement_refuse_old_completion: test
+shell::page_capture::tests::session_switch_refuses_completion: test
+shell::render_recovery_tests::render_capture_refusal_preserves_provider_and_installed_loss_identity: test
+shell::render_recovery_tests::render_capture_terminal_takes_only_its_window_once: test
+shell::render_recovery_tests::render_recovery_both_windows_release_before_one_sticky_factory: test
+shell::render_recovery_tests::render_recovery_closed_lens_leaves_barrier_and_stale_ack_does_not: test
+shell::render_recovery_tests::render_recovery_unsupported_binding_never_opens_replacement_barrier: test
+shell::renderers::tests::evicting_an_undrawn_pane_is_harmless: test
+shell::renderers::tests::eviction_takes_one_pane_and_spares_the_rest: test
+shell::renderers::tests::resolving_the_same_pane_twice_keeps_its_state: test
+shell::renderers::tests::scrollbar_continuation_is_scoped_to_actual_window_pane_plan: test
+shell::renderers::tests::two_panes_of_one_kind_resolve_to_two_retained_runners: test
+shell::servo_profile_tests::ambiguous_or_escaping_profile_bindings_are_refused: test
+shell::servo_profile_tests::named_process_profile_has_no_node_component_and_can_move: test
+shell::surface_poll::tests::early_cancelled_wakes_do_not_postpone_surface_poll: test
+shell::surface_poll::tests::inactive_polling_clears_deadline_and_reenable_starts_fresh: test
+shell::surface_poll::tests::late_wake_polls_once_without_catch_up_spin: test
+shell::tests::a_document_controller_hands_links_and_submissions_up: test
+shell::tests::automatic_html_routes_to_the_registered_livery_session: test
+shell::tests::dropped_files_classify_by_decodability: test
+shell::tests::gemini_route_lands_in_a_live_nematic_session: test
+shell::tests::hidden_livery_animation_reaches_quiescence_without_redraw: test
+shell::tests::lens_viewports_stay_distinct: test
+shell::tests::micron_file_uses_native_projection_and_preserves_source: test
+shell::tests::reader_pin_uses_held_html_and_switching_back_restores_original_rendering: test
+shell::tests::scroll_route_lands_in_a_live_nematic_session: test
+shell::window_input::tests::review_bookkeeping_lens_second_button_is_delivered_once: test
+shell::window_input::tests::review_bookkeeping_primary_second_button_is_delivered_once: test
+shell::window_input::tests::review_caller_capture_lens_actual_retirement_allows_new_receiver: test
+shell::window_input::tests::review_caller_capture_lens_navigation_names_first_receiver: test
+shell::window_input::tests::review_caller_capture_lens_second_down_preserves_custody: test
+shell::window_input::tests::review_caller_capture_lens_submission_names_first_receiver: test
+shell::window_input::tests::review_caller_capture_primary_actual_retirement_allows_new_receiver: test
+shell::window_input::tests::review_caller_capture_primary_navigation_names_first_receiver: test
+shell::window_input::tests::review_caller_capture_primary_second_down_preserves_custody: test
+shell::window_input::tests::review_caller_capture_primary_submission_names_first_receiver: test
+shell::window_input::tests::review_input_click_slop_parser_is_configurable_and_finite: test
+shell::window_input::tests::review_input_lens_auxiliary_and_mouse_capture_id: test
+shell::window_input::tests::review_input_lens_control_wheel_matches_primary_zoom_policy: test
+shell::window_input::tests::review_input_mouse_capture_uses_actual_pointer_id: test
+shell::window_input::tests::review_input_plain_wheel_does_not_zoom: test
+shell::window_input::tests::review_input_source_window_enter: test
+shell::window_input::tests::review_input_source_window_ime: test
+shell::window_input::tests::review_input_source_window_text: test
+shell::window_input::tests::review_input_touch_distinct_ids_and_independent_terminals: test
+shell::window_input::tests::review_input_touch_focus_loss_cancels_every_contact: test
+shell::window_input::tests::review_input_touch_hide_reopen_retires_old_contact: test
+shell::window_input::tests::review_input_touch_provider_replacement_does_not_receive_old_up: test
+shell::window_input::tests::review_input_touch_second_appearance_coordinates_and_sensors: test
+shell::window_input::tests::review_input_window_button_masks_and_unrelated_release: test
+shell::window_input::tests::review_lens_pane_custody_chord_content_and_none_preserve_receiver: test
+shell::window_input::tests::review_lens_pane_custody_foreign_primary_receiver_preserved: test
+shell::window_input::tests::review_lens_pane_custody_second_left_cannot_replace_pane: test
+shell::window_input::tests::review_lens_pane_custody_wrong_button_release_preserves_admitted_left: test
+shell::window_input::tests::review_modal_touch_fresh_down_is_blocked_then_new_gesture_is_admitted: test
+shell::window_input::tests::review_modal_touch_lens_cancelled_preserves_foreign_primary_contact: test
+shell::window_input::tests::review_modal_touch_lens_ended_preserves_foreign_primary_contact: test
+shell::window_input::tests::review_modal_touch_primary_cancelled_retires_without_later_up: test
+shell::window_input::tests::review_modal_touch_primary_ended_retires_without_up_activation: test
+shell::window_input::tests::review_mouse_boundary_lens_hide_then_physical_release: test
+shell::window_input::tests::review_mouse_boundary_lens_replacement_then_physical_release: test
+shell::window_input::tests::review_mouse_boundary_primary_hide_then_physical_release: test
+shell::window_input::tests::review_mouse_boundary_primary_replacement_then_physical_release: test
+shell::window_input::tests::review_mouse_boundary_unrelated_release_keeps_middle_custody: test
+shell::window_input::tests::review_native_interception_chrome_retires_before_action_and_drop: test
+shell::window_input::tests::review_native_interception_context_swallow_retires_before_action: test
+shell::window_input::tests::review_native_interception_foreign_lens_capture_is_not_selected_or_cancelled: test
+shell::window_input::tests::review_native_interception_lens_admitted_chord_precedes_fresh_pane: test
+shell::window_input::tests::review_native_interception_lens_admitted_chord_precedes_none_hit: test
+shell::window_input::tests::review_native_interception_omnibar_swallow_retires_before_action: test
+shell::window_input::tests::review_native_interception_real_focus_loss_still_blurs_and_retires: test
+shell::window_input::tests::review_native_interception_window_cancel_preserves_focus_and_foreign_touch: test
+shell::window_input::tests::review_overlap_native_mouse_matches_host_topmost_and_preserves_capture: test
+shell::window_input::tests::review_overlap_native_navigation_effect_names_actual_receiver: test
+shell::window_input::tests::review_overlap_native_reader_appearances_wheel_mutates_only_top_view: test
+shell::window_input::tests::review_overlap_native_submission_effect_names_actual_receiver: test
+shell::window_input::tests::review_overlap_native_touch_matches_host_topmost_and_preserves_capture: test
+shell::window_input::tests::review_primary_modal_rejection_cancels_before_shell_clear_without_later_up: test
+shell::window_input::tests::review_primary_modal_rejection_closed_gate_preserves_content_custody: test
+shell::window_input::tests::review_primary_modal_rejection_preserves_real_lens_custody: test
+shell::window_input::tests::review_primary_no_hit_chord_left_up_then_middle_up_retires_actual_receiver: test
+shell::window_input::tests::review_primary_no_hit_chord_middle_up_then_left_up_retires_actual_receiver: test
+shell::window_input::tests::review_primary_pane_chord_genuine_focus_loss_cancels_and_allows_new_receiver: test
+shell::window_input::tests::review_primary_pane_chord_left_up_then_middle_up_retires_actual_receiver: test
+shell::window_input::tests::review_primary_pane_chord_middle_up_then_left_up_retires_actual_receiver: test
+shell_services::tests::blueprint_composition_changes_only_projection_choices: test
+shell_services::tests::default_providers_and_shortcuts_are_registered_without_a_canvas: test
+shell_services::tests::retention_and_redaction_bound_the_local_ledger: test
+shell_services::tests::transcript_binds_the_target_at_open_and_replay_keeps_it: test
+sky_receipt::tests::fixed_boston_dto_goldens_preserve_exact_serialization_and_digests: test
+sky_receipt::tests::json_reader_keeps_a_sane_unavailable_zone_identity: test
+sky_receipt::tests::json_reader_rejects_another_receipt_version: test
+sky_receipt::tests::json_reader_rejects_same_midpoint_body_reordering: test
+sky_receipt::tests::json_reader_rejects_tampered_engine_and_day_boundaries: test
+sky_receipt::tests::json_reader_rejects_tampered_fact_projection: test
+sky_receipt::tests::json_reader_rejects_tampered_inputs_and_provenance: test
+sky_receipt::tests::json_reader_rejects_unknown_root_and_nested_fields: test
+sky_receipt::tests::pretty_json_round_trips_and_hashes_the_exact_bytes: test
+sky_surface::tests::changing_date_or_policy_rebuilds_a_distinct_receipt: test
+sky_surface::tests::duplicate_body_and_bad_zone_are_rejected_before_calculation: test
+sky_surface::tests::next_day_replaces_one_retained_projection_without_rewriting_opening_provenance: test
+sky_surface::tests::polar_empty_crossings_are_described_without_visibility_inference: test
+sky_surface::tests::provider_admits_semantic_controls_and_provenance: test
+sky_surface::tests::reference_source_reproduces_the_p0_receipt: test
+sky_surface::tests::source_version_and_unknown_fields_fail_closed: test
+sky_timeline::tests::boston_eclipse_day_composes_an_analytical_sun_moon_receipt: test
+sky_timeline::tests::daily_projection_uses_public_provider_and_retains_receipt_identity: test
+sky_timeline::tests::new_york_fall_transition_is_a_25_hour_half_open_day: test
+sky_timeline::tests::new_york_spring_transition_is_a_23_hour_half_open_day: test
+sky_timeline::tests::request_rejects_gap_and_fold_anchors: test
+sky_timeline::tests::request_rejects_unknown_zone_and_duplicate_body: test
+sky_timeline::tests::skipped_midnight_still_resolves_the_named_calendar_day: test
+sky_timeline::tests::tromso_solstice_reports_no_sampled_conventional_crossing_under_policy: test
+source_capture::tests::references_survive_facet_round_trip_in_capture_order: test
+surface::appearance::tests::reader_closed_pane_cleanup_preserves_other_appearances: test
+surface::appearance::tests::reader_duplicate_placements_receive_distinct_appearance_routes: test
+surface::tests::a_content_surface_keeps_its_id_across_frames: test
+surface::tests::abutting_rects_never_both_claim_a_point: test
+surface::tests::canvas_only_when_nothing_else_present: test
+surface::tests::chrome_swallows_input_only_when_focused: test
+surface::tests::content_and_chrome_ids_do_not_alias_the_reserved_ones: test
+surface::tests::content_is_inset_so_the_canvas_stays_visible: test
+surface::tests::dest_emits_corners_not_offset_plus_size: test
+surface::tests::pointer_over_content_hits_content_in_local_space: test
+surface::tests::pressing_a_surface_focuses_it: test
+surface::tests::workbench_tiles_compose_as_content_surfaces: test
+surface::tests::z_order_is_canvas_then_content_then_chrome: test
+surface_controls::tests::legacy_surface_labels_preserve_evidence_and_canonical_false: test
+swatch_pane::tests::clicking_a_minimap_node_activates_open: test
+swatch_pane::tests::diagnostic_rows_keep_producer_identity_and_retained_bounds_without_activation: test
+swatch_pane::tests::diagnostic_subtree_omits_clipped_hidden_and_removed_rows: test
+swatch_pane::tests::hovering_sets_and_clears_emphasis: test
+swatch_pane::tests::minimap_nodes_color_by_content_state: test
+swatch_pane::tests::minimap_preset_paints_through_the_pipeline: test
+swatch_pane::tests::overmap_preset_renders_lineage_and_switches: test
+trail_memory::evaluation::captured_trail_frecency_receipt: test
+trail_memory::evaluation::captured_trail_mint_receipt: test
+trail_memory::evaluation::firefox_history_corpus_receipt: test
+trail_memory::tests::a_body_only_term_recalls_the_page: test
+trail_memory::tests::explicit_source_capture_keeps_exact_bytes_and_reopens_annotation: test
+trail_memory::tests::full_segment_flushes_itself: test
+trail_memory::tests::mint_receipt_counts_the_corpus_exactly: test
+trail_memory::tests::mint_receipt_scale_ladder: test
+trail_memory::tests::navigation_mapping: test
+trail_memory::tests::recall_overlays_current_titles_and_remints_on_change: test
+trail_memory::tests::records_chain_and_round_trip: test
+trail_memory::tests::source_capture_refuses_incomplete_acquisition_context: test
+trail_memory::tests::two_urls_for_one_page_recall_once_with_one_frecency: test
+trail_memory::tests::typed_prefix_recall_follows_frecency_over_title_overlap: test
+trail_pane::tests::a_muted_row_is_inert: test
+trail_pane::tests::clicking_a_row_bubbles_its_affordance: test
+transcript_pane::tests::a_pending_entry_offers_no_repeat: test
+transcript_pane::tests::a_recorded_command_appears_and_its_row_repeats_that_entry: test
+transcript_pane::tests::a_redacted_entry_never_shows_its_input: test
+transcript_pane::tests::an_empty_transcript_names_itself: test
+transcript_pane::tests::the_most_recent_command_leads: test
+ui::contributed_projection_tests::css_hidden_control_is_an_authoritative_semantic_and_visible_miss: test
+ui::contributed_projection_tests::retained_semantics_bounds_and_pointer_visibility_share_ancestor_clips: test
+ui::retained_layout_tests::a_rebuild_keeps_the_pane_where_it_was_scrolled: test
+ui::retained_layout_tests::a_resized_pane_rebuilds_once_and_then_settles: test
+ui::retained_layout_tests::a_structural_change_rebuilds_but_an_attribute_change_does_not: test
+ui::retained_layout_tests::repainting_an_unchanged_pane_does_not_rebuild_its_layout: test
+ui::scroll_tests::a_scrolled_pane_emits_its_bar: test
+ui::scroll_tests::bars_are_hidden_until_scrolled: test
+ui::scroll_tests::hit_testing_follows_the_scroll: test
+ui::scroll_tests::scrolling_above_the_top_stays_at_the_top: test
+ui::scroll_tests::scrolling_past_the_end_clamps_to_the_content: test
+ui::tests::actions_lane_filters_the_catalog_it_is_given: test
+ui::tests::address_normalization_recognizes_hosts_and_schemes: test
+ui::tests::caret_editing_is_char_boundary_safe: test
+ui::tests::changed_certificate_prompt_exposes_both_complete_fingerprints: test
+ui::tests::chrome_absolute_siblings_all_paint: test
+ui::tests::empty_and_command_texts_suggest_hints: test
+ui::tests::find_lane_matches_existing_nodes_before_go: test
+ui::tests::live_appearance_changes_chrome_and_settings_paint_styles: test
+ui::tests::shared_canonical_roles_and_authored_rules_reach_the_retained_chrome_cascade: test
+web_policy::tests::credential_provider_answers_without_secret_facet_leakage: test
+web_policy::tests::dismissal_is_not_a_retained_denial: test
+web_policy::tests::grant_and_denial_are_origin_descriptor_scoped: test
+web_policy::tests::navigation_withdrawal_removes_old_request_identity: test
+web_policy::tests::one_shot_and_process_credentials_do_not_survive_restart: test
+web_policy::tests::private_profiles_are_isolated_and_never_create_a_registry_file: test
+web_policy::tests::remembered_permission_survives_registry_restart: test
+web_policy::tests::unanswered_requests_expire_without_retaining_policy: test
+window_projection::tests::repeated_producer_has_one_owner_and_follows_exact_focused_appearance: test
+window_projection::tests::window_instance_and_session_namespace_all_local_references: test
+workbench_pane::tests::a_tab_point_resolves_to_its_member: test
+workbench_pane::tests::clicking_an_inactive_tab_reports_activation: test
+workbench_pane::tests::long_page_titles_cannot_claim_the_siblings_tab: test
+workbench_pane::tests::two_tiles_draw_two_strips: test
+workbench_tiling::tests::a_stack_is_one_cell_with_its_active_tab: test
+workbench_tiling::tests::an_empty_workbench_places_nothing: test
+workbench_tiling::tests::drag_fractions_reweight_the_pair_and_clamp: test
+workbench_tiling::tests::drop_zones_resolve_stack_and_edge_splits: test
+workbench_tiling::tests::nested_splits_carry_nested_paths: test
+workbench_tiling::tests::stacking_via_the_model_collapses_a_cell: test
+workbench_tiling::tests::two_tiles_split_side_by_side_with_one_seam: test
+
+953 tests, 0 benchmarks

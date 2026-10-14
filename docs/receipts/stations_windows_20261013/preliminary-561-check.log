@@ -1,0 +1,11 @@
+    Blocking waiting for file lock on package cache
+error: failed to load source for dependency `engine-observables-api`
+
+Caused by:
+  unable to update https://www.github.com/merely-made/genet.git?rev=5618326d287e7f7ef0c1cc3545587d64cedb22a7
+
+Caused by:
+  failed to lookup reference in preexisting repository, and can't check for updates in offline mode (--offline)
+
+Caused by:
+  revspec '5618326d287e7f7ef0c1cc3545587d64cedb22a7' not found; class=Reference (4); code=NotFound (-3)

@@ -8,6 +8,7 @@ use crate::{
     panes::{FrisketLayout, PaneId},
     surface::Rect,
 };
+use layout_dom_api::LayoutDomMut;
 use workbench::{FloatEvent, RelativeRect, TileEvent, TileId, TilePath, WorkspaceEvent};
 
 pub(super) enum OuterCapture {
@@ -171,6 +172,77 @@ mod tests {
     }
 }
 impl Shell {
+    pub(super) fn inline_selector_target(
+        &self,
+        selector: &taproot::Selector,
+    ) -> taproot::SelectorTarget {
+        let plan = self.surface_plan();
+        let mut found = None;
+        for surface in &plan {
+            let crate::surface::SurfaceKind::Pane(pane) = surface.kind else {
+                continue;
+            };
+            if self.renderers.inline_mount(pane).is_none() {
+                continue;
+            }
+            let name = match self.pane_content(pane) {
+                Some(crate::panes::PaneContent::Roster) => "roster",
+                Some(crate::panes::PaneContent::Trail) => "trail",
+                Some(crate::panes::PaneContent::Gloss(_)) => "gloss",
+                Some(crate::panes::PaneContent::Overmap(_)) => "overmap",
+                Some(crate::panes::PaneContent::Registered(kind)) => match kind.as_str() {
+                    crate::panes::kind::TRANSCRIPT => "transcript",
+                    crate::panes::kind::ARRANGE => "arrange",
+                    crate::panes::kind::PUBLISHING => "publishing",
+                    crate::panes::kind::SHARED_KNOT => "shared-knot",
+                    crate::panes::kind::DEVICE_RECEIPTS => "device-receipts",
+                    crate::panes::kind::FROZEN_PROJECTION => "frozen-projection",
+                    _ => "pane",
+                },
+                _ => "pane",
+            };
+            if !selector.matches_surface(name) {
+                continue;
+            }
+            match self.renderers.inline_selector(pane, selector) {
+                Ok(Some(local)) => {
+                    let point = (surface.rect.x + local.0, surface.rect.y + local.1);
+                    if found.is_some()
+                        || crate::surface::hit_test(&plan, self.app.focus, point.0, point.1)
+                            .is_none_or(|hit| hit.id != surface.id)
+                    {
+                        return taproot::SelectorTarget::Miss;
+                    }
+                    found = Some(taproot::Hit {
+                        surface: name,
+                        point,
+                    });
+                },
+                Err(_) => return taproot::SelectorTarget::Miss,
+                _ => {},
+            }
+        }
+        if found.is_none() && selector.surface.is_none() {
+            let frames = self.outer_frames.borrow();
+            if let Some(frame) = frames.get(&0) {
+                let dom = frame.dom_ref();
+                match frame.layout.borrow().selector_point(&dom, selector) {
+                    Ok(Some(point)) => {
+                        return taproot::SelectorTarget::Hit(taproot::Hit {
+                            surface: "frame",
+                            point,
+                        });
+                    },
+                    Err(_) => return taproot::SelectorTarget::Miss,
+                    _ => {},
+                }
+            }
+        }
+        found.map_or(
+            taproot::SelectorTarget::Unsupported,
+            taproot::SelectorTarget::Hit,
+        )
+    }
     pub(super) fn outer_rects(
         &self,
         slot: usize,
@@ -181,7 +253,7 @@ impl Shell {
         self.outer_frames
             .borrow_mut()
             .entry(slot)
-            .or_default()
+            .or_insert_with(|| crate::outer_frame::OuterFrame::new(self.renderers.dom.clone()))
             .prepare(
                 layout,
                 self.app.active_pane,
@@ -196,7 +268,7 @@ impl Shell {
         self.outer_frames
             .borrow_mut()
             .entry(slot)
-            .or_default()
+            .or_insert_with(|| crate::outer_frame::OuterFrame::new(self.renderers.dom.clone()))
             .scene()
     }
     pub(super) fn outer_float_rects(&self, slot: usize) -> Vec<(PaneId, Rect, Rect)> {
@@ -220,6 +292,123 @@ impl Shell {
             size,
         );
         true
+    }
+    /// Sync host-owned components before the shared frame is painted. Pane
+    /// surfaces remain in the input plan, but inline owners are never rasterized
+    /// as an additional texture.
+    pub(super) fn prepare_inline_owners(&mut self, slot: usize, size: (u32, u32)) {
+        if !self.prepare_outer(slot, size) {
+            // Projection withdrawal detaches only bodies still parented here.
+            // Pane runners and owners survive; a moved destination keeps custody.
+            self.retire_frame_focus(slot as u64);
+            retire_outer_capture(&mut self.outer_capture, slot as u64);
+            self.outer_frames.borrow_mut().remove(&slot);
+            if let Some(host) = &self.host {
+                super::native_composition::retire(
+                    host.core(),
+                    &mut self.renderers.native_images,
+                    &mut self.renderers.native_masks,
+                    slot,
+                );
+                host.core()
+                    .invalidate_surface(crate::surface::SurfaceId::frame_window(slot).0);
+            }
+            let panes: Vec<_> = self
+                .app
+                .space(space(slot))
+                .map(|layout| layout.iter_leaves().map(|(pane, _, _)| pane).collect())
+                .unwrap_or_default();
+            for pane in panes {
+                self.renderers.unbind_inline(pane);
+            }
+            return;
+        }
+        let plan = if slot == 0 {
+            self.surface_plan()
+        } else {
+            self.lens_plan(slot - 1, size.0, size.1)
+        };
+        let layout = self
+            .outer_frames
+            .borrow()
+            .get(&slot)
+            .unwrap()
+            .layout
+            .clone();
+        for surface in &plan {
+            let crate::surface::SurfaceKind::Pane(pane) = surface.kind else {
+                continue;
+            };
+            let content = if slot == 0 {
+                self.pane_content(pane)
+            } else {
+                self.lens_pane_content(slot - 1, pane)
+            };
+            if self.renderers.inline_mount(pane).is_some() {
+                self.renderers.bind_inline(pane, &layout);
+            }
+            self.pane_scene_by_kind(
+                pane,
+                content.as_ref(),
+                surface.rect.w.round().max(1.0) as u32,
+                surface.rect.h.round().max(1.0) as u32,
+            );
+            self.renderers.bind_inline(pane, &layout);
+        }
+        let mounts = plan
+            .iter()
+            .filter_map(|surface| {
+                let crate::surface::SurfaceKind::Pane(pane) = surface.kind else {
+                    return None;
+                };
+                Some((TileId(pane.0), self.renderers.inline_mount(pane)?))
+            })
+            .collect();
+        self.outer_frames
+            .borrow_mut()
+            .get_mut(&slot)
+            .unwrap()
+            .controls
+            .set_mounts(mounts);
+        self.prepare_outer(slot, size);
+        // Paint state, scroll clamps and custom leaves use measured shared
+        // sizes. The first pass already synced app data and owner view state.
+        for surface in &plan {
+            let crate::surface::SurfaceKind::Pane(pane) = surface.kind else {
+                continue;
+            };
+            self.renderers.refresh_inline_paint(
+                pane,
+                surface.rect.w.round().max(1.0) as u32,
+                surface.rect.h.round().max(1.0) as u32,
+            );
+        }
+        self.prepare_outer(slot, size);
+        let focused = match self.app.focus {
+            crate::surface::FocusTarget::Pane(pane)
+                if plan
+                    .iter()
+                    .any(|s| s.kind == crate::surface::SurfaceKind::Pane(pane)) =>
+            {
+                self.renderers.inline_focus(pane)
+            },
+            _ => None,
+        };
+        self.outer_frames
+            .borrow_mut()
+            .get_mut(&slot)
+            .unwrap()
+            .body_focus = focused;
+    }
+    pub(super) fn finish_inline_frame(&mut self) {
+        for frame in self.outer_frames.borrow_mut().values_mut() {
+            frame.controls.observe_body_mutations();
+        }
+        let roots = self.renderers.owner_roots();
+        let mut dom = self.renderers.dom.borrow_mut();
+        let mut mutations = Vec::new();
+        dom.drain_mutations(&mut mutations);
+        dom.collect(roots);
     }
     pub(super) fn outer_press(&mut self, slot: usize, size: (u32, u32), x: f32, y: f32) -> bool {
         // Headers never steal an already admitted pane, document or graph gesture.

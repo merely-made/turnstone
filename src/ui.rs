@@ -30,7 +30,7 @@ use layout_dom_api::{
     AttributeView, LayoutDom, LayoutDomMut, LocalName, Namespace, NodeKind, QualName,
 };
 use mere::canvas::Canvas;
-use paint_list_api::{DeviceIntSize, PaintList};
+use paint_list_api::{DeviceIntSize, PaintCmd, PaintList};
 use paint_list_render::{CompositeLayer, composite_paint_layers};
 use uuid::Uuid;
 
@@ -1546,6 +1546,13 @@ where
         if dom.kind(node) != NodeKind::Element {
             return;
         }
+        if snapshot
+            .styles
+            .computed_style(node, "pointer-events")
+            .is_some_and(|value| value == "none")
+        {
+            return;
+        }
         let Some((left, top, width, height)) = snapshot_visible_rect(
             dom,
             snapshot,
@@ -1625,7 +1632,15 @@ fn append_scrollbars(
 /// style/fragment planes in place here. An unchanged frame retains shaping and
 /// geometry and pays paint only. Structural changes, viewport changes, and
 /// stylesheet changes count as full rebuilds.
+pub(crate) type InlineLayoutHandle = std::rc::Rc<std::cell::RefCell<RetainedLayout>>;
 pub struct RetainedLayout {
+    inline_leaves: HashMap<u64, Vec<paint_list_api::PaintCmd>>,
+    native_sources: HashMap<u64, Vec<PaintCmd>>,
+    inline_scroll_root: Option<DomNodeId>,
+    inline_bar: Option<DomNodeId>,
+    root: Option<DomNodeId>,
+    mutation_cursor: u64,
+    inline: Option<(std::rc::Weak<std::cell::RefCell<RetainedLayout>>, DomNodeId)>,
     snapshot: Option<LiverySnapshot<DomNodeId>>,
     size: (u32, u32),
     sheet: String,
@@ -1643,6 +1658,13 @@ impl Default for RetainedLayout {
 impl RetainedLayout {
     pub fn new() -> Self {
         Self {
+            inline_leaves: HashMap::new(),
+            native_sources: HashMap::new(),
+            inline_scroll_root: None,
+            inline_bar: None,
+            root: None,
+            mutation_cursor: 0,
+            inline: None,
             snapshot: None,
             size: (0, 0),
             sheet: String::new(),
@@ -1650,6 +1672,165 @@ impl RetainedLayout {
             viewport_scroll: (0.0, 0.0),
             element_scroll: HashMap::new(),
         }
+    }
+    pub(crate) fn new_at(root: Option<DomNodeId>) -> Self {
+        Self {
+            root,
+            ..Self::new()
+        }
+    }
+    pub(crate) fn bind_inline(
+        &mut self,
+        layout: &InlineLayoutHandle,
+        mount: &cambium::RetainedMount,
+    ) {
+        let owner = mount.node();
+        let handle = mount.dom();
+        let mut dom = handle.borrow_mut();
+        let root = dom
+            .dom_children(owner)
+            .find(|node| !dom.has_class(*node, "turnstone-pane-scrollbars"));
+        let bar = dom
+            .dom_children(owner)
+            .find(|node| dom.has_class(*node, "turnstone-pane-scrollbars"));
+        let bar = bar.unwrap_or_else(|| {
+            let node = dom.create_element(cambium::html_qual("custom-leaf"));
+            dom.set_attribute(
+                node,
+                cambium::attr_qual("class"),
+                "turnstone-pane-scrollbars",
+            );
+            let key = dom.opaque_id(node).to_string();
+            dom.set_attribute(node, cambium::attr_qual("key"), &key);
+            dom.set_attribute(
+                node,
+                cambium::attr_qual("style"),
+                "position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;",
+            );
+            dom.append_child(owner, node);
+            node
+        });
+        self.inline_scroll_root = root;
+        self.inline_bar = Some(bar);
+        self.inline = Some((std::rc::Rc::downgrade(layout), owner));
+        self.snapshot = None;
+    }
+    pub(crate) fn unbind_inline(&mut self) {
+        self.inline = None;
+        self.snapshot = None;
+    }
+    pub(crate) fn set_native_sources(&mut self, sources: HashMap<u64, Vec<PaintCmd>>) {
+        self.native_sources = sources;
+    }
+    pub(crate) fn native_source_command(
+        &self,
+        dom: &ScriptedDom,
+        owner: DomNodeId,
+        key: u64,
+        generation: u64,
+        source: crate::surface::Rect,
+    ) -> Option<PaintCmd> {
+        let fragment = self.snapshot.as_ref()?.fragments.get(owner)?;
+        let (painted_x, painted_y, _, _) = self.painted_rect(dom, owner)?;
+        let x = fragment.x + source.x - painted_x;
+        let y = fragment.y + source.y - painted_y;
+        Some(PaintCmd::DrawExternalTexture(
+            paint_list_api::ExternalTextureItem {
+                placement: paint_list_api::CommonPlacement::new(paint_list_api::LayoutRect::new(
+                    paint_list_api::LayoutPoint::new(x, y),
+                    paint_list_api::LayoutPoint::new(x + source.w, y + source.h),
+                )),
+                texture_key: key,
+                opacity: 1.0,
+                content_generation: Some(generation),
+            },
+        ))
+    }
+    pub(crate) fn scroll_stamp(&self) -> Vec<(u64, u32, u32)> {
+        let mut rows = self
+            .element_scroll
+            .iter()
+            .map(|(node, (x, y))| (node.raw(), x.to_bits(), y.to_bits()))
+            .collect::<Vec<_>>();
+        rows.sort_unstable();
+        rows
+    }
+    pub(crate) fn selector_point(
+        &self,
+        dom: &ScriptedDom,
+        selector: &taproot::Selector,
+    ) -> Result<Option<(f32, f32)>, &'static str> {
+        let mut point = None;
+        for node in taproot::matching(dom, selector) {
+            if let Some((x, y, width, height)) = self.visible_rect(dom, node) {
+                if point.is_some() {
+                    return Err("multiple visible body targets match");
+                }
+                point = Some((x + width / 2.0, y + height / 2.0));
+            }
+        }
+        Ok(point)
+    }
+    pub(crate) fn editable_focus(&self, dom: &ScriptedDom, focus: Option<DomNodeId>) -> bool {
+        let Some(focus) = focus else {
+            return false;
+        };
+        let Some(projection) = self.document_projection(dom, Some(focus)) else {
+            return false;
+        };
+        projection.nodes().iter().any(|node| {
+            node.id.get() == dom.opaque_id(focus)
+                && node.state.editable
+                && !node.state.disabled
+                && !node.state.hidden
+                && !node.state.read_only
+        })
+    }
+    pub(crate) fn cursor_area(
+        &self,
+        dom: &ScriptedDom,
+        focus: Option<DomNodeId>,
+    ) -> Option<NodeRect> {
+        let focus = focus?;
+        if !self.editable_focus(dom, Some(focus)) {
+            return None;
+        }
+        let mut caret = None;
+        walk_dom(dom, focus, &mut |node| {
+            if dom.has_class(node, cambium::FIELD_CARET_CLASS) {
+                caret = Some(node);
+            }
+        });
+        self.visible_rect(dom, caret.unwrap_or(focus))
+    }
+    fn inline_target(&self) -> Option<(InlineLayoutHandle, DomNodeId)> {
+        let (layout, owner) = self.inline.as_ref()?;
+        Some((layout.upgrade()?, *owner))
+    }
+    fn inline_hit(&self, dom: &mut ScriptedDom, x: f32, y: f32) -> Option<DomNodeId> {
+        let (layout, owner) = self.inline_target()?;
+        let mut layout = layout.borrow_mut();
+        let sheet = layout.sheet.clone();
+        let (w, h) = layout.size;
+        layout.ensure(dom, &sheet, w, h);
+        let (left, top, width, height) = layout.painted_rect(dom, owner)?;
+        let (visible_x, visible_y, visible_w, visible_h) = layout.visible_rect(dom, owner)?;
+        let global = (left + x, top + y);
+        if x < 0.0
+            || y < 0.0
+            || x >= width
+            || y >= height
+            || global.0 < visible_x
+            || global.1 < visible_y
+            || global.0 >= visible_x + visible_w
+            || global.1 >= visible_y + visible_h
+        {
+            return None;
+        }
+        let hit = layout.hit_test(dom, &sheet, w, h, global.0, global.1)?;
+        cambium_rootstock::WindowDom::new(dom, owner)
+            .contains(hit)
+            .then_some(hit)
     }
 
     /// How many full rebuilds this pane has paid for.
@@ -1668,17 +1849,48 @@ impl RetainedLayout {
         dom: &ScriptedDom,
         focus: Option<DomNodeId>,
     ) -> Option<document_session_api::DocumentA11yProjection> {
+        if let Some((layout, owner)) = self.inline_target() {
+            return layout.borrow().document_projection_at(dom, owner, focus);
+        }
+        self.document_projection_at(dom, self.root.unwrap_or_else(|| dom.document()), focus)
+    }
+    fn document_projection_at(
+        &self,
+        dom: &ScriptedDom,
+        root: DomNodeId,
+        focus: Option<DomNodeId>,
+    ) -> Option<document_session_api::DocumentA11yProjection> {
         use document_session_api::{DocumentA11yBounds, DocumentA11yProjection};
         let snapshot = self.snapshot.as_ref()?;
-        let projected = genet_render::document_a11y_projection(dom, &snapshot.fragments, focus, 0);
+        let scoped = cambium_rootstock::WindowDom::new(dom, root);
+        let projected =
+            genet_render::document_a11y_projection(&scoped, &snapshot.fragments, focus, 0);
         let mut nodes = projected.nodes().to_vec();
-        walk_dom(dom, dom.document(), &mut |node| {
+        walk_dom(&scoped, root, &mut |node| {
             let Some(semantic) = nodes
                 .iter_mut()
                 .find(|candidate| candidate.id.get() == dom.opaque_id(node))
             else {
                 return;
             };
+            // Cambium's controlled field owns editing in its runner, rather
+            // than native HTML contenteditable. Its explicit committed-value
+            // property supplies producer semantics, not a browser editing flag.
+            if semantic.role == document_session_api::DocumentA11yRole::TextField {
+                if let Some(value) = dom.attribute(
+                    node,
+                    &Namespace::default(),
+                    &LocalName::from("data-cambium-text-value"),
+                ) {
+                    semantic.value = Some(value.to_owned());
+                    semantic.state.editable = !semantic.state.disabled && !semantic.state.read_only;
+                    semantic.state.multiline |= dom.attribute(
+                        node,
+                        &Namespace::default(),
+                        &LocalName::from("aria-multiline"),
+                    ) == Some("true");
+                }
+            }
             semantic.state.hidden |= snapshot
                 .styles
                 .computed_style(node, "visibility")
@@ -1726,8 +1938,19 @@ impl RetainedLayout {
     }
 
     pub fn painted_rect(&self, dom: &ScriptedDom, node: DomNodeId) -> Option<NodeRect> {
+        if let Some((layout, owner)) = self.inline_target() {
+            if !cambium_rootstock::WindowDom::new(dom, owner).contains(node) {
+                return None;
+            }
+            let layout = layout.borrow();
+            let (ox, oy, _, _) = layout.painted_rect(dom, owner)?;
+            let (x, y, w, h) = layout.painted_rect(dom, node)?;
+            return Some((x - ox, y - oy, w, h));
+        }
+        let scoped =
+            cambium_rootstock::WindowDom::new(dom, self.root.unwrap_or_else(|| dom.document()));
         snapshot_node_rect(
-            dom,
+            &scoped,
             self.snapshot.as_ref()?,
             node,
             &self.element_scroll,
@@ -1736,8 +1959,19 @@ impl RetainedLayout {
     }
 
     pub fn visible_rect(&self, dom: &ScriptedDom, node: DomNodeId) -> Option<NodeRect> {
+        if let Some((layout, owner)) = self.inline_target() {
+            if !cambium_rootstock::WindowDom::new(dom, owner).contains(node) {
+                return None;
+            }
+            let layout = layout.borrow();
+            let (ox, oy, _, _) = layout.painted_rect(dom, owner)?;
+            let (x, y, w, h) = layout.visible_rect(dom, node)?;
+            return Some((x - ox, y - oy, w, h));
+        }
+        let scoped =
+            cambium_rootstock::WindowDom::new(dom, self.root.unwrap_or_else(|| dom.document()));
         snapshot_visible_rect(
-            dom,
+            &scoped,
             self.snapshot.as_ref()?,
             node,
             &self.element_scroll,
@@ -1762,27 +1996,45 @@ impl RetainedLayout {
                 0.0
             }
         };
-        let dx = nearest(x, width, self.size.0 as f32);
-        let dy = nearest(y, height, self.size.1 as f32);
+        let viewport = self
+            .inline_target()
+            .and_then(|(layout, owner)| {
+                layout
+                    .borrow()
+                    .painted_rect(dom, owner)
+                    .map(|(_, _, w, h)| (w, h))
+            })
+            .unwrap_or((self.size.0 as f32, self.size.1 as f32));
+        let dx = nearest(x, width, viewport.0);
+        let dy = nearest(y, height, viewport.1);
         scroll.nudge(dx, dy);
         true
     }
 
     /// Bring the retained layout up to date for this frame.
     ///
-    /// Draining is unconditional: mutations accumulate on the DOM whether or
-    /// not anyone reads them, so a frame that skipped the drain would leave
-    /// the next one holding a batch it cannot attribute, and the retained
-    /// layout would silently describe a tree that no longer exists.
+    /// Each observer reads its own mutation cursor. The shell drains the
+    /// shared forest after recording current owner revisions; an observer
+    /// behind that drain rebuilds conservatively rather than losing a sibling's
+    /// changes. Standalone owners use the same retained path.
     fn ensure(&mut self, dom: &mut ScriptedDom, sheet: &str, w: u32, h: u32) {
-        let mut mutations = Vec::new();
-        dom.drain_mutations(&mut mutations);
+        // Every window and body observes the same forest. Reading a sibling
+        // cannot consume mutations that another window still needs to see.
+        let (base, pending) = dom.pending_mutations();
+        let end = base + pending.len() as u64;
+        let missed = self.mutation_cursor < base;
+        let start = self
+            .mutation_cursor
+            .saturating_sub(base)
+            .min(pending.len() as u64) as usize;
+        let mutations = &pending[start..];
         let structural = mutations
             .iter()
-            .any(|m| !matches!(m, layout_dom_api::DomMutation::AttributeChanged { .. }));
+            .any(|m| !matches!(m, layout_dom_api::DomMutation::AttributeChanged { .. }))
+            || missed;
         let resized = self.size != (w, h);
         let resheeted = self.sheet != sheet;
-        if self.snapshot.is_some() && mutations.is_empty() && !resized && !resheeted {
+        if self.snapshot.is_some() && mutations.is_empty() && !missed && !resized && !resheeted {
             return;
         }
         let full_rebuild = self.snapshot.is_none() || structural || resized || resheeted;
@@ -1801,7 +2053,10 @@ impl RetainedLayout {
             .snapshot
             .take()
             .map_or_else(TextSystem::new, |snapshot| snapshot.text);
-        self.snapshot = Some(build_livery_snapshot(&*dom, sheet, w, h, text));
+        let scoped =
+            cambium_rootstock::WindowDom::new(dom, self.root.unwrap_or_else(|| dom.document()));
+        self.snapshot = Some(build_livery_snapshot(&scoped, sheet, w, h, text));
+        self.mutation_cursor = end;
         self.size = (w, h);
         self.sheet = sheet.to_string();
         let extent = self
@@ -1810,6 +2065,10 @@ impl RetainedLayout {
             .expect("a refreshed snapshot is live")
             .content_extent;
         self.viewport_scroll = clamp_scroll(self.viewport_scroll, extent, self.size);
+        if self.root.is_none() {
+            let mut observed = Vec::new();
+            dom.drain_mutations(&mut observed);
+        }
     }
 
     /// [`scene_from_dom`] against the retained layout.
@@ -1820,16 +2079,43 @@ impl RetainedLayout {
         w: u32,
         h: u32,
     ) -> netrender::Scene {
+        self.scene_resources(dom, sheet, w, h).scene
+    }
+
+    /// Keep the GPU mask requests together with the exact emitted scene.
+    /// The rendering owner builds these resources before rasterization.
+    pub(crate) fn scene_resources(
+        &mut self,
+        dom: &mut ScriptedDom,
+        sheet: &str,
+        w: u32,
+        h: u32,
+    ) -> paint_list_render::TranslatedDisplayList {
         self.ensure(dom, sheet, w, h);
-        let plist = paint_snapshot(
-            &*dom,
+        let scoped =
+            cambium_rootstock::WindowDom::new(dom, self.root.unwrap_or_else(|| dom.document()));
+        let mut live_keys = std::collections::HashSet::new();
+        walk_dom(&scoped, scoped.document(), &mut |node| {
+            if let Some(key) = custom_leaf_key(&scoped, node) {
+                live_keys.insert(key);
+            }
+        });
+        self.inline_leaves.retain(|key, _| live_keys.contains(key));
+        let mut plist = paint_snapshot(
+            &scoped,
             self.snapshot.as_mut().expect("ensure leaves a snapshot"),
             w,
             h,
             &self.element_scroll,
             self.viewport_scroll,
         );
-        composite(DeviceIntSize::new(w as i32, h as i32), &plist)
+        plist.splice_host_leaf_slots(|key| self.inline_leaves.get(&key).cloned(), |_| None);
+        plist.splice_text_paint_slots(|node, phase| {
+            (phase == genet_livery::TextPaintPhase::AfterContent)
+                .then(|| self.native_sources.get(&node).cloned())
+                .flatten()
+        });
+        composite_resources(DeviceIntSize::new(w as i32, h as i32), &plist)
     }
 
     /// [`scene_from_dom_scrolled`] against the retained layout.
@@ -1841,13 +2127,50 @@ impl RetainedLayout {
         h: u32,
         scroll: &mut PaneScroll,
     ) -> netrender::Scene {
+        if let Some((layout, owner)) = self.inline_target() {
+            let mut layout = layout.borrow_mut();
+            let root = self.inline_scroll_root.unwrap_or(owner);
+            if let Some(snapshot) = &layout.snapshot {
+                if let Some(fragment) = snapshot.fragments.get(owner) {
+                    let scoped = cambium_rootstock::WindowDom::new(dom, owner);
+                    let extent = content_extent(&scoped, &snapshot.fragments);
+                    let viewport = (
+                        fragment.width.round().max(1.0) as u32,
+                        fragment.height.round().max(1.0) as u32,
+                    );
+                    let extent = (extent.0 - fragment.x, extent.1 - fragment.y);
+                    scroll.offset = clamp_scroll(scroll.offset, extent, viewport);
+                    if let Some(bar) = self.inline_bar {
+                        let mut commands = LiveryPaintList::new(
+                            DeviceIntSize::new(viewport.0 as i32, viewport.1 as i32),
+                            0,
+                        );
+                        append_scrollbars(
+                            &mut commands,
+                            extent,
+                            viewport,
+                            scroll.offset,
+                            scroll.alpha(),
+                        );
+                        layout
+                            .inline_leaves
+                            .insert(dom.opaque_id(bar), commands.commands().to_vec());
+                    }
+                }
+            }
+            layout.element_scroll.insert(root, scroll.offset);
+            return netrender::Scene::default();
+        }
+
         self.ensure(dom, sheet, w, h);
+        let scoped =
+            cambium_rootstock::WindowDom::new(dom, self.root.unwrap_or_else(|| dom.document()));
         let snapshot = self.snapshot.as_mut().expect("ensure leaves a snapshot");
         self.viewport_scroll = clamp_scroll(scroll.offset, snapshot.content_extent, (w, h));
         scroll.offset = self.viewport_scroll;
         let viewport = DeviceIntSize::new(w as i32, h as i32);
         let mut plist = paint_snapshot(
-            &*dom,
+            &scoped,
             snapshot,
             w,
             h,
@@ -1874,10 +2197,42 @@ impl RetainedLayout {
         registry: &mut sprigging::LeafRegistry<u64>,
         cache: &mut sprigging::RenderedLeaves,
     ) -> netrender::Scene {
+        if let Some((layout, owner)) = self.inline_target() {
+            let mut layout = layout.borrow_mut();
+            let sheet = layout.sheet.clone();
+            let (width, height) = layout.size;
+            layout.ensure(dom, &sheet, width, height);
+            let scoped = cambium_rootstock::WindowDom::new(dom, owner);
+            let mut sizes = HashMap::new();
+            walk_dom(&scoped, owner, &mut |node| {
+                if let (Some(key), Some(fragment)) = (
+                    custom_leaf_key(&scoped, node),
+                    layout.snapshot.as_ref().and_then(|s| s.fragments.get(node)),
+                ) {
+                    sizes.insert(key, (fragment.width, fragment.height));
+                }
+            });
+            registry.render_into(
+                |key| {
+                    sizes
+                        .get(&key)
+                        .map(|&(width, height)| sprigging::Size { width, height })
+                },
+                cache,
+            );
+            for key in sizes.keys() {
+                if let Some(commands) = cache.get(*key) {
+                    layout.inline_leaves.insert(*key, commands.to_vec());
+                }
+            }
+            return netrender::Scene::default();
+        }
         self.ensure(dom, sheet, w, h);
+        let scoped =
+            cambium_rootstock::WindowDom::new(dom, self.root.unwrap_or_else(|| dom.document()));
         let snapshot = self.snapshot.as_mut().expect("ensure leaves a snapshot");
         let mut sizes = HashMap::new();
-        walk_dom(&*dom, dom.document(), &mut |node| {
+        walk_dom(&scoped, scoped.document(), &mut |node| {
             if let (Some(key), Some(fragment)) =
                 (custom_leaf_key(&*dom, node), snapshot.fragments.get(node))
             {
@@ -1895,19 +2250,19 @@ impl RetainedLayout {
         );
         let viewport = DeviceIntSize::new(w as i32, h as i32);
         let mut plist = paint_snapshot(
-            &*dom,
+            &scoped,
             snapshot,
             w,
             h,
             &self.element_scroll,
             self.viewport_scroll,
         );
-        walk_dom(&*dom, dom.document(), &mut |node| {
+        walk_dom(&scoped, scoped.document(), &mut |node| {
             let Some(key) = custom_leaf_key(&*dom, node) else {
                 return;
             };
             let Some((x, y, _, _)) = snapshot_node_rect(
-                &*dom,
+                &scoped,
                 snapshot,
                 node,
                 &self.element_scroll,
@@ -1936,9 +2291,15 @@ impl RetainedLayout {
         x: f32,
         y: f32,
     ) -> Option<DomNodeId> {
+        if self.inline_target().is_some() {
+            return self.inline_hit(dom, x, y);
+        }
+
         self.ensure(dom, sheet, w, h);
+        let scoped =
+            cambium_rootstock::WindowDom::new(dom, self.root.unwrap_or_else(|| dom.document()));
         snapshot_hit_test(
-            &*dom,
+            &scoped,
             self.snapshot.as_ref().expect("ensure leaves a snapshot"),
             x,
             y,
@@ -1965,11 +2326,17 @@ impl RetainedLayout {
         y: f32,
         scroll: &PaneScroll,
     ) -> Option<DomNodeId> {
+        if self.inline_target().is_some() {
+            return self.inline_hit(dom, x, y);
+        }
+
         self.ensure(dom, sheet, w, h);
+        let scoped =
+            cambium_rootstock::WindowDom::new(dom, self.root.unwrap_or_else(|| dom.document()));
         let snapshot = self.snapshot.as_ref().expect("ensure leaves a snapshot");
         self.viewport_scroll = clamp_scroll(scroll.offset, snapshot.content_extent, (w, h));
         snapshot_hit_test(
-            &*dom,
+            &scoped,
             snapshot,
             x,
             y,
@@ -1982,12 +2349,18 @@ impl RetainedLayout {
 
 /// The one composite step every scene builder ends with.
 fn composite<P: PaintList>(viewport: DeviceIntSize, plist: &P) -> netrender::Scene {
+    composite_resources(viewport, plist).scene
+}
+fn composite_resources<P: PaintList>(
+    viewport: DeviceIntSize,
+    plist: &P,
+) -> paint_list_render::TranslatedDisplayList {
     let layers = [CompositeLayer {
         commands: plist.commands(),
         fonts: plist.fonts(),
         images: plist.images(),
     }];
-    composite_paint_layers(viewport, &layers).scene
+    composite_paint_layers(viewport, &layers)
 }
 
 /// [`scene_from_dom`] at a pane's scroll offset, with auto-hiding overlay bars.

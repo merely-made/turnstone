@@ -62,7 +62,8 @@ pub(crate) fn stylesheet(
         .frisket-tab.active {{ color:var(--tabard-color-text-header); background:var(--tabard-color-bg); }}\n\
         .frisket-close {{ color:var(--tabard-color-text-dim); font-size:{:.2}px; width:{:.2}px; flex-basis:{:.2}px; min-height:{:.2}px; height:auto; padding:{:.2}px 0; }}\n\
         .frisket-divider {{ background:var(--tabard-color-text-dim); }}\n\
-        .frisket-content {{ background:transparent; }}\n",
+        .frisket-content {{ background:transparent; }}\n\
+        .turnstone-window-root {{ background:var(--tabard-color-bg); }}\n",
         cambium::FRISKET_CSS,
         cambium::WORKSPACE_CSS,
         palette.css_custom_properties(),

@@ -1,0 +1,106 @@
+[
+  {
+    "file": "01_inline_alpha_over_native_graph.png",
+    "size": [
+      2360,
+      1600
+    ],
+    "transparent_pixels": 0,
+    "outside_floats_raw": [
+      17,
+      20,
+      26,
+      255
+    ],
+    "overlap_raw": [
+      21,
+      30,
+      45,
+      255
+    ],
+    "overlap_final": [
+      21,
+      30,
+      45,
+      255
+    ]
+  },
+  {
+    "file": "02_native_alpha_over_inline_body.png",
+    "size": [
+      2360,
+      1600
+    ],
+    "transparent_pixels": 0,
+    "outside_floats_raw": [
+      24,
+      38,
+      60,
+      255
+    ],
+    "overlap_raw": [
+      20,
+      28,
+      41,
+      255
+    ],
+    "overlap_final": [
+      20,
+      28,
+      41,
+      255
+    ]
+  },
+  {
+    "file": "03_overlap_resized.png",
+    "size": [
+      1800,
+      1300
+    ],
+    "transparent_pixels": 0,
+    "outside_floats_raw": [
+      24,
+      38,
+      60,
+      255
+    ],
+    "overlap_raw": [
+      20,
+      28,
+      41,
+      255
+    ],
+    "overlap_final": [
+      20,
+      28,
+      41,
+      255
+    ]
+  },
+  {
+    "file": "04_overlap_settled.png",
+    "size": [
+      2360,
+      1600
+    ],
+    "transparent_pixels": 0,
+    "outside_floats_raw": [
+      24,
+      38,
+      60,
+      255
+    ],
+    "overlap_raw": [
+      20,
+      28,
+      41,
+      255
+    ],
+    "overlap_final": [
+      20,
+      28,
+      41,
+      255
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+RESULT ok
+waited 0 frames
+captured 01_inline_alpha_over_native_graph
+captured 02_native_alpha_over_inline_body
+captured 03_overlap_resized
+captured 04_overlap_settled
+presentation frames=160 captures=4 blank=0
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-b6-alpha-overlap\captures\a4_native_overlap\01_inline_alpha_over_native_graph.png digest=3051498e136ce2db blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-b6-alpha-overlap\captures\a4_native_overlap\02_native_alpha_over_inline_body.png digest=b0aaf25fc096c766 blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-b6-alpha-overlap\captures\a4_native_overlap\03_overlap_resized.png digest=b9a9b86d14552485 blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-b6-alpha-overlap\captures\a4_native_overlap\04_overlap_settled.png digest=b0aaf25fc096c766 blank=false

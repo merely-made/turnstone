@@ -118,12 +118,12 @@ fn swatch_view(state: &SwatchState) -> SwatchView {
                 if let Some(activate) = state.activate_of.get(&id) {
                     state.pending.push(SwatchIntent::Activate(activate.clone()));
                 }
-            }
+            },
             GraphCanvasEvent::Expand => state.pending.push(SwatchIntent::Expand),
             GraphCanvasEvent::Drag(_)
             | GraphCanvasEvent::RelationActivate(_)
             | GraphCanvasEvent::Pan { .. }
-            | GraphCanvasEvent::Zoom { .. } => {}
+            | GraphCanvasEvent::Zoom { .. } => {},
         },
     );
     // The swatch fills the top (its own leaf is sized to `swatch_h` in sync).
@@ -239,11 +239,25 @@ pub struct SwatchPane {
     /// re-shaped the whole document to draw an unchanged screen; see
     /// [`crate::ui::RetainedLayout`] for the measurement.
     layout: crate::ui::RetainedLayout,
+    // Drop the runner and its widget resources before final mount custody.
+    mount: Option<cambium::RetainedMount>,
 }
 
 impl SwatchPane {
     pub fn new(preset: ProjectionPreset) -> Self {
-        let dom: DomHandle = Rc::new(RefCell::new(ScriptedDom::new()));
+        Self::new_in(None, preset)
+    }
+    pub(crate) fn new_in(
+        mount: Option<cambium::RetainedMount>,
+        mut preset: ProjectionPreset,
+    ) -> Self {
+        let dom: DomHandle = mount
+            .as_ref()
+            .map(cambium::RetainedMount::dom)
+            .unwrap_or_else(|| Rc::new(RefCell::new(ScriptedDom::new())));
+        if let Some(mount) = &mount {
+            preset.leaf_key = dom.borrow().opaque_id(mount.node());
+        }
         let state = SwatchState {
             swatch: GraphCanvasSwatch::new(
                 preset.leaf_key,
@@ -262,12 +276,16 @@ impl SwatchPane {
             sections: Vec::new(),
             swatch_h: 0.0,
         };
-        let runner = SwatchRunner::new(
+        let runner = SwatchRunner::new_at(
             dom.clone(),
+            mount
+                .as_ref()
+                .map_or_else(|| dom.borrow().document(), cambium::RetainedMount::node),
             swatch_view as fn(&SwatchState) -> SwatchView,
             state,
         );
         Self {
+            mount: mount.clone(),
             preset,
             sections: Vec::new(),
             dom,
@@ -275,10 +293,60 @@ impl SwatchPane {
             registry: LeafRegistry::new(),
             rendered: RenderedLeaves::new(),
             last_hover: None,
-            layout: crate::ui::RetainedLayout::new(),
+            layout: crate::ui::RetainedLayout::new_at(
+                mount.as_ref().map(cambium::RetainedMount::node),
+            ),
         }
     }
 
+    pub(crate) fn inline_focus(&self) -> Option<genet_scripted_dom::NodeId> {
+        self.runner.focus()
+    }
+    pub(crate) fn focus_inline(&mut self, node: genet_scripted_dom::NodeId) -> bool {
+        let Some(mount) = &self.mount else {
+            return false;
+        };
+        if !cambium_rootstock::WindowDom::new(&self.dom.borrow(), mount.node()).contains(node) {
+            return false;
+        }
+        self.runner.set_focus(Some(node));
+        true
+    }
+    pub(crate) fn inline_selector(
+        &self,
+        selector: &taproot::Selector,
+    ) -> Result<Option<(f32, f32)>, &'static str> {
+        self.layout.selector_point(&self.dom.borrow(), selector)
+    }
+    pub(crate) fn key_inline(&mut self, event: cambium::KeyEvent) -> Vec<SwatchIntent> {
+        let _: Vec<()> = self.runner.dispatch_key(event);
+        let mut out = Vec::new();
+        self.runner
+            .update(|state| out = std::mem::take(&mut state.pending));
+        out
+    }
+    pub(crate) fn blur_inline(&mut self) {
+        self.runner.set_focus(None);
+    }
+    pub(crate) fn inline_accepts_text(&self) -> bool {
+        self.layout
+            .editable_focus(&self.dom.borrow(), self.runner.focus())
+    }
+    pub(crate) fn inline_cursor_area(&self) -> Option<(f32, f32, f32, f32)> {
+        self.layout
+            .cursor_area(&self.dom.borrow(), self.runner.focus())
+    }
+    pub(crate) fn inline_mount(&self) -> Option<cambium::RetainedMount> {
+        self.mount.clone()
+    }
+    pub(crate) fn unbind_inline(&mut self) {
+        self.layout.unbind_inline();
+    }
+    pub(crate) fn bind_inline(&mut self, layout: &crate::ui::InlineLayoutHandle) {
+        if let Some(mount) = &self.mount {
+            self.layout.bind_inline(layout, mount);
+        }
+    }
     /// Set the composed section providers for this pane (the host resolves
     /// them from the leaf's `PaneComposition` each frame). Cheap: providers are
     /// `Copy` descriptors, and the rows themselves are gathered in `sync`.
@@ -592,8 +660,7 @@ mod tests {
             .expect("every minimap node carries its url as a key");
         let (x, y) = pane
             .resolve(
-                &taproot::Selector::class("graph-canvas-swatch-node")
-                    .with_attr("data-key", &key),
+                &taproot::Selector::class("graph-canvas-swatch-node").with_attr("data-key", &key),
                 [0.0, 0.0, 480.0, 400.0],
             )
             .expect("the node must resolve by its data-key");

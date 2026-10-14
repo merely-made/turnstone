@@ -24,23 +24,38 @@ pub(super) fn space(slot: usize) -> SpaceRef {
         SpaceRef::Lens(slot - 1)
     }
 }
-pub(super) fn header_focus_in_window(owner: Option<&HeaderFocus>, window: u64, session: &uuid::Uuid) -> bool {
+pub(super) fn header_focus_in_window(
+    owner: Option<&HeaderFocus>,
+    window: u64,
+    session: &uuid::Uuid,
+) -> bool {
     owner.is_some_and(|owner| owner.slot as u64 == window && owner.session == *session)
 }
 
 fn retire_header_focus(owner: &mut Option<HeaderFocus>, window: u64) -> Option<HeaderFocus> {
-    if owner.as_ref().is_some_and(|owner| owner.slot as u64 == window) { owner.take() } else { None }
+    if owner
+        .as_ref()
+        .is_some_and(|owner| owner.slot as u64 == window)
+    {
+        owner.take()
+    } else {
+        None
+    }
 }
 
 /// Host editors retain first claim; a focused header then precedes body focus.
 pub(super) fn accessibility_focus(
-    host: Option<accesskit::NodeId>, header: Option<accesskit::NodeId>, body: Option<accesskit::NodeId>,
+    host: Option<accesskit::NodeId>,
+    header: Option<accesskit::NodeId>,
+    body: Option<accesskit::NodeId>,
 ) -> Option<accesskit::NodeId> {
     host.or(header).or(body)
 }
 
 pub(super) fn return_focus_is_valid(
-    app: &crate::app::App, owner: &HeaderFocus, active: Option<PaneId>,
+    app: &crate::app::App,
+    owner: &HeaderFocus,
+    active: Option<PaneId>,
     plan: &[crate::surface::Surface],
 ) -> bool {
     owner.session == *app.session_id.as_uuid() && owner.return_pane == active && match owner.return_focus {
@@ -55,7 +70,9 @@ pub(super) fn return_focus_is_valid(
 
 impl Shell {
     pub(super) fn raise_shared_float(&mut self, pane: PaneId) {
-        if self.app.raise_floating_pane(pane) { self.act(Action::SaveSession); }
+        if self.app.raise_floating_pane(pane) {
+            self.act(Action::SaveSession);
+        }
     }
     /// Withdrawal cannot restore old body focus into a different physical window.
     pub(super) fn retire_frame_focus(&mut self, window: u64) {
@@ -185,7 +202,6 @@ impl Shell {
         if divider && save_dividers {
             self.act(Action::SaveSession);
         }
-
     }
     pub(super) fn deliver_frame_key(&mut self, slot: usize, size: (u32, u32), key: &Key) -> bool {
         if self
@@ -270,6 +286,75 @@ impl Shell {
         if !self.prepare_outer(slot, size) {
             return false;
         }
+        if let Control::Body { tile, node } = route.control {
+            let target = self
+                .outer_frames
+                .borrow()
+                .get(&slot)
+                .and_then(|frame| frame.body_target(route, action));
+            let Some(target) = target else {
+                return false;
+            };
+            let pane = PaneId(tile.0);
+            let plan = if slot == 0 {
+                self.surface_plan()
+            } else {
+                self.lens_plan(slot - 1, size.0, size.1)
+            };
+            let Some(surface) = plan
+                .iter()
+                .find(|s| s.kind == crate::surface::SurfaceKind::Pane(pane))
+            else {
+                return false;
+            };
+            if action == accesskit::Action::Click {
+                let point = (target.x + target.w / 2.0, target.y + target.h / 2.0);
+                if crate::surface::hit_test(&plan, self.app.focus, point.0, point.1)
+                    .is_none_or(|hit| hit.id != surface.id)
+                {
+                    return false;
+                }
+            }
+            self.leave_frame_focus();
+            self.app.active_pane = Some(pane);
+            self.app.focus = crate::surface::FocusTarget::Pane(pane);
+            self.input_window = slot as u64;
+            self.window_focus.insert(slot as u64, self.app.focus);
+            match action {
+                accesskit::Action::Focus => {
+                    if !self.renderers.focus_inline(pane, node) {
+                        return false;
+                    }
+                },
+                accesskit::Action::Click => {
+                    let Some(content) = self.pane_content(pane) else {
+                        return false;
+                    };
+                    let local = (
+                        target.x + target.w / 2.0 - surface.rect.x,
+                        target.y + target.h / 2.0 - surface.rect.y,
+                    );
+                    for action in self.pane_click_actions(
+                        pane,
+                        &content,
+                        local,
+                        (
+                            surface.rect.w.round().max(1.0) as u32,
+                            surface.rect.h.round().max(1.0) as u32,
+                        ),
+                    ) {
+                        self.act(action);
+                    }
+                },
+                _ => return false,
+            }
+            if let Some(frame) = self.outer_frames.borrow_mut().get_mut(&slot) {
+                frame.body_focus = self.renderers.inline_focus(pane);
+                frame.controls.observe_body_mutations();
+            }
+            self.request_redraw();
+            return true;
+        }
         let events = self
             .outer_frames
             .borrow_mut()
@@ -295,12 +380,23 @@ mod tests {
         let app = crate::app::App::test_stub();
         let original_focus = app.focus;
         let mut owner = Some(HeaderFocus {
-            slot: 2, session: *app.session_id.as_uuid(), return_focus: app.focus,
+            slot: 2,
+            session: *app.session_id.as_uuid(),
+            return_focus: app.focus,
             return_pane: app.active_pane,
         });
-        assert!(header_focus_in_window(owner.as_ref(), 2, app.session_id.as_uuid()));
-        assert!(!header_focus_in_window(owner.as_ref(), 0, app.session_id.as_uuid()));
-        let next_session = uuid::Uuid::from_u128(app.session_id.as_uuid().as_u128().wrapping_add(1));
+        assert!(header_focus_in_window(
+            owner.as_ref(),
+            2,
+            app.session_id.as_uuid()
+        ));
+        assert!(!header_focus_in_window(
+            owner.as_ref(),
+            0,
+            app.session_id.as_uuid()
+        ));
+        let next_session =
+            uuid::Uuid::from_u128(app.session_id.as_uuid().as_u128().wrapping_add(1));
         assert!(!header_focus_in_window(owner.as_ref(), 2, &next_session));
         assert!(retire_header_focus(&mut owner, 0).is_none());
         assert!(owner.is_some());
@@ -314,16 +410,35 @@ mod tests {
     fn header_accessibility_focus_precedes_body_but_keeps_host_editor_priority() {
         let app = crate::app::App::test_stub();
         let mut frame = crate::outer_frame::OuterFrame::default();
-        frame.prepare(&app.frisket, app.active_pane, app.maximized, (1180, 800),
-            &app.shell_chrome_config().appearance, app.session_id.as_uuid().as_u128()).unwrap();
-        let target = frame.controls.order().into_iter().find(|c| matches!(c, Control::Tab(_))).unwrap();
+        frame
+            .prepare(
+                &app.frisket,
+                app.active_pane,
+                app.maximized,
+                (1180, 800),
+                &app.shell_chrome_config().appearance,
+                app.session_id.as_uuid().as_u128(),
+            )
+            .unwrap();
+        let target = frame
+            .controls
+            .order()
+            .into_iter()
+            .find(|c| matches!(c, Control::Tab(_)))
+            .unwrap();
         assert!(frame.focus_control(Some(target)));
         let projection = frame.accessibility(true).unwrap();
         let header = projection.focus.expect("actual retained header focus");
         let body = accesskit::NodeId(u64::MAX - 1);
-        assert_eq!(accessibility_focus(None, Some(header), Some(body)), Some(header));
+        assert_eq!(
+            accessibility_focus(None, Some(header), Some(body)),
+            Some(header)
+        );
         let editor = accesskit::NodeId(u64::MAX - 2);
-        assert_eq!(accessibility_focus(Some(editor), Some(header), Some(body)), Some(editor));
+        assert_eq!(
+            accessibility_focus(Some(editor), Some(header), Some(body)),
+            Some(editor)
+        );
         assert_eq!(accessibility_focus(None, None, Some(body)), Some(body));
     }
 
@@ -332,15 +447,44 @@ mod tests {
         let app = crate::app::App::test_stub();
         let mut frame = crate::outer_frame::OuterFrame::default();
         let scope = app.session_id.as_uuid().as_u128();
-        let bodies = frame.prepare(&app.frisket, app.active_pane, app.maximized, (1180, 800),
-            &app.shell_chrome_config().appearance, scope).unwrap();
+        let bodies = frame
+            .prepare(
+                &app.frisket,
+                app.active_pane,
+                app.maximized,
+                (1180, 800),
+                &app.shell_chrome_config().appearance,
+                scope,
+            )
+            .unwrap();
         assert!(!bodies.is_empty());
-        let control = frame.controls.order().into_iter().find(|c| matches!(c, Control::Tab(_))).unwrap();
+        let control = frame
+            .controls
+            .order()
+            .into_iter()
+            .find(|c| matches!(c, Control::Tab(_)))
+            .unwrap();
         let route = frame.controls.route(control);
-        assert!(frame.accessibility_action(&route, accesskit::Action::Focus).is_some());
-        frame.prepare(&app.frisket, app.active_pane, app.maximized, (1180, 800),
-            &app.shell_chrome_config().appearance, scope.wrapping_add(1)).unwrap();
-        assert!(frame.accessibility_action(&route, accesskit::Action::Click).is_none());
+        assert!(
+            frame
+                .accessibility_action(&route, accesskit::Action::Focus)
+                .is_some()
+        );
+        frame
+            .prepare(
+                &app.frisket,
+                app.active_pane,
+                app.maximized,
+                (1180, 800),
+                &app.shell_chrome_config().appearance,
+                scope.wrapping_add(1),
+            )
+            .unwrap();
+        assert!(
+            frame
+                .accessibility_action(&route, accesskit::Action::Click)
+                .is_none()
+        );
         assert!(frame.controls.focus().is_none());
     }
 }

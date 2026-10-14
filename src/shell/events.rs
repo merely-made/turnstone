@@ -31,7 +31,8 @@ use crate::browse;
 use super::Shell;
 
 impl ApplicationHandler for Shell {
-    fn new_events(&mut self, _event_loop: &ActiveEventLoop, _cause: StartCause) {
+    fn new_events(&mut self, _event_loop: &ActiveEventLoop, cause: StartCause) {
+        let started = std::time::Instant::now();
         self.poll_render_recovery();
         self.observe_physics_display_rate(false);
         #[cfg(all(feature = "servo", windows))]
@@ -43,20 +44,43 @@ impl ApplicationHandler for Shell {
         // captured browser mailboxes and self-drive cannot lose their clock.
         // Replace this fallback when the engines expose a host wake callback.
         let now = std::time::Instant::now();
-        if self.document_clock.poll_due(now) {
+        let document_due = self.document_clock.poll_due(now);
+        if document_due {
             self.pump_visible_documents();
-            self.request_pending_document_redraws();
             self.push_a11y_tree();
         }
         let active = self.content_sessions.surface_count() > 0 || self.shared_scenario.is_some();
-        if self.surface_poll_clock.poll_due(active, now) {
-            self.request_redraw();
+        let surface_due = self.surface_poll_clock.poll_due(active, now);
+        if surface_due {
+            // The mailbox clock belongs to native producers. Requeuing a
+            // quiet component lens every overdue interval can repeatedly
+            // service that window before another window receives its paint.
+            // Shared state/input/theme invalidation still requests all windows.
+            if (self.shared_scenario.is_some() || self.content_sessions.pool.window_has_surface(0))
+                && let Some(window) = &self.window
+            {
+                window.request_redraw();
+            }
+            for (id, lens) in &self.lens_windows {
+                if self.pending_lens_capture_window == Some(*id)
+                    || self
+                        .content_sessions
+                        .pool
+                        .window_has_surface(lens.ordinal as u64 + 1)
+                {
+                    lens.window.request_redraw();
+                }
+            }
         }
+        tracing::debug!(target: "turnstone::selfdrive", ?cause, document_due, surface_due,
+            micros = started.elapsed().as_micros(), "native wake batch prepared");
     }
 
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
         if self.shared_scenario.is_some()
-            && self.main_receipt.presentation_stalled(self.theme_editor.is_some())
+            && self
+                .main_receipt
+                .presentation_stalled(self.theme_editor.is_some())
         {
             let mut outcome = self.shared_scenario.take().unwrap().finish();
             outcome.ok = false;
@@ -94,6 +118,17 @@ impl ApplicationHandler for Shell {
     }
 
     fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
+        // Retire actual renderer resources while their physical hosts still
+        // exist, including a normal scenario exit and a primary-window close.
+        let windows: Vec<_> = self
+            .lens_windows
+            .values()
+            .map(|lens| lens.ordinal as u64 + 1)
+            .collect();
+        for window in windows {
+            self.retire_render_receivers(window);
+        }
+        self.retire_render_receivers(0);
         #[cfg(all(feature = "servo", windows))]
         {
             self.clear_surface_content();
@@ -169,7 +204,7 @@ impl ApplicationHandler for Shell {
             Ok(host) => {
                 self.host = Some(host);
                 self.ensure_render_recovery();
-            }
+            },
             Err(err) => {
                 eprintln!("[turnstone] {err}");
                 event_loop.exit();
@@ -202,6 +237,7 @@ impl ApplicationHandler for Shell {
     /// completed fetch is waiting. Drain fetches through the spine, then
     /// redraw so `frame()` folds everything in (and chains while settling).
     fn user_event(&mut self, event_loop: &ActiveEventLoop, _event: ()) {
+        let started = std::time::Instant::now();
         while let Ok(raw) = self
             .fetch_rx
             .try_recv()
@@ -286,6 +322,7 @@ impl ApplicationHandler for Shell {
         self.drain_a11y_actions();
         self.drain_pending_windows(event_loop);
         self.request_redraw();
+        tracing::debug!(target: "turnstone::selfdrive", micros = started.elapsed().as_micros(), "native actor wake completed");
     }
 
     fn window_event(
@@ -317,8 +354,7 @@ impl ApplicationHandler for Shell {
         if self.window.as_ref().map(|w| w.id()) != Some(window_id) {
             // A lens window's event (rung 7): canvas gestures through the
             // lens's own camera; everything else is the primary's.
-            if let Some(lens)=self.lens_windows.get_mut(&window_id) {
-
+            if let Some(lens) = self.lens_windows.get_mut(&window_id) {
                 self.lens_event(window_id, event);
                 self.drain_pending_windows(event_loop);
             }

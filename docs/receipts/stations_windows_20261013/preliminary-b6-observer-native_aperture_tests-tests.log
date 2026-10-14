@@ -1,0 +1,16 @@
+
+running 2 tests
+test outer_frame::native_aperture_tests::identical_source_rectangles_keep_exact_appearance_owners ... ok
+
+thread 'outer_frame::native_aperture_tests::the_final_floating_canvas_keeps_one_actual_native_aperture' (55676) panicked at src\outer_frame.rs:635:14:
+called `Option::unwrap()` on a `None` value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test outer_frame::native_aperture_tests::the_final_floating_canvas_keeps_one_actual_native_aperture ... FAILED
+
+failures:
+
+failures:
+    outer_frame::native_aperture_tests::the_final_floating_canvas_keeps_one_actual_native_aperture
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 951 filtered out; finished in 0.05s
+

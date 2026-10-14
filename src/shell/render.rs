@@ -66,9 +66,18 @@ impl Shell {
             .get(&node)
             .and_then(|cached| cached.as_ref())
             .map(|frame| CompositeLayer {
+                id: surface.id.0,
+                changed: true,
+                dimensions: frame.dimensions(),
+                alpha: frame.presentation_alpha(),
                 kind: surface.kind,
                 view: frame.view(),
-                placement: ExternalTexturePlacement::new(surface.rect.dest()),
+                raster: None,
+                // The importer sources carry explicit premultiplied output
+                // conventions; legacy direct composition must preserve them
+                // just as the shared staging lane does.
+                placement: ExternalTexturePlacement::new(surface.rect.dest())
+                    .with_alpha(netrender::SourceAlpha::Premultiplied),
             }))
     }
 
@@ -550,13 +559,17 @@ impl Shell {
                 },
             };
         }
+        let dom = self.renderers.dom.clone();
+        // A legacy blueprint rasterizes its scoped owner without replacing
+        // its runner. Joining a Workspace reparents this same owner.
+        let mount = || Some(cambium::RetainedMount::new(dom.clone()));
         match content {
             Some(PaneContent::Trail) => {
                 let pane = self
                     .renderers
                     .trail
                     .entry(pane_id)
-                    .or_insert_with(crate::trail_pane::TrailPane::new);
+                    .or_insert_with(|| crate::trail_pane::TrailPane::new_in(mount()));
                 pane.sync(&self.app, rw as f32, rh as f32);
                 pane.scene(rw, rh)
             },
@@ -567,7 +580,7 @@ impl Shell {
                     .renderers
                     .roster
                     .entry(pane_id)
-                    .or_insert_with(crate::cambium_pane::RosterGrid::new);
+                    .or_insert_with(|| crate::cambium_pane::RosterGrid::new_in(mount()));
                 grid.sync(&self.app, pane_id, rw as f32, rh as f32);
                 grid.scene(rw, rh)
             },
@@ -579,7 +592,10 @@ impl Shell {
                 // a newer build degrades instead of failing).
                 let providers = crate::sections::resolve(&cfg.sections);
                 let pane = self.renderers.gloss.entry(pane_id).or_insert_with(|| {
-                    crate::swatch_pane::SwatchPane::new(crate::swatch_pane::GLOSS_MINIMAP)
+                    crate::swatch_pane::SwatchPane::new_in(
+                        mount(),
+                        crate::swatch_pane::GLOSS_MINIMAP,
+                    )
                 });
                 pane.set_sections(providers);
                 pane.sync(&self.app, rw as f32, rh as f32);
@@ -606,7 +622,7 @@ impl Shell {
                     .renderers
                     .inspector
                     .entry(pane_id)
-                    .or_insert_with(crate::inspector_pane::InspectorPane::new);
+                    .or_insert_with(|| crate::inspector_pane::InspectorPane::new_in(mount()));
                 pane.sync(
                     &self.app,
                     pane_id,
@@ -627,7 +643,7 @@ impl Shell {
                     .renderers
                     .workbench
                     .entry(pane_id)
-                    .or_insert_with(crate::workbench_pane::WorkbenchPane::new);
+                    .or_insert_with(|| crate::workbench_pane::WorkbenchPane::new_in(mount()));
                 pane.sync(&self.app, pane_id, rw as f32, rh as f32);
                 pane.scene(rw, rh)
             },
@@ -640,7 +656,7 @@ impl Shell {
                     .renderers
                     .transcript
                     .entry(pane_id)
-                    .or_insert_with(crate::transcript_pane::TranscriptPane::new);
+                    .or_insert_with(|| crate::transcript_pane::TranscriptPane::new_in(mount()));
                 pane.sync(self.app.shell_transcript(), rw as f32, rh as f32);
                 pane.scene(rw, rh)
             },
@@ -649,7 +665,7 @@ impl Shell {
                     .renderers
                     .arrange
                     .entry(pane_id)
-                    .or_insert_with(crate::arrange_pane::ArrangePane::new);
+                    .or_insert_with(|| crate::arrange_pane::ArrangePane::new_in(mount()));
                 pane.sync(&self.app, rw as f32, rh as f32);
                 pane.scene(rw, rh)
             },
@@ -658,7 +674,8 @@ impl Shell {
             {
                 let live_settings = self.live_settings.clone();
                 let pane = self.renderers.settings.entry(pane_id).or_insert_with(|| {
-                    crate::settings_pane::SettingsPane::with_live_settings(
+                    crate::settings_pane::SettingsPane::new_in(
+                        mount(),
                         self.app.data_root.clone(),
                         Some(live_settings),
                     )
@@ -670,11 +687,10 @@ impl Shell {
                 if kind.as_str() == crate::panes::kind::PUBLISHING =>
             {
                 let service = self.publish_service.clone();
-                let pane = self
-                    .renderers
-                    .publish
-                    .entry(pane_id)
-                    .or_insert_with(|| crate::publish_pane::PublishPane::new(service));
+                let pane =
+                    self.renderers.publish.entry(pane_id).or_insert_with(|| {
+                        crate::publish_pane::PublishPane::new_in(mount(), service)
+                    });
                 pane.sync(rw as f32, rh as f32);
                 pane.scene(rw, rh)
             },
@@ -686,7 +702,9 @@ impl Shell {
                     .renderers
                     .shared_knot
                     .entry(pane_id)
-                    .or_insert_with(|| crate::share_reader_pane::SharedKnotPane::new(service));
+                    .or_insert_with(|| {
+                        crate::share_reader_pane::SharedKnotPane::new_in(mount(), service)
+                    });
                 pane.sync(rw as f32, rh as f32);
                 pane.scene(rw, rh)
             },
@@ -699,7 +717,7 @@ impl Shell {
                     .device_receipts
                     .entry(pane_id)
                     .or_insert_with(|| {
-                        crate::device_receipts_pane::DeviceReceiptsPane::new(service)
+                        crate::device_receipts_pane::DeviceReceiptsPane::new_in(mount(), service)
                     });
                 pane.sync(rw as f32, rh as f32);
                 pane.scene(rw, rh)
@@ -711,7 +729,9 @@ impl Shell {
                     .renderers
                     .frozen_projection
                     .entry(pane_id)
-                    .or_insert_with(crate::frozen_projection_pane::FrozenProjectionPane::new);
+                    .or_insert_with(|| {
+                        crate::frozen_projection_pane::FrozenProjectionPane::new_in(mount())
+                    });
                 pane.sync(&self.app, rw as f32, rh as f32);
                 pane.scene(rw, rh)
             },
@@ -723,7 +743,10 @@ impl Shell {
                 // so the second host cost a resolve and a setter.
                 let providers = crate::sections::resolve(&cfg.sections);
                 let pane = self.renderers.overmap.entry(pane_id).or_insert_with(|| {
-                    crate::swatch_pane::SwatchPane::new(crate::swatch_pane::OVERMAP_LINEAGE)
+                    crate::swatch_pane::SwatchPane::new_in(
+                        mount(),
+                        crate::swatch_pane::OVERMAP_LINEAGE,
+                    )
                 });
                 pane.set_sections(providers);
                 pane.sync(&self.app, rw as f32, rh as f32);
@@ -731,7 +754,13 @@ impl Shell {
             },
             other => {
                 let label = other.map(|c| pane_display_label(c)).unwrap_or_default();
-                crate::ui::pane_scene(&label, rw, rh)
+                let pane = self
+                    .renderers
+                    .placeholder
+                    .entry(pane_id)
+                    .or_insert_with(|| crate::inline_pane::InlinePane::new(dom.clone()));
+                pane.sync(label, rw, rh);
+                pane.scene(rw, rh)
             },
         }
     }
@@ -744,10 +773,19 @@ impl Shell {
         let PaneContent::Registered(kind) = content? else {
             return None;
         };
-        let spec = self.app.space(self.app.space_of(pane_id)?)?.outer_workspace().ok()
-            .and_then(|frame|frame.descriptors.get(&pane_id.0).cloned())
-            .and_then(|value|serde_json::from_value::<crate::panes::PaneSpec>(value).ok())
-            .or_else(||self.app.blueprint_space(self.app.space_of(pane_id)?)?.pane(pane_id).cloned())?;
+        let spec = self
+            .app
+            .space(self.app.space_of(pane_id)?)?
+            .outer_workspace()
+            .ok()
+            .and_then(|frame| frame.descriptors.get(&pane_id.0).cloned())
+            .and_then(|value| serde_json::from_value::<crate::panes::PaneSpec>(value).ok())
+            .or_else(|| {
+                self.app
+                    .blueprint_space(self.app.space_of(pane_id)?)?
+                    .pane(pane_id)
+                    .cloned()
+            })?;
         (&spec.kind == kind && self.surface_providers.contains_pane_kind(&spec.kind))
             .then(|| spec.clone())
     }
@@ -760,6 +798,35 @@ impl Shell {
     pub(super) fn render(&mut self) -> bool {
         self.refresh_retained_clip_playback();
         self.poll_capture_readback();
+        let diagnostics = std::mem::take(&mut self.pending_native_diagnostics);
+        for mut pending in diagnostics {
+            match pending.frame.poll() {
+                Some(Ok(frame)) => {
+                    if let Err(error) = mesquite::write_png(&pending.path, &frame) {
+                        self.main_receipt
+                            .errors
+                            .push(format!("native raster diagnostic: {error}"));
+                    }
+                },
+                Some(Err(error)) => self
+                    .main_receipt
+                    .errors
+                    .push(format!("native raster diagnostic: {error}")),
+                None if pending.started.elapsed() > std::time::Duration::from_secs(5) => {
+                    self.main_receipt
+                        .errors
+                        .push("native raster diagnostic exceeded five seconds".into());
+                },
+                None => self.pending_native_diagnostics.push(pending),
+            }
+        }
+        if !self.pending_native_diagnostics.is_empty()
+            && let Some(window) = &self.window
+        {
+            // Selected diagnostics belong to the primary renderer. Continue
+            // its asynchronous readback even outside a self-drive scenario.
+            window.request_redraw();
+        }
         if !self.poll_render_recovery() || self.host.is_none() {
             return false;
         }
@@ -803,6 +870,15 @@ impl Shell {
         // The surface plan (rung 5 slice A): the ordered list of composited
         // surfaces, each with its own rect. Built by the same helper input
         // routing uses, so what a frame draws and what a pointer hits agree.
+        self.prepare_inline_owners(0, (w, h));
+        if let Some(area) = self.inline_cursor_area(0)
+            && let Some(window) = &self.window
+        {
+            window.set_ime_cursor_area(
+                PhysicalPosition::new(area.x, area.y),
+                PhysicalSize::new(area.w, area.h),
+            );
+        }
         let surfaces = self.surface_plan();
         let caption = self
             .app
@@ -893,6 +969,14 @@ impl Shell {
                     }
                 },
                 crate::surface::SurfaceKind::Pane(id) => {
+                    if self
+                        .app
+                        .blueprint_space(crate::action::SpaceRef::Primary)
+                        .is_none()
+                        && self.renderers.inline_mount(id).is_some()
+                    {
+                        continue;
+                    }
                     // The pane's scene by kind, through the SHARED retained
                     // runners (extracted so lens windows render the same
                     // panes through the same runners — the identity story).
@@ -900,7 +984,9 @@ impl Shell {
                     let scene = self.pane_scene_by_kind(id, content.as_ref(), rw, rh);
                     (scene, wgpu::Color::TRANSPARENT)
                 },
-                crate::surface::SurfaceKind::Frame | crate::surface::SurfaceKind::FloatFrame(_) => (self.outer_scene(0), wgpu::Color::TRANSPARENT),
+                crate::surface::SurfaceKind::Frame | crate::surface::SurfaceKind::FloatFrame(_) => {
+                    (self.outer_scene(0), wgpu::Color::TRANSPARENT)
+                },
                 crate::surface::SurfaceKind::Divider(_) => {
                     // The band is the clear colour; nothing to draw over it.
                     (Scene::default(), crate::ui::SEAM_CLEAR)
@@ -935,10 +1021,21 @@ impl Shell {
                 self.app.frame_timings.pane_scenes += scene_started.elapsed();
             }
             scenes.push(PlannedLayer::Scene(PlannedScene {
-                id: if matches!(surface.kind,SurfaceKind::FloatFrame(_)) {crate::surface::SurfaceId::for_kind(SurfaceKind::Frame).0} else {surface.id.0},
+                id: if matches!(
+                    surface.kind,
+                    SurfaceKind::Frame | SurfaceKind::FloatFrame(_)
+                ) {
+                    crate::surface::SurfaceId::frame_window(0).0
+                } else {
+                    surface.id.0
+                },
                 kind: surface.kind,
-                placement: super::frame_placement(surface,w,h),
-                dims: if matches!(surface.kind,SurfaceKind::FloatFrame(_)) {(w,h)} else {(rw,rh)},
+                placement: super::frame_placement(surface, w, h),
+                dims: if matches!(surface.kind, SurfaceKind::FloatFrame(_)) {
+                    (w, h)
+                } else {
+                    (rw, rh)
+                },
                 scene,
                 clear,
             }));
@@ -966,32 +1063,47 @@ impl Shell {
         let generation = host.core().generation();
         // Keep each returned texture alive through composition and capture.
         let mut raster_textures = Vec::new();
-        let layers: Result<Vec<CompositeLayer>, (u64, genet_render_host::RasterizeFailure)> = scenes
-            .into_iter()
-            .map(|source| match source {
-                PlannedLayer::Scene(scene) => {
-                    let (texture, view) = host.core().try_rasterize_scaled_for(
-                        scene.id,
-                        &scene.scene,
-                        scene.dims.0,
-                        scene.dims.1,
-                        ColorLoad::Clear(scene.clear),
-                        1.0,
-                    ).map_err(|failure| (scene.id, failure))?;
-                    raster_textures.push(texture);
-                    surface_raster.note(
-                        scene.kind,
-                        host.renderer().vello_last_dirty_count().unwrap_or(0),
-                    );
-                    Ok(CompositeLayer {
-                        kind: scene.kind,
-                        view,
-                        placement: scene.placement,
-                    })
-                },
-                PlannedLayer::Imported(layer) => Ok(layer),
-            })
-            .collect();
+        let shared_frame = surfaces
+            .iter()
+            .any(|surface| surface.kind == SurfaceKind::Frame);
+        let layers: Result<Vec<CompositeLayer>, (u64, genet_render_host::RasterizeFailure)> =
+            scenes
+                .into_iter()
+                .filter(|source| !shared_frame || !matches!(source,
+                    PlannedLayer::Scene(scene) if matches!(scene.kind, SurfaceKind::Frame | SurfaceKind::FloatFrame(_))))
+                .map(|source| match source {
+                    PlannedLayer::Scene(scene) => {
+                        let (texture, view) = host
+                            .core()
+                            .try_rasterize_scaled_for(
+                                scene.id,
+                                &scene.scene,
+                                scene.dims.0,
+                                scene.dims.1,
+                                ColorLoad::Clear(scene.clear),
+                                1.0,
+                            )
+                            .map_err(|failure| (scene.id, failure))?;
+                        let raster = texture.clone();
+                        raster_textures.push(texture);
+                        surface_raster.note(
+                            scene.kind,
+                            host.renderer().vello_last_dirty_count().unwrap_or(0),
+                        );
+                        Ok(CompositeLayer {
+                            id: scene.id,
+                            changed: host.renderer().vello_last_dirty_count().unwrap_or(1) != 0,
+                            dimensions: [scene.dims.0, scene.dims.1],
+                            alpha: Ok(netrender::SourceAlpha::Straight),
+                            kind: scene.kind,
+                            view,
+                            raster: Some(raster),
+                            placement: scene.placement,
+                        })
+                    },
+                    PlannedLayer::Imported(layer) => Ok(layer),
+                })
+                .collect();
         let layers = match layers {
             Ok(layers) => layers,
             Err((source, failure)) => {
@@ -1000,7 +1112,52 @@ impl Shell {
                 drop((surface_device, surface_queue));
                 self.refuse_raster_frame(0, generation, source, failure);
                 return false;
+            },
+        };
+        let layers = if shared_frame {
+            let mut frames = self.outer_frames.borrow_mut();
+            match super::native_composition::compose(
+                frames.get_mut(&0).expect("shared frame prepared"),
+                &self.app,
+                host.core(),
+                &mut self.renderers.native_images,
+                &mut self.renderers.native_masks,
+                0,
+                &surfaces,
+                layers,
+                &mut raster_textures,
+                (w, h),
+                self.pending_capture
+                    .as_deref()
+                    .filter(|_| {
+                        std::env::var("TURNSTONE_A4_DIAGNOSTICS").is_ok_and(|value| value == "1")
+                    })
+                    .map(|path| {
+                        (
+                            path,
+                            &mut self.pending_native_diagnostics,
+                            self.window
+                                .as_ref()
+                                .map_or(1.0, |window| window.scale_factor()),
+                        )
+                    }),
+            ) {
+                Ok(layers) => {
+                    surface_raster.note(
+                        SurfaceKind::Frame,
+                        host.renderer().vello_last_dirty_count().unwrap_or(0),
+                    );
+                    layers
+                },
+                Err(failure) => {
+                    drop(frames);
+                    drop(raster_textures);
+                    self.refuse_native_composition(0, generation, failure);
+                    return false;
+                },
             }
+        } else {
+            layers
         };
         let raster_elapsed = raster_started.elapsed();
 
@@ -1018,7 +1175,12 @@ impl Shell {
                 drop(raster_textures);
                 #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
                 drop((surface_device, surface_queue));
-                self.refuse_raster_frame(0, generation, 0, genet_render_host::RasterizeFailure::DeviceLost(loss));
+                self.refuse_raster_frame(
+                    0,
+                    generation,
+                    0,
+                    genet_render_host::RasterizeFailure::DeviceLost(loss),
+                );
                 return false;
             },
             genet_render_host::SurfaceAcquire::SurfaceLost => {
@@ -1034,6 +1196,7 @@ impl Shell {
         let target = frame
             .texture
             .create_view(&wgpu::TextureViewDescriptor::default());
+        clear_composition_target(&host, &target);
         for layer in &layers {
             host.renderer().compose_external_texture(
                 &layer.view,
@@ -1051,7 +1214,12 @@ impl Shell {
             drop(raster_textures);
             #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
             drop((surface_device, surface_queue));
-            self.refuse_raster_frame(0, generation, 0, genet_render_host::RasterizeFailure::DeviceLost(loss));
+            self.refuse_raster_frame(
+                0,
+                generation,
+                0,
+                genet_render_host::RasterizeFailure::DeviceLost(loss),
+            );
             return false;
         }
         // wgpu 30 moved presentation from SurfaceTexture to Queue.
@@ -1142,7 +1310,30 @@ impl Shell {
         {
             window.request_redraw();
         }
+        self.finish_inline_frame();
         true
+    }
+
+    pub(super) fn request_document_work_redraws(
+        &self,
+        work: &[pelt_core::PeltDocumentWork<super::content_pool::ContentKey>],
+    ) {
+        if work
+            .iter()
+            .any(|work| self.content_sessions.pool.window_has_document_work(0, work))
+            && let Some(window) = self.window.as_ref()
+        {
+            window.request_redraw();
+        }
+        for lens in self.lens_windows.values() {
+            if work.iter().any(|work| {
+                self.content_sessions
+                    .pool
+                    .window_has_document_work(lens.ordinal as u64 + 1, work)
+            }) {
+                lens.window.request_redraw();
+            }
+        }
     }
 
     pub(super) fn request_pending_document_redraws(&self) {
@@ -1180,7 +1371,10 @@ impl Shell {
                     ));
                 }
             },
-            Some(Err(error)) => self.main_receipt.errors.push(format!("capture {}: {error}", pending.path.display())),
+            Some(Err(error)) => self
+                .main_receipt
+                .errors
+                .push(format!("capture {}: {error}", pending.path.display())),
             None if pending.started.elapsed() > std::time::Duration::from_secs(5) => {
                 self.main_receipt
                     .errors
@@ -1241,7 +1435,9 @@ pub(super) fn capture_composed(
     h: u32,
     path: &Path,
 ) -> bool {
-    let Ok(frame) = capture_target(host, layers, w, h) else { return false; };
+    let Ok(frame) = capture_target(host, layers, w, h) else {
+        return false;
+    };
     let rgba = read_texture_rgba(host, &frame, w, h);
     if rgba.is_empty() {
         return false;
@@ -1254,8 +1450,44 @@ pub(super) fn capture_composed(
         .is_ok()
 }
 
-fn capture_target(host: &SurfaceHost, layers: &[CompositeLayer], w: u32, h: u32) -> Result<wgpu::Texture, String> {
-    if let Some(loss) = host.core().device_failure() { return Err(format!("capture refused: DeviceLost({loss:?})")); }
+/// Composition blends over its target. Present and capture both begin from
+/// transparent black; the retained window's authored background owns color.
+pub(super) fn clear_composition_target(host: &SurfaceHost, target: &wgpu::TextureView) {
+    let mut encoder = host
+        .device()
+        .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+            label: Some("turnstone window target clear"),
+        });
+    {
+        let _pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            label: Some("turnstone window target clear pass"),
+            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                view: target,
+                depth_slice: None,
+                resolve_target: None,
+                ops: wgpu::Operations {
+                    load: wgpu::LoadOp::Clear(wgpu::Color::TRANSPARENT),
+                    store: wgpu::StoreOp::Store,
+                },
+            })],
+            depth_stencil_attachment: None,
+            timestamp_writes: None,
+            occlusion_query_set: None,
+            multiview_mask: None,
+        });
+    }
+    host.queue().submit([encoder.finish()]);
+}
+
+fn capture_target(
+    host: &SurfaceHost,
+    layers: &[CompositeLayer],
+    w: u32,
+    h: u32,
+) -> Result<wgpu::Texture, String> {
+    if let Some(loss) = host.core().device_failure() {
+        return Err(format!("capture refused: DeviceLost({loss:?})"));
+    }
     let target = host.device().create_texture(&wgpu::TextureDescriptor {
         label: Some("turnstone scenario capture"),
         size: wgpu::Extent3d {
@@ -1271,6 +1503,7 @@ fn capture_target(host: &SurfaceHost, layers: &[CompositeLayer], w: u32, h: u32)
         view_formats: &[],
     });
     let target_view = target.create_view(&wgpu::TextureViewDescriptor::default());
+    clear_composition_target(host, &target_view);
     for layer in layers {
         host.renderer().compose_external_texture(
             &layer.view,
@@ -1281,7 +1514,9 @@ fn capture_target(host: &SurfaceHost, layers: &[CompositeLayer], w: u32, h: u32)
             layer.placement,
         );
     }
-    if let Some(loss) = host.core().device_failure() { return Err(format!("capture refused: DeviceLost({loss:?})")); }
+    if let Some(loss) = host.core().device_failure() {
+        return Err(format!("capture refused: DeviceLost({loss:?})"));
+    }
     Ok(target)
 }
 

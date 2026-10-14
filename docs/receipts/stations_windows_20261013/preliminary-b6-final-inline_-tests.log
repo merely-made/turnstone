@@ -1,0 +1,9 @@
+
+running 4 tests
+test scenario::tests::inline_component_station_fixture_uses_supported_grammar ... ok
+test place::invite::tests::an_oversized_inline_artifact_is_refused_before_it_is_trusted ... ok
+test share_reader_pane::tests::inline_ticket_field_routes_keys_composition_and_caret_in_shared_layout ... ok
+test cambium_pane::tests::inline_roster_uses_shared_fragments_and_preserves_owner_across_windows ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 949 filtered out; finished in 0.10s
+

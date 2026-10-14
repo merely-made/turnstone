@@ -1,0 +1,13 @@
+{
+  "scenario": "a4_inline_components",
+  "case": "final-source-a4-scoped",
+  "workshop": "",
+  "started_utc": "2026-10-14T09:52:22.9248763Z",
+  "finished_utc": "2026-10-14T09:52:56.5685656Z",
+  "exit": 0,
+  "result_ok": true,
+  "default_surface_poll": true,
+  "executable_sha256": "4851ee2c1aaa46d9c33d0aeb706b0ab7f4b4c92c50ccd474206460cc619a25dc",
+  "fixture_sha256": "bac82d218f49cf01a7af9acad90e128751ba4249db263199e0a9329992982d72",
+  "primary_lock_sha256": "432883312ec370221f2a383e98ffb1e3a2bf735a235ab35c32621cc9901a2fb3"
+}

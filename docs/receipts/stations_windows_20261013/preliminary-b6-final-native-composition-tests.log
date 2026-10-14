@@ -1,0 +1,8 @@
+
+running 3 tests
+test shell::native_composition::tests::allocated_producers_preserve_custody_and_rootstock_range ... ok
+test shell::native_composition::tests::mask_cache_reuses_exact_requests_and_refreshes_changed_blur_or_device ... ok
+test shell::native_composition::tests::equal_mask_ordinals_keep_distinct_window_and_session_custody ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 950 filtered out; finished in 0.00s
+

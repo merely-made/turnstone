@@ -1,0 +1,53 @@
+warning: patch `layout-dom-api v0.1.1 (https://github.com/merely-made/genet.git?rev=19947c3a3cb7a04fac0ed5b4ec656a3258b32dc7#19947c3a)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+   Compiling icu_normalizer v2.3.0
+   Compiling serde v1.0.229
+   Compiling syn v2.0.119
+   Compiling tracing-attributes v0.1.31
+   Compiling idna_adapter v1.2.2
+   Compiling uuid v1.27.0
+   Compiling petgraph v0.8.3
+   Compiling tracing v0.1.44
+   Compiling accesskit v0.24.1
+   Compiling idna v1.1.0
+   Compiling document-session-api v0.1.0 (https://github.com/merely-made/genet.git?rev=19947c3a3cb7a04fac0ed5b4ec656a3258b32dc7#19947c3a)
+   Compiling inker v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\inker\inker)
+   Compiling url v2.5.8
+   Compiling genet-host-api v0.2.0 (https://github.com/merely-made/genet.git?rev=19947c3a3cb7a04fac0ed5b4ec656a3258b32dc7#19947c3a)
+   Compiling pelt-core v0.2.0 (C:\Users\mark_\Code\repos\mere\ports\pelt\core)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> ports\pelt\core\src\pool_a11y.rs:65:18
+   |
+65 |                 .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+   |                  ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+65 -                 .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+65 +                 .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+   --> ports\pelt\core\src\lib.rs:206:10
+    |
+206 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+    |          ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+206 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+206 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+    |
+
+warning: `pelt-core` (lib) generated 2 warnings (run `cargo fix --lib -p pelt-core` to apply 2 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 31.30s
+     Running tests\host_surface.rs (C:/t/cargo-targets/mere/build\debug\deps\host_surface-1dfe569fac06e767.exe)
+
+running 1 test
+test mailbox_polling_follows_admitted_native_window_custody ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.00s
+

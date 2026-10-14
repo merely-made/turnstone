@@ -82,3 +82,6 @@ docs/receipts/stations_windows_20261013/checks/*.log -text -whitespace
 docs/receipts/stations_windows_20261013/*.json text eol=lf
 docs/receipts/stations_windows_20261013/checks/*.json text eol=lf
 docs/receipts/stations_windows_20261013/harness/** text eol=lf
+
+# Source-bound A4 native captures, metadata and raw diagnostics keep their bytes.
+docs/receipts/stations_windows_20261013/** -text -whitespace

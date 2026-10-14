@@ -20,6 +20,11 @@ use workbench::{TileEvent, TileId, TilePath, TileTree, Workspace, WorkspaceEvent
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Control {
+    /// An actual in-house body node; input stays with its retained pane owner.
+    Body {
+        tile: TileId,
+        node: NodeId,
+    },
     Tab(TileId),
     Close(TileId),
     Divider {
@@ -45,10 +50,12 @@ struct State {
     workspace: Workspace,
     current: Option<TileId>,
     events: Vec<WorkspaceEvent>,
+    mounts: std::collections::HashMap<TileId, cambium::RetainedMount>,
 }
 type View = Box<dyn AnyView<State, (), GenetCtx, GenetElement>>;
 type Runner = GenetAppRunner<State, fn(&State) -> View, View, ()>;
 fn view(s: &State) -> View {
+    let mounts = s.mounts.clone();
     Box::new(cambium::workspace_view(
         &WorkspaceModel {
             workspace: &s.workspace,
@@ -56,7 +63,19 @@ fn view(s: &State) -> View {
             float_layer_visible: true,
         },
         |s: &mut State, event| s.events.push(event),
-        |_| Slot::Surface,
+        move |tile| match mounts.get(&tile.id) {
+            Some(mount) => Slot::View(Box::new(
+                cambium::component(
+                    mount.clone(),
+                    |_| (),
+                    |_, _, _| {},
+                    |mount, _| Box::new(mount.view::<(), ()>()),
+                    |_: &mut State, _: ()| {},
+                )
+                .probe_id(format!("pane:{}", tile.id.0)),
+            )),
+            None => Slot::Surface,
+        },
     ))
 }
 static NEXT: AtomicU64 = AtomicU64::new(1);
@@ -67,17 +86,34 @@ pub(crate) struct FrameControls {
     admission: u64,
     revision: u64,
     focus: Option<Control>,
+    body_cursor: u64,
 }
 impl Default for FrameControls {
     fn default() -> Self {
         let dom = Rc::new(RefCell::new(ScriptedDom::new()));
-        let runner = Runner::new(
+        let root = dom.borrow().document();
+        Self::new_at(dom, root)
+    }
+}
+impl FrameControls {
+    pub(crate) fn withdraw_mounts(&self, source: NodeId) {
+        for mount in self.runner.state().mounts.values() {
+            mount.withdraw_from(source);
+        }
+    }
+    pub(crate) fn inline_tiles(&self) -> std::collections::HashSet<TileId> {
+        self.runner.state().mounts.keys().copied().collect()
+    }
+    pub(crate) fn new_at(dom: DomHandle, root: NodeId) -> Self {
+        let runner = Runner::new_at(
             dom.clone(),
+            root,
             view as fn(&State) -> View,
             State {
                 workspace: Workspace::default(),
                 current: None,
                 events: Vec::new(),
+                mounts: Default::default(),
             },
         );
         Self {
@@ -87,10 +123,25 @@ impl Default for FrameControls {
             admission: NEXT.fetch_add(1, Ordering::Relaxed),
             revision: 0,
             focus: None,
+            body_cursor: 0,
         }
     }
-}
-impl FrameControls {
+    pub(crate) fn set_mounts(
+        &mut self,
+        mounts: std::collections::HashMap<TileId, cambium::RetainedMount>,
+    ) {
+        let previous = &self.runner.state().mounts;
+        let changed = previous.len() != mounts.len()
+            || mounts.iter().any(|(id, mount)| {
+                previous
+                    .get(id)
+                    .is_none_or(|old| old.node() != mount.node())
+            });
+        if changed {
+            self.invalidate();
+            self.runner.update(|s| s.mounts = mounts);
+        }
+    }
     pub(crate) fn root(&self) -> NodeId {
         self.runner.root()
     }
@@ -111,6 +162,7 @@ impl FrameControls {
             });
         }
         self.enhance();
+        self.observe_body_mutations();
         if self.focus.as_ref().is_some_and(|c| self.node(c).is_none()) {
             self.focus = self
                 .order()
@@ -129,6 +181,47 @@ impl FrameControls {
             .revision
             .checked_add(1)
             .expect("frame revision exhausted");
+    }
+    pub(crate) fn observe_body_mutations(&mut self) {
+        use layout_dom_api::DomMutation;
+        let dom = self.dom.borrow();
+        let (base, pending) = dom.pending_mutations();
+        let end = base + pending.len() as u64;
+        let start = self
+            .body_cursor
+            .saturating_sub(base)
+            .min(pending.len() as u64) as usize;
+        let belongs = |node| {
+            dom.is_live(node)
+                && self.runner.state().mounts.values().any(|mount| {
+                    cambium_rootstock::WindowDom::new(&dom, mount.node()).contains(node)
+                })
+        };
+        let changed = self.body_cursor < base
+            || pending[start..].iter().any(|mutation| match mutation {
+                DomMutation::Inserted { node, parent } => belongs(*node) || belongs(*parent),
+                DomMutation::Removed {
+                    node,
+                    former_parent,
+                } => belongs(*node) || belongs(*former_parent),
+                DomMutation::Moved {
+                    node,
+                    from_parent,
+                    to_parent,
+                } => belongs(*node) || belongs(*from_parent) || belongs(*to_parent),
+                DomMutation::AttributeChanged { node, .. }
+                | DomMutation::CharacterDataChanged { node }
+                | DomMutation::SubtreeReplaced { node }
+                | DomMutation::FormControlStateChanged { node }
+                | DomMutation::FormControlInteractionStateChanged { node }
+                | DomMutation::OptionStateChanged { node }
+                | DomMutation::FormControlCustomValidityChanged { node } => belongs(*node),
+            });
+        drop(dom);
+        self.body_cursor = end;
+        if changed {
+            self.invalidate();
+        }
     }
     pub fn stamp(&self) -> FrameStamp {
         FrameStamp {
@@ -165,6 +258,11 @@ impl FrameControls {
     }
     pub fn control_at(&self, node: NodeId) -> Option<Control> {
         let dom = self.dom.borrow();
+        for (tile, mount) in &self.runner.state().mounts {
+            if cambium_rootstock::WindowDom::new(&dom, mount.node()).contains(node) {
+                return Some(Control::Body { tile: *tile, node });
+            }
+        }
         if has_class(&dom, node, "frisket-close") {
             return cambium::close_target(&*dom, node).map(Control::Close);
         }
@@ -178,16 +276,19 @@ impl FrameControls {
         self.divider(&target.path, target.index)
     }
     pub fn node(&self, control: &Control) -> Option<NodeId> {
-        nodes(&self.dom.borrow())
+        nodes(&self.dom.borrow(), self.root())
             .into_iter()
             .find(|n| self.control_at(*n).as_ref() == Some(control))
     }
     pub fn order(&self) -> Vec<Control> {
         let dom = self.dom.borrow();
-        nodes(&dom)
+        nodes(&dom, self.root())
             .into_iter()
             .filter_map(|n| {
                 let control = self.control_at(n)?;
+                if matches!(control, Control::Body { .. }) {
+                    return None;
+                }
                 if matches!(control, Control::Tab(_))
                     && attr(&dom, n, "aria-selected").as_deref() != Some("true")
                 {
@@ -201,7 +302,7 @@ impl FrameControls {
         let node = self.focus_node();
         self.runner.set_focus(node);
         let mut dom = self.dom.borrow_mut();
-        for n in nodes(&dom) {
+        for n in nodes(&dom, self.root()) {
             if Some(n) == node {
                 if attr(&dom, n, "data-frame-focus").as_deref() != Some("true") {
                     dom.set_attribute(n, qual("data-frame-focus"), "true");
@@ -415,12 +516,15 @@ impl FrameControls {
         })
     }
     fn enhance(&self) {
-        let controls: Vec<_> = nodes(&self.dom.borrow())
+        let controls: Vec<_> = nodes(&self.dom.borrow(), self.root())
             .into_iter()
             .map(|n| (n, self.control_at(n)))
             .collect();
         let mut dom = self.dom.borrow_mut();
         for (node, control) in controls {
+            if matches!(control, Some(Control::Body { .. })) {
+                continue;
+            }
             if let Some(Control::Divider { index, .. }) = control.as_ref() {
                 if let Some((_, children)) = self.divider_tree(control.as_ref().unwrap()) {
                     let pair = children[*index].fraction + children[*index + 1].fraction;
@@ -462,9 +566,9 @@ impl FrameControls {
         }
     }
 }
-pub(crate) fn nodes(dom: &ScriptedDom) -> Vec<NodeId> {
+pub(crate) fn nodes(dom: &ScriptedDom, root: NodeId) -> Vec<NodeId> {
     let mut out = Vec::new();
-    let mut pending = vec![dom.document()];
+    let mut pending = vec![root];
     while let Some(node) = pending.pop() {
         out.push(node);
         let children = dom.dom_children(node).collect::<Vec<_>>();

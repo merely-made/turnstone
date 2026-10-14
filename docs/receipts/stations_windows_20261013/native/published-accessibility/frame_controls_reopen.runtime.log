@@ -1,0 +1,648 @@
+2026-10-14T10:09:41.907661Z  INFO turnstone::launch: turnstone starting
+2026-10-14T10:09:41.914918Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T10:09:41.940659Z  INFO turnstone::session: workbench tiling restored path="C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\stations_windows_20261013\\native\\published-accessibility\\profile\\sessions\\900e04e2-7f44-4919-bc8e-2a42c076d7df\\workbench.json" tiles=0
+2026-10-14T10:09:41.949816Z DEBUG turnstone::selfdrive: native wake batch prepared cause=Init document_due=false surface_due=false micros=26
+2026-10-14T10:09:41.966473Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-14T10:09:42.947388Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T10:09:43.208356Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-14T10:09:43.208388Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.217742Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-14T10:09:43.217779Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.219449Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=43 resized=true resheeted=true full_rebuild=true
+2026-10-14T10:09:43.249785Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.251633Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-14T10:09:43.251663Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.260969Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051789.684404003s }, requested_resume: Instant { t: 4612051788.389222203s } } document_due=false surface_due=true micros=21
+2026-10-14T10:09:43.264439Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.266504Z DEBUG turnstone::selfdrive: native actor wake completed micros=4801
+2026-10-14T10:09:43.269168Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.270720Z DEBUG turnstone::selfdrive: native actor wake completed micros=4054
+2026-10-14T10:09:43.273909Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.275683Z DEBUG turnstone::selfdrive: native actor wake completed micros=4788
+2026-10-14T10:09:43.278537Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.280131Z DEBUG turnstone::selfdrive: native actor wake completed micros=4245
+2026-10-14T10:09:43.283014Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.284688Z DEBUG turnstone::selfdrive: native actor wake completed micros=4362
+2026-10-14T10:09:43.287348Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.289165Z DEBUG turnstone::selfdrive: native actor wake completed micros=4302
+2026-10-14T10:09:43.291732Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.293382Z DEBUG turnstone::selfdrive: native actor wake completed micros=4083
+2026-10-14T10:09:43.296107Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.297774Z DEBUG turnstone::selfdrive: native actor wake completed micros=4252
+2026-10-14T10:09:43.298117Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.298133Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.298150Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.381201Z DEBUG turnstone::shell::render: frame frame_ms=83.01350402832031 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=41.000701904296875 raster_ms=30.056598663330078 rasterized=2 dirty_tiles=304 graph_rast=1 graph_tiles=144 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=160 chrome_rast=0 chrome_tiles=0 compose_ms=8.441300392150879 w=1024 h=600
+2026-10-14T10:09:43.381432Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.384149Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.385812Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.385893Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.386105Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051789.809563803s }, requested_resume: Instant { t: 4612051789.700424303s } } document_due=false surface_due=true micros=7
+2026-10-14T10:09:43.388940Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.390587Z DEBUG turnstone::selfdrive: native actor wake completed micros=4352
+2026-10-14T10:09:43.393647Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.395305Z DEBUG turnstone::selfdrive: native actor wake completed micros=4606
+2026-10-14T10:09:43.397935Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.399646Z DEBUG turnstone::selfdrive: native actor wake completed micros=4221
+2026-10-14T10:09:43.402520Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.404355Z DEBUG turnstone::selfdrive: native actor wake completed micros=4553
+2026-10-14T10:09:43.407524Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.409344Z DEBUG turnstone::selfdrive: native actor wake completed micros=4647
+2026-10-14T10:09:43.413200Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.414911Z DEBUG turnstone::selfdrive: native actor wake completed micros=5406
+2026-10-14T10:09:43.417514Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.419159Z DEBUG turnstone::selfdrive: native actor wake completed micros=4079
+2026-10-14T10:09:43.419570Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.419597Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.419605Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.449437Z DEBUG turnstone::shell::render: frame frame_ms=29.796899795532227 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.350800037384033 raster_ms=17.069398880004883 rasterized=2 dirty_tiles=144 graph_rast=1 graph_tiles=144 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.55649995803833 w=1024 h=600
+2026-10-14T10:09:43.449626Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.452464Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.454034Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.454076Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.454232Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051789.877695303s }, requested_resume: Instant { t: 4612051789.825568703s } } document_due=false surface_due=true micros=5
+2026-10-14T10:09:43.457596Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.459186Z DEBUG turnstone::selfdrive: native actor wake completed micros=4741
+2026-10-14T10:09:43.461493Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.462914Z DEBUG turnstone::selfdrive: native actor wake completed micros=3612
+2026-10-14T10:09:43.465392Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.466921Z DEBUG turnstone::selfdrive: native actor wake completed micros=3887
+2026-10-14T10:09:43.467046Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.467074Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.467085Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.494102Z DEBUG turnstone::shell::render: frame frame_ms=26.98040008544922 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.106900215148926 raster_ms=14.418800354003906 rasterized=2 dirty_tiles=8 graph_rast=1 graph_tiles=8 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.4079999923706055 w=1024 h=600
+2026-10-14T10:09:43.494284Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.497045Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.499094Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.499131Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.499333Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051789.922788403s }, requested_resume: Instant { t: 4612051789.893699003s } } document_due=false surface_due=true micros=12
+2026-10-14T10:09:43.502122Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.503771Z DEBUG turnstone::selfdrive: native actor wake completed micros=4374
+2026-10-14T10:09:43.506114Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.507613Z DEBUG turnstone::selfdrive: native actor wake completed micros=3778
+2026-10-14T10:09:43.507679Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.507688Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.507695Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.533962Z DEBUG turnstone::shell::render: frame frame_ms=26.232999801635742 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.382200241088867 raster_ms=14.021899223327637 rasterized=2 dirty_tiles=8 graph_rast=1 graph_tiles=8 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.4898000955581665 w=1024 h=600
+2026-10-14T10:09:43.534138Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.536760Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.538473Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.538526Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.538678Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051789.962142803s }, requested_resume: Instant { t: 4612051789.938796303s } } document_due=false surface_due=true micros=5
+2026-10-14T10:09:43.541064Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.542725Z DEBUG turnstone::selfdrive: native actor wake completed micros=4006
+2026-10-14T10:09:43.545742Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.547437Z DEBUG turnstone::selfdrive: native actor wake completed micros=4658
+2026-10-14T10:09:43.547514Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.547524Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.547531Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.574672Z DEBUG turnstone::shell::render: frame frame_ms=27.112899780273438 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.341899871826172 raster_ms=14.809500694274902 rasterized=2 dirty_tiles=9 graph_rast=1 graph_tiles=9 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.5710999965667725 w=1024 h=600
+2026-10-14T10:09:43.574871Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.577525Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.579085Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.579123Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.579436Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.002890003s }, requested_resume: Instant { t: 4612051789.978146803s } } document_due=false surface_due=true micros=15
+2026-10-14T10:09:43.582137Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.583614Z DEBUG turnstone::selfdrive: native actor wake completed micros=4114
+2026-10-14T10:09:43.585937Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.587412Z DEBUG turnstone::selfdrive: native actor wake completed micros=3735
+2026-10-14T10:09:43.589717Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.591293Z DEBUG turnstone::selfdrive: native actor wake completed micros=3834
+2026-10-14T10:09:43.591475Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.591496Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.591504Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.618725Z DEBUG turnstone::shell::render: frame frame_ms=27.189899444580078 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.172599792480469 raster_ms=14.974299430847168 rasterized=2 dirty_tiles=9 graph_rast=1 graph_tiles=9 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.4756999015808105 w=1024 h=600
+2026-10-14T10:09:43.618893Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.621665Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.623323Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.623360Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.623503Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.046970503s }, requested_resume: Instant { t: 4612051790.018898003s } } document_due=false surface_due=true micros=5
+2026-10-14T10:09:43.626169Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.627731Z DEBUG turnstone::selfdrive: native actor wake completed micros=4186
+2026-10-14T10:09:43.630336Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.631832Z DEBUG turnstone::selfdrive: native actor wake completed micros=4045
+2026-10-14T10:09:43.631891Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.631900Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.631906Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.659399Z DEBUG turnstone::shell::render: frame frame_ms=27.468400955200195 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.43179988861084 raster_ms=15.09280014038086 rasterized=2 dirty_tiles=9 graph_rast=1 graph_tiles=9 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.5878000259399414 w=1024 h=600
+2026-10-14T10:09:43.659580Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.662186Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.663722Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.663764Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.663916Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.087385403s }, requested_resume: Instant { t: 4612051790.062974203s } } document_due=false surface_due=true micros=5
+2026-10-14T10:09:43.666241Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.667842Z DEBUG turnstone::selfdrive: native actor wake completed micros=3885
+2026-10-14T10:09:43.670254Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.671753Z DEBUG turnstone::selfdrive: native actor wake completed micros=3858
+2026-10-14T10:09:43.674134Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.675934Z DEBUG turnstone::selfdrive: native actor wake completed micros=4135
+2026-10-14T10:09:43.676022Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.676033Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.676040Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.704028Z DEBUG turnstone::shell::render: frame frame_ms=27.952600479125977 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.956700325012207 raster_ms=14.78689956665039 rasterized=2 dirty_tiles=8 graph_rast=1 graph_tiles=8 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.584399938583374 w=1024 h=600
+2026-10-14T10:09:43.704241Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.706957Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.708440Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.708479Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.708698Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.132128403s }, requested_resume: Instant { t: 4612051790.103389003s } } document_due=false surface_due=true micros=44
+2026-10-14T10:09:43.711211Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.712823Z DEBUG turnstone::selfdrive: native actor wake completed micros=4000
+2026-10-14T10:09:43.715412Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.717140Z DEBUG turnstone::selfdrive: native actor wake completed micros=4262
+2026-10-14T10:09:43.717223Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.717234Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.717241Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.743157Z DEBUG turnstone::shell::render: frame frame_ms=25.881000518798828 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.217700004577637 raster_ms=13.616100311279297 rasterized=2 dirty_tiles=8 graph_rast=1 graph_tiles=8 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.5439000129699707 w=1024 h=600
+2026-10-14T10:09:43.743355Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.746059Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.747557Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.747594Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.747735Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.171206703s }, requested_resume: Instant { t: 4612051790.148132103s } } document_due=false surface_due=true micros=5
+2026-10-14T10:09:43.749940Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.751366Z DEBUG turnstone::selfdrive: native actor wake completed micros=3592
+2026-10-14T10:09:43.753599Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.755030Z DEBUG turnstone::selfdrive: native actor wake completed micros=3630
+2026-10-14T10:09:43.757282Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.758707Z DEBUG turnstone::selfdrive: native actor wake completed micros=3642
+2026-10-14T10:09:43.758764Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.758772Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.758778Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.784185Z DEBUG turnstone::shell::render: frame frame_ms=25.381500244140625 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.928499698638916 raster_ms=13.739099502563477 rasterized=2 dirty_tiles=8 graph_rast=1 graph_tiles=8 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.3989999294281006 w=1024 h=600
+2026-10-14T10:09:43.784350Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.786773Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.788198Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.788229Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.788369Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.211833403s }, requested_resume: Instant { t: 4612051790.187210503s } } document_due=false surface_due=true micros=5
+2026-10-14T10:09:43.790465Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.791881Z DEBUG turnstone::selfdrive: native actor wake completed micros=3477
+2026-10-14T10:09:43.794729Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.796326Z DEBUG turnstone::selfdrive: native actor wake completed micros=4385
+2026-10-14T10:09:43.796391Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.796399Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.796405Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.821653Z DEBUG turnstone::shell::render: frame frame_ms=25.222599029541016 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.909899711608887 raster_ms=13.991299629211426 rasterized=2 dirty_tiles=8 graph_rast=1 graph_tiles=8 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.371999979019165 w=1024 h=600
+2026-10-14T10:09:43.821818Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.824259Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.825723Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.825758Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.825971Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.249436303s }, requested_resume: Instant { t: 4612051790.227845303s } } document_due=false surface_due=true micros=11
+2026-10-14T10:09:43.828259Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.829604Z DEBUG turnstone::selfdrive: native actor wake completed micros=3567
+2026-10-14T10:09:43.831736Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.833120Z DEBUG turnstone::selfdrive: native actor wake completed micros=3482
+2026-10-14T10:09:43.833177Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.833185Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.833191Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.859281Z DEBUG turnstone::shell::render: frame frame_ms=26.065200805664063 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.114099979400635 raster_ms=14.275199890136719 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.55649995803833 w=1024 h=600
+2026-10-14T10:09:43.859469Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.861967Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.863435Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.863473Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.863627Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.287101703s }, requested_resume: Instant { t: 4612051790.265443603s } } document_due=false surface_due=true micros=5
+2026-10-14T10:09:43.865827Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.867277Z DEBUG turnstone::selfdrive: native actor wake completed micros=3604
+2026-10-14T10:09:43.869591Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.871080Z DEBUG turnstone::selfdrive: native actor wake completed micros=3763
+2026-10-14T10:09:43.871148Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.871158Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.871164Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.896009Z DEBUG turnstone::shell::render: frame frame_ms=24.82080078125 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.9847002029418945 raster_ms=13.2785005569458 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.3277000188827515 w=1024 h=600
+2026-10-14T10:09:43.896169Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.898654Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.900058Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.900092Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.900226Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.323701603s }, requested_resume: Instant { t: 4612051790.303105403s } } document_due=false surface_due=true micros=5
+2026-10-14T10:09:43.902338Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.904052Z DEBUG turnstone::selfdrive: native actor wake completed micros=3785
+2026-10-14T10:09:43.906915Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.908504Z DEBUG turnstone::selfdrive: native actor wake completed micros=4393
+2026-10-14T10:09:43.910750Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.912177Z DEBUG turnstone::selfdrive: native actor wake completed micros=3616
+2026-10-14T10:09:43.912331Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.912350Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.912356Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.939372Z DEBUG turnstone::shell::render: frame frame_ms=26.986299514770508 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.650100231170654 raster_ms=14.643499374389648 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.4386000633239746 w=1024 h=600
+2026-10-14T10:09:43.939548Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.942046Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.943548Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.943595Z DEBUG turnstone::selfdrive: begin app step verb="key"
+2026-10-14T10:09:43.944308Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-14T10:09:43.944334Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.944548Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.368011803s }, requested_resume: Instant { t: 4612051790.339705103s } } document_due=false surface_due=true micros=14
+2026-10-14T10:09:43.947249Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.948449Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T10:09:43.948955Z DEBUG turnstone::selfdrive: native actor wake completed micros=4344
+2026-10-14T10:09:43.951519Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.953145Z DEBUG turnstone::selfdrive: native actor wake completed micros=4139
+2026-10-14T10:09:43.953219Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:43.953227Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.953233Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:43.978917Z DEBUG turnstone::shell::render: frame frame_ms=25.657699584960938 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=7.157099723815918 raster_ms=13.940799713134766 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.3583999872207642 w=1024 h=600
+2026-10-14T10:09:43.979088Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:43.981664Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:43.983180Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:43.984939Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:43.985234Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.408686403s }, requested_resume: Instant { t: 4612051790.384019903s } } document_due=false surface_due=true micros=27
+2026-10-14T10:09:43.985278Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-14T10:09:43.985290Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:43.999009Z DEBUG turnstone::ui: pane Livery layout refreshed structural=false mutations=1 resized=true resheeted=false full_rebuild=true
+2026-10-14T10:09:44.009644Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.012145Z DEBUG turnstone::selfdrive: native actor wake completed micros=13673
+2026-10-14T10:09:44.015276Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.016710Z DEBUG turnstone::selfdrive: native actor wake completed micros=4043
+2026-10-14T10:09:44.018931Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.020303Z DEBUG turnstone::selfdrive: native actor wake completed micros=3553
+2026-10-14T10:09:44.022464Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.023823Z DEBUG turnstone::selfdrive: native actor wake completed micros=3486
+2026-10-14T10:09:44.024296Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-14T10:09:44.024320Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.024364Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-14T10:09:44.024381Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.028316Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.029796Z DEBUG turnstone::selfdrive: native actor wake completed micros=3770
+2026-10-14T10:09:44.029847Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:44.029854Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.029860Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:44.110805Z DEBUG turnstone::shell::render: frame frame_ms=80.9219970703125 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=22.98110008239746 raster_ms=52.739501953125 rasterized=2 dirty_tiles=1850 graph_rast=1 graph_tiles=925 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=925 chrome_rast=0 chrome_tiles=0 compose_ms=2.11080002784729 w=2360 h=1600
+2026-10-14T10:09:44.111002Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:44.113865Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.115265Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:44.115302Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:44.115464Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.538945103s }, requested_resume: Instant { t: 4612051790.424694203s } } document_due=false surface_due=true micros=4
+2026-10-14T10:09:44.117525Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.118920Z DEBUG turnstone::selfdrive: native actor wake completed micros=3422
+2026-10-14T10:09:44.121079Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.122467Z DEBUG turnstone::selfdrive: native actor wake completed micros=3508
+2026-10-14T10:09:44.124670Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.126056Z DEBUG turnstone::selfdrive: native actor wake completed micros=3556
+2026-10-14T10:09:44.128289Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.129765Z DEBUG turnstone::selfdrive: native actor wake completed micros=3675
+2026-10-14T10:09:44.132080Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.133592Z DEBUG turnstone::selfdrive: native actor wake completed micros=3787
+2026-10-14T10:09:44.135917Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.137350Z DEBUG turnstone::selfdrive: native actor wake completed micros=3717
+2026-10-14T10:09:44.137409Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:44.137418Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.137424Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:44.192330Z DEBUG turnstone::shell::render: frame frame_ms=54.88199996948242 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.954799652099609 raster_ms=43.13239669799805 rasterized=2 dirty_tiles=925 graph_rast=1 graph_tiles=925 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.5913000106811523 w=2360 h=1600
+2026-10-14T10:09:44.192499Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:44.194851Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.196249Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:44.196282Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:44.196452Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.619933803s }, requested_resume: Instant { t: 4612051790.554948403s } } document_due=false surface_due=true micros=5
+2026-10-14T10:09:44.198620Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.200013Z DEBUG turnstone::selfdrive: native actor wake completed micros=3524
+2026-10-14T10:09:44.202665Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.203993Z DEBUG turnstone::selfdrive: native actor wake completed micros=3943
+2026-10-14T10:09:44.206157Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.207519Z DEBUG turnstone::selfdrive: native actor wake completed micros=3495
+2026-10-14T10:09:44.209823Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.211298Z DEBUG turnstone::selfdrive: native actor wake completed micros=3748
+2026-10-14T10:09:44.211357Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:44.211366Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.211373Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:44.257506Z DEBUG turnstone::shell::render: frame frame_ms=46.10830307006836 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.968699932098389 raster_ms=34.256500244140625 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.670199990272522 w=2360 h=1600
+2026-10-14T10:09:44.257676Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:44.260087Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.261623Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:44.261664Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:44.261816Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.685289403s }, requested_resume: Instant { t: 4612051790.635937703s } } document_due=false surface_due=true micros=16
+2026-10-14T10:09:44.263948Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.265331Z DEBUG turnstone::selfdrive: native actor wake completed micros=3477
+2026-10-14T10:09:44.267457Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.268830Z DEBUG turnstone::selfdrive: native actor wake completed micros=3460
+2026-10-14T10:09:44.271063Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.272569Z DEBUG turnstone::selfdrive: native actor wake completed micros=3705
+2026-10-14T10:09:44.274844Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.276256Z DEBUG turnstone::selfdrive: native actor wake completed micros=3644
+2026-10-14T10:09:44.276313Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:44.276322Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.276329Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:44.322189Z DEBUG turnstone::shell::render: frame frame_ms=45.83509826660156 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.830600261688232 raster_ms=33.977901458740234 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.7360999584197998 w=2360 h=1600
+2026-10-14T10:09:44.322356Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:44.324899Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.326368Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:44.326402Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:44.326539Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.750025403s }, requested_resume: Instant { t: 4612051790.701304703s } } document_due=false surface_due=true micros=5
+2026-10-14T10:09:44.328795Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.330173Z DEBUG turnstone::selfdrive: native actor wake completed micros=3599
+2026-10-14T10:09:44.332391Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.333733Z DEBUG turnstone::selfdrive: native actor wake completed micros=3528
+2026-10-14T10:09:44.335866Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.337221Z DEBUG turnstone::selfdrive: native actor wake completed micros=3458
+2026-10-14T10:09:44.339465Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.341030Z DEBUG turnstone::selfdrive: native actor wake completed micros=3777
+2026-10-14T10:09:44.341095Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:44.341104Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.341110Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:44.405986Z DEBUG turnstone::shell::render: frame frame_ms=64.85000610351563 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.510700225830078 raster_ms=53.18989944458008 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.072999954223633 w=2360 h=1600
+2026-10-14T10:09:44.406168Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:44.408662Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.410127Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:44.410162Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:44.410301Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.833790103s }, requested_resume: Instant { t: 4612051790.766029003s } } document_due=false surface_due=true micros=4
+2026-10-14T10:09:44.412472Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.413876Z DEBUG turnstone::selfdrive: native actor wake completed micros=3541
+2026-10-14T10:09:44.416168Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.417579Z DEBUG turnstone::selfdrive: native actor wake completed micros=3619
+2026-10-14T10:09:44.419912Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.421327Z DEBUG turnstone::selfdrive: native actor wake completed micros=3717
+2026-10-14T10:09:44.423541Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.424920Z DEBUG turnstone::selfdrive: native actor wake completed micros=3548
+2026-10-14T10:09:44.427115Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.428482Z DEBUG turnstone::selfdrive: native actor wake completed micros=3518
+2026-10-14T10:09:44.428540Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:44.428549Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.428555Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:44.472185Z DEBUG turnstone::shell::render: frame frame_ms=43.6057014465332 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.960100173950195 raster_ms=32.05979919433594 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.4016000032424927 w=2360 h=1600
+2026-10-14T10:09:44.472349Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:44.474687Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.476090Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:44.476121Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:44.476254Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.899744603s }, requested_resume: Instant { t: 4612051790.849793503s } } document_due=false surface_due=true micros=4
+2026-10-14T10:09:44.478414Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.479775Z DEBUG turnstone::selfdrive: native actor wake completed micros=3488
+2026-10-14T10:09:44.482047Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.483487Z DEBUG turnstone::selfdrive: native actor wake completed micros=3681
+2026-10-14T10:09:44.485693Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.487063Z DEBUG turnstone::selfdrive: native actor wake completed micros=3541
+2026-10-14T10:09:44.489246Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.490627Z DEBUG turnstone::selfdrive: native actor wake completed micros=3532
+2026-10-14T10:09:44.490690Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:44.490699Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.490705Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:44.534350Z DEBUG turnstone::shell::render: frame frame_ms=43.61920166015625 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.9278998374938965 raster_ms=31.96660041809082 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.5370999574661255 w=2360 h=1600
+2026-10-14T10:09:44.534561Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:44.537258Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.538640Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:44.550602Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.551862Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:44.552078Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051790.975560003s }, requested_resume: Instant { t: 4612051790.915748103s } } document_due=false surface_due=true micros=12
+2026-10-14T10:09:44.554537Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.556088Z DEBUG turnstone::selfdrive: native actor wake completed micros=3947
+2026-10-14T10:09:44.558299Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.559708Z DEBUG turnstone::selfdrive: native actor wake completed micros=3584
+2026-10-14T10:09:44.562155Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.563718Z DEBUG turnstone::selfdrive: native actor wake completed micros=3972
+2026-10-14T10:09:44.566022Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.567537Z DEBUG turnstone::selfdrive: native actor wake completed micros=3758
+2026-10-14T10:09:44.567605Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:44.567615Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.567621Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:44.611992Z DEBUG turnstone::shell::render: frame frame_ms=44.34489822387695 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.994800090789795 raster_ms=32.3026008605957 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.7734999656677246 w=2360 h=1600
+2026-10-14T10:09:44.612157Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:44.614634Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.616040Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:44.616070Z DEBUG turnstone::selfdrive: begin app step verb="assert"
+2026-10-14T10:09:44.627834Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.628084Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-14T10:09:44.628103Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:44.628292Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051791.051743803s }, requested_resume: Instant { t: 4612051790.991567903s } } document_due=false surface_due=true micros=44
+2026-10-14T10:09:44.630972Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.632469Z DEBUG turnstone::selfdrive: native actor wake completed micros=4007
+2026-10-14T10:09:44.634677Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.636054Z DEBUG turnstone::selfdrive: native actor wake completed micros=3552
+2026-10-14T10:09:44.638297Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.639792Z DEBUG turnstone::selfdrive: native actor wake completed micros=3706
+2026-10-14T10:09:44.642071Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.643514Z DEBUG turnstone::selfdrive: native actor wake completed micros=3687
+2026-10-14T10:09:44.645697Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.647052Z DEBUG turnstone::selfdrive: native actor wake completed micros=3501
+2026-10-14T10:09:44.647106Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:44.647115Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.647121Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:44.691607Z DEBUG turnstone::shell::render: frame frame_ms=44.46269989013672 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.7270002365112305 raster_ms=33.081298828125 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.553399920463562 w=2360 h=1600
+2026-10-14T10:09:44.691771Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:44.694108Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.695496Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:44.695524Z DEBUG turnstone::selfdrive: begin app step verb="key"
+2026-10-14T10:09:44.698866Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-14T10:09:44.698888Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:44.699088Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051791.122575003s }, requested_resume: Instant { t: 4612051791.067747703s } } document_due=false surface_due=true micros=12
+2026-10-14T10:09:44.699491Z DEBUG turnstone::ui: pane Livery layout refreshed structural=false mutations=1 resized=false resheeted=false full_rebuild=false
+2026-10-14T10:09:44.710302Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.712330Z DEBUG turnstone::selfdrive: native actor wake completed micros=13187
+2026-10-14T10:09:44.714820Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.716427Z DEBUG turnstone::selfdrive: native actor wake completed micros=4054
+2026-10-14T10:09:44.719846Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.721349Z DEBUG turnstone::selfdrive: native actor wake completed micros=4782
+2026-10-14T10:09:44.723739Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.725271Z DEBUG turnstone::selfdrive: native actor wake completed micros=3839
+2026-10-14T10:09:44.727906Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.729427Z DEBUG turnstone::selfdrive: native actor wake completed micros=3992
+2026-10-14T10:09:44.729542Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:44.729561Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.729568Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:44.773422Z DEBUG turnstone::shell::render: frame frame_ms=43.82539749145508 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.571000099182129 raster_ms=31.49020004272461 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.5268999338150024 w=2360 h=1600
+2026-10-14T10:09:44.773581Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:44.776098Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.777538Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:44.789239Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.790382Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:44.790595Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051791.214082903s }, requested_resume: Instant { t: 4612051791.138582503s } } document_due=false surface_due=true micros=12
+2026-10-14T10:09:44.793455Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.795085Z DEBUG turnstone::selfdrive: native actor wake completed micros=4344
+2026-10-14T10:09:44.797906Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.799367Z DEBUG turnstone::selfdrive: native actor wake completed micros=4108
+2026-10-14T10:09:44.801745Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.803174Z DEBUG turnstone::selfdrive: native actor wake completed micros=3761
+2026-10-14T10:09:44.805558Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.806985Z DEBUG turnstone::selfdrive: native actor wake completed micros=3764
+2026-10-14T10:09:44.807072Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:44.807081Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.807088Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:44.852955Z DEBUG turnstone::shell::render: frame frame_ms=45.8411979675293 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.880099773406982 raster_ms=33.81529998779297 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.714400053024292 w=2360 h=1600
+2026-10-14T10:09:44.853170Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:44.855916Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.857444Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:44.857473Z DEBUG turnstone::selfdrive: begin app step verb="key"
+2026-10-14T10:09:44.859819Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-14T10:09:44.859843Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:44.860006Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051791.283504403s }, requested_resume: Instant { t: 4612051791.230090903s } } document_due=false surface_due=true micros=6
+2026-10-14T10:09:44.862547Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.864133Z DEBUG turnstone::selfdrive: native actor wake completed micros=4090
+2026-10-14T10:09:44.866653Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.868192Z DEBUG turnstone::selfdrive: native actor wake completed micros=4021
+2026-10-14T10:09:44.870721Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.872592Z DEBUG turnstone::selfdrive: native actor wake completed micros=4363
+2026-10-14T10:09:44.875466Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.877078Z DEBUG turnstone::selfdrive: native actor wake completed micros=4425
+2026-10-14T10:09:44.879643Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.881170Z DEBUG turnstone::selfdrive: native actor wake completed micros=4055
+2026-10-14T10:09:44.881233Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:44.881241Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.881248Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:44.926040Z DEBUG turnstone::shell::render: frame frame_ms=44.7666015625 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.930099964141846 raster_ms=32.49039840698242 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.8291999101638794 w=2360 h=1600
+2026-10-14T10:09:44.926271Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:44.929141Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.930653Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:44.930695Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:44.930908Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051791.354400103s }, requested_resume: Instant { t: 4612051791.299508603s } } document_due=false surface_due=true micros=12
+2026-10-14T10:09:44.933403Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.934733Z DEBUG turnstone::selfdrive: native actor wake completed micros=3767
+2026-10-14T10:09:44.936966Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.938396Z DEBUG turnstone::selfdrive: native actor wake completed micros=3630
+2026-10-14T10:09:44.940759Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.942263Z DEBUG turnstone::selfdrive: native actor wake completed micros=3828
+2026-10-14T10:09:44.942317Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:44.942326Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:44.942332Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:44.950101Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T10:09:44.987580Z DEBUG turnstone::shell::render: frame frame_ms=45.222801208496094 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.88670015335083 raster_ms=32.99620056152344 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.8918999433517456 w=2360 h=1600
+2026-10-14T10:09:44.987804Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:44.990625Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.992041Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:44.992076Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:44.992371Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051791.415870403s }, requested_resume: Instant { t: 4612051791.370407903s } } document_due=false surface_due=true micros=9
+2026-10-14T10:09:44.994536Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.996000Z DEBUG turnstone::selfdrive: native actor wake completed micros=3583
+2026-10-14T10:09:44.998399Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:44.999967Z DEBUG turnstone::selfdrive: native actor wake completed micros=3927
+2026-10-14T10:09:45.002603Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.004252Z DEBUG turnstone::selfdrive: native actor wake completed micros=4229
+2026-10-14T10:09:45.006693Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.008191Z DEBUG turnstone::selfdrive: native actor wake completed micros=3888
+2026-10-14T10:09:45.008246Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:45.008254Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:45.008260Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:45.052667Z DEBUG turnstone::shell::render: frame frame_ms=44.38180160522461 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.826700210571289 raster_ms=32.18429946899414 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.836400032043457 w=2360 h=1600
+2026-10-14T10:09:45.052859Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:45.055696Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.057272Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:45.057304Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:45.057444Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051791.480949203s }, requested_resume: Instant { t: 4612051791.431874303s } } document_due=false surface_due=true micros=4
+2026-10-14T10:09:45.059688Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.061034Z DEBUG turnstone::selfdrive: native actor wake completed micros=3553
+2026-10-14T10:09:45.063282Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.064672Z DEBUG turnstone::selfdrive: native actor wake completed micros=3606
+2026-10-14T10:09:45.067025Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.068450Z DEBUG turnstone::selfdrive: native actor wake completed micros=3748
+2026-10-14T10:09:45.070825Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.072366Z DEBUG turnstone::selfdrive: native actor wake completed micros=3885
+2026-10-14T10:09:45.072429Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:45.072437Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:45.072444Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:45.117809Z DEBUG turnstone::shell::render: frame frame_ms=45.339698791503906 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.726500034332275 raster_ms=32.674800872802734 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.8696000576019287 w=2360 h=1600
+2026-10-14T10:09:45.118028Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:45.121164Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.122570Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:45.122602Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:45.122796Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051791.546294403s }, requested_resume: Instant { t: 4612051791.496952503s } } document_due=false surface_due=true micros=11
+2026-10-14T10:09:45.125882Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.127322Z DEBUG turnstone::selfdrive: native actor wake completed micros=4467
+2026-10-14T10:09:45.129415Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.130799Z DEBUG turnstone::selfdrive: native actor wake completed micros=3446
+2026-10-14T10:09:45.133153Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.134577Z DEBUG turnstone::selfdrive: native actor wake completed micros=3738
+2026-10-14T10:09:45.137033Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.138624Z DEBUG turnstone::selfdrive: native actor wake completed micros=4014
+2026-10-14T10:09:45.138691Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:45.138701Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:45.138707Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:45.183452Z DEBUG turnstone::shell::render: frame frame_ms=44.718299865722656 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.724200248718262 raster_ms=32.69449996948242 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.8659000396728516 w=2360 h=1600
+2026-10-14T10:09:45.183638Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:45.186458Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.187994Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:45.188025Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:45.188209Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051791.611705003s }, requested_resume: Instant { t: 4612051791.562302003s } } document_due=false surface_due=true micros=15
+2026-10-14T10:09:45.190444Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.191759Z DEBUG turnstone::selfdrive: native actor wake completed micros=3473
+2026-10-14T10:09:45.193942Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.195306Z DEBUG turnstone::selfdrive: native actor wake completed micros=3517
+2026-10-14T10:09:45.197746Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.199223Z DEBUG turnstone::selfdrive: native actor wake completed micros=3881
+2026-10-14T10:09:45.201628Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.203151Z DEBUG turnstone::selfdrive: native actor wake completed micros=3894
+2026-10-14T10:09:45.203211Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:45.203219Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:45.203226Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:45.254092Z DEBUG turnstone::shell::render: frame frame_ms=50.84109878540039 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.665599822998047 raster_ms=38.8108024597168 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.9520999193191528 w=2360 h=1600
+2026-10-14T10:09:45.254320Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:45.257266Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.258805Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:45.258921Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:45.259137Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051791.682625903s }, requested_resume: Instant { t: 4612051791.627712703s } } document_due=false surface_due=true micros=25
+2026-10-14T10:09:45.261381Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.262713Z DEBUG turnstone::selfdrive: native actor wake completed micros=3537
+2026-10-14T10:09:45.264982Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.266415Z DEBUG turnstone::selfdrive: native actor wake completed micros=3672
+2026-10-14T10:09:45.266471Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:45.266480Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:45.266496Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:45.315813Z DEBUG turnstone::shell::render: frame frame_ms=49.29439926147461 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=6.833800315856934 raster_ms=37.519500732421875 rasterized=2 dirty_tiles=10 graph_rast=1 graph_tiles=10 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.5819000005722046 w=2360 h=1600
+2026-10-14T10:09:45.315973Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:45.318535Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.320440Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:45.320484Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:45.320627Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051791.744140003s }, requested_resume: Instant { t: 4612051791.698631003s } } document_due=false surface_due=true micros=4
+2026-10-14T10:09:45.320685Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:45.320693Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:45.320698Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:45.365219Z DEBUG turnstone::shell::render: frame frame_ms=44.50210189819336 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=0.9406999945640564 raster_ms=38.46529769897461 rasterized=2 dirty_tiles=2 graph_rast=1 graph_tiles=2 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.9032000303268433 w=2360 h=1600
+2026-10-14T10:09:45.365383Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:45.368003Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.369533Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:45.380646Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.381915Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:45.382155Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051791.805655903s }, requested_resume: Instant { t: 4612051791.760143103s } } document_due=false surface_due=true micros=14
+2026-10-14T10:09:45.382239Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:45.382252Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:45.382268Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:45.428378Z DEBUG turnstone::shell::render: frame frame_ms=46.07829666137695 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=1.0027999877929688 raster_ms=39.2411994934082 rasterized=2 dirty_tiles=2 graph_rast=1 graph_tiles=2 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.830299973487854 w=2360 h=1600
+2026-10-14T10:09:45.428550Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:45.431228Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.432943Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:45.432997Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:45.433188Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051791.856691903s }, requested_resume: Instant { t: 4612051791.821664203s } } document_due=false surface_due=true micros=13
+2026-10-14T10:09:45.433283Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:45.433297Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:45.433305Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:45.480352Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=1 chrome=false nodes=12
+2026-10-14T10:09:45.488599Z DEBUG turnstone::shell::render: frame frame_ms=55.265602111816406 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=1.027000069618225 raster_ms=40.34819793701172 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.7618000507354736 w=2360 h=1600
+2026-10-14T10:09:45.488811Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:45.491576Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.493248Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:45.493295Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:45.493538Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051791.917043003s }, requested_resume: Instant { t: 4612051791.872700203s } } document_due=false surface_due=true micros=13
+2026-10-14T10:09:45.493632Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:45.493646Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:45.493654Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:45.843537Z DEBUG turnstone::shell::render: frame frame_ms=47.018699645996094 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=0.9700999855995178 raster_ms=40.178897857666016 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.0870001316070557 w=2360 h=1600
+2026-10-14T10:09:45.843744Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:45.846373Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.847797Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:45.847826Z DEBUG turnstone::selfdrive: begin app step verb="key"
+2026-10-14T10:09:45.849662Z DEBUG turnstone::ui: pane Livery layout refreshed structural=false mutations=1 resized=false resheeted=false full_rebuild=false
+2026-10-14T10:09:45.858869Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-14T10:09:45.858904Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:45.859098Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051792.282612803s }, requested_resume: Instant { t: 4612051791.933050803s } } document_due=false surface_due=true micros=13
+2026-10-14T10:09:45.859218Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:45.859231Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:45.859240Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:45.859542Z DEBUG turnstone::ui: pane Livery layout refreshed structural=false mutations=2 resized=false resheeted=false full_rebuild=false
+2026-10-14T10:09:45.913632Z DEBUG turnstone::shell::render: frame frame_ms=54.365299224853516 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=1.0 raster_ms=41.18549728393555 rasterized=2 dirty_tiles=1 graph_rast=1 graph_tiles=1 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.5394999980926514 w=2360 h=1600
+2026-10-14T10:09:45.913812Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:45.916478Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.918755Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:45.929584Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.930567Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:45.930771Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051792.354289303s }, requested_resume: Instant { t: 4612051792.298620003s } } document_due=false surface_due=true micros=11
+2026-10-14T10:09:45.930924Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:45.930939Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:45.930948Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:45.951400Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=djinn is not reachable: the resident host closed the stream mid-conversation
+2026-10-14T10:09:45.974002Z DEBUG turnstone::shell::render: frame frame_ms=43.025699615478516 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=0.9351000189781189 raster_ms=37.17799758911133 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.6270999908447266 w=2360 h=1600
+2026-10-14T10:09:45.974173Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:45.976537Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.977872Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:45.988843Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:45.989961Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-14T10:09:45.990174Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { t: 4612051792.413693203s }, requested_resume: Instant { t: 4612051792.370296903s } } document_due=false surface_due=true micros=12
+2026-10-14T10:09:45.990392Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-14T10:09:45.990419Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-14T10:09:45.990428Z DEBUG turnstone::selfdrive: begin render
+2026-10-14T10:09:46.035530Z DEBUG turnstone::shell::render: frame frame_ms=45.06919860839844 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=1.0568000078201294 raster_ms=38.2322998046875 rasterized=2 dirty_tiles=0 graph_rast=1 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.850000023841858 w=2360 h=1600
+2026-10-14T10:09:46.035708Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-14T10:09:46.038420Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=4
+2026-10-14T10:09:46.039882Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-14T10:09:46.042938Z DEBUG turnstone::selfdrive: finished scenario tick

@@ -154,6 +154,107 @@ impl Shell {
 /// trait takes a visitor rather than returning a `Vec` (turnstone's DOMs are behind
 /// `RefCell`). Inspector/Workbench panes join by adding their `dom_ref` here when
 /// they grow click verbs.
+impl Shell {
+    fn scenario_key_in_window(
+        &mut self,
+        window: usize,
+        key: &crate::scenario::EditKey,
+    ) -> Result<(), String> {
+        if window != 0
+            && !self
+                .lens_windows
+                .values()
+                .any(|lens| lens.ordinal + 1 == window)
+        {
+            return Err("key-window target is absent".into());
+        }
+        if window != 0
+            && (self.app.omnibar.open
+                || self.app.document_find.open
+                || self.app.user_agent_decision.is_open())
+        {
+            return Err("a primary host editor owns keyboard input".into());
+        }
+        if !super::frame_keys::header_focus_in_window(
+            self.outer_focus.as_ref(),
+            window as u64,
+            self.app.session_id.as_uuid(),
+        ) && !self.focus_in_window(window as u64, self.app.focus)
+        {
+            let focus = self
+                .window_focus
+                .get(&(window as u64))
+                .copied()
+                .filter(|focus| self.focus_in_window(window as u64, *focus))
+                .or_else(|| self.fallback_window_focus(window as u64))
+                .ok_or("window has no current focus target")?;
+            self.app.focus = focus;
+        }
+        use crate::scenario::EditKey;
+        use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+
+        // Route through the SAME key seam winit uses, so `key` drives
+        // whatever holds focus (the omnibar, a focused page, the
+        // canvas) exactly as a real press would — one description, two
+        // runners, for keys as well as pointers. The former direct
+        // EditKey->omnibar-Action map only ever reached the omnibar.
+        let (winit_key, ctrl) = match key {
+            EditKey::Enter => (WinitKey::Named(WinitNamedKey::Enter), false),
+            EditKey::Escape => (WinitKey::Named(WinitNamedKey::Escape), false),
+            EditKey::Tab | EditKey::BackTab => (WinitKey::Named(WinitNamedKey::Tab), false),
+            EditKey::FrameFocus => (WinitKey::Named(WinitNamedKey::F6), true),
+            EditKey::FrameClose => (WinitKey::Character("w".into()), true),
+            EditKey::Backspace => (WinitKey::Named(WinitNamedKey::Backspace), false),
+            EditKey::Delete => (WinitKey::Named(WinitNamedKey::Delete), false),
+            EditKey::Up => (WinitKey::Named(WinitNamedKey::ArrowUp), false),
+            EditKey::Down => (WinitKey::Named(WinitNamedKey::ArrowDown), false),
+            EditKey::Left => (WinitKey::Named(WinitNamedKey::ArrowLeft), false),
+            EditKey::Right => (WinitKey::Named(WinitNamedKey::ArrowRight), false),
+            EditKey::Home => (WinitKey::Named(WinitNamedKey::Home), false),
+            EditKey::End => (WinitKey::Named(WinitNamedKey::End), false),
+            EditKey::PageDown => (WinitKey::Named(WinitNamedKey::PageDown), false),
+            EditKey::PageUp => (WinitKey::Named(WinitNamedKey::PageUp), false),
+            EditKey::Space => (WinitKey::Named(WinitNamedKey::Space), false),
+            EditKey::Save => (WinitKey::Character("s".into()), true),
+            EditKey::Find => (WinitKey::Character("f".into()), true),
+            EditKey::KeepCommand => (WinitKey::Character("d".into()), true),
+        };
+        let previous_ctrl = self.ctrl;
+        let previous_shift = self.shift;
+        self.shift |= matches!(key, EditKey::BackTab);
+        self.ctrl |= ctrl;
+        // Match the text accompanying a native winit key press. In
+        // Chromium, Enter's carriage-return char event activates the
+        // focused button after rawKeyDown.
+        let text = match winit_key {
+            WinitKey::Named(WinitNamedKey::Enter) => Some("\r"),
+            WinitKey::Named(WinitNamedKey::Space) => Some(" "),
+            _ => None,
+        };
+        // Purpose-built self-drive enters after OS admission. Native
+        // input keeps its physical activation guard; this fixture
+        // validates current window custody without stealing OS focus.
+        self.input_window = window as u64;
+        if self.deliver_surface_key(&winit_key, true, text) {
+            self.deliver_surface_key(&winit_key, false, None);
+        } else {
+            let size = if window == 0 {
+                (self.width, self.height)
+            } else {
+                self.lens_windows
+                    .values()
+                    .find(|lens| lens.ordinal + 1 == window)
+                    .map(|lens| (lens.width, lens.height))
+                    .unwrap()
+            };
+            self.on_key_in_window(window, size, &winit_key);
+        }
+        self.ctrl = previous_ctrl;
+        self.shift = previous_shift;
+        Ok(())
+    }
+}
+
 impl taproot::Automatable for Shell {
     fn with_surfaces<R>(&self, f: impl FnOnce(&[taproot::ProbeSurface<'_>]) -> R) -> R {
         let plan = self.surface_plan();
@@ -194,6 +295,8 @@ impl taproot::Automatable for Shell {
                         guards.push(("knot", rect, knot.dom_ref()));
                     }
                 },
+                crate::surface::SurfaceKind::Pane(id)
+                    if self.renderers.inline_mount(id).is_some() => {},
                 crate::surface::SurfaceKind::Pane(id) => match self.pane_content(id) {
                     Some(PaneContent::Roster) => {
                         if let Some(g) = self.renderers.roster.get(&id) {
@@ -312,21 +415,27 @@ impl taproot::Automatable for Shell {
                 sheet,
             }
         }));
-        let frames = self.outer_frames.borrow();
-        let frame = frames.get(&0).filter(|_| self.app.blueprint_space(crate::action::SpaceRef::Primary).is_none());
-        let frame_dom = frame.map(|frame| frame.dom_ref());
-        if let (Some(frame), Some(dom)) = (frame, frame_dom.as_ref()) {
-            surfaces.push(taproot::ProbeSurface {
-                name: "frame", dom, sheet: frame.stylesheet(),
-                rect: [0.0, 0.0, self.width as f32, self.height as f32],
-            });
-        }
+        // Shared forest targets use selector_target's actual scoped fragments.
         f(&surfaces)
     }
 
     fn selector_target(&self, selector: &taproot::Selector) -> taproot::SelectorTarget {
         match selector.surface.as_deref() {
-            None => taproot::SelectorTarget::Unsupported,
+            None => self.inline_selector_target(selector),
+            Some("frame") => {
+                let frames = self.outer_frames.borrow();
+                let Some(frame) = frames.get(&0) else {
+                    return taproot::SelectorTarget::Miss;
+                };
+                let dom = frame.dom_ref();
+                match frame.layout.borrow().selector_point(&dom, selector) {
+                    Ok(Some(point)) => taproot::SelectorTarget::Hit(taproot::Hit {
+                        surface: "frame",
+                        point,
+                    }),
+                    _ => taproot::SelectorTarget::Miss,
+                }
+            },
             Some("workbench") => {
                 let plan = self.surface_plan();
                 let mut selected = None;
@@ -394,7 +503,10 @@ impl taproot::Automatable for Shell {
                     {
                         return taproot::SelectorTarget::Miss;
                     }
-                    selected = Some(taproot::Hit { surface: "settings", point });
+                    selected = Some(taproot::Hit {
+                        surface: "settings",
+                        point,
+                    });
                 }
                 selected.map_or(taproot::SelectorTarget::Miss, taproot::SelectorTarget::Hit)
             },
@@ -446,7 +558,7 @@ impl taproot::Automatable for Shell {
                 Err(_) => taproot::SelectorTarget::Miss,
             },
             // Other ordinary pane scopes retain the shared DOM probe fallback.
-            Some(_) => taproot::SelectorTarget::Unsupported,
+            Some(_) => self.inline_selector_target(selector),
         }
     }
 
@@ -501,7 +613,18 @@ impl taproot::Automatable for Shell {
             .with_field("offline-acquisition-attempts", self.offline_attempts.load(std::sync::atomic::Ordering::Relaxed).to_string())
             .with_field("retained-voice", self.app.redshank.retained_voice_preview()
                 .map(|p| format!("{} {:?} {} ms", p.id, p.state, p.position_ms)).unwrap_or_else(|| "Ready".into()))
+            .with_field("inline-roster-tabs", {
+                let mut tabs: Vec<_> = self.renderers.roster.iter().map(|(pane, view)|
+                    (pane.0, view.selected_tab().1)).collect();
+                tabs.sort_by_key(|(pane, _)| *pane);
+                tabs.into_iter().map(|(pane, label)| format!("{pane}:{label}"))
+                    .collect::<Vec<_>>().join(",")
+            })
             .with_field("roster-tab", snap.roster_tab)
+            .with_field("native-texture-count", self.renderers.native_images.values().map(|images| images.len()).sum::<usize>().to_string())
+            .with_field("inline-component-count", self.surface_plan().iter().filter(|surface|
+                self.app.blueprint_space(crate::action::SpaceRef::Primary).is_none() &&
+                matches!(surface.kind, crate::surface::SurfaceKind::Pane(pane) if self.renderers.inline_mount(pane).is_some())).count().to_string())
             // The panes and surfaces as joined tags, so a generic scenario can
             // `assert snap panes ~ roster` without an app-specific verb. This is
             // minimal-shared-and-grow: the app adds the fields its scenarios name.
@@ -565,14 +688,39 @@ impl taproot::Automatable for Shell {
             Some(tabard::ThemePresentation::AuthoredStylesheet(sheets)) => sheets.join("\n"),
             _ => String::new(),
         };
-        out = out.with_field("appearance-css", appearance_sheet)
-            .with_field("frame-focus-slot",self.outer_focus.as_ref().map(|f|f.slot.to_string()).unwrap_or_else(||"none".into()))
-            .with_field("a11y-lens-windows",self.lens_windows.len().to_string());
-        if self.app.blueprint_space(crate::action::SpaceRef::Primary).is_none() {
+        out = out
+            .with_field("appearance-css", appearance_sheet)
+            .with_field(
+                "frame-focus-slot",
+                self.outer_focus
+                    .as_ref()
+                    .map(|f| f.slot.to_string())
+                    .unwrap_or_else(|| "none".into()),
+            )
+            .with_field("a11y-lens-windows", self.lens_windows.len().to_string())
+            .with_field(
+                "frame-control",
+                self.outer_focus
+                    .as_ref()
+                    .and_then(|focus| {
+                        self.outer_frames
+                            .borrow()
+                            .get(&focus.slot)
+                            .and_then(|frame| {
+                                frame.controls.focus().map(|control| format!("{control:?}"))
+                            })
+                    })
+                    .unwrap_or_else(|| "none".into()),
+            );
+        if self
+            .app
+            .blueprint_space(crate::action::SpaceRef::Primary)
+            .is_none()
+        {
             if let Some(frame) = self.outer_frames.borrow().get(&0) {
-                out = out.with_field("frame-css", frame.stylesheet())
-                    .with_field("frame-header-height", frame.header_height().to_string())
-                    .with_field("frame-control",frame.controls.focus().map(|c|format!("{c:?}")).unwrap_or_else(||"none".into()));
+                out = out
+                    .with_field("frame-css", frame.stylesheet())
+                    .with_field("frame-header-height", frame.header_height().to_string());
             }
         }
         #[cfg(all(feature = "scry", windows))]
@@ -858,32 +1006,163 @@ impl taproot::Driveable for Shell {
     /// parser and run it against the Shell via `run_scenario_step`. An unknown
     /// verb fails loudly (parse returns Err), never a silent skip.
     fn app_step(&mut self, line: &str) -> Result<(), String> {
-        if let Some(args)=line.strip_prefix("frame-a11y-window ") {
-            let (slot,action,target)=crate::frame_a11y::fixture_window_request(args)?;
-            if slot==0 {return self.app_step(&format!("frame-a11y {}",args.split_once(char::is_whitespace).unwrap().1));}
+        if let Some(args) = line.strip_prefix("inline-a11y-window ") {
+            let (slot, action, selector) = crate::frame_a11y::fixture_body_request(args)?;
             self.push_a11y_tree();
-            let lens=self.lens_windows.values_mut().find(|lens|lens.ordinal+1==slot).ok_or("frame window is absent")?;
-            let tree=lens.a11y_tree.clone().ok_or("lens tree is unpublished")?;
-            let matches=lens.a11y_routes.iter().filter_map(|(id,route)|match route {
-                crate::a11y::A11yRoute::Frame(route) if target.matches(&route.control) && tree.nodes.iter().any(|(node,n)|node==id&&n.supports_action(action))=>Some(*id),_=>None,
-            }).collect::<Vec<_>>();
-            if matches.len()!=1 {return Err("lens frame target is absent, ambiguous or unsupported".into());}
-            lens.a11y_actions.lock().map_err(|_|"lens queue poisoned")?.enqueue(accesskit::ActionRequest{action,target_tree:accesskit::TreeId::ROOT,target_node:matches[0],data:None});
-            self.drain_lens_a11y_actions();return Ok(());
+            let (nodes, routes) = if slot == 0 {
+                let projected = self.projected_a11y_tree();
+                (projected.tree.nodes, projected.routes)
+            } else {
+                let lens = self
+                    .lens_windows
+                    .values()
+                    .find(|lens| lens.ordinal + 1 == slot)
+                    .ok_or("inline window is absent")?;
+                (
+                    lens.a11y_tree
+                        .clone()
+                        .ok_or("inline window tree is unpublished")?
+                        .nodes,
+                    lens.a11y_routes.clone(),
+                )
+            };
+            let handle = self
+                .outer_frames
+                .borrow()
+                .get(&slot)
+                .ok_or("inline frame is absent")?
+                .controls
+                .dom
+                .clone();
+            let dom = handle.borrow();
+            let matches = taproot::matching(&dom, &selector);
+            let targets = routes
+                .iter()
+                .filter_map(|(id, route)| match route {
+                    crate::a11y::A11yRoute::Frame(crate::frame_controls::FrameRoute {
+                        control: crate::frame_controls::Control::Body { node, .. },
+                        ..
+                    }) if matches.contains(node)
+                        && nodes
+                            .iter()
+                            .any(|(n, current)| n == id && current.supports_action(action)) =>
+                    {
+                        Some(*id)
+                    },
+                    _ => None,
+                })
+                .collect::<Vec<_>>();
+            drop(dom);
+            if targets.len() != 1 {
+                return Err("inline target is absent, ambiguous or unsupported".into());
+            }
+            let request = accesskit::ActionRequest {
+                action,
+                target_tree: accesskit::TreeId::ROOT,
+                target_node: targets[0],
+                data: None,
+            };
+            if slot == 0 {
+                self.a11y_routes = routes;
+                self.a11y_actions
+                    .lock()
+                    .map_err(|_| "inline queue poisoned")?
+                    .enqueue(request);
+                self.drain_a11y_actions();
+            } else {
+                self.lens_windows
+                    .values_mut()
+                    .find(|lens| lens.ordinal + 1 == slot)
+                    .unwrap()
+                    .a11y_actions
+                    .lock()
+                    .map_err(|_| "inline queue poisoned")?
+                    .enqueue(request);
+                self.drain_lens_a11y_actions();
+            }
+            return Ok(());
         }
-        if let Some(args)=line.strip_prefix("frame-a11y ") {
-            let (action,target)=crate::frame_a11y::fixture_request(args)?;
+        if let Some(args) = line.strip_prefix("frame-a11y-window ") {
+            let (slot, action, target) = crate::frame_a11y::fixture_window_request(args)?;
+            if slot == 0 {
+                return self.app_step(&format!(
+                    "frame-a11y {}",
+                    args.split_once(char::is_whitespace).unwrap().1
+                ));
+            }
+            self.push_a11y_tree();
+            let lens = self
+                .lens_windows
+                .values_mut()
+                .find(|lens| lens.ordinal + 1 == slot)
+                .ok_or("frame window is absent")?;
+            let tree = lens.a11y_tree.clone().ok_or("lens tree is unpublished")?;
+            let matches = lens
+                .a11y_routes
+                .iter()
+                .filter_map(|(id, route)| match route {
+                    crate::a11y::A11yRoute::Frame(route)
+                        if target.matches(&route.control)
+                            && tree
+                                .nodes
+                                .iter()
+                                .any(|(node, n)| node == id && n.supports_action(action)) =>
+                    {
+                        Some(*id)
+                    },
+                    _ => None,
+                })
+                .collect::<Vec<_>>();
+            if matches.len() != 1 {
+                return Err("lens frame target is absent, ambiguous or unsupported".into());
+            }
+            lens.a11y_actions
+                .lock()
+                .map_err(|_| "lens queue poisoned")?
+                .enqueue(accesskit::ActionRequest {
+                    action,
+                    target_tree: accesskit::TreeId::ROOT,
+                    target_node: matches[0],
+                    data: None,
+                });
+            self.drain_lens_a11y_actions();
+            return Ok(());
+        }
+        if let Some(args) = line.strip_prefix("frame-a11y ") {
+            let (action, target) = crate::frame_a11y::fixture_request(args)?;
             let super::document_a11y::Projected { tree, routes, .. } = self.projected_a11y_tree();
-            let matches=routes.iter().filter_map(|(id,route)|match route {
-                crate::a11y::A11yRoute::Frame(route) if target.matches(&route.control)
-                    && tree.nodes.iter().any(|(node,n)|node==id&&n.supports_action(action))=>Some(*id),_=>None,
-            }).collect::<Vec<_>>();
-            if matches.len()!=1 {return Err("frame-a11y target is absent, ambiguous or does not support that action".into());}
-            self.a11y_routes=routes;
-            self.a11y_actions.lock().map_err(|_|"a11y queue poisoned")?.enqueue(accesskit::ActionRequest {
-                action,target_tree:accesskit::TreeId::ROOT,target_node:matches[0],data:None,
-            });
-            self.drain_a11y_actions();return Ok(());
+            let matches = routes
+                .iter()
+                .filter_map(|(id, route)| match route {
+                    crate::a11y::A11yRoute::Frame(route)
+                        if target.matches(&route.control)
+                            && tree
+                                .nodes
+                                .iter()
+                                .any(|(node, n)| node == id && n.supports_action(action)) =>
+                    {
+                        Some(*id)
+                    },
+                    _ => None,
+                })
+                .collect::<Vec<_>>();
+            if matches.len() != 1 {
+                return Err(
+                    "frame-a11y target is absent, ambiguous or does not support that action".into(),
+                );
+            }
+            self.a11y_routes = routes;
+            self.a11y_actions
+                .lock()
+                .map_err(|_| "a11y queue poisoned")?
+                .enqueue(accesskit::ActionRequest {
+                    action,
+                    target_tree: accesskit::TreeId::ROOT,
+                    target_node: matches[0],
+                    data: None,
+                });
+            self.drain_a11y_actions();
+            return Ok(());
         }
 
         if let Some(size) = line.strip_prefix("resize ") {
@@ -952,10 +1231,16 @@ impl Shell {
         match step {
             // ---- interactions: drive the Shell (the former Tick execution) ----
             Step::Open(url) => self.act(Action::OpenAddress(url.clone())),
-            Step::ImportClip(path) => self.act(Action::ImportClipPackage(std::path::PathBuf::from(path))),
+            Step::ImportClip(path) => {
+                self.act(Action::ImportClipPackage(std::path::PathBuf::from(path)))
+            },
             Step::ExportClip(path) => {
                 let clip = self.app.clip_export_target()?;
-                self.act(Action::ExportClipPackage { clip, path: path.into(), replace: false });
+                self.act(Action::ExportClipPackage {
+                    clip,
+                    path: path.into(),
+                    replace: false,
+                });
             },
             Step::Omnibar { command } => self.act(Action::OmnibarOpen { command: *command }),
             Step::Type(text) => {
@@ -996,53 +1281,8 @@ impl Shell {
                     return Err("insert: no focused text editor".into());
                 }
             },
-            Step::Key(key) => {
-                // Route through the SAME key seam winit uses, so `key` drives
-                // whatever holds focus (the omnibar, a focused page, the
-                // canvas) exactly as a real press would — one description, two
-                // runners, for keys as well as pointers. The former direct
-                // EditKey->omnibar-Action map only ever reached the omnibar.
-                let (winit_key, ctrl) = match key {
-                    EditKey::Enter => (WinitKey::Named(WinitNamedKey::Enter), false),
-                    EditKey::Escape => (WinitKey::Named(WinitNamedKey::Escape), false),
-                    EditKey::Tab | EditKey::BackTab => (WinitKey::Named(WinitNamedKey::Tab), false),
-                    EditKey::FrameFocus => (WinitKey::Named(WinitNamedKey::F6), true),
-                    EditKey::FrameClose => (WinitKey::Character("w".into()), true),
-                    EditKey::Backspace => (WinitKey::Named(WinitNamedKey::Backspace), false),
-                    EditKey::Delete => (WinitKey::Named(WinitNamedKey::Delete), false),
-                    EditKey::Up => (WinitKey::Named(WinitNamedKey::ArrowUp), false),
-                    EditKey::Down => (WinitKey::Named(WinitNamedKey::ArrowDown), false),
-                    EditKey::Left => (WinitKey::Named(WinitNamedKey::ArrowLeft), false),
-                    EditKey::Right => (WinitKey::Named(WinitNamedKey::ArrowRight), false),
-                    EditKey::Home => (WinitKey::Named(WinitNamedKey::Home), false),
-                    EditKey::End => (WinitKey::Named(WinitNamedKey::End), false),
-                    EditKey::PageDown => (WinitKey::Named(WinitNamedKey::PageDown), false),
-                    EditKey::PageUp => (WinitKey::Named(WinitNamedKey::PageUp), false),
-                    EditKey::Space => (WinitKey::Named(WinitNamedKey::Space), false),
-                    EditKey::Save => (WinitKey::Character("s".into()), true),
-                    EditKey::Find => (WinitKey::Character("f".into()), true),
-                    EditKey::KeepCommand => (WinitKey::Character("d".into()), true),
-                };
-                let previous_ctrl = self.ctrl;
-                let previous_shift = self.shift;
-                self.shift |= matches!(key,EditKey::BackTab);
-                self.ctrl |= ctrl;
-                // Match the text accompanying a native winit key press. In
-                // Chromium, Enter's carriage-return char event activates the
-                // focused button after rawKeyDown.
-                let text = match winit_key {
-                    WinitKey::Named(WinitNamedKey::Enter) => Some("\r"),
-                    WinitKey::Named(WinitNamedKey::Space) => Some(" "),
-                    _ => None,
-                };
-                if self.deliver_surface_key(&winit_key, true, text) {
-                    self.deliver_surface_key(&winit_key, false, None);
-                } else {
-                    self.on_key(&winit_key);
-                }
-                self.ctrl = previous_ctrl;
-                self.shift = previous_shift;
-            },
+            Step::Key(key) => self.scenario_key_in_window(0, key)?,
+            Step::KeyWindow(window, key) => self.scenario_key_in_window(*window, key)?,
             Step::Script(source) => self.run_scenario_script(source),
             Step::Click(x, y) => {
                 self.deliver_press(*x, *y, MouseButton::Left);
@@ -1447,6 +1687,30 @@ impl Shell {
                         "assert a11y '{substr}': {} lines, none match (first 12: {:?})",
                         lines.len(),
                         lines.iter().take(12).collect::<Vec<_>>()
+                    ));
+                }
+            },
+            Step::CapturesDiffer(first, second) => {
+                let digest = |name: &str| {
+                    self.main_receipt
+                        .captures
+                        .iter()
+                        .find_map(|(path, digest, _)| {
+                            (path.file_stem() == Some(std::ffi::OsStr::new(name)))
+                                .then_some(*digest)
+                        })
+                        .ok_or_else(|| format!("capture '{name}' has no completed native readback"))
+                };
+                if digest(first)? == digest(second)? {
+                    return Err(format!(
+                        "native captures '{first}' and '{second}' have identical pixels"
+                    ));
+                }
+            },
+            Step::ScrollPaneWindow(window, x, y, dx, dy) => {
+                if !self.lens_pane_wheel(*window, *x, *y, *dx, *dy) {
+                    return Err(format!(
+                        "window {window}: no current pane owns wheel at {x},{y}"
                     ));
                 }
             },

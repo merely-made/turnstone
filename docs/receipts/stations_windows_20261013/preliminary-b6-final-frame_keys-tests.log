@@ -1,0 +1,8 @@
+
+running 3 tests
+test shell::frame_keys::tests::header_focus_retirement_is_window_scoped_and_terminal ... ok
+test shell::frame_keys::tests::header_accessibility_focus_precedes_body_but_keeps_host_editor_priority ... ok
+test shell::frame_keys::tests::actual_frame_prepare_uses_session_identity_and_refuses_retired_route ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 950 filtered out; finished in 0.05s
+

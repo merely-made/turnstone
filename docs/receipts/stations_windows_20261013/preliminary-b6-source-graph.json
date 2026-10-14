@@ -1,0 +1,30 @@
+{
+  "scope": "preliminary local-Mere, published supplier closure",
+  "renderer": [
+    {
+      "name": "netrender",
+      "version": "0.1.2",
+      "source": "git+https://www.github.com/merely-made/netrender.git?rev=6a24ae08f55129b474282b8e4911564f875ce5fd#6a24ae08f55129b474282b8e4911564f875ce5fd"
+    },
+    {
+      "name": "netrender_device",
+      "version": "0.1.2",
+      "source": "git+https://www.github.com/merely-made/netrender.git?rev=6a24ae08f55129b474282b8e4911564f875ce5fd#6a24ae08f55129b474282b8e4911564f875ce5fd"
+    },
+    {
+      "name": "paint_list_api",
+      "version": "0.1.2",
+      "source": "git+https://www.github.com/merely-made/netrender.git?rev=6a24ae08f55129b474282b8e4911564f875ce5fd#6a24ae08f55129b474282b8e4911564f875ce5fd"
+    },
+    {
+      "name": "paint_list_render",
+      "version": "0.1.2",
+      "source": "git+https://www.github.com/merely-made/netrender.git?rev=6a24ae08f55129b474282b8e4911564f875ce5fd#6a24ae08f55129b474282b8e4911564f875ce5fd"
+    }
+  ],
+  "genet": [
+    "git+https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084",
+    "git+https://www.github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084"
+  ],
+  "lock_sha256": "5374810C621DBDCC0BC58B4825F73E882FD418694D78BCA7EFB8FAE9C1E38032"
+}

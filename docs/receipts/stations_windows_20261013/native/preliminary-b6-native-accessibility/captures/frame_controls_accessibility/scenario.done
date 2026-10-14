@@ -1,0 +1,6 @@
+RESULT ok
+captured frame_accessible_resize
+captured frame_accessible_close
+presentation frames=53 captures=2 blank=0
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-b6-native-accessibility\captures\frame_controls_accessibility\frame_accessible_resize.png digest=40d5888727ba009b blank=false
+capture C:\Users\mark_\Code\repos\turnstone\docs\receipts\stations_windows_20261013\native\preliminary-b6-native-accessibility\captures\frame_controls_accessibility\frame_accessible_close.png digest=5374558675b03232 blank=false

@@ -1,0 +1,13 @@
+{
+  "scenario": "a5_floating_pane",
+  "case": "published-a5",
+  "workshop": "",
+  "started_utc": "2026-10-14T10:07:13.0685102Z",
+  "finished_utc": "2026-10-14T10:08:15.5365880Z",
+  "exit": 0,
+  "result_ok": true,
+  "default_surface_poll": true,
+  "executable_sha256": "8a129e076def7c18da1eac4e8a3d604fcea186203021920053c64ff5bb48704f",
+  "fixture_sha256": "ae6e29ee85278b65d3dd78669d9ce1ec5caa03508a6fcbdc13be68a13b8ed1fc",
+  "primary_lock_sha256": "d418c6ca39048e6927226d8646d6fc14a3feda4cba0ee9877d130bfff32204e6"
+}

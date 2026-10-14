@@ -1,0 +1,6 @@
+
+running 1 test
+test shell::content_pool::tests::terminal_document_turn_paints_its_last_change_without_polling_quiet_windows ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 952 filtered out; finished in 0.21s
+

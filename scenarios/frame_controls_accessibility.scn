@@ -11,7 +11,8 @@ assert snap frame-focus-slot == 0
 assert snap frame-control ~ Tab(TileId(0))
 frame-a11y inc divider . 0
 settle 5
-assert a11y separator
+# Genet projects the authored ARIA separator as AccessKit's native Splitter.
+assert a11y splitter
 capture frame_accessible_resize
 frame-a11y focus close 1
 assert snap frame-control ~ Close(TileId(1))

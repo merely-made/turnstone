@@ -1,0 +1,96 @@
+{
+  "status": "ordinary published supplier metadata, affected tests, native build and 14 headed cases passed",
+  "mere": "77fd235fe659c513dd0463ed57be32f02fb2e71a",
+  "mere_manifest_rows": 116,
+  "genet": "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084",
+  "netrender": "6a24ae08f55129b474282b8e4911564f875ce5fd",
+  "baseline_lock_sha256": "432883312ec370221f2a383e98ffb1e3a2bf735a235ab35c32621cc9901a2fb3",
+  "baseline_head": "81d9f8bc2b6284f29d7013445ce709c8a3cec948",
+  "baseline_lock_blob": "f7a3429c1e23f9bf31ab528a13be5f71e75f935f",
+  "local_path_override": false,
+  "metadata_package_count": 1300,
+  "critical_families": {
+    "mere": {
+      "package_count": 73,
+      "sources": [
+        "git+https://www.github.com/merely-made/mere.git?rev=77fd235fe659c513dd0463ed57be32f02fb2e71a#77fd235fe659c513dd0463ed57be32f02fb2e71a"
+      ],
+      "revision": "77fd235fe659c513dd0463ed57be32f02fb2e71a"
+    },
+    "genet": {
+      "package_count": 30,
+      "sources": [
+        "git+https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084",
+        "git+https://www.github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084"
+      ],
+      "revision": "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084"
+    },
+    "netrender": {
+      "package_count": 4,
+      "sources": [
+        "git+https://www.github.com/merely-made/netrender.git?rev=6a24ae08f55129b474282b8e4911564f875ce5fd#6a24ae08f55129b474282b8e4911564f875ce5fd"
+      ],
+      "revision": "6a24ae08f55129b474282b8e4911564f875ce5fd"
+    }
+  },
+  "manifest_sha256": "85f66cb16eb0610dd7747e7eff0b18b6fb168b60d26e51211a7d28e587b462e9",
+  "lock_sha256": "d418c6ca39048e6927226d8646d6fc14a3feda4cba0ee9877d130bfff32204e6",
+  "metadata_sha256": "16150b585390d7c716628be9477d74766be49a54db1c067272c91ba19e9557ca",
+  "registry_added": [],
+  "registry_removed": [],
+  "existing_registry_checksums_preserved": true,
+  "test_gates": [
+    {
+      "gate": "native_aperture_tests",
+      "passed": 2,
+      "log_sha256": "e81c2933e3d771465b3e49c7c3ca9b22eeb5639e75674675bc29c1c9b0e4d1b9"
+    },
+    {
+      "gate": "shell::native_composition::tests",
+      "passed": 3,
+      "log_sha256": "7938798211d94255bf80d5fe0a6e6ff4ff90f8599bcbc1f170074415b9fe442b"
+    },
+    {
+      "gate": "inline_",
+      "passed": 4,
+      "log_sha256": "d97d5c73ea583ae71a00c3263857f328ef8b00b0201819c48ebd8efef84e8b28"
+    },
+    {
+      "gate": "frame_keys",
+      "passed": 3,
+      "log_sha256": "c333d88b97ccb0156cf46e1f50f431ac33d5fe9a0373ac441c5f85cbf2337659"
+    },
+    {
+      "gate": "scrollbar_continuation",
+      "passed": 1,
+      "log_sha256": "826658e021f97bd563a187ac67533ddb422ff6c630aecb0f068b2606b3d0dd05"
+    },
+    {
+      "gate": "settled_timer",
+      "passed": 2,
+      "log_sha256": "a0eacebe03c65cf1aa00b2a9a8a6c132fe53026048ae1edb6efdcef7456bb021"
+    },
+    {
+      "gate": "terminal_document_turn",
+      "passed": 1,
+      "log_sha256": "2077487c22e302a22ddbd39cf9fa94520da533b83865105f83c3ba5787364486"
+    },
+    {
+      "gate": "inline_component_station_fixture",
+      "passed": 1,
+      "log_sha256": "36b29e0cfa8c4c91e80281f1e19e566be5f3fd3b7fedbfe20a97e38c353efd09"
+    }
+  ],
+  "build_receipt": "published-native-build.json",
+  "executable_receipt": "published-native-executable.json",
+  "test_scope": "17 successful test invocations across eight selected groups; overlapping filters are not a distinct-test census",
+  "headed_receipt": "published-final-native-qualification.json",
+  "headed_receipt_sha256": "9342229cb658161f6fb64650eea45fcd8b4a24097b0f7ff826d06048e1d9c94f",
+  "actual_target_pngs": 40,
+  "physical_and_timing_gates": [
+    "physical OS activation",
+    "human assistive technology",
+    "monitor DPI transition",
+    "early headed scrollbar fade pixel timing"
+  ]
+}

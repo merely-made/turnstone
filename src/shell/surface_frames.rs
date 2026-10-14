@@ -93,6 +93,29 @@ impl ScryingFrameImporter {
 }
 
 impl ImportedSurfaceFrame {
+    pub(super) fn presentation_alpha(&self) -> Result<netrender::SourceAlpha, String> {
+        if self.identity.format.is_srgb() {
+            return Err("staged native source requires encoded RGBA in a non-sRGB view; acquired sRGB view is unsupported".into());
+        }
+        match self.identity.source {
+            #[cfg(feature = "weld")]
+            FrameSource::RawDx12 | FrameSource::WeldOwned => {
+                Ok(netrender::SourceAlpha::Premultiplied)
+            },
+            #[cfg(feature = "scry")]
+            FrameSource::ScryOwned => Ok(netrender::SourceAlpha::Premultiplied),
+            #[cfg(feature = "servo")]
+            // Servo aac43a3/WebRender 0.70 final composition uses
+            // ONE/ONE_MINUS_SRC_ALPHA. Grafting bb48281 only normalizes
+            // channel order/Y orientation with blend disabled; it preserves
+            // that premultiplied output. Transparent native pixels still
+            // require a headed producer acceptance receipt.
+            FrameSource::ServoOwned => Ok(netrender::SourceAlpha::Premultiplied),
+        }
+    }
+    pub(super) fn dimensions(&self) -> [u32; 2] {
+        [self.identity.width, self.identity.height]
+    }
     pub(super) fn view(&self) -> wgpu::TextureView {
         self.texture
             .create_view(&wgpu::TextureViewDescriptor::default())
@@ -166,25 +189,41 @@ fn update_servo_frame(
         format: map_texture_format(&frame.format)?,
     };
     if !matches!(frame.sync, inker::SurfaceSyncHandle::None) {
-        return Err(SurfaceError::FrameAcquisitionFailed("Servo imported frame has unexpected native synchronization".into()));
+        return Err(SurfaceError::FrameAcquisitionFailed(
+            "Servo imported frame has unexpected native synchronization".into(),
+        ));
     }
     let NativeTextureHandle::OwnedPayload(payload) = frame.texture else {
-        return Err(SurfaceError::Unsupported("Servo requires its owned imported frame".into()));
+        return Err(SurfaceError::Unsupported(
+            "Servo requires its owned imported frame".into(),
+        ));
     };
-    let payload = payload.into_any().downcast::<super::servo::ServoImportedFrame>()
+    let payload = payload
+        .into_any()
+        .downcast::<super::servo::ServoImportedFrame>()
         .map_err(|_| SurfaceError::Unsupported("unknown Servo imported-frame custody".into()))?;
     let texture = payload.imported.texture;
     let actual_size = texture.size();
-    if payload.device != *device || payload.queue != *queue
+    if payload.device != *device
+        || payload.queue != *queue
         || payload.resource_epoch != identity.epoch
         || payload.imported.origin != grafting::TextureOrigin::TopLeft
         || payload.imported.format != identity.format
         || texture.format() != identity.format
-        || (payload.imported.size.width, payload.imported.size.height) != (identity.width, identity.height)
-        || (actual_size.width, actual_size.height, actual_size.depth_or_array_layers) != (identity.width, identity.height, 1)
-        || !texture.usage().contains(wgpu::TextureUsages::TEXTURE_BINDING)
+        || (payload.imported.size.width, payload.imported.size.height)
+            != (identity.width, identity.height)
+        || (
+            actual_size.width,
+            actual_size.height,
+            actual_size.depth_or_array_layers,
+        ) != (identity.width, identity.height, 1)
+        || !texture
+            .usage()
+            .contains(wgpu::TextureUsages::TEXTURE_BINDING)
     {
-        return Err(SurfaceError::FrameAcquisitionFailed("Servo frame disagrees with its host device, origin, epoch or texture metadata".into()));
+        return Err(SurfaceError::FrameAcquisitionFailed(
+            "Servo frame disagrees with its host device, origin, epoch or texture metadata".into(),
+        ));
     }
     reuse_allocation(None, identity)?;
     // The producer's pre-present hook already imported and normalized this

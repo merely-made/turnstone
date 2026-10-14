@@ -40,6 +40,7 @@ use crate::workbench_tiling::{WorkbenchTiling, place_workbench};
 /// tab at sync; a click moves it and the shell lowers the diff), and the
 /// body hint.
 struct CellView {
+    appearance_role: Option<u64>,
     members: Vec<Uuid>,
     rect: Rect,
     labels: Vec<String>,
@@ -74,6 +75,19 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
         let body_h = (cell.rect.h - crate::ui::TABLIST_HEIGHT).max(0.0);
         let body = el::<_, WorkbenchState, ()>("div", cell.hint.clone())
             .attr("class", "wb-body")
+            .attr(
+                "data-native-role",
+                cell.appearance_role
+                    .map(|role| role.to_string())
+                    .unwrap_or_default(),
+            )
+            .attr(
+                "data-native-node",
+                cell.members
+                    .get(cell.strip.selected)
+                    .map(Uuid::to_string)
+                    .unwrap_or_default(),
+            )
             .attr("style", format!("height: {body_h}px;"));
         children.push(Box::new(placed_with(
             Placement::new(cell.rect.x, cell.rect.y),
@@ -110,27 +124,95 @@ pub struct WorkbenchPane {
     /// The last synced walk, pane-local — the shell's input routing asks it
     /// for cells and divider bands (the same walk the frame drew).
     tiling: WorkbenchTiling,
+    // Drop the runner and its widget resources before final mount custody.
+    mount: Option<cambium::RetainedMount>,
 }
 
 impl WorkbenchPane {
     pub fn new() -> Self {
-        let dom: DomHandle = Rc::new(RefCell::new(ScriptedDom::new()));
+        Self::new_in(None)
+    }
+
+    pub(crate) fn new_in(mount: Option<cambium::RetainedMount>) -> Self {
+        let dom: DomHandle = mount
+            .as_ref()
+            .map(cambium::RetainedMount::dom)
+            .unwrap_or_else(|| Rc::new(RefCell::new(ScriptedDom::new())));
         let state = WorkbenchState {
             cells: Vec::new(),
             viewport_w: 0.0,
             viewport_h: 0.0,
         };
-        let runner = WbRunner::new(
+        let runner = WbRunner::new_at(
             dom.clone(),
+            mount
+                .as_ref()
+                .map_or_else(|| dom.borrow().document(), cambium::RetainedMount::node),
             workbench_view as fn(&WorkbenchState) -> WbView,
             state,
         );
         Self {
+            mount: mount.clone(),
             dom,
             runner,
             scroll: crate::ui::PaneScroll::new(),
-            layout: crate::ui::RetainedLayout::new(),
+            layout: crate::ui::RetainedLayout::new_at(
+                mount.as_ref().map(cambium::RetainedMount::node),
+            ),
             tiling: WorkbenchTiling::default(),
+        }
+    }
+
+    pub(crate) fn inline_focus(&self) -> Option<genet_scripted_dom::NodeId> {
+        self.runner.focus()
+    }
+    pub(crate) fn focus_inline(&mut self, node: genet_scripted_dom::NodeId) -> bool {
+        let Some(mount) = &self.mount else {
+            return false;
+        };
+        if !cambium_rootstock::WindowDom::new(&self.dom.borrow(), mount.node()).contains(node) {
+            return false;
+        }
+        self.runner.set_focus(Some(node));
+        true
+    }
+    pub(crate) fn inline_selector(
+        &self,
+        selector: &taproot::Selector,
+    ) -> Result<Option<(f32, f32)>, &'static str> {
+        self.layout.selector_point(&self.dom.borrow(), selector)
+    }
+    pub(crate) fn key_inline(&mut self, event: cambium::KeyEvent) -> Vec<WbActivate> {
+        let _: Vec<()> = self.runner.dispatch_key(event);
+        self.runner
+            .state()
+            .cells
+            .iter()
+            .filter(|cell| cell.strip.selected != cell.synced_active)
+            .filter_map(|cell| cell.members.get(cell.strip.selected).copied())
+            .map(WbActivate)
+            .collect()
+    }
+    pub(crate) fn blur_inline(&mut self) {
+        self.runner.set_focus(None);
+    }
+    pub(crate) fn inline_accepts_text(&self) -> bool {
+        self.layout
+            .editable_focus(&self.dom.borrow(), self.runner.focus())
+    }
+    pub(crate) fn inline_cursor_area(&self) -> Option<(f32, f32, f32, f32)> {
+        self.layout
+            .cursor_area(&self.dom.borrow(), self.runner.focus())
+    }
+    pub(crate) fn inline_mount(&self) -> Option<cambium::RetainedMount> {
+        self.mount.clone()
+    }
+    pub(crate) fn unbind_inline(&mut self) {
+        self.layout.unbind_inline();
+    }
+    pub(crate) fn bind_inline(&mut self, layout: &crate::ui::InlineLayoutHandle) {
+        if let Some(mount) = &self.mount {
+            self.layout.bind_inline(layout, mount);
         }
     }
 
@@ -183,6 +265,9 @@ impl WorkbenchPane {
                     None => String::new(),
                 };
                 CellView {
+                    appearance_role: c.active_member().map(|node| {
+                        crate::surface::appearance::workbench_appearance_role(pane_id, node)
+                    }),
                     members: c.members.clone(),
                     rect: c.rect,
                     labels,

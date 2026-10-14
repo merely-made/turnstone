@@ -1,0 +1,23 @@
+warning: patch `layout-dom-api v0.1.1 (https://github.com/merely-made/genet.git?rev=7a8c5b8cb499f2d3b91083c2f7e38236599f98dc#7a8c5b8c)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+   Compiling cambium v0.3.3 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium)
+warning: function `find_element_by_name` is never used
+    --> crates\cambium\cambium\src\tests.rs:1838:8
+     |
+1838 |     fn find_element_by_name(dom: &ScriptedDom, node: NodeId, name: &str) -> Option<NodeId> {
+     |        ^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `cambium` (lib test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 42.45s
+     Running unittests src\lib.rs (C:/t/cargo-targets/mere/build\debug\deps\cambium-ac92b6bf2ca31b3f.exe)
+
+running 2 tests
+test retained_mount::tests::unrelated_document_cannot_mount_a_foreign_owner_identity - should panic ... ok
+test retained_mount::tests::actual_owner_keeps_dom_and_state_after_destination_first_mount ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 256 filtered out; finished in 0.00s
+

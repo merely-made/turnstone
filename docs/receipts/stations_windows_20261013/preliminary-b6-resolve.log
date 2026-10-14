@@ -1,0 +1,150 @@
+error: invalid type: boolean `true`, expected a map
+ --> ..\..\..\.cargo\git\checkouts\servo-e53a6e7b994a25fe\aac43a3\python\tidy\tests\lints-configuration\no-workspace\Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+warning: patch `engine-observables-api v0.2.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `genet-paint-types v0.2.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `genet-scripted-dom v0.1.2 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `genet-static-dom v0.1.1 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `layout-dom-api v0.1.1 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/genet.git
+warning: patch `burn-remote v0.22.0 (C:\Users\mark_\Code\repos\mere\support\patches\burn-remote)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (C:\Users\mark_\Code\repos\mere\support\patches\cubecl-runtime)` was not used in the crate graph
+warning: patch `burn-remote v0.22.0 (C:\Users\mark_\Code\repos\mere\support\patches\burn-remote)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (C:\Users\mark_\Code\repos\mere\support\patches\cubecl-runtime)` was not used in the crate graph
+warning: patch `burn-remote v0.22.0 (C:\Users\mark_\Code\repos\mere\support\patches\burn-remote)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (C:\Users\mark_\Code\repos\mere\support\patches\cubecl-runtime)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+     Locking 113 packages to highest Rust 1.97.1 compatible versions
+      Adding app-host v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\script\app-host)
+      Adding armillary v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\armillary)
+      Adding browsing-context-api v0.1.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding buckram v0.0.3 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding cadency v0.0.1 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding cambium v0.3.3 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium)
+      Adding cambium-genet-winit-host v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-genet-winit-host)
+      Adding cambium-rootstock v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-rootstock)
+      Adding cambium-winit v0.3.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-winit)
+      Adding cambium-winit-a11y v0.3.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-winit-a11y)
+      Adding chartulary v0.2.2 (C:\Users\mark_\Code\repos\mere\crates\eidetic\chartulary)
+      Adding chirograph v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\chirograph)
+      Adding command-menu v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\command-menu)
+      Adding commons-spine v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\moot\commons)
+      Adding distillery v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\distillery)
+      Adding document-canvas v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\inker\document-canvas)
+      Adding document-session-api v0.1.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding edit-history v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\edit-history)
+      Adding eidetic v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\eidetic\eidetic-core)
+      Adding eidetic-search v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\intel\eidetic-search)
+      Adding engine-observables-api v0.2.0 (https://www.github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding errand v0.4.0 (C:\Users\mark_\Code\repos\mere\crates\system\errand)
+      Adding esp v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\intel\esp)
+      Adding fleece v0.5.0 (https://www.github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding gemot v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\moot\gemot)
+      Adding genet-clipboard v0.1.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding genet-document-resources v0.2.1 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding genet-documents v0.1.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding genet-fontique v0.10.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding genet-host-api v0.2.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding genet-livery v0.0.4 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding genet-paint-types v0.2.0 (https://www.github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding genet-parley v0.10.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding genet-render v0.2.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding genet-render-host v0.2.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding genet-scripted-dom v0.1.2 (https://www.github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding genet-static-dom v0.1.1 (https://www.github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding genet-taffy v0.14.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding genet-text v0.1.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding genet-winit-host v0.2.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding graft-engine v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\inker\engines\graft-engine)
+      Adding graphshell v0.0.2 (C:\Users\mark_\Code\repos\mere\ports\graphshell)
+      Adding graphshell-client v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\graphshell\graphshell-client)
+      Adding graphshell-endpoint v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\graphshell\graphshell-endpoint)
+      Adding illume v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\nematic\illume)
+      Adding incipit v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\incipit)
+      Adding inker v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\inker\inker)
+      Adding ipc-channel v0.22.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding knot-editor-host v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\inker\knot-editor-host)
+      Adding layout-dom-api v0.1.1 (https://www.github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding livery v0.0.5 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding luggage v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\system\luggage)
+      Adding mere v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\mere)
+      Adding mere-alembic v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\distillery\alembic)
+      Adding mere-apparatus v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\domain\apparatus)
+      Adding mere-athanor v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\distillery\athanor)
+      Adding mere-cartography v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\canvas\cartography)
+      Adding mere-chrome v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\shell\chrome)
+      Adding mere-comms v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\shell\comms)
+      Adding mere-curation v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\forme\curation)
+      Adding mere-document-lanes v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\system\document-lanes)
+      Adding mere-fetch v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\fetch)
+      Adding mere-fleece v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\fleece)
+      Adding mere-forme v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\forme\forme)
+      Adding mere-kernel v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel)
+      Adding mere-linked-data v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\graph\linked-data)
+      Adding mere-mesh v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\mesh\mesh)
+      Adding mere-moot v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\moot)
+      Adding mere-page-load v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\page-load)
+      Adding mere-proofs v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\system\proofs)
+      Adding mere-surface-api v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\system\surface-api)
+      Adding meristem v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\meristem)
+      Adding mesquite v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\mesquite)
+      Adding mien v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\moot\mien)
+      Adding mooting v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\moot\mooting)
+      Adding mora-cmudict v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\intel\mora-cmudict)
+      Adding muniment v0.1.2 (C:\Users\mark_\Code\repos\mere\crates\eidetic\muniment)
+      Adding murm-wire v0.1.0 (https://github.com/merely-made/murm.git?rev=80d9959000fcd913634fd223538dfdbbec1f5e4f#80d99590)
+      Adding nematic v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\nematic\nematic)
+      Adding netfetcher v0.1.1 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding netrender v0.1.2 (https://www.github.com/merely-made/netrender.git?rev=6a24ae08f55129b474282b8e4911564f875ce5fd#6a24ae08)
+      Adding netrender_device v0.1.2 (https://www.github.com/merely-made/netrender.git?rev=6a24ae08f55129b474282b8e4911564f875ce5fd#6a24ae08)
+      Adding numen v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\conatus\numen)
+      Adding paint_list_api v0.1.2 (https://www.github.com/merely-made/netrender.git?rev=6a24ae08f55129b474282b8e4911564f875ce5fd#6a24ae08)
+      Adding paint_list_render v0.1.2 (https://www.github.com/merely-made/netrender.git?rev=6a24ae08f55129b474282b8e4911564f875ce5fd#6a24ae08)
+      Adding pandect v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\system\pandect)
+      Adding pelt-core v0.2.0 (C:\Users\mark_\Code\repos\mere\ports\pelt\core)
+      Adding pictograph v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\canvas\pictograph)
+      Adding platen v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\platen\platen)
+      Adding reference-data v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\intel\reference-data)
+      Adding regress v0.11.1 (https://www.github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding sceno v0.0.4 (C:\Users\mark_\Code\repos\mere\crates\cambium\scenes\sceno)
+      Adding scenograph v0.0.4 (C:\Users\mark_\Code\repos\mere\crates\cambium\scenes\scenograph)
+      Adding scenomise v0.0.4 (C:\Users\mark_\Code\repos\mere\crates\cambium\scenes\scenomise)
+      Adding scenotime v0.0.4 (C:\Users\mark_\Code\repos\mere\crates\cambium\scenes\scenotime)
+      Adding script-engine-api v0.1.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding script-engine-piccolo v0.0.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding script-rhai v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\script\rhai)
+      Adding scrying-engine v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\inker\engines\scrying-engine)
+      Adding seiche v0.0.6 (C:\Users\mark_\Code\repos\mere\crates\conatus\seiche)
+      Adding servitor v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\servitor)
+      Adding servo-media-player v0.2.0 (https://www.github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding servo-media-streams v0.2.0 (https://www.github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding servo-media-traits v0.2.0 (https://www.github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding sprigging v0.2.1 (C:\Users\mark_\Code\repos\mere\crates\cambium\sprigging)
+      Adding stickleback v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\stickleback)
+      Adding tabard v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\tabard)
+      Adding tabard-workshop v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\cambium\tabard-workshop)
+      Adding taproot v0.1.0 (https://github.com/merely-made/genet.git?rev=b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084#b6bfbeb5)
+      Adding tinct v0.1.2 (C:\Users\mark_\Code\repos\mere\crates\cambium\tinct)
+      Adding uxtree v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\forme\uxtree)
+      Adding weld-engine v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\inker\engines\weld-engine)
+      Adding workbench v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\workbench)
