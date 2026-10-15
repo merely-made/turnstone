@@ -2253,10 +2253,15 @@ fn fork_session_snapshots_the_component_with_its_facets() {
     assert_ne!(fork_id, donor_session);
     let fork_manifest = app.sessions.get(fork_id).expect("fork manifest inserted");
     assert_eq!(
-        fork_manifest.parent_session,
+        fork_manifest.picked_from.as_ref().map(|picked| picked.session),
         Some(donor_session),
-        "the weak parent back-reference"
+        "a torn-out session records where it was picked from"
     );
+    assert_eq!(
+        fork_manifest.picked_from.as_ref().map(|picked| picked.container),
+        Some(donor_container)
+    );
+    assert_eq!(fork_manifest.parent_session, None, "a pick is not a fork");
     assert_ne!(
         fork_manifest.root_graph_id,
         crate::panes::GraphId::from_uuid(donor_container),

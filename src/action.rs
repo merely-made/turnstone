@@ -500,7 +500,7 @@ pub enum Action {
     },
     /// Fork the connected component containing this node into a freshly
     /// minted session (the tear-out trichotomy's FORK arm, tear-out brief
-    /// §4.3): new SessionId + GraphId, `parent_session` back-reference,
+    /// §4.3): new SessionId + GraphId, a `picked_from` record,
     /// `CopiedFrom` provenance per node, per-node character carried by facets.
     /// Gesture-first (Ctrl+Shift at the tab drag-out); the palette arm is
     /// `ForkFocusedNode`.
