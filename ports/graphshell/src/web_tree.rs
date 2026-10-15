@@ -265,9 +265,9 @@ impl Shared {
     fn pan(&self, dx: f32, dy: f32) {
         let mut canvas = self.canvas.borrow_mut();
         if self.reduced_motion() {
-            mere::canvas::gestures::pan_at_once(&mut canvas, dx, dy);
+            mere::canvas::gestures::pan_at_once(&mut *canvas, dx, dy);
         } else {
-            CanvasCommand::Pan { dx, dy }.apply(&mut canvas, self.size.get());
+            CanvasCommand::Pan { dx, dy }.apply(&mut *canvas, self.size.get());
         }
         self.dirty.set(true);
     }
@@ -917,7 +917,7 @@ impl TreePage {
                     .push(format!("command {command}"));
                 return true;
             }
-            action.apply(&mut self.shared.canvas.borrow_mut(), self.size);
+            action.apply(&mut *self.shared.canvas.borrow_mut(), self.size);
             self.shared
                 .events
                 .borrow_mut()

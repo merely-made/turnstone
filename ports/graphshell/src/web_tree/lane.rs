@@ -1329,7 +1329,7 @@ impl Product for TreeLane {
             "set-zoom" => {
                 let zoom = rest.trim().parse().map_err(|_| "set-zoom wants a number")?;
                 let size = self.shared.size.get();
-                CanvasCommand::SetZoom { zoom }.apply(&mut self.shared.canvas.borrow_mut(), size);
+                CanvasCommand::SetZoom { zoom }.apply(&mut *self.shared.canvas.borrow_mut(), size);
                 self.shared.dirty.set(true);
                 Ok(())
             },
@@ -1337,7 +1337,7 @@ impl Product for TreeLane {
             // body, into the snapshot and the receipt.
             "measure-faces" => {
                 let faces = mere::canvas::face_alignment::FaceAlignment::measure(
-                    &self.shared.canvas.borrow(),
+                    &*self.shared.canvas.borrow(),
                     self.shared.size.get(),
                 );
                 self.shared.faces.set(Some(faces));

@@ -192,7 +192,7 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
                 .attr("aria-keyshortcuts", "Control+k Meta+k Shift+F10"),
                 button("Fit visible graph", |page: &mut TreePage, _| {
                     CanvasCommand::FitVisible
-                        .apply(&mut page.shared.canvas.borrow_mut(), page.shared.size.get());
+                        .apply(&mut *page.shared.canvas.borrow_mut(), page.shared.size.get());
                     page.shared.dirty.set(true);
                 }),
                 button("Graph tools", |page: &mut TreePage, _| {

@@ -80,7 +80,7 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
                         if command == CanvasCommand::FitSelection && !canvas.can_fit_selection() {
                             return;
                         }
-                        command.apply(&mut canvas, page.shared.size.get());
+                        command.apply(&mut *canvas, page.shared.size.get());
                         page.shared.dirty.set(true);
                     },
                 ),

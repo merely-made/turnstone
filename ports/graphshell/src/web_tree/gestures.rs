@@ -203,7 +203,7 @@ impl Listeners {
         let (dx, dy) = wheel_delta_from_dom(&event, WHEEL_LINE_PX, WHEEL_PAGE_PX);
         let mut canvas = self.shared.canvas.borrow_mut();
         if wheel == WheelUse::Zoom {
-            wheel_zoom(&mut canvas, at, dy);
+            wheel_zoom(&mut *canvas, at, dy);
         } else {
             canvas.set_ctrl(false);
             canvas.wheel(dx, dy);
@@ -370,7 +370,7 @@ impl Listeners {
         let Some(to) = self.fingers(&event.touches()) else {
             return;
         };
-        two_finger(&mut self.shared.canvas.borrow_mut(), from, to);
+        two_finger(&mut *self.shared.canvas.borrow_mut(), from, to);
         self.shared.gestures.borrow_mut().two = Some(to);
         self.redraw();
     }
