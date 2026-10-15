@@ -42,7 +42,8 @@ pub mod canary;
 #[cfg(feature = "web")]
 pub mod viewer_commands;
 #[cfg(feature = "web")]
-pub mod canvas_physics;
+#[cfg(test)]
+mod canvas_physics_tests;
 #[cfg(feature = "web")]
 pub mod canvas_reader;
 #[cfg(feature = "applets")]

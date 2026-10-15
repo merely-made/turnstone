@@ -274,7 +274,7 @@ impl TreeLane {
             )
             .with_field(
                 "physics-profile",
-                graphshell::canvas_physics::profile_id(&canvas),
+                mere::canvas::physics_controls::profile_id(&canvas),
             )
             .with_field("physics-kind-source", choice.kind.id())
             .with_field("physics-group-source", choice.groups.id())
@@ -392,7 +392,7 @@ impl TreeLane {
                 .with_field("layout-spread", format!("{:.0}", stats.spread))
                 .with_field("layout-overlaps", stats.overlaps.to_string());
         }
-        for (name, value) in graphshell::canvas_physics::framing_fields(&canvas) {
+        for (name, value) in mere::canvas::physics_controls::framing_fields(&canvas) {
             snapshot = snapshot.with_field(name, value);
         }
         // The GPU repulsion lane (P5c): whether the page has a device, and
@@ -1243,14 +1243,13 @@ impl Product for TreeLane {
             "log-layout" => {
                 let canvas = self.shared.canvas.borrow();
                 let start = ctx.runner.state().physics.law_start;
-                self.shared
-                    .physics_log
-                    .borrow_mut()
-                    .push(graphshell::canvas_physics::layout_line(
+                self.shared.physics_log.borrow_mut().push(
+                    mere::canvas::physics_controls::layout_line(
                         rest.trim(),
                         &canvas,
                         start.as_ref(),
-                    ));
+                    ),
+                );
                 Ok(())
             },
             // `log-physics <label>`: the layout's signature and the GPU
@@ -1260,7 +1259,7 @@ impl Product for TreeLane {
                 let canvas = self.shared.canvas.borrow();
                 let stats = canvas.layout_stats_without_stretch();
                 let lane = canvas.repulsion_stats().unwrap_or_default();
-                let framing = graphshell::canvas_physics::framing_fields(&canvas)
+                let framing = mere::canvas::physics_controls::framing_fields(&canvas)
                     .map(|(name, value)| format!("{name} {value}"))
                     .join(" ");
                 let answers = self
