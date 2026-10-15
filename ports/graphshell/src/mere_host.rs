@@ -175,6 +175,12 @@ pub struct MereHost<B> {
     projection_session: ProjectionSession,
     /// Whether the graph projection shows the session item (§7 item 31).
     session_item: bool,
+    /// Whether accepted edits also publish the addressable graph in the same
+    /// atomic write (resident host plan, Task 3). Off unless the composition
+    /// root that proved it owns this session's host turns it on.
+    resident_publication: bool,
+    /// The generation the last accepted resident write published.
+    resident_generation: Option<String>,
     /// The channel registry the served layout reads its facts from, held
     /// across calls for the current session's graph and reset when the
     /// session changes: a host without a canvas holds one (dynamics grammar
@@ -252,6 +258,8 @@ impl<B: Backend + Clone> MereHost<B> {
             reopened,
             projection_session: ProjectionSession(LOCAL_SESSION.to_string()),
             session_item: false,
+            resident_publication: false,
+            resident_generation: None,
             served_registry: std::sync::Mutex::new(mere::canvas::ChannelRegistry::new()),
         }
     }
@@ -545,6 +553,24 @@ impl<B: Backend> MereHost<B> {
 
     /// This host, showing the session item in its graph projection: the
     /// resident mode an attached application edits through (§7 item 31).
+    /// Publish the addressable graph with every accepted edit and undo. Only the
+    /// owner of the session's one shared host may call this: a second host on the
+    /// same session would race the publication.
+    pub fn with_resident_publication(mut self) -> Self {
+        self.resident_publication = true;
+        self
+    }
+
+    /// Whether accepted edits publish the addressable graph with them.
+    pub fn resident_publication(&self) -> bool {
+        self.resident_publication
+    }
+
+    /// The generation the last accepted resident write published.
+    pub fn resident_generation(&self) -> Option<&str> {
+        self.resident_generation.as_deref()
+    }
+
     pub fn with_session_item(mut self) -> Self {
         self.session_item = true;
         self
