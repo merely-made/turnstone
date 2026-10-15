@@ -6459,7 +6459,7 @@ dependencies = [
 [[package]]
 name = "mere-webrtc-carrier"
 version = "0.0.1"
-source = "git+https://www.github.com/merely-made/murm.git?rev=38e9c9b8dffe19ff374bd226375e27eea2eb98f6#38e9c9b8dffe19ff374bd226375e27eea2eb98f6"
+source = "git+https://www.github.com/merely-made/murm.git?rev=fb6360c12b37ab5ce896184a055d203779d0244b#fb6360c12b37ab5ce896184a055d203779d0244b"
 dependencies = [
  "blake3",
  "futures-channel",
@@ -9688,7 +9688,7 @@ dependencies = [
 
 [[package]]
 name = "sceno"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "serde",
  "serde_json",
@@ -9706,7 +9706,7 @@ dependencies = [
 
 [[package]]
 name = "scenomise"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "backstep",
  "libm",
