@@ -795,6 +795,57 @@ impl<B: Backend> MereHost<B> {
         Ok(())
     }
 
+    /// Plan merging `source`, a branch or picked-off part, into this
+    /// session (session merge-in note). Nothing is written.
+    pub async fn plan_merge(
+        &self,
+        sessions: &pandect::MereSessions<B>,
+        source: &MereHost<B>,
+    ) -> Result<pandect::PendingMerge, MereHostError>
+    where
+        B: Clone,
+    {
+        Ok(sessions
+            .merge_in(&self.graph_session, &source.graph_session)
+            .await?)
+    }
+
+    /// Write a planned merge into this session for `via`, with a choice for
+    /// each conflict, and mark `source` merged. Both projections move.
+    pub async fn apply_merge(
+        &mut self,
+        sessions: &pandect::MereSessions<B>,
+        source: &mut MereHost<B>,
+        pending: pandect::PendingMerge,
+        choices: &BTreeMap<mere::kernel::graph::Part, pandect::MergeChoice>,
+        via: &str,
+    ) -> Result<(), MereHostError>
+    where
+        B: Clone,
+    {
+        let author = author_of(&self.selected_persona, via);
+        sessions
+            .apply_merge(
+                &mut self.graph_session,
+                &mut source.graph_session,
+                pending,
+                choices,
+                author,
+            )
+            .await?;
+        self.bump_if(true);
+        source.bump_if(true);
+        Ok(())
+    }
+
+    /// Read this session's merged mark again: a target's undo of the merge
+    /// frees it, a redo marks it again.
+    pub async fn reload_merged_mark(&mut self) -> Result<(), MereHostError> {
+        self.graph_session.reload_merged_mark().await?;
+        self.bump_if(true);
+        Ok(())
+    }
+
     fn bump_if(&mut self, changed: bool) {
         if changed {
             self.projection_revision = self.projection_revision.wrapping_add(1);
