@@ -1,0 +1,10 @@
+RESULT ok
+captured 00_inline_nodes
+captured 01_inline_roster
+captured 02_inline_float
+captured 04_inline_returned
+presentation frames=115 captures=4 blank=0
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-a4-scoped\captures\a4_inline_components\00_inline_nodes.png digest=442520b892ecf8fc blank=false
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-a4-scoped\captures\a4_inline_components\01_inline_roster.png digest=f08df2125fd96b8e blank=false
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-a4-scoped\captures\a4_inline_components\02_inline_float.png digest=e47309a01345df9e blank=false
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-a4-scoped\captures\a4_inline_components\04_inline_returned.png digest=e47309a01345df9e blank=false

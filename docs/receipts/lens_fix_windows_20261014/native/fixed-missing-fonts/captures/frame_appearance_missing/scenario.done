@@ -1,0 +1,5 @@
+RESULT ok
+waited 0 frames
+captured frame_missing_font_fallback
+presentation frames=50 captures=1 blank=0
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-missing-fonts\captures\frame_appearance_missing\frame_missing_font_fallback.png digest=3cebe3752dbc3f43 blank=false

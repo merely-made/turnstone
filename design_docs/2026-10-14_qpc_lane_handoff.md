@@ -57,6 +57,12 @@ a fresh pull; nothing needed is left behind.
    published cases ended `RESULT ok` with no blank captures. Evidence is
    outside the repo at q-pc `~/Code/testing/turnstone/macos-qualification-20261014`.
    The Windows App producer and Windows native runs remain for o-pc.
+   *2026-10-14 annotation:* the Windows half passed on o-pc: App producer
+   built, 944/0/10 default and 977/0/10 Piccolo, the ten published cases
+   14/14 with 40 captures, and the inferred original five 5/5 with 11
+   captures. Gate 1 is closed for automated scope; see the
+   [qualification note](2026-10-13_current_consumer_qualification.md) and
+   `docs/receipts/lens_fix_windows_20261014/`.
 2. **Separate platform scopes** that no automated pass closes: physical GPU
    device-loss recovery, Windows producer rebinding, OS accessibility
    activation, human AT, human cross-window focus, monitor DPI transitions and

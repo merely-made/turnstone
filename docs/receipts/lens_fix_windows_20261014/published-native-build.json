@@ -1,0 +1,17 @@
+{
+  "genet": "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084",
+  "manifest_sha256": "85f66cb16eb0610dd7747e7eff0b18b6fb168b60d26e51211a7d28e587b462e9",
+  "lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+  "supplier": "77fd235fe659c513dd0463ed57be32f02fb2e71a",
+  "rust": "1.99.0",
+  "netrender": "6a24ae08f55129b474282b8e4911564f875ce5fd",
+  "gates": [
+    {
+      "exit": 0,
+      "command": "cargo +1.99.0 build --bin turnstone --locked --offline -j1",
+      "log": "published-native-build.log",
+      "gate": "native-build"
+    }
+  ],
+  "local_path_override": false
+}

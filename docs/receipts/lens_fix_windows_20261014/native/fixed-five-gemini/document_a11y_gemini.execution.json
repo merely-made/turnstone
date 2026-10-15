@@ -1,0 +1,13 @@
+{
+  "scenario": "document_a11y_gemini",
+  "case": "fixed-five-gemini",
+  "workshop": "",
+  "started_utc": "2026-10-15T03:58:50.4517874Z",
+  "finished_utc": "2026-10-15T03:59:03.6593900Z",
+  "exit": 0,
+  "result_ok": true,
+  "default_surface_poll": true,
+  "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+  "fixture_sha256": "d0d1468b29910f3e349452e272979b27f48c641fcc5a33f73cdc1a6a568bb35c",
+  "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f"
+}
