@@ -40,6 +40,10 @@ struct Connection {
     cards: HashMap<String, PortableCardV1>,
     saved_view: pandect::ViewIntent,
     read_only: bool,
+    /// The pending merge the resident discloses, and the choices made on it
+    /// here so far, by conflict key, until Apply sends them.
+    merge: Option<mere_overmap::wire::PendingMergeV1>,
+    merge_choices: std::collections::BTreeMap<String, mere_view::MergeOption>,
     requests: (
         chirograph::ProjectionRequest,
         chirograph::ProjectionRequest,
@@ -82,6 +86,8 @@ impl Connection {
             cards: HashMap::new(),
             saved_view: Default::default(),
             read_only: false,
+            merge: None,
+            merge_choices: Default::default(),
         })
     }
     async fn read(&mut self) -> Result<Reading, String> {
@@ -131,6 +137,37 @@ impl Connection {
         if let Some(archive) = &self.archive {
             mere_route::fill_archive(&mut model, &self.sessions, archive, &bytes);
         }
+        // A pending merge: its material, the carried and dropped choices of a
+        // new plan taken in once, and the choices made here kept.
+        let merge = match mere_route::merge_material_request(&self.sessions, &bytes) {
+            Some(request) => {
+                let material = self
+                    .client
+                    .resource(request.session, request.resource)
+                    .await
+                    .map_err(|e| e.to_string())?;
+                let merge: mere_overmap::wire::PendingMergeV1 =
+                    serde_json::from_slice(&material).map_err(|e| e.to_string())?;
+                if merge.schema != mere_overmap::wire::PENDING_MERGE_SCHEMA {
+                    return Err("The pending merge material has another schema.".into());
+                }
+                Some(merge)
+            },
+            None => None,
+        };
+        if merge != self.merge {
+            if let Some(merge) = &merge {
+                mere_route::adopt_merge(&mut self.merge_choices, merge);
+            }
+            self.merge = merge;
+        }
+        let pending: Vec<String> = self
+            .merge
+            .iter()
+            .flat_map(|merge| &merge.conflicts)
+            .map(|conflict| mere_route::conflict_key(&conflict.part))
+            .collect();
+        self.merge_choices.retain(|key, _| pending.contains(key));
         let mut cards = mere_route::node_cards(&self.graph, &bytes);
         if let Some(request) = mere_route::session_graph_request(&self.graph, &bytes) {
             let material = self
@@ -167,6 +204,7 @@ impl Connection {
             self.read_only = material.read_only;
             mere_route::add_node_facets(&mut cards, &material.facets)?;
         }
+        mere_route::fill_merge(&mut model, self.merge.as_ref(), &self.merge_choices);
         let saved_focus = self.saved_view.focus.as_ref().and_then(|focus| {
             cards
                 .iter()
@@ -187,6 +225,19 @@ impl Connection {
         })
     }
     async fn take(&mut self, request: &MereViewRequest) -> Result<Option<String>, String> {
+        // A choice stays here until Apply sends them all.
+        if let MereViewRequest::Merge(mere_view::MergeRequest::Choose(key, option)) = request {
+            if !self.merge.as_ref().is_some_and(|merge| {
+                merge
+                    .conflicts
+                    .iter()
+                    .any(|conflict| &mere_route::conflict_key(&conflict.part) == key)
+            }) {
+                return Ok(Some("That conflict is no longer pending.".into()));
+            }
+            self.merge_choices.insert(key.clone(), option.clone());
+            return Ok(None);
+        }
         let view_request = match request {
             MereViewRequest::Activate(key) | MereViewRequest::Layout(key) => {
                 if self.read_only {
@@ -257,8 +308,20 @@ impl Connection {
                 self.archive.as_ref().and_then(|archive| {
                     mere_route::archive_intent(request, &self.sessions, archive)
                 })
+            })
+            .or_else(|| {
+                self.merge.as_ref().and_then(|merge| {
+                    mere_route::merge_intent(request, &self.sessions, merge, &self.merge_choices)
+                })
             });
         let Some(invocation) = invocation else {
+            if matches!(
+                request,
+                MereViewRequest::Merge(mere_view::MergeRequest::Apply)
+            ) && self.merge.is_some()
+            {
+                return Ok(Some("Choose for every conflict before applying.".into()));
+            }
             return Ok(Some(
                 "The owner no longer offers that action; refresh the mere.".into(),
             ));
