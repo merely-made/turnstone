@@ -21,7 +21,9 @@ from pathlib import Path
 import subprocess
 
 
-CAPS = {"wasm": 3407872, "glue": 20480, "mount": 8192, "history": 131072}
+# R157's caps. Mark's 2026-10-15 ruling amends the Wasm cap from 3,407,872 B
+# (3.25 MiB) to 3,460,300 B (3.30 MiB), applied to each route artifact.
+CAPS = {"wasm": 3460300, "glue": 20480, "mount": 8192, "history": 131072}
 # Route artifact name -> the viewer crate's features for that artifact.
 ARTIFACTS = {
     "webgpu": ["presentation-webgpu"],
