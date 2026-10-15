@@ -26,8 +26,8 @@ use cambium::{
     NamedKey, PointerClick, StyleRange, button, el, lens, styled_textarea,
 };
 use genet_scripted_dom::ScriptedDom;
-use graphshell::client::{ResolvedContent, ResolvedPresentation, RetainedEndpointSession};
-use graphshell::protocol::{
+use graphshell_client::{ResolvedContent, ResolvedPresentation, RetainedEndpointSession};
+use chirograph::{
     AdvertisedAction, CapabilityProfile, DerivedTextV1, EDITABLE_TEXT_SAVE_INTENT, EditableTextV1,
     InsertKnotClipV1, InsertKnotClipV2, IntentResult, KNOT_BLOCK_RUN_INTENT,
     KNOT_CLIP_INSERT_INTENT, KNOT_CLIP_INSERT_SCHEMA_V2, KNOT_TRANSCLUSION_RESOLVE_INTENT,
@@ -3113,7 +3113,7 @@ mod tests {
         EditableTextV1 {
             address: address.to_owned(),
             media_type: "text/vnd.knot".to_owned(),
-            encoding: graphshell::protocol::TextEncoding::Utf8,
+            encoding: chirograph::TextEncoding::Utf8,
             source: "# Field\n".to_owned(),
             base_token,
             public_revision,
@@ -3235,7 +3235,7 @@ mod tests {
         let derived = DerivedTextV1 {
             source: "# Cached".into(),
             summary: "resolved 1; denied 0; failed 0".into(),
-            cache: Some(graphshell::protocol::DerivedCacheInfoV1 {
+            cache: Some(chirograph::DerivedCacheInfoV1 {
                 effect: "resolve".into(),
                 sources: vec!["https://example.test/note".into()],
                 provider_version: "fixture/v1".into(),

@@ -399,7 +399,7 @@ mod tests {
     use stickleback::DataKeyring;
     use transport::P2pandaTransport;
 
-    use graphshell::client::{ResolvedContent, RetainedEndpointSession};
+    use graphshell_client::{ResolvedContent, RetainedEndpointSession};
     use transport::Transport;
 
     use crate::action::Update;
