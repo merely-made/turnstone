@@ -62,7 +62,7 @@ pub(super) enum Session {
 
 /// The tree's remote session: absent until a join completes.
 pub(super) struct TreeRemote {
-    pub(super) reservoir: Option<graphshell::mere_route_session::MereRouteSession>,
+    pub(super) reservoir: Option<mere_overmap::route_session::MereRouteSession>,
     pub(super) live: Option<LiveRemote>,
     /// A first join in flight, before any session exists.
     joining: bool,
@@ -107,11 +107,12 @@ impl TreeRemote {
                     .driver()
                     .core()
                     .map(|core| core.descriptor())
-                    .filter(|descriptor| graphshell::mere_route::requests(descriptor).is_some())
+                    .filter(|descriptor| mere_overmap::route::requests(descriptor).is_some())
                 {
-                    match graphshell::mere_route_session::MereRouteSession::from_descriptor(
+                    match mere_overmap::route_session::MereRouteSession::from_descriptor(
                         descriptor.clone(),
                         live.session.profile().clone(),
+                        "graphshell",
                     ) {
                         Ok(session) => self.reservoir = Some(session),
                         Err(reason) => live.session.fail(reason),
