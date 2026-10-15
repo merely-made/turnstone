@@ -6459,7 +6459,7 @@ dependencies = [
 [[package]]
 name = "mere-webrtc-carrier"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/murm.git?rev=3d9e799fe06d2a58754569b8dc11b2dbc7d506e9#3d9e799fe06d2a58754569b8dc11b2dbc7d506e9"
+source = "git+https://www.github.com/merely-made/murm.git?rev=38e9c9b8dffe19ff374bd226375e27eea2eb98f6#38e9c9b8dffe19ff374bd226375e27eea2eb98f6"
 dependencies = [
  "blake3",
  "futures-channel",
