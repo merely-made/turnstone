@@ -27,10 +27,6 @@ use cambium::{
 };
 use genet_scripted_dom::ScriptedDom;
 use graphshell::client::{ResolvedContent, ResolvedPresentation, RetainedEndpointSession};
-use graphshell::projection_editor::{
-    ProjectionInputBinding, PublicSourceRevision, RevisionEvidence, RuntimeSourceBinding,
-    SourceBinding,
-};
 use graphshell::protocol::{
     AdvertisedAction, CapabilityProfile, DerivedTextV1, EDITABLE_TEXT_SAVE_INTENT, EditableTextV1,
     InsertKnotClipV1, InsertKnotClipV2, IntentResult, KNOT_BLOCK_RUN_INTENT,
@@ -46,6 +42,10 @@ use inker::{
 use knot_editor_host::KnotEditor;
 use netrender::Scene;
 use sceno::InstanceId;
+use scenograph::{
+    ProjectionInputBinding, PublicSourceRevision, RevisionEvidence, RuntimeSourceBinding,
+    SourceBinding,
+};
 
 /// The app-side route id. Knot remains the authority; this names only the
 /// retained Turnstone presentation.
@@ -3123,8 +3123,8 @@ mod tests {
 
     fn knot_projection_recipe(
         binding: ProjectionInputBinding,
-    ) -> graphshell::projection_editor::AuthoredProjectionDefinition {
-        use graphshell::projection_editor::{
+    ) -> scenograph::AuthoredProjectionDefinition {
+        use scenograph::{
             Appearance, Arrangement, AuthoredProjectionDefinition, Channel, Encoding, Interaction,
             PROJECTION_DEFINITION_VERSION, Provenance, Reading,
         };
