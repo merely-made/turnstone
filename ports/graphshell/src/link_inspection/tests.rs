@@ -51,6 +51,10 @@ fn same_predicate_assertions_keep_exact_handles_and_attribution_without_mutation
     let bob = assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:bob");
     let before = serde_json::to_value(graph.to_snapshot()).unwrap();
     let inspected = inspect_link(&graph, LinkTarget::new(a, b)).unwrap();
+    assert!(matches!(
+        inspected.source,
+        scenograph::link::LinkSource::Unavailable { .. }
+    ));
     assert_eq!(inspected.records.len(), 1);
     let statements = &inspected.records[0].statements;
     assert_eq!(statements.len(), 2);
@@ -72,6 +76,27 @@ fn same_predicate_assertions_keep_exact_handles_and_attribution_without_mutation
     );
     assert_eq!(first.statement.asserted_at_ms, Some(17));
     assert_eq!(serde_json::to_value(graph.to_snapshot()).unwrap(), before);
+}
+
+#[test]
+fn verified_source_context_survives_the_graphshell_adapter_unchanged() {
+    let (mut graph, [a, b, _, _]) = fixture();
+    assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:alice");
+    let source = scenograph::link::LinkSource::Available {
+        binding: scenograph::SourceBinding {
+            authority: "mere:test".into(),
+            domain: "graph".into(),
+            resource: "host-owned-graph".into(),
+        },
+        revision: scenograph::link::LinkSourceRevision::Available {
+            revision: scenograph::PublicSourceRevision::new("public-r4"),
+        },
+    };
+
+    let inspected =
+        inspect_link_with_source(&graph, LinkTarget::new(a, b), source.clone()).unwrap();
+    assert_eq!(inspected.source, source);
+    assert_eq!(inspected.records.len(), 1);
 }
 
 #[test]

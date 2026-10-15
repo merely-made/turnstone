@@ -10,12 +10,14 @@
 use std::collections::BTreeSet;
 
 use mere::kernel::graph::{
-    CoverageNote, EdgeFamily, EdgePayload, Graph, GraphStratum, RelationKey, SemanticStatement,
-    SemanticSubKind,
+    CoverageLayer, CoverageLimit, CoverageNote, EdgeFamily, Graph, GraphStratum, RelationKey,
+    SemanticStatement, SemanticSubKind,
 };
 use mere::kernel::types::GraphScope;
 use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use serde_json::Value;
+#[cfg(test)]
+use serde_json::json;
 use uuid::Uuid;
 
 use crate::access_inspection::AccessSummary;
@@ -96,6 +98,9 @@ pub struct LinkRecord {
 pub struct LinkInspection {
     pub first: AccessSummary,
     pub second: AccessSummary,
+    /// The graph-only caller cannot identify the owning public source, so that
+    /// limitation is explicit until a host supplies the context.
+    pub source: scenograph::link::LinkSource,
     /// One entry per contributing edge bucket per displayed direction, including parallels.
     /// Ordinals are presentation only, not reusable source handles.
     pub records: Vec<LinkRecord>,
@@ -139,55 +144,51 @@ fn owner(graph: &Graph, stratum: GraphStratum, from: Uuid, to: Uuid) -> LinkOwne
     }
 }
 
-fn families(payload: &EdgePayload) -> Vec<HeldFamily> {
-    let mut held = Vec::new();
-    let mut push = |family, data| held.push(HeldFamily { family, data });
-    if let Some(data) = &payload.semantic {
-        push(
-            EdgeFamily::Semantic,
-            json!({
-                "sub_kinds": data.sub_kinds, "label": data.label, "predicate": data.predicate
-            }),
-        );
+fn decode<T: for<'de> Deserialize<'de>>(value: &str) -> Result<T, String> {
+    serde_json::from_value(Value::String(value.to_owned())).map_err(|error| error.to_string())
+}
+
+fn portable_scope(scope: scenograph::link::LinkGraphScope) -> GraphScope {
+    use scenograph::link::LinkGraphScope as Scope;
+    match scope {
+        Scope::Default => GraphScope::Default,
+        Scope::Source => GraphScope::Source,
+        Scope::User => GraphScope::User,
+        Scope::Agent => GraphScope::Agent,
+        Scope::Moot => GraphScope::Moot,
+        Scope::Custom(value) => GraphScope::Custom(value),
     }
-    if let Some(data) = &payload.traversal {
-        push(
-            EdgeFamily::Traversal,
-            json!({
-                "traversals": data.traversals.iter().map(|event| json!({
-                    "timestamp_ms": event.timestamp_ms, "trigger": event.trigger
-                })).collect::<Vec<_>>(),
-                "metrics": {
-                    "total_navigations": data.metrics.total_navigations,
-                    "forward_navigations": data.metrics.forward_navigations,
-                    "backward_navigations": data.metrics.backward_navigations,
-                    "last_navigated_at": data.metrics.last_navigated_at
-                }
-            }),
-        );
+}
+
+fn coverage_layer(layer: scenograph::link::LinkCoverageLayer) -> CoverageLayer {
+    use scenograph::link::LinkCoverageLayer as Layer;
+    match layer {
+        Layer::Possession => CoverageLayer::Possession,
+        Layer::Residency => CoverageLayer::Residency,
+        Layer::Disclosure => CoverageLayer::Disclosure,
+        Layer::Synchronization => CoverageLayer::Synchronization,
+        Layer::Projection => CoverageLayer::Projection,
     }
-    if let Some(data) = &payload.arrangement {
-        push(
-            EdgeFamily::Arrangement,
-            json!({ "sub_kinds": data.sub_kinds }),
-        );
+}
+
+fn kernel_coverage(coverage: scenograph::link::LinkCoverage) -> Result<CoverageNote, String> {
+    let mut note = CoverageNote::default();
+    for item in coverage.limits {
+        let mut limit = CoverageLimit::new(coverage_layer(item.layer), item.reason);
+        limit.resources = item
+            .resources
+            .into_iter()
+            .map(|id| id.parse().map_err(|_| "Invalid coverage resource identity"))
+            .collect::<Result<_, _>>()?;
+        limit.surfaces = item
+            .surfaces
+            .into_iter()
+            .map(|id| id.parse().map_err(|_| "Invalid coverage surface identity"))
+            .collect::<Result<_, _>>()?;
+        limit.count = item.count;
+        note.push(limit);
     }
-    if let Some(data) = &payload.containment {
-        push(
-            EdgeFamily::Containment,
-            json!({ "sub_kinds": data.sub_kinds }),
-        );
-    }
-    if let Some(data) = &payload.imported {
-        push(EdgeFamily::Imported, json!({ "sub_kinds": data.sub_kinds }));
-    }
-    if let Some(data) = &payload.provenance {
-        push(
-            EdgeFamily::Provenance,
-            json!({ "sub_kinds": data.sub_kinds }),
-        );
-    }
-    held
+    Ok(note)
 }
 
 /// Held adjacent accesses only, deterministic and deduplicated by member UUID.
@@ -205,64 +206,118 @@ pub fn linked_accesses(graph: &Graph, member: Uuid) -> Result<Vec<AccessSummary>
 }
 
 pub fn inspect_link(graph: &Graph, target: LinkTarget) -> Result<LinkInspection, String> {
+    inspect_link_with_source(
+        graph,
+        target,
+        scenograph::link::LinkSource::Unavailable {
+            reason: "Graphshell receives a kernel graph without its owning source authority or public revision".into(),
+        },
+    )
+}
+
+/// Inspect a displayed pair when the owning host can provide verified source
+/// authority and revision context.
+pub fn inspect_link_with_source(
+    graph: &Graph,
+    target: LinkTarget,
+    source: scenograph::link::LinkSource,
+) -> Result<LinkInspection, String> {
     let first = access(graph, target.first)?;
     let second = access(graph, target.second)?;
-    let mut records = Vec::new();
     let mut notes = Vec::new();
-    let mut resources = BTreeSet::new();
-    let mut surfaces = BTreeSet::from([target.first, target.second]);
-    for member in &surfaces.clone() {
+    for member in [target.first, target.second] {
         let key = graph
-            .get_node_key_by_id(*member)
+            .get_node_key_by_id(member)
             .expect("access resolved above");
         match graph.shown_resource_id(key) {
-            Some(id) => {
-                resources.insert(id);
-                surfaces.extend(graph.surface_ids_showing_resource(id));
-                if graph.resource(id).is_none() {
-                    notes.push(format!("The recorded Resource {id} is not held here"));
-                }
-            },
+            Some(id) if graph.resource(id).is_some() => {},
+            Some(id) => notes.push(format!("The recorded Resource {id} is not held here")),
             None => notes.push(format!(
                 "No Resource association is recorded for access {member}"
             )),
         }
     }
-    let mut pairs = vec![(target.first, target.second)];
-    if target.first != target.second {
-        pairs.push((target.second, target.first));
-    }
-    for (from, to) in pairs {
-        let from_key = graph
-            .get_node_key_by_id(from)
-            .expect("access resolved above");
-        let to_key = graph.get_node_key_by_id(to).expect("access resolved above");
-        for (key, payload) in graph.projected_relations_between(from_key, to_key) {
-            let source = match key {
-                RelationKey::Surface(_) => owner(graph, GraphStratum::Surface, from, to),
-                RelationKey::Resource(_) => owner(
-                    graph,
-                    GraphStratum::Resource,
-                    graph
-                        .shown_resource_id(from_key)
-                        .expect("projected Resource source"),
-                    graph
-                        .shown_resource_id(to_key)
-                        .expect("projected Resource target"),
-                ),
-            };
-            let mut statements: Vec<_> = payload
-                .semantic_statements()
-                .iter()
-                .map(HeldStatement::from)
-                .collect();
+    let reading = mere::canvas::link_reading::read_link_with_options(
+        graph,
+        target.first,
+        target.second,
+        source,
+        mere::canvas::link_reading::LinkReadOptions {
+            include_legacy_summaries: true,
+        },
+    )?;
+    let source = reading.source.clone();
+    let mut records = Vec::new();
+    for link in reading.links {
+        let stratum = match link.key.stratum {
+            scenograph::link::LinkStratum::Surface => GraphStratum::Surface,
+            scenograph::link::LinkStratum::Resource => GraphStratum::Resource,
+        };
+        for bucket in link.buckets {
+            let displayed_from = bucket
+                .displayed_from
+                .parse()
+                .map_err(|_| "Invalid displayed source identity")?;
+            let displayed_to = bucket
+                .displayed_to
+                .parse()
+                .map_err(|_| "Invalid displayed target identity")?;
+            let source_from = bucket
+                .source_from
+                .id
+                .parse()
+                .map_err(|_| "Invalid source endpoint identity")?;
+            let source_to = bucket
+                .source_to
+                .id
+                .parse()
+                .map_err(|_| "Invalid target endpoint identity")?;
+            let mut statements = bucket
+                .assertions
+                .into_iter()
+                .map(|statement| {
+                    Ok(HeldStatement {
+                        statement_id: statement.id,
+                        predicate: statement.predicate,
+                        recognized_sub_kind: statement
+                            .recognized_kind
+                            .as_deref()
+                            .map(decode)
+                            .transpose()?,
+                        label: statement.label,
+                        graph_scope: portable_scope(statement.scope),
+                        provenance_iri: statement.asserter,
+                        asserted_at_ms: statement.asserted_at_ms,
+                    })
+                })
+                .collect::<Result<Vec<_>, String>>()?;
             statements.sort_by(|a, b| a.statement_id.cmp(&b.statement_id));
+            let families = bucket
+                .legacy_summaries
+                .into_iter()
+                .map(|family| {
+                    Ok(HeldFamily {
+                        family: decode(&family.family)?,
+                        data: family.data,
+                    })
+                })
+                .collect::<Result<Vec<_>, String>>()?;
             records.push(LinkRecord {
-                displayed_from: from,
-                displayed_to: to,
-                owner: source,
+                displayed_from,
+                displayed_to,
+                owner: LinkOwner {
+                    stratum,
+                    from: SourceEndpoint {
+                        id: source_from,
+                        address: bucket.source_from.address,
+                    },
+                    to: SourceEndpoint {
+                        id: source_to,
+                        address: bucket.source_to.address,
+                    },
+                },
                 statements,
-                families: families(payload),
+                families,
             });
         }
     }
@@ -271,15 +326,11 @@ pub fn inspect_link(graph: &Graph, target: LinkTarget) -> Result<LinkInspection,
         .sort_by_cached_key(|record| serde_json::to_string(record).expect("inspection serializes"));
     notes.sort();
     notes.dedup();
-    let mut coverage = graph.coverage_note();
-    coverage.limits.retain(|limit| {
-        (limit.resources.is_empty() && limit.surfaces.is_empty())
-            || limit.resources.iter().any(|id| resources.contains(id))
-            || limit.surfaces.iter().any(|id| surfaces.contains(id))
-    });
+    let coverage = kernel_coverage(reading.coverage)?;
     Ok(LinkInspection {
         first,
         second,
+        source,
         records,
         notes,
         coverage,
