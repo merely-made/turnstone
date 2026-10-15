@@ -29,11 +29,3 @@ pub mod resident_identity;
 pub mod resident_mere_proxy;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod transfer_staging;
-
-/// Transitional, and the only re-export of the lifted door: Djinn's pinned
-/// `knot-editor` (`8ed49d4`, whose `src/startup.rs` names these three paths)
-/// resolves `graphshell` to this package through the workspace patch.
-/// Nothing in this repository uses them. Delete this line when Djinn's Knot
-/// pin imports `graphshell_endpoint::door` (stack lift plan, P1 Progress).
-#[doc(hidden)]
-pub use graphshell_endpoint::door::{app_admission, custody, custody_client};
