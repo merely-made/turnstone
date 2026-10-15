@@ -86,8 +86,30 @@ pub struct SwatchNode {
 pub struct SwatchModel {
     pub nodes: Vec<SwatchNode>,
     pub edges: Vec<(Uuid, Uuid)>,
+    /// Kinded links, drawn in place of `edges` when present, each kind with
+    /// its own line (the overmap's fork and pick lineage).
+    pub relations: Vec<SwatchRelation>,
     pub selected: Option<Uuid>,
 }
+
+/// One kinded link between two gathered nodes.
+#[derive(Clone, Debug, PartialEq)]
+pub struct SwatchRelation {
+    pub from: Uuid,
+    pub to: Uuid,
+    /// The relation cell's `data-kind`, such as `picked-from`.
+    pub kind: &'static str,
+    /// Its accessible words, such as "Draft picked from home".
+    pub label: String,
+}
+
+/// The line each kinded link is painted with: a fork solid, a pick dashed,
+/// containment dotted.
+const RELATION_LINES: [(&str, sprigging::RelationLine); 3] = [
+    ("forked-from", sprigging::RelationLine::Solid),
+    ("picked-from", sprigging::RelationLine::Dashed),
+    ("contains", sprigging::RelationLine::Dotted),
+];
 
 struct SwatchState {
     swatch: GraphCanvasSwatch<Uuid, NodeState>,
@@ -380,6 +402,20 @@ impl SwatchPane {
             .iter()
             .map(|&(from, to)| GraphCanvasEdge { from, to })
             .collect();
+        let relations: Vec<cambium::GraphCanvasRelation<Uuid>> = model
+            .relations
+            .iter()
+            .map(|relation| cambium::GraphCanvasRelation {
+                id: format!("{}:{}:{}", relation.kind, relation.from, relation.to),
+                from: relation.from,
+                to: relation.to,
+                kind: relation.kind.to_string(),
+                label: relation.label.clone(),
+                route: Vec::new(),
+                visible: true,
+                emphasized: false,
+            })
+            .collect();
 
         // Composed sections shrink the swatch to the top fraction; without
         // them it fills the pane (the Overmap's shape, unchanged).
@@ -397,6 +433,11 @@ impl SwatchPane {
         let sh = ((swatch_h - 2.0 * SWATCH_PAD).max(32.0)) as u32;
         self.runner.update(|state| {
             state.swatch.graph = GraphCanvasSubgraph { nodes, edges };
+            state.swatch.relations = relations;
+            state.swatch.relation_lines = RELATION_LINES
+                .iter()
+                .map(|(kind, line)| (kind.to_string(), *line))
+                .collect();
             state.swatch.selected = model.selected;
             state.swatch.width = sw;
             state.swatch.height = sh;
@@ -850,6 +891,45 @@ mod tests {
             pane.diagnostic_tree(crate::panes::PaneId(7), placement)
                 .is_none(),
             "removing the section retires the whole subtree"
+        );
+    }
+
+    /// The overmap draws a fork's lineage and a picked-off part's apart: each
+    /// a kinded relation with its own line and words.
+    #[test]
+    fn overmap_preset_draws_pick_lineage_beside_fork_lineage() {
+        let (mut pane, mut app, donor) = overmap_pane_on_fork_pair();
+        let picked = crate::panes::SessionId::new();
+        let mut picked_m = pandect::GraphSessionManifest::new(
+            picked,
+            crate::panes::GraphId::from_uuid(uuid::Uuid::from_u128(0xe0)),
+        );
+        picked_m.display_name = Some("home (picked from home)".to_string());
+        picked_m.picked_from = Some(pandect::PickedFrom {
+            session: donor,
+            at: 0,
+            container: uuid::Uuid::from_u128(0xd0),
+        });
+        app.sessions.insert(picked_m);
+        pane.sync(&app, 480.0, 400.0);
+        let state = pane.runner.state();
+        let kinds: Vec<(&str, &str)> = state
+            .swatch
+            .relations
+            .iter()
+            .map(|relation| (relation.kind.as_str(), relation.label.as_str()))
+            .collect();
+        assert_eq!(kinds.len(), 2, "{kinds:?}");
+        assert!(kinds.iter().any(|(kind, _)| *kind == "forked-from"), "{kinds:?}");
+        assert!(
+            kinds.contains(&("picked-from", "home (picked from home) picked from home")),
+            "{kinds:?}"
+        );
+        assert!(
+            state
+                .swatch
+                .relation_lines
+                .contains(&("picked-from".to_string(), sprigging::RelationLine::Dashed))
         );
     }
 

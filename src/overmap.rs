@@ -10,8 +10,9 @@
 //! `2026-07-20_overmap_sessions_graph_plan`).
 //!
 //! Derived, not stored: `GraphSessionManifest` already carries the overmap's
-//! adjacency flat (`root_graph_id` the container id, `parent_session` a
-//! lineage edge, `sub_graph_refs` containment), so this module just projects
+//! adjacency flat (`root_graph_id` the container id, `parent_session` a fork's
+//! lineage edge, `picked_from` a picked-off part's, `sub_graph_refs`
+//! containment), so this module just projects
 //! it into a kernel [`Graph`] on demand — no second store, no sidecar. The
 //! promotion gate (a stored chartulary overmap) stays consumer-pulled.
 //!
@@ -19,9 +20,13 @@
 //! session's `scene.*` facets key on; nil ids are healed at boot). Each node's
 //! url is `mere://session/<session-id>` — the DOM-carried targeting key the
 //! probe/automation doctrine wants — and its title is the session's display
-//! label. Lineage renders as a provenance edge (child `CopiedFrom` parent,
-//! matching the fork's per-node derivation records); `sub_graph_refs` as
-//! containment (`CollectionMember`).
+//! label. Lineage renders as a provenance edge, child `CopiedFrom` parent,
+//! matching the per-node derivation records a fork and a pick both stamp; it
+//! is the one provenance kind the kernel admits between surfaces, so which
+//! link is a fork and which a pick (Mark, 2026-10-15: a pick takes part of a
+//! session, not all of it) is [`lineage`]'s to say. Parts torn out before the
+//! pick record existed carry `parent_session` and still read as forks.
+//! `sub_graph_refs` render as containment (`CollectionMember`).
 
 use mere::kernel::graph::apply::{self as graph_apply, GraphDelta, apply_graph_delta};
 use mere::kernel::graph::{ContainmentSubKind, EdgeAssertion, Graph, NodeKey, ProvenanceSubKind};
@@ -99,6 +104,19 @@ pub fn overmap_graph(sessions: &ManifestStore) -> Graph {
                 },
             );
         }
+        // Pick lineage: the child was picked off its source, part of it.
+        if let Some(picked) = &manifest.picked_from
+            && let Some(&source_key) = key_of.get(&picked.session)
+        {
+            let _ = graph_apply::assert_relation(
+                &mut graph,
+                child,
+                source_key,
+                EdgeAssertion::Provenance {
+                    sub_kind: ProvenanceSubKind::CopiedFrom,
+                },
+            );
+        }
         // Containment: a sub-graph ref whose target is some session's
         // container draws parent-contains-child.
         for sub in &manifest.sub_graph_refs {
@@ -117,6 +135,47 @@ pub fn overmap_graph(sessions: &ManifestStore) -> Graph {
     graph
 }
 
+/// How a session came from another: forked (the whole session, its own way
+/// thereafter) or picked off (the component around one node).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Lineage {
+    Fork,
+    Pick,
+}
+
+impl Lineage {
+    /// The relation kind the overmap draws the link with.
+    pub fn token(self) -> &'static str {
+        match self {
+            Self::Fork => "forked-from",
+            Self::Pick => "picked-from",
+        }
+    }
+
+    /// The words the link reads as, child first.
+    pub fn words(self) -> &'static str {
+        match self {
+            Self::Fork => "forked from",
+            Self::Pick => "picked from",
+        }
+    }
+}
+
+/// Every lineage link in the store, as `(child, parent, how)`: a fork's
+/// `parent_session`, or a pick's `picked_from` session.
+pub fn lineage(sessions: &ManifestStore) -> Vec<(SessionId, SessionId, Lineage)> {
+    let mut links = Vec::new();
+    for (id, manifest) in sessions.iter() {
+        if let Some(parent) = manifest.parent_session {
+            links.push((id, parent, Lineage::Fork));
+        }
+        if let Some(picked) = &manifest.picked_from {
+            links.push((id, picked.session, Lineage::Pick));
+        }
+    }
+    links
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -129,6 +188,60 @@ mod tests {
             store.insert(m);
         }
         store
+    }
+
+    #[test]
+    fn a_picked_off_part_draws_picked_from_lineage_beside_a_fork() {
+        let donor = SessionId::new();
+        let fork = SessionId::new();
+        let picked = SessionId::new();
+        let donor_m = GraphSessionManifest::new(donor, GraphId::from_uuid(uuid::Uuid::from_u128(0xd0)));
+        let mut fork_m = GraphSessionManifest::new(fork, GraphId::from_uuid(uuid::Uuid::from_u128(0xf0)));
+        fork_m.parent_session = Some(donor);
+        let mut picked_m =
+            GraphSessionManifest::new(picked, GraphId::from_uuid(uuid::Uuid::from_u128(0xe0)));
+        picked_m.picked_from = Some(pandect::PickedFrom {
+            session: donor,
+            at: 0,
+            container: uuid::Uuid::from_u128(0xd0),
+        });
+        let graph = overmap_graph(&store_with(vec![donor_m, fork_m, picked_m]));
+        let (donor_key, _) = graph.get_node_by_id(uuid::Uuid::from_u128(0xd0)).unwrap();
+        let (fork_key, _) = graph.get_node_by_id(uuid::Uuid::from_u128(0xf0)).unwrap();
+        let (picked_key, _) = graph.get_node_by_id(uuid::Uuid::from_u128(0xe0)).unwrap();
+        let edges: Vec<_> = graph
+            .relations()
+            .map(|relation| (relation.from, relation.to))
+            .collect();
+        assert_eq!(edges.len(), 2, "{edges:?}");
+        assert!(edges.contains(&(fork_key, donor_key)));
+        assert!(edges.contains(&(picked_key, donor_key)));
+        let store = store_with(vec![
+            GraphSessionManifest::new(donor, GraphId::from_uuid(uuid::Uuid::from_u128(0xd0))),
+            {
+                let mut m =
+                    GraphSessionManifest::new(fork, GraphId::from_uuid(uuid::Uuid::from_u128(0xf0)));
+                m.parent_session = Some(donor);
+                m
+            },
+            {
+                let mut m = GraphSessionManifest::new(
+                    picked,
+                    GraphId::from_uuid(uuid::Uuid::from_u128(0xe0)),
+                );
+                m.picked_from = Some(pandect::PickedFrom {
+                    session: donor,
+                    at: 0,
+                    container: uuid::Uuid::from_u128(0xd0),
+                });
+                m
+            },
+        ]);
+        let mut links = lineage(&store);
+        links.sort_by_key(|(child, _, _)| child.0);
+        let mut expected = vec![(fork, donor, Lineage::Fork), (picked, donor, Lineage::Pick)];
+        expected.sort_by_key(|(child, _, _)| child.0);
+        assert_eq!(links, expected);
     }
 
     #[test]

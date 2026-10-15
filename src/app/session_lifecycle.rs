@@ -253,7 +253,7 @@ impl App {
 
     /// Fork (tear-out G4-R R2): snapshot the connected component containing
     /// `seed` into a freshly minted session — new `SessionId` + real `GraphId`,
-    /// a weak `parent_session` back-reference on the fork's manifest, the
+    /// a `picked_from` record on the new manifest (a pick, not a fork), the
     /// component's nodes + internal edges copied with `CopiedFrom` provenance,
     /// and the donor's per-node character carried by **facets** through the
     /// copy's id remap (`arrangement.*` layout, `web.*` browser state, foreign
@@ -411,7 +411,16 @@ impl App {
         }
         let mut manifest = pandect::GraphSessionManifest::new(fork_id, fork_graph_id);
         manifest.storage_path = Some(session::session_dir(&self.data_root, fork_id));
-        manifest.parent_session = Some(self.session_id);
+        // A torn-out component is picked off, not forked (Mark, 2026-10-15):
+        // it records where it was picked from, never a fork's parent. The
+        // container is the donor's, which each copied node's CopiedFrom
+        // derivation names; Turnstone keeps no pandect journal for a session,
+        // so the pick's cursor is 0.
+        manifest.picked_from = Some(pandect::PickedFrom {
+            session: self.session_id,
+            at: 0,
+            container: self.container_id().unwrap_or_default(),
+        });
         // A torn-out component is a picked-off part (Mark, 2026-10-15): it
         // names where it was picked from, "Evening reading (picked from
         // Evening reading)", never reading as its donor.
