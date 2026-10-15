@@ -7,8 +7,9 @@
 //! Graphshell endpoint adapter for the resident Personae authority.
 //!
 //! The browser-facing side sees ordinary portable cards and typed intents.
-//! The authority is whatever [`ResidentIdentity`] the composer hands in;
-//! djinn hands in castellan's keeper (dramatis repo plan, D15). A
+//! The authority is whatever [`IdentityAuthority`] the composer hands in;
+//! djinn hands in castellan's keeper (dramatis repo plan, D15) through its
+//! `ResidentIdentity`, of which this trait is the part the endpoint reads. A
 //! carrier must admit a session before passing this endpoint to
 //! `serve_admitted_session`; nothing here invents a second principal field.
 
@@ -34,9 +35,30 @@ use crate::identity_projection::{
     IdentityProjectionAction, SIGNING_APPROVE_IDLE_INTENT, SIGNING_APPROVE_ONCE_INTENT,
     SIGNING_DENY_INTENT, project_identity,
 };
-use crate::native::browser_host::now_ms;
-use crate::native::resident_identity::ResidentIdentity;
 use graphshell_endpoint::door::identity::IdentitySurfaceSnapshot;
+
+/// What the identity endpoint reads from the resident's identity authority:
+/// the secret-free snapshot the cards project, and typed intents applied
+/// back.
+///
+/// Djinn's `ResidentIdentity` (its doors' authority, stack lift plan P5)
+/// extends this with door keys, native actions and custody; the endpoint
+/// needs only these two, so it stays in this port without naming Djinn.
+pub trait IdentityAuthority: Send + Sync + 'static {
+    /// The secret-free read model the identity cards project.
+    fn snapshot(&self) -> std::io::Result<IdentitySurfaceSnapshot>;
+
+    /// Apply one typed identity intent from an admitted session. The error
+    /// is the reason shown to the caller.
+    fn apply_intent(&self, intent: &str, payload: &[u8]) -> Result<(), String>;
+}
+
+fn now_ms() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("clock is after the epoch")
+        .as_millis() as u64
+}
 
 pub const IDENTITY_SESSION: &str = "native:personae";
 
@@ -148,7 +170,7 @@ pub const MAX_RELEASED_TRANSFER_BYTES: usize = 64 * 1024 * 1024;
 
 /// Native identity authority exposed through Graphshell's ordinary endpoint
 /// vocabulary.
-pub struct IdentityEndpoint<A: ResidentIdentity + ?Sized> {
+pub struct IdentityEndpoint<A: IdentityAuthority + ?Sized> {
     host: Arc<A>,
     session: ProjectionSession,
     epoch: u64,
@@ -174,7 +196,7 @@ pub struct IdentityEndpoint<A: ResidentIdentity + ?Sized> {
     decisions: Option<TransferDecisions>,
 }
 
-impl<A: ResidentIdentity + ?Sized> IdentityEndpoint<A> {
+impl<A: IdentityAuthority + ?Sized> IdentityEndpoint<A> {
     pub fn new(host: Arc<A>) -> Self {
         Self::with_session(host, ProjectionSession(IDENTITY_SESSION.to_string()))
     }
@@ -566,7 +588,7 @@ fn advertised_action(action: &IdentityProjectionAction) -> AdvertisedAction {
     }
 }
 
-impl<A: ResidentIdentity + ?Sized> ProjectionCatalog for IdentityEndpoint<A> {
+impl<A: IdentityAuthority + ?Sized> ProjectionCatalog for IdentityEndpoint<A> {
     fn describe(&self) -> EndpointDescriptor {
         EndpointDescriptor {
             label: "Local identity authority".to_string(),
@@ -578,7 +600,7 @@ impl<A: ResidentIdentity + ?Sized> ProjectionCatalog for IdentityEndpoint<A> {
     }
 }
 
-impl<A: ResidentIdentity + ?Sized> ProjectionSource for IdentityEndpoint<A> {
+impl<A: IdentityAuthority + ?Sized> ProjectionSource for IdentityEndpoint<A> {
     type Error = IdentityEndpointError;
 
     fn snapshot(&mut self, request: ProjectionRequest) -> Result<ProjectionSnapshot, Self::Error> {
@@ -589,7 +611,7 @@ impl<A: ResidentIdentity + ?Sized> ProjectionSource for IdentityEndpoint<A> {
     }
 }
 
-impl<A: ResidentIdentity + ?Sized> PresentationSource for IdentityEndpoint<A> {
+impl<A: IdentityAuthority + ?Sized> PresentationSource for IdentityEndpoint<A> {
     type Error = IdentityEndpointError;
 
     fn resource(&mut self, request: ResourceRequest) -> Result<ResourceResponse, Self::Error> {
@@ -631,7 +653,7 @@ impl<A: ResidentIdentity + ?Sized> PresentationSource for IdentityEndpoint<A> {
     }
 }
 
-impl<A: ResidentIdentity + ?Sized> IntentSink for IdentityEndpoint<A> {
+impl<A: IdentityAuthority + ?Sized> IntentSink for IdentityEndpoint<A> {
     type Error = IdentityEndpointError;
 
     fn invoke(&mut self, intent: IntentInvocation) -> Result<IntentResult, Self::Error> {
@@ -681,11 +703,11 @@ mod tests {
     use graphshell_client::{ClientState, PresentationResolution, ResolvedContent};
     use ssh_key::{Algorithm, HashAlg, LineEnding};
 
+    use super::test_support::{FixedIdentity, fixed_snapshot};
     use super::*;
     use crate::identity_projection::{
         GenerateSshKeyIntentV1, SSH_GENERATE_INTENT, SshUnlockPolicyIntentV1,
     };
-    use crate::native::resident_identity::test_support::{FixedIdentity, fixed_snapshot};
     use graphshell_endpoint::door::identity::{ProfileView, SshKeyView};
 
     /// Content a card names but nothing staged is read through to the store.
@@ -795,7 +817,7 @@ mod tests {
             unlock_policy: "every use".to_string(),
         });
         (
-            IdentityEndpoint::new(FixedIdentity::with_snapshot(0x6b, snapshot)),
+            IdentityEndpoint::new(FixedIdentity::with_snapshot(snapshot)),
             private_openssh,
         )
     }
@@ -1169,5 +1191,69 @@ mod tests {
             endpoint.accept_transfer(&payload),
             IntentResult::Rejected { .. }
         ));
+    }
+}
+
+#[cfg(test)]
+pub(crate) mod test_support {
+    //! A fixed authority for Graphshell's own tests: a snapshot it never
+    //! changes, and the intents it was asked to apply. Tests that need the
+    //! real keeper live with djinn, which links castellan.
+
+    use std::sync::{Arc, Mutex};
+
+    use super::*;
+    use graphshell_endpoint::door::identity::{
+        AgentListenerView, CarryView, VaultLockView, VaultProtectionView, VaultView,
+    };
+
+    pub(crate) struct FixedIdentity {
+        snapshot: IdentitySurfaceSnapshot,
+        pub(crate) intents: Mutex<Vec<String>>,
+    }
+
+    impl FixedIdentity {
+        pub(crate) fn with_snapshot(snapshot: IdentitySurfaceSnapshot) -> Arc<Self> {
+            Arc::new(Self {
+                snapshot,
+                intents: Mutex::new(Vec::new()),
+            })
+        }
+    }
+
+    pub(crate) fn fixed_snapshot() -> IdentitySurfaceSnapshot {
+        IdentitySurfaceSnapshot {
+            vault: VaultView {
+                protection: VaultProtectionView::Ephemeral,
+                lock: VaultLockView::Unlocked,
+                agent: AgentListenerView::StandaloneRetained,
+            },
+            profiles: Vec::new(),
+            ssh_keys: Vec::new(),
+            carry: CarryView::default(),
+            pending_signing: Vec::new(),
+            signing_history: Vec::new(),
+        }
+    }
+
+    impl IdentityAuthority for FixedIdentity {
+        fn snapshot(&self) -> std::io::Result<IdentitySurfaceSnapshot> {
+            Ok(self.snapshot.clone())
+        }
+
+        /// Records every intent. The one rule it keeps is the keeper's
+        /// confirmation gate: a payload saying `"confirmed": false` is
+        /// refused, as an unconfirmed device revocation is.
+        fn apply_intent(&self, intent: &str, payload: &[u8]) -> Result<(), String> {
+            let unconfirmed = serde_json::from_slice::<serde_json::Value>(payload)
+                .ok()
+                .and_then(|value| value.get("confirmed").and_then(|c| c.as_bool()))
+                == Some(false);
+            if unconfirmed {
+                return Err("the action must be confirmed".to_string());
+            }
+            self.intents.lock().unwrap().push(intent.to_string());
+            Ok(())
+        }
     }
 }

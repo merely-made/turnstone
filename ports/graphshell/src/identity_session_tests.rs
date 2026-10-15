@@ -100,7 +100,7 @@ async fn browser_carrier_delivers_public_identity_cards_and_an_approval() {
         "ssh-agent",
     );
     let pending_id = pending.request_id;
-    let mut fixed = crate::native::resident_identity::test_support::fixed_snapshot();
+    let mut fixed = crate::identity_endpoint::test_support::fixed_snapshot();
     fixed
         .pending_signing
         .push(personae::signing::PendingSigningRequest {
@@ -108,8 +108,7 @@ async fn browser_carrier_delivers_public_identity_cards_and_an_approval() {
             policy: personae::signing::SigningPolicy::PerUse,
             expires_at_ms: u64::MAX,
         });
-    let host =
-        crate::native::resident_identity::test_support::FixedIdentity::with_snapshot(0x7c, fixed);
+    let host = crate::identity_endpoint::test_support::FixedIdentity::with_snapshot(fixed);
 
     let launcher =
         BrowserLauncher::parse(&[format!("chrome-extension://{CHROMIUM_EXTENSION_ID}/")]).unwrap();
@@ -170,12 +169,11 @@ async fn browser_carrier_delivers_public_identity_cards_and_an_approval() {
 
     let server_task = tokio::spawn(async move {
         let revocations = RwLock::new(RevocationLedger::default());
-        let mut resume = |_: &mut IdentityEndpoint<
-            crate::native::resident_identity::test_support::FixedIdentity,
-        >,
-                          _: ResumeRequest| {
-            Err("identity resume is not implemented".to_string())
-        };
+        let mut resume =
+            |_: &mut IdentityEndpoint<crate::identity_endpoint::test_support::FixedIdentity>,
+             _: ResumeRequest| {
+                Err("identity resume is not implemented".to_string())
+            };
         serve_admitted_session(
             &mut admitted,
             &authority,
