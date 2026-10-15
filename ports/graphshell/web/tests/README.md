@@ -14,3 +14,10 @@ python3 receipt_sink.py --web WEB_DIRECTORY --out RECEIPT_DIRECTORY \
 ```
 
 The receipt parser, progress file, scenario result, decoded captures, and `scenario.done` format are unchanged. This helper only delivers receipts; successful receipt transport does not itself qualify a scenario, GPU, accessibility, or presentation result.
+
+
+Browser presentation controls use `presentation-webgl-fixture.html` against the packaged viewer. `run-presentation-webgl.py --web <fixture directory with index.html, mount.js and pkg/> --out <new directory> --backend webgl2 --force-context-loss` runs the retained viewer's scenario/capture path. Add `--browser firefox --headed` for Firefox, or `--disable-webgpu --backend auto` for fallback. Run every browser inside the machine's owned memory-capped heavy-job guard; keep physical and software results separate.
+
+`node ports/graphshell/web/tests/presentation-mount.mjs` checks policy precedence, invalid choices, removal/remount and a fetch completing after removal. The viewer accepts `data-render-backend` or overriding `?render_backend=` with `auto`, `webgpu` and `webgl2`; selected backend, context generation and compute availability are disclosed on the element. Explicit `?gpu=on` refuses on WebGL2.
+
+Packaging uses `npm ci --ignore-scripts` in `web/scripts` and the pinned Terser CLI (`--terser <path>`). The existing gzip caps remain enforced. The current dual-backend Wasm exceeds its cap; JavaScript minification fits the glue cap. See the dated presentation receipts for exact measurements and remaining qualification gates.

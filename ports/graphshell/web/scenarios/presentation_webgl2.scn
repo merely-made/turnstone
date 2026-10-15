@@ -1,0 +1,15 @@
+# Browser presentation fixture uses this same retained input path.
+# Loss/restoration, removal and readback assertions live in the outer fixture.
+assert snap ready == true
+click-node https://example.test/i2p-port
+settle 2
+assert snap picked == https://example.test/i2p-port
+assert snap focus-kind == graph
+remember picked-camera
+key ArrowRight
+settle 2
+differs picked-camera camera
+same picked-camera picked
+click role:button Fit graph
+settle 2
+capture presentation-webgl2

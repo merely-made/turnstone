@@ -43,8 +43,30 @@ export function defineElements(module) {
         async connectedCallback() {
           if (this.dataset.mounted) return;
           this.dataset.mounted = "true";
-          await loadHostDataset(this);
-          mount(this);
+          const epoch = this._mountEpoch = (this._mountEpoch ?? 0) + 1;
+          try {
+            const choice = new URLSearchParams(location.search).get("render_backend")
+              ?? this.getAttribute("data-render-backend") ?? "auto";
+            if (!["auto", "webgpu", "webgl2"].includes(choice)) {
+              throw new Error(`invalid render_backend: ${choice}`);
+            }
+            this.setAttribute("data-render-backend", choice);
+            await loadHostDataset(this);
+            if (!this.isConnected || this._mountEpoch !== epoch) return;
+            mount(this);
+          } catch (error) {
+            if (this._mountEpoch === epoch) {
+              delete this.dataset.mounted;
+              this.setAttribute("data-mount-error", String(error.message ?? error));
+              throw error;
+            }
+          }
+        }
+        disconnectedCallback() {
+          this._mountEpoch = (this._mountEpoch ?? 0) + 1;
+          module.dispose_tree?.(this);
+          delete this.dataset.mounted;
+          this.removeAttribute("data-ready");
         }
       },
     );

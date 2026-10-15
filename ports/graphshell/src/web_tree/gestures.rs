@@ -174,9 +174,10 @@ impl Listeners {
             );
             let gestures = self.shared.gestures.borrow();
             if gestures.graph.is_some()
-                && !gestures.overlays.iter().any(|rect| {
-                    graphshell::retained_policy::contains_point(*rect, at)
-                })
+                && !gestures
+                    .overlays
+                    .iter()
+                    .any(|rect| graphshell::retained_policy::contains_point(*rect, at))
             {
                 // The web host claims every notch. Keep ordinary chrome from
                 // trapping page scroll, while its actual scroll panes still work.
@@ -384,12 +385,44 @@ impl Listeners {
 /// Listen on `root`, ahead of the host's listeners on `canvas`. The canvas's
 /// `touch-action` (set where it is made) lets one finger scroll the page and
 /// leaves pinching to these listeners.
+pub(super) struct GestureOwner {
+    root: Element,
+    shared: Rc<Shared>,
+    alive: Rc<Cell<bool>>,
+    listeners: Vec<(&'static str, wasm_bindgen::JsValue, Box<dyn std::any::Any>)>,
+}
+impl Drop for GestureOwner {
+    fn drop(&mut self) {
+        self.alive.set(false);
+        self.shared.gestures.borrow_mut().ui_zoom.take();
+        for (name, callback, _) in &self.listeners {
+            let _ = self.root.remove_event_listener_with_callback_and_bool(
+                name,
+                callback.unchecked_ref(),
+                true,
+            );
+        }
+        let listeners = std::mem::take(&mut self.listeners);
+        // Defer closure destruction until an active event callback returns.
+        wasm_bindgen_futures::spawn_local(async move {
+            drop(listeners);
+        });
+    }
+}
+
 pub(super) fn install(
     root: &Element,
     canvas: HtmlCanvasElement,
     shared: Rc<Shared>,
     host: HostHandle,
-) -> Result<(), String> {
+) -> Result<GestureOwner, String> {
+    let alive = Rc::new(Cell::new(true));
+    let mut owner = GestureOwner {
+        root: root.clone(),
+        shared: shared.clone(),
+        alive: alive.clone(),
+        listeners: Vec::new(),
+    };
     shared.gestures.borrow_mut().ui_zoom = Some(host.ui_zoom.clone());
     let listeners = Rc::new(Listeners {
         shared,
@@ -403,7 +436,11 @@ pub(super) fn install(
         ($name:literal, $ty:ty, $handler:expr) => {{
             let listeners = listeners.clone();
             let handler: fn(&Listeners, $ty) = $handler;
+            let alive = alive.clone();
             let closure = Closure::<dyn FnMut($ty)>::new(move |event: $ty| {
+                if !alive.get() {
+                    return;
+                }
                 super::lane::overlay_observation::before_event(&listeners.shared, event.as_ref());
                 handler(&listeners, event);
             });
@@ -413,8 +450,9 @@ pub(super) fn install(
                 &options,
             )
             .map_err(|_| concat!("could not listen for ", $name).to_string())?;
-            // The page lives as long as its mount, as the host's do.
-            closure.forget();
+            owner
+                .listeners
+                .push(($name, closure.as_ref().clone(), Box::new(closure)));
         }};
     }
     listen!("wheel", web_sys::WheelEvent, |l, e| l.wheel(e));
@@ -434,5 +472,5 @@ pub(super) fn install(
     listen!("touchmove", TouchEvent, |l, e| l.touch_move(e));
     listen!("touchend", TouchEvent, |l, e| l.touch_end(e));
     listen!("touchcancel", TouchEvent, |l, e| l.touch_end(e));
-    Ok(())
+    Ok(owner)
 }

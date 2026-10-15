@@ -45,6 +45,7 @@ def main():
     parser.add_argument("--out-dir", required=True, type=Path)
     parser.add_argument("--cargo", default="cargo")
     parser.add_argument("--wasm-bindgen", default="wasm-bindgen")
+    parser.add_argument("--terser", default="terser", help="Terser CLI; install pinned scripts/package-lock.json dependencies")
     parser.add_argument("--target-dir", type=Path)
     parser.add_argument("--offline", action="store_true")
     args = parser.parse_args()
@@ -62,6 +63,12 @@ def main():
     raw = target / "wasm32-unknown-unknown/viewer/graphshell_web.wasm"
     subprocess.run([args.wasm_bindgen, "--target", "web", "--remove-name-section",
                     "--out-name", "graphshell_web", "--out-dir", str(out), str(raw)], check=True)
+    glue = out / "graphshell_web.js"
+    glue_input_sha256 = hashlib.sha256(glue.read_bytes()).hexdigest()
+    compact = out / "graphshell_web.min.js"
+    minify_command = [args.terser, str(glue), "--module", "--compress", "--mangle", "--output", str(compact)]
+    subprocess.run(minify_command, check=True)
+    compact.replace(glue)
     assets = {"wasm": out / "graphshell_web_bg.wasm", "glue": out / "graphshell_web.js",
               "mount": web / "viewer.js", "history": web / "fixtures/site-repository-host-history.json"}
     rows = measure_assets(assets)
@@ -71,6 +78,8 @@ def main():
               "command": command, "rustc": subprocess.check_output(
                   [os.environ.get("RUSTC", "rustc"), "--version"], text=True).strip(),
               "manifest_sha256": hashlib.sha256((web / "Cargo.toml").read_bytes()).hexdigest(),
+              "minifier": {"command": minify_command, "input_sha256": glue_input_sha256,
+                           "version": subprocess.check_output([args.terser, "--version"], text=True).strip()},
               "sizes": rows, "all_caps_pass": all(r["cap_pass"] for r in rows.values())}
     (out / "viewer-delivery.json").write_text(json.dumps(report, indent=2) + "\n")
     require_budget(rows)

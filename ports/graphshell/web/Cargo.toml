@@ -67,7 +67,7 @@ cambium = { path = "../../../crates/cambium/cambium" }
 tabard = { path = "../../../crates/system/tabard" }
 # The one-tree page (`src/web_tree.rs`): Cambium's web host mounts the tree,
 # and rootstock carries the host types and the canvas's texture producer.
-cambium-genet-web-host = { path = "../../../crates/cambium/cambium-genet-web-host", default-features = false }
+cambium-genet-web-host = { path = "../../../crates/cambium/cambium-genet-web-host", default-features = false, features = ["webgl"] }
 cambium-rootstock = { path = "../../../crates/cambium/cambium-rootstock", default-features = false }
 mesquite = { path = "../../../crates/cambium/mesquite", default-features = false }
 genet-render = { git = "https://github.com/merely-made/genet.git", rev = "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084", default-features = false, features = ["livery", "accesskit"] }
@@ -85,8 +85,8 @@ layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "b6bf
 # Named genet-probe until genet 7baa554c (2026-09-14).
 taproot = { git = "https://github.com/merely-made/genet.git", rev = "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084", default-features = false }
 js-sys = "0.3"
-netrender = { git = "https://www.github.com/merely-made/netrender.git", rev = "6a24ae08f55129b474282b8e4911564f875ce5fd" }
-netrender_device = { git = "https://www.github.com/merely-made/netrender.git", rev = "6a24ae08f55129b474282b8e4911564f875ce5fd" }
+netrender = { git = "https://www.github.com/merely-made/netrender.git", rev = "68bcddc063636056d1c8c9669f58e5acc499a542" }
+netrender_device = { git = "https://www.github.com/merely-made/netrender.git", rev = "68bcddc063636056d1c8c9669f58e5acc499a542" }
 serde_json = "1"
 # The remote link's outbound queue: the host enqueues lines synchronously,
 # a task drains them onto the channel.
@@ -255,7 +255,7 @@ luggage = { path = "../../../crates/system/luggage" }
 # runtime family to one immutable Git source identity. Standalone roots must
 # repeat this bridge. Retire after coordinated Genet supplier adoption.
 [patch."https://github.com/merely-made/netrender.git"]
-netrender = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "6a24ae08f55129b474282b8e4911564f875ce5fd" }
-netrender_device = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "6a24ae08f55129b474282b8e4911564f875ce5fd" }
-paint_list_api = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "6a24ae08f55129b474282b8e4911564f875ce5fd" }
-paint_list_render = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "6a24ae08f55129b474282b8e4911564f875ce5fd" }
+netrender = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "68bcddc063636056d1c8c9669f58e5acc499a542" }
+netrender_device = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "68bcddc063636056d1c8c9669f58e5acc499a542" }
+paint_list_api = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "68bcddc063636056d1c8c9669f58e5acc499a542" }
+paint_list_render = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "68bcddc063636056d1c8c9669f58e5acc499a542" }
