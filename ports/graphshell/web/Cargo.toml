@@ -70,23 +70,23 @@ tabard = { path = "../../../crates/system/tabard" }
 cambium-genet-web-host = { path = "../../../crates/cambium/cambium-genet-web-host", default-features = false, features = ["webgl"] }
 cambium-rootstock = { path = "../../../crates/cambium/cambium-rootstock", default-features = false }
 mesquite = { path = "../../../crates/cambium/mesquite", default-features = false }
-genet-render = { git = "https://github.com/merely-made/genet.git", rev = "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084", default-features = false, features = ["livery", "accesskit"] }
+genet-render = { git = "https://github.com/merely-made/genet.git", rev = "e8b8606f51101906c3e3d1d075c608ef530940ee", default-features = false, features = ["livery", "accesskit"] }
 # The present core, shared with every winit host. Booting wgpu, picking a
 # non-sRGB surface format, and rasterizing a Scene are not browser-specific, so
 # this crate no longer hand-rolls them; only the canvas target and the
 # content-over-chrome composition below are ours.
-genet-render-host = { git = "https://github.com/merely-made/genet.git", rev = "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084" }
-genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084", version = "=0.1.2" }
+genet-render-host = { git = "https://github.com/merely-made/genet.git", rev = "e8b8606f51101906c3e3d1d075c608ef530940ee" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "e8b8606f51101906c3e3d1d075c608ef530940ee", version = "=0.1.2" }
 # Retained scenario attributes use the shared DOM seam.
-layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084", version = "=0.1.1" }
+layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "e8b8606f51101906c3e3d1d075c608ef530940ee", version = "=0.1.1" }
 # The shared scenario driver every genet app runs its receipts through; the
 # page implements its `Automatable`/`Driveable` over the browser DOM
 # (`src/web_scenario.rs`). Pure: its three deps are already in this graph.
 # Named genet-probe until genet 7baa554c (2026-09-14).
-taproot = { git = "https://github.com/merely-made/genet.git", rev = "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084", default-features = false }
+taproot = { git = "https://github.com/merely-made/genet.git", rev = "e8b8606f51101906c3e3d1d075c608ef530940ee", default-features = false }
 js-sys = "0.3"
-netrender = { git = "https://www.github.com/merely-made/netrender.git", rev = "68bcddc063636056d1c8c9669f58e5acc499a542" }
-netrender_device = { git = "https://www.github.com/merely-made/netrender.git", rev = "68bcddc063636056d1c8c9669f58e5acc499a542" }
+netrender = { git = "https://www.github.com/merely-made/netrender.git", rev = "5fbc7b2ba44e40d613974fa7994558d66cf76c5a" }
+netrender_device = { git = "https://www.github.com/merely-made/netrender.git", rev = "5fbc7b2ba44e40d613974fa7994558d66cf76c5a" }
 serde_json = "1"
 # The remote link's outbound queue: the host enqueues lines synchronously,
 # a task drains them onto the channel.
@@ -214,14 +214,14 @@ opt-level = 3
 # Dramatis uses published muniment; the viewer and its applets share Mere's
 # own package, as the root workspace does after DR-D.
 muniment = { path = "../../../crates/eidetic/muniment" }
-taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084" }
-layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084", version = "=0.1.1" }
-genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084", version = "=0.1.2" }
+taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "e8b8606f51101906c3e3d1d075c608ef530940ee" }
+layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "e8b8606f51101906c3e3d1d075c608ef530940ee", version = "=0.1.1" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "e8b8606f51101906c3e3d1d075c608ef530940ee", version = "=0.1.2" }
 # Classic 0.11 and its owned repairs, kept in step with the root Scene aliases.
 # Standalone workspaces restate the complete encoding/shader trio.
-netrender-vello = { git = "https://github.com/mark-ik/vello", rev = "2eae6243881d5b24c984d5ee35dde509ca5db782" }
-vello_encoding = { git = "https://github.com/mark-ik/vello", rev = "2eae6243881d5b24c984d5ee35dde509ca5db782" }
-vello_shaders = { git = "https://github.com/mark-ik/vello", rev = "2eae6243881d5b24c984d5ee35dde509ca5db782" }
+netrender-vello = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
+vello_encoding = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
+vello_shaders = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
 # The resident lane's CubeCL stack (mere `canvas-gpu`, physics catalog P5c),
 # restated from the root manifest because [patch] is not inherited:
 # cubecl-runtime 0.11.0 with persistence removed from its defaults
@@ -255,7 +255,7 @@ luggage = { path = "../../../crates/system/luggage" }
 # runtime family to one immutable Git source identity. Standalone roots must
 # repeat this bridge. Retire after coordinated Genet supplier adoption.
 [patch."https://github.com/merely-made/netrender.git"]
-netrender = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "68bcddc063636056d1c8c9669f58e5acc499a542" }
-netrender_device = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "68bcddc063636056d1c8c9669f58e5acc499a542" }
-paint_list_api = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "68bcddc063636056d1c8c9669f58e5acc499a542" }
-paint_list_render = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "68bcddc063636056d1c8c9669f58e5acc499a542" }
+netrender = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "5fbc7b2ba44e40d613974fa7994558d66cf76c5a" }
+netrender_device = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "5fbc7b2ba44e40d613974fa7994558d66cf76c5a" }
+paint_list_api = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "5fbc7b2ba44e40d613974fa7994558d66cf76c5a" }
+paint_list_render = { version = "=0.1.2", git = "https://www.github.com/merely-made/netrender.git", rev = "5fbc7b2ba44e40d613974fa7994558d66cf76c5a" }

@@ -294,16 +294,27 @@ fn attach_gpu(shared: &Shared, core: &genet_render_host::RenderCore) {
     if shared.gpu.borrow().is_some() {
         return;
     }
-    *shared.gpu.borrow_mut() = Some((core.device().clone(), core.queue().clone()));
     #[cfg_attr(not(feature = "canvas-gpu"), allow(unused_variables))]
     let options = shared.gpu_options;
+    // The host's own device, never one of ours: the render core's handles are
+    // the ones every producer on this page draws with. Renderer access is one
+    // operation; a refused frame gate or lost device retries next frame.
     #[cfg(feature = "canvas-gpu")]
-    if options.enabled {
-        // The host's own device, never one of ours: the render core's
-        // handles are the ones every producer on this page draws with.
-        let device = mere::canvas::physics_device_for(&core.renderer().wgpu_device.core)
-            .with_threshold(options.threshold)
-            .with_max_stale_steps(options.max_stale_steps);
+    let physics = if options.enabled {
+        let Ok(renderer) = cambium_rootstock::try_renderer(core) else {
+            return;
+        };
+        Some(
+            mere::canvas::physics_device_for(&renderer.wgpu_device.core)
+                .with_threshold(options.threshold)
+                .with_max_stale_steps(options.max_stale_steps),
+        )
+    } else {
+        None
+    };
+    *shared.gpu.borrow_mut() = Some((core.device().clone(), core.queue().clone()));
+    #[cfg(feature = "canvas-gpu")]
+    if let Some(device) = physics {
         shared
             .canvas
             .borrow_mut()
@@ -1905,8 +1916,11 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 }
             }
             if after_shared.adapter_info.borrow().is_none() {
-                if let Some(core) = ctx.render_core {
-                    let info = core.renderer().wgpu_device.core.adapter.get_info();
+                if let Some(info) = ctx.render_core.and_then(|core| {
+                    cambium_rootstock::try_renderer(core)
+                        .ok()
+                        .map(|renderer| renderer.wgpu_device.core.adapter.get_info())
+                }) {
                     *after_shared.adapter_info.borrow_mut() = Some(json!({
                         "name": info.name, "backend": format!("{:?}", info.backend),
                         "device_type": format!("{:?}", info.device_type),
