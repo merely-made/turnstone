@@ -37,8 +37,9 @@ use std::time::Duration;
 
 use graphshell::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};
 use graphshell::carrier::{admit_accepted_session, projection_alpn, projection_policy};
-use graphshell::native::endpoint_catalog::{ResidentEndpointCatalog, ResidentEndpointRoute};
+use graphshell::native::endpoint_catalog::ResidentEndpointCatalog;
 use graphshell::native::projection_host::ResidentProjectionHost;
+use graphshell_endpoint::door::route::ResidentEndpointRoute;
 use identity::IdentityProvider;
 use identity::delegation::Issue;
 use insigne::delegation::{
