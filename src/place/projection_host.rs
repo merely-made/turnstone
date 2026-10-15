@@ -35,10 +35,10 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::time::Duration;
 
-use graphshell::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};
-use graphshell::carrier::{admit_accepted_session, projection_alpn, projection_policy};
-use graphshell::native::endpoint_catalog::ResidentEndpointCatalog;
-use graphshell::native::projection_host::ResidentProjectionHost;
+use graphshell_host::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};
+use graphshell_host::carrier::{admit_accepted_session, projection_alpn, projection_policy};
+use graphshell_host::endpoint_catalog::ResidentEndpointCatalog;
+use graphshell_host::projection_host::ResidentProjectionHost;
 use graphshell_endpoint::door::route::ResidentEndpointRoute;
 use identity::IdentityProvider;
 use identity::delegation::Issue;
@@ -350,7 +350,7 @@ impl ProjectionServing {
                     // A handshake that never reached a decision is not a
                     // refusal anyone was told about, but it is a peer turned
                     // away, so it counts and the loop keeps listening.
-                    Err(graphshell::carrier::ProjectionAcceptError::Handshake(error)) => {
+                    Err(graphshell_host::carrier::ProjectionAcceptError::Handshake(error)) => {
                         task_refused.fetch_add(1, Ordering::SeqCst);
                         tracing::info!(%error, "projection handshake did not complete");
                     },

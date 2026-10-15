@@ -19,8 +19,8 @@ use std::sync::Arc;
 use commons::chat::ChatExt;
 use commons::encrypted::{COMMONS_ENCRYPTED_GRAPH_LANE, EncryptedCommonsExt};
 use gemot::moot::MootLanes;
-use graphshell::admission::open_session;
-use graphshell::network_carrier::{
+use graphshell_host::admission::open_session;
+use graphshell_host::network_carrier::{
     CarrierRuntime, NetworkCarrier, dial_projection_session, projection_binding,
 };
 use identity::IdentityProvider;
@@ -2517,13 +2517,13 @@ mod tests {
             .unwrap();
         let visitor = InMemoryProvider::from_seed(derived.to_seed());
         let transport = Arc::clone(&lanes._transport);
-        let hello = graphshell::admission::open_session(
+        let hello = graphshell_host::admission::open_session(
             &visitor,
             notochord::NetworkId(moot),
             crate::place::projection_host::projection_profile(),
             notochord::TrafficClass::Interactive,
             [31; 32],
-            &graphshell::network_carrier::projection_binding(transport.local_peer_id()),
+            &graphshell_host::network_carrier::projection_binding(transport.local_peer_id()),
             Vec::new(),
         )
         .unwrap();
@@ -2533,7 +2533,7 @@ mod tests {
                 .add_peer_ticket(ticket)
                 .await
                 .map_err(|error| error.to_string())?;
-            match graphshell::network_carrier::dial_projection_session(
+            match graphshell_host::network_carrier::dial_projection_session(
                 &*transport,
                 peer,
                 &hello,
@@ -5440,7 +5440,7 @@ pub(crate) fn join_live(
             // Beside the sync lanes, on the same endpoint: a place member
             // reaching the document's holder is the same peer relationship,
             // and giving it a second bind would give it a second address.
-            .alpns(vec![graphshell::carrier::projection_alpn()])
+            .alpns(vec![graphshell_host::carrier::projection_alpn()])
             .bind()
             .await
             .map_err(|error| format!("bind place transport: {error}"))?;
