@@ -27,6 +27,8 @@ fn host_session_fork_preserves_resource_records_and_tag_assertions() {
     app.graph_runtimes.adopt_graph(graph, SessionPersistence::writable(app.session_dir(), None));
     let effects = app.fork_session_from(member);
     let child = effects.iter().find_map(|effect| match effect { Effect::SwitchSession { id } => Some(*id), _ => None }).unwrap();
+    let name = app.sessions.get(child).and_then(|m| m.display_name.clone()).unwrap();
+    assert!(name.contains(" (picked from "), "a torn-out session is named as a picked-off part: {name}");
     let loaded = session::try_load_session_graph(&session::session_dir(root.path(), child)).unwrap().unwrap().graph;
     let (copied, node) = loaded.get_node_by_url("https://fork-content.test/page").unwrap();
     assert_ne!(node.id, member);
