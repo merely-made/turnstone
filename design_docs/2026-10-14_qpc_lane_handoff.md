@@ -1,25 +1,26 @@
 # Turnstone lane handoff to q-pc, 2026-10-14
 
-**Status, 2026-10-14:** the Turnstone lane moves from the ThinkPad to q-pc
-(Windows). Remote `main` is the only live line: every branch and worktree on
+**Status, 2026-10-14:** the Turnstone lane moves from the ThinkPad to q-pc,
+Mark's Mac. Windows-only work runs on o-pc, the ASUS Windows laptop. Remote `main` is the only live line: every branch and worktree on
 the ThinkPad was reconciled into it, archived as a tag, or removed. Start from
 a fresh pull; nothing needed is left behind.
 
 ## Start here
 
-1. Pull `main` in `C:/Users/mark_/Code/repos/turnstone`. Check
-   `git log origin/main..HEAD` and `git status` first. The 2026-10-08 handoff
-   recorded unpushed administrative commits and untracked `.github/` WIP on
-   this checkout; reconcile them against current main before building, and
-   commit only paths owned by the current slice.
+1. Pull `main` in `~/Code/repos/turnstone` on q-pc. On o-pc, the checkout is
+   `C:/Users/mark_/Code/repos/turnstone`; check `git log origin/main..HEAD`
+   and `git status` there first. The 2026-10-08 handoff recorded unpushed
+   administrative commits and untracked `.github/` WIP on that checkout;
+   reconcile them against current main before building, and commit only
+   paths owned by the current slice.
 2. Read [the index](DOC_README.md) and [the policy](DOC_POLICY.md). Its working
    principles hold: work directly on `main`, avoid branches, PRs and worktrees
    unless isolation is genuinely needed, and merge and prune any temporary
    lane before leaving it. Mark does not use pull requests, and commits carry
    no `Co-Authored-By` trailer.
-3. Build per the [README](../README.md) (MSVC tools, Windows SDK, CMake,
-   Ninja; `CEF_PATH` to reuse a matching distribution). Approved Windows
-   targets live under `C:/t/cargo-targets/<repo>`.
+3. Build per the [README](../README.md). On o-pc that needs MSVC tools,
+   Windows SDK, CMake and Ninja (`CEF_PATH` reuses a matching distribution);
+   approved Windows targets live under `C:/t/cargo-targets/<repo>`.
 
 ## Where main stands
 
@@ -50,11 +51,16 @@ a fresh pull; nothing needed is left behind.
    station/lens-accessibility scenes are pending against the fixed source
    ([qualification note](2026-10-13_current_consumer_qualification.md)).
    Default and Piccolo native suites last passed 927/0/10 and 960/0/10 on the
-   pre-fix source.
+   pre-fix source. On q-pc against `b0b709a`, the lib suites gave 938/2/10
+   default and 970/3/10 Piccolo; all 59 `a11y` tests pass, and the failures
+   are `place::` timing tests that pass alone. All 14 scenarios of the ten
+   published cases ended `RESULT ok` with no blank captures. Evidence is
+   outside the repo at q-pc `~/Code/testing/turnstone/macos-qualification-20261014`.
+   The Windows App producer and Windows native runs remain for o-pc.
 2. **Separate platform scopes** that no automated pass closes: physical GPU
    device-loss recovery, Windows producer rebinding, OS accessibility
    activation, human AT, human cross-window focus, monitor DPI transitions and
-   early scrollbar-fade pixel timing. q-pc is the natural place for the
+   early scrollbar-fade pixel timing. o-pc is the natural place for the
    Windows ones.
 3. **Known UI issues** from the last visual review: floating-toolbar
    occlusion and confirmation-caption overflow. Recorded, not fixed.
