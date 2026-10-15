@@ -5,9 +5,9 @@
 use super::*;
 use cambium::select;
 use graphshell::projection_compile::{PRACTICE_CARD, practice_compiler};
-use graphshell::projection_editor::{
-    OptionKind, OptionSpec, arrangement_defaults, arrangement_options, option_placeholder,
-    with_option,
+use scenograph::options::{OptionKind, OptionSpec};
+use scenomise::arrangement::{
+    arrangement_defaults, arrangement_options, option_placeholder, with_option,
 };
 
 pub(in crate::web_tree::product) struct OptionRow {

@@ -201,7 +201,7 @@ pandect = { workspace = true, optional = true }
 platen = { path = "../../crates/platen/platen", default-features = false, optional = true }
 scenograph.workspace = true
 sceno.workspace = true
-scenomise.workspace = true
+scenomise = { workspace = true, features = ["authoring"] }
 scenotime.workspace = true
 serde = { version = "1", features = ["derive"], optional = true }
 chatelaine = { workspace = true, optional = true }

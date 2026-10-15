@@ -15,7 +15,11 @@
 
 use std::collections::BTreeMap;
 
-use crate::projection_editor::ProjectionDefinition;
+use scenograph::{
+    Appearance, Arrangement, Channel, Encoding, Interaction, PROJECTION_DEFINITION_VERSION,
+    ProjectionDefinition, ProjectionDraft, Provenance, Reading, RevisionEvidence, SelectionMode,
+    SourceBinding,
+};
 pub use scenomise::host_dataset::*;
 pub use scenomise::projection::*;
 
@@ -34,7 +38,6 @@ pub fn practice_compiler() -> &'static ProjectionCompiler {
 /// A bounded starting definition for the disclosed practice dataset. These
 /// field names are a host recipe, not an inferred product schema.
 pub fn default_definition(dataset: &ProjectionDataset) -> ProjectionDefinition {
-    use crate::projection_editor::*;
     ProjectionDefinition {
         dynamics: None,
         version: PROJECTION_DEFINITION_VERSION,
@@ -52,7 +55,7 @@ pub fn default_definition(dataset: &ProjectionDataset) -> ProjectionDefinition {
             color: None,
             label: Some(Channel::Field("label".into())),
         },
-        arrangement: crate::projection_editor::Arrangement {
+        arrangement: Arrangement {
             kind: scenomise::catalog::Family::Grid.id().into(),
             direction: "coordinates".into(),
             spacing: 16,
@@ -78,12 +81,59 @@ pub fn default_definition(dataset: &ProjectionDataset) -> ProjectionDefinition {
     }
 }
 
+/// The Graphshell reference host's starting draft for the projection editor:
+/// a host recipe, not part of the editor.
+pub fn initial_projection_draft() -> ProjectionDraft {
+    ProjectionDraft {
+        dynamics: None,
+        version: PROJECTION_DEFINITION_VERSION,
+        id: "graphshell-reference".to_string(),
+        label: "Graphshell reference projection".to_string(),
+        source: SourceBinding {
+            authority: "graphshell-reference-host".to_string(),
+            domain: "mere.graph".to_string(),
+            resource: "fixture.graphshell/reference".to_string(),
+        },
+        reading: Reading {
+            kind: "nodes".to_string(),
+            key: "title".to_string(),
+            value: None,
+        },
+        encoding: Encoding {
+            x: Channel::Field("x".to_string()),
+            y: Channel::Field("y".to_string()),
+            color: Some(Channel::Field("kind".to_string())),
+            label: Some(Channel::Field("title".to_string())),
+        },
+        arrangement: Arrangement {
+            kind: "phyllotaxis.default".to_string(),
+            direction: "horizontal".to_string(),
+            spacing: 16,
+            options: Default::default(),
+        },
+        interaction: Interaction {
+            selection: SelectionMode::Single,
+            pan: true,
+            zoom: true,
+        },
+        appearance: Appearance {
+            realization: "canvas".to_string(),
+            title: "Graphshell reference projection".to_string(),
+            theme: "dark".to_string(),
+        },
+        provenance: Provenance {
+            author: "Graphshell reference host".to_string(),
+            source_revision: Some("fixture-v1".into()),
+            revision_evidence: RevisionEvidence::PublicGeneration,
+            note: "Host-owned editor fixture".to_string(),
+        },
+    }
+}
+
 #[cfg(test)]
 const COORDINATES_DIRECTION: &str = "coordinates";
 #[cfg(test)]
 const NODES_READING_ID: &str = "nodes";
-#[cfg(test)]
-use crate::projection_editor::{Channel, RevisionEvidence, SourceBinding};
 #[cfg(test)]
 use sceno::{Footprint, InstanceId, SourceRef, Vec2};
 #[cfg(test)]
@@ -92,10 +142,6 @@ use std::collections::HashMap;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection_editor::{
-        Appearance, Arrangement, Encoding, Interaction, ProjectionDefinition, Provenance, Reading,
-        SelectionMode,
-    };
 
     #[test]
     fn refresh_reuses_geometry_for_labels_and_new_revisions() {

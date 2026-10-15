@@ -31,7 +31,7 @@ pub use scenomise::host_dataset::folds::FoldViewState;
 use uuid::Uuid;
 
 use crate::projection_compile::{ProjectionDataset, practice_compiler};
-use crate::projection_editor::{
+use scenograph::{
     Appearance, Arrangement, Channel, Encoding, Interaction, PROJECTION_DEFINITION_VERSION,
     ProjectionDefinition, Provenance, Reading, RevisionEvidence, SelectionMode,
 };

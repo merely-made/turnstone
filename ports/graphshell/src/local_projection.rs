@@ -6,9 +6,8 @@ use crate::projection_compile::{
     CompiledProjection, ProjectionDataset, ProjectionSnapshot, default_definition,
     practice_compiler,
 };
-use crate::projection_editor::{
-    EditorAction, ProjectionDefinition, ProjectionDraft, ProjectionEditor, ValidationIssue,
-};
+use scenograph::{ProjectionDefinition, ProjectionDraft, ValidationIssue};
+use scenomise::authoring::{EditorAction, ProjectionEditor};
 
 pub fn draft_from_definition(definition: &ProjectionDefinition) -> ProjectionDraft {
     ProjectionDraft {

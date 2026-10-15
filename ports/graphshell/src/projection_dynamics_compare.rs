@@ -17,7 +17,7 @@ use scenomise::facet::{FacetLayout, compose_facet};
 
 use crate::projection_compare::{ComparedCell, Comparison, EDITOR_VIEW, WORKING};
 use crate::projection_compile::{ProjectionDataset, practice_compiler};
-use crate::projection_editor::with_kind;
+use scenomise::arrangement::with_kind;
 
 fn end_label(end: mere::canvas::dynamics_recipe::SettleEnd) -> &'static str {
     match end {
@@ -309,7 +309,7 @@ pub fn compare_dynamics(
 mod tests {
     use super::*;
     use crate::projection_compile::default_definition;
-    use crate::projection_editor::{EditorAction, ProjectionEditor};
+    use scenomise::authoring::{EditorAction, ProjectionEditor};
     use mere::canvas::dynamics_recipe::preset_slot;
 
     fn fixture() -> (ProjectionDraft, ProjectionDataset) {

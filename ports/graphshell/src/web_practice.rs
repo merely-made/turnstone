@@ -22,8 +22,8 @@ use graphshell::{
     projection_compile::{
         CompiledProjection, HostDatasetV1, PRACTICE_CARD, default_definition, practice_compiler,
     },
-    projection_editor::{Channel, ProjectionDefinition},
 };
+use scenograph::{Channel, ProjectionDefinition};
 use mere::canvas::{ArrangementAction, Axes, BoardItem, PermittedActions, PhysicsBoard};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
