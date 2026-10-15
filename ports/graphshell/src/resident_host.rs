@@ -8,7 +8,7 @@
 //! resident. The complete writer stays authoritative (resident host plan,
 //! Task 4): nothing here is truth, only what to present.
 use pandect::ViewKey;
-use pandect::addressable_graph::{GraphAddress, ResidencyPolicy, ResidencyRoots};
+use pandect::addressable_graph::{GraphAddress, ResidencyPolicy, ResidencyRoots, ResidentGraph};
 use std::collections::{BTreeMap, BTreeSet};
 use uuid::Uuid;
 
@@ -146,6 +146,24 @@ impl HostRoots {
 
     fn bump(&mut self) {
         self.revision = self.revision.wrapping_add(1);
+    }
+}
+
+/// What a host holds to present a partial graph: the settings, every open
+/// pane's roots and the installed reader. The complete writer stays the host's
+/// truth; nothing here is authority.
+pub(crate) struct ResidentView<B> {
+    pub(crate) settings: ResidentSettings,
+    pub(crate) roots: HostRoots,
+    pub(crate) reader: Option<ResidentGraph<B>>,
+}
+impl<B> Default for ResidentView<B> {
+    fn default() -> Self {
+        Self {
+            settings: ResidentSettings::default(),
+            roots: HostRoots::default(),
+            reader: None,
+        }
     }
 }
 

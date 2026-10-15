@@ -102,6 +102,7 @@ pub enum MereHostError {
     /// owns. Only the one shared host of a session may publish.
     OwnershipUnproven,
     Live(pandect::live_graph::LiveEditError),
+    Settings(crate::resident_host::ResidentSettingsError),
 }
 
 impl std::fmt::Display for MereHostError {
@@ -121,6 +122,7 @@ impl std::fmt::Display for MereHostError {
                 "resident edits need the session's one shared host; this host is not it"
             ),
             Self::Live(error) => write!(formatter, "{error}"),
+            Self::Settings(error) => write!(formatter, "{error}"),
         }
     }
 }
@@ -142,6 +144,12 @@ impl From<SessionError> for MereHostError {
 impl From<pandect::live_graph::LiveEditError> for MereHostError {
     fn from(value: pandect::live_graph::LiveEditError) -> Self {
         Self::Live(value)
+    }
+}
+
+impl From<crate::resident_host::ResidentSettingsError> for MereHostError {
+    fn from(value: crate::resident_host::ResidentSettingsError) -> Self {
+        Self::Settings(value)
     }
 }
 
@@ -196,6 +204,8 @@ pub struct MereHost<B> {
     resident_publication: bool,
     /// The generation the last accepted resident write published.
     resident_generation: Option<String>,
+    /// Settings, pane roots and the installed partial reader.
+    resident_view: crate::resident_host::ResidentView<B>,
     /// The channel registry the served layout reads its facts from, held
     /// across calls for the current session's graph and reset when the
     /// session changes: a host without a canvas holds one (dynamics grammar
@@ -207,6 +217,8 @@ pub struct MereHost<B> {
 mod coupling;
 #[path = "mere_host_resident.rs"]
 mod resident_transaction;
+#[path = "mere_host_resident_view.rs"]
+mod resident_presentation;
 
 /// Changes not yet stored, taken as one batch: what [`MereHost::stage`] put
 /// in a batch, or what [`MereHost::prepare_store`] took for its caller to
@@ -275,6 +287,7 @@ impl<B: Backend + Clone> MereHost<B> {
             session_item: false,
             resident_publication: false,
             resident_generation: None,
+            resident_view: Default::default(),
             served_registry: std::sync::Mutex::new(mere::canvas::ChannelRegistry::new()),
         }
     }
