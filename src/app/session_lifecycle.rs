@@ -412,6 +412,15 @@ impl App {
         let mut manifest = pandect::GraphSessionManifest::new(fork_id, fork_graph_id);
         manifest.storage_path = Some(session::session_dir(&self.data_root, fork_id));
         manifest.parent_session = Some(self.session_id);
+        // A torn-out component is a picked-off part (Mark, 2026-10-15): it
+        // names where it was picked from, "Evening reading (picked from
+        // Evening reading)", never reading as its donor.
+        let donor_name = self
+            .sessions
+            .get(self.session_id)
+            .and_then(|m| m.display_name.clone())
+            .or_else(|| self.derive_session_name());
+        manifest.display_name = Some(pandect::picked_session_name(donor_name.as_deref()));
         let fork_state = crate::session_persistence::SessionPersistence::writable(fork_dir.clone(), fork_placement);
         if let Err(error) = fork_state.save_with(&fork_dir,
             || pandect::save_node_facets(&fork_dir, fork_graph.facets()),
