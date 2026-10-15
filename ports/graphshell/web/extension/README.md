@@ -113,10 +113,11 @@ with the selected values.
 
 ## Building
 
-Build the Graphshell relay and Djinn resident:
+Build the relay and the Djinn resident (the relay is Djinn's since the stack
+lift plan's P5; its binary name is unchanged):
 
 ```text
-cargo build -p graphshell --bin graphshell_native_host
+cargo build -p djinn --bin graphshell_native_host
 cargo build -p djinn --bin djinn
 ```
 

@@ -45,7 +45,7 @@ pub use notochord::HandshakeLimits;
 pub use personae::InMemoryProvider;
 pub use webrtc_carrier::{BrowserInitiatorConfig, InviteV1};
 
-use graphshell_client::line::LineAssembler;
+use chirograph::line::LineAssembler;
 use graphshell_host::admission::PROJECTION_PROTOCOL;
 use graphshell_host::webrtc_join::{
     JoinError, JoinFrames, PeerJoin, fill_random, peer_join, peer_rejoin,

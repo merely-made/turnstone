@@ -74,13 +74,9 @@ native = [
 # that presents its frames as the session stream. Separate from `native`
 # because it is what pulls str0m and the carrier's own tokio driver into the
 # build — every native Graphshell that is not yet serving browser joins keeps
-# not paying for them. The C4a fixture and its tests require this feature.
+# not paying for them. The C4a fixture and its signaling test are Djinn's
+# since the stack lift plan's P5 (`djinn --features c4-host`).
 webrtc-session = ["native", "webrtc-join", "webrtc-carrier/native", "graphshell-host/webrtc-session"]
-
-# The headed W1 fixture can serve Distillery's read-only Chronicle over the
-# existing WebRTC door. It remains opt-in so the ordinary C4 live-board host
-# does not acquire Distillery's product dependency cone.
-distillery-chronicle-fixture = ["webrtc-session", "dep:distillery", "dep:mesh"]
 
 # The joining side of the WebRTC door, buildable for `wasm32-unknown-unknown`:
 # the peer sequence, the wire both sides share, and the door's client
@@ -180,7 +176,6 @@ async-trait = { version = "0.1", optional = true }
 cambium-rootstock = { workspace = true, optional = true }
 base64.workspace = true
 chartulary = { workspace = true, optional = true }
-distillery = { path = "../distillery", optional = true }
 eidetic = { workspace = true, optional = true }
 graphshell-client = { version = "0.0.2", path = "../../crates/graphshell/graphshell-client" }
 graphshell-endpoint = { version = "0.0.2", path = "../../crates/graphshell/graphshell-endpoint" }
@@ -198,7 +193,6 @@ mere-view = { workspace = true, optional = true }
 mesquite = { workspace = true, optional = true }
 sprigging = { workspace = true, optional = true }
 taproot = { workspace = true, optional = true }
-mesh = { workspace = true, optional = true }
 muniment = { workspace = true, optional = true }
 # The session core. MereHost's truth is a pandect GraphSession in the browser
 # too, so it sits here rather than in the native-only table (reservoir plan
@@ -318,11 +312,6 @@ path = "src/bin/n4_policy_receipt.rs"
 required-features = ["native"]
 
 [[bin]]
-name = "graphshell_native_host"
-path = "src/bin/graphshell_native_host.rs"
-required-features = ["native"]
-
-[[bin]]
 name = "graphshell_mere"
 path = "src/bin/graphshell_mere.rs"
 required-features = ["mere-view-host"]
@@ -381,19 +370,9 @@ cambium-genet-winit-host = { workspace = true }
 cambium-winit-a11y = { workspace = true }
 
 [[bin]]
-name = "c4_webrtc_host"
-path = "src/bin/c4_webrtc_host.rs"
-required-features = ["webrtc-session"]
-[[bin]]
 name = "h4f_agent_probe"
 path = "src/bin/h4f_agent_probe.rs"
 required-features = ["native"]
-
-# The fixture binary driven through its own HTTP signaling: what an in-process
-# composition cannot claim about the binary a headed run actually launches.
-[[test]]
-name = "c4_host_signaling"
-required-features = ["webrtc-session"]
 
 # The browser build's entropy: the same-named entry merges its feature into
 # the one above, the way `personae` does it.

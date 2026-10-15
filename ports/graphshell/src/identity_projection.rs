@@ -9,7 +9,8 @@
 //!
 //! The cards are portable resources. Actions carry only public, typed fields;
 //! authorization and all private key handling stay with the resident
-//! authority behind [`crate::native::resident_identity::ResidentIdentity`].
+//! authority behind [`crate::identity_endpoint::IdentityAuthority`] (Djinn's
+//! `ResidentIdentity`).
 //!
 //! Home again since the dramatis repo plan's DR-C (ruling D15): the cards
 //! lived in castellan from the keeper founding (2026-08-14), but they are a

@@ -48,11 +48,8 @@ Under `native` (non-wasm):
 | Module | Contents |
 |---|---|
 | `browser_carrier` | WebExtensions native messaging: `NATIVE_HOST_NAME`, `CHROMIUM_EXTENSION_ID`, `FIREFOX_EXTENSION_ID`, `AllowedExtensions`, `BrowserLauncher` |
-| `identity_endpoint` | `SupplementalCard`, `TransferAcceptIntentV1`, `TransferDecision`, `IdentityEndpointError` |
+| `identity_endpoint` | `IdentityEndpoint`, `IdentityAuthority` (the snapshot and intents half of Djinn's `ResidentIdentity`), `SupplementalCard`, `TransferAcceptIntentV1`, `TransferDecision`, `IdentityEndpointError` |
 | `identity_projection` | Identity cards plus the signing, SSH generate, and SSH import intents |
-| `native::browser_host` | `serve_identity_native_messages`, `serve_catalog_native_messages` |
-| `native::device_broker` | `DeviceSurface`, `DEVICE_ENDPOINT_ENV` (`GRAPHSHELL_DEVICE_ENDPOINT`), `configured_device_endpoint` |
-| `native::app_broker` | `AppEndpointCatalog`, `serve_app_broker`: the serving half of the first-party door |
 
 The serving half these compose (admission and its action check, the accept
 path, the line codec, `SessionAuthority` and `AdmittedEndpointContext`, the
@@ -60,8 +57,16 @@ session loop and its notices, `ResidentEndpointCatalog`,
 `ResidentProjectionHost`, dialling, the N4 policy scenario, the resume and live
 fixture endpoints, and the WebRTC door) is the `graphshell-host` crate (stack
 lift plan, L2, 2026-10-15). Hosts that serve projections depend on that crate,
-not on this port; what remains here are the brokers (until P5), the browser
-carrier, and the identity endpoint with its `ResidentIdentity` authority.
+not on this port.
+
+The servers Djinn runs (the application door's broker, the browser door's
+host, the device broker and its `graphshell_native_host` relay, the local
+session, `ResidentIdentity`, `ResidentMereProxy`, and the personal sync,
+carriage, graph key and transfer staging hosts) are Djinn's `door` and `sync`
+modules since the stack lift plan's P5, with the C4 WebRTC host fixture
+(`djinn --features c4-host`). What remains here of the native side is the
+browser carrier and the identity endpoint, which reads Djinn's authority
+through `IdentityAuthority`.
 
 The application side of the first-party door (admission, the app client, custody and its
 clients, quarantine, the local endpoint, tracked tasks, the identity views,
@@ -90,11 +95,6 @@ Under `personal-sync`:
 |---|---|
 | `personal_sync` | `PersonalGraphEvent`, `PersonalGraphRecord`, `PersonalGraphExt`, `PersonalEncryption` |
 | `transfer_offer` | `TransferOfferV1`, `transfer_offer_rule`, `offer_address` |
-| `native::personal_sync_host` | `PersonalSyncHost`, `PersonalSyncHostConfig` |
-| `native::device_sync` | `personal_graph_id`, `SeedNote`, `BlobAction`, `resolve_data_root` |
-| `native::pairing` | `pair_device`, `unpair_device`, `PairingFacts` |
-| `native::graph_keys` | `GraphKeyGroup`, `OpenedKeyGroup`, `AbsorbReport` |
-| `native::transfer_staging` | `offer_transfer`, `receive_transfer`, `released_blobs_for` |
 
 ## Features
 
@@ -121,7 +121,6 @@ Turnstone, Genet host packages, and Servo runtime packages.
 | `h4d_browser_receipt_host` | `native` |
 | `h4e_browser_import_receipt_host` | `native` |
 | `h4f_agent_probe` | `native` |
-| `graphshell_native_host` | `native` |
 | `h6_transfer_peer` | `native`, `web` |
 | `h7_sync_peer` | `personal-sync` |
 

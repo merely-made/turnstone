@@ -537,8 +537,8 @@ mod tests {
         };
 
         use crate::identity_endpoint::IdentityEndpoint;
+        use crate::identity_endpoint::test_support::{FixedIdentity, fixed_snapshot};
         use crate::identity_projection::{DEVICE_REVOKE_INTENT, RevokeDeviceIntentV1};
-        use crate::native::resident_identity::test_support::{FixedIdentity, fixed_snapshot};
         use graphshell_endpoint::door::identity::{DeviceGrantView, DeviceView, ProfileView};
 
         // The public read model a keeper with one profile, one leased device,
@@ -589,7 +589,7 @@ mod tests {
             },
             completed_at_ms: 1_700_000_000_500,
         });
-        let authority = FixedIdentity::with_snapshot(0x46, fixed);
+        let authority = FixedIdentity::with_snapshot(fixed);
 
         let mut endpoint = IdentityEndpoint::new(authority);
         let before = endpoint
