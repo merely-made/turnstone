@@ -98,6 +98,10 @@ pub enum MereHostError {
     InvalidSnapshot(String),
     WrongSession,
     MissingResource,
+    /// A resident edit reached a host its composition root has not proven it
+    /// owns. Only the one shared host of a session may publish.
+    OwnershipUnproven,
+    Live(pandect::live_graph::LiveEditError),
 }
 
 impl std::fmt::Display for MereHostError {
@@ -112,6 +116,11 @@ impl std::fmt::Display for MereHostError {
             Self::MissingResource => {
                 write!(formatter, "resource was not disclosed by this session")
             },
+            Self::OwnershipUnproven => write!(
+                formatter,
+                "resident edits need the session's one shared host; this host is not it"
+            ),
+            Self::Live(error) => write!(formatter, "{error}"),
         }
     }
 }
@@ -127,6 +136,12 @@ impl From<StoreError> for MereHostError {
 impl From<SessionError> for MereHostError {
     fn from(value: SessionError) -> Self {
         Self::Session(value)
+    }
+}
+
+impl From<pandect::live_graph::LiveEditError> for MereHostError {
+    fn from(value: pandect::live_graph::LiveEditError) -> Self {
+        Self::Live(value)
     }
 }
 

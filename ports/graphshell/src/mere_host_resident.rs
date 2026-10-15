@@ -36,6 +36,28 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         Ok(())
     }
 
+    /// Apply observed stable-ID commands from a partial display, with their
+    /// publication, in one atomic write. The author is this host's persona over
+    /// `via`; nothing in the commands names one. Refused unless this is the
+    /// admitted shared host of its session.
+    pub async fn apply_observed_commands(
+        &mut self,
+        via: &str,
+        commands: Vec<pandect::live_graph::ObservedCommand>,
+    ) -> Result<pandect::live_graph::LiveApplied, MereHostError> {
+        if !self.resident_publication {
+            return Err(MereHostError::OwnershipUnproven);
+        }
+        let author = author_of(&self.selected_persona, via);
+        let (applied, generation) = self
+            .graph_session
+            .transact_live(author, commands, wall_clock_now())
+            .await?;
+        self.resident_generation = Some(generation);
+        self.projection_revision = self.projection_revision.wrapping_add(1);
+        Ok(applied)
+    }
+
     pub async fn transact_history(
         &mut self,
         via: &str,
@@ -365,6 +387,65 @@ mod tests {
             let view = reader().await;
             assert_eq!(view.generation(), undone);
             assert_eq!(view.graph().node_count(), 0);
+        });
+    }
+    #[test]
+    fn observed_commands_need_the_admitted_host_and_carry_its_persona() {
+        use pandect::addressable_graph::GraphAddress;
+        use pandect::live_graph::{LiveCheck, LiveCommand, ObservedCommand};
+        pollster::block_on(async {
+            let store = RefusingBackend {
+                inner: MemoryBackend::new(),
+                refuse: Arc::new(AtomicBool::new(false)),
+            };
+            let id = uuid::Uuid::from_u128(11);
+            let create = || {
+                vec![ObservedCommand {
+                    command: LiveCommand::CreateAddress {
+                        id,
+                        address: "https://resident.test/live".into(),
+                        title: "Live".into(),
+                    },
+                    checks: vec![LiveCheck::Absent(GraphAddress::Surface(id))],
+                }]
+            };
+            // Not the admitted host: refused, nothing written.
+            let mut other = resident_host(&store, false);
+            other.persist(1).await.unwrap();
+            let before = bytes(&store.inner).await;
+            assert!(matches!(
+                other.apply_observed_commands("task2", create()).await,
+                Err(MereHostError::OwnershipUnproven)
+            ));
+            assert_eq!(bytes(&store.inner).await, before);
+            // The admitted host applies under its own persona and `via`.
+            let mut host = resident_host(&store, true);
+            host.persist(1).await.unwrap();
+            let revision = host.projection_revision();
+            let applied = host.apply_observed_commands("task2", create()).await.unwrap();
+            assert_eq!(applied.created, vec![id]);
+            assert!(host.projection_revision().0 > revision.0);
+            let author = &host.graph_session().changes().last().unwrap().author;
+            assert_eq!(author.via.as_deref(), Some("task2"));
+            assert_eq!(host.graph().node_count(), 1);
+            let view = MereSessions::new(store.clone())
+                .open_resident_graph(host.graph_session().id(), Default::default())
+                .await
+                .unwrap();
+            assert_eq!(Some(view.generation()), host.resident_generation());
+            assert_eq!(view.graph().node_count(), 1);
+            // A refused observation leaves the host as it was.
+            let stale = vec![ObservedCommand {
+                command: LiveCommand::SetPinned { surface: id, pinned: true },
+                checks: vec![LiveCheck::RecordUnchanged {
+                    address: GraphAddress::Surface(id),
+                    digest: "stale".into(),
+                }],
+            }];
+            assert!(matches!(
+                host.apply_observed_commands("task2", stale).await,
+                Err(MereHostError::Live(pandect::live_graph::LiveEditError::Stale(_)))
+            ));
         });
     }
     #[test]
