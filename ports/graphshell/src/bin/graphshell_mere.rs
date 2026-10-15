@@ -11,13 +11,11 @@ use cambium_genet_winit_host::{AppCtx, HostOptions, Init, inert_hooks, run};
 use chirograph::{
     CarrierRequestBody, CarrierResponseBody, ContentHash, PortableCardV1, ProjectionSnapshot,
 };
-use graphshell::{
-    mere_route,
-    native::{
-        app_admission::{AppId, AppRouteId},
-        app_client::AppBrokerClient,
-    },
+use graphshell::native::{
+    app_admission::{AppId, AppRouteId},
+    app_client::AppBrokerClient,
 };
+use mere_overmap::route as mere_route;
 use mere_view::{
     HostAction, MereView, MereViewModel, MereViewRequest, MereViewState, StatusNote, ViewStatus,
 };
@@ -140,7 +138,7 @@ impl Connection {
                 .resource(request.session, request.resource)
                 .await
                 .map_err(|e| e.to_string())?;
-            let material: graphshell::session_item::SessionGraphV1 =
+            let material: mere_overmap::wire::SessionGraphV1 =
                 serde_json::from_slice(&material).map_err(|e| e.to_string())?;
             let attached = model
                 .sessions
@@ -148,7 +146,7 @@ impl Connection {
                 .find(|entry| entry.attached)
                 .ok_or("The graph has no attached session.")?
                 .id;
-            if material.schema != graphshell::session_item::SESSION_GRAPH_SCHEMA
+            if material.schema != mere_overmap::wire::SESSION_GRAPH_SCHEMA
                 || material.application != "graphshell"
                 || material.session != attached
                 || material.epoch != self.graph.scene.epoch
@@ -205,7 +203,7 @@ impl Connection {
                         self.graph.scene.tables.sources[item.source.0 as usize]
                             .as_ref()
                             .is_some_and(|source| {
-                                source.adapter == graphshell::session_item::SESSION_ITEM_SOURCE
+                                source.adapter == mere_overmap::wire::SESSION_ITEM_SOURCE
                             })
                     })
                     .map(|(instance, _)| instance)
@@ -217,7 +215,7 @@ impl Connection {
                     .is_some_and(|offers| {
                         offers.iter().any(|offer| {
                             offer.semantics.actions.iter().any(|action| {
-                                action.intent.0 == graphshell::session_item::SET_VIEW_INTENT
+                                action.intent.0 == mere_overmap::wire::SET_VIEW_INTENT
                             })
                         })
                     })
@@ -243,8 +241,8 @@ impl Connection {
                     target,
                     observed_epoch: self.graph.scene.epoch,
                     observed_revision: self.graph.scene.revision,
-                    intent: graphshell::session_item::SET_VIEW_INTENT.into(),
-                    payload: serde_json::to_vec(&graphshell::session_item::SetViewV1::new(
+                    intent: mere_overmap::wire::SET_VIEW_INTENT.into(),
+                    payload: serde_json::to_vec(&mere_overmap::wire::SetViewV1::new(
                         "graphshell.mere",
                         view,
                     ))

@@ -34,7 +34,7 @@ product = ["muniment/indexeddb", "dep:sha2", "graphshell/document-layout", "grap
 applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.
-remote = ["graphshell/webrtc-browser", "graphshell/mere-route", "dep:mere-view", "dep:futures-channel", "dep:futures-util"]
+remote = ["graphshell/webrtc-browser", "dep:mere-overmap", "dep:mere-view", "dep:futures-channel", "dep:futures-util"]
 # The canvas's repulsion on the page's own WebGPU device (physics catalog P5c).
 canvas-gpu = ["graphshell/canvas-gpu", "mere/canvas-gpu"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
@@ -42,6 +42,8 @@ image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-ro
 
 [dependencies]
 mere-view = { path="../../../crates/cambium/mere-view", optional=true }
+# The shared mere panel over the remote board's admitted route (stack lift plan L14).
+mere-overmap = { path = "../../../crates/cambium/mere-overmap", optional = true }
 mere-document-lanes = { path = "../../../crates/system/document-lanes", features = ["retained-clips"], optional = true }
 fleece = { package = "mere-fleece", path = "../../../crates/fleece", features = ["portable-clip"], optional = true }
 eidetic = { path = "../../../crates/eidetic/eidetic-core", default-features = false }

@@ -42,6 +42,7 @@ use crate::handlers::{
     HandlerOffer, HandlerRegistry, OpenAddressV1, handler_from_intent, intent_id,
 };
 use crate::session_item;
+use mere_overmap::wire;
 
 /// The session item's instance in resident mode (§7 item 31).
 const SESSION_ITEM_INSTANCE: InstanceId = InstanceId(0);
@@ -843,8 +844,7 @@ impl<B: Backend> MereHost<B> {
             max_x = max_x.max(position.x);
             max_y = max_y.max(position.y);
             let id = self.graph_session.id().as_uuid().to_string();
-            let source =
-                scene.intern_source(SourceRef::new(session_item::SESSION_ITEM_SOURCE, &id));
+            let source = scene.intern_source(SourceRef::new(wire::SESSION_ITEM_SOURCE, &id));
             scene.items.push(ProjectedItem {
                 source,
                 space: Scene::WORLD,
@@ -858,8 +858,8 @@ impl<B: Backend> MereHost<B> {
                 hit: None,
                 channels: Vec::new(),
             });
-            let graph_bytes = serde_json::to_vec(&session_item::SessionGraphV1 {
-                schema: session_item::SESSION_GRAPH_SCHEMA.into(),
+            let graph_bytes = serde_json::to_vec(&wire::SessionGraphV1 {
+                schema: wire::SESSION_GRAPH_SCHEMA.into(),
                 application: self.via.clone(),
                 views: self
                     .graph_session
@@ -881,7 +881,7 @@ impl<B: Backend> MereHost<B> {
             card.media.push(graph_resource);
             let bytes = serde_json::to_vec(&card).expect("PortableCardV1 always serializes");
             let resource = ContentHash::of(&bytes);
-            let key = PresentationKey(format!("{}:{id}", session_item::SESSION_ITEM_SOURCE));
+            let key = PresentationKey(format!("{}:{id}", wire::SESSION_ITEM_SOURCE));
             presentation.bindings.push(PresentationBinding {
                 instance: SESSION_ITEM_INSTANCE,
                 key: key.clone(),
@@ -1998,10 +1998,10 @@ mod tests {
         assert_eq!(
             intents,
             [
-                session_item::APPLY_EDITS_INTENT,
-                session_item::UNDO_INTENT,
-                session_item::REDO_INTENT,
-                session_item::SET_VIEW_INTENT,
+                wire::APPLY_EDITS_INTENT,
+                wire::UNDO_INTENT,
+                wire::REDO_INTENT,
+                wire::SET_VIEW_INTENT,
             ]
         );
     }

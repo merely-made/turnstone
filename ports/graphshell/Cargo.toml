@@ -127,6 +127,9 @@ web = [
     "dep:chartulary",
     "dep:eidetic",
     "dep:mere",
+    # The mere route's wire vocabulary `mere_host` serves (`mere-overmap`
+    # without its view).
+    "dep:mere-overmap",
     "dep:muniment",
     "dep:pandect",
     "dep:platen",
@@ -138,13 +141,9 @@ web = [
 # A bounded app-core host dialect over a disclosed capsule collection. Pack
 # verification is portable; the browser owns worker execution and its view.
 applets = ["web", "eidetic/pack-signing", "dep:personae"]
-# `mere_route`: a mere route's two projections as the mere view's model, and
-# the view's requests as the route's intents (reservoir plan V2b step 3, §7
-# item 42). It brings in `mere-view`, and with it Cambium, so it is opt-in.
-mere-route = ["web", "dep:mere-view"]
 # Ordinary native reservoir viewer: shared panel over the admitted resident
 # route. Its worker holds a client only; no persona graph files are opened.
-mere-view-host = ["native", "mere-route", "dep:cambium", "dep:cambium-genet-winit-host", "dep:mesquite", "dep:sprigging", "dep:taproot"]
+mere-view-host = ["native", "web", "dep:mere-view", "mere-overmap/view", "dep:cambium", "dep:cambium-genet-winit-host", "dep:mesquite", "dep:sprigging", "dep:taproot"]
 # Native owner composition for admitted Moot resource readings. This does not
 # enter the ordinary browser cone or install an application activity owner.
 # Finite native owner-composition proof; ordinary consumers need no window or
@@ -184,7 +183,10 @@ graphshell-client = { version = "0.0.2", path = "../../crates/graphshell/graphsh
 graphshell-endpoint = { version = "0.0.2", path = "../../crates/graphshell/graphshell-endpoint" }
 chirograph.workspace = true
 mere = { path = "../../crates/mere", default-features = false, features = ["graph", "canvas"], optional = true }
-# The mere view's model and requests, for `mere-route`.
+# The mere route's wire vocabulary, and for `mere-view-host` the route panel
+# that fills the mere view (stack lift plan L14).
+mere-overmap = { workspace = true, optional = true }
+# The mere view `graphshell_mere` hosts.
 mere-view = { workspace = true, optional = true }
 mesquite = { workspace = true, optional = true }
 sprigging = { workspace = true, optional = true }
