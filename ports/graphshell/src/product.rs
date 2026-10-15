@@ -90,45 +90,6 @@ pub const PRODUCT_CODICIL_SCHEMA_V2: &str = "graphshell.graph-codicil/v2";
 /// Engram-to-Codicil vocabulary migration.
 pub const LEGACY_PRODUCT_ENGRAM_SCHEMA: &str = "graphshell.graph-engram/v1";
 
-/// The host-owned elapsed clock for one projection transition.
-///
-/// Browser frame timestamps enter through [`observe`](Self::observe). Pausing
-/// keeps observing the host so resuming cannot charge the paused interval to
-/// the transition. Scenotime sees only the resulting elapsed value.
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct ProjectionClock {
-    elapsed_ms: f32,
-    last_host_ms: Option<f64>,
-    paused: bool,
-}
-
-impl ProjectionClock {
-    pub fn observe(&mut self, host_ms: f64) -> f32 {
-        if !host_ms.is_finite() {
-            return self.elapsed_ms;
-        }
-        let previous = self.last_host_ms.replace(host_ms);
-        if !self.paused
-            && let Some(previous) = previous
-        {
-            self.elapsed_ms += (host_ms - previous).max(0.0) as f32;
-        }
-        self.elapsed_ms
-    }
-
-    pub fn set_paused(&mut self, paused: bool) {
-        self.paused = paused;
-    }
-
-    pub fn is_paused(&self) -> bool {
-        self.paused
-    }
-
-    pub fn elapsed_ms(&self) -> f32 {
-        self.elapsed_ms
-    }
-}
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum TransferScope {
@@ -1563,6 +1524,7 @@ pub(crate) fn decode_profiled_codicil(
 mod tests {
     use mere::kernel::graph::{Author, ProvenanceSubKind, RelationKind};
     use muniment::MemoryBackend;
+    use scenotime::ProjectionClock;
 
     use super::*;
     use crate::access::AccessContext;

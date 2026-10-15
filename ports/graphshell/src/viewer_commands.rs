@@ -7,7 +7,7 @@
 //! The retained viewer's supported commands, independent of a browser/store.
 use command_menu::{Command, CommandSet, catalogue::ids};
 
-use crate::{canvas_controls::CanvasCommand, canvas_gestures::WheelMode};
+use mere::canvas::{controls::CanvasCommand, gestures::WheelMode};
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Availability {

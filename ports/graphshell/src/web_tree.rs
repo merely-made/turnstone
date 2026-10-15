@@ -32,7 +32,7 @@ use cambium_rootstock::{
     Init, ProducedTexture, ProducerContext, SourceAlpha, SourceEncoding, TextureProducer,
 };
 use graphshell::app::GraphshellApp;
-use graphshell::canvas_controls::CanvasCommand;
+use mere::canvas::controls::CanvasCommand;
 use graphshell::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
 use mere::canvas::Canvas;
 use mere::kernel::graph::Graph;
@@ -186,7 +186,7 @@ struct Shared {
     reading: RefCell<reading::Reading>,
     #[cfg(feature = "moot-resources")]
     moot_resources: RefCell<graphshell::moot_resources::Host>,
-    wheel_mode: Cell<graphshell::canvas_gestures::WheelMode>,
+    wheel_mode: Cell<mere::canvas::gestures::WheelMode>,
     command_request: RefCell<Option<commands::Request>>,
     #[cfg(feature = "applets")]
     applet: RefCell<applet::Pane>,
@@ -236,7 +236,7 @@ struct Shared {
     /// Lines `log-physics` recorded, for the receipt.
     physics_log: RefCell<Vec<String>>,
     /// The last `measure-faces` reading, for the snapshot.
-    faces: Cell<Option<graphshell::canvas_faces::FaceAlignment>>,
+    faces: Cell<Option<mere::canvas::face_alignment::FaceAlignment>>,
     /// The remote session (`remote::TreeRemote`); its channel's pumps reach
     /// it from outside the runner.
     remote: Rc<RefCell<remote::TreeRemote>>,
@@ -265,7 +265,7 @@ impl Shared {
     fn pan(&self, dx: f32, dy: f32) {
         let mut canvas = self.canvas.borrow_mut();
         if self.reduced_motion() {
-            graphshell::canvas_gestures::pan_at_once(&mut canvas, dx, dy);
+            mere::canvas::gestures::pan_at_once(&mut canvas, dx, dy);
         } else {
             CanvasCommand::Pan { dx, dy }.apply(&mut canvas, self.size.get());
         }

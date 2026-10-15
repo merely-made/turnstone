@@ -19,7 +19,7 @@ use mere::canvas::{
 use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::NodeKey;
 
-use crate::product::ProjectionClock;
+use scenotime::ProjectionClock;
 
 /// The arrangement picker's "no arrangement" choice: physics alone.
 pub const FREE_ARRANGEMENT: &str = "free";
@@ -612,7 +612,7 @@ mod tests {
     /// an analytic arrangement leaves it as it was.
     #[test]
     fn switches_follow_the_layout_a_pan_or_zoom_stops_it_and_fit_resumes_it() {
-        use crate::canvas_controls::CanvasCommand;
+        use mere::canvas::controls::CanvasCommand;
         let mut canvas = canvas();
         let viewport = (800, 600);
         let pan = CanvasCommand::Pan { dx: 10.0, dy: 0.0 };

@@ -6,8 +6,13 @@
 
 //! Exact coupling writes use the graph journal, not a second field store.
 use super::*;
-use crate::coupling_edit::{StrengthDraft, channel};
+use mere::coupling_edit::StrengthDraft;
 use mere::kernel::graph::{Coupling, CouplingId};
+
+/// The journal channel one coupling's saved strength edits and undo travel on.
+pub(crate) fn channel(id: CouplingId) -> String {
+    format!("graphshell.coupling/{}", id.as_uuid())
+}
 
 impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
     pub async fn save_coupling_strength(
@@ -68,3 +73,7 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "mere_host_coupling_tests.rs"]
+mod tests;

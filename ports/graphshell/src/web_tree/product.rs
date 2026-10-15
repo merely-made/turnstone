@@ -44,7 +44,7 @@ type OperationCompletion = (App, Result<(), String>);
 type CouplingCompletion = (App, CouplingId, Result<Option<String>, String>);
 
 pub(super) enum CouplingOperation {
-    Apply(graphshell::coupling_edit::StrengthDraft),
+    Apply(mere::coupling_edit::StrengthDraft),
     History(CouplingId, bool),
 }
 

@@ -25,8 +25,6 @@ pub mod link_inspection;
 #[cfg(feature = "web")]
 pub mod field_inspection;
 #[cfg(feature = "web")]
-pub mod coupling_edit;
-#[cfg(feature = "web")]
 pub mod presentation_editor;
 #[cfg(feature = "web")]
 pub mod presentation_binding;
@@ -46,12 +44,6 @@ pub mod browser_carrier;
 #[cfg(feature = "web")]
 pub mod browser_storage;
 pub mod canary;
-#[cfg(feature = "web")]
-pub mod canvas_controls;
-#[cfg(feature = "web")]
-pub mod canvas_faces;
-#[cfg(feature = "web")]
-pub mod canvas_gestures;
 #[cfg(feature = "web")]
 pub mod viewer_commands;
 #[cfg(feature = "web")]

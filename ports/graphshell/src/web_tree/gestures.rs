@@ -10,7 +10,7 @@
 //! The Cambium web host claims every wheel notch and pointer on its canvas,
 //! which would trap an embedding page's scroll. These listeners sit on the
 //! mount root in the capture phase, ahead of the host's, and keep from it
-//! what belongs to the page, by `graphshell::canvas_gestures`' policy: a
+//! what belongs to the page, by `mere::canvas::gestures`' policy: a
 //! wheel follows the view preference (pointer zoom by default); one finger
 //! on empty canvas scrolls the page and one on a node
 //! drags it; two fingers pan and pinch. Outside the graph leaf (the toolbar,
@@ -19,7 +19,7 @@
 use std::collections::HashSet;
 
 use cambium_genet_web_host::{WHEEL_LINE_PX, WHEEL_PAGE_PX, wheel_delta_from_dom};
-use graphshell::canvas_gestures::{
+use mere::canvas::gestures::{
     Fingers, TouchUse, WheelMode, WheelUse, touch_use, two_finger, wheel_use, wheel_zoom,
 };
 use web_sys::{AddEventListenerOptions, PointerEvent, TouchEvent, TouchList};

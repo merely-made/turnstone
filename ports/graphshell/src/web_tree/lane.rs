@@ -1336,7 +1336,7 @@ impl Product for TreeLane {
             // `measure-faces <label>`: each face in view against its drawn
             // body, into the snapshot and the receipt.
             "measure-faces" => {
-                let faces = graphshell::canvas_faces::FaceAlignment::measure(
+                let faces = mere::canvas::face_alignment::FaceAlignment::measure(
                     &self.shared.canvas.borrow(),
                     self.shared.size.get(),
                 );
