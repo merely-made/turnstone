@@ -8,7 +8,7 @@
 //! The workspace record contains rules/history only, not graph or selection state.
 use std::sync::{Arc, Mutex};
 
-use edit_history::History;
+use backstep::History;
 use muniment::{Backend, WriteOp};
 pub use scenograph::presentation;
 use scenograph::presentation::{
