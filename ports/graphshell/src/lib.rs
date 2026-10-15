@@ -87,6 +87,8 @@ pub mod local_scene;
 pub mod mere_host;
 #[cfg(feature = "web")]
 mod mere_host_fixture;
+#[cfg(feature = "web")]
+pub mod resident_host;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod native;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
