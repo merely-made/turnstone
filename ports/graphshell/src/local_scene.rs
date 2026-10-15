@@ -68,7 +68,8 @@ pub fn restore_scene(
     let PreparedScene { spec, arrangement } = prepare_scene(scene)?;
     canvas.set_graph(owner.clone());
     canvas.set_layout_strategy(
-        (arrangement != crate::canvas_physics::FREE_ARRANGEMENT).then(|| arrangement.clone()),
+        (arrangement != mere::canvas::physics_controls::FREE_ARRANGEMENT)
+            .then(|| arrangement.clone()),
     );
     let positions: Vec<_> = scene
         .cartography

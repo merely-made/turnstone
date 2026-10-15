@@ -225,7 +225,7 @@ fn action_button(label: &'static str, action: &'static str) -> Child {
             if let Some(scene) = &product.scenes.saved {
                 if let Ok(layout) = scene.arrangement() {
                     page.physics.arrangement.selected =
-                        graphshell::canvas_physics::arrangement_choices()
+                        mere::canvas::physics_controls::arrangement_choices()
                             .position(|(id, _)| id == layout)
                             .unwrap_or(0);
                     page.physics.layout_id = layout;
