@@ -5,7 +5,12 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-"""Build and package the read-only viewer, enforcing R157's delivery caps."""
+"""Build and package the read-only viewer, enforcing R157's delivery caps.
+
+The viewer ships one artifact per presentation route, and `mount.js` loads
+exactly one of them per page: `webgpu/` and `webgl2/` (the latter without
+Classic Vello). Each artifact's Wasm and glue is held to the unchanged caps.
+"""
 
 import argparse
 import gzip
@@ -16,7 +21,14 @@ from pathlib import Path
 import subprocess
 
 
-CAPS = {"wasm": 3407872, "glue": 20480, "mount": 8192, "history": 131072}
+# R157's caps. Mark's 2026-10-15 ruling amends the Wasm cap from 3,407,872 B
+# (3.25 MiB) to 3,460,300 B (3.30 MiB), applied to each route artifact.
+CAPS = {"wasm": 3460300, "glue": 20480, "mount": 8192, "history": 131072}
+# Route artifact name -> the viewer crate's features for that artifact.
+ARTIFACTS = {
+    "webgpu": ["presentation-webgpu"],
+    "webgl2": ["presentation-webgl2", "without-classic-vello"],
+}
 
 
 def measure_assets(assets):
@@ -25,10 +37,10 @@ def measure_assets(assets):
     for name, path in assets.items():
         data = path.read_bytes()
         row = {"raw_bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(),
-               "cap_bytes": CAPS[name]}
+               "cap_bytes": CAPS[name.split(":")[0]]}
         for level in (6, 9):
             row[f"gzip{level}_bytes"] = len(gzip.compress(data, compresslevel=level, mtime=0))
-        row["cap_pass"] = max(row["gzip6_bytes"], row["gzip9_bytes"]) <= CAPS[name]
+        row["cap_pass"] = max(row["gzip6_bytes"], row["gzip9_bytes"]) <= row["cap_bytes"]
         rows[name] = row
     return rows
 
@@ -54,32 +66,45 @@ def main():
     target = (args.target_dir or web / "target").resolve()
     out = args.out_dir.resolve()
     out.mkdir(parents=True, exist_ok=True)
-    command = [args.cargo, "build", "--locked", "--profile", "viewer",
-               "--target", "wasm32-unknown-unknown", "--no-default-features",
-               "--target-dir", str(target), "-j1"]
-    if args.offline:
-        command.append("--offline")
-    subprocess.run(command, cwd=web, check=True)
-    raw = target / "wasm32-unknown-unknown/viewer/graphshell_web.wasm"
-    subprocess.run([args.wasm_bindgen, "--target", "web", "--remove-name-section",
-                    "--out-name", "graphshell_web", "--out-dir", str(out), str(raw)], check=True)
-    glue = out / "graphshell_web.js"
-    glue_input_sha256 = hashlib.sha256(glue.read_bytes()).hexdigest()
-    compact = out / "graphshell_web.min.js"
-    minify_command = [args.terser, str(glue), "--module", "--compress", "--mangle", "--output", str(compact)]
-    subprocess.run(minify_command, check=True)
-    compact.replace(glue)
-    assets = {"wasm": out / "graphshell_web_bg.wasm", "glue": out / "graphshell_web.js",
-              "mount": web / "viewer.js", "history": web / "fixtures/site-repository-host-history.json"}
+    commands = {}
+    minifiers = {}
+    assets = {}
+    for artifact, features in ARTIFACTS.items():
+        command = [args.cargo, "build", "--locked", "--profile", "viewer",
+                   "--target", "wasm32-unknown-unknown", "--no-default-features",
+                   "--features", ",".join(features),
+                   "--target-dir", str(target), "-j1"]
+        if args.offline:
+            command.append("--offline")
+        subprocess.run(command, cwd=web, check=True)
+        commands[artifact] = command
+        raw = target / "wasm32-unknown-unknown/viewer/graphshell_web.wasm"
+        artifact_out = out / artifact
+        artifact_out.mkdir(parents=True, exist_ok=True)
+        subprocess.run([args.wasm_bindgen, "--target", "web", "--remove-name-section",
+                        "--out-name", "graphshell_web", "--out-dir", str(artifact_out), str(raw)],
+                       check=True)
+        glue = artifact_out / "graphshell_web.js"
+        glue_input_sha256 = hashlib.sha256(glue.read_bytes()).hexdigest()
+        compact = artifact_out / "graphshell_web.min.js"
+        minify_command = [args.terser, str(glue), "--module", "--compress", "--mangle",
+                          "--output", str(compact)]
+        subprocess.run(minify_command, check=True)
+        compact.replace(glue)
+        minifiers[artifact] = {"command": minify_command, "input_sha256": glue_input_sha256}
+        assets[f"wasm:{artifact}"] = artifact_out / "graphshell_web_bg.wasm"
+        assets[f"glue:{artifact}"] = glue
+    assets["mount"] = web / "viewer.js"
+    assets["history"] = web / "fixtures/site-repository-host-history.json"
     rows = measure_assets(assets)
     report = {"source": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo,
                                                 text=True).strip(),
-              "profile": "viewer", "features": "--no-default-features",
-              "command": command, "rustc": subprocess.check_output(
+              "profile": "viewer", "artifacts": ARTIFACTS,
+              "commands": commands, "rustc": subprocess.check_output(
                   [os.environ.get("RUSTC", "rustc"), "--version"], text=True).strip(),
               "manifest_sha256": hashlib.sha256((web / "Cargo.toml").read_bytes()).hexdigest(),
-              "minifier": {"command": minify_command, "input_sha256": glue_input_sha256,
-                           "version": subprocess.check_output([args.terser, "--version"], text=True).strip()},
+              "minifiers": minifiers,
+              "minifier_version": subprocess.check_output([args.terser, "--version"], text=True).strip(),
               "sizes": rows, "all_caps_pass": all(r["cap_pass"] for r in rows.values())}
     (out / "viewer-delivery.json").write_text(json.dumps(report, indent=2) + "\n")
     require_budget(rows)

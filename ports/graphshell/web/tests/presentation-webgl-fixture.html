@@ -3,8 +3,8 @@
 <graphshell-tree data-render-backend="webgl2" data-presentation-diagnostics="true" data-wheel-mode="zoom"></graphshell-tree>
 <pre id="scenario-log"></pre><div id="scenario-captures"></div>
 <script type="module">
-import init,* as module from './pkg/graphshell_web.js';
-import {defineElements} from './mount.js';
+import {defineElements,viewerArtifact} from './mount.js';
+let module;
 const results={result:'pending',controls:[],errors:[]};
 const assert=(value,message)=>{if(!value)throw Error(message);results.controls.push(message)};
 const turn=()=>new Promise(resolve=>requestAnimationFrame(resolve));
@@ -14,11 +14,13 @@ const gen=()=>Number(root.dataset.contextGeneration??0);
 async function scenario(text,name){module.run_scenario(text);await until(()=>document.body.dataset.scenario==='ok'||document.body.dataset.scenario==='fail','scenario timeout '+name);assert(document.body.dataset.scenario==='ok',name+': '+document.querySelector('#scenario-log').textContent)}
 async function capture(name){await scenario('capture '+name+'\n',name);const image=document.querySelector('[data-capture="'+name+'"]');assert(!!image,'capture emitted '+name);await image.decode();const c=document.createElement('canvas');c.width=image.width;c.height=image.height;const cx=c.getContext('2d');cx.drawImage(image,0,0);const pixels=cx.getImageData(0,0,c.width,c.height).data;assert(pixels.length===c.width*c.height*4,'tight capture rows '+name);assert([...pixels.slice(-4)].every((value,index)=>Math.abs(value-[9,12,26,255][index])<=1),'opaque last pixel after presentation '+name);assert(new Set(pixels).size>12,'nonblank graph and chrome '+name);return {name,width:c.width,height:c.height,png:image.src,lastPixel:[...pixels.slice(-4)]};}
 try{
- await init();defineElements(module);
+ defineElements(viewerArtifact);
  await until(()=>root.dataset.ready==='true','viewer never ready');
+ module=root.graphshellModule;
  await until(()=>gen()>0,'viewer never presented');
  const expected=new URLSearchParams(location.search).get('render_backend')==='webgpu'?'webgpu':'webgl2';
  assert(root.dataset.selectedRenderBackend===expected,'actual viewer selected '+expected);
+ assert(root.dataset.viewerArtifact===expected,'route artifact '+expected+' loaded');results.artifact=root.dataset.viewerArtifact;
  assert(root.dataset.computeAvailable===(expected==='webgpu'?'true':'false'),'compute availability disclosed');
  const canvas=root.querySelector('canvas'),gl=expected==='webgl2'?canvas.getContext('webgl2'):null;
  if(gl){results.renderer=gl.getParameter(gl.RENDERER);results.version=gl.getParameter(gl.VERSION);}
@@ -42,7 +44,7 @@ try{
  root.style.width='0px';await turn();await turn();const sequence=root.dataset.presentationSequence;await turn();await turn();assert(root.dataset.presentationSequence===sequence,'zero CSS extent suspends presentation');
  root.style.width='803px';root.style.height='643px';await until(()=>root.dataset.presentationSequence!==sequence,'resized viewer did not resume');results.captures.push(await capture('odd-resize'));
  const detachedCanvas=canvas;root.remove();await turn();await turn();if(gl)assert(gl.isContextLost(),'removal releases owned context');assert(!root.querySelector('[data-cambium-mirror]'),'removal clears owned semantic mirror');assert(!root.querySelector('canvas'),'removal clears owned canvas');await turn();assert(!root.querySelector('iframe'),'removal clears appearance color probe');
- document.body.prepend(root);await until(()=>root.dataset.ready==='true'&&root.querySelector('canvas')!==detachedCanvas,'recreated appearance did not boot');await until(()=>gen()>0,'recreated appearance did not present');assert(root.querySelector('canvas')!==detachedCanvas,'remount owns a new canvas');root.remove();await turn();
+ document.body.prepend(root);await until(()=>root.dataset.ready==='true'&&root.querySelector('canvas')!==detachedCanvas,'recreated appearance did not boot');module=root.graphshellModule;await until(()=>gen()>0,'recreated appearance did not present');assert(root.querySelector('canvas')!==detachedCanvas,'remount owns a new canvas');root.remove();await turn();
  results.result='pass';
 }catch(error){results.result='fail';results.errors.push(String(error.stack??error));}
 results.inventory=root.querySelector('canvas')?.dataset.portableProducerInventory;
