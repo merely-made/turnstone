@@ -21,9 +21,17 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
                     .ok_or_else(|| SessionError::NotReplayable(format!("{edit:?}")))
             })
             .collect::<Result<Vec<_>, _>>()?;
-        self.graph_session
-            .transact_deltas(author, deltas, wall_clock_now())
-            .await?;
+        if self.resident_publication {
+            let (_, generation) = self
+                .graph_session
+                .transact_deltas_published(author, deltas, wall_clock_now())
+                .await?;
+            self.resident_generation = Some(generation);
+        } else {
+            self.graph_session
+                .transact_deltas(author, deltas, wall_clock_now())
+                .await?;
+        }
         self.projection_revision = self.projection_revision.wrapping_add(1);
         Ok(())
     }
@@ -34,10 +42,18 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         redo: bool,
     ) -> Result<Option<Reverted>, MereHostError> {
         let author = author_of(&self.selected_persona, via);
-        let reverted = self
-            .graph_session
-            .transact_history(author, redo, wall_clock_now())
-            .await?;
+        let reverted = if self.resident_publication {
+            let (reverted, generation) = self
+                .graph_session
+                .transact_history_published(author, redo, wall_clock_now())
+                .await?;
+            self.resident_generation = Some(generation);
+            reverted
+        } else {
+            self.graph_session
+                .transact_history(author, redo, wall_clock_now())
+                .await?
+        };
         self.bump_if(reverted.is_some());
         Ok(reverted)
     }
@@ -282,4 +298,97 @@ mod tests {
             assert_eq!(bytes(&store.inner).await, durable);
         });
     }
+
+    fn resident_host(store: &RefusingBackend, admitted: bool) -> MereHost<RefusingBackend> {
+        let host = MereHost::empty(
+            store.clone(),
+            SelectedPersonaRef {
+                persona: "c1-test".into(),
+                profile: "fixture".into(),
+            },
+            HandlerRegistry::new(vec![]),
+            AccessContext {
+                persona: "c1-test".into(),
+                device: "fixture".into(),
+                at_ms: 0,
+            },
+        )
+        .with_session_item();
+        if admitted {
+            host.with_resident_publication()
+        } else {
+            host
+        }
+    }
+    fn added(n: u128) -> CapturedDelta {
+        CapturedDelta::ReplayAddNodeWithIdIfMissing {
+            id: uuid::Uuid::from_u128(n).to_string(),
+            url: format!("https://resident.test/{n}"),
+            position: [0.0, 0.0],
+        }
+    }
+    #[test]
+    fn an_admitted_host_publishes_each_accepted_edit_and_undo_in_the_same_write() {
+        pollster::block_on(async {
+            let store = RefusingBackend {
+                inner: MemoryBackend::new(),
+                refuse: Arc::new(AtomicBool::new(false)),
+            };
+            let mut host = resident_host(&store, true);
+            host.persist(1).await.unwrap();
+            let id = host.graph_session().id();
+            let reader = || async {
+                MereSessions::new(store.clone())
+                    .open_resident_graph(id, Default::default())
+                    .await
+                    .unwrap()
+            };
+            host.transact_edits("cleromancy", vec![added(1)])
+                .await
+                .unwrap();
+            let first = host.resident_generation().unwrap().to_string();
+            let view = reader().await;
+            assert_eq!(view.generation(), first);
+            assert_eq!(view.graph().node_count(), 1);
+            // A refused write publishes nothing and leaves the last generation.
+            let before = bytes(&store.inner).await;
+            store.refuse.store(true, Ordering::SeqCst);
+            assert!(host.transact_edits("cleromancy", vec![added(2)]).await.is_err());
+            assert!(host.transact_history("cleromancy", false).await.is_err());
+            assert_eq!(bytes(&store.inner).await, before);
+            assert_eq!(host.resident_generation(), Some(first.as_str()));
+            assert_eq!(host.graph().node_count(), 1);
+            store.refuse.store(false, Ordering::SeqCst);
+            host.transact_history("cleromancy", false).await.unwrap();
+            let undone = host.resident_generation().unwrap().to_string();
+            assert_ne!(undone, first);
+            let view = reader().await;
+            assert_eq!(view.generation(), undone);
+            assert_eq!(view.graph().node_count(), 0);
+        });
+    }
+    #[test]
+    fn a_host_that_was_not_admitted_never_writes_a_publication() {
+        pollster::block_on(async {
+            let store = RefusingBackend {
+                inner: MemoryBackend::new(),
+                refuse: Arc::new(AtomicBool::new(false)),
+            };
+            let mut host = resident_host(&store, false);
+            host.persist(1).await.unwrap();
+            host.transact_edits("cleromancy", vec![added(1)])
+                .await
+                .unwrap();
+            assert!(!host.resident_publication());
+            assert_eq!(host.resident_generation(), None);
+            assert!(
+                bytes(&store.inner)
+                    .await
+                    .keys()
+                    .all(|key| !key.contains("/resident/v1/")),
+                "no addressable record without an admitted owner"
+            );
+        });
+    }
+
 }
