@@ -19,20 +19,20 @@ use crate::browser_carrier::{
     write_native_message_async,
 };
 use crate::identity_endpoint::IdentityEndpoint;
-use crate::lifecycle::SessionAuthority;
 use crate::native::device_broker::DeviceSurface;
-use crate::native::endpoint_catalog::{
-    ResidentEndpointCatalog, ResidentEndpointCatalogError, ResidentEndpointSession,
-};
 use crate::native::local_session::{
     DoorIdentity, LocalSession, admit_local_client, identity_endpoint_for,
 };
 use crate::native::resident_identity::ResidentIdentity;
-use crate::session_loop::{SessionLoopError, SessionSummary, serve_admitted_session};
-use crate::session_notices::serve_admitted_session_notifying;
 use graphshell_endpoint::door::route::ResidentEndpointRoute;
 use graphshell_endpoint::door::tasks::spawn_tracked_with_handle;
 use graphshell_endpoint::door::wire::BrowserChallenge;
+use graphshell_host::endpoint_catalog::{
+    ResidentEndpointCatalog, ResidentEndpointCatalogError, ResidentEndpointSession,
+};
+use graphshell_host::lifecycle::SessionAuthority;
+use graphshell_host::session_loop::{SessionLoopError, SessionSummary, serve_admitted_session};
+use graphshell_host::session_notices::serve_admitted_session_notifying;
 
 #[derive(Debug, thiserror::Error)]
 pub enum BrowserHostError {
@@ -320,9 +320,9 @@ mod tests {
 
     use super::*;
     use crate::browser_carrier::{BrowserHostMessage, CHROMIUM_EXTENSION_ID};
-    use crate::lifecycle::AdmittedEndpointContext;
-    use crate::native::endpoint_catalog::ResidentEndpoint;
     use crate::native::resident_identity::test_support::FixedIdentity;
+    use graphshell_host::endpoint_catalog::ResidentEndpoint;
+    use graphshell_host::lifecycle::AdmittedEndpointContext;
 
     struct CatalogFixtureEndpoint;
 

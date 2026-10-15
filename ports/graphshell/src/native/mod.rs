@@ -8,8 +8,10 @@
 //!
 //! The application side of the first-party door (admission, the app client,
 //! custody and its clients, quarantine, the local endpoint and tracked tasks)
-//! is `graphshell_endpoint::door` (Graphshell stack lift plan, L1). What
-//! remains here serves it.
+//! is `graphshell_endpoint::door` (Graphshell stack lift plan, L1). The
+//! serving half they compose (the endpoint catalog, the projection host, the
+//! session loop) is `graphshell-host` (L2). What remains here are the brokers
+//! Djinn runs (L3) and the resident identity they serve.
 
 pub mod app_broker;
 #[cfg(test)]
@@ -18,13 +20,11 @@ pub mod browser_host;
 #[cfg(feature = "personal-sync")]
 pub mod carriage_host;
 pub mod device_broker;
-pub mod endpoint_catalog;
 #[cfg(feature = "personal-sync")]
 pub mod graph_keys;
 pub mod local_session;
 #[cfg(feature = "personal-sync")]
 pub mod personal_sync_host;
-pub mod projection_host;
 pub mod resident_identity;
 pub mod resident_mere_proxy;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]

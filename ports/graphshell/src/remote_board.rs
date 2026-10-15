@@ -219,9 +219,9 @@ impl RemoteBoard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::live_endpoint::LiveEndpoint;
     use graphshell_client::ClientState;
     use graphshell_endpoint::ProjectionSource;
+    use graphshell_host::live_endpoint::LiveEndpoint;
 
     fn mount(endpoint: &mut LiveEndpoint) -> (ClientState, chirograph::ProjectionSession) {
         let snapshot = endpoint.snapshot(endpoint.request()).expect("a snapshot");
@@ -332,9 +332,9 @@ mod tests {
 #[cfg(test)]
 mod scoped_session_tests {
     use super::*;
-    use crate::live_endpoint::LiveEndpoint;
     use graphshell_client::ClientState;
     use graphshell_endpoint::{ProjectionCatalog, ProjectionSource};
+    use graphshell_host::live_endpoint::LiveEndpoint;
     #[test]
     fn resident_reused_cards_take_new_owner_slots_and_stay_fitted_without_local_dynamics() {
         let mut endpoint = LiveEndpoint::new();

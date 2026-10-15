@@ -30,11 +30,6 @@ pub mod presentation_editor;
 pub mod presentation_binding;
 #[cfg(feature = "web")]
 pub mod node_presentation;
-#[cfg(any(
-    all(feature = "native", not(target_arch = "wasm32")),
-    feature = "webrtc-join"
-))]
-pub mod admission;
 #[cfg(feature = "web")]
 pub mod app;
 #[cfg(feature = "web")]
@@ -58,8 +53,6 @@ pub mod capture;
 mod capture_resources;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod carriage;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod carrier;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod distillery_w1;
 #[cfg(feature = "web")]
@@ -80,9 +73,8 @@ pub mod host_history_view;
 pub mod identity_endpoint;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod identity_projection;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod lifecycle;
-pub mod live_endpoint;
+#[cfg(all(test, feature = "native", not(target_arch = "wasm32")))]
+mod identity_session_tests;
 #[cfg(feature = "web")]
 pub mod local_edit;
 #[cfg(feature = "web")]
@@ -97,12 +89,8 @@ pub mod mere_host;
 mod mere_host_fixture;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod native;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod network_carrier;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod personal_sync;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod policy_projection;
 #[cfg(feature = "web")]
 pub mod product;
 #[cfg(feature = "web")]
@@ -129,11 +117,6 @@ pub mod projection_compile;
 /// Receipt ingest: a scenario-receipt directory becomes personal-graph facts.
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod receipts;
-pub mod resume;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod session_loop;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod session_notices;
 pub mod sessions;
 #[cfg(feature = "web")]
 pub mod transfer;
@@ -144,18 +127,6 @@ pub mod transfer_offer;
 pub mod view;
 #[cfg(all(feature = "webrtc-browser", target_arch = "wasm32"))]
 pub mod webrtc_browser;
-#[cfg(any(
-    all(feature = "native", not(target_arch = "wasm32")),
-    feature = "webrtc-join"
-))]
-pub mod webrtc_door;
-#[cfg(any(
-    all(feature = "native", not(target_arch = "wasm32")),
-    feature = "webrtc-join"
-))]
-pub mod webrtc_join;
-#[cfg(all(feature = "webrtc-session", not(target_arch = "wasm32")))]
-pub mod webrtc_session;
 
 pub use chirograph as protocol;
 pub use graphshell_client as client;

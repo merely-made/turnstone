@@ -41,30 +41,29 @@ Always compiled:
 |---|---|
 | `view` | `ProjectionReceiptView`, `ProjectionLayoutView`, `ScenePlacementView`, `SceneRelationView`, `IntentReceiptView`, `render_projection_receipt`, `render_g1_receipt`, `render_canary_html` |
 | `canary` | `FixtureEndpoint`, `CanaryRun`, `CanaryError`, `run_loopback_canary` |
-| `resume` | `ResumeFixtureEndpoint`, `run_resume_canary` |
 | `sessions` | `SessionProjectionView`, `render_session_switch_receipt`; under `native`, `spawn_endpoint_session` and `mount_endpoint_processes` |
 
 Under `native` (non-wasm):
 
 | Module | Contents |
 |---|---|
-| `admission` | `GRAPHSHELL_DOMAIN`, `PROJECTION_SERVICE`, `CONNECT_ACTION`, `PROJECTION_PROTOCOL`, `open_session`, `admit_session`, `serves_action` |
-| `carrier` | `projection_alpn`, `projection_policy`, `accept_projection_session`, `ProjectionRefusal`, `ProjectionAcceptError` |
-| `network_carrier` | `projection_binding`, `dial_projection_session`, `DialError`; re-exports `NetworkCarrier` and `CarrierRuntime` |
-| `session_loop` | `serve_admitted_session`, `SessionEnd`, `SessionSummary`, `SessionLoopError` |
-| `session_notices` | `serve_admitted_session_notifying` |
-| `lifecycle` | `SessionAuthority`, `AdmittedEndpointContext`, `BindAdmittedSession`, `Lapse`, `ScoreDenial`, `adjudicate_intent`, `apply_lapse` |
 | `browser_carrier` | WebExtensions native messaging: `NATIVE_HOST_NAME`, `CHROMIUM_EXTENSION_ID`, `FIREFOX_EXTENSION_ID`, `AllowedExtensions`, `BrowserLauncher` |
 | `identity_endpoint` | `SupplementalCard`, `TransferAcceptIntentV1`, `TransferDecision`, `IdentityEndpointError` |
 | `identity_projection` | Identity cards plus the signing, SSH generate, and SSH import intents |
-| `policy_projection` | `PolicySettingsView`, `run_n4_policy_scenario`, `render_n4_policy_receipt` |
-| `native::endpoint_catalog` | `ResidentEndpointCatalog`, `ResidentEndpoint`, `ResidentEndpointSession` |
-| `native::projection_host` | `ResidentProjectionHost`, `ServedProjection` |
 | `native::browser_host` | `serve_identity_native_messages`, `serve_catalog_native_messages` |
 | `native::device_broker` | `DeviceSurface`, `DEVICE_ENDPOINT_ENV` (`GRAPHSHELL_DEVICE_ENDPOINT`), `configured_device_endpoint` |
 | `native::app_broker` | `AppEndpointCatalog`, `serve_app_broker`: the serving half of the first-party door |
 
-The application side of that door (admission, the app client, custody and its
+The serving half these compose (admission and its action check, the accept
+path, the line codec, `SessionAuthority` and `AdmittedEndpointContext`, the
+session loop and its notices, `ResidentEndpointCatalog`,
+`ResidentProjectionHost`, dialling, the N4 policy scenario, the resume and live
+fixture endpoints, and the WebRTC door) is the `graphshell-host` crate (stack
+lift plan, L2, 2026-10-15). Hosts that serve projections depend on that crate,
+not on this port; what remains here are the brokers (until P5), the browser
+carrier, and the identity endpoint with its `ResidentIdentity` authority.
+
+The application side of the first-party door (admission, the app client, custody and its
 clients, quarantine, the local endpoint, tracked tasks, the identity views,
 `GraphshellIdentity` and `env_profile`, the shared envelope and frames) is
 `graphshell_endpoint::door`, feature `door` (stack lift plan, L1,

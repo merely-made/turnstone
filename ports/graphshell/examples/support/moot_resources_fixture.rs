@@ -20,11 +20,11 @@ use gemot::moot::{
     ErasurePolicy, KeepBound, Moot, MootAccessLevel, MootId, MootMember, MootMembershipAction,
     MootRetentionSettings, PolicyRevision,
 };
-use graphshell::admission::{
+use graphshell::moot_resources::{Error, Mount, Owners, Scope, Update};
+use graphshell_host::admission::{
     CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_PROTOCOL, PROJECTION_SERVICE, admit_session,
     open_session,
 };
-use graphshell::moot_resources::{Error, Mount, Owners, Scope, Update};
 use insigne::delegation::{
     CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
 };

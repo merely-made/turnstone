@@ -17,16 +17,16 @@ use chirograph::{
     SessionOpen,
 };
 use distillery::{ChronicleObserver, ChronicleRevision, ResidentReceipt};
-use graphshell::admission::open_session;
-use graphshell::carrier::projection_policy;
-use graphshell::native::endpoint_catalog::ResidentEndpointCatalog;
-use graphshell::native::projection_host::ResidentProjectionHost;
-use graphshell::network_carrier::{
-    CarrierRuntime, NetworkCarrier, dial_projection_session, projection_binding,
-};
 use graphshell_client::ClientState;
 use graphshell_client::frozen::FrozenScene;
 use graphshell_endpoint::door::route::ResidentEndpointRoute;
+use graphshell_host::admission::open_session;
+use graphshell_host::carrier::projection_policy;
+use graphshell_host::endpoint_catalog::ResidentEndpointCatalog;
+use graphshell_host::network_carrier::{
+    CarrierRuntime, NetworkCarrier, dial_projection_session, projection_binding,
+};
+use graphshell_host::projection_host::ResidentProjectionHost;
 use insigne::delegation::{
     CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
 };
@@ -64,10 +64,10 @@ fn grant(subject: [u8; 32]) -> SignedDelegationCertificate {
             owner().master_public_key().to_bytes(),
             subject,
             CapabilityScope {
-                domain: graphshell::admission::GRAPHSHELL_DOMAIN.into(),
+                domain: graphshell_host::admission::GRAPHSHELL_DOMAIN.into(),
                 resource: NETWORK.0.to_vec(),
-                path_prefix: graphshell::admission::PROJECTION_SERVICE.into(),
-                actions: [graphshell::admission::CONNECT_ACTION.to_string()]
+                path_prefix: graphshell_host::admission::PROJECTION_SERVICE.into(),
+                actions: [graphshell_host::admission::CONNECT_ACTION.to_string()]
                     .into_iter()
                     .collect(),
             },

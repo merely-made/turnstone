@@ -387,7 +387,7 @@ fn check_session<B: Backend + Clone, P: IdentityProvider + ?Sized>(
     authority: &RetainedAuthority,
     owners: &Owners<'_, B, P>,
 ) -> Result<(), Error> {
-    if !crate::admission::serves_action(authority.principal()) {
+    if !graphshell_host::admission::serves_action(authority.principal()) {
         return Err(Error::Admission(
             "This session was admitted for another service".into(),
         ));

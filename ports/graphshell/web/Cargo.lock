@@ -4372,6 +4372,7 @@ dependencies = [
  "getrandom 0.3.4",
  "graphshell-client",
  "graphshell-endpoint",
+ "graphshell-host",
  "inker",
  "insigne",
  "mere",
@@ -4418,6 +4419,25 @@ name = "graphshell-endpoint"
 version = "0.0.2"
 dependencies = [
  "chirograph",
+]
+
+[[package]]
+name = "graphshell-host"
+version = "0.0.2"
+dependencies = [
+ "chirograph",
+ "getrandom 0.3.4",
+ "graphshell-client",
+ "graphshell-endpoint",
+ "insigne",
+ "mere-webrtc-carrier",
+ "notochord",
+ "personae",
+ "sceno",
+ "scenotime",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
 ]
 
 [[package]]

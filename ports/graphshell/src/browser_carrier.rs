@@ -34,10 +34,12 @@ use notochord::{
 use personae::IdentityProvider;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncWrite, AsyncWriteExt, BufReader, DuplexStream};
+use tokio::io::{AsyncRead, AsyncWrite, DuplexStream};
 
-use crate::admission::{PROJECTION_PROTOCOL, open_network_bound_session};
 use crate::identity_projection::SshUnlockPolicyIntentV1;
+use graphshell_host::admission::{PROJECTION_PROTOCOL, open_network_bound_session};
+use graphshell_host::carrier::{ProjectionAcceptError, ProjectionRefusal, admit_stream};
+use graphshell_host::line::{self, LineReader};
 
 /// Native messaging host name shared by the extension and installer.
 pub const NATIVE_HOST_NAME: &str = "org.mere.graphshell";
@@ -523,13 +525,27 @@ pub async fn admit_local_session<P: IdentityProvider>(
     let limits = policy.limits.clamped();
 
     let initiator = async { initiate_session(&mut client, &hello, &limits).await };
-    let responder =
-        async { notochord::admit_session(server, policy, ledger, &facts, now_ms, 0).await };
+    // The host's one admission entry, as every stream-carried session takes:
+    // the in-process duplex has no transport, so the door states its facts
+    // (no peer, the link both ends derived) rather than reading them off an
+    // `AcceptedSession`.
+    let responder = async { admit_stream(server, &facts, policy, ledger, now_ms, 0).await };
     let (reply, admitted) = tokio::join!(initiator, responder);
     let reply = reply?;
-    let admitted = match admitted? {
-        Ok(admitted) => admitted,
-        Err(reason) => return Err(BrowserCarrierError::Refused(reason)),
+    let admitted = match admitted {
+        Ok(Ok(admitted)) => admitted,
+        Ok(Err(ProjectionRefusal::NotAdmitted(reason))) => {
+            return Err(BrowserCarrierError::Refused(reason));
+        },
+        Ok(Err(ProjectionRefusal::ActionNotServed(_))) => {
+            return Err(BrowserCarrierError::Refused(DenyReason::ActionNotOffered));
+        },
+        Err(ProjectionAcceptError::Handshake(error)) => {
+            return Err(BrowserCarrierError::Handshake(error));
+        },
+        Err(ProjectionAcceptError::Carrier(error)) => {
+            return Err(BrowserCarrierError::Io(std::io::Error::other(error)));
+        },
     };
     let SessionReply::Accept { session_id, .. } = reply else {
         let SessionReply::Reject { reason } = reply else {
@@ -545,7 +561,7 @@ pub async fn admit_local_session<P: IdentityProvider>(
 
 /// Browser-side end of an admitted private application stream.
 pub struct BrowserSessionClient {
-    reader: tokio::io::Lines<BufReader<tokio::io::ReadHalf<DuplexStream>>>,
+    reader: LineReader<tokio::io::ReadHalf<DuplexStream>>,
     writer: tokio::io::WriteHalf<DuplexStream>,
     notices: VecDeque<CarrierNotice>,
 }
@@ -554,7 +570,7 @@ impl BrowserSessionClient {
     fn new(stream: DuplexStream) -> Self {
         let (reader, writer) = tokio::io::split(stream);
         Self {
-            reader: BufReader::new(reader).lines(),
+            reader: LineReader::new(reader),
             writer,
             notices: VecDeque::new(),
         }
@@ -564,10 +580,7 @@ impl BrowserSessionClient {
         &mut self,
         request: &CarrierRequest,
     ) -> Result<CarrierResponse, BrowserCarrierError> {
-        let mut line = serde_json::to_vec(request)?;
-        line.push(b'\n');
-        self.writer.write_all(&line).await?;
-        self.writer.flush().await?;
+        line::write(&mut self.writer, request).await?;
         loop {
             match self.read_output().await? {
                 CarrierOutput::Notice(notice) => self.notices.push_back(notice),
@@ -622,12 +635,11 @@ impl BrowserSessionClient {
     }
 
     async fn read_output(&mut self) -> Result<CarrierOutput, BrowserCarrierError> {
-        let line = self
+        Ok(self
             .reader
-            .next_line()
+            .next::<CarrierOutput>()
             .await?
-            .ok_or(BrowserCarrierError::ApplicationEnded)?;
-        Ok(serde_json::from_str(&line)?)
+            .ok_or(BrowserCarrierError::ApplicationEnded)??)
     }
 }
 
@@ -647,10 +659,12 @@ fn decode_nonce(value: &str) -> Result<[u8; 32], BrowserCarrierError> {
 
 #[cfg(test)]
 mod tests {
-    use tokio::io::AsyncReadExt;
+    use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
 
     use super::*;
-    use crate::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE, open_session};
+    use graphshell_host::admission::{
+        CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE, open_session,
+    };
     use insigne::delegation::{
         CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
     };
@@ -967,7 +981,7 @@ mod tests {
         .unwrap();
         let facts = SessionFacts::new(PROJECTION_PROTOCOL, CarrierKind::Other)
             .with_ingress(None, Some(second.shared_link));
-        let (_, outcome) = crate::admission::admit_session(
+        let (_, outcome) = graphshell_host::admission::admit_session(
             &LocalNetworkPolicy::closed(NETWORK),
             &RevocationLedger::new(),
             &hello,

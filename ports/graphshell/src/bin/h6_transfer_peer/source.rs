@@ -12,17 +12,17 @@ use std::sync::RwLock;
 
 use eidetic::PrivacyClass;
 use graphshell::access::AccessContext;
-use graphshell::carrier::{accept_projection_session, projection_alpn, projection_policy};
-use graphshell::lifecycle::SessionAuthority;
 use graphshell::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
 use graphshell::product::{EditableRelation, ExportRequest, LocalFileMetadata, TransferScope};
-use graphshell::session_loop::{SessionEnd, serve_admitted_session};
 use graphshell::transfer::{
     AccessTransferPolicy, TransferBlobInput, TransferEndpointV1, TransferOperation,
     TransferRequest, TransferRouteV1, prepare_transfer,
 };
 use graphshell::transfer_endpoint::TransferSourceEndpoint;
 use graphshell_endpoint::ResumableProjectionSource;
+use graphshell_host::carrier::{accept_projection_session, projection_alpn, projection_policy};
+use graphshell_host::lifecycle::SessionAuthority;
+use graphshell_host::session_loop::{SessionEnd, serve_admitted_session};
 use insigne::delegation::{DelegationRevocation, SignedDelegationRevocation};
 use muniment::{BlobStore, MemoryBackend};
 use notochord::{NetworkId, RevocationLedger, TrustedRoot};

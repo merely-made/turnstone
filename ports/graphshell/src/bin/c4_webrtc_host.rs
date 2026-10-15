@@ -53,15 +53,15 @@ use std::net::{IpAddr, SocketAddr};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use graphshell::carrier::projection_policy;
-use graphshell::live_endpoint::{
+use graphshell_endpoint::door::route::ResidentEndpointRoute;
+use graphshell_host::carrier::projection_policy;
+use graphshell_host::endpoint_catalog::ResidentEndpointCatalog;
+use graphshell_host::live_endpoint::{
     ADMITTED_INTENT, LiveEndpoint, REFUSED_INTENT, SharedLiveEndpoint,
 };
-use graphshell::native::endpoint_catalog::ResidentEndpointCatalog;
-use graphshell::native::projection_host::{ResidentProjectionHost, admit_webrtc_catalog};
-use graphshell::webrtc_door::{InviteTerms, issue_invite};
-use graphshell::webrtc_session::HostedInvite;
-use graphshell_endpoint::door::route::ResidentEndpointRoute;
+use graphshell_host::projection_host::{ResidentProjectionHost, admit_webrtc_catalog};
+use graphshell_host::webrtc_door::{InviteTerms, issue_invite};
+use graphshell_host::webrtc_session::HostedInvite;
 use notochord::{NetworkId, ProfileRef, TrustedRoot};
 use personae::{IdentityProvider, InMemoryProvider};
 use rand_core::{OsRng, RngCore};

@@ -44,16 +44,16 @@ use tokio::io::{AsyncRead, AsyncWrite};
 
 use crate::browser_carrier::{LocalLink, read_native_message_async, write_native_message_async};
 use crate::identity_endpoint::IdentityEndpoint;
-use crate::lifecycle::SessionAuthority;
 use crate::native::browser_host::BrowserHostError;
 use crate::native::device_broker::{DeviceSurface, DeviceSurfaceHandle};
-use crate::native::endpoint_catalog::{
-    ResidentEndpointCatalog, ResidentEndpointCatalogError, ResidentEndpointSession,
-};
 use crate::native::local_session::{LocalSession, admit_local_client, identity_endpoint_for};
 use crate::native::resident_identity::ResidentIdentity;
-use crate::session_loop::{SessionSummary, serve_admitted_session};
-use crate::session_notices::serve_admitted_session_notifying;
+use graphshell_host::endpoint_catalog::{
+    ResidentEndpointCatalog, ResidentEndpointCatalogError, ResidentEndpointSession,
+};
+use graphshell_host::lifecycle::SessionAuthority;
+use graphshell_host::session_loop::{SessionSummary, serve_admitted_session};
+use graphshell_host::session_notices::serve_admitted_session_notifying;
 
 #[derive(Debug, thiserror::Error)]
 pub enum AppBrokerError {
@@ -94,7 +94,7 @@ impl AppEndpointCatalog {
     async fn open(
         &self,
         id: &str,
-        context: &crate::lifecycle::AdmittedEndpointContext,
+        context: &graphshell_host::lifecycle::AdmittedEndpointContext,
     ) -> Result<ResidentEndpointSession, ResidentEndpointCatalogError> {
         self.inner.lock().await.open(id, context)
     }

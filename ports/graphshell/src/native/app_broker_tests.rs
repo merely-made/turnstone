@@ -20,7 +20,6 @@ use crate::native::app_broker::{
     AppEndpointCatalog, serve_app_broker, serve_app_connection_for_tests,
 };
 use crate::native::device_broker::DeviceSurface;
-use crate::native::endpoint_catalog::ResidentEndpointCatalog;
 use crate::native::resident_identity::test_support::FixedIdentity;
 use chirograph::{
     CapabilityProfile, CarrierRequest, CarrierRequestBody, CarrierResponseBody, ContentHash,
@@ -31,6 +30,7 @@ use graphshell_endpoint::door::app_admission::{
 };
 use graphshell_endpoint::door::app_client::AppBrokerClient;
 use graphshell_endpoint::door::wire::{APP_CONNECT_SCHEMA, AppHostMessage, AppMessage};
+use graphshell_host::endpoint_catalog::ResidentEndpointCatalog;
 
 fn resident_host() -> Arc<FixedIdentity> {
     FixedIdentity::new(0x91)

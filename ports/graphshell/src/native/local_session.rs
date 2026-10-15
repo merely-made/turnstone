@@ -28,13 +28,13 @@ use personae::delegation::DelegationError;
 use personae::{IdentityError, IdentityProvider, InMemoryProvider, RetainedKeys};
 use tokio::io::DuplexStream;
 
-use crate::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};
 use crate::browser_carrier::{BrowserSessionClient, LocalLink, admit_local_session};
 use crate::identity_endpoint::IdentityEndpoint;
-use crate::lifecycle::SessionAuthority;
 use crate::native::browser_host::{BrowserHostError, now_ms};
 use crate::native::device_broker::DeviceSurface;
 use crate::native::resident_identity::ResidentIdentity;
+use graphshell_host::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};
+use graphshell_host::lifecycle::SessionAuthority;
 
 const NETWORK_DOMAIN: &[u8] = b"mere.graphshell/local-browser-network/v1";
 const ROOT_DOMAIN: &[u8] = b"mere.graphshell/local-browser-root/v1";

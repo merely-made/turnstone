@@ -181,13 +181,16 @@ impl<A: ResidentIdentity + ?Sized> IdentityEndpoint<A> {
 
     /// Bind the projection to the transcript-derived session retained after
     /// carrier admission.
-    pub fn for_admitted(host: Arc<A>, authority: &crate::lifecycle::SessionAuthority) -> Self {
+    pub fn for_admitted(
+        host: Arc<A>,
+        authority: &graphshell_host::lifecycle::SessionAuthority,
+    ) -> Self {
         Self::with_session(host, authority.session().clone())
     }
 
     pub fn for_admitted_with_cards(
         host: Arc<A>,
-        authority: &crate::lifecycle::SessionAuthority,
+        authority: &graphshell_host::lifecycle::SessionAuthority,
         supplemental_cards: Vec<SupplementalCard>,
     ) -> Self {
         let mut endpoint = Self::with_session(host, authority.session().clone());
