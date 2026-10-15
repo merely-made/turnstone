@@ -39,7 +39,8 @@ try:
   pixels=base64.b64decode(capture.pop('png').split(',',1)[1]);path=a.output/(capture['name']+'.png');path.write_bytes(pixels)
   capture['png_sha256']=hashlib.sha256(pixels).hexdigest();captures.append(capture)
  result['captures']=captures
- result['bundle_sha256']=hashlib.sha256((root/'pkg/graphshell_web_bg.wasm').read_bytes()).hexdigest()
+ bundle=root/'pkg'/result.get('artifact','')/'graphshell_web_bg.wasm'
+ result['bundle_sha256']=hashlib.sha256(bundle.read_bytes()).hexdigest() if bundle.is_file() else None
  result['policy']={'backend':a.backend,'disable_webgpu':a.disable_webgpu,'force_context_loss':a.force_context_loss,'angle':a.angle}
  (a.output/'summary.json').write_text(json.dumps(result,indent=2)+'\n')
  print(json.dumps({'result':result['result'],'controls':len(result['controls']),'errors':result.get('errors'), 'renderer':result.get('rendererDebug')}),flush=True)
