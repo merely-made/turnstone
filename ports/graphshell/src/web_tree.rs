@@ -287,32 +287,39 @@ struct CanvasProducer {
     texture: Option<wgpu::Texture>,
 }
 
+/// Bind the page's WebGPU device for canvas compute once per device lifetime.
+/// Runs from the frame hook, so a route that draws the graph's portable scene
+/// in the page pass, and never calls the texture callback, keeps GPU physics.
+fn attach_gpu(shared: &Shared, core: &genet_render_host::RenderCore) {
+    if shared.gpu.borrow().is_some() {
+        return;
+    }
+    *shared.gpu.borrow_mut() = Some((core.device().clone(), core.queue().clone()));
+    #[cfg_attr(not(feature = "canvas-gpu"), allow(unused_variables))]
+    let options = shared.gpu_options;
+    #[cfg(feature = "canvas-gpu")]
+    if options.enabled {
+        // The host's own device, never one of ours: the render core's
+        // handles are the ones every producer on this page draws with.
+        let device = mere::canvas::physics_device_for(&core.renderer().wgpu_device.core)
+            .with_threshold(options.threshold)
+            .with_max_stale_steps(options.max_stale_steps);
+        shared
+            .canvas
+            .borrow_mut()
+            .set_physics_device(Some(device.clone()));
+        shared
+            .remote
+            .borrow_mut()
+            .board
+            .set_physics_device(Some(device.clone()));
+        *shared.physics_device.borrow_mut() = Some(device);
+    }
+}
+
 impl TextureProducer for CanvasProducer {
     fn render(&mut self, cx: &ProducerContext<'_>) -> Option<ProducedTexture> {
-        let shared = &self.shared;
-        if shared.gpu.borrow().is_none() {
-            *shared.gpu.borrow_mut() = Some((cx.device.clone(), cx.queue.clone()));
-            #[cfg_attr(not(feature = "canvas-gpu"), allow(unused_variables))]
-            let options = shared.gpu_options;
-            #[cfg(feature = "canvas-gpu")]
-            if options.enabled {
-                // The host's own device, never one of ours: the render core's
-                // handles are the ones every producer on this page draws with.
-                let device = mere::canvas::physics_device_for(&cx.core.renderer().wgpu_device.core)
-                    .with_threshold(options.threshold)
-                    .with_max_stale_steps(options.max_stale_steps);
-                shared
-                    .canvas
-                    .borrow_mut()
-                    .set_physics_device(Some(device.clone()));
-                shared
-                    .remote
-                    .borrow_mut()
-                    .board
-                    .set_physics_device(Some(device.clone()));
-                *shared.physics_device.borrow_mut() = Some(device);
-            }
-        }
+        attach_gpu(&self.shared, cx.core);
         let output = self.produce(cx.frame).ok()?;
         let [physical_width, physical_height] = cx.frame.physical_size;
         let raster_start = self.shared.timing.borrow().active().then(now_ms);
@@ -1397,6 +1404,9 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
     }
     let options = HostOptions {
         presentation_choice: choice,
+        // WebGPU draws the graph's portable scene in the page pass, as WebGL2
+        // does, rather than resampling a producer texture at fractional scale.
+        wgpu_portable_scene: true,
         title: "Graphshell, one tree".into(),
         netrender: Box::new(|| NetrenderOptions {
             tile_cache_size: Some(1024),
@@ -1579,6 +1589,9 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
     let after_shared = shared.clone();
     HostHooks {
         frame: Box::new(move |ctx| {
+            if let Some(core) = ctx.render_core {
+                attach_gpu(&frame_shared, core);
+            }
             if ctx.runner.state().appearance_controls.changed() {
                 ctx.runner.update(appearance::apply);
             }
