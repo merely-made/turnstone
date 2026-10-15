@@ -34,11 +34,8 @@ pub mod node_presentation;
 pub mod app;
 #[cfg(feature = "web")]
 pub mod appearance;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod browser_carrier;
 #[cfg(feature = "web")]
 pub mod browser_storage;
-pub mod canary;
 #[cfg(feature = "web")]
 pub mod viewer_commands;
 #[cfg(feature = "web")]
@@ -70,12 +67,6 @@ pub mod host_dataset_view;
 pub mod host_presenter;
 #[cfg(feature = "web")]
 pub mod host_history_view;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod identity_endpoint;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod identity_projection;
-#[cfg(all(test, feature = "native", not(target_arch = "wasm32")))]
-mod identity_session_tests;
 #[cfg(feature = "web")]
 pub mod local_edit;
 #[cfg(feature = "web")]
@@ -118,14 +109,12 @@ pub mod projection_compile;
 /// Receipt ingest: a scenario-receipt directory becomes personal-graph facts.
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod receipts;
-pub mod sessions;
 #[cfg(feature = "web")]
 pub mod transfer;
 #[cfg(feature = "web")]
 pub mod transfer_endpoint;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod transfer_offer;
-pub mod view;
 #[cfg(all(feature = "webrtc-browser", target_arch = "wasm32"))]
 pub mod webrtc_browser;
 

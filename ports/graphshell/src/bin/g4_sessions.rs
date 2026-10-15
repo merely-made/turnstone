@@ -18,10 +18,10 @@ fn main() {
         !endpoints.is_empty(),
         "usage: g4_sessions <output.html> <endpoint> [endpoint...]"
     );
-    let sessions = graphshell::sessions::mount_endpoint_processes(&endpoints)
+    let sessions = graphshell_host::sessions::mount_endpoint_processes(&endpoints)
         .expect("Graphshell could not mount endpoint sessions");
     assert!(!sessions.is_empty(), "endpoints advertised no projections");
-    let html = graphshell::sessions::render_session_switch_receipt(&sessions);
+    let html = graphshell_host::sessions::render_session_switch_receipt(&sessions);
     std::fs::write(&output, html).expect("could not write G4 session receipt");
     println!(
         "mounted {} sessions from {} endpoints into {}",

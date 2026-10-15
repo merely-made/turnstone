@@ -13,9 +13,9 @@
 //! live stage (dynamics grammar plan, F150) and its speed dial (ruled 2026-10-04, "The viewer's own
 //! dial"); nothing is written back. (Physics catalog — P3.)
 
-use crate::view::ProjectionLayoutView;
 use graphshell_client::MountedScene;
 use graphshell_client::frozen::Satisfaction;
+use graphshell_host::view::ProjectionLayoutView;
 use mere::canvas::dynamics_spec::DynamicsSpec;
 use mere::canvas::{
     BoardBackdrop, BoardCard, BoardFootprint, BoardRect, BoardScene, PhysicsBoard, Speed,

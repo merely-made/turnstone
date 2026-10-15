@@ -4425,6 +4425,7 @@ dependencies = [
 name = "graphshell-host"
 version = "0.0.2"
 dependencies = [
+ "base64 0.22.1",
  "chirograph",
  "getrandom 0.3.4",
  "graphshell-client",

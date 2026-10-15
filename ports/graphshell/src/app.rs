@@ -171,7 +171,7 @@ impl<B: Backend> GraphshellApp<B> {
 
     /// Mount the deterministic G1 endpoint as H1's remote peer.
     pub fn mount_fixture_remote(&mut self) -> Result<ProjectionSession, AppError> {
-        let mut remote = crate::canary::FixtureEndpoint::new();
+        let mut remote = graphshell_host::canary::FixtureEndpoint::new();
         let request = remote.request();
         let snapshot = remote
             .snapshot(request)
@@ -527,137 +527,29 @@ mod tests {
         });
     }
 
-    #[cfg(feature = "native")]
+    /// The identity projection Djinn's identity endpoint serves for a keeper
+    /// with one profile, one leased device, its grant and one signing record,
+    /// after the device's revocation: its snapshot and card resources.
+    /// Djinn's `door::identity_endpoint` test produces it and fails when it
+    /// drifts, since the endpoint is Djinn's (stack lift plan, after P5) and
+    /// this port cannot depend on Djinn.
+    #[derive(serde::Deserialize)]
+    struct IdentityCardsFixture {
+        snapshot: chirograph::ProjectionSnapshot,
+        resources: Vec<chirograph::ResourceResponse>,
+    }
+
     #[tokio::test]
     async fn h4_exportable_identity_cards_and_access_survive_scene_reopen_as_projections() {
-        use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionSource};
         use mere::canvas::CartographyGeometry;
-        use personae::signing::{
-            ApprovalSource, SigningPolicy, SigningRecord, SigningRecordResult, SigningRequest,
-        };
 
-        use crate::identity_endpoint::IdentityEndpoint;
-        use crate::identity_endpoint::test_support::{FixedIdentity, fixed_snapshot};
-        use crate::identity_projection::{DEVICE_REVOKE_INTENT, RevokeDeviceIntentV1};
-        use graphshell_endpoint::door::identity::{DeviceGrantView, DeviceView, ProfileView};
-
-        // The public read model a keeper with one profile, one leased device,
-        // its grant and one signing record shows. The keeper itself (wallet,
-        // agent, revocation) is djinn's to exercise; this test is about the
-        // cards surviving a scene reopen as projections.
+        let fixture: IdentityCardsFixture =
+            serde_json::from_str(include_str!("../tests/fixtures/identity_cards.json"))
+                .expect("the identity cards fixture reads");
         let device_id = uuid::Uuid::from_u128(0x45);
-        let mut fixed = fixed_snapshot();
-        fixed.profiles.push(ProfileView {
-            id: "mixed-scene".to_string(),
-            display_name: "Mixed scene".to_string(),
-            selected: true,
-            slot_count: 1,
-            master_public_fingerprint: "fixture".to_string(),
-        });
-        fixed.carry.devices.push(DeviceView {
-            device_id: device_id.to_string(),
-            label: "Pocket relay".to_string(),
-            mode: "remote-auth".to_string(),
-            exposure: "hidden-client".to_string(),
-            public_key_fingerprint: "fixture".to_string(),
-            revoked: false,
-            grant_ref: Some("grant-ref".to_string()),
-        });
-        fixed.carry.grants.push(DeviceGrantView {
-            device_id: device_id.to_string(),
-            grant_ref: Some("grant-ref".to_string()),
-            signature_valid: Some(true),
-            issued_at_ms: 1_700_000_000_000,
-            expires_at_ms: Some(1_800_000_000_000),
-            personas: vec!["default".to_string()],
-            scopes: vec!["identity.act".to_string()],
-            attenuations: vec!["no-subdelegation".to_string()],
-            wrapped_epoch_count: 0,
-        });
-        fixed.signing_history.push(SigningRecord {
-            request: SigningRequest::new(
-                "mixed-scene",
-                "SHA256:mixed-scene-key",
-                "ssh.sign",
-                b"graphshell mixed scene",
-                "ssh-agent",
-            ),
-            policy: SigningPolicy::Session,
-            approval_source: Some(ApprovalSource::SessionPolicy),
-            result: SigningRecordResult::Signed {
-                signature_ref: "sig-1".to_string(),
-            },
-            completed_at_ms: 1_700_000_000_500,
-        });
-        let authority = FixedIdentity::with_snapshot(fixed);
-
-        let mut endpoint = IdentityEndpoint::new(authority);
-        let before = endpoint
-            .snapshot(endpoint.request())
-            .expect("identity projection before revocation");
         let device_source = format!("identity:device:{device_id}");
-        let device_instance = before
-            .scene
-            .active_items_in_order()
-            .into_iter()
-            .find_map(|(instance, item)| {
-                before.scene.tables.sources[item.source.0 as usize]
-                    .as_ref()
-                    .filter(|source| source.id == device_source)
-                    .map(|_| instance)
-            })
-            .expect("projected device");
-        let unconfirmed = endpoint
-            .invoke(IntentInvocation {
-                session: before.session.clone(),
-                target: device_instance,
-                observed_epoch: before.scene.epoch,
-                observed_revision: before.scene.revision,
-                intent: DEVICE_REVOKE_INTENT.to_string(),
-                payload: serde_json::to_vec(&RevokeDeviceIntentV1 {
-                    device_id,
-                    confirmed: false,
-                })
-                .unwrap(),
-            })
-            .expect("bounded rejection");
-        assert!(matches!(unconfirmed, IntentResult::Rejected { .. }));
-        let revoked = endpoint
-            .invoke(IntentInvocation {
-                session: before.session,
-                target: device_instance,
-                observed_epoch: before.scene.epoch,
-                observed_revision: before.scene.revision,
-                intent: DEVICE_REVOKE_INTENT.to_string(),
-                payload: serde_json::to_vec(&RevokeDeviceIntentV1 {
-                    device_id,
-                    confirmed: true,
-                })
-                .unwrap(),
-            })
-            .expect("typed revocation");
-        assert_eq!(revoked, IntentResult::Accepted);
-        assert!(
-            endpoint
-                .host()
-                .intents
-                .lock()
-                .unwrap()
-                .contains(&DEVICE_REVOKE_INTENT.to_string()),
-            "the revocation reached the resident authority, the mutation authority"
-        );
-
-        let snapshot = endpoint
-            .snapshot(endpoint.request())
-            .expect("identity projection after revocation");
+        let snapshot = fixture.snapshot;
         assert_eq!(snapshot.cache_policy.retention, CacheRetention::Exportable);
-        let resources = snapshot
-            .presentation
-            .offers
-            .values()
-            .flatten()
-            .map(|offer| offer.resource)
-            .collect::<Vec<_>>();
         let identity_session = snapshot.session.clone();
         let wanted_sources = [
             "identity:profile:mixed-scene".to_string(),
@@ -679,16 +571,9 @@ mod tests {
         let backend = MemoryBackend::new();
         let mut app = GraphshellApp::fixture(backend.clone(), selected()).expect("fixture");
         app.mount_remote(snapshot).expect("mount identity");
-        for resource in resources {
+        for resource in fixture.resources {
             app.client
-                .apply_resource(
-                    endpoint
-                        .resource(ResourceRequest {
-                            session: identity_session.clone(),
-                            resource,
-                        })
-                        .expect("identity card resource"),
-                )
+                .apply_resource(resource)
                 .expect("cache identity card");
         }
 

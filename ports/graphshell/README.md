@@ -35,38 +35,26 @@ stay pending. The public `profiles` roster remains readable while Locked.
 
 ## Modules
 
-Always compiled:
-
-| Module | Contents |
-|---|---|
-| `view` | `ProjectionReceiptView`, `ProjectionLayoutView`, `ScenePlacementView`, `SceneRelationView`, `IntentReceiptView`, `render_projection_receipt`, `render_g1_receipt`, `render_canary_html` |
-| `canary` | `FixtureEndpoint`, `CanaryRun`, `CanaryError`, `run_loopback_canary` |
-| `sessions` | `SessionProjectionView`, `render_session_switch_receipt`; under `native`, `spawn_endpoint_session` and `mount_endpoint_processes` |
-
-Under `native` (non-wasm):
-
-| Module | Contents |
-|---|---|
-| `browser_carrier` | WebExtensions native messaging: `NATIVE_HOST_NAME`, `CHROMIUM_EXTENSION_ID`, `FIREFOX_EXTENSION_ID`, `AllowedExtensions`, `BrowserLauncher` |
-| `identity_endpoint` | `IdentityEndpoint`, `IdentityAuthority` (the snapshot and intents half of Djinn's `ResidentIdentity`), `SupplementalCard`, `TransferAcceptIntentV1`, `TransferDecision`, `IdentityEndpointError` |
-| `identity_projection` | Identity cards plus the signing, SSH generate, and SSH import intents |
-
 The serving half these compose (admission and its action check, the accept
 path, the line codec, `SessionAuthority` and `AdmittedEndpointContext`, the
 session loop and its notices, `ResidentEndpointCatalog`,
-`ResidentProjectionHost`, dialling, the N4 policy scenario, the resume and live
-fixture endpoints, and the WebRTC door) is the `graphshell-host` crate (stack
-lift plan, L2, 2026-10-15). Hosts that serve projections depend on that crate,
-not on this port.
+`ResidentProjectionHost`, dialling, the N4 policy scenario, the fixture
+endpoints (`canary`, `resume`, `live_endpoint`), the receipt views (`view`,
+`sessions`) and the WebRTC door) is the `graphshell-host` crate (stack lift
+plan, L2 and after P5). Hosts that serve projections, and hosts that only
+render projection receipts, depend on that crate, not on this port.
 
 The servers Djinn runs (the application door's broker, the browser door's
-host, the device broker and its `graphshell_native_host` relay, the local
-session, `ResidentIdentity`, `ResidentMereProxy`, and the personal sync,
-carriage, graph key and transfer staging hosts) are Djinn's `door` and `sync`
-modules since the stack lift plan's P5, with the C4 WebRTC host fixture
-(`djinn --features c4-host`). What remains here of the native side is the
-browser carrier and the identity endpoint, which reads Djinn's authority
-through `IdentityAuthority`.
+host and its native-messaging envelope (`browser_carrier`), the device broker
+and its `graphshell_native_host` relay, the local session, the identity
+endpoint and its cards, `ResidentIdentity`, and the personal sync, carriage,
+graph key and transfer staging hosts) are Djinn's `door` and `sync` modules
+since the stack lift plan's P5. `ResidentMereProxy`, an endpoint forwarding
+over the application door, is `graphshell_endpoint::door::resident_mere_proxy`,
+and the C4 WebRTC host fixture that serves it stays here (`c4_webrtc_host`,
+feature `webrtc-session`). The port's identity scene test reads the identity
+cards from `tests/fixtures/identity_cards.json`, which Djinn's identity
+endpoint test keeps current.
 
 The application side of the first-party door (admission, the app client, custody and its
 clients, quarantine, the local endpoint, tracked tasks, the identity views,

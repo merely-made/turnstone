@@ -31,7 +31,7 @@ gitignored, so it is the usual destination.
 | Chromium | `oajkkocppbpbmfblepgbiidagliniofd`, derived from the manifest `key` |
 | Firefox | `graphshell@mere.systems` |
 
-The same values are `graphshell::browser_carrier::CHROMIUM_EXTENSION_ID` and
+The same values are `djinn::door::browser_carrier::CHROMIUM_EXTENSION_ID` and
 `FIREFOX_EXTENSION_ID`. Set `GRAPHSHELL_EXTENSION_IDS` to a comma-separated
 list to add locally built ids; the native host matches each id exactly. Store
 release ids can replace the defaults through the installer.

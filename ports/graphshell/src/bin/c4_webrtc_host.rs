@@ -7,12 +7,6 @@
 //! C4a's host fixture: a real Graphshell projection, served to a browser over
 //! WebRTC.
 //!
-//! It was Graphshell's until the stack lift plan's P5: its resident-mere
-//! endpoint forwards over the application door through
-//! [`djinn::door::resident_mere_proxy`], which moved here with the brokers, so
-//! the fixture builds against Djinn (feature `c4-host`), which also always
-//! carries the Distillery Chronicle endpoint it can serve.
-//!
 //! Everything below the signaling is the shipping path and none of it is
 //! reimplemented here. [`serve_webrtc_join`] admits the peer over the door's
 //! link challenge and redemption proof; [`ResidentProjectionHost`] serves it
@@ -33,7 +27,7 @@
 //! ## Run it
 //!
 //! ```text
-//! cargo run -p djinn --features c4-host --bin c4_webrtc_host -- \
+//! cargo run -p graphshell --features webrtc-session --bin c4_webrtc_host -- \
 //!     --bind 192.168.4.36 --advertise 192.168.4.36
 //! ```
 //!
@@ -77,6 +71,7 @@ use tokio::sync::Mutex;
 use webrtc_carrier::ReleaseRefV1;
 use webrtc_carrier::native::{Answerer, AnswererConfig, CarrierConfig};
 
+#[cfg(feature = "distillery-chronicle-fixture")]
 use distillery::{ChronicleObserver, ChronicleRevision, ResidentReceipt};
 
 /// The source endpoint the fixture exposes through its fixed host route.
@@ -117,6 +112,7 @@ impl Endpoint {
 #[derive(Clone)]
 enum FixtureEndpoint {
     LiveBoard(SharedLiveEndpoint),
+    #[cfg(feature = "distillery-chronicle-fixture")]
     DistilleryChronicle,
     ResidentMere,
 }
@@ -126,6 +122,7 @@ impl FixtureEndpoint {
         match self {
             Self::LiveBoard(board) => Ok(board.with(|endpoint| endpoint.append()).0),
             Self::ResidentMere => Err("nudge is not advertised by the resident mere"),
+            #[cfg(feature = "distillery-chronicle-fixture")]
             Self::DistilleryChronicle => {
                 Err("nudge is unsupported by the Distillery Chronicle endpoint")
             },
@@ -261,7 +258,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "resident.divination",
                 "Resident divination mere",
                 move |_context| {
-                    djinn::door::resident_mere_proxy::ResidentMereProxy::divination(&endpoint)
+                    graphshell_endpoint::door::resident_mere_proxy::ResidentMereProxy::divination(
+                        &endpoint,
+                    )
                 },
             )?;
             (
@@ -285,17 +284,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             )
         },
         Endpoint::DistilleryChronicle => {
-            let observer = distillery_chronicle_observer()?;
-            let route_observer = observer.clone();
-            catalog.register_resumable_notifying(
-                "distillery.chronicle",
-                "Distillery Chronicle",
-                move |context| Ok(route_observer.endpoint(context.session().clone())),
-            )?;
-            (
-                ResidentEndpointRoute::new("distillery.chronicle", Duration::from_millis(250))?,
-                FixtureEndpoint::DistilleryChronicle,
-            )
+            #[cfg(feature = "distillery-chronicle-fixture")]
+            {
+                let observer = distillery_chronicle_observer()?;
+                let route_observer = observer.clone();
+                catalog.register_resumable_notifying(
+                    "distillery.chronicle",
+                    "Distillery Chronicle",
+                    move |context| Ok(route_observer.endpoint(context.session().clone())),
+                )?;
+                (
+                    ResidentEndpointRoute::new("distillery.chronicle", Duration::from_millis(250))?,
+                    FixtureEndpoint::DistilleryChronicle,
+                )
+            }
+            #[cfg(not(feature = "distillery-chronicle-fixture"))]
+            {
+                return Err(
+                    "--endpoint distillery-chronicle requires --features distillery-chronicle-fixture"
+                        .into(),
+                );
+            }
         },
     };
     let host = Arc::new(Mutex::new(ResidentProjectionHost::new(
@@ -505,6 +514,7 @@ async fn serve_request(
 /// Load the checked-in W1 job board as a host-local, read-only observation.
 /// The board itself is not retained or mutated by Graphshell: Chronicle
 /// materializes it now and binds each admitted session in the route factory.
+#[cfg(feature = "distillery-chronicle-fixture")]
 fn distillery_chronicle_observer() -> Result<ChronicleObserver, Box<dyn std::error::Error>> {
     #[derive(serde::Deserialize)]
     struct Fixture {
