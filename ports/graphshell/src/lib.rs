@@ -85,8 +85,6 @@ pub mod host_presenter;
 #[cfg(feature = "web")]
 pub mod host_history_view;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod identity;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod identity_endpoint;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod identity_projection;
@@ -119,8 +117,6 @@ pub mod personal_sync;
 pub mod policy_projection;
 #[cfg(feature = "web")]
 pub mod product;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod profile;
 #[cfg(feature = "web")]
 pub mod remote_board;
 #[cfg(feature = "web")]

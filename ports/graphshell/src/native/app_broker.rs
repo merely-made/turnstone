@@ -6,7 +6,7 @@
 
 //! The first-party application door.
 //!
-//! Serves [`super::app_admission`]'s endpoint: an owner-only socket that a
+//! Serves `graphshell_endpoint::door::app_admission`'s endpoint: an owner-only socket that a
 //! first-party application — turnstone, today — opens to browse this device's
 //! graph. Everything past the hello is the same machinery the browser door
 //! uses, from `local_session`, so the two doors cannot come to two different
@@ -14,7 +14,8 @@
 //!
 //! **What is different here, and why.** Two things only:
 //!
-//! - *The wire.* An application speaks [`AppMessage`], not the browser's
+//! - *The wire.* An application speaks [`AppMessage`] (the shared envelope in
+//!   `graphshell_endpoint::door::wire`), not the browser's
 //!   native-messaging frames. The carrier payload inside is identical; the
 //!   envelope is separate so this door can version independently of a shipped
 //!   browser extension.
@@ -27,37 +28,32 @@
 use std::sync::Arc;
 use std::sync::RwLock as StdRwLock;
 
-use chirograph::{
-    CarrierNotice, CarrierRequest, CarrierRequestBody, CarrierResponse, CarrierResponseBody,
-};
-use serde::{Deserialize, Serialize};
-use tokio::io::{AsyncRead, AsyncWrite};
-
-use crate::browser_carrier::{
-    BrowserChallenge, LocalLink, read_native_message_async, write_native_message_async,
-};
-use crate::identity_endpoint::IdentityEndpoint;
-use crate::lifecycle::SessionAuthority;
-use crate::native::app_admission::{
+use chirograph::{CarrierRequestBody, CarrierResponseBody, ResumeRequest};
+use graphshell_endpoint::door::app_admission::{
     APP_IDENTITY_ROUTE, AllowedAppRoutes, AppAdmissionError, AppHello, AppId, AppRouteGrants,
     AppRouteId,
 };
+use graphshell_endpoint::door::custody::CUSTODY_ROUTE;
+use graphshell_endpoint::door::local_endpoint::{LocalStream, connect_local, serve_local};
+use graphshell_endpoint::door::route::ResidentEndpointRoute;
+use graphshell_endpoint::door::tasks::spawn_tracked_with_handle;
+use graphshell_endpoint::door::wire::{
+    APP_CONNECT_SCHEMA, AppHostMessage, AppMessage, BrowserChallenge,
+};
+use tokio::io::{AsyncRead, AsyncWrite};
+
+use crate::browser_carrier::{LocalLink, read_native_message_async, write_native_message_async};
+use crate::identity_endpoint::IdentityEndpoint;
+use crate::lifecycle::SessionAuthority;
 use crate::native::browser_host::BrowserHostError;
-use crate::native::custody::{CUSTODY_ROUTE, CustodyAnswer, CustodyCall, CustodyRefusal};
 use crate::native::device_broker::{DeviceSurface, DeviceSurfaceHandle};
 use crate::native::endpoint_catalog::{
     ResidentEndpointCatalog, ResidentEndpointCatalogError, ResidentEndpointSession,
 };
-use crate::native::local_endpoint::{LocalStream, connect_local, serve_local};
 use crate::native::local_session::{LocalSession, admit_local_client, identity_endpoint_for};
 use crate::native::resident_identity::ResidentIdentity;
-use crate::native::tasks::spawn_tracked_with_handle;
 use crate::session_loop::{SessionSummary, serve_admitted_session};
 use crate::session_notices::serve_admitted_session_notifying;
-use chirograph::ResumeRequest;
-
-/// Schema of the connect answer an application sends.
-pub const APP_CONNECT_SCHEMA: &str = "mere.graphshell/app-connect/v1";
 
 #[derive(Debug, thiserror::Error)]
 pub enum AppBrokerError {
@@ -77,53 +73,6 @@ pub enum AppBrokerError {
     WrongSchema,
     #[error("application broker transport failed: {0}")]
     Io(#[from] std::io::Error),
-}
-
-/// Application-to-host messages.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
-pub enum AppMessage {
-    /// Answer the host challenge and open the session.
-    Connect {
-        schema: String,
-        host_nonce: String,
-        client_nonce: String,
-    },
-    /// One carrier request against the admitted endpoint.
-    Request { request: CarrierRequest },
-    /// Poll for one available notice with bounded stream intake.
-    TakeNotice,
-    /// Wait until the admitted endpoint rings with a revision notice.
-    WaitNotice,
-    /// One call on the custody route ([`crate::native::custody`]).
-    Call { id: u64, call: CustodyCall },
-}
-
-/// Host-to-application messages.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
-pub enum AppHostMessage {
-    Challenge {
-        challenge: BrowserChallenge,
-    },
-    Connected {
-        app: AppId,
-        session: String,
-    },
-    Response {
-        response: CarrierResponse,
-    },
-    Notice {
-        notice: Option<CarrierNotice>,
-    },
-    /// The answer to one custody call, by its id.
-    Answer {
-        id: u64,
-        answer: Result<CustodyAnswer, CustodyRefusal>,
-    },
-    Failure {
-        message: String,
-    },
 }
 
 /// The resident endpoint registrations available to first-party routes.
@@ -270,7 +219,7 @@ async fn serve_admitted_app<A, R, W>(
     writer: &mut W,
     personae: Arc<A>,
     app: AppId,
-    route: crate::native::endpoint_catalog::ResidentEndpointRoute,
+    route: ResidentEndpointRoute,
     session_duration_ms: u64,
     surface: DeviceSurface,
     catalog: AppEndpointCatalog,

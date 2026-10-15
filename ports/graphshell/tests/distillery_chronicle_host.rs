@@ -19,13 +19,14 @@ use chirograph::{
 use distillery::{ChronicleObserver, ChronicleRevision, ResidentReceipt};
 use graphshell::admission::open_session;
 use graphshell::carrier::projection_policy;
-use graphshell::native::endpoint_catalog::{ResidentEndpointCatalog, ResidentEndpointRoute};
+use graphshell::native::endpoint_catalog::ResidentEndpointCatalog;
 use graphshell::native::projection_host::ResidentProjectionHost;
 use graphshell::network_carrier::{
     CarrierRuntime, NetworkCarrier, dial_projection_session, projection_binding,
 };
 use graphshell_client::ClientState;
 use graphshell_client::frozen::FrozenScene;
+use graphshell_endpoint::door::route::ResidentEndpointRoute;
 use insigne::delegation::{
     CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
 };

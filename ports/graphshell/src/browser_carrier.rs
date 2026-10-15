@@ -21,6 +21,10 @@ use std::io::{Read, Write};
 
 use base64::Engine;
 use chirograph::{CarrierNotice, CarrierOutput, CarrierRequest, CarrierResponse};
+use graphshell_endpoint::door::frame::{self, FrameError};
+use graphshell_endpoint::door::wire::{
+    BROWSER_CHALLENGE_SCHEMA as CHALLENGE_SCHEMA, BrowserChallenge,
+};
 use insigne::delegation::SignedDelegationCertificate;
 use notochord::{
     AdmittedSession, CarrierKind, DenyReason, IoHandshakeError, LocalNetworkPolicy, NetworkId,
@@ -28,12 +32,9 @@ use notochord::{
     initiate_session,
 };
 use personae::IdentityProvider;
-use rand_core::{OsRng, RngCore};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use tokio::io::{
-    AsyncBufReadExt, AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, BufReader, DuplexStream,
-};
+use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncWrite, AsyncWriteExt, BufReader, DuplexStream};
 
 use crate::admission::{PROJECTION_PROTOCOL, open_network_bound_session};
 use crate::identity_projection::SshUnlockPolicyIntentV1;
@@ -45,10 +46,9 @@ pub const NATIVE_HOST_NAME: &str = "org.mere.graphshell";
 pub const CHROMIUM_EXTENSION_ID: &str = "oajkkocppbpbmfblepgbiidagliniofd";
 /// Stable Firefox add-on id used by the extension and native host manifest.
 pub const FIREFOX_EXTENSION_ID: &str = "graphshell@mere.systems";
-/// A tighter application bound than Chrome's 64 MiB extension-to-host limit.
-pub const MAX_NATIVE_MESSAGE_BYTES: u32 = 1024 * 1024;
+/// The frame bound, shared with the application door ([`frame`]).
+pub const MAX_NATIVE_MESSAGE_BYTES: u32 = frame::MAX_NATIVE_MESSAGE_BYTES;
 
-const CHALLENGE_SCHEMA: &str = "mere.graphshell/browser-challenge/v1";
 const CONNECT_SCHEMA: &str = "mere.graphshell/browser-connect/v1";
 const LINK_DOMAIN: &[u8] = b"mere.graphshell/native-messaging-link/v1";
 
@@ -161,29 +161,13 @@ impl AllowedExtensions {
     }
 }
 
-/// First host-to-browser message on every native-messaging process.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct BrowserChallenge {
-    pub schema: String,
-    pub host_nonce: String,
-}
-
-impl BrowserChallenge {
-    pub fn fresh() -> Self {
-        let mut nonce = [0u8; 32];
-        OsRng.fill_bytes(&mut nonce);
-        Self {
-            schema: CHALLENGE_SCHEMA.to_string(),
-            host_nonce: encode_nonce(nonce),
-        }
+/// The browser door's nonce check on its own challenge: the schema must be
+/// the shared one and the nonce 32 bytes.
+fn challenge_nonce(challenge: &BrowserChallenge) -> Result<[u8; 32], BrowserCarrierError> {
+    if challenge.schema != CHALLENGE_SCHEMA {
+        return Err(BrowserCarrierError::WrongSchema);
     }
-
-    fn nonce(&self) -> Result<[u8; 32], BrowserCarrierError> {
-        if self.schema != CHALLENGE_SCHEMA {
-            return Err(BrowserCarrierError::WrongSchema);
-        }
-        decode_nonce(&self.host_nonce)
-    }
+    decode_nonce(&challenge.host_nonce)
 }
 
 /// Browser-to-host messages.
@@ -328,7 +312,7 @@ impl LocalLink {
         host_nonce: &str,
         client_nonce: &str,
     ) -> Result<Self, BrowserCarrierError> {
-        let expected = challenge.nonce()?;
+        let expected = challenge_nonce(challenge)?;
         let echoed = decode_nonce(host_nonce)?;
         if echoed != expected {
             return Err(BrowserCarrierError::ChallengeMismatch);
@@ -421,41 +405,13 @@ pub enum BrowserCarrierError {
     UnexpectedApplicationOutput(String),
 }
 
-/// Read one browser native-messaging JSON frame.
-///
-/// Native messaging uses a native-endian 32-bit byte length. End-of-stream
-/// between messages is normal process completion; a partial prefix or body is
-/// an error.
+/// Read one browser native-messaging JSON frame ([`frame::read_native_message`]).
 pub fn read_native_message<R, T>(reader: &mut R) -> Result<Option<T>, BrowserCarrierError>
 where
     R: Read,
     T: DeserializeOwned,
 {
-    let mut length = [0u8; 4];
-    let mut read = 0usize;
-    while read < length.len() {
-        match reader.read(&mut length[read..])? {
-            0 if read == 0 => return Ok(None),
-            0 => {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::UnexpectedEof,
-                    "native messaging length prefix was truncated",
-                )
-                .into());
-            },
-            count => read += count,
-        }
-    }
-    let length = u32::from_ne_bytes(length);
-    if length > MAX_NATIVE_MESSAGE_BYTES {
-        return Err(BrowserCarrierError::FrameTooLarge {
-            len: u64::from(length),
-            max: MAX_NATIVE_MESSAGE_BYTES,
-        });
-    }
-    let mut body = vec![0u8; length as usize];
-    reader.read_exact(&mut body)?;
-    Ok(Some(serde_json::from_slice(&body)?))
+    Ok(frame::read_native_message(reader)?)
 }
 
 /// Write one browser native-messaging JSON frame.
@@ -464,27 +420,12 @@ where
     W: Write,
     T: Serialize,
 {
-    let body = serde_json::to_vec(message)?;
-    let length = u32::try_from(body.len()).map_err(|_| BrowserCarrierError::FrameTooLarge {
-        len: body.len() as u64,
-        max: MAX_NATIVE_MESSAGE_BYTES,
-    })?;
-    if length > MAX_NATIVE_MESSAGE_BYTES {
-        return Err(BrowserCarrierError::FrameTooLarge {
-            len: u64::from(length),
-            max: MAX_NATIVE_MESSAGE_BYTES,
-        });
-    }
-    writer.write_all(&length.to_ne_bytes())?;
-    writer.write_all(&body)?;
-    writer.flush()?;
-    Ok(())
+    Ok(frame::write_native_message(writer, message)?)
 }
 
 /// Read one browser native-messaging JSON frame from an asynchronous stream.
 ///
 /// The resident device host uses this variant for its local browser broker.
-/// It has the same size and truncation behavior as [`read_native_message`].
 pub async fn read_native_message_async<R, T>(
     reader: &mut R,
 ) -> Result<Option<T>, BrowserCarrierError>
@@ -492,31 +433,7 @@ where
     R: AsyncRead + Unpin,
     T: DeserializeOwned,
 {
-    let mut length = [0u8; 4];
-    let mut read = 0usize;
-    while read < length.len() {
-        match AsyncReadExt::read(reader, &mut length[read..]).await? {
-            0 if read == 0 => return Ok(None),
-            0 => {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::UnexpectedEof,
-                    "native messaging length prefix was truncated",
-                )
-                .into());
-            },
-            count => read += count,
-        }
-    }
-    let length = u32::from_ne_bytes(length);
-    if length > MAX_NATIVE_MESSAGE_BYTES {
-        return Err(BrowserCarrierError::FrameTooLarge {
-            len: u64::from(length),
-            max: MAX_NATIVE_MESSAGE_BYTES,
-        });
-    }
-    let mut body = vec![0u8; length as usize];
-    AsyncReadExt::read_exact(reader, &mut body).await?;
-    Ok(Some(serde_json::from_slice(&body)?))
+    Ok(frame::read_native_message_async(reader).await?)
 }
 
 /// Write one browser native-messaging JSON frame to an asynchronous stream.
@@ -528,21 +445,17 @@ where
     W: AsyncWrite + Unpin,
     T: Serialize,
 {
-    let body = serde_json::to_vec(message)?;
-    let length = u32::try_from(body.len()).map_err(|_| BrowserCarrierError::FrameTooLarge {
-        len: body.len() as u64,
-        max: MAX_NATIVE_MESSAGE_BYTES,
-    })?;
-    if length > MAX_NATIVE_MESSAGE_BYTES {
-        return Err(BrowserCarrierError::FrameTooLarge {
-            len: u64::from(length),
-            max: MAX_NATIVE_MESSAGE_BYTES,
-        });
+    Ok(frame::write_native_message_async(writer, message).await?)
+}
+
+impl From<FrameError> for BrowserCarrierError {
+    fn from(error: FrameError) -> Self {
+        match error {
+            FrameError::TooLarge { len, max } => Self::FrameTooLarge { len, max },
+            FrameError::Io(error) => Self::Io(error),
+            FrameError::Json(error) => Self::Json(error),
+        }
     }
-    AsyncWriteExt::write_all(writer, &length.to_ne_bytes()).await?;
-    AsyncWriteExt::write_all(writer, &body).await?;
-    AsyncWriteExt::flush(writer).await?;
-    Ok(())
 }
 
 /// Run the existing SessionHello admission over a private stream whose link
@@ -718,6 +631,7 @@ impl BrowserSessionClient {
     }
 }
 
+#[cfg(test)]
 fn encode_nonce(nonce: [u8; 32]) -> String {
     base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(nonce)
 }
@@ -733,6 +647,8 @@ fn decode_nonce(value: &str) -> Result<[u8; 32], BrowserCarrierError> {
 
 #[cfg(test)]
 mod tests {
+    use tokio::io::AsyncReadExt;
+
     use super::*;
     use crate::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE, open_session};
     use insigne::delegation::{

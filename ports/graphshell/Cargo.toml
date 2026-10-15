@@ -46,6 +46,7 @@ image-decode = ["cambium-rootstock?/image-decode", "mere?/image-decode", "pelt-c
 native = [
     "webrtc-join",
     "dep:blake3",
+    "graphshell-endpoint/door",
     "graphshell-endpoint/network",
     "graphshell-endpoint/stdio",
     "dep:notochord",
@@ -244,7 +245,8 @@ blake3 = { workspace = true, optional = true }
 # The identity read model and intents (`identity`, `identity_projection`).
 # Graphshell no longer links castellan (dramatis repo plan, D4, D15): its
 # doors serve whatever `native::resident_identity::ResidentIdentity` djinn
-# hands them, and applications reach custody through `native::custody_client`.
+# hands them, and applications reach custody through
+# `graphshell_endpoint::door::custody_client`.
 dramatis = { workspace = true, optional = true }
 p2panda-core = { version = "0.7.0", optional = true }
 p2panda-store = { version = "0.7.0", default-features = false, optional = true }
@@ -266,14 +268,6 @@ transport = { workspace = true, features = ["notochord"], optional = true }
 # `native` str0m adapter, which the dev-dependency below turns on for the
 # loopback integration test alone.
 zeroize = { version = "1", optional = true }
-
-[target.'cfg(all(windows, not(target_arch = "wasm32")))'.dependencies]
-windows-sys = { version = "0.59", features = [
-    "Win32_Foundation",
-    "Win32_Security",
-    "Win32_System_Pipes",
-    "Win32_System_Threading",
-] }
 
 [[bin]]
 name = "g1_receipt"

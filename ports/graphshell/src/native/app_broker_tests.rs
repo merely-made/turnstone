@@ -16,12 +16,9 @@ use tokio::sync::RwLock;
 
 use crate::browser_carrier::{read_native_message_async, write_native_message_async};
 use crate::identity_endpoint::SupplementalCard;
-use crate::native::app_admission::{AllowedAppRoutes, AppHello, AppId, AppRouteGrants, AppRouteId};
 use crate::native::app_broker::{
-    APP_CONNECT_SCHEMA, AppEndpointCatalog, AppHostMessage, AppMessage, serve_app_broker,
-    serve_app_connection_for_tests,
+    AppEndpointCatalog, serve_app_broker, serve_app_connection_for_tests,
 };
-use crate::native::app_client::AppBrokerClient;
 use crate::native::device_broker::DeviceSurface;
 use crate::native::endpoint_catalog::ResidentEndpointCatalog;
 use crate::native::resident_identity::test_support::FixedIdentity;
@@ -29,6 +26,11 @@ use chirograph::{
     CapabilityProfile, CarrierRequest, CarrierRequestBody, CarrierResponseBody, ContentHash,
     PortableCardV1, ProtocolVersion, ResourceRequest, SessionOpen,
 };
+use graphshell_endpoint::door::app_admission::{
+    AllowedAppRoutes, AppHello, AppId, AppRouteGrants, AppRouteId,
+};
+use graphshell_endpoint::door::app_client::AppBrokerClient;
+use graphshell_endpoint::door::wire::{APP_CONNECT_SCHEMA, AppHostMessage, AppMessage};
 
 fn resident_host() -> Arc<FixedIdentity> {
     FixedIdentity::new(0x91)
@@ -431,7 +433,7 @@ async fn the_client_reads_cards_over_the_served_endpoint() {
 #[tokio::test(flavor = "multi_thread")]
 async fn a_route_granted_while_serving_opens_for_the_next_connection() {
     use crate::canary::FixtureEndpoint;
-    use crate::native::endpoint_catalog::ResidentEndpointRoute;
+    use graphshell_endpoint::door::route::ResidentEndpointRoute;
 
     let personae = resident_host();
     #[cfg(windows)]
@@ -497,7 +499,7 @@ async fn a_route_granted_while_serving_opens_for_the_next_connection() {
 /// without opt-in. Neither case may reach even the Graphshell challenge.
 #[tokio::test]
 async fn denials_and_ambient_refusals_precede_product_construction() {
-    use crate::native::endpoint_catalog::ResidentEndpointRoute;
+    use graphshell_endpoint::door::route::ResidentEndpointRoute;
     for (app, route, denied) in [
         ("turnstone", "mere/divination", true),
         ("turnstone", "ambient/mere/divination", false),

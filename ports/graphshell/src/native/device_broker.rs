@@ -25,9 +25,9 @@ use crate::browser_carrier::{
 };
 use crate::identity_endpoint::{SupplementalCard, TransferDecisions};
 use crate::native::browser_host::{BrowserHostError, serve_identity_native_messages_with_cards};
-use crate::native::local_endpoint::{LocalStream, connect_local, serve_local};
 use crate::native::resident_identity::ResidentIdentity;
 use chirograph::ContentHash;
+use graphshell_endpoint::door::local_endpoint::{LocalStream, connect_local, serve_local};
 
 pub const DEVICE_ENDPOINT_ENV: &str = "GRAPHSHELL_DEVICE_ENDPOINT";
 const BROKER_HELLO_SCHEMA: &str = "mere.graphshell/device-broker-hello/v1";
@@ -282,4 +282,16 @@ where
     })
     .await?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn the_app_endpoint_is_distinct_from_the_browser_one() {
+        assert_ne!(
+            graphshell_endpoint::door::app_admission::default_app_endpoint(),
+            super::configured_device_endpoint(),
+            "a first-party app must not land on the browser endpoint",
+        );
+    }
 }

@@ -333,8 +333,7 @@ mod tests {
     use super::*;
     use crate::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};
     use crate::browser_carrier::{
-        BrowserChallenge, BrowserLauncher, BrowserLink, BrowserMessage, CHROMIUM_EXTENSION_ID,
-        admit_browser_session,
+        BrowserLauncher, BrowserLink, BrowserMessage, CHROMIUM_EXTENSION_ID, admit_browser_session,
     };
     use crate::identity_endpoint::IdentityEndpoint;
     use crate::identity_projection::{SIGNING_APPROVE_ONCE_INTENT, SigningDecisionIntentV1};
@@ -344,6 +343,7 @@ mod tests {
         ResourceRequest, ResourceResponse, Revision, SceneEpoch, SessionOpen,
     };
     use graphshell_client::{ClientState, PresentationResolution, ResolvedContent};
+    use graphshell_endpoint::door::wire::BrowserChallenge;
     use insigne::delegation::{
         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
         SignedDelegationCertificate, SignedDelegationRevocation,

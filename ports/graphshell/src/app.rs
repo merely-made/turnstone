@@ -536,10 +536,10 @@ mod tests {
             ApprovalSource, SigningPolicy, SigningRecord, SigningRecordResult, SigningRequest,
         };
 
-        use crate::identity::{DeviceGrantView, DeviceView, ProfileView};
         use crate::identity_endpoint::IdentityEndpoint;
         use crate::identity_projection::{DEVICE_REVOKE_INTENT, RevokeDeviceIntentV1};
         use crate::native::resident_identity::test_support::{FixedIdentity, fixed_snapshot};
+        use graphshell_endpoint::door::identity::{DeviceGrantView, DeviceView, ProfileView};
 
         // The public read model a keeper with one profile, one leased device,
         // its grant and one signing record shows. The keeper itself (wallet,

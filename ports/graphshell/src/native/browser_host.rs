@@ -14,24 +14,25 @@ use chirograph::{CarrierRequestBody, CarrierResponseBody, ResumeRequest};
 use personae::delegation::DelegationError;
 
 use crate::browser_carrier::{
-    BrowserCarrierError, BrowserChallenge, BrowserHostMessage, BrowserLauncher, BrowserLink,
-    BrowserMessage, NativeIdentityFailure, NativeIdentityResult, read_native_message_async,
+    BrowserCarrierError, BrowserHostMessage, BrowserLauncher, BrowserLink, BrowserMessage,
+    NativeIdentityFailure, NativeIdentityResult, read_native_message_async,
     write_native_message_async,
 };
 use crate::identity_endpoint::IdentityEndpoint;
 use crate::lifecycle::SessionAuthority;
 use crate::native::device_broker::DeviceSurface;
 use crate::native::endpoint_catalog::{
-    ResidentEndpointCatalog, ResidentEndpointCatalogError, ResidentEndpointRoute,
-    ResidentEndpointSession,
+    ResidentEndpointCatalog, ResidentEndpointCatalogError, ResidentEndpointSession,
 };
 use crate::native::local_session::{
     DoorIdentity, LocalSession, admit_local_client, identity_endpoint_for,
 };
 use crate::native::resident_identity::ResidentIdentity;
-use crate::native::tasks::spawn_tracked_with_handle;
 use crate::session_loop::{SessionLoopError, SessionSummary, serve_admitted_session};
 use crate::session_notices::serve_admitted_session_notifying;
+use graphshell_endpoint::door::route::ResidentEndpointRoute;
+use graphshell_endpoint::door::tasks::spawn_tracked_with_handle;
+use graphshell_endpoint::door::wire::BrowserChallenge;
 
 #[derive(Debug, thiserror::Error)]
 pub enum BrowserHostError {

@@ -54,17 +54,21 @@ Under `native` (non-wasm):
 | `session_loop` | `serve_admitted_session`, `SessionEnd`, `SessionSummary`, `SessionLoopError` |
 | `session_notices` | `serve_admitted_session_notifying` |
 | `lifecycle` | `SessionAuthority`, `AdmittedEndpointContext`, `BindAdmittedSession`, `Lapse`, `ScoreDenial`, `adjudicate_intent`, `apply_lapse` |
-| `browser_carrier` | WebExtensions native messaging: `NATIVE_HOST_NAME`, `CHROMIUM_EXTENSION_ID`, `FIREFOX_EXTENSION_ID`, `AllowedExtensions`, `BrowserLauncher`, `BrowserChallenge` |
-| `identity` | Secret-free read model: `VaultView`, `ProfileView`, `SshKeyView`, `DeviceView`, `DeviceGrantView` |
+| `browser_carrier` | WebExtensions native messaging: `NATIVE_HOST_NAME`, `CHROMIUM_EXTENSION_ID`, `FIREFOX_EXTENSION_ID`, `AllowedExtensions`, `BrowserLauncher` |
 | `identity_endpoint` | `SupplementalCard`, `TransferAcceptIntentV1`, `TransferDecision`, `IdentityEndpointError` |
 | `identity_projection` | Identity cards plus the signing, SSH generate, and SSH import intents |
 | `policy_projection` | `PolicySettingsView`, `run_n4_policy_scenario`, `render_n4_policy_receipt` |
-| `profile` | `PROFILE_ENV` (`GRAPHSHELL_PROFILE`), `selected_profile`, `GraphshellIdentity` from djinn |
-| `native::endpoint_catalog` | `ResidentEndpointCatalog`, `ResidentEndpoint`, `ResidentEndpointRoute`, `ResidentEndpointSession` |
+| `native::endpoint_catalog` | `ResidentEndpointCatalog`, `ResidentEndpoint`, `ResidentEndpointSession` |
 | `native::projection_host` | `ResidentProjectionHost`, `ServedProjection` |
-| `native::custody`, `native::custody_client`, `native::custody_identity` | Public wire calls, broker clients, and pending identity binding; custody lives in djinn |
 | `native::browser_host` | `serve_identity_native_messages`, `serve_catalog_native_messages` |
 | `native::device_broker` | `DeviceSurface`, `DEVICE_ENDPOINT_ENV` (`GRAPHSHELL_DEVICE_ENDPOINT`), `configured_device_endpoint` |
+| `native::app_broker` | `AppEndpointCatalog`, `serve_app_broker`: the serving half of the first-party door |
+
+The application side of that door (admission, the app client, custody and its
+clients, quarantine, the local endpoint, tracked tasks, the identity views,
+`GraphshellIdentity` and `env_profile`, the shared envelope and frames) is
+`graphshell_endpoint::door`, feature `door` (stack lift plan, L1,
+2026-10-15). Applications depend on that crate, not on this port.
 
 Under `web` (portable, builds for `wasm32-unknown-unknown`):
 

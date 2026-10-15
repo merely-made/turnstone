@@ -30,13 +30,13 @@ use sceno::{
 };
 use scenotime::{Revision, SceneEpoch, SceneSnapshot};
 
-use crate::identity::IdentitySurfaceSnapshot;
 use crate::identity_projection::{
     IdentityProjectionAction, SIGNING_APPROVE_IDLE_INTENT, SIGNING_APPROVE_ONCE_INTENT,
     SIGNING_DENY_INTENT, project_identity,
 };
 use crate::native::browser_host::now_ms;
 use crate::native::resident_identity::ResidentIdentity;
+use graphshell_endpoint::door::identity::IdentitySurfaceSnapshot;
 
 pub const IDENTITY_SESSION: &str = "native:personae";
 
@@ -679,11 +679,11 @@ mod tests {
     use ssh_key::{Algorithm, HashAlg, LineEnding};
 
     use super::*;
-    use crate::identity::{ProfileView, SshKeyView};
     use crate::identity_projection::{
         GenerateSshKeyIntentV1, SSH_GENERATE_INTENT, SshUnlockPolicyIntentV1,
     };
     use crate::native::resident_identity::test_support::{FixedIdentity, fixed_snapshot};
+    use graphshell_endpoint::door::identity::{ProfileView, SshKeyView};
 
     /// Content a card names but nothing staged is read through to the store.
     /// This is what lets a receipt's captures be opened without holding every

@@ -11,12 +11,10 @@ use cambium_genet_winit_host::{AppCtx, HostOptions, Init, inert_hooks, run};
 use chirograph::{
     CarrierRequestBody, CarrierResponseBody, ContentHash, PortableCardV1, ProjectionSnapshot,
 };
-use graphshell::{
-    mere_route,
-    native::{
-        app_admission::{AppId, AppRouteId},
-        app_client::AppBrokerClient,
-    },
+use graphshell::mere_route;
+use graphshell_endpoint::door::{
+    app_admission::{AppId, AppRouteId},
+    app_client::AppBrokerClient,
 };
 use mere_view::{
     HostAction, MereView, MereViewModel, MereViewRequest, MereViewState, StatusNote, ViewStatus,

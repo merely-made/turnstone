@@ -17,10 +17,10 @@ use std::pin::Pin;
 use std::sync::Arc;
 
 use crate::browser_carrier::{NativeIdentityAction, NativeIdentityFailure, NativeIdentityResult};
-use crate::identity::IdentitySurfaceSnapshot;
-use crate::native::app_admission::AppId;
-use crate::native::custody::{CustodyAnswer, CustodyCall, CustodyRefusal};
 use crate::native::local_session::DoorIdentity;
+use graphshell_endpoint::door::app_admission::AppId;
+use graphshell_endpoint::door::custody::{CustodyAnswer, CustodyCall, CustodyRefusal};
+use graphshell_endpoint::door::identity::IdentitySurfaceSnapshot;
 
 /// One custody call in flight.
 pub type CustodyFuture =
@@ -45,7 +45,7 @@ pub trait ResidentIdentity: DoorIdentity + Send + Sync + 'static {
         }
     }
 
-    /// Answer one call on the custody route ([`crate::native::custody`]),
+    /// Answer one call on the custody route ([`graphshell_endpoint::door::custody`]),
     /// from the application the door admitted.
     fn custody(self: Arc<Self>, app: AppId, call: CustodyCall) -> CustodyFuture {
         let _ = (app, call);
@@ -64,7 +64,7 @@ pub(crate) mod test_support {
     use personae::{IdentityError, InMemoryProvider, RetainedKeys};
 
     use super::*;
-    use crate::identity::{
+    use graphshell_endpoint::door::identity::{
         AgentListenerView, CarryView, VaultLockView, VaultProtectionView, VaultView,
     };
 

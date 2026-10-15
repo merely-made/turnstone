@@ -57,10 +57,11 @@ use graphshell::carrier::projection_policy;
 use graphshell::live_endpoint::{
     ADMITTED_INTENT, LiveEndpoint, REFUSED_INTENT, SharedLiveEndpoint,
 };
-use graphshell::native::endpoint_catalog::{ResidentEndpointCatalog, ResidentEndpointRoute};
+use graphshell::native::endpoint_catalog::ResidentEndpointCatalog;
 use graphshell::native::projection_host::{ResidentProjectionHost, admit_webrtc_catalog};
 use graphshell::webrtc_door::{InviteTerms, issue_invite};
 use graphshell::webrtc_session::HostedInvite;
+use graphshell_endpoint::door::route::ResidentEndpointRoute;
 use notochord::{NetworkId, ProfileRef, TrustedRoot};
 use personae::{IdentityProvider, InMemoryProvider};
 use rand_core::{OsRng, RngCore};
@@ -252,7 +253,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut catalog = ResidentEndpointCatalog::new();
     let (route, fixture_endpoint) = match args.endpoint {
         Endpoint::ResidentMere => {
-            let endpoint = graphshell::native::app_admission::configured_app_endpoint();
+            let endpoint = graphshell_endpoint::door::app_admission::configured_app_endpoint();
             catalog.register_resumable_notifying(
                 "resident.divination",
                 "Resident divination mere",

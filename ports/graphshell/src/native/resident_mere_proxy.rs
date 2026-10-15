@@ -8,13 +8,13 @@
 //! happens before its host constructs this endpoint; browsers cannot choose an
 //! application, persona, route, store or alternate authority through it.
 
-use super::app_admission::{AppId, AppRouteId};
-use super::app_client::AppBrokerClient;
 use chirograph::{
     CarrierNotice, CarrierRequestBody, CarrierResponseBody, EndpointDescriptor, IntentInvocation,
     IntentResult, ProjectionRequest, ProjectionSnapshot, ResourceChunkRequest,
     ResourceChunkResponse, ResourceRequest, ResourceResponse, ResumeReply, ResumeRequest,
 };
+use graphshell_endpoint::door::app_admission::{AppId, AppRouteId};
+use graphshell_endpoint::door::app_client::AppBrokerClient;
 use graphshell_endpoint::{
     IntentSink, PresentationSource, ProjectionCatalog, ProjectionNoticeSource, ProjectionSource,
     ResumableProjectionSource,
