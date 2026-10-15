@@ -6120,10 +6120,10 @@ fn dr_c_turnstone_identity_stays_pending() {
     let mode = std::env::var("DR_C_RECEIPT_MODE").expect("receipt mode");
     assert!(mode == "absent" || mode == "locked");
     if mode == "locked" {
-        let mut client = graphshell::native::custody_client::BlockingCustodyClient::open(
-            graphshell::native::app_admission::AppId::new(crate::identity::CUSTODY_APP)).unwrap();
+        let mut client = graphshell_endpoint::door::custody_client::BlockingCustodyClient::open(
+            graphshell_endpoint::door::app_admission::AppId::new(crate::identity::CUSTODY_APP)).unwrap();
         let status = client.status().unwrap();
-        assert_eq!(status.lock, graphshell::identity::VaultLockView::Locked);
+        assert_eq!(status.lock, graphshell_endpoint::door::identity::VaultLockView::Locked);
         assert!(status.persona_public_key.is_none());
         assert!(!client.roster().unwrap().entries.is_empty());
     }

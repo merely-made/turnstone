@@ -682,10 +682,10 @@ impl KnotHub {
                     PresentationCapability::PortableCard,
                 ]);
                 let retained = (|| {
-                    let route = graphshell::native::app_admission::AppRouteId::new("knot")
+                    let route = graphshell_endpoint::door::app_admission::AppRouteId::new("knot")
                         .map_err(|error| format!("invalid resident Knot route: {error}"))?;
-                    let carrier = graphshell::native::app_client::AppRouteCarrier::open(
-                        graphshell::native::app_admission::AppId::new("turnstone"),
+                    let carrier = graphshell_endpoint::door::app_client::AppRouteCarrier::open(
+                        graphshell_endpoint::door::app_admission::AppId::new("turnstone"),
                         route,
                     )
                     .map_err(|error| format!("could not open resident Knot route: {error}"))?;
