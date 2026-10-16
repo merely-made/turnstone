@@ -6,10 +6,11 @@
 use super::*;
 use cambium::{BackdropSceneEvent, backdrop_scene_reading, button};
 use mere::canvas::backdrop_surface::BackdropSurface;
-use scenomise::backdrops::SceneInput;
+use scenomise::document::SceneDocument;
 
 const KEY: u64 = 0x6261_636b;
-const SAMPLES: [(&str, &str); 5] = [
+const RELATED_KEY: u64 = KEY + 1;
+const SAMPLES: [(&str, &str); 7] = [
     (
         "Metre grid",
         include_str!("../../../../support/design-studies/backdrops/metre.json"),
@@ -21,6 +22,18 @@ const SAMPLES: [(&str, &str); 5] = [
     (
         "Progression in G",
         include_str!("../../../../support/design-studies/backdrops/templates/progression-g.json"),
+    ),
+    (
+        "Regular arrangement",
+        include_str!(
+            "../../../../support/design-studies/backdrops/templates/arrangement-regular.json"
+        ),
+    ),
+    (
+        "Varied arrangement",
+        include_str!(
+            "../../../../support/design-studies/backdrops/templates/arrangement-varied.json"
+        ),
     ),
     (
         "Fretboard",
@@ -107,6 +120,9 @@ pub(super) struct Pane {
     pending: Option<Result<String, String>>,
     import_generation: u64,
     surface: Option<BackdropSurface>,
+    document: Option<SceneDocument>,
+    related: Option<BackdropSurface>,
+    related_key: Option<String>,
     sample: Option<usize>,
     error: String,
     revision: u64,
@@ -121,6 +137,9 @@ impl Default for Pane {
             pending: None,
             import_generation: 0,
             surface: None,
+            document: None,
+            related: None,
+            related_key: None,
             sample: Some(0),
             error: String::new(),
             revision: 0,
@@ -137,14 +156,19 @@ impl Drop for Pane {
 }
 impl Pane {
     fn install(&mut self, json: &str) -> Result<(), String> {
-        let input = SceneInput::parse(json).map_err(|e| e.to_string())?;
+        let document = SceneDocument::parse(json)?;
+        let input = &document.primary;
         if let Some(surface) = self.surface.as_mut() {
-            surface.replace(&input).map_err(|e| e.to_string())?;
+            surface.replace(input).map_err(|e| e.to_string())?;
         } else {
-            let mut surface = BackdropSurface::new(&input).map_err(|e| e.to_string())?;
+            let mut surface = BackdropSurface::new(input).map_err(|e| e.to_string())?;
             surface.register_font(include_bytes!("../../web/GraphshellSans.ttf").to_vec());
             self.surface = Some(surface);
         }
+        self.document = Some(document);
+        self.related = None;
+        self.related_key = None;
+        self.sync_related()?;
         self.input = json.into();
         self.error.clear();
         self.revision = self.revision.wrapping_add(1);
@@ -162,6 +186,26 @@ impl Pane {
             Err(error) => self.error = error,
         }
     }
+    fn sync_related(&mut self) -> Result<(), String> {
+        let selected = self.surface.as_ref().and_then(|s| s.selected());
+        let view = self
+            .document
+            .as_ref()
+            .and_then(|d| d.for_occurrence(selected));
+        let key = view.map(|v| v.occurrence.clone());
+        if key == self.related_key {
+            return Ok(());
+        }
+        self.related = view
+            .map(|v| {
+                let mut surface = BackdropSurface::new(&v.scene).map_err(|e| e.to_string())?;
+                surface.register_font(include_bytes!("../../web/GraphshellSans.ttf").to_vec());
+                Ok::<_, String>(surface)
+            })
+            .transpose()?;
+        self.related_key = key;
+        Ok(())
+    }
     fn event(&mut self, event: BackdropSceneEvent) {
         if let Some(surface) = self.surface.as_mut() {
             let result = match event {
@@ -173,6 +217,9 @@ impl Pane {
                 },
             };
             if let Err(error) = result {
+                self.error = error;
+            }
+            if let Err(error) = self.sync_related() {
                 self.error = error;
             }
             self.revision = self.revision.wrapping_add(1);
@@ -209,8 +256,17 @@ pub(super) fn control(page: &TreePage) -> Child {
     )
 }
 fn export_recipe(json: &str) -> Result<String, String> {
-    let input = SceneInput::parse(json).map_err(|e| e.to_string())?;
-    let bytes = serde_json::to_vec_pretty(&input).map_err(|e| e.to_string())?;
+    let input = SceneDocument::parse(json)?;
+    let bare = serde_json::from_str::<serde_json::Value>(json)
+        .map_err(|e| e.to_string())?
+        .get("format")
+        .is_none();
+    let bytes = if bare {
+        serde_json::to_vec_pretty(&input.primary)
+    } else {
+        serde_json::to_vec_pretty(&input)
+    }
+    .map_err(|e| e.to_string())?;
     let document = web_sys::window()
         .and_then(|w| w.document())
         .ok_or("No browser document")?;
@@ -329,7 +385,14 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
         let bounds = surface.scene().scene.bounds.size;
         let height = ((width.saturating_sub(48) as f32 * bounds.h / bounds.w) + 48.0)
             .ceil()
-            .clamp(440.0, 1000.0) as u32;
+            .clamp(
+                if pane.document.as_ref().is_some_and(|d| !d.linked.is_empty()) {
+                    220.0
+                } else {
+                    440.0
+                },
+                1000.0,
+            ) as u32;
         let stage = on_pointer(
             custom_leaf::<TreePage, ()>(KEY, width, height)
                 .attr("aria-label", "Portable scene stage"),
@@ -348,6 +411,9 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
                             )
                             .map(str::to_owned);
                         let _ = surface.select(key.as_deref());
+                        if let Err(error) = pane.sync_related() {
+                            pane.error = error;
+                        }
                         pane.revision = pane.revision.wrapping_add(1);
                     }
                 }
@@ -359,11 +425,52 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
             surface.retained(),
             |page: &mut TreePage, event| page.backdrop.borrow_mut().event(event),
         );
+        let mut stages: Vec<Child> = vec![Box::new(
+            el("div", stage).attr("class", "backdrop-scene-stage"),
+        )];
+        if let Some(related) = &pane.related {
+            let view = pane
+                .document
+                .as_ref()
+                .and_then(|d| d.for_occurrence(surface.selected()))
+                .unwrap();
+            stages.push(Box::new(el("h3", view.label.clone())));
+            stages.push(Box::new(
+                el("p", related.scene().title.clone()).attr("class", "tools-caption"),
+            ));
+            stages.push(Box::new(
+                el(
+                    "div",
+                    custom_leaf::<TreePage, ()>(RELATED_KEY, width, 300)
+                        .attr("aria-label", "Related scene stage"),
+                )
+                .attr("class", "backdrop-scene-stage"),
+            ));
+            let labels = related
+                .scene()
+                .marks
+                .iter()
+                .map(|m| m.label.as_str())
+                .collect::<Vec<_>>()
+                .join(" · ");
+            stages.push(Box::new(
+                el(
+                    "p",
+                    format!(
+                        "Supplied marks: {labels} · revision {}",
+                        related.scene().revision
+                    ),
+                )
+                .attr("class", "tools-caption"),
+            ));
+        } else if pane.document.as_ref().is_some_and(|d| !d.linked.is_empty()) {
+            stages.push(Box::new(el("p","No related scene is supplied for this selection. Choose an occurrence with a source-supplied reading.")));
+        }
         children.push(Box::new(
             el(
                 "div",
                 (
-                    el("div", stage).attr("class", "backdrop-scene-stage"),
+                    el("div", stages).attr("class", "backdrop-scene-stages"),
                     reading,
                 ),
             )
@@ -388,6 +495,7 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
 }
 
 struct Producer {
+    related: bool,
     pane: Rc<RefCell<Pane>>,
     appearance: crate::web_appearance::Handle,
     texture: Option<wgpu::Texture>,
@@ -424,9 +532,12 @@ impl Producer {
         let theme = appearance.backdrop_theme();
         let appearance_revision = appearance.revision;
         drop(appearance);
-        let scene = pane
-            .surface
-            .as_mut()
+        let active = if self.related {
+            pane.related.as_mut()
+        } else {
+            pane.surface.as_mut()
+        };
+        let scene = active
             .ok_or(PortableProducerError::InvalidSource)?
             .paint(size.0, size.1, &theme)
             .map_err(|error| {
@@ -436,21 +547,23 @@ impl Producer {
         self.generation = self.generation.wrapping_add(1);
         let result = ProducedScene {
             scene,
-            source_identity: pane
-                .surface
-                .as_ref()
-                .map(|surface| {
-                    let source = &surface.scene().scene.sources[0];
-                    source
-                        .adapter
-                        .bytes()
-                        .chain([0])
-                        .chain(source.id.bytes())
-                        .fold(0xcbf2_9ce4_8422_2325_u64, |h, b| {
-                            (h ^ u64::from(b)).wrapping_mul(0x100_0000_01b3)
-                        })
-                })
-                .unwrap_or(KEY),
+            source_identity: (if self.related {
+                pane.related.as_ref()
+            } else {
+                pane.surface.as_ref()
+            })
+            .map(|surface| {
+                let source = &surface.scene().scene.sources[0];
+                source
+                    .adapter
+                    .bytes()
+                    .chain([0])
+                    .chain(source.id.bytes())
+                    .fold(0xcbf2_9ce4_8422_2325_u64, |h, b| {
+                        (h ^ u64::from(b)).wrapping_mul(0x100_0000_01b3)
+                    })
+            })
+            .unwrap_or(KEY),
             source_revision: self.generation,
             alpha: SourceAlpha::Premultiplied,
             encoding: SourceEncoding::Srgb,
@@ -467,7 +580,7 @@ impl TextureProducer for Producer {
         let output = self.produce(cx.frame).ok()?;
         let [w, h] = cx.frame.physical_size;
         let (texture, view) = cx.core.rasterize_scaled_for(
-            KEY,
+            if self.related { RELATED_KEY } else { KEY },
             &output.scene,
             w,
             h,
@@ -507,21 +620,30 @@ pub(super) fn register(ctx: &mut AppCtx<'_, TreePage, Logic, Child>) {
     }
     if !ctx.runner.state().backdrop.borrow().open {
         ctx.producers.remove(KEY);
+        ctx.producers.remove(RELATED_KEY);
         return;
     }
-    if !ctx.producers.contains(KEY) {
-        let producer = Producer {
-            pane: ctx.runner.state().backdrop.clone(),
-            appearance: ctx.runner.state().shared.appearance.clone(),
-            texture: None,
-            last: None,
-            last_view: 0,
-            last_appearance: 0,
-            last_size: (0, 0),
-            generation: 0,
-        };
-        if let Err(error) = ctx.producers.register(KEY, producer, &[]) {
-            web_sys::console::error_1(&format!("portable scene producer: {error:?}").into());
+    for related in [false, true] {
+        let key = if related { RELATED_KEY } else { KEY };
+        if related && ctx.runner.state().backdrop.borrow().related.is_none() {
+            ctx.producers.remove(key);
+            continue;
+        }
+        if !ctx.producers.contains(key) {
+            let producer = Producer {
+                related,
+                pane: ctx.runner.state().backdrop.clone(),
+                appearance: ctx.runner.state().shared.appearance.clone(),
+                texture: None,
+                last: None,
+                last_view: 0,
+                last_appearance: 0,
+                last_size: (0, 0),
+                generation: 0,
+            };
+            if let Err(error) = ctx.producers.register(key, producer, &[]) {
+                web_sys::console::error_1(&format!("portable scene producer: {error:?}").into());
+            }
         }
     }
 }
