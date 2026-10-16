@@ -27,7 +27,7 @@ settle 2
 assert snap opened-link-layout == timeline
 assert snap opened-link-undated == 1
 assert snap opened-link-unknown-withdrawal == 0
-click role:heading Assertion timeline
+click role:heading Assertions in time order
 settle 2
 capture p3_opened_link_held_timeline
 click role:button List by source
@@ -57,7 +57,7 @@ assert snap opened-link-undated == 1
 assert snap opened-link-unknown-withdrawal == 1
 assert snap opened-link-lanes == 2
 assert text Held assertions observed at 4000 ms
-click role:heading Assertion timeline
+click role:heading Assertions in time order
 settle 2
 capture p3_opened_link_history_timeline
 click role:button Timeline by asserter
@@ -65,7 +65,7 @@ settle 2
 assert snap opened-link-members == 4
 assert snap opened-link-undated == 1
 assert text Assertions in time order
-click role:heading Assertion timeline
+click role:heading Assertions in time order
 settle 2
 capture p3_opened_link_asserter_lanes
 click role:button Timeline by direction
