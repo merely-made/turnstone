@@ -2,7 +2,8 @@
    values this sheet always had, so nothing changes until a theme is applied. Hairlines read
    --tabard-color-border; control and floating-panel outlines read --tabard-color-border-strong (3:1); the
    focus outline reads --tabard-color-focus. The "working" capture status is ink plus its word (activity is never a
-   colour change). Mapping: Merely design system, design_docs/2026-10-16_graphshell_theme_and_font_brief.md. */
+   colour change). Mapping: the Merely design system's design_docs/2026-10-16_graphshell_theme_and_font_brief.md (that
+   project, not this repository). */
 /* The component is its own box: the canvas fills it and the semantic
    overlay is positioned within it, whether it fills the page (index.html)
    or sits in a column of someone else's (embed.html). */
