@@ -1,0 +1,11 @@
+RESULT ok
+waited 0 frames
+captured 01_inline_alpha_over_native_graph
+captured 02_native_alpha_over_inline_body
+captured 03_overlap_resized
+captured 04_overlap_settled
+presentation frames=160 captures=4 blank=0
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-alpha\captures\a4_native_overlap\01_inline_alpha_over_native_graph.png digest=5a3f6ac836ee1952 blank=false
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-alpha\captures\a4_native_overlap\02_native_alpha_over_inline_body.png digest=4893c8450b764ba1 blank=false
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-alpha\captures\a4_native_overlap\03_overlap_resized.png digest=724b4f10d0f6a4ea blank=false
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-alpha\captures\a4_native_overlap\04_overlap_settled.png digest=4893c8450b764ba1 blank=false

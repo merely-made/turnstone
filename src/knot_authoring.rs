@@ -26,12 +26,8 @@ use cambium::{
     NamedKey, PointerClick, StyleRange, button, el, lens, styled_textarea,
 };
 use genet_scripted_dom::ScriptedDom;
-use graphshell::client::{ResolvedContent, ResolvedPresentation, RetainedEndpointSession};
-use graphshell::projection_editor::{
-    ProjectionInputBinding, PublicSourceRevision, RevisionEvidence, RuntimeSourceBinding,
-    SourceBinding,
-};
-use graphshell::protocol::{
+use graphshell_client::{ResolvedContent, ResolvedPresentation, RetainedEndpointSession};
+use chirograph::{
     AdvertisedAction, CapabilityProfile, DerivedTextV1, EDITABLE_TEXT_SAVE_INTENT, EditableTextV1,
     InsertKnotClipV1, InsertKnotClipV2, IntentResult, KNOT_BLOCK_RUN_INTENT,
     KNOT_CLIP_INSERT_INTENT, KNOT_CLIP_INSERT_SCHEMA_V2, KNOT_TRANSCLUSION_RESOLVE_INTENT,
@@ -46,6 +42,10 @@ use inker::{
 use knot_editor_host::KnotEditor;
 use netrender::Scene;
 use sceno::InstanceId;
+use scenograph::{
+    ProjectionInputBinding, PublicSourceRevision, RevisionEvidence, RuntimeSourceBinding,
+    SourceBinding,
+};
 
 /// The app-side route id. Knot remains the authority; this names only the
 /// retained Turnstone presentation.
@@ -644,7 +644,7 @@ impl KnotHub {
                     PresentationCapability::EditableText,
                     PresentationCapability::PortableCard,
                 ]);
-                let retained = graphshell::sessions::spawn_endpoint_session(
+                let retained = graphshell_host::sessions::spawn_endpoint_session(
                     program.as_os_str(),
                     &args,
                     profile,
@@ -682,10 +682,10 @@ impl KnotHub {
                     PresentationCapability::PortableCard,
                 ]);
                 let retained = (|| {
-                    let route = graphshell::native::app_admission::AppRouteId::new("knot")
+                    let route = graphshell_endpoint::door::app_admission::AppRouteId::new("knot")
                         .map_err(|error| format!("invalid resident Knot route: {error}"))?;
-                    let carrier = graphshell::native::app_client::AppRouteCarrier::open(
-                        graphshell::native::app_admission::AppId::new("turnstone"),
+                    let carrier = graphshell_endpoint::door::app_client::AppRouteCarrier::open(
+                        graphshell_endpoint::door::app_admission::AppId::new("turnstone"),
                         route,
                     )
                     .map_err(|error| format!("could not open resident Knot route: {error}"))?;
@@ -3113,7 +3113,7 @@ mod tests {
         EditableTextV1 {
             address: address.to_owned(),
             media_type: "text/vnd.knot".to_owned(),
-            encoding: graphshell::protocol::TextEncoding::Utf8,
+            encoding: chirograph::TextEncoding::Utf8,
             source: "# Field\n".to_owned(),
             base_token,
             public_revision,
@@ -3123,8 +3123,8 @@ mod tests {
 
     fn knot_projection_recipe(
         binding: ProjectionInputBinding,
-    ) -> graphshell::projection_editor::AuthoredProjectionDefinition {
-        use graphshell::projection_editor::{
+    ) -> scenograph::AuthoredProjectionDefinition {
+        use scenograph::{
             Appearance, Arrangement, AuthoredProjectionDefinition, Channel, Encoding, Interaction,
             PROJECTION_DEFINITION_VERSION, Provenance, Reading,
         };
@@ -3235,7 +3235,7 @@ mod tests {
         let derived = DerivedTextV1 {
             source: "# Cached".into(),
             summary: "resolved 1; denied 0; failed 0".into(),
-            cache: Some(graphshell::protocol::DerivedCacheInfoV1 {
+            cache: Some(chirograph::DerivedCacheInfoV1 {
                 effect: "resolve".into(),
                 sources: vec!["https://example.test/note".into()],
                 provider_version: "fixture/v1".into(),

@@ -1,0 +1,126 @@
+[
+  {
+    "capture": "00_inline_nodes",
+    "dimensions": [
+      2360,
+      1600
+    ],
+    "raw_minimum_alpha": 255,
+    "final_minimum_alpha": 255,
+    "authored_root": {
+      "x0": 0.0,
+      "y0": 0.0,
+      "x1": 2360.0,
+      "y1": 1600.0,
+      "color": [
+        0.03529412,
+        0.047058824,
+        0.101960786,
+        1.0
+      ],
+      "transform_id": 0,
+      "clip_rect": null,
+      "clip_corner_radii": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "scoped_raw_final_exact": true,
+    "independent_overlay_differences": 0
+  },
+  {
+    "capture": "01_inline_roster",
+    "dimensions": [
+      2360,
+      1600
+    ],
+    "raw_minimum_alpha": 255,
+    "final_minimum_alpha": 255,
+    "authored_root": {
+      "x0": 0.0,
+      "y0": 0.0,
+      "x1": 2360.0,
+      "y1": 1600.0,
+      "color": [
+        0.03529412,
+        0.047058824,
+        0.101960786,
+        1.0
+      ],
+      "transform_id": 0,
+      "clip_rect": null,
+      "clip_corner_radii": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "scoped_raw_final_exact": true,
+    "independent_overlay_differences": 0
+  },
+  {
+    "capture": "02_inline_float",
+    "dimensions": [
+      2360,
+      1600
+    ],
+    "raw_minimum_alpha": 255,
+    "final_minimum_alpha": 255,
+    "authored_root": {
+      "x0": 0.0,
+      "y0": 0.0,
+      "x1": 2360.0,
+      "y1": 1600.0,
+      "color": [
+        0.03529412,
+        0.047058824,
+        0.101960786,
+        1.0
+      ],
+      "transform_id": 0,
+      "clip_rect": null,
+      "clip_corner_radii": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "scoped_raw_final_exact": true,
+    "independent_overlay_differences": 0
+  },
+  {
+    "capture": "04_inline_returned",
+    "dimensions": [
+      2360,
+      1600
+    ],
+    "raw_minimum_alpha": 255,
+    "final_minimum_alpha": 255,
+    "authored_root": {
+      "x0": 0.0,
+      "y0": 0.0,
+      "x1": 2360.0,
+      "y1": 1600.0,
+      "color": [
+        0.03529412,
+        0.047058824,
+        0.101960786,
+        1.0
+      ],
+      "transform_id": 0,
+      "clip_rect": null,
+      "clip_corner_radii": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "scoped_raw_final_exact": true,
+    "independent_overlay_differences": 0
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "scenario": "frame_appearance_missing_reopen",
+  "case": "fixed-missing-fonts",
+  "workshop": "",
+  "started_utc": "2026-10-15T03:58:17.0699114Z",
+  "finished_utc": "2026-10-15T03:58:29.9379861Z",
+  "exit": 0,
+  "result_ok": true,
+  "default_surface_poll": true,
+  "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+  "fixture_sha256": "dca3b0ee12db9e920913fb98371dfbeb2a5369b059770d7886c788ef3c83f0a5",
+  "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f"
+}

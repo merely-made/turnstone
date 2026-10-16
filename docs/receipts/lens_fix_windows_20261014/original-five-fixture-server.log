@@ -1,0 +1,8 @@
+TURNSTONE_A11Y_GEMINI_PORT=19770
+TURNSTONE_A11Y_GOPHER_PORT=19771
+TURNSTONE_A11Y_MICRON_URI=file:///C:/Users/mark_/Code/worktrees/turnstone-win-qual/scenarios/fixtures/document_a11y/page.mu
+TURNSTONE_A11Y_READER_PORT=43118
+REQUEST gemini gemini://127.0.0.1:19770/capsule.gmi
+REQUEST gopher /
+REQUEST gemini gemini://127.0.0.1:19770/capsule.gmi
+REQUEST reader /article

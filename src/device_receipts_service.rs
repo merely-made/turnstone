@@ -7,7 +7,8 @@
 //! Retained client for this device's resident Graphshell host.
 //!
 //! Turnstone is a first-party application, so it enters through the
-//! first-party door — `graphshell::native::app_client` — not the browser one.
+//! first-party door — `graphshell_endpoint::door::app_client` — not the
+//! browser one.
 //! The service owns the worker thread and its runtime; the pane only projects
 //! the latest snapshot and asks for a refresh. Sessions are opened per
 //! refresh rather than held: the resident host reads its surface once at
@@ -15,8 +16,8 @@
 
 use std::sync::{Arc, Mutex, mpsc};
 
-use graphshell::native::app_admission::AppId;
-use graphshell::native::app_client::AppBrokerClient;
+use graphshell_endpoint::door::app_admission::AppId;
+use graphshell_endpoint::door::app_client::AppBrokerClient;
 use tokio::sync::mpsc as tokio_mpsc;
 
 /// One receipt card, reduced to what the pane shows.

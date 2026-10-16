@@ -1,0 +1,126 @@
+[
+  {
+    "capture": "01_inline_alpha_over_native_graph",
+    "dimensions": [
+      2360,
+      1600
+    ],
+    "raw_minimum_alpha": 255,
+    "final_minimum_alpha": 255,
+    "authored_root": {
+      "x0": 0.0,
+      "y0": 0.0,
+      "x1": 2360.0,
+      "y1": 1600.0,
+      "color": [
+        0.09411765,
+        0.14901961,
+        0.23529412,
+        1.0
+      ],
+      "transform_id": 0,
+      "clip_rect": null,
+      "clip_corner_radii": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "scoped_raw_final_exact": true,
+    "independent_overlay_differences": 10438
+  },
+  {
+    "capture": "02_native_alpha_over_inline_body",
+    "dimensions": [
+      2360,
+      1600
+    ],
+    "raw_minimum_alpha": 255,
+    "final_minimum_alpha": 255,
+    "authored_root": {
+      "x0": 0.0,
+      "y0": 0.0,
+      "x1": 2360.0,
+      "y1": 1600.0,
+      "color": [
+        0.09411765,
+        0.14901961,
+        0.23529412,
+        1.0
+      ],
+      "transform_id": 0,
+      "clip_rect": null,
+      "clip_corner_radii": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "scoped_raw_final_exact": true,
+    "independent_overlay_differences": 10438
+  },
+  {
+    "capture": "03_overlap_resized",
+    "dimensions": [
+      1800,
+      1300
+    ],
+    "raw_minimum_alpha": 255,
+    "final_minimum_alpha": 255,
+    "authored_root": {
+      "x0": 0.0,
+      "y0": 0.0,
+      "x1": 1800.0,
+      "y1": 1300.0,
+      "color": [
+        0.09411765,
+        0.14901961,
+        0.23529412,
+        1.0
+      ],
+      "transform_id": 0,
+      "clip_rect": null,
+      "clip_corner_radii": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "scoped_raw_final_exact": true,
+    "independent_overlay_differences": 10438
+  },
+  {
+    "capture": "04_overlap_settled",
+    "dimensions": [
+      2360,
+      1600
+    ],
+    "raw_minimum_alpha": 255,
+    "final_minimum_alpha": 255,
+    "authored_root": {
+      "x0": 0.0,
+      "y0": 0.0,
+      "x1": 2360.0,
+      "y1": 1600.0,
+      "color": [
+        0.09411765,
+        0.14901961,
+        0.23529412,
+        1.0
+      ],
+      "transform_id": 0,
+      "clip_rect": null,
+      "clip_corner_radii": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "scoped_raw_final_exact": true,
+    "independent_overlay_differences": 10438
+  }
+]

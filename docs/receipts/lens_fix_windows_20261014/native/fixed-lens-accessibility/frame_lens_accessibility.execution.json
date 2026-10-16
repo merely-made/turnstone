@@ -1,0 +1,13 @@
+{
+  "scenario": "frame_lens_accessibility",
+  "case": "fixed-lens-accessibility",
+  "workshop": "",
+  "started_utc": "2026-10-15T03:51:01.4936281Z",
+  "finished_utc": "2026-10-15T03:51:38.9452315Z",
+  "exit": 0,
+  "result_ok": true,
+  "default_surface_poll": true,
+  "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+  "fixture_sha256": "c63240a8b20b071a6a71455dd78d775f04c5466287c6d4ab5c833cc94195fc5b",
+  "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f"
+}

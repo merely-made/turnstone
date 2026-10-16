@@ -33,7 +33,7 @@
 
 use std::sync::Arc;
 
-use graphshell::native::custody_identity::CustodyIdentity;
+use graphshell_endpoint::door::custody_identity::CustodyIdentity;
 use identity::delegation::DelegationError;
 use identity::{Ed25519Keypair, Ed25519PublicKey, IdentityError, IdentityProvider};
 use insigne::DerivedKeyAttestation;
