@@ -266,7 +266,7 @@ mod tests {
         assert_eq!(families.len(), shown, "each family once");
         assert_eq!(
             shown + comparison.refused.len(),
-            11,
+            scenomise::catalog::FAMILIES.len(),
             "every family shown or refused"
         );
         assert_eq!(comparison.facet.validate(), Ok(()));
