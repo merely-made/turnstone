@@ -316,7 +316,7 @@ fn promoted_rows(inspection: &PromotedLinkInspection) -> Vec<Child> {
             ),
         )));
     }
-    rows.extend(vec![
+    let metadata: Vec<Child> = vec![
         Box::new(el(
             "p",
             format!(
@@ -336,7 +336,8 @@ fn promoted_rows(inspection: &PromotedLinkInspection) -> Vec<Child> {
             "p",
             format!("Coverage limits: {}", inspection.coverage.limits.len()),
         )),
-    ]);
+    ];
+    rows.extend(metadata);
     for (label, coverage) in [
         ("At freeze", frozen.coverage()),
         ("Here now", &inspection.coverage),
