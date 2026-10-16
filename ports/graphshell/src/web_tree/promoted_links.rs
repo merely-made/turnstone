@@ -214,7 +214,7 @@ fn statement_rows(inspection: &PromotedLinkInspection) -> Vec<Child> {
             }
         };
         let direction = format!(
-            "{} → {}",
+            "{} to {}",
             endpoint_label(&edge.from_node_id),
             endpoint_label(&edge.to_node_id)
         );
@@ -293,7 +293,7 @@ fn promoted_rows(inspection: &PromotedLinkInspection) -> Vec<Child> {
         Box::new(el(
             "p",
             format!(
-                "{stratum} link · {} ↔ {}",
+                "{stratum} link between {} and {}",
                 first.address.as_deref().unwrap_or("address unavailable"),
                 second.address.as_deref().unwrap_or("address unavailable")
             ),
