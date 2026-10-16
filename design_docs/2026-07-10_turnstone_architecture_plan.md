@@ -869,7 +869,7 @@ done-conditions story.
   that plan's B3. The resident helper unit is named **servitor** (reserved on
   crates.io); chartulary's nesting substrate (B0) landed the same day.
 
-- 2026-10-16: **Resident answer card under I5 qualification.** The palette's
+- 2026-10-16: **Resident answer card qualified through I5.** The palette's
   `Ask retained text` action opens `turnstone.answers`, scoped to the current
   browsing session. A decoder-free worker speaks Djinn's admitted `inference.ask`
   route, publishes retained text borrowed from the existing trail actor, and
@@ -880,4 +880,16 @@ done-conditions story.
   and source disclosure remain in Turnstone. The canonical done-conditions and
   current qualification belong to
   `mere/design_docs/mere_docs/implementation_strategy/2026-10-15_resident_inference_and_recall_plan.md`.
-  Native headed qualification is pending at this source cut.
+  The native gate passes with Turnstone `ec9881ea`, Mere wire supplier
+  `65b97b0b` and test-owned Djinn resident `67a514e8`: two live fixture pages
+  are retained, the trained SmolLM2 GPU model streams an answer, one ask pauses
+  at token 1 and finishes at token 18 after resume, another is cancelled, and
+  a fresh Turnstone/resident pair reopens the answer and exact source with the
+  origin server stopped. Six native frames and public run/prompt evidence are
+  retained under `docs/receipts/resident_inference_i5_windows_20261016/native/`.
+  The self-drive file wait now yields to normal rendered frames; two tests
+  cover its completion and timeout. Four new client/source-owner tests and
+  11 trail regressions pass (four pre-existing trail tests remain ignored).
+  Model markers and host exact-quotation annotations remain distinct. This
+  qualifies the native pane and app connection; the installed Djinn binary
+  and a physical second-device run retain their separate gates.

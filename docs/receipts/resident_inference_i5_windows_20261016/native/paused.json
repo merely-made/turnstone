@@ -1,0 +1,52 @@
+{
+  "run": "turnstone/f061a810-81c4-428d-aa6c-b1f336b4fd3f/08dcaac9-a7a8-4609-bd9d-264653f4d83a",
+  "question": "What is the Pelican observatory's access word? Answer in one short sentence and cite the passage using [1].",
+  "state": "paused",
+  "text": "The",
+  "error": null,
+  "session": {
+    "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+    "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+  },
+  "tokens": 1,
+  "continuations": [
+    {
+      "device": "O-PC:7eaec4d5a1f205762d8599da994d57ac",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "owner": "turnstone/f061a810-81c4-428d-aa6c-b1f336b4fd3f",
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 1,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "owner": "turnstone/f061a810-81c4-428d-aa6c-b1f336b4fd3f",
+            "source": "http://127.0.0.1:53031/pelican"
+          },
+          "version": "blake3:61c24822e5cd81e7e27beb6f5058cbe7af6ad44c63f48327230609d95d65b9fc",
+          "text_hash": "blake3:61c24822e5cd81e7e27beb6f5058cbe7af6ad44c63f48327230609d95d65b9fc",
+          "selector": {
+            "start": 0,
+            "end": 81
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Pelican observatory's access word is amberstone. It has no other access word."
+        }
+      }
+    ],
+    "stale": []
+  }
+}
