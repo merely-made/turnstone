@@ -375,7 +375,11 @@ mod tests {
             // A refused write publishes nothing and leaves the last generation.
             let before = bytes(&store.inner).await;
             store.refuse.store(true, Ordering::SeqCst);
-            assert!(host.transact_edits("cleromancy", vec![added(2)]).await.is_err());
+            assert!(
+                host.transact_edits("cleromancy", vec![added(2)])
+                    .await
+                    .is_err()
+            );
             assert!(host.transact_history("cleromancy", false).await.is_err());
             assert_eq!(bytes(&store.inner).await, before);
             assert_eq!(host.resident_generation(), Some(first.as_str()));
@@ -422,7 +426,10 @@ mod tests {
             let mut host = resident_host(&store, true);
             host.persist(1).await.unwrap();
             let revision = host.projection_revision();
-            let applied = host.apply_observed_commands("task2", create()).await.unwrap();
+            let applied = host
+                .apply_observed_commands("task2", create())
+                .await
+                .unwrap();
             assert_eq!(applied.created, vec![id]);
             assert!(host.projection_revision().0 > revision.0);
             let author = &host.graph_session().changes().last().unwrap().author;
@@ -436,7 +443,10 @@ mod tests {
             assert_eq!(view.graph().node_count(), 1);
             // A refused observation leaves the host as it was.
             let stale = vec![ObservedCommand {
-                command: LiveCommand::SetPinned { surface: id, pinned: true },
+                command: LiveCommand::SetPinned {
+                    surface: id,
+                    pinned: true,
+                },
                 checks: vec![LiveCheck::RecordUnchanged {
                     address: GraphAddress::Surface(id),
                     digest: "stale".into(),
@@ -444,7 +454,9 @@ mod tests {
             }];
             assert!(matches!(
                 host.apply_observed_commands("task2", stale).await,
-                Err(MereHostError::Live(pandect::live_graph::LiveEditError::Stale(_)))
+                Err(MereHostError::Live(
+                    pandect::live_graph::LiveEditError::Stale(_)
+                ))
             ));
         });
     }
@@ -471,5 +483,4 @@ mod tests {
             );
         });
     }
-
 }

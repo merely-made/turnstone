@@ -8043,6 +8043,7 @@ dependencies = [
  "muniment",
  "notochord",
  "personae",
+ "sceno",
  "serde",
  "serde_json",
  "tabard",

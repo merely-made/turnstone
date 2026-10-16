@@ -1246,7 +1246,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
     if presenter_options.is_some() && hosted.is_none() {
         return Err("Inspector presenter requires a disclosed host dataset".into());
     }
-    let product = if hosted.is_some() {
+    let mut product = if hosted.is_some() {
         None
     } else {
         product::open(&root).await?
@@ -1290,6 +1290,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
             },
         }
     } else if let Some(product) = &product {
+        placed = product.initial_fixture_positions();
         (product.graph(), "saved graph".to_string())
     } else {
         match web_graphs::requested() {
@@ -1391,6 +1392,10 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         root: root.clone(),
         gestures: RefCell::new(gestures::Gestures::default()),
     });
+    if let Some(product) = &mut product {
+        product.restore_canvas_link_hides(&mut shared.canvas.borrow_mut());
+    }
+
     shared
         .appearance
         .borrow()

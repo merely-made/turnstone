@@ -1,0 +1,25 @@
+# Relaunch with the same fixture route and DB; Graphshell must restore the saved LinkKey view intent.
+# tree.html?app=local&fixture=link-rest&scenario=scenarios/p4_tree_link_rest_reopen.scn
+click role:button Fit graph
+settle 2
+assert snap source == saved graph
+assert snap link-rest-ready == true
+assert snap link-visibility-save-state == saved
+assert snap link-rest-hidden-count == 1
+assert snap link-rest-hidden ~ link:v1:resource
+assert snap link-rest-visible-appearances == 2
+assert snap link-rest-appearance-count == 2
+assert snap link-rest-source-assertion-ids ~ fixture:p4:link-rest:resource-support-primary
+assert snap link-rest-source-assertion-ids ~ fixture:p4:link-rest:resource-reverse
+remember p4-reopened-source
+capture p4_link_rest_reopened_hidden
+click role:button Show hidden links
+settle 120
+assert snap link-visibility-save-state == saved
+assert snap link-rest-hidden-count == 0
+assert snap link-rest-visible-appearances == 6
+assert snap link-rest-appearance-count == 6
+same p4-reopened-source link-rest-source-facts
+same p4-reopened-source link-rest-graph-revision
+capture p4_link_rest_reopened_shown
+log P4 whole-link hidden intent restored after reopen and cleared through the ordinary Show hidden links action
