@@ -1,0 +1,48 @@
+# Real retained-text acquisition, GPU answer and ordinary card controls.
+settle 30
+key escape
+open ${I5_FIXTURE_ORIGIN}/pelican
+settle 120
+assert content-ready
+open ${I5_FIXTURE_ORIGIN}/sandpiper
+settle 120
+assert content-ready
+act Ask retained text
+settle 50
+act Maximize pane
+settle 30
+assert text Connected to resident inference.
+click surface:contributed role:textbox Question
+insert What is the Pelican observatory's access word? Answer in one short sentence and cite the passage using [1].
+click surface:contributed role:button Ask
+wait-file 6000 ${DJINN_HEADED_DIR}/streaming.json
+settle 12
+assert text Generating
+capture 01_streaming
+click surface:contributed role:button Pause
+wait-file 6000 ${DJINN_HEADED_DIR}/paused.json
+settle 30
+assert text Paused
+capture 02_paused
+click surface:contributed role:button Resume
+wait-file 12000 ${DJINN_HEADED_DIR}/finished.json
+settle 30
+assert text Finished
+assert text amberstone
+capture 03_answer
+click surface:contributed role:button Source 1:
+settle 30
+assert text Retained source version
+assert text amberstone
+capture 04_exact_source
+click surface:contributed role:button Close source
+click surface:contributed role:button Ask
+wait-file 6000 ${DJINN_HEADED_DIR}/second-started.json
+settle 12
+click surface:contributed role:button Cancel
+wait-file 6000 ${DJINN_HEADED_DIR}/cancelled.json
+settle 30
+assert text Cancelled
+capture 05_cancelled
+act Save session
+log Real retained corpus, streamed answer, pause/resume, exact source and cancellation

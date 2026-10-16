@@ -133,6 +133,19 @@ impl RecallSource {
 /// Commands the trail-memory actor takes (the shell sends these; ordering on
 /// the one channel is the consistency story, the bin actor's exact shape).
 pub enum TrailCommand {
+    /// Read exact retained texts through this actor's existing store handle.
+    InferenceSnapshot {
+        owner: String,
+        reply: std::sync::mpsc::SyncSender<
+            Result<Vec<eidetic::models::recall::RetainedSourceText>, String>,
+        >,
+    },
+    /// Resolve an immutable page-text version, never the current URL.
+    InferenceSource {
+        source: eidetic::models::recall::RecallSourceId,
+        version: String,
+        reply: std::sync::mpsc::SyncSender<Result<String, String>>,
+    },
     /// Record one traversal for `owner` (an opaque persona tag — turnstone
     /// passes the root identity's public key hex).
     Record {
@@ -245,7 +258,7 @@ fn open_memory(
                 capture_library.unavailable(error);
             }
             Some((store, memory))
-        }
+        },
         Err(err) => {
             capture_library.unavailable(format!("load browsing corpus: {err}"));
             tracing::warn!(%err, "trail memory: corpus load failed; capture disabled until reopen");
@@ -640,7 +653,10 @@ impl RecallIndex {
             index_dir(dir),
             &page_traces,
             |url| bodies.get(url).map(|text| (*text).to_string()),
-            IndexConfig { persist: false, ..IndexConfig::default() },
+            IndexConfig {
+                persist: false,
+                ..IndexConfig::default()
+            },
         )
         .map_err(|err| format!("re-mint: {err}"))?;
         let lexical_elapsed = lexical_started.elapsed();
@@ -720,7 +736,10 @@ impl RecallIndex {
         // Best score first, id as the tiebreak; only the head is ordered,
         // since a two-character prefix can name thousands of pages.
         let order = |left: &(u32, f64), right: &(u32, f64)| {
-            right.1.total_cmp(&left.1).then_with(|| left.0.cmp(&right.0))
+            right
+                .1
+                .total_cmp(&left.1)
+                .then_with(|| left.0.cmp(&right.0))
         };
         if scored.len() > limit {
             scored.select_nth_unstable_by(limit - 1, order);
@@ -804,9 +823,7 @@ impl RecallIndex {
         Ok(self
             .fused_hits(query, limit, config)?
             .into_iter()
-            .filter_map(|fused| {
-                self.documents.get(&fused.url).cloned()
-            })
+            .filter_map(|fused| self.documents.get(&fused.url).cloned())
             .collect())
     }
 }
@@ -867,14 +884,17 @@ pub(crate) fn spawn_trail_with_capture_library(
 }
 
 pub(crate) fn spawn_trail_for_session(
-    wake: Wake, dir: Option<PathBuf>,
+    wake: Wake,
+    dir: Option<PathBuf>,
     capture_library: crate::place::captured_collection::LocalCaptureLibrary,
 ) -> (ActorHandle<TrailCommand>, Receiver<Update>) {
     spawn_named(
         "trail-memory",
         wake,
         move |commands, out: Emitter<Update>| {
-            let mut state = dir.as_ref().and_then(|dir| open_memory(dir, &capture_library));
+            let mut state = dir
+                .as_ref()
+                .and_then(|dir| open_memory(dir, &capture_library));
             let mut current_dir = dir.unwrap_or_default();
             // The derived lexical/behavioural projection and whether the corpus has
             // moved since it was minted. Built on the first recall, not at
@@ -887,6 +907,27 @@ pub(crate) fn spawn_trail_for_session(
             let mut last_to: HashMap<String, PageRef> = HashMap::new();
             while let Ok(command) = commands.recv() {
                 match command {
+                    TrailCommand::InferenceSnapshot { owner, reply } => {
+                        let result = inference_snapshot(
+                            state.as_ref().map(|(store, _)| store),
+                            &current_dir,
+                            &owner,
+                        );
+                        let _ = reply.send(result);
+                    },
+                    TrailCommand::InferenceSource {
+                        source,
+                        version,
+                        reply,
+                    } => {
+                        let result = inference_source(
+                            state.as_ref().map(|(store, _)| store),
+                            &current_dir,
+                            &source,
+                            &version,
+                        );
+                        let _ = reply.send(result);
+                    },
                     TrailCommand::Record {
                         owner,
                         url,
@@ -971,7 +1012,7 @@ pub(crate) fn spawn_trail_for_session(
                                     capture_library.unavailable(error);
                                 }
                                 result
-                            }
+                            },
                             None => Err("the session Eidetic store is not open".to_string()),
                         };
                         out.emit(Update::SourceDocumentCaptured { node, url, result });
@@ -1206,12 +1247,19 @@ mod tests {
         )];
 
         let index = RecallIndex::mint(&temp_dir(), &traces, &texts).unwrap();
-        assert_eq!(index.receipt.pages_with_text, 1, "the body reached the index");
+        assert_eq!(
+            index.receipt.pages_with_text, 1,
+            "the body reached the index"
+        );
 
         // "kestrel" is in neither the URL nor the title.
         assert!(!url.contains("kestrel"));
         let hits = index
-            .search("kestrel", 5, RecallConfig::default().with_frecency_weight(0.0))
+            .search(
+                "kestrel",
+                5,
+                RecallConfig::default().with_frecency_weight(0.0),
+            )
             .unwrap();
         assert_eq!(hits.len(), 1, "a body term recalls the page");
         assert_eq!(hits[0].url, url);
@@ -1220,9 +1268,13 @@ mod tests {
         let bare = RecallIndex::mint(&temp_dir(), &traces, &PageTexts::default()).unwrap();
         assert_eq!(bare.receipt.pages_with_text, 0);
         assert!(
-            bare.search("kestrel", 5, RecallConfig::default().with_frecency_weight(0.0))
-                .unwrap()
-                .is_empty(),
+            bare.search(
+                "kestrel",
+                5,
+                RecallConfig::default().with_frecency_weight(0.0)
+            )
+            .unwrap()
+            .is_empty(),
             "without the body the term is unrecallable — the instrument works"
         );
     }
@@ -1522,5 +1574,153 @@ mod tests {
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(0);
         handle.command(TrailCommand::Release(ack_tx));
         ack_rx.recv().unwrap();
+    }
+}
+
+/// A read capability over the actor, not a second opener of its Fjall files.
+pub(crate) struct TrailInferenceOwner(pub std::sync::Arc<ActorHandle<TrailCommand>>);
+impl crate::inference_service::RetainedSourceOwner for TrailInferenceOwner {
+    fn snapshot(
+        &self,
+        owner: &str,
+    ) -> Result<Vec<eidetic::models::recall::RetainedSourceText>, String> {
+        let (reply, receive) = std::sync::mpsc::sync_channel(1);
+        if !self.0.command(TrailCommand::InferenceSnapshot {
+            owner: owner.into(),
+            reply,
+        }) {
+            return Err("The retained-text owner is closed.".into());
+        }
+        receive
+            .recv_timeout(Duration::from_secs(2))
+            .map_err(|_| "The retained-text owner did not answer.".to_string())?
+    }
+    fn resolve(
+        &self,
+        source: &eidetic::models::recall::RecallSourceId,
+        version: &str,
+    ) -> Result<String, String> {
+        let (reply, receive) = std::sync::mpsc::sync_channel(1);
+        if !self.0.command(TrailCommand::InferenceSource {
+            source: source.clone(),
+            version: version.into(),
+            reply,
+        }) {
+            return Err("The retained-text owner is closed.".into());
+        }
+        receive
+            .recv_timeout(Duration::from_secs(2))
+            .map_err(|_| "The retained-text owner did not answer.".to_string())?
+    }
+}
+fn inference_owner(dir: &Path) -> Result<String, String> {
+    let session = dir
+        .parent()
+        .and_then(Path::file_name)
+        .and_then(|n| n.to_str())
+        .and_then(|n| uuid::Uuid::parse_str(n).ok())
+        .ok_or("The active browsing session has no retained-text owner.")?;
+    Ok(format!("turnstone/{session}"))
+}
+fn inference_snapshot(
+    store: Option<&FjallStore>,
+    dir: &Path,
+    owner: &str,
+) -> Result<Vec<eidetic::models::recall::RetainedSourceText>, String> {
+    use eidetic::models::recall::{RecallSourceId, RecallSourceKind, RetainedSourceText};
+    if inference_owner(dir)? != owner {
+        return Err("This answer belongs to another browsing session.".into());
+    }
+    let store = store.ok_or("The retained-text owner is not open.")?;
+    pollster::block_on(async {
+        let texts = PageTextStore::new(store);
+        let mut out = Vec::new();
+        for entry in texts.references().await.map_err(|e| e.to_string())? {
+            let text = texts
+                .text_at(&entry)
+                .await
+                .map_err(|e| e.to_string())?
+                .ok_or("A retained source version is unavailable.")?;
+            out.push(RetainedSourceText {
+                source: RecallSourceId {
+                    kind: RecallSourceKind::PageText,
+                    owner: Some(owner.into()),
+                    source: entry.url,
+                    node: None,
+                },
+                version: format!("blake3:{}", entry.blob),
+                title: None,
+                text,
+            });
+        }
+        Ok(out)
+    })
+}
+fn inference_source(
+    store: Option<&FjallStore>,
+    dir: &Path,
+    source: &eidetic::models::recall::RecallSourceId,
+    version: &str,
+) -> Result<String, String> {
+    use eidetic::models::recall::RecallSourceKind;
+    if source.owner.as_deref() != Some(inference_owner(dir)?.as_str())
+        || source.kind != RecallSourceKind::PageText
+        || source.node.is_some()
+    {
+        return Err("The cited source belongs to another owner.".into());
+    }
+    let hash = eidetic::Hash::parse(version).map_err(|_| "The cited source version is invalid.")?;
+    let store = store.ok_or("The retained-text owner is not open.")?;
+    let reference = eidetic::browsing::text::PageTextRef {
+        url: source.source.clone(),
+        blob: hash.to_hex(),
+        stored_at_ms: 0,
+    };
+    pollster::block_on(PageTextStore::new(store).text_at(&reference))
+        .map_err(|e| e.to_string())?
+        .ok_or_else(|| "The cited retained version is unavailable.".into())
+}
+
+#[cfg(test)]
+mod inference_owner_tests {
+    use super::*;
+    use crate::inference_service::RetainedSourceOwner;
+    #[test]
+    fn the_actor_lends_versions_without_reopening_its_store_or_substituting_a_new_head() {
+        let temp = tempfile::tempdir().unwrap();
+        let session = uuid::Uuid::new_v4();
+        let dir = temp
+            .path()
+            .join("sessions")
+            .join(session.to_string())
+            .join("memory");
+        let (handle, _updates) =
+            spawn_trail_for_session(std::sync::Arc::new(|| {}), Some(dir), Default::default());
+        let owner = TrailInferenceOwner(std::sync::Arc::new(handle));
+        let namespace = format!("turnstone/{session}");
+        owner.0.command(TrailCommand::RecordText {
+            url: "https://retained.test/note".into(),
+            text: "nebula amberstone".into(),
+        });
+        let old = owner.snapshot(&namespace).unwrap().remove(0);
+        owner.0.command(TrailCommand::RecordText {
+            url: "https://retained.test/note".into(),
+            text: "nebula indigo".into(),
+        });
+        let new = owner.snapshot(&namespace).unwrap().remove(0);
+        assert_ne!(old.version, new.version);
+        assert_eq!(
+            owner.resolve(&old.source, &old.version).unwrap(),
+            "nebula amberstone"
+        );
+        assert!(owner.snapshot("turnstone/another-session").is_err());
+        let (ack, receive) = std::sync::mpsc::sync_channel(1);
+        owner.0.command(TrailCommand::Release(ack));
+        receive.recv_timeout(Duration::from_secs(2)).unwrap();
+        assert!(owner.snapshot(&namespace).is_err());
+        match std::sync::Arc::try_unwrap(owner.0) {
+            Ok(actor) => actor.join(),
+            Err(_) => panic!("unexpected actor borrower"),
+        }
     }
 }

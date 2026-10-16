@@ -153,6 +153,22 @@ founding brief is `design_docs/2026-07-08_turnstone_founding.md`.
   <sub>The Workbench tiles graph nodes into live document surfaces beside the canvas.</sub>
 </p>
 
+## Retained answers
+
+`Ask retained text` opens an answer pane for the current browsing session.
+It connects to Djinn's `inference.ask` route using `GRAPHSHELL_APP_ENDPOINT`
+(or the configured default endpoint). Djinn must have an inference model
+selected in its owner settings. The pane shows streamed text, token progress,
+pause/resume/cancel, and past asks. Source buttons open the exact retained
+version with its hash and character range. An exact-quotation annotation means
+the supplied passage appears verbatim; a source marker records the model's
+reference to supplied material.
+
+The trail actor lends retained text to the resident while the pane is open.
+Only passages supplied to an ask enter its sealed run journal. This first
+handoff refuses publication JSON above 128 KiB; use a smaller browsing session
+when that limit is reached. Headed I5 qualification is in progress.
+
 ## Graphshell endpoint
 
 Turnstone exposes its first local Graphshell projection through the library's

@@ -1371,6 +1371,10 @@ impl App {
             Action::ChooseKnotDocumentFile { read_only } => {
                 vec![Effect::ChooseKnotDocumentFile { read_only }]
             }
+            Action::OpenAnswers => self.summon_contributed_pane(
+                crate::panes::PaneKindId::new(crate::inference_surface::PANE_KIND),
+                crate::inference_surface::answer_source(self.session_id.0),
+            ),
             Action::SummonContributedPane { kind, source } => {
                 self.summon_contributed_pane(kind, source)
             }

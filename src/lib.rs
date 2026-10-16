@@ -47,6 +47,8 @@ mod gemini_identity;
 mod gemini_trust;
 mod host_journal;
 mod identity;
+mod inference_service;
+pub mod inference_surface;
 mod inspector_controls;
 mod inspector_pane;
 mod inline_pane;
