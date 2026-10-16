@@ -550,7 +550,7 @@ mod tests {
 
     fn export() -> serde_json::Value {
         serde_json::from_str(include_str!(
-            "../../../../woodshed/scenarios/woodshed_musical_comparison.json"
+            "../web/fixtures/woodshed_musical_comparison.json"
         ))
         .unwrap()
     }

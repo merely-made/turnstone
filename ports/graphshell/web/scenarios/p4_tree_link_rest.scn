@@ -1,0 +1,75 @@
+# Separate P4 source-owned link fixture; parent route uses DB graphshell-link-rest-p4-v1.
+# tree.html?app=local&fixture=link-rest&scenario=scenarios/p4_tree_link_rest.scn
+click role:button Fit graph
+settle 2
+assert snap source == saved graph
+assert snap link-rest-ready == true
+assert snap link-rest-source-appearance-count == 6
+assert snap link-rest-appearance-count == 6
+assert snap link-rest-resource-forward == true
+assert snap link-rest-resource-reverse == true
+assert snap link-rest-resource-opposed == true
+assert snap link-rest-resource-strength == 5
+assert snap link-rest-hidden-count == 0
+assert snap link-rest-keys ~ link:v1:resource
+assert snap link-rest-keys ~ link:v1:surface
+assert snap link-rest-source-assertion-ids ~ fixture:p4:link-rest:resource-support-primary
+assert snap link-rest-source-assertion-ids ~ fixture:p4:link-rest:resource-support-independent
+assert snap link-rest-source-assertion-ids ~ fixture:p4:link-rest:resource-contradiction
+remember p4-source
+capture p4_link_rest_canvas_initial
+
+# The Canvas hit path selects one canonical Resource key appearance among its
+# alias surfaces, then the normal Graphshell link inspector opens the reading.
+click-link-rest a1-b1 resource
+settle 2
+assert snap link-rest-selected ~ link:v1:resource
+assert snap link-inspector-open == true
+assert snap link-inspector-ready == true
+assert snap link-inspector-statements == 6
+assert snap link-inspector-strata == resource|surface
+assert text Primary support reason
+assert text Independent support reason
+assert text Opposing reading
+assert text Resource-level forward citation
+assert text Resource-level reverse citation
+capture p4_link_rest_opened_resource_reading
+assert retained {"role":"button","count":1,"key":["data-assertion-id","fixture:p4:link-rest:resource-support-primary"]}
+click-link-rest-assertion fixture:p4:link-rest:resource-support-primary
+settle 2
+assert snap assertion-inspector-open == true
+assert snap assertion-inspector-handle == fixture:p4:link-rest:resource-support-primary
+same p4-source link-rest-source-facts
+same p4-source link-rest-graph-revision
+click role:button Close assertion inspection
+settle 2
+click role:button Close link inspection
+settle 2
+
+# A second stratum on the same displayed endpoints remains a separate key.
+click-link-rest a1-b1 surface
+settle 2
+assert snap link-rest-selected ~ link:v1:surface
+assert snap link-rest-selected-appearance ~ link:v1:surface
+same p4-source link-rest-source-facts
+same p4-source link-rest-graph-revision
+capture p4_link_rest_surface_pick
+click-link-rest a1-b1 resource
+settle 2
+assert snap link-rest-selected ~ link:v1:resource
+
+# Hide is the visible toolbar action. The saved whole-key view intent removes
+# all four Resource alias appearances while leaving both Surface appearances.
+click role:button Hide selected link
+settle 120
+assert snap link-visibility-save-state == saved
+assert snap link-rest-hidden-count == 1
+assert snap link-rest-hidden ~ link:v1:resource
+assert snap link-rest-visible-appearances == 2
+assert snap link-rest-appearance-count == 2
+assert snap link-rest-resource-forward == false
+assert snap link-rest-resource-strength == 0
+same p4-source link-rest-source-facts
+same p4-source link-rest-graph-revision
+capture p4_link_rest_resource_hidden
+log P4 canonical link selection, opened source reading, exact assertion action and whole-key hide sequence completed

@@ -456,6 +456,8 @@ pub(crate) struct TreePage {
     #[cfg(feature = "product")]
     backdrop: Rc<RefCell<backdrop::Pane>>,
     #[cfg(feature = "product")]
+    promoted_links: promoted_links::Pane,
+    #[cfg(feature = "product")]
     dynamics_inspector: dynamics_inspection::Pane,
     #[cfg(feature = "product")]
     node_presentation: node_presentation::Pane,
@@ -909,6 +911,8 @@ fn tools_region(page: &TreePage) -> Child {
     #[cfg(feature = "product")]
     children.push(query_view::section(page));
     #[cfg(feature = "product")]
+    children.push(promoted_links::section(page));
+    #[cfg(feature = "product")]
     children.push(node_presentation::section(page));
     #[cfg(feature = "product")]
     children.push(forme::section(page));
@@ -1259,7 +1263,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
     if presenter_options.is_some() && hosted.is_none() {
         return Err("Inspector presenter requires a disclosed host dataset".into());
     }
-    let product = if hosted.is_some() {
+    let mut product = if hosted.is_some() {
         None
     } else {
         product::open(&root).await?
@@ -1303,6 +1307,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
             },
         }
     } else if let Some(product) = &product {
+        placed = product.initial_fixture_positions();
         (product.graph(), "saved graph".to_string())
     } else {
         match web_graphs::requested() {
@@ -1404,6 +1409,10 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         root: root.clone(),
         gestures: RefCell::new(gestures::Gestures::default()),
     });
+    if let Some(product) = &mut product {
+        product.restore_canvas_link_hides(&mut shared.canvas.borrow_mut());
+    }
+
     shared
         .appearance
         .borrow()
@@ -1497,6 +1506,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 query_views: query_view::Pane::default(),
                 #[cfg(feature = "product")]
                 backdrop: Rc::new(RefCell::new(backdrop::Pane::default())),
+                #[cfg(feature = "product")]
+                promoted_links: promoted_links::Pane::default(),
                 #[cfg(feature = "product")]
                 dynamics_inspector: dynamics_inspection::Pane::default(),
                 #[cfg(feature = "product")]
@@ -1752,6 +1763,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             #[cfg(feature = "product")]
             if query_view::ready(ctx.runner.state()) {
                 ctx.runner.update(query_view::poll);
+            }
+            #[cfg(feature = "product")]
+            if promoted_links::ready(ctx.runner.state()) {
+                ctx.runner.update(promoted_links::poll);
             }
             #[cfg(feature = "product")]
             field_inspection::reveal(ctx);
@@ -2014,6 +2029,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             if let Some(slot) = query_view::focused_text(runner) {
                 return Some(slot);
             }
+            #[cfg(feature = "product")]
+            if let Some(slot) = promoted_links::focused_text(runner) {
+                return Some(slot);
+            }
             appearance::focused_text(runner)
         }),
         key_intercept: Box::new(|_runner, _press| false),
@@ -2177,6 +2196,8 @@ mod product;
 mod product;
 #[cfg(feature = "product")]
 mod query_view;
+#[cfg(feature = "product")]
+mod promoted_links;
 #[cfg(feature = "product")]
 mod reading;
 #[cfg(feature = "remote")]

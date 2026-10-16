@@ -166,7 +166,7 @@ pub fn sync_canvas_metadata_from_graph(
 ) -> Result<(), String> {
     use mere::kernel::graph::CapturedDelta;
     use mere::kernel::graph::resource::TAGGED_WITH_IRI;
-    use mere::kernel::persistence::{PersistedEdge, PersistedEdgeFamily};
+    use mere::kernel::persistence::PersistedEdge;
     use std::collections::BTreeSet;
     let (key, node) = source
         .get_node_by_id(saved.member)
@@ -182,12 +182,9 @@ pub fn sync_canvas_metadata_from_graph(
     let from = source.to_snapshot();
     let current = canvas.graph().to_snapshot();
     let is_tag = |edge: &PersistedEdge| {
-        edge.semantic.as_ref().is_some_and(|bucket| {
-            bucket
-                .statements
-                .iter()
-                .any(|claim| claim.predicate == TAGGED_WITH_IRI)
-        })
+        edge.retained_assertions()
+            .iter()
+            .any(|claim| claim.predicate == TAGGED_WITH_IRI)
     };
     let mut deltas = vec![CapturedDelta::ReplaySetNodeTitleById {
         node_id: saved.member.to_string(),
@@ -211,55 +208,20 @@ pub fn sync_canvas_metadata_from_graph(
                 });
             }
         }
-        let select = |mut edge: PersistedEdge, tags: bool| -> Option<PersistedEdge> {
-            if tags {
-                edge.traversal = None;
-                edge.containment = None;
-                edge.arrangement = None;
-                edge.imported = None;
-                edge.provenance = None;
-                edge.families
-                    .retain(|family| *family == PersistedEdgeFamily::Semantic);
-            }
-            if let Some(bucket) = &mut edge.semantic {
-                bucket
-                    .statements
-                    .retain(|claim| (claim.predicate == TAGGED_WITH_IRI) == tags);
-                bucket.sub_kinds = bucket
-                    .statements
-                    .iter()
-                    .filter_map(|claim| claim.recognized_sub_kind)
-                    .collect();
-                bucket.predicate = bucket
-                    .statements
-                    .first()
-                    .map(|claim| claim.predicate.clone());
-                bucket.label = bucket
-                    .statements
-                    .iter()
-                    .find_map(|claim| claim.label.clone());
-                if bucket.statements.is_empty() {
-                    edge.semantic = None;
-                    edge.families
-                        .retain(|family| *family != PersistedEdgeFamily::Semantic);
-                }
-            }
-            (!edge.families.is_empty()).then_some(edge)
-        };
         for target in targets {
             let mut edges: Vec<_> = current
                 .resource_edges
                 .iter()
                 .filter(|edge| edge.from_node_id == resource_id && edge.to_node_id == target)
                 .cloned()
-                .filter_map(|edge| select(edge, false))
+                .filter_map(|edge| select_metadata_edge(edge, false))
                 .collect();
             edges.extend(
                 from.resource_edges
                     .iter()
                     .filter(|edge| edge.from_node_id == resource_id && edge.to_node_id == target)
                     .cloned()
-                    .filter_map(|edge| select(edge, true)),
+                    .filter_map(|edge| select_metadata_edge(edge, true)),
             );
             deltas.push(CapturedDelta::ReplaySetResourceEdgesByIds {
                 from_resource_id: resource_id.clone(),
@@ -277,5 +239,140 @@ pub fn sync_canvas_metadata_from_graph(
     Ok(())
 }
 
+fn select_metadata_edge(
+    mut edge: mere::kernel::persistence::PersistedEdge,
+    tags: bool,
+) -> Option<mere::kernel::persistence::PersistedEdge> {
+    use mere::kernel::graph::resource::TAGGED_WITH_IRI;
+    use mere::kernel::graph::{EdgeFamily, RelationKind};
+    use mere::kernel::persistence::PersistedEdgeFamily;
+    use std::collections::BTreeSet;
+
+    let mut assertions = edge.retained_assertions().to_vec();
+    assertions.retain(|claim| (claim.predicate == TAGGED_WITH_IRI) == tags);
+    edge.assertions = Some(assertions);
+
+    // `assertions` is the canonical all-family record list. Do not carry
+    // legacy per-family summaries beside a filtered copy: they may contain
+    // stale sibling kinds or duplicate the same record.
+    edge.semantic = None;
+    edge.containment = None;
+    edge.arrangement = None;
+    edge.imported = None;
+    edge.provenance = None;
+
+    if tags {
+        edge.traversal = None;
+        edge.families.clear();
+        if !edge.retained_assertions().is_empty() {
+            edge.families.push(PersistedEdgeFamily::Semantic);
+        }
+    } else {
+        let assertion_families: BTreeSet<_> = edge
+            .retained_assertions()
+            .iter()
+            .map(|claim| {
+                RelationKind::from_predicate_iri(&claim.predicate)
+                    .unwrap_or(RelationKind::OpenPredicate)
+                    .family()
+            })
+            .collect();
+        let has_traversal = edge.traversal.is_some();
+        edge.families.retain(|family| match family {
+            PersistedEdgeFamily::Traversal => has_traversal,
+            PersistedEdgeFamily::Semantic => assertion_families.contains(&EdgeFamily::Semantic),
+            PersistedEdgeFamily::Containment => {
+                assertion_families.contains(&EdgeFamily::Containment)
+            },
+            PersistedEdgeFamily::Arrangement => {
+                assertion_families.contains(&EdgeFamily::Arrangement)
+            },
+            PersistedEdgeFamily::Imported => assertion_families.contains(&EdgeFamily::Imported),
+            PersistedEdgeFamily::Provenance => assertion_families.contains(&EdgeFamily::Provenance),
+        });
+    }
+    (!edge.families.is_empty()).then_some(edge)
+}
+
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod exact_record_adapter_tests {
+    use super::*;
+    use mere::kernel::graph::{ContainmentSubKind, EdgeFamily, RelationKind};
+    use mere::kernel::persistence::{
+        PersistedEdge, PersistedEdgeFamily, PersistedSemanticStatement,
+    };
+    use mere::kernel::types::{AssertionBasis, GraphScope};
+
+    fn assertion(id: &str, predicate: &str) -> PersistedSemanticStatement {
+        PersistedSemanticStatement {
+            statement_id: id.to_string(),
+            predicate: predicate.to_string(),
+            recognized_sub_kind: None,
+            label: None,
+            graph_scope: GraphScope::Default,
+            provenance_iri: Some("urn:test:source".into()),
+            asserted_at_ms: None,
+            first_asserted_ms: None,
+            withdrawn: None,
+            basis: AssertionBasis::default(),
+        }
+    }
+
+    #[test]
+    fn metadata_partition_preserves_same_kind_containment_handles() {
+        let containment = RelationKind::Containment(ContainmentSubKind::CollectionMember)
+            .predicate_iri()
+            .expect("containment has a canonical predicate");
+        let edge = PersistedEdge {
+            from_node_id: "from-resource".into(),
+            to_node_id: "tag-resource".into(),
+            families: vec![
+                PersistedEdgeFamily::Semantic,
+                PersistedEdgeFamily::Containment,
+            ],
+            semantic: None,
+            traversal: None,
+            containment: None,
+            arrangement: None,
+            imported: None,
+            provenance: None,
+            assertions: Some(vec![
+                assertion("tag-1", mere::kernel::graph::resource::TAGGED_WITH_IRI),
+                assertion("containment-1", containment),
+                assertion("containment-2", containment),
+            ]),
+        };
+
+        let retained = select_metadata_edge(edge.clone(), false).unwrap();
+        assert_eq!(
+            retained
+                .retained_assertions()
+                .iter()
+                .map(|assertion| assertion.statement_id.as_str())
+                .collect::<Vec<_>>(),
+            ["containment-1", "containment-2"]
+        );
+        assert_eq!(retained.families, [PersistedEdgeFamily::Containment]);
+        assert_eq!(retained.assertions.as_ref().unwrap().len(), 2);
+        assert!(retained.semantic.is_none());
+
+        let tag_only = select_metadata_edge(edge, true).unwrap();
+        assert_eq!(tag_only.retained_assertions()[0].statement_id, "tag-1");
+        assert_eq!(tag_only.families, [PersistedEdgeFamily::Semantic]);
+        assert!(tag_only.containment.is_none());
+
+        assert_eq!(
+            RelationKind::from_predicate_iri(containment),
+            Some(RelationKind::Containment(
+                ContainmentSubKind::CollectionMember
+            ))
+        );
+        assert_eq!(
+            RelationKind::Containment(ContainmentSubKind::CollectionMember).family(),
+            EdgeFamily::Containment
+        );
+    }
+}

@@ -183,6 +183,231 @@ fn leaf_rect(ctx: &AppCtx<'_, TreePage, Logic, Child>) -> Option<(f32, f32, f32,
     ctx.painted_rect(leaf)
 }
 
+/// Source-backed observations for the isolated P4 fixture. This deliberately
+/// uses the same reader as the opened-link inspector and Canvas adapter.
+fn link_rest_fields(canvas: &Canvas, snapshot: ProbeSnapshot) -> ProbeSnapshot {
+    use graphshell::mere_host::{
+        LINK_REST_A1_ADDRESS, LINK_REST_A2_ADDRESS, LINK_REST_B1_ADDRESS, LINK_REST_B2_ADDRESS,
+    };
+    use scenograph::link::{LinkPairReading, LinkSource};
+
+    let graph = canvas.graph();
+    let endpoint_pairs = [
+        ("a1", LINK_REST_A1_ADDRESS, "b1", LINK_REST_B1_ADDRESS),
+        ("a1", LINK_REST_A1_ADDRESS, "b2", LINK_REST_B2_ADDRESS),
+        ("a2", LINK_REST_A2_ADDRESS, "b1", LINK_REST_B1_ADDRESS),
+        ("a2", LINK_REST_A2_ADDRESS, "b2", LINK_REST_B2_ADDRESS),
+    ];
+    let mut readings = Vec::<LinkPairReading>::new();
+    for (_, from_address, _, to_address) in endpoint_pairs {
+        let (Some((from, _)), Some((to, _))) = (
+            graph.get_node_by_url(from_address),
+            graph.get_node_by_url(to_address),
+        ) else {
+            return snapshot
+                .with_field("link-rest-ready", "false")
+                .with_field("link-rest-source-facts", "")
+                .with_field("link-rest-keys", "")
+                .with_field("link-rest-graph-revision", "")
+                .with_field("link-rest-appearance-count", "0")
+                .with_field("link-rest-source-appearance-count", "0")
+                .with_field("link-rest-visible-appearances", "0")
+                .with_field("link-rest-summaries", "")
+                .with_field("link-rest-source-assertion-ids", "");
+        };
+        let reading = match mere::canvas::link_reading::read_link_history(
+            graph,
+            graph.get_node(from).expect("resolved fixture node").id,
+            graph.get_node(to).expect("resolved fixture node").id,
+            LinkSource::Unavailable {
+                reason: "isolated fixture graph has no public source revision".into(),
+            },
+        ) {
+            Ok(reading) => reading,
+            Err(error) => {
+                return snapshot
+                    .with_field("link-rest-ready", "false")
+                    .with_field("link-rest-source-error", error)
+                    .with_field("link-rest-source-facts", "")
+                    .with_field("link-rest-keys", "")
+                    .with_field("link-rest-graph-revision", "")
+                    .with_field("link-rest-appearance-count", "0")
+                    .with_field("link-rest-source-appearance-count", "0")
+                    .with_field("link-rest-visible-appearances", "0")
+                    .with_field("link-rest-summaries", "")
+                    .with_field("link-rest-source-assertion-ids", "");
+            },
+        };
+        readings.push(reading);
+    }
+
+    let facts = serde_json::to_string(&readings).unwrap_or_default();
+    let mut keys = std::collections::BTreeSet::new();
+    let mut appearances = std::collections::BTreeSet::new();
+    let mut assertion_ids = std::collections::BTreeSet::new();
+    let mut summaries = std::collections::BTreeSet::new();
+    for reading in &readings {
+        for link in &reading.links {
+            let stable_key = link.key.stable_id();
+            keys.insert(stable_key.clone());
+            for bucket in &link.buckets {
+                let (first, second) = if bucket.displayed_from <= bucket.displayed_to {
+                    (&bucket.displayed_from, &bucket.displayed_to)
+                } else {
+                    (&bucket.displayed_to, &bucket.displayed_from)
+                };
+                appearances.insert((stable_key.clone(), first.clone(), second.clone()));
+                for assertion in &bucket.assertions {
+                    assertion_ids.insert(assertion.id.clone());
+                }
+                let summary = link.rest_summary(&bucket.displayed_from, &bucket.displayed_to);
+                summaries.insert(
+                    format!(
+                        "{}:{}:{}:{}:{}:{:.0}",
+                        stable_key,
+                        first,
+                        second,
+                        summary.marks.forward,
+                        summary.marks.reverse,
+                        summary.strength,
+                    ) + &format!(":{}", summary.marks.opposed),
+                );
+            }
+        }
+    }
+    let hidden = canvas.hidden_link_keys();
+    let visible = canvas
+        .visible_link_appearances()
+        .into_iter()
+        .filter(|appearance| keys.contains(&appearance.key.stable_id()))
+        .collect::<Vec<_>>();
+    let visible_strokes = visible
+        .iter()
+        .map(|appearance| {
+            let from = graph.get_node(appearance.display_from).map(|node| node.id);
+            let to = graph.get_node(appearance.display_to).map(|node| node.id);
+            serde_json::json!({
+                "key": appearance.key.stable_id(),
+                "from": from,
+                "to": to,
+                "forward": appearance.marks.forward,
+                "reverse": appearance.marks.reverse,
+                "opposed": appearance.marks.opposed,
+                "strength": appearance.strength,
+            })
+        })
+        .collect::<Vec<_>>();
+    let selected = canvas
+        .selected_link_keys()
+        .into_iter()
+        .filter(|key| keys.contains(&key.stable_id()))
+        .map(|key| key.stable_id())
+        .collect::<Vec<_>>();
+    let selected_appearance = canvas
+        .selected_link_keys()
+        .into_iter()
+        .filter(|key| keys.contains(&key.stable_id()))
+        .filter_map(|key| {
+            canvas
+                .link_appearance_pair(&key)
+                .map(|(from, to)| format!("{}:{}:{}", key.stable_id(), from, to))
+        })
+        .collect::<Vec<_>>();
+    let resource_appearances = visible
+        .iter()
+        .filter(|appearance| appearance.key.stratum == scenograph::link::LinkStratum::Resource)
+        .collect::<Vec<_>>();
+    let surface_appearances = visible
+        .iter()
+        .filter(|appearance| appearance.key.stratum == scenograph::link::LinkStratum::Surface)
+        .collect::<Vec<_>>();
+    snapshot
+        .with_field("link-rest-ready", "true")
+        .with_field("link-rest-source-facts", facts)
+        .with_field("link-rest-graph-revision", graph.revision().to_string())
+        .with_field(
+            "link-rest-keys",
+            keys.into_iter().collect::<Vec<_>>().join("|"),
+        )
+        .with_field("link-rest-appearance-count", visible.len().to_string())
+        .with_field(
+            "link-rest-source-appearance-count",
+            appearances.len().to_string(),
+        )
+        .with_field("link-rest-visible-appearances", visible.len().to_string())
+        .with_field(
+            "link-rest-visible-strokes",
+            serde_json::to_string(&visible_strokes).unwrap_or_default(),
+        )
+        .with_field(
+            "link-rest-resource-forward",
+            resource_appearances
+                .iter()
+                .any(|appearance| appearance.marks.forward)
+                .to_string(),
+        )
+        .with_field(
+            "link-rest-resource-reverse",
+            resource_appearances
+                .iter()
+                .any(|appearance| appearance.marks.reverse)
+                .to_string(),
+        )
+        .with_field(
+            "link-rest-resource-opposed",
+            resource_appearances
+                .iter()
+                .any(|appearance| appearance.marks.opposed)
+                .to_string(),
+        )
+        .with_field(
+            "link-rest-resource-strength",
+            resource_appearances
+                .iter()
+                .map(|appearance| appearance.strength)
+                .fold(0.0_f32, f32::max)
+                .to_string(),
+        )
+        .with_field(
+            "link-rest-surface-strength",
+            surface_appearances
+                .iter()
+                .map(|appearance| appearance.strength)
+                .fold(0.0_f32, f32::max)
+                .to_string(),
+        )
+        .with_field(
+            "link-rest-summaries",
+            summaries.into_iter().collect::<Vec<_>>().join("|"),
+        )
+        .with_field(
+            "link-rest-source-assertion-ids",
+            assertion_ids.into_iter().collect::<Vec<_>>().join("|"),
+        )
+        .with_field("link-rest-selected", selected.join("|"))
+        .with_field(
+            "link-rest-selected-appearance",
+            selected_appearance.join("|"),
+        )
+        .with_field(
+            "link-rest-hidden",
+            hidden
+                .iter()
+                .map(scenograph::link::LinkKey::stable_id)
+                .collect::<Vec<_>>()
+                .join("|"),
+        )
+        .with_field("link-rest-hidden-count", hidden.len().to_string())
+        .with_field(
+            "link-rest-hidden-assertions",
+            canvas.hidden_assertion_ids().join("|"),
+        )
+        .with_field(
+            "link-rest-hidden-assertion-count",
+            canvas.hidden_assertion_ids().len().to_string(),
+        )
+}
+
 impl TreeLane {
     /// The focused node's page point, for `press-focused`.
     fn focused_point(
@@ -694,6 +919,8 @@ impl Product for TreeLane {
         #[cfg(feature = "product")]
         let snapshot = link_inspection::fields(page, snapshot);
         #[cfg(feature = "product")]
+        let snapshot = super::promoted_links::fields(page, snapshot);
+        #[cfg(feature = "product")]
         let snapshot = field_inspection::fields(page, &canvas, snapshot);
         #[cfg(feature = "product")]
         let snapshot = coupling::fields(page, snapshot);
@@ -1020,6 +1247,7 @@ impl Product for TreeLane {
                     .collect::<Vec<_>>()
                     .join("|"),
             );
+        let snapshot = link_rest_fields(&canvas, snapshot);
         let faces = self.shared.faces.get().unwrap_or_default().fields();
         let snapshot = practice::fields(page, snapshot);
         let snapshot = responsive_links::fields(page, snapshot);
@@ -1069,8 +1297,18 @@ impl Product for TreeLane {
                     None => "none",
                 }
             };
+            let (link_visibility_state, link_visibility_status) = product.link_visibility_state();
+            let (assertion_visibility_state, assertion_visibility_status) =
+                product.assertion_visibility_state();
             product
                 .history_fields(product.projection_fields(snapshot))
+                .with_field("link-visibility-save-state", link_visibility_state)
+                .with_field("link-visibility-status", link_visibility_status)
+                .with_field(
+                    "assertion-visibility-save-state",
+                    assertion_visibility_state,
+                )
+                .with_field("assertion-visibility-status", assertion_visibility_status)
                 .with_field(
                     "command-menu",
                     if product.menu_open() {
@@ -1492,6 +1730,78 @@ impl Product for TreeLane {
                 ctx.pointer.push(HostPointer::Release(x, y));
                 Ok(())
             },
+            // Pick a source-owned P4 appearance through the ordinary canvas
+            // pointer route. The stratum offset selects one of the two
+            // parallel strokes when both are present on the same surfaces.
+            "click-link-rest" => {
+                use graphshell::mere_host::{
+                    LINK_REST_A1_ADDRESS, LINK_REST_A2_ADDRESS, LINK_REST_B1_ADDRESS,
+                    LINK_REST_B2_ADDRESS,
+                };
+                let words = rest.split_whitespace().collect::<Vec<_>>();
+                let [pair, stratum] = words.as_slice() else {
+                    return Err(
+                        "click-link-rest wants '<a1-b1|a1-b2|a2-b1|a2-b2> <surface|resource>'"
+                            .into(),
+                    );
+                };
+                let (from_address, to_address) = match *pair {
+                    "a1-b1" => (LINK_REST_A1_ADDRESS, LINK_REST_B1_ADDRESS),
+                    "a1-b2" => (LINK_REST_A1_ADDRESS, LINK_REST_B2_ADDRESS),
+                    "a2-b1" => (LINK_REST_A2_ADDRESS, LINK_REST_B1_ADDRESS),
+                    "a2-b2" => (LINK_REST_A2_ADDRESS, LINK_REST_B2_ADDRESS),
+                    _ => return Err("click-link-rest has an unknown fixture pair".into()),
+                };
+                let stratum = match *stratum {
+                    "surface" => scenograph::link::LinkStratum::Surface,
+                    "resource" => scenograph::link::LinkStratum::Resource,
+                    _ => return Err("click-link-rest stratum must be surface or resource".into()),
+                };
+                let point = {
+                    let canvas = self.shared.canvas.borrow();
+                    let graph = canvas.graph();
+                    let (from, _) = graph
+                        .get_node_by_url(from_address)
+                        .ok_or("click-link-rest source fixture endpoint is missing")?;
+                    let (to, _) = graph
+                        .get_node_by_url(to_address)
+                        .ok_or("click-link-rest target fixture endpoint is missing")?;
+                    let (first, second) = if from <= to { (from, to) } else { (to, from) };
+                    let (x1, y1) = canvas
+                        .screen_position_of(first)
+                        .ok_or("click-link-rest first endpoint is not visible")?;
+                    let (x2, y2) = canvas
+                        .screen_position_of(second)
+                        .ok_or("click-link-rest second endpoint is not visible")?;
+                    let dx = x2 - x1;
+                    let dy = y2 - y1;
+                    let length = dx.hypot(dy).max(f32::EPSILON);
+                    let direction = if stratum == scenograph::link::LinkStratum::Surface {
+                        -1.0
+                    } else {
+                        1.0
+                    };
+                    // The renderer offsets strata by 3 world units. Two more
+                    // screen units put this pointer closer to the chosen line
+                    // so nearest-segment picking selects this stratum.
+                    let offset = 3.0 * canvas.camera().zoom + 2.0;
+                    let point = (
+                        (x1 + x2) * 0.5 - dy / length * direction * offset,
+                        (y1 + y2) * 0.5 + dx / length * direction * offset,
+                    );
+                    point
+                };
+                let (left, top, width, height) =
+                    leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
+                if point.0 < 0.0 || point.1 < 0.0 || point.0 >= width || point.1 >= height {
+                    return Err("click-link-rest target is outside the canvas".into());
+                }
+                ctx.pointer
+                    .push(HostPointer::Press(left + point.0, top + point.1));
+                ctx.pointer
+                    .push(HostPointer::Release(left + point.0, top + point.1));
+                Ok(())
+            },
             "press-node" => {
                 let point = self.node_point(ctx, rest.trim())?;
                 self.pointer = Some(point);
@@ -1642,6 +1952,51 @@ impl Product for TreeLane {
         clicks: &mut mesquite::Clicks,
         line: &str,
     ) -> Result<(), String> {
+        if let Some(action_spec) = line.strip_prefix("click-link-rest-assertion ") {
+            let words = action_spec.split_whitespace().collect::<Vec<_>>();
+            let (assertion_id, action) = match words.as_slice() {
+                [id] => (*id, "inspect"),
+                [id, action @ ("inspect" | "hide" | "withdraw")] => (*id, *action),
+                _ => {
+                    return Err(
+                        "click-link-rest-assertion wants '<id> [inspect|hide|withdraw]'".into(),
+                    );
+                },
+            };
+            // Selector holds one attribute predicate. Use the independent
+            // accessible-name filter for the action so the exact ID survives.
+            let action_label = match action {
+                "inspect" => "Inspect assertion",
+                "hide" => "Hide this assertion from the view",
+                "withdraw" => "Withdraw this personal assertion",
+                _ => unreachable!("action was checked above"),
+            };
+            let selector = Selector::role("button")
+                .containing(action_label)
+                .with_attr("data-assertion-id", assertion_id);
+            let projection = ctx
+                .a11y_projection()
+                .ok_or("shared assertion action projection is unavailable")?;
+            let dom = ctx.runner.dom();
+            let dom = dom.borrow();
+            let matches = taproot::matching_with_projection(&dom, &selector, &projection);
+            if matches.len() != 1 {
+                return Err(format!(
+                    "click-link-rest-assertion requires one {action} action for {assertion_id:?}, got {}",
+                    matches.len()
+                ));
+            }
+            drop(dom);
+            return if clicks.click(ctx, &selector, |_, _, rect| {
+                (rect[0] + rect[2] * 0.5, rect[1] + rect[3] * 0.5)
+            }) {
+                Ok(())
+            } else {
+                Err(format!(
+                    "source {action} action {assertion_id:?} could not be clicked"
+                ))
+            };
+        }
         if let Some(rest) = line.strip_prefix("check-role ") {
             use layout_dom_api::{LayoutDom, LocalName, Namespace};
             let (label, wanted) = rest
