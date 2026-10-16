@@ -29,7 +29,7 @@ apparatus = { package = "mere-apparatus", git = "https://github.com/merely-made/
 # Presentable proof data/checks; Personae retains keys and issuing. The
 # identity tier lives in merely-made/dramatis (dramatis repo plan, DR-D); every
 # dramatis pin names the revision mere's workspace names, or personae splits.
-insigne = { git = "https://github.com/merely-made/dramatis.git", rev = "0234e7eea6f2ddf2330a71b9425da01b06ae0391", features = ["verify"] }
+insigne = { git = "https://github.com/merely-made/dramatis.git", branch = "main", features = ["verify"] }
 athanor = { package = "mere-athanor", git = "https://github.com/merely-made/mere.git", branch = "main" }
 tabard = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 tabard-workshop = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["native-host"] }
@@ -70,7 +70,7 @@ servitor = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # personae master key (capability-model OQ2). Personae lends the key types and
 # the IdentityProvider trait; the keys themselves stay in djinn, which
 # Turnstone calls through Graphshell's custody route (dramatis DR-C).
-identity = { package = "personae", git = "https://github.com/merely-made/dramatis.git", rev = "0234e7eea6f2ddf2330a71b9425da01b06ae0391" }
+identity = { package = "personae", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 # Self-signed Gemini client certificates projected from capsule-scoped
 # Personae-derived Ed25519 keys. The private key stays transient.
 rcgen = "0.14"
@@ -121,7 +121,7 @@ scenograph = { git = "https://github.com/merely-made/mere.git", branch = "main" 
 # The serving half: admission, the carriers, dialling, the session loop with
 # its notices, the endpoint catalog and the projection host (lift plan P4).
 graphshell-host = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["native"] }
-notochord = { git = "https://github.com/merely-made/dramatis.git", rev = "0234e7eea6f2ddf2330a71b9425da01b06ae0391" }
+notochord = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 # The in-process carrier and the Knot endpoint it hosts. Turnstone embeds the
 # endpoint rather than spawning it: a subprocess is unshippable in a browser
 # tab or an iOS app, so the spawn path cannot be the only one.
@@ -448,10 +448,10 @@ debug = 0
 # revision. Rows below redirect packages that left Mere for their own repository.
 [patch."https://github.com/merely-made/mere.git"]
 # Coherent Murm adoption: imported carriers and owner leaves share one type family.
-insigne = { git = "https://github.com/merely-made/dramatis.git", rev = "0234e7eea6f2ddf2330a71b9425da01b06ae0391" }
+insigne = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 mere-transport = { git = "https://github.com/merely-made/murm.git", branch = "main" }
-notochord = { git = "https://github.com/merely-made/dramatis.git", rev = "0234e7eea6f2ddf2330a71b9425da01b06ae0391" }
-personae = { git = "https://github.com/merely-made/dramatis.git", rev = "0234e7eea6f2ddf2330a71b9425da01b06ae0391" }
+notochord = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+personae = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 mere-webrtc-carrier = { git = "https://github.com/merely-made/murm.git", branch = "main" }
 
 [workspace.package]
