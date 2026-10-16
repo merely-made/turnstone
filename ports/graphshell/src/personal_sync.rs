@@ -2039,9 +2039,46 @@ mod tests {
                 ..
             }
         )));
-        let held = assertion_statements(&replica.projection().await.unwrap());
-        assert_eq!(held.len(), assertions.len());
-        let ids: Vec<_> = held
+        let authored_ids = authored
+            .events
+            .iter()
+            .filter_map(|event| match event {
+                PersonalGraphEvent::AssertRelation {
+                    assertion_version: Some(1),
+                    statement_id: Some(id),
+                    ..
+                } => Some(id.clone()),
+                _ => None,
+            })
+            .collect::<std::collections::BTreeSet<_>>();
+        assert_eq!(authored_ids.len(), assertions.len());
+        let authored_records = |projection: &SyncProjection| {
+            assertion_statements(projection)
+                .into_iter()
+                .filter(|statement| authored_ids.contains(&statement.statement_id))
+                .collect::<Vec<_>>()
+        };
+        let derived_kinds = |projection: &SyncProjection| {
+            assertion_statements(projection)
+                .into_iter()
+                .filter(|statement| !authored_ids.contains(&statement.statement_id))
+                .map(|statement| statement.relation_kind())
+                .collect::<std::collections::BTreeSet<_>>()
+        };
+        let initial_projection = replica.projection().await.unwrap();
+        let held = assertion_statements(&initial_projection);
+        let authored_held = authored_records(&initial_projection);
+        assert_eq!(held.len(), assertions.len() + 2);
+        assert_eq!(authored_held.len(), assertions.len());
+        assert_eq!(
+            derived_kinds(&initial_projection),
+            std::collections::BTreeSet::from([
+                RelationKind::Containment(ContainmentSubKind::Domain),
+                RelationKind::Containment(ContainmentSubKind::UrlPath),
+            ]),
+            "the two extra projected rows are derived node-containment relations, not signed operation assertions"
+        );
+        let ids: Vec<_> = authored_held
             .iter()
             .map(|statement| statement.statement_id.clone())
             .collect();
@@ -2049,7 +2086,7 @@ mod tests {
             ids.iter().collect::<std::collections::BTreeSet<_>>().len(),
             assertions.len()
         );
-        for statement in &held {
+        for statement in &authored_held {
             assert_eq!(statement.provenance_iri.as_deref(), Some(alice.as_str()));
             assert_eq!(statement.asserted_at_ms, statement.first_asserted_ms);
             assert!(statement.asserted_at_ms.is_some());
@@ -2090,7 +2127,13 @@ mod tests {
             retained.withdrawn.as_ref().unwrap().by.as_deref(),
             Some(alice.as_str())
         );
-        assert_eq!(assertion_statements(&history).len(), assertions.len() - 1);
+        assert_eq!(assertion_statements(&history).len(), assertions.len() + 1);
+        assert_eq!(authored_records(&history).len(), assertions.len() - 1);
+        assert_eq!(
+            derived_kinds(&history),
+            derived_kinds(&initial_projection),
+            "withdrawing a source assertion leaves the derived node-containment projection separate"
+        );
         assert_eq!(
             history.graph.find_assertion(&ids[0]).unwrap().1.withdrawn,
             None
@@ -2109,6 +2152,9 @@ mod tests {
             receiver.accept(&records[index].operation).await.unwrap();
         }
         let replayed = receiver.projection().await.unwrap();
+        assert_eq!(assertion_statements(&replayed).len(), assertions.len() + 1);
+        assert_eq!(authored_records(&replayed).len(), assertions.len() - 1);
+        assert_eq!(derived_kinds(&replayed), derived_kinds(&history));
         let replayed_tombstone = replayed.graph.find_assertion(&collection_id).unwrap().1;
         assert_eq!(
             replayed_tombstone.withdrawn.as_ref().unwrap().at_ms,
@@ -2324,10 +2370,14 @@ mod tests {
             .await
             .unwrap();
         let record = from_operation(&operation, None).unwrap();
-        assert_eq!(
-            record.events,
-            vec![statement_event(SemanticSubKind::Supports, id, 100)]
-        );
+        let mut newly_authored = statement_event(SemanticSubKind::Supports, id, 100);
+        if let PersonalGraphEvent::AssertRelation {
+            assertion_version, ..
+        } = &mut newly_authored
+        {
+            *assertion_version = Some(1);
+        }
+        assert_eq!(record.events, vec![newly_authored]);
         replica
             .author(vec![statement_event(
                 SemanticSubKind::Supports,

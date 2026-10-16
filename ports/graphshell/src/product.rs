@@ -2312,12 +2312,12 @@ mod tests {
             .flat_map(|edge| edge.retained_assertions())
             .filter(|claim| {
                 RelationKind::from_predicate_iri(&claim.predicate)
-                    == Some(RelationKind::Containment(ContainmentSubKind::UrlPath))
+                    == Some(RelationKind::Containment(ContainmentSubKind::Domain))
             })
             .collect();
         assert!(
             !derived.is_empty(),
-            "selected same-host surfaces retain URL-path claims"
+            "selected same-host surfaces retain the rule-derived domain claim"
         );
         for claim in derived {
             assert!(claim.statement_id.starts_with("urn:uuid:"));

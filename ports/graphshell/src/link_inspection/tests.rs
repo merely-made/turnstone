@@ -209,9 +209,18 @@ fn parallel_buckets_and_self_links_are_not_dropped_or_double_counted() {
     let (mut graph, [a, b, _, _]) = fixture();
     let id = assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:alice");
     let owner = inspect_statement(&graph, &id).unwrap().owner;
-    let edge = graph.to_snapshot().resource_edges.remove(0);
+    let edge = graph
+        .to_snapshot()
+        .resource_edges
+        .into_iter()
+        .find(|edge| {
+            edge.retained_assertions()
+                .iter()
+                .any(|statement| statement.statement_id == id)
+        })
+        .expect("the authored assertion is retained in its Resource bucket");
     let mut second = edge.clone();
-    let statement = &mut second.semantic.as_mut().unwrap().statements[0];
+    let statement = &mut second.retained_assertions_mut()[0];
     statement.statement_id = "urn:statement:parallel".into();
     statement.provenance_iri = Some("urn:author:bob".into());
     apply_graph_delta(
@@ -256,7 +265,7 @@ fn parallel_buckets_and_self_links_are_not_dropped_or_double_counted() {
 }
 
 #[test]
-fn session_sidecars_are_inspected_without_fabricating_statements() {
+fn session_sidecar_projection_preserves_its_canonical_assertion() {
     let (mut graph, [a, b, _, _]) = fixture();
     let from = graph.get_node_key_by_id(a).unwrap();
     let to = graph.get_node_key_by_id(b).unwrap();
@@ -271,7 +280,28 @@ fn session_sidecars_are_inspected_without_fabricating_statements() {
     let inspected = inspect_link(&graph, LinkTarget::new(a, b)).unwrap();
     assert_eq!(inspected.records.len(), 1);
     let record = &inspected.records[0];
-    assert!(record.statements.is_empty());
+    let canonical = graph
+        .get_edge(graph.find_edge_key(from, to).unwrap())
+        .unwrap()
+        .assertions()
+        .iter()
+        .find(|statement| statement.recognized_sub_kind.is_none())
+        .expect("the session Arrangement claim has an exact runtime assertion");
+    assert_eq!(record.statements.len(), 1);
+    assert_eq!(record.statements[0].statement_id, canonical.statement_id);
+    assert_eq!(record.statements[0].predicate, canonical.predicate);
+    assert_eq!(record.statements[0].recognized_sub_kind, None);
+    assert_eq!(record.statements[0].provenance_iri, None);
+    assert_eq!(record.statements[0].asserted_at_ms, None);
+    assert_eq!(record.statements[0].first_asserted_ms, None);
+    assert!(
+        graph.to_snapshot().edges.iter().all(|edge| {
+            edge.retained_assertions()
+                .iter()
+                .all(|statement| statement.statement_id != canonical.statement_id)
+        }),
+        "durable snapshots still omit session SplitPair assertions"
+    );
     assert_eq!(record.owner.stratum, GraphStratum::Surface);
     assert_eq!(
         record.families[0],
@@ -283,7 +313,7 @@ fn session_sidecars_are_inspected_without_fabricating_statements() {
 }
 
 #[test]
-fn mixed_nonsemantic_data_preserves_events_aggregates_and_family_values() {
+fn mixed_family_data_preserves_canonical_assertions_events_and_aggregates() {
     let (mut graph, [a, b, _, _]) = fixture();
     let from = graph.get_node_key_by_id(a).unwrap();
     let to = graph.get_node_key_by_id(b).unwrap();
@@ -310,12 +340,23 @@ fn mixed_nonsemantic_data_preserves_events_aggregates_and_family_values() {
         },
     );
     let inspected = inspect_link(&graph, LinkTarget::new(a, b)).unwrap();
-    assert!(
-        inspected
-            .records
-            .iter()
-            .all(|record| record.statements.is_empty())
-    );
+    let snapshot = graph.to_snapshot();
+    let canonical_ids: BTreeSet<_> = snapshot
+        .edges
+        .iter()
+        .flat_map(|edge| edge.retained_assertions())
+        .map(|statement| statement.statement_id.as_str())
+        .collect();
+    let statements: Vec<_> = inspected
+        .records
+        .iter()
+        .flat_map(|record| &record.statements)
+        .collect();
+    assert_eq!(statements.len(), 3);
+    assert!(statements.iter().all(|statement| {
+        statement.recognized_sub_kind.is_none()
+            && canonical_ids.contains(statement.statement_id.as_str())
+    }));
     let families: Vec<_> = inspected
         .records
         .iter()
