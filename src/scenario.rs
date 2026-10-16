@@ -84,7 +84,8 @@
 //! wait-status <frames> <substr> # like wait-row, over the place status lines
 //!                            # (`crate::observe::snapshot(..).place_status`)
 //! wait-file <frames> <path>  # like wait-row, satisfied once <path> exists
-//!                            # and is non-empty (cross-process sequencing
+//!                            # and is non-empty, without blocking rendered frames
+//!                            # (cross-process sequencing
 //!                            # through an exchange directory)
 //! wait-knot <frames> <substr> # like wait-row, over this session's
 //!                            # `crate::observe::KnotDocumentFacts` (from

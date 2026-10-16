@@ -16,7 +16,6 @@ click surface:contributed role:textbox Question
 insert What is the Pelican observatory's access word? Answer in one short sentence and cite the passage using [1].
 click surface:contributed role:button Ask
 wait-file 6000 ${DJINN_HEADED_DIR}/streaming.json
-settle 12
 assert text Generating
 capture 01_streaming
 click surface:contributed role:button Pause

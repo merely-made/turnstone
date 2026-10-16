@@ -1200,6 +1200,7 @@ pub struct Shell {
     /// on `self` (the scenario is taken out during a tick) so `capture` can reach
     /// it. `shared_done` guards writing the sentinel exactly once.
     shared_scenario: Option<taproot::Scenario>,
+    pending_scenario_file: Option<drive::PendingFileWait>,
     held_contributed_click: Option<contributed_automation::HeldClick>,
     contributed_click_request: u64,
     /// A bounded copy of semantic events after their ordinary consumers have
@@ -1672,6 +1673,7 @@ impl Shell {
             shift: false,
             meta: false,
             shared_scenario: shared_scenario_from_env(),
+            pending_scenario_file: None,
             held_contributed_click: None,
             contributed_click_request: 0,
             observed_events: VecDeque::with_capacity(128),
@@ -2947,6 +2949,26 @@ impl Shell {
         if self.pending_capture_readback.is_some() || !self.pending_native_diagnostics.is_empty() {
             self.request_redraw();
             return;
+        }
+        if let Some(wait) = self.pending_scenario_file.as_mut() {
+            match wait.poll() {
+                Ok(true) => self.pending_scenario_file = None,
+                Ok(false) => {
+                    self.request_redraw();
+                    return;
+                },
+                Err(error) => {
+                    self.pending_scenario_file = None;
+                    if let Some(shared) = self.shared_scenario.take() {
+                        let mut outcome = shared.finish();
+                        outcome.ok = false;
+                        outcome.log.push(error);
+                        self.write_shared_done(&outcome);
+                        event_loop.exit();
+                    }
+                    return;
+                },
+            }
         }
         // The shared taproot driver, when active, takes the frame: take the
         // scenario out (so `tick(self)` can borrow the Shell mutably), tick it,
