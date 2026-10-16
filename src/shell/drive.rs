@@ -21,6 +21,52 @@ use crate::panes::PaneContent;
 
 use super::Shell;
 
+/// A cross-process scenario wait polled by the normal rendered-frame pump.
+pub(super) struct PendingFileWait {
+    path: std::path::PathBuf,
+    remaining: u32,
+}
+impl PendingFileWait {
+    pub(super) fn new(path: std::path::PathBuf, frames: u32) -> Self {
+        Self { path, remaining: frames.max(1) }
+    }
+    pub(super) fn poll(&mut self) -> Result<bool, String> {
+        if std::fs::metadata(&self.path).is_ok_and(|meta| meta.len() > 0) {
+            return Ok(true);
+        }
+        if self.remaining == 0 {
+            return Err(format!("wait-file '{}': still missing or empty", self.path.display()));
+        }
+        self.remaining -= 1;
+        Ok(false)
+    }
+}
+#[cfg(test)]
+mod file_wait_tests {
+    use super::PendingFileWait;
+    #[test]
+    fn pending_file_wait_observes_empty_then_populated_file_on_later_frames() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("ready");
+        let mut wait = PendingFileWait::new(path.clone(), 3);
+        assert!(!wait.poll().unwrap());
+        std::fs::write(&path, b"").unwrap();
+        assert!(!wait.poll().unwrap());
+        std::fs::write(&path, b"ready").unwrap();
+        assert!(wait.poll().unwrap());
+    }
+    #[test]
+    fn pending_file_wait_refuses_an_exhausted_budget_but_accepts_a_ready_last_frame() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("ready");
+        let mut wait = PendingFileWait::new(path.clone(), 1);
+        assert!(!wait.poll().unwrap());
+        assert!(wait.poll().is_err());
+        std::fs::write(&path, b"ready").unwrap();
+        assert!(wait.poll().unwrap());
+    }
+}
+
 fn parse_public_fixture_a11y_receipt(value: Option<&str>) -> Result<bool, String> {
     match value {
         None | Some("0") => Ok(false),
@@ -1984,15 +2030,7 @@ impl Shell {
                 }
             },
             Step::WaitFile(frames, path) => {
-                let p = std::path::Path::new(path.as_str());
-                let ok = self.wait_frames(*frames, |_| {
-                    std::fs::metadata(p).is_ok_and(|meta| meta.len() > 0)
-                });
-                if !ok {
-                    return Err(format!(
-                        "wait-file '{path}' after {frames} frames: still missing or empty"
-                    ));
-                }
+                self.pending_scenario_file = Some(PendingFileWait::new(path.into(), *frames));
             },
             Step::RecordPlace(name) => {
                 let value = crate::observe::place_record(&self.app);
