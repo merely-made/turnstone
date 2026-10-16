@@ -167,7 +167,9 @@ reference to supplied material.
 The trail actor lends retained text to the resident while the pane is open.
 Only passages supplied to an ask enter its sealed run journal. This first
 handoff refuses publication JSON above 128 KiB; use a smaller browsing session
-when that limit is reached. Headed I5 qualification is in progress.
+when that limit is reached. The [native I5 receipt](docs/receipts/resident_inference_i5_windows_20261016/native/execution.json)
+qualifies the pinned GPU model, pause/resume, cancellation, and restart with
+the fixture origin offline. It uses a test-owned native Djinn resident.
 
 ## Graphshell endpoint
 

@@ -1,0 +1,17 @@
+{
+  "turnstone_head": "ec9881ea1ac1b336604b0096e0971e1c8085193b",
+  "turnstone_binary_sha256": "14ba71af853acdeb97747cf6675f21b72f1577566f682fb606067562d8746c23",
+  "resident_test_sha256": "160bf83db15d457687b32cc2c3137804f18ca162c0cc660a2f9239e40df3f38b",
+  "cargo_lock_sha256": "cc0af75bd07bb6a71280c110a9cd854b54612da4287004acd214c0ead29dddfc",
+  "scenarios": {
+    "answer": "bc37452ceb848b9cafc23e0bb797f86cfd4f3a4fab217679cb6f1c22802b1fe4",
+    "reopen": "186f471c0d59e0c25156536b027cf6e0a6cf22c86e46025014eb497b1d120d1c"
+  },
+  "harness_sha256": "890335dbd5f14d403ccc1482282bf3e135bf577e11409d2459b0716dba3db6a9",
+  "fixture_notes": {
+    "/pelican": "The Pelican observatory's access word is amberstone. It has no other access word.",
+    "/sandpiper": "The Sandpiper observatory's access word is indigo. It has no other access word."
+  },
+  "origin_stopped_before_reopen": true,
+  "boundary": "Separate headed Turnstone and in-process native Djinn resident; pinned trained GPU model; actual app connection; public fictional retained text"
+}

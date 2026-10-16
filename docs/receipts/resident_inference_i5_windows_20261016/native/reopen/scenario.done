@@ -1,0 +1,5 @@
+RESULT ok
+captured 06_reopened_exact_source
+Past answer and exact source reopened after both processes restarted
+presentation frames=177 captures=1 blank=0
+capture C:\t\cargo-targets\turnstone\i5-headed\reopen\06_reopened_exact_source.png digest=2a005683b7ef086a blank=false

@@ -1,7 +1,7 @@
 # Public two-page Windows UIA heading/ancestry probe. Banner text and form
-# semantics remain supplier-to-platform release gates. Keep the frame pump running during
-# activation and observation; wait-file itself blocks it and is only a final
-# check that the observer already completed its exact marker/ancestry proof.
+# semantics remain supplier-to-platform release gates. The frame pump runs during
+# activation and observation; wait-file checks the observer completion marker
+# between rendered frames.
 settle 30
 key escape
 open ${SERVO_FIXTURE_BASE}/a11y.html?page=A

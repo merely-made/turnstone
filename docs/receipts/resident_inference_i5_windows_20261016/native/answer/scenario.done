@@ -1,0 +1,13 @@
+RESULT ok
+captured 01_streaming
+captured 02_paused
+captured 03_answer
+captured 04_exact_source
+captured 05_cancelled
+Real retained corpus, streamed answer, pause/resume, exact source and cancellation
+presentation frames=1129 captures=5 blank=0
+capture C:\t\cargo-targets\turnstone\i5-headed\answer\01_streaming.png digest=b9d23f1bbd74db62 blank=false
+capture C:\t\cargo-targets\turnstone\i5-headed\answer\02_paused.png digest=da44a63851a811da blank=false
+capture C:\t\cargo-targets\turnstone\i5-headed\answer\03_answer.png digest=bd304ca83602fe7d blank=false
+capture C:\t\cargo-targets\turnstone\i5-headed\answer\04_exact_source.png digest=795783f7532d978c blank=false
+capture C:\t\cargo-targets\turnstone\i5-headed\answer\05_cancelled.png digest=e16c094051fc5bd5 blank=false
