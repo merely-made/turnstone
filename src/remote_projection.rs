@@ -591,7 +591,7 @@ impl IntentSink for TurnstoneEndpoint {
 pub struct G3Run {
     pub session: ProjectionSession,
     pub presentations: Vec<ResolvedPresentation>,
-    pub layout: graphshell::view::ProjectionLayoutView,
+    pub layout: graphshell_host::view::ProjectionLayoutView,
     pub fit_result: IntentResult,
     pub open_result: IntentResult,
     pub graph_revision_before: u64,
@@ -613,7 +613,7 @@ pub fn run_g3_canary() -> Result<G3Run, String> {
     let snapshot = endpoint
         .snapshot(request)
         .map_err(|error| error.to_string())?;
-    let layout = graphshell::view::ProjectionLayoutView::from_scene(&snapshot.scene);
+    let layout = graphshell_host::view::ProjectionLayoutView::from_scene(&snapshot.scene);
     let graph_revision_before = endpoint.app().graph_runtimes.graph().revision();
     let graph_nodes_before = endpoint.app().graph_runtimes.graph().nodes().count();
     let mut client = ClientState::default();
@@ -738,8 +738,8 @@ pub fn render_g3_receipt() -> Result<String, String> {
         IntentResult::Rejected { reason } => reason.clone(),
         IntentResult::Stale { .. } => "The client observation was stale.".into(),
     };
-    Ok(graphshell::view::render_projection_receipt(
-        &graphshell::view::ProjectionReceiptView {
+    Ok(graphshell_host::view::render_projection_receipt(
+        &graphshell_host::view::ProjectionReceiptView {
             eyebrow: "Graphshell · G3 receipt".into(),
             title: "Turnstone truth, projected.".into(),
             lede: "Mere cartography maps the live browser graph into one Scenograph scene. Graphshell resolves the endpoint-owned cards and returns both intents through the same Servitor authority gate.".into(),
@@ -751,7 +751,7 @@ pub fn render_g3_receipt() -> Result<String, String> {
             presentations: run.presentations,
             layout: Some(run.layout),
             intents: vec![
-                graphshell::view::IntentReceiptView {
+                graphshell_host::view::IntentReceiptView {
                     label: format!("{} · curation", fit_label()),
                     result: result_name(&run.fit_result),
                     detail: result_detail(
@@ -759,7 +759,7 @@ pub fn render_g3_receipt() -> Result<String, String> {
                         "The projected layout grant admitted the harmless view action.",
                     ),
                 },
-                graphshell::view::IntentReceiptView {
+                graphshell_host::view::IntentReceiptView {
                     label: "Open address · graph truth".into(),
                     result: result_name(&run.open_result),
                     detail: result_detail(

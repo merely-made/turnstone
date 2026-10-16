@@ -644,7 +644,7 @@ impl KnotHub {
                     PresentationCapability::EditableText,
                     PresentationCapability::PortableCard,
                 ]);
-                let retained = graphshell::sessions::spawn_endpoint_session(
+                let retained = graphshell_host::sessions::spawn_endpoint_session(
                     program.as_os_str(),
                     &args,
                     profile,
