@@ -1404,47 +1404,9 @@ fn filter_scene(mut scene: SavedSceneV3, members: &HashSet<Uuid>) -> SavedSceneV
         }
         scene.dynamics = SavedDynamics::from_spec(&spec);
     }
-    scene.cartography = CartographyGeometry::from_positions(
-        scene
-            .cartography
-            .iter()
-            .filter(|(id, _)| members.contains(id)),
-    )
-    .with_sizes(
-        scene
-            .cartography
-            .size_iter()
-            .filter(|(id, _)| members.contains(id)),
-    )
-    .with_size_by_degree(scene.cartography.size_by_degree())
-    .with_size_by_importance(scene.cartography.size_by_importance())
-    .with_importance_metric(scene.cartography.importance_metric())
-    .with_sprites(
-        scene
-            .cartography
-            .sprite_iter()
-            .filter(|(id, _)| members.contains(id))
-            .map(|(id, uri)| (id, uri.to_string())),
-    )
-    .with_sprite_hulls(
-        scene
-            .cartography
-            .sprite_hull_iter()
-            .filter(|(id, _)| members.contains(id)),
-    )
-    .with_materials(
-        scene
-            .cartography
-            .material_iter()
-            .filter(|(id, _)| members.contains(id)),
-    )
-    .with_faces(
-        scene
-            .cartography
-            .face_iter()
-            .filter(|(id, _)| members.contains(id))
-            .map(|(id, face)| (id, face.to_string())),
-    );
+    scene
+        .cartography
+        .retain_members(|id| members.contains(id));
     scene
 }
 

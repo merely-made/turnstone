@@ -92,6 +92,7 @@ pub fn restore_scene(
     canvas.apply_cartography_sprite_hulls(scene.cartography.sprite_hull_iter());
     canvas.apply_cartography_materials(scene.cartography.material_iter());
     canvas.apply_cartography_faces(scene.cartography.face_iter());
+    canvas.apply_cartography_scene_state(&scene.cartography);
     // Binding was checked above, before the graph changed.
     canvas
         .set_dynamics_spec(&spec)
