@@ -17,7 +17,11 @@ assert snap link-inspector-statements == 2
 same selected detail-member
 same selected forme
 same selected forme-accesses
+click role:button Inspect assertion 1
+settle 2
 capture p2_link_history_held_default
+click role:button Close assertion inspection
+settle 2
 
 # The default scope is held-only. The toggle exposes the retained tombstones.
 click role:button Show retained history
@@ -52,7 +56,19 @@ assert text urn:graphshell:link-history:evidence:legacy
 same selected detail-member
 same selected forme
 same selected forme-accesses
+# Reveal the following heading so the preceding assertion span and basis
+# are in view; headings do not edit source or selection.
+click role:heading Retained assertion 2
+settle 2
 capture p2_link_history_retained
+click role:heading Retained assertion 4
+settle 2
+capture p2_link_history_unknown_withdrawal
+click role:button Inspect held assertion 4
+settle 2
+capture p2_link_history_undated
+click role:button Close assertion inspection
+settle 2
 
 # Exact inspection remains available for a held row and names its stable handle.
 click role:button Inspect held assertion 2
