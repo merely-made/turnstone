@@ -12,7 +12,7 @@ use super::{Child, TreePage};
 use cambium::{WorkspacePaneStatus, el, title_bar, workspace_pane_header};
 
 pub(super) const SHEET: &str = r#"
-.tree-instrument { --workspace-font-interface:IBM Plex Sans,sans-serif; --workspace-font-reading:Newsreader,IBM Plex Sans,serif; }
+.tree-instrument { --workspace-font-interface:IBM Plex Sans,sans-serif; --workspace-font-reading:Newsreader,serif; }
 .tree-instrument > .cambium-title-bar h1 { margin:0; font-size:17px; font-weight:500; }
 .tree-instrument .workspace-app-context { margin:2px 0 0; font-size:12px; color:var(--workspace-muted); }
 .tree-instrument .workspace-app-identity { display:flex; flex-direction:column; }

@@ -81,10 +81,11 @@ impl Default for Reading {
         Self {
             host: ContentHost::with_native_presentation(
                 vec![
+                    include_bytes!("../../web/Newsreader-Regular.ttf").to_vec(),
                     include_bytes!("../../web/IBMPlexSans-Regular.ttf").to_vec(),
                     include_bytes!("../../web/IBMPlexMono-Regular.ttf").to_vec(),
                 ],
-                Some("IBM Plex Sans".into()),
+                Some("Newsreader".into()),
             ),
             bindings: Default::default(),
             registered: Default::default(),

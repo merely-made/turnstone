@@ -1227,7 +1227,10 @@ fn page_fonts() -> Vec<HostFont> {
     #[allow(unused_mut)]
     let mut fonts = vec![face(include_bytes!("../web/IBMPlexSans-Regular.ttf"))];
     #[cfg(feature = "product")]
-    fonts.push(face(include_bytes!("../web/IBMPlexMono-Regular.ttf")));
+    fonts.extend([
+        face(include_bytes!("../web/IBMPlexMono-Regular.ttf")),
+        face(include_bytes!("../web/Newsreader-Regular.ttf")),
+    ]);
     fonts
 }
 
@@ -1564,8 +1567,9 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
             logic: view as Logic,
             sheet: initial_sheet,
             // A browser lends genet no system faces, so the page brings its own: the
-            // design system's interface face, and in the product its code face (OFL;
-            // notices in web/). The viewer carries one face to hold its size budget.
+            // design system's interface face, and in the product its code and reading
+            // faces (OFL; notices in web/). The viewer carries one face to hold its
+            // size budget.
             fonts: page_fonts(),
             images: Vec::new(),
         },
