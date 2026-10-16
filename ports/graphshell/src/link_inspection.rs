@@ -535,6 +535,226 @@ pub fn inspect_statement(graph: &Graph, statement_id: &str) -> Result<StatementI
     })
 }
 
+/// Re-resolve a held statement within its exact directed owner. This is the
+/// safe follow-through for a source-bound UI action: equal statement IDs in
+/// another direction or stratum cannot retarget the inspection.
+///
+/// Identical retained copies of one ID within the requested owner collapse to
+/// one result. Conflicting copies in that same owner fail closed rather than
+/// selecting whichever bucket happens to iterate first.
+pub fn inspect_statement_at_owner(
+    graph: &Graph,
+    statement_id: &str,
+    stratum: GraphStratum,
+    from: Uuid,
+    to: Uuid,
+) -> Result<StatementInspection, String> {
+    let requested_owner = owner(graph, stratum, from, to);
+    let mut found: Option<SemanticStatement> = None;
+
+    let mut consider = |statement: &SemanticStatement| -> Result<(), String> {
+        if statement.statement_id != statement_id {
+            return Ok(());
+        }
+        if let Some(previous) = &found {
+            if previous != statement {
+                return Err(format!(
+                    "Conflicting retained copies of assertion {statement_id} in the requested owner"
+                ));
+            }
+        } else {
+            found = Some(statement.clone());
+        }
+        Ok(())
+    };
+
+    match stratum {
+        GraphStratum::Surface => {
+            if let Some((from_key, to_key)) = graph
+                .get_node_key_by_id(from)
+                .zip(graph.get_node_key_by_id(to))
+            {
+                for (_, _, target, payload) in graph.surface_outgoing_relation_buckets(from_key) {
+                    if target != to_key {
+                        continue;
+                    }
+                    for statement in payload.semantic_statements() {
+                        consider(statement)?;
+                    }
+                }
+            }
+        },
+        GraphStratum::Resource => {
+            for (_, source, target, payload) in graph.resource_relations() {
+                if (source, target) != (from, to) {
+                    continue;
+                }
+                for statement in payload.semantic_statements() {
+                    consider(statement)?;
+                }
+            }
+        },
+    }
+
+    let statement = found.filter(SemanticStatement::is_held).ok_or_else(|| {
+        format!(
+            "Assertion {statement_id} is not held for the requested {stratum:?} owner {from} -> {to}"
+        )
+    })?;
+    Ok(StatementInspection {
+        owner: requested_owner,
+        statement: (&statement).into(),
+    })
+}
+
 #[cfg(test)]
 #[path = "link_inspection/tests.rs"]
 mod tests;
+
+#[cfg(test)]
+mod owner_bound_statement_tests {
+    use super::*;
+    use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
+    use mere::kernel::graph::{
+        PersistedEdge, PersistedSemanticEdgeData, PersistedSemanticStatement,
+    };
+    use mere::kernel::types::{AssertionWithdrawal, GraphScope};
+
+    fn graph() -> (Graph, Uuid, Uuid, Uuid) {
+        let mut graph = Graph::new();
+        let ids = [1, 2, 3].map(Uuid::from_u128);
+        for (id, address) in ids.into_iter().zip([
+            "https://owner-a.test/",
+            "https://owner-b.test/",
+            "https://owner-c.test/",
+        ]) {
+            add_node(&mut graph, Some(id), address.into(), Default::default());
+        }
+        (graph, ids[0], ids[1], ids[2])
+    }
+
+    fn edge(from: Uuid, to: Uuid, predicate: &str, withdrawn: bool) -> PersistedEdge {
+        PersistedEdge {
+            from_node_id: from.to_string(),
+            to_node_id: to.to_string(),
+            families: Vec::new(),
+            semantic: Some(PersistedSemanticEdgeData {
+                predicate: Some(predicate.into()),
+                statements: vec![PersistedSemanticStatement {
+                    statement_id: "urn:assertion:shared".into(),
+                    predicate: predicate.into(),
+                    recognized_sub_kind: None,
+                    label: Some(format!("note for {predicate}")),
+                    graph_scope: GraphScope::Custom("urn:scope:owner-test".into()),
+                    provenance_iri: Some("urn:asserter:owner-test".into()),
+                    first_asserted_ms: Some(10),
+                    asserted_at_ms: Some(11),
+                    withdrawn: withdrawn.then_some(AssertionWithdrawal {
+                        at_ms: Some(12),
+                        by: Some("urn:withdrawer:test".into()),
+                    }),
+                    basis: Default::default(),
+                }],
+                ..Default::default()
+            }),
+            traversal: None,
+            containment: None,
+            arrangement: None,
+            imported: None,
+            provenance: None,
+        }
+    }
+
+    fn set_surface_edges(graph: &mut Graph, from: Uuid, to: Uuid, edges: Vec<PersistedEdge>) {
+        apply_graph_delta(
+            graph,
+            GraphDelta::ReplaySetEdgesByIds {
+                from_id: from,
+                to_id: to,
+                edges,
+            },
+        );
+    }
+
+    #[test]
+    fn same_id_in_antiparallel_buckets_resolves_by_exact_owner_without_mutation() {
+        let (mut graph, a, b, _) = graph();
+        set_surface_edges(
+            &mut graph,
+            a,
+            b,
+            vec![edge(a, b, "urn:predicate:forward", false)],
+        );
+        set_surface_edges(
+            &mut graph,
+            b,
+            a,
+            vec![edge(b, a, "urn:predicate:reverse", false)],
+        );
+        let before = serde_json::to_value(graph.to_snapshot()).unwrap();
+
+        let forward =
+            inspect_statement_at_owner(&graph, "urn:assertion:shared", GraphStratum::Surface, a, b)
+                .unwrap();
+        let reverse =
+            inspect_statement_at_owner(&graph, "urn:assertion:shared", GraphStratum::Surface, b, a)
+                .unwrap();
+
+        assert_eq!((forward.owner.from.id, forward.owner.to.id), (a, b));
+        assert_eq!(forward.statement.predicate, "urn:predicate:forward");
+        assert_eq!((reverse.owner.from.id, reverse.owner.to.id), (b, a));
+        assert_eq!(reverse.statement.predicate, "urn:predicate:reverse");
+        assert_eq!(serde_json::to_value(graph.to_snapshot()).unwrap(), before);
+    }
+
+    #[test]
+    fn owner_bound_lookup_rejects_wrong_owner_withdrawn_and_conflicting_copies() {
+        let (mut graph, a, b, c) = graph();
+        set_surface_edges(
+            &mut graph,
+            a,
+            b,
+            vec![edge(a, b, "urn:predicate:forward", false)],
+        );
+        set_surface_edges(
+            &mut graph,
+            b,
+            a,
+            vec![edge(b, a, "urn:predicate:reverse", true)],
+        );
+        assert!(inspect_statement_at_owner(
+            &graph,
+            "urn:assertion:shared",
+            GraphStratum::Surface,
+            c,
+            b,
+        )
+        .is_err());
+        assert!(inspect_statement_at_owner(
+            &graph,
+            "urn:assertion:shared",
+            GraphStratum::Surface,
+            b,
+            a,
+        )
+        .is_err());
+
+        set_surface_edges(
+            &mut graph,
+            a,
+            b,
+            vec![
+                edge(a, b, "urn:predicate:forward", false),
+                edge(a, b, "urn:predicate:conflict", false),
+            ],
+        );
+        assert!(inspect_statement_at_owner(
+            &graph,
+            "urn:assertion:shared",
+            GraphStratum::Surface,
+            a,
+            b,
+        )
+        .is_err());
+    }
+}

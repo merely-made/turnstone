@@ -27,10 +27,29 @@ fn exact(page: &TreePage) -> Result<StatementInspection, String> {
         .inspected_statement
         .as_deref()
         .ok_or("Choose an assertion to inspect")?;
-    page.product
+    let product = page
+        .product
         .as_ref()
-        .ok_or("Assertion inspection requires the local graph")?
-        .inspect_statement(statement)
+        .ok_or("Assertion inspection requires the local graph")?;
+    if let Some(target) = page
+        .inspected_link_member
+        .as_ref()
+        .filter(|target| target.assertion_id == statement)
+    {
+        if product.link_source()? != target.source {
+            return Err("The assertion's source context changed; reopen the link".into());
+        }
+        let stratum = match target.link.stratum {
+            scenograph::link::LinkStratum::Surface => GraphStratum::Surface,
+            scenograph::link::LinkStratum::Resource => GraphStratum::Resource,
+        };
+        let from =
+            Uuid::parse_str(&target.from).map_err(|_| "Invalid assertion source endpoint")?;
+        let to = Uuid::parse_str(&target.to).map_err(|_| "Invalid assertion source endpoint")?;
+        product.inspect_statement_at_owner(statement, stratum, from, to)
+    } else {
+        product.inspect_statement(statement)
+    }
 }
 
 fn read_history(page: &TreePage) -> Result<LinkHistoryInspection, String> {
@@ -169,6 +188,83 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
             .with_field("link-inspector-history-inspectable-ids", "")
             .with_field("link-inspector-history-error", "")
     };
+    let snapshot = match opened_reading(page) {
+        Ok(reading) => {
+            let layout = opened_layout(page, &reading);
+            let now_ms = page
+                .product
+                .as_ref()
+                .map(|product| product.opened_link_time_ms());
+            match scenomise::compile_opened_link(
+                &reading,
+                &layout,
+                scenograph::link::OpenedLinkOptions { now_ms },
+            ) {
+                Ok(opened) => snapshot
+                    .with_field("opened-link-ready", "true")
+                    .with_field(
+                        "opened-link-layout",
+                        match layout {
+                            scenograph::link::OpenedLinkLayout::List { .. } => "list",
+                            scenograph::link::OpenedLinkLayout::Timeline { .. } => "timeline",
+                        },
+                    )
+                    .with_field("opened-link-members", opened.entries.len().to_string())
+                    .with_field("opened-link-lanes", opened.lanes.len().to_string())
+                    .with_field(
+                        "opened-link-undated",
+                        opened
+                            .lanes
+                            .iter()
+                            .filter(|lane| lane.undated)
+                            .map(|lane| lane.row_count)
+                            .sum::<usize>()
+                            .to_string(),
+                    )
+                    .with_field(
+                        "opened-link-unknown-withdrawal",
+                        opened
+                            .entries
+                            .iter()
+                            .filter(|entry| {
+                                entry.span.as_ref().is_some_and(|span| {
+                                    matches!(
+                                        span.end,
+                                        scenograph::link::LinkSpanEnd::WithdrawalTimeUnknown
+                                    )
+                                })
+                            })
+                            .count()
+                            .to_string(),
+                    )
+                    .with_field(
+                        "opened-link-source-available",
+                        matches!(
+                            reading.source,
+                            scenograph::link::LinkSource::Available { .. }
+                        )
+                        .to_string(),
+                    )
+                    .with_field(
+                        "opened-link-error",
+                        page.opened_link_error.as_deref().unwrap_or(""),
+                    ),
+                Err(error) => snapshot
+                    .with_field("opened-link-ready", "false")
+                    .with_field("opened-link-error", error.to_string()),
+            }
+        },
+        Err(error) => snapshot
+            .with_field("opened-link-ready", "false")
+            .with_field(
+                "opened-link-error",
+                if page.inspected_link.is_some() {
+                    error
+                } else {
+                    String::new()
+                },
+            ),
+    };
     let snapshot = snapshot
         .with_field(
             "assertion-inspector-open",
@@ -237,7 +333,10 @@ pub(super) fn access_links(page: &TreePage, member: Uuid) -> Child {
                                 format!("Inspect links: {label}"),
                                 move |page: &mut TreePage, _| {
                                     page.inspected_link = Some(target);
+                                    page.opened_link_layout = None;
+                                    page.opened_link_error = None;
                                     page.inspected_statement = None;
+                                    page.inspected_link_member = None;
                                     page.tools_open = true;
                                 },
                             )
@@ -354,132 +453,57 @@ fn statement_rows(statement: &HeldStatement) -> Vec<DetailRow> {
     rows
 }
 
-fn render_history(history: LinkHistoryInspection, children: &mut Vec<Child>) {
-    children.push(Box::new(detail_panel(&[DetailSection::new(
-        "Displayed accesses",
-        vec![
-            DetailRow::new("First access", &history.first.address),
-            DetailRow::new("First identity", history.first.member.to_string()),
-            DetailRow::new("Second access", &history.second.address),
-            DetailRow::new("Second identity", history.second.member.to_string()),
-        ],
-    )])));
-    for note in history.notes {
-        children.push(Box::new(el("p", note).attr("role", "status")));
-    }
-    if history.entries.is_empty() {
-        children.push(Box::new(el(
-            "p",
-            "No retained assertion history held for this pair",
-        )));
-    }
-    for (index, entry) in history.entries.into_iter().enumerate() {
-        let assertion = entry.assertion;
-        let first = assertion
-            .first_asserted_ms
-            .map(|time| time.to_string())
-            .unwrap_or_else(|| "Undated".into());
-        let lifecycle_end = match &assertion.withdrawn {
-            Some(withdrawal) => withdrawal
-                .at_ms
-                .map(|time| format!("withdrawn at {time}"))
-                .unwrap_or_else(|| "withdrawn; time unavailable".into()),
-            None => "open (currently held)".into(),
-        };
-        let basis_method = assertion
-            .basis
-            .method
-            .as_ref()
-            .map(|method| match &method.version {
-                Some(version) => format!("{} ({version})", method.iri),
-                None => method.iri.clone(),
-            })
-            .unwrap_or_else(|| "No method held".into());
-        let rows = vec![
-            DetailRow::new("Assertion handle", &assertion.id),
-            DetailRow::new("Predicate", &assertion.predicate),
-            DetailRow::new(
-                "Displayed direction",
-                format!("{} → {}", entry.displayed_from, entry.displayed_to),
-            ),
-            DetailRow::new("Source stratum", format!("{:?}", entry.owner.stratum)),
-            DetailRow::new(
-                "First to lifecycle end",
-                format!("{first} to {lifecycle_end}"),
-            ),
-            DetailRow::new(
-                "Withdrawal by",
-                assertion
-                    .withdrawn
-                    .as_ref()
-                    .and_then(|withdrawal| withdrawal.by.clone())
-                    .unwrap_or_else(|| {
-                        if assertion.withdrawn.is_some() {
-                            "Attribution not held here".into()
-                        } else {
-                            "Currently held".into()
-                        }
-                    }),
-            ),
-            DetailRow::new(
-                "Last confirmation (ms)",
-                assertion
-                    .asserted_at_ms
-                    .map(|time| time.to_string())
-                    .unwrap_or_else(|| "No confirmation time held".into()),
-            ),
-            DetailRow::new(
-                "Basis note",
-                assertion
-                    .basis
-                    .note
-                    .clone()
-                    .unwrap_or_else(|| "No basis note held".into()),
-            ),
-            DetailRow::new("Basis method", basis_method),
-            DetailRow::new(
-                "Basis evidence",
-                if assertion.basis.evidence.is_empty() {
-                    "No evidence held".into()
-                } else {
-                    assertion.basis.evidence.join(", ")
-                },
-            ),
-        ];
-        children.push(Box::new(detail_panel(&[DetailSection::new(
-            format!("Retained assertion {}", index + 1),
-            rows,
-        )])));
-        if assertion.withdrawn.is_none() {
-            let handle = assertion.id.clone();
-            children.push(Box::new(
-                button(
-                    format!("Inspect held assertion {}", index + 1),
-                    move |page: &mut TreePage, _| {
-                        page.inspected_statement = Some(handle.clone());
-                    },
-                )
-                .attr("data-inspect-statement", assertion.id),
-            ));
-        }
-    }
-    if !history.coverage.limits.is_empty() {
-        children.push(Box::new(el("h3", "Known limits")));
-        children.push(Box::new(el(
-            "ul",
-            history
-                .coverage
-                .limits
-                .into_iter()
-                .map(|limit| {
-                    let count = limit
-                        .count
-                        .map(|count| format!(" · {count}"))
-                        .unwrap_or_default();
-                    el("li", format!("{:?}: {}{count}", limit.layer, limit.reason))
-                })
-                .collect::<Vec<_>>(),
-        )));
+fn opened_reading(page: &TreePage) -> Result<scenograph::link::LinkPairReading, String> {
+    let target = page.inspected_link.ok_or("Choose a link to inspect")?;
+    page.product
+        .as_ref()
+        .ok_or("Link reading requires the local graph")?
+        .opened_link(target, page.link_history_open)
+}
+
+fn opened_layout(
+    page: &TreePage,
+    reading: &scenograph::link::LinkPairReading,
+) -> scenograph::link::OpenedLinkLayout {
+    page.opened_link_layout
+        .clone()
+        .unwrap_or_else(|| scenograph::link::OpenedLinkLayout::default_for(reading))
+}
+
+fn opened_event(page: &mut TreePage, event: cambium::OpenedLinkEvent) {
+    match event {
+        cambium::OpenedLinkEvent::Layout(layout) => {
+            page.opened_link_layout = Some(layout);
+            page.opened_link_error = None;
+        },
+        cambium::OpenedLinkEvent::Member { target, action } => {
+            // A retained UI callback resolves against today's source reading.
+            // A view ordinal never becomes an assertion or an action target.
+            let valid = opened_reading(page).is_ok_and(|reading| {
+                reading.source == target.source
+                    && reading.links.iter().any(|link| {
+                        link.key == target.link
+                            && link.buckets.iter().any(|bucket| {
+                                bucket.source_from.id == target.from
+                                    && bucket.source_to.id == target.to
+                                    && bucket.assertions.iter().any(|assertion| {
+                                        assertion.id == target.assertion_id
+                                            && assertion.withdrawn.is_none()
+                                    })
+                            })
+                    })
+            });
+            if action == "inspect" && valid {
+                page.inspected_statement = Some(target.assertion_id.clone());
+                page.inspected_link_member = Some(target);
+                page.opened_link_error = None;
+            } else {
+                page.opened_link_error = Some(
+                    "This assertion is no longer available for that action; reopen the link."
+                        .into(),
+                );
+            }
+        },
     }
 }
 
@@ -503,7 +527,10 @@ pub(super) fn section(page: &TreePage) -> Child {
         Box::new(button("Close link inspection", |page: &mut TreePage, _| {
             page.inspected_link = None;
             page.inspected_statement = None;
+            page.inspected_link_member = None;
             page.link_history_open = false;
+            page.opened_link_layout = None;
+            page.opened_link_error = None;
         })),
         Box::new(button(
             if page.link_history_open {
@@ -524,107 +551,53 @@ pub(super) fn section(page: &TreePage) -> Child {
             },
         )),
     ];
-    if page.link_history_open {
-        match read_history(page) {
-            Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
-            Ok(history) => render_history(history, &mut children),
-        }
-    } else {
-        match read(page) {
-            Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
-            Ok(inspected) => {
-                children.push(Box::new(detail_panel(&[DetailSection::new(
-                    "Displayed accesses",
-                    vec![
-                        DetailRow::new("First access", &inspected.first.address),
-                        DetailRow::new("First identity", inspected.first.member.to_string()),
-                        DetailRow::new("Second access", &inspected.second.address),
-                        DetailRow::new("Second identity", inspected.second.member.to_string()),
-                    ],
-                )])));
-                for note in inspected.notes {
-                    children.push(Box::new(el("p", note).attr("role", "status")));
-                }
-                if inspected.records.is_empty() {
-                    children.push(Box::new(el(
-                        "p",
-                        "No contributing source records held for this pair",
-                    )));
-                }
-                let mut assertion_number = 0;
-                for (index, record) in inspected.records.into_iter().enumerate() {
-                    let displayed_address = |id| {
-                        if id == inspected.first.member {
-                            &inspected.first.address
-                        } else {
-                            &inspected.second.address
+    match opened_reading(page) {
+        Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
+        Ok(reading) => {
+            let layout = opened_layout(page, &reading);
+            let history = page.link_history_open;
+            let now_ms = page
+                .product
+                .as_ref()
+                .map(|product| product.opened_link_time_ms());
+            for (index, link) in reading.links.iter().enumerate() {
+                let swatch = scenograph::swatch::Swatch {
+                    id: format!("opened-link-{index}"),
+                    scope: scenograph::swatch::Scope::Link(link.key.clone()),
+                    // This host resolves the ephemeral preset to `layout`;
+                    // no authored recipe or pair entity is persisted.
+                    mode: scenograph::swatch::SwatchMode::Projection {
+                        definition_id: "opened-link".into(),
+                        variant_id: None,
+                    },
+                };
+                children.push(Box::new(cambium::opened_link_swatch(
+                    &swatch,
+                    &reading,
+                    &layout,
+                    scenograph::link::OpenedLinkOptions { now_ms },
+                    history,
+                    move |_source, _key, _bucket, assertion| {
+                        if assertion.withdrawn.is_some() {
+                            return Vec::new();
                         }
-                    };
-                    let mut rows = vec![DetailRow::new(
-                        "Displayed direction",
-                        format!(
-                            "{} → {}",
-                            displayed_address(record.displayed_from),
-                            displayed_address(record.displayed_to)
-                        ),
-                    )];
-                    rows.extend(owner_rows(&record.owner));
-                    children.push(Box::new(detail_panel(&[DetailSection::new(
-                        format!("Source record {}", index + 1),
-                        rows,
-                    )])));
-                    for family in record.families {
-                        let label = if family.family == mere::kernel::graph::EdgeFamily::Semantic {
-                            "Semantic grouping summary".into()
-                        } else {
-                            format!("{:?} data", family.family)
-                        };
-                        children.push(Box::new(detail_panel(&[DetailSection::new(
-                            label,
-                            vec![DetailRow::new(
-                                "Held values",
-                                serde_json::to_string(&family.data).expect("JSON value serializes"),
-                            )],
-                        )])));
-                    }
-                    for statement in record.statements {
-                        assertion_number += 1;
-                        let handle = statement.statement_id.clone();
-                        children.push(Box::new(detail_panel(&[DetailSection::new(
-                            format!("Assertion {assertion_number}"),
-                            statement_rows(&statement),
-                        )])));
-                        children.push(Box::new(
-                            button(
-                                format!("Inspect assertion {assertion_number}"),
-                                move |page: &mut TreePage, _| {
-                                    page.inspected_statement = Some(handle.clone());
-                                },
-                            )
-                            .attr("data-inspect-statement", statement.statement_id),
-                        ));
-                    }
-                }
-                if !inspected.coverage.limits.is_empty() {
-                    children.push(Box::new(el("h3", "Known limits")));
-                    children.push(Box::new(el(
-                        "ul",
-                        inspected
-                            .coverage
-                            .limits
-                            .into_iter()
-                            .map(|limit| {
-                                let count = limit
-                                    .count
-                                    .map(|count| format!(" · {count}"))
-                                    .unwrap_or_default();
-                                el("li", format!("{:?}: {}{count}", limit.layer, limit.reason))
-                            })
-                            .collect::<Vec<_>>(),
-                    )));
-                }
-            },
-        }
+                        vec![cambium::LinkMemberAction {
+                            id: "inspect".into(),
+                            label: if history {
+                                "Inspect held assertion {number}"
+                            } else {
+                                "Inspect assertion {number}"
+                            }
+                            .into(),
+                        }]
+                    },
+                    |page: &mut TreePage, event| opened_event(page, event),
+                )));
+            }
+        },
+    }
+    if let Some(error) = &page.opened_link_error {
+        children.push(Box::new(el("p", error.clone()).attr("role", "status")));
     }
     if page.inspected_statement.is_some() {
         children.push(Box::new(el("h3", "Exact assertion")));
@@ -632,6 +605,7 @@ pub(super) fn section(page: &TreePage) -> Child {
             "Close assertion inspection",
             |page: &mut TreePage, _| {
                 page.inspected_statement = None;
+                page.inspected_link_member = None;
             },
         )));
         match exact(page) {

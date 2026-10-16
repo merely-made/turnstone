@@ -439,7 +439,13 @@ pub(crate) struct TreePage {
     #[cfg(feature = "product")]
     link_history_open: bool,
     #[cfg(feature = "product")]
+    opened_link_layout: Option<scenograph::link::OpenedLinkLayout>,
+    #[cfg(feature = "product")]
+    opened_link_error: Option<String>,
+    #[cfg(feature = "product")]
     inspected_statement: Option<String>,
+    #[cfg(feature = "product")]
+    inspected_link_member: Option<cambium::LinkMemberTarget>,
     #[cfg(feature = "product")]
     field_inspector: field_inspection::Pane,
     #[cfg(feature = "product")]
@@ -1463,7 +1469,13 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 #[cfg(feature = "product")]
                 link_history_open: false,
                 #[cfg(feature = "product")]
+                opened_link_layout: None,
+                #[cfg(feature = "product")]
+                opened_link_error: None,
+                #[cfg(feature = "product")]
                 inspected_statement: None,
+                #[cfg(feature = "product")]
+                inspected_link_member: None,
                 #[cfg(feature = "product")]
                 field_inspector: field_inspection::Pane::default(),
                 #[cfg(feature = "product")]

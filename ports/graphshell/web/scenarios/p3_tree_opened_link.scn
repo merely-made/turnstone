@@ -1,0 +1,150 @@
+# Isolated link lifecycle fixture; reference-host and P4 fixtures are unchanged.
+# tree.html?app=local&fixture=link-history&scenario=scenarios/p3_tree_opened_link.scn
+assert snap source == saved graph
+assert snap link-inspector-open == false
+click-node file:///Graphshell/reference-notes.md
+settle 2
+remember selected
+click role:button Inspect selected access
+settle 2
+click role:button Inspect links: I2P port notes
+settle 2
+assert snap link-inspector-open == true
+assert snap link-inspector-ready == true
+assert snap link-inspector-scope == held
+assert snap link-inspector-records == 1
+assert snap link-inspector-statements == 2
+assert snap opened-link-ready == true
+assert snap opened-link-layout == list
+assert snap opened-link-members == 2
+assert snap opened-link-source-available == true
+assert text List by family
+assert text List by source
+assert text Source revision
+assert text Graph scope
+click role:button Timeline by family
+settle 2
+assert snap opened-link-layout == timeline
+assert snap opened-link-undated == 1
+assert snap opened-link-unknown-withdrawal == 0
+click role:heading Assertion timeline
+settle 2
+capture p3_opened_link_held_timeline
+click role:button List by source
+settle 2
+assert snap opened-link-layout == list
+same selected detail-member
+same selected forme
+same selected forme-accesses
+click role:button Inspect assertion 1
+settle 2
+capture p3_link_history_held_default
+click role:button Close assertion inspection
+settle 2
+
+# The default scope is held-only. The toggle exposes the retained tombstones.
+click role:button Show retained history
+settle 2
+assert snap link-inspector-scope == history
+assert snap link-inspector-history-ready == true
+assert snap link-inspector-history-count == 4
+click role:button Timeline by family
+settle 2
+assert snap opened-link-ready == true
+assert snap opened-link-layout == timeline
+assert snap opened-link-members == 4
+assert snap opened-link-undated == 1
+assert snap opened-link-unknown-withdrawal == 1
+assert snap opened-link-lanes == 2
+assert text Held assertions observed at 4000 ms
+click role:heading Assertion timeline
+settle 2
+capture p3_opened_link_history_timeline
+click role:button Timeline by asserter
+settle 2
+assert snap opened-link-members == 4
+assert snap opened-link-undated == 1
+assert text Assertions in time order
+click role:heading Assertion timeline
+settle 2
+capture p3_opened_link_asserter_lanes
+click role:button Timeline by direction
+settle 2
+assert snap opened-link-members == 4
+click role:button List by family
+settle 2
+assert snap opened-link-layout == list
+assert snap opened-link-members == 4
+same selected detail-member
+same selected forme
+same selected forme-accesses
+assert snap link-inspector-history-ids == fixture:p2:link-history:withdrawn-timed|fixture:p2:link-history:held-dated|fixture:p2:link-history:withdrawn-undated|fixture:p2:link-history:held-undated
+# Only currently held entries receive an exact-inspection action.
+assert snap link-inspector-history-inspectable-ids == fixture:p2:link-history:held-dated|fixture:p2:link-history:held-undated
+assert text First to lifecycle end
+assert text 1000
+assert text 2000
+assert text 3000
+assert text 2500
+assert text 3100
+assert text withdrawn at 1200
+assert text withdrawn; time unavailable
+assert text No confirmation time held
+assert text Dated held basis
+assert text urn:graphshell:link-history:method:dated (p2-fixture-v1)
+assert text urn:graphshell:link-history:evidence:dated
+assert text Timed withdrawal basis
+assert text urn:graphshell:link-history:method:timed (p2-fixture-v1)
+assert text urn:graphshell:link-history:evidence:timed
+assert text Undated withdrawal basis
+assert text urn:graphshell:link-history:method:undated (p2-fixture-v1)
+assert text urn:graphshell:link-history:evidence:undated
+assert text Undated held basis
+assert text urn:graphshell:link-history:method:legacy (p2-fixture-v1)
+assert text urn:graphshell:link-history:evidence:legacy
+same selected detail-member
+same selected forme
+same selected forme-accesses
+# Reveal the following heading so the preceding assertion span and basis
+# are in view; headings do not edit source or selection.
+click role:heading Retained assertion 2
+settle 2
+capture p3_link_history_retained
+click role:heading Retained assertion 4
+settle 2
+capture p3_link_history_unknown_withdrawal
+click role:button Inspect held assertion 4
+settle 2
+capture p3_link_history_undated
+click role:button Close assertion inspection
+settle 2
+
+# Exact inspection remains available for a held row and names its stable handle.
+click role:button Inspect held assertion 2
+settle 2
+assert snap assertion-inspector-open == true
+assert snap assertion-inspector-handle == fixture:p2:link-history:held-dated
+same selected detail-member
+same selected forme
+same selected forme-accesses
+click role:button Close assertion inspection
+settle 2
+assert snap assertion-inspector-open == false
+assert snap link-inspector-scope == history
+
+# Switching back restores the two held records without changing selection or workbench membership.
+click role:button Show held assertions
+settle 2
+assert snap link-inspector-scope == held
+assert snap link-inspector-ready == true
+assert snap link-inspector-statements == 2
+same selected detail-member
+same selected forme
+same selected forme-accesses
+click role:button Close link inspection
+settle 2
+assert snap link-inspector-open == false
+same selected detail-member
+same selected forme
+same selected forme-accesses
+log opened-link scope, list and Timeline layouts, source metadata, exact actions and selection invariants passed

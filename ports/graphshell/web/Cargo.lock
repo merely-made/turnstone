@@ -1355,6 +1355,8 @@ dependencies = [
  "mere-surface-api",
  "meristem",
  "sceno",
+ "scenograph",
+ "scenomise",
  "sprigging",
  "workbench",
 ]

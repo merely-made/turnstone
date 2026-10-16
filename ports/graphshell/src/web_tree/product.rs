@@ -72,6 +72,7 @@ pub(super) struct SavedProduct {
     pub(super) observed_session_changes: u64,
     pub(super) reopened: bool,
     pub(super) inspection_fixture: bool,
+    link_history_fixture: bool,
     intake_open: bool,
     intake_address: TextInput,
     intake_title: TextInput,
@@ -197,6 +198,7 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         observed_session_changes: 0,
         reopened,
         inspection_fixture,
+        link_history_fixture,
         intake_open: false,
         intake_address: TextInput::new(""),
         intake_title: TextInput::new(""),
@@ -301,6 +303,38 @@ impl SavedProduct {
         )
     }
 
+    pub(super) fn opened_link(
+        &self,
+        target: graphshell::link_inspection::LinkTarget,
+        history: bool,
+    ) -> Result<scenograph::link::LinkPairReading, String> {
+        let app = self
+            .app
+            .as_ref()
+            .ok_or("Link reading will resume when the current save finishes")?;
+        let read = if history {
+            mere::canvas::link_reading::read_link_history
+        } else {
+            mere::canvas::link_reading::read_link
+        };
+        read(
+            app.host.graph(),
+            target.first,
+            target.second,
+            app.host.link_source(),
+        )
+    }
+
+    pub(super) fn opened_link_time_ms(&self) -> u64 {
+        // The isolated scenario's source clocks are 1000..3100. Its view
+        // clock is explicit too; it is never written back as assertion time.
+        if self.link_history_fixture {
+            4000
+        } else {
+            js_sys::Date::now() as u64
+        }
+    }
+
     pub(super) fn inspect_link_history(
         &self,
         target: graphshell::link_inspection::LinkTarget,
@@ -321,6 +355,26 @@ impl SavedProduct {
             .as_ref()
             .map(|app| app.host.link_source())
             .ok_or_else(|| "Source inspection will resume when the current save finishes".into())
+    }
+
+    pub(super) fn inspect_statement_at_owner(
+        &self,
+        statement_id: &str,
+        stratum: mere::kernel::graph::GraphStratum,
+        from: Uuid,
+        to: Uuid,
+    ) -> Result<graphshell::link_inspection::StatementInspection, String> {
+        let app = self
+            .app
+            .as_ref()
+            .ok_or("Assertion inspection requires the local graph")?;
+        graphshell::link_inspection::inspect_statement_at_owner(
+            app.host.graph(),
+            statement_id,
+            stratum,
+            from,
+            to,
+        )
     }
 
     pub(super) fn inspect_statement(

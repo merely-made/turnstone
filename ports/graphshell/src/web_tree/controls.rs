@@ -206,6 +206,8 @@ impl TreePage {
         canvas.set_shift(event.modifiers.shift);
         canvas.set_alt(event.modifiers.alt);
         let mut context = None;
+        #[cfg(feature = "product")]
+        let mut opened_pair = None;
         match event.phase {
             PointerPhase::Down => {
                 // Canvas right-drag is a marquee; shared menu handlers retain
@@ -220,6 +222,13 @@ impl TreePage {
             },
             PointerPhase::Up => {
                 canvas.pointer_up(button, x, y);
+                #[cfg(feature = "product")]
+                if event.button == PointerButton::Primary {
+                    let pairs = canvas.selected_link_pairs();
+                    if pairs.len() == 1 {
+                        opened_pair = pairs.first().copied();
+                    }
+                }
                 context = canvas.take_context_request();
                 self.picked = canvas.focused_url().map(str::to_owned);
                 if let Some(product) = &mut self.product {
@@ -233,6 +242,18 @@ impl TreePage {
         canvas.set_shift(false);
         canvas.set_alt(false);
         drop(canvas);
+        #[cfg(feature = "product")]
+        if let Some((first, second)) = opened_pair {
+            let target = graphshell::link_inspection::LinkTarget::new(first, second);
+            if self.inspected_link != Some(target) {
+                self.opened_link_layout = None;
+                self.opened_link_error = None;
+                self.inspected_statement = None;
+                self.inspected_link_member = None;
+            }
+            self.inspected_link = Some(target);
+            self.tools_open = true;
+        }
         if let Some(request) = context {
             commands::open(
                 self,
