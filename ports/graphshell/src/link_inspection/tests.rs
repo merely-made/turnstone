@@ -8,8 +8,10 @@ use super::*;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
 use mere::kernel::graph::{
     ArrangementSubKind, ContainmentSubKind, CoverageLayer, CoverageLimit, EdgeAssertion,
-    ImportedSubKind, NavigationTrigger, ProvenanceSubKind, SemanticStatementSpec, predicate_iri,
+    ImportedSubKind, NavigationTrigger, ProvenanceSubKind, SemanticStatement,
+    SemanticStatementSpec, predicate_iri,
 };
+use mere::kernel::types::{AssertionBasis, AssertionMethod};
 
 fn fixture() -> (Graph, [Uuid; 4]) {
     let mut graph = Graph::new();
@@ -34,6 +36,7 @@ fn assert(graph: &mut Graph, from: Uuid, to: Uuid, kind: SemanticSubKind, author
                 predicate: predicate_iri(kind).into(),
                 recognized_sub_kind: Some(kind),
                 label: Some(format!("claim by {author}")),
+                basis: AssertionBasis::default(),
                 graph_scope: GraphScope::Custom("urn:graph:review".into()),
                 provenance_iri: Some(author.into()),
                 asserted_at_ms: Some(17),
@@ -44,6 +47,53 @@ fn assert(graph: &mut Graph, from: Uuid, to: Uuid, kind: SemanticSubKind, author
         .statement_id
 }
 
+fn stored_assertion(
+    graph: &mut Graph,
+    from: Uuid,
+    to: Uuid,
+    id: &str,
+    first: Option<u64>,
+    last: Option<u64>,
+) {
+    stored_assertion_kind(graph, from, to, id, SemanticSubKind::Cites, first, last);
+}
+
+fn stored_assertion_kind(
+    graph: &mut Graph,
+    from: Uuid,
+    to: Uuid,
+    id: &str,
+    kind: SemanticSubKind,
+    first: Option<u64>,
+    last: Option<u64>,
+) {
+    graph
+        .try_assert_persisted_semantic_statement(
+            graph.get_node_key_by_id(from).unwrap(),
+            graph.get_node_key_by_id(to).unwrap(),
+            SemanticStatement {
+                statement_id: id.into(),
+                predicate: predicate_iri(kind).into(),
+                recognized_sub_kind: Some(kind),
+                label: Some(format!("note:{id}")),
+                basis: AssertionBasis {
+                    note: Some(format!("note:{id}")),
+                    method: Some(AssertionMethod {
+                        iri: "urn:method:extractor".into(),
+                        version: Some("v3".into()),
+                    }),
+                    evidence: vec!["urn:evidence:b".into(), "urn:evidence:a".into()],
+                },
+                graph_scope: Default::default(),
+                provenance_iri: Some("urn:asserter:history".into()),
+                first_asserted_ms: first,
+                asserted_at_ms: last,
+                withdrawn: None,
+            },
+        )
+        .unwrap();
+}
+
 #[test]
 fn same_predicate_assertions_keep_exact_handles_and_attribution_without_mutation() {
     let (mut graph, [a, b, _, _]) = fixture();
@@ -51,6 +101,10 @@ fn same_predicate_assertions_keep_exact_handles_and_attribution_without_mutation
     let bob = assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:bob");
     let before = serde_json::to_value(graph.to_snapshot()).unwrap();
     let inspected = inspect_link(&graph, LinkTarget::new(a, b)).unwrap();
+    assert!(matches!(
+        inspected.source,
+        scenograph::link::LinkSource::Unavailable { .. }
+    ));
     assert_eq!(inspected.records.len(), 1);
     let statements = &inspected.records[0].statements;
     assert_eq!(statements.len(), 2);
@@ -72,6 +126,27 @@ fn same_predicate_assertions_keep_exact_handles_and_attribution_without_mutation
     );
     assert_eq!(first.statement.asserted_at_ms, Some(17));
     assert_eq!(serde_json::to_value(graph.to_snapshot()).unwrap(), before);
+}
+
+#[test]
+fn verified_source_context_survives_the_graphshell_adapter_unchanged() {
+    let (mut graph, [a, b, _, _]) = fixture();
+    assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:alice");
+    let source = scenograph::link::LinkSource::Available {
+        binding: scenograph::SourceBinding {
+            authority: "mere:test".into(),
+            domain: "graph".into(),
+            resource: "host-owned-graph".into(),
+        },
+        revision: scenograph::link::LinkSourceRevision::Available {
+            revision: scenograph::PublicSourceRevision::new("public-r4"),
+        },
+    };
+
+    let inspected =
+        inspect_link_with_source(&graph, LinkTarget::new(a, b), source.clone()).unwrap();
+    assert_eq!(inspected.source, source);
+    assert_eq!(inspected.records.len(), 1);
 }
 
 #[test]
@@ -365,5 +440,130 @@ fn stable_bundle_and_statement_targets_roundtrip_through_graph_snapshot() {
         serde_json::from_value::<LinkInspection>(serde_json::to_value(&inspected).unwrap())
             .unwrap(),
         inspected
+    );
+}
+
+#[test]
+fn history_is_opt_in_preserves_lifecycle_and_sorts_undated_entries_last() {
+    let (mut graph, [a, b, _, _]) = fixture();
+    stored_assertion(&mut graph, a, b, "z-undated", None, None);
+    stored_assertion(&mut graph, a, b, "c-held", Some(20), Some(24));
+    stored_assertion(&mut graph, a, b, "b-held", Some(10), Some(15));
+    stored_assertion(&mut graph, a, b, "a-withdrawn", Some(10), Some(18));
+    let from = graph.get_node_key_by_id(a).unwrap();
+    let to = graph.get_node_key_by_id(b).unwrap();
+    assert!(graph.apply_imported_semantic_withdrawal_for_pair(
+        from,
+        to,
+        "a-withdrawn",
+        Some(25),
+        Some("urn:withdrawer:reviewer".into()),
+    ));
+
+    // The existing inspector contract remains held-only.
+    let held = inspect_link(&graph, LinkTarget::new(a, b)).unwrap();
+    let held_ids: Vec<_> = held.records[0]
+        .statements
+        .iter()
+        .map(|statement| statement.statement_id.as_str())
+        .collect();
+    assert_eq!(held_ids, ["b-held", "c-held", "z-undated"]);
+    assert!(inspect_statement(&graph, "a-withdrawn").is_err());
+
+    let history = inspect_link_history(&graph, LinkTarget::new(a, b)).unwrap();
+    assert!(matches!(
+        history.source,
+        scenograph::link::LinkSource::Unavailable { .. }
+    ));
+    let ids: Vec<_> = history
+        .entries
+        .iter()
+        .map(|entry| entry.assertion.id.as_str())
+        .collect();
+    assert_eq!(ids, ["a-withdrawn", "b-held", "c-held", "z-undated"]);
+
+    let withdrawn = &history.entries[0].assertion;
+    assert_eq!(withdrawn.first_asserted_ms, Some(10));
+    assert_eq!(withdrawn.asserted_at_ms, Some(18));
+    assert_eq!(
+        withdrawn.withdrawn,
+        Some(scenograph::link::LinkWithdrawal {
+            at_ms: Some(25),
+            by: Some("urn:withdrawer:reviewer".into()),
+        })
+    );
+    assert_eq!(withdrawn.basis.note.as_deref(), Some("note:a-withdrawn"));
+    assert_eq!(
+        withdrawn
+            .basis
+            .method
+            .as_ref()
+            .map(|method| method.iri.as_str()),
+        Some("urn:method:extractor")
+    );
+    assert_eq!(
+        withdrawn.basis.evidence,
+        ["urn:evidence:b", "urn:evidence:a"]
+    );
+    assert_eq!(history.entries[1].assertion.first_asserted_ms, Some(10));
+    assert_eq!(history.entries[2].assertion.first_asserted_ms, Some(20));
+    assert_eq!(history.entries[3].assertion.first_asserted_ms, None);
+}
+
+#[test]
+fn held_inspection_omits_surface_and_resource_tombstone_only_buckets() {
+    let (mut graph, [a, b, _, _]) = fixture();
+    stored_assertion_kind(
+        &mut graph,
+        a,
+        b,
+        "surface-tombstone",
+        SemanticSubKind::UserGrouped,
+        Some(10),
+        Some(15),
+    );
+    stored_assertion_kind(
+        &mut graph,
+        a,
+        b,
+        "resource-tombstone",
+        SemanticSubKind::Cites,
+        Some(20),
+        Some(25),
+    );
+    let from = graph.get_node_key_by_id(a).unwrap();
+    let to = graph.get_node_key_by_id(b).unwrap();
+    assert!(graph.apply_imported_semantic_withdrawal_for_pair(
+        from,
+        to,
+        "surface-tombstone",
+        Some(30),
+        Some("urn:withdrawer:surface".into()),
+    ));
+    assert!(graph.apply_imported_semantic_withdrawal_for_pair(
+        from,
+        to,
+        "resource-tombstone",
+        Some(31),
+        Some("urn:withdrawer:resource".into()),
+    ));
+
+    let target = LinkTarget::new(a, b);
+    let held = inspect_link(&graph, target).unwrap();
+    assert!(held.records.is_empty());
+
+    let history = inspect_link_history(&graph, target).unwrap();
+    let mut entries: Vec<_> = history
+        .entries
+        .iter()
+        .map(|entry| (entry.assertion.id.as_str(), entry.owner.stratum))
+        .collect();
+    entries.sort_by_key(|(id, _)| *id);
+    assert_eq!(
+        entries,
+        [
+            ("resource-tombstone", GraphStratum::Resource),
+            ("surface-tombstone", GraphStratum::Surface),
+        ]
     );
 }

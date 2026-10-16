@@ -31,7 +31,7 @@ gitignored, so it is the usual destination.
 | Chromium | `oajkkocppbpbmfblepgbiidagliniofd`, derived from the manifest `key` |
 | Firefox | `graphshell@mere.systems` |
 
-The same values are `graphshell::browser_carrier::CHROMIUM_EXTENSION_ID` and
+The same values are `djinn::door::browser_carrier::CHROMIUM_EXTENSION_ID` and
 `FIREFOX_EXTENSION_ID`. Set `GRAPHSHELL_EXTENSION_IDS` to a comma-separated
 list to add locally built ids; the native host matches each id exactly. Store
 release ids can replace the defaults through the installer.
@@ -113,10 +113,11 @@ with the selected values.
 
 ## Building
 
-Build the Graphshell relay and Djinn resident:
+Build the relay and the Djinn resident (the relay is Djinn's since the stack
+lift plan's P5; its binary name is unchanged):
 
 ```text
-cargo build -p graphshell --bin graphshell_native_host
+cargo build -p djinn --bin graphshell_native_host
 cargo build -p djinn --bin djinn
 ```
 

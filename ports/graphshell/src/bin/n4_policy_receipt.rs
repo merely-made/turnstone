@@ -19,10 +19,12 @@ fn main() {
     ));
     let _ = std::fs::remove_dir_all(&state);
 
-    let receipt =
-        graphshell::policy_projection::run_n4_policy_scenario(&state, PersonaId::default_persona())
-            .expect("N4 policy scenario");
-    let html = graphshell::policy_projection::render_n4_policy_receipt(&receipt);
+    let receipt = graphshell_host::policy_projection::run_n4_policy_scenario(
+        &state,
+        PersonaId::default_persona(),
+    )
+    .expect("N4 policy scenario");
+    let html = graphshell_host::policy_projection::render_n4_policy_receipt(&receipt);
     std::fs::write(&output, html).expect("receipt writes");
     std::fs::remove_dir_all(state).expect("receipt state cleans up");
     println!("wrote {}", output.display());

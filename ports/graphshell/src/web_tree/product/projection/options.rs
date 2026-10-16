@@ -4,11 +4,9 @@
 //! Arrangement declarations supply both the shared controls and their refusals.
 use super::*;
 use cambium::select;
-use graphshell::projection_compile::{PRACTICE_CARD, practice_compiler};
-use graphshell::projection_editor::{
-    OptionKind, OptionSpec, arrangement_defaults, arrangement_options, option_placeholder,
-    with_option,
-};
+use graphshell::projection_compile::{PRACTICE_CARD, option_placeholder, practice_compiler};
+use scenograph::options::{OptionKind, OptionSpec};
+use scenomise::arrangement::{arrangement_defaults, arrangement_options, with_option};
 
 pub(in crate::web_tree::product) struct OptionRow {
     pub(in crate::web_tree::product) spec: OptionSpec,

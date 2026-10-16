@@ -459,7 +459,7 @@ fn hosted_canvas_metadata_keeps_exact_tag_claims_peer_sources_and_navigation_res
             .filter(|edge| edge.from_node_id == resource)
             .filter_map(|edge| edge.semantic)
             .flat_map(|bucket| bucket.statements)
-            .filter(|claim| claim.predicate == TAGGED_WITH_IRI)
+            .filter(|claim| claim.predicate == TAGGED_WITH_IRI && claim.withdrawn.is_none())
             .collect::<Vec<_>>()
     };
     let expected = tag_claims(app.host.graph(), &resource);

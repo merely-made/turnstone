@@ -21,8 +21,8 @@
 use std::process::Stdio;
 use std::time::Duration;
 
-use graphshell::webrtc_session::peer_join;
 use graphshell_client::{Advance, Outcome, SessionDriver};
+use graphshell_host::webrtc_session::peer_join;
 use notochord::HandshakeLimits;
 use personae::InMemoryProvider;
 use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncWrite, AsyncWriteExt, BufReader};
@@ -292,9 +292,9 @@ async fn an_invitation_this_host_never_issued_is_refused() {
 
         // A well-formed invitation from a different host entirely.
         let other = InMemoryProvider::from_seed([42; 32]);
-        let issue = graphshell::webrtc_door::issue_invite(
+        let issue = graphshell_host::webrtc_door::issue_invite(
             &other,
-            &graphshell::webrtc_door::InviteTerms::projection(
+            &graphshell_host::webrtc_door::InviteTerms::projection(
                 notochord::NetworkId([3; 32]),
                 notochord::ProfileRef {
                     id: "mere.base".into(),

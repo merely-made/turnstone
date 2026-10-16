@@ -1,0 +1,10 @@
+# fixture=retained-content, actual Fleece receipt; export is a separate trusted gesture.
+assert snap source == saved graph
+click-node mere://clip/b40c579d5234ed1f14d7512474a18c958c5e07f1a16f27afc42d337eeabd07ba
+settle 1
+click role:button Open selected in workbench
+wait 1000
+assert snap pelt-sessions >= 1
+assert snap pelt-pending == false
+assert snap pelt-glyph-runs >= 1
+capture clip_export_ready

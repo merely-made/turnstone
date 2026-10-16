@@ -1,0 +1,66 @@
+<!doctype html><meta charset="utf-8"><title>Actual viewer presentation qualification</title>
+<!-- ?mode=presentation (default): the per-route presentation controls.
+     ?mode=compare: the same, with reduced motion and the WebGPU route taking the WebGL2 route's graph-command
+     click, so both backends reach one state and their captures compare (compare.py). It also records the
+     adapter, console warnings, root state, extent and last pixel; off 1x scale the last pixel only has to be opaque.
+     ?mode=auto-choice: only checks that Auto loads the WebGPU artifact when a device exists. -->
+<style>graphshell-tree{display:block;width:801px;height:641px}canvas{width:100%;height:100%}#scenario-captures{display:none}</style>
+<graphshell-tree data-render-backend="webgl2" data-presentation-diagnostics="true" data-wheel-mode="zoom"></graphshell-tree>
+<pre id="scenario-log"></pre><div id="scenario-captures"></div>
+<script type="module">
+import {defineElements,viewerArtifact} from './mount.js';
+let module;
+const params=new URLSearchParams(location.search),mode=params.get('mode')??'presentation',compare=mode==='compare',autoChoice=mode==='auto-choice';
+const results={result:'pending',mode,controls:[],errors:[]};
+if(compare){results.messages=[];for(const kind of ['warn','error']){const original=console[kind];console[kind]=(...args)=>{if(results.messages.length<12)results.messages.push([kind,...args.map(String)]);original.apply(console,args)}}window.addEventListener('error',event=>results.messages.push(['window error',event.message]));}
+const assert=(value,message)=>{if(!value)throw Error(message);results.controls.push(message)};
+const turn=()=>new Promise(resolve=>requestAnimationFrame(resolve));
+async function until(predicate,message){const stop=performance.now()+20000;while(!predicate()){if(performance.now()>stop)throw Error(message);await turn()}}
+const root=document.querySelector('graphshell-tree');
+if(compare)root.dataset.reducedMotion='true';
+if(autoChoice)root.removeAttribute('data-render-backend');
+const gen=()=>Number(root.dataset.contextGeneration??0);
+async function scenario(text,name){module.run_scenario(text);await until(()=>document.body.dataset.scenario==='ok'||document.body.dataset.scenario==='fail','scenario timeout '+name);assert(document.body.dataset.scenario==='ok',name+': '+document.querySelector('#scenario-log').textContent)}
+async function capture(name){await scenario('capture '+name+'\n',name);const image=document.querySelector('[data-capture="'+name+'"]');assert(!!image,'capture emitted '+name);await image.decode();const c=document.createElement('canvas');c.width=image.width;c.height=image.height;const cx=c.getContext('2d');cx.drawImage(image,0,0);const pixels=cx.getImageData(0,0,c.width,c.height).data;assert(pixels.length===c.width*c.height*4,'tight capture rows '+name);if(compare){results.lastPixel=[...pixels.slice(-4)];results.extent=[c.width,c.height,devicePixelRatio];}assert(compare&&devicePixelRatio!==1?pixels[pixels.length-1]===255:[...pixels.slice(-4)].every((value,index)=>Math.abs(value-[9,12,26,255][index])<=1),'opaque last pixel after presentation '+name);assert(new Set(pixels).size>12,'nonblank graph and chrome '+name);return {name,width:c.width,height:c.height,png:image.src,lastPixel:[...pixels.slice(-4)]};}
+try{
+ if(compare){const adapter=await navigator.gpu?.requestAdapter();if(adapter){const info=adapter.info;results.adapterProbe={vendor:info.vendor,architecture:info.architecture,device:info.device,description:info.description};}}
+ defineElements(viewerArtifact);
+ await until(()=>root.dataset.ready==='true','viewer never ready');
+ module=root.graphshellModule;
+ await until(()=>gen()>0,'viewer never presented');
+ if(autoChoice){assert(root.dataset.renderBackend==='auto','policy auto');assert(root.dataset.viewerArtifact==='webgpu','auto loaded the WebGPU artifact');assert(root.dataset.selectedRenderBackend==='webgpu','auto presented on WebGPU');results.artifact=root.dataset.viewerArtifact;results.result='pass';}else{
+ const expected=params.get('render_backend')==='webgpu'?'webgpu':'webgl2';
+ assert(root.dataset.selectedRenderBackend===expected,'actual viewer selected '+expected);
+ assert(root.dataset.viewerArtifact===expected,'route artifact '+expected+' loaded');results.artifact=root.dataset.viewerArtifact;
+ assert(root.dataset.computeAvailable===(expected==='webgpu'?'true':'false'),'compute availability disclosed');
+ const canvas=root.querySelector('canvas'),gl=expected==='webgl2'?canvas.getContext('webgl2'):null;
+ if(gl){results.renderer=gl.getParameter(gl.RENDERER);results.version=gl.getParameter(gl.VERSION);}
+
+ await scenario('click-node https://example.test/i2p-port\nsettle 2\nassert snap picked == https://example.test/i2p-port\nassert snap focus-kind == graph\nremember picked-camera\nkey ArrowRight\nsettle 2\ndiffers picked-camera camera\nsame picked-camera picked\nclick role:button Fit graph\nsettle 2\n', 'graph picking and keyboard actions');
+ results.captures=[await capture('before-loss')];
+ assert(results.captures[0].width%2===1,'odd-width actual viewer capture');
+ const mirror=root.querySelector('[data-cambium-mirror]')??canvas.parentElement.querySelector('[data-cambium-mirror]');
+ assert(!!mirror&&mirror.querySelectorAll('[role]').length>0,'actual viewer semantic mirror');
+ const button=[...mirror.querySelectorAll('[role="button"]')].find(b=>b.getAttribute('aria-label')==='Graph commands'||b.textContent==='Graph commands');assert(!!button,'graph command action target');
+ if(gl&&params.get('force_context_loss')!=='false')await scenario('timing start across-loss\n','start timing');
+ if(gl&&params.get('force_context_loss')!=='false'){
+ const debug=gl.getExtension('WEBGL_debug_renderer_info');if(debug)results.rendererDebug={vendor:gl.getParameter(debug.UNMASKED_VENDOR_WEBGL),renderer:gl.getParameter(debug.UNMASKED_RENDERER_WEBGL)};
+ const old=gen(),loss=gl.getExtension('WEBGL_lose_context');assert(!!loss,'context loss extension');loss.loseContext();await until(()=>gl.isContextLost(),'loss not observed');
+ button.click();await turn();await turn();loss.restoreContext();await until(()=>gen()>old,'viewer context did not restore');
+ assert(gen()===old+1,'restoration increases context generation once');
+ assert(mirror.textContent.includes('Search graph commands')||[...mirror.querySelectorAll('[aria-label]')].some(e=>e.getAttribute('aria-label')==='Search graph commands'),'state changed while lost survives restoration');
+ await scenario('timing stop\n','stop timing across loss');
+ }else if(compare&&!gl){button.click();await turn();}
+ results.captures.push(await capture('after-restore'));
+ root.style.width='0px';await turn();await turn();const sequence=root.dataset.presentationSequence;await turn();await turn();assert(root.dataset.presentationSequence===sequence,'zero CSS extent suspends presentation');
+ root.style.width='803px';root.style.height='643px';await until(()=>root.dataset.presentationSequence!==sequence,'resized viewer did not resume');results.captures.push(await capture('odd-resize'));
+ const detachedCanvas=canvas;root.remove();await turn();await turn();if(gl)assert(gl.isContextLost(),'removal releases owned context');assert(!root.querySelector('[data-cambium-mirror]'),'removal clears owned semantic mirror');assert(!root.querySelector('canvas'),'removal clears owned canvas');await turn();assert(!root.querySelector('iframe'),'removal clears appearance color probe');
+ document.body.prepend(root);await until(()=>root.dataset.ready==='true'&&root.querySelector('canvas')!==detachedCanvas,'recreated appearance did not boot');module=root.graphshellModule;await until(()=>gen()>0,'recreated appearance did not present');assert(root.querySelector('canvas')!==detachedCanvas,'remount owns a new canvas');root.remove();await turn();
+ results.result='pass';}
+}catch(error){results.result='fail';results.errors.push(String(error.stack??error));results.state={...root.dataset};}
+results.inventory=root.querySelector('canvas')?.dataset.portableProducerInventory;
+results.paintCommandCount=root.querySelector('canvas')?.dataset.portablePaintCommandCount;
+if(compare)results.rootState={data:{...root.dataset},canvasData:{...root.querySelector('canvas')?.dataset},canvasCount:root.querySelectorAll('canvas').length,body:{...document.body.dataset}};
+results.log=document.querySelector('#scenario-log').textContent;
+await fetch('/result',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(results)});
+</script>

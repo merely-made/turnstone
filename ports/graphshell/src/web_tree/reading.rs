@@ -6,6 +6,7 @@
 
 //! The retained Workbench uses Pelt for content; graph actions stay with its owner.
 use super::*;
+use graphshell::retained_content::ClipExportScope;
 use graphshell::retained_content::{ContentHost, ContentProducer, ContentSlot, HeldContent};
 use std::collections::BTreeMap;
 use uuid::Uuid;
@@ -18,6 +19,39 @@ struct Binding {
 }
 type ClipAnswer = Rc<RefCell<Option<Result<HeldContent, String>>>>;
 type PendingClip = (String, ClipAnswer);
+type ExportAnswer =
+    Rc<RefCell<Option<Result<mere_document_lanes::retained_clip::ClipExport, String>>>>;
+struct PendingExport {
+    scope: ClipExportScope,
+    answer: ExportAnswer,
+    cancellation: Rc<RefCell<ExportCancellation>>,
+}
+#[derive(Default)]
+struct ExportCancellation {
+    cancelled: bool,
+    waker: Option<std::task::Waker>,
+}
+impl Drop for PendingExport {
+    fn drop(&mut self) {
+        let waker = {
+            let mut cancellation = self.cancellation.borrow_mut();
+            cancellation.cancelled = true;
+            cancellation.waker.take()
+        };
+        if let Some(waker) = waker {
+            waker.wake();
+        }
+    }
+}
+struct DownloadUrl {
+    url: String,
+    revoke_at: f64,
+}
+impl Drop for DownloadUrl {
+    fn drop(&mut self) {
+        let _ = web_sys::Url::revoke_object_url(&self.url);
+    }
+}
 struct MediaPlayer {
     element: web_sys::HtmlAudioElement,
     clip: eidetic::ManifestId,
@@ -34,6 +68,10 @@ pub(super) struct Reading {
     statuses: BTreeMap<Uuid, String>,
     clips: BTreeMap<Uuid, PendingClip>,
     scope: String,
+    persona: String,
+    current_owner: Option<(Uuid, String)>,
+    exports: BTreeMap<Uuid, PendingExport>,
+    download_urls: BTreeMap<Uuid, DownloadUrl>,
     players: BTreeMap<Uuid, MediaPlayer>,
     media_answers: BTreeMap<Uuid, (u64, Rc<RefCell<Option<String>>>)>,
     requests: Vec<(Uuid, String)>,
@@ -50,6 +88,10 @@ impl Default for Reading {
             statuses: Default::default(),
             clips: Default::default(),
             scope: String::new(),
+            persona: String::new(),
+            current_owner: None,
+            exports: Default::default(),
+            download_urls: Default::default(),
             players: Default::default(),
             media_answers: Default::default(),
             requests: Default::default(),
@@ -117,13 +159,19 @@ pub(super) fn prepare(page: &TreePage) {
         .as_ref()
         .filter(|p| p.workbench)
         .and_then(|p| p.projected_model().tile_tree(&graph));
-    let scope = page
-        .product
+    let owner = page.product.as_ref().and_then(|p| p.retained_scope());
+    let scope = owner
         .as_ref()
-        .map(|p| p.session.clone())
+        .map(|(session, _)| session.to_string())
+        .or_else(|| page.product.as_ref().map(|p| p.session.clone()))
         .unwrap_or_default();
     let mut reading = page.shared.reading.borrow_mut();
-    if reading.scope != scope {
+    let persona = owner
+        .as_ref()
+        .map(|(_, persona)| persona.clone())
+        .unwrap_or_else(|| reading.persona.clone());
+    reading.current_owner = owner;
+    if reading.scope != scope || reading.persona != persona {
         for id in reading.bindings.keys().copied().collect::<Vec<_>>() {
             reading.host.close(id);
         }
@@ -133,9 +181,39 @@ pub(super) fn prepare(page: &TreePage) {
         reading.players.clear();
         reading.media_answers.clear();
         reading.requests.clear();
+        reading.exports.clear();
+        reading.download_urls.clear();
         reading.scope = scope;
+        reading.persona = persona;
     }
     reading.prepare(tree.as_ref(), &retained);
+    reading.clips.retain(|id, (address, _)| {
+        graph
+            .get_node_by_id(*id)
+            .is_some_and(|(_, node)| node.url() == *address)
+    });
+    // A retained access may survive a graph edit while its address changes.
+    // Retire the old content before handling its queued host effects.
+    let stale: Vec<_> = reading
+        .bindings
+        .iter()
+        .filter_map(|(id, binding)| {
+            graph
+                .get_node_by_id(*id)
+                .is_none_or(|(_, node)| node.url() != binding.slot.borrow().source().address)
+                .then_some(*id)
+        })
+        .collect();
+    for id in stale {
+        reading.host.close(id);
+        reading.bindings.remove(&id);
+        reading.clips.remove(&id);
+        reading.exports.remove(&id);
+        reading.players.remove(&id);
+        reading.media_answers.remove(&id);
+        reading.download_urls.remove(&id);
+        reading.statuses.remove(&id);
+    }
 }
 impl Reading {
     pub(super) fn prepare(&mut self, tree: Option<&TileTree>, retained: &[Uuid]) {
@@ -151,6 +229,8 @@ impl Reading {
             self.statuses.remove(&id);
             self.players.remove(&id);
             self.media_answers.remove(&id);
+            self.exports.remove(&id);
+            self.download_urls.remove(&id);
         }
         self.clips.retain(|id, _| retained.contains(id));
         let mut shown = vec![];
@@ -158,6 +238,19 @@ impl Reading {
             active(tree, &mut shown);
         }
         self.host.show_only(&shown);
+        let hidden: Vec<_> = self
+            .exports
+            .keys()
+            .copied()
+            .filter(|id| !shown.contains(id))
+            .collect();
+        for id in hidden {
+            self.exports.remove(&id);
+            self.statuses.insert(
+                id,
+                "Selected clip export canceled because its access was hidden".into(),
+            );
+        }
     }
     fn open(
         &mut self,
@@ -169,6 +262,19 @@ impl Reading {
             && Rc::ptr_eq(&binding.slot, &slot)
         {
             return Ok((binding.key, slot));
+        }
+        if self.bindings.contains_key(&member) {
+            let canceled_export = self.exports.remove(&member).is_some();
+            self.players.remove(&member);
+            self.media_answers.remove(&member);
+            self.download_urls.remove(&member);
+            self.statuses.remove(&member);
+            if canceled_export {
+                self.statuses.insert(
+                    member,
+                    "Selected clip export canceled because its content changed".into(),
+                );
+            }
         }
         let key = ContentProducer::allocate_key();
         let producer = Rc::new(RefCell::new(ContentProducer::new(slot.clone(), key)));
@@ -221,6 +327,39 @@ impl Reading {
     }
     pub(super) fn poll(&mut self) -> bool {
         let mut changed = false;
+        self.download_urls
+            .retain(|_, url| js_sys::Date::now() < url.revoke_at);
+        // While a product operation owns the app asynchronously, retain the
+        // bounded answer until its actual owner is available for revalidation.
+        let completed_exports: Vec<_> = self
+            .exports
+            .iter()
+            .filter_map(|(id, pending)| {
+                self.current_owner.as_ref()?;
+                pending
+                    .answer
+                    .borrow_mut()
+                    .take()
+                    .map(|result| (*id, pending.scope.clone(), result))
+            })
+            .collect();
+        for (id, scope, result) in completed_exports {
+            self.exports.remove(&id);
+            if !scope.is_current(self.export_scope(id).as_ref())
+                || !scope.is_owned_by(self.current_owner.as_ref())
+            {
+                continue;
+            }
+            let status = match result.and_then(download_clip) {
+                Ok(url) => {
+                    self.download_urls.insert(id, url);
+                    "Selected clip download handed to the browser".into()
+                },
+                Err(error) => format!("Selected clip export refused: {error}"),
+            };
+            self.statuses.insert(id, status);
+            changed = true;
+        }
         let completed: Vec<_> = self
             .clips
             .iter()
@@ -369,7 +508,85 @@ impl Reading {
         changed
     }
     pub(super) fn busy(&self) -> bool {
-        !self.clips.is_empty() || !self.media_answers.is_empty()
+        !self.clips.is_empty() || !self.media_answers.is_empty() || !self.exports.is_empty()
+    }
+    fn export_scope(&self, access: Uuid) -> Option<ClipExportScope> {
+        let binding = self.bindings.get(&access)?;
+        let slot = binding.slot.borrow();
+        if !slot.is_visible() {
+            return None;
+        }
+        let mere_document_lanes::retained_clip::ClipRequest::Read(clip) =
+            mere_document_lanes::retained_clip::request(&slot.source().address).ok()??
+        else {
+            return None;
+        };
+        Some(ClipExportScope {
+            persona: self.persona.clone(),
+            graph_session: self.scope.parse().ok()?,
+            access,
+            content_session: slot.session_identity()?.instance_id,
+            clip,
+        })
+    }
+    pub(super) fn export_clip(
+        &mut self,
+        access: Uuid,
+        clip: eidetic::ManifestId,
+        owner: Option<(Uuid, String)>,
+        store: Option<muniment::IndexedDbBackend>,
+    ) {
+        let result: Result<_, String> = (|| {
+            let scope = self
+                .export_scope(access)
+                .ok_or("The selected clip access is no longer shown")?;
+            if scope.clip != clip || !scope.is_owned_by(owner.as_ref()) {
+                return Err("The selected clip owner or session changed".into());
+            }
+            let store = store.ok_or("This view has no available supplying Mere store")?;
+            Ok((scope, store, clip_limits()?))
+        })();
+        match result {
+            Ok((scope, mut store, limits)) => {
+                let answer = Rc::new(RefCell::new(None));
+                let cancellation = Rc::new(RefCell::new(ExportCancellation::default()));
+                self.exports.insert(
+                    access,
+                    PendingExport {
+                        scope,
+                        answer: answer.clone(),
+                        cancellation: cancellation.clone(),
+                    },
+                );
+                self.statuses
+                    .insert(access, "Preparing verified selected clip download".into());
+                wasm_bindgen_futures::spawn_local(async move {
+                    use std::{future::Future, task::Poll};
+                    let mut operation =
+                        std::pin::pin!(mere_document_lanes::retained_clip::export_body(
+                            &mut store, None, clip, limits,
+                        ));
+                    let result = std::future::poll_fn(|context| {
+                        {
+                            let mut state = cancellation.borrow_mut();
+                            if state.cancelled {
+                                return Poll::Ready(None);
+                            }
+                            state.waker = Some(context.waker().clone());
+                        }
+                        operation.as_mut().poll(context).map(Some)
+                    })
+                    .await;
+                    if let Some(result) = result {
+                        *answer.borrow_mut() = Some(result);
+                    }
+                });
+            },
+            Err(error) => {
+                self.statuses
+                    .insert(access, format!("Selected clip export refused: {error}"));
+            },
+        }
     }
     pub(super) fn take_requests(&mut self) -> Vec<(Uuid, String)> {
         std::mem::take(&mut self.requests)
@@ -429,6 +646,8 @@ pub(super) fn clip_appearance(
         reading.statuses.remove(&member);
         reading.players.remove(&member);
         reading.media_answers.remove(&member);
+        reading.exports.remove(&member);
+        reading.download_urls.remove(&member);
     }
     let id = match mere_document_lanes::retained_clip::request(address) {
         Ok(Some(mere_document_lanes::retained_clip::ClipRequest::Read(id))) => id,
@@ -472,6 +691,51 @@ pub(super) fn clip_appearance(
     )
 }
 
+fn download_clip(
+    file: mere_document_lanes::retained_clip::ClipExport,
+) -> Result<DownloadUrl, String> {
+    use wasm_bindgen::JsCast;
+    let document = web_sys::window()
+        .and_then(|window| window.document())
+        .ok_or("No browser document")?;
+    let parts = js_sys::Array::new();
+    parts.push(&js_sys::Uint8Array::from(file.bytes.as_slice()));
+    let options = web_sys::BlobPropertyBag::new();
+    options.set_type(mere_document_lanes::retained_clip::PACKAGE_MEDIA_TYPE);
+    let blob = web_sys::Blob::new_with_u8_array_sequence_and_options(&parts, &options)
+        .map_err(|e| format!("Could not create clip package: {e:?}"))?;
+    let url = web_sys::Url::create_object_url_with_blob(&blob)
+        .map_err(|e| format!("Could not create clip download URL: {e:?}"))?;
+    let held_url = DownloadUrl {
+        url,
+        revoke_at: js_sys::Date::now() + 60_000.,
+    };
+    let anchor: web_sys::HtmlElement = document
+        .create_element("a")
+        .map_err(|e| format!("Could not create clip download: {e:?}"))?
+        .dyn_into()
+        .map_err(|_| "Clip download element unavailable")?;
+    anchor
+        .set_attribute("href", &held_url.url)
+        .map_err(|e| format!("Could not set clip download URL: {e:?}"))?;
+    anchor
+        .set_attribute("download", &file.filename)
+        .map_err(|e| format!("Could not name clip download: {e:?}"))?;
+    anchor
+        .set_attribute("hidden", "")
+        .map_err(|e| format!("Could not prepare clip download: {e:?}"))?;
+    document
+        .body()
+        .ok_or("No browser document body")?
+        .append_child(&anchor)
+        .map_err(|e| format!("Could not attach clip download: {e:?}"))?;
+    anchor.click();
+    anchor.remove();
+    // Give the browser time to consume its download, then release on frame,
+    // access close, source replacement or owner change. At most one per access.
+    Ok(held_url)
+}
+
 #[derive(Clone)]
 pub(super) enum Appearance {
     Message(String),
@@ -500,7 +764,7 @@ pub(super) fn render(appearance: Appearance) -> Child {
         Appearance::Message(message) => Box::new(el("p", message).attr("role", "status")),
         Appearance::Ready { key, slot, status } => {
             let leaf =
-                graphshell::retained_content::content_view::<TreePage, ()>(key, slot, 480, 300);
+                graphshell::retained_content::filling_content_view::<TreePage, ()>(key, slot);
             Box::new(
                 el("div", (leaf, el("p", status).attr("role", "status")))
                     .attr("class", "pelt-reading"),

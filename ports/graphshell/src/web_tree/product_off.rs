@@ -82,6 +82,17 @@ impl SavedProduct {
         match self.never {}
     }
 
+    pub(super) fn inspect_link_history(
+        &self,
+        _target: graphshell::link_inspection::LinkTarget,
+    ) -> Result<graphshell::link_inspection::LinkHistoryInspection, String> {
+        match self.never {}
+    }
+
+    pub(super) fn link_source(&self) -> Result<scenograph::link::LinkSource, String> {
+        match self.never {}
+    }
+
     pub(super) fn saved_file(&self) -> Option<serde_json::Value> {
         match self.never {}
     }

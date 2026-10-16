@@ -7,10 +7,10 @@
 //! The "Graph tools" side region's first section: arrangement and physics.
 //!
 //! Cambium controls hold the form; Apply reads them into the typed inputs of
-//! `graphshell::canvas_physics`, which the old page's form also calls.
+//! `mere::canvas::physics_controls`, which the old page's form also calls.
 use super::*;
 use cambium::{SelectState, button, checkbox, disclosure, lens, select};
-use graphshell::canvas_physics::{
+use mere::canvas::physics_controls::{
     self, ArrangementTransition, CUSTOM_PROFILE, LawStart, arrangement_choices,
 };
 use mere::canvas::{
@@ -115,7 +115,7 @@ impl PhysicsPanel {
         let law = self.picked_law();
         PhysicsChoice {
             law,
-            overlays: canvas_physics::ticked_overlays(|overlay| {
+            overlays: physics_controls::ticked_overlays(|overlay| {
                 law.refuses(overlay).is_none()
                     && PhysicsOverlay::ALL
                         .iter()
@@ -169,7 +169,7 @@ impl TreePage {
         let mut canvas = self.shared.canvas.borrow_mut();
         self.physics.transition = None;
         self.physics.status =
-            match canvas_physics::apply_arrangement(&mut canvas, id, self.shared.size.get()) {
+            match physics_controls::apply_arrangement(&mut canvas, id, self.shared.size.get()) {
                 Ok(applied) => {
                     self.physics.layout_id = applied.layout_id;
                     self.physics.transition = applied.transition;
@@ -193,7 +193,7 @@ impl TreePage {
         let choice = self.physics.choice();
         let mut canvas = self.shared.canvas.borrow_mut();
         self.physics.law_start = Some(LawStart::of(&canvas));
-        self.physics.status = canvas_physics::apply_physics(&mut canvas, &choice);
+        self.physics.status = physics_controls::apply_physics(&mut canvas, &choice);
         self.physics.sync(&canvas);
         self.shared.dirty.set(true);
     }
@@ -211,7 +211,7 @@ impl TreePage {
         let id = self.physics.profile_id();
         let mut canvas = self.shared.canvas.borrow_mut();
         self.physics.law_start = Some(LawStart::of(&canvas));
-        self.physics.status = match canvas_physics::apply_profile(&mut canvas, id) {
+        self.physics.status = match physics_controls::apply_profile(&mut canvas, id) {
             Ok(status) => status,
             Err(error) => format!("Failed · {error}"),
         };
@@ -233,7 +233,7 @@ impl TreePage {
             &[host_ms]
         };
         for &at in steps {
-            if let Some(status) = canvas_physics::advance_arrangement(
+            if let Some(status) = physics_controls::advance_arrangement(
                 &mut canvas,
                 &mut self.physics.transition,
                 &self.physics.layout_id,
@@ -251,7 +251,7 @@ impl TreePage {
         let layout_id = self.physics.layout_id.clone();
         let mut canvas = self.shared.canvas.borrow_mut();
         self.physics.transition = None;
-        match canvas_physics::apply_arrangement(&mut canvas, &layout_id, self.shared.size.get()) {
+        match physics_controls::apply_arrangement(&mut canvas, &layout_id, self.shared.size.get()) {
             Ok(applied) => {
                 self.physics.transition = applied.transition;
                 self.physics.status = applied.status;

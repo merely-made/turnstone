@@ -16,7 +16,7 @@
 //! `scenomise.host-dataset/v2` history, a v1 envelope being its one
 //! revision; the practice proof reads one v1 dataset.
 
-#[cfg(feature = "main-page")]
+#[cfg(feature = "product")]
 use graphshell::projection_compile::HostDatasetV1;
 use graphshell::projection_compile::HostDatasetV2;
 use web_sys::Element;
@@ -36,7 +36,7 @@ fn supplied_text(root: &Element) -> Option<Result<String, String>> {
 
 /// The one host dataset `root` was given, if any, parsed and checked: the
 /// practice proof's input.
-#[cfg(feature = "main-page")]
+#[cfg(feature = "product")]
 pub(crate) fn supplied(root: &Element) -> Option<Result<HostDatasetV1, String>> {
     Some(supplied_text(root)?.and_then(|text| {
         graphshell::projection_compile::parse_host_dataset(&text)

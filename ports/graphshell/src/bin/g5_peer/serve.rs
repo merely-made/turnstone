@@ -16,11 +16,11 @@
 use personae::delegation::Issue;
 use std::sync::RwLock;
 
-use graphshell::carrier::{accept_projection_session, projection_alpn, projection_policy};
-use graphshell::lifecycle::SessionAuthority;
-use graphshell::resume::ResumeFixtureEndpoint;
-use graphshell::session_loop::serve_admitted_session;
 use graphshell_endpoint::ResumableProjectionSource;
+use graphshell_host::carrier::{accept_projection_session, projection_alpn, projection_policy};
+use graphshell_host::lifecycle::SessionAuthority;
+use graphshell_host::resume::ResumeFixtureEndpoint;
+use graphshell_host::session_loop::serve_admitted_session;
 use insigne::delegation::{DelegationRevocation, SignedDelegationRevocation};
 use notochord::{NetworkId, RevocationLedger, TrustedRoot};
 use personae::{IdentityProvider, InMemoryProvider};
@@ -79,7 +79,7 @@ pub(crate) async fn serve(
     let mut endpoint = ResumeFixtureEndpoint::new();
 
     // Serve sessions until the peer stops coming back. The accept task must
-    // not own the carrier; see `graphshell::carrier`.
+    // not own the carrier; see `graphshell_host::carrier`.
     for attempt in 1.. {
         println!("  waiting for session {attempt}...");
         // Admission evaluates one ledger snapshot. Do not hold the synchronous
@@ -152,7 +152,10 @@ pub(crate) async fn serve(
             "  session {attempt}: served {} request(s); ended {:?}",
             summary.answered, summary.end
         );
-        if matches!(summary.end, graphshell::session_loop::SessionEnd::Lapsed(_)) {
+        if matches!(
+            summary.end,
+            graphshell_host::session_loop::SessionEnd::Lapsed(_)
+        ) {
             println!("  authority lapsed; not accepting further sessions");
             return Ok(());
         }

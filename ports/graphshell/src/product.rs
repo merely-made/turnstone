@@ -90,45 +90,6 @@ pub const PRODUCT_CODICIL_SCHEMA_V2: &str = "graphshell.graph-codicil/v2";
 /// Engram-to-Codicil vocabulary migration.
 pub const LEGACY_PRODUCT_ENGRAM_SCHEMA: &str = "graphshell.graph-engram/v1";
 
-/// The host-owned elapsed clock for one projection transition.
-///
-/// Browser frame timestamps enter through [`observe`](Self::observe). Pausing
-/// keeps observing the host so resuming cannot charge the paused interval to
-/// the transition. Scenotime sees only the resulting elapsed value.
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct ProjectionClock {
-    elapsed_ms: f32,
-    last_host_ms: Option<f64>,
-    paused: bool,
-}
-
-impl ProjectionClock {
-    pub fn observe(&mut self, host_ms: f64) -> f32 {
-        if !host_ms.is_finite() {
-            return self.elapsed_ms;
-        }
-        let previous = self.last_host_ms.replace(host_ms);
-        if !self.paused
-            && let Some(previous) = previous
-        {
-            self.elapsed_ms += (host_ms - previous).max(0.0) as f32;
-        }
-        self.elapsed_ms
-    }
-
-    pub fn set_paused(&mut self, paused: bool) {
-        self.paused = paused;
-    }
-
-    pub fn is_paused(&self) -> bool {
-        self.paused
-    }
-
-    pub fn elapsed_ms(&self) -> f32 {
-        self.elapsed_ms
-    }
-}
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum TransferScope {
@@ -1563,6 +1524,7 @@ pub(crate) fn decode_profiled_codicil(
 mod tests {
     use mere::kernel::graph::{Author, ProvenanceSubKind, RelationKind};
     use muniment::MemoryBackend;
+    use scenotime::ProjectionClock;
 
     use super::*;
     use crate::access::AccessContext;
@@ -1580,7 +1542,7 @@ mod tests {
     }
 
     fn projection(label: &str, selected: Option<&str>) -> ProjectionSnapshot {
-        use crate::projection_editor::*;
+        use scenograph::*;
         let definition = ProjectionDraft {
             dynamics: None,
             version: PROJECTION_DEFINITION_VERSION,
@@ -1912,9 +1874,15 @@ mod tests {
                     predicate: predicate.into(),
                     recognized_sub_kind: None,
                     label: Some("retained relation".into()),
+                    basis: mere::kernel::types::AssertionBasis {
+                        note: Some("retained relation".into()),
+                        ..Default::default()
+                    },
                     graph_scope: mere::kernel::types::GraphScope::Default,
                     provenance_iri: Some("https://tagger.test/".into()),
                     asserted_at_ms: Some(23),
+                    first_asserted_ms: Some(23),
+                    withdrawn: None,
                 }],
                 ..Default::default()
             }),
@@ -2796,6 +2764,13 @@ mod tests {
             .unwrap()
             .statements[0]
             .label = Some("divergent".into());
+        payload_collision.graph.edges[0]
+            .semantic
+            .as_mut()
+            .unwrap()
+            .statements[0]
+            .basis
+            .note = Some("divergent".into());
         let mut pair_collision = codicil.clone();
         pair_collision.graph.edges[0].to_node_id = surfaces[0].to_string();
         let mut store_collision = codicil.clone();
@@ -2816,6 +2791,9 @@ mod tests {
         let mut duplicate = surface;
         duplicate.semantic.as_mut().unwrap().statements[0].label =
             Some("raw source divergence".into());
+        duplicate.semantic.as_mut().unwrap().statements[0]
+            .basis
+            .note = Some("raw source divergence".into());
         source_collision.graph.edges.push(duplicate);
         let mut invalid_declaration = codicil.clone();
         invalid_declaration
@@ -2903,6 +2881,9 @@ mod tests {
         );
         legacy.graph.edges[0].semantic.as_mut().unwrap().statements[0].label =
             Some("different legacy claim".into());
+        legacy.graph.edges[0].semantic.as_mut().unwrap().statements[0]
+            .basis
+            .note = Some("different legacy claim".into());
         assert!(
             legacy_host
                 .import_product_codicil(&serde_json::to_vec(&legacy).unwrap())
@@ -3737,6 +3718,15 @@ mod tests {
             mere::canvas::dynamics_spec::bind(&spec).expect("a runnable spec binds");
             let scene = SavedSceneV3 {
                 selected: vec![web],
+                // Fractional positions from the headed Save failure must survive
+                // the JSON facet capture before the typed f32 scene is reopened.
+                cartography: CartographyGeometry::from_positions([(
+                    web,
+                    (
+                        21.345783233642578_f64 as f32,
+                        -26.827743530273438_f64 as f32,
+                    ),
+                )]),
                 ..scene(&spec)
             };
             host.save_product_scene("mere://scene/spec", &scene)
@@ -3757,6 +3747,16 @@ mod tests {
                     .is_none()
             );
             assert_eq!(SAVED_SCENE_FACET, "graphshell.saved-scene/v4");
+            pollster::block_on(host.persist(4)).expect("store the scene and its journal");
+            let stored = pollster::block_on(crate::app::GraphshellApp::open_or_fixture(
+                host.store(),
+                selected_persona(),
+            ))
+            .expect("reopen the stored scene through the application owner");
+            assert_eq!(
+                stored.host.product_scene("mere://scene/spec").unwrap(),
+                scene
+            );
             // Through the codicil, as JSON text, opened as a session.
             let bytes = codicil(&host, scene);
             let text: serde_json::Value = serde_json::from_slice(&bytes).unwrap();

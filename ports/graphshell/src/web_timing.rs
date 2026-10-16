@@ -245,6 +245,19 @@ impl GpuMarks {
 }
 
 impl FrameTiming {
+    /// Retire device-bound measurements while preserving CPU windows/reports.
+    pub(crate) fn release_device(&mut self) {
+        self.marks.take();
+        if let Some(window) = &mut self.window {
+            window.gpu_frames = 0;
+            window.gpu_open = false;
+        }
+        if let Some(closing) = &mut self.closing {
+            if let Some((buffer, _)) = closing.readback.take() {
+                buffer.unmap();
+            }
+        }
+    }
     /// Open a window. Fails if one is open or still closing.
     pub(crate) fn start(&mut self, label: &str, gpu: Gpu<'_>) -> Result<(), String> {
         if self.window.is_some() || self.closing.is_some() {

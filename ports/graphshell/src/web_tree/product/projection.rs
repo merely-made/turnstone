@@ -11,9 +11,9 @@ use graphshell::projection_compile::{
 use graphshell::projection_dynamics_compare::{
     DynamicsComparison, compare_arrangements_dynamics, compare_dynamics,
 };
-use graphshell::projection_editor::{
-    Channel, EditorAction, ProjectionEditor, ProjectionPanel, initial_projection_draft,
-};
+use graphshell::projection_compile::initial_projection_draft;
+use scenograph::Channel;
+use scenomise::authoring::{EditorAction, ProjectionEditor, ProjectionPanel};
 use mere::canvas::PhysicsLaw;
 use mere::canvas::dynamics_recipe::preset_slot;
 use mere::canvas::projection_dynamics::ProjectionDynamics;
@@ -192,6 +192,7 @@ impl ProjectionControls {
                     FIELDS[index].0,
                     input.text(),
                     js_sys::Date::now() as u64,
+                    graphshell::projection_compile::practice_compiler().registry(),
                 ) {
                     Ok(()) => format!("Edited · {}", FIELDS[index].0),
                     Err(error) => error,
@@ -554,7 +555,7 @@ impl SavedProduct {
                 };
             },
             "grid" | "scatter" => {
-                let arrangement = graphshell::projection_editor::with_kind(
+                let arrangement = scenomise::arrangement::with_kind(
                     &p.editor.draft().arrangement,
                     if action == "grid" {
                         "grid.default"

@@ -97,6 +97,7 @@ fn one_resource_assertion_has_distinct_exact_displayed_pair_occurrences() {
                 predicate: predicate_iri(SemanticSubKind::Cites).into(),
                 recognized_sub_kind: Some(SemanticSubKind::Cites),
                 label: None,
+                basis: Default::default(),
                 graph_scope: GraphScope::Custom("urn:graph:review".into()),
                 provenance_iri: Some("urn:author:alice".into()),
                 asserted_at_ms: Some(17),
@@ -135,6 +136,58 @@ fn one_resource_assertion_has_distinct_exact_displayed_pair_occurrences() {
     assert!(bind(&graph, &cd, &ViewInputs::default(), None).is_err());
     assert!(bind(&graph, &ab, &ViewInputs::default(), None).is_ok());
 }
+#[test]
+fn assertion_binding_preserves_host_source_and_graph_only_binding_discloses_unavailable() {
+    let (mut graph, [a, b, _, _]) = fixture();
+    let statement = graph
+        .try_assert_semantic_statement(
+            graph.get_node_key_by_id(a).unwrap(),
+            graph.get_node_key_by_id(b).unwrap(),
+            SemanticStatementSpec {
+                predicate: predicate_iri(SemanticSubKind::Cites).into(),
+                recognized_sub_kind: Some(SemanticSubKind::Cites),
+                label: None,
+                basis: Default::default(),
+                graph_scope: GraphScope::Default,
+                provenance_iri: None,
+                asserted_at_ms: None,
+            },
+        )
+        .unwrap()
+        .1
+        .statement_id;
+    let occurrence = Occurrence::Assertion {
+        pair: LinkTarget::new(a, b),
+        statement,
+    };
+    let source = scenograph::link::LinkSource::Available {
+        binding: scenograph::SourceBinding {
+            authority: "mere".into(),
+            domain: "graph-session".into(),
+            resource: "session:123/graph:456".into(),
+        },
+        revision: scenograph::link::LinkSourceRevision::Unavailable {
+            reason: "live source has no qualified immutable revision".into(),
+        },
+    };
+
+    let bound = bind_with_source(
+        &graph,
+        &occurrence,
+        &ViewInputs::default(),
+        None,
+        source.clone(),
+    )
+    .unwrap();
+    assert_eq!(bound.link_source, Some(source));
+
+    let graph_only = bind(&graph, &occurrence, &ViewInputs::default(), None).unwrap();
+    assert!(matches!(
+        graph_only.link_source,
+        Some(scenograph::link::LinkSource::Unavailable { .. })
+    ));
+}
+
 #[test]
 fn removed_access_cannot_retarget_equal_address() {
     let (mut graph, [a, _, c, _]) = fixture();

@@ -6,16 +6,13 @@
 
 //! A working session over disclosed source objects. Product evidence enters at
 //! the edge; the grammar places occurrences, Seiche moves a transient view,
-//! and Cambium/Genet build retained Netrender fragments. An axis the recipe
+//! and the retained Cambium view realizes the same keyed Control records. An axis the recipe
 //! encodes from a data field is pinned on that axis, so motion never moves a
 //! card off its value there (dynamics grammar plan, G7, F28). Motion never
 //! lays out text or recompiles a recipe. The browser's native controls are a
 //! keyed realization of the very same Control records, including their
 //! rectangles.
 
-use cambium::{GenetAppRunner, el, text};
-use genet_render::TextSystem;
-use genet_scripted_dom::ScriptedDom;
 use graphshell::{
     practice_disclosure::tone_labels as tones,
     practice_workspace::{
@@ -25,20 +22,12 @@ use graphshell::{
     projection_compile::{
         CompiledProjection, HostDatasetV1, PRACTICE_CARD, default_definition, practice_compiler,
     },
-    projection_editor::{Channel, ProjectionDefinition},
 };
+use scenograph::{Channel, ProjectionDefinition};
 use mere::canvas::{ArrangementAction, Axes, BoardItem, PermittedActions, PhysicsBoard};
-use netrender::{Scene, ScenePath, Transform};
 use serde::{Deserialize, Serialize};
-use std::{
-    cell::RefCell,
-    collections::{BTreeMap, HashMap},
-    rc::Rc,
-};
-use wasm_bindgen::{JsCast, prelude::Closure};
-use web_sys::{Element, PointerEvent};
-
-use super::{BrowserHost, document, element, root, web_gpu::GpuPresenter, window};
+use std::collections::BTreeMap;
+use super::window;
 
 const STORAGE: &str = "graphshellPracticeWorkspaceV1";
 const HISTORY_LIMIT: usize = 64;
@@ -59,14 +48,6 @@ pub(crate) struct Control {
     pub(crate) rect: [f32; 4],
     pub(crate) command: Option<String>,
     pub(crate) body: Option<String>,
-}
-
-struct RetainedControl {
-    face: Face,
-    fragment: u64,
-    element: Element,
-    rect: [f32; 4],
-    visible: bool,
 }
 
 #[derive(Default, Serialize)]
@@ -100,7 +81,6 @@ pub(super) struct PracticeHost {
     board: PhysicsBoard,
     dirty: bool,
     extent: (u32, u32),
-    controls: HashMap<String, RetainedControl>,
     metrics: Metrics,
     status: String,
     saved: bool,
@@ -171,7 +151,6 @@ impl PracticeHost {
             board,
             dirty: true,
             extent: (0, 0),
-            controls: HashMap::new(),
             metrics: Metrics {
                 compiles: 1,
                 placement_solves: 1,
@@ -962,197 +941,6 @@ impl PracticeHost {
         self.status = error;
         self.dirty = true;
     }
-    pub(super) fn frame(
-        &mut self,
-        width: u32,
-        height: u32,
-        host_ms: f64,
-        text_system: &mut TextSystem,
-        gpu: &GpuPresenter,
-    ) -> Result<Option<Scene>, String> {
-        let started = now();
-        if !self.advance(width, height, host_ms) {
-            return Ok(None);
-        }
-        let controls = self.controls(width, height);
-        let mut scene = Scene::new(width, height);
-        scene.push_rect(
-            0.0,
-            0.0,
-            width as f32,
-            height as f32,
-            [0.10, 0.13, 0.105, 1.0],
-        );
-        for ([x, y, tx, ty], curved) in self.relation_lines() {
-            let mut path = ScenePath::new();
-            path.move_to(x, y);
-            if curved {
-                path.cubic_to(x, (y + ty) * 0.5, tx, (y + ty) * 0.5, tx, ty);
-            } else {
-                path.line_to(tx, ty);
-            }
-            scene.push_shape_stroked(
-                path,
-                if curved {
-                    [0.60, 0.70, 0.57, 1.0]
-                } else {
-                    [0.86, 0.72, 0.42, 1.0]
-                },
-                if curved { 1.5 } else { 2.0 },
-            );
-        }
-        let container = element("practice-controls")?;
-        // Keep alternate views warm, including the actual focused controls.
-        // The named disclosure admits <=12 pitches and history <=64 entries;
-        // cap the cache as well so even future views cannot grow it unbounded.
-        let active: std::collections::HashSet<_> = controls.iter().map(|c| c.id.as_str()).collect();
-        for (id, old) in &mut self.controls {
-            if old.visible && !active.contains(id.as_str()) {
-                old.element
-                    .set_attribute("hidden", "")
-                    .map_err(|_| "Hide inactive control")?;
-                old.visible = false;
-                self.metrics.semantic_updates += 1;
-            }
-        }
-        if self.controls.len() > 160 {
-            let dead: Vec<_> = self
-                .controls
-                .iter()
-                .filter(|(_, c)| !c.visible)
-                .map(|(id, _)| id.clone())
-                .collect();
-            for id in dead {
-                if let Some(old) = self.controls.remove(&id) {
-                    old.element.remove();
-                    gpu.release_fragment(old.fragment);
-                }
-            }
-        }
-        for control in controls {
-            let old = self.controls.remove(&control.id);
-            let face_changed = old.as_ref().is_none_or(|old| old.face != control.face);
-            let fragment = if face_changed {
-                self.metrics.layouts += 1;
-                gpu.retain(
-                    paint_face(&control.face, text_system)?,
-                    old.as_ref().map(|old| old.fragment),
-                )?
-            } else {
-                old.as_ref().unwrap().fragment
-            };
-            let element = if let Some(old) = &old {
-                if !old.visible {
-                    old.element
-                        .remove_attribute("hidden")
-                        .map_err(|_| "Show cached control")?;
-                    self.metrics.semantic_updates += 1;
-                }
-                old.element.clone()
-            } else {
-                let el = document()?
-                    .create_element(if control.command.is_some() {
-                        "button"
-                    } else {
-                        "div"
-                    })
-                    .map_err(|_| "Workspace target creation failed")?;
-                el.set_attribute("data-practice-id", &control.id)
-                    .map_err(|_| "Workspace target identity")?;
-                if let Some(command) = &control.command {
-                    el.set_attribute("type", "button")
-                        .map_err(|_| "Button type")?;
-                    el.set_attribute("data-practice-command", command)
-                        .map_err(|_| "Button command")?;
-                }
-                if let Some(body) = &control.body {
-                    el.set_attribute("data-practice-body", body)
-                        .map_err(|_| "Physics body identity")?;
-                }
-                if control.id == "selection" || control.id == "status" {
-                    el.set_attribute("aria-live", "polite")
-                        .map_err(|_| "Live status")?;
-                }
-                if control.face.kind == "heading" {
-                    el.set_attribute("role", "heading")
-                        .map_err(|_| "Heading role")?;
-                    el.set_attribute("aria-level", "1")
-                        .map_err(|_| "Heading level")?;
-                }
-                container
-                    .append_child(&el)
-                    .map_err(|_| "Workspace target attach")?;
-                self.metrics.semantic_creates += 1;
-                el
-            };
-            if face_changed {
-                element.set_text_content(Some(&format!(
-                    "{} {}",
-                    control.face.label, control.face.detail
-                )));
-                element
-                    .set_attribute(
-                        "aria-label",
-                        &format!("{} {}", control.face.label, control.face.detail),
-                    )
-                    .map_err(|_| "Workspace label")?;
-                if control.command.is_some() {
-                    element
-                        .set_attribute(
-                            "aria-pressed",
-                            if control.face.selected {
-                                "true"
-                            } else {
-                                "false"
-                            },
-                        )
-                        .map_err(|_| "Workspace selection")?;
-                }
-                self.metrics.semantic_updates += 1;
-            }
-            if old.as_ref().is_none_or(|old| old.rect != control.rect) {
-                let [x, y, w, h] = control.rect;
-                element
-                    .set_attribute(
-                        "style",
-                        &format!("left:{x}px;top:{y}px;width:{w}px;height:{h}px"),
-                    )
-                    .map_err(|_| "Workspace bounds")?;
-                self.metrics.semantic_updates += 1;
-            }
-            scene.place_fragment(
-                fragment,
-                Transform::translate_2d(control.rect[0], control.rect[1]),
-            );
-            self.controls.insert(
-                control.id,
-                RetainedControl {
-                    face: control.face,
-                    fragment,
-                    element,
-                    rect: control.rect,
-                    visible: true,
-                },
-            );
-        }
-        if self.focus_view {
-            let id = format!("{:?}", self.workspace.location().view).to_lowercase();
-            if let Some(control) = self.controls.get(&id) {
-                if let Some(element) = control.element.dyn_ref::<web_sys::HtmlElement>() {
-                    let _ = element.focus();
-                }
-            }
-            self.focus_view = false;
-        }
-        self.dirty = false;
-        self.metrics.presents += 1;
-        let elapsed = now() - started;
-        self.metrics.frame_cpu_ms += elapsed;
-        self.metrics.max_frame_cpu_ms = self.metrics.max_frame_cpu_ms.max(elapsed);
-        self.publish()?;
-        Ok(Some(scene))
-    }
-
     pub(crate) fn fields(&self) -> Result<Vec<(&'static str, String)>, String> {
         Ok([
             (
@@ -1200,163 +988,4 @@ impl PracticeHost {
         .collect())
     }
 
-    pub(super) fn publish(&self) -> Result<(), String> {
-        let root = root()?;
-        for (key, value) in self.fields()? {
-            if root.get_attribute(key).as_deref() != Some(&value) {
-                root.set_attribute(key, &value)
-                    .map_err(|_| "Workspace state")?;
-            }
-        }
-        Ok(())
-    }
-}
-
-fn now() -> f64 {
-    window()
-        .ok()
-        .and_then(|w| w.performance())
-        .map(|p| p.now())
-        .unwrap_or_else(js_sys::Date::now)
-}
-
-fn paint_face(face: &Face, text_system: &mut TextSystem) -> Result<Scene, String> {
-    let model = face.clone();
-    let dom = Rc::new(RefCell::new(ScriptedDom::new()));
-    let runner = GenetAppRunner::new(
-        dom,
-        move |_: &()| {
-            el::<_, (), ()>(
-                "div",
-                (
-                    el("div", text(model.label.clone())).attr("class", "label"),
-                    el("div", text(model.detail.clone())).attr("class", "detail"),
-                ),
-            )
-            .attr(
-                "class",
-                format!(
-                    "face {} {}",
-                    model.kind,
-                    if model.selected { "selected" } else { "" }
-                ),
-            )
-        },
-        (),
-    );
-    let sheet = format!(
-        r#"
-      .face {{ width:{}px;height:{}px;box-sizing:border-box;color:#e4eadc;font-family:Roboto;font-size:14px;overflow:hidden; }}
-      .button {{background-color:#29352a;border:1px solid #53624a;border-radius:5px;padding:8px;}}
-      .card {{background-color:#263426;border:1px solid #627255;border-radius:6px;padding:9px;}}
-      .selected {{background-color:#3a4c30;border:2px solid #bdd59e;}}
-      .card .label {{font-size:18px;}}
-      .detail {{font-size:12px;color:#b5c2ac;margin-top:5px;}}
-      .heading .label {{font-size:27px;color:#e8ecd9;}}
-      .heading .detail {{font-size:14px;}}
-      .text .label {{font-size:17px;}}
-      .quiet {{font-size:12px;color:#bdc9b5;padding-top:5px;}}
-    "#,
-        face.width, face.height
-    );
-    let dom = runner.dom();
-    let dom = dom.borrow();
-    genet_render::scene_from_scripted_dom_with_text_system(
-        &*dom,
-        &[sheet.as_str()],
-        face.width,
-        face.height,
-        None,
-        &Default::default(),
-        text_system,
-    )
-    .map_err(|e| e.to_string())
-}
-
-impl BrowserHost {
-    pub(super) fn practice_command(&mut self, command: &str) {
-        if let Some(practice) = &mut self.practice {
-            if let Err(error) = practice.command(command) {
-                practice.status = format!("Could not complete action: {error}");
-                practice.dirty = true;
-            }
-        }
-    }
-}
-
-pub(super) fn install(state: &Rc<RefCell<BrowserHost>>) -> Result<(), String> {
-    if state.borrow().practice.is_none() {
-        return Ok(());
-    }
-    element("graphshell-canvas")?
-        .set_attribute("aria-hidden", "true")
-        .map_err(|_| "Canvas semantics")?;
-    element("graphshell-canvas")?
-        .remove_attribute("tabindex")
-        .map_err(|_| "Canvas focus")?;
-    element("semantic-host")?
-        .set_attribute("hidden", "")
-        .map_err(|_| "Hide fixture chrome")?;
-    let container = document()?
-        .create_element("section")
-        .map_err(|_| "Practice controls")?;
-    container.set_id("gs-practice-controls");
-    container
-        .set_attribute("aria-label", "Thursday practice workspace")
-        .map_err(|_| "Workspace name")?;
-    root()?
-        .append_child(&container)
-        .map_err(|_| "Mount workspace")?;
-    for phase in [
-        "pointerdown",
-        "pointermove",
-        "pointerup",
-        "pointercancel",
-        "lostpointercapture",
-    ] {
-        let state = state.clone();
-        let listener = Closure::<dyn FnMut(PointerEvent)>::new(move |event: PointerEvent| {
-            let mut host = state.borrow_mut();
-            let (px, py) = host.pointer_position(event.client_x(), event.client_y());
-            let Some(practice) = &mut host.practice else {
-                return;
-            };
-            if phase == "pointerdown" {
-                // Whether the card may move is the board's advertisement,
-                // which `drag_start` reads (G9).
-                if event.button() != 0 {
-                    return;
-                }
-                let Some(target) = event.target().and_then(|t| t.dyn_into::<Element>().ok()) else {
-                    return;
-                };
-                let Some(id) = target.get_attribute("data-practice-body") else {
-                    return;
-                };
-                if practice.board_pointer(&id, cambium::PointerPhase::Down, px, py) {
-                    let _ = target.set_pointer_capture(event.pointer_id());
-                }
-            } else {
-                let phase = match phase {
-                    "pointermove" => cambium::PointerPhase::Move,
-                    "pointerup" => cambium::PointerPhase::Up,
-                    _ => cambium::PointerPhase::Cancel,
-                };
-                practice.board_pointer("", phase, px, py);
-            }
-        });
-        root()?
-            .add_event_listener_with_callback(phase, listener.as_ref().unchecked_ref())
-            .map_err(|_| "Practice pointer listener")?;
-        listener.forget();
-    }
-    // Browser reduced-motion is a host preference, rather than a new recipe
-    // meaning. Explicit saved/workspace motion controls remain available.
-    if root()?.get_attribute("data-reduced-motion").as_deref() == Some("true") {
-        let mut host = state.borrow_mut();
-        if let Some(practice) = &mut host.practice {
-            practice.command("motion")?;
-        }
-    }
-    Ok(())
 }

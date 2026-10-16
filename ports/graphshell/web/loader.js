@@ -10,6 +10,10 @@
 // loads `viewer.js` instead.
 import { defineElements, loadHostDataset } from "./mount.js";
 
+// Rust panic frames otherwise stop at the JavaScript glue. Keep enough of the
+// existing receipt stack to identify the actual host or library caller.
+if (new URLSearchParams(location.search).has("scenario")) Error.stackTraceLimit = 64;
+
 const originalError = console.error.bind(console);
 
 function failureTitle(message) {

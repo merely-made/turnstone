@@ -8,11 +8,11 @@
 //! the NDJSON session over its frames.
 //!
 //! Everything with a rule in it lives elsewhere and runs on an ordinary
-//! `cargo test`: the join sequence in [`crate::webrtc_join`], the session
-//! protocol in `graphshell_client::SessionDriver`, and the byte-to-line
-//! reassembly in [`LineAssembler`]. This
-//! module is what is left once those are taken out — a few dozen lines that
-//! know what a data channel is, and nothing else does.
+//! `cargo test`: the join sequence in [`graphshell_host::webrtc_join`], the
+//! session protocol in `graphshell_client::SessionDriver`, and the
+//! byte-to-line reassembly in [`LineAssembler`]. This module is what is left
+//! once those are taken out — a few dozen lines that know what a data channel
+//! is, and nothing else does.
 //!
 //! ## Frames in, lines out
 //!
@@ -45,9 +45,10 @@ pub use notochord::HandshakeLimits;
 pub use personae::InMemoryProvider;
 pub use webrtc_carrier::{BrowserInitiatorConfig, InviteV1};
 
-use crate::admission::PROJECTION_PROTOCOL;
-use crate::webrtc_join::{
-    JoinError, JoinFrames, LineAssembler, PeerJoin, fill_random, peer_join, peer_rejoin,
+use chirograph::line::LineAssembler;
+use graphshell_host::admission::PROJECTION_PROTOCOL;
+use graphshell_host::webrtc_join::{
+    JoinError, JoinFrames, PeerJoin, fill_random, peer_join, peer_rejoin,
 };
 
 /// Frames arriving from the channel, queued until something asks.

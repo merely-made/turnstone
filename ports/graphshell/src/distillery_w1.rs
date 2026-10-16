@@ -299,7 +299,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::live_endpoint::LiveEndpoint;
+    use graphshell_host::live_endpoint::LiveEndpoint;
 
     fn distillery_board() -> mesh::JobBoard {
         #[derive(Deserialize)]
@@ -450,7 +450,7 @@ mod tests {
     #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
     #[test]
     fn read_only_chronicle_can_be_registered_with_a_context_bound_factory() {
-        let mut catalog = crate::native::endpoint_catalog::ResidentEndpointCatalog::new();
+        let mut catalog = graphshell_host::endpoint_catalog::ResidentEndpointCatalog::new();
         let admitted_session = ProjectionSession("admitted:chronicle".into());
         let expected_session = admitted_session.clone();
         catalog
@@ -466,7 +466,8 @@ mod tests {
             .expect("catalog registration");
         assert_eq!(catalog.offers()[0].id, "distillery.chronicle");
         assert_eq!(catalog.offers()[0].label, "Distillery Chronicle");
-        let context = crate::lifecycle::AdmittedEndpointContext::new(admitted_session, [9; 32]);
+        let context =
+            graphshell_host::lifecycle::AdmittedEndpointContext::new(admitted_session, [9; 32]);
         let session = catalog
             .open("distillery.chronicle", &context)
             .expect("open after admission");

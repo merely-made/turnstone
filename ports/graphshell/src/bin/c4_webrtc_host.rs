@@ -53,14 +53,15 @@ use std::net::{IpAddr, SocketAddr};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use graphshell::carrier::projection_policy;
-use graphshell::live_endpoint::{
+use graphshell_endpoint::door::route::ResidentEndpointRoute;
+use graphshell_host::carrier::projection_policy;
+use graphshell_host::endpoint_catalog::ResidentEndpointCatalog;
+use graphshell_host::live_endpoint::{
     ADMITTED_INTENT, LiveEndpoint, REFUSED_INTENT, SharedLiveEndpoint,
 };
-use graphshell::native::endpoint_catalog::{ResidentEndpointCatalog, ResidentEndpointRoute};
-use graphshell::native::projection_host::{ResidentProjectionHost, admit_webrtc_catalog};
-use graphshell::webrtc_door::{InviteTerms, issue_invite};
-use graphshell::webrtc_session::HostedInvite;
+use graphshell_host::projection_host::{ResidentProjectionHost, admit_webrtc_catalog};
+use graphshell_host::webrtc_door::{InviteTerms, issue_invite};
+use graphshell_host::webrtc_session::HostedInvite;
 use notochord::{NetworkId, ProfileRef, TrustedRoot};
 use personae::{IdentityProvider, InMemoryProvider};
 use rand_core::{OsRng, RngCore};
@@ -82,6 +83,7 @@ use distillery::{ChronicleObserver, ChronicleRevision, ResidentReceipt};
 enum Endpoint {
     LiveBoard,
     DistilleryChronicle,
+    ResidentMere,
 }
 
 impl Endpoint {
@@ -89,8 +91,9 @@ impl Endpoint {
         match value {
             "live-board" => Ok(Self::LiveBoard),
             "distillery-chronicle" => Ok(Self::DistilleryChronicle),
+            "resident-mere" => Ok(Self::ResidentMere),
             _ => Err(format!(
-                "bad --endpoint {value}; expected live-board or distillery-chronicle"
+                "bad --endpoint {value}; expected live-board, distillery-chronicle or resident-mere"
             )),
         }
     }
@@ -99,6 +102,7 @@ impl Endpoint {
         match self {
             Self::LiveBoard => "live board",
             Self::DistilleryChronicle => "Distillery Chronicle",
+            Self::ResidentMere => "Resident divination mere",
         }
     }
 }
@@ -110,12 +114,14 @@ enum FixtureEndpoint {
     LiveBoard(SharedLiveEndpoint),
     #[cfg(feature = "distillery-chronicle-fixture")]
     DistilleryChronicle,
+    ResidentMere,
 }
 
 impl FixtureEndpoint {
     fn nudge(&self) -> Result<u64, &'static str> {
         match self {
             Self::LiveBoard(board) => Ok(board.with(|endpoint| endpoint.append()).0),
+            Self::ResidentMere => Err("nudge is not advertised by the resident mere"),
             #[cfg(feature = "distillery-chronicle-fixture")]
             Self::DistilleryChronicle => {
                 Err("nudge is unsupported by the Distillery Chronicle endpoint")
@@ -181,7 +187,7 @@ impl Args {
 }
 
 const USAGE: &str = "c4_webrtc_host \
-[--endpoint live-board|distillery-chronicle] [--signal-port 8788] [--bind 0.0.0.0] \
+[--endpoint live-board|distillery-chronicle|resident-mere] [--signal-port 8788] [--bind 0.0.0.0] \
 [--advertise IP]... [--udp-port 0] \
 [--uses 8] [--invite-ttl-ms 3600000]";
 
@@ -246,6 +252,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // read-only Chronicle observation explicitly at launch.
     let mut catalog = ResidentEndpointCatalog::new();
     let (route, fixture_endpoint) = match args.endpoint {
+        Endpoint::ResidentMere => {
+            let endpoint = graphshell_endpoint::door::app_admission::configured_app_endpoint();
+            catalog.register_resumable_notifying(
+                "resident.divination",
+                "Resident divination mere",
+                move |_context| {
+                    graphshell_endpoint::door::resident_mere_proxy::ResidentMereProxy::divination(
+                        &endpoint,
+                    )
+                },
+            )?;
+            (
+                ResidentEndpointRoute::new("resident.divination", Duration::from_millis(250))?,
+                FixtureEndpoint::ResidentMere,
+            )
+        },
         Endpoint::LiveBoard => {
             // `register_resumable_notifying`, not `register_notifying`: the
             // plainer registration erases resume behind a default that
@@ -309,6 +331,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Endpoint::DistilleryChronicle => println!(
             "  nudge         POST http://{signal_addr}/nudge   (unsupported by this read-only Chronicle fixture)"
         ),
+        Endpoint::ResidentMere => println!("  nudge         not advertised by the resident mere"),
     }
     println!("  carrier bind  {}:{}", args.bind, args.udp_port);
     if args.advertise.is_empty() {
@@ -334,6 +357,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Endpoint::DistilleryChronicle => {
             println!("  intents       none (read-only endpoint)");
         },
+        Endpoint::ResidentMere => println!(
+            "  intents       resident-advertised session and archive actions (graphshell application)"
+        ),
     }
     println!();
     println!("INVITE FRAGMENT (paste into the browser page):");

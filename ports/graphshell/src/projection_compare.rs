@@ -19,7 +19,8 @@ use scenomise::facet::compose_facet;
 pub use scenomise::facet::{FACET_AXIS_ADAPTER, FACET_CELL_ADAPTER, FacetLayout};
 
 use crate::projection_compile::{ProjectionDataset, practice_compiler};
-use crate::projection_editor::{ProjectionDraft, with_kind};
+use scenograph::ProjectionDraft;
+use scenomise::arrangement::with_kind;
 
 /// The view a working cell reflects (SE58, SE66).
 pub const EDITOR_VIEW: (&str, &str) = ("graphshell", "projection-editor");

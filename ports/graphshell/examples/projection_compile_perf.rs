@@ -20,9 +20,9 @@ use graphshell::{
         ProjectionDataset, ProjectionFieldType, ProjectionOccurrence, ProjectionValue,
         practice_compiler,
     },
-    projection_editor::{Channel, SourceBinding},
 };
 use sceno::SourceRef;
+use scenograph::{Channel, SourceBinding};
 
 fn dataset(count: usize) -> ProjectionDataset {
     let fields = BTreeMap::from([

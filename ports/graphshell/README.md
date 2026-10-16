@@ -35,36 +35,32 @@ stay pending. The public `profiles` roster remains readable while Locked.
 
 ## Modules
 
-Always compiled:
+The serving half these compose (admission and its action check, the accept
+path, the line codec, `SessionAuthority` and `AdmittedEndpointContext`, the
+session loop and its notices, `ResidentEndpointCatalog`,
+`ResidentProjectionHost`, dialling, the N4 policy scenario, the fixture
+endpoints (`canary`, `resume`, `live_endpoint`), the receipt views (`view`,
+`sessions`) and the WebRTC door) is the `graphshell-host` crate (stack lift
+plan, L2 and after P5). Hosts that serve projections, and hosts that only
+render projection receipts, depend on that crate, not on this port.
 
-| Module | Contents |
-|---|---|
-| `view` | `ProjectionReceiptView`, `ProjectionLayoutView`, `ScenePlacementView`, `SceneRelationView`, `IntentReceiptView`, `render_projection_receipt`, `render_g1_receipt`, `render_canary_html` |
-| `canary` | `FixtureEndpoint`, `CanaryRun`, `CanaryError`, `run_loopback_canary` |
-| `resume` | `ResumeFixtureEndpoint`, `run_resume_canary` |
-| `sessions` | `SessionProjectionView`, `render_session_switch_receipt`; under `native`, `spawn_endpoint_session` and `mount_endpoint_processes` |
+The servers Djinn runs (the application door's broker, the browser door's
+host and its native-messaging envelope (`browser_carrier`), the device broker
+and its `graphshell_native_host` relay, the local session, the identity
+endpoint and its cards, `ResidentIdentity`, and the personal sync, carriage,
+graph key and transfer staging hosts) are Djinn's `door` and `sync` modules
+since the stack lift plan's P5. `ResidentMereProxy`, an endpoint forwarding
+over the application door, is `graphshell_endpoint::door::resident_mere_proxy`,
+and the C4 WebRTC host fixture that serves it stays here (`c4_webrtc_host`,
+feature `webrtc-session`). The port's identity scene test reads the identity
+cards from `tests/fixtures/identity_cards.json`, which Djinn's identity
+endpoint test keeps current.
 
-Under `native` (non-wasm):
-
-| Module | Contents |
-|---|---|
-| `admission` | `GRAPHSHELL_DOMAIN`, `PROJECTION_SERVICE`, `CONNECT_ACTION`, `PROJECTION_PROTOCOL`, `open_session`, `admit_session`, `serves_action` |
-| `carrier` | `projection_alpn`, `projection_policy`, `accept_projection_session`, `ProjectionRefusal`, `ProjectionAcceptError` |
-| `network_carrier` | `projection_binding`, `dial_projection_session`, `DialError`; re-exports `NetworkCarrier` and `CarrierRuntime` |
-| `session_loop` | `serve_admitted_session`, `SessionEnd`, `SessionSummary`, `SessionLoopError` |
-| `session_notices` | `serve_admitted_session_notifying` |
-| `lifecycle` | `SessionAuthority`, `AdmittedEndpointContext`, `BindAdmittedSession`, `Lapse`, `ScoreDenial`, `adjudicate_intent`, `apply_lapse` |
-| `browser_carrier` | WebExtensions native messaging: `NATIVE_HOST_NAME`, `CHROMIUM_EXTENSION_ID`, `FIREFOX_EXTENSION_ID`, `AllowedExtensions`, `BrowserLauncher`, `BrowserChallenge` |
-| `identity` | Secret-free read model: `VaultView`, `ProfileView`, `SshKeyView`, `DeviceView`, `DeviceGrantView` |
-| `identity_endpoint` | `SupplementalCard`, `TransferAcceptIntentV1`, `TransferDecision`, `IdentityEndpointError` |
-| `identity_projection` | Identity cards plus the signing, SSH generate, and SSH import intents |
-| `policy_projection` | `PolicySettingsView`, `run_n4_policy_scenario`, `render_n4_policy_receipt` |
-| `profile` | `PROFILE_ENV` (`GRAPHSHELL_PROFILE`), `selected_profile`, `GraphshellIdentity` from djinn |
-| `native::endpoint_catalog` | `ResidentEndpointCatalog`, `ResidentEndpoint`, `ResidentEndpointRoute`, `ResidentEndpointSession` |
-| `native::projection_host` | `ResidentProjectionHost`, `ServedProjection` |
-| `native::custody`, `native::custody_client`, `native::custody_identity` | Public wire calls, broker clients, and pending identity binding; custody lives in djinn |
-| `native::browser_host` | `serve_identity_native_messages`, `serve_catalog_native_messages` |
-| `native::device_broker` | `DeviceSurface`, `DEVICE_ENDPOINT_ENV` (`GRAPHSHELL_DEVICE_ENDPOINT`), `configured_device_endpoint` |
+The application side of the first-party door (admission, the app client, custody and its
+clients, quarantine, the local endpoint, tracked tasks, the identity views,
+`GraphshellIdentity` and `env_profile`, the shared envelope and frames) is
+`graphshell_endpoint::door`, feature `door` (stack lift plan, L1,
+2026-10-15). Applications depend on that crate, not on this port.
 
 Under `web` (portable, builds for `wasm32-unknown-unknown`):
 
@@ -87,11 +83,6 @@ Under `personal-sync`:
 |---|---|
 | `personal_sync` | `PersonalGraphEvent`, `PersonalGraphRecord`, `PersonalGraphExt`, `PersonalEncryption` |
 | `transfer_offer` | `TransferOfferV1`, `transfer_offer_rule`, `offer_address` |
-| `native::personal_sync_host` | `PersonalSyncHost`, `PersonalSyncHostConfig` |
-| `native::device_sync` | `personal_graph_id`, `SeedNote`, `BlobAction`, `resolve_data_root` |
-| `native::pairing` | `pair_device`, `unpair_device`, `PairingFacts` |
-| `native::graph_keys` | `GraphKeyGroup`, `OpenedKeyGroup`, `AbsorbReport` |
-| `native::transfer_staging` | `offer_transfer`, `receive_transfer`, `released_blobs_for` |
 
 ## Features
 
@@ -118,7 +109,6 @@ Turnstone, Genet host packages, and Servo runtime packages.
 | `h4d_browser_receipt_host` | `native` |
 | `h4e_browser_import_receipt_host` | `native` |
 | `h4f_agent_probe` | `native` |
-| `graphshell_native_host` | `native` |
 | `h6_transfer_peer` | `native`, `web` |
 | `h7_sync_peer` | `personal-sync` |
 
@@ -261,11 +251,14 @@ python3 ports/graphshell/web/scripts/test_viewer_budget.py
 ```
 
 The builder uses the standalone web lock, `--profile viewer` and
-`--no-default-features`. The viewer profile selects size optimization and full
+`--no-default-features`, once per presentation route: `webgpu/` and `webgl2/`
+(the latter without Classic Vello). `viewer.js` loads exactly one of them. The viewer profile selects size optimization and full
 LTO; the full application's release profile remains separate. It writes
 `viewer-delivery.json` with source, compiler, profile, asset hashes and sizes,
 then rejects a package that exceeds any interaction cap at gzip level 6 or 9:
-Wasm 3.25 MiB, glue 20 KiB, mount 8 KiB, and the site history fixture 128 KiB.
+Wasm 3,460,300 B (3.30 MiB, per route artifact; Mark's 2026-10-15 ruling
+amending R157's 3.25 MiB), glue 20 KiB, mount 8 KiB, and the site history
+fixture 128 KiB.
 The report remains available when the gate refuses a package. `--target-dir`
 can keep a delivery lane's build artifacts isolated; `--offline` requires the
 locked dependencies to be available locally.

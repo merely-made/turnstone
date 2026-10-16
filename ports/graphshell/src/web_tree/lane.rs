@@ -274,7 +274,7 @@ impl TreeLane {
             )
             .with_field(
                 "physics-profile",
-                graphshell::canvas_physics::profile_id(&canvas),
+                mere::canvas::physics_controls::profile_id(&canvas),
             )
             .with_field("physics-kind-source", choice.kind.id())
             .with_field("physics-group-source", choice.groups.id())
@@ -392,7 +392,7 @@ impl TreeLane {
                 .with_field("layout-spread", format!("{:.0}", stats.spread))
                 .with_field("layout-overlaps", stats.overlaps.to_string());
         }
-        for (name, value) in graphshell::canvas_physics::framing_fields(&canvas) {
+        for (name, value) in mere::canvas::physics_controls::framing_fields(&canvas) {
             snapshot = snapshot.with_field(name, value);
         }
         // The GPU repulsion lane (P5c): whether the page has a device, and
@@ -435,6 +435,8 @@ impl TreeLane {
         let remote = self.shared.remote.borrow();
         let board = &remote.board;
         let live = remote.live.as_ref();
+        #[cfg(feature = "remote")]
+        let snapshot = reservoir::fields(page, snapshot);
         snapshot
             .with_field(
                 "session",
@@ -702,6 +704,8 @@ impl Product for TreeLane {
         );
         #[cfg(feature = "product")]
         let snapshot = presentation::fields(page, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = super::query_view::fields(page, snapshot);
         #[cfg(feature = "product")]
         let snapshot = dynamics_inspection::fields(page, snapshot);
         #[cfg(feature = "product")]
@@ -1018,6 +1022,7 @@ impl Product for TreeLane {
             );
         let faces = self.shared.faces.get().unwrap_or_default().fields();
         let snapshot = practice::fields(page, snapshot);
+        let snapshot = responsive_links::fields(page, snapshot);
         // Host-boundary receipts come from the existing validated loader and
         // Tabard adapter. Missing evidence stays absent, never a passing default.
         let snapshot = [
@@ -1047,6 +1052,23 @@ impl Product for TreeLane {
             snapshot.with_field(name, value)
         });
         if let Some(product) = &page.product {
+            // Detail observations describe the selected node. Before selection,
+            // observe the faces actually on the canvas rather than conflating
+            // an absent detail selection with an absent representation.
+            let face = if let Some(id) = product.selected {
+                canvas
+                    .graph()
+                    .get_node_by_id(id)
+                    .map(|(key, _)| canvas.node_face(key).as_code())
+                    .unwrap_or("none")
+            } else {
+                let mut faces = canvas.graph().nodes().map(|(key, _)| canvas.node_face(key));
+                match faces.next() {
+                    Some(face) if faces.all(|other| other == face) => face.as_code(),
+                    Some(_) => "mixed",
+                    None => "none",
+                }
+            };
             product
                 .history_fields(product.projection_fields(snapshot))
                 .with_field(
@@ -1089,14 +1111,7 @@ impl Product for TreeLane {
                     "selected-count",
                     canvas.selected_members().len().to_string(),
                 )
-                .with_field(
-                    "face",
-                    product
-                        .selected
-                        .and_then(|id| canvas.graph().get_node_by_id(id))
-                        .map(|(key, _)| canvas.node_face(key).as_code())
-                        .unwrap_or("none"),
-                )
+                .with_field("face", face)
                 .with_field(
                     "item-role",
                     product
@@ -1229,14 +1244,13 @@ impl Product for TreeLane {
             "log-layout" => {
                 let canvas = self.shared.canvas.borrow();
                 let start = ctx.runner.state().physics.law_start;
-                self.shared
-                    .physics_log
-                    .borrow_mut()
-                    .push(graphshell::canvas_physics::layout_line(
+                self.shared.physics_log.borrow_mut().push(
+                    mere::canvas::physics_controls::layout_line(
                         rest.trim(),
                         &canvas,
                         start.as_ref(),
-                    ));
+                    ),
+                );
                 Ok(())
             },
             // `log-physics <label>`: the layout's signature and the GPU
@@ -1246,7 +1260,7 @@ impl Product for TreeLane {
                 let canvas = self.shared.canvas.borrow();
                 let stats = canvas.layout_stats_without_stretch();
                 let lane = canvas.repulsion_stats().unwrap_or_default();
-                let framing = graphshell::canvas_physics::framing_fields(&canvas)
+                let framing = mere::canvas::physics_controls::framing_fields(&canvas)
                     .map(|(name, value)| format!("{name} {value}"))
                     .join(" ");
                 let answers = self
@@ -1315,15 +1329,15 @@ impl Product for TreeLane {
             "set-zoom" => {
                 let zoom = rest.trim().parse().map_err(|_| "set-zoom wants a number")?;
                 let size = self.shared.size.get();
-                CanvasCommand::SetZoom { zoom }.apply(&mut self.shared.canvas.borrow_mut(), size);
+                CanvasCommand::SetZoom { zoom }.apply(&mut *self.shared.canvas.borrow_mut(), size);
                 self.shared.dirty.set(true);
                 Ok(())
             },
             // `measure-faces <label>`: each face in view against its drawn
             // body, into the snapshot and the receipt.
             "measure-faces" => {
-                let faces = graphshell::canvas_faces::FaceAlignment::measure(
-                    &self.shared.canvas.borrow(),
+                let faces = mere::canvas::face_alignment::FaceAlignment::measure(
+                    &*self.shared.canvas.borrow(),
                     self.shared.size.get(),
                 );
                 self.shared.faces.set(Some(faces));
@@ -1703,7 +1717,12 @@ impl Product for TreeLane {
             && leaf_rect(ctx).is_some_and(|(_, _, width, height)| width > 0. && height > 0.);
         #[cfg(feature = "product")]
         let workspace_saving = super::forme::owner_busy(ctx.runner.state())
-            || ctx.runner.state().forme.as_ref().is_some_and(|pane| pane.saving)
+            || ctx
+                .runner
+                .state()
+                .forme
+                .as_ref()
+                .is_some_and(|pane| pane.saving)
             || ctx.runner.state().presentation.busy();
         #[cfg(not(feature = "product"))]
         let workspace_saving = false;
@@ -1772,7 +1791,9 @@ fn owner_receipt(page: &TreePage) -> serde_json::Value {
         "actual_session_changes":page.product.as_ref().map_or(0,|p|p.observed_session_changes)})
 }
 #[cfg(not(feature = "product"))]
-fn owner_receipt(_page: &TreePage) -> serde_json::Value { serde_json::Value::Null }
+fn owner_receipt(_page: &TreePage) -> serde_json::Value {
+    serde_json::Value::Null
+}
 
 #[cfg(feature = "product")]
 fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> ProbeSnapshot {
@@ -1780,15 +1801,40 @@ fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> Pr
     let model_owner = page.forme.as_ref().map(|p| p.model().document.graph_id);
     let snapshot = snapshot
         .with_field("actual-app-present", actual_owner.is_some().to_string())
-        .with_field("actual-graph-session", actual_owner.map(|id| id.to_string()).unwrap_or_else(|| "busy".into()))
-        .with_field("forme-model-session", model_owner.map(|id| id.to_string()).unwrap_or_else(|| "absent".into()))
-        .with_field("forme-session-matches", match (actual_owner, model_owner) {
-            (Some(actual), Some(model)) => (actual == model).to_string(),
-            (None, _) => "unknown".into(),
-            (Some(_), None) => "false".into(),
-        })
-        .with_field("actual-session-changes", page.product.as_ref().map_or(0, |p| p.observed_session_changes).to_string())
-        .with_field("forme-region-id", canvas.forme_region().map(|r| r.id.to_string()).unwrap_or_else(|| "absent".into()));
+        .with_field(
+            "actual-graph-session",
+            actual_owner
+                .map(|id| id.to_string())
+                .unwrap_or_else(|| "busy".into()),
+        )
+        .with_field(
+            "forme-model-session",
+            model_owner
+                .map(|id| id.to_string())
+                .unwrap_or_else(|| "absent".into()),
+        )
+        .with_field(
+            "forme-session-matches",
+            match (actual_owner, model_owner) {
+                (Some(actual), Some(model)) => (actual == model).to_string(),
+                (None, _) => "unknown".into(),
+                (Some(_), None) => "false".into(),
+            },
+        )
+        .with_field(
+            "actual-session-changes",
+            page.product
+                .as_ref()
+                .map_or(0, |p| p.observed_session_changes)
+                .to_string(),
+        )
+        .with_field(
+            "forme-region-id",
+            canvas
+                .forme_region()
+                .map(|r| r.id.to_string())
+                .unwrap_or_else(|| "absent".into()),
+        );
     let Some(pane) = &page.forme else {
         return snapshot.with_field(
             "forme",

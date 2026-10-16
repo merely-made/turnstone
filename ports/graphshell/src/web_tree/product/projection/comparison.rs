@@ -5,7 +5,7 @@
 use super::*;
 use graphshell::projection_compare::{FACET_AXIS_ADAPTER, FACET_CELL_ADAPTER};
 use graphshell::projection_compile::practice_compiler;
-use graphshell::projection_editor::with_kind;
+use scenomise::arrangement::with_kind;
 
 pub(super) fn view(p: &ProjectionControls, width: f32) -> Option<Child> {
     let comparison = p.comparison.as_ref()?;

@@ -9,51 +9,26 @@
 //! G1 adds a native semantic view over the portable client state. Networking,
 //! product models, and source authority remain injected at the edge.
 
-#[cfg(feature = "retained-content")]
-pub mod retained_content;
 #[cfg(feature = "moot-resources")]
 pub mod moot_resources;
+#[cfg(feature = "query-views")]
+pub mod query_views;
+#[cfg(feature = "retained-content")]
+pub mod retained_content;
 
 #[cfg(feature = "web")]
 pub mod access;
 #[cfg(feature = "web")]
 pub mod access_inspection;
 #[cfg(feature = "web")]
-pub mod link_inspection;
-#[cfg(feature = "web")]
-pub mod field_inspection;
-#[cfg(feature = "web")]
-pub mod coupling_edit;
-#[cfg(feature = "web")]
-pub mod presentation_editor;
-#[cfg(feature = "web")]
-pub mod presentation_binding;
-#[cfg(feature = "web")]
-pub mod node_presentation;
-#[cfg(any(
-    all(feature = "native", not(target_arch = "wasm32")),
-    feature = "webrtc-join"
-))]
-pub mod admission;
-#[cfg(feature = "web")]
 pub mod app;
 #[cfg(feature = "web")]
 pub mod appearance;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod browser_carrier;
 #[cfg(feature = "web")]
 pub mod browser_storage;
-pub mod canary;
 #[cfg(feature = "web")]
-pub mod canvas_controls;
-#[cfg(feature = "web")]
-pub mod canvas_faces;
-#[cfg(feature = "web")]
-pub mod canvas_gestures;
-#[cfg(feature = "web")]
-pub mod viewer_commands;
-#[cfg(feature = "web")]
-pub mod canvas_physics;
+#[cfg(test)]
+mod canvas_physics_tests;
 #[cfg(feature = "web")]
 pub mod canvas_reader;
 #[cfg(feature = "applets")]
@@ -64,33 +39,26 @@ pub mod capture;
 mod capture_resources;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod carriage;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod carrier;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod distillery_w1;
 #[cfg(feature = "web")]
-pub mod frame_budget;
+pub mod field_inspection;
+#[cfg(feature = "web")]
+pub mod forme_session;
 #[cfg(feature = "web")]
 pub mod forme_workspace;
 #[cfg(feature = "web")]
-pub mod forme_session;
+pub mod frame_budget;
 #[cfg(feature = "web")]
 pub mod handlers;
 #[cfg(feature = "web")]
 pub mod host_dataset_view;
 #[cfg(feature = "web")]
+pub mod host_history_view;
+#[cfg(feature = "web")]
 pub mod host_presenter;
 #[cfg(feature = "web")]
-pub mod host_history_view;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod identity;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod identity_endpoint;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod identity_projection;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod lifecycle;
-pub mod live_endpoint;
+pub mod link_inspection;
 #[cfg(feature = "web")]
 pub mod local_edit;
 #[cfg(feature = "web")]
@@ -103,28 +71,30 @@ pub mod local_scene;
 pub mod mere_host;
 #[cfg(feature = "web")]
 mod mere_host_fixture;
-#[cfg(feature = "mere-route")]
-pub mod mere_route;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod native;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod network_carrier;
+#[cfg(feature = "web")]
+pub mod node_presentation;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod personal_sync;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod policy_projection;
+#[cfg(feature = "web")]
+pub mod presentation_binding;
+#[cfg(feature = "web")]
+pub mod presentation_editor;
 #[cfg(feature = "web")]
 pub mod product;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod profile;
 #[cfg(feature = "web")]
 pub mod remote_board;
+#[cfg(feature = "web")]
+pub mod resident_host;
+#[cfg(feature = "web")]
+pub mod responsive_links;
 #[cfg(feature = "web")]
 pub mod retained_policy;
 #[cfg(feature = "web")]
 pub mod session_item;
 #[cfg(feature = "web")]
 pub mod speed_bar;
+#[cfg(feature = "web")]
+pub mod viewer_commands;
 
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod practice_disclosure;
@@ -132,44 +102,23 @@ pub mod practice_disclosure;
 pub mod practice_workspace;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod projection_compare;
+#[cfg(any(feature = "native", feature = "web"))]
+pub mod projection_compile;
 #[cfg(feature = "web")]
 pub mod projection_dynamics_compare;
 #[cfg(feature = "web")]
 pub mod projection_dynamics_receipt;
-#[cfg(any(feature = "native", feature = "web"))]
-pub mod projection_compile;
-#[cfg(any(feature = "native", feature = "web"))]
-pub mod projection_editor;
 /// Receipt ingest: a scenario-receipt directory becomes personal-graph facts.
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod receipts;
-pub mod resume;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod session_loop;
-#[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-pub mod session_notices;
-pub mod sessions;
 #[cfg(feature = "web")]
 pub mod transfer;
 #[cfg(feature = "web")]
 pub mod transfer_endpoint;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod transfer_offer;
-pub mod view;
 #[cfg(all(feature = "webrtc-browser", target_arch = "wasm32"))]
 pub mod webrtc_browser;
-#[cfg(any(
-    all(feature = "native", not(target_arch = "wasm32")),
-    feature = "webrtc-join"
-))]
-pub mod webrtc_door;
-#[cfg(any(
-    all(feature = "native", not(target_arch = "wasm32")),
-    feature = "webrtc-join"
-))]
-pub mod webrtc_join;
-#[cfg(all(feature = "webrtc-session", not(target_arch = "wasm32")))]
-pub mod webrtc_session;
 
 pub use chirograph as protocol;
 pub use graphshell_client as client;

@@ -20,6 +20,7 @@ use insigne::DerivedKeyAttestation;
 use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
 use mere::kernel::graph::{Author, EdgeAssertion, Graph, RelationSelector};
+use mere::kernel::types::AssertionBasis;
 use muniment::Backend;
 use p2panda_core::cbor::{decode_cbor_strict, encode_cbor};
 use p2panda_core::{Body, Hash, Header, Operation, SigningKey, Topic, VerifyingKey};
@@ -141,6 +142,8 @@ pub enum PersonalGraphEvent {
         statement_id: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         asserted_at_ms: Option<u64>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        basis: Option<AssertionBasis>,
     },
     RetractRelation {
         from: Uuid,
@@ -151,6 +154,8 @@ pub enum PersonalGraphEvent {
         from: Uuid,
         to: Uuid,
         statement_id: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        withdrawn_at_ms: Option<u64>,
     },
     SetFacet {
         node: Uuid,
@@ -949,11 +954,21 @@ pub async fn accept_into<B: Backend + Clone + Send + Sync + 'static>(
             .await
             .map_err(|error| Reject::new("assertion-history-unavailable", error.to_string()))?;
         let mut ids = assertions::IdentityIndex::default();
-        for stored in &records {
-            observe_assertion_ids(&mut ids, &stored.operation, &stored.record)
-                .map_err(|error| Reject::new("conflicting-assertion-id", error.to_string()))?;
+        let entries = causal_entries(&records);
+        let entries_by_hash = causal_entry_index(&entries);
+        let causal = causal_projection(&entries)
+            .map_err(|error| Reject::new("assertion-history-unavailable", error.to_string()))?;
+        for &index in &causal.order {
+            let stored = &records[index];
+            observe_assertion_ids(
+                &mut ids,
+                &stored.operation,
+                &stored.record,
+                &entries_by_hash,
+            )
+            .map_err(|error| Reject::new("conflicting-assertion-id", error.to_string()))?;
         }
-        observe_assertion_ids(&mut ids, operation, &record)
+        observe_assertion_ids(&mut ids, operation, &record, &entries_by_hash)
             .map_err(|error| Reject::new("conflicting-assertion-id", error.to_string()))?;
     }
     Ok(processor.process(operation).await?.inserted())
@@ -963,18 +978,65 @@ fn observe_assertion_ids(
     ids: &mut assertions::IdentityIndex,
     operation: &Operation<PersonalGraphExt>,
     record: &PersonalGraphRecord,
+    entries_by_hash: &BTreeMap<[u8; 32], &CausalEntry<u64>>,
 ) -> Result<(), PersonalGraphError> {
     let subject = stable_subject(operation, record)
         .map_err(|error| PersonalGraphError::Excluded(error.to_string()))?;
     let asserter = Author::person(hex32(&subject)).asserter_iri();
+    let operation_hash = *operation.hash.as_bytes();
+    let has_retraction = record
+        .events
+        .iter()
+        .any(|event| matches!(event, PersonalGraphEvent::RetractAssertion { .. }));
+    let causally_known = if has_retraction {
+        causal_known_operations(
+            entries_by_hash,
+            operation_hash,
+            record.parents.iter().copied().chain(
+                operation
+                    .header
+                    .backlink
+                    .as_ref()
+                    .map(|hash| *hash.as_bytes()),
+            ),
+        )
+    } else {
+        std::collections::HashSet::new()
+    };
     for (index, event) in record.events.iter().enumerate() {
         let fallback = format!(
             "urn:mere:statement:personal:{}:{index}",
             hex32(operation.hash.as_bytes())
         );
-        ids.observe(event, &asserter, &fallback)?;
+        ids.observe(event, &asserter, &fallback, operation_hash, &causally_known)?;
     }
     Ok(())
+}
+
+fn causal_known_operations(
+    by_hash: &BTreeMap<[u8; 32], &CausalEntry<u64>>,
+    operation: [u8; 32],
+    direct: impl IntoIterator<Item = [u8; 32]>,
+) -> std::collections::HashSet<[u8; 32]> {
+    let mut known = std::collections::HashSet::from([operation]);
+    let mut pending = direct.into_iter().collect::<Vec<_>>();
+    while let Some(hash) = pending.pop() {
+        if !known.insert(hash) {
+            continue;
+        }
+        if let Some(entry) = by_hash.get(&hash) {
+            pending.extend(entry.parents.iter().copied());
+            pending.extend(entry.backlink);
+        }
+    }
+    known
+}
+
+fn causal_entry_index(entries: &[CausalEntry<u64>]) -> BTreeMap<[u8; 32], &CausalEntry<u64>> {
+    entries
+        .iter()
+        .map(|entry| (entry.operation, entry))
+        .collect()
 }
 
 /// One local device replica.
@@ -1254,6 +1316,7 @@ pub async fn materialize<B: Backend + Clone + Send + Sync + 'static>(
 ) -> Result<SyncProjection, PersonalGraphError> {
     let (records, unreadable) = load_records(store, graph_id, keyring).await?;
     let entries = causal_entries(&records);
+    let entries_by_hash = causal_entry_index(&entries);
     let causal = causal_projection(&entries)?;
     let policy = PersonalGraphPolicy {
         graph: graph_id,
@@ -1282,12 +1345,39 @@ pub async fn materialize<B: Backend + Clone + Send + Sync + 'static>(
             signer: *stored.operation.header.verifying_key.as_bytes(),
             stable_subject: subject,
         });
+        let has_retraction = stored
+            .record
+            .events
+            .iter()
+            .any(|event| matches!(event, PersonalGraphEvent::RetractAssertion { .. }));
+        let causally_known = if has_retraction {
+            causal_known_operations(
+                &entries_by_hash,
+                *stored.operation.hash.as_bytes(),
+                stored.record.parents.iter().copied().chain(
+                    stored
+                        .operation
+                        .header
+                        .backlink
+                        .as_ref()
+                        .map(|hash| *hash.as_bytes()),
+                ),
+            )
+        } else {
+            std::collections::HashSet::new()
+        };
         for (event_index, event) in stored.record.events.iter().enumerate() {
             let fallback_id = format!(
                 "urn:mere:statement:personal:{}:{event_index}",
                 hex32(stored.operation.hash.as_bytes()),
             );
-            assertion_ids.observe(event, &asserter_iri, &fallback_id)?;
+            assertion_ids.observe(
+                event,
+                &asserter_iri,
+                &fallback_id,
+                *stored.operation.hash.as_bytes(),
+                &causally_known,
+            )?;
             // Never gated by selection. A device cannot opt out of the traffic
             // that keys it and still expect to read the graph.
             match event {
@@ -1454,6 +1544,7 @@ fn apply_event(
             assertion,
             statement_id,
             asserted_at_ms,
+            basis,
         } => {
             if let EdgeAssertion::Semantic {
                 sub_kind, label, ..
@@ -1468,6 +1559,7 @@ fn apply_event(
                     asserter_iri,
                     statement_id.as_deref().unwrap_or(fallback_id),
                     *asserted_at_ms,
+                    basis.clone(),
                 );
             } else {
                 apply_graph_delta(
@@ -1495,16 +1587,16 @@ fn apply_event(
             );
         },
         PersonalGraphEvent::RetractAssertion {
-            from,
-            to,
+            from: _,
+            to: _,
             statement_id,
+            withdrawn_at_ms,
         } => {
-            if let Some((from, to)) = graph
-                .get_node_key_by_id(*from)
-                .zip(graph.get_node_key_by_id(*to))
-            {
-                graph.retract_semantic_statement(from, to, statement_id);
-            }
+            graph.apply_imported_semantic_withdrawal(
+                statement_id,
+                *withdrawn_at_ms,
+                Some(asserter_iri.to_owned()),
+            );
         },
         PersonalGraphEvent::SetFacet { node, facet, value } => {
             apply_graph_delta(
@@ -1691,6 +1783,7 @@ fn event_target(event: &PersonalGraphEvent) -> String {
             from,
             to,
             statement_id,
+            ..
         } => {
             format!("assertion/{from}/{to}/{statement_id}")
         },
@@ -1804,6 +1897,7 @@ mod tests {
                 assertion: relation(),
                 statement_id: None,
                 asserted_at_ms: None,
+                basis: None,
             }])
             .await
             .unwrap();
@@ -1814,6 +1908,7 @@ mod tests {
                 assertion: relation(),
                 statement_id: None,
                 asserted_at_ms: None,
+                basis: None,
             }])
             .await
             .unwrap();
@@ -1833,7 +1928,7 @@ mod tests {
         projection
             .graph
             .projected_relations_between(from, to)
-            .flat_map(|(_, edge)| edge.semantic_statements().iter().cloned())
+            .flat_map(|(_, edge)| edge.held_semantic_statements().cloned())
             .collect()
     }
 
@@ -1882,6 +1977,12 @@ mod tests {
     async fn p1_sync_retraction_preserves_the_other_asserter() {
         let (replica, alice, bob) = assertion_fixture().await;
         let before = assertion_statements(&replica.projection().await.unwrap());
+        let alice_id = before
+            .iter()
+            .find(|s| s.provenance_iri.as_deref() == Some(&alice))
+            .unwrap()
+            .statement_id
+            .clone();
         assert_eq!(
             before.len(),
             2,
@@ -1915,6 +2016,20 @@ mod tests {
         );
         assert_eq!(after.len(), 1, "another asserter's assertion must remain");
         assert_eq!(after[0].provenance_iri.as_deref(), Some(bob.as_str()));
+        let withdrawn = replica
+            .projection()
+            .await
+            .unwrap()
+            .graph
+            .find_semantic_statement(&alice_id)
+            .expect("legacy sync retraction retains exact history")
+            .1
+            .clone();
+        assert_eq!(
+            withdrawn.withdrawn.as_ref().unwrap().at_ms,
+            None,
+            "legacy retraction events carry no recorded time"
+        );
     }
 
     async fn legacy_signed(
@@ -1960,6 +2075,7 @@ mod tests {
             },
             statement_id: Some(id.into()),
             asserted_at_ms: Some(time),
+            basis: None,
         }
     }
 
@@ -1985,16 +2101,24 @@ mod tests {
             .await
             .unwrap();
         let before = assertion_statements(&replica.projection().await.unwrap());
-        assert_eq!(before.len(), 3);
+        assert_eq!(before.len(), 4);
         assert_eq!(
             before
                 .iter()
                 .find(|s| s.statement_id == id)
                 .unwrap()
                 .asserted_at_ms,
+            Some(100),
+            "an explicit signed ID is not merged with another ID for the same reason"
+        );
+        assert_eq!(
+            before
+                .iter()
+                .find(|s| s.statement_id == "urn:co-op:unused")
+                .unwrap()
+                .asserted_at_ms,
             Some(200)
         );
-        assert!(!before.iter().any(|s| s.statement_id == "urn:co-op:unused"));
 
         let receiver = PersonalGraphReplica::new(
             MemoryBackend::new(),
@@ -2012,15 +2136,18 @@ mod tests {
             assertion_statements(&receiver.projection().await.unwrap()),
             before
         );
-        let absent = replica
-            .author(vec![PersonalGraphEvent::RetractAssertion {
-                from: A,
-                to: B,
-                statement_id: "urn:co-op:missing".into(),
-            }])
-            .await
-            .unwrap();
-        receiver.accept(&absent).await.unwrap();
+        assert!(
+            replica
+                .author(vec![PersonalGraphEvent::RetractAssertion {
+                    from: A,
+                    to: B,
+                    statement_id: "urn:co-op:missing".into(),
+                    withdrawn_at_ms: None,
+                }])
+                .await
+                .is_err(),
+            "unknown-ID withdrawal is rejected before signing or causal admission"
+        );
         assert_eq!(
             assertion_statements(&replica.projection().await.unwrap()),
             before
@@ -2030,13 +2157,25 @@ mod tests {
                 from: A,
                 to: B,
                 statement_id: id.into(),
+                withdrawn_at_ms: None,
             }])
             .await
             .unwrap();
         receiver.accept(&retract).await.unwrap();
         let after = assertion_statements(&receiver.projection().await.unwrap());
-        assert_eq!(after.len(), 2, "the two independent citations remain");
+        assert_eq!(after.len(), 3, "the other exact IDs remain held");
         assert!(!after.iter().any(|s| s.statement_id == id));
+        assert!(after.iter().any(|s| s.statement_id == "urn:co-op:unused"));
+        let withdrawn = receiver
+            .projection()
+            .await
+            .unwrap()
+            .graph
+            .find_semantic_statement(id)
+            .expect("exact withdrawal remains in retained history")
+            .1
+            .clone();
+        assert!(withdrawn.withdrawn.as_ref().unwrap().at_ms.is_some());
         assert_eq!(
             after,
             before
@@ -2110,6 +2249,7 @@ mod tests {
             assertion: relation(),
             statement_id: None,
             asserted_at_ms: None,
+            basis: None,
         };
         assert_eq!(encode_cbor(&legacy).unwrap(), encode_cbor(&old).unwrap());
         let (replica, _, _) = assertion_fixture().await;
@@ -2125,6 +2265,7 @@ mod tests {
                 to: B,
                 statement_id: None,
                 asserted_at_ms: None,
+                basis: None,
             }],
         )
         .await;
@@ -2205,9 +2346,15 @@ mod tests {
             predicate: mere::kernel::graph::predicate_iri(SemanticSubKind::Supports).into(),
             recognized_sub_kind: Some(PersistedSemanticSubKind::Supports),
             label: Some("held Surface claim".into()),
+            basis: AssertionBasis {
+                note: Some("held Surface claim".into()),
+                ..Default::default()
+            },
             graph_scope: mere::kernel::types::GraphScope::Default,
             provenance_iri: Some(asserter.clone()),
             asserted_at_ms: Some(at),
+            first_asserted_ms: Some(at),
+            withdrawn: None,
         })
         .collect();
         apply_graph_delta(
@@ -2400,6 +2547,7 @@ mod tests {
                     assertion: relation(),
                     statement_id: None,
                     asserted_at_ms: None,
+                    basis: None,
                 },
                 PersonalGraphEvent::AppendAccess {
                     record: access("alice-laptop", 1, 100),

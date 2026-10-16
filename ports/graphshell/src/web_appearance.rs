@@ -57,6 +57,12 @@ pub(crate) struct Session {
     status: String,
 }
 
+impl Drop for Session {
+    fn drop(&mut self) {
+        self.probe.remove();
+    }
+}
+
 fn error(value: impl Into<JsValue>) -> String {
     format!("Browser appearance: {:?}", value.into())
 }

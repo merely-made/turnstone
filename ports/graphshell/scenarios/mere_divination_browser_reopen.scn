@@ -1,0 +1,10 @@
+# Fresh page/controller through the same admitted resident bridge.
+settle 3
+wait
+assert snap mere-status == open
+assert snap session == remote
+assert snap mere-record == Reading session
+assert snap mere-record-data ~ context digest
+assert snap mere-layout == grid.default
+assert snap mere-view-saved == true
+capture 01_browser_fresh_own_view

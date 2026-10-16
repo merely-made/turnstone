@@ -27,10 +27,12 @@ use std::{
 use uuid::Uuid;
 
 mod view;
-pub use view::content_view;
+pub use view::{content_view, filling_content_view};
 mod producer;
 pub use producer::ContentProducer;
 pub mod fixture;
+mod export;
+pub use export::ClipExportScope;
 
 /// Admit an explicitly selected package through its Fleece owner, then add the
 /// retained reference through the existing Mere owner. No destination fetch.

@@ -16,8 +16,6 @@ use chirograph::{
 };
 use eidetic::PrivacyClass;
 use graphshell::access::AccessContext;
-use graphshell::admission::open_session;
-use graphshell::carrier::projection_alpn;
 use graphshell::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
 use graphshell::product::ProductCodicilV3;
 use graphshell::transfer::{
@@ -25,6 +23,8 @@ use graphshell::transfer::{
     apply_transfer,
 };
 use graphshell::transfer_endpoint::{TRANSFER_BEGIN_INTENT, TransferBeginV1};
+use graphshell_host::admission::open_session;
+use graphshell_host::carrier::projection_alpn;
 use mere::kernel::graph::{RelationKind, SemanticSubKind};
 use muniment::{BlobStore, MemoryBackend};
 use notochord::{NetworkId, SessionReply, TrafficClass, initiate_session};

@@ -8,7 +8,7 @@
 //! layout history and the canonical workspace commit together in one slot.
 //! No document content, resource metadata or graph source is snapshotted.
 use crate::forme_workspace::{FormeWorkspace, slot};
-use edit_history::History;
+use backstep::History;
 use mere::{forme::Arrangement, kernel::graph::Graph};
 use muniment::Backend;
 use platen::projection_geometry::TreeGeometry;

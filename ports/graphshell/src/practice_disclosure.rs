@@ -26,7 +26,7 @@ use crate::practice_workspace::ComparisonRecord;
 use crate::projection_compile::{
     ProjectionDataset, ProjectionFieldType, ProjectionOccurrence, ProjectionValue,
 };
-use crate::projection_editor::SourceBinding;
+use scenograph::SourceBinding;
 
 /// Maximum accepted UTF-8 input size before JSON parsing.
 pub const MAX_WOODSHED_DISCLOSURE_BYTES: usize = 256 * 1024;

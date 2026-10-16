@@ -21,6 +21,8 @@ mod fields;
 mod find;
 mod history;
 mod projection;
+#[cfg(feature = "product")]
+mod query;
 mod scenes;
 pub(super) use commands::menu;
 use fields::TextField;
@@ -42,7 +44,7 @@ type OperationCompletion = (App, Result<(), String>);
 type CouplingCompletion = (App, CouplingId, Result<Option<String>, String>);
 
 pub(super) enum CouplingOperation {
-    Apply(graphshell::coupling_edit::StrengthDraft),
+    Apply(mere::coupling_edit::StrengthDraft),
     History(CouplingId, bool),
 }
 
@@ -70,6 +72,7 @@ pub(super) struct SavedProduct {
     pub(super) observed_session_changes: u64,
     pub(super) reopened: bool,
     pub(super) inspection_fixture: bool,
+    link_history_fixture: bool,
     intake_open: bool,
     intake_address: TextInput,
     intake_title: TextInput,
@@ -117,11 +120,18 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         return Err("app=local cannot also select a generated graph".into());
     }
     let inspection_fixture = params.get("fixture").as_deref() == Some("field-inspection");
-    let retained_fixture = params.get("fixture").as_deref() == Some("retained-content");
-    let database = if retained_fixture {
+    let link_history_fixture = params.get("fixture").as_deref() == Some("link-history");
+    let query_fixture = params.get("fixture").as_deref() == Some("retained-content-query");
+    let retained_fixture =
+        query_fixture || params.get("fixture").as_deref() == Some("retained-content");
+    let database = if query_fixture {
+        "graphshell-retained-content-query-acceptance"
+    } else if retained_fixture {
         "graphshell-retained-content-acceptance"
     } else if inspection_fixture {
         "graphshell-field-inspection-draft-v1"
+    } else if link_history_fixture {
+        "graphshell-link-history-p2-v1"
     } else {
         "graphshell-reference-host-h5"
     };
@@ -140,6 +150,11 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     }
     .map_err(|error| error.to_string())?;
     let reopened = app.host.was_reopened();
+    if link_history_fixture && !reopened {
+        app.host
+            .seed_link_history_fixture()
+            .map_err(|error| error.to_string())?;
+    }
     let history = history::HistoryControls::load(&mut app, capture_store).await?;
     app.host
         .persist(now_secs())
@@ -148,6 +163,9 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     if retained_fixture && !reopened {
         graphshell::retained_content::fixture::seed(&mut app, super::reading::clip_limits()?)
             .await?;
+    }
+    if query_fixture && !reopened {
+        graphshell::query_views::seed_fixture(&mut app).await?;
     }
     app.mount_local().map_err(|error| error.to_string())?;
     let persistence = super::super::resolve_storage_persistence().await;
@@ -180,6 +198,7 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         observed_session_changes: 0,
         reopened,
         inspection_fixture,
+        link_history_fixture,
         intake_open: false,
         intake_address: TextInput::new(""),
         intake_title: TextInput::new(""),
@@ -210,7 +229,9 @@ impl SavedProduct {
         self.app.as_ref().map(|app| app.host.graph_session().id().0)
     }
     pub(super) fn actual_graph_nodes(&self) -> Option<usize> {
-        self.app.as_ref().map(|app| app.host.graph().nodes().count())
+        self.app
+            .as_ref()
+            .map(|app| app.host.graph().nodes().count())
     }
     pub(super) fn forme_source(&self) -> Option<(IndexedDbBackend, Uuid)> {
         let app = self.app.as_ref()?;
@@ -275,7 +296,85 @@ impl SavedProduct {
             .app
             .as_ref()
             .ok_or("Source inspection will resume when the current save finishes")?;
-        graphshell::link_inspection::inspect_link(app.host.graph(), target)
+        graphshell::link_inspection::inspect_link_with_source(
+            app.host.graph(),
+            target,
+            app.host.link_source(),
+        )
+    }
+
+    pub(super) fn opened_link(
+        &self,
+        target: graphshell::link_inspection::LinkTarget,
+        history: bool,
+    ) -> Result<scenograph::link::LinkPairReading, String> {
+        let app = self
+            .app
+            .as_ref()
+            .ok_or("Link reading will resume when the current save finishes")?;
+        let read = if history {
+            mere::canvas::link_reading::read_link_history
+        } else {
+            mere::canvas::link_reading::read_link
+        };
+        read(
+            app.host.graph(),
+            target.first,
+            target.second,
+            app.host.link_source(),
+        )
+    }
+
+    pub(super) fn opened_link_time_ms(&self) -> u64 {
+        // The isolated scenario's source clocks are 1000..3100. Its view
+        // clock is explicit too; it is never written back as assertion time.
+        if self.link_history_fixture {
+            4000
+        } else {
+            js_sys::Date::now() as u64
+        }
+    }
+
+    pub(super) fn inspect_link_history(
+        &self,
+        target: graphshell::link_inspection::LinkTarget,
+    ) -> Result<graphshell::link_inspection::LinkHistoryInspection, String> {
+        let app = self
+            .app
+            .as_ref()
+            .ok_or("Link history inspection requires the local graph")?;
+        graphshell::link_inspection::inspect_link_history_with_source(
+            app.host.graph(),
+            target,
+            app.host.link_source(),
+        )
+    }
+
+    pub(super) fn link_source(&self) -> Result<scenograph::link::LinkSource, String> {
+        self.app
+            .as_ref()
+            .map(|app| app.host.link_source())
+            .ok_or_else(|| "Source inspection will resume when the current save finishes".into())
+    }
+
+    pub(super) fn inspect_statement_at_owner(
+        &self,
+        statement_id: &str,
+        stratum: mere::kernel::graph::GraphStratum,
+        from: Uuid,
+        to: Uuid,
+    ) -> Result<graphshell::link_inspection::StatementInspection, String> {
+        let app = self
+            .app
+            .as_ref()
+            .ok_or("Assertion inspection requires the local graph")?;
+        graphshell::link_inspection::inspect_statement_at_owner(
+            app.host.graph(),
+            statement_id,
+            stratum,
+            from,
+            to,
+        )
     }
 
     pub(super) fn inspect_statement(
@@ -450,6 +549,13 @@ impl SavedProduct {
     pub(super) fn retained_store(&self) -> Option<IndexedDbBackend> {
         self.app.as_ref().map(|app| app.host.store())
     }
+    pub(super) fn retained_scope(&self) -> Option<(Uuid, String)> {
+        let app = self.app.as_ref()?;
+        Some((
+            app.host.graph_session().id().0,
+            app.host.selected_persona().persona.clone(),
+        ))
+    }
     fn store_clip_file(&mut self, bytes: Vec<u8>) {
         let limits = match super::reading::clip_limits() {
             Ok(limits) => limits,
@@ -577,12 +683,19 @@ impl SavedProduct {
             // restart settling, unlike an ordinary metadata-only completion.
             let coupling_changed = result.is_ok()
                 && previous_owner == Some(owner)
-                && app.host.graph().couplings().find(|coupling| coupling.id == id)
+                && app
+                    .host
+                    .graph()
+                    .couplings()
+                    .find(|coupling| coupling.id == id)
                     .is_some_and(|coupling| {
                         !canvas.graph().couplings().any(|held| held == coupling)
                     });
             graphshell::local_scene::reconcile_completed_graph(
-                canvas, previous_owner, owner, app.host.graph(),
+                canvas,
+                previous_owner,
+                owner,
+                app.host.graph(),
             );
             if coupling_changed {
                 // The graph is already coherent; retain the coupling editor's
@@ -606,7 +719,10 @@ impl SavedProduct {
         if let Some((app, result)) = operation {
             let owner = app.host.graph_session().id().0;
             graphshell::local_scene::reconcile_completed_graph(
-                canvas, self.session.parse().ok(), owner, app.host.graph(),
+                canvas,
+                self.session.parse().ok(),
+                owner,
+                app.host.graph(),
             );
             self.session = owner.to_string();
             self.forme_reconcile_session = Some(owner);
@@ -636,7 +752,10 @@ impl SavedProduct {
         };
         let owner = app.host.graph_session().id().0;
         graphshell::local_scene::reconcile_completed_graph(
-            canvas, self.session.parse().ok(), owner, app.host.graph(),
+            canvas,
+            self.session.parse().ok(),
+            owner,
+            app.host.graph(),
         );
         self.session = owner.to_string();
         self.forme_reconcile_session = Some(owner);

@@ -4159,6 +4159,107 @@
         "source_sha256": "a5531a96e9371fdf34e0a0c8d4ad011f946f46f9e466fe8269662dc778c116b6",
         "status_basis": "FullProduct retained-content SCN. Exact real owner/held source/PNG proof remains pending."
       }
+    },
+    {
+      "name": "query_views.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "7137844dcd92882164ad7ab2d3fec44cceb965f4e6316d01bcef21c89e1726d0",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "workspace.html",
+        "query": "app=local&fixture=retained-content-query",
+        "host": "Dedicated same-origin/profile query_views \u2192 query_views_inspect \u2192 query_views_reopen; shipping namespace seeded only before first reopen.",
+        "setup_verification": "pending",
+        "same_origin_profile_after": []
+      },
+      "original_source_sha256": "7137844dcd92882164ad7ab2d3fec44cceb965f4e6316d01bcef21c89e1726d0",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": null
+    },
+    {
+      "name": "query_views_inspect.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "06b6e4a90f9bdb9105f747757f2ed0eb663fcd33dd19da8395864a4b24c19196",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "workspace.html",
+        "query": "app=local&fixture=retained-content-query",
+        "host": "Dedicated same-origin/profile query_views \u2192 query_views_inspect \u2192 query_views_reopen; shipping namespace seeded only before first reopen.",
+        "setup_verification": "pending",
+        "same_origin_profile_after": [
+          "query_views.scn"
+        ]
+      },
+      "original_source_sha256": "06b6e4a90f9bdb9105f747757f2ed0eb663fcd33dd19da8395864a4b24c19196",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": null
+    },
+    {
+      "name": "query_views_reopen.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "eee19ad4c3fd070b6703d6b35c2e1a9a2135b8bb6cbb65996ee752e974c822e6",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "workspace.html",
+        "query": "app=local&fixture=retained-content-query",
+        "host": "Dedicated same-origin/profile query_views \u2192 query_views_inspect \u2192 query_views_reopen; shipping namespace seeded only before first reopen.",
+        "setup_verification": "pending",
+        "same_origin_profile_after": [
+          "query_views.scn",
+          "query_views_inspect.scn"
+        ]
+      },
+      "original_source_sha256": "eee19ad4c3fd070b6703d6b35c2e1a9a2135b8bb6cbb65996ee752e974c822e6",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": null
+    },
+    {
+      "name": "clip_export_ready.scn",
+      "status": "live",
+      "verification": "pending",
+      "current_source_sha256": "ff3c3096f0aeb87fd795994d8de9262f7274e1ab630f92f28760d95edfc50125",
+      "expected_outcome": {
+        "scenario": "pass",
+        "page_errors": 0,
+        "gate_failures": 0,
+        "whole_frame_required": true,
+        "accessibility_tree_required": true,
+        "frozen_before_run": true
+      },
+      "prerequisites": {
+        "page": "workspace.html",
+        "query": "app=local&fixture=retained-content",
+        "host": "Fresh dedicated ordinary retained-content fixture; trusted export and disk download are separate qualifications.",
+        "setup_verification": "pending",
+        "same_origin_profile_after": []
+      },
+      "original_source_sha256": "ff3c3096f0aeb87fd795994d8de9262f7274e1ab630f92f28760d95edfc50125",
+      "dialect": "shared-retained-with-explicit-host-fixture",
+      "translation_record": null
     }
   ],
   "unmatched_prior_runs": [

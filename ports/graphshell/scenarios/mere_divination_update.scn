@@ -1,0 +1,17 @@
+# Run while the browser remains joined and its live scenario waits.
+# The archive mutation is deliberately later, so the retained original is writable.
+# If the receipt owner selected another session first, prepend its exact mounted
+# Switch button (aria-label from the original saved session) and wait for ack.
+settle 3
+wait
+assert snap status == ready
+assert snap read-only == false
+assert snap record == Reading session
+click role:button @data-layout=phyllotaxis.default
+settle 2
+wait
+assert snap status == ready
+assert snap read-only == false
+assert snap layout == phyllotaxis.default
+assert snap view-saved == true
+capture 01_external_saved_spiral_view

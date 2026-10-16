@@ -33,6 +33,8 @@ use sceno::{
     Arrangement, Footprint, InstanceId, ProjectedItem, Rect, Representation, RoutedRelation, Scene,
     Score, Size2, SourceRef, Transform2, Vec2,
 };
+use scenograph::SourceBinding;
+use scenograph::link::{LinkSource, LinkSourceRevision};
 use scenotime::{Revision, SceneEpoch, SceneSnapshot};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -42,6 +44,7 @@ use crate::handlers::{
     HandlerOffer, HandlerRegistry, OpenAddressV1, handler_from_intent, intent_id,
 };
 use crate::session_item;
+use mere_overmap::wire;
 
 /// The session item's instance in resident mode (§7 item 31).
 const SESSION_ITEM_INSTANCE: InstanceId = InstanceId(0);
@@ -97,6 +100,11 @@ pub enum MereHostError {
     InvalidSnapshot(String),
     WrongSession,
     MissingResource,
+    /// A resident edit reached a host its composition root has not proven it
+    /// owns. Only the one shared host of a session may publish.
+    OwnershipUnproven,
+    Live(pandect::live_graph::LiveEditError),
+    Settings(crate::resident_host::ResidentSettingsError),
 }
 
 impl std::fmt::Display for MereHostError {
@@ -111,6 +119,12 @@ impl std::fmt::Display for MereHostError {
             Self::MissingResource => {
                 write!(formatter, "resource was not disclosed by this session")
             },
+            Self::OwnershipUnproven => write!(
+                formatter,
+                "resident edits need the session's one shared host; this host is not it"
+            ),
+            Self::Live(error) => write!(formatter, "{error}"),
+            Self::Settings(error) => write!(formatter, "{error}"),
         }
     }
 }
@@ -126,6 +140,18 @@ impl From<StoreError> for MereHostError {
 impl From<SessionError> for MereHostError {
     fn from(value: SessionError) -> Self {
         Self::Session(value)
+    }
+}
+
+impl From<pandect::live_graph::LiveEditError> for MereHostError {
+    fn from(value: pandect::live_graph::LiveEditError) -> Self {
+        Self::Live(value)
+    }
+}
+
+impl From<crate::resident_host::ResidentSettingsError> for MereHostError {
+    fn from(value: crate::resident_host::ResidentSettingsError) -> Self {
+        Self::Settings(value)
     }
 }
 
@@ -174,6 +200,14 @@ pub struct MereHost<B> {
     projection_session: ProjectionSession,
     /// Whether the graph projection shows the session item (§7 item 31).
     session_item: bool,
+    /// Whether accepted edits also publish the addressable graph in the same
+    /// atomic write (resident host plan, Task 3). Off unless the composition
+    /// root that proved it owns this session's host turns it on.
+    resident_publication: bool,
+    /// The generation the last accepted resident write published.
+    resident_generation: Option<String>,
+    /// Settings, pane roots and the installed partial reader.
+    resident_view: crate::resident_host::ResidentView<B>,
     /// The channel registry the served layout reads its facts from, held
     /// across calls for the current session's graph and reset when the
     /// session changes: a host without a canvas holds one (dynamics grammar
@@ -183,6 +217,10 @@ pub struct MereHost<B> {
 
 #[path = "mere_host_coupling.rs"]
 mod coupling;
+#[path = "mere_host_resident_view.rs"]
+mod resident_presentation;
+#[path = "mere_host_resident.rs"]
+mod resident_transaction;
 
 /// Changes not yet stored, taken as one batch: what [`MereHost::stage`] put
 /// in a batch, or what [`MereHost::prepare_store`] took for its caller to
@@ -249,6 +287,9 @@ impl<B: Backend + Clone> MereHost<B> {
             reopened,
             projection_session: ProjectionSession(LOCAL_SESSION.to_string()),
             session_item: false,
+            resident_publication: false,
+            resident_generation: None,
+            resident_view: Default::default(),
             served_registry: std::sync::Mutex::new(mere::canvas::ChannelRegistry::new()),
         }
     }
@@ -525,6 +566,28 @@ impl<B: Backend> MereHost<B> {
         &self.graph_session
     }
 
+    /// Identity of this local host's current graph session. `mere` is only
+    /// this MereHost's source namespace; it does not imply registry identity,
+    /// authentication, or write authority. The live graph has no qualified
+    /// immutable public revision, so its revision remains explicitly absent.
+    pub fn link_source(&self) -> LinkSource {
+        let manifest = self.graph_session.manifest();
+        LinkSource::Available {
+            binding: SourceBinding {
+                authority: "mere".into(),
+                domain: "graph-session".into(),
+                resource: format!(
+                    "session:{}/graph:{}",
+                    manifest.session_id.as_uuid(),
+                    manifest.root_graph_id.as_uuid()
+                ),
+            },
+            revision: LinkSourceRevision::Unavailable {
+                reason: "The live MereHost graph has no qualified immutable public revision; journal prefixes and runtime generations are not durable revisions".into(),
+            },
+        }
+    }
+
     pub fn selected_persona(&self) -> &SelectedPersonaRef {
         &self.selected_persona
     }
@@ -542,6 +605,24 @@ impl<B: Backend> MereHost<B> {
 
     /// This host, showing the session item in its graph projection: the
     /// resident mode an attached application edits through (§7 item 31).
+    /// Publish the addressable graph with every accepted edit and undo. Only the
+    /// owner of the session's one shared host may call this: a second host on the
+    /// same session would race the publication.
+    pub fn with_resident_publication(mut self) -> Self {
+        self.resident_publication = true;
+        self
+    }
+
+    /// Whether accepted edits publish the addressable graph with them.
+    pub fn resident_publication(&self) -> bool {
+        self.resident_publication
+    }
+
+    /// The generation the last accepted resident write published.
+    pub fn resident_generation(&self) -> Option<&str> {
+        self.resident_generation.as_deref()
+    }
+
     pub fn with_session_item(mut self) -> Self {
         self.session_item = true;
         self
@@ -792,6 +873,57 @@ impl<B: Backend> MereHost<B> {
         Ok(())
     }
 
+    /// Plan merging `source`, a branch or picked-off part, into this
+    /// session (session merge-in note). Nothing is written.
+    pub async fn plan_merge(
+        &self,
+        sessions: &pandect::MereSessions<B>,
+        source: &MereHost<B>,
+    ) -> Result<pandect::PendingMerge, MereHostError>
+    where
+        B: Clone,
+    {
+        Ok(sessions
+            .merge_in(&self.graph_session, &source.graph_session)
+            .await?)
+    }
+
+    /// Write a planned merge into this session for `via`, with a choice for
+    /// each conflict, and mark `source` merged. Both projections move.
+    pub async fn apply_merge(
+        &mut self,
+        sessions: &pandect::MereSessions<B>,
+        source: &mut MereHost<B>,
+        pending: pandect::PendingMerge,
+        choices: &BTreeMap<mere::kernel::graph::Part, pandect::MergeChoice>,
+        via: &str,
+    ) -> Result<(), MereHostError>
+    where
+        B: Clone,
+    {
+        let author = author_of(&self.selected_persona, via);
+        sessions
+            .apply_merge(
+                &mut self.graph_session,
+                &mut source.graph_session,
+                pending,
+                choices,
+                author,
+            )
+            .await?;
+        self.bump_if(true);
+        source.bump_if(true);
+        Ok(())
+    }
+
+    /// Read this session's merged mark again: a target's undo of the merge
+    /// frees it, a redo marks it again.
+    pub async fn reload_merged_mark(&mut self) -> Result<(), MereHostError> {
+        self.graph_session.reload_merged_mark().await?;
+        self.bump_if(true);
+        Ok(())
+    }
+
     fn bump_if(&mut self, changed: bool) {
         if changed {
             self.projection_revision = self.projection_revision.wrapping_add(1);
@@ -841,8 +973,7 @@ impl<B: Backend> MereHost<B> {
             max_x = max_x.max(position.x);
             max_y = max_y.max(position.y);
             let id = self.graph_session.id().as_uuid().to_string();
-            let source =
-                scene.intern_source(SourceRef::new(session_item::SESSION_ITEM_SOURCE, &id));
+            let source = scene.intern_source(SourceRef::new(wire::SESSION_ITEM_SOURCE, &id));
             scene.items.push(ProjectedItem {
                 source,
                 space: Scene::WORLD,
@@ -856,10 +987,30 @@ impl<B: Backend> MereHost<B> {
                 hit: None,
                 channels: Vec::new(),
             });
-            let card = session_item::card(&self.graph_session);
+            let graph_bytes = serde_json::to_vec(&wire::SessionGraphV1 {
+                schema: wire::SESSION_GRAPH_SCHEMA.into(),
+                application: self.via.clone(),
+                views: self
+                    .graph_session
+                    .views()
+                    .filter(|(key, _)| key.app() == self.via)
+                    .map(|(key, state)| (key.view().to_owned(), state.clone()))
+                    .collect(),
+                session: self.graph_session.id(),
+                read_only: self.graph_session.manifest().codicil_read_only,
+                epoch: self.projection_epoch(),
+                revision: self.projection_revision(),
+                graph: self.graph().to_snapshot_at(0),
+                facets: self.graph().facets().clone(),
+            })
+            .expect("the session graph always serializes");
+            let graph_resource = ContentHash::of(&graph_bytes);
+            resources.insert(graph_resource, graph_bytes);
+            let mut card = session_item::card(&self.graph_session);
+            card.media.push(graph_resource);
             let bytes = serde_json::to_vec(&card).expect("PortableCardV1 always serializes");
             let resource = ContentHash::of(&bytes);
-            let key = PresentationKey(format!("{}:{id}", session_item::SESSION_ITEM_SOURCE));
+            let key = PresentationKey(format!("{}:{id}", wire::SESSION_ITEM_SOURCE));
             presentation.bindings.push(PresentationBinding {
                 instance: SESSION_ITEM_INSTANCE,
                 key: key.clone(),
@@ -1091,9 +1242,15 @@ pub(crate) fn placement_test_graph() -> Graph {
                 predicate: "urn:mere:profile:held-custom".into(),
                 recognized_sub_kind: None,
                 label: Some("held Surface claim".into()),
+                basis: mere::kernel::types::AssertionBasis {
+                    note: Some("held Surface claim".into()),
+                    ..Default::default()
+                },
                 graph_scope: mere::kernel::types::GraphScope::Default,
                 provenance_iri: Some("urn:mere:profile:source".into()),
                 asserted_at_ms: Some(42),
+                first_asserted_ms: Some(42),
+                withdrawn: None,
             }],
             ..Default::default()
         }),
@@ -1717,6 +1874,55 @@ mod tests {
         .expect("open")
     }
 
+    #[test]
+    fn link_source_is_session_scoped_and_keeps_revision_unavailable() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let mut host = MereHost::empty(
+                backend.clone(),
+                selected_persona(),
+                fixture_handlers(),
+                access_context(),
+            );
+            let first = host.link_source();
+            let session_id = host.graph_session().manifest().session_id;
+            let graph_id = host.graph_session().manifest().root_graph_id;
+            assert_eq!(
+                first,
+                LinkSource::Available {
+                    binding: SourceBinding {
+                        authority: "mere".into(),
+                        domain: "graph-session".into(),
+                        resource: format!(
+                            "session:{}/graph:{}",
+                            session_id.as_uuid(),
+                            graph_id.as_uuid()
+                        ),
+                    },
+                    revision: LinkSourceRevision::Unavailable {
+                        reason: "The live MereHost graph has no qualified immutable public revision; journal prefixes and runtime generations are not durable revisions".into(),
+                    },
+                }
+            );
+
+            host.persist(1_800_000_000).await.unwrap();
+            let reopened = opened(&backend).await;
+            assert_eq!(reopened.link_source(), first);
+
+            host.begin_profiled_session(placement_test_graph(), None)
+                .unwrap();
+            let switched = host.link_source();
+            assert_ne!(switched, first);
+            assert!(matches!(
+                switched,
+                LinkSource::Available {
+                    revision: LinkSourceRevision::Unavailable { .. },
+                    ..
+                }
+            ));
+        });
+    }
+
     /// A graph's snapshot, undated, and its facets, encoded.
     fn encoded(graph: &Graph) -> (Vec<u8>, Vec<u8>) {
         let mut snapshot = graph.to_snapshot();
@@ -1976,10 +2182,10 @@ mod tests {
         assert_eq!(
             intents,
             [
-                session_item::APPLY_EDITS_INTENT,
-                session_item::UNDO_INTENT,
-                session_item::REDO_INTENT,
-                session_item::SET_VIEW_INTENT,
+                wire::APPLY_EDITS_INTENT,
+                wire::UNDO_INTENT,
+                wire::REDO_INTENT,
+                wire::SET_VIEW_INTENT,
             ]
         );
     }

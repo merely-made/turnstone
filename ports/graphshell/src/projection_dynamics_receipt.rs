@@ -33,7 +33,7 @@ pub fn catalog_receipt_for(bound: u32, family: &str) -> Result<String, String> {
     let mut rows = Vec::new();
     for law in PhysicsLaw::ALL {
         let mut definition = default_definition(&data);
-        definition.arrangement = crate::projection_editor::with_kind(
+        definition.arrangement = scenomise::arrangement::with_kind(
             &definition.arrangement,
             family,
             practice_compiler().registry(),

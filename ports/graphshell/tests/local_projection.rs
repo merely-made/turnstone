@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use graphshell::local_projection::ProjectionSession;
-use graphshell::projection_editor::{Channel, EditorAction};
+use scenograph::Channel;
+use scenomise::authoring::EditorAction;
 
 const SOURCE: &str = include_str!("../web/fixtures/woodshed-stage.json");
 

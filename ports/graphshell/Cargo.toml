@@ -1,4 +1,5 @@
 [package]
+rust-version = "1.97.1"
 name = "graphshell"
 version = "0.0.2"
 edition.workspace = true
@@ -12,6 +13,10 @@ name = "retained_content_fixture"
 required-features = ["retained-content"]
 
 [[example]]
+name = "caller_owned_toolkits"
+required-features = ["caller-owned-toolkit-bench"]
+
+[[example]]
 name = "projection_dynamics_receipt"
 required-features = ["web"]
 
@@ -19,7 +24,13 @@ required-features = ["web"]
 name = "moot_resources"
 required-features = ["moot-resources"]
 
+[[test]]
+name = "moot_resources_reopen"
+required-features = ["moot-resources"]
+
 [features]
+query-views = ["web", "mere/query", "dep:cambium"]
+caller-owned-toolkit-bench = ["retained-content", "cambium-rootstock/embedding-egui", "cambium-rootstock/embedding-iced", "dep:image"]
 moot-resources = ["web", "webrtc-join", "dep:cambium", "dep:moot", "dep:gemot", "dep:eidetic", "dep:muniment"]
 default = ["native", "image-decode", "document-layout", "retained-content"]
 # Document-capable hosts retain Platen's document producer. The read-only
@@ -35,8 +46,10 @@ image-decode = ["cambium-rootstock?/image-decode", "mere?/image-decode", "pelt-c
 native = [
     "webrtc-join",
     "dep:blake3",
+    "graphshell-endpoint/door",
     "graphshell-endpoint/network",
     "graphshell-endpoint/stdio",
+    "graphshell-host/native",
     "dep:notochord",
     "dep:dramatis",
     "dep:chatelaine",
@@ -62,7 +75,7 @@ native = [
 # because it is what pulls str0m and the carrier's own tokio driver into the
 # build — every native Graphshell that is not yet serving browser joins keeps
 # not paying for them. The C4a fixture and its tests require this feature.
-webrtc-session = ["native", "webrtc-join", "webrtc-carrier/native"]
+webrtc-session = ["native", "webrtc-join", "webrtc-carrier/native", "graphshell-host/webrtc-session"]
 
 # The headed W1 fixture can serve Distillery's read-only Chronicle over the
 # existing WebRTC door. It remains opt-in so the ordinary C4 live-board host
@@ -83,6 +96,7 @@ distillery-chronicle-fixture = ["webrtc-session", "dep:distillery", "dep:mesh"]
 webrtc-browser = ["webrtc-join", "webrtc-carrier/browser"]
 
 webrtc-join = [
+    "graphshell-host/webrtc-join",
     "dep:getrandom",
     "dep:notochord",
     "dep:personae",
@@ -116,6 +130,9 @@ web = [
     "dep:chartulary",
     "dep:eidetic",
     "dep:mere",
+    # The mere route's wire vocabulary `mere_host` serves (`mere-overmap`
+    # without its view).
+    "dep:mere-overmap",
     "dep:muniment",
     "dep:pandect",
     "dep:platen",
@@ -127,10 +144,9 @@ web = [
 # A bounded app-core host dialect over a disclosed capsule collection. Pack
 # verification is portable; the browser owns worker execution and its view.
 applets = ["web", "eidetic/pack-signing", "dep:personae"]
-# `mere_route`: a mere route's two projections as the mere view's model, and
-# the view's requests as the route's intents (reservoir plan V2b step 3, §7
-# item 42). It brings in `mere-view`, and with it Cambium, so it is opt-in.
-mere-route = ["web", "dep:mere-view"]
+# Ordinary native reservoir viewer: shared panel over the admitted resident
+# route. Its worker holds a client only; no persona graph files are opened.
+mere-view-host = ["native", "web", "dep:mere-view", "mere-overmap/view", "dep:cambium", "dep:cambium-genet-winit-host", "dep:mesquite", "dep:sprigging", "dep:taproot"]
 # Native owner composition for admitted Moot resource readings. This does not
 # enter the ordinary browser cone or install an application activity owner.
 # Finite native owner-composition proof; ordinary consumers need no window or
@@ -150,6 +166,7 @@ personal-sync = [
 [dependencies]
 genet-render-host = { workspace = true, optional = true }
 cambium = { workspace = true, optional = true }
+moot = { package = "mere-moot", path = "../moot", features = ["resource-view", "presentation"], optional = true }
 fleece = { workspace = true, features = ["portable-clip"], optional = true }
 wgpu = { workspace = true, optional = true }
 pelt-core = { workspace = true, features = ["genet"], optional = true }
@@ -167,10 +184,20 @@ distillery = { path = "../distillery", optional = true }
 eidetic = { workspace = true, optional = true }
 graphshell-client = { version = "0.0.2", path = "../../crates/graphshell/graphshell-client" }
 graphshell-endpoint = { version = "0.0.2", path = "../../crates/graphshell/graphshell-endpoint" }
+# The serving half (stack lift plan, L2): admission, the session loop, the
+# catalog and the projection host. `native` and the WebRTC features name its
+# halves; with none, it is the fixture endpoints the web tests use.
+graphshell-host = { version = "0.0.2", path = "../../crates/graphshell/graphshell-host", default-features = false }
 chirograph.workspace = true
 mere = { path = "../../crates/mere", default-features = false, features = ["graph", "canvas"], optional = true }
-# The mere view's model and requests, for `mere-route`.
+# The mere route's wire vocabulary, and for `mere-view-host` the route panel
+# that fills the mere view (stack lift plan L14).
+mere-overmap = { workspace = true, optional = true }
+# The mere view `graphshell_mere` hosts.
 mere-view = { workspace = true, optional = true }
+mesquite = { workspace = true, optional = true }
+sprigging = { workspace = true, optional = true }
+taproot = { workspace = true, optional = true }
 mesh = { workspace = true, optional = true }
 muniment = { workspace = true, optional = true }
 # The session core. MereHost's truth is a pandect GraphSession in the browser
@@ -180,7 +207,7 @@ pandect = { workspace = true, optional = true }
 platen = { path = "../../crates/platen/platen", default-features = false, optional = true }
 scenograph.workspace = true
 sceno.workspace = true
-scenomise.workspace = true
+scenomise = { workspace = true, features = ["authoring"] }
 scenotime.workspace = true
 serde = { version = "1", features = ["derive"], optional = true }
 chatelaine = { workspace = true, optional = true }
@@ -188,7 +215,7 @@ serde_json.workspace = true
 workbench.workspace = true
 tabard = { workspace = true, optional = true }
 # The projection editor's undo (Scenograph editor plan, E2 and SE10).
-edit-history.workspace = true
+backstep.workspace = true
 sha2 = { workspace = true, optional = true }
 uuid = { workspace = true, features = ["v5"], optional = true }
 url = { version = "2", optional = true }
@@ -220,13 +247,14 @@ genet-scripted-dom = { workspace = true, optional = true }
 layout_dom_api = { workspace = true, optional = true }
 image = { version = "0.25", default-features = false, features = ["png"], optional = true }
 cambium = { workspace = true, optional = true }
-moot = { package = "mere-moot", path = "../moot", features = ["resource-owner", "resource-view", "presentation"], optional = true }
+moot = { package = "mere-moot", path = "../moot", features = ["resource-owner"], optional = true }
 gemot = { workspace = true, optional = true }
 blake3 = { workspace = true, optional = true }
 # The identity read model and intents (`identity`, `identity_projection`).
 # Graphshell no longer links castellan (dramatis repo plan, D4, D15): its
 # doors serve whatever `native::resident_identity::ResidentIdentity` djinn
-# hands them, and applications reach custody through `native::custody_client`.
+# hands them, and applications reach custody through
+# `graphshell_endpoint::door::custody_client`.
 dramatis = { workspace = true, optional = true }
 p2panda-core = { version = "0.7.0", optional = true }
 p2panda-store = { version = "0.7.0", default-features = false, optional = true }
@@ -248,14 +276,6 @@ transport = { workspace = true, features = ["notochord"], optional = true }
 # `native` str0m adapter, which the dev-dependency below turns on for the
 # loopback integration test alone.
 zeroize = { version = "1", optional = true }
-
-[target.'cfg(all(windows, not(target_arch = "wasm32")))'.dependencies]
-windows-sys = { version = "0.59", features = [
-    "Win32_Foundation",
-    "Win32_Security",
-    "Win32_System_Pipes",
-    "Win32_System_Threading",
-] }
 
 [[bin]]
 name = "g1_receipt"
@@ -298,9 +318,9 @@ path = "src/bin/n4_policy_receipt.rs"
 required-features = ["native"]
 
 [[bin]]
-name = "graphshell_native_host"
-path = "src/bin/graphshell_native_host.rs"
-required-features = ["native"]
+name = "graphshell_mere"
+path = "src/bin/graphshell_mere.rs"
+required-features = ["mere-view-host"]
 
 [[bin]]
 name = "receipt_ingest"
@@ -308,12 +328,6 @@ path = "src/bin/receipt_ingest.rs"
 # Needs the personal-graph event vocabulary and muniment's redb backend, both
 # of which arrive with personal-sync.
 required-features = ["personal-sync"]
-
-[[bin]]
-name = "h4f_agent_probe"
-path = "src/bin/h4f_agent_probe.rs"
-required-features = ["native"]
-
 [dev-dependencies]
 # Tests and examples bind throwaway identities (vault lock plan, ruling 96).
 transport = { workspace = true, features = ["test-identity"] }
@@ -365,18 +379,23 @@ cambium-winit-a11y = { workspace = true }
 name = "c4_webrtc_host"
 path = "src/bin/c4_webrtc_host.rs"
 required-features = ["webrtc-session"]
+[[bin]]
+name = "h4f_agent_probe"
+path = "src/bin/h4f_agent_probe.rs"
+required-features = ["native"]
 
+# The browser build's entropy: the same-named entry merges its feature into
+# the one above, the way `personae` does it.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"], optional = true }
+
+# The committed N4 receipt against `graphshell_host::policy_projection`.
 [[test]]
-name = "webrtc_join_loopback"
-required-features = ["webrtc-session"]
+name = "n4_owner_policy_receipt"
+required-features = ["native"]
 
 # The fixture binary driven through its own HTTP signaling: what an in-process
 # composition cannot claim about the binary a headed run actually launches.
 [[test]]
 name = "c4_host_signaling"
 required-features = ["webrtc-session"]
-
-# The browser build's entropy: the same-named entry merges its feature into
-# the one above, the way `personae` does it.
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-getrandom = { version = "0.3", features = ["wasm_js"], optional = true }

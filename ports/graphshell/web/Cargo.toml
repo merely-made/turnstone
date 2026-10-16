@@ -1,4 +1,5 @@
 [package]
+rust-version = "1.97.1"
 name = "graphshell-web"
 version = "0.1.0"
 edition = "2024"
@@ -26,23 +27,30 @@ path = "../src/web.rs"
 [features]
 moot-resources = ["graphshell/moot-resources", "dep:moot"]
 dynamics-receipt = []
-default = ["main-page", "product", "remote", "canvas-gpu", "image-decode"]
-# The H5 reference host and its `mount` export (`src/web_main.rs`). It drives
-# the product modules and the remote link, so it needs both.
-main-page = ["product", "remote"]
+default = ["product", "remote", "canvas-gpu", "image-decode", "presentation-webgpu", "presentation-webgl2"]
+# Browser presentation routes. The full page carries both and Auto chooses at
+# boot. The read-only viewer ships one artifact per route, chosen by
+# `mount.js` before loading: `presentation-webgpu`, or `presentation-webgl2`
+# with `without-classic-vello` (Classic Vello and its shaders not linked).
+presentation-webgpu = ["cambium-genet-web-host/webgpu", "cambium-genet-web-host/portable"]
+presentation-webgl2 = ["cambium-genet-web-host/webgl"]
+without-classic-vello = ["genet-render-host/without-classic-vello"]
 # What a page saves: IndexedDB, saved scenes, the tree's product mode,
 # `web_product` and `web_practice`.
-product = ["muniment/indexeddb", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "dep:mere-document-lanes", "dep:fleece"]
+product = ["muniment/indexeddb", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "graphshell/query-views", "mere/query", "dep:mere-document-lanes", "dep:fleece"]
 applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.
-remote = ["graphshell/webrtc-browser", "dep:futures-channel", "dep:futures-util"]
+remote = ["graphshell/webrtc-browser", "dep:mere-overmap", "dep:mere-view", "dep:futures-channel", "dep:futures-util"]
 # The canvas's repulsion on the page's own WebGPU device (physics catalog P5c).
 canvas-gpu = ["graphshell/canvas-gpu", "mere/canvas-gpu"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
 image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mesquite/image-decode", "cambium-genet-web-host/image-decode", "graphshell/image-decode", "mere/image-decode"]
 
 [dependencies]
+mere-view = { path="../../../crates/cambium/mere-view", optional=true }
+# The shared mere panel over the remote board's admitted route (stack lift plan L14).
+mere-overmap = { path = "../../../crates/cambium/mere-overmap", optional = true }
 mere-document-lanes = { path = "../../../crates/system/document-lanes", features = ["retained-clips"], optional = true }
 fleece = { package = "mere-fleece", path = "../../../crates/fleece", features = ["portable-clip"], optional = true }
 eidetic = { path = "../../../crates/eidetic/eidetic-core", default-features = false }
@@ -60,6 +68,8 @@ muniment = { path = "../../../crates/eidetic/muniment" }
 graphshell-client = { path = "../../../crates/graphshell/graphshell-client" }
 workbench = { path = "../../../crates/cambium/workbench" }
 sceno = { path = "../../../crates/cambium/scenes/sceno" }
+scenograph = { path = "../../../crates/cambium/scenes/scenograph" }
+scenomise = { path = "../../../crates/cambium/scenes/scenomise", features = ["authoring"] }
 scenotime = { path = "../../../crates/cambium/scenes/scenotime" }
 serde = { version = "1", features = ["derive"] }
 # A mere workspace member since 2026-09-03 (platform boundary plan, P2), so a
@@ -71,23 +81,23 @@ tabard = { path = "../../../crates/system/tabard" }
 cambium-genet-web-host = { path = "../../../crates/cambium/cambium-genet-web-host", default-features = false }
 cambium-rootstock = { path = "../../../crates/cambium/cambium-rootstock", default-features = false }
 mesquite = { path = "../../../crates/cambium/mesquite", default-features = false }
-genet-render = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc", default-features = false, features = ["livery", "accesskit"] }
+genet-render = { git = "https://github.com/merely-made/genet.git", branch = "main", default-features = false, features = ["livery", "accesskit"] }
 # The present core, shared with every winit host. Booting wgpu, picking a
 # non-sRGB surface format, and rasterizing a Scene are not browser-specific, so
 # this crate no longer hand-rolls them; only the canvas target and the
 # content-over-chrome composition below are ours.
-genet-render-host = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
-genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc", version = "=0.1.2" }
+genet-render-host = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "=0.1.2" }
 # Retained scenario attributes use the shared DOM seam.
-layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc", version = "=0.1.1" }
+layout-dom-api = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "=0.1.1" }
 # The shared scenario driver every genet app runs its receipts through; the
 # page implements its `Automatable`/`Driveable` over the browser DOM
 # (`src/web_scenario.rs`). Pure: its three deps are already in this graph.
 # Named genet-probe until genet 7baa554c (2026-09-14).
-taproot = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc", default-features = false }
+taproot = { git = "https://github.com/merely-made/genet.git", branch = "main", default-features = false }
 js-sys = "0.3"
-netrender = { git = "https://github.com/merely-made/netrender.git", rev = "c74b7cb28090c28b1c6d80b08dcdea18aff48d3e" }
-netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "c74b7cb28090c28b1c6d80b08dcdea18aff48d3e" }
+netrender = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
+netrender_device = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
 serde_json = "1"
 # The remote link's outbound queue: the host enqueues lines synchronously,
 # a task drains them onto the channel.
@@ -162,7 +172,7 @@ web-sys = { version = "0.3", features = [
 # step with the genet pins above. Taffy is a Genet fork published under the same
 # version number as the crate it replaces, so missing it is invisible while
 # genet-livery resolves from crates.io and a compile error the moment it resolves
-# the working copy: buckram names `genet-taffy` outright. Parley needs no row —
+# the working copy: buckram names `genet-taffy` outright. Parley needs no row â€”
 # as of genet 5ae30cad the fork is published as `genet-parley` (and its sibling
 # as `genet-fontique`), so no package in genet answers to the name `parley` and
 # a patch row would match nothing and fail resolution; genet-livery reaches the
@@ -193,9 +203,9 @@ lto = "fat"
 
 # The receipts settle physics for hundreds of frames, and the dynamics stack
 # at the dev profile's opt-level 0 was the slow part of every run. Optimize
-# just those crates in dev builds — never the crates edited here, so an
+# just those crates in dev builds â€” never the crates edited here, so an
 # incremental host build stays fast. This manifest is its own workspace, so
-# the override reaches the wasm build alone. (Physics catalog — the P2 profile
+# the override reaches the wasm build alone. (Physics catalog â€” the P2 profile
 # item, 2026-09-04; glamx joined 2026-10-04 so the root manifest, which now
 # optimizes the same physics crates in dev, names the same six.)
 [profile.dev.package.rapier2d]
@@ -215,14 +225,14 @@ opt-level = 3
 # Dramatis uses published muniment; the viewer and its applets share Mere's
 # own package, as the root workspace does after DR-D.
 muniment = { path = "../../../crates/eidetic/muniment" }
-taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc" }
-layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc", version = "=0.1.1" }
-genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "7a8c5b8cb499f2d3b91083c2f7e38236599f98dc", version = "=0.1.2" }
+taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", branch = "main" }
+layout-dom-api = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "=0.1.1" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "=0.1.2" }
 # Classic 0.11 and its owned repairs, kept in step with the root Scene aliases.
 # Standalone workspaces restate the complete encoding/shader trio.
-netrender-vello = { git = "https://github.com/mark-ik/vello", rev = "2eae6243881d5b24c984d5ee35dde509ca5db782" }
-vello_encoding = { git = "https://github.com/mark-ik/vello", rev = "2eae6243881d5b24c984d5ee35dde509ca5db782" }
-vello_shaders = { git = "https://github.com/mark-ik/vello", rev = "2eae6243881d5b24c984d5ee35dde509ca5db782" }
+netrender-vello = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
+vello_encoding = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
+vello_shaders = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
 # The resident lane's CubeCL stack (mere `canvas-gpu`, physics catalog P5c),
 # restated from the root manifest because [patch] is not inherited:
 # cubecl-runtime 0.11.0 with persistence removed from its defaults
@@ -231,11 +241,22 @@ vello_shaders = { git = "https://github.com/mark-ik/vello", rev = "2eae6243881d5
 cubecl-runtime = { path = "../../../support/patches/cubecl-runtime" }
 
 # Match the root retained/admitted owner supplier closure.
-mere-p2panda-net = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
-p2panda-auth = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
-p2panda-core = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
-p2panda-discovery = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
-p2panda-encryption = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
-p2panda-store = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
-p2panda-stream = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
-p2panda-sync = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261011" }
+mere-p2panda-net = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-auth = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-core = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-discovery = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-encryption = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-store = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-stream = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-sync = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+
+[workspace.package]
+rust-version = "1.97.1"
+
+# The standalone host uses the same release-identity contract as the parent
+# workspace when Murm's carrier names its published compatibility dependency.
+[patch."https://github.com/merely-made/mere.git"]
+muniment = { path = "../../../crates/eidetic/muniment" }
+stickleback = { path = "../../../crates/stickleback" }
+mere-proofs = { path = "../../../crates/system/proofs" }
+luggage = { path = "../../../crates/system/luggage" }

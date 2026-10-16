@@ -6,9 +6,9 @@
 
 //! Terminal client for djinn's vault. This binary links no custody implementation.
 
-use graphshell::native::app_admission::{AppId, configured_app_endpoint};
-use graphshell::native::custody::{CustodyAnswer, CustodyCall};
-use graphshell::native::custody_client::BlockingCustodyClient;
+use graphshell_endpoint::door::app_admission::{AppId, configured_app_endpoint};
+use graphshell_endpoint::door::custody::{CustodyAnswer, CustodyCall};
+use graphshell_endpoint::door::custody_client::BlockingCustodyClient;
 use personae::ProfileId;
 
 const USAGE: &str = "usage: personae-vault [--app-endpoint <endpoint>] [--profile <name>] <command> [args]\n\

@@ -31,7 +31,20 @@ class DeliveryBudget(unittest.TestCase):
             path = Path(directory) / "payload"
             path.write_bytes(random.Random(157).randbytes(builder.CAPS["wasm"] + 4096))
             rows = builder.measure_assets({"wasm": path})
-            with self.assertRaisesRegex(RuntimeError, "wasm: gzip6=.*cap=3407872"):
+            with self.assertRaisesRegex(RuntimeError, f"wasm: gzip6=.*cap={builder.CAPS['wasm']}"):
+                builder.require_budget(rows)
+
+    def test_wasm_cap_is_marks_2026_10_15_ruling(self):
+        self.assertEqual(builder.CAPS["wasm"], 3460300)
+
+    def test_each_route_artifact_is_held_to_the_wasm_cap(self):
+        self.assertEqual(set(builder.ARTIFACTS), {"webgpu", "webgl2"})
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "payload"
+            path.write_bytes(random.Random(158).randbytes(builder.CAPS["wasm"] + 4096))
+            rows = builder.measure_assets({"wasm:webgl2": path})
+            self.assertEqual(rows["wasm:webgl2"]["cap_bytes"], builder.CAPS["wasm"])
+            with self.assertRaisesRegex(RuntimeError, f"wasm:webgl2: gzip6=.*cap={builder.CAPS['wasm']}"):
                 builder.require_budget(rows)
 
 
