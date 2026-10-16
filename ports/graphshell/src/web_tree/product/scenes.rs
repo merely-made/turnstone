@@ -144,15 +144,22 @@ impl SavedProduct {
                 let previous_session = app.host.graph_session().id().0;
                 super::super::owner_waypoint::pre_open(waypoint.as_ref(), previous_session);
                 let accepted = graphshell::local_scene::open_codicil(
-                    &mut app.host, canvas, self.scenes.codicil.text().as_bytes(), viewport,
+                    &mut app.host,
+                    canvas,
+                    self.scenes.codicil.text().as_bytes(),
+                    viewport,
                 )?;
                 // Acceptance may precede a view error; count actual owner truth.
                 self.observed_session_changes += u64::from(previous_session != accepted.owner);
                 self.session = accepted.owner.to_string();
                 self.forme_new_session = Some(accepted.owner);
                 self.scenes.imported_nodes = accepted.receipt.nodes;
-                if let Some(error) = accepted.view_error { return Err(error); }
-                if let Some(scene) = accepted.scene { self.scenes.saved = Some(scene); }
+                if let Some(error) = accepted.view_error {
+                    return Err(error);
+                }
+                if let Some(scene) = accepted.scene {
+                    self.scenes.saved = Some(scene);
+                }
                 self.detail_open = false;
                 self.operation_success = Some("Opened codicil".into());
                 self.persist_operation();
@@ -207,7 +214,11 @@ pub(in crate::web_tree) fn section(page: &TreePage) -> Child {
 }
 fn action_button(label: &'static str, action: &'static str) -> Child {
     Box::new(button(label, move |page: &mut TreePage, _| {
-        let waypoint = if action == "open" { super::super::owner_waypoint::context(page) } else { None };
+        let waypoint = if action == "open" {
+            super::super::owner_waypoint::context(page)
+        } else {
+            None
+        };
         if let Some(product) = &mut page.product {
             if let Err(error) = product.scene_action_observed(
                 &mut page.shared.canvas.borrow_mut(),

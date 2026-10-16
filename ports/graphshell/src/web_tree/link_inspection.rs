@@ -493,15 +493,29 @@ fn opened_event(page: &mut TreePage, event: cambium::OpenedLinkEvent) {
                             })
                     })
             });
-            if action == "inspect" && valid {
-                page.inspected_statement = Some(target.assertion_id.clone());
-                page.inspected_link_member = Some(target);
-                page.opened_link_error = None;
-            } else {
+            if !valid {
                 page.opened_link_error = Some(
                     "This assertion is no longer available for that action; reopen the link."
                         .into(),
                 );
+            } else if action == "inspect" {
+                page.inspected_statement = Some(target.assertion_id.clone());
+                page.inspected_link_member = Some(target);
+                page.opened_link_error = None;
+            } else if action == "hide" {
+                let canvas = page.shared.canvas.borrow();
+                let result = page
+                    .product
+                    .as_mut()
+                    .ok_or_else(|| "Assertion hiding requires the local graph".to_owned())
+                    .and_then(|product| product.hide_assertion(&canvas, &target.assertion_id));
+                match result {
+                    Ok(()) => page.opened_link_error = None,
+                    Err(error) => page.opened_link_error = Some(error),
+                }
+                page.shared.dirty.set(true);
+            } else {
+                page.opened_link_error = Some("Unknown assertion view action".into());
             }
         },
     }
@@ -551,6 +565,31 @@ pub(super) fn section(page: &TreePage) -> Child {
             },
         )),
     ];
+    let hidden_assertion_count = page.shared.canvas.borrow().hidden_assertion_ids().len();
+    if hidden_assertion_count > 0 {
+        children.push(Box::new(
+            button("Show hidden assertions", |page: &mut TreePage, _| {
+                let canvas = page.shared.canvas.borrow();
+                if let Some(product) = &mut page.product {
+                    if let Err(error) = product.show_hidden_assertions(&canvas) {
+                        product.status = error;
+                    }
+                }
+                page.shared.dirty.set(true);
+            })
+            .attr("data-assertion-visibility", "show"),
+        ));
+    }
+    if let Some(product) = &page.product {
+        let (state, message) = product.assertion_visibility_state();
+        if state != "idle" {
+            children.push(Box::new(
+                el("span", message.to_owned())
+                    .attr("role", "status")
+                    .attr("data-assertion-visibility-status", state),
+            ));
+        }
+    }
     match opened_reading(page) {
         Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
         Ok(reading) => {
@@ -581,15 +620,21 @@ pub(super) fn section(page: &TreePage) -> Child {
                         if assertion.withdrawn.is_some() {
                             return Vec::new();
                         }
-                        vec![cambium::LinkMemberAction {
-                            id: "inspect".into(),
-                            label: if history {
-                                "Inspect held assertion {number}"
-                            } else {
-                                "Inspect assertion {number}"
-                            }
-                            .into(),
-                        }]
+                        vec![
+                            cambium::LinkMemberAction {
+                                id: "inspect".into(),
+                                label: if history {
+                                    "Inspect held assertion {number}"
+                                } else {
+                                    "Inspect assertion {number}"
+                                }
+                                .into(),
+                            },
+                            cambium::LinkMemberAction {
+                                id: "hide".into(),
+                                label: "Hide this assertion from the view {number}".into(),
+                            },
+                        ]
                     },
                     |page: &mut TreePage, event| opened_event(page, event),
                 )));

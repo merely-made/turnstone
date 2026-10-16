@@ -8,7 +8,7 @@ use super::*;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
 use mere::kernel::graph::{
     ArrangementSubKind, ContainmentSubKind, CoverageLayer, CoverageLimit, EdgeAssertion,
-    ImportedSubKind, NavigationTrigger, ProvenanceSubKind, SemanticStatement,
+    ImportedSubKind, NavigationTrigger, ProvenanceSubKind, RelationKind, SemanticStatement,
     SemanticStatementSpec, predicate_iri,
 };
 use mere::kernel::types::{AssertionBasis, AssertionMethod};
@@ -508,6 +508,68 @@ fn history_is_opt_in_preserves_lifecycle_and_sorts_undated_entries_last() {
     assert_eq!(history.entries[1].assertion.first_asserted_ms, Some(10));
     assert_eq!(history.entries[2].assertion.first_asserted_ms, Some(20));
     assert_eq!(history.entries[3].assertion.first_asserted_ms, None);
+}
+
+#[test]
+fn exact_containment_ids_are_independently_inspectable_and_withdrawable() {
+    let (mut graph, [a, b, _, _]) = fixture();
+    let predicate = RelationKind::Containment(ContainmentSubKind::CollectionMember)
+        .predicate_iri()
+        .expect("canonical containment predicate")
+        .to_owned();
+    for (id, author) in [
+        ("collection-claim-a", "urn:author:a"),
+        ("collection-claim-b", "urn:author:b"),
+    ] {
+        graph
+            .try_assert_persisted_relation_statement(
+                graph.get_node_key_by_id(a).unwrap(),
+                graph.get_node_key_by_id(b).unwrap(),
+                SemanticStatement {
+                    statement_id: id.into(),
+                    predicate: predicate.clone(),
+                    recognized_sub_kind: None,
+                    label: None,
+                    basis: AssertionBasis {
+                        note: Some(format!("independent {id}")),
+                        ..Default::default()
+                    },
+                    graph_scope: GraphScope::Custom("urn:collection:owners".into()),
+                    provenance_iri: Some(author.into()),
+                    first_asserted_ms: Some(30),
+                    asserted_at_ms: Some(31),
+                    withdrawn: None,
+                },
+            )
+            .unwrap();
+    }
+    let before = inspect_link(&graph, LinkTarget::new(a, b)).unwrap();
+    let ids = before.records[0]
+        .statements
+        .iter()
+        .map(|statement| statement.statement_id.as_str())
+        .collect::<BTreeSet<_>>();
+    assert_eq!(
+        ids,
+        BTreeSet::from(["collection-claim-a", "collection-claim-b"])
+    );
+    assert_eq!(before.records[0].statements[0].predicate, predicate);
+
+    graph.retract_assertion("collection-claim-b");
+    assert!(inspect_statement(&graph, "collection-claim-a").is_ok());
+    assert!(inspect_statement(&graph, "collection-claim-b").is_err());
+    let history = inspect_link_history(&graph, LinkTarget::new(a, b)).unwrap();
+    let retained = history
+        .entries
+        .iter()
+        .filter(|entry| entry.assertion.predicate == predicate)
+        .collect::<Vec<_>>();
+    assert_eq!(retained.len(), 2);
+    assert!(
+        retained
+            .iter()
+            .any(|entry| entry.assertion.id == "collection-claim-b")
+    );
 }
 
 #[test]

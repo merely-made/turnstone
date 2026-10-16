@@ -16,7 +16,8 @@ use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert
 use mere::kernel::graph::{
     ArrangementSubKind, ContainmentSubKind, Coupling, CouplingId, CouplingResponse, EdgeAssertion,
     Field, FieldDefinition, FieldExtent, FieldId, FieldLifecycle, Graph, NodeKey, NodeSelector,
-    ProvenanceSubKind, ResourceNode, ScalarField, SemanticStatement, SemanticSubKind, VectorField,
+    ProvenanceSubKind, RelationKind, ResourceNode, ScalarField, SemanticStatement, SemanticSubKind,
+    VectorField,
 };
 use mere::kernel::persistence::PersistedResourceRecord;
 use mere::kernel::types::{AssertionBasis, AssertionMethod, GraphScope};
@@ -34,6 +35,7 @@ use crate::mere_host::{
 };
 
 const LINK_REST_SOURCE: &str = "urn:graphshell:fixture:link-rest";
+const LINK_FAMILY_SOURCE: &str = "urn:graphshell:fixture:link-family-assertions";
 
 impl<B: Backend + Clone> MereHost<B> {
     /// Add a compact, source-owned link topology to a separately routed
@@ -166,6 +168,127 @@ impl<B: Backend + Clone> MereHost<B> {
                     )
                     .expect("fixture assertion IDs are unique and endpoints are present");
             }
+        })
+    }
+
+    /// Seed a separate exact-assertion visibility fixture. It deliberately
+    /// starts from the same small endpoint topology as P4, then replaces the
+    /// link facts with two independent CollectionMember reasons and one
+    /// Resource-stratum citation control.
+    pub fn seed_link_family_assertion_fixture(&mut self) -> Result<(), MereHostError> {
+        self.seed_link_rest_fixture()?;
+        self.mutate_product_graph(|graph| {
+            let (a1, _) = graph
+                .get_node_by_url(LINK_REST_A1_ADDRESS)
+                .expect("fixture A1 endpoint");
+            let (a2, _) = graph
+                .get_node_by_url(LINK_REST_A2_ADDRESS)
+                .expect("fixture A2 endpoint");
+            let (b1, _) = graph
+                .get_node_by_url(LINK_REST_B1_ADDRESS)
+                .expect("fixture B1 endpoint");
+            let (b2, _) = graph
+                .get_node_by_url(LINK_REST_B2_ADDRESS)
+                .expect("fixture B2 endpoint");
+
+            // Clear the source-owned P4 records from both strata before
+            // installing this fixture's independent set.
+            for (from, to) in [(a1, b1), (b1, a1), (a2, b2)] {
+                let (from_id, to_id) = (
+                    graph.get_node(from).expect("fixture source").id,
+                    graph.get_node(to).expect("fixture target").id,
+                );
+                apply_graph_delta(
+                    graph,
+                    GraphDelta::ReplaySetEdgesByIds {
+                        from_id,
+                        to_id,
+                        edges: Vec::new(),
+                    },
+                );
+            }
+            let resource_a = graph.shown_resource_id(a1).expect("fixture A resource");
+            let resource_b = graph.shown_resource_id(b1).expect("fixture B resource");
+            for (from_id, to_id) in [(resource_a, resource_b), (resource_b, resource_a)] {
+                apply_graph_delta(
+                    graph,
+                    GraphDelta::ReplaySetResourceEdgesByIds {
+                        from_resource_id: from_id,
+                        to_resource_id: to_id,
+                        edges: Vec::new(),
+                    },
+                );
+            }
+
+            let collection = RelationKind::Containment(ContainmentSubKind::CollectionMember);
+            for (id, note, method, evidence, at_ms) in [
+                (
+                    "fixture:p6:family:collection-primary",
+                    "Primary collection membership",
+                    "urn:graphshell:fixture:p6:method:primary",
+                    "urn:graphshell:fixture:p6:evidence:primary",
+                    1_800_000_000_100,
+                ),
+                (
+                    "fixture:p6:family:collection-independent",
+                    "Independent collection membership",
+                    "urn:graphshell:fixture:p6:method:independent",
+                    "urn:graphshell:fixture:p6:evidence:independent",
+                    1_800_000_000_200,
+                ),
+            ] {
+                graph
+                    .try_assert_persisted_relation_statement(
+                        a1,
+                        b1,
+                        SemanticStatement {
+                            statement_id: id.into(),
+                            predicate: collection.predicate_iri().expect("fixed predicate").into(),
+                            recognized_sub_kind: None,
+                            label: Some(note.into()),
+                            basis: AssertionBasis {
+                                note: Some(note.into()),
+                                method: Some(AssertionMethod {
+                                    iri: method.into(),
+                                    version: Some("1".into()),
+                                }),
+                                evidence: vec![evidence.into()],
+                            },
+                            graph_scope: GraphScope::User,
+                            provenance_iri: Some(LINK_FAMILY_SOURCE.into()),
+                            first_asserted_ms: Some(at_ms),
+                            asserted_at_ms: Some(at_ms),
+                            withdrawn: None,
+                        },
+                    )
+                    .expect("fixture CollectionMember IDs are unique");
+            }
+
+            let kind = SemanticSubKind::Cites;
+            let note = "Resource stratum citation control";
+            let at_ms = 1_800_000_000_300;
+            graph
+                .try_assert_persisted_relation_statement(
+                    a2,
+                    b2,
+                    SemanticStatement {
+                        statement_id: "fixture:p6:family:resource-control".into(),
+                        predicate: mere::kernel::graph::predicate_iri(kind).into(),
+                        recognized_sub_kind: Some(kind),
+                        label: Some(note.into()),
+                        basis: AssertionBasis {
+                            note: Some(note.into()),
+                            method: None,
+                            evidence: vec!["urn:graphshell:fixture:p6:evidence:resource".into()],
+                        },
+                        graph_scope: GraphScope::User,
+                        provenance_iri: Some(LINK_FAMILY_SOURCE.into()),
+                        first_asserted_ms: Some(at_ms),
+                        asserted_at_ms: Some(at_ms),
+                        withdrawn: None,
+                    },
+                )
+                .expect("fixture resource control ID is unique");
         })
     }
 

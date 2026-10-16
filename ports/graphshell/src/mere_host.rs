@@ -1270,7 +1270,7 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
 #[cfg(test)]
 pub(crate) fn placement_test_graph() -> Graph {
     use mere::kernel::persistence::{
-        PersistedEdge, PersistedEdgeFamily, PersistedSemanticEdgeData, PersistedSemanticStatement,
+        PersistedEdge, PersistedEdgeFamily, PersistedSemanticStatement,
     };
     let mut graph = Graph::new();
     let ids = [uuid::Uuid::from_u128(1), uuid::Uuid::from_u128(2)];
@@ -1290,25 +1290,22 @@ pub(crate) fn placement_test_graph() -> Graph {
         from_node_id: ids[0].to_string(),
         to_node_id: ids[1].to_string(),
         families: vec![PersistedEdgeFamily::Semantic],
-        semantic: Some(PersistedSemanticEdgeData {
-            predicate: Some("urn:mere:profile:held-custom".into()),
-            statements: vec![PersistedSemanticStatement {
-                statement_id: "held-profile-handle".into(),
-                predicate: "urn:mere:profile:held-custom".into(),
-                recognized_sub_kind: None,
-                label: Some("held Surface claim".into()),
-                basis: mere::kernel::types::AssertionBasis {
-                    note: Some("held Surface claim".into()),
-                    ..Default::default()
-                },
-                graph_scope: mere::kernel::types::GraphScope::Default,
-                provenance_iri: Some("urn:mere:profile:source".into()),
-                asserted_at_ms: Some(42),
-                first_asserted_ms: Some(42),
-                withdrawn: None,
-            }],
-            ..Default::default()
-        }),
+        semantic: None,
+        assertions: Some(vec![PersistedSemanticStatement {
+            statement_id: "held-profile-handle".into(),
+            predicate: "urn:mere:profile:held-custom".into(),
+            recognized_sub_kind: None,
+            label: Some("held Surface claim".into()),
+            basis: mere::kernel::types::AssertionBasis {
+                note: Some("held Surface claim".into()),
+                ..Default::default()
+            },
+            graph_scope: mere::kernel::types::GraphScope::Default,
+            provenance_iri: Some("urn:mere:profile:source".into()),
+            asserted_at_ms: Some(42),
+            first_asserted_ms: Some(42),
+            withdrawn: None,
+        }]),
         traversal: None,
         containment: None,
         arrangement: None,
@@ -1749,12 +1746,9 @@ mod tests {
                 let host = opened(&backend).await;
                 assert_eq!(host.snapshot_placement(), placement);
                 assert!(host.graph().to_snapshot().edges.iter().any(|edge| {
-                    edge.semantic.as_ref().is_some_and(|semantic| {
-                        semantic
-                            .statements
-                            .iter()
-                            .any(|claim| claim.statement_id == "held-profile-handle")
-                    })
+                    edge.retained_assertions()
+                        .iter()
+                        .any(|claim| claim.statement_id == "held-profile-handle")
                 }));
                 if placement.is_some() {
                     assert_eq!(host.graph().to_snapshot().edges, saved.graph.edges);
