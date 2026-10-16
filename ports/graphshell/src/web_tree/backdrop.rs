@@ -9,10 +9,18 @@ use mere::canvas::backdrop_surface::BackdropSurface;
 use scenomise::backdrops::SceneInput;
 
 const KEY: u64 = 0x6261_636b;
-const SAMPLES: [(&str, &str); 3] = [
+const SAMPLES: [(&str, &str); 5] = [
     (
         "Metre grid",
         include_str!("../../../../support/design-studies/backdrops/metre.json"),
+    ),
+    (
+        "Progression in C",
+        include_str!("../../../../support/design-studies/backdrops/templates/progression.json"),
+    ),
+    (
+        "Progression in G",
+        include_str!("../../../../support/design-studies/backdrops/templates/progression-g.json"),
     ),
     (
         "Fretboard",
@@ -315,8 +323,13 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
     }
     if let Some(surface) = &pane.surface {
         children.push(Box::new(el("h2", surface.scene().title.clone())));
-        let width = page.size.0.saturating_sub(590).max(280);
-        let height = 440;
+        // Keep structural labels legible. Narrow hosts scroll the stage rather
+        // than compressing nested groups into overlapping text.
+        let width = page.size.0.saturating_sub(590).max(680);
+        let bounds = surface.scene().scene.bounds.size;
+        let height = ((width.saturating_sub(48) as f32 * bounds.h / bounds.w) + 48.0)
+            .ceil()
+            .clamp(440.0, 1000.0) as u32;
         let stage = on_pointer(
             custom_leaf::<TreePage, ()>(KEY, width, height)
                 .attr("aria-label", "Portable scene stage"),
@@ -347,7 +360,14 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
             |page: &mut TreePage, event| page.backdrop.borrow_mut().event(event),
         );
         children.push(Box::new(
-            el("div", (stage, reading)).attr("class", "backdrop-scene-body"),
+            el(
+                "div",
+                (
+                    el("div", stage).attr("class", "backdrop-scene-stage"),
+                    reading,
+                ),
+            )
+            .attr("class", "backdrop-scene-body"),
         ));
         children.push(Box::new(
             el(
