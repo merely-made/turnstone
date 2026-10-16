@@ -868,3 +868,16 @@ done-conditions story.
   populated from participant nested graphs, and a typed turnstone WIT world as
   that plan's B3. The resident helper unit is named **servitor** (reserved on
   crates.io); chartulary's nesting substrate (B0) landed the same day.
+
+- 2026-10-16: **Resident answer card under I5 qualification.** The palette's
+  `Ask retained text` action opens `turnstone.answers`, scoped to the current
+  browsing session. A decoder-free worker speaks Djinn's admitted `inference.ask`
+  route, publishes retained text borrowed from the existing trail actor, and
+  projects streamed answers, pause/resume/cancel, and past asks. Citation opens
+  resolve the exact retained blob through that actor and verify its text hash,
+  passage identity and Unicode selector. Djinn never reopens the browsing store.
+  Protocol, durability and key authority remain in Mere/Djinn; product state
+  and source disclosure remain in Turnstone. The canonical done-conditions and
+  current qualification belong to
+  `mere/design_docs/mere_docs/implementation_strategy/2026-10-15_resident_inference_and_recall_plan.md`.
+  Native headed qualification is pending at this source cut.

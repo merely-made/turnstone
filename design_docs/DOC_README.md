@@ -60,6 +60,12 @@ set.
 
 ## Current implementation plans and product direction
 
+- Resident answer card: source-owner publication, exact-version citations and
+  headed I5 acceptance are tracked in
+  `mere/design_docs/mere_docs/implementation_strategy/2026-10-15_resident_inference_and_recall_plan.md`.
+  Turnstone's client integration is recorded in the
+  [architecture plan](2026-07-10_turnstone_architecture_plan.md).
+
 - [Retained clip receiver](2026-10-11_retained_clip_receiver_plan.md): Fleece
   selected-package admission, local Inker reading and Redshank voice-body
   playback in the receiving mere; automated/native restart and selected onward

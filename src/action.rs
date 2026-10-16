@@ -432,6 +432,8 @@ pub enum Action {
     /// slice C). Meerkat's fixed Right-split off the graph pane, generalized to
     /// the active pane.
     SummonPane(PaneKindId),
+    /// Ask over this browsing session through the resident inference route.
+    OpenAnswers,
     /// Ask the platform shell to choose a local Knot document. The resulting
     /// path becomes a contributed source only after the user chooses it.
     ChooseKnotDocumentFile {
@@ -456,7 +458,10 @@ pub enum Action {
     /// Close the active pane, collapsing its split back into its sibling.
     CloseActivePane,
     /// Shared outer-frame intent; exact window and pane identity.
-    OuterWorkspace { space: SpaceRef, event: workbench::WorkspaceEvent },
+    OuterWorkspace {
+        space: SpaceRef,
+        event: workbench::WorkspaceEvent,
+    },
     /// Set the divider ratio of the active pane's split (drag the seam). Clamped
     /// by the geometry walker so neither side collapses.
     SetActivePaneDivider(f32),
@@ -694,6 +699,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
             "Open Knot document read-only",
             Action::ChooseKnotDocumentFile { read_only: true },
         ),
+        ("Ask retained text", Action::OpenAnswers),
         (
             "Open Sky reference",
             Action::SummonContributedPane {
@@ -944,7 +950,9 @@ pub enum Effect {
     },
     ChooseClipPackageFile,
     ImportClipPackage(std::path::PathBuf),
-    ChooseClipExportFile { clip: eidetic::ManifestId },
+    ChooseClipExportFile {
+        clip: eidetic::ManifestId,
+    },
     ExportClipPackage {
         clip: eidetic::ManifestId,
         path: std::path::PathBuf,

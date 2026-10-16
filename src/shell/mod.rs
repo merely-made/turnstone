@@ -1159,7 +1159,7 @@ pub struct Shell {
     /// The trail-memory actor (browsing capture into the session's memory
     /// store; search wiring W1). Fed from the semantic-event drain; re-pointed
     /// and released on the same session edges as the bin.
-    trail_handle: armillary::ActorHandle<crate::trail_memory::TrailCommand>,
+    trail_handle: Arc<armillary::ActorHandle<crate::trail_memory::TrailCommand>>,
     /// The trail's recall answers (RecallHits / RecallFailed), drained beside
     /// the bin's.
     trail_rx: Receiver<Update>,
@@ -1510,6 +1510,7 @@ impl Shell {
                 .then(|| crate::trail_memory::memory_dir(&app.session_dir())),
             capture_library.clone(),
         );
+        let trail_handle = Arc::new(trail_handle);
 
         let place_proxy = proxy.clone();
         let place_wake: armillary::Wake = Arc::new(move || {
@@ -1601,6 +1602,18 @@ impl Shell {
         // Redshank's own compact dock, admitted rather than copied. The shell
         // holds the dock handles; the app holds the one listening authority,
         // which is where the device is opened.
+        let answers_proxy = proxy.clone();
+        let answers_wake: armillary::Wake = Arc::new(move || {
+            let _ = answers_proxy.send_event(());
+        });
+        surface_providers
+            .register_provider(crate::inference_surface::AnswerProvider::new(
+                Arc::new(crate::trail_memory::TrailInferenceOwner(
+                    trail_handle.clone(),
+                )),
+                answers_wake,
+            ))
+            .expect("the answer provider is unique");
         let redshank_docks = crate::redshank_episode_surface::RedshankDocks::new();
         surface_providers
             .register_provider(

@@ -134,7 +134,7 @@ knot = { package = "knot-editor", git = "https://github.com/merely-made/knot-edi
 knot-document = { git = "https://github.com/merely-made/knot-editor.git", branch = "main" }
 # The installed Distillery projection surface: the independent second provider
 # proving the contributed-surface seam (Knot shared-surface plan P0).
-distillery = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+distillery = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["inference-wire"] }
 graphshell-client = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["accesskit"] }
 graphshell-endpoint = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["door", "local", "stdio"] }
 chirograph = { git = "https://github.com/merely-made/mere.git", branch = "main" }

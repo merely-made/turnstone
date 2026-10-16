@@ -112,7 +112,8 @@ pub fn ring_of(action: &Action) -> Ring {
     // Navigating the web does not grant reads or playback of the host's local
     // retained store. A narrower clip capability can replace this later.
     if let OpenAddress(address) = action
-        && matches!(crate::retained_clip::request(address), Ok(Some(_))) {
+        && matches!(crate::retained_clip::request(address), Ok(Some(_)))
+    {
         return Ring::HostOnly;
     }
     match action {
@@ -244,6 +245,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | ImportClipPackage(_)
         | ChooseClipExportFile
         | ExportClipPackage { .. }
+        | OpenAnswers
         | SummonContributedPane { .. }
         // Personal theme authoring is a local settings gesture, with no
         // participant grant to open or alter the user's shared library.
@@ -353,9 +355,9 @@ pub fn emit_allowed(
             | Action::UnsubscribeFocusedFeed
             | Action::RefreshFeeds
             | Action::MarkFocusedFeedEntryRead => "feed subscription management",
-            Action::ChooseKnotDocumentFile { .. } | Action::SummonContributedPane { .. } => {
-                "local source admission"
-            },
+            Action::ChooseKnotDocumentFile { .. }
+            | Action::OpenAnswers
+            | Action::SummonContributedPane { .. } => "local source admission",
             _ => "gate management",
         };
         return Err(format!(
