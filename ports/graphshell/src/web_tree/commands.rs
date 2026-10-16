@@ -230,7 +230,8 @@ fn run(page: &mut TreePage, id: &str) {
     match viewer_commands::action(id, matches!(page.dataset, HostedDataset::Loaded(_))) {
         Some(Action::Canvas(CanvasCommand::Pan { dx, dy })) => page.shared.pan(dx, dy),
         Some(Action::Canvas(command)) => {
-            command.apply(&mut *page.shared.canvas.borrow_mut(), page.shared.size.get())
+            command.apply(&mut *page.shared.canvas.borrow_mut(), page.shared.size.get());
+            crate::web_suggestions::after_command(command, &page.shared.canvas.borrow());
         },
         Some(Action::Wheel(mode)) => {
             page.shared.wheel_mode.set(mode);

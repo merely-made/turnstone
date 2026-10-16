@@ -59,6 +59,7 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
         ("Grow tile", CanvasCommand::GrowTiles),
         ("Shrink tile", CanvasCommand::ShrinkTiles),
         ("Territory", CanvasCommand::ToggleTerritory),
+        ("Suggestions", CanvasCommand::ToggleSuggestions),
         (
             if paused {
                 "Play physics"
@@ -95,6 +96,7 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
                             return;
                         }
                         command.apply(&mut *canvas, page.shared.size.get());
+                        crate::web_suggestions::after_command(command, &canvas);
                         page.shared.dirty.set(true);
                     },
                 ),
@@ -472,6 +474,7 @@ pub(super) fn named_command(id: &str) -> Option<CanvasCommand> {
         "tile-grow" => Some(CanvasCommand::GrowTiles),
         "tile-shrink" => Some(CanvasCommand::ShrinkTiles),
         "territory-field" => Some(CanvasCommand::ToggleTerritory),
+        "suggestions" => Some(CanvasCommand::ToggleSuggestions),
         _ => None,
     }
 }

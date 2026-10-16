@@ -38,6 +38,7 @@ mod web_scenario;
 mod web_command_catalog;
 mod web_speed;
 mod web_timing;
+mod web_suggestions;
 mod web_tree;
 
 #[cfg(feature = "product")]

@@ -52,6 +52,7 @@ pub fn action(id: &str, hosted: bool) -> Option<Action> {
         "tile-grow" => Action::Canvas(CanvasCommand::GrowTiles),
         "tile-shrink" => Action::Canvas(CanvasCommand::ShrinkTiles),
         "territory-field" => Action::Canvas(CanvasCommand::ToggleTerritory),
+        "suggestions" => Action::Canvas(CanvasCommand::ToggleSuggestions),
         ids::PHYSICS_TOGGLE => Action::Canvas(CanvasCommand::TogglePhysics),
         ids::VIEW_ZOOM_IN => Action::Canvas(CanvasCommand::Zoom { delta: 40.0 }),
         ids::VIEW_ZOOM_OUT => Action::Canvas(CanvasCommand::Zoom { delta: -40.0 }),
@@ -96,6 +97,7 @@ pub fn commands(available: Availability) -> CommandSet {
         ("tile-grow", "Grow tile", "node"),
         ("tile-shrink", "Shrink tile", "node"),
         ("territory-field", "Territory field", "canvas"),
+        ("suggestions", "Suggestions", "preferences"),
         (
             ids::PHYSICS_TOGGLE,
             if available.paused {

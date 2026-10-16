@@ -950,6 +950,7 @@ impl TreePage {
                 return true;
             }
             action.apply(&mut *self.shared.canvas.borrow_mut(), self.size);
+            crate::web_suggestions::after_command(action, &self.shared.canvas.borrow());
             self.shared
                 .events
                 .borrow_mut()
@@ -1373,9 +1374,13 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         appearance,
         appearance_revision,
 
-        canvas: RefCell::new(match &placed {
-            Some(positions) => web_graphs::placed_canvas(graph, positions, width, height),
-            None => web_graphs::prepared_canvas(graph, width, height),
+        canvas: RefCell::new({
+            let mut canvas = match &placed {
+                Some(positions) => web_graphs::placed_canvas(graph, positions, width, height),
+                None => web_graphs::prepared_canvas(graph, width, height),
+            };
+            canvas.set_suggestion_settings(crate::web_suggestions::load());
+            canvas
         }),
         dirty: Cell::new(true),
         moving: Cell::new(false),
