@@ -1907,8 +1907,25 @@ mod tests {
         let snapshot = host.snapshot(request).unwrap();
         assert_eq!(
             snapshot.scene.tables.relations.len(),
-            5,
-            "four lifted self-resource pairs plus one held Surface claim"
+            4,
+            "three unordered Resource appearances plus one held Surface link"
+        );
+        assert_eq!(
+            snapshot
+                .scene
+                .tables
+                .relations
+                .iter()
+                .flatten()
+                .filter(|relation| {
+                    relation
+                        .link_key
+                        .as_ref()
+                        .is_some_and(|key| key.stratum == scenograph::link::LinkStratum::Resource)
+                })
+                .count(),
+            3,
+            "the two directed cross-alias buckets share one resting appearance"
         );
         let shared_cards = |host: &MereHost<MemoryBackend>| {
             host.resources
