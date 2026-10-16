@@ -7,6 +7,7 @@
 use crate::app::GraphshellApp;
 use mere::kernel::graph::GraphStratum;
 use mere::query_view::{self, QueryNodeId, QueryProjection, QueryViewSpec};
+use mere::query_view as model;
 use muniment::Backend;
 use sceno::{LinkKey, LinkMarks, LinkStratum};
 use std::collections::{BTreeMap, BTreeSet};
