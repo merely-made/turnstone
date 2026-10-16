@@ -1022,6 +1022,7 @@ impl Product for TreeLane {
             );
         let faces = self.shared.faces.get().unwrap_or_default().fields();
         let snapshot = practice::fields(page, snapshot);
+        let snapshot = responsive_links::fields(page, snapshot);
         // Host-boundary receipts come from the existing validated loader and
         // Tabard adapter. Missing evidence stays absent, never a passing default.
         let snapshot = [

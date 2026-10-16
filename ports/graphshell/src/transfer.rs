@@ -1693,9 +1693,15 @@ mod tests {
                         predicate: mere::kernel::graph::resource::TAGGED_WITH_IRI.into(),
                         recognized_sub_kind: None,
                         label: Some("tag".into()),
+                        basis: mere::kernel::types::AssertionBasis {
+                            note: Some("tag".into()),
+                            ..Default::default()
+                        },
                         graph_scope: mere::kernel::types::GraphScope::Default,
                         provenance_iri: Some("https://tagger.test/".into()),
                         asserted_at_ms: Some(23),
+                        first_asserted_ms: Some(23),
+                        withdrawn: None,
                     }],
                     ..Default::default()
                 }),
@@ -2078,6 +2084,7 @@ mod tests {
             carried.provenance_iri = Some("urn:mere:replication-peer".into());
             carried.asserted_at_ms = Some(77);
             carried.label = Some("new carried assertion".into());
+            carried.basis.note = Some("new carried assertion".into());
             product
                 .graph
                 .resource_edges

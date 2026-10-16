@@ -286,7 +286,33 @@ impl SavedProduct {
             .app
             .as_ref()
             .ok_or("Source inspection will resume when the current save finishes")?;
-        graphshell::link_inspection::inspect_link(app.host.graph(), target)
+        graphshell::link_inspection::inspect_link_with_source(
+            app.host.graph(),
+            target,
+            app.host.link_source(),
+        )
+    }
+
+    pub(super) fn inspect_link_history(
+        &self,
+        target: graphshell::link_inspection::LinkTarget,
+    ) -> Result<graphshell::link_inspection::LinkHistoryInspection, String> {
+        let app = self
+            .app
+            .as_ref()
+            .ok_or("Link history inspection requires the local graph")?;
+        graphshell::link_inspection::inspect_link_history_with_source(
+            app.host.graph(),
+            target,
+            app.host.link_source(),
+        )
+    }
+
+    pub(super) fn link_source(&self) -> Result<scenograph::link::LinkSource, String> {
+        self.app
+            .as_ref()
+            .map(|app| app.host.link_source())
+            .ok_or_else(|| "Source inspection will resume when the current save finishes".into())
     }
 
     pub(super) fn inspect_statement(

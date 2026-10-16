@@ -61,6 +61,10 @@ pub struct HeldStatement {
     pub graph_scope: GraphScope,
     pub provenance_iri: Option<String>,
     pub asserted_at_ms: Option<u64>,
+    #[serde(default)]
+    pub first_asserted_ms: Option<u64>,
+    #[serde(default)]
+    pub basis: scenograph::link::LinkAssertionBasis,
 }
 
 impl From<&SemanticStatement> for HeldStatement {
@@ -73,6 +77,17 @@ impl From<&SemanticStatement> for HeldStatement {
             graph_scope: statement.graph_scope.clone(),
             provenance_iri: statement.provenance_iri.clone(),
             asserted_at_ms: statement.asserted_at_ms,
+            first_asserted_ms: statement.first_asserted_ms,
+            basis: scenograph::link::LinkAssertionBasis {
+                note: statement.basis.note.clone(),
+                method: statement.basis.method.as_ref().map(|method| {
+                    scenograph::link::LinkAssertionMethod {
+                        iri: method.iri.clone(),
+                        version: method.version.clone(),
+                    }
+                }),
+                evidence: statement.basis.evidence.clone(),
+            },
         }
     }
 }
@@ -112,6 +127,27 @@ pub struct LinkInspection {
 pub struct StatementInspection {
     pub owner: LinkOwner,
     pub statement: HeldStatement,
+}
+
+/// One exact assertion in the explicitly requested retained history.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LinkHistoryEntry {
+    pub displayed_from: Uuid,
+    pub displayed_to: Uuid,
+    pub owner: LinkOwner,
+    pub assertion: scenograph::link::LinkAssertion,
+}
+
+/// Retained assertion lifecycle for a displayed pair in the supplied graph
+/// snapshot. This is not a journal-prefix replay or a write capability.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LinkHistoryInspection {
+    pub first: AccessSummary,
+    pub second: AccessSummary,
+    pub source: scenograph::link::LinkSource,
+    pub entries: Vec<LinkHistoryEntry>,
+    pub notes: Vec<String>,
+    pub coverage: CoverageNote,
 }
 
 fn access(graph: &Graph, member: Uuid) -> Result<AccessSummary, String> {
@@ -243,6 +279,7 @@ pub fn inspect_link_with_source(
         target.second,
         source,
         mere::canvas::link_reading::LinkReadOptions {
+            scope: mere::canvas::link_reading::LinkReadScope::Held,
             include_legacy_summaries: true,
         },
     )?;
@@ -288,6 +325,8 @@ pub fn inspect_link_with_source(
                         graph_scope: portable_scope(statement.scope),
                         provenance_iri: statement.asserter,
                         asserted_at_ms: statement.asserted_at_ms,
+                        first_asserted_ms: statement.first_asserted_ms,
+                        basis: statement.basis,
                     })
                 })
                 .collect::<Result<Vec<_>, String>>()?;
@@ -337,11 +376,129 @@ pub fn inspect_link_with_source(
     })
 }
 
+/// Explicit retained-history view for a displayed pair. The default
+/// [`inspect_link`] remains held-only.
+pub fn inspect_link_history(
+    graph: &Graph,
+    target: LinkTarget,
+) -> Result<LinkHistoryInspection, String> {
+    inspect_link_history_with_source(
+        graph,
+        target,
+        scenograph::link::LinkSource::Unavailable {
+            reason: "Graphshell receives a kernel graph without its owning source authority or public revision".into(),
+        },
+    )
+}
+
+/// Read held and withdrawn semantic assertions retained in this supplied
+/// graph snapshot. This does not replay a session journal or authorize writes.
+pub fn inspect_link_history_with_source(
+    graph: &Graph,
+    target: LinkTarget,
+    source: scenograph::link::LinkSource,
+) -> Result<LinkHistoryInspection, String> {
+    let first = access(graph, target.first)?;
+    let second = access(graph, target.second)?;
+    let mut notes = Vec::new();
+    for member in [target.first, target.second] {
+        let key = graph
+            .get_node_key_by_id(member)
+            .expect("access resolved above");
+        match graph.shown_resource_id(key) {
+            Some(id) if graph.resource(id).is_some() => {},
+            Some(id) => notes.push(format!("The recorded Resource {id} is not held here")),
+            None => notes.push(format!(
+                "No Resource association is recorded for access {member}"
+            )),
+        }
+    }
+    let reading =
+        mere::canvas::link_reading::read_link_history(graph, target.first, target.second, source)?;
+    let mut entries = Vec::new();
+    for link in reading.links {
+        let stratum = match link.key.stratum {
+            scenograph::link::LinkStratum::Surface => GraphStratum::Surface,
+            scenograph::link::LinkStratum::Resource => GraphStratum::Resource,
+        };
+        for bucket in link.buckets {
+            let displayed_from = bucket
+                .displayed_from
+                .parse()
+                .map_err(|_| "Invalid displayed source identity")?;
+            let displayed_to = bucket
+                .displayed_to
+                .parse()
+                .map_err(|_| "Invalid displayed target identity")?;
+            let source_from = bucket
+                .source_from
+                .id
+                .parse()
+                .map_err(|_| "Invalid source endpoint identity")?;
+            let source_to = bucket
+                .source_to
+                .id
+                .parse()
+                .map_err(|_| "Invalid target endpoint identity")?;
+            for assertion in bucket.assertions {
+                entries.push(LinkHistoryEntry {
+                    displayed_from,
+                    displayed_to,
+                    owner: LinkOwner {
+                        stratum,
+                        from: SourceEndpoint {
+                            id: source_from,
+                            address: bucket.source_from.address.clone(),
+                        },
+                        to: SourceEndpoint {
+                            id: source_to,
+                            address: bucket.source_to.address.clone(),
+                        },
+                    },
+                    assertion,
+                });
+            }
+        }
+    }
+    entries.sort_by(|a, b| {
+        let a_assertion = &a.assertion;
+        let b_assertion = &b.assertion;
+        let time_order = match (a_assertion.first_asserted_ms, b_assertion.first_asserted_ms) {
+            (Some(a), Some(b)) => a.cmp(&b),
+            (Some(_), None) => std::cmp::Ordering::Less,
+            (None, Some(_)) => std::cmp::Ordering::Greater,
+            (None, None) => std::cmp::Ordering::Equal,
+        };
+        time_order
+            .then_with(|| a_assertion.id.cmp(&b_assertion.id))
+            .then_with(|| {
+                let order = |stratum| match stratum {
+                    GraphStratum::Resource => 0,
+                    GraphStratum::Surface => 1,
+                };
+                order(a.owner.stratum).cmp(&order(b.owner.stratum))
+            })
+            .then_with(|| a.owner.from.id.cmp(&b.owner.from.id))
+            .then_with(|| a.owner.to.id.cmp(&b.owner.to.id))
+            .then_with(|| a.displayed_from.cmp(&b.displayed_from))
+            .then_with(|| a.displayed_to.cmp(&b.displayed_to))
+    });
+    let coverage = kernel_coverage(reading.coverage)?;
+    Ok(LinkHistoryInspection {
+        first,
+        second,
+        source: reading.source,
+        entries,
+        notes,
+        coverage,
+    })
+}
+
 /// Re-resolve the exact held statement independently of the displayed pair.
 /// Resource statements remain inspectable after an access changes its binding.
 pub fn inspect_statement(graph: &Graph, statement_id: &str) -> Result<StatementInspection, String> {
     let (key, statement) = graph
-        .find_semantic_statement(statement_id)
+        .find_held_semantic_statement(statement_id)
         .ok_or_else(|| format!("Assertion {statement_id} is no longer held here"))?;
     let source = match key {
         RelationKey::Resource(key) => {

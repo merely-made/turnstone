@@ -6,7 +6,7 @@
 
 //! Exact held occurrences and disclosed view inputs for presentation decisions.
 //! No source writes, field evaluation, URL identity or synthetic assertions.
-use crate::link_inspection::{LinkTarget, inspect_link};
+use crate::link_inspection::{LinkTarget, inspect_link_with_source};
 use crate::presentation_editor::presentation::{
     Condition, Context, Effect, Issue, PrimitiveKind, Property, Resolution, RuleSet, Scalar,
     ViewState,
@@ -74,6 +74,9 @@ pub struct BoundContext {
     pub context: Context,
     pub available_states: BTreeSet<ViewState>,
     pub notes: Vec<String>,
+    /// Source identity for an assertion occurrence; other occurrence kinds do
+    /// not read link assertions.
+    pub link_source: Option<scenograph::link::LinkSource>,
 }
 fn text(facts: &mut BTreeMap<String, Scalar>, key: &str, value: impl Into<String>) {
     facts.insert(key.into(), Scalar::Text(value.into()));
@@ -92,6 +95,24 @@ pub fn bind(
     view: &ViewInputs,
     forme: Option<&FormeFacts>,
 ) -> Result<BoundContext, String> {
+    bind_with_source(
+        graph,
+        occurrence,
+        view,
+        forme,
+        scenograph::link::LinkSource::Unavailable {
+            reason: "Graphshell received a kernel graph without its owning source context".into(),
+        },
+    )
+}
+
+pub fn bind_with_source(
+    graph: &Graph,
+    occurrence: &Occurrence,
+    view: &ViewInputs,
+    forme: Option<&FormeFacts>,
+    source: scenograph::link::LinkSource,
+) -> Result<BoundContext, String> {
     let kind = match occurrence {
         Occurrence::Access { .. } => PrimitiveKind::Node,
         Occurrence::Assertion { .. } => PrimitiveKind::Relation,
@@ -102,6 +123,7 @@ pub fn bind(
         context: Context { id: occurrence.id(), kind, facts: BTreeMap::new(), states: BTreeSet::new(), screen_size: view.screen_size, previous_matches: BTreeSet::new() },
         available_states: BTreeSet::new(),
         notes: vec!["Facts are held locally; absent metadata is not a completeness claim. Foreground pins and overview state have no adapter yet.".into()],
+        link_source: None,
     };
     let facts = &mut bound.context.facts;
     match occurrence {
@@ -135,7 +157,9 @@ pub fn bind(
             state(&mut bound, ViewState::PositionPinned, view.position_pinned);
         },
         Occurrence::Assertion { pair, statement } => {
-            let inspected = inspect_link(graph, LinkTarget::new(pair.first, pair.second))?;
+            let inspected =
+                inspect_link_with_source(graph, LinkTarget::new(pair.first, pair.second), source)?;
+            bound.link_source = Some(inspected.source.clone());
             let (record, held) = inspected
                 .records
                 .iter()

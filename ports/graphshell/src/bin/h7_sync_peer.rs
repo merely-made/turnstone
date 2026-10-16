@@ -317,6 +317,7 @@ fn local_events(role: Role) -> Vec<PersonalGraphEvent> {
                 label: None,
                 decay_progress: None,
             },
+            basis: None,
         });
     }
     events

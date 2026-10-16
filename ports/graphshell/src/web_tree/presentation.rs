@@ -8,7 +8,9 @@
 use super::*;
 use cambium::{TextInput, button, lens, text_field_typed};
 use graphshell::field_inspection::FieldTarget;
-use graphshell::presentation_binding::{BoundContext, FormeFacts, Occurrence, ViewInputs, bind};
+use graphshell::presentation_binding::{
+    BoundContext, FormeFacts, Occurrence, ViewInputs, bind_with_source,
+};
 use graphshell::presentation_editor::presentation::{Context, PrimitiveKind, Property, Resolution};
 use graphshell::presentation_editor::{
     PresentationSession, RuleDraft, RuleSetDraft, SaveKind, parse,
@@ -303,7 +305,12 @@ fn bound(page: &TreePage, occurrence: &Occurrence) -> Result<BoundContext, Strin
                 .map(|_| canvas.forme_region_hovered());
         },
     }
-    bind(graph, occurrence, &view, forme.as_ref())
+    let source = page
+        .product
+        .as_ref()
+        .ok_or("Presentation binding requires the local graph")?
+        .link_source()?;
+    bind_with_source(graph, occurrence, &view, forme.as_ref(), source)
 }
 /// Re-resolve exact owners on view changes; preview is invalidated, never retargeted.
 pub(super) fn refresh(page: &TreePage) -> Option<Inputs> {

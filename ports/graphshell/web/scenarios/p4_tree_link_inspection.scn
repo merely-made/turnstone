@@ -27,6 +27,16 @@ assert snap assertion-inspector-ready == true
 assert snap assertion-inspector-predicate == https://mere.computer/ns/rel#cites
 remember inspected
 capture exact_link_assertion
+assert snap link-inspector-scope == held
+click role:button Show retained history
+settle 2
+assert snap link-inspector-scope == history
+assert snap link-inspector-history-ready == true
+assert snap link-inspector-history-count == 1
+capture retained_assertion_history
+click role:button Show held assertions
+settle 2
+assert snap link-inspector-scope == held
 # Selection changes leave both inspection targets intact.
 click-node https://example.test/i2p-port
 settle 2

@@ -33,6 +33,8 @@ use sceno::{
     Arrangement, Footprint, InstanceId, ProjectedItem, Rect, Representation, RoutedRelation, Scene,
     Score, Size2, SourceRef, Transform2, Vec2,
 };
+use scenograph::SourceBinding;
+use scenograph::link::{LinkSource, LinkSourceRevision};
 use scenotime::{Revision, SceneEpoch, SceneSnapshot};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -215,10 +217,10 @@ pub struct MereHost<B> {
 
 #[path = "mere_host_coupling.rs"]
 mod coupling;
-#[path = "mere_host_resident.rs"]
-mod resident_transaction;
 #[path = "mere_host_resident_view.rs"]
 mod resident_presentation;
+#[path = "mere_host_resident.rs"]
+mod resident_transaction;
 
 /// Changes not yet stored, taken as one batch: what [`MereHost::stage`] put
 /// in a batch, or what [`MereHost::prepare_store`] took for its caller to
@@ -562,6 +564,28 @@ impl<B: Backend> MereHost<B> {
     /// The session truth lives in: its journal, changes and authors.
     pub fn graph_session(&self) -> &GraphSession<B> {
         &self.graph_session
+    }
+
+    /// Identity of this local host's current graph session. `mere` is only
+    /// this MereHost's source namespace; it does not imply registry identity,
+    /// authentication, or write authority. The live graph has no qualified
+    /// immutable public revision, so its revision remains explicitly absent.
+    pub fn link_source(&self) -> LinkSource {
+        let manifest = self.graph_session.manifest();
+        LinkSource::Available {
+            binding: SourceBinding {
+                authority: "mere".into(),
+                domain: "graph-session".into(),
+                resource: format!(
+                    "session:{}/graph:{}",
+                    manifest.session_id.as_uuid(),
+                    manifest.root_graph_id.as_uuid()
+                ),
+            },
+            revision: LinkSourceRevision::Unavailable {
+                reason: "The live MereHost graph has no qualified immutable public revision; journal prefixes and runtime generations are not durable revisions".into(),
+            },
+        }
     }
 
     pub fn selected_persona(&self) -> &SelectedPersonaRef {
@@ -1218,9 +1242,15 @@ pub(crate) fn placement_test_graph() -> Graph {
                 predicate: "urn:mere:profile:held-custom".into(),
                 recognized_sub_kind: None,
                 label: Some("held Surface claim".into()),
+                basis: mere::kernel::types::AssertionBasis {
+                    note: Some("held Surface claim".into()),
+                    ..Default::default()
+                },
                 graph_scope: mere::kernel::types::GraphScope::Default,
                 provenance_iri: Some("urn:mere:profile:source".into()),
                 asserted_at_ms: Some(42),
+                first_asserted_ms: Some(42),
+                withdrawn: None,
             }],
             ..Default::default()
         }),
@@ -1842,6 +1872,55 @@ mod tests {
         )
         .await
         .expect("open")
+    }
+
+    #[test]
+    fn link_source_is_session_scoped_and_keeps_revision_unavailable() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let mut host = MereHost::empty(
+                backend.clone(),
+                selected_persona(),
+                fixture_handlers(),
+                access_context(),
+            );
+            let first = host.link_source();
+            let session_id = host.graph_session().manifest().session_id;
+            let graph_id = host.graph_session().manifest().root_graph_id;
+            assert_eq!(
+                first,
+                LinkSource::Available {
+                    binding: SourceBinding {
+                        authority: "mere".into(),
+                        domain: "graph-session".into(),
+                        resource: format!(
+                            "session:{}/graph:{}",
+                            session_id.as_uuid(),
+                            graph_id.as_uuid()
+                        ),
+                    },
+                    revision: LinkSourceRevision::Unavailable {
+                        reason: "The live MereHost graph has no qualified immutable public revision; journal prefixes and runtime generations are not durable revisions".into(),
+                    },
+                }
+            );
+
+            host.persist(1_800_000_000).await.unwrap();
+            let reopened = opened(&backend).await;
+            assert_eq!(reopened.link_source(), first);
+
+            host.begin_profiled_session(placement_test_graph(), None)
+                .unwrap();
+            let switched = host.link_source();
+            assert_ne!(switched, first);
+            assert!(matches!(
+                switched,
+                LinkSource::Available {
+                    revision: LinkSourceRevision::Unavailable { .. },
+                    ..
+                }
+            ));
+        });
     }
 
     /// A graph's snapshot, undated, and its facets, encoded.

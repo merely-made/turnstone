@@ -32,9 +32,9 @@ use cambium_rootstock::{
     Init, ProducedTexture, ProducerContext, SourceAlpha, SourceEncoding, TextureProducer,
 };
 use graphshell::app::GraphshellApp;
-use mere::canvas::controls::CanvasCommand;
 use graphshell::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
 use mere::canvas::Canvas;
+use mere::canvas::controls::CanvasCommand;
 use mere::kernel::graph::Graph;
 use mesquite::{CaptureRecord, Lane, Product};
 use muniment::MemoryBackend;
@@ -47,7 +47,10 @@ use web_sys::{Element, Event, HtmlCanvasElement};
 
 // The retained canvas's clear colour, independent of any presentation adapter.
 const SHELL_CLEAR: wgpu::Color = wgpu::Color {
-    r: 0.027, g: 0.047, b: 0.059, a: 1.0,
+    r: 0.027,
+    g: 0.047,
+    b: 0.059,
+    a: 1.0,
 };
 use super::web_graphs;
 use super::web_scenario;
@@ -434,6 +437,8 @@ pub(crate) struct TreePage {
     #[cfg(feature = "product")]
     inspected_link: Option<graphshell::link_inspection::LinkTarget>,
     #[cfg(feature = "product")]
+    link_history_open: bool,
+    #[cfg(feature = "product")]
     inspected_statement: Option<String>,
     #[cfg(feature = "product")]
     field_inspector: field_inspection::Pane,
@@ -462,6 +467,7 @@ pub(crate) struct TreePage {
     picked: Option<String>,
     product: Option<product::SavedProduct>,
     practice: Option<practice::Practice>,
+    responsive_links: Option<graphshell::responsive_links::ResponsiveLinksFixture>,
     /// The host dataset the page supplied, if any (S1).
     dataset: HostedDataset,
     /// Optional explicit containment reading over the same host authority.
@@ -636,6 +642,9 @@ type Child = Box<dyn AnyView<TreePage, (), GenetCtx, GenetElement>>;
 type Logic = fn(&TreePage) -> Child;
 
 fn view(page: &TreePage) -> Child {
+    if let Some(view) = responsive_links::view(page) {
+        return view;
+    }
     if let Some(view) = practice::view(page) {
         return view;
     }
@@ -1225,6 +1234,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
     // A host dataset (S1) or history (S3) replaces every other source, and a
     // refused one shows its refusal over an empty graph, never the fixture.
     let practice = practice::open(&root)?;
+    let responsive_links = responsive_links::open(&root)?;
     let hosted = crate::web_dataset::supplied_history(&root);
     let presenter_options = presenter::requested(&root)?;
     if presenter_options.is_some() && hosted.is_none() {
@@ -1451,6 +1461,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 #[cfg(feature = "product")]
                 inspected_link: None,
                 #[cfg(feature = "product")]
+                link_history_open: false,
+                #[cfg(feature = "product")]
                 inspected_statement: None,
                 #[cfg(feature = "product")]
                 field_inspector: field_inspection::Pane::default(),
@@ -1477,6 +1489,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 picked: None,
                 product,
                 practice,
+                responsive_links,
                 dataset,
                 grouping,
                 grouping_evidence: false,
@@ -2138,11 +2151,11 @@ mod query_view;
 mod reading;
 #[cfg(feature = "remote")]
 mod remote;
-#[cfg(feature="remote")]
-mod reservoir;
 #[cfg(not(feature = "remote"))]
 #[path = "web_tree/remote_off.rs"]
 mod remote;
+#[cfg(feature = "remote")]
+mod reservoir;
 mod speed;
 mod visibility;
 
@@ -2176,3 +2189,5 @@ fn forme_sheet() -> String {
     #[cfg(not(feature = "product"))]
     String::new()
 }
+
+mod responsive_links;

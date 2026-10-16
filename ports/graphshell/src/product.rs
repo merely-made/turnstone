@@ -1874,9 +1874,15 @@ mod tests {
                     predicate: predicate.into(),
                     recognized_sub_kind: None,
                     label: Some("retained relation".into()),
+                    basis: mere::kernel::types::AssertionBasis {
+                        note: Some("retained relation".into()),
+                        ..Default::default()
+                    },
                     graph_scope: mere::kernel::types::GraphScope::Default,
                     provenance_iri: Some("https://tagger.test/".into()),
                     asserted_at_ms: Some(23),
+                    first_asserted_ms: Some(23),
+                    withdrawn: None,
                 }],
                 ..Default::default()
             }),
@@ -2758,6 +2764,13 @@ mod tests {
             .unwrap()
             .statements[0]
             .label = Some("divergent".into());
+        payload_collision.graph.edges[0]
+            .semantic
+            .as_mut()
+            .unwrap()
+            .statements[0]
+            .basis
+            .note = Some("divergent".into());
         let mut pair_collision = codicil.clone();
         pair_collision.graph.edges[0].to_node_id = surfaces[0].to_string();
         let mut store_collision = codicil.clone();
@@ -2778,6 +2791,9 @@ mod tests {
         let mut duplicate = surface;
         duplicate.semantic.as_mut().unwrap().statements[0].label =
             Some("raw source divergence".into());
+        duplicate.semantic.as_mut().unwrap().statements[0]
+            .basis
+            .note = Some("raw source divergence".into());
         source_collision.graph.edges.push(duplicate);
         let mut invalid_declaration = codicil.clone();
         invalid_declaration
@@ -2865,6 +2881,9 @@ mod tests {
         );
         legacy.graph.edges[0].semantic.as_mut().unwrap().statements[0].label =
             Some("different legacy claim".into());
+        legacy.graph.edges[0].semantic.as_mut().unwrap().statements[0]
+            .basis
+            .note = Some("different legacy claim".into());
         assert!(
             legacy_host
                 .import_product_codicil(&serde_json::to_vec(&legacy).unwrap())
