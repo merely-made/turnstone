@@ -193,6 +193,23 @@ impl Session {
     pub fn sheet(&self) -> &str {
         &self.sheet
     }
+    pub fn backdrop_theme(&self) -> mere::canvas::backdrop_surface::SurfaceTheme {
+        use mere::canvas::backdrop_surface::SurfaceTheme;
+        if self.colors.len() != PAINT.len() {
+            return SurfaceTheme::default();
+        }
+        let mut guide = self.colors[1];
+        guide[3] *= 0.35;
+        SurfaceTheme {
+            ground: self.colors[0],
+            text: self.colors[2],
+            guide,
+            category: self.colors[4],
+            root: self.colors[5],
+            fifth: self.colors[6],
+            warning: self.colors[9],
+        }
+    }
     pub fn apply_canvas(&self, canvas: &mut mere::canvas::Canvas) {
         if self.colors.len() >= 2 {
             canvas.set_palette(self.colors[0], self.colors[1]);

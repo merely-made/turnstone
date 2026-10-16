@@ -175,9 +175,10 @@ fn tree_stylesheet(appearance: &str) -> String {
     #[cfg(not(feature = "remote"))]
     let reservoir_sheet = "";
     format!(
-        "{SHEET}\n{}\n{}\n{workspace_sheet}\n{applet_sheet}\n{reservoir_sheet}\n{appearance}",
+        "{SHEET}\n{}\n{}\n{workspace_sheet}\n{applet_sheet}\n{reservoir_sheet}\n{}\n{appearance}",
         format!("{}\n{}", commands::SHEET, presenter::SHEET),
-        forme_sheet()
+        forme_sheet(),
+        cambium::BACKDROP_SCENE_CSS
     )
 }
 
@@ -452,6 +453,8 @@ pub(crate) struct TreePage {
     presentation: presentation::Pane,
     #[cfg(feature = "product")]
     query_views: query_view::Pane,
+    #[cfg(feature = "product")]
+    backdrop: Rc<RefCell<backdrop::Pane>>,
     #[cfg(feature = "product")]
     promoted_links: promoted_links::Pane,
     #[cfg(feature = "product")]
@@ -731,6 +734,10 @@ fn view(page: &TreePage) -> Child {
     #[cfg(not(feature = "product"))]
     let scene_header: Option<Child> = None;
     #[cfg(feature = "product")]
+    let backdrop_workspace = backdrop::workspace(page);
+    #[cfg(not(feature = "product"))]
+    let backdrop_workspace: Option<Child> = None;
+    #[cfg(feature = "product")]
     let app_header = instrument::app_header(page);
     #[cfg(not(feature = "product"))]
     let app_header: Option<Child> = None;
@@ -783,7 +790,9 @@ fn view(page: &TreePage) -> Child {
                                 "div",
                                 (
                                     scene_header,
-                                    workbench.unwrap_or_else(|| Box::new(graph)),
+                                    backdrop_workspace
+                                        .or(workbench)
+                                        .unwrap_or_else(|| Box::new(graph)),
                                     drop_feedback,
                                 ),
                             )
@@ -884,6 +893,10 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(product::find_section(page));
     children.push(product::scenes_section(page));
     children.push(product::projection_section(page));
+    #[cfg(feature = "product")]
+    if page.product.is_some() {
+        children.push(backdrop::control(page));
+    }
     children.push(product::history_section(page));
     #[cfg(feature = "product")]
     children.push(dynamics_inspection::section(page));
@@ -1492,6 +1505,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 #[cfg(feature = "product")]
                 query_views: query_view::Pane::default(),
                 #[cfg(feature = "product")]
+                backdrop: Rc::new(RefCell::new(backdrop::Pane::default())),
+                #[cfg(feature = "product")]
                 promoted_links: promoted_links::Pane::default(),
                 #[cfg(feature = "product")]
                 dynamics_inspector: dynamics_inspection::Pane::default(),
@@ -1844,6 +1859,7 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             #[cfg(feature = "product")]
             {
                 reading::prepare(ctx.runner.state());
+                backdrop::register(ctx);
                 frame_shared.reading.borrow_mut().register(ctx);
                 if frame_shared.reading.borrow_mut().poll() {
                     ctx.runner.update(|_| {});
@@ -2151,6 +2167,8 @@ mod host_boundary;
 mod inspection;
 #[cfg(feature = "product")]
 mod instrument;
+#[cfg(feature = "product")]
+mod backdrop;
 mod lane;
 #[cfg(feature = "product")]
 mod link_inspection;
