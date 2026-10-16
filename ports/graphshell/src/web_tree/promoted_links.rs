@@ -263,7 +263,9 @@ fn statement_rows(inspection: &PromotedLinkInspection) -> Vec<Child> {
 }
 
 fn drift_rows(drift: &LinkDrift) -> Vec<Child> {
-    let mut rows = vec![Box::new(el("p", format!("Current link: {}", drift.status))) as Child];
+    let mut rows = vec![Box::new(
+        el("p", format!("Current link: {}", drift.status)).attr("class", "promoted-link-current"),
+    ) as Child];
     if let Some(reason) = &drift.reason {
         rows.push(Box::new(el("p", reason.clone())));
     }
@@ -301,20 +303,23 @@ fn promoted_rows(inspection: &PromotedLinkInspection) -> Vec<Child> {
     ];
     rows.extend(drift_rows(&inspection.drift));
     for comment in &inspection.comments {
-        rows.push(Box::new(el(
-            "p",
-            format!(
-                "Review comment · {} · by {} · recorded {}",
-                comment.value,
-                comment
-                    .provenance_iri
-                    .as_deref()
-                    .unwrap_or("unknown author"),
-                comment
-                    .asserted_at_ms
-                    .map_or_else(|| "unknown".to_owned(), |ms| ms.to_string())
-            ),
-        )));
+        rows.push(Box::new(
+            el(
+                "p",
+                format!(
+                    "Review comment · {} · by {} · recorded {}",
+                    comment.value,
+                    comment
+                        .provenance_iri
+                        .as_deref()
+                        .unwrap_or("unknown author"),
+                    comment
+                        .asserted_at_ms
+                        .map_or_else(|| "unknown".to_owned(), |ms| ms.to_string())
+                ),
+            )
+            .attr("class", "promoted-link-review-comment"),
+        ));
     }
     let metadata: Vec<Child> = vec![
         Box::new(el(

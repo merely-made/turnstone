@@ -25,7 +25,7 @@ assert snap promoted-link-drift == unchanged
 assert snap promoted-link-frozen-assertion-ids == fixture:p7:collection-independent|fixture:p7:collection-primary
 assert snap promoted-link-frozen-withdrawn-count == 0
 same p7-source link-rest-source-facts
-reveal role:button Open promoted link 1
+reveal .promoted-link-current
 capture p7_link_promoted
 
 # A permitted exact source withdrawal changes the live link, leaving the copied
@@ -40,6 +40,7 @@ assert snap promoted-link-frozen-withdrawn-count == 0
 # The pair inspector includes the remaining Surface reason and Resource control.
 assert snap link-inspector-statements == 2
 remember p7-after-withdrawal
+reveal .promoted-link-current
 capture p7_live_link_drifted
 
 # The promoted Resource remains reachable from Graph tools after closing the live inspector.
@@ -64,6 +65,6 @@ assert snap promoted-link-comment-count == 1
 assert snap promoted-link-comment-texts == Reviewed after the source assertion was withdrawn.
 same p7-after-withdrawal link-rest-source-facts
 assert snap promoted-link-drift == changed
-reveal role:button Open promoted link 1
+reveal .promoted-link-review-comment
 capture p7_promoted_link_review_comment
 log Graphshell promotion retained the frozen copy across source withdrawal and attached review to the unique Resource
