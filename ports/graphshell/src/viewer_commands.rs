@@ -51,6 +51,7 @@ pub fn action(id: &str, hosted: bool) -> Option<Action> {
         "dismiss-retained" => Action::Canvas(CanvasCommand::DismissRetained),
         "tile-grow" => Action::Canvas(CanvasCommand::GrowTiles),
         "tile-shrink" => Action::Canvas(CanvasCommand::ShrinkTiles),
+        "territory-field" => Action::Canvas(CanvasCommand::ToggleTerritory),
         ids::PHYSICS_TOGGLE => Action::Canvas(CanvasCommand::TogglePhysics),
         ids::VIEW_ZOOM_IN => Action::Canvas(CanvasCommand::Zoom { delta: 40.0 }),
         ids::VIEW_ZOOM_OUT => Action::Canvas(CanvasCommand::Zoom { delta: -40.0 }),
@@ -94,6 +95,7 @@ pub fn commands(available: Availability) -> CommandSet {
         ("dismiss-retained", "Dismiss retained", "canvas"),
         ("tile-grow", "Grow tile", "node"),
         ("tile-shrink", "Shrink tile", "node"),
+        ("territory-field", "Territory field", "canvas"),
         (
             ids::PHYSICS_TOGGLE,
             if available.paused {

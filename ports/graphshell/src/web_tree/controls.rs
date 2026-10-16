@@ -58,6 +58,7 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
         ("Dismiss retained", CanvasCommand::DismissRetained),
         ("Grow tile", CanvasCommand::GrowTiles),
         ("Shrink tile", CanvasCommand::ShrinkTiles),
+        ("Territory", CanvasCommand::ToggleTerritory),
         (
             if paused {
                 "Play physics"
@@ -470,6 +471,7 @@ pub(super) fn named_command(id: &str) -> Option<CanvasCommand> {
         "dismiss-retained" => Some(CanvasCommand::DismissRetained),
         "tile-grow" => Some(CanvasCommand::GrowTiles),
         "tile-shrink" => Some(CanvasCommand::ShrinkTiles),
+        "territory-field" => Some(CanvasCommand::ToggleTerritory),
         _ => None,
     }
 }
