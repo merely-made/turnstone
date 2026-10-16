@@ -514,6 +514,27 @@ fn opened_event(page: &mut TreePage, event: cambium::OpenedLinkEvent) {
                     Err(error) => page.opened_link_error = Some(error),
                 }
                 page.shared.dirty.set(true);
+            } else if action == "withdraw" {
+                let can_withdraw = page
+                    .product
+                    .as_ref()
+                    .is_some_and(|product| product.can_withdraw_link_assertion(&target));
+                if !can_withdraw {
+                    page.opened_link_error = Some(
+                        "Only a personal assertion authored by the current persona can be withdrawn here.".into(),
+                    );
+                    return;
+                }
+                let result = page
+                    .product
+                    .as_mut()
+                    .ok_or_else(|| "Assertion withdrawal requires the local graph".to_owned())
+                    .and_then(|product| product.withdraw_link_assertion(&target));
+                match result {
+                    Ok(()) => page.opened_link_error = None,
+                    Err(error) => page.opened_link_error = Some(error),
+                }
+                page.shared.dirty.set(true);
             } else {
                 page.opened_link_error = Some("Unknown assertion view action".into());
             }
@@ -599,7 +620,19 @@ pub(super) fn section(page: &TreePage) -> Child {
                 .product
                 .as_ref()
                 .map(|product| product.opened_link_time_ms());
+            let expected_source = reading.source.clone();
             for (index, link) in reading.links.iter().enumerate() {
+                let key = link.key.clone();
+                let key_token = key.stable_id();
+                children.push(Box::new(
+                    button(format!("Freeze {:?} link for review", key.stratum), {
+                        let expected_source = expected_source.clone();
+                        move |page: &mut TreePage, _| {
+                            promoted_links::freeze(page, &key, &expected_source)
+                        }
+                    })
+                    .attr("data-freeze-link", key_token),
+                ));
                 let swatch = scenograph::swatch::Swatch {
                     id: format!("opened-link-{index}"),
                     scope: scenograph::swatch::Scope::Link(link.key.clone()),
@@ -616,11 +649,11 @@ pub(super) fn section(page: &TreePage) -> Child {
                     &layout,
                     scenograph::link::OpenedLinkOptions { now_ms },
                     history,
-                    move |_source, _key, _bucket, assertion| {
+                    move |source, key, bucket, assertion| {
                         if assertion.withdrawn.is_some() {
                             return Vec::new();
                         }
-                        vec![
+                        let mut actions = vec![
                             cambium::LinkMemberAction {
                                 id: "inspect".into(),
                                 label: if history {
@@ -634,7 +667,25 @@ pub(super) fn section(page: &TreePage) -> Child {
                                 id: "hide".into(),
                                 label: "Hide this assertion from the view {number}".into(),
                             },
-                        ]
+                        ];
+                        let target = cambium::LinkMemberTarget {
+                            source: source.clone(),
+                            link: key.clone(),
+                            from: bucket.source_from.id.clone(),
+                            to: bucket.source_to.id.clone(),
+                            assertion_id: assertion.id.clone(),
+                        };
+                        if page
+                            .product
+                            .as_ref()
+                            .is_some_and(|product| product.can_withdraw_link_assertion(&target))
+                        {
+                            actions.push(cambium::LinkMemberAction {
+                                id: "withdraw".into(),
+                                label: "Withdraw this personal assertion {number}".into(),
+                            });
+                        }
+                        actions
                     },
                     |page: &mut TreePage, event| opened_event(page, event),
                 )));

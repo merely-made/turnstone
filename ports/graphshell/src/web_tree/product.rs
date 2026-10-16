@@ -21,6 +21,7 @@ mod fields;
 mod find;
 mod history;
 mod projection;
+mod promoted_links;
 #[cfg(feature = "product")]
 mod query;
 mod scenes;
@@ -151,10 +152,13 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     let link_rest_fixture = params.get("fixture").as_deref() == Some("link-rest");
     let link_family_assertion_fixture =
         params.get("fixture").as_deref() == Some("family-assertions");
+    let promoted_link_fixture = params.get("fixture").as_deref() == Some("promoted-link");
     let query_fixture = params.get("fixture").as_deref() == Some("retained-content-query");
     let retained_fixture =
         query_fixture || params.get("fixture").as_deref() == Some("retained-content");
-    let database = if link_family_assertion_fixture {
+    let database = if promoted_link_fixture {
+        "graphshell-promoted-link-p7-v1"
+    } else if link_family_assertion_fixture {
         "graphshell-link-family-assertions-p6-v1"
     } else if link_rest_fixture {
         "graphshell-link-rest-p4-v1"
@@ -198,6 +202,9 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         app.host
             .seed_link_family_assertion_fixture()
             .map_err(|error| error.to_string())?;
+    }
+    if promoted_link_fixture && !reopened {
+        app.host.seed_link_promotion_fixture().map_err(|error| error.to_string())?;
     }
     let history = history::HistoryControls::load(&mut app, capture_store).await?;
     app.host
@@ -243,7 +250,7 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         reopened,
         inspection_fixture,
         link_rest_fixture,
-        link_family_assertion_fixture,
+        link_family_assertion_fixture: link_family_assertion_fixture || promoted_link_fixture,
         link_history_fixture,
         intake_open: false,
         intake_address: TextInput::new(""),

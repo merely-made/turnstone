@@ -919,6 +919,8 @@ impl Product for TreeLane {
         #[cfg(feature = "product")]
         let snapshot = link_inspection::fields(page, snapshot);
         #[cfg(feature = "product")]
+        let snapshot = super::promoted_links::fields(page, snapshot);
+        #[cfg(feature = "product")]
         let snapshot = field_inspection::fields(page, &canvas, snapshot);
         #[cfg(feature = "product")]
         let snapshot = coupling::fields(page, snapshot);
@@ -1954,14 +1956,19 @@ impl Product for TreeLane {
             let words = action_spec.split_whitespace().collect::<Vec<_>>();
             let (assertion_id, action) = match words.as_slice() {
                 [id] => (*id, "inspect"),
-                [id, action @ ("inspect" | "hide")] => (*id, *action),
-                _ => return Err("click-link-rest-assertion wants '<id> [inspect|hide]'".into()),
+                [id, action @ ("inspect" | "hide" | "withdraw")] => (*id, *action),
+                _ => {
+                    return Err(
+                        "click-link-rest-assertion wants '<id> [inspect|hide|withdraw]'".into(),
+                    );
+                },
             };
             // Selector holds one attribute predicate. Use the independent
             // accessible-name filter for the action so the exact ID survives.
             let action_label = match action {
                 "inspect" => "Inspect assertion",
                 "hide" => "Hide this assertion from the view",
+                "withdraw" => "Withdraw this personal assertion",
                 _ => unreachable!("action was checked above"),
             };
             let selector = Selector::role("button")

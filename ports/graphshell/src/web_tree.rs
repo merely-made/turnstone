@@ -453,6 +453,8 @@ pub(crate) struct TreePage {
     #[cfg(feature = "product")]
     query_views: query_view::Pane,
     #[cfg(feature = "product")]
+    promoted_links: promoted_links::Pane,
+    #[cfg(feature = "product")]
     dynamics_inspector: dynamics_inspection::Pane,
     #[cfg(feature = "product")]
     node_presentation: node_presentation::Pane,
@@ -895,6 +897,8 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(presentation::section(page));
     #[cfg(feature = "product")]
     children.push(query_view::section(page));
+    #[cfg(feature = "product")]
+    children.push(promoted_links::section(page));
     #[cfg(feature = "product")]
     children.push(node_presentation::section(page));
     #[cfg(feature = "product")]
@@ -1488,6 +1492,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 #[cfg(feature = "product")]
                 query_views: query_view::Pane::default(),
                 #[cfg(feature = "product")]
+                promoted_links: promoted_links::Pane::default(),
+                #[cfg(feature = "product")]
                 dynamics_inspector: dynamics_inspection::Pane::default(),
                 #[cfg(feature = "product")]
                 node_presentation: node_presentation::Pane::default(),
@@ -1742,6 +1748,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             #[cfg(feature = "product")]
             if query_view::ready(ctx.runner.state()) {
                 ctx.runner.update(query_view::poll);
+            }
+            #[cfg(feature = "product")]
+            if promoted_links::ready(ctx.runner.state()) {
+                ctx.runner.update(promoted_links::poll);
             }
             #[cfg(feature = "product")]
             field_inspection::reveal(ctx);
@@ -2003,6 +2013,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             if let Some(slot) = query_view::focused_text(runner) {
                 return Some(slot);
             }
+            #[cfg(feature = "product")]
+            if let Some(slot) = promoted_links::focused_text(runner) {
+                return Some(slot);
+            }
             appearance::focused_text(runner)
         }),
         key_intercept: Box::new(|_runner, _press| false),
@@ -2164,6 +2178,8 @@ mod product;
 mod product;
 #[cfg(feature = "product")]
 mod query_view;
+#[cfg(feature = "product")]
+mod promoted_links;
 #[cfg(feature = "product")]
 mod reading;
 #[cfg(feature = "remote")]

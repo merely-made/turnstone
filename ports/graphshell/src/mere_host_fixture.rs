@@ -38,6 +38,28 @@ const LINK_REST_SOURCE: &str = "urn:graphshell:fixture:link-rest";
 const LINK_FAMILY_SOURCE: &str = "urn:graphshell:fixture:link-family-assertions";
 
 impl<B: Backend + Clone> MereHost<B> {
+    /// P7 has its own browser database. Reuse the small topology, then supply
+    /// two personal, independently reasoned assertions by the journal's persona.
+    pub fn seed_link_promotion_fixture(&mut self) -> Result<(), MereHostError> {
+        self.seed_link_family_assertion_fixture()?;
+        self.mutate_product_graph(|graph| {
+            let (from, _) = graph.get_node_by_url(LINK_REST_A1_ADDRESS).expect("fixture first");
+            let (to, _) = graph.get_node_by_url(LINK_REST_B1_ADDRESS).expect("fixture second");
+            let from_id = graph.get_node(from).unwrap().id;
+            let to_id = graph.get_node(to).unwrap().id;
+            let mut edges = graph.persisted_edges_between(from, to);
+            let actor = graph.write_author().asserter_iri();
+            for edge in &mut edges {
+                for claim in edge.retained_assertions_mut() {
+                    claim.statement_id = claim.statement_id.replace("fixture:p6:family:", "fixture:p7:");
+                    claim.provenance_iri = Some(actor.clone());
+                    claim.basis.method = None;
+                }
+            }
+            apply_graph_delta(graph, GraphDelta::ReplaySetEdgesByIds { from_id, to_id, edges });
+        })
+    }
+
     /// Add a compact, source-owned link topology to a separately routed
     /// acceptance store. The four surfaces represent two Resource aliases;
     /// assertions remain ordinary exact graph statements with fixture IDs.
