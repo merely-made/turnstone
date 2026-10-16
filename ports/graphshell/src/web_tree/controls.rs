@@ -56,6 +56,8 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
         ("Set seed", CanvasCommand::SetSeed),
         ("Foreground pin", CanvasCommand::ToggleForegroundPin),
         ("Dismiss retained", CanvasCommand::DismissRetained),
+        ("Grow tile", CanvasCommand::GrowTiles),
+        ("Shrink tile", CanvasCommand::ShrinkTiles),
         (
             if paused {
                 "Play physics"
@@ -71,7 +73,9 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
         .map(|(label, command)| {
             let enabled = match command {
                 CanvasCommand::FitSelection => can_fit_selection,
-                CanvasCommand::ToggleForegroundPin => has_selection,
+                CanvasCommand::ToggleForegroundPin
+                | CanvasCommand::GrowTiles
+                | CanvasCommand::ShrinkTiles => has_selection,
                 _ => true,
             };
             let mut control = focusable_if(
@@ -464,6 +468,8 @@ pub(super) fn named_command(id: &str) -> Option<CanvasCommand> {
         "restore-recipe-seed" => Some(CanvasCommand::RestoreRecipeSeed),
         "foreground-pin" => Some(CanvasCommand::ToggleForegroundPin),
         "dismiss-retained" => Some(CanvasCommand::DismissRetained),
+        "tile-grow" => Some(CanvasCommand::GrowTiles),
+        "tile-shrink" => Some(CanvasCommand::ShrinkTiles),
         _ => None,
     }
 }

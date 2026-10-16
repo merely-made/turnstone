@@ -49,6 +49,8 @@ pub fn action(id: &str, hosted: bool) -> Option<Action> {
         "restore-recipe-seed" => Action::Canvas(CanvasCommand::RestoreRecipeSeed),
         "foreground-pin" => Action::Canvas(CanvasCommand::ToggleForegroundPin),
         "dismiss-retained" => Action::Canvas(CanvasCommand::DismissRetained),
+        "tile-grow" => Action::Canvas(CanvasCommand::GrowTiles),
+        "tile-shrink" => Action::Canvas(CanvasCommand::ShrinkTiles),
         ids::PHYSICS_TOGGLE => Action::Canvas(CanvasCommand::TogglePhysics),
         ids::VIEW_ZOOM_IN => Action::Canvas(CanvasCommand::Zoom { delta: 40.0 }),
         ids::VIEW_ZOOM_OUT => Action::Canvas(CanvasCommand::Zoom { delta: -40.0 }),
@@ -90,6 +92,8 @@ pub fn commands(available: Availability) -> CommandSet {
         ("restore-recipe-seed", "Restore recipe seed", "canvas"),
         ("foreground-pin", "Foreground pin", "node"),
         ("dismiss-retained", "Dismiss retained", "canvas"),
+        ("tile-grow", "Grow tile", "node"),
+        ("tile-shrink", "Shrink tile", "node"),
         (
             ids::PHYSICS_TOGGLE,
             if available.paused {
@@ -125,6 +129,8 @@ pub fn commands(available: Availability) -> CommandSet {
     if !available.selection && !available.locked {
         set.set_disabled("fit-selection", Some("Select a visible node first".into()));
         set.set_disabled("foreground-pin", Some("Select a node first".into()));
+        set.set_disabled("tile-grow", Some("Select a tile first".into()));
+        set.set_disabled("tile-shrink", Some("Select a tile first".into()));
     }
     set
 }
