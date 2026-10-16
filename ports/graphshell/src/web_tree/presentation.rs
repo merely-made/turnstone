@@ -273,6 +273,10 @@ fn bound(page: &TreePage, occurrence: &Occurrence) -> Result<BoundContext, Strin
             view.position_pinned = Some(canvas.arrangement_role_of(key) == Role::Pinned);
             view.inspected = page.inspected_access == Some(*member);
             view.screen_size = canvas.node_presentation_screen_size(*member);
+            view.set_attention(
+                canvas.member_attention(*member),
+                canvas.member_foreground_pinned(*member),
+            );
         },
         Occurrence::Assertion { pair, statement } => {
             view.inspected = page.inspected_link == Some(*pair)

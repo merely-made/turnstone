@@ -12,6 +12,7 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
     let resident = page.resident_mere_shown();
     let paused = page.shared.canvas.borrow().physics_paused();
     let can_fit_selection = page.shared.canvas.borrow().can_fit_selection();
+    let has_selection = !page.shared.canvas.borrow().selected_members().is_empty();
     let hosted = matches!(page.dataset, HostedDataset::Loaded(_));
     let commands = [
         (
@@ -51,6 +52,10 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
         },
         ("Fit selection", CanvasCommand::FitSelection),
         ("Restore arrangement", CanvasCommand::RestoreArrangement),
+        ("Reset", CanvasCommand::ResetToSeed),
+        ("Set seed", CanvasCommand::SetSeed),
+        ("Foreground pin", CanvasCommand::ToggleForegroundPin),
+        ("Dismiss retained", CanvasCommand::DismissRetained),
         (
             if paused {
                 "Play physics"
@@ -64,7 +69,11 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
         .into_iter()
         .filter(|_| !resident)
         .map(|(label, command)| {
-            let enabled = command != CanvasCommand::FitSelection || can_fit_selection;
+            let enabled = match command {
+                CanvasCommand::FitSelection => can_fit_selection,
+                CanvasCommand::ToggleForegroundPin => has_selection,
+                _ => true,
+            };
             let mut control = focusable_if(
                 on_click(
                     el("button", label.to_owned()),
@@ -394,6 +403,11 @@ pub(super) fn named_command(id: &str) -> Option<CanvasCommand> {
             dy: PAN_STEP,
         }),
         "physics:toggle" => Some(CanvasCommand::TogglePhysics),
+        "reset-to-seed" => Some(CanvasCommand::ResetToSeed),
+        "set-seed" => Some(CanvasCommand::SetSeed),
+        "restore-recipe-seed" => Some(CanvasCommand::RestoreRecipeSeed),
+        "foreground-pin" => Some(CanvasCommand::ToggleForegroundPin),
+        "dismiss-retained" => Some(CanvasCommand::DismissRetained),
         _ => None,
     }
 }

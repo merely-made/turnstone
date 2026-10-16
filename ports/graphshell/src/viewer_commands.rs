@@ -44,6 +44,11 @@ pub fn action(id: &str, hosted: bool) -> Option<Action> {
         }),
         "fit-selection" => Action::Canvas(CanvasCommand::FitSelection),
         "restore-arrangement" => Action::Canvas(CanvasCommand::RestoreArrangement),
+        "reset-to-seed" => Action::Canvas(CanvasCommand::ResetToSeed),
+        "set-seed" => Action::Canvas(CanvasCommand::SetSeed),
+        "restore-recipe-seed" => Action::Canvas(CanvasCommand::RestoreRecipeSeed),
+        "foreground-pin" => Action::Canvas(CanvasCommand::ToggleForegroundPin),
+        "dismiss-retained" => Action::Canvas(CanvasCommand::DismissRetained),
         ids::PHYSICS_TOGGLE => Action::Canvas(CanvasCommand::TogglePhysics),
         ids::VIEW_ZOOM_IN => Action::Canvas(CanvasCommand::Zoom { delta: 40.0 }),
         ids::VIEW_ZOOM_OUT => Action::Canvas(CanvasCommand::Zoom { delta: -40.0 }),
@@ -80,6 +85,11 @@ pub fn commands(available: Availability) -> CommandSet {
         ),
         ("fit-selection", "Fit selection", "node"),
         ("restore-arrangement", "Restore arrangement", "canvas"),
+        ("reset-to-seed", "Reset", "canvas"),
+        ("set-seed", "Set seed", "canvas"),
+        ("restore-recipe-seed", "Restore recipe seed", "canvas"),
+        ("foreground-pin", "Foreground pin", "node"),
+        ("dismiss-retained", "Dismiss retained", "canvas"),
         (
             ids::PHYSICS_TOGGLE,
             if available.paused {
@@ -114,6 +124,7 @@ pub fn commands(available: Availability) -> CommandSet {
     }
     if !available.selection && !available.locked {
         set.set_disabled("fit-selection", Some("Select a visible node first".into()));
+        set.set_disabled("foreground-pin", Some("Select a node first".into()));
     }
     set
 }
