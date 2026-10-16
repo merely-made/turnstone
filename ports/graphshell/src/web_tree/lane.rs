@@ -1957,9 +1957,16 @@ impl Product for TreeLane {
                 [id, action @ ("inspect" | "hide")] => (*id, *action),
                 _ => return Err("click-link-rest-assertion wants '<id> [inspect|hide]'".into()),
             };
+            // Selector holds one attribute predicate. Use the independent
+            // accessible-name filter for the action so the exact ID survives.
+            let action_label = match action {
+                "inspect" => "Inspect assertion",
+                "hide" => "Hide this assertion from the view",
+                _ => unreachable!("action was checked above"),
+            };
             let selector = Selector::role("button")
-                .with_attr("data-assertion-id", assertion_id)
-                .with_attr("data-assertion-action", action);
+                .containing(action_label)
+                .with_attr("data-assertion-id", assertion_id);
             let projection = ctx
                 .a11y_projection()
                 .ok_or("shared assertion action projection is unavailable")?;
