@@ -2114,15 +2114,17 @@ mod tests {
             assert!(statement.withdrawn.is_none());
         }
 
-        let collection_id = held
+        let collection_ids: Vec<_> = authored_held
             .iter()
-            .find(|statement| {
+            .filter(|statement| {
                 statement.relation_kind()
                     == RelationKind::Containment(ContainmentSubKind::CollectionMember)
             })
-            .unwrap()
-            .statement_id
-            .clone();
+            .map(|statement| statement.statement_id.clone())
+            .collect();
+        assert_eq!(collection_ids.len(), 2);
+        let collection_id = collection_ids[0].clone();
+        let sibling_id = collection_ids[1].clone();
         replica
             .author(vec![PersonalGraphEvent::RetractAssertion {
                 from: A,
@@ -2146,10 +2148,28 @@ mod tests {
             baseline,
             "withdrawing one new assertion preserves both prior signed citations exactly"
         );
-        assert_eq!(
-            history.graph.find_assertion(&ids[0]).unwrap().1.withdrawn,
-            None
+        assert!(
+            history
+                .graph
+                .find_assertion(&sibling_id)
+                .unwrap()
+                .1
+                .is_held()
         );
+        for before in authored_held
+            .iter()
+            .filter(|claim| claim.statement_id != collection_id)
+        {
+            assert_eq!(
+                history
+                    .graph
+                    .find_assertion(&before.statement_id)
+                    .unwrap()
+                    .1,
+                before,
+                "withdrawing one exact reason preserves every other authored record"
+            );
+        }
 
         let receiver = PersonalGraphReplica::new(
             MemoryBackend::new(),
@@ -2177,8 +2197,8 @@ mod tests {
             Some(alice.as_str())
         );
         assert_eq!(
-            replayed.graph.find_assertion(&ids[0]).unwrap().1,
-            history.graph.find_assertion(&ids[0]).unwrap().1
+            replayed.graph.find_assertion(&sibling_id).unwrap().1,
+            history.graph.find_assertion(&sibling_id).unwrap().1
         );
     }
 
