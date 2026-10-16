@@ -143,11 +143,22 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
                         .collect::<Vec<_>>()
                         .join("|"),
                 )
+                .with_field(
+                    "link-inspector-history-inspectable-ids",
+                    history
+                        .entries
+                        .iter()
+                        .filter(|entry| entry.assertion.withdrawn.is_none())
+                        .map(|entry| entry.assertion.id.as_str())
+                        .collect::<Vec<_>>()
+                        .join("|"),
+                )
                 .with_field("link-inspector-history-error", ""),
             Err(error) => snapshot
                 .with_field("link-inspector-history-ready", "false")
                 .with_field("link-inspector-history-count", "0")
                 .with_field("link-inspector-history-ids", "")
+                .with_field("link-inspector-history-inspectable-ids", "")
                 .with_field("link-inspector-history-error", error),
         }
     } else {
@@ -155,6 +166,7 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
             .with_field("link-inspector-history-ready", "false")
             .with_field("link-inspector-history-count", "0")
             .with_field("link-inspector-history-ids", "")
+            .with_field("link-inspector-history-inspectable-ids", "")
             .with_field("link-inspector-history-error", "")
     };
     let snapshot = snapshot
@@ -392,8 +404,8 @@ fn render_history(history: LinkHistoryInspection, children: &mut Vec<Child>) {
             ),
             DetailRow::new("Source stratum", format!("{:?}", entry.owner.stratum)),
             DetailRow::new(
-                "First → lifecycle end",
-                format!("{first} → {lifecycle_end}"),
+                "First to lifecycle end",
+                format!("{first} to {lifecycle_end}"),
             ),
             DetailRow::new(
                 "Withdrawal by",

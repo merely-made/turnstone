@@ -119,6 +119,7 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         return Err("app=local cannot also select a generated graph".into());
     }
     let inspection_fixture = params.get("fixture").as_deref() == Some("field-inspection");
+    let link_history_fixture = params.get("fixture").as_deref() == Some("link-history");
     let query_fixture = params.get("fixture").as_deref() == Some("retained-content-query");
     let retained_fixture =
         query_fixture || params.get("fixture").as_deref() == Some("retained-content");
@@ -128,6 +129,8 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         "graphshell-retained-content-acceptance"
     } else if inspection_fixture {
         "graphshell-field-inspection-draft-v1"
+    } else if link_history_fixture {
+        "graphshell-link-history-p2-v1"
     } else {
         "graphshell-reference-host-h5"
     };
@@ -146,6 +149,11 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     }
     .map_err(|error| error.to_string())?;
     let reopened = app.host.was_reopened();
+    if link_history_fixture && !reopened {
+        app.host
+            .seed_link_history_fixture()
+            .map_err(|error| error.to_string())?;
+    }
     let history = history::HistoryControls::load(&mut app, capture_store).await?;
     app.host
         .persist(now_secs())

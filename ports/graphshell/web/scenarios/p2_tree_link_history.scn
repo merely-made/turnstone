@@ -1,0 +1,85 @@
+# Isolated link lifecycle fixture; reference-host and P4 fixtures are unchanged.
+# tree.html?app=local&fixture=link-history&scenario=scenarios/p2_tree_link_history.scn
+assert snap source == saved graph
+assert snap link-inspector-open == false
+click-node file:///Graphshell/reference-notes.md
+settle 2
+remember selected
+click role:button Inspect selected access
+settle 2
+click role:button Inspect links: I2P port notes
+settle 2
+assert snap link-inspector-open == true
+assert snap link-inspector-ready == true
+assert snap link-inspector-scope == held
+assert snap link-inspector-records == 1
+assert snap link-inspector-statements == 2
+same selected detail-member
+same selected forme
+same selected forme-accesses
+capture p2_link_history_held_default
+
+# The default scope is held-only. The toggle exposes the retained tombstones.
+click role:button Show retained history
+settle 2
+assert snap link-inspector-scope == history
+assert snap link-inspector-history-ready == true
+assert snap link-inspector-history-count == 4
+assert snap link-inspector-history-ids == fixture:p2:link-history:withdrawn-timed|fixture:p2:link-history:held-dated|fixture:p2:link-history:withdrawn-undated|fixture:p2:link-history:held-undated
+# Only currently held entries receive an exact-inspection action.
+assert snap link-inspector-history-inspectable-ids == fixture:p2:link-history:held-dated|fixture:p2:link-history:held-undated
+assert text First to lifecycle end
+assert text 1000
+assert text 2000
+assert text 3000
+assert text 2500
+assert text 3100
+assert text withdrawn at 1200
+assert text withdrawn; time unavailable
+assert text No confirmation time held
+assert text Dated held basis
+assert text urn:graphshell:link-history:method:dated (p2-fixture-v1)
+assert text urn:graphshell:link-history:evidence:dated
+assert text Timed withdrawal basis
+assert text urn:graphshell:link-history:method:timed (p2-fixture-v1)
+assert text urn:graphshell:link-history:evidence:timed
+assert text Undated withdrawal basis
+assert text urn:graphshell:link-history:method:undated (p2-fixture-v1)
+assert text urn:graphshell:link-history:evidence:undated
+assert text Undated held basis
+assert text urn:graphshell:link-history:method:legacy (p2-fixture-v1)
+assert text urn:graphshell:link-history:evidence:legacy
+same selected detail-member
+same selected forme
+same selected forme-accesses
+capture p2_link_history_retained
+
+# Exact inspection remains available for a held row and names its stable handle.
+click role:button Inspect held assertion 2
+settle 2
+assert snap assertion-inspector-open == true
+assert snap assertion-inspector-handle == fixture:p2:link-history:held-dated
+same selected detail-member
+same selected forme
+same selected forme-accesses
+click role:button Close assertion inspection
+settle 2
+assert snap assertion-inspector-open == false
+assert snap link-inspector-scope == history
+
+# Switching back restores the two held records without changing selection or workbench membership.
+click role:button Show held assertions
+settle 2
+assert snap link-inspector-scope == held
+assert snap link-inspector-ready == true
+assert snap link-inspector-statements == 2
+same selected detail-member
+same selected forme
+same selected forme-accesses
+click role:button Close link inspection
+settle 2
+assert snap link-inspector-open == false
+same selected detail-member
+same selected forme
+same selected forme-accesses
+log link history default scope, chronology, lifecycle disclosures, and held-only action passed

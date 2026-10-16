@@ -16,8 +16,9 @@ use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert
 use mere::kernel::graph::{
     ArrangementSubKind, ContainmentSubKind, Coupling, CouplingId, CouplingResponse, EdgeAssertion,
     Field, FieldDefinition, FieldExtent, FieldId, FieldLifecycle, Graph, NodeKey, NodeSelector,
-    ProvenanceSubKind, ScalarField, SemanticSubKind, VectorField,
+    ProvenanceSubKind, ScalarField, SemanticStatement, SemanticSubKind, VectorField,
 };
+use mere::kernel::types::{AssertionBasis, AssertionMethod, GraphScope};
 use muniment::Backend;
 use serde_json::json;
 
@@ -31,6 +32,116 @@ use crate::mere_host::{
 };
 
 impl<B: Backend + Clone> MereHost<B> {
+    /// Replace the reference pair's demo assertion with a deterministic
+    /// lifecycle fixture. The browser route gives this fixture its own store.
+    pub fn seed_link_history_fixture(&mut self) -> Result<(), MereHostError> {
+        self.mutate_product_graph(|graph| {
+            let (web, _) = graph
+                .get_node_by_url(FIXTURE_WEB_ADDRESS)
+                .expect("reference web node is present");
+            let (file, _) = graph
+                .get_node_by_url(FIXTURE_FILE_ADDRESS)
+                .expect("reference file node is present");
+
+            // The normal reference fixture has one Cites assertion on this
+            // pair. Replace only its isolated fixture buckets so the history
+            // has exactly the four explicit records below.
+            let web_id = graph.get_node(web).expect("web node").id;
+            let file_id = graph.get_node(file).expect("file node").id;
+            apply_graph_delta(
+                graph,
+                GraphDelta::ReplaySetEdgesByIds {
+                    from_id: web_id,
+                    to_id: file_id,
+                    edges: Vec::new(),
+                },
+            );
+            let web_resource = graph.shown_resource_id(web).expect("web resource");
+            let file_resource = graph.shown_resource_id(file).expect("file resource");
+            apply_graph_delta(
+                graph,
+                GraphDelta::ReplaySetResourceEdgesByIds {
+                    from_resource_id: web_resource,
+                    to_resource_id: file_resource,
+                    edges: Vec::new(),
+                },
+            );
+
+            let predicate = mere::kernel::graph::predicate_iri(SemanticSubKind::Cites).to_owned();
+            let rows = [
+                (
+                    "fixture:p2:link-history:withdrawn-timed",
+                    Some(1_000),
+                    Some(1_100),
+                    "Timed withdrawal basis",
+                    "urn:graphshell:link-history:method:timed",
+                    "urn:graphshell:link-history:evidence:timed",
+                    Some(Some(1_200)),
+                ),
+                (
+                    "fixture:p2:link-history:held-dated",
+                    Some(2_000),
+                    Some(2_500),
+                    "Dated held basis",
+                    "urn:graphshell:link-history:method:dated",
+                    "urn:graphshell:link-history:evidence:dated",
+                    None,
+                ),
+                (
+                    "fixture:p2:link-history:withdrawn-undated",
+                    Some(3_000),
+                    Some(3_100),
+                    "Undated withdrawal basis",
+                    "urn:graphshell:link-history:method:undated",
+                    "urn:graphshell:link-history:evidence:undated",
+                    Some(None),
+                ),
+                (
+                    "fixture:p2:link-history:held-undated",
+                    None,
+                    None,
+                    "Undated held basis",
+                    "urn:graphshell:link-history:method:legacy",
+                    "urn:graphshell:link-history:evidence:legacy",
+                    None,
+                ),
+            ];
+            for (id, first, last, note, method, evidence, withdrawal) in rows {
+                let statement = SemanticStatement {
+                    statement_id: id.into(),
+                    predicate: predicate.clone(),
+                    recognized_sub_kind: Some(SemanticSubKind::Cites),
+                    label: Some(note.into()),
+                    basis: AssertionBasis {
+                        note: Some(note.into()),
+                        method: Some(AssertionMethod {
+                            iri: method.into(),
+                            version: Some("p2-fixture-v1".into()),
+                        }),
+                        evidence: vec![evidence.into()],
+                    },
+                    graph_scope: GraphScope::Default,
+                    provenance_iri: Some("urn:graphshell:fixture:link-history".into()),
+                    first_asserted_ms: first,
+                    asserted_at_ms: last,
+                    withdrawn: None,
+                };
+                graph
+                    .try_assert_persisted_semantic_statement(web, file, statement)
+                    .expect("fixture assertion handles are unique and pair-valid");
+                if let Some(at_ms) = withdrawal {
+                    graph.apply_imported_semantic_withdrawal_for_pair(
+                        web,
+                        file,
+                        id,
+                        at_ms,
+                        Some("urn:graphshell:fixture:link-history:withdrawal".into()),
+                    );
+                }
+            }
+        })
+    }
+
     /// Opt-in inspection data. Callers must use a separate fixture store.
     pub fn field_inspection_fixture(
         backend: B,
