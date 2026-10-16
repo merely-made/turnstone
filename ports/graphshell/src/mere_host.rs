@@ -81,6 +81,10 @@ pub const FIXTURE_DEVICE_TWO_ADDRESS: &str = "personae://device/phone";
 pub const FIXTURE_KEY_ADDRESS: &str = "personae://key/ssh-ed25519/test";
 pub const FIXTURE_GRANT_ADDRESS: &str = "personae://grant/open-addresses";
 pub const FIXTURE_RECEIPT_ADDRESS: &str = "personae://receipt/signing/test";
+pub const LINK_REST_A1_ADDRESS: &str = "https://link-rest.fixture/a/first";
+pub const LINK_REST_A2_ADDRESS: &str = "https://link-rest.fixture/a/alias";
+pub const LINK_REST_B1_ADDRESS: &str = "https://link-rest.fixture/b/first";
+pub const LINK_REST_B2_ADDRESS: &str = "https://link-rest.fixture/b/alias";
 pub const UNKNOWN_FIXTURE_FACET: &str = "future.graphshell.transport-route/v7";
 
 /// Public identity selection injected by the host.

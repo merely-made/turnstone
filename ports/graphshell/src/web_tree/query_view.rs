@@ -91,7 +91,7 @@ fn presented_links(projection: &QueryProjection) -> Vec<PresentedLink> {
         ) else {
             continue;
         };
-        let key = LinkKey::new(stratum, from, to);
+        let key = LinkKey::new(stratum, &from, &to);
         let entry = grouped.entry(key.clone()).or_insert_with(|| Accumulator {
             presented: PresentedLink {
                 key: key.clone(),

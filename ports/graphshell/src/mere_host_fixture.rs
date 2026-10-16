@@ -29,13 +29,10 @@ use crate::mere_host::{
     FIXTURE_DEVICE_ONE_ADDRESS, FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_FILE_ADDRESS,
     FIXTURE_GRANT_ADDRESS, FIXTURE_KEY_ADDRESS, FIXTURE_NON_WEB_ADDRESS, FIXTURE_PERSONA_ADDRESS,
     FIXTURE_RECEIPT_ADDRESS, FIXTURE_REMOTE_ADDRESS, FIXTURE_SCENE_ADDRESS, FIXTURE_WEB_ADDRESS,
+    LINK_REST_A1_ADDRESS, LINK_REST_A2_ADDRESS, LINK_REST_B1_ADDRESS, LINK_REST_B2_ADDRESS,
     MereHost, MereHostError, SelectedPersonaRef, UNKNOWN_FIXTURE_FACET,
 };
 
-pub(crate) const LINK_REST_A1_ADDRESS: &str = "https://link-rest.fixture/a/first";
-pub(crate) const LINK_REST_A2_ADDRESS: &str = "https://link-rest.fixture/a/alias";
-pub(crate) const LINK_REST_B1_ADDRESS: &str = "https://link-rest.fixture/b/first";
-pub(crate) const LINK_REST_B2_ADDRESS: &str = "https://link-rest.fixture/b/alias";
 const LINK_REST_SOURCE: &str = "urn:graphshell:fixture:link-rest";
 
 impl<B: Backend + Clone> MereHost<B> {
