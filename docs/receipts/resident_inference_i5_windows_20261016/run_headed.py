@@ -116,6 +116,8 @@ def main():
                     raise RuntimeError(f"{scenario} failed: exit={code}\n{done}")
                 (control / ("restart.request" if phase == 0 else "stop.request")).write_text("ready\n")
                 if phase == 0:
+                    web.shutdown()
+                    web.server_close()
                     wait_file(control / "ready-1.json", host)
             if host.wait(timeout=60):
                 raise RuntimeError("Resident assertions failed")
@@ -142,6 +144,7 @@ def main():
         "scenarios": {name: sha(HERE / f"{name}.scn") for name in ("answer", "reopen")},
         "harness_sha256": sha(Path(__file__)),
         "fixture_notes": NOTES,
+        "origin_stopped_before_reopen": True,
         "boundary": "Separate headed Turnstone and in-process native Djinn resident; pinned trained GPU model; actual app connection; public fictional retained text",
     }
     (destination / "execution.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")

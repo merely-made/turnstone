@@ -1,12 +1,10 @@
 # Same retained session, a fresh resident and a fresh Turnstone process.
 settle 100
 key escape
-act Ask retained text
-settle 100
-settle 30
 assert text Connected to resident inference.
 assert text Past asks
 click surface:contributed role:button Reopen: What is the Pelican observatory's access word? Answer in one short sen (Finished)
+act Maximize pane
 settle 30
 assert text Finished
 assert text amberstone
