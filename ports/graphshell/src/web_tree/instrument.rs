@@ -16,7 +16,7 @@ pub(super) const SHEET: &str = r#"
 .tree-instrument > .cambium-title-bar h1 { margin:0; font-size:17px; font-weight:500; }
 .tree-instrument .workspace-app-context { margin:2px 0 0; font-size:12px; color:var(--workspace-muted); }
 .tree-instrument .workspace-app-identity { display:flex; flex-direction:column; }
-.tree-instrument .workspace-brand { font-size:14px; font-weight:500; color:var(--workspace-accent); }
+.tree-instrument .workspace-brand { font-size:14px; font-weight:500; color:var(--tabard-color-accent, var(--workspace-accent)); }
 .tree-instrument .tree-status { color:var(--workspace-muted); font-size:12px; }
 .tree-instrument .tree-controls { padding:6px 12px; border-bottom:1px solid var(--workspace-rule); }
 .tree-instrument > .tree-product { position:static; flex:0 0 auto; max-width:none; max-height:140px; overflow-y:auto; padding:6px 12px; border-bottom:1px solid var(--workspace-rule); }

@@ -120,7 +120,9 @@ pub(super) fn view(page: &TreePage) -> Option<Child> {
         )));
     }
     Some(Box::new(
-        el("section", children).attr("aria-label", "Application appearance"),
+        el("section", children)
+            .attr("class", "tree-appearance")
+            .attr("aria-label", "Application appearance"),
     ))
 }
 

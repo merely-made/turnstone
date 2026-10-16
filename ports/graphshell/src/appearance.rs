@@ -255,13 +255,13 @@ pub const ROLE_STYLESHEET: &str = r#"
 .shell, main { color:var(--tabard-color-text); }
 main { background-color:var(--tabard-color-bg); }
 .topbar, .rail, .remote-card, .tree-tools, .detail, .session-card, .proof, .product-proof { background-color:var(--tabard-color-surface); color:var(--tabard-color-text); border-color:var(--tabard-color-text-dim); }
-.pill, .tree-controls button, .tree-tools button, .tree-product button, .select-box, .select-list, .tree-product [data-cambium-text-value], .tree-rules [data-cambium-text-value], .tree-detail, .preview-card { background-color:var(--tabard-color-surface-2); color:var(--tabard-color-text); border-color:var(--tabard-color-text-dim); }
+.pill, .tree-controls button, .tree-tools button, .tree-product button, .select-box, .select-list, .tree-product [data-cambium-text-value], .tree-rules [data-cambium-text-value], .tree-appearance [data-cambium-text-value], .tree-detail, .preview-card { background-color:var(--tabard-color-surface-2); color:var(--tabard-color-text); border-color:var(--tabard-color-text-dim); }
 .pill.active, .tools-switch button[aria-pressed=true], .preview-card.selected { background-color:var(--tabard-color-tertiary); color:var(--tabard-color-on-tertiary); border-color:var(--tabard-color-primary); }
 .action, .action-submit { background-color:var(--tabard-color-primary); color:var(--tabard-color-on-primary); }
 .brand, .session-name, .selection, .detail-title, .remote-card-title, .action-form-title, .action-field-label, .product-status, .card-title, .tools-active, .tools-cards, .preview-title { color:var(--tabard-color-text); }
 .subtitle, .hint, .eyebrow, .address, .action-help, .action-choice, .proof-copy, .tools-caption, .tree-tools .tools-caption, .tools-status, .tools-storage, .tools-note, .card-detail, .preview-status { color:var(--tabard-color-text-dim); }
 .preview-card.selected .card-title, .preview-card.selected .card-detail { color:var(--tabard-color-on-tertiary); }
-.action-choice.selected, .remote-card-kicker { color:var(--tabard-color-primary); }
+.action-choice.selected, .remote-card-kicker { color:var(--tabard-color-accent, var(--tabard-color-primary)); }
 .action-form, .tools-section + .tools-section { border-color:var(--tabard-color-text-dim); }
 .action-form-error { color:var(--tabard-color-danger); }
 .action-status, .proof-pass { color:var(--tabard-color-success); }
