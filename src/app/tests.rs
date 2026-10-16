@@ -2253,10 +2253,15 @@ fn fork_session_snapshots_the_component_with_its_facets() {
     assert_ne!(fork_id, donor_session);
     let fork_manifest = app.sessions.get(fork_id).expect("fork manifest inserted");
     assert_eq!(
-        fork_manifest.parent_session,
+        fork_manifest.picked_from.as_ref().map(|picked| picked.session),
         Some(donor_session),
-        "the weak parent back-reference"
+        "a torn-out session records where it was picked from"
     );
+    assert_eq!(
+        fork_manifest.picked_from.as_ref().map(|picked| picked.container),
+        Some(donor_container)
+    );
+    assert_eq!(fork_manifest.parent_session, None, "a pick is not a fork");
     assert_ne!(
         fork_manifest.root_graph_id,
         crate::panes::GraphId::from_uuid(donor_container),
@@ -6120,10 +6125,10 @@ fn dr_c_turnstone_identity_stays_pending() {
     let mode = std::env::var("DR_C_RECEIPT_MODE").expect("receipt mode");
     assert!(mode == "absent" || mode == "locked");
     if mode == "locked" {
-        let mut client = graphshell::native::custody_client::BlockingCustodyClient::open(
-            graphshell::native::app_admission::AppId::new(crate::identity::CUSTODY_APP)).unwrap();
+        let mut client = graphshell_endpoint::door::custody_client::BlockingCustodyClient::open(
+            graphshell_endpoint::door::app_admission::AppId::new(crate::identity::CUSTODY_APP)).unwrap();
         let status = client.status().unwrap();
-        assert_eq!(status.lock, graphshell::identity::VaultLockView::Locked);
+        assert_eq!(status.lock, graphshell_endpoint::door::identity::VaultLockView::Locked);
         assert!(status.persona_public_key.is_none());
         assert!(!client.roster().unwrap().entries.is_empty());
     }

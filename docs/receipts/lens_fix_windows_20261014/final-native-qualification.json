@@ -1,0 +1,1341 @@
+{
+  "status": "passed",
+  "machine": "o-pc",
+  "os": "windows",
+  "qualified_source": "b0b709a5",
+  "head": "f14d20917b7f682f39b1e87baa130fed65299671",
+  "local_path_override": false,
+  "mere": "77fd235fe659c513dd0463ed57be32f02fb2e71a",
+  "genet": "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084",
+  "netrender": "6a24ae08f55129b474282b8e4911564f875ce5fd",
+  "executable": {
+    "lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+    "executable": "C:/t/cargo-targets/turnstone/debug/turnstone.exe",
+    "manifest_sha256": "85f66cb16eb0610dd7747e7eff0b18b6fb168b60d26e51211a7d28e587b462e9",
+    "finished_utc": "2026-10-15T03:29:34.8303849Z",
+    "sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e"
+  },
+  "published_cases_passed": 14,
+  "published_primary_and_lens_pngs": 40,
+  "inferred_original_five_passed": 5,
+  "inferred_original_five_pngs": 11,
+  "inferred_original_five_reading": "Reading, not ruled: no doc names the original five; identified as document_a11y_{gemini,gopher,micron,lens} + reader_appearance by their eleven captures, the lens label assertion and serve.py's Reader port.",
+  "cases": [
+    {
+      "scenario": "a4_inline_components",
+      "case": "fixed-a4-scoped",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:53:14.6791929Z",
+      "finished_utc": "2026-10-15T03:53:56.1845167Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "bac82d218f49cf01a7af9acad90e128751ba4249db263199e0a9329992982d72",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "published",
+      "presented_primary_frames": 115,
+      "primary_ledger_captures": 4,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-a4-scoped/captures/a4_inline_components/00_inline_nodes.png",
+          "sha256": "dd7c30d65a16f5e8d2e9aa45dbcb5bee935b5908de45c55b86b49f80c2646da3",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        },
+        {
+          "path": "native/fixed-a4-scoped/captures/a4_inline_components/01_inline_roster.png",
+          "sha256": "77e112b32e3a4d07259b83bbe3d8de1d2c23973fcf023977a4bdf7e03c725e8c",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        },
+        {
+          "path": "native/fixed-a4-scoped/captures/a4_inline_components/02_inline_float.png",
+          "sha256": "b9b86c482f80459e3c39efbe75ab5cc541b8d2c3abf40d6b9055e6ec51b6995f",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        },
+        {
+          "path": "native/fixed-a4-scoped/captures/a4_inline_components/03_inline_lens.png",
+          "sha256": "1090a2e7dfc6d0549c2f6e197c91dd3e3b0990df3ecb0a66f5c1e43cf77eafb5",
+          "dimensions": [
+            800,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-a4-scoped/captures/a4_inline_components/04_inline_returned.png",
+          "sha256": "b9b86c482f80459e3c39efbe75ab5cc541b8d2c3abf40d6b9055e6ec51b6995f",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "a5_floating_pane",
+      "case": "fixed-a5",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:54:50.3581632Z",
+      "finished_utc": "2026-10-15T03:56:03.8996923Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "ae6e29ee85278b65d3dd78669d9ce1ec5caa03508a6fcbdc13be68a13b8ed1fc",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "published",
+      "presented_primary_frames": 176,
+      "primary_ledger_captures": 6,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-a5/captures/a5_floating_pane/01_gloss_float.png",
+          "sha256": "a3afb8e56ab1c6a5f1af80718c05f441e172370ed1c6f230a3564f59924bb4f9",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-a5/captures/a5_floating_pane/02_gloss_raised.png",
+          "sha256": "bf4ce99448bb016d890794ddc2e1e233aa2a217ea5a217b73603b72eda8ac88f",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-a5/captures/a5_floating_pane/03_gloss_docked_nested.png",
+          "sha256": "4bd4ea41482a66a79f07cf566ed5835cd12c61bd5994e9746237dd57effe3317",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-a5/captures/a5_floating_pane/04_primary_after_tearout.png",
+          "sha256": "fb0d049924df1470f21cbe7cf0c682fb54281aa5352344a8dea75cb0680498ca",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-a5/captures/a5_floating_pane/05_gloss_float_in_lens.png",
+          "sha256": "54d62782d24e205221c570508c53b1dc52a8523069c6b0b5dc48c8de4eb03e3e",
+          "dimensions": [
+            800,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-a5/captures/a5_floating_pane/06_gloss_returned_float.png",
+          "sha256": "c9a924e90ebcc1f01618ce7fa79476b6fb342b722de79ea57c2fd3b3f26a94be",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-a5/captures/a5_floating_pane/07_gloss_returned_docked.png",
+          "sha256": "4bd4ea41482a66a79f07cf566ed5835cd12c61bd5994e9746237dd57effe3317",
+          "dimensions": [
+            1024,
+            600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "frame_controls_accessibility",
+      "case": "fixed-accessibility",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:52:46.3696310Z",
+      "finished_utc": "2026-10-15T03:53:07.7812029Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "2341d550f75518080a3d8a873fed52cdb037e1e72bddbec2798afa058fa0e930",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "published",
+      "presented_primary_frames": 53,
+      "primary_ledger_captures": 2,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-accessibility/captures/frame_controls_accessibility/frame_accessible_close.png",
+          "sha256": "425f7e8b21e8c8d9f89a93308e4b53fb526020c0001b2c4ead64a2ea183110fb",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        },
+        {
+          "path": "native/fixed-accessibility/captures/frame_controls_accessibility/frame_accessible_resize.png",
+          "sha256": "ee4c8c6f4dd7706562afc7f7d79f935c75b06363da42d9d5ad14f8a59ad113b8",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "frame_controls_reopen",
+      "case": "fixed-accessibility",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:53:08.5258967Z",
+      "finished_utc": "2026-10-15T03:53:13.8689819Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "fa9ebb912a928f127bef7fe18afb1ab94be8281823fb6569ccc39a605c4066de",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "published",
+      "presented_primary_frames": 40,
+      "primary_ledger_captures": 1,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-accessibility/captures/frame_controls_reopen/frame_last_pane_refusal.png",
+          "sha256": "1ce8dd902b474be93d46e8219c13b85f46042051779a09ebd6bc6341495a6b29",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "a4_native_overlap",
+      "case": "fixed-alpha",
+      "workshop": "frame_alpha_workshop",
+      "started_utc": "2026-10-15T03:53:56.9135910Z",
+      "finished_utc": "2026-10-15T03:54:49.6603875Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "973f8fcd89d06a9aad359b501a371e3948c80b51726b52d3d3bb94396bf966e0",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "published",
+      "presented_primary_frames": 160,
+      "primary_ledger_captures": 4,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-alpha/captures/a4_native_overlap/01_inline_alpha_over_native_graph.png",
+          "sha256": "8afe10c1d93ccf8ddf09d4c36e594c668c7117f610d9eabcdab40bb7e5470b8c",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        },
+        {
+          "path": "native/fixed-alpha/captures/a4_native_overlap/02_native_alpha_over_inline_body.png",
+          "sha256": "8df15aaa26ec18b01da3d3e03d5163b6f694f1c2fd1b45e5d108cc7928b08f70",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        },
+        {
+          "path": "native/fixed-alpha/captures/a4_native_overlap/03_overlap_resized.png",
+          "sha256": "20760c120e506ee985d645b9c12322afd1edba996116fd069bd9c965ecfebf05",
+          "dimensions": [
+            1800,
+            1300
+          ]
+        },
+        {
+          "path": "native/fixed-alpha/captures/a4_native_overlap/04_overlap_settled.png",
+          "sha256": "8df15aaa26ec18b01da3d3e03d5163b6f694f1c2fd1b45e5d108cc7928b08f70",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "document_a11y_gemini",
+      "case": "fixed-five-gemini",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:58:50.4517874Z",
+      "finished_utc": "2026-10-15T03:59:03.6593900Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "d0d1468b29910f3e349452e272979b27f48c641fcc5a33f73cdc1a6a568bb35c",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "inferred_original_five",
+      "presented_primary_frames": 131,
+      "primary_ledger_captures": 1,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-five-gemini/captures/document_a11y_gemini/gemini_document_a11y.png",
+          "sha256": "75f12187d957b26f4f420f1950141909ca77a35a47d3624133270a035a7e54de",
+          "dimensions": [
+            1024,
+            600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "document_a11y_gopher",
+      "case": "fixed-five-gopher",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:59:04.4302090Z",
+      "finished_utc": "2026-10-15T03:59:16.6012277Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "c33d0c69ac829ad83816b772ec7fba0b6c16a6c20acd9032158bb3b7d080fa42",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "inferred_original_five",
+      "presented_primary_frames": 131,
+      "primary_ledger_captures": 1,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-five-gopher/captures/document_a11y_gopher/gopher_document_a11y.png",
+          "sha256": "1837654bc0d442ece58eb1050a9700e705fe646f1c9ce8b831677402c46cf9c1",
+          "dimensions": [
+            1024,
+            600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "document_a11y_lens",
+      "case": "fixed-five-lens",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:59:34.4938318Z",
+      "finished_utc": "2026-10-15T03:59:56.9789985Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "31c23a7b55d42303ec1b4b56750a62d798b12a4c9e6b67f867777e61c132ac4a",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "inferred_original_five",
+      "presented_primary_frames": 170,
+      "primary_ledger_captures": 2,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-five-lens/captures/document_a11y_lens/a11y_lens_document.png",
+          "sha256": "1a56794083be953fe78ba224f434fdc88891baa65350974fb23b40c48b00e12a",
+          "dimensions": [
+            800,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-five-lens/captures/document_a11y_lens/a11y_primary_after_tearout.png",
+          "sha256": "af55e0266b284cddebe28014da138d6eeb61591ca2c0c8e44f70245947a7f264",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-five-lens/captures/document_a11y_lens/a11y_primary_document.png",
+          "sha256": "65d19e9b1f50920204280556c4ae1ca28ad7cd775732a24ecd6e28cd05b4ecbb",
+          "dimensions": [
+            1024,
+            600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "document_a11y_micron",
+      "case": "fixed-five-micron",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:59:17.3372069Z",
+      "finished_utc": "2026-10-15T03:59:33.7421946Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "874af112bfca66835725aa5223b52cd72b68b07edbe6400545591377165f90a2",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "inferred_original_five",
+      "presented_primary_frames": 141,
+      "primary_ledger_captures": 2,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-five-micron/captures/document_a11y_micron/micron_document_a11y.png",
+          "sha256": "207b0a10bb18478480cf9a8ecd447f8188c8b1bc36981f4e9470fa815665712d",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-five-micron/captures/document_a11y_micron/micron_host_form_confirmation.png",
+          "sha256": "8879df9bd34109b58fb583b0bb88ca2f1f8b9c3303ca7c10ab5cdb9de0367e0c",
+          "dimensions": [
+            1024,
+            600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "reader_appearance",
+      "case": "fixed-five-reader",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:59:57.7165852Z",
+      "finished_utc": "2026-10-15T04:01:10.2038076Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "3cd4cd66c7761445364d923b039cc49552d77cdd4cf19a9c65712f92a3fb9942",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "inferred_original_five",
+      "presented_primary_frames": 225,
+      "primary_ledger_captures": 4,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-five-reader/captures/reader_appearance/01_two_reader_appearances.png",
+          "sha256": "fdeda3c7c1877e8e5f4fd447373a33fc0f896d60e59ee73ee8292926d97cd945",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-five-reader/captures/reader_appearance/02_inset_scrolled.png",
+          "sha256": "e976307ebd462f5dab2e48f8186d4a7b8da6c83cff153abe9de495f473d8b1e0",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-five-reader/captures/reader_appearance/03_independent_scrolls.png",
+          "sha256": "0e920843ecdd4ac5df2563f85dec9e0c30f5564fc13c04153d15d09a2abdbfe2",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-five-reader/captures/reader_appearance/04_inset_survives.png",
+          "sha256": "b0b58b85eb83469e37270637b29a3fc929c03c10ede38441f6ef8a3ae8e978d9",
+          "dimensions": [
+            1024,
+            600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "frame_appearance",
+      "case": "fixed-fonts",
+      "workshop": "frame_fonts_workshop",
+      "started_utc": "2026-10-15T03:56:51.8781893Z",
+      "finished_utc": "2026-10-15T03:57:28.3144746Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "ff37ad65b97c011f5eb1e09192bfb76d548fd5823179e7c7eba1861e7896dc53",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "published",
+      "presented_primary_frames": 84,
+      "primary_ledger_captures": 4,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-fonts/captures/frame_appearance/frame_default.png",
+          "sha256": "06a8d57162c818add3aec877c5a6005d42ba26c47af15e5b30e744d482eb869e",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        },
+        {
+          "path": "native/fixed-fonts/captures/frame_appearance/frame_fonts_applied.png",
+          "sha256": "00bb3d682c032ee33830e9daa8f9016916e56ba8204c793c8ab74ca2fac73765",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        },
+        {
+          "path": "native/fixed-fonts/captures/frame_appearance/frame_fonts_narrow.png",
+          "sha256": "e16ce427ea66dfa4280c0ccb8cc2a9142c7966c64f85fd8815048d1238c7bf68",
+          "dimensions": [
+            640,
+            1000
+          ]
+        },
+        {
+          "path": "native/fixed-fonts/captures/frame_appearance/frame_graph_activated.png",
+          "sha256": "a62f70899e4cf897badad795935ffe399f66e64a3a0bd78ebb5df7f97c3bd3e6",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "frame_appearance_reopen",
+      "case": "fixed-fonts",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:57:29.0241376Z",
+      "finished_utc": "2026-10-15T03:57:44.8886066Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "716a04c286ab6cc5e143e8f1eb53579d134049c589aa609a9e3448aa1b9fa3e5",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "published",
+      "presented_primary_frames": 47,
+      "primary_ledger_captures": 2,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-fonts/captures/frame_appearance_reopen/frame_fonts_reopened.png",
+          "sha256": "52b038f56cbfc2e6f6689c5a794ee8327f80ea00656680cc3c97567e89343361",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        },
+        {
+          "path": "native/fixed-fonts/captures/frame_appearance_reopen/frame_fonts_reset.png",
+          "sha256": "fe3b98a72d5a262f28b118d72bf6830bba468c8d8d88b22429192e6bd1cca656",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "frame_controls_keyboard",
+      "case": "fixed-keyboard",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:56:04.6215559Z",
+      "finished_utc": "2026-10-15T03:56:23.7744268Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "4f3aa36992403f0c80a6f169d5a7ada2c14417169ed14aac175cf1aa2478643f",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "published",
+      "presented_primary_frames": 50,
+      "primary_ledger_captures": 2,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-keyboard/captures/frame_controls_keyboard/frame_keyboard_closed.png",
+          "sha256": "425f7e8b21e8c8d9f89a93308e4b53fb526020c0001b2c4ead64a2ea183110fb",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        },
+        {
+          "path": "native/fixed-keyboard/captures/frame_controls_keyboard/frame_keyboard_entered.png",
+          "sha256": "22d879b75d28bac39d4b7802a4100f3f47a0f4b5e3a980f3b40c3500d503c519",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "frame_lens_accessibility",
+      "case": "fixed-lens-accessibility",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:51:01.4936281Z",
+      "finished_utc": "2026-10-15T03:51:38.9452315Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "c63240a8b20b071a6a71455dd78d775f04c5466287c6d4ab5c833cc94195fc5b",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "published",
+      "presented_primary_frames": 107,
+      "primary_ledger_captures": 1,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-lens-accessibility/captures/frame_lens_accessibility/01_lens_close_focus.png",
+          "sha256": "ddc7d60bfb09953bffce4cc35f7c2d593cdd9a6d9b19a054a99662ac41abee50",
+          "dimensions": [
+            800,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-lens-accessibility/captures/frame_lens_accessibility/02_lens_close_repaired.png",
+          "sha256": "65944e62483c6ae723c843d5a7614492e908c02b46814cb904076492c7c688e6",
+          "dimensions": [
+            800,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-lens-accessibility/captures/frame_lens_accessibility/03_primary_frame_focus.png",
+          "sha256": "c22d217cb7fecbdcf64ad3fc9f810b51766fdf45ea164b01d698bdae2974b6c5",
+          "dimensions": [
+            1024,
+            600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "frame_lens_scroll",
+      "case": "fixed-lens-scroll",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:56:24.4512773Z",
+      "finished_utc": "2026-10-15T03:56:51.1534836Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "bd01007ee358a661a3135ddc565855c46731b6d12214a0e2cf8e7aec147192ff",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "published",
+      "presented_primary_frames": 65,
+      "primary_ledger_captures": 0,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-lens-scroll/captures/frame_lens_scroll/01_lens_before_scroll.png",
+          "sha256": "64d2540491a32beba2d1497c0174a1dfcfe2cc06afde55fb9e254c4b4b6b1fba",
+          "dimensions": [
+            800,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-lens-scroll/captures/frame_lens_scroll/02_lens_scrolled.png",
+          "sha256": "8c81ca5ec346be7b7c9e707eaf07e2d9726c4627bfa27d4c34728b0a1884c7ab",
+          "dimensions": [
+            800,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-lens-scroll/captures/frame_lens_scroll/03_lens_scrollbar_faded.png",
+          "sha256": "8c81ca5ec346be7b7c9e707eaf07e2d9726c4627bfa27d4c34728b0a1884c7ab",
+          "dimensions": [
+            800,
+            600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "frame_appearance_missing",
+      "case": "fixed-missing-fonts",
+      "workshop": "frame_fonts_missing_workshop",
+      "started_utc": "2026-10-15T03:57:45.6108299Z",
+      "finished_utc": "2026-10-15T03:58:16.3034141Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "4e46f8063a0bf2ca05769981e2993e6a6749a6cd0bb5d22e26281731af018202",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "published",
+      "presented_primary_frames": 50,
+      "primary_ledger_captures": 1,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-missing-fonts/captures/frame_appearance_missing/frame_missing_font_fallback.png",
+          "sha256": "849622f71b9c187de45539f9c94ff00545b9e34ad16ef0839dd8ebc2f541809e",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "frame_appearance_missing_reopen",
+      "case": "fixed-missing-fonts",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:58:17.0699114Z",
+      "finished_utc": "2026-10-15T03:58:29.9379861Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "dca3b0ee12db9e920913fb98371dfbeb2a5369b059770d7886c788ef3c83f0a5",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "published",
+      "presented_primary_frames": 29,
+      "primary_ledger_captures": 1,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-missing-fonts/captures/frame_appearance_missing_reopen/frame_missing_font_reopened.png",
+          "sha256": "a25f64899beb88d628717ff1425925a3ccdc06b2e17718869bad253bf841fd66",
+          "dimensions": [
+            2360,
+            1600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "frame_stations",
+      "case": "fixed-stations",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:51:39.7275412Z",
+      "finished_utc": "2026-10-15T03:52:18.2195343Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "a977122e397710c7bf8bfa9f4ce4812a6237fde1f4b3e2c866f93d49d095b734",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "published",
+      "presented_primary_frames": 106,
+      "primary_ledger_captures": 2,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-stations/captures/frame_stations/01_shared_float.png",
+          "sha256": "c2686eb796d8972a876d505cbd0052e8eee641d9b4fb89f57adbdcf2e3d76fc9",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-stations/captures/frame_stations/02_shared_float_lens.png",
+          "sha256": "e23a8a3b161072f61be1c1b61e00a691324ffc71a113c3fe388d16a95a823320",
+          "dimensions": [
+            800,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-stations/captures/frame_stations/03_shared_float_returned.png",
+          "sha256": "532d39a96ff71c4342c55a004cd875223945bd4878b07ba1680075b11b02f32c",
+          "dimensions": [
+            1024,
+            600
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "frame_stations_reopen",
+      "case": "fixed-stations",
+      "workshop": "",
+      "started_utc": "2026-10-15T03:52:18.9665460Z",
+      "finished_utc": "2026-10-15T03:52:45.6407830Z",
+      "exit": 0,
+      "result_ok": true,
+      "default_surface_poll": true,
+      "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+      "fixture_sha256": "6b07b384a1d58b4f65e5c6f1744cca929f2e6d3d7b260a301b8cf46798df83b0",
+      "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+      "set": "published",
+      "presented_primary_frames": 60,
+      "primary_ledger_captures": 2,
+      "actual_primary_and_lens_captures": [
+        {
+          "path": "native/fixed-stations/captures/frame_stations_reopen/04_shared_float_reopened.png",
+          "sha256": "74aa3b8d8057b664eb1811194acd7be7f623ed79b6775e2329749a7df0bc65e1",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native/fixed-stations/captures/frame_stations_reopen/05_shared_float_docked.png",
+          "sha256": "bd6ffd1b33ccc8f4e632e349fce9a598d9218ff2af47e41e52408d0e5d9a0156",
+          "dimensions": [
+            1024,
+            600
+          ]
+        }
+      ]
+    }
+  ],
+  "artifact_hashes": [
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/00_inline_nodes.masks.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/00_inline_nodes.png",
+      "sha256": "dd7c30d65a16f5e8d2e9aa45dbcb5bee935b5908de45c55b86b49f80c2646da3"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/00_inline_nodes.raw.png",
+      "sha256": "dd7c30d65a16f5e8d2e9aa45dbcb5bee935b5908de45c55b86b49f80c2646da3"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/00_inline_nodes.scene.json",
+      "sha256": "67b7b5892f27fe9b19d3faaeb108d3cb10b3636656c1e4a14714db1860a00f58"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/00_inline_nodes.source-1176657005713031169.png",
+      "sha256": "45f34c46e6f6c08d0194b064df860827e87c7e53ab16e6d5ab1c00a358e1e17d"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/00_inline_nodes.sources.json",
+      "sha256": "8ffc2a432667a2d25ea590ed1e234996405b129ee3244b2b2258a7b8e864c921"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/01_inline_roster.masks.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/01_inline_roster.png",
+      "sha256": "77e112b32e3a4d07259b83bbe3d8de1d2c23973fcf023977a4bdf7e03c725e8c"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/01_inline_roster.raw.png",
+      "sha256": "77e112b32e3a4d07259b83bbe3d8de1d2c23973fcf023977a4bdf7e03c725e8c"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/01_inline_roster.scene.json",
+      "sha256": "9b03bfdb5edd17a552d04e612bac9c27a86132f75da67ec94932bc585388cbff"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/01_inline_roster.source-1176657005713031169.png",
+      "sha256": "45f34c46e6f6c08d0194b064df860827e87c7e53ab16e6d5ab1c00a358e1e17d"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/01_inline_roster.sources.json",
+      "sha256": "a8111ce38bb0c6ddcf6b81895b78b99402456c0e2feed41f36c6a2d639a35ebd"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/02_inline_float.masks.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/02_inline_float.png",
+      "sha256": "b9b86c482f80459e3c39efbe75ab5cc541b8d2c3abf40d6b9055e6ec51b6995f"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/02_inline_float.raw.png",
+      "sha256": "b9b86c482f80459e3c39efbe75ab5cc541b8d2c3abf40d6b9055e6ec51b6995f"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/02_inline_float.scene.json",
+      "sha256": "2e65ecbdbf484af55318cee947d1174e40c4eafdee47f55d1d44902521337ec7"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/02_inline_float.source-1176657005713031169.png",
+      "sha256": "cb839e370d99d9c3d40b7c802f643330bb95ece9eb6e126d2e5f7e4395df4615"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/02_inline_float.sources.json",
+      "sha256": "85dba423e4accd705582904561acfad3ab38c68c15a9a51889422bcd12fb6aec"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/03_inline_lens.png",
+      "sha256": "1090a2e7dfc6d0549c2f6e197c91dd3e3b0990df3ecb0a66f5c1e43cf77eafb5"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/04_inline_returned.masks.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/04_inline_returned.png",
+      "sha256": "b9b86c482f80459e3c39efbe75ab5cc541b8d2c3abf40d6b9055e6ec51b6995f"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/04_inline_returned.raw.png",
+      "sha256": "b9b86c482f80459e3c39efbe75ab5cc541b8d2c3abf40d6b9055e6ec51b6995f"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/04_inline_returned.scene.json",
+      "sha256": "2e65ecbdbf484af55318cee947d1174e40c4eafdee47f55d1d44902521337ec7"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/04_inline_returned.source-1176657005713031169.png",
+      "sha256": "cb839e370d99d9c3d40b7c802f643330bb95ece9eb6e126d2e5f7e4395df4615"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/04_inline_returned.sources.json",
+      "sha256": "9bb45f543828eba4ed41e0fbdaaea4a8f1e0f12d3ec89cc063d4070c1479f935"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/diagnostics.json",
+      "sha256": "d8a895046d61cfa802b64e9cbb0925c54fbcc504ee1e3c52b64d07552d904af3"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/pixel-review.json",
+      "sha256": "d78ed6d6a0fb7b5d04ed587805c0486f8f64113d831c2e80510b7ed50bb05c57"
+    },
+    {
+      "path": "native/fixed-a4-scoped/captures/a4_inline_components/scenario.done",
+      "sha256": "45276ef94a6744b2d9247d715be25f4415519df32f5b090a17b2342ffa645713"
+    },
+    {
+      "path": "native/fixed-a5/captures/a5_floating_pane/01_gloss_float.png",
+      "sha256": "a3afb8e56ab1c6a5f1af80718c05f441e172370ed1c6f230a3564f59924bb4f9"
+    },
+    {
+      "path": "native/fixed-a5/captures/a5_floating_pane/02_gloss_raised.png",
+      "sha256": "bf4ce99448bb016d890794ddc2e1e233aa2a217ea5a217b73603b72eda8ac88f"
+    },
+    {
+      "path": "native/fixed-a5/captures/a5_floating_pane/03_gloss_docked_nested.png",
+      "sha256": "4bd4ea41482a66a79f07cf566ed5835cd12c61bd5994e9746237dd57effe3317"
+    },
+    {
+      "path": "native/fixed-a5/captures/a5_floating_pane/04_primary_after_tearout.png",
+      "sha256": "fb0d049924df1470f21cbe7cf0c682fb54281aa5352344a8dea75cb0680498ca"
+    },
+    {
+      "path": "native/fixed-a5/captures/a5_floating_pane/05_gloss_float_in_lens.png",
+      "sha256": "54d62782d24e205221c570508c53b1dc52a8523069c6b0b5dc48c8de4eb03e3e"
+    },
+    {
+      "path": "native/fixed-a5/captures/a5_floating_pane/06_gloss_returned_float.png",
+      "sha256": "c9a924e90ebcc1f01618ce7fa79476b6fb342b722de79ea57c2fd3b3f26a94be"
+    },
+    {
+      "path": "native/fixed-a5/captures/a5_floating_pane/07_gloss_returned_docked.png",
+      "sha256": "4bd4ea41482a66a79f07cf566ed5835cd12c61bd5994e9746237dd57effe3317"
+    },
+    {
+      "path": "native/fixed-a5/captures/a5_floating_pane/diagnostics.json",
+      "sha256": "3687abf05f4512975e551cfad9df647d405b7829bb066720fb386cadb7fa8871"
+    },
+    {
+      "path": "native/fixed-a5/captures/a5_floating_pane/scenario.done",
+      "sha256": "1738de9bc9e7e6f71f9a486c6496803d13dd1f3507eada8057c1e4232604b00f"
+    },
+    {
+      "path": "native/fixed-accessibility/captures/frame_controls_accessibility/diagnostics.json",
+      "sha256": "e0eb8f8ce76350854d78c14bbc5ae7c3cfa52e6d857ebaeca1ec5587e5fb5c99"
+    },
+    {
+      "path": "native/fixed-accessibility/captures/frame_controls_accessibility/frame_accessible_close.png",
+      "sha256": "425f7e8b21e8c8d9f89a93308e4b53fb526020c0001b2c4ead64a2ea183110fb"
+    },
+    {
+      "path": "native/fixed-accessibility/captures/frame_controls_accessibility/frame_accessible_resize.png",
+      "sha256": "ee4c8c6f4dd7706562afc7f7d79f935c75b06363da42d9d5ad14f8a59ad113b8"
+    },
+    {
+      "path": "native/fixed-accessibility/captures/frame_controls_accessibility/scenario.done",
+      "sha256": "a4b7dc4706ea1b9fc822fb717d1e406e757d540be049e1790c150d98d44a5bba"
+    },
+    {
+      "path": "native/fixed-accessibility/captures/frame_controls_reopen/diagnostics.json",
+      "sha256": "1ae450237fabf7278f084c95f148518e8ffe993dc1dea76dbaf7c5afe288c7f8"
+    },
+    {
+      "path": "native/fixed-accessibility/captures/frame_controls_reopen/frame_last_pane_refusal.png",
+      "sha256": "1ce8dd902b474be93d46e8219c13b85f46042051779a09ebd6bc6341495a6b29"
+    },
+    {
+      "path": "native/fixed-accessibility/captures/frame_controls_reopen/scenario.done",
+      "sha256": "72e4eb3d7404043d2d2d67fd692e5c8833bd12046ca9ceb99cab0d8efb1b2041"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/01_inline_alpha_over_native_graph.masks.json",
+      "sha256": "bd87b8b8a0f1b68910dee59e992ce0b33aa997023aca5f362f35ea85c04b1741"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/01_inline_alpha_over_native_graph.png",
+      "sha256": "8afe10c1d93ccf8ddf09d4c36e594c668c7117f610d9eabcdab40bb7e5470b8c"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/01_inline_alpha_over_native_graph.raw.png",
+      "sha256": "07ae21c0ec8d913b0048609a4ed86597a725b29d8b78b1c57cf7ffa4f2e9bcf5"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/01_inline_alpha_over_native_graph.scene.json",
+      "sha256": "8e1c765fafa19c12f5fcde5e6e4360890cbdc04eebb7786d4595516649e548e4"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/01_inline_alpha_over_native_graph.source-1176657005713031169.png",
+      "sha256": "1f4fddd968e7d1abd2384bae333d96db67189160917b427df91819486a12988d"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/01_inline_alpha_over_native_graph.sources.json",
+      "sha256": "84e651600eafe6df4a221c0f2fb1c07397f60b09b03f371716b571bbc0695380"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/02_native_alpha_over_inline_body.masks.json",
+      "sha256": "924a0ac30e86a5d5b974660f415487d48410f54a5e61e8e40d0d3e78fc5d8a1d"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/02_native_alpha_over_inline_body.png",
+      "sha256": "8df15aaa26ec18b01da3d3e03d5163b6f694f1c2fd1b45e5d108cc7928b08f70"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/02_native_alpha_over_inline_body.raw.png",
+      "sha256": "526d1e21670f38de5e74439c296bdb57797dcefda52ae1dd3e7d640efd621668"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/02_native_alpha_over_inline_body.scene.json",
+      "sha256": "76cd6f16e0ffec5e54ddce36e302ccc654c4fb908189d5b60f7c7700fdd0cf18"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/02_native_alpha_over_inline_body.source-1176657005713031169.png",
+      "sha256": "7dfe5c9fd3d05fff581e9b760a16c2e888554167406ec2452d31e23c134f50a0"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/02_native_alpha_over_inline_body.sources.json",
+      "sha256": "482dcb7f753d09c5dfee847efb10d08039201ee168c9855f418ba68bd806c7fe"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/03_overlap_resized.masks.json",
+      "sha256": "821b89707112aca9ddaa712f1e81f95f2594f0254a56d2b0e6a1ba4b4af20a4a"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/03_overlap_resized.png",
+      "sha256": "20760c120e506ee985d645b9c12322afd1edba996116fd069bd9c965ecfebf05"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/03_overlap_resized.raw.png",
+      "sha256": "20abe51576e1ab7e01f553ab459fb816b626d20172e8ce8ee7fba32cd3a413e6"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/03_overlap_resized.scene.json",
+      "sha256": "f955455fa0c97b1cc92c38904dd66c247c13b8706edb62731134ac6195a75b3e"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/03_overlap_resized.source-1176657005713031169.png",
+      "sha256": "663547a9180e24c50d8b4962c822d6705e38d76a04129ed74c79e49a619077bd"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/03_overlap_resized.sources.json",
+      "sha256": "1b53839ac6e1499632aef14392fb095f255e2a3b927489aa7af5542c8b764c23"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/04_overlap_settled.masks.json",
+      "sha256": "924a0ac30e86a5d5b974660f415487d48410f54a5e61e8e40d0d3e78fc5d8a1d"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/04_overlap_settled.png",
+      "sha256": "8df15aaa26ec18b01da3d3e03d5163b6f694f1c2fd1b45e5d108cc7928b08f70"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/04_overlap_settled.raw.png",
+      "sha256": "526d1e21670f38de5e74439c296bdb57797dcefda52ae1dd3e7d640efd621668"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/04_overlap_settled.scene.json",
+      "sha256": "76cd6f16e0ffec5e54ddce36e302ccc654c4fb908189d5b60f7c7700fdd0cf18"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/04_overlap_settled.source-1176657005713031169.png",
+      "sha256": "7dfe5c9fd3d05fff581e9b760a16c2e888554167406ec2452d31e23c134f50a0"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/04_overlap_settled.sources.json",
+      "sha256": "2f4fedc8288c308edc0164ce491636c31a8e00d6552c56fce386b0966445f1f9"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/diagnostics.json",
+      "sha256": "bc4b2c58717aa1799cb9e5707eea7468d6a45f541e864bc8b5bae438f5ef598d"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/pixel-review.json",
+      "sha256": "84e92b19c84577a257f4daeb6c6b175ff41d578f301db57e40f355904f89ed29"
+    },
+    {
+      "path": "native/fixed-alpha/captures/a4_native_overlap/scenario.done",
+      "sha256": "c99d4fed727581cae070c5f7951d8b5c31b6dd5b7565862ec5f46299af35cdaa"
+    },
+    {
+      "path": "native/fixed-five-gemini/captures/document_a11y_gemini/diagnostics.json",
+      "sha256": "0a35bcdaab06bd6964242f407a0ec844593c7061570f7f6a3a2c9f7874c2c4f2"
+    },
+    {
+      "path": "native/fixed-five-gemini/captures/document_a11y_gemini/gemini_document_a11y.png",
+      "sha256": "75f12187d957b26f4f420f1950141909ca77a35a47d3624133270a035a7e54de"
+    },
+    {
+      "path": "native/fixed-five-gemini/captures/document_a11y_gemini/scenario.done",
+      "sha256": "1ac6b8563efef0997ffc8a3a24e5c896f3853b329de2df0518a03e43602d459b"
+    },
+    {
+      "path": "native/fixed-five-gopher/captures/document_a11y_gopher/diagnostics.json",
+      "sha256": "fdd305be836063f4835e21b5d24a336afe9813e6d9df7067fd8ffd20edc1760f"
+    },
+    {
+      "path": "native/fixed-five-gopher/captures/document_a11y_gopher/gopher_document_a11y.png",
+      "sha256": "1837654bc0d442ece58eb1050a9700e705fe646f1c9ce8b831677402c46cf9c1"
+    },
+    {
+      "path": "native/fixed-five-gopher/captures/document_a11y_gopher/scenario.done",
+      "sha256": "ae4a857b0af47dd2539591915bda68ac94ed123900fac87482dae5e13b7df652"
+    },
+    {
+      "path": "native/fixed-five-lens/captures/document_a11y_lens/a11y_lens_document.png",
+      "sha256": "1a56794083be953fe78ba224f434fdc88891baa65350974fb23b40c48b00e12a"
+    },
+    {
+      "path": "native/fixed-five-lens/captures/document_a11y_lens/a11y_primary_after_tearout.png",
+      "sha256": "af55e0266b284cddebe28014da138d6eeb61591ca2c0c8e44f70245947a7f264"
+    },
+    {
+      "path": "native/fixed-five-lens/captures/document_a11y_lens/a11y_primary_document.png",
+      "sha256": "65d19e9b1f50920204280556c4ae1ca28ad7cd775732a24ecd6e28cd05b4ecbb"
+    },
+    {
+      "path": "native/fixed-five-lens/captures/document_a11y_lens/diagnostics.json",
+      "sha256": "8b09bf42e90b89fcd78a99777f8f63abb35e27d5e7de11990215e23423f384c9"
+    },
+    {
+      "path": "native/fixed-five-lens/captures/document_a11y_lens/scenario.done",
+      "sha256": "e6a37ce73e37671aa09388c87e759e930a150a7bff72f3d17d83a8f708eb82f2"
+    },
+    {
+      "path": "native/fixed-five-micron/captures/document_a11y_micron/diagnostics.json",
+      "sha256": "d210dfcb5543071fe1e9db2b8d2992f45a73f7d752ed49b6f8c593fca4b19c4b"
+    },
+    {
+      "path": "native/fixed-five-micron/captures/document_a11y_micron/micron_document_a11y.png",
+      "sha256": "207b0a10bb18478480cf9a8ecd447f8188c8b1bc36981f4e9470fa815665712d"
+    },
+    {
+      "path": "native/fixed-five-micron/captures/document_a11y_micron/micron_host_form_confirmation.png",
+      "sha256": "8879df9bd34109b58fb583b0bb88ca2f1f8b9c3303ca7c10ab5cdb9de0367e0c"
+    },
+    {
+      "path": "native/fixed-five-micron/captures/document_a11y_micron/scenario.done",
+      "sha256": "3b4acd018ee86e697389ab68fd82188d78fef3567510ecee64e91d9c49b39df1"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/01_after_open_wait.foreign-a11y.json",
+      "sha256": "9d651c84ded33dd7fbdb4c4e11f864206c29fd7dfaf62a988e4b2a9f4f704d2b"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/01_after_open_wait.txt",
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/01_before_scroll.txt",
+      "sha256": "0c890085fb97a397013d76d4467b5b88bfa7ece72c2e659d078a94ffc2378a81"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/01_two_reader_appearances.png",
+      "sha256": "fdeda3c7c1877e8e5f4fd447373a33fc0f896d60e59ee73ee8292926d97cd945"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/02_after_content_wait.foreign-a11y.json",
+      "sha256": "9d651c84ded33dd7fbdb4c4e11f864206c29fd7dfaf62a988e4b2a9f4f704d2b"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/02_after_content_wait.txt",
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/02_inset_only.txt",
+      "sha256": "198707d1146cb4c4b7df57d42af2a31a5eef76079397156f4a3101b9b8a161f5"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/02_inset_scrolled.png",
+      "sha256": "e976307ebd462f5dab2e48f8186d4a7b8da6c83cff153abe9de495f473d8b1e0"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/03_after_reader_wait.foreign-a11y.json",
+      "sha256": "9d651c84ded33dd7fbdb4c4e11f864206c29fd7dfaf62a988e4b2a9f4f704d2b"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/03_after_reader_wait.txt",
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/03_both_scrolled.txt",
+      "sha256": "9d3a16c8c42455111f38008b3fb9fda5a7e8eebad0a269eec2657fd5443eda99"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/03_independent_scrolls.png",
+      "sha256": "0e920843ecdd4ac5df2563f85dec9e0c30f5564fc13c04153d15d09a2abdbfe2"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/04_inset_survives.png",
+      "sha256": "b0b58b85eb83469e37270637b29a3fc929c03c10ede38441f6ef8a3ae8e978d9"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/04_inset_survives.txt",
+      "sha256": "f6d2477f24ae39b35551a4b8c85fab3f84748a6fa6a3c3c7141a97c1afed1082"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/diagnostics.json",
+      "sha256": "4b2a95a0564252c8bf41121b4a3922029a1330ce05bb18ae10f4a2c437086d98"
+    },
+    {
+      "path": "native/fixed-five-reader/captures/reader_appearance/scenario.done",
+      "sha256": "5aebf24bcfe649942446d3ac24774af858eadf8a1202a63b48b99e01715cb445"
+    },
+    {
+      "path": "native/fixed-fonts/captures/frame_appearance/diagnostics.json",
+      "sha256": "654acec76d1cdab9aec1e9a61a2702252d6272264baa2ebc949d862263d8fb7d"
+    },
+    {
+      "path": "native/fixed-fonts/captures/frame_appearance/frame_default.png",
+      "sha256": "06a8d57162c818add3aec877c5a6005d42ba26c47af15e5b30e744d482eb869e"
+    },
+    {
+      "path": "native/fixed-fonts/captures/frame_appearance/frame_fonts_applied.png",
+      "sha256": "00bb3d682c032ee33830e9daa8f9016916e56ba8204c793c8ab74ca2fac73765"
+    },
+    {
+      "path": "native/fixed-fonts/captures/frame_appearance/frame_fonts_narrow.png",
+      "sha256": "e16ce427ea66dfa4280c0ccb8cc2a9142c7966c64f85fd8815048d1238c7bf68"
+    },
+    {
+      "path": "native/fixed-fonts/captures/frame_appearance/frame_graph_activated.png",
+      "sha256": "a62f70899e4cf897badad795935ffe399f66e64a3a0bd78ebb5df7f97c3bd3e6"
+    },
+    {
+      "path": "native/fixed-fonts/captures/frame_appearance/scenario.done",
+      "sha256": "7d164cf0e1fbbd302e5086503a542619b6ddae0fd5dd24018175a79d7552b10d"
+    },
+    {
+      "path": "native/fixed-fonts/captures/frame_appearance_reopen/diagnostics.json",
+      "sha256": "799e77377ce2eb650fcb99d5aa2400e3d1efb60e3034982f15ee347439742ff2"
+    },
+    {
+      "path": "native/fixed-fonts/captures/frame_appearance_reopen/frame_fonts_reopened.png",
+      "sha256": "52b038f56cbfc2e6f6689c5a794ee8327f80ea00656680cc3c97567e89343361"
+    },
+    {
+      "path": "native/fixed-fonts/captures/frame_appearance_reopen/frame_fonts_reset.png",
+      "sha256": "fe3b98a72d5a262f28b118d72bf6830bba468c8d8d88b22429192e6bd1cca656"
+    },
+    {
+      "path": "native/fixed-fonts/captures/frame_appearance_reopen/scenario.done",
+      "sha256": "6feabfe89d9d1147c4e7349de21c611095113f8fd262aa3174a21ab64a26fef4"
+    },
+    {
+      "path": "native/fixed-keyboard/captures/frame_controls_keyboard/diagnostics.json",
+      "sha256": "a5bc404e4506bc0d25a8acce336c261bde47ce339e352e6a890776bd659a395d"
+    },
+    {
+      "path": "native/fixed-keyboard/captures/frame_controls_keyboard/frame_keyboard_closed.png",
+      "sha256": "425f7e8b21e8c8d9f89a93308e4b53fb526020c0001b2c4ead64a2ea183110fb"
+    },
+    {
+      "path": "native/fixed-keyboard/captures/frame_controls_keyboard/frame_keyboard_entered.png",
+      "sha256": "22d879b75d28bac39d4b7802a4100f3f47a0f4b5e3a980f3b40c3500d503c519"
+    },
+    {
+      "path": "native/fixed-keyboard/captures/frame_controls_keyboard/scenario.done",
+      "sha256": "72d103f0795e7d441c946f58f3be5fbaa97f708b0abc542c1539a1a25ba410c7"
+    },
+    {
+      "path": "native/fixed-lens-accessibility/captures/frame_lens_accessibility/01_lens_close_focus.png",
+      "sha256": "ddc7d60bfb09953bffce4cc35f7c2d593cdd9a6d9b19a054a99662ac41abee50"
+    },
+    {
+      "path": "native/fixed-lens-accessibility/captures/frame_lens_accessibility/02_lens_close_repaired.png",
+      "sha256": "65944e62483c6ae723c843d5a7614492e908c02b46814cb904076492c7c688e6"
+    },
+    {
+      "path": "native/fixed-lens-accessibility/captures/frame_lens_accessibility/03_primary_frame_focus.png",
+      "sha256": "c22d217cb7fecbdcf64ad3fc9f810b51766fdf45ea164b01d698bdae2974b6c5"
+    },
+    {
+      "path": "native/fixed-lens-accessibility/captures/frame_lens_accessibility/diagnostics.json",
+      "sha256": "2e8640c7f9ab88c4ff6f65a7423e1aa276f4debed2ed249f2a7bd3cb2c665e1a"
+    },
+    {
+      "path": "native/fixed-lens-accessibility/captures/frame_lens_accessibility/scenario.done",
+      "sha256": "f8923b6a190c0370f6eaf8f539ef6818a62ff84375f30a7bfc10aa9be65086e7"
+    },
+    {
+      "path": "native/fixed-lens-scroll/captures/frame_lens_scroll/01_lens_before_scroll.png",
+      "sha256": "64d2540491a32beba2d1497c0174a1dfcfe2cc06afde55fb9e254c4b4b6b1fba"
+    },
+    {
+      "path": "native/fixed-lens-scroll/captures/frame_lens_scroll/02_lens_scrolled.png",
+      "sha256": "8c81ca5ec346be7b7c9e707eaf07e2d9726c4627bfa27d4c34728b0a1884c7ab"
+    },
+    {
+      "path": "native/fixed-lens-scroll/captures/frame_lens_scroll/03_lens_scrollbar_faded.png",
+      "sha256": "8c81ca5ec346be7b7c9e707eaf07e2d9726c4627bfa27d4c34728b0a1884c7ab"
+    },
+    {
+      "path": "native/fixed-lens-scroll/captures/frame_lens_scroll/diagnostics.json",
+      "sha256": "40a668b97d3a1eddb5d9064c2bc30381cb92b4fe0af92b17d4215700e7220683"
+    },
+    {
+      "path": "native/fixed-lens-scroll/captures/frame_lens_scroll/scenario.done",
+      "sha256": "6bbe72ac6210635f9c6a7dcc80ff28787cda515426585b1a2b452a02655112dd"
+    },
+    {
+      "path": "native/fixed-missing-fonts/captures/frame_appearance_missing/diagnostics.json",
+      "sha256": "2dafa29af1b440270ea03b784483a1b7fc7882c9bcc8c80bb6b2606e0bb4e27b"
+    },
+    {
+      "path": "native/fixed-missing-fonts/captures/frame_appearance_missing/frame_missing_font_fallback.png",
+      "sha256": "849622f71b9c187de45539f9c94ff00545b9e34ad16ef0839dd8ebc2f541809e"
+    },
+    {
+      "path": "native/fixed-missing-fonts/captures/frame_appearance_missing/scenario.done",
+      "sha256": "f07a95e1539d98ed4e9d3b60f425e29f670d28348971dc503013e1c69d37595b"
+    },
+    {
+      "path": "native/fixed-missing-fonts/captures/frame_appearance_missing_reopen/diagnostics.json",
+      "sha256": "d25e17087e681b1beaeb035c1e63d6d7dad6c472bf3da724d6bf976ff6363a69"
+    },
+    {
+      "path": "native/fixed-missing-fonts/captures/frame_appearance_missing_reopen/frame_missing_font_reopened.png",
+      "sha256": "a25f64899beb88d628717ff1425925a3ccdc06b2e17718869bad253bf841fd66"
+    },
+    {
+      "path": "native/fixed-missing-fonts/captures/frame_appearance_missing_reopen/scenario.done",
+      "sha256": "7c05a204f9f73bfbdab36f79b7d12d6db00eb0b6da48a33003d659a33bcb0d5e"
+    },
+    {
+      "path": "native/fixed-stations/captures/frame_stations/01_shared_float.png",
+      "sha256": "c2686eb796d8972a876d505cbd0052e8eee641d9b4fb89f57adbdcf2e3d76fc9"
+    },
+    {
+      "path": "native/fixed-stations/captures/frame_stations/02_shared_float_lens.png",
+      "sha256": "e23a8a3b161072f61be1c1b61e00a691324ffc71a113c3fe388d16a95a823320"
+    },
+    {
+      "path": "native/fixed-stations/captures/frame_stations/03_shared_float_returned.png",
+      "sha256": "532d39a96ff71c4342c55a004cd875223945bd4878b07ba1680075b11b02f32c"
+    },
+    {
+      "path": "native/fixed-stations/captures/frame_stations/diagnostics.json",
+      "sha256": "f9926f3be7a3ad86fd7d37b81d7399310ccf0c497e9158c744bf58c7254ce711"
+    },
+    {
+      "path": "native/fixed-stations/captures/frame_stations/scenario.done",
+      "sha256": "34bfa6cff76a4d7fec54228dcfa1fdd17cb7b5f30344808838b02caab200da64"
+    },
+    {
+      "path": "native/fixed-stations/captures/frame_stations_reopen/04_shared_float_reopened.png",
+      "sha256": "74aa3b8d8057b664eb1811194acd7be7f623ed79b6775e2329749a7df0bc65e1"
+    },
+    {
+      "path": "native/fixed-stations/captures/frame_stations_reopen/05_shared_float_docked.png",
+      "sha256": "bd6ffd1b33ccc8f4e632e349fce9a598d9218ff2af47e41e52408d0e5d9a0156"
+    },
+    {
+      "path": "native/fixed-stations/captures/frame_stations_reopen/diagnostics.json",
+      "sha256": "3e80aa999e145884d483da769267532dbb8104c0945e75309c4804002ef0b1ac"
+    },
+    {
+      "path": "native/fixed-stations/captures/frame_stations_reopen/scenario.done",
+      "sha256": "e8e9595e64b89fed1857fe12ead91321265b4b1e0d5727b7b6e1d539502244ce"
+    }
+  ]
+}

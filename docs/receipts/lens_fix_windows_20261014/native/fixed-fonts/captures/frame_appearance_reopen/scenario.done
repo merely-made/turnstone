@@ -1,0 +1,6 @@
+RESULT ok
+captured frame_fonts_reopened
+captured frame_fonts_reset
+presentation frames=47 captures=2 blank=0
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-fonts\captures\frame_appearance_reopen\frame_fonts_reopened.png digest=d439ed70ff631557 blank=false
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-fonts\captures\frame_appearance_reopen\frame_fonts_reset.png digest=41bedee3beacd618 blank=false

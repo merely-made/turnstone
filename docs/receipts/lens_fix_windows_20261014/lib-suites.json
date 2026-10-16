@@ -1,0 +1,57 @@
+{
+  "machine": "o-pc",
+  "qualified_source": "b0b709a5",
+  "head": "f14d20917b7f682f39b1e87baa130fed65299671",
+  "env": {
+    "CARGO_TARGET_DIR": "C:/t/cargo-targets/turnstone",
+    "CARGO_BUILD_BUILD_DIR": "C:/t/cargo-targets/turnstone/build",
+    "CARGO_NET_OFFLINE": "true"
+  },
+  "suites": {
+    "default": {
+      "command": "cargo +1.99.0 test --lib --locked --offline -j1",
+      "log": "full-lib-default.log",
+      "started_utc": "2026-10-15T03:34:52Z",
+      "result": "ok",
+      "passed": 944,
+      "failed": 0,
+      "ignored": 10,
+      "lens_window_tests_ok": true
+    },
+    "piccolo": {
+      "command": "cargo +1.99.0 test --lib --features piccolo --locked --offline -j1",
+      "log": "full-lib-piccolo.log",
+      "started_utc": "2026-10-15T03:38:11Z",
+      "result": "ok",
+      "passed": 977,
+      "failed": 0,
+      "ignored": 10,
+      "lens_window_tests_ok": true
+    }
+  },
+  "pre_fix_baseline": {
+    "default": [
+      927,
+      0,
+      10
+    ],
+    "piccolo": [
+      960,
+      0,
+      10
+    ]
+  },
+  "macos_b0b709a": {
+    "default": [
+      938,
+      2,
+      10
+    ],
+    "piccolo": [
+      970,
+      3,
+      10
+    ]
+  },
+  "flaky_reruns": []
+}

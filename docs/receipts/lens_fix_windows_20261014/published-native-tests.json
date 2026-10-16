@@ -1,0 +1,59 @@
+{
+  "manifest_sha256": "85f66cb16eb0610dd7747e7eff0b18b6fb168b60d26e51211a7d28e587b462e9",
+  "gates": [
+    {
+      "log": "published-native_aperture_tests.log",
+      "command": "cargo +1.99.0 test --lib native_aperture_tests --locked --offline -j1",
+      "gate": "native_aperture_tests",
+      "exit": 0
+    },
+    {
+      "log": "published-shell-native_composition-tests.log",
+      "command": "cargo +1.99.0 test --lib shell::native_composition::tests --locked --offline -j1",
+      "gate": "shell::native_composition::tests",
+      "exit": 0
+    },
+    {
+      "log": "published-inline_.log",
+      "command": "cargo +1.99.0 test --lib inline_ --locked --offline -j1",
+      "gate": "inline_",
+      "exit": 0
+    },
+    {
+      "log": "published-frame_keys.log",
+      "command": "cargo +1.99.0 test --lib frame_keys --locked --offline -j1",
+      "gate": "frame_keys",
+      "exit": 0
+    },
+    {
+      "log": "published-scrollbar_continuation.log",
+      "command": "cargo +1.99.0 test --lib scrollbar_continuation --locked --offline -j1",
+      "gate": "scrollbar_continuation",
+      "exit": 0
+    },
+    {
+      "log": "published-settled_timer.log",
+      "command": "cargo +1.99.0 test --lib settled_timer --locked --offline -j1",
+      "gate": "settled_timer",
+      "exit": 0
+    },
+    {
+      "log": "published-terminal_document_turn.log",
+      "command": "cargo +1.99.0 test --lib terminal_document_turn --locked --offline -j1",
+      "gate": "terminal_document_turn",
+      "exit": 0
+    },
+    {
+      "log": "published-inline_component_station_fixture.log",
+      "command": "cargo +1.99.0 test --lib inline_component_station_fixture --locked --offline -j1",
+      "gate": "inline_component_station_fixture",
+      "exit": 0
+    }
+  ],
+  "local_path_override": false,
+  "rust": "1.99.0",
+  "lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f",
+  "netrender": "6a24ae08f55129b474282b8e4911564f875ce5fd",
+  "supplier": "77fd235fe659c513dd0463ed57be32f02fb2e71a",
+  "genet": "b6bfbeb556a6a17eddf8d5ad8254d3fcac95b084"
+}

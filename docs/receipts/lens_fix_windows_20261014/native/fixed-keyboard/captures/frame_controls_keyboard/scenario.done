@@ -1,0 +1,6 @@
+RESULT ok
+captured frame_keyboard_entered
+captured frame_keyboard_closed
+presentation frames=50 captures=2 blank=0
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-keyboard\captures\frame_controls_keyboard\frame_keyboard_entered.png digest=0a41a92009b7bf28 blank=false
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-keyboard\captures\frame_controls_keyboard\frame_keyboard_closed.png digest=5374558675b03232 blank=false

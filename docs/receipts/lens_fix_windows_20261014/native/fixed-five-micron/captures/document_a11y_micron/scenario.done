@@ -1,0 +1,6 @@
+RESULT ok
+captured micron_document_a11y
+captured micron_host_form_confirmation
+presentation frames=141 captures=2 blank=0
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-five-micron\captures\document_a11y_micron\micron_document_a11y.png digest=a36cb4a69056eb15 blank=false
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-five-micron\captures\document_a11y_micron\micron_host_form_confirmation.png digest=7cfa68c4a3c7852e blank=false

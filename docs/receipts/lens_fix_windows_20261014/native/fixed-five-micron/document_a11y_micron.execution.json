@@ -1,0 +1,13 @@
+{
+  "scenario": "document_a11y_micron",
+  "case": "fixed-five-micron",
+  "workshop": "",
+  "started_utc": "2026-10-15T03:59:17.3372069Z",
+  "finished_utc": "2026-10-15T03:59:33.7421946Z",
+  "exit": 0,
+  "result_ok": true,
+  "default_surface_poll": true,
+  "executable_sha256": "2ef888417544c9f04d030545e1cdbe7057061f0e5b985d6b92983e7f88bd968e",
+  "fixture_sha256": "874af112bfca66835725aa5223b52cd72b68b07edbe6400545591377165f90a2",
+  "primary_lock_sha256": "99a14fc370801de8a16fa3805208a5054ba5b239324c0fd4d5575018738e579f"
+}

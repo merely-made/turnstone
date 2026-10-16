@@ -1,0 +1,14 @@
+RESULT ok
+waited 72 frames
+waited 0 frames
+waited 0 frames
+captured 01_two_reader_appearances
+captured 02_inset_scrolled
+captured 03_independent_scrolls
+captured 04_inset_survives
+headed Reader appearance isolation receipt complete
+presentation frames=225 captures=4 blank=0
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-five-reader\captures\reader_appearance\01_two_reader_appearances.png digest=37325b69df81cf14 blank=false
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-five-reader\captures\reader_appearance\02_inset_scrolled.png digest=7007e3fbd1b1e35c blank=false
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-five-reader\captures\reader_appearance\03_independent_scrolls.png digest=4eec1916aff0f323 blank=false
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-five-reader\captures\reader_appearance\04_inset_survives.png digest=5b756ac6792d209b blank=false

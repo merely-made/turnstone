@@ -1,0 +1,6 @@
+RESULT ok
+captured a11y_primary_document
+captured a11y_primary_after_tearout
+presentation frames=170 captures=2 blank=0
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-five-lens\captures\document_a11y_lens\a11y_primary_document.png digest=b864ccd028d31447 blank=false
+capture C:\Users\mark_\Code\worktrees\turnstone-win-qual\docs\receipts\lens_fix_windows_20261014\native\fixed-five-lens\captures\document_a11y_lens\a11y_primary_after_tearout.png digest=45ed297bb03975db blank=false

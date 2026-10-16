@@ -216,11 +216,47 @@ fn overmap_gather(app: &App) -> SwatchModel {
             activate: session.map(SwatchActivate::Switch),
         });
     }
+    // Each link drawn with its kind: a fork, a pick, or containment.
+    let lineage = overmap::lineage(&app.sessions);
+    let label_of = |id: Uuid| {
+        model
+            .nodes
+            .iter()
+            .find(|node| node.id == id)
+            .map(|node| node.label.clone())
+            .unwrap_or_default()
+    };
+    let mut relations = Vec::new();
     for rel in graph.relations() {
-        if let (Some(&from), Some(&to)) = (by_key.get(&rel.from), by_key.get(&rel.to)) {
-            model.edges.push((from, to));
-        }
+        let (Some(&from), Some(&to)) = (by_key.get(&rel.from), by_key.get(&rel.to)) else {
+            continue;
+        };
+        model.edges.push((from, to));
+        let session = |key| {
+            graph
+                .get_node(key)
+                .and_then(|node| overmap::session_of_url(node.url()))
+        };
+        let kind = match (session(rel.from), session(rel.to)) {
+            _ if matches!(rel.kind, mere::kernel::graph::RelationKind::Containment(_)) => None,
+            (Some(child), Some(parent)) => lineage
+                .iter()
+                .find(|(c, p, _)| *c == child && *p == parent)
+                .map(|(_, _, how)| *how),
+            _ => None,
+        };
+        let (token, words) = match kind {
+            Some(how) => (how.token(), how.words()),
+            None => ("contains", "contains"),
+        };
+        relations.push(crate::swatch_pane::SwatchRelation {
+            from,
+            to,
+            kind: token,
+            label: format!("{} {words} {}", label_of(from), label_of(to)),
+        });
     }
+    model.relations = relations;
     model
 }
 
