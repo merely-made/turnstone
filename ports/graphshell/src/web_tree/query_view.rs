@@ -68,7 +68,7 @@ fn legacy_members(payload: &serde_json::Value) -> BTreeSet<(String, Option<Strin
 fn presented_links(projection: &QueryProjection) -> Vec<PresentedLink> {
     struct Accumulator {
         presented: PresentedLink,
-        statements: BTreeSet<(String, String)>,
+        assertions: BTreeSet<(String, String)>,
         legacy: BTreeSet<(String, Option<String>)>,
         supports: bool,
         contradicts: bool,
@@ -100,7 +100,7 @@ fn presented_links(projection: &QueryProjection) -> Vec<PresentedLink> {
                 strength: 0,
                 rows: 0,
             },
-            statements: BTreeSet::new(),
+            assertions: BTreeSet::new(),
             legacy: BTreeSet::new(),
             supports: false,
             contradicts: false,
@@ -127,22 +127,37 @@ fn presented_links(projection: &QueryProjection) -> Vec<PresentedLink> {
 
         let forward = from == key.first && to == key.second;
         let mut eligible = false;
-        for statement in relation
-            .statements
-            .iter()
-            .filter(|statement| statement.is_held())
-        {
+        let exact_records = relation.assertions.is_some();
+        let records = relation
+            .assertions
+            .as_deref()
+            // Compatibility for query projections serialized before the
+            // all-family field existed.
+            .unwrap_or(&relation.statements);
+        for statement in records.iter().filter(|statement| statement.is_held()) {
             eligible = true;
             entry.supports |= statement.predicate == "https://mere.computer/ns/rel#supports";
             entry.contradicts |= statement.predicate == "https://mere.computer/ns/rel#contradicts";
             let scope = serde_json::to_string(&statement.graph_scope).unwrap_or_default();
             entry
-                .statements
+                .assertions
                 .insert((statement.statement_id.clone(), scope));
         }
         let members = legacy_members(&relation.families);
-        eligible |= !members.is_empty();
-        entry.legacy.extend(members);
+        if exact_records {
+            // Traversal remains a separate summary input until its own
+            // assertion-ledger migration. Family rows are represented by
+            // canonical assertions and must not be counted a second time.
+            eligible |= members.iter().any(|(family, _)| family == "traversal");
+            entry.legacy.extend(
+                members
+                    .into_iter()
+                    .filter(|(family, _)| family == "traversal"),
+            );
+        } else {
+            eligible |= !members.is_empty();
+            entry.legacy.extend(members);
+        }
         if eligible {
             if forward {
                 entry.presented.marks.forward = true;
@@ -155,7 +170,7 @@ fn presented_links(projection: &QueryProjection) -> Vec<PresentedLink> {
         .into_values()
         .map(|mut entry| {
             entry.presented.marks.opposed = entry.supports && entry.contradicts;
-            entry.presented.strength = entry.statements.len() + entry.legacy.len();
+            entry.presented.strength = entry.assertions.len() + entry.legacy.len();
             entry.presented
         })
         .collect()
@@ -1078,7 +1093,8 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
 #[cfg(test)]
 mod grouping_tests {
     use super::*;
-    use mere::kernel::graph::{SemanticStatement, SemanticSubKind};
+    use mere::kernel::graph::{ContainmentSubKind, SemanticStatement, SemanticSubKind};
+    use mere::kernel::types::AssertionWithdrawal;
     use mere::kernel::types::GraphScope;
 
     fn statement(id: &str, kind: SemanticSubKind) -> SemanticStatement {
@@ -1113,6 +1129,7 @@ mod grouping_tests {
             kind,
             source_from,
             source_to,
+            assertions: Some(statements.clone()),
             statements,
             families: serde_json::json!({}),
             hop_cost: if kind == model::VisualRelationKind::ShownBinding {
@@ -1262,6 +1279,86 @@ mod grouping_tests {
                 .count(),
             1,
             "shown-binding rows remain separate and are never folded into a link"
+        );
+    }
+
+    #[test]
+    fn all_family_reasons_contribute_exact_held_strength_without_double_counting() {
+        let from = QueryNodeId::resource(Uuid::from_u128(1));
+        let to = QueryNodeId::resource(Uuid::from_u128(2));
+        let mut held_a = SemanticStatement::new(
+            "https://mere.computer/ns/rel#containment.collection-member".into(),
+            None,
+            None,
+            GraphScope::User,
+            Some("https://author.test/a".into()),
+            Some(10),
+        );
+        held_a.statement_id = "urn:statement:collection-a".into();
+        held_a.basis.evidence.push("urn:evidence:a".into());
+        let mut held_b = held_a.clone();
+        held_b.statement_id = "urn:statement:collection-b".into();
+        held_b.basis.evidence = vec!["urn:evidence:b".into()];
+        let mut withdrawn = held_a.clone();
+        withdrawn.statement_id = "urn:statement:collection-withdrawn".into();
+        withdrawn.withdrawn = Some(AssertionWithdrawal {
+            at_ms: Some(30),
+            by: Some("https://author.test/a".into()),
+        });
+
+        let mut projection = QueryProjection {
+            owner: Uuid::from_u128(9),
+            source_revision: 1,
+            spec: QueryViewSpec::select("fixture", "SELECT ?member WHERE {}"),
+            members: vec![],
+            missing_resources: vec![],
+            coverage: Default::default(),
+            nodes: vec![
+                QueryNode {
+                    identity: from,
+                    title: "A".into(),
+                    address: "https://resource.test/a".into(),
+                    member: true,
+                    tags: vec![],
+                    held_accesses: vec![],
+                },
+                QueryNode {
+                    identity: to,
+                    title: "B".into(),
+                    address: "https://resource.test/b".into(),
+                    member: true,
+                    tags: vec![],
+                    held_accesses: vec![],
+                },
+            ],
+            relations: vec![relation(
+                from,
+                to,
+                from,
+                to,
+                model::VisualRelationKind::ResourceLink,
+                vec![],
+            )],
+        };
+        projection.relations[0].assertions = Some(vec![held_a, held_b, withdrawn]);
+        // This compatibility summary describes the same family and must not
+        // inflate strength alongside the exact canonical records.
+        projection.relations[0].families = serde_json::json!({
+            "containment": {"sub_kinds": [ContainmentSubKind::CollectionMember]},
+            "traversal": {"occurrences": []}
+        });
+
+        let groups = presented_links(&projection);
+        assert_eq!(groups.len(), 1);
+        assert_eq!(groups[0].rows, 1);
+        assert_eq!(groups[0].strength, 3);
+        assert!(groups[0].marks.forward);
+        assert!(!groups[0].marks.reverse && !groups[0].marks.opposed);
+        let assertions = projection.relations[0].assertions.as_ref().unwrap();
+        assert_eq!(assertions.len(), 3);
+        assert_eq!(
+            assertions[2].statement_id,
+            "urn:statement:collection-withdrawn"
         );
     }
 }
