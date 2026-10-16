@@ -2062,7 +2062,7 @@ mod tests {
             assertion_statements(projection)
                 .into_iter()
                 .filter(|statement| !authored_ids.contains(&statement.statement_id))
-                .map(|statement| statement.relation_kind())
+                .map(|statement| statement.predicate)
                 .collect::<std::collections::BTreeSet<_>>()
         };
         let initial_projection = replica.projection().await.unwrap();
@@ -2073,8 +2073,14 @@ mod tests {
         assert_eq!(
             derived_kinds(&initial_projection),
             std::collections::BTreeSet::from([
-                RelationKind::Containment(ContainmentSubKind::Domain),
-                RelationKind::Containment(ContainmentSubKind::UrlPath),
+                RelationKind::Containment(ContainmentSubKind::Domain)
+                    .predicate_iri()
+                    .unwrap()
+                    .to_owned(),
+                RelationKind::Containment(ContainmentSubKind::UrlPath)
+                    .predicate_iri()
+                    .unwrap()
+                    .to_owned(),
             ]),
             "the two extra projected rows are derived node-containment relations, not signed operation assertions"
         );
