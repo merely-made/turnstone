@@ -615,7 +615,7 @@ mod tests;
 mod owner_bound_statement_tests {
     use super::*;
     use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
-    use mere::kernel::graph::{
+    use mere::kernel::persistence::{
         PersistedEdge, PersistedSemanticEdgeData, PersistedSemanticStatement,
     };
     use mere::kernel::types::{AssertionWithdrawal, GraphScope};
