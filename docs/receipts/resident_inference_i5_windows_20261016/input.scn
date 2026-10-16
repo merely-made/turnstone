@@ -1,0 +1,13 @@
+settle 30
+key escape
+act Ask retained text
+settle 20
+act Maximize pane
+settle 5
+capture 00_input
+click surface:contributed role:textbox Question
+capture 01_focus
+insert Retained question
+capture 02_typed
+assert text Retained question
+log Input inspection

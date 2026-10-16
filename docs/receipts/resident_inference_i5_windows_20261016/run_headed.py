@@ -71,8 +71,9 @@ def main():
     parser.add_argument("model", type=Path)
     args = parser.parse_args()
     # Preserve a failed attempt for diagnosis. This harness never deletes it.
-    WORK.mkdir(exist_ok=False)
+    WORK.mkdir(exist_ok=True)
     control = WORK / "resident"
+    # A retained attempt must be archived explicitly before reusing this root.
     control.mkdir()
     env = os.environ.copy()
     env.update(ESP_SMOLLM2_DIR=str(args.model), DJINN_HEADED_DIR=str(control),
@@ -131,12 +132,15 @@ def main():
     for name in ("resident.log",):
         shutil.copy2(WORK / name, destination)
     shutil.copy2(control / "resident-receipt.json", destination)
+    for name in ("paused", "finished", "cancelled", "reopened"):
+        shutil.copy2(control / f"{name}.json", destination)
     receipt = {
         "turnstone_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, encoding="utf-8").strip(),
         "turnstone_binary_sha256": sha(TURNSTONE),
         "resident_test_sha256": sha(args.resident_test),
         "cargo_lock_sha256": sha(REPO / "Cargo.lock"),
         "scenarios": {name: sha(HERE / f"{name}.scn") for name in ("answer", "reopen")},
+        "harness_sha256": sha(Path(__file__)),
         "fixture_notes": NOTES,
         "boundary": "Separate headed Turnstone and in-process native Djinn resident; pinned trained GPU model; actual app connection; public fictional retained text",
     }
