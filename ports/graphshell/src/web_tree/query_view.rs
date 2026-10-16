@@ -8,6 +8,8 @@ use super::*;
 use cambium::{TextInput, button, lens, text_field_typed};
 use mere::kernel::graph::GraphStratum;
 use mere::query_view::{self as model, *};
+use sceno::{LinkKey, LinkMarks, LinkStratum};
+use std::collections::{BTreeMap, BTreeSet};
 use uuid::Uuid;
 const LABELS: [&str; 5] = [
     "Query view title",
@@ -17,6 +19,147 @@ const LABELS: [&str; 5] = [
     "Query relation budget",
 ];
 const SAVE_FAILED: &str = "Query write failed. Retry the existing pending save in Graph tools.";
+
+#[derive(Clone, Debug)]
+struct PresentedLink {
+    key: LinkKey,
+    representative: usize,
+    marks: LinkMarks,
+    strength: usize,
+    rows: usize,
+}
+
+fn endpoint_label(projection: &QueryProjection, endpoint: QueryNodeId) -> Option<String> {
+    match endpoint.stratum {
+        GraphStratum::Surface => Some(endpoint.id.to_string()),
+        GraphStratum::Resource => projection
+            .nodes
+            .iter()
+            .find(|node| node.identity == endpoint)
+            .map(|node| node.address.clone())
+            .filter(|address| !address.is_empty()),
+    }
+}
+
+fn legacy_members(payload: &serde_json::Value) -> BTreeSet<(String, Option<String>)> {
+    let mut members = BTreeSet::new();
+    for family in ["arrangement", "containment", "imported", "provenance"] {
+        let Some(data) = payload.get(family).filter(|data| !data.is_null()) else {
+            continue;
+        };
+        if let Some(kinds) = data.get("sub_kinds").and_then(serde_json::Value::as_array) {
+            for kind in kinds.iter().filter_map(serde_json::Value::as_str) {
+                members.insert((family.to_owned(), Some(kind.to_owned())));
+            }
+        }
+    }
+    if payload
+        .get("traversal")
+        .is_some_and(|traversal| !traversal.is_null())
+    {
+        members.insert(("traversal".into(), None));
+    }
+    members
+}
+
+/// Collapse the query projection's repeated/lifted rows into one display
+/// appearance per authoritative source stratum and endpoint pair. Shown
+/// bindings are deliberately left outside this grouping.
+fn presented_links(projection: &QueryProjection) -> Vec<PresentedLink> {
+    struct Accumulator {
+        presented: PresentedLink,
+        statements: BTreeSet<(String, String)>,
+        legacy: BTreeSet<(String, Option<String>)>,
+        supports: bool,
+        contradicts: bool,
+    }
+
+    let mut grouped: BTreeMap<LinkKey, Accumulator> = BTreeMap::new();
+    for (index, relation) in projection.relations.iter().enumerate() {
+        if relation.kind == model::VisualRelationKind::ShownBinding
+            || relation.source_from.stratum != relation.source_to.stratum
+        {
+            continue;
+        }
+        let stratum = match relation.source_from.stratum {
+            GraphStratum::Resource => LinkStratum::Resource,
+            GraphStratum::Surface => LinkStratum::Surface,
+        };
+        let (Some(from), Some(to)) = (
+            endpoint_label(projection, relation.source_from),
+            endpoint_label(projection, relation.source_to),
+        ) else {
+            continue;
+        };
+        let key = LinkKey::new(stratum, from, to);
+        let entry = grouped.entry(key.clone()).or_insert_with(|| Accumulator {
+            presented: PresentedLink {
+                key: key.clone(),
+                representative: index,
+                marks: LinkMarks::default(),
+                strength: 0,
+                rows: 0,
+            },
+            statements: BTreeSet::new(),
+            legacy: BTreeSet::new(),
+            supports: false,
+            contradicts: false,
+        });
+        entry.presented.rows += 1;
+        let relation_is_base_resource_row = relation.kind
+            == model::VisualRelationKind::ResourceLink
+            && relation.from.stratum == GraphStratum::Resource
+            && relation.to.stratum == GraphStratum::Resource;
+        let current_is_base_resource_row = projection.relations[entry.presented.representative]
+            .kind
+            == model::VisualRelationKind::ResourceLink
+            && projection.relations[entry.presented.representative]
+                .from
+                .stratum
+                == GraphStratum::Resource
+            && projection.relations[entry.presented.representative]
+                .to
+                .stratum
+                == GraphStratum::Resource;
+        if relation_is_base_resource_row && !current_is_base_resource_row {
+            entry.presented.representative = index;
+        }
+
+        let forward = from == key.first && to == key.second;
+        let mut eligible = false;
+        for statement in relation
+            .statements
+            .iter()
+            .filter(|statement| statement.is_held())
+        {
+            eligible = true;
+            entry.supports |= statement.predicate == "https://mere.computer/ns/rel#supports";
+            entry.contradicts |= statement.predicate == "https://mere.computer/ns/rel#contradicts";
+            let scope = serde_json::to_string(&statement.graph_scope).unwrap_or_default();
+            entry
+                .statements
+                .insert((statement.statement_id.clone(), scope));
+        }
+        let members = legacy_members(&relation.families);
+        eligible |= !members.is_empty();
+        entry.legacy.extend(members);
+        if eligible {
+            if forward {
+                entry.presented.marks.forward = true;
+            } else {
+                entry.presented.marks.reverse = true;
+            }
+        }
+    }
+    grouped
+        .into_values()
+        .map(|mut entry| {
+            entry.presented.marks.opposed = entry.supports && entry.contradicts;
+            entry.presented.strength = entry.statements.len() + entry.legacy.len();
+            entry.presented
+        })
+        .collect()
+}
 pub(super) struct Pane {
     inputs: Vec<TextInput>,
     scope: Option<(Uuid, String)>,
@@ -485,24 +628,86 @@ pub(super) fn render(snapshot: (Result<QueryProjection, String>, Option<(Uuid, S
         row[column] += 1;
     }
     let mut diagram: Vec<Child> = vec![];
-    for relation in &projection.relations {
-        let Some((_, ax, ay)) = positions.iter().find(|(id, ..)| *id == relation.from) else {
-            continue;
-        };
-        let Some((_, bx, by)) = positions.iter().find(|(id, ..)| *id == relation.to) else {
-            continue;
-        };
-        let (dx, dy) = (bx - ax, by - ay);
-        let length = dx.hypot(dy);
-        let angle = dy.atan2(dx).to_degrees();
-        let cue = relation.kind.cue(&projection.spec.styles);
-        let pieces: Vec<Child> = model::stroke_parts(cue, length).into_iter().map(|part| {
+    let links = presented_links(&projection);
+    let mut add_stroke =
+        |relation: &QueryRelation,
+         cue,
+         label: String,
+         data_kind: String,
+         link_attrs: Option<(LinkKey, LinkMarks, usize)>| {
+            let Some((_, ax, ay)) = positions.iter().find(|(id, ..)| *id == relation.from) else {
+                return;
+            };
+            let Some((_, bx, by)) = positions.iter().find(|(id, ..)| *id == relation.to) else {
+                return;
+            };
+            let (dx, dy) = (bx - ax, by - ay);
+            let length = dx.hypot(dy);
+            let angle = dy.atan2(dx).to_degrees();
+            let pieces: Vec<Child> = model::stroke_parts(cue, length).into_iter().map(|part| {
                 Box::new(el("div", ()).attr("aria-hidden", "true").attr("style", format!(
                     "display:block;position:absolute;left:{}px;top:{}px;width:{}px;height:{}px;background:currentColor;border-radius:{}px",
                 part.offset, part.top, part.width, part.height, if part.rounded { 1.5 } else { 0.0 }
             ))) as Child
         }).collect();
-        diagram.push(Box::new(el("div", pieces).attr("role", "img").attr("aria-label", format!("{}: {} to {}; source {:?} to {:?}", relation.kind.label(), relation.from.id, relation.to.id, relation.source_from.stratum, relation.source_to.stratum)).attr("data-query-relation", format!("{:?}", relation.kind)).attr("style", format!("position:absolute;left:{}px;top:{}px;width:{length}px;height:3px;transform-origin:0 0;transform:rotate({angle}deg)", ax+145.0, ay+48.0))));
+            let mut stroke = el("div", pieces)
+            .attr("role", "img")
+            .attr("aria-label", label)
+            .attr("data-query-relation", data_kind)
+            .attr("style", format!("position:absolute;left:{}px;top:{}px;width:{length}px;height:3px;transform-origin:0 0;transform:rotate({angle}deg)", ax+145.0, ay+48.0));
+            if let Some((key, marks, strength)) = link_attrs {
+                stroke = stroke
+                    .attr("data-link-key", key.stable_id())
+                    .attr("data-link-forward", marks.forward.to_string())
+                    .attr("data-link-reverse", marks.reverse.to_string())
+                    .attr("data-link-opposed", marks.opposed.to_string())
+                    .attr("data-link-strength", strength.to_string());
+            }
+            diagram.push(Box::new(stroke));
+        };
+    for link in &links {
+        let relation = &projection.relations[link.representative];
+        let kind = match link.key.stratum {
+            LinkStratum::Resource => model::VisualRelationKind::ResourceLink,
+            LinkStratum::Surface => model::VisualRelationKind::SurfaceLink,
+        };
+        let label = format!(
+            "{}: {} to {}; {} held contributions; forward {}, reverse {}, opposed {}",
+            kind.label(),
+            link.key.first,
+            link.key.second,
+            link.strength,
+            link.marks.forward,
+            link.marks.reverse,
+            link.marks.opposed
+        );
+        add_stroke(
+            relation,
+            kind.cue(&projection.spec.styles),
+            label,
+            format!("{kind:?}"),
+            Some((link.key.clone(), link.marks, link.strength)),
+        );
+    }
+    for relation in projection
+        .relations
+        .iter()
+        .filter(|relation| relation.kind == model::VisualRelationKind::ShownBinding)
+    {
+        add_stroke(
+            relation,
+            relation.kind.cue(&projection.spec.styles),
+            format!(
+                "{}: {:?} {} to {:?} {}",
+                relation.kind.label(),
+                relation.source_from.stratum,
+                relation.source_from.id,
+                relation.source_to.stratum,
+                relation.source_to.id
+            ),
+            format!("{:?}", relation.kind),
+            None,
+        );
     }
     for (node, (_, x, y)) in projection.nodes.iter().zip(&positions) {
         let mut content: Vec<Child> = vec![
@@ -600,14 +805,26 @@ pub(super) fn render(snapshot: (Result<QueryProjection, String>, Option<(Uuid, S
             ),
         )),
     ];
-    for (index, relation) in projection.relations.iter().enumerate() {
+    for link in &links {
         let source = projection.clone();
         let lease = scope.clone();
+        let key = link.key.clone();
+        let representative = projection.relations[link.representative].clone();
+        let direction = match (link.marks.forward, link.marks.reverse) {
+            (true, true) => "↔",
+            (true, false) => "→",
+            (false, true) => "←",
+            (false, false) => "—",
+        };
+        let opposed = if link.marks.opposed {
+            " · opposed"
+        } else {
+            ""
+        };
         children.push(Box::new(button(
             format!(
-                "Inspect query relation {}: {}",
-                index + 1,
-                relation.kind.label()
+                "Open {:?} link {} {} {} · {} held contributions{}",
+                key.stratum, key.first, direction, key.second, link.strength, opposed
             ),
             move |p: &mut TreePage, _| {
                 let result = p
@@ -618,31 +835,82 @@ pub(super) fn render(snapshot: (Result<QueryProjection, String>, Option<(Uuid, S
                         if product.retained_scope() != lease
                             || !source.is_current(product.source_graph()?)
                         {
-                            return Err("Query relation belongs to an obsolete source".into());
+                            return Err("Query link belongs to an obsolete source".into());
                         }
-                        serde_json::to_string_pretty(&source.relations[index])
-                            .map_err(|e| e.to_string())
+                        let graph = product.source_graph()?;
+                        let (first, second) = match key.stratum {
+                            LinkStratum::Surface => (
+                                representative.source_from.id,
+                                representative.source_to.id,
+                            ),
+                            LinkStratum::Resource => {
+                                let from = source
+                                    .nodes
+                                    .iter()
+                                    .find(|node| {
+                                        node.identity == representative.source_from
+                                    })
+                                    .and_then(|node| node.held_accesses.first())
+                                    .copied()
+                                    .ok_or("Resource link has no held appearance at its first endpoint")?;
+                                let to = source
+                                    .nodes
+                                    .iter()
+                                    .find(|node| node.identity == representative.source_to)
+                                    .and_then(|node| node.held_accesses.first())
+                                    .copied()
+                                    .ok_or("Resource link has no held appearance at its second endpoint")?;
+                                source.access_for(graph, representative.source_from.id, from)?;
+                                source.access_for(graph, representative.source_to.id, to)?;
+                                (from, to)
+                            },
+                        };
+                        Ok(graphshell::link_inspection::LinkTarget::new(first, second))
                     });
                 match result {
-                    Ok(text) => {
-                        if let Some(scope) = lease.clone() {
-                            p.query_views.inspection = Some((scope, source.source_revision, text));
+                    Ok(target) => {
+                        if p.inspected_link != Some(target) {
+                            p.opened_link_layout = None;
+                            p.opened_link_error = None;
+                            p.inspected_statement = None;
+                            p.inspected_link_member = None;
                         }
+                        p.inspected_link = Some(target);
+                        p.tools_open = true;
+                        p.query_views.status = "Opened source link reading".into();
+                        p.shared.dirty.set(true);
                     },
-                    Err(e) => p.query_views.status = e,
+                    Err(error) => p.query_views.status = error,
                 }
             },
         )));
         children.push(Box::new(el(
             "p",
             format!(
-                "{} · {:?} {} → {:?} {} · {} statements · hop cost {}",
+                "{:?} link · {} merged projection rows · forward {} · reverse {} · opposed {} · strength {}",
+                link.key.stratum,
+                link.rows,
+                link.marks.forward,
+                link.marks.reverse,
+                link.marks.opposed,
+                link.strength
+            ),
+        )));
+    }
+    for relation in projection
+        .relations
+        .iter()
+        .filter(|relation| relation.kind == model::VisualRelationKind::ShownBinding)
+    {
+        children.push(Box::new(el(
+            "p",
+            format!(
+                "{} · {:?} {} → {:?} {} · hop cost {}",
                 relation.kind.label(),
                 relation.source_from.stratum,
                 relation.source_from.id,
                 relation.source_to.stratum,
                 relation.source_to.id,
-                relation.statements.len(),
                 relation.hop_cost
             ),
         )));
@@ -805,4 +1073,195 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
             "query-view-edge-stroke",
             pane.options.styles.cross_stratum_edge.css(),
         )
+}
+
+#[cfg(test)]
+mod grouping_tests {
+    use super::*;
+    use mere::kernel::graph::{SemanticStatement, SemanticSubKind};
+    use mere::kernel::types::GraphScope;
+
+    fn statement(id: &str, kind: SemanticSubKind) -> SemanticStatement {
+        let predicate = match kind {
+            SemanticSubKind::Supports => "https://mere.computer/ns/rel#supports",
+            SemanticSubKind::Contradicts => "https://mere.computer/ns/rel#contradicts",
+            _ => "https://mere.computer/ns/rel#cites",
+        };
+        let mut statement = SemanticStatement::new(
+            predicate.into(),
+            Some(kind),
+            None,
+            GraphScope::Default,
+            Some("https://author.test/a".into()),
+            Some(10),
+        );
+        statement.statement_id = id.into();
+        statement
+    }
+
+    fn relation(
+        from: QueryNodeId,
+        to: QueryNodeId,
+        source_from: QueryNodeId,
+        source_to: QueryNodeId,
+        kind: model::VisualRelationKind,
+        statements: Vec<SemanticStatement>,
+    ) -> QueryRelation {
+        QueryRelation {
+            from,
+            to,
+            kind,
+            source_from,
+            source_to,
+            statements,
+            families: serde_json::json!({}),
+            hop_cost: if kind == model::VisualRelationKind::ShownBinding {
+                0
+            } else {
+                1
+            },
+        }
+    }
+
+    #[test]
+    fn grouping_keeps_strata_separate_deduplicates_lifted_rows_and_preserves_directions() {
+        let resource_a = QueryNodeId::resource(Uuid::from_u128(1));
+        let resource_b = QueryNodeId::resource(Uuid::from_u128(2));
+        let surface_a = QueryNodeId::surface(Uuid::from_u128(1));
+        let surface_b = QueryNodeId::surface(Uuid::from_u128(2));
+        let surface_alias_a = QueryNodeId::surface(Uuid::from_u128(3));
+        let surface_alias_b = QueryNodeId::surface(Uuid::from_u128(4));
+        let nodes = vec![
+            QueryNode {
+                identity: resource_a,
+                title: "A resource".into(),
+                address: "https://resource.test/a".into(),
+                member: true,
+                tags: vec![],
+                held_accesses: vec![surface_a.id],
+            },
+            QueryNode {
+                identity: resource_b,
+                title: "B resource".into(),
+                address: "https://resource.test/b".into(),
+                member: true,
+                tags: vec![],
+                held_accesses: vec![surface_b.id],
+            },
+            QueryNode {
+                identity: surface_a,
+                title: "A surface".into(),
+                address: String::new(),
+                member: true,
+                tags: vec![],
+                held_accesses: vec![],
+            },
+            QueryNode {
+                identity: surface_b,
+                title: "B surface".into(),
+                address: String::new(),
+                member: true,
+                tags: vec![],
+                held_accesses: vec![],
+            },
+            QueryNode {
+                identity: surface_alias_a,
+                title: "A alias".into(),
+                address: String::new(),
+                member: true,
+                tags: vec![],
+                held_accesses: vec![],
+            },
+            QueryNode {
+                identity: surface_alias_b,
+                title: "B alias".into(),
+                address: String::new(),
+                member: true,
+                tags: vec![],
+                held_accesses: vec![],
+            },
+        ];
+        let projection = QueryProjection {
+            owner: Uuid::from_u128(9),
+            source_revision: 1,
+            spec: QueryViewSpec::select("fixture", "SELECT ?member WHERE {}"),
+            members: vec![],
+            missing_resources: vec![],
+            coverage: Default::default(),
+            nodes,
+            relations: vec![
+                relation(
+                    resource_a,
+                    resource_b,
+                    resource_a,
+                    resource_b,
+                    model::VisualRelationKind::ResourceLink,
+                    vec![statement("support", SemanticSubKind::Supports)],
+                ),
+                relation(
+                    resource_b,
+                    resource_a,
+                    resource_b,
+                    resource_a,
+                    model::VisualRelationKind::ResourceLink,
+                    vec![statement("contradiction", SemanticSubKind::Contradicts)],
+                ),
+                relation(
+                    surface_alias_a,
+                    surface_alias_b,
+                    resource_a,
+                    resource_b,
+                    model::VisualRelationKind::ResourceLink,
+                    vec![statement("support", SemanticSubKind::Supports)],
+                ),
+                relation(
+                    surface_a,
+                    surface_b,
+                    surface_a,
+                    surface_b,
+                    model::VisualRelationKind::SurfaceLink,
+                    vec![statement("surface-support", SemanticSubKind::Supports)],
+                ),
+                relation(
+                    resource_a,
+                    surface_a,
+                    resource_a,
+                    surface_a,
+                    model::VisualRelationKind::ShownBinding,
+                    vec![],
+                ),
+            ],
+        };
+
+        let groups = presented_links(&projection);
+        assert_eq!(groups.len(), 2);
+        let resource = groups
+            .iter()
+            .find(|group| group.key.stratum == LinkStratum::Resource)
+            .unwrap();
+        assert_eq!(resource.rows, 3);
+        assert_eq!(resource.strength, 2);
+        assert!(resource.marks.forward && resource.marks.reverse && resource.marks.opposed);
+        assert_eq!(
+            projection.relations[resource.representative].from.stratum,
+            GraphStratum::Resource,
+            "prefer the canonical Resource-to-Resource row for opening"
+        );
+        let surface = groups
+            .iter()
+            .find(|group| group.key.stratum == LinkStratum::Surface)
+            .unwrap();
+        assert_eq!(surface.rows, 1);
+        assert_eq!(surface.strength, 1);
+        assert!(surface.marks.forward && !surface.marks.reverse && !surface.marks.opposed);
+        assert_eq!(
+            projection
+                .relations
+                .iter()
+                .filter(|relation| relation.kind == model::VisualRelationKind::ShownBinding)
+                .count(),
+            1,
+            "shown-binding rows remain separate and are never folded into a link"
+        );
+    }
 }

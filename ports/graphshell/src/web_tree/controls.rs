@@ -125,6 +125,62 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
             .attr("aria-keyshortcuts", "Control+k Meta+k Shift+F10"),
         ));
     }
+    #[cfg(feature = "product")]
+    if !resident && !hosted {
+        let canvas = page.shared.canvas.borrow();
+        let local_ready = page.product.as_ref().is_some_and(|p| !p.selection_locked());
+        for (label, show, enabled) in [
+            (
+                "Hide selected link",
+                false,
+                local_ready && !canvas.selected_link_keys().is_empty(),
+            ),
+            (
+                "Show hidden links",
+                true,
+                local_ready && !canvas.hidden_link_keys().is_empty(),
+            ),
+        ] {
+            let mut control = focusable_if(
+                on_click(el("button", label), move |page: &mut TreePage, _| {
+                    if page.resident_mere_shown()
+                        || matches!(page.dataset, HostedDataset::Loaded(_))
+                    {
+                        return;
+                    }
+                    if let Some(product) = &mut page.product {
+                        let canvas = page.shared.canvas.borrow();
+                        let result = if show {
+                            product.show_hidden_links(&canvas)
+                        } else {
+                            product.hide_selected_links(&canvas)
+                        };
+                        if let Err(error) = result {
+                            product.status = error;
+                        }
+                        page.shared.dirty.set(true);
+                    }
+                }),
+                enabled,
+            )
+            .attr("data-link-visibility", if show { "show" } else { "hide" });
+            if !enabled {
+                control = control.attr("disabled", "").attr("aria-disabled", "true");
+            }
+            buttons.push(Box::new(control));
+        }
+    }
+    #[cfg(feature = "product")]
+    if let Some(product) = &page.product {
+        let (state, message) = product.link_visibility_state();
+        if state != "idle" {
+            buttons.push(Box::new(
+                el("span", message.to_owned())
+                    .attr("role", "status")
+                    .attr("data-link-visibility-status", state),
+            ));
+        }
+    }
     // Collapsed, the Graph tools region opens over the canvas from here.
     if !tools_docked(page) {
         buttons.push(Box::new(
@@ -224,9 +280,9 @@ impl TreePage {
                 canvas.pointer_up(button, x, y);
                 #[cfg(feature = "product")]
                 if event.button == PointerButton::Primary {
-                    let pairs = canvas.selected_link_pairs();
-                    if pairs.len() == 1 {
-                        opened_pair = pairs.first().copied();
+                    let keys = canvas.selected_link_keys();
+                    if keys.len() == 1 {
+                        opened_pair = canvas.link_appearance_pair(&keys[0]);
                     }
                 }
                 context = canvas.take_context_request();

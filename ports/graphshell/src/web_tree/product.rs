@@ -42,6 +42,13 @@ enum CompletedEdit {
 type Completion = (App, CompletedEdit, Result<NodeMetadata, String>);
 type OperationCompletion = (App, Result<(), String>);
 type CouplingCompletion = (App, CouplingId, Result<Option<String>, String>);
+type LinkVisibilityCompletion = (
+    App,
+    Uuid,
+    std::collections::BTreeSet<scenograph::link::LinkKey>,
+    bool,
+    Result<(), String>,
+);
 
 pub(super) enum CouplingOperation {
     Apply(mere::coupling_edit::StrengthDraft),
@@ -88,6 +95,12 @@ pub(super) struct SavedProduct {
     commands: commands::Commands,
     operation_completed: Rc<RefCell<Option<OperationCompletion>>>,
     operation_pending: bool,
+    link_visibility_completed: Rc<RefCell<Option<LinkVisibilityCompletion>>>,
+    link_visibility_pending: bool,
+    link_visibility_uncertain_session: Option<Uuid>,
+    link_visibility_desired: Option<std::collections::BTreeSet<scenograph::link::LinkKey>>,
+    link_visibility_save_state: &'static str,
+    link_visibility_status: String,
     pub(super) forme_reconcile_session: Option<Uuid>,
     pub(super) forme_new_session: Option<Uuid>,
     operation_success: Option<String>,
@@ -213,6 +226,12 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         commands,
         operation_completed: Rc::new(RefCell::new(None)),
         operation_pending: false,
+        link_visibility_completed: Rc::new(RefCell::new(None)),
+        link_visibility_pending: false,
+        link_visibility_uncertain_session: None,
+        link_visibility_desired: None,
+        link_visibility_save_state: "idle",
+        link_visibility_status: String::new(),
         forme_reconcile_session: None,
         forme_new_session: None,
         operation_success: None,
@@ -222,6 +241,18 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
 
 fn now_secs() -> u64 {
     (js_sys::Date::now() / 1_000.0) as u64
+}
+
+fn link_key_is_present(
+    graph: &Graph,
+    pair: (Uuid, Uuid),
+    expected: &scenograph::link::LinkKey,
+) -> bool {
+    let source = scenograph::link::LinkSource::Unavailable {
+        reason: "Graphshell is validating a local view target".into(),
+    };
+    mere::canvas::link_reading::read_link(graph, pair.0, pair.1, source)
+        .is_ok_and(|reading| reading.links.iter().any(|link| &link.key == expected))
 }
 
 impl SavedProduct {
@@ -243,12 +274,15 @@ impl SavedProduct {
             || self.completed.borrow().is_some()
             || self.coupling_completed.borrow().is_some()
             || self.operation_completed.borrow().is_some()
+            || self.link_visibility_completed.borrow().is_some()
             || self.projection.changed()
             || self.projection.needs_frame()
     }
     pub(super) fn selection_locked(&self) -> bool {
         self.saving
             || self.operation_pending
+            || self.link_visibility_pending
+            || self.link_visibility_uncertain_session.is_some()
             || self.file_requested
             || self.pending_intake.is_some()
             || self.pending_detail.is_some()
@@ -393,6 +427,185 @@ impl SavedProduct {
             .as_ref()
             .map(|app| app.host.graph())
             .ok_or_else(|| "Source inspection will resume when the current save finishes".into())
+    }
+
+    /// Product-visible save state for whole-link view intent. `uncertain`
+    /// means the backend did not confirm whether the last write committed;
+    /// actions remain locked until this product is reopened.
+    pub(super) fn link_visibility_state(&self) -> (&'static str, &str) {
+        (
+            self.link_visibility_save_state,
+            self.link_visibility_status.as_str(),
+        )
+    }
+
+    /// Restore canonical whole-link hides from this session's acknowledged
+    /// Graphshell canvas view. Call after mounting the current product graph
+    /// and again after an acknowledged owner/session switch.
+    pub(super) fn restore_canvas_link_hides(&mut self, canvas: &mut Canvas) {
+        if self.link_visibility_pending || self.link_visibility_completed.borrow().is_some() {
+            self.link_visibility_save_state = "pending";
+            self.link_visibility_status = "Waiting for the link visibility save to finish".into();
+            return;
+        }
+        let Some(app) = self.app.as_ref() else {
+            self.link_visibility_save_state = "error";
+            self.link_visibility_status = "The local graph is unavailable".into();
+            return;
+        };
+        let owner = app.host.graph_session().id().0;
+        if let Some(uncertain) = self.link_visibility_uncertain_session {
+            if uncertain == owner {
+                self.link_visibility_save_state = "uncertain";
+                self.link_visibility_status =
+                    "The previous save is unconfirmed; reopen this session before changing link visibility".into();
+                return;
+            }
+            self.link_visibility_uncertain_session = None;
+            self.link_visibility_desired = None;
+        }
+        if self.session.parse().ok() != Some(owner) {
+            self.link_visibility_save_state = "error";
+            self.link_visibility_status =
+                "The product session has not reconciled to the current owner".into();
+            return;
+        }
+        if canvas.graph().revision() != app.host.graph().revision() {
+            self.link_visibility_save_state = "error";
+            self.link_visibility_status =
+                "The canvas graph has not reconciled to the current owner".into();
+            return;
+        }
+        let hidden = app
+            .host
+            .view(graphshell::mere_host::GRAPHSHELL, "canvas")
+            .map(|view| view.hidden_links.clone())
+            .unwrap_or_else(std::collections::BTreeSet::new);
+        let count = hidden.len();
+        canvas.set_hidden_link_keys(hidden);
+        self.link_visibility_save_state = "saved";
+        self.link_visibility_status = if count == 0 {
+            "No saved whole-link hides".into()
+        } else {
+            format!("Restored {count} saved whole-link hide(s)")
+        };
+    }
+
+    /// Persist selected canonical link hides. Canvas visibility is published
+    /// only after `MereHost::set_view` confirms its IndexedDB write.
+    pub(super) fn hide_selected_links(&mut self, canvas: &Canvas) -> Result<(), String> {
+        if self.selection_locked() {
+            return Err("Another save is pending or its outcome is unconfirmed".into());
+        }
+        let selected = canvas.selected_link_keys();
+        if selected.is_empty() {
+            return self.link_visibility_refusal("Select a link before hiding it".into());
+        }
+        let (owner, mut intent) = match self.link_visibility_intent_for_canvas(canvas) {
+            Ok(state) => state,
+            Err(error) => return self.link_visibility_refusal(error),
+        };
+        for key in selected {
+            let Some(pair) = canvas.link_appearance_pair(&key) else {
+                return self.link_visibility_refusal(format!(
+                    "The selected link {key:?} has no current appearance"
+                ));
+            };
+            let owner_has_key = match self.source_graph() {
+                Ok(graph) => link_key_is_present(graph, pair, &key),
+                Err(error) => return self.link_visibility_refusal(error),
+            };
+            if !link_key_is_present(canvas.graph(), pair, &key) || !owner_has_key {
+                return self.link_visibility_refusal(format!(
+                    "The selected link {key:?} does not belong to the current product graph"
+                ));
+            }
+            intent.hidden_links.insert(key);
+        }
+        self.persist_link_visibility(owner, intent.hidden_links.clone(), true, intent)
+    }
+
+    /// Clear only canonical whole-link hides. Legacy exact-cell filters and
+    /// every other field in the saved canvas view are preserved.
+    pub(super) fn show_hidden_links(&mut self, canvas: &Canvas) -> Result<(), String> {
+        if self.selection_locked() {
+            return Err("Another save is pending or its outcome is unconfirmed".into());
+        }
+        let (owner, mut intent) = match self.link_visibility_intent_for_canvas(canvas) {
+            Ok(state) => state,
+            Err(error) => return self.link_visibility_refusal(error),
+        };
+        if intent.hidden_links.is_empty() {
+            self.link_visibility_save_state = "saved";
+            self.link_visibility_status = "No whole-link hides to show".into();
+            return Ok(());
+        }
+        intent.hidden_links.clear();
+        self.persist_link_visibility(owner, std::collections::BTreeSet::new(), false, intent)
+    }
+
+    fn link_visibility_refusal(&mut self, error: String) -> Result<(), String> {
+        self.link_visibility_save_state = "error";
+        self.link_visibility_status = error.clone();
+        Err(error)
+    }
+
+    fn link_visibility_intent_for_canvas(
+        &self,
+        canvas: &Canvas,
+    ) -> Result<(Uuid, graphshell::mere_host::SessionViewIntent), String> {
+        let app = self.app.as_ref().ok_or("The local graph is unavailable")?;
+        let owner = app.host.graph_session().id().0;
+        if self.session.parse().ok() != Some(owner) {
+            return Err("The product is not reconciled to its current graph session".into());
+        }
+        if canvas.graph().revision() != app.host.graph().revision() {
+            return Err("The canvas is stale relative to the current product graph".into());
+        }
+        let mut intent = app
+            .host
+            .view(graphshell::mere_host::GRAPHSHELL, "canvas")
+            .cloned()
+            .unwrap_or_default();
+        let canvas_hidden: std::collections::BTreeSet<_> =
+            canvas.hidden_link_keys().into_iter().collect();
+        if canvas_hidden != intent.hidden_links {
+            return Err(
+                "Restore the current session's saved link visibility before changing it".into(),
+            );
+        }
+        Ok((owner, intent))
+    }
+
+    fn persist_link_visibility(
+        &mut self,
+        owner: Uuid,
+        desired: std::collections::BTreeSet<scenograph::link::LinkKey>,
+        clear_selected_links: bool,
+        intent: graphshell::mere_host::SessionViewIntent,
+    ) -> Result<(), String> {
+        let Some(mut app) = self.app.take() else {
+            return Err("The local graph is unavailable".into());
+        };
+        self.saving = true;
+        self.link_visibility_pending = true;
+        self.link_visibility_desired = Some(desired.clone());
+        self.link_visibility_save_state = "pending";
+        self.link_visibility_status = if desired.is_empty() {
+            "Saving whole-link visibility…".into()
+        } else {
+            format!("Saving {} whole-link hide(s)…", desired.len())
+        };
+        let completed = self.link_visibility_completed.clone();
+        wasm_bindgen_futures::spawn_local(async move {
+            let result = app
+                .host
+                .set_view(graphshell::mere_host::GRAPHSHELL, "canvas", intent)
+                .await
+                .map_err(|error| error.to_string());
+            *completed.borrow_mut() = Some((app, owner, desired, clear_selected_links, result));
+        });
+        Ok(())
     }
 
     pub(super) fn source_session_id(&self) -> Result<Uuid, String> {
@@ -678,6 +891,7 @@ impl SavedProduct {
         if let Some((app, id, result)) = coupling {
             let owner = app.host.graph_session().id().0;
             let previous_owner = self.session.parse().ok();
+            let owner_changed = previous_owner != Some(owner);
             // Reconciliation installs the complete returned owner graph. Capture
             // an acknowledged coupling change first: its new force inputs must
             // restart settling, unlike an ordinary metadata-only completion.
@@ -709,15 +923,72 @@ impl SavedProduct {
             self.session = owner.to_string();
             self.forme_reconcile_session = Some(owner);
             self.app = Some(app);
+            if owner_changed {
+                self.restore_canvas_link_hides(canvas);
+            }
             self.saving = false;
             self.save_state = if result.is_ok() { "saved" } else { "error" };
             self.coupling_result = Some(result);
             return true;
         }
 
+        let link_visibility = self.link_visibility_completed.borrow_mut().take();
+        if let Some((app, requested_owner, desired, clear_selected_links, result)) = link_visibility
+        {
+            let owner = app.host.graph_session().id().0;
+            let owner_matches =
+                owner == requested_owner && self.session.parse().ok() == Some(owner);
+            let persisted = app
+                .host
+                .view(graphshell::mere_host::GRAPHSHELL, "canvas")
+                .map(|view| view.hidden_links.clone())
+                .unwrap_or_default();
+            let confirmed = result.is_ok() && owner_matches && persisted == desired;
+            self.session = owner.to_string();
+            self.forme_reconcile_session = Some(owner);
+            self.app = Some(app);
+            self.saving = false;
+            self.link_visibility_pending = false;
+            if confirmed {
+                canvas.set_hidden_link_keys(desired.iter().cloned());
+                if clear_selected_links
+                    && canvas
+                        .selected_link_keys()
+                        .iter()
+                        .all(|key| desired.contains(key))
+                {
+                    canvas.hide_selected_links();
+                }
+                self.link_visibility_desired = None;
+                self.link_visibility_uncertain_session = None;
+                self.link_visibility_save_state = "saved";
+                self.link_visibility_status = if desired.is_empty() {
+                    "All whole-link hides are cleared".into()
+                } else {
+                    format!("Saved {} whole-link hide(s)", desired.len())
+                };
+            } else {
+                let cause = match result {
+                    Err(error) => format!("{error}; the backend did not confirm the write"),
+                    Ok(()) if !owner_matches => {
+                        "the owning session changed before the saved view could be applied".into()
+                    },
+                    Ok(()) => "the acknowledged view did not contain the requested hide set".into(),
+                };
+                self.link_visibility_desired = Some(desired);
+                self.link_visibility_uncertain_session = Some(owner);
+                self.link_visibility_save_state = "uncertain";
+                self.link_visibility_status = format!(
+                    "Link visibility save is unconfirmed ({cause}); reopen this session before retrying"
+                );
+            }
+            return true;
+        }
+
         let operation = self.operation_completed.borrow_mut().take();
         if let Some((app, result)) = operation {
             let owner = app.host.graph_session().id().0;
+            let owner_changed = self.session.parse().ok() != Some(owner);
             graphshell::local_scene::reconcile_completed_graph(
                 canvas,
                 self.session.parse().ok(),
@@ -727,6 +998,9 @@ impl SavedProduct {
             self.session = owner.to_string();
             self.forme_reconcile_session = Some(owner);
             self.app = Some(app);
+            if owner_changed {
+                self.restore_canvas_link_hides(canvas);
+            }
             self.saving = false;
             match result {
                 Ok(()) => {
@@ -751,6 +1025,7 @@ impl SavedProduct {
             return projection_changed || projection_advanced;
         };
         let owner = app.host.graph_session().id().0;
+        let owner_changed = self.session.parse().ok() != Some(owner);
         graphshell::local_scene::reconcile_completed_graph(
             canvas,
             self.session.parse().ok(),
@@ -763,6 +1038,9 @@ impl SavedProduct {
             self.pending_intake = self.clip_member.take();
         }
         self.app = Some(app);
+        if owner_changed {
+            self.restore_canvas_link_hides(canvas);
+        }
         self.saving = false;
         match result {
             Ok(saved) => {

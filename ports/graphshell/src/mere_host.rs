@@ -6,7 +6,7 @@
 
 //! Mere graph truth adapted to Graphshell's portable endpoint vocabulary.
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::time::{Duration, SystemTime};
 
 use chartulary::{FacetError, FacetId};
@@ -19,7 +19,9 @@ use chirograph::{
 };
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, ProjectionSource};
 use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
-use mere::kernel::graph::{Author, CapturedDelta, Graph, NodeFacetStore, NodeKey, RelationKind};
+use mere::kernel::graph::{
+    Author, CapturedDelta, Graph, NodeFacetStore, NodeKey, RelationKey, RelationKind,
+};
 use mere::kernel::persistence::GraphSnapshot;
 use mere::kernel::time::wall_clock_now;
 use muniment::{Backend, JsonSlots, StoreError};
@@ -30,8 +32,8 @@ use pandect::{
     GraphSession, MereSessions, Pending, Reverted, SessionError, SessionId, ViewIntent, ViewKey,
 };
 use sceno::{
-    Arrangement, Footprint, InstanceId, ProjectedItem, Rect, Representation, RoutedRelation, Scene,
-    Score, Size2, SourceRef, Transform2, Vec2,
+    Arrangement, Footprint, InstanceId, LinkKey, LinkStratum, ProjectedItem, Rect, Representation,
+    RoutedRelation, Scene, Score, Size2, SourceRef, Transform2, Vec2,
 };
 use scenograph::SourceBinding;
 use scenograph::link::{LinkSource, LinkSourceRevision};
@@ -1119,7 +1121,47 @@ impl<B: Backend> MereHost<B> {
             resources.insert(resource, bytes);
         }
 
-        for (_, relation) in self.graph().projected_relations() {
+        let mut routed_links = BTreeSet::new();
+        for (relation_key, relation) in self.graph().projected_relations() {
+            let Some(key) = routed_link_key(self.graph(), relation_key, relation.from, relation.to)
+            else {
+                continue;
+            };
+            let display_pair = if relation.from <= relation.to {
+                (relation.from, relation.to)
+            } else {
+                (relation.to, relation.from)
+            };
+            if !routed_links.insert((key.clone(), display_pair)) {
+                continue;
+            }
+            let from_id = self
+                .graph()
+                .get_node(relation.from)
+                .ok_or(MereHostError::MissingResource)?
+                .id;
+            let to_id = self
+                .graph()
+                .get_node(relation.to)
+                .ok_or(MereHostError::MissingResource)?
+                .id;
+            let reading = mere::canvas::link_reading::read_link(
+                self.graph(),
+                from_id,
+                to_id,
+                self.link_source(),
+            )
+            .map_err(MereHostError::InvalidSnapshot)?;
+            let summary = reading
+                .links
+                .iter()
+                .find(|link| link.key == key)
+                .ok_or_else(|| {
+                    MereHostError::InvalidSnapshot(
+                        "A routed source link was absent from its reading".into(),
+                    )
+                })?
+                .rest_summary(&from_id.to_string(), &to_id.to_string());
             let (Some(&from), Some(&to)) = (
                 instance_of.get(&relation.from),
                 instance_of.get(&relation.to),
@@ -1136,8 +1178,17 @@ impl<B: Backend> MereHost<B> {
                     Vec2::new(from_position.x, from_position.y),
                     Vec2::new(to_position.x, to_position.y),
                 ],
-                kind: Some(relation_kind_label(relation.kind).to_string()),
+                kind: Some(
+                    match key.stratum {
+                        LinkStratum::Surface => "link.surface",
+                        LinkStratum::Resource => "link.resource",
+                    }
+                    .into(),
+                ),
                 weight: Some(1.0),
+                link_key: Some(key),
+                marks: summary.marks,
+                strength: Some(summary.strength),
             });
         }
 
@@ -1385,6 +1436,33 @@ fn address_kind_label(kind: mere::kernel::address::AddressKind) -> &'static str 
         AddressKind::GraphshellClip => "clip",
         AddressKind::Directory => "directory",
         AddressKind::Unknown => "custom",
+    }
+}
+
+/// Resolve a portable link identity from the owning relation handle, never
+/// from its display kind (custom declarations can place kinds in either
+/// graph stratum).
+fn routed_link_key(
+    graph: &Graph,
+    relation: RelationKey,
+    from: NodeKey,
+    to: NodeKey,
+) -> Option<LinkKey> {
+    match relation {
+        RelationKey::Surface(_) => Some(LinkKey::new(
+            LinkStratum::Surface,
+            graph.get_node(from)?.id.to_string(),
+            graph.get_node(to)?.id.to_string(),
+        )),
+        RelationKey::Resource(_) => {
+            let from = graph.resource(graph.shown_resource_id(from)?)?;
+            let to = graph.resource(graph.shown_resource_id(to)?)?;
+            Some(LinkKey::new(
+                LinkStratum::Resource,
+                from.canonical_iri(),
+                to.canonical_iri(),
+            ))
+        },
     }
 }
 
