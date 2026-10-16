@@ -72,7 +72,8 @@ impl AnswerProvider {
     }
 }
 const CSS: &str = r#"
-.answer-pane { padding: 12px; }
+.answer-pane { box-sizing: border-box; padding: 12px; color: rgb(230,235,245); font-size: 14px; }
+.answer-pane button { color: rgb(230,235,245); background-color: rgb(36,44,62); }
 .answer-heading { font-size: 18px; margin-bottom: 8px; }
 .answer-controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
 .answer-button { padding: 6px 10px; border: 1px solid rgb(105,115,135); border-radius: 5px; }
@@ -81,7 +82,7 @@ const CSS: &str = r#"
 .answer-source { padding: 10px; border: 1px solid rgb(100,110,135); margin: 10px 0; }
 .answer-version { font-size: 12px; overflow-wrap: anywhere; }
 .answer-history { margin: 12px 0; }
-.answer-question input { min-width: 160px; width: 100%; }
+.answer-question { box-sizing: border-box; min-height: 32px; min-width: 160px; width: 100%; padding: 6px 8px; border: 1px solid rgb(105,115,135); border-radius: 5px; color: rgb(230,235,245); background-color: rgb(25,32,48); }
 "#;
 impl SurfaceProvider for AnswerProvider {
     fn pane_kind(&self) -> &PaneKindId {
@@ -223,11 +224,13 @@ fn answer_view(state: &AnswerState) -> AnswerView {
                     },
                 ),
         ),
+        row("Question"),
         Box::new(lens(
             |input: &mut TextInput| {
                 text_field_typed(input)
                     .attr("aria-label", "Question")
                     .attr("data-answer-question", "true")
+                    .attr("class", "answer-question")
             },
             |state: &mut AnswerState| &mut state.question,
         )),
