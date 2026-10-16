@@ -134,10 +134,13 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     }
     let inspection_fixture = params.get("fixture").as_deref() == Some("field-inspection");
     let link_history_fixture = params.get("fixture").as_deref() == Some("link-history");
+    let link_rest_fixture = params.get("fixture").as_deref() == Some("link-rest");
     let query_fixture = params.get("fixture").as_deref() == Some("retained-content-query");
     let retained_fixture =
         query_fixture || params.get("fixture").as_deref() == Some("retained-content");
-    let database = if query_fixture {
+    let database = if link_rest_fixture {
+        "graphshell-link-rest-p4-v1"
+    } else if query_fixture {
         "graphshell-retained-content-query-acceptance"
     } else if retained_fixture {
         "graphshell-retained-content-acceptance"
@@ -166,6 +169,11 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     if link_history_fixture && !reopened {
         app.host
             .seed_link_history_fixture()
+            .map_err(|error| error.to_string())?;
+    }
+    if link_rest_fixture && !reopened {
+        app.host
+            .seed_link_rest_fixture()
             .map_err(|error| error.to_string())?;
     }
     let history = history::HistoryControls::load(&mut app, capture_store).await?;
@@ -562,7 +570,7 @@ impl SavedProduct {
         if canvas.graph().revision() != app.host.graph().revision() {
             return Err("The canvas is stale relative to the current product graph".into());
         }
-        let mut intent = app
+        let intent = app
             .host
             .view(graphshell::mere_host::GRAPHSHELL, "canvas")
             .cloned()

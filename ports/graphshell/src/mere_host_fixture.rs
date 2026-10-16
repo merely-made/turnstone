@@ -16,8 +16,9 @@ use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert
 use mere::kernel::graph::{
     ArrangementSubKind, ContainmentSubKind, Coupling, CouplingId, CouplingResponse, EdgeAssertion,
     Field, FieldDefinition, FieldExtent, FieldId, FieldLifecycle, Graph, NodeKey, NodeSelector,
-    ProvenanceSubKind, ScalarField, SemanticStatement, SemanticSubKind, VectorField,
+    ProvenanceSubKind, ResourceNode, ScalarField, SemanticStatement, SemanticSubKind, VectorField,
 };
+use mere::kernel::persistence::PersistedResourceRecord;
 use mere::kernel::types::{AssertionBasis, AssertionMethod, GraphScope};
 use muniment::Backend;
 use serde_json::json;
@@ -31,7 +32,142 @@ use crate::mere_host::{
     MereHost, MereHostError, SelectedPersonaRef, UNKNOWN_FIXTURE_FACET,
 };
 
+pub(crate) const LINK_REST_A1_ADDRESS: &str = "https://link-rest.fixture/a/first";
+pub(crate) const LINK_REST_A2_ADDRESS: &str = "https://link-rest.fixture/a/alias";
+pub(crate) const LINK_REST_B1_ADDRESS: &str = "https://link-rest.fixture/b/first";
+pub(crate) const LINK_REST_B2_ADDRESS: &str = "https://link-rest.fixture/b/alias";
+const LINK_REST_SOURCE: &str = "urn:graphshell:fixture:link-rest";
+
 impl<B: Backend + Clone> MereHost<B> {
+    /// Add a compact, source-owned link topology to a separately routed
+    /// acceptance store. The four surfaces represent two Resource aliases;
+    /// assertions remain ordinary exact graph statements with fixture IDs.
+    pub fn seed_link_rest_fixture(&mut self) -> Result<(), MereHostError> {
+        self.mutate_product_graph(|graph| {
+            let a1 = add_link_rest_node(graph, LINK_REST_A1_ADDRESS, "A first", -180.0, -40.0);
+            let a2 = add_link_rest_node(graph, LINK_REST_A2_ADDRESS, "A alias", -180.0, 40.0);
+            let b1 = add_link_rest_node(graph, LINK_REST_B1_ADDRESS, "B first", 180.0, -40.0);
+            let b2 = add_link_rest_node(graph, LINK_REST_B2_ADDRESS, "B alias", 180.0, 40.0);
+
+            let resource_a = ResourceNode::new(LINK_REST_A1_ADDRESS);
+            let resource_b = ResourceNode::new(LINK_REST_B1_ADDRESS);
+            for resource in [&resource_a, &resource_b] {
+                apply_graph_delta(
+                    graph,
+                    GraphDelta::ReplaySetResourceRecordById {
+                        resource_id: resource.id(),
+                        record: Some(PersistedResourceRecord {
+                            canonical_iri: resource.canonical_iri().to_owned(),
+                            facets: Vec::new(),
+                        }),
+                    },
+                );
+            }
+            for surface in [a1, a2] {
+                apply_graph_delta(
+                    graph,
+                    GraphDelta::ReplaySetShownResourceById {
+                        surface_id: graph.get_node(surface).expect("fixture surface").id,
+                        resource_id: Some(resource_a.id()),
+                    },
+                );
+            }
+            for surface in [b1, b2] {
+                apply_graph_delta(
+                    graph,
+                    GraphDelta::ReplaySetShownResourceById {
+                        surface_id: graph.get_node(surface).expect("fixture surface").id,
+                        resource_id: Some(resource_b.id()),
+                    },
+                );
+            }
+
+            for (from, to, id, kind, note, at_ms) in [
+                (
+                    a1,
+                    b1,
+                    "fixture:p4:link-rest:resource-support-primary",
+                    SemanticSubKind::Supports,
+                    "Primary support reason",
+                    1_700_000_000_100,
+                ),
+                (
+                    a1,
+                    b1,
+                    "fixture:p4:link-rest:resource-support-independent",
+                    SemanticSubKind::Supports,
+                    "Independent support reason",
+                    1_700_000_000_200,
+                ),
+                (
+                    b1,
+                    a1,
+                    "fixture:p4:link-rest:resource-contradiction",
+                    SemanticSubKind::Contradicts,
+                    "Opposing reading",
+                    1_700_000_000_300,
+                ),
+                (
+                    a2,
+                    b2,
+                    "fixture:p4:link-rest:surface-alias-grouping",
+                    SemanticSubKind::UserGrouped,
+                    "Alias surface grouping",
+                    1_700_000_000_400,
+                ),
+                (
+                    a1,
+                    b1,
+                    "fixture:p4:link-rest:surface-primary-grouping",
+                    SemanticSubKind::UserGrouped,
+                    "Primary surface grouping",
+                    1_700_000_000_450,
+                ),
+                (
+                    a1,
+                    b1,
+                    "fixture:p4:link-rest:resource-forward",
+                    SemanticSubKind::Cites,
+                    "Resource-level forward citation",
+                    1_700_000_000_500,
+                ),
+                (
+                    b1,
+                    a1,
+                    "fixture:p4:link-rest:resource-reverse",
+                    SemanticSubKind::Cites,
+                    "Resource-level reverse citation",
+                    1_700_000_000_600,
+                ),
+            ] {
+                graph
+                    .try_assert_persisted_semantic_statement(
+                        from,
+                        to,
+                        SemanticStatement {
+                            statement_id: id.into(),
+                            predicate: mere::kernel::graph::predicate_iri(kind).to_owned(),
+                            recognized_sub_kind: Some(kind),
+                            label: Some(note.into()),
+                            basis: AssertionBasis {
+                                note: Some(note.into()),
+                                method: None,
+                                evidence: vec![format!(
+                                    "urn:graphshell:fixture:link-rest:evidence:{id}"
+                                )],
+                            },
+                            graph_scope: GraphScope::User,
+                            provenance_iri: Some(LINK_REST_SOURCE.into()),
+                            first_asserted_ms: Some(at_ms),
+                            asserted_at_ms: Some(at_ms),
+                            withdrawn: None,
+                        },
+                    )
+                    .expect("fixture assertion IDs are unique and endpoints are present");
+            }
+        })
+    }
+
     /// Replace the reference pair's demo assertion with a deterministic
     /// lifecycle fixture. The browser route gives this fixture its own store.
     pub fn seed_link_history_fixture(&mut self) -> Result<(), MereHostError> {
@@ -566,6 +702,23 @@ fn add_fixture_node(
         GraphDelta::ReplayTouchNodeLastVisitedById {
             node_id: id,
             timestamp_ms: at_ms,
+        },
+    );
+    key
+}
+
+fn add_link_rest_node(graph: &mut Graph, address: &str, title: &str, x: f32, y: f32) -> NodeKey {
+    let key = add_node(
+        graph,
+        Some(Graph::node_namespace_id(address)),
+        address.to_owned(),
+        PortablePoint::new(x, y),
+    );
+    apply_graph_delta(
+        graph,
+        GraphDelta::SetNodeTitle {
+            key,
+            title: title.to_owned(),
         },
     );
     key
