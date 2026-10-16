@@ -24,6 +24,8 @@ pub mod graph_keys;
 pub mod local_endpoint;
 pub mod local_session;
 #[cfg(feature = "personal-sync")]
+pub mod personal_seals;
+#[cfg(feature = "personal-sync")]
 pub mod personal_sync_host;
 pub mod projection_host;
 pub mod quarantine;

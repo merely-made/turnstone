@@ -129,6 +129,8 @@ pub struct PersonalSyncHost {
     /// reason the roster is: a device keyed while the host runs must start
     /// reading sealed operations without a restart.
     keys: Arc<RwLock<Option<Arc<DataKeyring>>>>,
+    seals: super::personal_seals::PersonalGraphSeals,
+    sibling_topics: Mutex<Vec<[u8; 32]>>,
     /// Deterministic failure injection for key-transition rollback tests.
     #[cfg(test)]
     fail_next_key_author: std::sync::atomic::AtomicBool,
@@ -192,7 +194,8 @@ impl PersonalSyncHost {
             PersonalSyncHostError::Store(muniment::StoreError::Backend(error.to_string()))
         })?;
         let backend = RedbBackend::open(&config.store_path)?;
-        let transport_key = identity.derived_keypair(&personal_graph_identity_salt(config.graph))?;
+        let transport_key =
+            identity.derived_keypair(&personal_graph_identity_salt(config.graph))?;
         // The host knows which device it is; callers should not have to say so.
         // Leaving this to the caller is what makes an addressed-object filter
         // quietly inert, which is worse than absent because the lane still
@@ -367,6 +370,21 @@ impl PersonalSyncHost {
         )
         .await?;
 
+        let members = key_group.members().map_err(key_error)?;
+        let own_root = identity.master_public_key().to_bytes();
+        let (current_roots, historical_roots) =
+            sealing_roots(graph, &caught_up, &members, key_group.member(), own_root);
+        let current_keys = keys.read().await.clone();
+        let can_write = current_keys.is_some() && members.contains(&key_group.member());
+        let seals = super::personal_seals::PersonalGraphSeals(Arc::new(std::sync::RwLock::new(
+            super::personal_seals::SealingState {
+                keys: current_keys,
+                current_roots,
+                historical_roots,
+                can_write,
+                revision: 0,
+            },
+        )));
         let host = Self {
             graph,
             store_path: config.store_path,
@@ -381,6 +399,8 @@ impl PersonalSyncHost {
             own_root: identity.master_public_key().to_bytes(),
             key_group: Mutex::new(key_group),
             keys,
+            seals,
+            sibling_topics: Mutex::new(Vec::new()),
             #[cfg(test)]
             fail_next_key_author: std::sync::atomic::AtomicBool::new(false),
         };
@@ -440,6 +460,26 @@ impl PersonalSyncHost {
             .add_topics(peer, topics)
             .await
             .map_err(|error| PersonalSyncHostError::Transport(error.to_string()))
+    }
+
+    /// Live, non-exporting access to this graph's existing encryption group.
+    pub fn seals(&self) -> super::personal_seals::PersonalGraphSeals {
+        self.seals.clone()
+    }
+
+    /// Keep a sibling overlay on current peers and peers paired later.
+    pub async fn register_sibling_topic(
+        &self,
+        topic: [u8; 32],
+    ) -> Result<(), PersonalSyncHostError> {
+        let mut topics = self.sibling_topics.lock().await;
+        if !topics.contains(&topic) {
+            topics.push(topic);
+        }
+        for peer in self.known_peers().await? {
+            self.add_topics(peer.peer.to_bytes(), &[topic]).await?;
+        }
+        Ok(())
     }
 
     /// This device's blob store: what it serves to siblings, and where a
@@ -678,6 +718,10 @@ impl PersonalSyncHost {
             .add_peer(node_id)
             .await
             .map_err(|error| PersonalSyncHostError::Transport(error.to_string()))?;
+        let topics = self.sibling_topics.lock().await;
+        if !topics.is_empty() {
+            self.add_topics(node_id, &topics).await?;
+        }
         self.blob_authority.allow_reader(self.blob_scope, node_id);
         Ok(())
     }
@@ -691,6 +735,16 @@ impl PersonalSyncHost {
             .remove_peer(node_id)
             .await
             .map_err(|error| PersonalSyncHostError::Transport(error.to_string()))?;
+        let peer = PeerID::from_bytes(&node_id)
+            .map_err(|error| PersonalSyncHostError::Transport(error.to_string()))?;
+        let topics = self.sibling_topics.lock().await;
+        for topic in topics.iter() {
+            self.network
+                .transport()
+                .remove_topic(peer, *topic)
+                .await
+                .map_err(|error| PersonalSyncHostError::Transport(error.to_string()))?;
+        }
         self.blob_authority.deny_reader(self.blob_scope, &node_id);
         Ok(())
     }
@@ -1028,14 +1082,41 @@ impl PersonalSyncHost {
 
     /// Put the current keyring where the replica and intake will find it.
     async fn refresh_keyring(&self) -> Result<(), PersonalSyncHostError> {
-        let keyring = {
+        let (keyring, members, mine) = {
             let group = self.key_group.lock().await;
-            group.keyring().map_err(key_error)?
+            (
+                group.keyring().map_err(key_error)?,
+                group.members().map_err(key_error)?,
+                group.member(),
+            )
         };
+        let steps = {
+            let replica = self.replica.lock().await;
+            crate::personal_sync::key_agreement(&replica.sync_store(), self.graph).await?
+        };
+        let (current_roots, historical_roots) =
+            sealing_roots(self.graph, &steps, &members, mine, self.own_root);
         if let Some(keyring) = keyring.clone() {
             self.replica.lock().await.set_keyring(keyring);
         }
-        *self.keys.write().await = keyring;
+        *self.keys.write().await = keyring.clone();
+        let mut state = self.seals.0.write().unwrap();
+        // Reuse this very keyring, including its retained epochs. No parallel
+        // group engine or copied private identity is created for sibling lanes.
+        let changed = state.keys.as_ref().map(|keys| keys.epoch_ids())
+            != keyring.as_ref().map(|keys| keys.epoch_ids());
+        state.keys = keyring;
+        let can_write = state.keys.is_some() && members.contains(&mine);
+        if changed
+            || state.can_write != can_write
+            || state.current_roots != current_roots
+            || state.historical_roots != historical_roots
+        {
+            state.revision = state.revision.wrapping_add(1);
+        }
+        state.can_write = can_write;
+        state.current_roots = current_roots;
+        state.historical_roots = historical_roots;
         Ok(())
     }
 
@@ -1279,6 +1360,42 @@ fn value(label: impl Into<String>, value: impl Into<String>) -> CardValueV1 {
         label: label.into(),
         value: value.into(),
     }
+}
+
+fn sealing_roots(
+    graph: [u8; 32],
+    steps: &[KeyAgreementStep],
+    members: &[GroupRecipientId],
+    mine: GroupRecipientId,
+    own_root: [u8; 32],
+) -> (
+    std::collections::BTreeSet<[u8; 32]>,
+    std::collections::BTreeSet<[u8; 32]>,
+) {
+    let mut current = std::collections::BTreeSet::new();
+    let mut historical = std::collections::BTreeSet::from([own_root]);
+    if members.contains(&mine) {
+        current.insert(own_root);
+    }
+    for step in steps {
+        let KeyAgreementEvent::Prekey(bytes) = &step.step else {
+            continue;
+        };
+        let Ok(bundle) = GroupPrekeyBundle::from_bytes(bytes) else {
+            continue;
+        };
+        if bundle.group != stickleback::GroupSessionId(graph) {
+            continue;
+        }
+        let Ok(root) = bundle.personae_root() else {
+            continue;
+        };
+        historical.insert(root);
+        if members.contains(&bundle.recipient) {
+            current.insert(root);
+        }
+    }
+    (current, historical)
 }
 
 /// Both directions of the lane's Personae-root/group-seat correspondence,
@@ -1706,6 +1823,59 @@ mod tests {
         for host in hosts {
             host.close().await.unwrap();
         }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn private_sibling_topics_follow_live_pairing_and_unpairing() {
+        let temp = tempfile::tempdir().unwrap();
+        let identity = InMemoryProvider::from_seed([0x6b; 32]);
+        let host = PersonalSyncHost::open(
+            &identity,
+            PersonalSyncHostConfig {
+                graph: [0x6c; 32],
+                store_path: temp.path().join("graph.redb"),
+                roster: SyncRoster::new([identity.master_public_key().to_bytes()]),
+                selection: SyncSelection::default(),
+                peer_tickets: Vec::new(),
+                peer_hints: Vec::new(),
+                paired_nodes: Vec::new(),
+                relay_urls: Vec::new(),
+            },
+        )
+        .await
+        .unwrap();
+        let peer = InMemoryProvider::from_seed([0x6d; 32])
+            .master_public_key()
+            .to_bytes();
+        let topic = [0x6e; 32];
+        host.register_sibling_topic(topic).await.unwrap();
+        host.pair_node(peer).await.unwrap();
+        assert_eq!(
+            host.network
+                .transport()
+                .peers_for_topic(topic)
+                .await
+                .unwrap()[0]
+                .peer
+                .to_bytes(),
+            peer
+        );
+        assert_eq!(
+            host.known_peers().await.unwrap().len(),
+            1,
+            "the graph overlay survives adding a sibling"
+        );
+        host.unpair_node(peer).await.unwrap();
+        assert!(
+            host.network
+                .transport()
+                .peers_for_topic(topic)
+                .await
+                .unwrap()
+                .is_empty()
+        );
+        assert!(host.known_peers().await.unwrap().is_empty());
+        host.close().await.unwrap();
     }
 
     fn endpoint_for(host: &PersonalSyncHost) -> crate::transfer::TransferEndpointV1 {
