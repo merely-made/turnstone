@@ -1290,6 +1290,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
             },
         }
     } else if let Some(product) = &product {
+        placed = product.initial_fixture_positions();
         (product.graph(), "saved graph".to_string())
     } else {
         match web_graphs::requested() {

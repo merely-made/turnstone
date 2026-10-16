@@ -40,11 +40,15 @@ impl<B: Backend + Clone> MereHost<B> {
     /// acceptance store. The four surfaces represent two Resource aliases;
     /// assertions remain ordinary exact graph statements with fixture IDs.
     pub fn seed_link_rest_fixture(&mut self) -> Result<(), MereHostError> {
+        self.begin_profiled_session(
+            Graph::new(),
+            Some(pandect::graph_placement::PlacementProfile::RecordedStrataV1),
+        )?;
         self.mutate_product_graph(|graph| {
-            let a1 = add_link_rest_node(graph, LINK_REST_A1_ADDRESS, "A first", -180.0, -40.0);
-            let a2 = add_link_rest_node(graph, LINK_REST_A2_ADDRESS, "A alias", -180.0, 40.0);
-            let b1 = add_link_rest_node(graph, LINK_REST_B1_ADDRESS, "B first", 180.0, -40.0);
-            let b2 = add_link_rest_node(graph, LINK_REST_B2_ADDRESS, "B alias", 180.0, 40.0);
+            let a1 = add_link_rest_node(graph, LINK_REST_A1_ADDRESS, "A first", -180.0, -80.0);
+            let a2 = add_link_rest_node(graph, LINK_REST_A2_ADDRESS, "A alias", -180.0, 80.0);
+            let b1 = add_link_rest_node(graph, LINK_REST_B1_ADDRESS, "B first", 180.0, -80.0);
+            let b2 = add_link_rest_node(graph, LINK_REST_B2_ADDRESS, "B alias", 180.0, 80.0);
 
             let resource_a = ResourceNode::new(LINK_REST_A1_ADDRESS);
             let resource_b = ResourceNode::new(LINK_REST_B1_ADDRESS);
@@ -163,6 +167,24 @@ impl<B: Backend + Clone> MereHost<B> {
                     .expect("fixture assertion IDs are unique and endpoints are present");
             }
         })
+    }
+
+    /// Declared presentation coordinates for this isolated fixture. Graph
+    /// truth is position-free; these are reapplied only by its fixture route.
+    pub fn link_rest_fixture_positions(&self) -> Vec<(NodeKey, PortablePoint)> {
+        [
+            (LINK_REST_A1_ADDRESS, -180.0, -80.0),
+            (LINK_REST_A2_ADDRESS, -180.0, 80.0),
+            (LINK_REST_B1_ADDRESS, 180.0, -80.0),
+            (LINK_REST_B2_ADDRESS, 180.0, 80.0),
+        ]
+        .into_iter()
+        .filter_map(|(address, x, y)| {
+            self.graph()
+                .get_node_by_url(address)
+                .map(|(key, _)| (key, PortablePoint::new(x, y)))
+        })
+        .collect()
     }
 
     /// Replace the reference pair's demo assertion with a deterministic

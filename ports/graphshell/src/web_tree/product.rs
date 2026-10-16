@@ -79,6 +79,7 @@ pub(super) struct SavedProduct {
     pub(super) observed_session_changes: u64,
     pub(super) reopened: bool,
     pub(super) inspection_fixture: bool,
+    link_rest_fixture: bool,
     link_history_fixture: bool,
     intake_open: bool,
     intake_address: TextInput,
@@ -219,6 +220,7 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         observed_session_changes: 0,
         reopened,
         inspection_fixture,
+        link_rest_fixture,
         link_history_fixture,
         intake_open: false,
         intake_address: TextInput::new(""),
@@ -298,6 +300,23 @@ impl SavedProduct {
     pub(super) fn authority_nodes(&self) -> Option<usize> {
         self.app.as_ref().map(|app| app.host.graph().node_count())
     }
+    pub(super) fn initial_fixture_positions(
+        &self,
+    ) -> Option<
+        Vec<(
+            mere::kernel::graph::NodeKey,
+            mere::kernel::geometry::PortablePoint,
+        )>,
+    > {
+        self.link_rest_fixture
+            .then(|| {
+                self.app
+                    .as_ref()
+                    .map(|app| app.host.link_rest_fixture_positions())
+            })
+            .flatten()
+    }
+
     pub(super) fn graph(&self) -> Graph {
         self.app
             .as_ref()
