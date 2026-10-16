@@ -8,7 +8,7 @@ use super::*;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
 use mere::kernel::graph::{
     ArrangementSubKind, ContainmentSubKind, CoverageLayer, CoverageLimit, EdgeAssertion,
-    ImportedSubKind, NavigationTrigger, ProvenanceSubKind, SemanticStatement,
+    ImportedSubKind, NavigationTrigger, ProvenanceSubKind, RelationKind, SemanticStatement,
     SemanticStatementSpec, predicate_iri,
 };
 use mere::kernel::types::{AssertionBasis, AssertionMethod};
@@ -209,9 +209,18 @@ fn parallel_buckets_and_self_links_are_not_dropped_or_double_counted() {
     let (mut graph, [a, b, _, _]) = fixture();
     let id = assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:alice");
     let owner = inspect_statement(&graph, &id).unwrap().owner;
-    let edge = graph.to_snapshot().resource_edges.remove(0);
+    let edge = graph
+        .to_snapshot()
+        .resource_edges
+        .into_iter()
+        .find(|edge| {
+            edge.retained_assertions()
+                .iter()
+                .any(|statement| statement.statement_id == id)
+        })
+        .expect("the authored assertion is retained in its Resource bucket");
     let mut second = edge.clone();
-    let statement = &mut second.semantic.as_mut().unwrap().statements[0];
+    let statement = &mut second.retained_assertions_mut()[0];
     statement.statement_id = "urn:statement:parallel".into();
     statement.provenance_iri = Some("urn:author:bob".into());
     apply_graph_delta(
@@ -256,7 +265,7 @@ fn parallel_buckets_and_self_links_are_not_dropped_or_double_counted() {
 }
 
 #[test]
-fn session_sidecars_are_inspected_without_fabricating_statements() {
+fn session_sidecar_projection_preserves_its_canonical_assertion() {
     let (mut graph, [a, b, _, _]) = fixture();
     let from = graph.get_node_key_by_id(a).unwrap();
     let to = graph.get_node_key_by_id(b).unwrap();
@@ -271,19 +280,52 @@ fn session_sidecars_are_inspected_without_fabricating_statements() {
     let inspected = inspect_link(&graph, LinkTarget::new(a, b)).unwrap();
     assert_eq!(inspected.records.len(), 1);
     let record = &inspected.records[0];
-    assert!(record.statements.is_empty());
-    assert_eq!(record.owner.stratum, GraphStratum::Surface);
+    let canonical = graph
+        .get_edge(graph.find_edge_key(from, to).unwrap())
+        .unwrap()
+        .assertions()
+        .iter()
+        .find(|statement| statement.recognized_sub_kind.is_none())
+        .expect("the session Arrangement claim has an exact runtime assertion");
+    assert_eq!(record.statements.len(), 1);
+    assert_eq!(record.statements[0].statement_id, canonical.statement_id);
+    assert_eq!(record.statements[0].predicate, canonical.predicate);
+    assert_eq!(record.statements[0].recognized_sub_kind, None);
     assert_eq!(
-        record.families[0],
-        HeldFamily {
-            family: EdgeFamily::Arrangement,
-            data: json!({"sub_kinds": ["SplitPair"]}),
-        }
+        record.statements[0].provenance_iri,
+        canonical.provenance_iri
+    );
+    assert_eq!(
+        record.statements[0].asserted_at_ms,
+        canonical.asserted_at_ms
+    );
+    assert_eq!(
+        record.statements[0].first_asserted_ms,
+        canonical.first_asserted_ms
+    );
+    assert!(
+        graph.to_snapshot().edges.iter().all(|edge| {
+            edge.retained_assertions()
+                .iter()
+                .all(|statement| statement.statement_id != canonical.statement_id)
+        }),
+        "durable snapshots still omit session SplitPair assertions"
+    );
+    assert_eq!(record.owner.stratum, GraphStratum::Surface);
+    assert!(
+        record.families.is_empty(),
+        "Arrangement is represented by its exact assertion"
+    );
+    assert_eq!(
+        canonical.predicate,
+        RelationKind::Arrangement(ArrangementSubKind::SplitPair)
+            .predicate_iri()
+            .unwrap()
     );
 }
 
 #[test]
-fn mixed_nonsemantic_data_preserves_events_aggregates_and_family_values() {
+fn mixed_family_data_preserves_canonical_assertions_events_and_aggregates() {
     let (mut graph, [a, b, _, _]) = fixture();
     let from = graph.get_node_key_by_id(a).unwrap();
     let to = graph.get_node_key_by_id(b).unwrap();
@@ -310,37 +352,47 @@ fn mixed_nonsemantic_data_preserves_events_aggregates_and_family_values() {
         },
     );
     let inspected = inspect_link(&graph, LinkTarget::new(a, b)).unwrap();
-    assert!(
-        inspected
-            .records
-            .iter()
-            .all(|record| record.statements.is_empty())
-    );
+    let snapshot = graph.to_snapshot();
+    let canonical_ids: BTreeSet<_> = snapshot
+        .edges
+        .iter()
+        .flat_map(|edge| edge.retained_assertions())
+        .map(|statement| statement.statement_id.as_str())
+        .collect();
+    let statements: Vec<_> = inspected
+        .records
+        .iter()
+        .flat_map(|record| &record.statements)
+        .collect();
+    assert_eq!(statements.len(), 3);
+    assert!(statements.iter().all(|statement| {
+        statement.recognized_sub_kind.is_none()
+            && canonical_ids.contains(statement.statement_id.as_str())
+    }));
     let families: Vec<_> = inspected
         .records
         .iter()
         .flat_map(|record| &record.families)
         .collect();
-    for (family, value) in [
-        (
-            EdgeFamily::Containment,
-            json!({"sub_kinds": ["NotebookSection"]}),
-        ),
-        (
-            EdgeFamily::Imported,
-            json!({"sub_kinds": ["SessionImport"]}),
-        ),
-        (EdgeFamily::Provenance, json!({"sub_kinds": ["CopiedFrom"]})),
+    for kind in [
+        RelationKind::Containment(ContainmentSubKind::NotebookSection),
+        RelationKind::Imported(ImportedSubKind::SessionImport),
+        RelationKind::Provenance(ProvenanceSubKind::CopiedFrom),
     ] {
         assert_eq!(
-            families
+            statements
                 .iter()
-                .find(|held| held.family == family)
-                .unwrap()
-                .data,
-            value
+                .filter(|statement| statement.predicate == kind.predicate_iri().unwrap())
+                .count(),
+            1
         );
     }
+    assert!(
+        families
+            .iter()
+            .all(|family| family.family == EdgeFamily::Traversal),
+        "only event-shaped Traversal retains a legacy summary"
+    );
     let traversal = &families
         .iter()
         .find(|held| held.family == EdgeFamily::Traversal)
@@ -508,6 +560,68 @@ fn history_is_opt_in_preserves_lifecycle_and_sorts_undated_entries_last() {
     assert_eq!(history.entries[1].assertion.first_asserted_ms, Some(10));
     assert_eq!(history.entries[2].assertion.first_asserted_ms, Some(20));
     assert_eq!(history.entries[3].assertion.first_asserted_ms, None);
+}
+
+#[test]
+fn exact_containment_ids_are_independently_inspectable_and_withdrawable() {
+    let (mut graph, [a, b, _, _]) = fixture();
+    let predicate = RelationKind::Containment(ContainmentSubKind::CollectionMember)
+        .predicate_iri()
+        .expect("canonical containment predicate")
+        .to_owned();
+    for (id, author) in [
+        ("collection-claim-a", "urn:author:a"),
+        ("collection-claim-b", "urn:author:b"),
+    ] {
+        graph
+            .try_assert_persisted_relation_statement(
+                graph.get_node_key_by_id(a).unwrap(),
+                graph.get_node_key_by_id(b).unwrap(),
+                SemanticStatement {
+                    statement_id: id.into(),
+                    predicate: predicate.clone(),
+                    recognized_sub_kind: None,
+                    label: None,
+                    basis: AssertionBasis {
+                        note: Some(format!("independent {id}")),
+                        ..Default::default()
+                    },
+                    graph_scope: GraphScope::Custom("urn:collection:owners".into()),
+                    provenance_iri: Some(author.into()),
+                    first_asserted_ms: Some(30),
+                    asserted_at_ms: Some(31),
+                    withdrawn: None,
+                },
+            )
+            .unwrap();
+    }
+    let before = inspect_link(&graph, LinkTarget::new(a, b)).unwrap();
+    let ids = before.records[0]
+        .statements
+        .iter()
+        .map(|statement| statement.statement_id.as_str())
+        .collect::<BTreeSet<_>>();
+    assert_eq!(
+        ids,
+        BTreeSet::from(["collection-claim-a", "collection-claim-b"])
+    );
+    assert_eq!(before.records[0].statements[0].predicate, predicate);
+
+    graph.retract_assertion("collection-claim-b");
+    assert!(inspect_statement(&graph, "collection-claim-a").is_ok());
+    assert!(inspect_statement(&graph, "collection-claim-b").is_err());
+    let history = inspect_link_history(&graph, LinkTarget::new(a, b)).unwrap();
+    let retained = history
+        .entries
+        .iter()
+        .filter(|entry| entry.assertion.predicate == predicate)
+        .collect::<Vec<_>>();
+    assert_eq!(retained.len(), 2);
+    assert!(
+        retained
+            .iter()
+            .any(|entry| entry.assertion.id == "collection-claim-b")
+    );
 }
 
 #[test]

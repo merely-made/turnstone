@@ -358,8 +358,7 @@ fn canvas_metadata_refresh_preserves_geometry_camera_selection_and_play_state() 
         .to_snapshot()
         .resource_edges
         .into_iter()
-        .filter_map(|edge| edge.semantic)
-        .flat_map(|bucket| bucket.statements)
+        .flat_map(|edge| edge.retained_assertions().to_vec())
         .find(|claim| claim.provenance_iri.as_deref() == Some("urn:mere:canvas-metadata-peer"))
         .expect("peer supplied an independent tagging assertion");
     let mut canvas = Canvas::with_graph(app.host.graph().clone());
@@ -404,8 +403,7 @@ fn canvas_metadata_refresh_preserves_geometry_camera_selection_and_play_state() 
             .to_snapshot()
             .resource_edges
             .iter()
-            .filter_map(|edge| edge.semantic.as_ref())
-            .flat_map(|bucket| &bucket.statements)
+            .flat_map(|edge| edge.retained_assertions())
             .any(|claim| *claim == peer),
         "the peer's exact handle, source, time and label survive the refresh"
     );
@@ -457,8 +455,7 @@ fn hosted_canvas_metadata_keeps_exact_tag_claims_peer_sources_and_navigation_res
             .resource_edges
             .into_iter()
             .filter(|edge| edge.from_node_id == resource)
-            .filter_map(|edge| edge.semantic)
-            .flat_map(|bucket| bucket.statements)
+            .flat_map(|edge| edge.retained_assertions().to_vec())
             .filter(|claim| claim.predicate == TAGGED_WITH_IRI && claim.withdrawn.is_none())
             .collect::<Vec<_>>()
     };

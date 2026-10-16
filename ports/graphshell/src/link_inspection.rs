@@ -391,7 +391,7 @@ pub fn inspect_link_history(
     )
 }
 
-/// Read held and withdrawn semantic assertions retained in this supplied
+/// Read held and withdrawn relation assertions retained in this supplied
 /// graph snapshot. This does not replay a session journal or authorize writes.
 pub fn inspect_link_history_with_source(
     graph: &Graph,
@@ -494,11 +494,11 @@ pub fn inspect_link_history_with_source(
     })
 }
 
-/// Re-resolve the exact held statement independently of the displayed pair.
-/// Resource statements remain inspectable after an access changes its binding.
+/// Re-resolve the exact held assertion independently of the displayed pair.
+/// Resource assertions remain inspectable after an access changes its binding.
 pub fn inspect_statement(graph: &Graph, statement_id: &str) -> Result<StatementInspection, String> {
     let (key, statement) = graph
-        .find_held_semantic_statement(statement_id)
+        .find_held_assertion(statement_id)
         .ok_or_else(|| format!("Assertion {statement_id} is no longer held here"))?;
     let source = match key {
         RelationKey::Resource(key) => {
@@ -578,7 +578,7 @@ pub fn inspect_statement_at_owner(
                     if target != to_key {
                         continue;
                     }
-                    for statement in payload.semantic_statements() {
+                    for statement in payload.assertions() {
                         consider(statement)?;
                     }
                 }
@@ -589,7 +589,7 @@ pub fn inspect_statement_at_owner(
                 if (source, target) != (from, to) {
                     continue;
                 }
-                for statement in payload.semantic_statements() {
+                for statement in payload.assertions() {
                     consider(statement)?;
                 }
             }
@@ -616,7 +616,7 @@ mod owner_bound_statement_tests {
     use super::*;
     use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
     use mere::kernel::persistence::{
-        PersistedEdge, PersistedSemanticEdgeData, PersistedSemanticStatement,
+        PersistedEdge, PersistedEdgeFamily, PersistedSemanticStatement,
     };
     use mere::kernel::types::{AssertionWithdrawal, GraphScope};
 
@@ -637,26 +637,23 @@ mod owner_bound_statement_tests {
         PersistedEdge {
             from_node_id: from.to_string(),
             to_node_id: to.to_string(),
-            families: Vec::new(),
-            semantic: Some(PersistedSemanticEdgeData {
-                predicate: Some(predicate.into()),
-                statements: vec![PersistedSemanticStatement {
-                    statement_id: "urn:assertion:shared".into(),
-                    predicate: predicate.into(),
-                    recognized_sub_kind: None,
-                    label: Some(format!("note for {predicate}")),
-                    graph_scope: GraphScope::Custom("urn:scope:owner-test".into()),
-                    provenance_iri: Some("urn:asserter:owner-test".into()),
-                    first_asserted_ms: Some(10),
-                    asserted_at_ms: Some(11),
-                    withdrawn: withdrawn.then_some(AssertionWithdrawal {
-                        at_ms: Some(12),
-                        by: Some("urn:withdrawer:test".into()),
-                    }),
-                    basis: Default::default(),
-                }],
-                ..Default::default()
-            }),
+            families: vec![PersistedEdgeFamily::Semantic],
+            semantic: None,
+            assertions: Some(vec![PersistedSemanticStatement {
+                statement_id: "urn:assertion:shared".into(),
+                predicate: predicate.into(),
+                recognized_sub_kind: None,
+                label: Some(format!("note for {predicate}")),
+                graph_scope: GraphScope::Custom("urn:scope:owner-test".into()),
+                provenance_iri: Some("urn:asserter:owner-test".into()),
+                first_asserted_ms: Some(10),
+                asserted_at_ms: Some(11),
+                withdrawn: withdrawn.then_some(AssertionWithdrawal {
+                    at_ms: Some(12),
+                    by: Some("urn:withdrawer:test".into()),
+                }),
+                basis: Default::default(),
+            }]),
             traversal: None,
             containment: None,
             arrangement: None,

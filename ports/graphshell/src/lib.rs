@@ -60,6 +60,8 @@ pub mod host_presenter;
 #[cfg(feature = "web")]
 pub mod link_inspection;
 #[cfg(feature = "web")]
+pub mod promoted_links;
+#[cfg(feature = "web")]
 pub mod local_edit;
 #[cfg(feature = "web")]
 pub mod local_intake;

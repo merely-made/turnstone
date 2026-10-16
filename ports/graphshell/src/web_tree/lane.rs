@@ -317,6 +317,10 @@ fn link_rest_fields(canvas: &Canvas, snapshot: ProbeSnapshot) -> ProbeSnapshot {
         .iter()
         .filter(|appearance| appearance.key.stratum == scenograph::link::LinkStratum::Resource)
         .collect::<Vec<_>>();
+    let surface_appearances = visible
+        .iter()
+        .filter(|appearance| appearance.key.stratum == scenograph::link::LinkStratum::Surface)
+        .collect::<Vec<_>>();
     snapshot
         .with_field("link-rest-ready", "true")
         .with_field("link-rest-source-facts", facts)
@@ -365,6 +369,14 @@ fn link_rest_fields(canvas: &Canvas, snapshot: ProbeSnapshot) -> ProbeSnapshot {
                 .to_string(),
         )
         .with_field(
+            "link-rest-surface-strength",
+            surface_appearances
+                .iter()
+                .map(|appearance| appearance.strength)
+                .fold(0.0_f32, f32::max)
+                .to_string(),
+        )
+        .with_field(
             "link-rest-summaries",
             summaries.into_iter().collect::<Vec<_>>().join("|"),
         )
@@ -386,6 +398,14 @@ fn link_rest_fields(canvas: &Canvas, snapshot: ProbeSnapshot) -> ProbeSnapshot {
                 .join("|"),
         )
         .with_field("link-rest-hidden-count", hidden.len().to_string())
+        .with_field(
+            "link-rest-hidden-assertions",
+            canvas.hidden_assertion_ids().join("|"),
+        )
+        .with_field(
+            "link-rest-hidden-assertion-count",
+            canvas.hidden_assertion_ids().len().to_string(),
+        )
 }
 
 impl TreeLane {
@@ -899,6 +919,8 @@ impl Product for TreeLane {
         #[cfg(feature = "product")]
         let snapshot = link_inspection::fields(page, snapshot);
         #[cfg(feature = "product")]
+        let snapshot = super::promoted_links::fields(page, snapshot);
+        #[cfg(feature = "product")]
         let snapshot = field_inspection::fields(page, &canvas, snapshot);
         #[cfg(feature = "product")]
         let snapshot = coupling::fields(page, snapshot);
@@ -1276,10 +1298,17 @@ impl Product for TreeLane {
                 }
             };
             let (link_visibility_state, link_visibility_status) = product.link_visibility_state();
+            let (assertion_visibility_state, assertion_visibility_status) =
+                product.assertion_visibility_state();
             product
                 .history_fields(product.projection_fields(snapshot))
                 .with_field("link-visibility-save-state", link_visibility_state)
                 .with_field("link-visibility-status", link_visibility_status)
+                .with_field(
+                    "assertion-visibility-save-state",
+                    assertion_visibility_state,
+                )
+                .with_field("assertion-visibility-status", assertion_visibility_status)
                 .with_field(
                     "command-menu",
                     if product.menu_open() {
@@ -1923,9 +1952,28 @@ impl Product for TreeLane {
         clicks: &mut mesquite::Clicks,
         line: &str,
     ) -> Result<(), String> {
-        if let Some(assertion_id) = line.strip_prefix("click-link-rest-assertion ") {
-            let selector =
-                Selector::role("button").with_attr("data-assertion-id", assertion_id.trim());
+        if let Some(action_spec) = line.strip_prefix("click-link-rest-assertion ") {
+            let words = action_spec.split_whitespace().collect::<Vec<_>>();
+            let (assertion_id, action) = match words.as_slice() {
+                [id] => (*id, "inspect"),
+                [id, action @ ("inspect" | "hide" | "withdraw")] => (*id, *action),
+                _ => {
+                    return Err(
+                        "click-link-rest-assertion wants '<id> [inspect|hide|withdraw]'".into(),
+                    );
+                },
+            };
+            // Selector holds one attribute predicate. Use the independent
+            // accessible-name filter for the action so the exact ID survives.
+            let action_label = match action {
+                "inspect" => "Inspect assertion",
+                "hide" => "Hide this assertion from the view",
+                "withdraw" => "Withdraw this personal assertion",
+                _ => unreachable!("action was checked above"),
+            };
+            let selector = Selector::role("button")
+                .containing(action_label)
+                .with_attr("data-assertion-id", assertion_id);
             let projection = ctx
                 .a11y_projection()
                 .ok_or("shared assertion action projection is unavailable")?;
@@ -1934,7 +1982,7 @@ impl Product for TreeLane {
             let matches = taproot::matching_with_projection(&dom, &selector, &projection);
             if matches.len() != 1 {
                 return Err(format!(
-                    "click-link-rest-assertion requires one live action for {assertion_id:?}, got {}",
+                    "click-link-rest-assertion requires one {action} action for {assertion_id:?}, got {}",
                     matches.len()
                 ));
             }
@@ -1945,7 +1993,7 @@ impl Product for TreeLane {
                 Ok(())
             } else {
                 Err(format!(
-                    "source action {assertion_id:?} could not be clicked"
+                    "source {action} action {assertion_id:?} could not be clicked"
                 ))
             };
         }
