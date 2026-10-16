@@ -677,7 +677,7 @@ pub(super) const SHEET: &str = "\
     .applet-search-field { color:#edf4f1;background:#142723;border:1px solid #77968f;padding:8px;width:280px;min-height:36px; } \
     .applet-library ul { margin:0;padding:0;list-style:none; } \
     .applet-library li { padding:10px 14px;margin-bottom:8px;background:#1f3533;border:1px solid #506c67; } \
-    .applet-library pre { color:#e6f0ee;background:#102723;padding:12px;white-space:pre-wrap;font-family:Roboto; } \
+    .applet-library pre { color:#e6f0ee;background:#102723;padding:12px;white-space:pre-wrap;font-family:IBM Plex Mono,monospace; } \
     .applet-readings { display:flex;flex-direction:row;flex-wrap:wrap;gap:12px; } \
     .applet-reader { flex:1 1 360px;min-width:260px;padding:12px;border:1px solid #506c67;box-sizing:border-box; } \
     .applet-reader[data-selected=true] { border-color:#b6d3c9; } \

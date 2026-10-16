@@ -91,7 +91,7 @@ impl TreeRemote {
             board: RemoteBoard::new(),
             text: {
                 let mut text = BoardText::new();
-                text.register_font(include_bytes!("../../web/GraphshellSans.ttf").to_vec());
+                text.register_font(include_bytes!("../../web/IBMPlexSans-Regular.ttf").to_vec());
                 text
             },
             generation: 0,

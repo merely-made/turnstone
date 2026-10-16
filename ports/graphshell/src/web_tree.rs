@@ -74,7 +74,7 @@ const TOOLS_WIDTH: u32 = 300;
 const TOOLS_DOCK_MIN_WIDTH: u32 = TOOLS_WIDTH + 600;
 
 const SHEET: &str = "\
-    :root { font-family: Roboto, sans-serif; font-size: 14px; color: #dce3e8; background: #070c0f; } \
+    :root { font-family: IBM Plex Sans, sans-serif; font-size: 14px; color: #dce3e8; background: #070c0f; } \
     main { display: flex; flex-direction: column; } \
     h1 { font-size: 16px; margin: 8px 12px 0; } \
     .tree-status { margin: 4px 12px 8px; } \
@@ -1219,6 +1219,18 @@ fn boot(
     Box::pin(boot_inner(root, epoch))
 }
 
+fn page_fonts() -> Vec<HostFont> {
+    let face = |bytes: &[u8]| HostFont {
+        family: None,
+        bytes: bytes.to_vec(),
+    };
+    #[allow(unused_mut)]
+    let mut fonts = vec![face(include_bytes!("../web/IBMPlexSans-Regular.ttf"))];
+    #[cfg(feature = "product")]
+    fonts.push(face(include_bytes!("../web/IBMPlexMono-Regular.ttf")));
+    fonts
+}
+
 async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
     if !root.is_connected() || TREE_EPOCH.with(|current| current.get() != epoch) {
         return Err("appearance boot cancelled".into());
@@ -1551,11 +1563,10 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
             },
             logic: view as Logic,
             sheet: initial_sheet,
-            // A browser lends genet no system faces, so the page brings one.
-            fonts: vec![HostFont {
-                family: None,
-                bytes: include_bytes!("../web/GraphshellSans.ttf").to_vec(),
-            }],
+            // A browser lends genet no system faces, so the page brings its own: the
+            // design system's interface face, and in the product its code face (OFL;
+            // notices in web/). The viewer carries one face to hold its size budget.
+            fonts: page_fonts(),
             images: Vec::new(),
         },
         hooks(shared.clone()),

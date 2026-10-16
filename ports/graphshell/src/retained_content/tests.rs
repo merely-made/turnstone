@@ -506,7 +506,7 @@ fn filling_content_view_reserves_headers_and_scrolls_to_export_in_short_panels()
 
 #[test]
 fn native_factory_passes_host_font_bytes_into_document_resource_custody() {
-    let font = include_bytes!("../../web/GraphshellSans.ttf").to_vec();
+    let font = include_bytes!("../../web/IBMPlexSans-Regular.ttf").to_vec();
     let engines = pelt_core::native::sessions_with_fetcher_and_fonts(
         pelt_core::native::HeldResources::default(),
         vec![font.clone()],
@@ -515,7 +515,7 @@ fn native_factory_passes_host_font_bytes_into_document_resource_custody() {
         .spawn(
             inker::routing::ENGINE_GENET_LIVERY,
             &SessionSpawnRequest::new("https://held.example/font")
-                .with_body(r#"<p style="font-family:Roboto">Held text</p>"#)
+                .with_body(r#"<p style="font-family:IBM Plex Sans">Held text</p>"#)
                 .with_content_type("text/html"),
         )
         .unwrap();

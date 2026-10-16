@@ -30,6 +30,17 @@ const ROLES: &[&str] = &[
     "on-tertiary",
     "success",
     "danger",
+    // Read by styles.css: the heading tier, then tinct::derive_gated_roles.
+    "text-header",
+    "accent",
+    "focus",
+    "border",
+    "border-strong",
+    "category-1",
+    "category-2",
+    "category-3",
+    "category-4",
+    "category-5",
 ];
 const PAINT: &[&str] = &[
     "background",
@@ -42,7 +53,17 @@ const PAINT: &[&str] = &[
     "on-primary",
     "success",
     "danger",
+    // The graph grammar's categories (sites and territory), last so the
+    // indices above stay put. An authored sheet without them falls back to
+    // the triad and the dim text.
+    "category-1",
+    "category-2",
+    "category-3",
+    "category-4",
+    "category-5",
 ];
+/// Where the category roles start in `PAINT`.
+const CATEGORY_START: usize = PAINT.len() - 5;
 
 pub(crate) struct Session {
     root: Element,
@@ -225,6 +246,10 @@ impl Session {
                 bytes(9),
                 bytes(2),
             ]));
+            canvas.set_category_colors((CATEGORY_START..PAINT.len()).map(|index| {
+                let [r, g, b, _] = bytes(index);
+                [r, g, b]
+            }));
         }
     }
     /// Embedded instances observe only inherited shared roles, never storage.

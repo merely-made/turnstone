@@ -162,7 +162,7 @@ impl Pane {
             surface.replace(input).map_err(|e| e.to_string())?;
         } else {
             let mut surface = BackdropSurface::new(input).map_err(|e| e.to_string())?;
-            surface.register_font(include_bytes!("../../web/GraphshellSans.ttf").to_vec());
+            surface.register_font(include_bytes!("../../web/IBMPlexSans-Regular.ttf").to_vec());
             self.surface = Some(surface);
         }
         self.document = Some(document);
@@ -199,7 +199,7 @@ impl Pane {
         self.related = view
             .map(|v| {
                 let mut surface = BackdropSurface::new(&v.scene).map_err(|e| e.to_string())?;
-                surface.register_font(include_bytes!("../../web/GraphshellSans.ttf").to_vec());
+                surface.register_font(include_bytes!("../../web/IBMPlexSans-Regular.ttf").to_vec());
                 Ok::<_, String>(surface)
             })
             .transpose()?;
