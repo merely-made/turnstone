@@ -2311,7 +2311,7 @@ mod tests {
             .iter()
             .flat_map(|edge| edge.retained_assertions())
             .filter(|claim| {
-                claim.relation_kind()
+                RelationKind::from_predicate_iri(&claim.predicate)
                     == Some(RelationKind::Containment(ContainmentSubKind::UrlPath))
             })
             .collect();
