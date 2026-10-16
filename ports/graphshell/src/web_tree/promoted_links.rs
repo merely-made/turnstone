@@ -298,6 +298,25 @@ fn promoted_rows(inspection: &PromotedLinkInspection) -> Vec<Child> {
                 second.address.as_deref().unwrap_or("address unavailable")
             ),
         )),
+    ];
+    rows.extend(drift_rows(&inspection.drift));
+    for comment in &inspection.comments {
+        rows.push(Box::new(el(
+            "p",
+            format!(
+                "Review comment · {} · by {} · recorded {}",
+                comment.value,
+                comment
+                    .provenance_iri
+                    .as_deref()
+                    .unwrap_or("unknown author"),
+                comment
+                    .asserted_at_ms
+                    .map_or_else(|| "unknown".to_owned(), |ms| ms.to_string())
+            ),
+        )));
+    }
+    rows.extend(vec![
         Box::new(el(
             "p",
             format!(
@@ -317,7 +336,7 @@ fn promoted_rows(inspection: &PromotedLinkInspection) -> Vec<Child> {
             "p",
             format!("Coverage limits: {}", inspection.coverage.limits.len()),
         )),
-    ];
+    ]);
     for (label, coverage) in [
         ("At freeze", frozen.coverage()),
         ("Here now", &inspection.coverage),
@@ -339,23 +358,6 @@ fn promoted_rows(inspection: &PromotedLinkInspection) -> Vec<Child> {
         }
     }
     rows.extend(statement_rows(inspection));
-    rows.extend(drift_rows(&inspection.drift));
-    for comment in &inspection.comments {
-        rows.push(Box::new(el(
-            "p",
-            format!(
-                "Review comment · {} · by {} · recorded {}",
-                comment.value,
-                comment
-                    .provenance_iri
-                    .as_deref()
-                    .unwrap_or("unknown author"),
-                comment
-                    .asserted_at_ms
-                    .map_or_else(|| "unknown".to_owned(), |ms| ms.to_string())
-            ),
-        )));
-    }
     rows
 }
 
@@ -401,17 +403,14 @@ pub(super) fn section(page: &TreePage) -> Child {
         let selected = page.promoted_links.selected == Some(owner);
         children.push(Box::new(
             button(
-                if selected {
-                    format!("Viewing promoted link {}", index + 1)
-                } else {
-                    format!("Open promoted link {}", index + 1)
-                },
+                format!("Open promoted link {}", index + 1),
                 move |page: &mut TreePage, _| {
                     page.promoted_links.selected = Some(owner);
                     page.promoted_links.status.clear();
                 },
             )
-            .attr("data-promoted-link-owner", owner.to_string()),
+            .attr("data-promoted-link-owner", owner.to_string())
+            .attr("aria-pressed", selected.to_string()),
         ));
     }
     if let Some(owner) = page.promoted_links.selected {

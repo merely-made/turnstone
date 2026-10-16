@@ -37,7 +37,8 @@ assert snap promoted-link-drift == changed
 assert snap promoted-link-withdrawn-ids == fixture:p7:collection-primary
 assert snap promoted-link-frozen-assertion-ids == fixture:p7:collection-independent|fixture:p7:collection-primary
 assert snap promoted-link-frozen-withdrawn-count == 0
-assert snap link-inspector-statements == 1
+# The pair inspector includes the remaining Surface reason and Resource control.
+assert snap link-inspector-statements == 2
 remember p7-after-withdrawal
 capture p7_live_link_drifted
 
