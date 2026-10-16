@@ -344,6 +344,7 @@ pub fn presented_links(projection: &QueryProjection) -> Vec<PresentedLink> {
             entry.presented.strength = entry.assertions.len() + entry.legacy.len();
             entry.presented
         })
+        .filter(|link| link.strength > 0)
         .collect()
 }
 
@@ -617,6 +618,22 @@ mod grouping_tests {
         assert_eq!(
             assertions[2].statement_id,
             "urn:statement:collection-withdrawn"
+        );
+        for assertion in projection.relations[0].assertions.as_mut().unwrap() {
+            assertion.withdrawn = Some(AssertionWithdrawal {
+                at_ms: Some(40),
+                by: Some("https://author.test/a".into()),
+            });
+        }
+        projection.relations[0].families["traversal"] = serde_json::Value::Null;
+        assert!(
+            presented_links(&projection).is_empty(),
+            "a pair with only retained withdrawals has no resting stroke"
+        );
+        assert_eq!(
+            projection.relations[0].assertions.as_ref().unwrap().len(),
+            3,
+            "presentation keeps all source history records"
         );
     }
 }

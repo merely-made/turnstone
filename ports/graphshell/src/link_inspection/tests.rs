@@ -291,9 +291,18 @@ fn session_sidecar_projection_preserves_its_canonical_assertion() {
     assert_eq!(record.statements[0].statement_id, canonical.statement_id);
     assert_eq!(record.statements[0].predicate, canonical.predicate);
     assert_eq!(record.statements[0].recognized_sub_kind, None);
-    assert_eq!(record.statements[0].provenance_iri, None);
-    assert_eq!(record.statements[0].asserted_at_ms, None);
-    assert_eq!(record.statements[0].first_asserted_ms, None);
+    assert_eq!(
+        record.statements[0].provenance_iri,
+        canonical.provenance_iri
+    );
+    assert_eq!(
+        record.statements[0].asserted_at_ms,
+        canonical.asserted_at_ms
+    );
+    assert_eq!(
+        record.statements[0].first_asserted_ms,
+        canonical.first_asserted_ms
+    );
     assert!(
         graph.to_snapshot().edges.iter().all(|edge| {
             edge.retained_assertions()
@@ -303,12 +312,15 @@ fn session_sidecar_projection_preserves_its_canonical_assertion() {
         "durable snapshots still omit session SplitPair assertions"
     );
     assert_eq!(record.owner.stratum, GraphStratum::Surface);
+    assert!(
+        record.families.is_empty(),
+        "Arrangement is represented by its exact assertion"
+    );
     assert_eq!(
-        record.families[0],
-        HeldFamily {
-            family: EdgeFamily::Arrangement,
-            data: json!({"sub_kinds": ["SplitPair"]}),
-        }
+        canonical.predicate,
+        RelationKind::Arrangement(ArrangementSubKind::SplitPair)
+            .predicate_iri()
+            .unwrap()
     );
 }
 
@@ -362,26 +374,25 @@ fn mixed_family_data_preserves_canonical_assertions_events_and_aggregates() {
         .iter()
         .flat_map(|record| &record.families)
         .collect();
-    for (family, value) in [
-        (
-            EdgeFamily::Containment,
-            json!({"sub_kinds": ["NotebookSection"]}),
-        ),
-        (
-            EdgeFamily::Imported,
-            json!({"sub_kinds": ["SessionImport"]}),
-        ),
-        (EdgeFamily::Provenance, json!({"sub_kinds": ["CopiedFrom"]})),
+    for kind in [
+        RelationKind::Containment(ContainmentSubKind::NotebookSection),
+        RelationKind::Imported(ImportedSubKind::SessionImport),
+        RelationKind::Provenance(ProvenanceSubKind::CopiedFrom),
     ] {
         assert_eq!(
-            families
+            statements
                 .iter()
-                .find(|held| held.family == family)
-                .unwrap()
-                .data,
-            value
+                .filter(|statement| statement.predicate == kind.predicate_iri().unwrap())
+                .count(),
+            1
         );
     }
+    assert!(
+        families
+            .iter()
+            .all(|family| family.family == EdgeFamily::Traversal),
+        "only event-shaped Traversal retains a legacy summary"
+    );
     let traversal = &families
         .iter()
         .find(|held| held.family == EdgeFamily::Traversal)

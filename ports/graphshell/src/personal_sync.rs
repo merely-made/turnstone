@@ -1985,6 +1985,21 @@ mod tests {
     #[tokio::test]
     async fn p6_sync_authors_and_replays_exact_ids_for_every_relation_family() {
         let (mut replica, alice, _) = assertion_fixture().await;
+        let baseline = assertion_statements(&replica.projection().await.unwrap())
+            .into_iter()
+            .map(|statement| (statement.statement_id.clone(), statement))
+            .collect::<std::collections::BTreeMap<_, _>>();
+        assert_eq!(
+            baseline.len(),
+            2,
+            "the fixture begins with two signed citations"
+        );
+        assert!(baseline.values().all(|statement| {
+            statement.predicate
+                == RelationKind::Semantic(SemanticSubKind::Cites)
+                    .predicate_iri()
+                    .unwrap()
+        }));
         let assertions = [
             EdgeAssertion::Semantic {
                 sub_kind: SemanticSubKind::Supports,
@@ -2058,12 +2073,12 @@ mod tests {
                 .filter(|statement| authored_ids.contains(&statement.statement_id))
                 .collect::<Vec<_>>()
         };
-        let derived_kinds = |projection: &SyncProjection| {
+        let baseline_records = |projection: &SyncProjection| {
             assertion_statements(projection)
                 .into_iter()
                 .filter(|statement| !authored_ids.contains(&statement.statement_id))
-                .map(|statement| statement.predicate)
-                .collect::<std::collections::BTreeSet<_>>()
+                .map(|statement| (statement.statement_id.clone(), statement))
+                .collect::<std::collections::BTreeMap<_, _>>()
         };
         let initial_projection = replica.projection().await.unwrap();
         let held = assertion_statements(&initial_projection);
@@ -2071,18 +2086,9 @@ mod tests {
         assert_eq!(held.len(), assertions.len() + 2);
         assert_eq!(authored_held.len(), assertions.len());
         assert_eq!(
-            derived_kinds(&initial_projection),
-            std::collections::BTreeSet::from([
-                RelationKind::Containment(ContainmentSubKind::Domain)
-                    .predicate_iri()
-                    .unwrap()
-                    .to_owned(),
-                RelationKind::Containment(ContainmentSubKind::UrlPath)
-                    .predicate_iri()
-                    .unwrap()
-                    .to_owned(),
-            ]),
-            "the two extra projected rows are derived node-containment relations, not signed operation assertions"
+            baseline_records(&initial_projection),
+            baseline,
+            "adding all-family assertions preserves both existing signed citations exactly"
         );
         let ids: Vec<_> = authored_held
             .iter()
@@ -2136,9 +2142,9 @@ mod tests {
         assert_eq!(assertion_statements(&history).len(), assertions.len() + 1);
         assert_eq!(authored_records(&history).len(), assertions.len() - 1);
         assert_eq!(
-            derived_kinds(&history),
-            derived_kinds(&initial_projection),
-            "withdrawing a source assertion leaves the derived node-containment projection separate"
+            baseline_records(&history),
+            baseline,
+            "withdrawing one new assertion preserves both prior signed citations exactly"
         );
         assert_eq!(
             history.graph.find_assertion(&ids[0]).unwrap().1.withdrawn,
@@ -2160,7 +2166,7 @@ mod tests {
         let replayed = receiver.projection().await.unwrap();
         assert_eq!(assertion_statements(&replayed).len(), assertions.len() + 1);
         assert_eq!(authored_records(&replayed).len(), assertions.len() - 1);
-        assert_eq!(derived_kinds(&replayed), derived_kinds(&history));
+        assert_eq!(baseline_records(&replayed), baseline);
         let replayed_tombstone = replayed.graph.find_assertion(&collection_id).unwrap().1;
         assert_eq!(
             replayed_tombstone.withdrawn.as_ref().unwrap().at_ms,
