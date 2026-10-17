@@ -19,7 +19,7 @@ use mere::kernel::graph::predicate_declarations::PREDICATE_DECLARATIONS_FACET;
 use mere::kernel::graph::resource::TAGGED_WITH_IRI;
 use mere::kernel::graph::{
     ArrangementSubKind, ContainmentSubKind, EdgeAssertion, EdgeFamily, Graph, NodeFacetStore,
-    RelationKind, SemanticSubKind, import_edits,
+    NodeKey, RelationKind, SemanticSubKind, import_edits,
 };
 use mere::kernel::persistence::GraphSnapshot;
 use mere::kernel::types::NodeProperty;
@@ -696,28 +696,56 @@ impl From<MereHostError> for ProductError {
     }
 }
 
+fn add_address(graph: &mut Graph, id: Uuid, address: &str, title: &str) -> NodeKey {
+    let key = add_node(
+        graph,
+        Some(id),
+        address.to_string(),
+        PortablePoint::new(0.0, 0.0),
+    );
+    if !title.trim().is_empty() {
+        apply_graph_delta(
+            graph,
+            GraphDelta::SetNodeTitle {
+                key,
+                title: title.trim().to_string(),
+            },
+        );
+    }
+    key
+}
+
 impl<B: Backend> MereHost<B> {
     pub fn create_address(&mut self, address: &str, title: &str) -> Result<Uuid, ProductError> {
         if let Some((_, node)) = self.graph().get_node_by_url(address) {
             return Ok(node.id);
         }
         let id = Uuid::new_v4();
+        self.mutate_product_graph(|graph| add_address(graph, id, address, title))?;
+        Ok(id)
+    }
+
+    /// Add `address` as an object `origin` links to, in one change: a kept
+    /// suggestion from that page's links. An address already held only gains
+    /// the link.
+    pub fn create_linked_address(
+        &mut self,
+        origin: Uuid,
+        address: &str,
+        title: &str,
+    ) -> Result<Uuid, ProductError> {
+        let from = self
+            .graph()
+            .get_node_key_by_id(origin)
+            .ok_or(ProductError::UnknownNode(origin))?;
+        let held = self
+            .graph()
+            .get_node_by_url(address)
+            .map(|(key, node)| (key, node.id));
+        let id = held.map_or_else(Uuid::new_v4, |(_, id)| id);
         self.mutate_product_graph(|graph| {
-            let key = add_node(
-                graph,
-                Some(id),
-                address.to_string(),
-                PortablePoint::new(0.0, 0.0),
-            );
-            if !title.trim().is_empty() {
-                apply_graph_delta(
-                    graph,
-                    GraphDelta::SetNodeTitle {
-                        key,
-                        title: title.trim().to_string(),
-                    },
-                );
-            }
+            let to = held.map_or_else(|| add_address(graph, id, address, title), |(key, _)| key);
+            assert_relation(graph, from, to, EditableRelation::Hyperlink.assertion());
         })?;
         Ok(id)
     }

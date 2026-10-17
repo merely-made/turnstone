@@ -10,7 +10,9 @@ use cambium::{FileEvent, SelectState, TextInput};
 use graphshell::local_edit::{
     NodeMetadata, metadata, save_metadata, sync_canvas_metadata_from_graph,
 };
-use graphshell::local_intake::{create_address, create_file, persist_intake, sync_canvas_intake};
+use graphshell::local_intake::{
+    create_address, create_file, create_link, persist_intake, sync_canvas_intake,
+};
 use mere::canvas::Role;
 use mere::kernel::graph::CouplingId;
 use muniment::IndexedDbBackend;
@@ -1038,9 +1040,9 @@ impl SavedProduct {
         }
     }
 
-    /// Write a kept suggestion as the person's own object, through the same
-    /// intake as an added address; the acknowledged graph then replaces the
-    /// canvas's derived member.
+    /// Write a kept suggestion as the person's own object, linked from the page
+    /// it came from, through the same intake as an added address; the
+    /// acknowledged graph then replaces the canvas's derived member.
     fn keep_links(&mut self, canvas: &mut Canvas) {
         self.kept_links.extend(canvas.take_kept_links());
         if self.saving
@@ -1056,7 +1058,7 @@ impl SavedProduct {
         let Some(app) = self.app.as_mut() else {
             return;
         };
-        match create_address(app, &kept.url, &kept.url) {
+        match create_link(app, kept.origin, &kept.url) {
             Ok(member) => self.store_intake(member),
             Err(error) => {
                 self.status = error;

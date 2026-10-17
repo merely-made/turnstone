@@ -33,6 +33,21 @@ pub fn create_address<B: Backend>(
         .map_err(|error| error.to_string())
 }
 
+/// Add a link kept from `origin`'s page, with its hyperlink from that page
+/// when the page is the person's own object.
+pub fn create_link<B: Backend>(
+    app: &mut GraphshellApp<B>,
+    origin: Uuid,
+    address: &str,
+) -> Result<Uuid, String> {
+    if app.host.graph().get_node_by_id(origin).is_none() {
+        return create_address(app, address, address);
+    }
+    app.host
+        .create_linked_address(origin, address.trim(), address.trim())
+        .map_err(|error| error.to_string())
+}
+
 /// Reduce the chosen bytes to existing portable metadata. Empty files are
 /// valid; the supplied filename must identify the chosen object.
 pub fn file_metadata(

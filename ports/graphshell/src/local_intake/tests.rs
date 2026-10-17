@@ -305,3 +305,40 @@ fn intake_ingest_preserves_existing_layout_and_physics_while_selecting_new_membe
         assert!(geometry.iter().any(|(member, _)| member == added));
     }
 }
+
+#[test]
+fn a_kept_link_arrives_with_its_hyperlink_in_one_change() {
+    pollster::block_on(async {
+        let backend = MemoryBackend::new();
+        let mut app = GraphshellApp::open_or_fixture(backend.clone(), persona())
+            .await
+            .unwrap();
+        app.host.persist(1).await.unwrap();
+        let (page_key, page) = app.host.graph().nodes().next().unwrap();
+        let page = page.id;
+        let changes = app.host.graph_session().changes().len();
+        let linked = |app: &GraphshellApp<MemoryBackend>, member: Uuid| {
+            let to = app.host.graph().get_node_key_by_id(member).unwrap();
+            app.host
+                .graph()
+                .projected_relations()
+                .filter(|(_, relation)| relation.from == page_key && relation.to == to)
+                .count()
+        };
+
+        let kept = create_link(&mut app, page, "https://kept.example/next").unwrap();
+        assert_eq!(app.host.graph_session().changes().len(), changes + 1);
+        assert_eq!(linked(&app, kept), 1);
+        persist_intake(&mut app, kept, 2).await.unwrap();
+
+        assert_eq!(
+            create_link(&mut app, page, "https://kept.example/next").unwrap(),
+            kept,
+            "an address already held is not added again"
+        );
+        assert_eq!(linked(&app, kept), 1);
+
+        let unlinked = create_link(&mut app, Uuid::new_v4(), "https://kept.example/far").unwrap();
+        assert_eq!(linked(&app, unlinked), 0, "a page the person does not hold");
+    });
+}
