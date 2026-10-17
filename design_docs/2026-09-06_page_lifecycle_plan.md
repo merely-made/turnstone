@@ -1,11 +1,12 @@
 # Page lifecycle plan
 
 **Status:** in progress, refreshed 2026-10-17. Rulings L1-L7 were made with Mark on
-2026-09-06. The research-workflow section below is a proposed implementation
-slice, not delivered behavior or a replacement for those rulings. Source
-capture and collection-scoped search now have app consumers;
-the Keep, bin custody, and other lifecycle joins remain governed by their
-individual done-conditions. This plan joins rules that
+2026-09-06. The research-workflow section below records the R0/R1 bounded
+qualifications, the bounded macOS R2 private search/reader qualification,
+and the still-planned R3/R4 work; it does not replace those rulings. Source
+capture and collection-scoped search now have app consumers. The Keep, bin
+custody, and other lifecycle joins remain governed by their individual
+done-conditions. This plan joins rules that
 already exist in three documents into one experience and adds the rules that
 were missing between them. It consumes the
 [browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md)
@@ -298,7 +299,7 @@ Done-conditions:
 
 ## Research workflow: smallest complete slice (2026-10-17)
 
-**Status: R0 qualified; R1 bounded macOS qualification passed; R2-R4 remain planned.** Mark asked
+**Status: R0 qualified; R1 bounded macOS qualification passed; R2 bounded macOS qualification passed; R3-R4 remain planned.** Mark asked
 for the existing research workflow to be traced, its missing joins identified,
 and the smallest complete slice planned. This section owns that product join;
 the capture, pane, Knot and resident plans retain their domain gates.
@@ -655,24 +656,33 @@ runs and their resolutions remain in the receipt diagnostics.
 
 #### R2. Private saved-source search and retained reader
 
+**Implemented and bounded macOS qualification passed.**
+
 Derive a list/series from live node capture-reference facets, not every manifest
 in the store. Reuse L-P6's per-node series facts in Inspector and the existing
 omnibar/retained-surface patterns for “Search saved sources” and source opening.
-Search exact validated canonical text; carry the capture identity and optional
-half-open Unicode scalar selector through the result instead of lowering it to
-`OpenAddress`. Show source title/origin, capture time and version; reveal the
-matched passage and distinguish “Open original address”. Keep equal text's
-source identities/provenance separate even if the index groups it. Preserve
-occurrence order in the series while publishing one entry per exact
-owner/member/manifest source identity, not duplicate wire source IDs.
+Search uses exact-case substring matching over validated canonical text and
+carries the exact capture identity plus an optional half-open Unicode-scalar
+selector through the result. The internal `mere://saved-source/...` address is
+persisted view intent containing the session, graph, node, annotation manifest,
+text hash and selector; it is not an origin request. The original URL appears
+only as an explicit “Open original address” link. Search preserves facet
+occurrence order and source identities/provenance even for equal text, while
+deduplicating repeated admission of one owner/node/annotation identity. The
+current node title is an admission label, not an immutable historical capture
+title; source origin, capture time, version and matched passage come from the
+retained annotation.
 
 Use the pinned public `fleece::load_fleece_annotation` with local/NoFetcher
-validation, through the existing actor. Its canonical text and BLAKE3 text hash
-are distinct from raw-response hashes and the canonical-text IRI's SHA256.
-Render a host-resolved `EngineDocument` through the existing retained text
-session pattern. The imported retained-clip route expects a ClipRecord in a
-different store; do not convert/reimport a FleeceAnnotationRecord just to read
-it. No shared reader abstraction is promoted for this first consumer.
+validation through the existing session actor and its R0 checks. The reader
+cache is transient and is cleared on session adoption, retargeting and reload;
+each open rechecks current admission and resolves through the actor's
+NoFetcher path. Canonical text and its BLAKE3 text hash stay distinct from raw
+response hashes and the canonical-text IRI's SHA256. The host lowers resolved
+text into an `EngineDocument` and opens it in the retained text session. The
+imported retained-clip route expects a ClipRecord in another store; R2 does not
+convert or reimport a Fleece annotation, fork a supplier API, or promote a
+shared reader abstraction.
 
 **Done:** private sources can be listed, searched and opened with no joined
 place, no network and no inference resident. Selection survives normal view
@@ -682,6 +692,25 @@ or fetch live content. Revisit A with changed bytes leaves captured A1 intact;
 explicit capture A2 creates another version. This phase may close the relevant
 L-P6 source-document series gates only after their own assertions pass; it does
 not qualify hosted screenshot/PDF series.
+
+The [R2 receipt](../docs/receipts/r2_saved_sources_20261017/qualification.json)
+binds the final source, refreshed Mere `a9b5dd663`, test executable and native
+binary. All 16 focused controls pass within 969 bounded regression passes;
+three capture-library controls, Clippy correctness and portable Cargo verification
+also pass. Ten ignored and 89 shared-place/Sky tests remain outside that count.
+Two fresh headed processes present 245 frames and seven reviewed nonblank
+captures. The runner stops the actual origin, confirms TCP refusal, then proves
+A1 search/read and fresh-process reopen with no further origin requests. The
+exact A1 annotation, canonical text/hash and `44..56` Unicode selector survive;
+A2, visited-only X and the foreign session remain separately accounted for.
+
+The qualification also covers stale/retargeted replies, a foreign reader pane,
+missing/corrupt evidence and normal history restoration through App/actor tests.
+The headed packet does not activate the separate original-address link. Earlier
+catalog/identity-test failures and the stopped global-quiescence diagnostic are
+retained in the receipt; the identity test now awaits its actual wake callback.
+Hosted screenshot/PDF series, R3/R4, other platforms, OS assistive activation
+and power-loss guarantees remain separate gates.
 
 #### R3. Capture-backed, explicitly scoped Answers
 
@@ -948,4 +977,20 @@ refreshed 2026-09-12.
   work once per event batch. 953 scoped regression tests, three capture-library
   controls, 46 supplier tests, Clippy correctness and two headed fresh processes
   pass. Twelve reviewed captures and exact offline request/reference recovery
-  are retained in the R1 receipt. R2-R4 remain planned.
+  are retained in the R1 receipt. R2 is now bounded-qualified in the following entry;
+  R3-R4 remain planned.
+
+- **2026-10-17, R2 private saved-source reader bounded-qualified on macOS:**
+  the current branch adds session-facet admissions, exact-case canonical-text
+  search, a private owner/node/annotation/text-hash/scalar-selector view address,
+  actor-backed NoFetcher reads and a retained text reader. The original URL is
+  an explicit link; the current node title is only an admission label. Reader
+  cache state is transient across adoption, retarget and reload. The refreshed
+  lock stack changes exactly 78 Mere lock records to published `a9b5dd663`
+  (including the scroll-boundary fix); Genet and all other lock records retain
+  their prior pins. The final receipt records 969 bounded regression passes,
+  three capture-library controls, Clippy/Cargo verification and two fresh headed
+  processes with seven reviewed captures. Actual origin shutdown/TCP refusal
+  precedes offline A1 search/read and fresh reopen of its exact Unicode target.
+  Reader labels/version presentation and the identity-test scheduling assertion
+  are repaired; R3/R4 and hosted capture gates remain open.

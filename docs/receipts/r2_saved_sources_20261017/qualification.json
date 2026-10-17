@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-17",
+  "status": "R2 bounded macOS qualification passed",
+  "turnstone_base": "e1e7d3bd9d76f1c86bd9267c97fc1a39b116a74d",
+  "mere_supplier": "a9b5dd6635e7528ff3d2aec1e389075d628fcb6c",
+  "platform": {
+    "os": "macOS 15.8.1 (24H32)",
+    "architecture": "x86_64",
+    "toolchain": "rustup run 1.99.1"
+  },
+  "source_inputs": "source-inputs.json",
+  "native_binary": "native-binary.json",
+  "test_executable": "test-binary.json",
+  "lock_delta": "checks/lock-delta.json",
+  "currentness": {
+    "turnstone_fetched_main_before_publication": "e1e7d3bd9d76f1c86bd9267c97fc1a39b116a74d",
+    "mere_fetched_main": "a9b5dd6635e7528ff3d2aec1e389075d628fcb6c",
+    "checked_utc": "2026-10-17T22:11:06.443027+00:00",
+    "active_work": "Other Turnstone worktrees and existing Mere untracked node_modules preserved."
+  },
+  "product_contract": [
+    "Current-session live graph member capture-reference facets are the only source admissions; no evidence-store inventory, recovery receipt, visited-only PageText or other-session corpus fallback.",
+    "Search is exact-case substring matching over validated canonical text, with metadata fallback and list mode. One hit per exact session/graph/member/annotation identity; occurrence order remains in admissions. Equal-text provenance stays distinct.",
+    "A result carries immutable annotation identity, canonical-text BLAKE3 and optional half-open Unicode scalar selector. Its internal address persists view intent, not a text copy or origin request.",
+    "The existing session trail actor resolves exact IDs using public Fleece NoFetcher validation and stronger R0 raw/annotation/privacy/provenance checks. No second Fjall owner, ClipRecord import, supplier fork or new shared reader abstraction.",
+    "A host-resolved EngineDocument is rendered through the existing retained SmolwebDocumentSession. It reveals the selected quote and full canonical text, origin, capture time and compact saved version. Open original address is a separate explicit link.",
+    "Actor generation, request, owning session/store, live source facet and current reader view URL are rechecked. Late/retargeted replies cannot install text; adoption, explicit open, retarget, history navigation and reload discard transient read state.",
+    "Missing/corrupt records remain identifiable unavailable entries. Invalid hash/range/owner/ref cannot fetch or substitute another version. No joined place or inference resident is required.",
+    "R0/R1 save acknowledgement and retention remain unchanged. The current node title is a view label, not a promised immutable historical capture title."
+  ],
+  "integration_repairs": [
+    "The command is registered in the static palette catalog rather than appended outside its sources.",
+    "Reader open resolves the focused pane graph rather than the legacy runtime cursor, and refuses a foreign-session reader view.",
+    "Retarget/reload/history navigation withdraw pending read dedup state so returning can resolve again.",
+    "Existing identity-watch test now separately awaits root delivery and the host wake callback; it no longer assumes callback scheduling after receive. Production identity code is unchanged."
+  ],
+  "tests": {
+    "focused_r2": {
+      "command": "rustup run 1.99.1 cargo test --locked --offline --lib saved_source --no-fail-fast -j2 -- --test-threads=2",
+      "exit_code": 0,
+      "passed": 16,
+      "failed": 0,
+      "seconds": 3.71,
+      "part_of_bounded_library": true,
+      "log": "checks/focused.log"
+    },
+    "bounded_library": {
+      "command": "/Users/markik/Code/output/turnstone-r2-qualified-tests-polished/turnstone-a8f1418604963df6 --test-threads=4 --skip place:: --skip sky_surface:: --skip sky_timeline::",
+      "exit_code": 0,
+      "passed": 969,
+      "failed": 0,
+      "ignored": 10,
+      "filtered_out": 89,
+      "seconds": 121.96,
+      "log": "checks/bounded-library.log"
+    },
+    "captured_collection": {
+      "command": "/Users/markik/Code/output/turnstone-r2-qualified-tests-polished/turnstone-a8f1418604963df6 place::captured_collection --test-threads=1",
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0,
+      "seconds": 0.66,
+      "log": "checks/capture-library.log"
+    },
+    "clippy": {
+      "command": "rustup run 1.99.1 cargo clippy --locked --offline --lib --tests -j2 -- -D clippy::correctness",
+      "exit_code": 0,
+      "non_correctness_warnings_present": true,
+      "log": "checks/clippy.log"
+    },
+    "portable_cargo_mode": {
+      "command": "python3 scripts/cargo_mode.py verify",
+      "exit_code": 0,
+      "cargo": "Homebrew 1.99.0 wrapper default; explicit build/tests/Clippy use rustup 1.99.1",
+      "packages": 1279,
+      "log": "checks/cargo-mode.log"
+    },
+    "scoped_rustfmt": {
+      "exit_code": 0,
+      "files": [
+        "src/saved_sources.rs",
+        "src/app/saved_source_arms.rs",
+        "src/app/r2_saved_source_tests.rs",
+        "src/trail_memory/saved_sources.rs",
+        "src/shell/saved_sources.rs"
+      ],
+      "log": "checks/rustfmt-scoped.log"
+    },
+    "native_build": {
+      "exit_code": 0,
+      "log": "checks/native-build.log"
+    }
+  },
+  "headed_native": {
+    "result": "pass",
+    "runner_output": "/Users/markik/Code/output/turnstone-r2-native-final-03",
+    "native_processes": 2,
+    "same_frozen_binary": true,
+    "seed_seconds": 95.797,
+    "reopen_seconds": 62.204,
+    "presentations": {
+      "seed": 204,
+      "reopen": 41
+    },
+    "reviewed_captures": 7,
+    "blank_captures": 0,
+    "verification": "native/verification.json",
+    "origin_stop": "native/origin-stop.json",
+    "zero_origin_requests_after_stop": true,
+    "a1_exact_selector": {
+      "end": 56,
+      "start": 44
+    },
+    "verifier_python": "isolated output/turnstone-r2-verifier-venv with blake3 1.0.11",
+    "note": "Runner stops the actual loopback origin, waits for process exit and ECONNREFUSED, acknowledges a fresh control file, and keeps the origin dead through offline search/read and a fresh process. No manual focus intervention."
+  },
+  "startup_fixture": {
+    "kind": "historical immutable no-wallet identity/cookie custodian only",
+    "mere_source": "0eb2218a69742ba7d0e791dfbcfc2b4252f6770f",
+    "binary_sha256": "8605534361a92f7b666a5681edfe38352f2f3d4ff538db57a78a293a174847a3",
+    "qualification": "../graph_scenes_20261016/inputs.json",
+    "note": "Production source reads use the current App/trail/Fjall path. No current Djinn release qualification inferred."
+  },
+  "earlier_diagnostics": "diagnostics/summary.json",
+  "qualification_limits": [
+    "10 ignored tests and the 89 shared-place/Sky tests excluded from the bounded suite are not counted as passes. Three capture-library controls are reported separately.",
+    "App-native headed keyboard, pointer/catalog and presentation on macOS. No OS assistive activation, physical-device recovery, Windows or Linux qualification.",
+    "Ordinary saved HTML canonical text is readable offline; no hosted page replay, screenshot/PDF capture, preserved HTML formatting, R3 Answers or R4 full research workflow claim.",
+    "Persistence retains R0 acknowledged writes and tested process-exit/reopen survival. No cross-store atomic transaction or power-loss guarantee is added.",
+    "Retarget/history/stale-response refusal and corrupt/missing records are tested in App/actor/storage controls; the headed packet does not click the separate original-address link."
+  ]
+}

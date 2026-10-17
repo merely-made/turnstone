@@ -35,6 +35,9 @@ mod resident_admission_tests;
 #[cfg(test)]
 mod resident_run_tests;
 mod source_capture_arms;
+mod saved_source_arms;
+#[cfg(test)]
+mod r2_saved_source_tests;
 #[cfg(test)]
 mod source_capture_persistence_tests;
 #[cfg(test)]
@@ -206,6 +209,8 @@ pub struct App {
     /// Correlated capture progress; recovery inventory is never corpus admission.
     pub source_captures: HashMap<uuid::Uuid, crate::source_capture::CaptureAttempt>,
     pub(crate) source_capture_generation: uuid::Uuid,
+    pub(crate) saved_sources: saved_source_arms::SavedSourcesState,
+    pub(crate) saved_readers: HashMap<uuid::Uuid, saved_source_arms::SavedReader>,
     /// Transient host engine availability; retained across session switches.
     pub engine_inventory: Vec<crate::content::EngineDescriptor>,
     /// Durable feed schedules and duplicate-suppression state for this
@@ -1123,6 +1128,7 @@ impl App {
         }
         let mut effects = self.dispatch(action);
         if !self.session_load_refused() { effects.extend(crate::behaviors::drain(self)); }
+        effects.extend(self.invalidate_saved_readers());
         effects
     }
 
@@ -1161,6 +1167,8 @@ impl App {
             Action::CapturePage { member } => vec![Effect::CaptureContent { node: member }],
             Action::CaptureSourceDocument { target } => self.begin_source_capture(target),
             Action::RetrySourceDocumentCapture { request } => self.retry_source_capture(request),
+            Action::SearchSavedSources => self.search_saved_sources(),
+            Action::OpenSavedSource(target) => self.open_saved_source(target),
             Action::ChoosePermission { request, choice } => self.choose_permission(request, choice),
             Action::FocusAuthenticationField(field) => self.focus_authentication_field(field),
             Action::InsertAuthentication(text) => self.insert_authentication(text),

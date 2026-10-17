@@ -530,7 +530,8 @@ Recorded here so they are not lost, and because each is independently closable:
   earlier open Full-vs-opt-in recorder tail above. The first headed check found
   missing HTTP final-response provenance in the shared fetch lane; qualification
   includes the supplier repair rather than guessing that provenance in the app.
-  Private saved readers, research Answers and hosted capture gates remain open.
+  The R2 private reader is now bounded-qualified on macOS; research
+  Answers and hosted capture gates remain open.
 
   The [R1 receipt](../docs/receipts/r1_source_keep_20261017/qualification.json)
   records 953 bounded regression tests, three capture-library controls, 46
@@ -540,4 +541,20 @@ Recorded here so they are not lost, and because each is independently closable:
   body-only recall is absent. Native cold reopen also qualifies the host's
   actor-batch drain/visibility repair after reproducing an occluded first frame.
   This closes R1's ordinary HTML/Keep/new-retention join, within R0's acknowledged
-  write/process-exit durability model; R2-R4 and hosted capture remain open.
+  write/process-exit durability model; R3-R4 and hosted capture remain open.
+
+- **2026-10-17, R2 private saved-source consumer bounded-qualified on macOS:**
+  the lifecycle plan now records the session-admitted source list/search and
+  retained offline text reader. Its private URL binds session, graph, node,
+  annotation manifest, canonical-text hash and scalar selector; actor reads use
+  the existing NoFetcher/R0 boundary, while the original address is an explicit
+  link. This consumer does not fork a supplier API or convert captures into
+  ClipRecords. The branch's refreshed stack changes exactly 78 Mere lock records
+  to published `a9b5dd663`, including its scroll-boundary fix; Genet and the
+  other lock records are preserved. The
+  [R2 receipt](../docs/receipts/r2_saved_sources_20261017/qualification.json)
+  binds 969 bounded regression passes, three capture-library controls,
+  Clippy/Cargo verification and two fresh headed processes. Seven reviewed
+  captures and independent hash/facet/selector checks prove A1 search/read and
+  exact fresh reopen after the real origin exits and its TCP port refuses
+  connections; A2 does not replace A1. Hosted P2, P4 and P5 remain separate.

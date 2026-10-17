@@ -205,6 +205,50 @@ impl Shell {
 /// `RefCell`). Inspector/Workbench panes join by adding their `dom_ref` here when
 /// they grow click verbs.
 impl Shell {
+    fn focused_saved_reader_node(&self) -> Option<uuid::Uuid> {
+        let focused = match self.app.focus {
+            crate::surface::FocusTarget::Content { node, .. } => Some(node),
+            crate::surface::FocusTarget::Graph(pane) => {
+                self.app.graph_pane_focused_member(pane)
+            }
+            _ => None,
+        }?;
+        self.app
+            .saved_readers
+            .contains_key(&focused)
+            .then_some(focused)
+    }
+
+    fn saved_reader_engine_live(&self, node: uuid::Uuid) -> bool {
+        matches!(self.app.content.get(node), Some(crate::content::NodeContent::Live))
+            && self
+                .app
+                .content
+                .facts(node)
+                .is_some_and(|facts| facts.engine == crate::saved_sources::ENGINE_ID)
+            && self
+                .content_sessions
+                .session(&node)
+                .is_some_and(|session| {
+                    session
+                        .as_any_ref()
+                        .downcast_ref::<mere_document_lanes::SmolwebDocumentSession>()
+                        .is_some()
+                })
+    }
+
+    fn focused_saved_reader_ready(&self) -> bool {
+        let Some(node) = self.focused_saved_reader_node() else {
+            return false;
+        };
+        self.app.saved_readers.get(&node).is_some_and(|reader| {
+            reader.request.is_none()
+                && reader.error.is_none()
+                && reader.content.is_some()
+                && self.saved_reader_engine_live(node)
+        })
+    }
+
     fn scenario_key_in_window(
         &mut self,
         window: usize,
@@ -650,6 +694,44 @@ impl taproot::Automatable for Shell {
         let snap = crate::observe::snapshot(&self.app);
         let appearance = self.live_settings.snapshot();
         let kept = snap.focused.as_ref().is_some_and(|node| node.kept);
+        let saved_reader_node = self.focused_saved_reader_node();
+        let saved_reader = saved_reader_node.and_then(|node| self.app.saved_readers.get(&node));
+        let saved_reader_state = match saved_reader {
+            None => "None",
+            Some(reader) if reader.error.is_some() => "Error",
+            Some(reader)
+                if reader.request.is_none()
+                    && reader.content.is_some()
+                    && saved_reader_node.is_some_and(|node| self.saved_reader_engine_live(node)) =>
+            {
+                "Ready"
+            }
+            Some(_) => "Pending",
+        };
+        let saved_reader_text = saved_reader
+            .and_then(|reader| reader.content.as_ref())
+            .map(|content| content.text.as_str())
+            .unwrap_or_default();
+        let saved_reader_quote = saved_reader
+            .and_then(|reader| {
+                reader.content.as_ref().and_then(|content| {
+                    crate::saved_sources::validate_selector(content, &reader.target)
+                        .ok()
+                        .flatten()
+                })
+            })
+            .unwrap_or_default();
+        let saved_reader_manifest = saved_reader
+            .map(|reader| reader.target.key.annotation_manifest.as_str())
+            .unwrap_or_default();
+        let saved_reader_origin = saved_reader
+            .and_then(|reader| reader.content.as_ref())
+            .map(|content| content.origin.as_str())
+            .unwrap_or_default();
+        let saved_reader_selector = saved_reader
+            .and_then(|reader| reader.target.selector.as_ref())
+            .map(|selector| format!("{}..{}", selector.start, selector.end))
+            .unwrap_or_default();
         let mut out = taproot::ProbeSnapshot::default()
             .with_field("scene-arrangement", snap.graph_scene.arrangement)
             .with_field("scene-saved-seed", snap.graph_scene.saved_seed.to_string())
@@ -658,6 +740,13 @@ impl taproot::Automatable for Shell {
             .with_field("scene-retained", snap.graph_scene.retained.to_string())
             .with_field("scene-grammar", snap.graph_scene.grammar.to_string())
             .with_field("focus", snap.focus)
+            .with_field("saved-sources-status", self.app.saved_sources.status.clone())
+            .with_field("saved-reader-state", saved_reader_state)
+            .with_field("saved-reader-text", saved_reader_text)
+            .with_field("saved-reader-quote", saved_reader_quote)
+            .with_field("saved-reader-manifest", saved_reader_manifest)
+            .with_field("saved-reader-origin", saved_reader_origin)
+            .with_field("saved-reader-selector", saved_reader_selector)
             .with_field(
                 "host-surface-producers",
                 self.content_sessions.surface_count().to_string(),
@@ -2210,6 +2299,36 @@ impl Shell {
                     return Err(format!("wait-source-capture {ordinal} {phase} after {frames} frames: observed {current:?}"));
                 }
             },
+            Step::WaitSavedSources(frames) => {
+                let ready = self.wait_frames(*frames, |shell| {
+                    shell.app.saved_sources.request.is_none()
+                        && shell.app.saved_sources.status == "Ready"
+                });
+                if !ready {
+                    return Err(format!(
+                        "wait-saved-sources after {frames} frames: status is '{}' with request {:?}",
+                        self.app.saved_sources.status,
+                        self.app.saved_sources.request,
+                    ));
+                }
+            },
+            Step::WaitSavedReader(frames) => {
+                if !self.wait_frames(*frames, Shell::focused_saved_reader_ready) {
+                    let node = self.focused_saved_reader_node();
+                    let state = node.and_then(|node| self.app.saved_readers.get(&node)).map(|reader| {
+                        if reader.error.is_some() {
+                            "Error"
+                        } else if reader.request.is_some() || reader.content.is_none() {
+                            "Pending"
+                        } else {
+                            "Content ready; live saved-source engine unavailable"
+                        }
+                    }).unwrap_or("None");
+                    return Err(format!(
+                        "wait-saved-reader after {frames} frames: focused reader state is {state}"
+                    ));
+                }
+            },
             Step::WaitFile(frames, path) => {
                 self.pending_scenario_file = Some(PendingFileWait::new(path.into(), *frames));
             },
@@ -2257,6 +2376,75 @@ impl Shell {
                 let path = self.shared_out_dir.join(format!("{name}.source-captures.json"));
                 std::fs::write(&path, body).map_err(|error| {
                     format!("record-source-captures '{name}': could not write {}: {error}", path.display())
+                })?;
+            },
+            Step::RecordSavedSources(name) => {
+                let mut readers = Vec::new();
+                let mut nodes: Vec<_> = self.app.saved_readers.keys().copied().collect();
+                nodes.sort();
+                for node in nodes {
+                    let reader = &self.app.saved_readers[&node];
+                    let engine = self.app.content.facts(node).map(|facts| facts.engine.clone());
+                    let node_live = matches!(
+                        self.app.content.get(node),
+                        Some(crate::content::NodeContent::Live)
+                    );
+                    let rendered_document = if node_live
+                        && engine.as_deref() == Some(crate::saved_sources::ENGINE_ID)
+                    {
+                        self.content_sessions
+                            .session_mut(&node)
+                            .and_then(|session| {
+                                session
+                                    .as_any()
+                                    .downcast_mut::<mere_document_lanes::SmolwebDocumentSession>()
+                            })
+                            .map(|session| session.document_mut().document().clone())
+                    } else {
+                        None
+                    };
+                    let phase = if reader.error.is_some() {
+                        "Error"
+                    } else if reader.request.is_some() || reader.content.is_none() {
+                        "Pending"
+                    } else if node_live
+                        && engine.as_deref() == Some(crate::saved_sources::ENGINE_ID)
+                        && rendered_document.is_some()
+                    {
+                        "Ready"
+                    } else {
+                        "EngineUnavailable"
+                    };
+                    readers.push(serde_json::json!({
+                        "node": node,
+                        "url": reader.url,
+                        "target": reader.target,
+                        "phase": phase,
+                        "error": reader.error,
+                        "content": reader.content,
+                        "engine": engine,
+                        "rendered_document": rendered_document,
+                    }));
+                }
+                let value = serde_json::json!({
+                    "session": self.app.session_id,
+                    "generation": self.app.source_capture_generation,
+                    "status": self.app.saved_sources.status,
+                    "admissions": self.app.saved_source_admissions(),
+                    "entries": self.app.saved_sources.entries,
+                    "readers": readers,
+                });
+                let body = serde_json::to_string_pretty(&value).map_err(|error| {
+                    format!("record-saved-sources '{name}': could not serialize: {error}")
+                })?;
+                let path = self
+                    .shared_out_dir
+                    .join(format!("{name}.saved-sources.json"));
+                std::fs::write(&path, body).map_err(|error| {
+                    format!(
+                        "record-saved-sources '{name}': could not write {}: {error}",
+                        path.display()
+                    )
                 })?;
             },
             Step::TouchFile(path) => {

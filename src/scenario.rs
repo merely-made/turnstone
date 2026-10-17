@@ -101,6 +101,9 @@
 //! record-source-captures <name> # write current-session capture request facts
 //!                            # (owner node, URL, phase and exact stored refs)
 //! wait-source-capture <frames> <ordinal> <phase> # wait for that capture phase
+//! wait-saved-sources <frames> # wait for this session's source admission read
+//! wait-saved-reader <frames> # wait for the focused saved source's live reader
+//! record-saved-sources <name> # write source admission, entries and live readers
 //! queue-act <palette label> # retain the exact offered Action through later
 //!                            # scenario steps; no execution until deliver-act
 //! deliver-act               # lower the retained Action through Shell::act
@@ -318,12 +321,18 @@ pub enum Step {
     WaitKnot(u32, String),
     /// Wait until an observed source request reaches the named phase.
     WaitSourceCapture(u32, u64, String),
+    /// Wait until this session's saved-source admission load has completed.
+    WaitSavedSources(u32),
+    /// Wait until the focused saved-source reader has content and a live engine.
+    WaitSavedReader(u32),
     /// Write the place observation facts (`crate::observe::place_record`),
     /// pretty-printed, to `<name>.json` in the capture directory.
     RecordPlace(String),
     /// Write the current session's correlated source-capture facts from the
     /// same observation snapshot used by the visible Inspector rows.
     RecordSourceCaptures(String),
+    /// Write current-session saved-source admissions, entries, and reader state.
+    RecordSavedSources(String),
     /// Snapshot an exact catalog Action for a later stale-admission check.
     QueueAct(String),
     /// Deliver the previously queued catalog Action through the ordinary
@@ -859,9 +868,21 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 }
                 Step::WaitSourceCapture(frames.unwrap(), ordinal.unwrap(), phase.unwrap().to_string())
             }
+            "wait-saved-sources" | "wait-saved-reader" => {
+                let frames = rest.trim().parse::<u32>().map_err(|_| {
+                    format!("line {}: {verb} wants '<frames>'", i + 1)
+                })?;
+                match verb {
+                    "wait-saved-sources" => Step::WaitSavedSources(frames),
+                    _ => Step::WaitSavedReader(frames),
+                }
+            }
             "record-place" if !rest.is_empty() => Step::RecordPlace(rest.to_string()),
             "record-source-captures" if !rest.is_empty() => {
                 Step::RecordSourceCaptures(rest.to_string())
+            }
+            "record-saved-sources" if !rest.is_empty() => {
+                Step::RecordSavedSources(rest.to_string())
             }
             "queue-act" if !rest.is_empty() => Step::QueueAct(rest.to_string()),
             "deliver-act" if rest.is_empty() => Step::DeliverAct,
@@ -968,6 +989,34 @@ drop-file 350 280 receipt.txt",
     fn record_place_is_a_typed_step() {
         let steps = parse("record-place founder").unwrap();
         assert!(matches!(steps.as_slice(), [Step::RecordPlace(name)] if name == "founder"));
+    }
+
+    #[test]
+    fn saved_source_observation_commands_parse_and_reject_bad_arguments() {
+        let steps = parse(
+            "wait-saved-sources 600\nwait-saved-reader 300\nrecord-saved-sources sample",
+        )
+        .unwrap();
+        assert!(matches!(
+            steps.as_slice(),
+            [
+                Step::WaitSavedSources(600),
+                Step::WaitSavedReader(300),
+                Step::RecordSavedSources(name),
+            ] if name == "sample"
+        ));
+
+        for invalid in [
+            "wait-saved-sources",
+            "wait-saved-sources many",
+            "wait-saved-sources 10 extra",
+            "wait-saved-reader",
+            "wait-saved-reader -1",
+            "wait-saved-reader 10 extra",
+            "record-saved-sources",
+        ] {
+            assert!(parse(invalid).is_err(), "accepted invalid command: {invalid}");
+        }
     }
 
     #[test]

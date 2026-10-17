@@ -1,0 +1,231 @@
+{
+  "nodes": {
+    "46a89228-af7d-4a12-9e1d-29e007cb59b7": {
+      "arrangement.frame-layout": [],
+      "arrangement.pin": false,
+      "arrangement.position": {
+        "x": -60.8811149597168,
+        "y": 81.58448028564453
+      },
+      "arrangement.split-offer-suppressed": false,
+      "capture.source-annotations/v1": [
+        "blake3:a3a8c82260cda3c91a7b6cbdc74ce723d0cb93e4762f87b95c330ef70f1572e8"
+      ],
+      "capture.source-requests/v1": [
+        {
+          "request": {
+            "graph": "b9a2645b-4950-4e28-b62c-25b4be0fb93e",
+            "id": "a25fec7f-ff31-4514-8cd9-6b254b176808",
+            "keep": true,
+            "node": "46a89228-af7d-4a12-9e1d-29e007cb59b7",
+            "session": "f4013057-4867-4b76-9738-2665123ca17f",
+            "source": {
+              "acquired_at_ms": 1792274813706,
+              "body_hash": "blake3:5a39b17dd36643890b08247318b48f0852bf9cd25d53de7d52ae5e6059abd53e",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:65507/B",
+              "hash": "blake3:5a39b17dd36643890b08247318b48f0852bf9cd25d53de7d52ae5e6059abd53e"
+            },
+            "url": "http://127.0.0.1:65507/B"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:a3a8c82260cda3c91a7b6cbdc74ce723d0cb93e4762f87b95c330ef70f1572e8",
+            "raw_manifest": "blake3:5a39b17dd36643890b08247318b48f0852bf9cd25d53de7d52ae5e6059abd53e"
+          }
+        }
+      ],
+      "chartulary.class": "turnstone.web-page",
+      "presentation.tags": {
+        "icon_overrides": {},
+        "ordered_tags": []
+      },
+      "provenance.derivations": [],
+      "provenance.import": [],
+      "semantic.classifications": [],
+      "semantic.properties": [],
+      "turnstone.controls.v1.feed": false,
+      "turnstone.controls.v1.keep": true,
+      "turnstone.controls.v1.unread": false,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792274812686
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:65507/B",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    },
+    "49566ec0-5fa0-4f95-b674-b28b2c1d2d91": {
+      "arrangement.frame-layout": [],
+      "arrangement.pin": false,
+      "arrangement.position": {
+        "x": 179.12152099609375,
+        "y": 178.2794647216797
+      },
+      "arrangement.split-offer-suppressed": false,
+      "chartulary.class": "turnstone.web-page",
+      "presentation.tags": {
+        "icon_overrides": {},
+        "ordered_tags": []
+      },
+      "provenance.derivations": [],
+      "provenance.import": [],
+      "semantic.classifications": [],
+      "semantic.properties": [],
+      "turnstone.controls.v1.feed": false,
+      "turnstone.controls.v1.unread": false,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792274826352
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:65507/swap-a",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    },
+    "69b4c91d-13a0-4b97-9c0d-621954edff64": {
+      "arrangement.frame-layout": [],
+      "arrangement.pin": false,
+      "arrangement.position": {
+        "x": 33.00693893432617,
+        "y": -101.24934387207031
+      },
+      "arrangement.split-offer-suppressed": false,
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "presentation.tags": {
+        "icon_overrides": {},
+        "ordered_tags": []
+      },
+      "provenance.derivations": [],
+      "provenance.import": [],
+      "semantic.classifications": [],
+      "semantic.properties": [],
+      "turnstone.controls.v1.feed": false,
+      "turnstone.controls.v1.unread": false,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792274932840
+      },
+      "web.content": true
+    },
+    "6b6e8218-657f-4e9d-a1a2-610869c18bff": {
+      "arrangement.frame-layout": [],
+      "arrangement.pin": false,
+      "arrangement.position": {
+        "x": -130.9054412841797,
+        "y": -73.76221466064453
+      },
+      "arrangement.split-offer-suppressed": false,
+      "capture.source-annotations/v1": [
+        "blake3:3c01d7ed6ed974357269505fcb16999269406fd66fa9fde15d109fb14262f77e",
+        "blake3:08725a3d8432901b024281e2503dc8b2d69341947c0e57bf2ea6ca7ba4e14a17"
+      ],
+      "capture.source-requests/v1": [
+        {
+          "request": {
+            "graph": "b9a2645b-4950-4e28-b62c-25b4be0fb93e",
+            "id": "5e91eca1-e48f-4ffa-a75b-319bad87d1be",
+            "keep": true,
+            "node": "6b6e8218-657f-4e9d-a1a2-610869c18bff",
+            "session": "f4013057-4867-4b76-9738-2665123ca17f",
+            "source": {
+              "acquired_at_ms": 1792274807482,
+              "body_hash": "blake3:fba44add7056fd91ed3f40250134ca5853c1701b42547394a2d52a778e13c776",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:65507/A",
+              "hash": "blake3:fba44add7056fd91ed3f40250134ca5853c1701b42547394a2d52a778e13c776"
+            },
+            "url": "http://127.0.0.1:65507/A"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:3c01d7ed6ed974357269505fcb16999269406fd66fa9fde15d109fb14262f77e",
+            "raw_manifest": "blake3:fba44add7056fd91ed3f40250134ca5853c1701b42547394a2d52a778e13c776"
+          }
+        },
+        {
+          "request": {
+            "graph": "b9a2645b-4950-4e28-b62c-25b4be0fb93e",
+            "id": "0c66a6df-ea13-44a7-9391-56b139c9daa8",
+            "keep": true,
+            "node": "6b6e8218-657f-4e9d-a1a2-610869c18bff",
+            "session": "f4013057-4867-4b76-9738-2665123ca17f",
+            "source": {
+              "acquired_at_ms": 1792274831333,
+              "body_hash": "blake3:60a670119530da418659183e02de193625a1a7a897d8d6904de5ccde3b4b72c9",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:65507/A",
+              "hash": "blake3:60a670119530da418659183e02de193625a1a7a897d8d6904de5ccde3b4b72c9"
+            },
+            "url": "http://127.0.0.1:65507/A"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:08725a3d8432901b024281e2503dc8b2d69341947c0e57bf2ea6ca7ba4e14a17",
+            "raw_manifest": "blake3:60a670119530da418659183e02de193625a1a7a897d8d6904de5ccde3b4b72c9"
+          }
+        }
+      ],
+      "chartulary.class": "turnstone.web-page",
+      "presentation.tags": {
+        "icon_overrides": {},
+        "ordered_tags": []
+      },
+      "provenance.derivations": [],
+      "provenance.import": [],
+      "semantic.classifications": [],
+      "semantic.properties": [],
+      "turnstone.controls.v1.feed": false,
+      "turnstone.controls.v1.keep": true,
+      "turnstone.controls.v1.unread": false,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792274830792
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:65507/A",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    },
+    "8544f705-cc04-4fbc-89f9-a0c6f6598b68": {
+      "arrangement.frame-layout": [],
+      "arrangement.pin": false,
+      "arrangement.position": {
+        "x": 100.87389373779297,
+        "y": 27.684675216674805
+      },
+      "arrangement.split-offer-suppressed": false,
+      "chartulary.class": "turnstone.web-page",
+      "presentation.tags": {
+        "icon_overrides": {},
+        "ordered_tags": []
+      },
+      "provenance.derivations": [],
+      "provenance.import": [],
+      "semantic.classifications": [],
+      "semantic.properties": [],
+      "turnstone.controls.v1.feed": false,
+      "turnstone.controls.v1.unread": false,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792274821533
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:65507/X",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    },
+    "b9a2645b-4950-4e28-b62c-25b4be0fb93e": {
+      "scene.importance_metric": "degree",
+      "scene.physics_damping": 2.5,
+      "scene.size_by_degree": false,
+      "scene.size_by_importance": false
+    }
+  }
+}

@@ -97,6 +97,7 @@ pub mod sky_receipt;
 pub mod sky_surface;
 pub mod sky_timeline;
 pub mod source_capture;
+pub mod saved_sources;
 mod surface;
 mod surface_controls;
 mod swatch_pane;

@@ -105,12 +105,13 @@ set.
   visiting, keeping, capturing, annotating, collecting, sharing, revision
   and deletion; rulings L1-L7 join the surfaces, capture and recycle bin
   plans and add phases for the missing joins. Source capture and persisted
-  collection-scoped search are implemented. The October 17 proposed research
-  slice audits `428deb5` and sequences save acknowledgement/recovery, ordinary capture/Keep, private saved-source
-  search and offline text reading, then explicitly scoped capture-backed
-  Answers and cold-reopen acceptance. Authored Knot notes and deliberate
-  attachment sharing are named follow-ons. R0 save acknowledgement/recovery
-  is implemented from fetched `b7e1529`, adopting published Mere `00e444286`:
+  collection-scoped search are implemented. The October 17 research workflow
+  audited `428deb5` and sequences save acknowledgement/recovery, ordinary
+  capture/Keep, private saved-source search and offline text reading, then
+  explicitly scoped capture-backed Answers and cold-reopen acceptance. Authored
+  Knot notes and deliberate attachment sharing are named follow-ons. R0 save
+  acknowledgement/recovery is implemented from fetched `b7e1529`, adopting
+  published Mere `00e444286`:
   940 bounded regression tests pass, including 50 capture and 16 scene controls;
   three capture-library controls and the Clippy correctness gate also pass.
   The [R0 receipt](../docs/receipts/r0_source_save_20261017/qualification.json)
@@ -120,8 +121,16 @@ set.
   controls, 46 supplier tests and two fresh headed processes pass. The
   [R1 receipt](../docs/receipts/r1_source_keep_20261017/qualification.json) retains
   12 reviewed captures, exact offline recovery, the HTTP provenance/host wake
-  repairs and earlier failed diagnostics. R2-R4 remain proposed; the full
-  research workflow and remaining lifecycle joins retain their individual gates.
+  repairs and earlier failed diagnostics. The private saved-source search and
+  offline text reader now have bounded macOS qualification: 969 regression
+  passes, three capture-library controls, Clippy/Cargo verification and two
+  headed processes with seven reviewed captures. The
+  [R2 receipt](../docs/receipts/r2_saved_sources_20261017/qualification.json)
+  proves exact A1 search/read and fresh reopen after actual origin shutdown and
+  TCP refusal, with A2/X/foreign-session isolation. Its internal view URL binds
+  session, graph, node, annotation, text hash and scalar selector; the original
+  URL is a separate explicit link. R3-R4 and the full research workflow retain
+  their individual gates.
 - [Trail recall evaluation](2026-09-02_trail_recall_evaluation_plan.md): private captured-corpus protocol for selecting or rejecting configurable phrase recall against BM25 with held-out ranking and resource budgets.
 - [Page capture and provenance](2026-08-28_page_capture_plan.md): ruled path
   for durable node-attached page captures; P1 owner contracts and exact pins

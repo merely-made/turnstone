@@ -31,6 +31,14 @@ impl App {
             return Vec::new();
         }
         match update {
+            Update::SavedSourcesLoaded { generation, request, session, admissions, result } => {
+                if generation != self.source_capture_generation { return Vec::new(); }
+                self.saved_sources_loaded(request, session, admissions, result)
+            },
+            Update::SavedSourceRead { generation, request, node, url, target, result } => {
+                if generation != self.source_capture_generation { return Vec::new(); }
+                self.saved_source_read(request, node, url, target, result)
+            },
             Update::FeedFetched { node, url, result } => self.apply_feed_fetched(node, url, result),
             Update::PageStreamed {
                 request,

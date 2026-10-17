@@ -189,25 +189,26 @@ mod tests {
     /// The watch hands the root back once djinn answers, and not before.
     #[test]
     fn the_unlock_watch_adopts_the_root_once_djinn_answers() {
-        use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+        use std::sync::atomic::{AtomicUsize, Ordering};
         let poll = std::time::Duration::from_millis(20);
         let asks = Arc::new(AtomicUsize::new(0));
         let counted = asks.clone();
-        let woken = Arc::new(AtomicBool::new(false));
-        let flag = woken.clone();
+        // Delivery can wake this receiver before the watcher calls the host
+        // callback. Observe both events rather than assuming their scheduling.
+        let (wake_ack, woken) = std::sync::mpsc::channel();
         let roots = watch_with(
             move || {
                 (counted.fetch_add(1, Ordering::SeqCst) >= 3)
                     .then(|| Arc::new(RootIdentity::from_seed([4; 32])))
             },
             poll,
-            Arc::new(move || flag.store(true, Ordering::SeqCst)),
+            Arc::new(move || { let _ = wake_ack.send(()); }),
         );
         let root = roots
             .recv_timeout(poll * 100)
             .expect("the root arrives once djinn answers");
         assert!(asks.load(Ordering::SeqCst) >= 4, "pending answers came first");
-        assert!(woken.load(Ordering::SeqCst));
+        woken.recv_timeout(poll * 100).expect("root adoption also wakes the host");
         assert_eq!(
             root_subject(root.as_ref()),
             root_subject(&RootIdentity::from_seed([4; 32]))

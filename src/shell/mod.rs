@@ -28,6 +28,7 @@ mod reader_observe;
 mod render;
 mod renderers;
 mod retained_clips;
+mod saved_sources;
 #[cfg(all(feature = "scry", windows))]
 mod scry;
 #[cfg(all(feature = "servo", windows))]
@@ -202,6 +203,7 @@ pub(crate) fn standard_content_engines() -> SessionRegistry<Scene> {
         LocalFetcher.with_fallback(RemoteFetcher::shared()),
     );
     engines.register(Box::new(crate::nomadnet::MicronSessionEngine::new()));
+    engines.register(Box::new(saved_sources::SavedSourceSessionEngine));
     for engine_id in SMOLWEB_SESSION_ENGINE_IDS {
         engines.register(Box::new(
             SmolwebSessionEngine::new(

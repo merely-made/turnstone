@@ -52,6 +52,7 @@ use eidetic_search::{CandidateIndex, FusedHit, IndexConfig, Ranking, TrailIndex,
 use muniment::FjallStore;
 
 use crate::action::{RecallHit, StoredSourceDocument, Update};
+mod saved_sources;
 
 /// Traversals per stored trace segment. Segments are the flush granularity:
 /// small enough that a crash loses minutes, large enough that a stored trace
@@ -131,6 +132,22 @@ impl RecallSource {
 /// Commands the trail-memory actor takes (the shell sends these; ordering on
 /// the one channel is the consistency story, the bin actor's exact shape).
 pub enum TrailCommand {
+    LoadSavedSources {
+        generation: uuid::Uuid,
+        request: uuid::Uuid,
+        session: crate::panes::SessionId,
+        admissions: Vec<crate::saved_sources::Admission>,
+        directory: PathBuf,
+    },
+    ReadSavedSource {
+        generation: uuid::Uuid,
+        request: uuid::Uuid,
+        node: uuid::Uuid,
+        url: String,
+        target: crate::saved_sources::Target,
+        admission: crate::saved_sources::Admission,
+        directory: PathBuf,
+    },
     /// Read exact retained texts through this actor's existing store handle.
     InferenceSnapshot {
         owner: String,
@@ -1108,6 +1125,30 @@ pub(crate) fn spawn_trail_for_session(
             let mut last_to: HashMap<String, PageRef> = HashMap::new();
             while let Ok(command) = commands.recv() {
                 match command {
+                    TrailCommand::LoadSavedSources { generation, request, session, admissions, directory } => {
+                        let owner = current_dir.parent().and_then(Path::file_name).and_then(|name| name.to_str());
+                        let result = if generation != current_capture_generation || directory != current_dir
+                            || owner != Some(session.as_uuid().to_string().as_str())
+                            || admissions.iter().any(|admission| admission.key.session != session)
+                        { Err("Saved source search belongs to another session opening or store".into()) }
+                        else { match state.as_mut() {
+                            Some((store, _)) => Ok(saved_sources::load(store, &admissions)),
+                            None => Err("The session evidence store is unavailable".into()),
+                        }};
+                        out.emit(Update::SavedSourcesLoaded { generation, request, session, admissions, result });
+                    },
+                    TrailCommand::ReadSavedSource { generation, request, node, url, target, admission, directory } => {
+                        let owner = current_dir.parent().and_then(Path::file_name).and_then(|name| name.to_str());
+                        let result = if generation != current_capture_generation || directory != current_dir
+                            || owner != Some(target.key.session.as_uuid().to_string().as_str())
+                            || admission.key != target.key
+                        { Err("Saved source reading belongs to another session opening or attachment".into()) }
+                        else { match state.as_mut() {
+                            Some((store, _)) => saved_sources::resolve(store, &admission, &target),
+                            None => Err("The session evidence store is unavailable".into()),
+                        }};
+                        out.emit(Update::SavedSourceRead { generation, request, node, url, target, result });
+                    },
                     TrailCommand::InferenceSnapshot { owner, reply } => {
                         let result = inference_snapshot(
                             state.as_ref().map(|(store, _)| store),

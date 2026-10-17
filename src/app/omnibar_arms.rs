@@ -65,6 +65,11 @@ impl App {
             self.viewport.1,
             chrome.appearance.ui_zoom,
         );
+        if matches!(self.omnibar.mode, OmnibarMode::SavedSources) {
+            self.recompute_saved_source_suggestions(row_limit);
+            self.frame_timings.note_suggestions(started.elapsed(), false);
+            return;
+        }
         if matches!(self.omnibar.mode, OmnibarMode::CapturedPages) {
             self.recompute_captured_page_suggestions(row_limit);
             self.frame_timings
@@ -346,7 +351,7 @@ impl App {
         effects
     }
 
-    fn cancel_smolweb_conversation(&mut self) -> Vec<Effect> {
+    pub(super) fn cancel_smolweb_conversation(&mut self) -> Vec<Effect> {
         if matches!(self.omnibar.mode, OmnibarMode::SmolwebSubmissionResult(_)) {
             let effects = self
                 .active_smolweb_submission

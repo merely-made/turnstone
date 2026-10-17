@@ -1386,46 +1386,127 @@ impl Shell {
                 // failure — unroutable id, spawn error — surfaces as
                 // ContentFailed; a Requested node never silently spins.
                 Effect::SpawnContent { node, url } => {
+                    // Resolve private saved-source addresses before the ordinary
+                    // host visit, retained-clip, or fetch paths can claim them.
+                    let saved_source_namespace = url::Url::parse(&url)
+                        .ok()
+                        .is_some_and(|parsed| {
+                            parsed.scheme() == "mere"
+                                && parsed.host_str() == Some("saved-source")
+                        })
+                        || url.starts_with("mere://saved-source");
+                    let saved_target = if saved_source_namespace {
+                        match crate::saved_sources::parse_address(&url) {
+                            Ok(Some(target)) => Some(target),
+                            Ok(None) => {
+                                let effects = self.app.apply_update(Update::ContentFailed {
+                                    node,
+                                    error: "Invalid saved source address".into(),
+                                });
+                                self.run_effects(effects);
+                                continue;
+                            }
+                            Err(error) => {
+                                let effects = self.app.apply_update(Update::ContentFailed {
+                                    node,
+                                    error,
+                                });
+                                self.run_effects(effects);
+                                continue;
+                            }
+                        }
+                    } else {
+                        None
+                    };
+                    let saved_source_document = if let Some(target) = saved_target.as_ref() {
+                        match self.app.held_saved_source_document(node, &url, target) {
+                            Ok(Some(document)) => Some(document),
+                            Ok(None) => {
+                                let effects = self.app.request_saved_source_read(
+                                    node,
+                                    url.clone(),
+                                    target.clone(),
+                                );
+                                self.run_effects(effects);
+                                continue;
+                            }
+                            Err(error) => {
+                                let effects = self.app.apply_update(Update::ContentFailed {
+                                    node,
+                                    error,
+                                });
+                                self.run_effects(effects);
+                                continue;
+                            }
+                        }
+                    } else {
+                        None
+                    };
                     // A document another mere holds is dialed before it is
                     // opened. The visit is one place-worker round trip; the
                     // spawn waits for it and then runs unchanged, so the
                     // authoring engine never learns that anything was dialed.
-                    if self.request_visit_if_held_elsewhere(node, &url) {
+                    if saved_target.is_none() && self.request_visit_if_held_elsewhere(node, &url) {
                         continue;
                     }
-                    let clip = match crate::retained_clip::request(&url) {
-                        Ok(Some(crate::retained_clip::ClipRequest::Read(id))) => {
-                            let resolved = self.app.clip_destination().and_then(|root| crate::retained_clip::read(&root, id, crate::retained_clip::limits()?));
-                            match resolved {
-                                Ok(clip) => Some(clip.document()),
-                                Err(error) => {
-                                    let follow_up = self.app.apply_update(Update::ContentFailed { node, error });
-                                    self.run_effects(follow_up);
-                                    continue;
-                                },
-                            }
-                        },
-                        Ok(None) => None,
-                        _ => {
-                            let follow_up = self.app.apply_update(Update::ContentFailed { node, error: "Invalid retained clip address".into() });
-                            self.run_effects(follow_up);
-                            continue;
-                        },
+                    let clip = if let Some(document) = saved_source_document {
+                        Some(document)
+                    } else {
+                        match crate::retained_clip::request(&url) {
+                            Ok(Some(crate::retained_clip::ClipRequest::Read(id))) => {
+                                let resolved = self.app.clip_destination().and_then(|root| {
+                                    crate::retained_clip::read(
+                                        &root,
+                                        id,
+                                        crate::retained_clip::limits()?,
+                                    )
+                                });
+                                match resolved {
+                                    Ok(clip) => Some(clip.document()),
+                                    Err(error) => {
+                                        let follow_up = self
+                                            .app
+                                            .apply_update(Update::ContentFailed { node, error });
+                                        self.run_effects(follow_up);
+                                        continue;
+                                    },
+                                }
+                            },
+                            Ok(None) => None,
+                            _ => {
+                                let follow_up = self.app.apply_update(Update::ContentFailed {
+                                    node,
+                                    error: "Invalid retained clip address".into(),
+                                });
+                                self.run_effects(follow_up);
+                                continue;
+                            },
+                        }
                     };
                     let fetched = self.app.content.fetched(node, &url).cloned();
-                    let pinned = clip.as_ref().map(|_| crate::retained_clip::ENGINE_ID.to_string())
-                        .or_else(|| self.app.browser.get(node).and_then(|b| b.viewer_override.clone()))
-                        .or_else(|| {
-                            crate::nomadnet::is_micron_address(&url)
-                                .then(|| crate::nomadnet::ENGINE_ID.to_string())
-                        })
-                        .or_else(|| {
-                            (self
-                                .content_engines
-                                .contains(crate::knot_authoring::ENGINE_ID)
-                                && crate::knot_authoring::is_knot_address(&url))
-                            .then(|| crate::knot_authoring::ENGINE_ID.to_string())
-                        });
+                    let pinned = if saved_target.is_some() {
+                        Some(crate::saved_sources::ENGINE_ID.to_string())
+                    } else {
+                        clip.as_ref()
+                            .map(|_| crate::retained_clip::ENGINE_ID.to_string())
+                            .or_else(|| {
+                                self.app
+                                    .browser
+                                    .get(node)
+                                    .and_then(|b| b.viewer_override.clone())
+                            })
+                            .or_else(|| {
+                                crate::nomadnet::is_micron_address(&url)
+                                    .then(|| crate::nomadnet::ENGINE_ID.to_string())
+                            })
+                            .or_else(|| {
+                                (self
+                                    .content_engines
+                                    .contains(crate::knot_authoring::ENGINE_ID)
+                                    && crate::knot_authoring::is_knot_address(&url))
+                                .then(|| crate::knot_authoring::ENGINE_ID.to_string())
+                            })
+                    };
                     let request = inker::EngineRouteRequest {
                         workspace_id: inker::WorkspaceRouteId::new("turnstone"),
                         view: None,
@@ -1766,6 +1847,71 @@ impl Shell {
                         self.run_effects(effects);
                     }
                 },
+                Effect::LoadSavedSources {
+                    generation,
+                    request,
+                    session,
+                    admissions,
+                } => {
+                    if generation != self.app.source_capture_generation {
+                        continue;
+                    }
+                    let directory = crate::trail_memory::memory_dir(&crate::session::session_dir(
+                        &self.app.data_root,
+                        session,
+                    ));
+                    if !self.trail_handle.command(crate::trail_memory::TrailCommand::LoadSavedSources {
+                        generation,
+                        request,
+                        session,
+                        admissions: admissions.clone(),
+                        directory,
+                    }) {
+                        let effects = self.app.apply_update(Update::SavedSourcesLoaded {
+                            generation,
+                            request,
+                            session,
+                            admissions,
+                            result: Err("the session Eidetic actor is unavailable".into()),
+                        });
+                        self.run_effects(effects);
+                    }
+                }
+                Effect::ReadSavedSource {
+                    generation,
+                    request,
+                    node,
+                    url,
+                    target,
+                    admission,
+                } => {
+                    if generation != self.app.source_capture_generation {
+                        continue;
+                    }
+                    let directory = crate::trail_memory::memory_dir(&crate::session::session_dir(
+                        &self.app.data_root,
+                        target.key.session,
+                    ));
+                    if !self.trail_handle.command(crate::trail_memory::TrailCommand::ReadSavedSource {
+                        generation,
+                        request,
+                        node,
+                        url: url.clone(),
+                        target: target.clone(),
+                        admission,
+                        directory,
+                    }) {
+                        let effects = self.app.apply_update(Update::SavedSourceRead {
+                            generation,
+                            request,
+                            node,
+                            url,
+                            target,
+                            result: Err("the session Eidetic actor is unavailable".into()),
+                        });
+                        self.run_effects(effects);
+                    }
+                }
                 Effect::FindContent {
                     node,
                     request,

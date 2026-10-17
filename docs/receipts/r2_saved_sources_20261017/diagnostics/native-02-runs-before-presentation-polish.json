@@ -1,0 +1,32 @@
+[
+  {
+    "phase": "seed",
+    "exit_code": 0,
+    "process": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 101.95,
+      "binary_sha256": "cab07dd0003a6bdf88a2c47573c9b2e19d595bd122ddd6a272fa569592db3a78",
+      "scenario_sha256": "2395d35bdb9eb3dbdc616929af3aef43f5f73ce409313e81a320317b1daa3eac",
+      "receipt": "scenario.done",
+      "captures": 5
+    }
+  },
+  {
+    "phase": "reopen",
+    "exit_code": 0,
+    "process": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 66.113,
+      "binary_sha256": "cab07dd0003a6bdf88a2c47573c9b2e19d595bd122ddd6a272fa569592db3a78",
+      "scenario_sha256": "91b2fabe2c9d30aec8f881b910adf4fbc90cdf35ce6f9de3204d1fb4e1a9900f",
+      "receipt": "scenario.done",
+      "captures": 2
+    }
+  }
+]

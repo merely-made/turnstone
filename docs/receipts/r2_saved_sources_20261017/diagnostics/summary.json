@@ -1,0 +1,25 @@
+{
+  "final_status": "All final qualified gates passed; earlier results remain diagnostic only.",
+  "catalog_test_failure": {
+    "log": "initial-catalog-bounded-library.log",
+    "result": "967 passed, 1 failed; fixed static catalog registration."
+  },
+  "identity_test_race": {
+    "log": "identity-race-bounded-library.log",
+    "isolated_control": "identity-race-isolated-pass.log",
+    "result": "968 passed, 1 failed. Receiver could run before callback. Test now awaits callback acknowledgement; final bounded run passes 969."
+  },
+  "native_01": {
+    "output": "/Users/markik/Code/output/turnstone-r2-native-final-01",
+    "result": "Operator-stopped incomplete run; global wait was held by unrelated graph settling on B. Replaced generic idle waits with ordinary source frame turns plus offered Save controls, R0 acknowledgements and exact body/manifest assertions.",
+    "operator_stop": "native-01-operator-stop.json",
+    "process": "native-01-process.json"
+  },
+  "native_02": {
+    "output": "/Users/markik/Code/output/turnstone-r2-native-final-02",
+    "result": "Two processes and independent verifier passed before final reader title/engine label/compact version presentation polish.",
+    "verification": "native-02-verification-before-presentation-polish.json",
+    "runs": "native-02-runs-before-presentation-polish.json"
+  },
+  "final_native": "../native/verification.json"
+}

@@ -105,6 +105,8 @@ impl App {
             content: ContentStates::default(),
             source_captures: Default::default(),
             source_capture_generation: uuid::Uuid::new_v4(),
+            saved_sources: Default::default(),
+            saved_readers: Default::default(),
             engine_inventory: Vec::new(),
             feeds: crate::feed::FeedSubscriptions::default(),
             redshank: crate::redshank_host::RedshankHost::default(),
@@ -995,6 +997,8 @@ impl App {
         self.behavior_binding = None;
         self.session_id = id;
         self.await_source_capture_revalidation(id);
+        self.saved_sources = Default::default();
+        self.saved_readers.clear();
         self.physics_refusal = None;
         let graph = self
             .sessions
