@@ -567,6 +567,15 @@ impl<B: Backend> MereHost<B> {
         Ok(self)
     }
 
+    /// Add owner admission policy without rechecking historical references.
+    pub fn with_graph_admission_validator(
+        mut self,
+        validator: pandect::GraphAdmissionValidator,
+    ) -> Self {
+        self.graph_session = self.graph_session.with_admission_validator(validator);
+        self
+    }
+
     /// The session truth lives in: its journal, changes and authors.
     pub fn graph_session(&self) -> &GraphSession<B> {
         &self.graph_session
