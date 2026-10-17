@@ -1,0 +1,67 @@
+Diff in /Users/markik/Code/worktrees/turnstone-r0-save/src/app/source_capture_persistence_tests.rs:41:
+
+ fn begin(app: &mut App, node: uuid::Uuid) -> CaptureRequest {
+     if app.source_capture_target(node).is_err() {
+-        let url = app.graph_runtimes.graph().get_node_by_id(node).unwrap().1.url().to_owned();
++        let url = app
++            .graph_runtimes
++            .graph()
++            .get_node_by_id(node)
++            .unwrap()
++            .1
++            .url()
++            .to_owned();
+         let body = "<html><main>capture fixture</main></html>";
+-        app.content.note_fetched(node, url.clone(), crate::content::FetchedDocument {
+-            bytes: body.as_bytes().to_vec(), body: body.into(), content_type: Some("text/html".into()),
+-            effective_url: Some(url), acquired_at_ms: 1,
+-        }, body.len());
++        app.content.note_fetched(
++            node,
++            url.clone(),
++            crate::content::FetchedDocument {
++                bytes: body.as_bytes().to_vec(),
++                body: body.into(),
++                content_type: Some("text/html".into()),
++                effective_url: Some(url),
++                acquired_at_ms: 1,
++            },
++            body.len(),
++        );
+     }
+-    let target = app.source_capture_target(node).expect("complete fixture source");
++    let target = app
++        .source_capture_target(node)
++        .expect("complete fixture source");
+     let effects = app.update(Action::CaptureSourceDocument { target });
+     effects
+         .into_iter()
+Diff in /Users/markik/Code/worktrees/turnstone-r0-save/src/app/source_capture_persistence_tests.rs:1457:
+         // R1 starts unkept: its new Keep and exact reference must travel
+         // together through both real file faults and four abrupt processes.
+         let graph = app.graph_runtimes.active_graph();
+-        assert!(crate::surface_controls::set(app.graph_runtimes.canvas_mut(graph).unwrap(),
+-            node, crate::surface_controls::Control::Keep, false));
++        assert!(crate::surface_controls::set(
++            app.graph_runtimes.canvas_mut(graph).unwrap(),
++            node,
++            crate::surface_controls::Control::Keep,
++            false
++        ));
+         app.persist_session_graph().unwrap();
+         assert!(!app.node_is_kept(node));
+         let url = "https://capture-save.example/evidence";
+Diff in /Users/markik/Code/worktrees/turnstone-r0-save/src/app/source_capture_persistence_tests.rs:1484:
+             .unwrap();
+         app.adopt_session(request.session);
+         assert!(!app.session_load_refused());
+-        assert_eq!(app.node_is_kept(request.node), stage != "fail-graph",
+-            "Keep and the reference commit in the same required facet write");
++        assert_eq!(
++            app.node_is_kept(request.node),
++            stage != "fail-graph",
++            "Keep and the reference commit in the same required facet write"
++        );
+         assert_eq!(
+             references(&app, request.node).len(),
+             usize::from(stage != "fail-graph")

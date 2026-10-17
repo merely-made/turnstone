@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-17",
+  "status": "R1 bounded macOS qualification passed",
+  "turnstone_base": "dc630b71d72befb9a8048b6c5a84b979a26b12b4",
+  "mere_supplier": "1be0bc04f44eacf4cecce62afc84bda68625cf87",
+  "platform": {
+    "os": "macOS 15.8.1 (24H32)",
+    "architecture": "x86_64",
+    "toolchain": "rustup run 1.99.1"
+  },
+  "source_inputs": "source-inputs.json",
+  "native_binary": "native-binary.json",
+  "test_executable": "test-binary.json",
+  "lock_delta": "checks/lock-delta.json",
+  "currentness": {
+    "turnstone_fetched_main_before_publication": "dc630b71d72befb9a8048b6c5a84b979a26b12b4",
+    "mere_fetched_main": "df30e97dd",
+    "mere_since_locked_supplier": "Only design_docs/2026-10-14_retained_document_resource_brief.md changed; no source/manifests/lock drift. Turnstone uses the exact published and qualified supplier commit.",
+    "active_work": "Other Turnstone worktrees and existing Mere untracked node_modules preserved."
+  },
+  "product_contract": [
+    "Ordinary source-bound Inspector pointer control and common keyboard/semantic catalog action carry the owning session/graph/member, exact complete HTML source identity, response admission UUID and current opening generation.",
+    "Verified deposition stages exact reference and idempotent Keep in one canonical facet bundle, emits NodeKept only for a new promotion and asks for one owning save.",
+    "Final Saved still requires R0 owning facet/graph write acknowledgement plus checked completed-receipt acknowledgement. Deposition alone is not Saved.",
+    "New live retries retain the original admission fence. Verified historical attachment and fresh actor recovery may complete original evidence offline; stale pre-actor refusals cannot retry into a new capture.",
+    "Ordinary visits retain address/title/traversal metadata. New automatic PageText writes are blocked at enrichment and queued-command storage boundary. Legacy PageText and legacy Answers records remain readable without migration or purge.",
+    "Standalone Keep remains metadata-only; saved-source reading/search and capture-scoped Answers belong to R2-R4."
+  ],
+  "tests": {
+    "bounded_library": {
+      "command": "rustup run 1.99.1 cargo test --locked --offline --lib --no-fail-fast -j 2 -- --test-threads=4 --skip place:: --skip sky_surface:: --skip sky_timeline::",
+      "exit_code": 0,
+      "passed": 953,
+      "failed": 0,
+      "ignored": 10,
+      "filtered_out": 89,
+      "seconds": 186.1,
+      "log": "checks/bounded-library.log"
+    },
+    "new_r1_app_controls": {
+      "passed": 12,
+      "part_of_bounded_library": true,
+      "module": "src/app/r1_source_keep_tests.rs"
+    },
+    "capture_and_scene_regressions": {
+      "note": "Includes the R0 real App/trail/Fjall four-process failure/retry/reopen control now starting unkept, duplicate completion/idempotency, typed integrity and receipt recovery controls, and 16 scene tests. All are part of bounded_library."
+    },
+    "captured_collection": {
+      "command": "turnstone-a8f1418604963df6 place::captured_collection --test-threads=1",
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0,
+      "seconds": 0.77,
+      "log": "checks/capture-library.log"
+    },
+    "clippy": {
+      "command": "rustup run 1.99.1 cargo clippy --locked --offline --lib --tests -j 2 -- -D clippy::correctness",
+      "exit_code": 0,
+      "non_correctness_warnings_present": true,
+      "log": "checks/clippy.log"
+    },
+    "portable_cargo_mode": {
+      "command": "python3 scripts/cargo_mode.py verify",
+      "exit_code": 0,
+      "cargo": "Homebrew 1.99.0 (verification wrapper default); build/tests/Clippy use explicit rustup 1.99.1",
+      "packages": 1279,
+      "log": "checks/cargo-mode.log"
+    },
+    "scoped_rustfmt": {
+      "exit_code": 0,
+      "files": [
+        "src/source_capture.rs",
+        "src/content.rs",
+        "src/inspector_pane.rs",
+        "src/inspector_view.rs",
+        "src/surface_controls.rs",
+        "src/app/source_capture_arms.rs",
+        "src/app/r1_source_keep_tests.rs",
+        "src/app/source_capture_persistence_tests.rs",
+        "src/shell/events.rs"
+      ],
+      "log": "checks/rustfmt-scoped.log"
+    },
+    "git_diff_check": {
+      "exit_code": 0
+    },
+    "documentation": {
+      "receipt": "checks/documentation.json"
+    }
+  },
+  "headed_native": {
+    "result": "pass",
+    "runner_output": "/Users/markik/Code/output/turnstone-r1-native-final-04",
+    "native_processes": 2,
+    "same_frozen_binary": true,
+    "seed_seconds": 130.35,
+    "reopen_seconds": 30.241,
+    "seed_presentations": 228,
+    "reopen_presentations": 26,
+    "captures": 12,
+    "blank_captures": 0,
+    "verified_saved_requests": 5,
+    "stale_refusals_without_deposit": 2,
+    "exact_same_owner_ordered_refs_reopened": true,
+    "new_network_requests_on_offline_reopen": 0,
+    "verification": "native/verification.json",
+    "visual_review": "native/visual-review.json",
+    "host_scheduling": "native/host-scheduling.json",
+    "reproducible_packet_verify": "python3 docs/receipts/r1_source_keep_20261017/verify_native.py docs/receipts/r1_source_keep_20261017/native"
+  },
+  "supplier": {
+    "commit": "1be0bc04f44eacf4cecce62afc84bda68625cf87",
+    "change": "Actual final HTTP response URL and bounded successful body progress precede terminal outcome; new same-address requests cannot borrow prior acquisition context. Downloads remain terminal-only.",
+    "mere_fetch_passed": 34,
+    "mere_page_load_passed": 12,
+    "receipt": "https://github.com/merely-made/mere/blob/1be0bc04f44eacf4cecce62afc84bda68625cf87/validation/http-source-provenance-20261017/receipt.json",
+    "public_fetched_api_changed": false,
+    "manifests_or_lock_changed": false
+  },
+  "host_integration": {
+    "change": "Proxy callbacks only mark pending actor work; about_to_wait drains workers and publishes accessibility once per native batch. Primary Occluded(false) requests redraw.",
+    "fresh_reopen_control": "The final process encountered four initial Occluded acquisitions, then interleaved 29 actor drains with 30 render attempts and completed 26 successful presentations without intervention.",
+    "scope": "Producer-agnostic callback fairness at observed cadence; no sender-rate cap or Winit fork."
+  },
+  "startup_fixture": {
+    "kind": "historical immutable no-wallet identity/cookie custodian only",
+    "mere_source": "0eb2218a69742ba7d0e791dfbcfc2b4252f6770f",
+    "binary_sha256": "8605534361a92f7b666a5681edfe38352f2f3d4ff538db57a78a293a174847a3",
+    "qualification": "../graph_scenes_20261016/inputs.json",
+    "note": "Fixture source file unchanged against current Mere. Production source captures use the final current session-local App/trail actor/Fjall path. No current Djinn release qualification inferred."
+  },
+  "earlier_diagnostics": "diagnostics/summary.json",
+  "qualification_limits": [
+    "Acknowledged OS writes and tested process exit/restart survival. No cross-store atomic transaction or power-loss/sync_all guarantee is added.",
+    "The unrestricted shared-place and analytical Sky profile remains outside the bounded suite; 10 ignored and 89 filtered tests are not counted as passes.",
+    "Headed app-native pointer/keyboard/catalog input and presentation with visual review on macOS only. No OS assistive-technology activation, physical-device recovery, Windows or Linux qualification.",
+    "Inspector Saved captures/Kept rows are below the captured viewport; their values are asserted through the ordinary observation snapshot and checked independently in persisted facets/ledgers.",
+    "R2 private saved-source search/reader and R3-R4 research Answers/full-workflow acceptance remain planned. Legacy body data is preserved, not migrated to a new evidence corpus or silently deleted."
+  ]
+}

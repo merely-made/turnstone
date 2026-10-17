@@ -40,11 +40,37 @@ fn fixture(root: &Path) -> (App, uuid::Uuid) {
 }
 
 fn begin(app: &mut App, node: uuid::Uuid) -> CaptureRequest {
-    let effects = app.update(Action::CaptureSourceDocument { member: node });
+    if app.source_capture_target(node).is_err() {
+        let url = app
+            .graph_runtimes
+            .graph()
+            .get_node_by_id(node)
+            .unwrap()
+            .1
+            .url()
+            .to_owned();
+        let body = "<html><main>capture fixture</main></html>";
+        app.content.note_fetched(
+            node,
+            url.clone(),
+            crate::content::FetchedDocument {
+                bytes: body.as_bytes().to_vec(),
+                body: body.into(),
+                content_type: Some("text/html".into()),
+                effective_url: Some(url),
+                acquired_at_ms: 1,
+            },
+            body.len(),
+        );
+    }
+    let target = app
+        .source_capture_target(node)
+        .expect("complete fixture source");
+    let effects = app.update(Action::CaptureSourceDocument { target });
     effects
         .into_iter()
         .find_map(|effect| match effect {
-            Effect::CaptureSourceDocument { request } => Some(request),
+            Effect::CaptureSourceDocument { request, .. } => Some(request),
             _ => None,
         })
         .expect("a current member yields a correlated deposit request")
@@ -82,7 +108,7 @@ fn retry(app: &mut App, request: &CaptureRequest) {
     });
     assert!(
         effects.iter().any(|effect| matches!(effect,
-            Effect::CaptureSourceDocument { request: replay } if replay == request
+            Effect::CaptureSourceDocument { request: replay, .. } if replay == request
         )),
         "retry must replay the original identity and admitted evidence"
     );
@@ -1445,6 +1471,17 @@ fn source_capture_real_stack_process_worker() {
     let handoff = root.join("real-capture-handoff.json");
     let (mut app, request, original_stored, document) = if stage == "fail-facets" {
         let (mut app, node) = fixture(root);
+        // R1 starts unkept: its new Keep and exact reference must travel
+        // together through both real file faults and four abrupt processes.
+        let graph = app.graph_runtimes.active_graph();
+        assert!(crate::surface_controls::set(
+            app.graph_runtimes.canvas_mut(graph).unwrap(),
+            node,
+            crate::surface_controls::Control::Keep,
+            false
+        ));
+        app.persist_session_graph().unwrap();
+        assert!(!app.node_is_kept(node));
         let url = "https://capture-save.example/evidence";
         let body = "<html><main><p>saved source kestrel — Ångström</p></main></html>";
         let document = crate::content::FetchedDocument {
@@ -1468,7 +1505,11 @@ fn source_capture_real_stack_process_worker() {
             .unwrap();
         app.adopt_session(request.session);
         assert!(!app.session_load_refused());
-        assert!(app.node_is_kept(request.node));
+        assert_eq!(
+            app.node_is_kept(request.node),
+            stage != "fail-graph",
+            "Keep and the reference commit in the same required facet write"
+        );
         assert_eq!(
             references(&app, request.node).len(),
             usize::from(stage != "fail-graph")

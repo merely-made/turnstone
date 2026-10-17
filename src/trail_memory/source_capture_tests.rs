@@ -314,6 +314,7 @@ fn request(document: &crate::content::FetchedDocument) -> crate::source_capture:
         node: uuid::Uuid::new_v4(),
         url: "https://capture.test/candidate".into(),
         source: Some(crate::source_capture::SourceIdentity::of(document)),
+        keep: false,
     }
 }
 

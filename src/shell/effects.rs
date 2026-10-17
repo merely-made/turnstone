@@ -1748,20 +1748,21 @@ impl Shell {
                         }
                     }
                 },
-                Effect::CaptureSourceDocument { request } => {
-                    let owner = self.app.source_capture_owner(&request);
+                Effect::CaptureSourceDocument { capture_generation, request } => {
+                    if capture_generation != self.app.source_capture_generation { continue; }
+                    let owner = self.app.source_capture_dispatch_owner(&request, capture_generation);
                     let document = self.app.content.source_capture_candidate(request.node, &request.url).cloned();
                     // The actor can replay an exact saved receipt without a live origin.
                     let result = owner.and_then(|()| {
                         let directory = crate::trail_memory::memory_dir(&crate::session::session_dir(
                             &self.app.data_root, request.session));
                         if self.trail_handle.command(crate::trail_memory::TrailCommand::CaptureSourceDocument {
-                            capture_generation: self.app.source_capture_generation,
+                            capture_generation,
                             request: request.clone(), directory, document,
                         }) { Ok(()) } else { Err("the session Eidetic actor is unavailable".into()) }
                     });
                     if let Err(error) = result {
-                        let effects = self.app.apply_update(Update::SourceDocumentCaptured { capture_generation: self.app.source_capture_generation, request, result: Err(error) });
+                        let effects = self.app.apply_update(Update::SourceDocumentCaptured { capture_generation, request, result: Err(error) });
                         self.run_effects(effects);
                     }
                 },

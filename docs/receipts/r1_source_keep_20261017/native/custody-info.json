@@ -1,0 +1,5 @@
+{
+  "endpoint": "/tmp/turnstone-r1-fee7fb2701bd.sock",
+  "root": "/Users/markik/Code/output/turnstone-r1-native-final-04/custody",
+  "mode": "no-wallet"
+}

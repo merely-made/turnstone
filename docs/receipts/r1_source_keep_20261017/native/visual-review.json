@@ -1,0 +1,114 @@
+{
+  "result": "pass",
+  "reviewed_utc": "2026-10-17T21:03:37.981587+00:00",
+  "reviewed_captures": [
+    {
+      "path": "reopen/10_reopened_A_kept_and_referenced.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "1a74c119c8b129d0019f183c973ae6ce0872b402a51f0faa04d682c7108bd04a"
+    },
+    {
+      "path": "seed/00_A_inspector_ready.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "68cb750645dda43ba3159c5f32870ea0b6a9782a3e2af764474cc8f6bcf8491d"
+    },
+    {
+      "path": "seed/01_pointer_saved_A.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "74cb2558af319960fc21c4de3d098f563a84d12f5b66ee5c3d10cedc6ced4652"
+    },
+    {
+      "path": "seed/02_keyboard_saved_A.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "66e91cf90ba591b6d43cd349c5448371c822e62929465706ac7117f8476e428d"
+    },
+    {
+      "path": "seed/03_semantic_saved_A.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "74cb2558af319960fc21c4de3d098f563a84d12f5b66ee5c3d10cedc6ced4652"
+    },
+    {
+      "path": "seed/04_bound_A_saved_with_cursor_B.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "97de9bbea5dd01f237886dc2ed6293e955c8f4921465cc8c29adb0dc37253986"
+    },
+    {
+      "path": "seed/04_same_url_replaced_A_ready.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "8ede855fe34f75fe37f9fa54888e73cfd9a9f984825ccf35e024ae28c6649e5c"
+    },
+    {
+      "path": "seed/05_ab_a_refused.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "e30d44c15f4e47cc854d324fbae601415e1067ccf21108d71e9b0b091b74338b"
+    },
+    {
+      "path": "seed/06_replacement_refused.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "4f88096784444232fb0711a5f6b61dd70beb975e3be0d778688179a5a5e30491"
+    },
+    {
+      "path": "seed/07_visited_only_X.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "25b25ec2f271d516c9e0e655ecc9f8098e753f70de2152c50128c29f5ee88718"
+    },
+    {
+      "path": "seed/08_visited_X_address_search.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "9f5dddbeceb9897caa92c9b481e9f87e0d81f809b1036928df51c158deed9e37"
+    },
+    {
+      "path": "seed/09_visited_X_body_search_empty.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "bf73662fca87dc41f86fe856638defad393d7745de93579a01e2fd16e2b0c969"
+    }
+  ],
+  "review": "All 12 captures reviewed by an independent agent; root also inspected pointer, cursor-B, positive address, empty body query, and cold reopen captures.",
+  "observations": [
+    "A starts Ready and unkept in toolbar; pointer/keyboard/semantic captures show Saved and Kept.",
+    "Cursor-B image shows B in toolbar and Inspector, Source save Ready, toolbar still Keep. Exact queued A capture outcome is proved by A-owned request records and persisted facets, not by this image alone.",
+    "A/B/A and same-URL replacement visibly refuse the stale offered source.",
+    "Address query /X displays exactly Visited X \u00b7 127.0.0.1; body-only orchid-only query displays only no matching nodes; enter an address.",
+    "Offline A shows historical Source save Saved and a disabled capture action with a reason: no current complete fetched HTML response."
+  ],
+  "pixel_boundaries": [
+    "Saved captures and Kept Inspector rows are below the captured viewport. Their values are asserted through the ordinary observation snapshot and independently checked from persisted facets/request ledgers.",
+    "No OS assistive-technology activation, Windows/Linux, power-loss, or full research reader/Answers acceptance is inferred."
+  ]
+}

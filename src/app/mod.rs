@@ -37,6 +37,8 @@ mod resident_run_tests;
 mod source_capture_arms;
 #[cfg(test)]
 mod source_capture_persistence_tests;
+#[cfg(test)]
+mod r1_source_keep_tests;
 mod fold_arms;
 mod scene_arms;
 #[cfg(test)]
@@ -1157,7 +1159,7 @@ impl App {
             Action::PageZoomOut { member } => self.page_zoom_out(member),
             Action::PageZoomReset { member } => self.page_zoom_reset(member),
             Action::CapturePage { member } => vec![Effect::CaptureContent { node: member }],
-            Action::CaptureSourceDocument { member } => self.begin_source_capture(member),
+            Action::CaptureSourceDocument { target } => self.begin_source_capture(target),
             Action::RetrySourceDocumentCapture { request } => self.retry_source_capture(request),
             Action::ChoosePermission { request, choice } => self.choose_permission(request, choice),
             Action::FocusAuthenticationField(field) => self.focus_authentication_field(field),

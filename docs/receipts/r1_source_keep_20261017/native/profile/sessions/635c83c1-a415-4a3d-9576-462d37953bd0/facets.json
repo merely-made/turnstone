@@ -1,0 +1,369 @@
+{
+  "nodes": {
+    "00000000-0000-0000-0000-000000000001": {
+      "arrangement.position": {
+        "x": 2.825716495513916,
+        "y": 48.14584732055664
+      },
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270773229
+      }
+    },
+    "00000000-0000-0000-0000-000000000002": {
+      "arrangement.position": {
+        "x": -161.7799530029297,
+        "y": 11.689898490905762
+      },
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270773229
+      }
+    },
+    "00000000-0000-0000-0000-000000000003": {
+      "arrangement.position": {
+        "x": -46.766239166259766,
+        "y": -119.90000915527344
+      },
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270773229
+      }
+    },
+    "00000000-0000-0000-0000-000000000004": {
+      "arrangement.position": {
+        "x": 66.9583511352539,
+        "y": 7.7887654304504395
+      },
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270773229
+      }
+    },
+    "00000000-0000-0000-0000-000000000005": {
+      "arrangement.position": {
+        "x": -78.6872787475586,
+        "y": -72.93848419189453
+      },
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270773230
+      }
+    },
+    "00000000-0000-0000-0000-000000000006": {
+      "arrangement.position": {
+        "x": 97.52020263671875,
+        "y": -93.98863983154297
+      },
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270773230
+      }
+    },
+    "00000000-0000-0000-0000-000000000007": {
+      "arrangement.position": {
+        "x": 112.6504135131836,
+        "y": 82.2718276977539
+      },
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270773230
+      }
+    },
+    "00000000-0000-0000-0000-000000000008": {
+      "arrangement.position": {
+        "x": 44.74744415283203,
+        "y": -71.84062957763672
+      },
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270773230
+      }
+    },
+    "00000000-0000-0000-0000-000000000009": {
+      "arrangement.position": {
+        "x": 176.8267822265625,
+        "y": 46.84430694580078
+      },
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270773230
+      }
+    },
+    "00000000-0000-0000-0000-00000000000a": {
+      "arrangement.position": {
+        "x": 34.1187744140625,
+        "y": 143.39039611816406
+      },
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270773230
+      }
+    },
+    "00000000-0000-0000-0000-00000000000b": {
+      "arrangement.position": {
+        "x": 140.9678192138672,
+        "y": 4.859433650970459
+      },
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270773230
+      }
+    },
+    "00000000-0000-0000-0000-00000000000c": {
+      "arrangement.position": {
+        "x": 116.97834777832031,
+        "y": 176.6282958984375
+      },
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270773230
+      }
+    },
+    "05d62f5c-77cd-451a-a80e-653c68e7d6a1": {
+      "arrangement.position": {
+        "x": -178.36683654785156,
+        "y": -81.69667053222656
+      },
+      "chartulary.class": "turnstone.web-page",
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270841680
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:62902/swap-a",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    },
+    "449d36b4-f8de-4077-b732-7fdf945939a1": {
+      "arrangement.position": {
+        "x": -351.58740234375,
+        "y": -125.82535552978516
+      },
+      "capture.source-annotations/v1": [
+        "blake3:855e550df3bf78ee90617b10af6fc4d314d43d7bc3039cd0ecae0289a42b772a",
+        "blake3:855e550df3bf78ee90617b10af6fc4d314d43d7bc3039cd0ecae0289a42b772a",
+        "blake3:855e550df3bf78ee90617b10af6fc4d314d43d7bc3039cd0ecae0289a42b772a",
+        "blake3:855e550df3bf78ee90617b10af6fc4d314d43d7bc3039cd0ecae0289a42b772a",
+        "blake3:cdec3274e17667bd9d789fc243cf7332a18650e147e186c7085e382bdcc2d0f2"
+      ],
+      "capture.source-requests/v1": [
+        {
+          "request": {
+            "graph": "46472fe0-ddb0-40ea-b1e5-0543bd056ee2",
+            "id": "6ac9b2dd-8747-4db9-9cff-5f718c839cd4",
+            "keep": true,
+            "node": "449d36b4-f8de-4077-b732-7fdf945939a1",
+            "session": "635c83c1-a415-4a3d-9576-462d37953bd0",
+            "source": {
+              "acquired_at_ms": 1792270803776,
+              "body_hash": "blake3:3cd655ca5a99215d8848ea52bf92cd037f0ea54d59c07f89a95d839d0f909dd7",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:62902/A",
+              "hash": "blake3:3cd655ca5a99215d8848ea52bf92cd037f0ea54d59c07f89a95d839d0f909dd7"
+            },
+            "url": "http://127.0.0.1:62902/A"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:855e550df3bf78ee90617b10af6fc4d314d43d7bc3039cd0ecae0289a42b772a",
+            "raw_manifest": "blake3:3cd655ca5a99215d8848ea52bf92cd037f0ea54d59c07f89a95d839d0f909dd7"
+          }
+        },
+        {
+          "request": {
+            "graph": "46472fe0-ddb0-40ea-b1e5-0543bd056ee2",
+            "id": "f320b65b-931d-4f67-b917-193445de0853",
+            "keep": true,
+            "node": "449d36b4-f8de-4077-b732-7fdf945939a1",
+            "session": "635c83c1-a415-4a3d-9576-462d37953bd0",
+            "source": {
+              "acquired_at_ms": 1792270803776,
+              "body_hash": "blake3:3cd655ca5a99215d8848ea52bf92cd037f0ea54d59c07f89a95d839d0f909dd7",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:62902/A",
+              "hash": "blake3:3cd655ca5a99215d8848ea52bf92cd037f0ea54d59c07f89a95d839d0f909dd7"
+            },
+            "url": "http://127.0.0.1:62902/A"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:855e550df3bf78ee90617b10af6fc4d314d43d7bc3039cd0ecae0289a42b772a",
+            "raw_manifest": "blake3:3cd655ca5a99215d8848ea52bf92cd037f0ea54d59c07f89a95d839d0f909dd7"
+          }
+        },
+        {
+          "request": {
+            "graph": "46472fe0-ddb0-40ea-b1e5-0543bd056ee2",
+            "id": "132ca679-981b-4593-9e72-b9d6b1642883",
+            "keep": true,
+            "node": "449d36b4-f8de-4077-b732-7fdf945939a1",
+            "session": "635c83c1-a415-4a3d-9576-462d37953bd0",
+            "source": {
+              "acquired_at_ms": 1792270803776,
+              "body_hash": "blake3:3cd655ca5a99215d8848ea52bf92cd037f0ea54d59c07f89a95d839d0f909dd7",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:62902/A",
+              "hash": "blake3:3cd655ca5a99215d8848ea52bf92cd037f0ea54d59c07f89a95d839d0f909dd7"
+            },
+            "url": "http://127.0.0.1:62902/A"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:855e550df3bf78ee90617b10af6fc4d314d43d7bc3039cd0ecae0289a42b772a",
+            "raw_manifest": "blake3:3cd655ca5a99215d8848ea52bf92cd037f0ea54d59c07f89a95d839d0f909dd7"
+          }
+        },
+        {
+          "request": {
+            "graph": "46472fe0-ddb0-40ea-b1e5-0543bd056ee2",
+            "id": "1e7f23af-b481-4208-ba00-feff9077483a",
+            "keep": true,
+            "node": "449d36b4-f8de-4077-b732-7fdf945939a1",
+            "session": "635c83c1-a415-4a3d-9576-462d37953bd0",
+            "source": {
+              "acquired_at_ms": 1792270803776,
+              "body_hash": "blake3:3cd655ca5a99215d8848ea52bf92cd037f0ea54d59c07f89a95d839d0f909dd7",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:62902/A",
+              "hash": "blake3:3cd655ca5a99215d8848ea52bf92cd037f0ea54d59c07f89a95d839d0f909dd7"
+            },
+            "url": "http://127.0.0.1:62902/A"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:855e550df3bf78ee90617b10af6fc4d314d43d7bc3039cd0ecae0289a42b772a",
+            "raw_manifest": "blake3:3cd655ca5a99215d8848ea52bf92cd037f0ea54d59c07f89a95d839d0f909dd7"
+          }
+        },
+        {
+          "request": {
+            "graph": "46472fe0-ddb0-40ea-b1e5-0543bd056ee2",
+            "id": "9dd91917-7c1e-4abf-8381-d4c6de9df238",
+            "keep": true,
+            "node": "449d36b4-f8de-4077-b732-7fdf945939a1",
+            "session": "635c83c1-a415-4a3d-9576-462d37953bd0",
+            "source": {
+              "acquired_at_ms": 1792270851436,
+              "body_hash": "blake3:7616fb573569591bc293c87d608d48c982fc39294ddfbae1fccb5fa154a28cd7",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:62902/A",
+              "hash": "blake3:7616fb573569591bc293c87d608d48c982fc39294ddfbae1fccb5fa154a28cd7"
+            },
+            "url": "http://127.0.0.1:62902/A"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:cdec3274e17667bd9d789fc243cf7332a18650e147e186c7085e382bdcc2d0f2",
+            "raw_manifest": "blake3:7616fb573569591bc293c87d608d48c982fc39294ddfbae1fccb5fa154a28cd7"
+          }
+        }
+      ],
+      "chartulary.class": "turnstone.web-page",
+      "turnstone.controls.v1.keep": true,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270850661
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:62902/A",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    },
+    "46472fe0-ddb0-40ea-b1e5-0543bd056ee2": {
+      "scene.importance_metric": "degree",
+      "scene.physics_damping": 2.5,
+      "scene.size_by_degree": false,
+      "scene.size_by_importance": false
+    },
+    "5f1f3a21-83b1-41da-bc36-801065f777c6": {
+      "arrangement.position": {
+        "x": -320.4173583984375,
+        "y": -95.84922790527344
+      },
+      "chartulary.class": "turnstone.web-page",
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270858574
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:62902/X",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    },
+    "f49b3737-976a-4326-9cb8-011f595dc794": {
+      "arrangement.position": {
+        "x": -288.93670654296875,
+        "y": 45.9968376159668
+      },
+      "chartulary.class": "turnstone.web-page",
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792270836202
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:62902/B",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    }
+  }
+}

@@ -35,6 +35,19 @@ impl SourceIdentity {
     }
 }
 
+/// An offered source, bound to its owner and this particular admission.
+/// Transient tokens never become persisted authority after reopening.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SourceCaptureTarget {
+    pub session: crate::panes::SessionId,
+    pub graph: crate::panes::GraphId,
+    pub node: uuid::Uuid,
+    pub url: String,
+    pub source: SourceIdentity,
+    pub capture_generation: uuid::Uuid,
+    pub source_admission: uuid::Uuid,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CaptureRequest {
     pub id: uuid::Uuid,
@@ -43,6 +56,9 @@ pub struct CaptureRequest {
     pub node: uuid::Uuid,
     pub url: String,
     pub source: Option<SourceIdentity>,
+    /// R0 receipts predate completion-bound Keep. Preserve their old contract.
+    #[serde(default)]
+    pub keep: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -61,7 +77,10 @@ pub struct CaptureAttempt {
     pub stored: Option<crate::action::StoredSourceDocument>,
     pub phase: CapturePhase,
     pub error: Option<String>,
-    pub(crate) recovered: bool,
+    pub(crate) source_admission: Option<uuid::Uuid>,
+    pub(crate) ordinal: u64,
+    /// A pre-actor stale-control refusal is visible but cannot become a retry.
+    pub(crate) admitted: bool,
 }
 
 /// A durable request receipt is recovery inventory, never corpus admission.

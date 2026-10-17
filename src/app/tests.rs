@@ -197,19 +197,24 @@ fn capture_action_preserves_explicit_member_for_the_host() {
 
 #[test]
 fn source_capture_refuses_a_member_without_a_current_target() {
-    let mut app = App::test_stub();
-    assert!(
-        app.update(Action::CaptureSourceDocument {
-            member: uuid::Uuid::new_v4()
-        })
-        .is_empty()
-    );
+    let app = App::test_stub();
+    assert!(app.source_capture_target(uuid::Uuid::new_v4()).is_err());
+    assert!(!app.available_actions().iter().any(|(label, _)| label == "Save source and keep"));
 }
 
 fn requested_source_capture(app: &mut App, node: uuid::Uuid) -> crate::source_capture::CaptureRequest {
-    app.update(Action::CaptureSourceDocument { member: node }).into_iter().find_map(|effect| {
+    if app.source_capture_target(node).is_err() {
+        let url = app.graph_runtimes.graph().get_node_by_id(node).unwrap().1.url().to_owned();
+        let body = "<html><main>source fixture</main></html>";
+        app.content.note_fetched(node, url.clone(), crate::content::FetchedDocument {
+            bytes: body.as_bytes().to_vec(), body: body.into(), content_type: Some("text/html".into()),
+            effective_url: Some(url), acquired_at_ms: 1,
+        }, body.len());
+    }
+    let target = app.source_capture_target(node).expect("complete fixture source");
+    app.update(Action::CaptureSourceDocument { target }).into_iter().find_map(|effect| {
         match effect {
-            Effect::CaptureSourceDocument { request } => Some(request),
+            Effect::CaptureSourceDocument { request, .. } => Some(request),
             _ => None,
         }
     }).expect("current target produces a correlated source request")

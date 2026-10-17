@@ -1,0 +1,19 @@
+{
+  "exited": true,
+  "exit_code": 0,
+  "endpoint": "/tmp/turnstone-r1-fee7fb2701bd.sock",
+  "awake_assertion_process_exited": true,
+  "before_sha256": {
+    "ready": "d6e48aa79d2881df374e6a52ebd927fa0e07b6ea6b8147f0266abe9c1ea0e78e",
+    ".tucket-custody-generated": "54f38dfc841f794a92b89240beaff5de47f368c7f2851eb9e9470b69c0bae7c5",
+    "vault/passphrase-root.json": "21da566bf6c00a4ef86362de9293c2818ad050e766de57d6ca5cfc3546874be6",
+    "vault/profiles/f78761cf8c3621e851097dff9a4b04633626e62e1f419444898fae02960d89ef.json": "c2be7dc8fac18cf504aa09023ac931676f598cbfa8e09804603cf99e32168b63"
+  },
+  "after_sha256": {
+    "ready": "d6e48aa79d2881df374e6a52ebd927fa0e07b6ea6b8147f0266abe9c1ea0e78e",
+    ".tucket-custody-generated": "54f38dfc841f794a92b89240beaff5de47f368c7f2851eb9e9470b69c0bae7c5",
+    "vault/passphrase-root.json": "21da566bf6c00a4ef86362de9293c2818ad050e766de57d6ca5cfc3546874be6",
+    "vault/profiles/f78761cf8c3621e851097dff9a4b04633626e62e1f419444898fae02960d89ef.json": "c2be7dc8fac18cf504aa09023ac931676f598cbfa8e09804603cf99e32168b63"
+  },
+  "original_files_unchanged": true
+}

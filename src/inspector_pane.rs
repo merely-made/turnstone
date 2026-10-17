@@ -31,6 +31,9 @@ use crate::inspector_view::{InspectorSection, inspector_member, inspector_sectio
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum InspectorIntent {
     ClipToKnot,
+    CaptureSourceDocument {
+        target: crate::source_capture::SourceCaptureTarget,
+    },
     SetViewer {
         member: uuid::Uuid,
         viewer: Option<String>,
@@ -48,6 +51,9 @@ struct InspectorState {
     clip_target: Option<String>,
     clip_source_available: bool,
     clip_status: String,
+    source_target: Option<crate::source_capture::SourceCaptureTarget>,
+    source_status: String,
+    source_unavailable: String,
     viewport_w: f32,
     viewport_h: f32,
 }
@@ -202,6 +208,42 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
         },
     )
     .attr("style", "white-space: normal; overflow-wrap: anywhere;");
+    // Bind the offered source, rather than consulting the possibly retargeted
+    // pane when a queued activation is finally delivered.
+    let source_target = state.source_target.clone();
+    let source_button = button(
+        "Save source and keep",
+        move |_state: &mut InspectorState, _click: PointerClick| {
+            source_target
+                .clone()
+                .map(|target| InspectorIntent::CaptureSourceDocument { target })
+        },
+    )
+    .attr(
+        "class",
+        if state.source_target.is_some() {
+            "list-row action"
+        } else {
+            "list-row muted"
+        },
+    )
+    .attr(
+        "aria-disabled",
+        if state.source_target.is_some() {
+            "false"
+        } else {
+            "true"
+        },
+    );
+    let source_status = el::<_, InspectorState, InspectorIntent>(
+        "div",
+        format!(
+            "Source save: {}{}",
+            state.source_status, state.source_unavailable
+        ),
+    )
+    .attr("class", "detail-value")
+    .attr("style", "white-space: normal; overflow-wrap: anywhere;");
     let viewer_options = state.viewer_options.clone();
     let viewer = map_message_result(
         lens(
@@ -234,6 +276,8 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
                 capabilities,
                 clip_status,
                 clip_button,
+                source_button,
+                source_status,
                 detail_panel(&sections),
             ),
         )
@@ -285,6 +329,9 @@ impl InspectorPane {
             clip_target: None,
             clip_source_available: false,
             clip_status: "unconfigured".into(),
+            source_target: None,
+            source_status: "Unavailable: No source member".into(),
+            source_unavailable: String::new(),
             viewport_w: 0.0,
             viewport_h: 0.0,
         };
@@ -384,12 +431,22 @@ impl InspectorPane {
         let synced_viewer =
             crate::inspector_controls::index_for_viewer(&viewer_options, saved_viewer);
         let capabilities = crate::inspector_controls::capabilities(app, member);
+        let source_target = member.and_then(|member| app.source_capture_target(member).ok());
+        let source_status = app.source_capture_status(member);
+        let source_unavailable = member
+            .and_then(|member| app.source_capture_target(member).err())
+            .filter(|_| !source_status.starts_with("Unavailable:"))
+            .map(|reason| format!("; Save source unavailable: {reason}"))
+            .unwrap_or_default();
         self.runner.update(|state| {
             state.member = member;
             state.radio.selected = synced_viewer;
             state.radio.focus_request = None;
             state.viewer_options = viewer_options;
             state.capabilities = capabilities;
+            state.source_target = source_target;
+            state.source_status = source_status;
+            state.source_unavailable = source_unavailable;
             state.sections = sections;
             state.clip_target = clip_target.map(str::to_string);
             state.clip_source_available = clip_source_available;

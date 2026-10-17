@@ -298,7 +298,7 @@ Done-conditions:
 
 ## Research workflow: smallest complete slice (2026-10-17)
 
-**Status: R0 implemented and qualified within the bounded receipt below; R1-R4 remain planned.** Mark asked
+**Status: R0 qualified; R1 bounded macOS qualification passed; R2-R4 remain planned.** Mark asked
 for the existing research workflow to be traced, its missing joins identified,
 and the smallest complete slice planned. This section owns that product join;
 the capture, pane, Knot and resident plans retain their domain gates.
@@ -309,8 +309,10 @@ Audited clean Turnstone `428deb5` (`428deb5` also matched fetched `origin/main`)
 with Rust pinned to 1.99.1 and Mere locked to
 `a17e5bb97c79332b932d10cce70f465b022a3a1a`. The October 16 scene/answer receipts
 qualify their recorded earlier sources; they are supporting evidence, not a
-research-workflow receipt for this source. The following is a current-source
-inventory. Named tests/scenarios were inspected, not executed for this plan.
+research-workflow receipt for this source. The following inventory records that
+planning cut; the R0 and R1 implementation/qualification sections below update
+their respective missing joins. Named tests/scenarios were inspected, not
+executed for the initial plan.
 
 | Person's step | Existing implementation | Join still needed |
 | --- | --- | --- |
@@ -590,6 +592,66 @@ idempotency key. A persisted success
 has both Keep and the exact manifest reference. Unsupported engines explain
 why the control is unavailable. Address recall survives with automatic body
 writes disabled.
+
+**Implementation cut (2026-10-17, qualified below):** starts from
+fetched Turnstone `dc630b7` and Mere `00e444286`; final qualification adopts
+published Mere `1be0bc04f` for exact HTTP response provenance and fresh request
+context. The 78 Mere lock records change revision only; every other lockfile
+byte remains unchanged.
+Inspector offers “Save source and keep” for a complete, settled, app-held HTML
+response and explains why unavailable engines/sources cannot supply it. The
+common command catalog carries the same action. Both retain the offered
+member/session/graph, source fingerprint, per-response admission UUID and
+opening generation; queued actions and effects cannot acquire a replacement
+source or a later opening's authority.
+
+Verified deposit stages the exact attachment and idempotent Keep in one cloned
+canonical facet bundle, then requests R0's one owning save. New request receipts
+carry `keep: true`, including retries; legacy R0 receipts default to false.
+Fresh unattached retries retain their live admission fence. A current actor
+inventory can retire that transient fence for verified offline recovery;
+already-attached exact evidence can finish historical save repair without a
+live response. Saved still requires R0's correlated completed-receipt
+acknowledgement. Pre-actor stale refusals remain visible but are not offered as
+retryable artifact work.
+
+Ordinary fetch enrichment now retains metadata and emits no extracted-body
+write. The old queued `RecordText` storage path also refuses new writes.
+Existing PageText and legacy Answers references remain readable and unchanged.
+Mere's PageLoad, Cambium controls and command catalog, canonical Surface control
+facets, Fleece artifacts and the existing trail actor remain their stack
+owners; no replacement store or general retention-policy abstraction is added.
+
+Native cold reopen also exposed a host scheduling fault: expensive work inside
+Winit's proxy callback could be outrun by queued producer wakes, preventing a
+return to window events after the first acquisition was occluded. The callback
+now only admits pending work; the end of the native event batch drains workers
+and publishes accessibility once. This remains independent of pixel success.
+The primary window also requests redraw on the actual unoccluded transition,
+matching the existing Mere retained host. This bounds host callback work rather
+than changing producer cadence or introducing a new event loop.
+
+**Qualification (2026-10-17):** the
+[R1 receipt](../docs/receipts/r1_source_keep_20261017/qualification.json) binds the
+final source, lock and binaries. All 953 bounded library tests, three separate
+capture-library controls and the Clippy correctness gate pass; Mere's affected
+fetch and PageLoad suites pass 34 + 12 tests. The two fresh headed native
+processes pass with 12 nonblank reviewed captures. Five deliberate saves retain
+A's exact ordered request/reference identities plus Keep, including an A-bound
+queued action delivered with cursor B; two stale offered actions refuse before
+deposit. The same references reopen with zero fixture requests offline. Address
+history stays searchable while the unique body-only query returns only the
+empty-result Hint. Final cold reopen encountered initial occlusion, then
+recovered presentation without intervention after the host batch-drain repair.
+
+R0's real four-process failure/retry/reopen control now starts unkept and passes
+in that final suite. Required facet/graph and receipt-ack failures still cannot
+announce Saved; retry preserves the request identity and avoids duplicate
+attachment/Keep promotion. Legacy request payloads keep their old meaning.
+This qualifies R1's bounded macOS path, not the unrestricted place/Sky suite,
+power-loss durability, other platforms, OS assistive activation or R2-R4's
+private reader and research Answers workflow. Earlier failed harness/source
+runs and their resolutions remain in the receipt diagnostics.
 
 #### R2. Private saved-source search and retained reader
 
@@ -878,3 +940,12 @@ refreshed 2026-09-12.
   tags at the supplier. The receipt above retains the broader failed runs and
   durability/platform limits. R1-R4 and headed research-workflow acceptance
   remain separate gates.
+
+- **2026-10-17, R1 implemented and bounded macOS qualification passed:** ordinary
+  Inspector/catalog capture, exact response/opening fences, completion-bound
+  Keep and L1 metadata-only new history writes are joined to R0. Published Mere
+  `1be0bc04f` supplies real HTTP provenance; the native host now drains actor
+  work once per event batch. 953 scoped regression tests, three capture-library
+  controls, 46 supplier tests, Clippy correctness and two headed fresh processes
+  pass. Twelve reviewed captures and exact offline request/reference recovery
+  are retained in the R1 receipt. R2-R4 remain planned.

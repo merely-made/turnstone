@@ -1,0 +1,7 @@
+
+running 3 tests
+test place::captured_collection::tests::local_records_group_search_and_survive_cold_reopen ... ok
+test place::captured_collection::tests::missing_and_unavailable_manifest_statuses_never_become_text ... ok
+test place::captured_collection::tests::targeted_withdrawal_remints_only_the_selected_contribution_away ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 1049 filtered out; finished in 0.77s

@@ -1,0 +1,35 @@
+RESULT fail
+waited 60 frames
+waited 60 frames
+waited 0 frames
+captured 00_A_inspector_ready
+captured 01_pointer_saved_A
+captured 02_keyboard_saved_A
+captured 03_semantic_saved_A
+captured 04_bound_A_saved_with_cursor_B
+waited 0 frames
+waited 0 frames
+waited 0 frames
+captured 05_ab_a_refused
+waited 0 frames
+waited 0 frames
+captured 06_replacement_refused
+captured 04_same_url_replaced_A_ready
+waited 0 frames
+FAIL: assert snap suggestions Contains '/X': got 'Visited X · 127.0.0.1'
+captured 08_visited_X_address_search
+captured 09_visited_X_body_search_empty
+captured 07_visited_only_X
+R1 source keep seed complete
+presentation frames=246 captures=11 blank=0
+capture /Users/markik/Code/output/turnstone-r1-native-final-02/seed/00_A_inspector_ready.png digest=8d321a21c14b65f6 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-02/seed/01_pointer_saved_A.png digest=3ecfb051a0f8fa2f blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-02/seed/02_keyboard_saved_A.png digest=06c091f8fec5a8f9 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-02/seed/03_semantic_saved_A.png digest=b50b8416111dba60 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-02/seed/04_bound_A_saved_with_cursor_B.png digest=d6ffea7e0295f053 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-02/seed/05_ab_a_refused.png digest=86163f422a428684 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-02/seed/06_replacement_refused.png digest=9a22946cf8a75921 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-02/seed/04_same_url_replaced_A_ready.png digest=c562e2bbbe333a66 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-02/seed/08_visited_X_address_search.png digest=37ad798fa30fbfae blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-02/seed/09_visited_X_body_search_empty.png digest=6458f576e1943bb6 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-02/seed/07_visited_only_X.png digest=e8b1ff6d656c945d blank=false

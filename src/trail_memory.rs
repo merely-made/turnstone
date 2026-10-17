@@ -20,11 +20,9 @@
 //! is an observer of browsing, never a gate on it — which is also why it
 //! rides the observation drain instead of lowering an Effect.
 //!
-//! Page bodies ride the same channel ([`TrailCommand::RecordText`], W6c): the
-//! fetch path extracts them through fleece and the actor writes them into the
-//! session store through eidetic's [`PageTextStore`] — blob for the bytes, one
-//! slot per address for the index. What may be stored is [`consented_to_keep`]'s
-//! question (capture plan C4), named here and answered by a later slice.
+//! Legacy PageText records remain readable, but ordinary fetches no longer
+//! write extracted bodies. L1 keeps address, title and traversal history;
+//! source bytes enter durable storage only through explicit capture.
 //!
 //! The same actor answers **recall** (W2): the omnibar lowers
 //! `Effect::RecallQuery`, and [`TrailCommand::Recall`] projects the corpus
@@ -154,9 +152,8 @@ pub enum TrailCommand {
         transition: TraceTransition,
         at_ms: u64,
     },
-    /// Keep one fetched page's extracted main text, keyed by the address it
-    /// was fetched from (wiring plan W6c). Best-effort: a failure warns and
-    /// the page stays recallable by title and URL alone.
+    /// Legacy automatic-text command retained for compatibility with queued
+    /// work. New commands are deliberately ignored under lifecycle ruling L1.
     RecordText { url: String, text: String },
     /// An explicit request to preserve one fetched HTML response. This remains
     /// separate from `RecordText`: recall text is never source evidence.
@@ -320,25 +317,11 @@ fn traces_with_titles(memory: &BrowsingMemory, sources: &[RecallSource]) -> Vec<
         .collect()
 }
 
-/// The consent gate (capture plan C4). The single place a policy will refuse
-/// a page: refusing here keeps the body out of the store, and so out of every
-/// index projected from it. A no-op today — C4 replaces this body, not its
-/// call site.
-fn consented_to_keep(_url: &str) -> bool {
-    true
-}
-
-/// Write one page's extracted text into the session store. Warns and returns
-/// on failure: a browser that cannot remember a body must still browse.
-fn keep_page_text(store: &FjallStore, url: &str, text: &str) {
-    if !consented_to_keep(url) {
-        tracing::info!(%url, "trail memory: page text withheld by consent");
-        return;
-    }
-    let texts = PageTextStore::new(store);
-    if let Err(err) = pollster::block_on(texts.put(url, text, now_ms())) {
-        tracing::warn!(%err, %url, "trail memory: page text not stored");
-    }
+/// Enforce L1 at the storage boundary as well as at browse enrichment: any
+/// queued or older caller of `RecordText` is harmless. Existing PageText
+/// records remain untouched and readable through the legacy Answers adapter.
+fn keep_page_text(_store: &FjallStore, url: &str, _text: &str) {
+    tracing::debug!(%url, "trail memory: ordinary page text withheld under L1");
 }
 
 /// Store the exact acquired bytes and the Fleece annotation that describes a
@@ -1204,13 +1187,9 @@ pub(crate) fn spawn_trail_for_session(
                         }
                     },
                     TrailCommand::RecordText { url, text } => {
-                        let Some((store, _)) = state.as_ref() else {
-                            continue;
-                        };
-                        keep_page_text(store, &url, &text);
-                        // The body is part of the corpus the index is minted
-                        // from, so a new one makes the projection stale.
-                        index_stale = true;
+                        if let Some((store, _)) = state.as_ref() {
+                            keep_page_text(store, &url, &text);
+                        }
                     },
                     TrailCommand::CaptureSourceDocument { capture_generation, request, directory, document } => {
                         let admitted_session = current_dir.parent().and_then(Path::file_name).and_then(|name| name.to_str());
@@ -1450,21 +1429,20 @@ mod tests {
         );
     }
 
-    /// W6c's done-condition in the small: a term that appears only in a page
-    /// BODY — not in its URL, not in its title — recalls the page, through the
-    /// same store the actor writes to.
+    /// L1's retention boundary: an ordinary body is absent while address and
+    /// title remain recallable from the same traversal.
     #[test]
-    fn a_body_only_term_recalls_the_page() {
+    fn ordinary_page_body_is_not_retained_but_address_and_title_recall() {
         const BODY: &str = "A kestrel hovers on a fixed point of air, head still while \
                             the wings work, and stoops only when the vole below commits \
                             to a run across the open verge.";
         let url = "https://field.test/notes/7";
         let dir = temp_dir();
         let store = FjallStore::open(&dir).unwrap();
-        // The write path the actor takes, consent hook included.
+        // Exercise the actor's boundary directly, including stale queued work.
         keep_page_text(&store, url, BODY);
         let texts = stored_page_texts(&store);
-        assert_eq!(texts.get(url), Some(BODY), "the store round-trips the body");
+        assert!(texts.is_empty(), "ordinary fetch text never enters PageText");
 
         let traces = vec![BrowsingTrace::from_events(
             "p",
@@ -1482,36 +1460,48 @@ mod tests {
         )];
 
         let index = RecallIndex::mint(&temp_dir(), &traces, &texts).unwrap();
-        assert_eq!(
-            index.receipt.pages_with_text, 1,
-            "the body reached the index"
-        );
+        assert_eq!(index.receipt.pages_with_text, 0);
 
         // "kestrel" is in neither the URL nor the title.
         assert!(!url.contains("kestrel"));
-        let hits = index
+        let body_hits = index
             .search(
                 "kestrel",
                 5,
                 RecallConfig::default().with_frecency_weight(0.0),
             )
             .unwrap();
-        assert_eq!(hits.len(), 1, "a body term recalls the page");
-        assert_eq!(hits[0].url, url);
+        assert!(body_hits.is_empty(), "body-only terms are not searchable");
 
-        // The negative control: the same corpus with no stored text cannot.
-        let bare = RecallIndex::mint(&temp_dir(), &traces, &PageTexts::default()).unwrap();
-        assert_eq!(bare.receipt.pages_with_text, 0);
-        assert!(
-            bare.search(
-                "kestrel",
-                5,
-                RecallConfig::default().with_frecency_weight(0.0)
-            )
-            .unwrap()
-            .is_empty(),
-            "without the body the term is unrecallable — the instrument works"
-        );
+        let title_hits = index.search(
+            "Notes",
+            5,
+            RecallConfig::default().with_frecency_weight(0.0),
+        ).unwrap();
+        assert_eq!(title_hits.len(), 1, "title recall remains available");
+        assert_eq!(title_hits[0].url, url, "address remains attached to recall");
+        let address_hits = index.search(
+            "field",
+            5,
+            RecallConfig::default().with_frecency_weight(0.0),
+        ).unwrap();
+        assert_eq!(address_hits.len(), 1, "address recall remains available");
+        assert_eq!(address_hits[0].url, url);
+    }
+
+    #[test]
+    fn legacy_page_text_survives_ordinary_fetch_without_rewrite() {
+        let url = "https://field.test/legacy";
+        let dir = temp_dir();
+        let store = FjallStore::open(&dir).unwrap();
+        let legacy = "legacy amberstone body";
+        pollster::block_on(PageTextStore::new(&store).put(url, legacy, 17)).unwrap();
+        let before = stored_page_texts(&store);
+
+        keep_page_text(&store, url, "new automatic body must be ignored");
+
+        assert_eq!(stored_page_texts(&store), before);
+        assert_eq!(stored_page_texts(&store).get(url), Some(legacy));
     }
 
     /// The W6a cost curve. A measurement run, not a correctness gate: build in
@@ -1929,21 +1919,25 @@ mod inference_owner_tests {
             .join("sessions")
             .join(session.to_string())
             .join("memory");
+        std::fs::create_dir_all(&dir).unwrap();
+        pollster::block_on(PageTextStore::new(&FjallStore::open(&dir).unwrap()).put(
+            "https://retained.test/note",
+            "nebula amberstone",
+            1,
+        )).unwrap();
         let (handle, _updates) =
             spawn_trail_for_session(std::sync::Arc::new(|| {}), Some(dir), Default::default(), uuid::Uuid::nil());
         let owner = TrailInferenceOwner(std::sync::Arc::new(handle));
         let namespace = format!("turnstone/{session}");
-        owner.0.command(TrailCommand::RecordText {
-            url: "https://retained.test/note".into(),
-            text: "nebula amberstone".into(),
-        });
         let old = owner.snapshot(&namespace).unwrap().remove(0);
+        assert_eq!(old.text, "nebula amberstone");
         owner.0.command(TrailCommand::RecordText {
             url: "https://retained.test/note".into(),
             text: "nebula indigo".into(),
         });
-        let new = owner.snapshot(&namespace).unwrap().remove(0);
-        assert_ne!(old.version, new.version);
+        let still_legacy = owner.snapshot(&namespace).unwrap().remove(0);
+        assert_eq!(old.version, still_legacy.version);
+        assert_eq!(still_legacy.text, "nebula amberstone");
         assert_eq!(
             owner.resolve(&old.source, &old.version).unwrap(),
             "nebula amberstone"

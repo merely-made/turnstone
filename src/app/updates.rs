@@ -111,7 +111,15 @@ impl App {
                     Some(crate::content::NodeContent::Live)
                 );
                 if let Ok(fetched) = &result {
-                    let observed = self.content.fetched(node, &url);
+                    // A retained response from a previous request is not
+                    // acquisition context for this terminal answer. Only this
+                    // request's progress can supply its actual final URL.
+                    let observed = matches!(
+                        self.content.fetch_phase(node),
+                        Some(crate::content::PageFetchPhase::Streaming { .. })
+                    )
+                    .then(|| self.content.fetched(node, &url))
+                    .flatten();
                     let effective_url =
                         observed.and_then(|previous| previous.effective_url.clone());
                     let content_type = fetched

@@ -1,0 +1,18 @@
+# Second native process, same saved profile. Select the admitted A member from
+# graph truth without opening its address; this phase has no acquisition step.
+settle 5
+key escape
+assert snap network-offline == true
+select-graph-member none
+select-graph-member ${TURNSTONE_R1_FIXTURE_URL}/A
+act Open Inspector pane
+settle 3
+assert pane inspector
+assert row URL: ${TURNSTONE_R1_FIXTURE_URL}/A
+assert row Kept: yes
+assert row Saved captures: 5
+wait-row 600 Source save: Saved
+wait-source-capture 600 5 saved
+record-source-captures 10_reopened_A_kept_and_referenced
+capture 10_reopened_A_kept_and_referenced
+log R1 fresh-process reopen complete

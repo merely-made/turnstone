@@ -77,6 +77,11 @@ impl ApplicationHandler for Shell {
     }
 
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+        // Clear before draining: any later proxy callback admits another turn.
+        // Semantic publication remains independent of successful presentation.
+        if std::mem::take(&mut self.actor_wake_pending) {
+            self.drain_actor_updates(event_loop);
+        }
         if self.shared_scenario.is_some()
             && self
                 .main_receipt
@@ -236,93 +241,12 @@ impl ApplicationHandler for Shell {
     /// An actor woke us through the proxy: a physics layout snapshot or a
     /// completed fetch is waiting. Drain fetches through the spine, then
     /// redraw so `frame()` folds everything in (and chains while settling).
-    fn user_event(&mut self, event_loop: &ActiveEventLoop, _event: ()) {
-        let started = std::time::Instant::now();
-        while let Ok(raw) = self
-            .fetch_rx
-            .try_recv()
-            .or_else(|_| self.nomadnet_rx.try_recv())
-        {
-            let raw = match raw {
-                FetchUpdate::Subresource(outcome) => {
-                    let requesters = self.pending_fetches.take_subresources(&outcome.url);
-                    if requesters.is_empty() {
-                        tracing::warn!(url = %outcome.url, "subresource completion without a pending session; dropped");
-                        continue;
-                    }
-                    match outcome.result {
-                        Ok(bytes) => {
-                            for node in requesters {
-                                if let Some(session) = self.content_sessions.session_mut(&node) {
-                                    session.provide_subresource(&outcome.url, &bytes);
-                                }
-                            }
-                        },
-                        Err(error) => {
-                            tracing::warn!(url = %outcome.url, %error, "content subresource failed");
-                        },
-                    }
-                    continue;
-                },
-                other => other,
-            };
-            // The port adapter converts the service's types at the boundary;
-            // the app only ever sees the app-owned vocabulary.
-            if let Some(update) = browse::update_from_fetch(raw, &mut self.pending_fetches) {
-                let effects = self.app.apply_update(update);
-                self.run_effects(effects);
-            }
-        }
-        while let Ok(update) = self.bin_rx.try_recv() {
-            // The bin actor already speaks the app-owned vocabulary.
-            let effects = self.app.apply_update(update);
-            self.run_effects(effects);
-        }
-        while let Ok(update) = self.download_rx.try_recv() {
-            let effects = self.app.apply_update(update);
-            self.run_effects(effects);
-        }
-        while let Ok(update) = self.trail_rx.try_recv() {
-            // Recall answers (RecallHits / RecallFailed), already app-owned.
-            let effects = self.app.apply_update(update);
-            self.run_effects(effects);
-        }
-        // The vault unlocked: adopt the root before the place worker's
-        // answers, which may be the commands it held until now.
-        self.adopt_unlocked_root();
-        while let Ok(update) = self.place_rx.try_recv() {
-            // One place answer the app never sees: a prepared dial is a
-            // shell-owned thing. The app learns of a refusal as an event and
-            // of a visit only as the document that then opens.
-            if let crate::action::Update::PlaceDocumentVisit {
-                holder_root,
-                result,
-                ..
-            } = update
-            {
-                self.apply_document_visit(holder_root, result);
-                continue;
-            }
-            let effects = self.app.apply_update(update);
-            self.run_effects(effects);
-        }
-        self.refresh_knot_documents();
-        while let Ok(update) = self.micron_submission_rx.try_recv() {
-            let effects = self.app.apply_update(update);
-            self.run_effects(effects);
-        }
-        // Any cookie a fetch or a script set since the last drain goes to disk
-        // now; the flush is dirty-gated, so a quiet drain writes nothing.
-        self.cookie_custody.flush();
-        self.drain_surface_web_events();
-        self.drain_surface_accessibility();
-        // Semantic callbacks publish on their own wake, before any pixel
-        // frame acquisition or queued assistive action delivery.
-        self.push_a11y_tree();
-        self.drain_a11y_actions();
-        self.drain_pending_windows(event_loop);
-        self.request_redraw();
-        tracing::debug!(target: "turnstone::selfdrive", micros = started.elapsed().as_micros(), "native actor wake completed");
+    fn user_event(&mut self, _event_loop: &ActiveEventLoop, _event: ()) {
+        // Winit's macOS adapter drains proxy callbacks until its queue is empty.
+        // Projecting accessibility here can take longer than the producers'
+        // cadence, starving window/input events and the next presentation.
+        // Keep callbacks cheap; the retained actor queues drain once per batch.
+        self.actor_wake_pending = true;
     }
 
     fn window_event(
@@ -365,6 +289,11 @@ impl ApplicationHandler for Shell {
                 self.primary_focused = focused;
                 self.native_input_focus(0, focused);
                 self.push_a11y_tree();
+            },
+            WindowEvent::Occluded(false) => {
+                // Acquisition can skip an occluded surface without another
+                // frame. Repaint on the actual platform visibility transition.
+                self.request_redraw();
             },
             WindowEvent::Moved(_) | WindowEvent::ScaleFactorChanged { .. } => {
                 self.observe_physics_display_rate(true);
@@ -519,6 +448,95 @@ impl ApplicationHandler for Shell {
 }
 
 impl Shell {
+    fn drain_actor_updates(&mut self, event_loop: &ActiveEventLoop) {
+        let started = std::time::Instant::now();
+        while let Ok(raw) = self
+            .fetch_rx
+            .try_recv()
+            .or_else(|_| self.nomadnet_rx.try_recv())
+        {
+            let raw = match raw {
+                FetchUpdate::Subresource(outcome) => {
+                    let requesters = self.pending_fetches.take_subresources(&outcome.url);
+                    if requesters.is_empty() {
+                        tracing::warn!(url = %outcome.url, "subresource completion without a pending session; dropped");
+                        continue;
+                    }
+                    match outcome.result {
+                        Ok(bytes) => {
+                            for node in requesters {
+                                if let Some(session) = self.content_sessions.session_mut(&node) {
+                                    session.provide_subresource(&outcome.url, &bytes);
+                                }
+                            }
+                        },
+                        Err(error) => {
+                            tracing::warn!(url = %outcome.url, %error, "content subresource failed");
+                        },
+                    }
+                    continue;
+                },
+                other => other,
+            };
+            // The port adapter converts the service's types at the boundary;
+            // the app only ever sees the app-owned vocabulary.
+            if let Some(update) = browse::update_from_fetch(raw, &mut self.pending_fetches) {
+                let effects = self.app.apply_update(update);
+                self.run_effects(effects);
+            }
+        }
+        while let Ok(update) = self.bin_rx.try_recv() {
+            // The bin actor already speaks the app-owned vocabulary.
+            let effects = self.app.apply_update(update);
+            self.run_effects(effects);
+        }
+        while let Ok(update) = self.download_rx.try_recv() {
+            let effects = self.app.apply_update(update);
+            self.run_effects(effects);
+        }
+        while let Ok(update) = self.trail_rx.try_recv() {
+            // Recall answers (RecallHits / RecallFailed), already app-owned.
+            let effects = self.app.apply_update(update);
+            self.run_effects(effects);
+        }
+        // The vault unlocked: adopt the root before the place worker's
+        // answers, which may be the commands it held until now.
+        self.adopt_unlocked_root();
+        while let Ok(update) = self.place_rx.try_recv() {
+            // One place answer the app never sees: a prepared dial is a
+            // shell-owned thing. The app learns of a refusal as an event and
+            // of a visit only as the document that then opens.
+            if let crate::action::Update::PlaceDocumentVisit {
+                holder_root,
+                result,
+                ..
+            } = update
+            {
+                self.apply_document_visit(holder_root, result);
+                continue;
+            }
+            let effects = self.app.apply_update(update);
+            self.run_effects(effects);
+        }
+        self.refresh_knot_documents();
+        while let Ok(update) = self.micron_submission_rx.try_recv() {
+            let effects = self.app.apply_update(update);
+            self.run_effects(effects);
+        }
+        // Any cookie a fetch or a script set since the last drain goes to disk
+        // now; the flush is dirty-gated, so a quiet drain writes nothing.
+        self.cookie_custody.flush();
+        self.drain_surface_web_events();
+        self.drain_surface_accessibility();
+        // Semantic callbacks publish on their own wake, before any pixel
+        // frame acquisition or queued assistive action delivery.
+        self.push_a11y_tree();
+        self.drain_a11y_actions();
+        self.drain_pending_windows(event_loop);
+        self.request_redraw();
+        tracing::debug!(target: "turnstone::selfdrive", micros = started.elapsed().as_micros(), "native actor batch completed");
+    }
+
     /// Refresh changes need not move the window or change its scale. Sample
     /// on the existing host cadence, with unchanged rates suppressed by the
     /// runtime pool. No extra event-loop wake is needed while the host is idle.
