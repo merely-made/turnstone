@@ -146,8 +146,13 @@ pub struct Snapshot {
 #[derive(Clone, Debug, PartialEq)]
 pub struct SourceCaptureView {
     pub request: Uuid,
+    pub ordinal: u64,
+    pub session: crate::panes::SessionId,
+    pub graph: crate::panes::GraphId,
     pub node: Uuid,
     pub url: String,
+    pub source: Option<crate::source_capture::SourceIdentity>,
+    pub keep: bool,
     pub phase: crate::source_capture::CapturePhase,
     pub error: Option<String>,
     pub stored: Option<crate::action::StoredSourceDocument>,
@@ -1031,8 +1036,11 @@ pub fn snapshot(app: &App) -> Snapshot {
             let mut captures: Vec<_> = app.source_captures.values()
                 .filter(|attempt| attempt.request.session == app.session_id)
                 .map(|attempt| SourceCaptureView {
-                    request: attempt.request.id, node: attempt.request.node,
-                    url: attempt.request.url.clone(), phase: attempt.phase, error: attempt.error.clone(), stored: attempt.stored.clone(),
+                    request: attempt.request.id, ordinal: attempt.ordinal, node: attempt.request.node,
+                    session: attempt.request.session, graph: attempt.request.graph,
+                    url: attempt.request.url.clone(), source: attempt.request.source.clone(),
+                    keep: attempt.request.keep,
+                    phase: attempt.phase, error: attempt.error.clone(), stored: attempt.stored.clone(),
                 }).collect();
             captures.sort_by_key(|capture| capture.request);
             captures

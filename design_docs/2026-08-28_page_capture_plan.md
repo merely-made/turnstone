@@ -520,3 +520,24 @@ Recorded here so they are not lost, and because each is independently closable:
   private reader/Answers joins and retention gates remain R1-R4 work. The
   supported durability model is acknowledged writes and tested process exit,
   with power-loss and headed acceptance outside this receipt.
+
+- **2026-10-17, R1 bounded macOS qualification passed:** Inspector and the common
+  catalog now offer source-bound “Save source and keep”. Verified deposition
+  stages Keep and the exact manifest reference together for R0's owning save
+  acknowledgement. New automatic PageText writes are blocked at enrichment
+  and the queued-command storage boundary; legacy bytes and Answers references
+  remain readable. This implements L1/L3 for new writes and supersedes the
+  earlier open Full-vs-opt-in recorder tail above. The first headed check found
+  missing HTTP final-response provenance in the shared fetch lane; qualification
+  includes the supplier repair rather than guessing that provenance in the app.
+  Private saved readers, research Answers and hosted capture gates remain open.
+
+  The [R1 receipt](../docs/receipts/r1_source_keep_20261017/qualification.json)
+  records 953 bounded regression tests, three capture-library controls, 46
+  supplier tests, Clippy correctness and two fresh headed native processes.
+  The exact five saved requests/references and Keep reopen offline without
+  acquiring fixture content; metadata recall remains available and ordinary
+  body-only recall is absent. Native cold reopen also qualifies the host's
+  actor-batch drain/visibility repair after reproducing an occluded first frame.
+  This closes R1's ordinary HTML/Keep/new-retention join, within R0's acknowledged
+  write/process-exit durability model; R2-R4 and hosted capture remain open.

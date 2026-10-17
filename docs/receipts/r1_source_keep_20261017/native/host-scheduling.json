@@ -1,0 +1,11 @@
+{
+  "result": "pass",
+  "prior_failure": "../diagnostics/headed-03-reopen-process.json",
+  "occluded_acquisitions_before_eventual_presentation": 4,
+  "actor_batches": 29,
+  "render_attempts": 30,
+  "new_event_batches": 30,
+  "cold_reopen_presentation_frames": 26,
+  "manual_foreground_intervention": false,
+  "note": "Final cold reopen independently encountered initial occlusion, then returned to window events and completed its presentation-gated scenario without intervention. Actual counts are from retained native.log; no sender-rate coalescing claim."
+}

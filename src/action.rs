@@ -175,7 +175,7 @@ pub enum Action {
     /// Explicitly preserve the current fetched HTML source and its Fleece
     /// annotation. This does not inspect a rendered surface or recall text.
     CaptureSourceDocument {
-        member: uuid::Uuid,
+        target: crate::source_capture::SourceCaptureTarget,
     },
     /// Retry the same explicit request; never recapture a replacement response.
     RetrySourceDocumentCapture { request: uuid::Uuid },
@@ -1126,6 +1126,7 @@ pub enum Effect {
     /// Preserve one exact, app-held fetched HTML response through the session
     /// Eidetic store, bound to the request's owner and acquired response.
     CaptureSourceDocument {
+        capture_generation: uuid::Uuid,
         request: crate::source_capture::CaptureRequest,
     },
     PersistSourceCapture {

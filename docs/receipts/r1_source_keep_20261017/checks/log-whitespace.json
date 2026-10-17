@@ -1,0 +1,35 @@
+{
+  "note": "Committed log copies remove trailing horizontal whitespace and redundant final blank lines so git diff --check passes. Raw outputs are preserved unchanged at recorded paths; test contents/results are unchanged.",
+  "files": [
+    {
+      "path": "checks/bounded-library.log",
+      "raw_output": "/Users/markik/Code/output/turnstone-r1-host-fix-bounded-tests.log",
+      "raw_sha256": "4096e08db309759025749ef3e3a951e95be0097d6b869003fc9f514a59134e4b",
+      "committed_sha256": "68b23dec26a4a7a88d7e7c67b92a166ceb66ae43518bea9848e08afac97a316a"
+    },
+    {
+      "path": "checks/capture-library.log",
+      "raw_output": "/Users/markik/Code/output/turnstone-r1-host-fix-captured-collection-tests.log",
+      "raw_sha256": "d87941b841a96d34308299b970e82f87c0fa56035a3541a3a2cef72f9184e2b4",
+      "committed_sha256": "9b5927c23647d94716984beb8b4669dbb1fb6d901f1588864f3f52f1c9bd4dee"
+    },
+    {
+      "path": "checks/clippy.log",
+      "raw_output": "/Users/markik/Code/output/turnstone-r1-host-fix-clippy.log",
+      "raw_sha256": "47e50107fa43fb2ca009e0138812213987a88e4648c854768b0bf0e585a0014c",
+      "committed_sha256": "406a761e278b9eccc4b2f1424c963d6dbb6b941c7136713c003879190f96da68"
+    },
+    {
+      "path": "diagnostics/expanded-rustfmt.log",
+      "raw_output": "/Users/markik/Code/output/turnstone-r1-rustfmt.log",
+      "raw_sha256": "99b38c1e20f801aa41d2362518714a7e742dd407897c9f372d6c88161495003f",
+      "committed_sha256": "2ba5001375068237b563e4cb7001e5ebeb7d720b8a2fc49ab1fbbe083911999c"
+    },
+    {
+      "path": "diagnostics/pre-host-fix-bounded-library.log",
+      "raw_output": "/Users/markik/Code/output/turnstone-r1-published-bounded-tests.log",
+      "raw_sha256": "b96ffc806647467baa2e9488b87f39c899f3d73c596c6bee0694f50f4bfe3740",
+      "committed_sha256": "6700386d86502ed77c265ee351c8efedc25723944505240ae971146bbd6b7ba8"
+    }
+  ]
+}

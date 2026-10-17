@@ -150,6 +150,10 @@ impl Shell {
     fn wait_frames(&mut self, frames: u32, mut condition: impl FnMut(&Shell) -> bool) -> bool {
         let attempts = frames.max(1);
         for attempt in 0..attempts {
+            while let Ok(update) = self.trail_rx.try_recv() {
+                let effects = self.app.apply_update(update);
+                self.run_effects(effects);
+            }
             while let Ok(update) = self.place_rx.try_recv() {
                 let effects = self.app.apply_update(update);
                 self.run_effects(effects);
@@ -1908,6 +1912,23 @@ impl Shell {
                 }
             },
             Step::Settle(_) | Step::Log(_) => {},
+            Step::QueueAct(label) => {
+                if self.scenario_queued_action.is_some() {
+                    return Err("queue-act: an Action is already waiting for delivery".into());
+                }
+                let rows = self.app.available_actions();
+                let action = rows.iter()
+                    .find(|(candidate, _)| candidate == label)
+                    .or_else(|| rows.iter().find(|(candidate, _)| candidate.starts_with(label)))
+                    .map(|(_, action)| action.clone())
+                    .ok_or_else(|| format!("queue-act: no palette action labelled '{label}'"))?;
+                self.scenario_queued_action = Some(action);
+            },
+            Step::DeliverAct => {
+                let action = self.scenario_queued_action.take()
+                    .ok_or("deliver-act: no catalog Action is waiting")?;
+                Shell::act(self, action);
+            },
             Step::Capture(name) => {
                 self.pending_capture = Some(self.shared_out_dir.join(format!("{name}.png")));
             },
@@ -2169,6 +2190,26 @@ impl Shell {
                     ));
                 }
             },
+            Step::WaitSourceCapture(frames, ordinal, phase) => {
+                let phase_of = |phase: crate::source_capture::CapturePhase| match phase {
+                    crate::source_capture::CapturePhase::Depositing => "depositing",
+                    crate::source_capture::CapturePhase::Deposited => "deposited",
+                    crate::source_capture::CapturePhase::PendingSave => "pending-save",
+                    crate::source_capture::CapturePhase::Failed => "failed",
+                    crate::source_capture::CapturePhase::Saved => "saved",
+                    crate::source_capture::CapturePhase::Recoverable => "recoverable",
+                };
+                let ok = self.wait_frames(*frames, |shell| {
+                    crate::observe::snapshot(&shell.app).source_captures.iter()
+                        .any(|capture| capture.ordinal == *ordinal && phase_of(capture.phase) == phase)
+                });
+                if !ok {
+                    let current = crate::observe::snapshot(&self.app).source_captures.iter()
+                        .map(|capture| (capture.ordinal, phase_of(capture.phase)))
+                        .collect::<Vec<_>>();
+                    return Err(format!("wait-source-capture {ordinal} {phase} after {frames} frames: observed {current:?}"));
+                }
+            },
             Step::WaitFile(frames, path) => {
                 self.pending_scenario_file = Some(PendingFileWait::new(path.into(), *frames));
             },
@@ -2183,6 +2224,39 @@ impl Shell {
                         "record-place '{name}': could not write {}: {error}",
                         path.display()
                     )
+                })?;
+            },
+            Step::RecordSourceCaptures(name) => {
+                let snapshot = crate::observe::snapshot(&self.app);
+                let captures: Vec<_> = snapshot.source_captures.iter().map(|capture| {
+                    let phase = match capture.phase {
+                        crate::source_capture::CapturePhase::Depositing => "depositing",
+                        crate::source_capture::CapturePhase::Deposited => "deposited",
+                        crate::source_capture::CapturePhase::PendingSave => "pending-save",
+                        crate::source_capture::CapturePhase::Failed => "failed",
+                        crate::source_capture::CapturePhase::Saved => "saved",
+                        crate::source_capture::CapturePhase::Recoverable => "recoverable",
+                    };
+                    serde_json::json!({
+                        "request": capture.request,
+                        "ordinal": capture.ordinal,
+                        "session": capture.session,
+                        "graph": capture.graph,
+                        "node": capture.node,
+                        "url": capture.url.as_str(),
+                        "source": capture.source.as_ref(),
+                        "keep": capture.keep,
+                        "phase": phase,
+                        "error": capture.error.as_deref(),
+                        "stored": capture.stored.as_ref(),
+                    })
+                }).collect();
+                let body = serde_json::to_string_pretty(&captures).map_err(|error| {
+                    format!("record-source-captures '{name}': could not serialize: {error}")
+                })?;
+                let path = self.shared_out_dir.join(format!("{name}.source-captures.json"));
+                std::fs::write(&path, body).map_err(|error| {
+                    format!("record-source-captures '{name}': could not write {}: {error}", path.display())
                 })?;
             },
             Step::TouchFile(path) => {

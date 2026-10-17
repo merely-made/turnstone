@@ -1132,6 +1132,8 @@ pub struct Shell {
     live_settings: LiveSettingsHandle,
     /// Wakes the loop when the physics or fetch actor has news.
     proxy: EventLoopProxy<()>,
+    /// Proxy callbacks admit one actor drain at the end of the native batch.
+    actor_wake_pending: bool,
     /// The fetch actor's command handle; dropping it ends the actor.
     fetch_handle: armillary::ActorHandle<FetchCommand>,
     network_offline: bool,
@@ -1139,7 +1141,7 @@ pub struct Shell {
     /// Durable Gemini server pins. The protocol verifier shares this exact
     /// instance; the shell retains it for explicit change acceptance.
     gemini_trust: Arc<crate::gemini_trust::GeminiTrustStore>,
-    /// Completed fetches, drained in `user_event` on each wake.
+    /// Completed fetches, drained after each notified native event batch.
     fetch_rx: Receiver<FetchUpdate>,
     /// The session jar's durable home, flushed after each drain.
     cookie_custody: crate::cookie_custody::CookieCustody,
@@ -1200,6 +1202,9 @@ pub struct Shell {
     /// on `self` (the scenario is taken out during a tick) so `capture` can reach
     /// it. `shared_done` guards writing the sentinel exactly once.
     shared_scenario: Option<taproot::Scenario>,
+    /// Exact action copied from the common catalog for scenario stale-source
+    /// controls; delivery still lowers through the ordinary shell action path.
+    scenario_queued_action: Option<Action>,
     pending_scenario_file: Option<drive::PendingFileWait>,
     held_contributed_click: Option<contributed_automation::HeldClick>,
     contributed_click_request: u64,
@@ -1646,6 +1651,7 @@ impl Shell {
             app,
             live_settings,
             proxy,
+            actor_wake_pending: false,
             fetch_handle,
             network_offline,
             offline_attempts,
@@ -1674,6 +1680,7 @@ impl Shell {
             shift: false,
             meta: false,
             shared_scenario: shared_scenario_from_env(),
+            scenario_queued_action: None,
             pending_scenario_file: None,
             held_contributed_click: None,
             contributed_click_request: 0,
@@ -2352,6 +2359,7 @@ impl Shell {
                         crate::inspector_pane::InspectorIntent::ClipToKnot => {
                             self.clip_focused_document_to_knot()
                         },
+                        crate::inspector_pane::InspectorIntent::CaptureSourceDocument { target } => out.push(Action::CaptureSourceDocument { target }),
                         crate::inspector_pane::InspectorIntent::SetViewer { member, viewer } => {
                             out.push(Action::SetViewerOverride { member, viewer })
                         },

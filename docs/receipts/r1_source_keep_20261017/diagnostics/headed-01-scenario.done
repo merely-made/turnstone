@@ -1,0 +1,32 @@
+RESULT fail
+waited 39 frames
+waited 11 frames
+waited 0 frames
+captured 00_A_inspector_ready
+captured 01_pointer_saved_A
+FAIL: line 1: assert suggestions op wants ==|>=|<=: 'assert suggestions ~ Save source and keep'
+captured 02_keyboard_saved_A
+captured 03_semantic_saved_A
+captured 04_bound_A_saved_with_cursor_B
+waited 0 frames
+waited 0 frames
+waited 0 frames
+captured 05_ab_a_refused
+waited 0 frames
+waited 0 frames
+captured 06_replacement_refused
+captured 04_same_url_replaced_A_ready
+waited 0 frames
+FAIL: assert suggestions: have 1 (["no matching nodes; enter an address"]), wanted Eq 0
+captured 07_visited_only_X
+R1 source keep seed complete
+presentation frames=170 captures=9 blank=0
+capture /Users/markik/Code/output/turnstone-r1-native-final-01/seed/00_A_inspector_ready.png digest=0b10a889cfef1e20 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-01/seed/01_pointer_saved_A.png digest=21326d7abca7f4e3 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-01/seed/02_keyboard_saved_A.png digest=02f4e8cced30fd6f blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-01/seed/03_semantic_saved_A.png digest=24692bfbb9aa50a6 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-01/seed/04_bound_A_saved_with_cursor_B.png digest=02bc591c76a62dfd blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-01/seed/05_ab_a_refused.png digest=2cedf1cadece9fc7 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-01/seed/06_replacement_refused.png digest=80003abe97c8bd20 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-01/seed/04_same_url_replaced_A_ready.png digest=a5b99a08324218b6 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-01/seed/07_visited_only_X.png digest=c5e4349c6c104f96 blank=false

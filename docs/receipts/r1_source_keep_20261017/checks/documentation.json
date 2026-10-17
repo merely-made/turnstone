@@ -1,0 +1,15 @@
+{
+  "result": "pass",
+  "relative_markdown_links": "pass",
+  "files": [
+    "design_docs/2026-09-06_page_lifecycle_plan.md",
+    "design_docs/2026-08-28_page_capture_plan.md",
+    "design_docs/DOC_README.md",
+    "docs/receipts/r1_source_keep_20261017/README.md"
+  ],
+  "unique_R0_through_R4_phases": "pass",
+  "receipt_JSON_parse": "pass",
+  "frozen_source_inputs_unchanged": "pass",
+  "native_binary_matches_receipt": "pass",
+  "runner_fixture_and_scenarios_match": "pass"
+}

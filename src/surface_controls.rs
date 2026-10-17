@@ -54,8 +54,17 @@ pub(crate) fn set(canvas: &mut Canvas, member: Uuid, control: Control, enabled: 
     if canvas.graph().get_node_by_id(member).is_none() {
         return false;
     }
+    set_facets(canvas.facets_mut(), member, control, enabled)
+}
+/// Stage a control with other canonical facets before one owning save.
+pub(crate) fn set_facets(
+    facets: &mut NodeFacetStore,
+    member: Uuid,
+    control: Control,
+    enabled: bool,
+) -> bool {
     let id = FacetId::new(control.facet());
-    if let Some(value) = canvas.facets().get(&member, &id) {
+    if let Some(value) = facets.get(&member, &id) {
         let Some(old) = value.as_bool() else {
             tracing::warn!(%member,facet=control.facet(),"invalid Surface control retained");
             return false;
@@ -65,8 +74,7 @@ pub(crate) fn set(canvas: &mut Canvas, member: Uuid, control: Control, enabled: 
         }
     }
     // Explicit false prevents stale labels from resurrecting a control.
-    canvas
-        .facets_mut()
+    facets
         .set(member, id, Value::Bool(enabled), &AcceptAll)
         .is_ok()
 }

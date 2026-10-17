@@ -98,6 +98,12 @@
 //!                            # knot://<root>/field.knot")
 //! record-place <name>        # write crate::observe::place_record(..), pretty
 //!                            # printed, to <name>.json in the capture dir
+//! record-source-captures <name> # write current-session capture request facts
+//!                            # (owner node, URL, phase and exact stored refs)
+//! wait-source-capture <frames> <ordinal> <phase> # wait for that capture phase
+//! queue-act <palette label> # retain the exact offered Action through later
+//!                            # scenario steps; no execution until deliver-act
+//! deliver-act               # lower the retained Action through Shell::act
 //! touch <path>               # write a one-line marker file at <path> (any
 //!                            # absolute path, not just the capture dir) —
 //!                            # a cross-process signal a scenario can wait on
@@ -310,9 +316,19 @@ pub enum Step {
     /// `crate::observe::KnotDocumentFacts` entries, each formatted as
     /// "<status> <address>".
     WaitKnot(u32, String),
+    /// Wait until an observed source request reaches the named phase.
+    WaitSourceCapture(u32, u64, String),
     /// Write the place observation facts (`crate::observe::place_record`),
     /// pretty-printed, to `<name>.json` in the capture directory.
     RecordPlace(String),
+    /// Write the current session's correlated source-capture facts from the
+    /// same observation snapshot used by the visible Inspector rows.
+    RecordSourceCaptures(String),
+    /// Snapshot an exact catalog Action for a later stale-admission check.
+    QueueAct(String),
+    /// Deliver the previously queued catalog Action through the ordinary
+    /// shell action spine after the intervening scenario steps.
+    DeliverAct,
     /// Write a one-line marker file at an arbitrary path — the cross-process
     /// signal a scenario in another process waits on with `wait-file`.
     TouchFile(String),
@@ -833,7 +849,22 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                     _ => Step::WaitKnot(frames, arg.to_string()),
                 }
             }
+            "wait-source-capture" => {
+                let mut fields = rest.split_whitespace();
+                let frames = fields.next().and_then(|value| value.parse().ok());
+                let ordinal = fields.next().and_then(|value| value.parse().ok());
+                let phase = fields.next().filter(|value| matches!(*value, "depositing" | "deposited" | "pending-save" | "saved" | "failed" | "recoverable"));
+                if fields.next().is_some() || frames.is_none() || ordinal.is_none() || phase.is_none() {
+                    return err("wait-source-capture wants '<frames> <ordinal> <depositing|deposited|pending-save|saved|failed|recoverable>'");
+                }
+                Step::WaitSourceCapture(frames.unwrap(), ordinal.unwrap(), phase.unwrap().to_string())
+            }
             "record-place" if !rest.is_empty() => Step::RecordPlace(rest.to_string()),
+            "record-source-captures" if !rest.is_empty() => {
+                Step::RecordSourceCaptures(rest.to_string())
+            }
+            "queue-act" if !rest.is_empty() => Step::QueueAct(rest.to_string()),
+            "deliver-act" if rest.is_empty() => Step::DeliverAct,
             "touch" if !rest.is_empty() => Step::TouchFile(rest.to_string()),
             "log" => Step::Log(rest.to_string()),
             _ => return err("unknown verb"),

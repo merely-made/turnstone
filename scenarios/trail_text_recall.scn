@@ -1,38 +1,40 @@
-# Page-text recall receipt (search wiring W6c): a term that appears only in a
-# page BODY recalls that page from the omnibar.
+# L1 metadata-only visit history. New ordinary visits must not put page body
+# text into durable recall. Legacy PageText/Answers compatibility is exercised
+# by trail_memory's snapshot tests; this lane starts with a FRESH profile.
 #
-# Start scenarios/fixtures/trail_text_server.ps1 on port 43121 first; the run
-# is otherwise loopback-only. FRESH profile.
-#
-# The fixture makes the claim unfakeable in both directions. HAGIOSCOPE is in
-# the body of /notes/7 and in neither its path nor its title ("Field notes");
-# PARBUCKLE is in the body of /notes/8 alone. A recall lane reading only titles
-# and URLs answers nothing for either word, and one that pooled the bodies
-# would answer the same page for both — so the two asserts together say the
-# text reached the index AND stayed attached to its own address.
+# Start scenarios/fixtures/trail_text_server.ps1 on port 43121 first.
+# HAGIOSCOPE and PARBUCKLE appear only in the fixture bodies, not URL/title.
 settle 30
 key escape
-
-# ---- 1. Visit both pages so the fetch path extracts and stores their text ---
 open http://127.0.0.1:43121/notes/7
 settle 60
 open http://127.0.0.1:43121/notes/8
 settle 60
 
-# ---- 2. A body-only term recalls its own page --------------------------------
+# Address/title history remains useful after visiting.
 omnibar find
-type hagioscope
+type /notes/7
 settle 40
-assert snap suggestions ~ recall http://127.0.0.1:43121/notes/7
-capture 01_body_term_recalls_the_page
+assert suggestions == 1
+assert snap suggestions ~ Field notes
+capture 00_address_history_remains_searchable
 key escape
 settle 10
 
-# ---- 3. The other body-only term recalls the OTHER page ----------------------
+# The only suggestion is the empty-result hint; neither body is retained.
+omnibar find
+type hagioscope
+settle 40
+assert suggestions == 1
+assert snap suggestions == no matching nodes; enter an address
+capture 01_first_body_term_not_retained
+key escape
+settle 10
 omnibar find
 type parbuckle
 settle 40
-assert snap suggestions ~ recall http://127.0.0.1:43121/notes/8
-capture 02_the_other_body_term_recalls_the_other_page
+assert suggestions == 1
+assert snap suggestions == no matching nodes; enter an address
+capture 02_second_body_term_not_retained
 key escape
 settle 10

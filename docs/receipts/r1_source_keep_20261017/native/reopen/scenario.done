@@ -1,0 +1,5 @@
+RESULT ok
+captured 10_reopened_A_kept_and_referenced
+R1 fresh-process reopen complete
+presentation frames=26 captures=1 blank=0
+capture /Users/markik/Code/output/turnstone-r1-native-final-04/reopen/10_reopened_A_kept_and_referenced.png digest=2c158e0239332975 blank=false

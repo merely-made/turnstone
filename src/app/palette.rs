@@ -226,8 +226,14 @@ impl App {
             return rows;
         }
         let mut rows = self.session_actions();
+        if let Some((member, _)) = self.browser_command_target()
+            && let Ok(target) = self.source_capture_target(member)
+        {
+            rows.push(("Save source and keep".into(), Action::CaptureSourceDocument { target }));
+        }
         let mut retries: Vec<_> = self.source_captures.values().filter(|attempt| {
             attempt.request.session == self.session_id
+                && attempt.admitted
                 && matches!(attempt.phase, crate::source_capture::CapturePhase::Failed | crate::source_capture::CapturePhase::Recoverable)
         }).collect();
         retries.sort_by_key(|attempt| (attempt.request.source.as_ref().map(|source| source.acquired_at_ms), attempt.request.id));

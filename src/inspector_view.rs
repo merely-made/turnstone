@@ -150,6 +150,32 @@ fn inspector_sections_for_context(
             rows,
         });
     }
+    let member = focused.map(|(_, node)| node.id);
+    sections.push(InspectorSection {
+        title: "Source capture".into(),
+        rows: vec![
+            ("Source save".into(), app.source_capture_status(member)),
+            (
+                "Saved captures".into(),
+                member
+                    .and_then(|member| {
+                        app.graph_runtimes
+                            .graph_containing_member(member)
+                            .and_then(|graph| app.graph_runtimes.get(graph))
+                            .map(|runtime| {
+                                crate::source_capture::references(runtime.canvas.facets(), member)
+                                    .len()
+                            })
+                    })
+                    .unwrap_or(0)
+                    .to_string(),
+            ),
+            (
+                "Kept".into(),
+                yes_no(member.is_some_and(|member| app.node_is_kept(member))),
+            ),
+        ],
+    });
     sections.push(InspectorSection {
         title: "Journal".to_string(),
         rows: journal_rows(app),
@@ -233,7 +259,10 @@ fn journal_author_label(app: &App, author: &mere::kernel::graph::Author) -> Stri
     }
     let mut display = author.clone();
     if author.kind == AuthorKind::Script {
-        if let Some(resident) = app.denizens.residents.values()
+        if let Some(resident) = app
+            .denizens
+            .residents
+            .values()
             .find(|resident| resident.subject.to_hex() == author.id)
         {
             display.id = resident.label.clone();
@@ -329,7 +358,7 @@ fn content_rows(app: &App, node: Option<uuid::Uuid>) -> Vec<(String, String)> {
                 format!("headings={} outline={}", s.headings, s.outline.len()),
             ));
             rows.push(("Outgoing links".to_string(), s.links.to_string()));
-        }
+        },
         // The lane has no structural read: said, not synthesized.
         None => rows.push((
             "Structural read".to_string(),

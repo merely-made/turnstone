@@ -114,9 +114,14 @@ set.
   940 bounded regression tests pass, including 50 capture and 16 scene controls;
   three capture-library controls and the Clippy correctness gate also pass.
   The [R0 receipt](../docs/receipts/r0_source_save_20261017/qualification.json)
-  preserves broader failures and process/durability/platform limits. R1-R4
-  remain proposed; the full research workflow and remaining lifecycle joins
-  retain their individual gates.
+  preserves broader failures and process/durability/platform limits. R1 now
+  qualifies the source-bound Inspector/catalog action, completion-bound Keep
+  and metadata-only new history writes: 953 bounded tests, three capture-library
+  controls, 46 supplier tests and two fresh headed processes pass. The
+  [R1 receipt](../docs/receipts/r1_source_keep_20261017/qualification.json) retains
+  12 reviewed captures, exact offline recovery, the HTTP provenance/host wake
+  repairs and earlier failed diagnostics. R2-R4 remain proposed; the full
+  research workflow and remaining lifecycle joins retain their individual gates.
 - [Trail recall evaluation](2026-09-02_trail_recall_evaluation_plan.md): private captured-corpus protocol for selecting or rejecting configurable phrase recall against BM25 with held-out ranking and resource budgets.
 - [Page capture and provenance](2026-08-28_page_capture_plan.md): ruled path
   for durable node-attached page captures; P1 owner contracts and exact pins

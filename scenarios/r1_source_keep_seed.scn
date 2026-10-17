@@ -1,0 +1,120 @@
+# R1 headed source-keep acceptance seed. Uses the visible Inspector control,
+# keyboard command search, and the semantic action catalog. FRESH profile.
+settle 5
+key escape
+
+open ${TURNSTONE_R1_FIXTURE_URL}/A
+wait 1800
+assert focused /A
+open ${TURNSTONE_R1_FIXTURE_URL}/B
+wait 1800
+assert focused /B
+open ${TURNSTONE_R1_FIXTURE_URL}/A
+wait 1800
+assert focused /A
+act Open Inspector pane
+settle 3
+assert pane inspector
+assert row URL: ${TURNSTONE_R1_FIXTURE_URL}/A
+assert a11y Save source and keep
+capture 00_A_inspector_ready
+
+# Ordinary pointer activation on the source-bound Inspector control.
+click-row Save source and keep
+wait-row 600 Source save: Saved
+assert row Saved captures: 1
+assert row Kept: yes
+assert event source-document-captured
+capture 01_pointer_saved_A
+record-source-captures 01_pointer_saved_A
+
+# The Inspector is opened in A's per-context source after B already exists.
+# Keyboard activation goes through the ordinary action catalog while that
+# Inspector context is active.
+assert row URL: ${TURNSTONE_R1_FIXTURE_URL}/A
+omnibar actions
+type Save source and keep
+settle 3
+assert snap suggestions ~ Save source and keep
+key enter
+wait-row 600 Source save: Saved
+assert row Saved captures: 2
+assert row Kept: yes
+capture 02_keyboard_saved_A
+record-source-captures 02_keyboard_saved_A
+
+# Immediate semantic activation through the same offered Inspector action.
+act Save source and keep
+wait-row 600 Source save: Saved
+assert row Saved captures: 3
+capture 03_semantic_saved_A
+record-source-captures 03_semantic_saved_A
+
+# Queue the exact action offered for A, move the graph cursor to existing B,
+# then deliver it. The graph's selected member is B while the request must
+# still retain the Inspector's offered A owner.
+queue-act Save source and keep
+select-graph-member none
+select-graph-member ${TURNSTONE_R1_FIXTURE_URL}/B
+assert focused /B
+deliver-act
+wait-source-capture 600 4 saved
+assert focused /B
+capture 04_bound_A_saved_with_cursor_B
+record-source-captures 04_bound_A_saved_with_cursor_B
+
+# Keep the exact offered Action while the target walks A -> B -> A. Delivery
+# must revalidate the original source admission after the retarget interval.
+open ${TURNSTONE_R1_FIXTURE_URL}/A
+wait 1800
+queue-act Save source and keep
+open ${TURNSTONE_R1_FIXTURE_URL}/B
+wait 1800
+open ${TURNSTONE_R1_FIXTURE_URL}/A
+wait 1800
+deliver-act
+wait-row 600 Source save: Failed
+assert row Saved captures: 4
+capture 05_ab_a_refused
+record-source-captures 05_ab_a_stale_action
+
+# Replace the fetched document at A's exact address, then revisit A. No
+# manifest is admitted until the ordinary explicit action runs again.
+queue-act Save source and keep
+open ${TURNSTONE_R1_FIXTURE_URL}/swap-a
+wait 1800
+open ${TURNSTONE_R1_FIXTURE_URL}/A
+wait 1800
+deliver-act
+wait-row 600 Source save: Failed
+assert row Saved captures: 4
+capture 06_replacement_refused
+record-source-captures 06_replacement_stale_action
+assert focused /A
+assert row URL: ${TURNSTONE_R1_FIXTURE_URL}/A
+capture 04_same_url_replaced_A_ready
+act Save source and keep
+wait-row 600 Source save: Saved
+assert row Saved captures: 5
+record-source-captures 07_replaced_A_explicitly_saved
+
+# An ordinary visit contributes address/title history but no retained body.
+open ${TURNSTONE_R1_FIXTURE_URL}/X
+wait 1800
+assert focused /X
+omnibar find
+type /X
+settle 3
+assert suggestions == 1
+assert snap suggestions == Visited X · 127.0.0.1
+capture 08_visited_X_address_search
+key escape
+omnibar find
+type orchid-only
+settle 3
+assert suggestions == 1
+assert snap suggestions == no matching nodes; enter an address
+capture 09_visited_X_body_search_empty
+key escape
+capture 07_visited_only_X
+log R1 source keep seed complete

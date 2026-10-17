@@ -266,6 +266,8 @@ pub struct ContentStates {
     /// Each node's load: its current request, transfer phase, streamed bytes
     /// and retained response, owned by Mere's sans-IO `PageLoad`.
     loads: HashMap<Uuid, page_load::PageLoad>,
+    /// A retained response admission, independent of equal response bytes.
+    source_admissions: HashMap<Uuid, (Uuid, crate::source_capture::SourceIdentity)>,
 }
 
 impl ContentStates {
@@ -319,6 +321,7 @@ impl ContentStates {
         node: Uuid,
         request: fetch::FetchRequestId,
     ) -> Option<fetch::FetchRequestId> {
+        self.source_admissions.remove(&node);
         self.loads.entry(node).or_default().begin(request)
     }
 
@@ -371,10 +374,10 @@ impl ContentStates {
         match facts {
             Some(facts) => {
                 self.facts.insert(node, facts);
-            }
+            },
             None => {
                 self.facts.remove(&node);
-            }
+            },
         }
     }
 
@@ -405,6 +408,13 @@ impl ContentStates {
         document: FetchedDocument,
         received_bytes: usize,
     ) {
+        self.source_admissions.insert(
+            node,
+            (
+                Uuid::new_v4(),
+                crate::source_capture::SourceIdentity::of(&document),
+            ),
+        );
         self.loads
             .entry(node)
             .or_default()
@@ -422,6 +432,7 @@ impl ContentStates {
         content_type: Option<String>,
         chunk: &[u8],
     ) -> usize {
+        self.source_admissions.remove(&node);
         let now_ms = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|duration| duration.as_millis() as u64)
@@ -452,18 +463,38 @@ impl ContentStates {
     /// A source-capture candidate is available only for the exact current
     /// node/address pair. Incidental recall text never enters this seam.
     pub fn source_capture_candidate(&self, node: Uuid, url: &str) -> Option<&FetchedDocument> {
-        self.fetched(node, url).filter(|document| {
-            document.content_type.as_deref().is_some_and(|type_| {
-                type_
-                    .split(';')
-                    .next()
-                    .is_some_and(|media| media.trim().eq_ignore_ascii_case("text/html"))
+        self.fetched(node, url)
+            .filter(|document| {
+                document.content_type.as_deref().is_some_and(|type_| {
+                    type_
+                        .split(';')
+                        .next()
+                        .is_some_and(|media| media.trim().eq_ignore_ascii_case("text/html"))
+                })
             })
-        })
-        .filter(|document| document.effective_url.is_some() && document.acquired_at_ms != 0)
+            .filter(|document| document.effective_url.is_some() && document.acquired_at_ms != 0)
+    }
+
+    /// Only a complete, settled source can be offered for a new capture.
+    /// Fingerprints are computed at admission rather than on every UI frame.
+    pub(crate) fn source_capture_admission(
+        &self,
+        node: Uuid,
+        url: &str,
+    ) -> Option<(Uuid, &crate::source_capture::SourceIdentity)> {
+        if self.fetch_in_progress(node)
+            || !matches!(self.fetch_phase(node), Some(PageFetchPhase::Settled { .. }))
+        {
+            return None;
+        }
+        self.source_capture_candidate(node, url)?;
+        self.source_admissions
+            .get(&node)
+            .map(|(token, source)| (*token, source))
     }
 
     pub fn forget_fetched(&mut self, node: Uuid) {
+        self.source_admissions.remove(&node);
         if let Some(load) = self.loads.get_mut(&node) {
             load.forget_fetched();
         }
@@ -471,6 +502,7 @@ impl ContentStates {
 
     /// Remove every transient fact owned by a node that has left the graph.
     pub fn forget_node(&mut self, node: Uuid) {
+        self.source_admissions.remove(&node);
         self.note_closed(node);
         self.loads.remove(&node);
     }

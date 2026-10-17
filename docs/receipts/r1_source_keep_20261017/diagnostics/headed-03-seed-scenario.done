@@ -1,0 +1,34 @@
+RESULT ok
+waited 67 frames
+waited 56 frames
+waited 0 frames
+captured 00_A_inspector_ready
+captured 01_pointer_saved_A
+captured 02_keyboard_saved_A
+captured 03_semantic_saved_A
+captured 04_bound_A_saved_with_cursor_B
+waited 0 frames
+waited 0 frames
+waited 0 frames
+captured 05_ab_a_refused
+waited 0 frames
+waited 0 frames
+captured 06_replacement_refused
+captured 04_same_url_replaced_A_ready
+waited 0 frames
+captured 08_visited_X_address_search
+captured 09_visited_X_body_search_empty
+captured 07_visited_only_X
+R1 source keep seed complete
+presentation frames=249 captures=11 blank=0
+capture /Users/markik/Code/output/turnstone-r1-native-final-03/seed/00_A_inspector_ready.png digest=ff68121037348d90 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-03/seed/01_pointer_saved_A.png digest=24e4e2522271b5a2 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-03/seed/02_keyboard_saved_A.png digest=b9cc4a1aaa1cd0e3 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-03/seed/03_semantic_saved_A.png digest=f5ee2aeeeb0f464f blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-03/seed/04_bound_A_saved_with_cursor_B.png digest=bb1e1a671adc4454 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-03/seed/05_ab_a_refused.png digest=b3e242883895c372 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-03/seed/06_replacement_refused.png digest=db046fa6af0ade05 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-03/seed/04_same_url_replaced_A_ready.png digest=3238be6de3cbfedd blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-03/seed/08_visited_X_address_search.png digest=8dbe15faace4b55e blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-03/seed/09_visited_X_body_search_empty.png digest=10fe75cc04c9f67e blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-03/seed/07_visited_only_X.png digest=b55e81ed55ab5e4d blank=false

@@ -803,6 +803,7 @@ impl Shell {
                                         crate::inspector_pane::InspectorIntent::ClipToKnot => {
                                             self.clip_focused_document_to_knot()
                                         },
+                                        crate::inspector_pane::InspectorIntent::CaptureSourceDocument { target } => self.act(Action::CaptureSourceDocument { target }),
                                         crate::inspector_pane::InspectorIntent::SetViewer {
                                             member,
                                             viewer,

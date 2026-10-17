@@ -1,0 +1,34 @@
+RESULT ok
+waited 38 frames
+waited 37 frames
+waited 0 frames
+captured 00_A_inspector_ready
+captured 01_pointer_saved_A
+captured 02_keyboard_saved_A
+captured 03_semantic_saved_A
+captured 04_bound_A_saved_with_cursor_B
+waited 1 frames
+waited 1 frames
+waited 0 frames
+captured 05_ab_a_refused
+waited 16 frames
+waited 0 frames
+captured 06_replacement_refused
+captured 04_same_url_replaced_A_ready
+waited 9 frames
+captured 08_visited_X_address_search
+captured 09_visited_X_body_search_empty
+captured 07_visited_only_X
+R1 source keep seed complete
+presentation frames=228 captures=11 blank=0
+capture /Users/markik/Code/output/turnstone-r1-native-final-04/seed/00_A_inspector_ready.png digest=a08591f207d569c7 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-04/seed/01_pointer_saved_A.png digest=e5f4df1822b0ee08 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-04/seed/02_keyboard_saved_A.png digest=ab8c901eed832839 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-04/seed/03_semantic_saved_A.png digest=e5f4df1822b0ee08 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-04/seed/04_bound_A_saved_with_cursor_B.png digest=1133bc5e81eb3fe0 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-04/seed/05_ab_a_refused.png digest=01cbe10d0e921f95 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-04/seed/06_replacement_refused.png digest=40fec82bdfc372e9 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-04/seed/04_same_url_replaced_A_ready.png digest=78d0b18ea084a544 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-04/seed/08_visited_X_address_search.png digest=7a2bbcf005fafde3 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-04/seed/09_visited_X_body_search_empty.png digest=20fac049c23d1a42 blank=false
+capture /Users/markik/Code/output/turnstone-r1-native-final-04/seed/07_visited_only_X.png digest=8f394a9f2d447855 blank=false

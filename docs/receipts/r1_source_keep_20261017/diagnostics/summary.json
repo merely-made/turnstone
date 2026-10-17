@@ -1,0 +1,48 @@
+{
+  "early_bounded_run": {
+    "result": "947 passed; 3 failed; 10 ignored; 89 filtered",
+    "log": "early-bounded-library.log",
+    "resolution": "Fixed historical attached acknowledgement repair and warm reopen recovery; final published-cohort 953-test run passes unchanged regression controls."
+  },
+  "initial_native_diagnostic": {
+    "path": "/Users/markik/Code/output/turnstone-r1-native-diagnostic-01",
+    "result": "Source correctly unavailable: ordinary shared HTTP path lacked observed final URL. Repaired supplier instead of guessing provenance."
+  },
+  "supplier_ordering_control": {
+    "result": "33 passed; 1 failed before test was updated for the new observed-response progress preceding terminal outcome",
+    "log": "supplier-ordering-test-before-fix.log",
+    "resolution": "Now explicitly asserts PageProgress then Page, along with cookie continuity. All 34 fetch and 12 PageLoad tests pass in published supplier receipt."
+  },
+  "headed_01": {
+    "result": "fail",
+    "reason": "Harness used unsupported assert suggestions ~ syntax and expected zero rows for an empty query result, which has one Hint. Product save/stale controls succeeded. Reopen was not launched.",
+    "resolution": "Correct assert snap syntax and require exactly the empty-result Hint; rerun in a new profile, same frozen production binary.",
+    "scenario_result": "headed-01-scenario.done"
+  },
+  "interrupted_builds": {
+    "supplier_first": "/Users/markik/Code/output/turnstone-r1-supplier-http-tests.log",
+    "keeper_fixture_cold_build": "/Users/markik/Code/output/turnstone-r1-keeper-build.log",
+    "status": "Interrupted; no pass inferred. Completed supplier test receipt and immutable historical startup fixture used instead."
+  },
+  "headed_02": {
+    "result": "fail",
+    "reason": "Additional harness address-label assertion expected /X, but normal address search renders Visited X \u00b7 127.0.0.1. All save, stale-refusal, and body-query empty-result checks passed. Reopen was not launched.",
+    "resolution": "Require exactly one exact Visited X title/host suggestion for query /X. Fresh profile rerun, same product binary.",
+    "scenario_result": "headed-02-scenario.done"
+  },
+  "expanded_rustfmt": {
+    "result": "formatting-only differences",
+    "file": "src/app/source_capture_persistence_tests.rs",
+    "log": "expanded-rustfmt.log",
+    "note": "Seven scoped R1 model/control files pass rustfmt. Existing persistence test module fixture edits retain local formatting; no formatter sweep or source mutation after freezing. This is not a correctness failure.",
+    "resolution": "The bounded persistence-test fixture edits were formatted with rustfmt during the host-fix rebuild; no helper-test behavior changed."
+  },
+  "headed_03": {
+    "result": "seed passed; fresh reopen stalled before any successful presentation",
+    "seed_result": "headed-03-seed-scenario.done",
+    "reopen_process": "headed-03-reopen-process.json",
+    "reason": "First acquisition was Occluded. Sustained expensive proxy callbacks kept Winit macOS receiver.try_iter busy, preventing a return to window events and presentation. Console was unlocked; one existing-app foreground request did not resolve it. Owned process sampled then stopped by SIGTERM; no reopen pass inferred.",
+    "sample": "headed-03-reopen-process-sample.txt",
+    "resolution": "Flag-only proxy callbacks defer expensive actor queue drain/accessibility projection to one about_to_wait turn per native batch. Primary Occluded(false) now requests redraw, matching existing Mere host behavior. Final new binary receives both CPU and native qualification."
+  }
+}

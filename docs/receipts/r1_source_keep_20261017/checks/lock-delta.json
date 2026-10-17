@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "mere_source_records_changed": 78,
+  "before_mere": "00e4442868ee1cb014364a81ccaed657b512b218",
+  "after_mere": "1be0bc04f44eacf4cecce62afc84bda68625cf87",
+  "all_other_lockfile_bytes_unchanged": true,
+  "before_sha256": "22283da753cdcfe35fbd86a5a9a08f3361797f62e9e84e1aec273e8beb64a9b5",
+  "after_sha256": "5c69d432c9081e44bfe18c95ade703e82157473d4a4f2abc42946e5ef3de2007",
+  "note": "Supplier patch changes no manifests; only its source revision changes. Final locked offline build verifies resolution."
+}

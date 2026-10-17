@@ -1,0 +1,7 @@
+{
+  "utc": "2026-10-17T20:55:59.875441+00:00",
+  "pid": 43746,
+  "executable": "/private/var/folders/nt/xlxwlg695b399ck_h55sfwtc0000gn/T/mesquite-native-toog243s/MesquiteAcceptance.app/Contents/MacOS/product",
+  "signal": "SIGTERM",
+  "reason": "No presentation after first Occluded; confirmed sustained user-event drain prevents return to native event loop. Source integration defect under investigation; no acceptance inferred."
+}
