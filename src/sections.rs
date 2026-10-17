@@ -330,6 +330,7 @@ mod tests {
         let mut pane = crate::swatch_pane::SwatchPane::new(crate::swatch_pane::GLOSS_MINIMAP);
         pane.set_sections(vec![DOWNLOADS_SECTION]);
         pane.sync(&app, 640.0, 480.0);
+        let _ = pane.scene(640, 480);
         assert!(
             pane.resolve(
                 &taproot::Selector::class("section-row")

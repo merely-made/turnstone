@@ -126,9 +126,9 @@ notochord = { git = "https://github.com/merely-made/dramatis.git", branch = "mai
 # The in-process carrier and the Knot endpoint it hosts. Turnstone embeds the
 # endpoint rather than spawning it: a subprocess is unshippable in a browser
 # tab or an iOS app, so the spawn path cannot be the only one.
-# Knot names Mere, Murm, Genet and netrender by `branch = "main"` at the
-# canonical URL, as every row here does, so one Cargo.lock entry per repository
-# is the invariant. Repin with `cargo update -p <package>`, then re-test.
+# Knot names Mere, Murm and Genet by `branch = "main"` at the canonical URL.
+# The NetRender rows below match Genet's published immutable revision so the
+# host and Canvas share one renderer identity. Repin the lock, then re-test.
 knot = { package = "knot-editor", git = "https://github.com/merely-made/knot-editor.git", branch = "main" }
 # The reusable one-document product surface. This stays separate from the
 # broad Knot port graph used by publishing and endpoint composition above.
@@ -225,14 +225,14 @@ taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git",
 # neither the app nor the place worker ever holds a clipboard handle.
 genet-clipboard = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/genet.git", branch = "main" }
-paint_list_api = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
-paint_list_render = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
+paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
+paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
 # Suggestion rows key node identity by the graph's stable UUIDs.
 uuid = "1"
 # Resolve a declared icon href (or the /favicon.ico fallback) against the page URL.
 url = "2.5"
 # Rasterize + composite the canvas Scene through the shared present stack.
-netrender = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
+netrender = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
 genet-winit-host = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-render-host = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # The view toolkit (rung 5 slice D, the toolkit adoption): cambium (the xilem
@@ -309,6 +309,7 @@ redshank-playback = { git = "https://github.com/merely-made/woodshed.git", branc
 redshank-storage = { git = "https://github.com/merely-made/woodshed.git", branch = "main" }
 
 [dev-dependencies]
+taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git", branch = "main", features = ["estimated-probe-fixtures"] }
 accesskit_consumer = "=0.38.0"
 accesskit-consumer-windows = { package = "accesskit_consumer", version = "=0.35.0" }
 accesskit-consumer-unix = { package = "accesskit_consumer", version = "=0.36.0" }
@@ -405,10 +406,10 @@ layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/gen
 # the host cannot receive source-distinct `Scene` or paint vocabulary types.
 # `netrender_text` is only Netrender's dev-only Parley adapter, so it does not
 # reach this application graph and must not add an unused root patch.
-netrender = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
-netrender_device = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
-paint_list_api = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
-paint_list_render = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
+netrender = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
+netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
+paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
+paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
 #
 # The tagged `mere-p2panda-net =0.7.5` source owns the exact-ALPN net crate.
 # It resolves through this root patch until its crates.io release is available.

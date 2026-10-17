@@ -419,7 +419,7 @@ fn admitted_pane_exposes_its_retained_dom_and_complete_probe_stylesheet() {
         rect: [0.0, 0.0, 240.0, 120.0],
         sheet: pane.stylesheet(),
     };
-    let button = taproot::resolve(&[surface], &taproot::Selector::role("button"))
+    let button = taproot::resolve_estimated_fixture(&[surface], &taproot::Selector::role("button"))
         .expect("semantic controls resolve under the exact stylesheet the pane presents")
         .point;
     drop(dom);
@@ -564,7 +564,7 @@ fn content_pool_host_contributed_mouse_waits_for_release_and_cancel_never_activa
     pane.scene(240, 120, 1.0);
     let point = {
         let dom = pane.dom_ref();
-        taproot::resolve(
+        taproot::resolve_estimated_fixture(
             &[taproot::ProbeSurface {
                 name: "contributed",
                 dom: &dom,
@@ -615,7 +615,7 @@ fn review_input_small_motion_clicks_but_recognized_drag_and_cancel_do_not() {
     pane.scene(240, 120, 1.0);
     let point = {
         let dom = pane.dom_ref();
-        taproot::resolve(
+        taproot::resolve_estimated_fixture(
             &[taproot::ProbeSurface {
                 name: "contributed",
                 dom: &dom,

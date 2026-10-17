@@ -91,10 +91,14 @@ impl Shell {
     }
 
     /// Drive a workbench tab drag by LABEL (the scenario's `drag-tab`): both
-    /// tab centres resolve through the pane's DOM (the shared prober), then
+    /// tab centres resolve through the painted pane, then
     /// the gesture runs through the same press/move/release path a pointer
     /// takes — one description, two runners.
     pub(super) fn drag_workbench_tab(&mut self, from: &str, onto: &str, edge: Option<&str>) {
+        // Scenario commands can arrive between rendered frames. Bring the
+        // shared outer layout through paint before asking a pane for geometry.
+        self.prepare_inline_owners(0, (self.width, self.height));
+        self.outer_scene(0);
         let plan = self.surface_plan();
         let found = plan.iter().find_map(|s| {
             let crate::surface::SurfaceKind::Pane(id) = s.kind else {
@@ -141,10 +145,12 @@ impl Shell {
     }
 
     /// Drive the tile TEAR-OUT drag by label (the scenario's `drag-tab <a>
-    /// out`): the tab centre resolves through the pane's DOM and the release
+    /// out`): the tab centre resolves through the painted pane and the release
     /// lands at the CANVAS pane's centre — outside the workbench, so the same
     /// press/move/release path a pointer takes resolves the branch arm.
     pub(super) fn drag_workbench_tab_out(&mut self, from: &str) {
+        self.prepare_inline_owners(0, (self.width, self.height));
+        self.outer_scene(0);
         let plan = self.surface_plan();
         let start = plan.iter().find_map(|s| {
             let crate::surface::SurfaceKind::Pane(id) = s.kind else {

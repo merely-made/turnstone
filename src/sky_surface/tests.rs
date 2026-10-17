@@ -171,7 +171,7 @@ fn next_day_replaces_one_retained_projection_without_rewriting_opening_provenanc
 
     let next_day_point = {
         let dom = changed.dom_ref();
-        let targets = taproot::matching(
+        let targets = taproot::matching_estimated_fixture(
             &dom,
             &taproot::Selector::role("button").containing("Next day"),
         );

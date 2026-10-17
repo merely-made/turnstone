@@ -294,20 +294,16 @@ impl RosterGrid {
     }
 
     /// Resolve a selector to a point within this pane's DOM at window rect
-    /// `rect` (`[x, y, w, h]`), via the shared taproot resolver — the strip's
-    /// bespoke `tab_center` collapsed onto the generic path. Returns the
-    /// window-space centre of the first match, or `None` (not drawn). This is
-    /// the "extraction simplifies the consumer" claim in the small: the pane no
-    /// longer owns tab geometry, it forwards its DOM to the shared resolver.
+    /// `rect` (`[x, y, w, h]`), using this pane's retained semantics and
+    /// geometry. Returns the window-space centre of the first visible match.
     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+        if !sel.matches_surface("roster") {
+            return None;
+        }
         let dom = self.dom.borrow();
-        let surfaces = [taproot::ProbeSurface {
-            name: "roster",
-            dom: &dom,
-            rect,
-            sheet: crate::ui::CAMBIUM_SHEET,
-        }];
-        taproot::resolve(&surfaces, sel).map(|h| h.point)
+        self.layout
+            .first_selector_point(&dom, sel)
+            .map(|(x, y)| (rect[0] + x, rect[1] + y))
     }
 
     /// Borrow this pane's DOM for the shared driver's `with_surfaces`. The Ref
@@ -512,6 +508,7 @@ mod tests {
             state.viewport_w = 512.0;
             state.viewport_h = 600.0;
         });
+        let _ = g.scene(512, 600);
         g
     }
 
@@ -542,9 +539,20 @@ mod tests {
     #[test]
     fn a_roster_cell_resolves_by_text() {
         let g = grid_with_rows();
+        let selector = taproot::Selector::class("roster-cell").containing("alpha");
         let hit = g.resolve(
-            &taproot::Selector::class("roster-cell").containing("alpha"),
+            &selector,
             [0.0, 0.0, 512.0, 600.0],
+        );
+        assert!(
+            matches!(g.inline_selector(&selector), Err("multiple visible body targets match")),
+            "the title and address both contain alpha, so the shell refuses ambiguity"
+        );
+        let address = taproot::Selector::class("roster-cell").containing("https://alpha/");
+        assert_eq!(
+            g.inline_selector(&address).expect("retained selector"),
+            g.resolve(&address, [0.0, 0.0, 512.0, 600.0]),
+            "a unique address uses the same standalone pane paint in both routes"
         );
         // Diagnostic: how many roster-cell elements exist at all.
         let d = g.dom.borrow();
@@ -586,6 +594,7 @@ mod tests {
             state.viewport_w = PANE_W;
             state.viewport_h = PANE_H;
         });
+        g.scene(PANE_W as u32, PANE_H as u32);
 
         let point = g
             .resolve(

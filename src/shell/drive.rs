@@ -467,14 +467,13 @@ impl taproot::Automatable for Shell {
 
     fn selector_target(&self, selector: &taproot::Selector) -> taproot::SelectorTarget {
         match selector.surface.as_deref() {
-            None => self.inline_selector_target(selector),
+            None => self.retained_pane_selector_target(selector),
             Some("frame") => {
-                let frames = self.outer_frames.borrow();
-                let Some(frame) = frames.get(&0) else {
+                let mut frames = self.outer_frames.borrow_mut();
+                let Some(frame) = frames.get_mut(&0) else {
                     return taproot::SelectorTarget::Miss;
                 };
-                let dom = frame.dom_ref();
-                match frame.layout.borrow().selector_point(&dom, selector) {
+                match frame.selector_point(selector) {
                     Ok(Some(point)) => taproot::SelectorTarget::Hit(taproot::Hit {
                         surface: "frame",
                         point,
@@ -603,8 +602,8 @@ impl taproot::Automatable for Shell {
                     }),
                 Err(_) => taproot::SelectorTarget::Miss,
             },
-            // Other ordinary pane scopes retain the shared DOM probe fallback.
-            Some(_) => self.inline_selector_target(selector),
+            // Other ordinary pane scopes use their retained pane owner.
+            Some(_) => self.retained_pane_selector_target(selector),
         }
     }
 
@@ -1078,16 +1077,13 @@ impl taproot::Driveable for Shell {
                     lens.a11y_routes.clone(),
                 )
             };
-            let handle = self
-                .outer_frames
-                .borrow()
-                .get(&slot)
-                .ok_or("inline frame is absent")?
-                .controls
-                .dom
-                .clone();
+            let (handle, layout) = {
+                let frames = self.outer_frames.borrow();
+                let frame = frames.get(&slot).ok_or("inline frame is absent")?;
+                (frame.controls.dom.clone(), frame.layout.clone())
+            };
             let dom = handle.borrow();
-            let matches = taproot::matching(&dom, &selector);
+            let matches = layout.borrow().matching_nodes(&dom, &selector);
             let targets = routes
                 .iter()
                 .filter_map(|(id, route)| match route {

@@ -604,7 +604,7 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
             .on_surface("inspector");
         let estimated_point = {
             let dom = pane.dom_ref();
-            taproot::resolve(
+            taproot::resolve_estimated_fixture(
                 &[taproot::ProbeSurface {
                     name: "inspector",
                     dom: &dom,

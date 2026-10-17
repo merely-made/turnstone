@@ -310,14 +310,13 @@ impl TranscriptPane {
     }
 
     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+        if !sel.matches_surface("transcript") {
+            return None;
+        }
         let dom = self.dom.borrow();
-        let surfaces = [taproot::ProbeSurface {
-            name: "transcript",
-            dom: &dom,
-            rect,
-            sheet: crate::ui::CAMBIUM_SHEET,
-        }];
-        taproot::resolve(&surfaces, sel).map(|h| h.point)
+        self.layout
+            .first_selector_point(&dom, sel)
+            .map(|(x, y)| (rect[0] + x, rect[1] + y))
     }
 
     pub fn dom_ref(&self) -> std::cell::Ref<'_, ScriptedDom> {
@@ -360,6 +359,7 @@ mod tests {
     fn synced(transcript: &ShellTranscript) -> TranscriptPane {
         let mut pane = TranscriptPane::new();
         pane.sync(transcript, 512.0, 600.0);
+        let _ = pane.scene(512, 600);
         pane
     }
 

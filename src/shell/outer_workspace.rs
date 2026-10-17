@@ -1,7 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 
-use super::Shell;
+use super::{NodeSessions, Shell};
 use crate::{
     action::{Action, SpaceRef},
     outer_frame::HeaderHit,
@@ -100,9 +100,86 @@ pub(super) fn frame_body_rects(
     frame_body_geometry(app, space, size).map(|(docked, _)| docked)
 }
 
+fn pane_selector_family(content: Option<&crate::panes::PaneContent>) -> &'static str {
+    use crate::panes::PaneContent;
+    match content {
+        Some(PaneContent::Roster) => "roster",
+        Some(PaneContent::Trail) => "trail",
+        Some(PaneContent::Workbench) => "workbench",
+        Some(PaneContent::Inspector) => "inspector",
+        Some(PaneContent::Gloss(_)) => "gloss",
+        Some(PaneContent::Overmap(_)) => "overmap",
+        Some(PaneContent::Registered(kind)) => match kind.as_str() {
+            crate::panes::kind::TRANSCRIPT => "transcript",
+            crate::panes::kind::SETTINGS => "settings",
+            crate::panes::kind::ARRANGE => "arrange",
+            crate::panes::kind::PUBLISHING => "publishing",
+            crate::panes::kind::SHARED_KNOT => "shared-knot",
+            crate::panes::kind::DEVICE_RECEIPTS => "device-receipts",
+            crate::panes::kind::FROZEN_PROJECTION => "frozen-projection",
+            _ => "contributed",
+        },
+        _ => "pane",
+    }
+}
+
+fn ordinary_pane_selector(
+    renderers: &super::renderers::PaneRenderers,
+    pane: PaneId,
+    family: &str,
+    selector: &taproot::Selector,
+) -> Result<Option<(f32, f32)>, &'static str> {
+    match family {
+        "workbench" => renderers
+            .workbench
+            .get(&pane)
+            .map(|view| view.selector_point(selector))
+            .unwrap_or(Ok(None)),
+        "settings" => renderers
+            .settings
+            .get(&pane)
+            .map(|view| view.selector_point(selector))
+            .unwrap_or(Ok(None)),
+        "inspector" => renderers
+            .inspector
+            .get(&pane)
+            .map(|view| view.selector_point(selector))
+            .unwrap_or(Ok(None)),
+        _ => renderers.inline_selector(pane, selector),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn unscoped_selector_uses_a_standalone_panes_retained_route() {
+        let pane = PaneId(7);
+        let mut roster = crate::cambium_pane::RosterGrid::new();
+        roster.sync(&crate::app::App::test_stub(), pane, 512.0, 600.0);
+        roster.scene(512, 600);
+        assert!(roster.inline_mount().is_none(), "fixture is not mounted inline");
+        let mut renderers = super::super::renderers::PaneRenderers::default();
+        renderers.roster.insert(pane, roster);
+        let selector = taproot::Selector::class("tab").containing("Nodes");
+        let family = pane_selector_family(Some(&crate::panes::PaneContent::Roster));
+        assert!(selector.matches_surface(family));
+        assert!(
+            ordinary_pane_selector(&renderers, pane, family, &selector)
+                .expect("current retained geometry")
+                .is_some(),
+            "the Shell's unscoped route must see standalone pane paint"
+        );
+        assert_eq!(
+            pane_selector_family(Some(&crate::panes::PaneContent::Workbench)),
+            "workbench"
+        );
+        assert_eq!(
+            pane_selector_family(Some(&crate::panes::PaneContent::Inspector)),
+            "inspector"
+        );
+    }
 
     #[test]
     fn outer_capture_retirement_is_window_scoped_and_terminal() {
@@ -172,44 +249,45 @@ mod tests {
     }
 }
 impl Shell {
-    pub(super) fn inline_selector_target(
+    pub(super) fn retained_pane_selector_target(
         &self,
         selector: &taproot::Selector,
     ) -> taproot::SelectorTarget {
         let plan = self.surface_plan();
         let mut found = None;
+        let mut owned_family = false;
         for surface in &plan {
             let crate::surface::SurfaceKind::Pane(pane) = surface.kind else {
                 continue;
             };
-            if self.renderers.inline_mount(pane).is_none() {
-                continue;
-            }
-            let name = match self.pane_content(pane) {
-                Some(crate::panes::PaneContent::Roster) => "roster",
-                Some(crate::panes::PaneContent::Trail) => "trail",
-                Some(crate::panes::PaneContent::Gloss(_)) => "gloss",
-                Some(crate::panes::PaneContent::Overmap(_)) => "overmap",
-                Some(crate::panes::PaneContent::Registered(kind)) => match kind.as_str() {
-                    crate::panes::kind::TRANSCRIPT => "transcript",
-                    crate::panes::kind::ARRANGE => "arrange",
-                    crate::panes::kind::PUBLISHING => "publishing",
-                    crate::panes::kind::SHARED_KNOT => "shared-knot",
-                    crate::panes::kind::DEVICE_RECEIPTS => "device-receipts",
-                    crate::panes::kind::FROZEN_PROJECTION => "frozen-projection",
-                    _ => "pane",
-                },
-                _ => "pane",
-            };
+            let content = self.pane_content(pane);
+            let name = pane_selector_family(content.as_ref());
             if !selector.matches_surface(name) {
                 continue;
             }
-            match self.renderers.inline_selector(pane, selector) {
+            if name == "contributed" {
+                // Provider semantics and painted geometry have their own
+                // owner, evaluated with other families below.
+                continue;
+            }
+            owned_family = true;
+            let local = ordinary_pane_selector(&self.renderers, pane, name, selector);
+            match local {
                 Ok(Some(local)) => {
                     let point = (surface.rect.x + local.0, surface.rect.y + local.1);
                     if found.is_some()
                         || crate::surface::hit_test(&plan, self.app.focus, point.0, point.1)
                             .is_none_or(|hit| hit.id != surface.id)
+                        || (name == "workbench"
+                            && self.renderers.workbench.get(&pane).is_none_or(|view| {
+                                view.tab_at(
+                                    local.0,
+                                    local.1,
+                                    surface.rect.w as u32,
+                                    surface.rect.h as u32,
+                                )
+                                .is_none()
+                            }))
                     {
                         return taproot::SelectorTarget::Miss;
                     }
@@ -222,11 +300,70 @@ impl Shell {
                 _ => {},
             }
         }
+        if selector.matches_surface("knot") {
+            for surface in &plan {
+                let crate::surface::SurfaceKind::Content(node) = surface.kind else {
+                    continue;
+                };
+                let Some(knot) = self.content_sessions.session(&node).and_then(|session| {
+                    session
+                        .as_any_ref()
+                        .downcast_ref::<crate::knot_authoring::KnotDocumentSession>()
+                }) else {
+                    continue;
+                };
+                owned_family = true;
+                match knot.selector_point(selector) {
+                    Ok(Some(local)) => {
+                        let point = (surface.rect.x + local.0, surface.rect.y + local.1);
+                        if found.is_some()
+                            || crate::surface::hit_test(&plan, self.app.focus, point.0, point.1)
+                                .is_none_or(|hit| hit.id != surface.id)
+                        {
+                            return taproot::SelectorTarget::Miss;
+                        }
+                        found = Some(taproot::Hit {
+                            surface: "knot",
+                            point,
+                        });
+                    },
+                    Err(_) => return taproot::SelectorTarget::Miss,
+                    _ => {},
+                }
+            }
+        }
+        if selector.matches_surface("contributed") {
+            let readings = self.contributed_readings();
+            if !readings.is_empty() {
+                owned_family = true;
+                match self.contributed_selector(selector) {
+                    Ok(target) => {
+                        if let Some(point) = target.point() {
+                            if found.is_some()
+                                || crate::surface::hit_test(&plan, self.app.focus, point.0, point.1)
+                                    .is_none_or(|hit| {
+                                        hit.kind != crate::surface::SurfaceKind::Pane(target.pane())
+                                    })
+                            {
+                                return taproot::SelectorTarget::Miss;
+                            }
+                            found = Some(taproot::Hit {
+                                surface: "contributed",
+                                point,
+                            });
+                        }
+                    },
+                    Err(error) if error.starts_with("multiple") => {
+                        return taproot::SelectorTarget::Miss;
+                    },
+                    Err(_) => {},
+                }
+            }
+        }
         if found.is_none() && selector.surface.is_none() {
-            let frames = self.outer_frames.borrow();
-            if let Some(frame) = frames.get(&0) {
-                let dom = frame.dom_ref();
-                match frame.layout.borrow().selector_point(&dom, selector) {
+            let mut frames = self.outer_frames.borrow_mut();
+            if let Some(frame) = frames.get_mut(&0) {
+                match frame.selector_point(selector) {
                     Ok(Some(point)) => {
                         return taproot::SelectorTarget::Hit(taproot::Hit {
                             surface: "frame",
@@ -238,8 +375,14 @@ impl Shell {
                 }
             }
         }
-        found.map_or(
-            taproot::SelectorTarget::Unsupported,
+        found.map_or_else(
+            || {
+                if owned_family {
+                    taproot::SelectorTarget::Miss
+                } else {
+                    taproot::SelectorTarget::Unsupported
+                }
+            },
             taproot::SelectorTarget::Hit,
         )
     }

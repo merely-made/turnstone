@@ -34,6 +34,10 @@ pub(super) struct Target {
 }
 
 impl Target {
+    pub(super) fn pane(&self) -> PaneId {
+        self.identity.pane
+    }
+
     pub(super) fn point(&self) -> Option<(f32, f32)> {
         let (x, y, width, height) = self.visible?;
         Some((
@@ -128,7 +132,7 @@ fn next_request(current: u64) -> Option<u64> {
 }
 
 impl Shell {
-    fn contributed_readings(&self) -> Vec<(PaneId, Rect, PaneSpec)> {
+    pub(super) fn contributed_readings(&self) -> Vec<(PaneId, Rect, PaneSpec)> {
         self.surface_plan()
             .into_iter()
             .filter_map(|surface| {

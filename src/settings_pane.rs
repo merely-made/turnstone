@@ -485,8 +485,11 @@ impl SettingsPane {
             return Ok(None);
         }
         let dom = self.dom.borrow();
+        if !self.layout.has_current_snapshot(&dom) {
+            return Err("retained Settings snapshot is unavailable or stale");
+        }
         let mut point = None;
-        for node in taproot::matching(&dom, selector) {
+        for node in self.layout.matching_nodes(&dom, selector) {
             let Some((x, y, width, height)) = self.layout.visible_rect(&dom, node) else {
                 continue;
             };
@@ -588,7 +591,7 @@ mod tests {
         let live = LiveSettingsHandle::new(&ApplicationSettings::default());
         let mut pane = SettingsPane::with_live_settings(root.path().into(), Some(live.clone()));
         let before = live.snapshot();
-        let node = taproot::matching(
+        let node = taproot::matching_estimated_fixture(
             &*pane.dom_ref(),
             &taproot::Selector::role("button").with_attr("data-action", "edit-themes"),
         )[0];
@@ -868,7 +871,7 @@ mod tests {
             let generic = {
                 let dom = pane.dom_ref();
                 let sheet = crate::ui::cambium_sheet(&ShellChromeConfig::default().appearance);
-                taproot::resolve(
+                taproot::resolve_estimated_fixture(
                     &[taproot::ProbeSurface {
                         name: "settings",
                         dom: &dom,
@@ -882,7 +885,7 @@ mod tests {
             let generic_hits_edit = generic.is_some_and(|(x, y)| {
                 let sheet = crate::ui::cambium_sheet(&ShellChromeConfig::default().appearance);
                 let mut dom = pane.dom.borrow_mut();
-                let edit_node = taproot::matching(&dom, &edit)[0];
+                let edit_node = taproot::matching_estimated_fixture(&dom, &edit)[0];
                 pane.layout
                     .hit_test_scrolled(&mut dom, &sheet, width, height, x, y, &pane.scroll)
                     == Some(edit_node)
@@ -1005,7 +1008,7 @@ mod tests {
         // roving-tabindex radio, exactly as the native fixture does.
         let selector = taproot::Selector::class("radio").containing("High contrast light");
         for _ in 0..2 {
-            let node = taproot::matching(&*pane.dom_ref(), &selector)[0];
+            let node = taproot::matching_estimated_fixture(&*pane.dom_ref(), &selector)[0];
             let _: Vec<()> = pane
                 .runner
                 .dispatch_click(node, cambium::PointerClick::at((0.0, 0.0)));
@@ -1017,7 +1020,7 @@ mod tests {
         pane.focus_traverse(true);
         {
             let dom = pane.dom_ref();
-            let apply = taproot::matching(
+            let apply = taproot::matching_estimated_fixture(
                 &*dom,
                 &taproot::Selector::class("setting-apply").with_attr("data-setting", "theme.mode"),
             )[0];
@@ -1045,7 +1048,7 @@ mod tests {
         );
         // Repeat the visible group entry, then two ArrowUp presses choose Light.
         for _ in 0..2 {
-            let node = taproot::matching(&*pane.dom_ref(), &selector)[0];
+            let node = taproot::matching_estimated_fixture(&*pane.dom_ref(), &selector)[0];
             let _: Vec<()> = pane
                 .runner
                 .dispatch_click(node, cambium::PointerClick::at((0.0, 0.0)));
