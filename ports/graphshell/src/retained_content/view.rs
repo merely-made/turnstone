@@ -164,24 +164,28 @@ fn content_view_with_style<State: 'static, Action: 'static>(
                     meta: event.mods.meta,
                 };
                 let mut slot = key_slot.borrow_mut();
-                if let SessionKey::Character(text) = &key
-                    && !modifiers.control
-                    && !modifiers.alt
-                    && !modifiers.meta
-                {
-                    if slot.input(SessionInput::Text(text.clone())) {
-                        event.prevent_default();
-                    }
-                    return;
-                }
-                if slot.input(SessionInput::Key {
+                let printable = match &key {
+                    SessionKey::Character(text) => Some(text.clone()),
+                    SessionKey::Space => Some(" ".to_owned()),
+                    _ => None,
+                };
+                let handled = slot.input(SessionInput::Key {
                     key: key.clone(),
                     state: SessionButtonState::Pressed,
                     modifiers,
                     repeat: false,
-                }) {
+                });
+                if handled {
                     event.prevent_default();
-                } else if let Some(key) = match key {
+                }
+                if !modifiers.meta && !(modifiers.control && !modifiers.alt)
+                    && let Some(text) = printable
+                    && text.chars().all(|c| !c.is_control())
+                    && slot.input(SessionInput::KeyboardText(text))
+                {
+                    event.prevent_default();
+                }
+                if !handled && let Some(key) = match key {
                     SessionKey::PageDown => Some(SessionScrollKey::PageDown),
                     SessionKey::PageUp => Some(SessionScrollKey::PageUp),
                     SessionKey::Home => Some(SessionScrollKey::Home),
