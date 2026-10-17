@@ -177,6 +177,8 @@ pub enum Action {
     CaptureSourceDocument {
         member: uuid::Uuid,
     },
+    /// Retry the same explicit request; never recapture a replacement response.
+    RetrySourceDocumentCapture { request: uuid::Uuid },
     ChoosePermission {
         request: crate::user_agent_decision::UserAgentRequestKey,
         choice: crate::user_agent_decision::PermissionChoice,
@@ -1122,10 +1124,12 @@ pub enum Effect {
         node: uuid::Uuid,
     },
     /// Preserve one exact, app-held fetched HTML response through the session
-    /// Eidetic store. `url` is captured with the action for a stale-target gate.
+    /// Eidetic store, bound to the request's owner and acquired response.
     CaptureSourceDocument {
-        node: uuid::Uuid,
-        url: String,
+        request: crate::source_capture::CaptureRequest,
+    },
+    PersistSourceCapture {
+        request: uuid::Uuid,
     },
     /// Ask one exact live content owner to replace or step its retained find.
     FindContent {
@@ -1379,9 +1383,25 @@ pub enum Update {
     RecallFailed { error: String },
     /// The session Eidetic actor completed an explicit source-document capture.
     SourceDocumentCaptured {
-        node: uuid::Uuid,
-        url: String,
+        capture_generation: uuid::Uuid,
+        request: crate::source_capture::CaptureRequest,
         result: Result<StoredSourceDocument, String>,
+    },
+    SourceCaptureRecovered {
+        capture_generation: uuid::Uuid,
+        request: crate::source_capture::CaptureRequest,
+        stored: Option<StoredSourceDocument>,
+    },
+    SourceCaptureSaved {
+        capture_generation: uuid::Uuid,
+        request: uuid::Uuid,
+        result: Result<(), String>,
+    },
+    SourceCaptureRecoveryFailed { capture_generation: uuid::Uuid, error: String },
+    SourceCaptureRevalidated {
+        capture_generation: uuid::Uuid,
+        request: crate::source_capture::CaptureRequest,
+        stored: StoredSourceDocument,
     },
     /// One retained-place open completed. The app accepts it only while both
     /// the session and generation still match its active opening.
@@ -1482,7 +1502,7 @@ pub enum Update {
 }
 
 /// Manifest identities written by one explicit source-document capture.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct StoredSourceDocument {
     pub raw_manifest: String,
     pub annotation_manifest: String,

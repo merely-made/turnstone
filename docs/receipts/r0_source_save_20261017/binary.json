@@ -1,0 +1,6 @@
+{
+  "name": "turnstone-a8f1418604963df6",
+  "sha256": "667a3b07f346b5d55b4cb51a807ff9f9e55bb5432f92b4aa2bcbbe9cadfee0cb",
+  "bytes": 473337424,
+  "note": "Same test executable used by the bounded regression and real subprocess controls; executable is retained in the qualification worktree, not committed."
+}

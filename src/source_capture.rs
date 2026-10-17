@@ -11,6 +11,163 @@
 //! after restart without reconstructing an association by scanning Eidetic.
 
 use chartulary::{AcceptAll, FacetError, FacetId};
+use serde::{Deserialize, Serialize};
+
+/// Identity of the acquired response, independent of the current URL/cursor.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SourceIdentity {
+    pub hash: String,
+    pub body_hash: String,
+    pub effective_url: Option<String>,
+    pub content_type: Option<String>,
+    pub acquired_at_ms: u64,
+}
+
+impl SourceIdentity {
+    pub(crate) fn of(document: &crate::content::FetchedDocument) -> Self {
+        Self {
+            hash: eidetic::Hash::of(&document.bytes).to_string(),
+            body_hash: eidetic::Hash::of(document.body.as_bytes()).to_string(),
+            effective_url: document.effective_url.clone(),
+            content_type: document.content_type.clone(),
+            acquired_at_ms: document.acquired_at_ms,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CaptureRequest {
+    pub id: uuid::Uuid,
+    pub session: crate::panes::SessionId,
+    pub graph: crate::panes::GraphId,
+    pub node: uuid::Uuid,
+    pub url: String,
+    pub source: Option<SourceIdentity>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CapturePhase {
+    Depositing,
+    Deposited,
+    PendingSave,
+    Failed,
+    Saved,
+    Recoverable,
+}
+
+#[derive(Clone, Debug)]
+pub struct CaptureAttempt {
+    pub request: CaptureRequest,
+    pub stored: Option<crate::action::StoredSourceDocument>,
+    pub phase: CapturePhase,
+    pub error: Option<String>,
+    pub(crate) recovered: bool,
+}
+
+/// A durable request receipt is recovery inventory, never corpus admission.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub(crate) struct DepositReceipt {
+    #[serde(default)]
+    pub saved: bool,
+    pub request: CaptureRequest,
+    pub stored: Option<crate::action::StoredSourceDocument>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct CaptureAttachment {
+    request: CaptureRequest,
+    stored: crate::action::StoredSourceDocument,
+}
+
+const ATTACHMENTS_FACET: &str = "capture.source-requests/v1";
+
+/// A fork carries source references, never the donor's local operation/ack
+/// authority. Its new node can make its own explicit capture requests.
+pub(crate) fn discard_copied_request_admission(
+    facets: &mut pandect::NodeFacetStore,
+    node: uuid::Uuid,
+) {
+    facets.remove(&node, &FacetId::new(ATTACHMENTS_FACET));
+}
+
+/// Read the request ledger only when every occurrence still has an ordered
+/// reference. Legacy references may interleave; duplicate manifests count.
+fn attachment_records(
+    facets: &pandect::NodeFacetStore,
+    node: uuid::Uuid,
+) -> Result<Vec<CaptureAttachment>, String> {
+    let series: Vec<String> =
+        match facets.get(&node, &FacetId::new(SOURCE_CAPTURE_REFERENCES_FACET)) {
+            Some(value) => serde_json::from_value(value.clone())
+                .map_err(|error| format!("capture reference series is unreadable: {error}"))?,
+            None => Vec::new(),
+        };
+    let records: Vec<CaptureAttachment> = match facets.get(&node, &FacetId::new(ATTACHMENTS_FACET))
+    {
+        Some(value) => serde_json::from_value(value.clone())
+            .map_err(|error| format!("capture request ledger is unreadable: {error}"))?,
+        None => Vec::new(),
+    };
+    let mut ids = std::collections::HashSet::new();
+    let mut references = series.iter();
+    for record in &records {
+        if record.request.node != node
+            || !ids.insert(record.request.id)
+            || !references.any(|reference| *reference == record.stored.annotation_manifest)
+        {
+            return Err("capture request ledger and ordered references disagree".into());
+        }
+    }
+    Ok(records)
+}
+
+/// Correlates an ordered reference with its explicit request across restart.
+pub(crate) fn attached(
+    facets: &pandect::NodeFacetStore,
+    request: &CaptureRequest,
+) -> Option<crate::action::StoredSourceDocument> {
+    Some(
+        attachment_records(facets, request.node)
+            .ok()?
+            .into_iter()
+            .find(|entry| entry.request == *request)?
+            .stored,
+    )
+}
+
+pub(crate) fn attach_reference(
+    facets: &mut pandect::NodeFacetStore,
+    node: uuid::Uuid,
+    request: &CaptureRequest,
+    stored: &crate::action::StoredSourceDocument,
+) -> Result<(), String> {
+    if node != request.node {
+        return Err("capture member identity mismatch".into());
+    }
+    let key = FacetId::new(ATTACHMENTS_FACET);
+    let mut receipts = attachment_records(facets, node)?;
+    if let Some(existing) = receipts.iter().find(|entry| entry.request.id == request.id) {
+        return if existing.request == *request && existing.stored == *stored {
+            Ok(())
+        } else {
+            Err("capture request identity was reused for different evidence".into())
+        };
+    }
+    // Publish both facets together in memory. Persistence is ordered, fallible,
+    // and acknowledged separately; this does not claim a storage transaction.
+    let mut replacement = facets.clone();
+    append_reference(&mut replacement, node, stored.annotation_manifest.clone())
+        .map_err(|error| error.to_string())?;
+    receipts.push(CaptureAttachment {
+        request: request.clone(),
+        stored: stored.clone(),
+    });
+    replacement
+        .set(node, key, serde_json::json!(receipts), &AcceptAll)
+        .map_err(|error| error.to_string())?;
+    *facets = replacement;
+    Ok(())
+}
 
 /// A node-scoped ordered series of Eidetic Fleece annotation manifest ids.
 pub const SOURCE_CAPTURE_REFERENCES_FACET: &str = "capture.source-annotations/v1";

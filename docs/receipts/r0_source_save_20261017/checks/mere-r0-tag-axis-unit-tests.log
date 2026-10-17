@@ -1,0 +1,5 @@
+running 2 tests
+test canvas::scene_axes::tests::tags_become_sorted_memberships ... ok
+test canvas::scene_axes::tests::sources_stand_left_and_each_derivation_adds_a_column ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 533 filtered out; finished in 0.00s

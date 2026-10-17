@@ -1,0 +1,26 @@
+{
+  "base_commit": "b7e15290d50db7c4b00a29257f224c1d96f8d0cf",
+  "sha256": {
+    "Cargo.lock": "22283da753cdcfe35fbd86a5a9a08f3361797f62e9e84e1aec273e8beb64a9b5",
+    "Cargo.toml": "98e46a4d212757e287dbae46fbb26c1b99be7900a097bf33bffdb93aedd09387",
+    "src/action.rs": "4c1c48e8cde751a5ec886e68e41c00ac14ee924a34505052d55910cd2dbe6cc2",
+    "src/app/fixtures.rs": "5dd33f8e9433a782d276401ee4d3df8b907d307cf1194fb1be33ed77adb8cf00",
+    "src/app/mod.rs": "7e81a7ad2b64c9cb1b2fd26a51184711ac2f0dbb4fb39c661206ede05fd27739",
+    "src/app/palette.rs": "0f6a188ae8eef1dddbc1fd21bef6c89fd2fc0534f56a39f5e9cc1fd194c3b668",
+    "src/app/session_lifecycle.rs": "7c183cc09379c6fd1ccca8be9b14e0108e2026a13ca7aaf5ad6c837a10432003",
+    "src/app/source_capture_arms.rs": "74a7e02b87a9199d85840ac8830b59e61069f441f39e75d5e460a3a676420f6d",
+    "src/app/source_capture_persistence_tests.rs": "3c9b6669a865acd14cf87df3fd9d75bdc7e501d2c584d5010b955c95c20194e4",
+    "src/app/tests.rs": "d83b069531efb0cbcf9a48de3b651148e35994f0591cf887aedde1a1d80a6fbc",
+    "src/app/updates.rs": "0d83ff891787e2760244d677933f6cc3ca6391605210b8e9949e9996c3b1fa80",
+    "src/diagnostic_observations.rs": "c1acfd55c9372195ef7af8da18c37b7f803e668e52716748a05d4881423350db",
+    "src/lib.rs": "6ba00846f973c52b2f58a69201586b736cc9c8e76d34d8ad1cb890225d7e431a",
+    "src/observe.rs": "95421ea9d848bbc27d1ab85272ee6c174ac7a7e1dfa28f81a63a211ee3b644e5",
+    "src/ring.rs": "358b4a1991e57512dcbacae19adda469906ce33a8427add09a3e09313cef3464",
+    "src/shell/effects.rs": "14816e5ba3204bb296075f06f93d8854c095c4a2c102a0c4df0bf7c637df8fcc",
+    "src/shell/mod.rs": "d3f66bfacbefab595bf11b1f2321e44437c2a25ff537d0890638a0ee9cbf8c82",
+    "src/source_capture.rs": "b4b38b6c42ab68ae729a386a6735878923858cd86125a3353214723e52d7e735",
+    "src/trail_memory.rs": "14cafb8eb9e0c5dc42badb7f07466292253d3edf6094f79b26451c7cd47c4f8b",
+    "src/trail_memory/source_capture_receipts.rs": "196758effc96a554a5b8d8b11fce44e772e5bfb8e7b9e315b4e36d139d34110e",
+    "src/trail_memory/source_capture_tests.rs": "1139bcd615b79efa46eca37131ee66921ccb60fb2ac5cd49d0b55f95f347f5ed"
+  }
+}

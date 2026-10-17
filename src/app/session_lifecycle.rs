@@ -103,6 +103,8 @@ impl App {
             sessions,
             session_id,
             content: ContentStates::default(),
+            source_captures: Default::default(),
+            source_capture_generation: uuid::Uuid::new_v4(),
             engine_inventory: Vec::new(),
             feeds: crate::feed::FeedSubscriptions::default(),
             redshank: crate::redshank_host::RedshankHost::default(),
@@ -364,6 +366,7 @@ impl App {
             chartulary::FacetId::new(mere::kernel::graph::node_facets::PROVENANCE_IMPORT);
         for (_, minted) in &copy.id_remap {
             fork_graph.facets_mut().remove(minted, &import_facet);
+            crate::source_capture::discard_copied_request_admission(fork_graph.facets_mut(), *minted);
         }
         for (minted, value) in copied_derivations {
             fork_graph
@@ -991,6 +994,7 @@ impl App {
     pub fn adopt_session(&mut self, id: crate::panes::SessionId) -> Vec<Effect> {
         self.behavior_binding = None;
         self.session_id = id;
+        self.await_source_capture_revalidation(id);
         self.physics_refusal = None;
         let graph = self
             .sessions

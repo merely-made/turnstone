@@ -206,20 +206,26 @@ fn source_capture_refuses_a_member_without_a_current_target() {
     );
 }
 
+fn requested_source_capture(app: &mut App, node: uuid::Uuid) -> crate::source_capture::CaptureRequest {
+    app.update(Action::CaptureSourceDocument { member: node }).into_iter().find_map(|effect| {
+        match effect {
+            Effect::CaptureSourceDocument { request } => Some(request),
+            _ => None,
+        }
+    }).expect("current target produces a correlated source request")
+}
+
 #[test]
 fn source_capture_carries_current_target_without_requesting_png() {
     let mut app = App::test_stub();
     let url = "https://example.test/source";
     let key = app.graph_runtimes.visit(url);
     let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
-
-    assert_eq!(
-        app.update(Action::CaptureSourceDocument { member: node }),
-        vec![Effect::CaptureSourceDocument {
-            node,
-            url: url.to_string(),
-        }]
-    );
+    let request = requested_source_capture(&mut app, node);
+    assert_eq!(request.node, node);
+    assert_eq!(request.url, url);
+    assert_eq!(request.session, app.session_id);
+    assert_eq!(request.graph, app.graph_runtimes.active_graph());
 }
 
 #[test]
@@ -228,34 +234,22 @@ fn source_capture_completion_attaches_an_ordered_node_reference_series() {
     let url = "https://example.test/source";
     let key = app.graph_runtimes.visit(url);
     let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
-    let stored = |annotation_manifest: &str| crate::action::StoredSourceDocument {
-        raw_manifest: format!("raw-{annotation_manifest}"),
-        annotation_manifest: annotation_manifest.into(),
-    };
-
-    assert_eq!(
-        app.apply_update(Update::SourceDocumentCaptured {
-            node,
-            url: url.into(),
-            result: Ok(stored("annotation-first")),
-        }),
-        vec![Effect::SaveSession, Effect::Redraw]
-    );
-    assert_eq!(
-        app.apply_update(Update::SourceDocumentCaptured {
-            node,
-            url: url.into(),
-            result: Ok(stored("annotation-second")),
-        }),
-        vec![Effect::SaveSession, Effect::Redraw]
-    );
-    assert_eq!(
-        crate::source_capture::references(app.graph_runtimes.facets(), node),
-        vec![
-            "annotation-first".to_string(),
-            "annotation-second".to_string()
-        ]
-    );
+    for annotation_manifest in ["annotation-first", "annotation-second"] {
+        let request = requested_source_capture(&mut app, node);
+        assert_eq!(app.apply_update(Update::SourceDocumentCaptured {
+        capture_generation: app.source_capture_generation,
+            request: request.clone(),
+            result: Ok(crate::action::StoredSourceDocument {
+                raw_manifest: format!("raw-{annotation_manifest}"),
+                annotation_manifest: annotation_manifest.into(),
+            }),
+        }), vec![Effect::PersistSourceCapture { request: request.id }, Effect::Redraw]);
+    }
+    assert_eq!(crate::source_capture::references(app.graph_runtimes.facets(), node),
+        vec!["annotation-first".to_string(), "annotation-second".to_string()]);
+    assert!(app.take_events().iter().all(|event| !matches!(event,
+        crate::observe::AppEvent::SourceDocumentCaptured { .. }
+    )), "attachment cannot report final saved success");
 }
 
 #[test]
@@ -264,37 +258,29 @@ fn stale_or_failed_source_capture_completion_never_attaches_a_reference() {
     let url = "https://example.test/source";
     let key = app.graph_runtimes.visit(url);
     let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
-    let stored = crate::action::StoredSourceDocument {
-        raw_manifest: "raw-stale".into(),
-        annotation_manifest: "annotation-stale".into(),
-    };
-
-    assert_eq!(
-        app.apply_update(Update::SourceDocumentCaptured {
-            node,
-            url: "https://example.test/changed".into(),
-            result: Ok(stored),
+    let stale = requested_source_capture(&mut app, node);
+    app.update(Action::ContentNavigationCommitted {
+        member: node, url: "https://example.test/changed".into(),
+    });
+    assert_eq!(app.apply_update(Update::SourceDocumentCaptured {
+        capture_generation: app.source_capture_generation,
+        request: stale,
+        result: Ok(crate::action::StoredSourceDocument {
+            raw_manifest: "raw-stale".into(), annotation_manifest: "annotation-stale".into(),
         }),
-        vec![Effect::Redraw]
-    );
-    assert!(matches!(
-        app.take_events().last(),
-        Some(crate::observe::AppEvent::SourceDocumentCaptureUnattached { .. })
-    ));
+    }), vec![Effect::Redraw]);
+    assert!(app.take_events().iter().any(|event| matches!(event,
+        crate::observe::AppEvent::SourceDocumentCaptureFailed { .. }
+    )));
     assert!(crate::source_capture::references(app.graph_runtimes.facets(), node).is_empty());
-
-    assert_eq!(
-        app.apply_update(Update::SourceDocumentCaptured {
-            node,
-            url: url.into(),
-            result: Err("eidetic write failed".into()),
-        }),
-        vec![Effect::Redraw]
-    );
-    assert!(matches!(
-        app.take_events().last(),
-        Some(crate::observe::AppEvent::SourceDocumentCaptureFailed { .. })
-    ));
+    let failed = requested_source_capture(&mut app, node);
+    assert_eq!(app.apply_update(Update::SourceDocumentCaptured {
+        capture_generation: app.source_capture_generation,
+        request: failed, result: Err("eidetic write failed".into()),
+    }), vec![Effect::Redraw]);
+    assert!(app.take_events().iter().any(|event| matches!(event,
+        crate::observe::AppEvent::SourceDocumentCaptureFailed { .. }
+    )));
     assert!(crate::source_capture::references(app.graph_runtimes.facets(), node).is_empty());
 }
 

@@ -1510,6 +1510,7 @@ impl Shell {
             (!app.session_load_refused())
                 .then(|| crate::trail_memory::memory_dir(&app.session_dir())),
             capture_library.clone(),
+            app.source_capture_generation,
         );
         let trail_handle = Arc::new(trail_handle);
 

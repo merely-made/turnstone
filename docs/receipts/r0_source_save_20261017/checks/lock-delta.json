@@ -1,0 +1,8 @@
+{
+  "base": "b7e15290d50db7c4b00a29257f224c1d96f8d0cf",
+  "mere_before": "55c479bc75d31a2a7dec4b9b206f3cf96a81b3a1",
+  "mere_after": "00e4442868ee1cb014364a81ccaed657b512b218",
+  "added_direct_dev_dependency": "async-trait =0.1.92 (already present transitively)",
+  "all_other_lock_records_preserved": true,
+  "cargo_lock_sha256": "22283da753cdcfe35fbd86a5a9a08f3361797f62e9e84e1aec273e8beb64a9b5"
+}

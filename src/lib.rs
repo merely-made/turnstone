@@ -96,7 +96,7 @@ pub mod shell_services;
 pub mod sky_receipt;
 pub mod sky_surface;
 pub mod sky_timeline;
-mod source_capture;
+pub mod source_capture;
 mod surface;
 mod surface_controls;
 mod swatch_pane;
