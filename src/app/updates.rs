@@ -19,6 +19,17 @@ impl App {
     /// Fold one typed service answer into state.
     pub fn apply_update(&mut self, update: Update) -> Vec<Effect> {
         if self.session_load_refused() { return Vec::new(); }
+        let capture_generation = match &update {
+            Update::SourceDocumentCaptured { capture_generation, .. }
+            | Update::SourceCaptureSaved { capture_generation, .. }
+            | Update::SourceCaptureRecovered { capture_generation, .. }
+            | Update::SourceCaptureRevalidated { capture_generation, .. }
+            | Update::SourceCaptureRecoveryFailed { capture_generation, .. } => Some(*capture_generation),
+            _ => None,
+        };
+        if capture_generation.is_some_and(|generation| generation != self.source_capture_generation) {
+            return Vec::new();
+        }
         match update {
             Update::FeedFetched { node, url, result } => self.apply_feed_fetched(node, url, result),
             Update::PageStreamed {
@@ -561,51 +572,14 @@ impl App {
                 self.events.push(AppEvent::RecallFailed(error));
                 vec![Effect::Redraw]
             },
-            Update::SourceDocumentCaptured { node, url, result } => match result {
-                Ok(stored) => {
-                    let current = self
-                        .graph_runtimes
-                        .graph_containing_member(node)
-                        .and_then(|graph| self.graph_runtimes.canvas(graph))
-                        .is_some_and(|canvas| browse::still_current(canvas, node, &url));
-                    if !current {
-                        self.events.push(AppEvent::SourceDocumentCaptureUnattached {
-                            node,
-                            url,
-                            raw_manifest: stored.raw_manifest,
-                            annotation_manifest: stored.annotation_manifest,
-                            reason: "target changed before capture completion".into(),
-                        });
-                        return vec![Effect::Redraw];
-                    }
-                    if let Err(error) = crate::source_capture::append_reference(
-                        self.graph_runtimes.facets_mut(),
-                        node,
-                        stored.annotation_manifest.clone(),
-                    ) {
-                        self.events.push(AppEvent::SourceDocumentCaptureUnattached {
-                            node,
-                            url,
-                            raw_manifest: stored.raw_manifest,
-                            annotation_manifest: stored.annotation_manifest,
-                            reason: format!("could not attach capture reference: {error}"),
-                        });
-                        return vec![Effect::Redraw];
-                    }
-                    self.events.push(AppEvent::SourceDocumentCaptured {
-                        node,
-                        url,
-                        raw_manifest: stored.raw_manifest,
-                        annotation_manifest: stored.annotation_manifest,
-                    });
-                    vec![Effect::SaveSession, Effect::Redraw]
-                },
-                Err(error) => {
-                    self.events
-                        .push(AppEvent::SourceDocumentCaptureFailed { node, url, error });
-                    vec![Effect::Redraw]
-                },
+            Update::SourceDocumentCaptured { request, result, .. } => self.source_capture_deposited(request, result),
+            Update::SourceCaptureRevalidated { request, stored, .. } => self.revalidate_source_capture(request, stored),
+            Update::SourceCaptureRecoveryFailed { error, .. } => {
+                self.events.push(AppEvent::InteractionMissed { what: "recover-source-captures", target: error });
+                vec![Effect::Redraw]
             },
+            Update::SourceCaptureRecovered { request, stored, .. } => self.recover_source_capture(request, stored),
+            Update::SourceCaptureSaved { request, result, .. } => self.source_capture_saved(request, result),
             // Shell-owned: a prepared dial is not an app fact, and the
             // shell drains this one before `apply_update` ever sees it. The
             // arm exists so the vocabulary stays exhaustive here.

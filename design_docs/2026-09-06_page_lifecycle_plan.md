@@ -1,7 +1,9 @@
 # Page lifecycle plan
 
-**Status:** in progress, 2026-09-13. Rulings L1-L7 were made with Mark on
-2026-09-06. Source capture and collection-scoped search now have app consumers;
+**Status:** in progress, refreshed 2026-10-17. Rulings L1-L7 were made with Mark on
+2026-09-06. The research-workflow section below is a proposed implementation
+slice, not delivered behavior or a replacement for those rulings. Source
+capture and collection-scoped search now have app consumers;
 the Keep, bin custody, and other lifecycle joins remain governed by their
 individual done-conditions. This plan joins rules that
 already exist in three documents into one experience and adds the rules that
@@ -294,6 +296,452 @@ Done-conditions:
 - The trail recall evaluation corpus is unaffected by L1 and this is checked,
   not assumed.
 
+## Research workflow: smallest complete slice (2026-10-17)
+
+**Status: R0 implemented and qualified within the bounded receipt below; R1-R4 remain planned.** Mark asked
+for the existing research workflow to be traced, its missing joins identified,
+and the smallest complete slice planned. This section owns that product join;
+the capture, pane, Knot and resident plans retain their domain gates.
+
+### Source cut and evidence
+
+Audited clean Turnstone `428deb5` (`428deb5` also matched fetched `origin/main`),
+with Rust pinned to 1.99.1 and Mere locked to
+`a17e5bb97c79332b932d10cce70f465b022a3a1a`. The October 16 scene/answer receipts
+qualify their recorded earlier sources; they are supporting evidence, not a
+research-workflow receipt for this source. The following is a current-source
+inventory. Named tests/scenarios were inspected, not executed for this plan.
+
+| Person's step | Existing implementation | Join still needed |
+| --- | --- | --- |
+| Start somewhere to work | New/Rename session, session switcher, graph/window/view persistence (`src/app/session_lifecycle.rs`, `src/action.rs`) | Use a named personal session; a new project/container type is unnecessary. |
+| Gather and keep pages | Targeted `OpenAddress`; idempotent `keep_node` bookmarks one Surface (`src/app/node_arms.rs:123`) | Keep remains metadata-only under L3. An ordinary explicit source-capture control is missing. |
+| Preserve evidence | Exact fetched HTML candidate, raw response + validated Fleece annotation in the existing trail-owned session store; ordered manifest facet (`src/content.rs:452`, `src/shell/effects.rs:1734`, `src/source_capture.rs`) | `SourceDocumentCaptured` attaches a reference and saves but does not Keep. L-P1's completion-bound admission and source/session ownership must be joined; current completion checks the member but appends through active-runtime facet convenience state. |
+| Find one's saved material | Session recall and a local validated Fleece library exist; captured-page search is an authority-filtered shared-place projection (`src/trail_memory.rs`, `src/place/captured_collection.rs:104`) | Provide a private projection from this session's attached capture references. Do not require a Moot/share to find one's own captures, or admit orphan store records by scanning. |
+| Open a saved passage | Answer citations have exact text/hash/Unicode-range validation (`src/inference_service.rs:318`) | Existing captured-search hits lower to `OpenAddress`, hence refetch. A capture-manifest-bound reader must work independently of origin and inference resident. |
+| Ask over chosen evidence | Streamed/durable resident asks, source markers, exact-quotation labels and historical I5 reopen evidence | Current Answers publishes all PageText heads and sends empty scope (`src/trail_memory.rs:1625`, `src/inference_service.rs:220`). Add a capture-backed adapter and nonempty selected source scope. |
+| Author a sourced note | Reusable local Knot document pane; separate addressed Knot/typed Inspector clip route (`src/knot_document_surface.rs`, `src/knot_authoring.rs`) | The file picker mounts a path-only pane, not a graph source or clipping destination. Destination is environment-configured; Inspector's offered and executed source can differ. This is a named follow-on, not a completed join. |
+| Share selected work | Address-only place sharing, authority-filtered captures, live holder-backed Knot projection and selected clip packages | Deliberate attachment choice, destination/source binding and holder availability remain separate joins under L7/L-P5. |
+
+### The first complete user task
+
+In a named personal session, visit two small HTML sources, deliberately save
+both as evidence, find a passage in the saved text, ask a question using an
+explicit subset, inspect its exact cited passage, close everything and return
+to the same evidence after the origin is gone. Ordinary browsing of unrelated
+material must not enlarge that research corpus.
+
+This delivers **collect -> find -> inspect -> ask -> verify -> return**. Authored
+Knot notes and peer sharing are the next joins. They are not earned by this
+slice and are not prerequisites for private saved-source reading. Generation
+and durable answer history still require the admitted resident/model; reading
+and searching locally held evidence must work with both origin and inference
+resident stopped. A resident outage may report Answers unavailable; this slice
+does not invent a second durable answer store in Turnstone.
+
+Initial source capability is fetched HTML with observed final URL, acquisition
+time and real content type. Hosted engines that cannot supply that candidate
+show an unavailable reason. A PNG, current DOM, extracted recall head or live
+URL is never substituted for an exact source capture. The supported reader is
+an inert saved-text/provenance view, not offline replay of an interactive web
+application. No new engine, inference wire, shared collection system or store
+is required by the audited source contracts.
+
+### Product and ownership boundaries
+
+- **A session is the research scope.** Use existing New/Rename/Switch actions.
+  “Saved sources” is a view of that session's attached captures, distinct from
+  Gemot's versioned captured-search collections. Persist selected capture
+  references and reader/view intent through the session's existing persistence
+  paths; do not duplicate source bytes in settings or sidecars.
+- **Capture identities remain immutable.** A saved-source reference binds the
+  owning session/graph/member and annotation manifest. Load provenance and
+  canonical text from the validated Fleece record. The live URL is displayed
+  provenance and a separate “Open original address” action. A second deliberate capture
+  is another ordered occurrence; identical bytes/acquisition context may resolve
+  to the same immutable manifest. Distinct changed-content artifacts remain
+  separately selectable, and no occurrence retargets an earlier artifact.
+- **One store owner.** The trail actor remains the only Fjall owner. Its
+  request/completion vocabulary supplies the admitted local capture projection,
+  search and exact resolve. Correlate session/store generation as well as node
+  and request; stale completion cannot attach or publish into another session.
+  Disabled, missing, invalid, withdrawn and unavailable entries stay explicit.
+- **Follow L1-L3 on new writes.** Ordinary visits retain address/title/order;
+  Keep retains node metadata; an explicit capture admits source bytes. Wire the
+  automatic extracted-body write gate accordingly. The current unconditional
+  `consented_to_keep` conflicts with L1; the capture plan's later Full-vs-opt-in
+  tail does not silently overturn that ruling. The proposed slice follows
+  metadata-only ordinary history. Legacy PageText bytes/runs are preserved and
+  excluded from the new evidence context, without silent purge or migration into
+  source evidence. A general Full automatic-retention policy needs its own
+  explicit reconciliation; this plan does not declare that policy shipped.
+- **Preserve authored-note ownership.** Fleece's “annotation record” is an
+  extraction/capture artifact, not the authored annotation promised by L6.
+  `WriteNote` is a graph-body helper, not a substitute for Knot evidence.
+- **Selection is not availability.** Publish all still-attached, admitted
+  captures for a bounded research owner, then supply a nonempty exact source-ID
+  scope per ask. Changing the chosen subset does not withdraw older citations
+  while their source remains admitted. Explicit deletion/detachment, missing
+  content or invalid integrity may withdraw availability. Never implement an
+  empty UI selection as wire `scope: []`, which currently means all sources.
+- **Preserve legacy Answers.** Add a versioned capture-research pane context;
+  derive its owner from the validated session (for example
+  `turnstone/research/<session UUID>`). Keep V1's `turnstone/<session UUID>`
+  PageText context, history and strict resolver unchanged. Namespace strings in
+  saved payloads are not authority. Use one coordinated service/publisher per
+  derived owner, with exact namespace/run filtering and current actor admission.
+- **Keep the existing publication ceiling.** The complete encoded corpus JSON,
+  including metadata/escaping, must fit 128 KiB. Preflight and visibly refuse
+  oversize before a generation request; do not truncate, silently publish a
+  subset, broaden scope, or prevent independent saved-source reading. Capture
+  and reading may outgrow this inference budget. Resource-backed large-corpus
+  handoff belongs to the resident plan's separate open gate.
+
+### Ordered implementation phases
+
+#### R0. Save acknowledgement, integrity and partial-failure recovery
+
+The persistence critique adds a prerequisite to the product join. At the
+pre-implementation source (`45542b1`, fetched current on 2026-10-17), `SourceDocumentCaptured` is emitted before `Effect::SaveSession` runs
+(`src/app/updates.rs:595`). `persist_session_graph` propagates facet/graph write
+errors, but the shell's `save_session` returns `()` and logs most failures
+(`src/app/session_lifecycle.rs:1464`, `src/shell/effects.rs:2162`). The capture
+request therefore has no correlated session-save acknowledgement. Ordered
+facet-before-graph writes (`src/session_persistence.rs:91`) do not make the
+capture store and session files one transaction.
+
+Before R1 can claim success, specify and implement the following bounded
+contract through the existing owners:
+
+- Correlate the source request, owning session/member and admitted artifact
+  identities through deposit, attachment/Keep and persistence completion.
+  Distinguish deposited, attached/pending-save, saved and failed/recoverable.
+  Emit final saved success only after the required artifact and owning
+  facet/graph writes acknowledge success. Identify which writes that promise
+  covers; unrelated best-effort view/preferences sidecars must not supply its
+  success signal. A failure may leave recoverable state; it must remain visible
+  and retryable without losing evidence or duplicating the same completion.
+- Inventory write ordering and recovery for raw bytes, raw/annotation manifests,
+  facet references and graph/Keep metadata. Inject failure after each boundary,
+  terminate/reopen and retry. Orphan deposits stay outside Saved sources and
+  publication; incomplete references produce an attributable refusal. Preserve
+  valid pre-existing state. Do not add destructive cleanup as compensation.
+- Treat batch atomicity, successful write acknowledgement, process-restart
+  survival and power-loss durability as separate claims. Locked Mere
+  `a17e5bb9` has the same `Backend::apply` contradiction as current Mere: its
+  all-or-none wording permits ordered partial application, and Fjall implements
+  the latter. `transact` already provides a stronger read/check/write contract
+  with typed `NotTransactional` refusal; Fjall does not implement it. Do not
+  depend on atomic `apply` or fall back from required transactions. Any required
+  shared-contract repair belongs in Muniment. Identify the actual persistence
+  barrier before promising abrupt power-loss survival; a cold-reopen receipt
+  alone does not establish it.
+- Keep blocking Fjall calls on the existing trail actor thread. Turnstone's
+  `spawn_named` already supplies a dedicated thread; a new executor/store owner
+  or scattered per-call `spawn_blocking` wrappers are unnecessary here.
+- Verify the exact addressed manifest and payload at the research admission
+  boundary. Muniment's primitive `BlobStore::get` does not verify bytes, but
+  Eidetic's typed resolver verifies payload hashes and
+  `load_fleece_annotation` additionally validates annotation facts. Consume that
+  existing checked path with `NoFetcher`; prove that wrong bytes, a substituted
+  manifest identity and inconsistent raw/annotation links cannot enter reading
+  or publication. Do not replace saved evidence with a network fetch.
+
+**Done:** focused fault/retry/reopen controls demonstrate the declared saved
+boundary, preserve previously saved evidence, and never announce saved success
+on a required-write failure. Record the supported failure model and supplier
+contracts. General Graphshell preference health and browser persistence UI
+remain separate work; they are not prerequisites for this native slice.
+
+**Implementation cut (2026-10-17, qualified below):** R0 starts from
+Turnstone `45542b1` and was fast-forwarded to fetched `b7e1529` before final
+qualification, adopting its locked Mere `55c479bc` supplier. The storage APIs
+used by R0 were compared across that update. Final qualification adopts
+published Mere `00e444286`, whose only runtime change reads canonical Resource
+tags for Sets scenes. The unchanged Turnstone scene assertion exposed that
+supplier mismatch; no consumer-side tag shim or weakened assertion was added.
+The earlier
+`428deb5` inventory above records the planning baseline. Concurrent dependency
+adoption in the primary checkout required the isolated `codex/r0-source-save`
+lane; those unrelated changes were preserved.
+
+R0 now follows one request UUID through the existing trail actor and stores
+intent/result/completed-save receipts in that actor's existing Eidetic
+namespace. These receipts are recovery inventory, not a new store or corpus.
+The app attaches each request once, preserves distinct same-manifest gestures,
+and saves that explicit runtime's canonical facets and graph. Final success
+waits for those writes and the verified completed receipt's acknowledgement.
+The request receipt also names the original decoded-body hash. Its checked
+UTF-8 body blob is retained before raw deposition, allowing faithful offline
+retry for originally decoded non-UTF-8 HTML. An intent whose raw bytes never
+landed remains an explicit original-response-required failure; it is never
+replaced by a URL fetch. A partial intent reuses its exact local original even
+if the live address now has a newer response; that replacement is never
+deposited for the old request. A fresh request still rejects substituted
+response identity before writing its intent.
+Receipt/artifact retention roots remain subject to the
+separate custody/GC gates; this slice performs no reclamation.
+The bounded capture save excludes unrelated feed, pane, view and preference
+sidecars; ordinary whole-session save retains their existing behavior. R0
+persists existing Keep state; automatic Keep promotion remains R1.
+
+Facet/request ledgers must agree with the ordered reference occurrences.
+Incomplete or malformed ledgers fail visibly instead of being reconstructed by
+scanning all artifacts. Explicit retry reuses the original request and checked
+local evidence, including after a lost write acknowledgement. On reopen the
+actor verifies completed receipts individually; the app rechecks their owning
+session, graph, member and attachment before restoring Saved status without a
+new success event. Historical saved evidence does not require the member's
+current address to remain its original address. Failed/incomplete requests
+remain attributable and offer an ordinary retry action. The observation
+snapshot and event stream expose progress, artifact identities and failures.
+Warm session adoption first makes prior Saved qualifications and unfinished
+work await fresh verification, so an unreadable inventory or unavailable store
+cannot preserve a stale Saved badge. An ephemeral opening token binds actor
+commands, deposit/save completions and recovery inventory to the current
+adoption. Queued replies from a prior opening cannot requalify the same request
+after A/B/A adoption. The token is not persisted as authority: explicit retry
+retains the original request/evidence and runs under the current opening.
+Current-opening recovery inventory cannot overwrite a live operation or reuse
+its request ID with different facts.
+Forks preserve source references and unrelated facets while stripping the
+donor's local request/ack ledger from reminted child nodes. A fork receives no
+new local custody or Saved authority; its new explicit requests remain usable.
+
+Shared-stack findings: Pandect file writes and Fjall's default buffered journal
+acknowledge OS writes; the exposed APIs supply no cross-store transaction or
+`sync_all` boundary. The acceptance claim is bounded to write acknowledgements
+and tested process restart/exit survival, not power-loss durability. Eidetic's
+typed resolver checks payload hashes; host admission additionally binds exact
+manifest keys/IDs, local payload addresses/size, schemas, Fleece integrity and
+raw/annotation acquisition links. Identical raw bytes share a manifest, so each
+checked annotation owns its URL/time facts. No network fetch repairs evidence.
+Before deposition, R0 preflights the raw, annotation and schema roles at their
+content addresses. Compatible existing manifests retain their exact metadata;
+incompatible roles or missing prior payloads are refused before typed writes.
+This prevents response bytes that happen to equal an annotation/schema payload
+from replacing that valid artifact's manifest. The guard is local to this
+serialized actor; it does not strengthen Eidetic's general write contract.
+The shared-place library remains lookup inventory intersected with authorized
+fauna; its live refresh now follows save acknowledgement. R2/R3 must derive
+private research admission from saved attachments, never deposit inventory.
+
+**Qualification (2026-10-17):** the canonical locked run against published Mere
+`00e444286` passed **940 tests**, with zero failures, ten existing ignores and
+89 filtered tests. Its declared scope excludes `place::`, `sky_surface::` and
+`sky_timeline::`; it is not an unrestricted-library pass. It includes all
+**50 capture controls** and **16 unchanged scene controls**, including the Sets
+assertion that exposed the supplier mismatch. Three captured-collection
+lookup/search/withdrawal controls separately passed in that same frozen binary.
+The source/lock inputs, binary digest, exact commands, test names and retained
+diagnostics are in the [R0 receipt](../docs/receipts/r0_source_save_20261017/qualification.json).
+
+The controls inject failures before and after each actual Fjall put, exercise
+required facet/graph write failures and lost receipt acknowledgements, and
+preserve earlier valid evidence. A joined four-process App/actor/Fjall run exits
+without Rust Drop/Flush after facet failure, graph failure, then successful
+offline retry; its final fresh process quietly revalidates exactly one saved
+attachment. Additional controls cover warm A/B/A adoption and stale opening
+messages, real same-directory actor reopening, foreign-session refusal before
+deposition, original non-UTF-8 decoding, newer live-response replacement,
+typed-role preservation, corrupt local evidence, ordered duplicate occurrences
+and forked evidence without copied job authority. The final Clippy correctness
+gate, scoped Rust formatting and whitespace checks pass. Other Clippy warning
+groups remain warnings.
+
+The earlier unrestricted parallel run was interrupted after twelve completed
+failures, including the now-fixed scene assertion and shared-place controls;
+three individual place controls subsequently passed. That does not qualify
+the remaining place/Sky profile. Mere's full supplier run passed 516 tests,
+failed its unchanged wall-clock speed budget control and retained 18 ignores;
+the clock control also failed alone on this host. These diagnostics remain in
+the receipt rather than being replaced by the bounded pass. No headed/GPU,
+physical recovery, Windows/Linux or power-loss qualification is added by R0.
+
+#### R1. Ordinary explicit capture, Keep and honest retention
+
+Expose the existing source-capture action through the common action catalog and
+an ordinary source-bound control, with proposed wording “Save source and keep”.
+Bind the displayed pane/member, owning graph/session, current fetched-document
+admission and request generation; revalidate on execution and completion. Use
+existing target/placement authority, never the active compatibility cursor.
+Write the resolved runtime's facets and persist its owning session. If that
+source's session/store is not the actor's currently admitted owner, refuse
+before deposit; do not reopen another store or relabel the current one.
+
+On successful deposit, attach the manifest and apply idempotent Keep to that
+same owner, emit `NodeKept` only on a new promotion, and request one session
+save. Use R0's correlated acknowledgement for final saved success, not the
+deposit/completion event. Failure/stale source must not Keep the wrong node or attach evidence.
+This is L-P1's completion-bound state change, not a claimed transaction across
+Fjall and graph/facet files. Successful deposit followed by attachment/save
+failure remains attributable and recoverable; preserve bytes/refusal evidence
+and show a failure instead of a false “Saved”. Unattached deposits do not enter
+Saved sources or publication. Gate new automatic body writes under L1 as above;
+preserve address-only history and existing legacy retained data.
+
+**Done:** ordinary pointer/keyboard/queued semantic activation reaches the same
+bound action; followed source A with cursor B changes only A; failed, same-URL
+replaced-document, wrong-session and A/B/A stale actions fail; repeated
+delivery of the same request completion produces no duplicate attachment or
+Keep event. Distinct admitted capture gestures preserve their ordered entries
+even when their artifact manifest is equal; manifest equality is not a request
+idempotency key. A persisted success
+has both Keep and the exact manifest reference. Unsupported engines explain
+why the control is unavailable. Address recall survives with automatic body
+writes disabled.
+
+#### R2. Private saved-source search and retained reader
+
+Derive a list/series from live node capture-reference facets, not every manifest
+in the store. Reuse L-P6's per-node series facts in Inspector and the existing
+omnibar/retained-surface patterns for “Search saved sources” and source opening.
+Search exact validated canonical text; carry the capture identity and optional
+half-open Unicode scalar selector through the result instead of lowering it to
+`OpenAddress`. Show source title/origin, capture time and version; reveal the
+matched passage and distinguish “Open original address”. Keep equal text's
+source identities/provenance separate even if the index groups it. Preserve
+occurrence order in the series while publishing one entry per exact
+owner/member/manifest source identity, not duplicate wire source IDs.
+
+Use the pinned public `fleece::load_fleece_annotation` with local/NoFetcher
+validation, through the existing actor. Its canonical text and BLAKE3 text hash
+are distinct from raw-response hashes and the canonical-text IRI's SHA256.
+Render a host-resolved `EngineDocument` through the existing retained text
+session pattern. The imported retained-clip route expects a ClipRecord in a
+different store; do not convert/reimport a FleeceAnnotationRecord just to read
+it. No shared reader abstraction is promoted for this first consumer.
+
+**Done:** private sources can be listed, searched and opened with no joined
+place, no network and no inference resident. Selection survives normal view
+retargeting. Missing/corrupt records remain identifiable unavailable entries;
+wrong session/member/ref, invalid hash or selector cannot open another record
+or fetch live content. Revisit A with changed bytes leaves captured A1 intact;
+explicit capture A2 creates another version. This phase may close the relevant
+L-P6 source-document series gates only after their own assertions pass; it does
+not qualify hosted screenshot/PDF series.
+
+#### R3. Capture-backed, explicitly scoped Answers
+
+Extend the same actor's owner interface with a capture-specific snapshot and
+exact resolve; keep the legacy PageText resolver restrictions. The locked
+`RecallSourceId` already supports `Fleece`/`Capture`, owner, source and node;
+`RetainedSourceText` already carries version/title/exact text. Use immutable
+annotation-manifest identity, owning member UUID and canonical-text hash; avoid
+current URL/head identity. The producer must validate local facet admission,
+record integrity and session ownership before publication, because the resident
+publisher does not supply capture-specific validation on its behalf.
+
+Version the Answers pane source for the derived research context; persist the
+nonempty chosen capture IDs as view state, and revalidate on reopen/ask. Do not
+persist a corpus copy. Preserve one publisher for this context across panes.
+An empty, stale or wholly unavailable selection refuses before generation;
+no PageText or all-session fallback. Invalid records are reported and excluded
+from availability, while an ask naming one must fail. Existing history remains
+available through the correct resident when its sources are still valid.
+
+**Done:** the source-ID namespace is accepted through the real admitted route;
+wrong owner fails; the recorded requested scope equals the chosen A/B
+identities, every supplied passage/prompt source belongs to that scope, and the
+fixture question supplies its relevant A passage while excluding visited-only
+X and the other session's sentinel. B need not enter the prompt when the
+ranker/context budget does not select it. Selection changes leave old
+A1 citations resolvable; A2/live edits do not replace A1. Citation activation
+reveals/highlights its exact Unicode passage and repeats hash/range validation.
+Oversize encoded publication refuses visibly with zero new generation; source
+reading remains available. Reconnecting preserves owner/run isolation and does
+not let an old control mutate another session's ask.
+
+#### R4. One end-to-end acceptance receipt
+
+Use a new isolated profile, two small public fixture HTML pages A/B, a unique
+sentinel on visited-only X, and a second session with a distinct sentinel. Use
+ordinary named actions and actual visible controls; no direct store insertion
+may stand in for capture admission, source selection or reopening.
+
+1. New/Rename session; visit A/B/X; explicitly save A and B. Inspect durable
+   references and Keep state independently. X has address/title history but no
+   newly retained body and is absent from the evidence index/publication.
+2. Search a non-ASCII phrase; open A1's saved text at the exact scalar range.
+   Stop both origin and inference resident: list/search/read still work, with
+   no acquisition attempt. Answers reports its separate resident requirement.
+3. Start the declared real resident/model. Choose a nonempty A/B scope, ask,
+   inspect supplied source IDs and prompt ledger, then open the exact citation.
+   Assert mechanics and exclusions; do not infer general answer entailment or
+   model quality from a source marker. Preserve any deterministic fixture
+   controls separately from the real-model integration receipt.
+4. Restart the controlled origin, change live A at the same URL, revisit,
+   then explicitly capture A2. Compare
+   A1/A2 identities and retain A1 passage/old citation. Change the selected ask
+   subset without treating it as source withdrawal.
+5. Save and terminate app/resident; stop origin; cold reopen the named session.
+   Assert source graph/Keep, manifest identities, chosen IDs, reader version and
+   arrangement. Source reading works first; restart resident separately and
+   verify durable answer/history and exact old citation against A1.
+6. Exercise failed deposit, failed attachment/save, empty selection, oversize
+   publication, missing/corrupt Fleece, invalid Unicode range, wrong owner,
+   stale queued action, session switch and late completion. None may claim
+   Saved/answered, fetch a substitute, admit orphan data or leak the other
+   session's sentinel. Deliberate source withdrawal may invalidate its citation
+   with an attributable reason; it must never silently replace the source.
+
+Fast tests qualify pure identity/filtering/retention policy and actor adapter
+behavior. Real consumer tests qualify control/selector wiring. A new headed
+macOS capture/read/ask/reopen run qualifies the assembled first slice on its
+frozen source and coherent lock. Record build/test commands, final full
+workspace result, model/source identities, independently checked stores, prompt
+ledger, reviewed readbacks, unavailable outcomes and cleanup. Historical I5
+and scene receipts cannot substitute for this run. Windows/Linux, human AT and
+physical device/recovery qualification retain separate gates.
+
+### Explicit next joins and exclusions
+
+- **Sourced authored research note:** choose/create an actual Knot-owned
+  document as this session's destination, make its identity visible and durable,
+  and carry a selected saved passage with its artifact/hash/selector into the
+  note beside authored commentary. Opening an existing local Knot file is not
+  itself a graph binding or a clipping target. Reuse the pane plan's
+  “Next Inspector surface: ownership before semantic routes” prerequisite:
+  displayed source A versus cursor B, source/content/endpoint admission and
+  stale-token revalidation. Preserve `DocumentClip` and `KnotClipHandle.insert`;
+  the current environment-only target is not the finished chooser. A standalone
+  research document can be a referenced note under L6; page-leaf annotations
+  and promotion still belong to L-P4. Prove note/evidence/reopen together before
+  claiming this next join complete.
+- **Deliberate selected sharing:** consume L7/L-P5 and place authority for
+  individually chosen attachments, disclose destination and transferred
+  material, and qualify reader refusal/withdrawal plus exact selected export.
+  A private capture list is not a shared collection. Live holder-backed Knot
+  editing does not imply offline visitor editing. No capture/note leaves by
+  being visited, kept, selected for an ask or placed in a research session.
+- **Remain separate:** general annotation/promotion; deletion/recovery/blob-GC
+  completion (L-P2/L-P3); hosted/viewport/PDF capture; automatic Full retention
+  settings and legacy data disposal; arbitrary large-corpus publication;
+  offline interactive-page replay; a new project type, universal collection
+  schema or shared research framework. Existing deletion must conservatively
+  preserve evidence and withdraw missing admission; no irreversible “Forget”
+  promise is added before its custody/GC gates land.
+
+### Implementation entry and stop rules
+
+Start with R0's bounded save acknowledgement and recovery contract, then R1:
+source-bound ordinary capture and completion -> Keep/reference persistence,
+plus metadata-only new history writes. Their positive and negative
+controls must pass before introducing the private reader or Answers context.
+R2 then supplies resident-independent return; R3 connects the existing answer
+engine; R4 qualifies the complete task. Individual phases may land separately,
+but only R0-R4 earns the first research-workflow claim.
+
+Implementation must re-fetch/check active work and confirm the locked Fleece,
+recall and rendering contracts before editing. Preserve the existing single
+store owner and legacy run namespaces. If the audited supplier lacks the exact
+required contract at implementation time, stop at that named owner boundary
+and record the missing contract instead of introducing a parallel store, wire
+or fake success. If native desktop, resident/model or origin control is
+unavailable, keep software evidence separate and leave that acceptance gate
+open. No permissions, accounts or outside participants are created by this
+plan.
+
 ## Findings
 
 Verified 2026-09-06 against the working tree; capture and collection boundaries
@@ -409,3 +857,24 @@ refreshed 2026-09-12.
   close Keep promotion, bin custody, offline replay, or headed acceptance. See
   the [capture plan progress](2026-08-28_page_capture_plan.md#progress) for the
   implementation and validation receipt.
+
+- **2026-10-17, research workflow planning:** audited current `428deb5` and
+  locked Mere `a17e5bb9`; added the first complete private saved-source
+  collect/find/read/ask/verify/return slice, current missing-join inventory,
+  phased gates and explicit authored-note/sharing follow-ons. At that planning
+  cut R0-R4 were proposed, not implemented or newly tested. Existing L1-L7 remain unchanged.
+
+- **2026-10-17, persistence critique reconciled:** verified the Muniment batch
+  contract mismatch, primitive unchecked blob reads and existing typed Fleece
+  verification against both locked `a17e5bb9` and current Mere. Added R0 for
+  correlated save acknowledgement, fault/retry/reopen controls and explicit
+  durability claims. This does not claim a storage fix or execution receipt.
+
+- **2026-10-17, R0 implemented and bounded qualification passed:** correlated
+  request/receipt, required-write acknowledgement, checked replay and current
+  opening-bound recovery passed the 940-test scoped run, including 50 capture
+  and 16 scene controls. Three capture-library controls and the Clippy
+  correctness gate also pass. Published Mere `00e444286` fixes canonical Sets
+  tags at the supplier. The receipt above retains the broader failed runs and
+  durability/platform limits. R1-R4 and headed research-workflow acceptance
+  remain separate gates.

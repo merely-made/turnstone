@@ -226,6 +226,15 @@ impl App {
             return rows;
         }
         let mut rows = self.session_actions();
+        let mut retries: Vec<_> = self.source_captures.values().filter(|attempt| {
+            attempt.request.session == self.session_id
+                && matches!(attempt.phase, crate::source_capture::CapturePhase::Failed | crate::source_capture::CapturePhase::Recoverable)
+        }).collect();
+        retries.sort_by_key(|attempt| (attempt.request.source.as_ref().map(|source| source.acquired_at_ms), attempt.request.id));
+        rows.extend(retries.into_iter().enumerate().map(|(index, attempt)| {
+            (format!("Retry source save {}: {}", index + 1, attempt.request.url),
+                Action::RetrySourceDocumentCapture { request: attempt.request.id })
+        }));
         rows.extend(self.place_founding_actions());
         rows.extend(self.place_member_actions());
         rows.extend(self.place_collection_actions());

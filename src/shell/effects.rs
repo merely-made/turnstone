@@ -1334,9 +1334,10 @@ impl Shell {
                         self.bin_handle.command(crate::recycle::BinCommand::Reopen(
                             crate::recycle::bin_dir(&self.app.session_dir()),
                         ));
-                        self.trail_handle.command(crate::trail_memory::TrailCommand::Reopen(
-                            crate::trail_memory::memory_dir(&self.app.session_dir()),
-                        ));
+                        self.trail_handle.command(crate::trail_memory::TrailCommand::Reopen {
+                            directory: crate::trail_memory::memory_dir(&self.app.session_dir()),
+                            capture_generation: self.app.source_capture_generation,
+                        });
                     } else {
                         let (bin_ack, _) = std::sync::mpsc::sync_channel(1);
                         let (trail_ack, _) = std::sync::mpsc::sync_channel(1);
@@ -1366,9 +1367,10 @@ impl Shell {
                         self.bin_handle.command(crate::recycle::BinCommand::Reopen(
                             crate::recycle::bin_dir(&self.app.session_dir()),
                         ));
-                        self.trail_handle.command(crate::trail_memory::TrailCommand::Reopen(
-                            crate::trail_memory::memory_dir(&self.app.session_dir()),
-                        ));
+                        self.trail_handle.command(crate::trail_memory::TrailCommand::Reopen {
+                            directory: crate::trail_memory::memory_dir(&self.app.session_dir()),
+                            capture_generation: self.app.source_capture_generation,
+                        });
                     } else {
                         let (bin_ack, _) = std::sync::mpsc::sync_channel(1);
                         let (trail_ack, _) = std::sync::mpsc::sync_channel(1);
@@ -1731,51 +1733,36 @@ impl Shell {
                         tracing::warn!(%node, %error, "page capture request refused");
                     }
                 }
-                Effect::CaptureSourceDocument { node, url } => {
-                    let current = self
-                        .app
-                        .graph_runtimes
-                        .graph_containing_member(node)
-                        .and_then(|graph| self.app.graph_runtimes.canvas(graph))
-                        .is_some_and(|canvas| crate::browse::still_current(canvas, node, &url));
-                    let result = current
-                        .then(|| self.app.content.source_capture_candidate(node, &url).cloned())
-                        .flatten()
-                        .ok_or_else(|| {
-                            "source capture requires the exact current fetched HTML response; hosted Weld pages do not expose one".to_string()
-                        });
-                    match result {
-                        Ok(document) => {
-                            let delivered = self.trail_handle.command(
-                                crate::trail_memory::TrailCommand::CaptureSourceDocument {
-                                    node,
-                                    url: url.clone(),
-                                    document,
-                                },
-                            );
-                            if !delivered {
-                                let effects = self.app.apply_update(
-                                    crate::action::Update::SourceDocumentCaptured {
-                                        node,
-                                        url,
-                                        result: Err(
-                                            "the session Eidetic actor is unavailable".into()
-                                        ),
-                                    },
-                                );
-                                self.run_effects(effects);
-                            }
-                        },
-                        Err(error) => {
-                            let effects = self.app.apply_update(
-                                crate::action::Update::SourceDocumentCaptured {
-                                    node,
-                                    url,
-                                    result: Err(error),
-                                },
-                            );
+                Effect::PersistSourceCapture { request } => {
+                    let result = self.app.persist_source_capture(request);
+                    if let Err(error) = result {
+                        let effects = self.app.apply_update(Update::SourceCaptureSaved { capture_generation: self.app.source_capture_generation, request, result: Err(error) });
+                        self.run_effects(effects);
+                    } else {
+                        let owner = self.app.source_captures[&request].request.clone();
+                        let directory = crate::trail_memory::memory_dir(&crate::session::session_dir(&self.app.data_root, owner.session));
+                        if !self.trail_handle.command(crate::trail_memory::TrailCommand::AcknowledgeSourceCapture { capture_generation: self.app.source_capture_generation, request: owner, directory }) {
+                            let effects = self.app.apply_update(Update::SourceCaptureSaved { capture_generation: self.app.source_capture_generation, request,
+                                result: Err("the capture actor could not acknowledge the saved request".into()) });
                             self.run_effects(effects);
-                        },
+                        }
+                    }
+                },
+                Effect::CaptureSourceDocument { request } => {
+                    let owner = self.app.source_capture_owner(&request);
+                    let document = self.app.content.source_capture_candidate(request.node, &request.url).cloned();
+                    // The actor can replay an exact saved receipt without a live origin.
+                    let result = owner.and_then(|()| {
+                        let directory = crate::trail_memory::memory_dir(&crate::session::session_dir(
+                            &self.app.data_root, request.session));
+                        if self.trail_handle.command(crate::trail_memory::TrailCommand::CaptureSourceDocument {
+                            capture_generation: self.app.source_capture_generation,
+                            request: request.clone(), directory, document,
+                        }) { Ok(()) } else { Err("the session Eidetic actor is unavailable".into()) }
+                    });
+                    if let Err(error) = result {
+                        let effects = self.app.apply_update(Update::SourceDocumentCaptured { capture_generation: self.app.source_capture_generation, request, result: Err(error) });
+                        self.run_effects(effects);
                     }
                 },
                 Effect::FindContent {

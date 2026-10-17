@@ -1,6 +1,6 @@
 # Turnstone design documents
 
-Rust policy (2026-10-13): working toolchain 1.99.0 and shared MSRV 1.97.1, qualified separately. Canonical policy: `mere/design_docs/2026-08-12_family_composition_thesis_brief.md`, section "Shared Rust toolchain and minimum version".
+Rust policy (2026-10-13): working toolchain 1.99.1 and shared MSRV 1.97.1, qualified separately. Canonical policy: `mere/design_docs/2026-08-12_family_composition_thesis_brief.md`, section "Shared Rust toolchain and minimum version".
 
 Murm source adoption (2026-10-13) is tracked in
 `murm/design_docs/2026-10-13_murm_family_move_plan.md`. Active consumer roots
@@ -105,8 +105,18 @@ set.
   visiting, keeping, capturing, annotating, collecting, sharing, revision
   and deletion; rulings L1-L7 join the surfaces, capture and recycle bin
   plans and add phases for the missing joins. Source capture and persisted
-  collection-scoped search are implemented; the remaining joins retain their
-  individual gates.
+  collection-scoped search are implemented. The October 17 proposed research
+  slice audits `428deb5` and sequences save acknowledgement/recovery, ordinary capture/Keep, private saved-source
+  search and offline text reading, then explicitly scoped capture-backed
+  Answers and cold-reopen acceptance. Authored Knot notes and deliberate
+  attachment sharing are named follow-ons. R0 save acknowledgement/recovery
+  is implemented from fetched `b7e1529`, adopting published Mere `00e444286`:
+  940 bounded regression tests pass, including 50 capture and 16 scene controls;
+  three capture-library controls and the Clippy correctness gate also pass.
+  The [R0 receipt](../docs/receipts/r0_source_save_20261017/qualification.json)
+  preserves broader failures and process/durability/platform limits. R1-R4
+  remain proposed; the full research workflow and remaining lifecycle joins
+  retain their individual gates.
 - [Trail recall evaluation](2026-09-02_trail_recall_evaluation_plan.md): private captured-corpus protocol for selecting or rejecting configurable phrase recall against BM25 with held-out ranking and resource budgets.
 - [Page capture and provenance](2026-08-28_page_capture_plan.md): ruled path
   for durable node-attached page captures; P1 owner contracts and exact pins

@@ -1,0 +1,8 @@
+Command: CARGO_BUILD_JOBS=2 cargo clippy --locked --lib --tests -- -D clippy::correctness
+Toolchain: rustup run 1.99.1
+Exit code: 0
+Non-correctness warnings remain; this command enforces the correctness lint group only.
+
+warning: `turnstone` (lib) generated 237 warnings (run `cargo clippy --fix --lib -p turnstone -- -D clippy::correctness` to apply 125 suggestions)
+warning: `turnstone` (lib test) generated 229 warnings (185 duplicates) (run `cargo clippy --fix --lib -p turnstone --tests -- -D clippy::correctness` to apply 39 suggestions)
+    Finished `dev` profile [unoptimized] target(s) in 4m 20s

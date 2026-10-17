@@ -494,3 +494,29 @@ Recorded here so they are not lost, and because each is independently closable:
   gate is still the no-op `consented_to_keep` in `src/trail_memory.rs`, which
   returns `true`. Its default is open: `Full`, as Mere's C4 shipped, or
   disabled and opt-in, as Graphshell's `HistoryCapturePolicy` is. Recorded in Mere's archived plan tails plan (`mere/design_docs/mere_docs/implementation_strategy/2026-07-03_archived_plan_tails_plan.md`, section "2026-10-06 archive pass").
+
+- **2026-10-17, research-workflow join planned:** the
+  [lifecycle plan's research slice](2026-09-06_page_lifecycle_plan.md#research-workflow-smallest-complete-slice-2026-10-17)
+  now scopes a correlated save acknowledgement and partial-failure recovery
+  prerequisite (R0), ordinary explicit source capture -> Keep, a private capture
+  list/search and resident-independent exact saved-text reader, then a bounded
+  capture-backed Answers context. This consumes P3a's existing source artifacts;
+  it does not close hosted P2/P4/P5 or imply a new execution receipt. The audit
+  confirms `consented_to_keep` still returns true at `428deb5`. The proposed
+  first slice follows L1/L3's metadata-only ordinary history and explicit-byte
+  admission on new writes, preserves legacy PageText bytes/runs, and excludes
+  them from research evidence. This names the conflict with the older open
+  Full-vs-opt-in tail; it neither silently changes L1 nor claims a general
+  automatic-retention policy has shipped.
+
+- **2026-10-17, R0 save integrity qualified:** source deposits now wait for
+  required owning facet/graph writes and a checked, current-opening receipt
+  acknowledgement before final saved success. Fault/retry/reopen controls,
+  including four joined real-Fjall processes, pass within the 940-test bounded
+  regression run; all 50 capture controls pass. The
+  [R0 receipt](../docs/receipts/r0_source_save_20261017/qualification.json)
+  binds source/lock/binary inputs and retains broader failed diagnostics.
+  Existing Keep is preserved; automatic Keep, the ordinary research control,
+  private reader/Answers joins and retention gates remain R1-R4 work. The
+  supported durability model is acknowledged writes and tested process exit,
+  with power-loss and headed acceptance outside this receipt.

@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-17",
+  "status": "R0 bounded qualification passed",
+  "turnstone_base": "b7e15290d50db7c4b00a29257f224c1d96f8d0cf",
+  "mere_supplier": "00e4442868ee1cb014364a81ccaed657b512b218",
+  "platform": {
+    "os": "macOS 15.8.1 (24H32)",
+    "architecture": "x86_64",
+    "toolchain": "rustup run 1.99.1"
+  },
+  "source_inputs": "source-inputs.json",
+  "test_executable": "binary.json",
+  "lock_delta": "checks/lock-delta.json",
+  "saved_boundary": [
+    "exact original raw and annotation evidence verified locally",
+    "owning canonical facets and graph writes acknowledge success",
+    "completed request receipt verifies and acknowledges its saved flag",
+    "current-opening app admission emits one final success per request"
+  ],
+  "sidecars_outside_saved_boundary": [
+    "feed",
+    "pane",
+    "view",
+    "preferences",
+    "derived shared-place lookup refresh"
+  ],
+  "keep_behavior": "Existing Keep state is preserved; R1 adds automatic Keep promotion.",
+  "tests": {
+    "bounded_library": {
+      "command": "cargo test --locked --lib --no-fail-fast -- --test-threads=4 --skip place:: --skip sky_surface:: --skip sky_timeline::",
+      "exit_code": 0,
+      "passed": 940,
+      "failed": 0,
+      "ignored": 10,
+      "filtered_out": 89,
+      "seconds": 225.9,
+      "log": "checks/bounded-library.log"
+    },
+    "capture_subset": {
+      "passed": 50,
+      "part_of_bounded_library": true,
+      "log": "checks/capture-checks.log",
+      "note": "Includes process-worker helpers; their parent controls actually invoke and assert three/four fresh child stages."
+    },
+    "unchanged_scene_subset": {
+      "passed": 16,
+      "part_of_bounded_library": true,
+      "sets_regression": "app::scene_tests::scene_catalog_layouts_place_finite_members_and_their_bounded_regions"
+    },
+    "captured_collection": {
+      "command": "turnstone-a8f1418604963df6 place::captured_collection --test-threads=1",
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0,
+      "log": "checks/capture-library.log"
+    },
+    "clippy": {
+      "command": "CARGO_BUILD_JOBS=2 cargo clippy --locked --lib --tests -- -D clippy::correctness",
+      "exit_code": 0,
+      "non_correctness_warnings_present": true,
+      "summary": "checks/clippy-summary.log"
+    },
+    "scoped_rustfmt": {
+      "exit_code": 0,
+      "files": [
+        "src/source_capture.rs",
+        "src/app/source_capture_arms.rs",
+        "src/app/source_capture_persistence_tests.rs",
+        "src/trail_memory/source_capture_receipts.rs",
+        "src/trail_memory/source_capture_tests.rs"
+      ]
+    },
+    "git_diff_check": {
+      "exit_code": 0
+    },
+    "documentation": {
+      "status": "pass",
+      "receipt": "checks/documentation.json"
+    }
+  },
+  "proved_failure_controls": [
+    "Before and after every actual Fjall put in artifact/request writes, including committed writes whose acknowledgement fails; drop/reopen/retry preserves previous valid artifacts and stable identities.",
+    "Required facet-write and graph-write failures never announce Saved; receipt-ack failures remain retryable without duplicate attachment.",
+    "Three fresh app processes prove file failure/retry/reopen; four joined real App/trail actor/Fjall processes prove facet failure, graph failure, offline retry/save, then quiet completed revalidation.",
+    "Real process workers call process::exit without Rust Drop/Flush; no power-loss claim follows.",
+    "Original decoded non-UTF-8 body is retained and checked; partial retry ignores a newer live response and never deposits its replacement. Fresh substituted responses refuse before intent.",
+    "A/B/A warm adoption invalidates prior qualification; all five prior-opening update types are rejected. Current retry/revalidation succeeds without duplicate success.",
+    "Real actor same-directory reopening releases the old Fjall lock; stale-opening and foreign-session capture/ack commands refuse before writes, confirmed by direct reopened store inspection.",
+    "Wrong bytes, substituted manifest identity, broken raw/annotation links and Fleece facts, missing payloads, typed-role/schema collisions and malformed attachment ledgers refuse admission while preserving evidence.",
+    "Distinct deliberate equal-manifest gestures retain ordered occurrences; duplicate completion of one request attaches once. Forks retain evidence/foreign facets without copying donor operation authority."
+  ],
+  "supplier_qualification": {
+    "commit": "00e4442868ee1cb014364a81ccaed657b512b218",
+    "change": "Sets reads canonical Resource tags through Graph::node_content_tags; existing legacy fallback retained.",
+    "focused_bounded_scenes": {
+      "passed": 6,
+      "failed": 0,
+      "log": "checks/mere-r0-tag-axis-tests.log"
+    },
+    "focused_axes": {
+      "passed": 2,
+      "failed": 0,
+      "log": "checks/mere-r0-tag-axis-unit-tests.log"
+    },
+    "full_library": {
+      "passed": 516,
+      "failed": 1,
+      "ignored": 18,
+      "log": "checks/mere-r0-tag-axis-full-tests.log"
+    },
+    "isolated_clock_control": {
+      "passed": 0,
+      "failed": 1,
+      "log": "checks/mere-r0-tag-axis-speed-isolated.log"
+    },
+    "open_gate": "Unchanged speed budget assertion fails on this host, including when isolated. It does not call the tag axis; no physics code/assertion changed. Concurrent unrelated compilation was observed."
+  },
+  "earlier_diagnostics": {
+    "unrestricted_parallel_run": "checks/early-default-run.json",
+    "three_individual_place_controls": [
+      "checks/turnstone-r0-peer-grant-serial.log",
+      "checks/turnstone-r0-peer-unauthorized-serial.log",
+      "checks/turnstone-r0-peer-relock.log"
+    ],
+    "scheduling_prefix": "checks/serial-scheduling-prefix.json",
+    "note": "These are diagnostics, not a current unrestricted-suite pass. The earlier default run used Mere55c479bc and pre-final R0 source."
+  },
+  "qualification_limits": [
+    "OS write acknowledgement and tested process-exit/restart survival; exposed Fjall/Pandect APIs provide no cross-store transaction or sync_all barrier. Power-loss durability remains open.",
+    "The unrestricted shared-place/analytical Sky profile is not qualified by this receipt; its earlier failures and interruption remain recorded.",
+    "No headed, GPU, physical recovery, Windows or Linux acceptance was performed for R0.",
+    "Missing original raw/decoded bytes require the original response, never a network replacement. An intent that never committed cannot appear in cold recovery inventory.",
+    "R1-R4 research product joins, retention/GC and live Sets tag-edit cache invalidation remain separate work."
+  ]
+}

@@ -28,6 +28,8 @@ use crate::ui::Suggestion;
 /// One coherent read of the application's observable state.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Snapshot {
+    /// Current-session capture acknowledgement and recovery facts.
+    pub source_captures: Vec<SourceCaptureView>,
     pub graph_scene: crate::graph_scenes::Facts,
     /// Same last-refresh facts as the place status surface, without its filter.
     pub place_status: Vec<String>,
@@ -139,6 +141,16 @@ pub struct Snapshot {
     pub session: String,
     /// How many sessions the manifest set holds.
     pub session_count: usize,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct SourceCaptureView {
+    pub request: Uuid,
+    pub node: Uuid,
+    pub url: String,
+    pub phase: crate::source_capture::CapturePhase,
+    pub error: Option<String>,
+    pub stored: Option<crate::action::StoredSourceDocument>,
 }
 
 /// The focused node's identity and captions, as the UI would present them.
@@ -319,7 +331,15 @@ pub enum AppEvent {
         node: Uuid,
         error: String,
     },
-    /// An explicit Fleece source-document capture reached local Eidetic custody.
+    SourceDocumentCaptureProgress {
+        request: Uuid,
+        node: Uuid,
+        session: crate::panes::SessionId,
+        stage: String,
+        detail: Option<String>,
+        stored: Option<crate::action::StoredSourceDocument>,
+    },
+    /// Verified local evidence and its owning facet/graph writes acknowledged success.
     SourceDocumentCaptured {
         node: Uuid,
         url: String,
@@ -644,6 +664,9 @@ impl AppEvent {
             AppEvent::DownloadFailed { node, error } => {
                 format!("download-failed {node} {error}")
             }
+            AppEvent::SourceDocumentCaptureProgress { request, node, session, stage, detail, stored } => format!(
+                "source-document-capture-progress request={request} session={session:?} node={node} stage={stage} stored={stored:?} {}", detail.as_deref().unwrap_or("")
+            ),
             AppEvent::SourceDocumentCaptured {
                 node,
                 url,
@@ -1004,6 +1027,16 @@ pub fn snapshot(app: &App) -> Snapshot {
         surfaces.push("chrome".to_string());
     }
     Snapshot {
+        source_captures: {
+            let mut captures: Vec<_> = app.source_captures.values()
+                .filter(|attempt| attempt.request.session == app.session_id)
+                .map(|attempt| SourceCaptureView {
+                    request: attempt.request.id, node: attempt.request.node,
+                    url: attempt.request.url.clone(), phase: attempt.phase, error: attempt.error.clone(), stored: attempt.stored.clone(),
+                }).collect();
+            captures.sort_by_key(|capture| capture.request);
+            captures
+        },
         graph_scene: crate::graph_scenes::facts(app.scene_command_pane()
             .and_then(|pane| app.graph_for_pane(pane))
             .and_then(|graph| app.graph_runtimes.canvas(graph))

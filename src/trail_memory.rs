@@ -161,10 +161,13 @@ pub enum TrailCommand {
     /// An explicit request to preserve one fetched HTML response. This remains
     /// separate from `RecordText`: recall text is never source evidence.
     CaptureSourceDocument {
-        node: uuid::Uuid,
-        url: String,
-        document: crate::content::FetchedDocument,
+        capture_generation: uuid::Uuid,
+        request: crate::source_capture::CaptureRequest,
+        directory: PathBuf,
+        document: Option<crate::content::FetchedDocument>,
     },
+    /// Commit the durable request receipt after owning facet/graph save ack.
+    AcknowledgeSourceCapture { capture_generation: uuid::Uuid, request: crate::source_capture::CaptureRequest, directory: PathBuf },
     /// Flush every open segment to the store (a lifecycle edge).
     Flush,
     /// Answer lexical recall over the stored corpus (the omnibar's recall
@@ -178,7 +181,7 @@ pub enum TrailCommand {
     },
     /// Flush, re-point the store at another session's memory dir (a session
     /// switch), and restart origin chaining.
-    Reopen(PathBuf),
+    Reopen { directory: PathBuf, capture_generation: uuid::Uuid },
     /// Flush, drop the open store, and ack — the close path's handshake:
     /// Windows cannot rename a directory whose files are open, so the shell
     /// releases the memory store BEFORE moving the session dir to the trash.
@@ -341,8 +344,16 @@ fn keep_page_text(store: &FjallStore, url: &str, text: &str) {
 /// Store the exact acquired bytes and the Fleece annotation that describes a
 /// canonical-text projection of those bytes. This is invoked only by the
 /// explicit action path, never by fetch enrichment or trail recall.
+#[cfg(test)]
 fn capture_source_document(
     store: &mut FjallStore,
+    document: &crate::content::FetchedDocument,
+) -> Result<StoredSourceDocument, String> {
+    capture_source_document_in(store, document)
+}
+
+pub(crate) fn capture_source_document_in(
+    store: &mut dyn eidetic::Store,
     document: &crate::content::FetchedDocument,
 ) -> Result<StoredSourceDocument, String> {
     use eidetic::models::OpaqueBlob;
@@ -386,27 +397,7 @@ fn capture_source_document(
         extracted.contract.quote_context,
     )
     .ok_or_else(|| "Fleece produced no canonical text for a whole-document anchor".to_string())?;
-    let raw_manifest = pollster::block_on(eidetic::save_typed(
-        store,
-        &OpaqueBlob(document.bytes.clone()),
-        Vec::new(),
-        PrivacyClass::LocalOnly,
-        ProvenanceRecord {
-            origin: ProvenanceOrigin::Imported {
-                source: effective_url.clone(),
-            },
-            upstream: Vec::new(),
-            tooling: Some("turnstone-source-document-capture/v1".into()),
-            generated_at: captured_at,
-        },
-        TrustEnvelope {
-            level: TrustLevel::SelfAsserted,
-            signatures: Vec::new(),
-            moderation_state: ModerationState::Unreviewed,
-        },
-        captured_at,
-    ))
-    .map_err(|error| format!("raw source deposit: {error}"))?;
+    let raw_manifest = eidetic::ManifestId::of_blob(&document.bytes);
     let evidence = CaptureEvidenceV1::new(
         effective_url,
         eidetic::Hash::of(&document.bytes),
@@ -424,19 +415,243 @@ fn capture_source_document(
         &anchor,
     )
     .map_err(|error| format!("Fleece annotation: {error}"))?;
+    // Eidetic IDs address payload bytes, not (schema, bytes). Plan and check
+    // every typed role before any deposit, so one role cannot replace another
+    // valid artifact's mutable manifest at the same content address.
+    use eidetic::TypedPayload;
+    let annotation_bytes = record
+        .serialize_to_bytes()
+        .map_err(|error| format!("Fleece annotation encoding: {error}"))?;
+    let annotation_manifest = eidetic::ManifestId::of_blob(&annotation_bytes);
+    let schema_manifest = fleece::FLEECE_ANNOTATION_SCHEMA_REF.0;
+    if raw_manifest == annotation_manifest
+        || raw_manifest == schema_manifest
+        || annotation_manifest == schema_manifest
+    {
+        return Err("source capture has incompatible typed roles at one content address".into());
+    }
+    let raw_exists = preflight_source_artifact(
+        store,
+        raw_manifest,
+        OpaqueBlob::schema_ref(),
+        PrivacyClass::LocalOnly,
+        Some(&document.bytes),
+    )?;
+    let annotation_exists = preflight_source_artifact(
+        store,
+        annotation_manifest,
+        fleece::FleeceAnnotationRecord::schema_ref(),
+        PrivacyClass::LocalOnly,
+        Some(&annotation_bytes),
+    )?;
+    preflight_source_artifact(
+        store,
+        schema_manifest,
+        *eidetic::META_SCHEMA_REF,
+        PrivacyClass::PublicPortable,
+        None,
+    )?;
+    if raw_exists {
+        let manifest = pollster::block_on(eidetic::manifest::load_manifest(store, raw_manifest))
+            .map_err(|error| format!("raw source preflight: {error}"))?
+            .unwrap();
+        if !matches!(
+            manifest.provenance.origin,
+            ProvenanceOrigin::Imported { .. }
+        ) {
+            return Err(
+                "raw source preflight: incompatible existing acquisition provenance".into(),
+            );
+        }
+    }
+    if annotation_exists {
+        let stored = StoredSourceDocument {
+            raw_manifest: raw_manifest.to_string(),
+            annotation_manifest: annotation_manifest.to_string(),
+        };
+        verify_source_document(store, &stored)?;
+    }
+    if !raw_exists {
+        pollster::block_on(eidetic::save_typed(
+            store,
+            &OpaqueBlob(document.bytes.clone()),
+            Vec::new(),
+            PrivacyClass::LocalOnly,
+            ProvenanceRecord {
+                origin: ProvenanceOrigin::Imported {
+                    source: document.effective_url.clone().unwrap(),
+                },
+                upstream: Vec::new(),
+                tooling: Some("turnstone-source-document-capture/v1".into()),
+                generated_at: captured_at,
+            },
+            TrustEnvelope {
+                level: TrustLevel::SelfAsserted,
+                signatures: Vec::new(),
+                moderation_state: ModerationState::Unreviewed,
+            },
+            captured_at,
+        ))
+        .map_err(|error| format!("raw source deposit: {error}"))?;
+    }
     pollster::block_on(fleece::bootstrap_fleece_annotation_schema(store))
         .map_err(|error| format!("Fleece schema bootstrap: {error}"))?;
-    let annotation_manifest = pollster::block_on(fleece::save_fleece_annotation(
-        store,
-        &record,
-        document.acquired_at_ms,
-    ))
-    .map_err(|error| format!("Fleece annotation deposit: {error}"))?;
-    Ok(StoredSourceDocument {
+    if !annotation_exists {
+        pollster::block_on(fleece::save_fleece_annotation(
+            store,
+            &record,
+            document.acquired_at_ms,
+        ))
+        .map_err(|error| format!("Fleece annotation deposit: {error}"))?;
+    } else {
+        // Reusing a complete annotation preserves its exact manifest metadata.
+        // Its resource association is independently idempotent and may have
+        // been the interrupted final write of the previous deposit attempt.
+        pollster::block_on(eidetic::ResourceCaptureStore::new(&*store).record(
+            &record.extraction.capture.canonical_source,
+            record.extraction.capture.capture_hash,
+            eidetic::CaptureContent::Acquired,
+            document.acquired_at_ms,
+        ))
+        .map_err(|error| format!("Fleece capture association: {error}"))?;
+    }
+    let stored = StoredSourceDocument {
         raw_manifest: raw_manifest.to_string(),
         annotation_manifest: annotation_manifest.to_string(),
-    })
+    };
+    verify_source_document(store, &stored)?;
+    Ok(stored)
 }
+
+/// Preserve an existing typed role exactly. The trail actor serializes these
+/// checks with subsequent writes; no transactional backend guarantee is assumed.
+fn preflight_source_artifact(
+    store: &mut dyn eidetic::Store,
+    id: eidetic::ManifestId,
+    schema: eidetic::SchemaRef,
+    privacy: eidetic::PrivacyClass,
+    expected: Option<&[u8]>,
+) -> Result<bool, String> {
+    let manifest = pollster::block_on(eidetic::manifest::load_manifest(store, id))
+        .map_err(|error| format!("source artifact preflight manifest: {error}"))?;
+    if let Some(manifest) = &manifest {
+        if manifest.id != id
+            || manifest.content_hash != id.0
+            || manifest.schema != schema
+            || manifest.privacy != privacy
+        {
+            return Err(format!(
+                "source artifact preflight: incompatible existing manifest role at {id}"
+            ));
+        }
+    }
+    let key = format!("blob:{}", id.0.to_hex());
+    let bytes = pollster::block_on(store.get(&key))
+        .map_err(|error| format!("source artifact preflight payload: {error}"))?;
+    if let Some(bytes) = &bytes {
+        if eidetic::Hash::of(bytes) != id.0 || expected.is_some_and(|expected| expected != bytes) {
+            return Err(format!(
+                "source artifact preflight: payload integrity mismatch at {id}"
+            ));
+        }
+    }
+    if let Some(manifest) = &manifest {
+        let bytes = bytes
+            .as_ref()
+            .ok_or_else(|| format!("source artifact preflight: missing local payload at {id}"))?;
+        if manifest.byte_size != bytes.len() as u64
+            || !manifest.sources.iter().any(|source| matches!(source, eidetic::BlobSource::Local { key: local } if local == &key))
+        {
+            return Err(format!("source artifact preflight: inconsistent local payload at {id}"));
+        }
+    }
+    Ok(manifest.is_some())
+}
+
+/// Admit only the exact locally addressed raw/annotation pair. Eidetic checks
+/// typed payload hashes and Fleece checks annotation facts; the host additionally
+/// binds the requested key to the manifest identity and authoritative raw source.
+/// No fetcher can repair missing or damaged saved evidence at this boundary.
+pub(crate) fn verify_source_document(
+    store: &mut dyn eidetic::Store,
+    stored: &StoredSourceDocument,
+) -> Result<(), String> {
+    use eidetic::{ManifestId, PrivacyClass, ProvenanceOrigin};
+    use fleece::eidetic_bridge::CaptureDomMode;
+
+    fn manifest_id(value: &str) -> Result<ManifestId, String> {
+        serde_json::from_value(serde_json::Value::String(value.to_owned()))
+            .map_err(|error| format!("source manifest identity: {error}"))
+    }
+
+    fn checked_manifest(
+        store: &mut dyn eidetic::Store,
+        id: ManifestId,
+    ) -> Result<eidetic::BlobManifest, String> {
+        let manifest = pollster::block_on(eidetic::manifest::load_manifest(store, id))
+            .map_err(|error| format!("source manifest read: {error}"))?
+            .ok_or_else(|| format!("source manifest {id} is missing"))?;
+        if manifest.id != id || manifest.content_hash != id.0 {
+            return Err(format!("source manifest identity mismatch at {id}"));
+        }
+        if manifest.privacy != PrivacyClass::LocalOnly {
+            return Err(format!("source manifest {id} is not private local evidence"));
+        }
+        let key = format!("blob:{}", id.0.to_hex());
+        if !manifest.sources.iter().any(|source| {
+            matches!(source, eidetic::BlobSource::Local { key: local } if local == &key)
+        }) {
+            return Err(format!("source manifest {id} has no exact local payload"));
+        }
+        let bytes = pollster::block_on(store.get(&key))
+            .map_err(|error| format!("source payload read: {error}"))?
+            .ok_or_else(|| format!("source payload {id} is missing"))?;
+        if eidetic::Hash::of(&bytes) != id.0 || bytes.len() as u64 != manifest.byte_size {
+            return Err(format!("source payload integrity mismatch at {id}"));
+        }
+        Ok(manifest)
+    }
+
+    let raw_id = manifest_id(&stored.raw_manifest)?;
+    let annotation_id = manifest_id(&stored.annotation_manifest)?;
+    let raw_manifest = checked_manifest(store, raw_id)?;
+    let annotation_manifest = checked_manifest(store, annotation_id)?;
+    let record = pollster::block_on(fleece::load_fleece_annotation(store, annotation_id))
+        .map_err(|error| format!("source annotation validation: {error}"))?
+        .ok_or_else(|| "source annotation is missing".to_string())?;
+    let evidence = record.extraction.capture.evidence.as_ref()
+        .ok_or_else(|| "source annotation lacks acquisition evidence".to_string())?;
+    let html = evidence.response_content_type.as_deref().is_some_and(|content_type| {
+        content_type.split(';').next()
+            .is_some_and(|media| media.trim().eq_ignore_ascii_case("text/html"))
+    });
+    if !evidence.has_authoritative_acquisition_context()
+        || evidence.dom_mode != CaptureDomMode::Source
+        || !html
+        || evidence.raw_manifest != Some(raw_id)
+        || evidence.capture_hash != raw_id.0
+        || evidence.replay_manifest.is_some()
+        // A raw blob is content addressed: identical bytes acquired from two
+        // URLs/times share it. Acquisition identity belongs to the annotation,
+        // not the mutable metadata of that shared raw manifest.
+        || !matches!(raw_manifest.provenance.origin, ProvenanceOrigin::Imported { .. })
+        || annotation_manifest.created_at != evidence.captured_at
+        || annotation_manifest.provenance.generated_at != evidence.captured_at
+        || annotation_manifest.provenance.origin != ProvenanceOrigin::Generated
+    {
+        return Err("source annotation and raw acquisition provenance disagree".to_string());
+    }
+    pollster::block_on(eidetic::load_typed::<eidetic::models::OpaqueBlob>(
+        store, &mut eidetic::NoFetcher, raw_id,
+    ))
+    .map_err(|error| format!("raw source validation: {error}"))?
+    .ok_or_else(|| "raw source is missing".to_string())?;
+    Ok(())
+}
+
+#[cfg(test)]
+#[path = "trail_memory/source_capture_tests.rs"]
+mod source_capture_tests;
 
 /// Every stored page body for the open session. An unreadable store yields an
 /// empty snapshot rather than failing the recall: pages then recall by title
@@ -880,13 +1095,14 @@ pub(crate) fn spawn_trail_with_capture_library(
     dir: PathBuf,
     capture_library: crate::place::captured_collection::LocalCaptureLibrary,
 ) -> (ActorHandle<TrailCommand>, Receiver<Update>) {
-    spawn_trail_for_session(wake, Some(dir), capture_library)
+    spawn_trail_for_session(wake, Some(dir), capture_library, uuid::Uuid::nil())
 }
 
 pub(crate) fn spawn_trail_for_session(
     wake: Wake,
     dir: Option<PathBuf>,
     capture_library: crate::place::captured_collection::LocalCaptureLibrary,
+    capture_generation: uuid::Uuid,
 ) -> (ActorHandle<TrailCommand>, Receiver<Update>) {
     spawn_named(
         "trail-memory",
@@ -896,6 +1112,8 @@ pub(crate) fn spawn_trail_for_session(
                 .as_ref()
                 .and_then(|dir| open_memory(dir, &capture_library));
             let mut current_dir = dir.unwrap_or_default();
+            let mut current_capture_generation = capture_generation;
+            emit_capture_recovery(&mut state, &current_dir, current_capture_generation, &out);
             // The derived lexical/behavioural projection and whether the corpus has
             // moved since it was minted. Built on the first recall, not at
             // spawn: a session that never searches never pays for one.
@@ -994,35 +1212,47 @@ pub(crate) fn spawn_trail_for_session(
                         // from, so a new one makes the projection stale.
                         index_stale = true;
                     },
-                    TrailCommand::CaptureSourceDocument {
-                        node,
-                        url,
-                        document,
-                    } => {
-                        let result = match state.as_mut() {
-                            Some((store, _)) => {
-                                let result = capture_source_document(store, &document);
-                                if result.is_ok()
-                                    && let Err(error) = crate::place::captured_collection::refresh_local_capture_library(
-                                        store,
-                                        &current_dir,
-                                        &capture_library,
-                                    )
-                                {
-                                    capture_library.unavailable(error);
-                                }
-                                result
-                            },
-                            None => Err("the session Eidetic store is not open".to_string()),
+                    TrailCommand::CaptureSourceDocument { capture_generation, request, directory, document } => {
+                        let admitted_session = current_dir.parent().and_then(Path::file_name).and_then(|name| name.to_str());
+                        let result = if directory != current_dir
+                            || capture_generation != current_capture_generation
+                            || admitted_session != Some(request.session.as_uuid().to_string().as_str())
+                        {
+                            Err("the capture actor belongs to another session opening or directory".into())
+                        } else {
+                            match state.as_mut() {
+                                Some((store, _)) => source_capture_receipts::capture_request(store, &request, document.as_ref()),
+                                None => Err("the session Eidetic store is not open".into()),
+                            }
                         };
-                        out.emit(Update::SourceDocumentCaptured { node, url, result });
+                        out.emit(Update::SourceDocumentCaptured { capture_generation, request, result });
+                    },
+                    TrailCommand::AcknowledgeSourceCapture { capture_generation, request, directory } => {
+                        let admitted_session = current_dir.parent().and_then(Path::file_name).and_then(|name| name.to_str());
+                        let result = if directory != current_dir
+                            || capture_generation != current_capture_generation
+                            || admitted_session != Some(request.session.as_uuid().to_string().as_str())
+                        {
+                            Err("capture save acknowledgement belongs to another session opening or store".into())
+                        } else {
+                            match state.as_mut() {
+                                Some((store, _)) => source_capture_receipts::acknowledge_saved(store, &request),
+                                None => Err("the session Eidetic store is not open".into()),
+                            }
+                        };
+                        if result.is_ok() {
+                            if let Some((store, _)) = state.as_mut()
+                                && let Err(error) = crate::place::captured_collection::refresh_local_capture_library(store, &current_dir, &capture_library)
+                            { capture_library.unavailable(error); }
+                        }
+                        out.emit(Update::SourceCaptureSaved { capture_generation, request: request.id, result });
                     },
                     TrailCommand::Flush => {
                         if let Some((store, memory)) = state.as_mut() {
                             flush(store, memory);
                         }
                     },
-                    TrailCommand::Reopen(dir) => {
+                    TrailCommand::Reopen { directory: dir, capture_generation } => {
                         if let Some((store, memory)) = state.as_mut() {
                             flush(store, memory);
                         }
@@ -1032,8 +1262,13 @@ pub(crate) fn spawn_trail_for_session(
                         index = None;
                         index_stale = true;
                         indexed_sources.clear();
+                        // A warm reopen can target this same directory. Release
+                        // its Fjall lock before evaluating the new open.
+                        drop(state.take());
                         state = open_memory(&dir, &capture_library);
                         current_dir = dir;
+                        current_capture_generation = capture_generation;
+                        emit_capture_recovery(&mut state, &current_dir, current_capture_generation, &out);
                     },
                     TrailCommand::Release(ack) => {
                         if let Some((store, memory)) = state.as_mut() {
@@ -1695,7 +1930,7 @@ mod inference_owner_tests {
             .join(session.to_string())
             .join("memory");
         let (handle, _updates) =
-            spawn_trail_for_session(std::sync::Arc::new(|| {}), Some(dir), Default::default());
+            spawn_trail_for_session(std::sync::Arc::new(|| {}), Some(dir), Default::default(), uuid::Uuid::nil());
         let owner = TrailInferenceOwner(std::sync::Arc::new(handle));
         let namespace = format!("turnstone/{session}");
         owner.0.command(TrailCommand::RecordText {
@@ -1722,5 +1957,38 @@ mod inference_owner_tests {
             Ok(actor) => actor.join(),
             Err(_) => panic!("unexpected actor borrower"),
         }
+    }
+}
+
+#[path = "trail_memory/source_capture_receipts.rs"]
+mod source_capture_receipts;
+
+fn emit_capture_recovery(
+    state: &mut Option<(FjallStore, BrowsingMemory)>, directory: &Path, capture_generation: uuid::Uuid, out: &Emitter<Update>,
+) {
+    let Some((store, _)) = state.as_mut() else { return; };
+    match source_capture_receipts::recover_receipts(store) {
+        Ok(receipts) => for receipt in receipts {
+            // Directory admission comes from the live actor, not saved JSON.
+            let owner = directory.parent().and_then(Path::file_name).and_then(|name| name.to_str());
+            if owner != Some(receipt.request.session.as_uuid().to_string().as_str()) {
+                out.emit(Update::SourceCaptureRecoveryFailed { capture_generation, error: "capture receipt owner does not match the admitted session store".into() });
+                continue;
+            }
+            if receipt.saved {
+                if let Err(error) = source_capture_receipts::verify_receipt(store, &receipt) {
+                    let id = receipt.request.id;
+                    out.emit(Update::SourceCaptureRecovered { capture_generation, request: receipt.request, stored: receipt.stored });
+                    out.emit(Update::SourceCaptureRecoveryFailed { capture_generation, error: format!("capture request {id} verification failed: {error}") });
+                } else if let Some(stored) = receipt.stored {
+                    out.emit(Update::SourceCaptureRevalidated { capture_generation, request: receipt.request, stored });
+                } else {
+                    out.emit(Update::SourceCaptureRecoveryFailed { capture_generation, error: "saved capture receipt has no artifacts".into() });
+                }
+            } else {
+                out.emit(Update::SourceCaptureRecovered { capture_generation, request: receipt.request, stored: receipt.stored });
+            }
+        },
+        Err(error) => out.emit(Update::SourceCaptureRecoveryFailed { capture_generation, error }),
     }
 }

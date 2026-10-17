@@ -1,0 +1,30 @@
+{
+  "status": "interrupted_after_failures",
+  "exit_code": 130,
+  "base": "b7e15290d50db7c4b00a29257f224c1d96f8d0cf",
+  "mere": "55c479bc75d31a2a7dec4b9b206f3cf96a81b3a1",
+  "candidate": "early R0 source before final preservation and warm reopen guards",
+  "command": "cargo test --locked --no-fail-fast",
+  "completed_passes": 1001,
+  "completed_failures": [
+    "app::scene_tests::scene_catalog_layouts_place_finite_members_and_their_bounded_regions",
+    "place::lanes::tests::a_closed_live_bind_releases_the_store_lock_for_a_reopen",
+    "place::lanes::tests::a_bounded_writer_grant_expires_while_connected_and_reconnect_still_admits",
+    "place::lanes::tests::an_unauthorized_profile_is_refused_before_it_authors",
+    "place::worker::tests::reconnect_for_a_released_generation_is_refused",
+    "place::worker::tests::reconnect_refuses_removed_local_membership_before_dialing_and_keeps_cache",
+    "place::lanes::tests::the_place_worker_conforms_to_the_coop_lifecycle_contract",
+    "place::worker::tests::worker_authority_shrink_keeps_the_exact_version_and_withholds_its_share",
+    "place::worker::tests::worker_releases_files_before_reopen_and_advances_generation",
+    "place::worker::tests::worker_exact_collection_version_returns_only_its_ready_capture",
+    "place::worker::tests::worker_rejects_a_departed_generation_without_rescoping_the_open_place",
+    "place::worker::tests::worker_stale_collection_version_withholds_available_capture"
+  ],
+  "completed_ignores": 10,
+  "note": "No completed-suite result or buffered panic details. Scene failure diagnosed separately; three place controls subsequently passed alone. This run is not final-source qualification.",
+  "declared_test_count": 1025,
+  "unfinished_count": 2,
+  "unfinished_slow_tests_observed": [
+    "sky_surface::tests::next_day_replaces_one_retained_projection_without_rewriting_opening_provenance"
+  ]
+}

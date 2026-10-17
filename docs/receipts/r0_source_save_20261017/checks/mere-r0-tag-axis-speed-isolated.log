@@ -1,0 +1,13 @@
+running 1 test
+test canvas::tests::speed::fast_forward_on_the_canvas_stops_at_the_budget_and_reports_the_speed ...
+thread 'canvas::tests::speed::fast_forward_on_the_canvas_stops_at_the_budget_and_reports_the_speed' (41344659) panicked at crates/canvas/pictograph/src/canvas/tests/speed.rs:223:9:
+frame 0: 101.536396ms against 5.018372ms (+11.826586ms)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    canvas::tests::speed::fast_forward_on_the_canvas_stops_at_the_budget_and_reports_the_speed
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 534 filtered out; finished in 53.90s

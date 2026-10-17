@@ -85,6 +85,8 @@ impl App {
             sessions: pandect::ManifestStore::new(),
             session_id,
             content: ContentStates::default(),
+            source_captures: Default::default(),
+            source_capture_generation: uuid::Uuid::new_v4(),
             engine_inventory: Vec::new(),
             feeds: crate::feed::FeedSubscriptions::default(),
             redshank: crate::redshank_host::RedshankHost::default(),

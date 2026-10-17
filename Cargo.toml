@@ -309,6 +309,7 @@ redshank-playback = { git = "https://github.com/merely-made/woodshed.git", branc
 redshank-storage = { git = "https://github.com/merely-made/woodshed.git", branch = "main" }
 
 [dev-dependencies]
+async-trait = "=0.1.92"
 taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git", branch = "main", features = ["estimated-probe-fixtures"] }
 accesskit_consumer = "=0.38.0"
 accesskit-consumer-windows = { package = "accesskit_consumer", version = "=0.35.0" }

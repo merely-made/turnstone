@@ -1,0 +1,9 @@
+{
+  "status": "intentionally interrupted to run the identical bounded scope with four workers",
+  "exit_code": 130,
+  "completed_passes": 288,
+  "completed_failures": 0,
+  "completed_ignores": 1,
+  "completed_suite": false,
+  "assertions_and_test_scope_unchanged": true
+}

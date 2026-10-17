@@ -38,6 +38,7 @@ fn category(event: &AppEvent) -> EventCategory {
         DownloadStarted { .. } => "download-started",
         DownloadCompleted { .. } => "download-completed",
         DownloadFailed { .. } => "download-failed",
+        SourceDocumentCaptureProgress { .. } => "source-document-capture-progress",
         SourceDocumentCaptured { .. } => "source-document-captured",
         SourceDocumentCaptureFailed { .. } => "source-document-capture-failed",
         SourceDocumentCaptureUnattached { .. } => "source-document-capture-unattached",

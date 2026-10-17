@@ -34,6 +34,9 @@ mod journal_origin_tests;
 mod resident_admission_tests;
 #[cfg(test)]
 mod resident_run_tests;
+mod source_capture_arms;
+#[cfg(test)]
+mod source_capture_persistence_tests;
 mod fold_arms;
 mod scene_arms;
 #[cfg(test)]
@@ -198,6 +201,9 @@ pub struct App {
     /// Per-node content lifecycle (rung 4). Data only: the live session
     /// handles live in the shell's content port, keyed by the same ids.
     pub content: ContentStates,
+    /// Correlated capture progress; recovery inventory is never corpus admission.
+    pub source_captures: HashMap<uuid::Uuid, crate::source_capture::CaptureAttempt>,
+    pub(crate) source_capture_generation: uuid::Uuid,
     /// Transient host engine availability; retained across session switches.
     pub engine_inventory: Vec<crate::content::EngineDescriptor>,
     /// Durable feed schedules and duplicate-suppression state for this
@@ -1151,18 +1157,8 @@ impl App {
             Action::PageZoomOut { member } => self.page_zoom_out(member),
             Action::PageZoomReset { member } => self.page_zoom_reset(member),
             Action::CapturePage { member } => vec![Effect::CaptureContent { node: member }],
-            Action::CaptureSourceDocument { member } => self
-                .graph_runtimes
-                .graph_containing_member(member)
-                .and_then(|graph| self.graph_runtimes.canvas(graph))
-                .and_then(|canvas| {
-                    canvas
-                        .graph()
-                        .get_node_by_id(member)
-                        .map(|(_, node)| node.url().to_owned())
-                })
-                .map(|url| vec![Effect::CaptureSourceDocument { node: member, url }])
-                .unwrap_or_default(),
+            Action::CaptureSourceDocument { member } => self.begin_source_capture(member),
+            Action::RetrySourceDocumentCapture { request } => self.retry_source_capture(request),
             Action::ChoosePermission { request, choice } => self.choose_permission(request, choice),
             Action::FocusAuthenticationField(field) => self.focus_authentication_field(field),
             Action::InsertAuthentication(text) => self.insert_authentication(text),
