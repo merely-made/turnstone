@@ -2535,6 +2535,16 @@ impl KnotDocumentSession {
         self.dom.borrow()
     }
 
+    pub(crate) fn selector_point(
+        &self,
+        selector: &taproot::Selector,
+    ) -> Result<Option<(f32, f32)>, &'static str> {
+        if !selector.matches_surface("knot") {
+            return Ok(None);
+        }
+        self.layout.selector_point(&self.dom.borrow(), selector)
+    }
+
     pub fn status(&mut self) -> &'static str {
         self.drain_events();
         match self.runner.state().status {
@@ -3283,7 +3293,7 @@ mod tests {
             sheet: KNOT_SHEET,
         }];
 
-        let hit = taproot::resolve(
+        let hit = taproot::resolve_estimated_fixture(
             &surfaces,
             &taproot::Selector::class("knot-resolve")
                 .with_attr("data-projection-instance", "17"),

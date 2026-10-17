@@ -1,0 +1,34 @@
+{
+  "genet_commit": "cb6161cc6cbdad2f80d0e0433add3120e05e47ae",
+  "mere_commit": "4490ae1651f88b4f22f7e7fdd1ef12b81c6b3008",
+  "source_sha256": {
+    "Cargo.toml": "5e390da44595e869703eacfe4395dfc713060d113c652440faf82c11dd3fa34d",
+    "src/cambium_pane.rs": "0082010226c8faec3716e8decca78b4f84e742ece7cfcdb58c37f8a6731e8a88",
+    "src/contributed_surface/tests.rs": "37b1aa1bac8cc538c7cc8cb21e27c967df47632cb61f9863fd059667f8a781ab",
+    "src/inspector_pane.rs": "160b2027281038e647cd540490c6a4db4298dc4aaae79feaa22f3d87b3b25dd5",
+    "src/inspector_pane/tests.rs": "7992d2fd9de77a49f294af8216f88144a172029c59a409a0d2483ffeb4d60fc7",
+    "src/knot_authoring.rs": "4dfc2d727105e00f567c76cecfa79f58e25749ecf9487f7b068075adc8eed6e9",
+    "src/outer_frame.rs": "d3307f1fc81cbb1117cece85aeb0190ad33a43f3f84d42a49d44f52c22905402",
+    "src/sections.rs": "6471e4c5c9260c4156b706347138dd9301f4230bc8c780f0357fbbd738f17e32",
+    "src/settings_pane.rs": "3edbd6a9abc90e842c4f29fd3e3322f5dfeec200d3d454e02bfcb4d1e3b9898d",
+    "src/share_reader_pane.rs": "9d1ebb3cf7c3058d6013ea8d423069270ea362ce0d6a88cac4777857127591b7",
+    "src/shell/contributed_automation.rs": "8ddaa657d90093aec6ea178b4eae69df4ad5862c57d1407375a44cd3022e7100",
+    "src/shell/drive.rs": "2d537f68b16d4ac2d2516e0446318e7281d50d4e36d593add3de6cbb8897aece",
+    "src/shell/gestures.rs": "258e1ff279fbeabfc738eb6f34ebb5a6f4e79e00f62be5db2c346d5377e34b59",
+    "src/shell/outer_workspace.rs": "d8d4a673618d5610fc3982845fa3e08264861ee3843b06fe69b3a3d739cdbf4e",
+    "src/shell/renderers.rs": "dcfa491498dd65be85580a4a2d7152fddb6613489778eb41e584596dfdea6e76",
+    "src/sky_surface/tests.rs": "3917c876f78ce4d4a0d702199444336c95f8c1e8751ed35c580e1ccfbdce748f",
+    "src/swatch_pane/mod.rs": "35cb6c7cee2a20392ad097cb8e214f8518bf4cc0c9af0f857a2902ea42417857",
+    "src/trail_pane.rs": "d1fcefcf7c641d3db27412334105750fc8868eff9da6b5c64cf50841c2f46936",
+    "src/transcript_pane.rs": "8a700f7575875315f59372833e26befc6d765a22bca35bbf6d5aa0840bfc1fec",
+    "src/ui.rs": "b492bc7bb2e61fe63051b99f23f074fc2ea4d3de4cf268d74955a533b084c94d",
+    "src/workbench_pane.rs": "5caf4c4c8c144e2c473af18ae28f63807f78f3bb6fcd412fef25eb8c3979916d"
+  },
+  "validation": {
+    "retained_selector_tests_passed": 12,
+    "publication_metadata": "locked offline; package versions, enabled features and dependency edges identical to tested local source graph"
+  },
+  "lock_sha256": "7e0c7938cc8569ab24aa22f60994fad49ea0a7befa51a0ef7de7f327189530c2",
+  "evidence_directory": "/home/markik/Code/testing/audits/genet-architecture-20261017/remaining-slices",
+  "qualification": "Native retained selectors tested; actual GPU draws qualified in Genet slice4 receipt. Tests used local source graph, subsequently verified identical to published Git dependencies. Serialized builds capped at 5 GiB RAM, zero swap, 150% CPU, one Cargo job."
+}

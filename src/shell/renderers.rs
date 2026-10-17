@@ -524,6 +524,7 @@ mod tests {
     /// itself uses, so a receipt that passes here cannot be passing through a
     /// door the shell does not have.
     fn click_tab(grid: &mut RosterGrid, label: &str) {
+        let _ = grid.scene(W, H);
         let (x, y) = grid
             .resolve(&taproot::Selector::class("tab").containing(label), RECT)
             .unwrap_or_else(|| panic!("the strip must draw a {label} tab"));

@@ -1760,8 +1760,11 @@ impl RetainedLayout {
         dom: &ScriptedDom,
         selector: &taproot::Selector,
     ) -> Result<Option<(f32, f32)>, &'static str> {
+        if !self.has_current_snapshot(dom) {
+            return Err("retained selector snapshot is unavailable or stale");
+        }
         let mut point = None;
-        for node in taproot::matching(dom, selector) {
+        for node in self.matching_nodes(dom, selector) {
             if let Some((x, y, width, height)) = self.visible_rect(dom, node) {
                 if point.is_some() {
                     return Err("multiple visible body targets match");
@@ -1770,6 +1773,20 @@ impl RetainedLayout {
             }
         }
         Ok(point)
+    }
+    /// The pane convenience resolvers historically select the first painted
+    /// match. Keep that ordering while using the retained semantic and layout
+    /// owners for the target and its coordinates.
+    pub(crate) fn first_selector_point(
+        &self,
+        dom: &ScriptedDom,
+        selector: &taproot::Selector,
+    ) -> Option<(f32, f32)> {
+        self.matching_nodes(dom, selector)
+            .into_iter()
+            .filter_map(|node| self.visible_rect(dom, node))
+            .find(|(_, _, width, height)| *width > 0.0 && *height > 0.0)
+            .map(|(x, y, width, height)| (x + width / 2.0, y + height / 2.0))
     }
     pub(crate) fn editable_focus(&self, dom: &ScriptedDom, focus: Option<DomNodeId>) -> bool {
         let Some(focus) = focus else {
@@ -1853,6 +1870,37 @@ impl RetainedLayout {
             return layout.borrow().document_projection_at(dom, owner, focus);
         }
         self.document_projection_at(dom, self.root.unwrap_or_else(|| dom.document()), focus)
+    }
+    /// A selector may only use the fragments from the current DOM revision.
+    /// In inline mode the outer frame owns those fragments, so its cursor is
+    /// the one that matters even though the pane itself has no snapshot.
+    pub(crate) fn has_current_snapshot(&self, dom: &ScriptedDom) -> bool {
+        if let Some((layout, _)) = self.inline_target() {
+            return layout.borrow().has_current_snapshot(dom);
+        }
+        let (base, pending) = dom.pending_mutations();
+        self.snapshot.is_some()
+            && self.mutation_cursor >= base
+            && self.mutation_cursor == base + pending.len() as u64
+    }
+    /// Match semantic selectors against this layout's current accessibility
+    /// projection. Class selectors retain taproot's DOM matching contract.
+    pub(crate) fn matching_nodes(
+        &self,
+        dom: &ScriptedDom,
+        selector: &taproot::Selector,
+    ) -> Vec<DomNodeId> {
+        if !self.has_current_snapshot(dom) {
+            return Vec::new();
+        }
+        if let taproot::Match::Class(_) = &selector.matcher {
+            return taproot::matching_classes(dom, selector);
+        }
+        self.document_projection(dom, None)
+            .map(|projection| {
+                taproot::matching_prefer_exact_with_projection(dom, selector, &projection)
+            })
+            .unwrap_or_default()
     }
     fn document_projection_at(
         &self,
@@ -2861,7 +2909,7 @@ mod tests {
         let mut dom = ScriptedDom::new();
         let document = dom.document();
         dom.set_inner_html(document, "<html><body><div class='omni'><div class='omni-input'>Address</div></div></body></html>");
-        let omni = taproot::matching(&dom, &taproot::Selector::class("omni"))[0];
+        let omni = taproot::matching_estimated_fixture(&dom, &taproot::Selector::class("omni"))[0];
         let mut retained = RetainedLayout::new();
         let registry = tabard::theme::registry::ThemeRegistry::default();
         let mut observed = Vec::new();
@@ -3388,7 +3436,7 @@ mod contributed_projection_tests {
         let sheet = ".clip { position:absolute; left:20px; top:20px; width:80px; height:40px; border:4px solid red; overflow:hidden; transform:translate(10px,5px); } button { position:absolute; left:30px; top:30px; width:80px; height:30px; padding:0; border:0; }";
         let mut layout = RetainedLayout::new();
         let _ = layout.scene(&mut dom, sheet, 200, 120);
-        let button = taproot::matching(&dom, &taproot::Selector::role("button"))[0];
+        let button = taproot::matching_estimated_fixture(&dom, &taproot::Selector::role("button"))[0];
         let painted = layout.painted_rect(&dom, button).unwrap();
         let visible = layout.visible_rect(&dom, button).unwrap();
         assert!(
@@ -3448,7 +3496,7 @@ mod contributed_projection_tests {
             200,
             120,
         );
-        let button = taproot::matching(&dom, &taproot::Selector::role("button"))[0];
+        let button = taproot::matching_estimated_fixture(&dom, &taproot::Selector::role("button"))[0];
         assert!(layout.visible_rect(&dom, button).is_none());
         let projection = layout.document_projection(&dom, None).unwrap();
         assert!(
@@ -3458,6 +3506,32 @@ mod contributed_projection_tests {
                 &projection
             )
             .is_empty()
+        );
+    }
+
+    #[test]
+    fn retained_selector_prefers_the_accessible_name_and_its_painted_owner() {
+        let mut dom = ScriptedDom::new();
+        let document = dom.document();
+        dom.set_inner_html(
+            document,
+            r#"<button style="width:80px;height:30px">Open selected in workbench</button><span id="label">Open selected</span><button aria-labelledby="label" aria-label="Raw label" style="width:120px;height:30px">Raw text</button>"#,
+        );
+        let mut layout = RetainedLayout::new();
+        let _ = layout.scene(&mut dom, "", 400, 160);
+        let selector = taproot::Selector::role("button").containing("Open selected");
+        let matches = layout.matching_nodes(&dom, &selector);
+        assert_eq!(matches.len(), 1, "the exact accessible name wins");
+        let painted = layout.visible_rect(&dom, matches[0]).unwrap();
+        assert_eq!(
+            layout.selector_point(&dom, &selector).unwrap(),
+            Some((painted.0 + painted.2 / 2.0, painted.1 + painted.3 / 2.0))
+        );
+        assert!(
+            layout
+                .matching_nodes(&dom, &taproot::Selector::role("button").containing("Raw label"))
+                .is_empty(),
+            "a superseded DOM label cannot retarget the click"
         );
     }
 }

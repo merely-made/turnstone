@@ -352,9 +352,12 @@ impl WorkbenchPane {
             return Ok(None);
         }
         let dom = self.dom.borrow();
+        if !self.layout.has_current_snapshot(&dom) {
+            return Err("retained Workbench snapshot is unavailable or stale");
+        }
         let tabs = dom.all_with_class(dom.document(), "tab");
         let mut point = None;
-        for node in taproot::matching(&dom, selector) {
+        for node in self.layout.matching_nodes(&dom, selector) {
             if !tabs.contains(&node) {
                 continue;
             }
@@ -401,17 +404,16 @@ impl WorkbenchPane {
     }
 
     /// Resolve a selector to a point within this pane's DOM at window rect
-    /// `rect`, via the shared taproot resolver (the scenario's
-    /// `drag-tab` aims through this).
+    /// `rect`, using this pane's retained semantics and geometry (the
+    /// scenario's `drag-tab` aims through this).
     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+        if !sel.matches_surface("workbench") {
+            return None;
+        }
         let dom = self.dom.borrow();
-        let surfaces = [taproot::ProbeSurface {
-            name: "workbench",
-            dom: &dom,
-            rect,
-            sheet: crate::ui::CAMBIUM_SHEET,
-        }];
-        taproot::resolve(&surfaces, sel).map(|hit| hit.point)
+        self.layout
+            .first_selector_point(&dom, sel)
+            .map(|(x, y)| (rect[0] + x, rect[1] + y))
     }
 }
 
@@ -419,6 +421,7 @@ impl WorkbenchPane {
 mod tests {
     use super::*;
     use crate::action::Action;
+    use layout_dom_api::LayoutDomMut;
 
     fn pane_over(app: &App, w: f32, h: f32) -> WorkbenchPane {
         let mut pane = WorkbenchPane::new();
@@ -493,6 +496,31 @@ mod tests {
         let (ax, _) = alpha.expect("alpha's tab is drawn");
         let (bx, _) = beta.expect("beta's tab is drawn");
         assert!(bx > ax, "beta's cell sits to the right");
+    }
+
+    #[test]
+    fn selector_resolution_waits_for_current_paint() {
+        let (app, _, _) = app_with_two_tiles();
+        let mut pane = WorkbenchPane::new();
+        pane.sync(&app, app.default_graph_pane(), 800.0, 600.0);
+        let selector = taproot::Selector::class("tab").containing("alpha");
+        let rect = [0.0, 0.0, 800.0, 600.0];
+        assert_eq!(pane.resolve(&selector, rect), None, "no painted snapshot yet");
+        pane.scene(800, 600);
+        assert!(pane.resolve(&selector, rect).is_some());
+
+        let tab = {
+            let dom = pane.dom.borrow();
+            taproot::matching_classes(&dom, &selector)[0]
+        };
+        pane.dom.borrow_mut().set_attribute(
+            tab,
+            cambium::attr_qual("data-paint-revision"),
+            "changed",
+        );
+        assert_eq!(pane.resolve(&selector, rect), None, "old geometry is stale");
+        pane.scene(800, 600);
+        assert!(pane.resolve(&selector, rect).is_some());
     }
 
     /// The press resolution: a point inside a drawn tab maps back to its

@@ -275,14 +275,13 @@ impl TrailPane {
     /// `roster-cell` through one path. `row_center`'s bespoke walk collapsed
     /// here.
     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+        if !sel.matches_surface("trail") {
+            return None;
+        }
         let dom = self.dom.borrow();
-        let surfaces = [taproot::ProbeSurface {
-            name: "trail",
-            dom: &dom,
-            rect,
-            sheet: crate::ui::CAMBIUM_SHEET,
-        }];
-        taproot::resolve(&surfaces, sel).map(|h| h.point)
+        self.layout
+            .first_selector_point(&dom, sel)
+            .map(|(x, y)| (rect[0] + x, rect[1] + y))
     }
 
     /// Borrow this pane's DOM for the shared driver's `with_surfaces`.
@@ -323,6 +322,7 @@ mod tests {
             state.viewport_w = 400.0;
             state.viewport_h = 600.0;
         });
+        let _ = pane.scene(400, 600);
         pane
     }
 

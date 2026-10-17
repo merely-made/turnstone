@@ -180,6 +180,60 @@ impl OuterFrame {
     pub fn scene(&mut self) -> netrender::Scene {
         self.scene_resources().scene
     }
+    /// Resolve only frame-owned furniture. Mounted pane descendants share the
+    /// same DOM and fragments, but their selectors belong to the pane owner.
+    pub(crate) fn selector_point(
+        &mut self,
+        selector: &taproot::Selector,
+    ) -> Result<Option<(f32, f32)>, &'static str> {
+        if !selector.matches_surface("frame") {
+            return Ok(None);
+        }
+        let selected = {
+            let dom = self.controls.dom.borrow();
+            let layout = self.layout.borrow();
+            if !layout.has_current_snapshot(&dom) {
+                return Err("retained frame snapshot is unavailable or stale");
+            }
+            let mut selected = None;
+            for node in layout.matching_nodes(&dom, selector) {
+                let Some(control) = self.controls.control_at(node) else {
+                    continue;
+                };
+                if matches!(control, Control::Body { .. }) {
+                    continue;
+                }
+                let Some((x, y, width, height)) = layout.visible_rect(&dom, node) else {
+                    continue;
+                };
+                if width <= 0.0 || height <= 0.0 {
+                    continue;
+                }
+                if selected.is_some() {
+                    return Err("multiple visible frame controls match");
+                }
+                selected = Some(((x + width / 2.0, y + height / 2.0), control));
+            }
+            selected
+        };
+        let Some((point, control)) = selected else {
+            return Ok(None);
+        };
+        let physical = self.hit(point.0, point.1);
+        let same = match (control, physical) {
+            (Control::Tab(expected), Some(HeaderHit::Tab(actual))) => expected == actual,
+            (Control::Close(expected), Some(HeaderHit::Close(actual))) => expected == actual,
+            (
+                Control::Divider { path, index, .. },
+                Some(HeaderHit::Divider { target, .. }),
+            ) => path == target.path && index == target.index,
+            _ => false,
+        };
+        if !same {
+            return Err("frame control is covered or no longer hit-testable");
+        }
+        Ok(Some(point))
+    }
     pub(crate) fn scene_resources(&mut self) -> paint_list_render::TranslatedDisplayList {
         self.layout.borrow_mut().scene_resources(
             &mut self.controls.dom.borrow_mut(),
@@ -592,6 +646,34 @@ mod native_aperture_tests {
     use super::*;
     use crate::surface::{Surface, SurfaceId, SurfaceKind};
     use layout_dom_api::LayoutDomMut;
+
+    #[test]
+    fn frame_selector_rejects_body_slots_and_uses_header_hit() {
+        let app = crate::app::App::test_stub();
+        let mut frame = OuterFrame::default();
+        frame
+            .prepare(
+                &app.frisket,
+                app.active_pane,
+                None,
+                (900, 600),
+                &app.shell_chrome_config().appearance,
+                app.session_id.as_uuid().as_u128(),
+            )
+            .expect("retained frame");
+        assert!(
+            frame
+                .selector_point(&taproot::Selector::class("frisket-tab"))
+                .expect("painted header")
+                .is_some()
+        );
+        assert_eq!(
+            frame
+                .selector_point(&taproot::Selector::class("frisket-content"))
+                .expect("body slot is not frame furniture"),
+            None
+        );
+    }
     #[test]
     fn the_final_floating_canvas_keeps_one_actual_native_aperture() {
         let mut app = crate::app::App::test_stub();

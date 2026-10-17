@@ -534,14 +534,13 @@ impl SwatchPane {
     /// Resolve a probe selector within this pane's DOM (nodes carry their
     /// stable identity as `data-key`).
     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+        if !sel.matches_surface(self.preset.id) {
+            return None;
+        }
         let dom = self.dom.borrow();
-        let surfaces = [taproot::ProbeSurface {
-            name: self.preset.id,
-            dom: &dom,
-            rect,
-            sheet: crate::ui::CAMBIUM_SHEET,
-        }];
-        taproot::resolve(&surfaces, sel).map(|h| h.point)
+        self.layout
+            .first_selector_point(&dom, sel)
+            .map(|(x, y)| (rect[0] + x, rect[1] + y))
     }
 
     /// The promoted read-only Diagnostics section, from its producer identities
@@ -645,6 +644,7 @@ mod tests {
         *app.graph_runtimes.active_canvas_mut() = mere::canvas::Canvas::with_sample_graph();
         let mut pane = SwatchPane::new(GLOSS_MINIMAP);
         pane.sync(&app, 480.0, 400.0);
+        let _ = pane.scene(480, 400);
         (pane, app)
     }
 
@@ -667,6 +667,7 @@ mod tests {
         app.session_id = fork;
         let mut pane = SwatchPane::new(OVERMAP_LINEAGE);
         pane.sync(&app, 480.0, 400.0);
+        let _ = pane.scene(480, 400);
         (pane, app, donor)
     }
 

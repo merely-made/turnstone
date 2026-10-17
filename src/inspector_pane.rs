@@ -436,8 +436,11 @@ impl InspectorPane {
             return Ok(None);
         }
         let dom = self.dom.borrow();
+        if !self.layout.has_current_snapshot(&dom) {
+            return Err("retained Inspector snapshot is unavailable or stale");
+        }
         let mut point = None;
-        for node in taproot::matching(&dom, selector) {
+        for node in self.layout.matching_nodes(&dom, selector) {
             let Some((x, y, width, height)) = self.layout.visible_rect(&dom, node) else {
                 continue;
             };
