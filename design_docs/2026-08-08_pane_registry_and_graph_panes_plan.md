@@ -1528,3 +1528,12 @@ scoped continuation control do not claim early scrollbar opacity pixels.
   camera, cropping fold bodies. The production command now resolves and
   stashes the owning pane's viewport; final visual qualification repeats on
   this corrected source.
+
+- 2026-10-16 fresh-process probe restored records exactly and left graph/facet
+  files unchanged, but did not retain the explicit physics pause. View intent
+  now stores an optional pause choice and applies it after scene restoration.
+  Older sidecars preserve their existing startup behavior.
+- The starter graph's unprofiled legacy snapshot re-derives eleven Domain
+  containment cells on load. This precedes folds and is a separate legacy
+  normalization behavior. The final fixture uses the ordinary New session
+  action and six linked members; no raw profile patching establishes its graph.

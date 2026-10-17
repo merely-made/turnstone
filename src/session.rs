@@ -512,6 +512,10 @@ pub struct ViewIntentV1 {
     /// reopens as it always did. (Physics catalog — P2.)
     #[serde(default)]
     pub physics_law: Option<String>,
+    /// Preserve an explicit pause across reopening. Older sidecars retain
+    /// their existing startup behavior when this choice is absent.
+    #[serde(default)]
+    pub physics_paused: Option<bool>,
     /// The overlay ids composed onto the law, in run order.
     #[serde(default)]
     pub physics_overlays: Vec<String>,

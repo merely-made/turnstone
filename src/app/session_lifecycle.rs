@@ -1140,6 +1140,7 @@ impl App {
         // arm clears the score for a non-Spiral strategy, which is right for a
         // fresh choice and wrong for a restore of the pair.
         let view_intent = session::load_view_intent(&sdir);
+        let physics_paused = view_intent.as_ref().and_then(|intent| intent.physics_paused);
         self.command_choices = view_intent
             .as_ref()
             .map(|intent| intent.command_menu.clone())
@@ -1424,6 +1425,12 @@ impl App {
                     url: node.url().to_string(),
                 });
             }
+        }
+        // Apply the explicit pause after all layout/scene restoration, which
+        // can seed or reconcile physics. Never let the first frame move a
+        // session the person saved paused.
+        if let Some(paused) = physics_paused {
+            self.graph_runtimes.set_physics_paused(paused);
         }
         self.window_count = 1;
         if let Err(error) = self.bind_behavior_journal() {

@@ -2202,6 +2202,7 @@ impl Shell {
                     .layout_strategy()
                     .map(str::to_string),
                 physics_law: Some(self.app.graph_runtimes.physics_law().id().to_string()),
+                physics_paused: Some(self.app.graph_runtimes.physics_paused()),
                 physics_overlays: self
                     .app
                     .graph_runtimes
