@@ -256,6 +256,14 @@ pub enum Action {
     },
     /// Re-seed the canvas layout and replay the settle.
     ReseedLayout,
+    /// Shared graph grammar commands, applied to the owning Orrery pane.
+    ResetToSeed,
+    SetSeed,
+    RestoreRecipeSeed,
+    ToggleForegroundPin,
+    DismissRetained,
+    GrowTiles,
+    ShrinkTiles,
     /// Native view curation; never changes graph truth or source positions.
     FoldSelection,
     ExpandFold,
@@ -682,6 +690,13 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Refresh feeds", Action::RefreshFeeds),
         ("Mark feed entry read", Action::MarkFocusedFeedEntryRead),
         ("Reseed layout", Action::ReseedLayout),
+        ("Reset to seed", Action::ResetToSeed),
+        ("Set seed", Action::SetSeed),
+        ("Restore recipe seed", Action::RestoreRecipeSeed),
+        ("Foreground pin", Action::ToggleForegroundPin),
+        ("Dismiss retained", Action::DismissRetained),
+        ("Grow tiles", Action::GrowTiles),
+        ("Shrink tiles", Action::ShrinkTiles),
         shared(Action::FitView),
         shared(Action::FoldSelection),
         shared(Action::ExpandFold),

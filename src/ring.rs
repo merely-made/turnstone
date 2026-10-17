@@ -150,6 +150,13 @@ pub fn ring_of(action: &Action) -> Ring {
         SetNodeSprite { .. }
         | KeepNode { .. }
         | SetViewerOverride { .. }
+        | ResetToSeed
+        | SetSeed
+        | RestoreRecipeSeed
+        | ToggleForegroundPin
+        | DismissRetained
+        | GrowTiles
+        | ShrinkTiles
         | ReseedLayout
         | FoldSelection
         | ExpandFold

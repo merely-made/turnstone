@@ -1,0 +1,115 @@
+# Ordinary product actions over a new isolated graph. Three sites, six members.
+settle 35
+key escape
+act New session
+settle 8
+open mere://alpha.example/one
+settle 8
+open mere://alpha.example/two
+settle 8
+open mere://beta.example/one
+settle 8
+open mere://beta.example/two
+settle 8
+open mere://gamma.example/one
+settle 8
+open mere://gamma.example/two
+settle 75
+assert physics running
+act Pause or resume physics
+settle 5
+assert physics paused
+select-graph-member none
+act Save session
+record-graph-scene 00_source
+act Layout: Partition (by site)
+settle 10
+act Fit to view
+settle 5
+assert snap scene-arrangement == partition.default
+assert physics paused
+record-graph-scene 01_partition
+capture 01_partition
+act Set seed
+select-graph-member mere://alpha.example/one
+act Foreground pin
+select-graph-member none
+select-graph-member mere://gamma.example/two
+settle 5
+assert snap scene-foreground-pins == 1
+record-graph-scene 02_attention
+capture 02_attention
+select-graph-member none
+act Layout: Grid
+settle 10
+assert snap scene-regions == 0
+record-graph-scene 03_grid
+act Reset to seed
+settle 90
+record-graph-scene 04_reset
+capture 04_reset
+act Restore recipe seed
+assert snap scene-saved-seed == false
+act Layout: Sets (by tag)
+settle 10
+act Fit to view
+settle 5
+record-graph-scene 05_sets
+capture 05_sets
+act Layout: Provenance
+settle 10
+act Fit to view
+settle 5
+record-graph-scene 06_provenance
+capture 06_provenance
+act Layout: Mosaic (by site)
+settle 10
+select-graph-member mere://gamma.example/two
+act Grow tiles
+settle 10
+act Fit to view
+settle 5
+record-graph-scene 07_mosaic
+capture 07_mosaic
+select-graph-member none
+select-graph-member mere://alpha.example/one
+select-graph-member mere://alpha.example/two
+act Fold selection
+settle 8
+record-graph-folds 08_folded 1
+select-graph-member none
+act Open Arrange pane
+settle 8
+click role:button Restore recipe seed
+settle 3
+assert snap scene-saved-seed == false
+click role:button Set seed
+settle 3
+assert snap scene-saved-seed == true
+capture 09_controls
+act Close pane
+settle 8
+act Set seed
+act Save session
+settle 5
+record-graph-scene 09_saved
+capture 09_saved
+# Same graph and scene controls in an actual lens window.
+act Tear out pane
+settle 25
+assert windows == 2
+assert lens-pane 0:orrery
+act Layout: Partition (by site)
+settle 10
+act Fit to view
+settle 5
+record-graph-scene 10_lens_partition
+capture-lens 10_lens_partition
+act Layout: Mosaic (by site)
+settle 10
+act Fit to view
+act Save session
+settle 5
+record-graph-scene 11_lens_saved
+capture-lens 11_lens_saved
+log Graph scenes saved for fresh process

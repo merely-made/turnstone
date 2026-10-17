@@ -1745,13 +1745,18 @@ impl App {
     }
 
     pub(super) fn set_layout_strategy(&mut self, id: Option<&'static str>) -> Vec<Effect> {
-        self.graph_runtimes
-            .set_layout_strategy(id.map(str::to_string));
-        if id != Some("phyllotaxis.default") {
-            self.graph_runtimes.set_projection_score(None);
+        if let Some(pane) = self.scene_command_pane() {
+            if let Some(graph) = self.graph_for_pane(pane) {
+                self.graph_runtimes.get_mut(graph).unwrap().scene_transition = None;
+            }
+            self.with_graph_pane(pane, |canvas| {
+                canvas.take_stop_return();
+                canvas.pick_layout_strategy(id.map(str::to_string));
+                canvas.set_projection_score(None);
+                canvas.set_strategy_regions(Vec::new());
+            });
+            self.mark_graph_scene_changed(pane);
         }
-        // The projection itself is computed on the next frame by
-        // `drive_layout_strategy` (it needs the surface viewport).
         vec![Effect::Redraw]
     }
 

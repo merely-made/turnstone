@@ -35,6 +35,9 @@ mod resident_admission_tests;
 #[cfg(test)]
 mod resident_run_tests;
 mod fold_arms;
+mod scene_arms;
+#[cfg(test)]
+mod scene_tests;
 mod runtime_pool;
 mod user_agent_decision_arms;
 
@@ -484,9 +487,9 @@ impl App {
     /// Run the graph-scoped layout strategy while a particular pane has its
     /// view installed. The strategy sees selection only through that pane's
     /// temporary view state; it never chooses a global active pane.
-    fn drive_layout_strategy_for(canvas: &mut mere::canvas::Canvas, w: u32, h: u32) {
+    fn drive_layout_strategy_for(canvas: &mut mere::canvas::Canvas, w: u32, h: u32) -> bool {
         let Some(id) = canvas.layout_strategy().map(str::to_string) else {
-            return;
+            return false;
         };
         canvas.refresh_community_cache(&id);
         let focus = canvas.focused_key();
@@ -494,28 +497,19 @@ impl App {
             // The host measures (per-node face footprints), the strategy
             // places — extent-aware spacing per the P2 contract.
             let extents = canvas.strategy_extents();
-            let community = canvas.community().cloned();
-            // Recency reading pairs the Spiral's newest-first ordering with
-            // the size-by-recency channel (P3).
             let recent_first = canvas.size_by_recency();
-            // The canvas passes its own channel registry, which serves its
-            // graph (Mere F87).
-            let (registry, graph) = canvas.registry_and_graph();
-            let strategy = mere::canvas::project_canvas_strategy_with_score(
-                registry,
-                &id,
-                graph,
-                focus,
-                w,
-                h,
-                community.as_ref(),
-                Some(&extents),
-                recent_first,
+            let previous = canvas.projection_score().cloned();
+            let strategy = canvas.project_arrangement_for_view(
+                &id, w, h, Some(&extents), recent_first, canvas.camera().zoom,
+                previous.as_ref(),
             );
             canvas.apply_strategy_positions(&strategy.positions);
             canvas.set_projection_score(strategy.score);
+            canvas.set_strategy_regions(strategy.regions);
             canvas.note_strategy_computed(&id, w, h, focus);
+            return true;
         }
+        false
     }
 
     /// Write the LIVE state into the facet store: the canvas arrangement as
@@ -536,6 +530,7 @@ impl App {
         pandect::write_arrangement_sprite_hulls(facets, geometry.sprite_hull_iter());
         pandect::write_arrangement_materials(facets, geometry.material_iter());
         pandect::write_arrangement_faces(facets, geometry.face_iter());
+        crate::graph_scenes::write(facets, container, &geometry);
         if let Some(container) = container {
             let scene = pandect::SceneFacets {
                 size_by_degree: geometry.size_by_degree(),
@@ -740,10 +735,23 @@ impl App {
         width: u32,
         height: u32,
     ) -> Option<(netrender::Scene, bool)> {
-        self.with_graph_pane(pane, |canvas| {
-            Self::drive_layout_strategy_for(canvas, width, height);
-            canvas.frame(width, height)
-        })
+        let graph = self.graph_for_pane(pane)?;
+        let mut transition = self.graph_runtimes.get_mut(graph)?.scene_transition.take();
+        static CLOCK: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
+        let host_ms = CLOCK.get_or_init(std::time::Instant::now).elapsed().as_secs_f64() * 1000.0;
+        let result = self.with_graph_pane(pane, |canvas| {
+            if Self::drive_layout_strategy_for(canvas, width, height) {
+                // A resized/recomputed scene supersedes any older return.
+                transition = None;
+                canvas.take_stop_return();
+            }
+            let id = canvas.layout_strategy().unwrap_or("free").to_owned();
+            mere::canvas::physics_controls::advance_arrangement(canvas, &mut transition, &id, host_ms);
+            let (scene, redraw) = canvas.frame(width, height);
+            (scene, redraw || transition.is_some() || canvas.has_stop_return())
+        });
+        self.graph_runtimes.get_mut(graph)?.scene_transition = transition;
+        result
     }
 
     pub fn graph_pane_focused_member(&self, pane: PaneId) -> Option<uuid::Uuid> {
@@ -801,8 +809,13 @@ impl App {
         x: f32,
         y: f32,
     ) -> bool {
-        self.with_graph_pane(pane, |canvas| canvas.pointer_down(button, x, y))
-            .unwrap_or(false)
+        if let Some(graph) = self.graph_for_pane(pane) {
+            self.graph_runtimes.get_mut(graph).unwrap().scene_transition = None;
+        }
+        self.with_graph_pane(pane, |canvas| {
+            canvas.take_stop_return();
+            canvas.pointer_down(button, x, y)
+        }).unwrap_or(false)
     }
 
     /// The right click the pane's canvas did not use, if any, for the host's
@@ -1147,51 +1160,15 @@ impl App {
             | Action::ExpandAllFolds
             | Action::UndoFold
             | Action::RedoFold) => self.edit_graph_folds(action),
+            action @ (Action::ResetToSeed | Action::SetSeed | Action::RestoreRecipeSeed
+                | Action::ToggleForegroundPin | Action::DismissRetained
+                | Action::GrowTiles | Action::ShrinkTiles) => self.edit_graph_scene(action),
             Action::ReseedLayout => self.reseed_layout(),
             Action::SetLayoutStrategy(id) => self.set_layout_strategy(id),
-            Action::SetPhysicsLaw(id) => {
-                if let Some(law) = mere::canvas::PhysicsLaw::parse(id) {
-                    let result = self.graph_runtimes.set_physics_law(law);
-                    self.record_physics_result(result);
-                }
-                vec![Effect::Redraw]
-            }
-            Action::SetPhysicsOverlay(id, on) => {
-                if let Some(overlay) = mere::canvas::PhysicsOverlay::parse(id) {
-                    let mut overlays = self.graph_runtimes.physics_overlays().to_vec();
-                    overlays.retain(|o| *o != overlay);
-                    if on {
-                        overlays.push(overlay);
-                    }
-                    let result = self.graph_runtimes.set_physics_overlays(overlays);
-                    self.record_physics_result(result);
-                }
-                vec![Effect::Redraw]
-            }
-            Action::SetPhysicsKindSource(id) => {
-                if let Some(source) = mere::canvas::PhysicsKindSource::parse(id) {
-                    self.graph_runtimes.set_physics_kind_source(source);
-                }
-                vec![Effect::Redraw]
-            }
-            Action::SetPhysicsMassSource(id) => {
-                if let Some(source) = mere::canvas::PhysicsMassSource::parse(id) {
-                    self.graph_runtimes.set_physics_mass_source(source);
-                }
-                vec![Effect::Redraw]
-            }
-            Action::SetPhysicsDepthSource(id) => {
-                if let Some(source) = mere::canvas::PhysicsDepthSource::parse(id) {
-                    self.graph_runtimes.set_physics_depth_source(source);
-                }
-                vec![Effect::Redraw]
-            }
-            Action::ApplyPhysicsProfile(id) => {
-                if self.graph_runtimes.apply_physics_profile(id) {
-                    self.physics_refusal = None;
-                }
-                vec![Effect::Redraw]
-            }
+            action @ (Action::SetPhysicsLaw(_) | Action::SetPhysicsOverlay(_, _)
+                | Action::SetPhysicsKindSource(_) | Action::SetPhysicsMassSource(_)
+                | Action::SetPhysicsDepthSource(_) | Action::ApplyPhysicsProfile(_)
+                | Action::TogglePhysics) => self.edit_graph_physics(action),
             Action::ToggleIsometric => {
                 let on = !self.graph_runtimes.is_isometric();
                 self.graph_runtimes.set_isometric(on);
@@ -1215,10 +1192,6 @@ impl App {
                 if let Some(pane) = self.graph_command_pane() {
                     self.with_graph_pane(pane, |canvas| canvas.fit_to_content());
                 }
-                vec![Effect::Redraw]
-            }
-            Action::TogglePhysics => {
-                self.graph_runtimes.toggle_physics_paused();
                 vec![Effect::Redraw]
             }
             Action::ToggleSizeByRecency => self.toggle_size_by_recency(),

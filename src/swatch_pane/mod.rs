@@ -414,6 +414,9 @@ impl SwatchPane {
                 route: Vec::new(),
                 visible: true,
                 emphasized: false,
+                link_key: None,
+                marks: Default::default(),
+                strength: 1.0,
             })
             .collect();
 

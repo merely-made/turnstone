@@ -542,6 +542,12 @@ pub fn view_intent_path(session_dir: &Path) -> PathBuf {
 /// Persist view intent atomically. Like the score, it is view state: a missing
 /// or malformed sidecar must never prevent the session from opening.
 pub fn save_view_intent(session_dir: &Path, intent: &ViewIntentV1) {
+    if let Err(err) = try_save_view_intent(session_dir, intent) {
+        tracing::warn!(%err, path = ?view_intent_path(session_dir), "failed to persist view intent");
+    }
+}
+
+pub(crate) fn try_save_view_intent(session_dir: &Path, intent: &ViewIntentV1) -> std::io::Result<()> {
     let target = view_intent_path(session_dir);
     let tmp = target.with_extension("json.tmp");
     let result = (|| -> std::io::Result<()> {
@@ -553,10 +559,8 @@ pub fn save_view_intent(session_dir: &Path, intent: &ViewIntentV1) {
         }
         std::fs::rename(&tmp, &target)
     })();
-    if let Err(err) = result {
-        tracing::warn!(%err, path = ?target, "failed to persist view intent");
-        let _ = std::fs::remove_file(tmp);
-    }
+    if result.is_err() { let _ = std::fs::remove_file(tmp); }
+    result
 }
 
 /// Restore the last valid view intent. A corrupt sidecar is diagnosed and

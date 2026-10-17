@@ -28,6 +28,7 @@ use crate::ui::Suggestion;
 /// One coherent read of the application's observable state.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Snapshot {
+    pub graph_scene: crate::graph_scenes::Facts,
     /// Same last-refresh facts as the place status surface, without its filter.
     pub place_status: Vec<String>,
     /// Machine-readable place facts, when this session is in one. Ids and
@@ -1003,6 +1004,10 @@ pub fn snapshot(app: &App) -> Snapshot {
         surfaces.push("chrome".to_string());
     }
     Snapshot {
+        graph_scene: crate::graph_scenes::facts(app.scene_command_pane()
+            .and_then(|pane| app.graph_for_pane(pane))
+            .and_then(|graph| app.graph_runtimes.canvas(graph))
+            .unwrap_or(&app.graph_runtimes)),
         place_status: app.place.status_lines(),
         place: place_facts(app),
         focused,

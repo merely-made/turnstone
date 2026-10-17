@@ -2127,6 +2127,21 @@ impl Shell {
         Ok(())
     }
 
+    /// Scene edits settle in a rendered owner pane before their geometry is
+    /// saved. Both native windows call this after that pane's frame.
+    pub(super) fn save_ready_graph_scene(&mut self, pane: crate::panes::PaneId) {
+        let Some(graph) = self.app.graph_for_pane(pane) else { return; };
+        let ready = self.app.graph_runtimes.get(graph).is_some_and(|r|
+            r.scene_save_pending && r.scene_transition.is_none() && !r.canvas.has_stop_return());
+        if !ready { return; }
+        // A refusal is reported once; another explicit edit can retry.
+        self.app.graph_runtimes.get_mut(graph).unwrap().scene_save_pending = false;
+        if let Err(error) = self.app.persist_graph_scene(graph) {
+            tracing::warn!(%error, "graph scene persistence refused or failed");
+            self.app.note(crate::observe::AppEvent::InteractionMissed { what: "graph-scene-save", target: error.to_string() });
+        }
+    }
+
     /// Save the resolved graph runtime's curation beside its own session.
     pub(super) fn save_graph_folds(&mut self, graph: crate::panes::GraphId) {
         let Some(runtime) = self.app.graph_runtimes.get(graph) else { return; };
@@ -2145,6 +2160,14 @@ impl Shell {
     /// (`sessions/<id>/`) — the SaveSession effect's body, shared by the
     /// session switch (which must save the DEPARTING session first).
     pub(super) fn save_session(&mut self) {
+        // Explicit save/close also captures views whose panes have just closed.
+        // Each write rechecks that runtime's own session authority.
+        for graph in self.app.graph_runtimes.pending_scene_graphs() {
+            self.app.graph_runtimes.get_mut(graph).unwrap().scene_save_pending = false;
+            if let Err(error) = self.app.persist_graph_scene(graph) {
+                tracing::warn!(%error, "graph scene save refused or failed");
+            }
+        }
         if let Err(reason)=self.app.prepare_shared_stations_for_save() {
             tracing::warn!(%reason,"pane station persistence refused; session save skipped");
             self.app.note(crate::observe::AppEvent::InteractionMissed {what:"save-pane-stations",target:reason});

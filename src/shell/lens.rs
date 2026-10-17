@@ -344,6 +344,7 @@ impl Shell {
                         .app
                         .graph_pane_frame(pane, rw, rh)
                         .unwrap_or_else(|| (Scene::default(), false));
+                    self.save_ready_graph_scene(pane);
                     animating |= anim;
                     animating |= self.app.resolve_pending_images() > 0;
                     (scene, wgpu::Color::WHITE)

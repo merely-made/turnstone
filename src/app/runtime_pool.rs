@@ -33,6 +33,8 @@ pub struct GraphRuntime {
     pub graph: GraphId,
     pub session: Option<SessionId>,
     pub canvas: Canvas,
+    pub(crate) scene_save_pending: bool,
+    pub(crate) scene_transition: Option<mere::canvas::physics_controls::ArrangementTransition>,
     pub(crate) folds: crate::graph_folds::FoldSidecar,
     origin: Option<crate::host_journal::RuntimeOrigin>,
     pub(crate) persistence: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile>,
@@ -42,11 +44,14 @@ impl GraphRuntime {
     pub(crate) fn origin(&self) -> Option<crate::host_journal::RuntimeOrigin> {
         self.origin
     }
-    pub fn new(graph: GraphId, session: Option<SessionId>, canvas: Canvas) -> Self {
+    pub fn new(graph: GraphId, session: Option<SessionId>, mut canvas: Canvas) -> Self {
+        canvas.set_graph_grammar(true);
         Self {
             graph,
             session,
             canvas,
+            scene_transition: None,
+            scene_save_pending: false,
             folds: Default::default(),
             origin: None,
             persistence: crate::session_persistence::SessionPersistence::Unbound,
@@ -144,6 +149,9 @@ impl GraphRuntimePool {
         }
         let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
         runtime.persistence.clear_placement();
+        canvas.set_graph_grammar(true);
+        runtime.scene_transition = None;
+        runtime.scene_save_pending = false;
         runtime.canvas = canvas;
         runtime.origin = None;
         let _ = self.bind_recording(self.active);
@@ -159,6 +167,8 @@ impl GraphRuntimePool {
         >,
     ) {
         let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
+        runtime.scene_transition = None;
+        runtime.scene_save_pending = false;
         runtime.canvas.set_graph(graph);
         runtime.persistence = state;
         runtime.origin = None;
@@ -170,6 +180,8 @@ impl GraphRuntimePool {
     pub fn set_graph(&mut self, graph: mere::kernel::graph::Graph) {
         let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
         runtime.persistence.clear_placement();
+        runtime.scene_transition = None;
+        runtime.scene_save_pending = false;
         runtime.canvas.set_graph(graph);
         runtime.origin = None;
         let _ = self.bind_recording(self.active);
@@ -189,6 +201,10 @@ impl GraphRuntimePool {
         for runtime in self.runtimes.values_mut() {
             runtime.canvas.set_physics_display_rate(millihertz);
         }
+    }
+
+    pub(crate) fn pending_scene_graphs(&self) -> Vec<GraphId> {
+        self.runtimes.iter().filter_map(|(id, r)| r.scene_save_pending.then_some(*id)).collect()
     }
 
     pub fn contains(&self, graph: GraphId) -> bool {
@@ -330,7 +346,10 @@ impl GraphRuntimePool {
         &mut self,
         edit: impl FnOnce(&mut PhysicsChoice),
     ) -> Result<(), OverlayRefusal> {
-        let canvas = self.active_canvas_mut();
+        Self::edit_canvas_physics(self.active_canvas_mut(), edit)
+    }
+
+    pub(crate) fn edit_canvas_physics(canvas: &mut Canvas, edit: impl FnOnce(&mut PhysicsChoice)) -> Result<(), OverlayRefusal> {
         let running = PhysicsChoice::live(canvas);
         let mut choice = running.clone();
         edit(&mut choice);
