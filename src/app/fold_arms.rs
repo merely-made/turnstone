@@ -197,4 +197,28 @@ mod tests {
         assert_ne!(fitted.offset, (9000.0, -7000.0));
         app.with_graph_pane(pane, |canvas| assert_eq!(canvas.viewport(), fitted));
     }
+    #[test]
+    fn adopt_restores_explicit_pause_after_scene_and_layout() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut app = App::test_stub_at(dir.path().to_path_buf());
+        let id = app.session_id;
+        app.sessions.insert(pandect::GraphSessionManifest::new(
+            id,
+            GraphId::from_uuid(*id.as_uuid()),
+        ));
+        let session_dir = app.session_dir();
+        std::fs::create_dir_all(&session_dir).unwrap();
+        crate::session::save_session_graph(&session_dir, app.graph_runtimes.graph());
+        crate::session::save_view_intent(
+            &session_dir,
+            &crate::session::ViewIntentV1 {
+                physics_paused: Some(true),
+                ..Default::default()
+            },
+        );
+        app.adopt_session(id);
+        assert!(app.graph_runtimes.physics_paused());
+        let intent = crate::session::load_view_intent(&session_dir).unwrap();
+        assert_eq!(intent.physics_paused, Some(true));
+    }
 }
