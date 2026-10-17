@@ -1,0 +1,8 @@
+{"launch_method": "LaunchServices temporary application bundle", "launcher_exit": 0, "timeout": false, "success": false, "elapsed_seconds": 67.617, "binary_sha256": "7afa8f8a2da88564a3de6d84ac43ef06cdfe62b07b0b2c8d63f062537e7a5b36", "scenario_sha256": "bf591d80c5259c2796a9cc7ee6408a18500d8431da2e317fa91f8a5ac577910e", "receipt": "scenario.done", "captures": 2}
+RESULT fail
+captured 01_partition
+captured 02_attention
+FAIL: no successful window presentation for ten seconds
+presentation frames=311 captures=2 blank=0
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r6/seed/01_partition.png digest=24a9d5713c135782 blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r6/seed/02_attention.png digest=d48b8f4ed5c6503f blank=false

@@ -1,0 +1,5 @@
+{
+  "result": "intentionally_interrupted",
+  "reason": "Superseded by real multiwindow scenario harness fix; not a full suite qualification.",
+  "source": "1ff6ba08ffeafd2eae06da801dd7bc6611aa45b0"
+}

@@ -1,0 +1,848 @@
+{
+  "graph": {
+    "assertion_schema": 1,
+    "couplings": [],
+    "edges": [
+      {
+        "arrangement": null,
+        "assertions": [
+          {
+            "basis": {
+              "evidence": [],
+              "method": {
+                "iri": "urn:mere:method:derived-containment",
+                "version": "1"
+              },
+              "note": null
+            },
+            "predicate": "https://mere.computer/ns/rel#containment.domain",
+            "provenance_iri": "urn:mere:rule:derived-containment:v1",
+            "statement_id": "urn:uuid:34b423a7-4e6a-5b80-a6bc-6c1253e92062"
+          }
+        ],
+        "containment": null,
+        "families": [
+          "Containment"
+        ],
+        "from_node_id": "918e4bc4-23bd-47f7-9880-6e8841e4e7e5",
+        "imported": null,
+        "provenance": null,
+        "semantic": null,
+        "to_node_id": "7e8f7514-5e7c-4a3d-84ef-ed228d39effe",
+        "traversal": null
+      },
+      {
+        "arrangement": null,
+        "assertions": [
+          {
+            "basis": {
+              "evidence": [],
+              "method": {
+                "iri": "urn:mere:method:derived-containment",
+                "version": "1"
+              },
+              "note": null
+            },
+            "predicate": "https://mere.computer/ns/rel#containment.domain",
+            "provenance_iri": "urn:mere:rule:derived-containment:v1",
+            "statement_id": "urn:uuid:689c902f-09bf-53d8-b80f-ea523dd41e7d"
+          }
+        ],
+        "containment": null,
+        "families": [
+          "Containment"
+        ],
+        "from_node_id": "fb8e7d5b-e752-4875-90d4-31da47e09bc5",
+        "imported": null,
+        "provenance": null,
+        "semantic": null,
+        "to_node_id": "8e032f4e-636c-47e6-aa9a-c0466bfe841d",
+        "traversal": null
+      },
+      {
+        "arrangement": null,
+        "assertions": [
+          {
+            "basis": {
+              "evidence": [],
+              "method": {
+                "iri": "urn:mere:method:derived-containment",
+                "version": "1"
+              },
+              "note": null
+            },
+            "predicate": "https://mere.computer/ns/rel#containment.domain",
+            "provenance_iri": "urn:mere:rule:derived-containment:v1",
+            "statement_id": "urn:uuid:1cf29c36-f415-5c5b-bf8e-069cd0a4ce09"
+          }
+        ],
+        "containment": null,
+        "families": [
+          "Containment"
+        ],
+        "from_node_id": "e05db96c-2607-419f-93fd-959feb10acb5",
+        "imported": null,
+        "provenance": null,
+        "semantic": null,
+        "to_node_id": "ad901c35-f3d9-4d7b-b5a1-07a2adff637b",
+        "traversal": null
+      }
+    ],
+    "fields": [],
+    "import_records": [],
+    "navigation": {
+      "snapshot": {
+        "entries": [
+          {
+            "first_seen_at_ms": 1792216364060,
+            "key": "mere://alpha.example/one",
+            "last_seen_at_ms": 1792216364060,
+            "payload": "mere://alpha.example/one",
+            "privacy": "LocalOnly",
+            "visit_count": 1
+          },
+          {
+            "first_seen_at_ms": 1792216364969,
+            "key": "mere://alpha.example/two",
+            "last_seen_at_ms": 1792216364969,
+            "payload": "mere://alpha.example/two",
+            "privacy": "LocalOnly",
+            "visit_count": 1
+          },
+          {
+            "first_seen_at_ms": 1792216365896,
+            "key": "mere://beta.example/one",
+            "last_seen_at_ms": 1792216365896,
+            "payload": "mere://beta.example/one",
+            "privacy": "LocalOnly",
+            "visit_count": 1
+          },
+          {
+            "first_seen_at_ms": 1792216366896,
+            "key": "mere://beta.example/two",
+            "last_seen_at_ms": 1792216366896,
+            "payload": "mere://beta.example/two",
+            "privacy": "LocalOnly",
+            "visit_count": 1
+          },
+          {
+            "first_seen_at_ms": 1792216367904,
+            "key": "mere://gamma.example/one",
+            "last_seen_at_ms": 1792216367904,
+            "payload": "mere://gamma.example/one",
+            "privacy": "LocalOnly",
+            "visit_count": 1
+          },
+          {
+            "first_seen_at_ms": 1792216368943,
+            "key": "mere://gamma.example/two",
+            "last_seen_at_ms": 1792216368943,
+            "payload": "mere://gamma.example/two",
+            "privacy": "LocalOnly",
+            "visit_count": 1
+          }
+        ],
+        "owners": [
+          {
+            "creator": null,
+            "current": 0,
+            "identity": {
+              "Node": "918e4bc4-23bd-47f7-9880-6e8841e4e7e5"
+            },
+            "origin": 0,
+            "owned_visits": [
+              0
+            ],
+            "pending_origin_parent": null
+          },
+          {
+            "creator": 0,
+            "current": 1,
+            "identity": {
+              "Node": "7e8f7514-5e7c-4a3d-84ef-ed228d39effe"
+            },
+            "origin": 1,
+            "owned_visits": [
+              1
+            ],
+            "pending_origin_parent": null
+          },
+          {
+            "creator": 1,
+            "current": 2,
+            "identity": {
+              "Node": "fb8e7d5b-e752-4875-90d4-31da47e09bc5"
+            },
+            "origin": 2,
+            "owned_visits": [
+              2
+            ],
+            "pending_origin_parent": null
+          },
+          {
+            "creator": 2,
+            "current": 3,
+            "identity": {
+              "Node": "8e032f4e-636c-47e6-aa9a-c0466bfe841d"
+            },
+            "origin": 3,
+            "owned_visits": [
+              3
+            ],
+            "pending_origin_parent": null
+          },
+          {
+            "creator": 3,
+            "current": 4,
+            "identity": {
+              "Node": "e05db96c-2607-419f-93fd-959feb10acb5"
+            },
+            "origin": 4,
+            "owned_visits": [
+              4
+            ],
+            "pending_origin_parent": null
+          },
+          {
+            "creator": 4,
+            "current": 5,
+            "identity": {
+              "Node": "ad901c35-f3d9-4d7b-b5a1-07a2adff637b"
+            },
+            "origin": 5,
+            "owned_visits": [
+              5
+            ],
+            "pending_origin_parent": null
+          }
+        ],
+        "visits": [
+          {
+            "bindings": [
+              {
+                "forward_child": null,
+                "last_accessed_at_ms": 1792216364060,
+                "owner": 0
+              },
+              {
+                "forward_child": 1,
+                "last_accessed_at_ms": 1792216364969,
+                "owner": 1
+              }
+            ],
+            "children": [
+              1
+            ],
+            "context": null,
+            "created_at_ms": 1792216364060,
+            "entry": 0,
+            "inbound": null,
+            "parent": null
+          },
+          {
+            "bindings": [
+              {
+                "forward_child": 2,
+                "last_accessed_at_ms": 1792216365896,
+                "owner": 2
+              },
+              {
+                "forward_child": null,
+                "last_accessed_at_ms": 1792216364969,
+                "owner": 1
+              }
+            ],
+            "children": [
+              2
+            ],
+            "context": null,
+            "created_at_ms": 1792216364969,
+            "entry": 1,
+            "inbound": {
+              "at_ms": 1792216364969,
+              "kind": "UrlTyped"
+            },
+            "parent": 0
+          },
+          {
+            "bindings": [
+              {
+                "forward_child": 3,
+                "last_accessed_at_ms": 1792216366896,
+                "owner": 3
+              },
+              {
+                "forward_child": null,
+                "last_accessed_at_ms": 1792216365896,
+                "owner": 2
+              }
+            ],
+            "children": [
+              3
+            ],
+            "context": null,
+            "created_at_ms": 1792216365896,
+            "entry": 2,
+            "inbound": {
+              "at_ms": 1792216365896,
+              "kind": "UrlTyped"
+            },
+            "parent": 1
+          },
+          {
+            "bindings": [
+              {
+                "forward_child": null,
+                "last_accessed_at_ms": 1792216366896,
+                "owner": 3
+              },
+              {
+                "forward_child": 4,
+                "last_accessed_at_ms": 1792216367904,
+                "owner": 4
+              }
+            ],
+            "children": [
+              4
+            ],
+            "context": null,
+            "created_at_ms": 1792216366896,
+            "entry": 3,
+            "inbound": {
+              "at_ms": 1792216366896,
+              "kind": "UrlTyped"
+            },
+            "parent": 2
+          },
+          {
+            "bindings": [
+              {
+                "forward_child": null,
+                "last_accessed_at_ms": 1792216367904,
+                "owner": 4
+              },
+              {
+                "forward_child": 5,
+                "last_accessed_at_ms": 1792216368943,
+                "owner": 5
+              }
+            ],
+            "children": [
+              5
+            ],
+            "context": null,
+            "created_at_ms": 1792216367904,
+            "entry": 4,
+            "inbound": {
+              "at_ms": 1792216367904,
+              "kind": "UrlTyped"
+            },
+            "parent": 3
+          },
+          {
+            "bindings": [
+              {
+                "forward_child": null,
+                "last_accessed_at_ms": 1792216368943,
+                "owner": 5
+              }
+            ],
+            "children": [],
+            "context": null,
+            "created_at_ms": 1792216368943,
+            "entry": 5,
+            "inbound": {
+              "at_ms": 1792216368943,
+              "kind": "UrlTyped"
+            },
+            "parent": 4
+          }
+        ]
+      }
+    },
+    "nodes": [
+      {
+        "address": {
+          "Custom": "mere://alpha.example/one"
+        },
+        "body": null,
+        "cached_host": null,
+        "classifications": [],
+        "derivations": [],
+        "frame_layout_hints": [],
+        "frame_split_offer_suppressed": false,
+        "import_provenance": [],
+        "is_pinned": false,
+        "last_session_visited": 0,
+        "mime_hint": null,
+        "nested": null,
+        "node_id": "918e4bc4-23bd-47f7-9880-6e8841e4e7e5",
+        "properties": [],
+        "session_state": {
+          "form_draft": null,
+          "last_visited_ms": null,
+          "scroll_x": null,
+          "scroll_y": null
+        },
+        "tag_presentation": {
+          "icon_overrides": {},
+          "ordered_tags": []
+        },
+        "tags": [],
+        "title": "mere://alpha.example/one",
+        "url": "mere://alpha.example/one"
+      },
+      {
+        "address": {
+          "Custom": "mere://alpha.example/two"
+        },
+        "body": null,
+        "cached_host": null,
+        "classifications": [],
+        "derivations": [],
+        "frame_layout_hints": [],
+        "frame_split_offer_suppressed": false,
+        "import_provenance": [],
+        "is_pinned": false,
+        "last_session_visited": 0,
+        "mime_hint": null,
+        "nested": null,
+        "node_id": "7e8f7514-5e7c-4a3d-84ef-ed228d39effe",
+        "properties": [],
+        "session_state": {
+          "form_draft": null,
+          "last_visited_ms": null,
+          "scroll_x": null,
+          "scroll_y": null
+        },
+        "tag_presentation": {
+          "icon_overrides": {},
+          "ordered_tags": []
+        },
+        "tags": [],
+        "title": "mere://alpha.example/two",
+        "url": "mere://alpha.example/two"
+      },
+      {
+        "address": {
+          "Custom": "mere://beta.example/one"
+        },
+        "body": null,
+        "cached_host": null,
+        "classifications": [],
+        "derivations": [],
+        "frame_layout_hints": [],
+        "frame_split_offer_suppressed": false,
+        "import_provenance": [],
+        "is_pinned": false,
+        "last_session_visited": 0,
+        "mime_hint": null,
+        "nested": null,
+        "node_id": "fb8e7d5b-e752-4875-90d4-31da47e09bc5",
+        "properties": [],
+        "session_state": {
+          "form_draft": null,
+          "last_visited_ms": null,
+          "scroll_x": null,
+          "scroll_y": null
+        },
+        "tag_presentation": {
+          "icon_overrides": {},
+          "ordered_tags": []
+        },
+        "tags": [],
+        "title": "mere://beta.example/one",
+        "url": "mere://beta.example/one"
+      },
+      {
+        "address": {
+          "Custom": "mere://beta.example/two"
+        },
+        "body": null,
+        "cached_host": null,
+        "classifications": [],
+        "derivations": [],
+        "frame_layout_hints": [],
+        "frame_split_offer_suppressed": false,
+        "import_provenance": [],
+        "is_pinned": false,
+        "last_session_visited": 0,
+        "mime_hint": null,
+        "nested": null,
+        "node_id": "8e032f4e-636c-47e6-aa9a-c0466bfe841d",
+        "properties": [],
+        "session_state": {
+          "form_draft": null,
+          "last_visited_ms": null,
+          "scroll_x": null,
+          "scroll_y": null
+        },
+        "tag_presentation": {
+          "icon_overrides": {},
+          "ordered_tags": []
+        },
+        "tags": [],
+        "title": "mere://beta.example/two",
+        "url": "mere://beta.example/two"
+      },
+      {
+        "address": {
+          "Custom": "mere://gamma.example/one"
+        },
+        "body": null,
+        "cached_host": null,
+        "classifications": [],
+        "derivations": [],
+        "frame_layout_hints": [],
+        "frame_split_offer_suppressed": false,
+        "import_provenance": [],
+        "is_pinned": false,
+        "last_session_visited": 0,
+        "mime_hint": null,
+        "nested": null,
+        "node_id": "e05db96c-2607-419f-93fd-959feb10acb5",
+        "properties": [],
+        "session_state": {
+          "form_draft": null,
+          "last_visited_ms": null,
+          "scroll_x": null,
+          "scroll_y": null
+        },
+        "tag_presentation": {
+          "icon_overrides": {},
+          "ordered_tags": []
+        },
+        "tags": [],
+        "title": "mere://gamma.example/one",
+        "url": "mere://gamma.example/one"
+      },
+      {
+        "address": {
+          "Custom": "mere://gamma.example/two"
+        },
+        "body": null,
+        "cached_host": null,
+        "classifications": [],
+        "derivations": [],
+        "frame_layout_hints": [],
+        "frame_split_offer_suppressed": false,
+        "import_provenance": [],
+        "is_pinned": false,
+        "last_session_visited": 0,
+        "mime_hint": null,
+        "nested": null,
+        "node_id": "ad901c35-f3d9-4d7b-b5a1-07a2adff637b",
+        "properties": [],
+        "session_state": {
+          "form_draft": null,
+          "last_visited_ms": null,
+          "scroll_x": null,
+          "scroll_y": null
+        },
+        "tag_presentation": {
+          "icon_overrides": {},
+          "ordered_tags": []
+        },
+        "tags": [],
+        "title": "mere://gamma.example/two",
+        "url": "mere://gamma.example/two"
+      }
+    ],
+    "resource_edges": [
+      {
+        "arrangement": null,
+        "assertions": [
+          {
+            "asserted_at_ms": 1792216366896,
+            "first_asserted_ms": 1792216366896,
+            "predicate": "https://mere.computer/ns/rel#hyperlink",
+            "provenance_iri": "https://mere.computer/ns/agent#person/user",
+            "recognized_sub_kind": "Hyperlink",
+            "statement_id": "01a1486b7f30-bf4703472de164c2-0000000000000013"
+          }
+        ],
+        "containment": null,
+        "families": [
+          "Semantic"
+        ],
+        "from_node_id": "4ac126d0-63cc-59ee-b808-a0a67b3431a1",
+        "imported": null,
+        "provenance": null,
+        "semantic": null,
+        "to_node_id": "6c2f201d-7cf8-522d-adb2-4d83b2dd7f3b",
+        "traversal": null
+      },
+      {
+        "arrangement": null,
+        "assertions": [
+          {
+            "asserted_at_ms": 1792216367905,
+            "first_asserted_ms": 1792216367905,
+            "predicate": "https://mere.computer/ns/rel#hyperlink",
+            "provenance_iri": "https://mere.computer/ns/agent#person/user",
+            "recognized_sub_kind": "Hyperlink",
+            "statement_id": "01a1486b8321-bf4703472de164c2-0000000000000014"
+          }
+        ],
+        "containment": null,
+        "families": [
+          "Semantic"
+        ],
+        "from_node_id": "6c2f201d-7cf8-522d-adb2-4d83b2dd7f3b",
+        "imported": null,
+        "provenance": null,
+        "semantic": null,
+        "to_node_id": "7c31c960-16d2-5412-8131-409786248b1d",
+        "traversal": null
+      },
+      {
+        "arrangement": null,
+        "assertions": [
+          {
+            "asserted_at_ms": 1792216368943,
+            "first_asserted_ms": 1792216368943,
+            "predicate": "https://mere.computer/ns/rel#hyperlink",
+            "provenance_iri": "https://mere.computer/ns/agent#person/user",
+            "recognized_sub_kind": "Hyperlink",
+            "statement_id": "01a1486b872f-bf4703472de164c2-0000000000000015"
+          }
+        ],
+        "containment": null,
+        "families": [
+          "Semantic"
+        ],
+        "from_node_id": "7c31c960-16d2-5412-8131-409786248b1d",
+        "imported": null,
+        "provenance": null,
+        "semantic": null,
+        "to_node_id": "fbfe6dc8-3c91-595e-93e3-a4889de3af7d",
+        "traversal": null
+      },
+      {
+        "arrangement": null,
+        "assertions": [
+          {
+            "asserted_at_ms": 1792216365896,
+            "first_asserted_ms": 1792216365896,
+            "predicate": "https://mere.computer/ns/rel#hyperlink",
+            "provenance_iri": "https://mere.computer/ns/agent#person/user",
+            "recognized_sub_kind": "Hyperlink",
+            "statement_id": "01a1486b7b48-bf4703472de164c2-0000000000000012"
+          }
+        ],
+        "containment": null,
+        "families": [
+          "Semantic"
+        ],
+        "from_node_id": "8fc7f6b2-6255-53d2-a220-8b7d749d3f45",
+        "imported": null,
+        "provenance": null,
+        "semantic": null,
+        "to_node_id": "4ac126d0-63cc-59ee-b808-a0a67b3431a1",
+        "traversal": null
+      },
+      {
+        "arrangement": null,
+        "assertions": [
+          {
+            "asserted_at_ms": 1792216364969,
+            "first_asserted_ms": 1792216364969,
+            "predicate": "https://mere.computer/ns/rel#hyperlink",
+            "provenance_iri": "https://mere.computer/ns/agent#person/user",
+            "recognized_sub_kind": "Hyperlink",
+            "statement_id": "01a1486b77a9-bf4703472de164c2-0000000000000011"
+          }
+        ],
+        "containment": null,
+        "families": [
+          "Semantic"
+        ],
+        "from_node_id": "fee3a938-5787-5c57-a49a-67fbeec20c75",
+        "imported": null,
+        "provenance": null,
+        "semantic": null,
+        "to_node_id": "8fc7f6b2-6255-53d2-a220-8b7d749d3f45",
+        "traversal": null
+      }
+    ],
+    "resources": [
+      {
+        "canonical_iri": "mere://alpha.example/one",
+        "facets": []
+      },
+      {
+        "canonical_iri": "mere://alpha.example/two",
+        "facets": []
+      },
+      {
+        "canonical_iri": "mere://beta.example/one",
+        "facets": []
+      },
+      {
+        "canonical_iri": "mere://beta.example/two",
+        "facets": []
+      },
+      {
+        "canonical_iri": "mere://gamma.example/one",
+        "facets": []
+      },
+      {
+        "canonical_iri": "mere://gamma.example/two",
+        "facets": []
+      }
+    ],
+    "shown_resources": [
+      {
+        "resource_id": "8fc7f6b2-6255-53d2-a220-8b7d749d3f45",
+        "surface_id": "7e8f7514-5e7c-4a3d-84ef-ed228d39effe"
+      },
+      {
+        "resource_id": "6c2f201d-7cf8-522d-adb2-4d83b2dd7f3b",
+        "surface_id": "8e032f4e-636c-47e6-aa9a-c0466bfe841d"
+      },
+      {
+        "resource_id": "fee3a938-5787-5c57-a49a-67fbeec20c75",
+        "surface_id": "918e4bc4-23bd-47f7-9880-6e8841e4e7e5"
+      },
+      {
+        "resource_id": "fbfe6dc8-3c91-595e-93e3-a4889de3af7d",
+        "surface_id": "ad901c35-f3d9-4d7b-b5a1-07a2adff637b"
+      },
+      {
+        "resource_id": "7c31c960-16d2-5412-8131-409786248b1d",
+        "surface_id": "e05db96c-2607-419f-93fd-959feb10acb5"
+      },
+      {
+        "resource_id": "4ac126d0-63cc-59ee-b808-a0a67b3431a1",
+        "surface_id": "fb8e7d5b-e752-4875-90d4-31da47e09bc5"
+      }
+    ],
+    "timestamp_secs": 0
+  },
+  "graph_id": "02ae3808-7284-4fcf-9b07-787a44de6d5b",
+  "hidden": 0,
+  "member_keys": [
+    {
+      "id": "918e4bc4-23bd-47f7-9880-6e8841e4e7e5",
+      "key": "NodeIndex(0)"
+    },
+    {
+      "id": "7e8f7514-5e7c-4a3d-84ef-ed228d39effe",
+      "key": "NodeIndex(1)"
+    },
+    {
+      "id": "fb8e7d5b-e752-4875-90d4-31da47e09bc5",
+      "key": "NodeIndex(2)"
+    },
+    {
+      "id": "8e032f4e-636c-47e6-aa9a-c0466bfe841d",
+      "key": "NodeIndex(3)"
+    },
+    {
+      "id": "e05db96c-2607-419f-93fd-959feb10acb5",
+      "key": "NodeIndex(4)"
+    },
+    {
+      "id": "ad901c35-f3d9-4d7b-b5a1-07a2adff637b",
+      "key": "NodeIndex(5)"
+    }
+  ],
+  "physics_paused": true,
+  "positions": [
+    [
+      "7e8f7514-5e7c-4a3d-84ef-ed228d39effe",
+      [
+        -224.79449462890625,
+        97.25274658203125
+      ]
+    ],
+    [
+      "8e032f4e-636c-47e6-aa9a-c0466bfe841d",
+      [
+        -12.239738464355469,
+        107.72183990478516
+      ]
+    ],
+    [
+      "918e4bc4-23bd-47f7-9880-6e8841e4e7e5",
+      [
+        -224.79449462890625,
+        -96.19093322753906
+      ]
+    ],
+    [
+      "ad901c35-f3d9-4d7b-b5a1-07a2adff637b",
+      [
+        212.55474853515625,
+        107.72183990478516
+      ]
+    ],
+    [
+      "e05db96c-2607-419f-93fd-959feb10acb5",
+      [
+        212.55474853515625,
+        -85.72183990478516
+      ]
+    ],
+    [
+      "fb8e7d5b-e752-4875-90d4-31da47e09bc5",
+      [
+        -12.239738464355469,
+        -85.72183990478516
+      ]
+    ]
+  ],
+  "presented_frames": 78,
+  "records": [],
+  "relations": [
+    {
+      "family": "Containment",
+      "from": "NodeIndex(0)",
+      "to": "NodeIndex(1)"
+    },
+    {
+      "family": "Containment",
+      "from": "NodeIndex(2)",
+      "to": "NodeIndex(3)"
+    },
+    {
+      "family": "Containment",
+      "from": "NodeIndex(4)",
+      "to": "NodeIndex(5)"
+    },
+    {
+      "family": "Semantic",
+      "from": "NodeIndex(2)",
+      "to": "NodeIndex(3)"
+    },
+    {
+      "family": "Semantic",
+      "from": "NodeIndex(3)",
+      "to": "NodeIndex(4)"
+    },
+    {
+      "family": "Semantic",
+      "from": "NodeIndex(4)",
+      "to": "NodeIndex(5)"
+    },
+    {
+      "family": "Semantic",
+      "from": "NodeIndex(1)",
+      "to": "NodeIndex(2)"
+    },
+    {
+      "family": "Semantic",
+      "from": "NodeIndex(0)",
+      "to": "NodeIndex(1)"
+    }
+  ],
+  "routes": [],
+  "session_id": "4cb87a65-1ca2-4360-8cf7-8d36d5223c14",
+  "stored": {
+    "records": [],
+    "refused_records": [],
+    "version": 1
+  },
+  "stored_facets.json_blake3": "7590a0998856f9848a06b678fee0160c69c179da7c4e374ebb9048062b55b409",
+  "stored_graph.json_blake3": "a1eb906907b54844fab57a913e861857fd9ae8f2ef1f4473f9a254652f5fe074"
+}

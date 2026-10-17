@@ -1,0 +1,4 @@
+{"launch_method": "LaunchServices temporary application bundle", "launcher_exit": 0, "timeout": false, "success": true, "elapsed_seconds": 56.652, "binary_sha256": "3051373ebf5b569a296b5daf20c849ba2be91188ca07c7a4c8f5bcab807d45d3", "scenario_sha256": "4c09df8823273839cc58320cddcbf79b962c190c059f8b3c472d8705d209a0c8", "receipt": "scenario.done", "captures": 2}
+RESULT ok
+Graph scene reopening complete
+presentation frames=58 captures=0 blank=0

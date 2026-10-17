@@ -1,0 +1,35 @@
+{
+  "captured_utc": "2026-10-17T06:39:36.399367+00:00",
+  "turnstone_origin_main": "70862302a1a0a8d2d27cc573a6787900e5d3fd98",
+  "turnstone_ahead_behind": "0\t8",
+  "mere_origin_main": "161368bfd2f33c2ea4002ebd86565b2102c1a780",
+  "frozen_supplier": "7441f2f399701c14a7a6abb67146bb08c0a8055e",
+  "supplier_tracked_status": "",
+  "upstream_since_resume": [
+    "161368bfd Record shared span editing and native consumer qualification",
+    "34f7f08db Record integrated natal houses owner qualification",
+    "5147de0f3 Merge current shared span editing and documentation before natal intake qualification",
+    "46297ab1d Import immutable natal houses validator and verify both systems across apps",
+    "4c4ea11d8 Add revision-qualified span edits for metre and progressions",
+    "a94dfad26 Record bounded DOM batching results and limits"
+  ],
+  "compared_paths": [
+    "crates/canvas/pictograph/src/canvas",
+    "crates/cambium/scenes",
+    "crates/system/pandect",
+    "crates/canvas/forme"
+  ],
+  "supplier_vs_current_differences": [
+    "crates/cambium/scenes/scenomise/src/backdrops.rs",
+    "crates/cambium/scenes/scenomise/src/lib.rs",
+    "crates/cambium/scenes/scenomise/src/span_edit.rs",
+    "crates/cambium/scenes/scenomise/tests/span_edits.rs",
+    "crates/canvas/pictograph/src/canvas/backdrop_surface.rs",
+    "crates/canvas/pictograph/src/canvas/scene_axes.rs",
+    "crates/canvas/pictograph/src/canvas/tests/bounded_scenes.rs",
+    "crates/system/pandect/src/graph_session.rs",
+    "crates/system/pandect/src/graph_session_transaction.rs",
+    "crates/system/pandect/src/lib.rs"
+  ],
+  "decision": "Retain qualified coherent7441f2f3 cohort. New shared span editing/backdrop highlight changes, optional personal-fact admission validator and resident natal integration are separate work. Current graph scene axes differ only by this supplier canonical tag fix/tests. No unrelated live lanes modified."
+}

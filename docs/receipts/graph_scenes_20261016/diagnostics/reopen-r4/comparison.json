@@ -1,0 +1,30 @@
+{
+  "excluded": true,
+  "native_processes_succeeded": true,
+  "graph_equal": false,
+  "canonical_columns_equal": {
+    "assertion_schema": true,
+    "couplings": true,
+    "fields": true,
+    "import_records": true,
+    "navigation": true,
+    "nodes": true,
+    "resource_edges": true,
+    "resources": true,
+    "shown_resources": true,
+    "timestamp_secs": true
+  },
+  "legacy_surface_edge_counts": [
+    0,
+    3
+  ],
+  "geometry_equal": {
+    "positions": false,
+    "seed": true,
+    "regions": false,
+    "mosaic": true
+  },
+  "folds_equal": true,
+  "paused": true,
+  "foreground_pins_after_reopen": 0
+}

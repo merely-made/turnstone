@@ -1,0 +1,6 @@
+settle 12
+key escape
+assert windows == 2
+assert lens-pane 0:orrery
+capture-lens lens-probe
+settle 2

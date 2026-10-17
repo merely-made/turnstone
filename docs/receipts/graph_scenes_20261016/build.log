@@ -434,19 +434,13 @@ warning: variable does not need to be mutable
      |
      = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
 
-warning: unused variable: `lens`
-   --> src/shell/events.rs:357:25
-    |
-357 |             if let Some(lens) = self.lens_windows.get_mut(&window_id) {
-    |                         ^^^^ help: if this is intentional, prefix it with an underscore: `_lens`
-    |
-    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
-
 warning: unused variable: `caption`
    --> src/shell/render.rs:883:13
     |
 883 |         let caption = self
     |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
 
 warning: unused variable: `node`
    --> src/shell/render.rs:932:54
@@ -478,9 +472,9 @@ warning: unused variable: `host`
     |                  ^^^^ help: if this is intentional, prefix it with an underscore: `_host`
 
 warning: unused variable: `space`
-    --> src/shell/lens.rs:1136:19
+    --> src/shell/lens.rs:1151:19
      |
-1136 |     let Some(Some(space)) = app.lenses.get(ordinal) else {
+1151 |     let Some(Some(space)) = app.lenses.get(ordinal) else {
      |                   ^^^^^ help: if this is intentional, prefix it with an underscore: `_space`
 
 warning: variable does not need to be mutable
@@ -646,14 +640,14 @@ warning: methods `status`, `projection_input_binding`, and `runtime_projection_s
      |            ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: methods `split_axis` and `new_is_first` are never used
-   --> src/panes/mod.rs:341:19
+   --> src/panes/mod.rs:349:19
     |
-340 | impl InsertSide {
+348 | impl InsertSide {
     | --------------- methods in this implementation
-341 |     pub(crate) fn split_axis(self) -> SplitAxis {
+349 |     pub(crate) fn split_axis(self) -> SplitAxis {
     |                   ^^^^^^^^^^
 ...
-350 |     pub(crate) fn new_is_first(self) -> bool {
+358 |     pub(crate) fn new_is_first(self) -> bool {
     |                   ^^^^^^^^^^^^
 
 warning: method `ops_received` is never used
@@ -1066,5 +1060,5 @@ warning: associated function `new` is never used
 132 |     pub fn new() -> Self {
     |            ^^^
 
-warning: `turnstone` (lib) generated 126 warnings (run `cargo fix --lib -p turnstone` to apply 53 suggestions)
-    Finished `dev` profile [unoptimized] target(s) in 32.34s
+warning: `turnstone` (lib) generated 125 warnings (run `cargo fix --lib -p turnstone` to apply 52 suggestions)
+    Finished `dev` profile [unoptimized] target(s) in 51.19s

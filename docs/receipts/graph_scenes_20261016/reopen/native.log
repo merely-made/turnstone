@@ -1,0 +1,1059 @@
+2026-10-17T06:32:52.760372Z  INFO turnstone::launch: turnstone starting
+2026-10-17T06:32:52.957943Z  INFO turnstone::identity: profile identity (djinn) protection=Passphrase (held by djinn)
+2026-10-17T06:32:53.279469Z  INFO turnstone::session: workbench tiling restored path="/Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r8/profile/sessions/d02b6807-960f-4122-bfdc-1a5c079b99e2/workbench.json" tiles=0
+2026-10-17T06:32:53.455343Z DEBUG turnstone::selfdrive: native wake batch prepared cause=Init document_due=false surface_due=false micros=40
+2026-10-17T06:32:53.473123Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-17T06:32:54.119669Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:54.122500Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:54.873224Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:54.916804Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:55.622609Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:55.641058Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:55.868513Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:32:55.868577Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:32:55.868823Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:32:55.871374Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=43 resized=true resheeted=true full_rebuild=true
+2026-10-17T06:32:56.036371Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=687 resized=true resheeted=true full_rebuild=true
+2026-10-17T06:32:56.266488Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=655 resized=false resheeted=false full_rebuild=true
+2026-10-17T06:32:56.350991Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:56.370782Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:56.439624Z DEBUG turnstone::ui: chrome subtree layout rebuilt dirty=true resized=true resheeted=true rebuilds=1
+2026-10-17T06:32:56.899394Z DEBUG turnstone::shell::render: main surface acquire skipped reason=surface acquire skipped: Occluded
+2026-10-17T06:32:56.899539Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:32:56.950614Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:32:57.012075Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:32:57.012133Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:32:57.019734Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-17T06:32:57.035197Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=741 resized=true resheeted=true full_rebuild=true
+2026-10-17T06:32:57.088451Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:57.107246Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:57.172303Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=43 resized=false resheeted=false full_rebuild=true
+2026-10-17T06:32:57.330496Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:32:57.406876Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:32:57.474344Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:32:57.559044Z DEBUG turnstone::ui: chrome subtree layout rebuilt dirty=true resized=true resheeted=true rebuilds=1
+2026-10-17T06:32:57.862017Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:57.910581Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:58.011207Z DEBUG turnstone::shell::lens: lens surface acquire skipped reason=surface acquire skipped: Occluded window=1
+2026-10-17T06:32:58.011357Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=false
+2026-10-17T06:32:58.076499Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:32:58.151810Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:32:58.166985Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-17T06:32:58.167039Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:32:58.167311Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-17T06:32:58.167334Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:32:58.167544Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-17T06:32:58.167567Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:32:58.167705Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-17T06:32:58.167724Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:32:58.253337Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:32:58.324646Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:32:58.327085Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-17T06:32:58.327130Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:32:58.427229Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:32:58.498796Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:32:58.580377Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:32:58.650162Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:58.653652Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:32:58.656301Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-17T06:32:58.656356Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:32:58.660557Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:58.744014Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:32:58.816802Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:32:58.899146Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:32:58.970986Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:32:59.078636Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:32:59.150048Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:32:59.152536Z DEBUG turnstone::selfdrive: native actor wake completed micros=138381
+2026-10-17T06:32:59.152584Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:32:59.152596Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:32:59.152606Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:32:59.233534Z DEBUG turnstone::ui: chrome subtree layout rebuilt dirty=true resized=false resheeted=false rebuilds=2
+2026-10-17T06:32:59.389836Z DEBUG turnstone::shell::render: main surface acquire skipped reason=surface acquire skipped: Occluded
+2026-10-17T06:32:59.389962Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:32:59.419465Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:59.450840Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:32:59.453199Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:32:59.525384Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:32:59.527844Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:32:59.527880Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:32:59.527915Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:32:59.546513Z DEBUG turnstone::ui: chrome subtree layout rebuilt dirty=true resized=false resheeted=false rebuilds=2
+2026-10-17T06:32:59.741098Z DEBUG turnstone::shell::lens: lens surface acquire skipped reason=surface acquire skipped: Occluded window=1
+2026-10-17T06:32:59.741236Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=false
+2026-10-17T06:32:59.804319Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:32:59.877516Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:32:59.880399Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251116, tv_nsec: 93468570 }, requested_resume: Instant { tv_sec: 1251109, tv_nsec: 684515557 } } document_due=false surface_due=true micros=234
+2026-10-17T06:32:59.881457Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:32:59.881502Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:32:59.881515Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:00.139111Z DEBUG turnstone::shell::render: main surface acquire skipped reason=surface acquire skipped: Occluded
+2026-10-17T06:33:00.139351Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:00.202946Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:00.216655Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:00.239072Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:00.275353Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:00.277796Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:00.277838Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:00.278003Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251116, tv_nsec: 491314653 }, requested_resume: Instant { tv_sec: 1251116, tv_nsec: 109760954 } } document_due=false surface_due=true micros=12
+2026-10-17T06:33:00.340600Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-17T06:33:00.340656Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:00.341682Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:00.341718Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:00.341731Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:00.735615Z DEBUG turnstone::shell::render: frame frame_ms=393.8519287109375 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=1.804190993309021 chrome_scene_ms=160.37619018554688 chrome_syncs=4 pane_scenes_ms=41.11205291748047 raster_ms=117.10330963134766 rasterized=2 dirty_tiles=0 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=196.05975341796875 w=1024 h=600
+2026-10-17T06:33:00.736440Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:00.800776Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:00.872687Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:00.875213Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:00.875315Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:00.875485Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251117, tv_nsec: 88817686 }, requested_resume: Instant { tv_sec: 1251116, tv_nsec: 507381086 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:00.875678Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:00.875698Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:00.875709Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:00.960940Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:00.986320Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:01.097943Z DEBUG turnstone::shell::render: frame frame_ms=222.20767211914063 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3016609847545624 chrome_scene_ms=0.5921859741210938 chrome_syncs=1 pane_scenes_ms=9.781424522399902 raster_ms=135.74903869628906 rasterized=2 dirty_tiles=0 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=3.293842077255249 w=1024 h=600
+2026-10-17T06:33:01.098694Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:01.162903Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:01.235049Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:01.237504Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:01.237569Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:01.237601Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:01.362149Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:01.428109Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:01.499569Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:01.502426Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251117, tv_nsec: 715533733 }, requested_resume: Instant { tv_sec: 1251117, tv_nsec: 104881880 } } document_due=false surface_due=true micros=241
+2026-10-17T06:33:01.502547Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:01.502566Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:01.502576Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:01.725536Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:01.738223Z DEBUG turnstone::shell::render: frame frame_ms=235.62086486816406 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.29935699701309204 chrome_scene_ms=0.6391599774360657 chrome_syncs=1 pane_scenes_ms=9.744119644165039 raster_ms=152.37965393066406 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.651420831680298 w=1024 h=600
+2026-10-17T06:33:01.738986Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:01.740937Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:01.800273Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:01.875422Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:01.877893Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:01.877966Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:01.877998Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:01.957418Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:02.019070Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:02.093098Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:02.095755Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251118, tv_nsec: 309112606 }, requested_resume: Instant { tv_sec: 1251117, tv_nsec: 731833612 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:02.095839Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:02.095853Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:02.095864Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:02.326994Z DEBUG turnstone::shell::render: frame frame_ms=231.1061248779297 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3099270164966583 chrome_scene_ms=0.606902003288269 chrome_syncs=1 pane_scenes_ms=9.731990814208984 raster_ms=148.29148864746094 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.4502511024475098 w=1024 h=600
+2026-10-17T06:33:02.327740Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:02.392898Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:02.455432Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:02.464918Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:02.467398Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:02.467463Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:02.467494Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:02.490754Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:02.581539Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:02.643967Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:02.717532Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:02.720611Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251118, tv_nsec: 933748476 }, requested_resume: Instant { tv_sec: 1251118, tv_nsec: 325179989 } } document_due=false surface_due=true micros=239
+2026-10-17T06:33:02.740960Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:02.740996Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:02.741009Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:02.973819Z DEBUG turnstone::shell::render: frame frame_ms=232.76390075683594 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.2973710000514984 chrome_scene_ms=0.5986649990081787 chrome_syncs=1 pane_scenes_ms=9.678061485290527 raster_ms=145.47906494140625 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=4.400991916656494 w=1024 h=600
+2026-10-17T06:33:02.974558Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:03.039401Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:03.111458Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:03.113904Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:03.113966Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:03.113997Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:03.241540Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:03.246893Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:03.258829Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:03.320274Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:03.392623Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:03.395230Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251119, tv_nsec: 608617592 }, requested_resume: Instant { tv_sec: 1251118, tv_nsec: 950044214 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:03.395338Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:03.395356Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:03.395367Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:03.622655Z DEBUG turnstone::shell::render: frame frame_ms=227.2654571533203 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.29884499311447144 chrome_scene_ms=0.7045760154724121 chrome_syncs=1 pane_scenes_ms=10.184600830078125 raster_ms=141.05039978027344 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.460839033126831 w=1024 h=600
+2026-10-17T06:33:03.623396Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:03.685773Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:03.757887Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:03.760361Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:03.760430Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:03.760461Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:03.918968Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:03.984076Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:04.013494Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:04.054843Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:04.055981Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:04.058797Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251120, tv_nsec: 271989962 }, requested_resume: Instant { tv_sec: 1251119, tv_nsec: 624689208 } } document_due=false surface_due=true micros=226
+2026-10-17T06:33:04.058885Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:04.058901Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:04.058911Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:04.275041Z DEBUG turnstone::shell::render: frame frame_ms=216.1022491455078 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3146659731864929 chrome_scene_ms=0.6319630146026611 chrome_syncs=1 pane_scenes_ms=10.461684226989746 raster_ms=132.34841918945313 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.4210259914398193 w=1024 h=600
+2026-10-17T06:33:04.275780Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:04.342604Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:04.417006Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:04.419460Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:04.419522Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:04.419555Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:04.565880Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:04.629670Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:04.703373Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:04.706010Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251120, tv_nsec: 919429704 }, requested_resume: Instant { tv_sec: 1251120, tv_nsec: 288271407 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:04.706160Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:04.706184Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:04.706196Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:04.793870Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:04.836547Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:04.942152Z DEBUG turnstone::shell::render: frame frame_ms=235.93080139160156 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.31182000041007996 chrome_scene_ms=0.6846140027046204 chrome_syncs=1 pane_scenes_ms=10.027691841125488 raster_ms=151.5723419189453 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.858865976333618 w=1024 h=600
+2026-10-17T06:33:04.942896Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:05.004587Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:05.077943Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:05.080422Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:05.080488Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:05.080520Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:05.206529Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:05.269353Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:05.343122Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:05.345990Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251121, tv_nsec: 559216233 }, requested_resume: Instant { tv_sec: 1251120, tv_nsec: 935501423 } } document_due=false surface_due=true micros=223
+2026-10-17T06:33:05.346107Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:05.346125Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:05.346136Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:05.561391Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:05.573108Z DEBUG turnstone::shell::render: frame frame_ms=226.9442901611328 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.29562801122665405 chrome_scene_ms=0.5844379663467407 chrome_syncs=1 pane_scenes_ms=9.5955228805542 raster_ms=143.42477416992188 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=3.1691720485687256 w=1024 h=600
+2026-10-17T06:33:05.573852Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:05.577697Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:05.636752Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:05.708926Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:05.711448Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:05.711511Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:05.711544Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:05.838642Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:05.901005Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:05.972826Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:05.975819Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251122, tv_nsec: 189272195 }, requested_resume: Instant { tv_sec: 1251121, tv_nsec: 575495099 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:05.984861Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:05.984909Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:05.984923Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:06.224082Z DEBUG turnstone::shell::render: frame frame_ms=239.1151580810547 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3221129775047302 chrome_scene_ms=0.6040599942207336 chrome_syncs=1 pane_scenes_ms=9.6843843460083 raster_ms=154.149658203125 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.3895578384399414 w=1024 h=600
+2026-10-17T06:33:06.224847Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:06.288955Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:06.329400Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:06.338687Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:06.360789Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:06.363221Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:06.363281Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:06.363312Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:06.498044Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:06.560468Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:06.634514Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:06.637556Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251122, tv_nsec: 850803430 }, requested_resume: Instant { tv_sec: 1251122, tv_nsec: 205340878 } } document_due=false surface_due=true micros=233
+2026-10-17T06:33:06.639478Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:06.639538Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:06.639563Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:06.874763Z DEBUG turnstone::shell::render: frame frame_ms=235.1465606689453 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.31859898567199707 chrome_scene_ms=0.5957059860229492 chrome_syncs=1 pane_scenes_ms=9.842700004577637 raster_ms=150.20350646972656 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.8902721405029297 w=1024 h=600
+2026-10-17T06:33:06.875521Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:06.938241Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:07.009578Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:07.012087Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:07.012161Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:07.012195Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:07.100266Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:07.134837Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:07.150993Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:07.212817Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:07.284016Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:07.286745Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251123, tv_nsec: 500231325 }, requested_resume: Instant { tv_sec: 1251122, tv_nsec: 867092470 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:07.286910Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:07.286950Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:07.286961Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:07.509137Z DEBUG turnstone::shell::render: frame frame_ms=222.1489715576172 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3040219843387604 chrome_scene_ms=0.5914480090141296 chrome_syncs=1 pane_scenes_ms=9.85766887664795 raster_ms=136.68112182617188 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.8617630004882813 w=1024 h=600
+2026-10-17T06:33:07.509870Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:07.574619Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:07.646942Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:07.649447Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:07.649511Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:07.649542Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:07.798643Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:07.854393Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:07.860310Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:07.870654Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:07.932113Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:07.935028Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251124, tv_nsec: 148310879 }, requested_resume: Instant { tv_sec: 1251123, tv_nsec: 516300294 } } document_due=false surface_due=true micros=230
+2026-10-17T06:33:07.935148Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:07.935168Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:07.935179Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:08.168744Z DEBUG turnstone::shell::render: frame frame_ms=233.53724670410156 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.31158700585365295 chrome_scene_ms=0.6164860129356384 chrome_syncs=1 pane_scenes_ms=9.753851890563965 raster_ms=148.4361572265625 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.376081943511963 w=1024 h=600
+2026-10-17T06:33:08.169509Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:08.231224Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:08.303431Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:08.306038Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:08.306110Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:08.306142Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:08.446969Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:08.511657Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:08.583133Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:08.584152Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:08.585779Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251124, tv_nsec: 799307413 }, requested_resume: Instant { tv_sec: 1251124, tv_nsec: 164597976 } } document_due=false surface_due=true micros=7
+2026-10-17T06:33:08.617793Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:08.617852Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:08.617866Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:08.624632Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:08.851747Z DEBUG turnstone::shell::render: frame frame_ms=233.83255004882813 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3497159779071808 chrome_scene_ms=0.6458320021629333 chrome_syncs=1 pane_scenes_ms=9.864608764648438 raster_ms=150.28195190429688 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.54984188079834 w=1024 h=600
+2026-10-17T06:33:08.852532Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:08.914415Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:08.987128Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:08.989687Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:08.989756Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:08.989788Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:09.115208Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:09.176825Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:09.249174Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:09.252073Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251125, tv_nsec: 465386951 }, requested_resume: Instant { tv_sec: 1251124, tv_nsec: 815372430 } } document_due=false surface_due=true micros=235
+2026-10-17T06:33:09.252196Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:09.252214Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:09.252225Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:09.329482Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:09.350673Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:09.495899Z DEBUG turnstone::shell::render: frame frame_ms=243.6453399658203 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.30773401260375977 chrome_scene_ms=0.8319829702377319 chrome_syncs=1 pane_scenes_ms=9.754733085632324 raster_ms=157.01443481445313 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.6246390342712402 w=1024 h=600
+2026-10-17T06:33:09.496655Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:09.561062Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:09.633280Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:09.635765Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:09.635830Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:09.635862Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:09.784239Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:09.846081Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:09.918485Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:09.921226Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251126, tv_nsec: 134784520 }, requested_resume: Instant { tv_sec: 1251125, tv_nsec: 481678295 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:09.921412Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:09.921433Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:09.921444Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:10.058564Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:10.083027Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:10.114431Z DEBUG turnstone::shell::render: frame frame_ms=192.9600830078125 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.32657599449157715 chrome_scene_ms=0.5934449434280396 chrome_syncs=1 pane_scenes_ms=9.708823204040527 raster_ms=108.19713592529297 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.505168914794922 w=1024 h=600
+2026-10-17T06:33:10.115201Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:10.176125Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:10.249627Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:10.252112Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:10.252181Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:10.252212Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:10.400106Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:10.467183Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:10.540329Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:10.543547Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251126, tv_nsec: 756898706 }, requested_resume: Instant { tv_sec: 1251126, tv_nsec: 150850451 } } document_due=false surface_due=true micros=232
+2026-10-17T06:33:10.543683Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:10.543702Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:10.543713Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:10.767849Z DEBUG turnstone::shell::render: frame frame_ms=224.1078643798828 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.30449599027633667 chrome_scene_ms=0.5990670323371887 chrome_syncs=1 pane_scenes_ms=10.175799369812012 raster_ms=138.14703369140625 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.97536301612854 w=1024 h=600
+2026-10-17T06:33:10.768629Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:10.800287Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:10.831775Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:10.845648Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:10.908420Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:10.910960Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:10.911023Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:10.911054Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:10.986570Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:11.050030Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:11.123702Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:11.126512Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251127, tv_nsec: 340103491 }, requested_resume: Instant { tv_sec: 1251126, tv_nsec: 773183802 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:11.141185Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:11.141229Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:11.141242Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:11.363239Z DEBUG turnstone::shell::render: frame frame_ms=221.9523162841797 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3279550075531006 chrome_scene_ms=0.6329829692840576 chrome_syncs=1 pane_scenes_ms=10.30290412902832 raster_ms=136.0172882080078 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.4267449378967285 w=1024 h=600
+2026-10-17T06:33:11.363982Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:11.429910Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:11.503579Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:11.506103Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:11.506159Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:11.506190Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:11.597855Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:11.633672Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:11.648909Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:11.713280Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:11.788075Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:11.791180Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251128, tv_nsec: 4558270 }, requested_resume: Instant { tv_sec: 1251127, tv_nsec: 356168982 } } document_due=false surface_due=true micros=236
+2026-10-17T06:33:11.791307Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:11.791326Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:11.791360Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:12.026556Z DEBUG turnstone::shell::render: frame frame_ms=235.16676330566406 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.30448099970817566 chrome_scene_ms=0.5996769666671753 chrome_syncs=1 pane_scenes_ms=9.873950004577637 raster_ms=150.09483337402344 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.420440196990967 w=1024 h=600
+2026-10-17T06:33:12.027324Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:12.090231Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:12.162612Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:12.165083Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:12.165143Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:12.165176Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:12.312639Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:12.364770Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:12.375801Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:12.408525Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:12.448518Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:12.451147Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251128, tv_nsec: 664769209 }, requested_resume: Instant { tv_sec: 1251128, tv_nsec: 20849844 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:12.458473Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:12.458497Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:12.458508Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:12.724200Z DEBUG turnstone::shell::render: frame frame_ms=265.66217041015625 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.31459298729896545 chrome_scene_ms=0.6333670020103455 chrome_syncs=1 pane_scenes_ms=9.925278663635254 raster_ms=183.7843780517578 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.5117859840393066 w=1024 h=600
+2026-10-17T06:33:12.724986Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:12.787956Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:12.861628Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:12.864066Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:12.864122Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:12.864153Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:12.973344Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:13.036288Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:13.110572Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:13.113485Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251129, tv_nsec: 326912904 }, requested_resume: Instant { tv_sec: 1251128, tv_nsec: 680836578 } } document_due=false surface_due=true micros=225
+2026-10-17T06:33:13.113621Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:13.113639Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:13.113649Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:13.140669Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:13.149747Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:13.385805Z DEBUG turnstone::shell::render: frame frame_ms=272.1310729980469 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3106909990310669 chrome_scene_ms=0.6480240225791931 chrome_syncs=1 pane_scenes_ms=10.014883995056152 raster_ms=183.4815673828125 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=7.663082599639893 w=1024 h=600
+2026-10-17T06:33:13.386540Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:13.448648Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:13.520912Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:13.523352Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:13.523412Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:13.523444Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:13.642871Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:13.705428Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:13.777656Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:13.780275Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251129, tv_nsec: 993937359 }, requested_resume: Instant { tv_sec: 1251129, tv_nsec: 343190911 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:13.787866Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:13.787905Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:13.787917Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:13.903919Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:13.938289Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:14.056696Z DEBUG turnstone::shell::render: frame frame_ms=268.7372131347656 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.29660099744796753 chrome_scene_ms=0.6021410226821899 chrome_syncs=1 pane_scenes_ms=9.790879249572754 raster_ms=183.98977661132813 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.4839229583740234 w=1024 h=600
+2026-10-17T06:33:14.057428Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:14.118549Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:14.190788Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:14.193218Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:14.193281Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:14.193336Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:14.335176Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:14.397519Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:14.471266Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:14.474216Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251130, tv_nsec: 687646030 }, requested_resume: Instant { tv_sec: 1251130, tv_nsec: 10001208 } } document_due=false surface_due=true micros=248
+2026-10-17T06:33:14.474342Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:14.474361Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:14.474371Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:14.684447Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:14.703971Z DEBUG turnstone::shell::render: frame frame_ms=229.5734100341797 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.29843997955322266 chrome_scene_ms=0.6095809936523438 chrome_syncs=1 pane_scenes_ms=10.023298263549805 raster_ms=138.2211151123047 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=7.905254364013672 w=1024 h=600
+2026-10-17T06:33:14.704696Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:14.728314Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:14.766904Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:14.840126Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:14.842571Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:14.842641Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:14.842672Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:14.942409Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:15.003419Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:15.079565Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:15.082257Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251131, tv_nsec: 295950005 }, requested_resume: Instant { tv_sec: 1251130, tv_nsec: 703953710 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:15.089654Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:15.089678Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:15.089689Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:15.304673Z DEBUG turnstone::shell::render: frame frame_ms=214.9508819580078 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3249710202217102 chrome_scene_ms=0.6822110414505005 chrome_syncs=1 pane_scenes_ms=10.32667350769043 raster_ms=128.30563354492188 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.7719860076904297 w=1024 h=600
+2026-10-17T06:33:15.305424Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:15.371605Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:15.445481Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:15.447994Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:15.448052Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:15.448083Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:15.463339Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:15.486132Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:15.589975Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:15.652897Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:15.737512Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:15.740499Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251131, tv_nsec: 953996022 }, requested_resume: Instant { tv_sec: 1251131, tv_nsec: 312014845 } } document_due=false surface_due=true micros=221
+2026-10-17T06:33:15.740615Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:15.740633Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:15.740644Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:15.970393Z DEBUG turnstone::shell::render: frame frame_ms=229.7223358154297 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3096669912338257 chrome_scene_ms=0.8482150435447693 chrome_syncs=1 pane_scenes_ms=10.206889152526855 raster_ms=143.4123077392578 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.6326420307159424 w=1024 h=600
+2026-10-17T06:33:15.971142Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:16.036905Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:16.110589Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:16.113129Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:16.113195Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:16.113227Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:16.250676Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:16.253074Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:16.282914Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:16.314375Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:16.388812Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:16.391484Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251132, tv_nsec: 605208080 }, requested_resume: Instant { tv_sec: 1251131, tv_nsec: 970269957 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:16.398722Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:16.398744Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:16.398754Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:16.732883Z DEBUG turnstone::shell::render: frame frame_ms=334.1001281738281 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.288237988948822 chrome_scene_ms=0.5967370271682739 chrome_syncs=1 pane_scenes_ms=9.596827507019043 raster_ms=201.45835876464844 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=49.88805389404297 w=1024 h=600
+2026-10-17T06:33:16.733709Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:16.796498Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:16.867799Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:16.870220Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:16.870274Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:16.870305Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:16.991642Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:17.010994Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:17.034039Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:17.097465Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:17.170485Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:17.173328Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251133, tv_nsec: 386857582 }, requested_resume: Instant { tv_sec: 1251132, tv_nsec: 621273428 } } document_due=false surface_due=true micros=225
+2026-10-17T06:33:17.173449Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:17.173467Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:17.173478Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:17.381689Z DEBUG turnstone::shell::render: frame frame_ms=208.18356323242188 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3095410168170929 chrome_scene_ms=0.599170982837677 chrome_syncs=1 pane_scenes_ms=9.641331672668457 raster_ms=126.21354675292969 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.621723175048828 w=1024 h=600
+2026-10-17T06:33:17.382435Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:17.444274Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:17.516267Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:17.518697Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:17.518761Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:17.518792Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:17.596188Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:17.658140Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:17.721116Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:17.730582Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:17.735084Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:17.737756Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251133, tv_nsec: 951511105 }, requested_resume: Instant { tv_sec: 1251133, tv_nsec: 403135574 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:17.745203Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:17.745231Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:17.745241Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:17.965253Z DEBUG turnstone::shell::render: frame frame_ms=219.9758758544922 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.32226699590682983 chrome_scene_ms=0.65351802110672 chrome_syncs=1 pane_scenes_ms=9.869057655334473 raster_ms=135.7755584716797 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.5707437992095947 w=1024 h=600
+2026-10-17T06:33:17.966002Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:18.030052Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:18.103883Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:18.106531Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:18.106601Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:18.106633Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:18.224334Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:18.286647Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:18.359256Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:18.362145Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251134, tv_nsec: 575686462 }, requested_resume: Instant { tv_sec: 1251133, tv_nsec: 967581533 } } document_due=false surface_due=true micros=238
+2026-10-17T06:33:18.362280Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:18.362299Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:18.362309Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:18.455478Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:18.487363Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:18.546045Z DEBUG turnstone::shell::render: frame frame_ms=183.705078125 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.31064897775650024 chrome_scene_ms=0.8323690295219421 chrome_syncs=1 pane_scenes_ms=9.797392845153809 raster_ms=99.66578674316406 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.483323812484741 w=1024 h=600
+2026-10-17T06:33:18.546787Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:18.608605Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:18.681438Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:18.683883Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:18.683943Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:18.683975Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:18.760025Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:18.824086Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:18.898055Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:18.900554Z DEBUG turnstone::selfdrive: begin app step verb="key"
+2026-10-17T06:33:18.948036Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-17T06:33:18.948242Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251135, tv_nsec: 162049058 }, requested_resume: Instant { tv_sec: 1251134, tv_nsec: 591981694 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:18.954913Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:18.954932Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:18.954943Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:19.142463Z DEBUG turnstone::shell::render: frame frame_ms=187.4908447265625 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=9.816425323486328 raster_ms=79.54127502441406 rasterized=1 dirty_tiles=0 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.774994969367981 w=1024 h=600
+2026-10-17T06:33:19.143193Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:19.198324Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:19.206087Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:19.227987Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:19.279414Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:19.281876Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:19.281922Z DEBUG turnstone::selfdrive: begin app step verb="assert"
+2026-10-17T06:33:19.290859Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:19.291492Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-17T06:33:19.291528Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:19.291559Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:19.425341Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:19.490107Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:19.569778Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:19.572395Z DEBUG turnstone::selfdrive: begin app step verb="assert"
+2026-10-17T06:33:19.581243Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:19.581758Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-17T06:33:19.582177Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251135, tv_nsec: 795757929 }, requested_resume: Instant { tv_sec: 1251135, tv_nsec: 178101588 } } document_due=false surface_due=true micros=238
+2026-10-17T06:33:19.582280Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:19.582297Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:19.582307Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:19.830672Z DEBUG turnstone::shell::render: frame frame_ms=248.33865356445313 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=9.873756408691406 raster_ms=142.36610412597656 rasterized=1 dirty_tiles=0 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.904560923576355 w=1024 h=600
+2026-10-17T06:33:19.831461Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:19.895373Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:19.960762Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:19.967042Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:19.969471Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:19.969518Z DEBUG turnstone::selfdrive: begin app step verb="key-window"
+2026-10-17T06:33:19.971349Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-17T06:33:19.971384Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:19.971415Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:19.993888Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:20.090456Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:20.152884Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:20.225614Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:20.228078Z DEBUG turnstone::selfdrive: begin app step verb="assert"
+2026-10-17T06:33:20.237587Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:20.238108Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-17T06:33:20.238295Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251136, tv_nsec: 452125062 }, requested_resume: Instant { tv_sec: 1251135, tv_nsec: 812049550 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:20.246128Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:20.246158Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:20.246171Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:20.450142Z DEBUG turnstone::shell::render: frame frame_ms=203.92965698242188 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3165559768676758 chrome_scene_ms=0.6322000026702881 chrome_syncs=1 pane_scenes_ms=10.113953590393066 raster_ms=106.3403091430664 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=15.746474266052246 w=1024 h=600
+2026-10-17T06:33:20.450879Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:20.514630Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:20.587541Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:20.590018Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:20.598866Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:20.611582Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:20.611653Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:20.761658Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:20.795260Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:20.816327Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:20.896203Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:20.970852Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:20.982432Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:20.995977Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251137, tv_nsec: 209583632 }, requested_resume: Instant { tv_sec: 1251136, tv_nsec: 468188279 } } document_due=false surface_due=true micros=243
+2026-10-17T06:33:20.996117Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:20.996135Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:20.996146Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:21.204351Z DEBUG turnstone::shell::render: frame frame_ms=208.17724609375 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.2897370159626007 chrome_scene_ms=0.5997929573059082 chrome_syncs=1 pane_scenes_ms=9.91983413696289 raster_ms=114.69666290283203 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=9.00135612487793 w=1024 h=600
+2026-10-17T06:33:21.205141Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:21.268372Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:21.343066Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:21.345866Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:21.355523Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:21.368344Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:21.368407Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:21.517716Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:21.525129Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:21.546705Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:21.583112Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:21.656994Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:21.659540Z DEBUG turnstone::selfdrive: begin app step verb="record-graph-scene"
+2026-10-17T06:33:21.662478Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-17T06:33:21.662670Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251137, tv_nsec: 876533975 }, requested_resume: Instant { tv_sec: 1251137, tv_nsec: 225880218 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:21.670734Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:21.670759Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:21.670769Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:21.858589Z DEBUG turnstone::shell::render: frame frame_ms=187.78292846679688 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.30564799904823303 chrome_scene_ms=0.6109090447425842 chrome_syncs=1 pane_scenes_ms=10.060934066772461 raster_ms=101.40970611572266 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.48675799369812 w=1024 h=600
+2026-10-17T06:33:21.859340Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:21.921658Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:21.996445Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:21.998993Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:21.999041Z DEBUG turnstone::selfdrive: begin app step verb="record-graph-folds"
+2026-10-17T06:33:22.001349Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-17T06:33:22.001380Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:22.001412Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:22.129263Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:22.193717Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:22.268220Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:22.270720Z DEBUG turnstone::selfdrive: begin app step verb="capture-lens"
+2026-10-17T06:33:22.270808Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-17T06:33:22.271227Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251138, tv_nsec: 484865980 }, requested_resume: Instant { tv_sec: 1251137, tv_nsec: 892599961 } } document_due=false surface_due=true micros=246
+2026-10-17T06:33:22.271336Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:22.271352Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:22.271363Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:22.285779Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:22.305719Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:22.515980Z DEBUG turnstone::shell::render: frame frame_ms=244.59207153320313 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.31544598937034607 chrome_scene_ms=0.6560490131378174 chrome_syncs=1 pane_scenes_ms=10.157244682312012 raster_ms=153.55369567871094 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=7.203848838806152 w=1024 h=600
+2026-10-17T06:33:22.516809Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:22.580968Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:22.656367Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:22.658859Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:22.658914Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:22.658945Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:22.947512Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:23.012011Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:23.048046Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:23.085863Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:23.097000Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:23.103254Z DEBUG turnstone::shell::input: physical pane press admission x=243.66970825195313 y=325.0 button=Left chrome_intent=None omnibar=false
+2026-10-17T06:33:23.164461Z DEBUG turnstone::shell::input: physical surface press selected x=243.66970825195313 y=325.0 hit=Some(HitResult { id: SurfaceId(3), kind: Pane(PaneId(1)), local: (243.66971, 263.0) })
+2026-10-17T06:33:23.215102Z DEBUG turnstone::ui: pane Livery layout refreshed structural=false mutations=2 resized=false resheeted=false full_rebuild=false
+2026-10-17T06:33:23.483131Z DEBUG turnstone::ui: pane Livery layout refreshed structural=false mutations=2 resized=false resheeted=false full_rebuild=false
+2026-10-17T06:33:23.510028Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251139, tv_nsec: 723699674 }, requested_resume: Instant { tv_sec: 1251138, tv_nsec: 501168876 } } document_due=false surface_due=true micros=242
+2026-10-17T06:33:23.520526Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:23.520567Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:23.520579Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:23.599552Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=1 resized=false resheeted=false full_rebuild=true
+2026-10-17T06:33:23.807515Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=1 resized=false resheeted=false full_rebuild=true
+2026-10-17T06:33:23.823287Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:23.858698Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:23.972751Z DEBUG turnstone::shell::render: frame frame_ms=452.1347961425781 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=10.40821361541748 raster_ms=139.1619873046875 rasterized=1 dirty_tiles=6 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=6 chrome_rast=0 chrome_tiles=0 compose_ms=1.8617949485778809 w=1024 h=600
+2026-10-17T06:33:23.973505Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:24.035751Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:24.109349Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:24.111816Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:24.111871Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:24.111902Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:24.218218Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:24.279418Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:24.351285Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:24.353922Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251140, tv_nsec: 567854724 }, requested_resume: Instant { tv_sec: 1251139, tv_nsec: 739994068 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:24.354036Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:24.354053Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:24.354064Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:24.573254Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:24.592396Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:24.628793Z DEBUG turnstone::shell::render: frame frame_ms=274.70611572265625 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=10.25395679473877 raster_ms=83.023193359375 rasterized=1 dirty_tiles=0 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=6.679874897003174 w=1024 h=600
+2026-10-17T06:33:24.629521Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:24.691675Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:24.764379Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:24.766896Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:24.766956Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:24.766988Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:24.879413Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:24.941043Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:25.013238Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:25.016105Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251141, tv_nsec: 229842592 }, requested_resume: Instant { tv_sec: 1251140, tv_nsec: 583917591 } } document_due=false surface_due=true micros=219
+2026-10-17T06:33:25.024435Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:25.024459Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:25.024472Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:25.304817Z DEBUG turnstone::shell::render: frame frame_ms=280.3054504394531 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=9.823626518249512 raster_ms=94.6026382446289 rasterized=1 dirty_tiles=0 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.5866539478302002 w=1024 h=600
+2026-10-17T06:33:25.305652Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:25.306935Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:25.309173Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:25.367834Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:25.442185Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:25.444737Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:25.453630Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:25.466688Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:25.466770Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:25.592732Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:25.658052Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:25.731427Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:25.749401Z DEBUG turnstone::shell::input: physical pane press admission x=137.4598388671875 y=325.0 button=Left chrome_intent=None omnibar=false
+2026-10-17T06:33:25.809675Z DEBUG turnstone::shell::input: physical surface press selected x=137.4598388671875 y=325.0 hit=Some(HitResult { id: SurfaceId(3), kind: Pane(PaneId(1)), local: (137.45984, 263.0) })
+2026-10-17T06:33:26.033925Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251142, tv_nsec: 247671109 }, requested_resume: Instant { tv_sec: 1251141, tv_nsec: 246113811 } } document_due=false surface_due=true micros=233
+2026-10-17T06:33:26.034092Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:26.034113Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:26.034125Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:26.040482Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:26.041904Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:26.114215Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=1 resized=false resheeted=false full_rebuild=true
+2026-10-17T06:33:26.322957Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=1 resized=false resheeted=false full_rebuild=true
+2026-10-17T06:33:26.485489Z DEBUG turnstone::shell::render: frame frame_ms=451.33837890625 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=10.973031997680664 raster_ms=136.09918212890625 rasterized=1 dirty_tiles=6 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=6 chrome_rast=0 chrome_tiles=0 compose_ms=1.7755179405212402 w=1024 h=600
+2026-10-17T06:33:26.486248Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:26.551700Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:26.627937Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:26.630700Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:26.630773Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:26.630806Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:26.714043Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:26.780717Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:26.784541Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:26.802922Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:26.855647Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:26.858390Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251143, tv_nsec: 72377900 }, requested_resume: Instant { tv_sec: 1251142, tv_nsec: 263956906 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:26.868907Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:26.868972Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:26.868987Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:27.161224Z DEBUG turnstone::shell::render: frame frame_ms=292.1895446777344 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=10.189141273498535 raster_ms=99.6008071899414 rasterized=1 dirty_tiles=0 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.0431180000305176 w=1024 h=600
+2026-10-17T06:33:27.161978Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:27.225761Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:27.300039Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:27.302618Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:27.302679Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:27.302711Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:27.400725Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:27.463915Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:27.537779Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:27.540697Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251143, tv_nsec: 754491645 }, requested_resume: Instant { tv_sec: 1251143, tv_nsec: 88447740 } } document_due=false surface_due=true micros=226
+2026-10-17T06:33:27.540813Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:27.540831Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:27.540842Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:27.552934Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:27.577219Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:27.815185Z DEBUG turnstone::shell::render: frame frame_ms=274.3157043457031 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=10.012497901916504 raster_ms=77.44513702392578 rasterized=1 dirty_tiles=0 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=7.387675762176514 w=1024 h=600
+2026-10-17T06:33:27.815942Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:27.880686Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:27.955160Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:27.957677Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:27.966726Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:27.979632Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:27.979695Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:28.063477Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:28.126709Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:28.199971Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:28.202499Z DEBUG turnstone::selfdrive: begin app step verb="key-window"
+2026-10-17T06:33:28.204398Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-17T06:33:28.204598Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251144, tv_nsec: 418627204 }, requested_resume: Instant { tv_sec: 1251143, tv_nsec: 770771262 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:28.212223Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:28.212253Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:28.212264Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:28.302387Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:28.345159Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:28.451114Z DEBUG turnstone::shell::render: frame frame_ms=238.82159423828125 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.32461899518966675 chrome_scene_ms=0.663578987121582 chrome_syncs=1 pane_scenes_ms=10.73574447631836 raster_ms=152.12722778320313 rasterized=2 dirty_tiles=160 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=160 compose_ms=3.137618064880371 w=1024 h=600
+2026-10-17T06:33:28.451866Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:28.515901Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:28.588051Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:28.590511Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:28.591555Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:28.591597Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:28.723914Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:28.786307Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:28.859342Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:28.862222Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251145, tv_nsec: 76051943 }, requested_resume: Instant { tv_sec: 1251144, tv_nsec: 434695013 } } document_due=false surface_due=true micros=220
+2026-10-17T06:33:28.862347Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:28.862366Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:28.862376Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:29.028093Z DEBUG turnstone::shell::render: frame frame_ms=165.68817138671875 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=9.649718284606934 raster_ms=84.75045776367188 rasterized=1 dirty_tiles=0 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.5928360223770142 w=1024 h=600
+2026-10-17T06:33:29.028839Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:29.086097Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:29.091977Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:29.116464Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:29.163328Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:29.165760Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:29.165823Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:29.165855Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:29.252548Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:29.317796Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:29.390571Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:29.393408Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251145, tv_nsec: 607465677 }, requested_resume: Instant { tv_sec: 1251145, tv_nsec: 92327833 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:29.400106Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:29.400148Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:29.400160Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:29.567260Z DEBUG turnstone::shell::render: frame frame_ms=167.06166076660156 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=10.148183822631836 raster_ms=84.18951416015625 rasterized=1 dirty_tiles=0 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.8869400024414063 w=1024 h=600
+2026-10-17T06:33:29.568000Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:29.631899Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:29.706478Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:29.708921Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:29.708979Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:29.709011Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:29.778209Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:29.829108Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:29.838876Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:29.841367Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:29.912412Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:29.915273Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251146, tv_nsec: 129108554 }, requested_resume: Instant { tv_sec: 1251145, tv_nsec: 623531957 } } document_due=false surface_due=true micros=245
+2026-10-17T06:33:29.915391Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:29.915410Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:29.915421Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:30.086156Z DEBUG turnstone::shell::render: frame frame_ms=170.7066650390625 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=10.358661651611328 raster_ms=88.34324645996094 rasterized=1 dirty_tiles=0 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.9417520761489868 w=1024 h=600
+2026-10-17T06:33:30.086892Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:30.148432Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:30.221381Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:30.223853Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:30.223911Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:30.223942Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:30.298498Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:30.361229Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:30.433847Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:30.436491Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251146, tv_nsec: 650579886 }, requested_resume: Instant { tv_sec: 1251146, tv_nsec: 145408889 } } document_due=false surface_due=true micros=7
+2026-10-17T06:33:30.442286Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:30.442311Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:30.442322Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:30.552393Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:30.605202Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:30.615441Z DEBUG turnstone::shell::render: frame frame_ms=173.08554077148438 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=9.537569999694824 raster_ms=89.9462890625 rasterized=1 dirty_tiles=0 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=1.843277931213379 w=1024 h=600
+2026-10-17T06:33:30.616177Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:30.678812Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:30.753215Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:30.755841Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:30.755897Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:30.755930Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:30.851278Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:30.914732Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:30.988196Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:30.991088Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251147, tv_nsec: 204963941 }, requested_resume: Instant { tv_sec: 1251146, tv_nsec: 666643409 } } document_due=false surface_due=true micros=230
+2026-10-17T06:33:30.991218Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:30.991239Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:30.991252Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:31.154623Z DEBUG turnstone::shell::render: frame frame_ms=163.3394775390625 surfaces=2 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.0 chrome_scene_ms=0.0 chrome_syncs=0 pane_scenes_ms=9.805055618286133 raster_ms=80.24751281738281 rasterized=1 dirty_tiles=0 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=0 chrome_tiles=0 compose_ms=2.0747129917144775 w=1024 h=600
+2026-10-17T06:33:31.155368Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:31.217280Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:31.288649Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:31.291239Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:31.291295Z DEBUG turnstone::selfdrive: begin app step verb="record-graph-folds"
+2026-10-17T06:33:31.293282Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-17T06:33:31.293315Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:31.293349Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:31.333016Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:31.346853Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:31.371516Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:31.436029Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:31.508455Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:31.512039Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251147, tv_nsec: 726149491 }, requested_resume: Instant { tv_sec: 1251147, tv_nsec: 221249408 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:31.518011Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:31.518033Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:31.518047Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:31.733824Z DEBUG turnstone::shell::render: frame frame_ms=215.7471466064453 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.34144899249076843 chrome_scene_ms=0.679980993270874 chrome_syncs=1 pane_scenes_ms=9.721404075622559 raster_ms=132.8961944580078 rasterized=2 dirty_tiles=0 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=0 compose_ms=2.3118069171905518 w=1024 h=600
+2026-10-17T06:33:31.734572Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:31.797001Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:31.869251Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:31.872007Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:31.872087Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:31.872128Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:32.043881Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:32.106912Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:32.115293Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:32.157099Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:32.176552Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:32.179312Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251148, tv_nsec: 393238148 }, requested_resume: Instant { tv_sec: 1251147, tv_nsec: 742216033 } } document_due=false surface_due=true micros=215
+2026-10-17T06:33:32.179425Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:32.179449Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:32.179461Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:32.371688Z DEBUG turnstone::shell::render: frame frame_ms=192.1976318359375 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.31293800473213196 chrome_scene_ms=0.5868800282478333 chrome_syncs=1 pane_scenes_ms=9.228328704833984 raster_ms=111.08380126953125 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.3605599403381348 w=1024 h=600
+2026-10-17T06:33:32.374641Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:32.434696Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:32.504850Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:32.507353Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:32.507432Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:32.507466Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:32.660876Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:32.724331Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:32.796095Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:32.798855Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251149, tv_nsec: 12997458 }, requested_resume: Instant { tv_sec: 1251148, tv_nsec: 409506649 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:32.805823Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:32.805851Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:32.805864Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:32.883887Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:32.935218Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:33.015335Z DEBUG turnstone::shell::render: frame frame_ms=209.43838500976563 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3152659833431244 chrome_scene_ms=0.6267839670181274 chrome_syncs=1 pane_scenes_ms=9.819710731506348 raster_ms=126.88793182373047 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.225192070007324 w=1024 h=600
+2026-10-17T06:33:33.016066Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:33.078725Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:33.148612Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:33.151021Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:33.151088Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:33.151121Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:33.295086Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:33.359532Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:33.444125Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:33.447365Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251149, tv_nsec: 661318433 }, requested_resume: Instant { tv_sec: 1251149, tv_nsec: 29066165 } } document_due=false surface_due=true micros=217
+2026-10-17T06:33:33.447497Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:33.447518Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:33.447532Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:33.653931Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:33.664775Z DEBUG turnstone::shell::render: frame frame_ms=217.21205139160156 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3110179901123047 chrome_scene_ms=0.638558030128479 chrome_syncs=1 pane_scenes_ms=10.416049003601074 raster_ms=132.88681030273438 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.5263960361480713 w=1024 h=600
+2026-10-17T06:33:33.665515Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:33.677254Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:33.728422Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:33.799080Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:33.801499Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:33.801551Z DEBUG turnstone::selfdrive: begin app step verb="record-graph-folds"
+2026-10-17T06:33:33.803702Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-17T06:33:33.803731Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:33.803763Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:33.946687Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:34.007159Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:34.077539Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:34.080438Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251150, tv_nsec: 294618296 }, requested_resume: Instant { tv_sec: 1251149, tv_nsec: 677587256 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:34.087360Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:34.087387Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:34.087403Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:34.112768Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=1 resized=false resheeted=false full_rebuild=true
+2026-10-17T06:33:34.257948Z DEBUG turnstone::ui: pane Livery layout refreshed structural=true mutations=1 resized=false resheeted=false full_rebuild=true
+2026-10-17T06:33:34.443601Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:34.446635Z DEBUG turnstone::shell::render: frame frame_ms=359.1982727050781 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.30216002464294434 chrome_scene_ms=0.569642961025238 chrome_syncs=1 pane_scenes_ms=9.872869491577148 raster_ms=162.69715881347656 rasterized=2 dirty_tiles=136 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=6 chrome_rast=1 chrome_tiles=130 compose_ms=2.3898239135742188 w=1024 h=600
+2026-10-17T06:33:34.447419Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:34.462798Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:34.508320Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:34.577650Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:34.580046Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:34.588458Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:34.588515Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:34.703028Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:34.765284Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:34.837620Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:34.840462Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251151, tv_nsec: 54441023 }, requested_resume: Instant { tv_sec: 1251150, tv_nsec: 310681994 } } document_due=false surface_due=true micros=228
+2026-10-17T06:33:34.840576Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:34.840593Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:34.840604Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:35.063001Z DEBUG turnstone::shell::render: frame frame_ms=222.37103271484375 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.2884159982204437 chrome_scene_ms=0.77423095703125 chrome_syncs=1 pane_scenes_ms=9.440747261047363 raster_ms=140.94927978515625 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.2723422050476074 w=1024 h=600
+2026-10-17T06:33:35.063885Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:35.127061Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:35.199222Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:35.201634Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:35.201693Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:35.201723Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:35.229397Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:35.243350Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:35.336840Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:35.397821Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:35.468475Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:35.471086Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251151, tv_nsec: 685302945 }, requested_resume: Instant { tv_sec: 1251151, tv_nsec: 70721357 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:35.478567Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:35.478588Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:35.478599Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:35.702790Z DEBUG turnstone::shell::render: frame frame_ms=224.1614990234375 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3145509958267212 chrome_scene_ms=0.6250190138816833 chrome_syncs=1 pane_scenes_ms=10.240182876586914 raster_ms=139.524658203125 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.933474063873291 w=1024 h=600
+2026-10-17T06:33:35.703501Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:35.766866Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:35.838946Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:35.841745Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:35.841809Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:35.841840Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:35.962766Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:35.966514Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:35.983707Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:36.028759Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:36.101538Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:36.104674Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251152, tv_nsec: 318646160 }, requested_resume: Instant { tv_sec: 1251151, tv_nsec: 701367610 } } document_due=false surface_due=true micros=260
+2026-10-17T06:33:36.104818Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:36.104839Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:36.104852Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:36.320879Z DEBUG turnstone::shell::render: frame frame_ms=215.99728393554688 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.29963400959968567 chrome_scene_ms=0.5937420129776001 chrome_syncs=1 pane_scenes_ms=9.513607025146484 raster_ms=133.57130432128906 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.4944679737091064 w=1024 h=600
+2026-10-17T06:33:36.321619Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:36.382006Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:36.452564Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:36.455222Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:36.455305Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:36.455341Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:36.580511Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:36.645227Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:36.687310Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:36.716072Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:36.716234Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:36.727265Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:36.739977Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251152, tv_nsec: 954220451 }, requested_resume: Instant { tv_sec: 1251152, tv_nsec: 334966503 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:36.746838Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:36.746865Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:36.746878Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:36.944037Z DEBUG turnstone::shell::render: frame frame_ms=197.1245880126953 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.30055299401283264 chrome_scene_ms=0.7551659941673279 chrome_syncs=1 pane_scenes_ms=9.45335865020752 raster_ms=113.59613800048828 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=3.3105978965759277 w=1024 h=600
+2026-10-17T06:33:36.944760Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:37.004986Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:37.076115Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:37.078588Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:37.078648Z DEBUG turnstone::selfdrive: begin app step verb="record-graph-scene"
+2026-10-17T06:33:37.081499Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-17T06:33:37.081534Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:37.081570Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:37.206635Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:37.267638Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:37.338714Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:37.341179Z DEBUG turnstone::selfdrive: begin app step verb="capture-lens"
+2026-10-17T06:33:37.341276Z DEBUG turnstone::selfdrive: finished app step ok=true
+2026-10-17T06:33:37.341704Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251153, tv_nsec: 555715812 }, requested_resume: Instant { tv_sec: 1251152, tv_nsec: 970287248 } } document_due=false surface_due=true micros=258
+2026-10-17T06:33:37.341819Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:37.341838Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:37.341851Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:37.482255Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:37.505597Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:37.572086Z DEBUG turnstone::shell::render: frame frame_ms=230.2054443359375 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.31259000301361084 chrome_scene_ms=0.6147730350494385 chrome_syncs=1 pane_scenes_ms=9.794081687927246 raster_ms=141.8450927734375 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=8.026412963867188 w=1024 h=600
+2026-10-17T06:33:37.572814Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:37.635472Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:37.705903Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:37.708349Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:37.708427Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:37.708461Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:37.932598Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:37.995020Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:38.067365Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:38.069991Z DEBUG turnstone::selfdrive: native wake batch prepared cause=ResumeTimeReached { start: Instant { tv_sec: 1251154, tv_nsec: 284274258 }, requested_resume: Instant { tv_sec: 1251153, tv_nsec: 572031993 } } document_due=false surface_due=true micros=8
+2026-10-17T06:33:38.077447Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=true
+2026-10-17T06:33:38.077484Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:38.077498Z DEBUG turnstone::selfdrive: begin render
+2026-10-17T06:33:38.262987Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:38.282565Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:38.286247Z DEBUG turnstone::shell::render: frame frame_ms=208.7158203125 surfaces=3 palette=false suggestions_ms=0.0 suggestion_runs=0 suggestion_refits=0 chrome_sync_ms=0.3174639940261841 chrome_scene_ms=0.6202729940414429 chrome_syncs=1 pane_scenes_ms=10.016173362731934 raster_ms=121.78689575195313 rasterized=2 dirty_tiles=130 graph_rast=0 graph_tiles=0 content_rast=0 content_tiles=0 pane_rast=0 pane_tiles=0 divider_rast=0 divider_tiles=0 frame_rast=1 frame_tiles=0 chrome_rast=1 chrome_tiles=130 compose_ms=2.646462917327881 w=1024 h=600
+2026-10-17T06:33:38.287031Z DEBUG turnstone::selfdrive: finished render; begin accessibility update
+2026-10-17T06:33:38.352294Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:38.424078Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:38.426557Z DEBUG turnstone::selfdrive: finished accessibility update; begin scenario tick
+2026-10-17T06:33:38.427166Z DEBUG turnstone::selfdrive: finished scenario tick
+2026-10-17T06:33:38.427209Z DEBUG turnstone::selfdrive: begin lens render window=1
+2026-10-17T06:33:38.547249Z DEBUG turnstone::selfdrive: finished lens render window=1 presented=true
+2026-10-17T06:33:38.611114Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=content node_count=3
+2026-10-17T06:33:38.682558Z DEBUG turnstone::panes::projection: projected FrisketLayout into uxtree subtree frame_id=lens-0 node_count=4
+2026-10-17T06:33:38.685425Z DEBUG turnstone::selfdrive: begin accessibility event delivery redraw=false
+2026-10-17T06:33:38.685486Z DEBUG turnstone::selfdrive: finished accessibility event delivery
+2026-10-17T06:33:38.689650Z DEBUG turnstone::selfdrive: native wake batch prepared cause=WaitCancelled { start: Instant { tv_sec: 1251154, tv_nsec: 903732943 }, requested_resume: Some(Instant { tv_sec: 1251214, tv_nsec: 899509905 }) } document_due=false surface_due=false micros=204
+2026-10-17T06:33:39.033457Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-17T06:33:39.072763Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)

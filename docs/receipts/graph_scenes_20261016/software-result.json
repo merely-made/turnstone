@@ -1,58 +1,68 @@
 {
-  "recorded_utc": "2026-10-17T04:10:36.462994+00:00",
-  "runtime_candidate": "c0cdc2c0e415558f840413f8a57ace276d3683cc",
+  "source_commit": "24958a8301d7668d43f52b090ef3e5826297924e",
+  "recorded_utc": "2026-10-17T07:05:48.800877+00:00",
+  "environment": {
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "canonical_lockfile": true,
+    "local_path_patches": false
+  },
   "build": {
-    "command": "cargo build --locked --offline --bin turnstone -j4",
+    "source_commit": "24958a8301d7668d43f52b090ef3e5826297924e",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--offline",
+      "--bin",
+      "turnstone",
+      "-j4"
+    ],
+    "started_utc": "2026-10-17T06:28:40.106956+00:00",
     "exit_code": 0,
-    "log": "build.log"
+    "finished_utc": "2026-10-17T06:29:31.581862+00:00"
+  },
+  "workspace": {
+    "source_commit": "24958a8301d7668d43f52b090ef3e5826297924e",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "--workspace",
+      "--no-fail-fast",
+      "-j4",
+      "--",
+      "--test-threads=1"
+    ],
+    "started_utc": "2026-10-17T06:33:47.051806+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-17T07:04:52.346031+00:00",
+    "passed": 982,
+    "failed": 0,
+    "ignored": 10,
+    "full_green_rerun": true
   },
   "focused": {
-    "command": "cargo test --locked --offline --lib scene -j4 -- --test-threads=1",
-    "exit_code": 0,
-    "passed": 19,
-    "new_tests": 16
+    "scene": 23,
+    "session_persistence": 8,
+    "multiwindow_receipt": 8,
+    "note": "Focused logs precede trace-only instrumentation; full final-source workspace rerun includes all these tests.",
+    "new_receiving_tests": 24
   },
   "supplier": {
-    "commit": "7441f2f399701c14a7a6abb67146bb08c0a8055e",
+    "source": "7441f2f399701c14a7a6abb67146bb08c0a8055e",
     "scene_axes_passed": 3,
     "bounded_scenes_passed": 5
   },
-  "workspace": {
-    "command": "cargo test --locked --offline --workspace --no-fail-fast -j4 -- --test-threads=1",
-    "exit_code": 101,
-    "passed": 973,
-    "failed": 1,
-    "ignored": 10,
-    "library_duration_seconds": 1457.36,
-    "failure": "settings_pane::tests::pane_renders_controls_from_setting_control_not_setting_ids",
-    "status": "stale_assertion_corrected_and_module_retested",
-    "full_green_rerun": false
-  },
-  "corrective": {
-    "command": "cargo test --locked --offline --lib settings_pane::tests -j4 -- --test-threads=1",
-    "exit_code": 0,
-    "passed": 9,
-    "source_commit": "d5c198527acf2550afd4fccd2faeab04ccc818a4",
-    "changed_runtime_inputs": [
-      "src/settings_pane.rs"
-    ],
-    "production_change": false,
-    "change": "Test expectation and comment only: shared built-in themes increased from four to six; radio count 14 to 16."
-  },
   "native": {
-    "status": "blocked_locked_console",
-    "qualified": false,
-    "failed_attempt_source": "19aeb5803db6b8153067e6fd12936e6760f09830",
-    "excluded_attempt": "diagnostics/locked-console-r1",
-    "required_external_change": "Unlock Q-PC macOS console, then run a fresh headed and reopen cohort."
-  },
-  "publication": {
-    "status": "not_pushed",
-    "mere_supplier_branch": "codex/turnstone-scene-supplier",
-    "turnstone_branch": "main",
-    "order": [
-      "mere supplier branch",
-      "turnstone main"
-    ]
+    "status": "qualified",
+    "cohort": "native-r8",
+    "scene_checkpoints": 13,
+    "fold_route_checkpoints": 4,
+    "visually_reviewed_captures": 12,
+    "seed_elapsed_seconds": 108.969,
+    "reopen_elapsed_seconds": 56.652,
+    "exact_reopen_graph_positions_seed_regions_mosaic_fold": true,
+    "scope": "Default macOS host; one scene-driving Orrery with bound Arrange in primary/lens; tagged Sets and multistep provenance separately CPU-tested."
   }
 }

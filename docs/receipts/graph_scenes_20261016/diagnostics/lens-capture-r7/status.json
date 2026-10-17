@@ -1,0 +1,6 @@
+{
+  "result": "lens_capture_did_not_present",
+  "source": "60ebc990c557c22a37a688cee8804f00da3e8a85",
+  "excluded": true,
+  "reason": "Primary acquire Occluded; target lens capture never completed; additional lens delivery/acquisition tracing required."
+}
