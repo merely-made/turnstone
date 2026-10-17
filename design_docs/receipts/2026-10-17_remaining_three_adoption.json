@@ -1,0 +1,30 @@
+{
+  "findings": [
+    "R7",
+    "I6",
+    "H5"
+  ],
+  "pins": {
+    "genet": "4db9557c9c155e5e157a863996b17017d947bb4f",
+    "mere": "a17e5bb97c79332b932d10cce70f465b022a3a1a"
+  },
+  "turnstone_base": "ca1534e85da100541c9a30c5f38336437f11f9d9",
+  "verification": {
+    "retained_tests": 8,
+    "filter": "cambium_pane::tests",
+    "log": "/home/markik/Code/testing/audits/genet-architecture-20261017/remaining-slices/r3-turnstone-retained.log",
+    "log_sha256": "53ee8c8576a8dac1c57b49540b3d044371e8a41b75188556f1a9181efa070435",
+    "max_rss_kib": 3347768,
+    "publication": "Offline locked metadata versions, enabled features and dependency edges match tested local family graph.",
+    "metadata_sha256": {
+      "r3-turnstone-local": "d35a8ddcc6bf7e9d409c158338d09887cda57340df5667afce79584424863cf6",
+      "r3-turnstone-published": "75364e816b587b9a6d3e723902b699e6a13f2fdf8274f520a28e97f0904aaa6f"
+    },
+    "lock_sha256": "b7b0d9b1e04c0c488c3ba625afb31d1cdcd2b734ea31abb77356b07788e41198"
+  },
+  "limits": [
+    "Retained tests ran against local family sources; published Git graph matched after pin conversion.",
+    "Worker helper deployment and Windows/macOS reclamation are not qualified here.",
+    "Cargo metadata emitted an invalid-manifest diagnostic while scanning a Servo tidy negative fixture, but exited zero and returned the complete matching graph."
+  ]
+}
