@@ -1,0 +1,9 @@
+{
+  "observed_utc": "2026-10-17T03:43:18.668203+00:00",
+  "macos_screen_locked": true,
+  "display_current_power_state": 4,
+  "read_only_source": "ioreg Root IOConsoleUsers CGSSessionScreenIsLocked; IODisplayWrangler IOPowerManagement",
+  "native_result": "zero successful presentation; scenario did not start",
+  "required_external_change": "unlock the macOS console session",
+  "cpu_workspace_r1": "interrupted by us to freeze acquisition-diagnostic source before restarting full suite"
+}

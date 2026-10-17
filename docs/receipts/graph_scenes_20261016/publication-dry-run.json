@@ -1,0 +1,17 @@
+{
+  "captured_utc": "2026-10-17T03:51:44.108917+00:00",
+  "dry_run_only": true,
+  "refs_written": false,
+  "turnstone": {
+    "remote": "https://github.com/merely-made/turnstone.git",
+    "target": "main",
+    "source": "c0cdc2c0e415558f840413f8a57ace276d3683cc",
+    "exit_code": 0
+  },
+  "mere": {
+    "remote": "https://github.com/merely-made/mere.git",
+    "target": "codex/turnstone-scene-supplier",
+    "source": "7441f2f399701c14a7a6abb67146bb08c0a8055e",
+    "exit_code": 0
+  }
+}

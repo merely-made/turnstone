@@ -1,0 +1,10 @@
+
+running 5 tests
+test canvas::tests::bounded_scenes::a_saved_scene_carries_the_seed_and_the_regions ... ok
+test canvas::tests::bounded_scenes::partition_subdivides_the_viewport_by_site ... ok
+test canvas::tests::bounded_scenes::provenance_stands_sources_left ... ok
+test canvas::tests::bounded_scenes::sets_draw_the_common_tags_and_place_by_membership ... ok
+test canvas::tests::bounded_scenes::the_territory_field_claims_ground_by_site_beneath_the_graph ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 530 filtered out; finished in 0.98s
+

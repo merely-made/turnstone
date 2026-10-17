@@ -1,0 +1,18 @@
+{
+  "verifier_exit_code": 2,
+  "acceptance_qualified": false,
+  "result": {
+    "evidence_verification": "pass",
+    "acceptance": "blocked: headed and reopen acceptance pending an unlocked console",
+    "source_commit": "c0cdc2c0e415558f840413f8a57ace276d3683cc",
+    "workspace_passed": 973,
+    "workspace_failed_stale_assertion": 1,
+    "workspace_ignored": 10,
+    "corrective_settings_module_passed": 9,
+    "test_only_correction_verified": true,
+    "full_green_workspace_rerun": false,
+    "focused_passed": 19,
+    "new_receiving_tests": 16,
+    "supplier_tests": 8
+  }
+}

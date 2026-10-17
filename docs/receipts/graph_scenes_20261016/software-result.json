@@ -1,0 +1,58 @@
+{
+  "recorded_utc": "2026-10-17T04:10:36.462994+00:00",
+  "runtime_candidate": "c0cdc2c0e415558f840413f8a57ace276d3683cc",
+  "build": {
+    "command": "cargo build --locked --offline --bin turnstone -j4",
+    "exit_code": 0,
+    "log": "build.log"
+  },
+  "focused": {
+    "command": "cargo test --locked --offline --lib scene -j4 -- --test-threads=1",
+    "exit_code": 0,
+    "passed": 19,
+    "new_tests": 16
+  },
+  "supplier": {
+    "commit": "7441f2f399701c14a7a6abb67146bb08c0a8055e",
+    "scene_axes_passed": 3,
+    "bounded_scenes_passed": 5
+  },
+  "workspace": {
+    "command": "cargo test --locked --offline --workspace --no-fail-fast -j4 -- --test-threads=1",
+    "exit_code": 101,
+    "passed": 973,
+    "failed": 1,
+    "ignored": 10,
+    "library_duration_seconds": 1457.36,
+    "failure": "settings_pane::tests::pane_renders_controls_from_setting_control_not_setting_ids",
+    "status": "stale_assertion_corrected_and_module_retested",
+    "full_green_rerun": false
+  },
+  "corrective": {
+    "command": "cargo test --locked --offline --lib settings_pane::tests -j4 -- --test-threads=1",
+    "exit_code": 0,
+    "passed": 9,
+    "source_commit": "d5c198527acf2550afd4fccd2faeab04ccc818a4",
+    "changed_runtime_inputs": [
+      "src/settings_pane.rs"
+    ],
+    "production_change": false,
+    "change": "Test expectation and comment only: shared built-in themes increased from four to six; radio count 14 to 16."
+  },
+  "native": {
+    "status": "blocked_locked_console",
+    "qualified": false,
+    "failed_attempt_source": "19aeb5803db6b8153067e6fd12936e6760f09830",
+    "excluded_attempt": "diagnostics/locked-console-r1",
+    "required_external_change": "Unlock Q-PC macOS console, then run a fresh headed and reopen cohort."
+  },
+  "publication": {
+    "status": "not_pushed",
+    "mere_supplier_branch": "codex/turnstone-scene-supplier",
+    "turnstone_branch": "main",
+    "order": [
+      "mere supplier branch",
+      "turnstone main"
+    ]
+  }
+}

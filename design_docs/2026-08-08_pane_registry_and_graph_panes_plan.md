@@ -1610,3 +1610,14 @@ Spiral-only remote/frozen disclosure remain separate follow-ups.
   from acceptance. The full software suite and an unlocked headed/reopen run
   remain required before publication. Unavailable surface acquisition reasons
   now appear in the existing debug log.
+
+- 2026-10-17: the full locked/offline workspace run completed: 973 passed, ten
+  existing ignores, and one stale settings-pane radio-count assertion. The
+  supplier now has six shared built-in themes; the test expected four. Only
+  its expected count/comment changed, and all nine settings-pane tests pass
+  on the corrective commit. This is recorded as a failed full run plus a
+  successful corrective module rerun, not a second green full run.
+  Native/reopen acceptance remains blocked by the locked Q-PC console, with
+  the excluded attempt and exact software evidence in
+  `docs/receipts/graph_scenes_20261016/`. Both receiving and supplier pushes
+  remain pending the headed/reopen gate.

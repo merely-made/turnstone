@@ -1,0 +1,636 @@
+{
+  "result": "pass",
+  "captured_utc": "2026-10-17T03:43:43.652584+00:00",
+  "platform": "aarch64-apple-darwin",
+  "source_revisions": {
+    "git+https://github.com/merely-made/mere.git?branch=main": "7441f2f399701c14a7a6abb67146bb08c0a8055e",
+    "git+https://github.com/merely-made/woodshed.git?branch=main": "0a0d67d06d356fcfb79cfc8710b260d7ca593656",
+    "git+https://github.com/merely-made/genet.git?branch=main": "fa27ea5421c6d3913a622977b8ea37736ae303ea",
+    "git+https://github.com/merely-made/dramatis.git?branch=main": "36ca194e5d48c66ae44af9530cc12c9f6a05b0be",
+    "git+https://github.com/merely-made/smolweb.git?branch=main": "ed11be68eaeef8767cc97aa58f4b81840c043e1c",
+    "git+https://github.com/merely-made/knot-editor.git?branch=main": "9759ee872639f4f4c2c366075cdcaaaa066b4915",
+    "git+https://github.com/merely-made/murm.git?branch=main": "bd8fe1e5db9690dbb15b618d0103ce6d97d701a4",
+    "git+https://github.com/merely-made/netrender.git?branch=main": "8960024f7b1f2b7a5ba382972f08b2f75eb7a0f0",
+    "git+https://github.com/merely-made/turquet.git?rev=bc3c454f755d0bfd70ab48bd9556a1cda2213d41": "bc3c454f755d0bfd70ab48bd9556a1cda2213d41",
+    "git+https://github.com/merely-made/wgpu-weld.git?branch=main": "b673f36f9b27329ad54ca356d60248279682cdfd"
+  },
+  "selected_package_manifest_heads_match_source": true,
+  "selected_supplier_tracked_trees_clean": true,
+  "packages": [
+    {
+      "package": "armillary",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/armillary/Cargo.toml"
+    },
+    {
+      "package": "backstep",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/backstep/Cargo.toml"
+    },
+    {
+      "package": "browsing-context-api",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/shared/browsing-context/Cargo.toml"
+    },
+    {
+      "package": "buckram",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/buckram/Cargo.toml"
+    },
+    {
+      "package": "cadency",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/cadency/Cargo.toml"
+    },
+    {
+      "package": "cambium",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/cambium/Cargo.toml"
+    },
+    {
+      "package": "cambium-genet-winit-host",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/cambium-genet-winit-host/Cargo.toml"
+    },
+    {
+      "package": "cambium-rootstock",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/cambium-rootstock/Cargo.toml"
+    },
+    {
+      "package": "cambium-winit",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/cambium-winit/Cargo.toml"
+    },
+    {
+      "package": "cambium-winit-a11y",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/cambium-winit-a11y/Cargo.toml"
+    },
+    {
+      "package": "chartulary",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/eidetic/chartulary/Cargo.toml"
+    },
+    {
+      "package": "chatelaine",
+      "source": "git+https://github.com/merely-made/dramatis.git?branch=main#36ca194e5d48c66ae44af9530cc12c9f6a05b0be",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/dramatis-c1632f2f3bdc2597/36ca194/crates/chatelaine/Cargo.toml"
+    },
+    {
+      "package": "chirograph",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/chirograph/Cargo.toml"
+    },
+    {
+      "package": "command-menu",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/command-menu/Cargo.toml"
+    },
+    {
+      "package": "commons-spine",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/moot/commons/Cargo.toml"
+    },
+    {
+      "package": "distillery",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/ports/distillery/Cargo.toml"
+    },
+    {
+      "package": "document-canvas",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/inker/document-canvas/Cargo.toml"
+    },
+    {
+      "package": "document-session-api",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/shared/document-session-api/Cargo.toml"
+    },
+    {
+      "package": "dramatis",
+      "source": "git+https://github.com/merely-made/dramatis.git?branch=main#36ca194e5d48c66ae44af9530cc12c9f6a05b0be",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/dramatis-c1632f2f3bdc2597/36ca194/crates/dramatis/Cargo.toml"
+    },
+    {
+      "package": "eidetic",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/eidetic/eidetic-core/Cargo.toml"
+    },
+    {
+      "package": "eidetic-search",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/intel/eidetic-search/Cargo.toml"
+    },
+    {
+      "package": "engine-observables-api",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/shared/engine-observables-api/Cargo.toml"
+    },
+    {
+      "package": "errand",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/errand/Cargo.toml"
+    },
+    {
+      "package": "esp",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/intel/esp/Cargo.toml"
+    },
+    {
+      "package": "fleece",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/fleece/Cargo.toml"
+    },
+    {
+      "package": "gaz",
+      "source": "git+https://github.com/merely-made/dramatis.git?branch=main#36ca194e5d48c66ae44af9530cc12c9f6a05b0be",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/dramatis-c1632f2f3bdc2597/36ca194/crates/gaz/Cargo.toml"
+    },
+    {
+      "package": "gemot",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/moot/gemot/Cargo.toml"
+    },
+    {
+      "package": "genet-clipboard",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/genet-clipboard/Cargo.toml"
+    },
+    {
+      "package": "genet-document-resources",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/genet-document-resources/Cargo.toml"
+    },
+    {
+      "package": "genet-documents",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/genet-documents/Cargo.toml"
+    },
+    {
+      "package": "genet-fontique",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/support/patches/fontique/Cargo.toml"
+    },
+    {
+      "package": "genet-host-api",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/genet-host-api/Cargo.toml"
+    },
+    {
+      "package": "genet-livery",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/genet-livery/Cargo.toml"
+    },
+    {
+      "package": "genet-paint-types",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/shared/paint-types/Cargo.toml"
+    },
+    {
+      "package": "genet-parley",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/support/patches/parley/Cargo.toml"
+    },
+    {
+      "package": "genet-render",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/genet-render/Cargo.toml"
+    },
+    {
+      "package": "genet-render-host",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/genet-render-host/Cargo.toml"
+    },
+    {
+      "package": "genet-scripted-dom",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/genet-scripted-dom/Cargo.toml"
+    },
+    {
+      "package": "genet-static-dom",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/genet-static-dom/Cargo.toml"
+    },
+    {
+      "package": "genet-taffy",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/support/patches/taffy/Cargo.toml"
+    },
+    {
+      "package": "genet-text",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/genet-text/Cargo.toml"
+    },
+    {
+      "package": "genet-winit-host",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/genet-winit-host/Cargo.toml"
+    },
+    {
+      "package": "graphshell-client",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/graphshell/graphshell-client/Cargo.toml"
+    },
+    {
+      "package": "graphshell-endpoint",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/graphshell/graphshell-endpoint/Cargo.toml"
+    },
+    {
+      "package": "graphshell-host",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/graphshell/graphshell-host/Cargo.toml"
+    },
+    {
+      "package": "illume",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/nematic/illume/Cargo.toml"
+    },
+    {
+      "package": "incipit",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/incipit/Cargo.toml"
+    },
+    {
+      "package": "inker",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/inker/inker/Cargo.toml"
+    },
+    {
+      "package": "insigne",
+      "source": "git+https://github.com/merely-made/dramatis.git?branch=main#36ca194e5d48c66ae44af9530cc12c9f6a05b0be",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/dramatis-c1632f2f3bdc2597/36ca194/crates/insigne/Cargo.toml"
+    },
+    {
+      "package": "ipc-channel",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/support/patches/ipc-channel/Cargo.toml"
+    },
+    {
+      "package": "knot-capture",
+      "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#9759ee872639f4f4c2c366075cdcaaaa066b4915",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/knot-editor-87fc402d91cabea0/9759ee8/crates/knot-capture/Cargo.toml"
+    },
+    {
+      "package": "knot-composition",
+      "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#9759ee872639f4f4c2c366075cdcaaaa066b4915",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/knot-editor-87fc402d91cabea0/9759ee8/crates/knot-composition/Cargo.toml"
+    },
+    {
+      "package": "knot-document",
+      "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#9759ee872639f4f4c2c366075cdcaaaa066b4915",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/knot-editor-87fc402d91cabea0/9759ee8/crates/knot-document/Cargo.toml"
+    },
+    {
+      "package": "knot-editor",
+      "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#9759ee872639f4f4c2c366075cdcaaaa066b4915",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/knot-editor-87fc402d91cabea0/9759ee8/crates/knot-editor/Cargo.toml"
+    },
+    {
+      "package": "knot-editor-host",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/inker/knot-editor-host/Cargo.toml"
+    },
+    {
+      "package": "knot-file-catalog",
+      "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#9759ee872639f4f4c2c366075cdcaaaa066b4915",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/knot-editor-87fc402d91cabea0/9759ee8/crates/knot-file-catalog/Cargo.toml"
+    },
+    {
+      "package": "layout-dom-api",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/shared/layout-dom/Cargo.toml"
+    },
+    {
+      "package": "livery",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/livery/Cargo.toml"
+    },
+    {
+      "package": "luggage",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/luggage/Cargo.toml"
+    },
+    {
+      "package": "mere",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/mere/Cargo.toml"
+    },
+    {
+      "package": "mere-alembic",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/distillery/alembic/Cargo.toml"
+    },
+    {
+      "package": "mere-apparatus",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/domain/apparatus/Cargo.toml"
+    },
+    {
+      "package": "mere-athanor",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/ports/distillery/athanor/Cargo.toml"
+    },
+    {
+      "package": "mere-cartography",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/canvas/cartography/Cargo.toml"
+    },
+    {
+      "package": "mere-chrome",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/shell/chrome/Cargo.toml"
+    },
+    {
+      "package": "mere-comms",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/shell/comms/Cargo.toml"
+    },
+    {
+      "package": "mere-curation",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/forme/curation/Cargo.toml"
+    },
+    {
+      "package": "mere-document-lanes",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/document-lanes/Cargo.toml"
+    },
+    {
+      "package": "mere-fetch",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/fetch/Cargo.toml"
+    },
+    {
+      "package": "mere-fleece",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/fleece/Cargo.toml"
+    },
+    {
+      "package": "mere-forme",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/forme/forme/Cargo.toml"
+    },
+    {
+      "package": "mere-kernel",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/graph/graph-kernel/Cargo.toml"
+    },
+    {
+      "package": "mere-linked-data",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/graph/linked-data/Cargo.toml"
+    },
+    {
+      "package": "mere-mesh",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/mesh/mesh/Cargo.toml"
+    },
+    {
+      "package": "mere-moot",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/ports/moot/Cargo.toml"
+    },
+    {
+      "package": "mere-page-load",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/page-load/Cargo.toml"
+    },
+    {
+      "package": "mere-proofs",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/proofs/Cargo.toml"
+    },
+    {
+      "package": "mere-surface-api",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/surface-api/Cargo.toml"
+    },
+    {
+      "package": "mere-transport",
+      "source": "git+https://github.com/merely-made/murm.git?branch=main#bd8fe1e5db9690dbb15b618d0103ce6d97d701a4",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/murm-ebfa134ea22785bd/bd8fe1e/native/crates/transport/Cargo.toml"
+    },
+    {
+      "package": "mere-webrtc-carrier",
+      "source": "git+https://github.com/merely-made/murm.git?branch=main#bd8fe1e5db9690dbb15b618d0103ce6d97d701a4",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/murm-ebfa134ea22785bd/bd8fe1e/native/crates/webrtc-carrier/Cargo.toml"
+    },
+    {
+      "package": "meristem",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/meristem/Cargo.toml"
+    },
+    {
+      "package": "mesquite",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/mesquite/Cargo.toml"
+    },
+    {
+      "package": "mien",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/moot/mien/Cargo.toml"
+    },
+    {
+      "package": "mooting",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/moot/mooting/Cargo.toml"
+    },
+    {
+      "package": "mora-cmudict",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/intel/mora-cmudict/Cargo.toml"
+    },
+    {
+      "package": "muniment",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/eidetic/muniment/Cargo.toml"
+    },
+    {
+      "package": "murm-wire",
+      "source": "git+https://github.com/merely-made/murm.git?branch=main#bd8fe1e5db9690dbb15b618d0103ce6d97d701a4",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/murm-ebfa134ea22785bd/bd8fe1e/wire/crates/wire/Cargo.toml"
+    },
+    {
+      "package": "nematic",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/nematic/nematic/Cargo.toml"
+    },
+    {
+      "package": "netfetcher",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/netfetcher/Cargo.toml"
+    },
+    {
+      "package": "netrender",
+      "source": "git+https://github.com/merely-made/netrender.git?branch=main#8960024f7b1f2b7a5ba382972f08b2f75eb7a0f0",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/netrender-a79f0762881dec01/8960024/netrender/Cargo.toml"
+    },
+    {
+      "package": "netrender_device",
+      "source": "git+https://github.com/merely-made/netrender.git?branch=main#8960024f7b1f2b7a5ba382972f08b2f75eb7a0f0",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/netrender-a79f0762881dec01/8960024/netrender_device/Cargo.toml"
+    },
+    {
+      "package": "notochord",
+      "source": "git+https://github.com/merely-made/dramatis.git?branch=main#36ca194e5d48c66ae44af9530cc12c9f6a05b0be",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/dramatis-c1632f2f3bdc2597/36ca194/crates/notochord/Cargo.toml"
+    },
+    {
+      "package": "numen",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/conatus/numen/Cargo.toml"
+    },
+    {
+      "package": "paint_list_api",
+      "source": "git+https://github.com/merely-made/netrender.git?branch=main#8960024f7b1f2b7a5ba382972f08b2f75eb7a0f0",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/netrender-a79f0762881dec01/8960024/paint_list_api/Cargo.toml"
+    },
+    {
+      "package": "paint_list_render",
+      "source": "git+https://github.com/merely-made/netrender.git?branch=main#8960024f7b1f2b7a5ba382972f08b2f75eb7a0f0",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/netrender-a79f0762881dec01/8960024/paint_list_render/Cargo.toml"
+    },
+    {
+      "package": "pandect",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/pandect/Cargo.toml"
+    },
+    {
+      "package": "pelt-core",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/ports/pelt/core/Cargo.toml"
+    },
+    {
+      "package": "personae",
+      "source": "git+https://github.com/merely-made/dramatis.git?branch=main#36ca194e5d48c66ae44af9530cc12c9f6a05b0be",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/dramatis-c1632f2f3bdc2597/36ca194/crates/personae/Cargo.toml"
+    },
+    {
+      "package": "pictograph",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/canvas/pictograph/Cargo.toml"
+    },
+    {
+      "package": "platen",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/platen/platen/Cargo.toml"
+    },
+    {
+      "package": "reference-data",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/intel/reference-data/Cargo.toml"
+    },
+    {
+      "package": "regress",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/support/patches/regress-0.11.1/Cargo.toml"
+    },
+    {
+      "package": "retinue",
+      "source": "git+https://github.com/merely-made/murm.git?branch=main#bd8fe1e5db9690dbb15b618d0103ce6d97d701a4",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/murm-ebfa134ea22785bd/bd8fe1e/crates/retinue/Cargo.toml"
+    },
+    {
+      "package": "sceno",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/scenes/sceno/Cargo.toml"
+    },
+    {
+      "package": "scenograph",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/scenes/scenograph/Cargo.toml"
+    },
+    {
+      "package": "scenomise",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/scenes/scenomise/Cargo.toml"
+    },
+    {
+      "package": "scenotime",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/scenes/scenotime/Cargo.toml"
+    },
+    {
+      "package": "script-engine-api",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/script-engine-api/Cargo.toml"
+    },
+    {
+      "package": "script-rhai",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/script/rhai/Cargo.toml"
+    },
+    {
+      "package": "seiche",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/conatus/seiche/Cargo.toml"
+    },
+    {
+      "package": "servitor",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/servitor/Cargo.toml"
+    },
+    {
+      "package": "servo-media-player",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/media/player/Cargo.toml"
+    },
+    {
+      "package": "servo-media-streams",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/media/streams/Cargo.toml"
+    },
+    {
+      "package": "servo-media-traits",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/media/traits/Cargo.toml"
+    },
+    {
+      "package": "sprigging",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/sprigging/Cargo.toml"
+    },
+    {
+      "package": "stickleback",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/stickleback/Cargo.toml"
+    },
+    {
+      "package": "tabard",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/tabard/Cargo.toml"
+    },
+    {
+      "package": "tabard-workshop",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/tabard-workshop/Cargo.toml"
+    },
+    {
+      "package": "taproot",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5/components/taproot/Cargo.toml"
+    },
+    {
+      "package": "tinct",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/tinct/Cargo.toml"
+    },
+    {
+      "package": "uxtree",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/forme/uxtree/Cargo.toml"
+    },
+    {
+      "package": "weld-engine",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/inker/engines/weld-engine/Cargo.toml"
+    },
+    {
+      "package": "workbench",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/workbench/Cargo.toml"
+    }
+  ]
+}
