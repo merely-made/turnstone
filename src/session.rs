@@ -1314,6 +1314,7 @@ mod tests {
         let intent = ViewIntentV1 {
             layout_strategy: None,
             physics_law: Some("orbit.gravity".to_string()),
+            physics_paused: Some(true),
             physics_overlays: vec!["skeleton".to_string(), "tide".to_string()],
             physics_kind_source: Some("coloring".to_string()),
             physics_mass_source: Some("pagerank".to_string()),
