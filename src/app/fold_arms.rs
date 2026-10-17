@@ -10,7 +10,7 @@ impl App {
     /// Resolve the actual graph pane before touching a runtime. Chrome's
     /// command palette keeps the active pane; initial chrome uses the primary
     /// graph pane. An active non-graph pane cannot retarget this command.
-    pub(crate) fn fold_owner_pane(&self) -> Option<PaneId> {
+    pub(crate) fn graph_command_pane(&self) -> Option<PaneId> {
         let pane = self
             .focused_graph_pane()
             .or(self.active_pane)
@@ -19,7 +19,7 @@ impl App {
     }
 
     pub(super) fn edit_graph_folds(&mut self, action: Action) -> Vec<Effect> {
-        let Some(pane) = self.fold_owner_pane() else {
+        let Some(pane) = self.graph_command_pane() else {
             return vec![];
         };
         let Some(graph) = self.graph_for_pane(pane) else {
@@ -182,5 +182,19 @@ mod tests {
             crate::session_persistence::SessionPersistence::Unbound;
         assert!(app.update(Action::FoldSelection).is_empty());
         assert!(app.graph_runtimes.fold_records().is_empty());
+    }
+    #[test]
+    fn fit_command_survives_the_next_pane_viewport_install() {
+        let mut app = fixture();
+        let pane = app.default_graph_pane();
+        app.with_graph_pane(pane, |canvas| {
+            let mut viewport = canvas.viewport();
+            viewport.offset = (9000.0, -7000.0);
+            canvas.set_viewport(viewport);
+        });
+        app.update(Action::FitView);
+        let fitted = app.graph_views.viewport(pane).unwrap();
+        assert_ne!(fitted.offset, (9000.0, -7000.0));
+        app.with_graph_pane(pane, |canvas| assert_eq!(canvas.viewport(), fitted));
     }
 }

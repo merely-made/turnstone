@@ -1278,7 +1278,7 @@ impl Shell {
             // ---- interactions: drive the Shell (the former Tick execution) ----
             Step::Open(url) => self.act(Action::OpenAddress(url.clone())),
             Step::SelectGraphMember(url) => {
-                let pane = self.app.fold_owner_pane().ok_or("no graph owner pane")?;
+                let pane = self.app.graph_command_pane().ok_or("no graph owner pane")?;
                 self.app
                     .with_graph_pane(pane, |canvas| {
                         if url == "none" {
@@ -1301,7 +1301,7 @@ impl Shell {
                 self.request_redraw();
             },
             Step::ActivateGraphFold(index) => {
-                let pane = self.app.fold_owner_pane().ok_or("no graph owner pane")?;
+                let pane = self.app.graph_command_pane().ok_or("no graph owner pane")?;
                 let badge = self
                     .app
                     .with_graph_pane(pane, |canvas| canvas.fold_badges().get(*index).cloned())
@@ -1322,7 +1322,7 @@ impl Shell {
                 self.request_redraw();
             },
             Step::RecordGraphFolds(name, expected) => {
-                let pane = self.app.fold_owner_pane().ok_or("no graph owner pane")?;
+                let pane = self.app.graph_command_pane().ok_or("no graph owner pane")?;
                 let graph = self.app.graph_for_pane(pane).ok_or("graph absent")?;
                 let value = self.app.with_graph_pane(pane, |canvas| {
                     if canvas.fold_records().len() != *expected {

@@ -1212,7 +1212,9 @@ impl App {
                 vec![Effect::Redraw]
             }
             Action::FitView => {
-                self.graph_runtimes.fit_to_content();
+                if let Some(pane) = self.graph_command_pane() {
+                    self.with_graph_pane(pane, |canvas| canvas.fit_to_content());
+                }
                 vec![Effect::Redraw]
             }
             Action::TogglePhysics => {

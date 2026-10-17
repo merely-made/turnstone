@@ -1521,3 +1521,10 @@ scoped continuation control do not claim early scrollbar opacity pixels.
 - 2026-10-16: commands and session sidecar integration implemented; validation
   pending. This scope is the Orrery graph, with Gloss and Overmap separate
   projection consumers.
+
+- 2026-10-16 headed probe: native creation, badge expansion and fresh reopen
+  completed, but visual review found `FitView` changed the runtime camera
+  outside the pane viewport cache. The next pane render restored the old
+  camera, cropping fold bodies. The production command now resolves and
+  stashes the owning pane's viewport; final visual qualification repeats on
+  this corrected source.
