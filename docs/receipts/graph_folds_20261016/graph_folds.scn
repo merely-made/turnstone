@@ -1,0 +1,57 @@
+# Production native Canvas folds, run on a new isolated profile.
+settle 35
+key escape
+act New session
+settle 8
+open mere://fold-alpha
+settle 10
+open mere://fold-beta
+settle 10
+open mere://fold-gamma
+settle 10
+open mere://fold-delta
+settle 10
+open mere://fold-epsilon
+settle 10
+open mere://fold-zeta
+settle 90
+assert physics running
+act Pause or resume physics
+settle 6
+assert physics paused
+key escape
+act Fit to view
+select-graph-member none
+act Save session
+settle 5
+record-graph-folds 01_source 0
+capture 01_source
+select-graph-member mere://fold-alpha
+select-graph-member mere://fold-beta
+act Fold selection
+settle 6
+record-graph-folds 02_one_fold 1
+capture 02_one_fold
+act Undo fold
+settle 5
+record-graph-folds 03_undone 0
+capture 03_undone
+act Redo fold
+settle 5
+record-graph-folds 04_redone 1
+select-graph-member mere://fold-gamma
+select-graph-member mere://fold-delta
+act Fold selection
+settle 6
+record-graph-folds 05_two_folds 2
+capture 05_two_folds
+# Badge input uses the same native press/release handlers as a normal click.
+activate-graph-fold 0
+settle 5
+record-graph-folds 06_badge_expanded 1
+capture 06_badge_expanded
+act Undo fold
+settle 5
+record-graph-folds 07_saved 2
+capture 07_saved
+log Native graph folds saved for a fresh process

@@ -1,0 +1,10 @@
+{
+  "source": "f74fb679f169106cb52d85777b93586d562f1230",
+  "runtime_paths_checked_against_git_blobs": 389,
+  "tracked_auxiliary_assets_checked_after_run": {
+    "assets/screenshots/gloss-minimap.png": "2203d02d3fd6cfa7d75c1b2e273a28892e33921fce7e791f4e78bbcadb69daa8",
+    "assets/screenshots/workbench-split.png": "fe62838200696c98a405ce7d3b2831bda2d7d301b95291362149e9a6b7dca86a",
+    "rust-toolchain.toml": "a56ba71ef87e755baa388799b1bb99d84b8eb945a81868d1f33ca9a355863033"
+  },
+  "source_and_scenario_files_unchanged_since_launch": true
+}

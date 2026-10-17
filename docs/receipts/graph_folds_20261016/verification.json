@@ -1,0 +1,91 @@
+{
+  "result": "passed",
+  "checkpoints": 12,
+  "presented_frames_at_final_checkpoint": {
+    "seed": 284,
+    "reopen": 87
+  },
+  "source_nodes": 6,
+  "source_relation_cells": 5,
+  "two_fold_boundary_bundles": 2,
+  "two_fold_boundary_cells": 2,
+  "source_graph_and_facets_bytes_unchanged": true,
+  "source_snapshot_at_fixed_date_unchanged": true,
+  "every_member_position_unchanged": true,
+  "exact_native_records_reopened": true,
+  "all_directed_boundary_counts_recomputed": true,
+  "images": [
+    {
+      "path": "seed/01_source.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "bf9ab0146bf12d608e23ab3be85613df3eee249f2d7b88b367902f9c99498dad"
+    },
+    {
+      "path": "seed/02_one_fold.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "aa99de1dc3cddd0754084188c85628c1bb353204dde9349b1ef4e772ef555f6e"
+    },
+    {
+      "path": "seed/03_undone.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "7de6b2aa694c8cb2370ce3bb90728c7720f2b41222ffc7ea78eb5f0f387debdc"
+    },
+    {
+      "path": "seed/05_two_folds.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "01383e6cf3f97b0707025bff32650cff30a56518fa1a9808d833924a82b26559"
+    },
+    {
+      "path": "seed/06_badge_expanded.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "c7726be41f54c9e589b896272e41d62e4249e5dfcf0420c4d5d1746252e1bd2f"
+    },
+    {
+      "path": "seed/07_saved.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "01383e6cf3f97b0707025bff32650cff30a56518fa1a9808d833924a82b26559"
+    },
+    {
+      "path": "reopen/08_reopened.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "2c7786f305ba486bdeb0ea0db02daaf93e5a31a52ee9835629a42cd64057fdb8"
+    },
+    {
+      "path": "reopen/09_expanded.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "4fc11c6dc94ba1313d5369bf03d695fac83b0b9da6bf06ff74daa574d4a60fe0"
+    },
+    {
+      "path": "reopen/12_all_expanded.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "7de6b2aa694c8cb2370ce3bb90728c7720f2b41222ffc7ea78eb5f0f387debdc"
+    }
+  ]
+}

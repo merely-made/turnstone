@@ -1,0 +1,96 @@
+{
+  "status": "qualified",
+  "source": "f74fb679f169106cb52d85777b93586d562f1230",
+  "upstream_base": "aaad30d67abc2b7454e70d33e9a84527d28f6f1e",
+  "test_scope": "macOS native primary Orrery; two separate ordinary app processes",
+  "native": {
+    "seed_frames": 288,
+    "reopen_frames": 91,
+    "captures": 9,
+    "all_captures_visually_reviewed": true,
+    "checkpoints": 12,
+    "fixture": "ordinary New session action; six mere:// members and five navigation cells",
+    "verification": "verification.json"
+  },
+  "supplier_pins_unchanged": true,
+  "fold_records_schema": 2,
+  "host_sidecar_envelope": 1,
+  "known_prior_probe": "diagnostics contains the earlier paused-state failure; the cropped starter-graph probe is excluded from qualification",
+  "full_workspace": {
+    "status": "passed",
+    "source": "f74fb679f169106cb52d85777b93586d562f1230",
+    "workspace_command": "cargo test --locked --offline --workspace --no-fail-fast -j4 -- --test-threads=1",
+    "workspace_exit_code": 0,
+    "passed": 958,
+    "failed": 0,
+    "ignored": 10,
+    "summaries": [
+      {
+        "status": "ok",
+        "passed": 958,
+        "failed": 0,
+        "ignored": 10
+      },
+      {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      }
+    ],
+    "ignored_tests": [
+      "test app::tests::dr_c_turnstone_identity_stays_pending ... ignored, run mere/scripts/dr_c_receipts.py against the isolated receipt keeper",
+      "test knot_authoring::tests::inspector_clip_crosses_the_typed_endpoint_action ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint",
+      "test knot_authoring::tests::inspector_clip_retains_livery_source_evidence_end_to_end ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint",
+      "test knot_authoring::tests::real_knot_consumer_saves_rejects_stale_and_reopens ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint",
+      "test knot_authoring::tests::received_communal_auto_run_waits_for_explicit_confirmation ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint",
+      "test knot_authoring::tests::resolve_and_run_cross_the_consented_authoring_path ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint",
+      "test trail_memory::evaluation::captured_trail_frecency_receipt ... ignored, requires an explicit private Turnstone session",
+      "test trail_memory::evaluation::captured_trail_mint_receipt ... ignored, requires an explicit private Turnstone session",
+      "test trail_memory::evaluation::firefox_history_corpus_receipt ... ignored, requires an exported Firefox history corpus",
+      "test trail_memory::tests::mint_receipt_scale_ladder ... ignored, measurement run: cargo test --release ... -- --ignored --nocapture"
+    ],
+    "focused_fold_command": "cargo test --locked --offline --lib fold -j4 -- --test-threads=1",
+    "focused_passed": 13,
+    "new_task_tests": 10,
+    "native_build_command": "cargo build --locked --offline --bin turnstone -j4",
+    "native_build_exit_code": 0,
+    "logs_byte_preserved": true
+  },
+  "scope_exclusions": [
+    "Gloss and Overmap are separate projection consumers",
+    "Windows/Linux native, physical GPU recovery and human assistive technology were not qualified",
+    "legacy starter-graph Domain normalization remains independent of fold curation"
+  ],
+  "completed_utc": "2026-10-17T02:19:47.461732+00:00",
+  "packet_integrity": {
+    "manifest": "sha256.json",
+    "raw_logs_byte_preserved": true,
+    "raw_log_eof_warnings_recorded_in": "doc-audit.json",
+    "source_docs_whitespace": "passed"
+  }
+}

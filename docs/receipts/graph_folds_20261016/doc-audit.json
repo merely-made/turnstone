@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "existing_plan_extended": "design_docs/2026-08-08_pane_registry_and_graph_panes_plan.md",
+  "new_active_design_documents": 0,
+  "canonical_index_updated": true,
+  "runtime_source_unchanged_since_qualification": true,
+  "new_receipt_link_resolves": true,
+  "raw_logs_preserved": true,
+  "source_docs_whitespace": "passed",
+  "raw_log_whitespace_notes": [
+    "focused.log:779 and workspace.log:2722 retain original trailing blank lines; raw log bytes are preserved"
+  ]
+}

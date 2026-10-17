@@ -1,0 +1,22 @@
+{
+  "result": "reviewed",
+  "scope": "actual composed frame readbacks; no OS accessibility or human AT qualification",
+  "files": [
+    "seed/01_source.png",
+    "seed/02_one_fold.png",
+    "seed/03_undone.png",
+    "seed/05_two_folds.png",
+    "seed/06_badge_expanded.png",
+    "seed/07_saved.png",
+    "reopen/08_reopened.png",
+    "reopen/09_expanded.png",
+    "reopen/12_all_expanded.png"
+  ],
+  "observations": [
+    "All six source members and their five connections are framed at baseline.",
+    "The first summary and both +2 badges are visible at their source centroids.",
+    "Badge input expands the first fold; undo returns exactly two summaries.",
+    "Fresh-process capture restores both summaries and both outside members.",
+    "Expand-all returns all six members at the same positions."
+  ]
+}
