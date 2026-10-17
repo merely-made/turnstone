@@ -256,6 +256,12 @@ pub enum Action {
     },
     /// Re-seed the canvas layout and replay the settle.
     ReseedLayout,
+    /// Native view curation; never changes graph truth or source positions.
+    FoldSelection,
+    ExpandFold,
+    ExpandAllFolds,
+    UndoFold,
+    RedoFold,
     /// Frame the camera on the current content bounds. An analytic layout can
     /// place nodes anywhere in world space (and the extent-aware Spiral spreads
     /// wide), so the view needs an explicit fit. (Projection proofs — P3.)
@@ -677,6 +683,11 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Mark feed entry read", Action::MarkFocusedFeedEntryRead),
         ("Reseed layout", Action::ReseedLayout),
         shared(Action::FitView),
+        shared(Action::FoldSelection),
+        shared(Action::ExpandFold),
+        ("Expand all folds", Action::ExpandAllFolds),
+        ("Undo fold", Action::UndoFold),
+        ("Redo fold", Action::RedoFold),
         // The per-arrangement `Layout:` rows are derived from the canvas
         // registry below, so the plain display names live in one place.
         // Force-directed is the orrery surface's native arrangement
@@ -820,6 +831,8 @@ pub fn shared_command_id(action: &Action) -> Option<&'static str> {
         Action::Reload => ids::NAV_RELOAD,
         Action::Stop => ids::NAV_STOP,
         Action::FitView => ids::VIEW_FIT,
+        Action::FoldSelection => ids::FOLD_SELECTION,
+        Action::ExpandFold => ids::FOLD_EXPAND,
         Action::TogglePhysics => ids::PHYSICS_TOGGLE,
         Action::DeleteFocusedNode => ids::NODE_DELETE,
         Action::SaveSession => ids::SESSION_SAVE,
@@ -859,6 +872,8 @@ pub enum ContentControl {
 /// itself never blocks and never touches a platform API.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Effect {
+    /// Persist curation for the resolved graph runtime and its session.
+    SaveGraphFolds { graph: crate::panes::GraphId },
     /// Open/focus the host-owned workshop on the existing render core.
     OpenThemeWorkshop,
     /// Fetch a page document through the fetch actor, for enrichment of the

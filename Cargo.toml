@@ -24,6 +24,7 @@ name = "turnstone"
 path = "src/main.rs"
 
 [dependencies]
+curation = { package = "mere-curation", git = "https://github.com/merely-made/mere.git", branch = "main" }
 # Product-redacted, bounded observations; no renderer dependency in the store.
 apparatus = { package = "mere-apparatus", git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false, features = ["serde", "projection"] }
 # Presentable proof data/checks; Personae retains keys and issuing. The

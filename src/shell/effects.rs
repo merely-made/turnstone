@@ -965,6 +965,7 @@ impl Shell {
                     }
                 },
                 Effect::SaveSession => self.save_session(),
+                Effect::SaveGraphFolds { graph } => self.save_graph_folds(graph),
                 Effect::CopyText(text) => {
                     use genet_clipboard::TextClipboard as _;
                     let wrote = match &mut self.clipboard {
@@ -2126,6 +2127,20 @@ impl Shell {
         Ok(())
     }
 
+    /// Save the resolved graph runtime's curation beside its own session.
+    pub(super) fn save_graph_folds(&mut self, graph: crate::panes::GraphId) {
+        let Some(runtime) = self.app.graph_runtimes.get(graph) else { return; };
+        let Some(session) = runtime.session else { return; };
+        let dir = session::session_dir(&self.app.data_root, session);
+        if let Err(error) = runtime.persistence.placement_for(&dir) {
+            tracing::warn!(%error, "fold view persistence has no session authority");
+            return;
+        }
+        if let Err(error) = runtime.folds.save(&dir, runtime.canvas.fold_records()) {
+            tracing::warn!(%error, "fold view persistence refused or failed");
+        }
+    }
+
     /// Persist the live session's whole sidecar set under ITS directory
     /// (`sessions/<id>/`) — the SaveSession effect's body, shared by the
     /// session switch (which must save the DEPARTING session first).
@@ -2175,6 +2190,7 @@ impl Shell {
         if let Some(score) = self.app.graph_runtimes.projection_score() {
             session::save_projection_score(&sdir, score);
         }
+        self.save_graph_folds(self.app.graph_runtimes.active_graph());
         // The score records what the solver produced; this records what the
         // viewer chose, which the score cannot be read backward to recover.
         session::save_view_intent(

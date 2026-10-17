@@ -1491,3 +1491,33 @@ Physical OS activation, human assistive technology and monitor DPI transitions
 remain separate gates. The immediate lens-scroll fixture's capture dispatch can
 land after the existing scrollbar fade interval; actual body movement and the
 scoped continuation control do not claim early scrollbar opacity pixels.
+
+## Native graph folds (2026-10-16)
+
+**Status (2026-10-16): in progress.**
+
+### Phases and done conditions
+
+1. Expose native selection, expand, undo and redo commands through the one
+   product action catalog; resolve the actual Orrery pane's graph.
+2. Persist native FoldRecord v2 records in each session's separate `folds.json`.
+   Refused records and unreadable future envelopes survive ordinary saves.
+3. Qualify current published suppliers with focused state/roundtrip tests and
+   the workspace gate. Run real headed graph interaction and fresh-process
+   reopen against an isolated profile, preserving source members, relations
+   and their positions, then publish the receipt and push.
+
+### Findings
+
+- 2026-10-16: fetched main advanced 13 commits from `79f5f87` to `aaad30d`.
+  Its canonical Mere pin `65b97b0` already supplies Canvas folds. The graph
+  runtime owns the Canvas view; the existing pane-local cache owns viewport.
+  Fold commands use pane-to-graph lookup, never the compatibility cursor.
+- Explicit selection supplies membership. Navigation links do not establish
+  a descendant hierarchy, so no implicit collapse-descendants command is added.
+
+### Progress
+
+- 2026-10-16: commands and session sidecar integration implemented; validation
+  pending. This scope is the Orrery graph, with Gloss and Overmap separate
+  projection consumers.

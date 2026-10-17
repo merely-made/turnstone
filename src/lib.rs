@@ -82,6 +82,7 @@ mod scenario;
 mod script;
 mod sections;
 mod session;
+mod graph_folds;
 mod session_persistence;
 mod settings_pane;
 pub mod settings_provider;

@@ -1522,10 +1522,7 @@ impl Shell {
                     .then_some((x - surface.rect.x, y - surface.rect.y))
             })
         {
-            if self
-                .app
-                .graph_pane_pointer_up(pane, button, local_x, local_y)
-            {
+            if self.release_graph_pointer(pane, button, local_x, local_y) {
                 self.request_redraw();
             }
             // A right click the canvas did not use is a request for the
@@ -1538,6 +1535,26 @@ impl Shell {
                 self.act(Action::OmnibarOpen { command: true });
             }
         }
+    }
+
+    /// Native badge expansion is a view edit even when it bypasses Action.
+    /// Both primary and lens input use this save boundary after release.
+    pub(super) fn release_graph_pointer(
+        &mut self,
+        pane: crate::panes::PaneId,
+        button: mere::canvas::PointerButton,
+        x: f32,
+        y: f32,
+    ) -> bool {
+        let graph = self.app.graph_for_pane(pane);
+        let before = graph.and_then(|g| self.app.graph_runtimes.canvas(g))
+            .map(|c| c.fold_records().to_vec());
+        let handled = self.app.graph_pane_pointer_up(pane, button, x, y);
+        if let Some(graph) = graph {
+            let after = self.app.graph_runtimes.canvas(graph).map(|c| c.fold_records().to_vec());
+            if before != after { self.save_graph_folds(graph); }
+        }
+        handled
     }
 
     /// Lower one winit touch contact to Pointer Events. Each live contact keeps

@@ -32,6 +32,9 @@
 //! insert <text>             # IME commit into the focused omnibar or Knot editor
 //! key enter|escape|tab|backspace|delete|up|down|left|right|home|end|ctrl+s
 //! act <palette label>       # commit a palette_actions() entry by label
+//! select-graph-member <url>|none # Canvas multi-selection in the owner pane
+//! activate-graph-fold <index> # press/release a real native fold badge
+//! record-graph-folds <name> <count> # read native/source/saved-state checkpoint
 //! script <inline lua>        # run a Piccolo control script; its Actions lower
 //!                            # through the same spine (the automation runner —
 //!                            # needs the `piccolo` feature)
@@ -171,6 +174,12 @@ pub enum Step {
     /// Write the named reasons that currently make Turnstone's global `wait`
     /// report busy. This is a read-only receipt, not another waiting policy.
     RecordIdle(String),
+    /// Toggle the named current source member using Canvas multi-selection.
+    SelectGraphMember(String),
+    /// Read graph truth, native fold routes and the saved session sidecar.
+    RecordGraphFolds(String, usize),
+    /// Activate a real native fold badge by index through pointer input.
+    ActivateGraphFold(usize),
     /// Click the list-pane (Trail/Roster) row whose text contains this substring.
     /// The shell resolves the row's window position (it owns the pane rects and
     /// rows), so the receipt names a row by text, not pixels.
@@ -597,6 +606,13 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 Step::RecordReaderAppearances(rest.to_string())
             }
             "record-idle" if !rest.is_empty() => Step::RecordIdle(rest.to_string()),
+            "select-graph-member" if !rest.is_empty() => Step::SelectGraphMember(rest.to_string()),
+            "activate-graph-fold" => Step::ActivateGraphFold(rest.parse().map_err(|_| format!("line {}: fold index required", i + 1))?),
+            "record-graph-folds" => {
+                let (name, count) = rest.split_once(' ').ok_or_else(|| format!("line {}: name and fold count required", i + 1))?;
+                if name.contains(['/', '\\']) { return err("simple checkpoint name required"); }
+                Step::RecordGraphFolds(name.into(), count.parse().map_err(|_| format!("line {}: invalid fold count", i + 1))?)
+            },
             "assert" => {
                 let (what, arg) = rest.split_once(char::is_whitespace).unwrap_or((rest, ""));
                 let arg = arg.trim();
