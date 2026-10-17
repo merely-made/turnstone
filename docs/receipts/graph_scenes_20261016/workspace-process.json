@@ -1,0 +1,17 @@
+{
+  "source_commit": "24958a8301d7668d43f52b090ef3e5826297924e",
+  "command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--workspace",
+    "--no-fail-fast",
+    "-j4",
+    "--",
+    "--test-threads=1"
+  ],
+  "started_utc": "2026-10-17T06:33:47.051806+00:00",
+  "exit_code": 0,
+  "finished_utc": "2026-10-17T07:04:52.346031+00:00"
+}

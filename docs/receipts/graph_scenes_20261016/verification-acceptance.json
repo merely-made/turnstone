@@ -1,0 +1,12 @@
+{
+  "evidence_verification": "pass",
+  "acceptance": "qualified",
+  "source_commit": "24958a8301d7668d43f52b090ef3e5826297924e",
+  "workspace_passed": 982,
+  "workspace_ignored": 10,
+  "full_green_workspace_rerun": true,
+  "focused_passed": 23,
+  "new_receiving_tests": 24,
+  "multiwindow_receipt_passed": 8,
+  "supplier_tests": 8
+}

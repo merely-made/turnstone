@@ -1,0 +1,24 @@
+RESULT fail
+captured 01_partition
+captured 02_attention
+captured 04_reset
+captured 05_sets
+captured 06_provenance
+captured 07_mosaic
+FAIL: assert snap scene-saved-seed Eq 'true': got 'false'
+captured 09_controls
+captured 09_saved
+FAIL: assert windows Eq 2: have 1
+FAIL: assert lens-pane '0:orrery': the lens spaces hold []
+FAIL: capture-lens '10_lens_partition': no lens window is open to capture
+FAIL: capture-lens '11_lens_saved': no lens window is open to capture
+Graph scenes saved for fresh process
+presentation frames=550 captures=8 blank=0
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r2/seed/01_partition.png digest=24a9d5713c135782 blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r2/seed/02_attention.png digest=d48b8f4ed5c6503f blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r2/seed/04_reset.png digest=0df75f6b64d716fc blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r2/seed/05_sets.png digest=709857fbbc726fd5 blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r2/seed/06_provenance.png digest=ab1a78a4f911b1d8 blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r2/seed/07_mosaic.png digest=e749731f249c2f54 blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r2/seed/09_controls.png digest=9aabb5c7d56ac14a blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r2/seed/09_saved.png digest=880e894045ac30e0 blank=false

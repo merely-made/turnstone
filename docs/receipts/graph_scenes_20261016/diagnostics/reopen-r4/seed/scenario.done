@@ -1,0 +1,19 @@
+RESULT ok
+captured 01_partition
+captured 02_attention
+captured 04_reset
+captured 05_sets
+captured 06_provenance
+captured 07_mosaic
+captured 09_controls
+captured 09_saved
+Graph scenes saved for fresh process
+presentation frames=551 captures=8 blank=0
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r4/seed/01_partition.png digest=24a9d5713c135782 blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r4/seed/02_attention.png digest=d48b8f4ed5c6503f blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r4/seed/04_reset.png digest=0df75f6b64d716fc blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r4/seed/05_sets.png digest=f496a3e451a0cd91 blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r4/seed/06_provenance.png digest=ab1a78a4f911b1d8 blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r4/seed/07_mosaic.png digest=e749731f249c2f54 blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r4/seed/09_controls.png digest=05f65f6cc470d962 blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r4/seed/09_saved.png digest=f772c9bfd9774de9 blank=false

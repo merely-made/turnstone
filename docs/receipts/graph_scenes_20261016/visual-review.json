@@ -1,0 +1,112 @@
+{
+  "result": "pass",
+  "reviewed_utc": "2026-10-17T06:34:29.351503+00:00",
+  "source_commit": "24958a8301d7668d43f52b090ef3e5826297924e",
+  "method": "Individually viewed all twelve native readback PNGs at full dimensions.",
+  "observations": [
+    "Partition site regions and six nodes visible; attention marks coexist with graph source.",
+    "Reset lands at saved positions; untagged Sets and unrelated Provenance render as supplied.",
+    "Mosaic regions, resized tile and foreground treatment visible.",
+    "Primary Arrange exposes scene/seed/attention/tile actions with Mosaic selected.",
+    "Lens Partition and Mosaic show folded pair badge and boundary route; fresh-process Mosaic retains regions, fold and readable graph.",
+    "Camera and transient selection can differ across reopening; exact world geometry and source equality are independently checked by JSON checkpoints."
+  ],
+  "images": [
+    {
+      "path": "seed/01_partition.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "4f962932060fb40b6c583d38cc0a4304ec67a0fc88ad3bf5b75932ede1d7567a"
+    },
+    {
+      "path": "seed/02_attention.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "b819b62cc379c9ead9a5592197cc4f414fa6c4d612b984f33ea792a99060e01d"
+    },
+    {
+      "path": "seed/04_reset.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "f2da2cff355bbc8e2cd7da7ec633fe5ffb4e0becdab18b70ce553be44cd8d62e"
+    },
+    {
+      "path": "seed/05_sets.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "dad7e14afaa1cb711815205b1a092a65b1719b048756f6ae633d9001b59f85f0"
+    },
+    {
+      "path": "seed/06_provenance.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "92e5881ad005c93a2a54a9a7a60be6aa6d33ad9dfe3872919e1cb15a97e4b746"
+    },
+    {
+      "path": "seed/07_mosaic.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "4e5cab0d23d738eda4b861341c4eb52b87b7dd053805fbb4d67649125ab9c10a"
+    },
+    {
+      "path": "seed/09_controls.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "b7b304a68835d86fdda8eadb193cd72e66a93c3758610236b9d79fd8c9eeff6d"
+    },
+    {
+      "path": "seed/09_saved.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "ec88774f8944edb4fc44776d23bf64138ba591955cdda9c2d73689499c65f324"
+    },
+    {
+      "path": "seed/10_lens_partition.png",
+      "size": [
+        800,
+        600
+      ],
+      "sha256": "86a10d31bae74f2e5552937e497809f210080ba7a2050ed8d2a88b1558bf158e"
+    },
+    {
+      "path": "seed/11_lens_saved.png",
+      "size": [
+        800,
+        600
+      ],
+      "sha256": "6180ffc2c699a2959bb835f8c2ff5c66dde0cc7691ef259b4aa17a97de04ee48"
+    },
+    {
+      "path": "reopen/12_reopened.png",
+      "size": [
+        800,
+        600
+      ],
+      "sha256": "fbe9f8a5f2eedee8e3d8fec3a664ab9beed9c642d7a97e52691def49779ef0b1"
+    },
+    {
+      "path": "reopen/15_recipe_restored.png",
+      "size": [
+        800,
+        600
+      ],
+      "sha256": "fbe9f8a5f2eedee8e3d8fec3a664ab9beed9c642d7a97e52691def49779ef0b1"
+    }
+  ]
+}

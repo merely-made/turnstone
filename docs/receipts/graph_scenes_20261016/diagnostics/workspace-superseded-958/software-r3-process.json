@@ -1,0 +1,38 @@
+{
+  "source_commit": "9587071d774c1978b9f6b2b7446bb27ee9bc0c2b",
+  "started_utc": "2026-10-17T05:49:01.793239+00:00",
+  "runs": [
+    {
+      "name": "focused-r4",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--lib",
+        "scene",
+        "-j4",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "finished_utc": "2026-10-17T05:50:55.249845+00:00"
+    },
+    {
+      "name": "workspace-r3",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--workspace",
+        "--no-fail-fast",
+        "-j4",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 101,
+      "finished_utc": "2026-10-17T05:54:37.210973+00:00"
+    }
+  ]
+}

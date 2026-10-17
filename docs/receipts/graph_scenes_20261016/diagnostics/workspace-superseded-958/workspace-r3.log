@@ -1,0 +1,1392 @@
+    Blocking waiting for file lock on package cache
+warning: skipping duplicate package `mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/proofs/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/proofs/Cargo.toml
+
+warning: skipping duplicate package `muniment v0.1.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/eidetic/muniment/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/eidetic/muniment/Cargo.toml
+
+warning: skipping duplicate package `mere-apparatus v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/domain/apparatus/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/domain/apparatus/Cargo.toml
+
+warning: skipping duplicate package `armillary v0.1.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/armillary/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/armillary/Cargo.toml
+
+warning: skipping duplicate package `cambium v0.3.3 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/cambium/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/cambium/Cargo.toml
+
+warning: skipping duplicate package `cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/cambium-winit/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/cambium-winit/Cargo.toml
+
+warning: skipping duplicate package `chartulary v0.2.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/eidetic/chartulary/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/eidetic/chartulary/Cargo.toml
+
+warning: skipping duplicate package `eidetic v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/eidetic/eidetic-core/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/eidetic/eidetic-core/Cargo.toml
+
+warning: skipping duplicate package `errand v0.4.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/errand/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/errand/Cargo.toml
+
+warning: skipping duplicate package `mere-fetch v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/fetch/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/fetch/Cargo.toml
+
+warning: skipping duplicate package `incipit v0.2.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/incipit/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/incipit/Cargo.toml
+
+warning: skipping duplicate package `inker v0.1.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/inker/inker/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/inker/inker/Cargo.toml
+
+warning: skipping duplicate package `mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/document-lanes/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/document-lanes/Cargo.toml
+
+warning: skipping duplicate package `mere-surface-api v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/surface-api/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/surface-api/Cargo.toml
+
+warning: skipping duplicate package `nematic v0.1.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/nematic/nematic/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/nematic/nematic/Cargo.toml
+
+warning: skipping duplicate package `mere-page-load v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/page-load/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/page-load/Cargo.toml
+
+warning: skipping duplicate package `pandect v0.1.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/pandect/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/system/pandect/Cargo.toml
+
+warning: skipping duplicate package `servitor v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/servitor/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/servitor/Cargo.toml
+
+warning: skipping duplicate package `sprigging v0.2.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/sprigging/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/sprigging/Cargo.toml
+
+warning: skipping duplicate package `stickleback v0.1.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/stickleback/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/stickleback/Cargo.toml
+
+warning: skipping duplicate package `uxtree v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/forme/uxtree/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/forme/uxtree/Cargo.toml
+
+warning: skipping duplicate package `workbench v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/workbench/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/workbench/Cargo.toml
+
+error: invalid type: boolean `true`, expected a map
+ --> ../../../.cargo/git/checkouts/servo-e53a6e7b994a25fe/aac43a3/python/tidy/tests/lints-configuration/no-workspace/Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+warning: skipping duplicate package `mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/distillery/alembic/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/distillery/alembic/Cargo.toml
+
+warning: skipping duplicate package `mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/graph/graph-kernel/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/graph/graph-kernel/Cargo.toml
+
+warning: skipping duplicate package `meristem v0.2.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/meristem/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/meristem/Cargo.toml
+
+warning: skipping duplicate package `illume v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/nematic/illume/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/nematic/illume/Cargo.toml
+
+warning: skipping duplicate package `mere-linked-data v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/graph/linked-data/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/graph/linked-data/Cargo.toml
+
+warning: skipping duplicate package `document-canvas v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/inker/document-canvas/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/inker/document-canvas/Cargo.toml
+
+warning: skipping duplicate package `numen v0.2.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/conatus/numen/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/conatus/numen/Cargo.toml
+
+warning: patch `burn-remote v0.22.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling turnstone v0.1.0 (/Users/markik/Code/repos/turnstone)
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src/app/mod.rs:20:31
+   |
+20 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `browse`
+  --> src/app/mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src/app/node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src/app/omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src/app/palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src/app/session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src/app/session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: unused import: `Update`
+    --> src/denizen.rs:1141:33
+     |
+1141 |     use crate::action::{Action, Update};
+     |                                 ^^^^^^
+
+warning: unused import: `NodeKind`
+    --> src/knot_authoring.rs:3013:37
+     |
+3013 |     use layout_dom_api::{LayoutDom, NodeKind};
+     |                                     ^^^^^^^^
+
+warning: unused imports: `MOOT_ACT_ACTION` and `MOOT_DELEGATION_DOMAIN`
+    --> src/place/worker.rs:2730:44
+     |
+2730 |         CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
+     |                                            ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilityScope`, `DelegationCertificate`, `DelegationParent`, and `delegation_signing_salt`
+    --> src/place/worker.rs:2743:9
+     |
+2743 |         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+     |         ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+2744 |         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
+     |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Hash`
+  --> src/retained_clip.rs:12:15
+   |
+12 | use eidetic::{Hash, ManifestId, ProvenanceRecord, Timestamp, TrustEnvelope};
+   |               ^^^^
+
+warning: unused import: `Write`
+  --> src/retained_clip.rs:16:16
+   |
+16 |     io::{Read, Write},
+   |                ^^^^^
+
+warning: unused import: `NodeSessions`
+  --> src/shell/controller_input.rs:17:13
+   |
+17 | use super::{NodeSessions, NodeSurfaces, Shell, content_link_target};
+   |             ^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src/shell/drive.rs:17:23
+   |
+17 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+    --> src/shell/drive.rs:1265:13
+     |
+1265 |         use crate::action::CaretMove;
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `EditKey`
+    --> src/shell/drive.rs:1266:38
+     |
+1266 |         use crate::scenario::{CmpOp, EditKey, Step};
+     |                                      ^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src/shell/effects.rs:14:5
+   |
+14 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src/shell/effects.rs:16:13
+   |
+16 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src/shell/effects.rs:18:46
+   |
+18 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src/shell/effects.rs:23:5
+   |
+23 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `netrender::external_texture::ExternalTexturePlacement`
+  --> src/shell/render.rs:20:5
+   |
+20 | use netrender::external_texture::ExternalTexturePlacement;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `inker::SessionClick`
+  --> src/shell/lens.rs:29:5
+   |
+29 | use inker::SessionClick;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ContentKey`
+ --> src/shell/lens_tests.rs:7:20
+  |
+7 |     content_pool::{ContentKey, HostPlacement, NodeDocuments},
+  |                    ^^^^^^^^^^
+
+warning: unused import: `NodeSessions`
+  --> src/shell/input.rs:15:13
+   |
+15 | use super::{NodeSessions, NodeSurfaces};
+   |             ^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src/shell/input.rs:17:23
+   |
+17 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `SessionClick` and `SessionScrollKey`
+  --> src/shell/input.rs:21:13
+   |
+21 | use inker::{SessionClick, SessionScrollKey};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src/shell/input.rs:25:29
+   |
+25 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src/shell/input.rs:28:20
+   |
+28 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: unused imports: `SessionNavigationCommand` and `SessionSpawnRequest`
+  --> src/shell/window_input_tests.rs:17:53
+   |
+17 |     Cookie, FocusReason, KeyboardEvent, MouseEvent, SessionNavigationCommand, SessionSpawnRequest,
+   |                                                     ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `PeltLane`
+  --> src/shell/window_input_tests.rs:20:30
+   |
+20 | use pelt_core::{PeltContent, PeltLane, PeltRoute, PeltRouteSource, PeltRouteState};
+   |                              ^^^^^^^^
+
+warning: unused import: `input::pointer_button`
+  --> src/shell/mod.rs:48:5
+   |
+48 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src/shell/mod.rs:51:5
+   |
+51 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src/shell/mod.rs:58:5
+   |
+58 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src/shell/mod.rs:60:5
+   |
+60 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ReaderSessionEngine`
+  --> src/shell/mod.rs:62:5
+   |
+62 |     ReaderSessionEngine, RemoteFetcher, SmolwebInlineMediaPolicy, SmolwebSessionEngine,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src/shell/mod.rs:66:17
+   |
+66 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src/shell/mod.rs:67:5
+   |
+67 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src/shell/mod.rs:68:18
+   |
+68 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src/shell/mod.rs:69:20
+   |
+69 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src/shell/mod.rs:71:23
+   |
+71 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `A11yRoutes`
+ --> src/shell/window_a11y.rs:6:23
+  |
+6 |     a11y::{A11yRoute, A11yRoutes},
+  |                       ^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src/shell/mod.rs:81:29
+   |
+81 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src/shell/mod.rs:84:21
+   |
+84 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: unused import: `mere::canvas::palette`
+  --> src/swatch_pane/mod.rs:32:5
+   |
+32 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src/swatch_pane/mod.rs:33:17
+   |
+33 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src/swatch_pane/mod.rs:37:5
+   |
+37 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src/swatch_pane/mod.rs:38:5
+   |
+38 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> src/shell/native_composition.rs:63:10
+   |
+63 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+   |          ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+63 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+63 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+   --> src/shell/native_composition.rs:133:10
+    |
+133 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |          ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+133 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+133 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |
+
+warning: unused import: `genet_clipboard::TextClipboard`
+   --> src/shell/effects.rs:970:25
+    |
+970 |                     use genet_clipboard::TextClipboard as _;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::NodeSessions`
+  --> src/shell/lens.rs:14:5
+   |
+14 | use super::NodeSessions;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> src/place/worker.rs:3882:13
+     |
+3882 |         let mut welcome = |open: &mut OpenPlace, seed: u8| {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+    --> src/shell/drive.rs:1548:21
+     |
+1548 |                 let mut diagnostic = self.surface_a11y.publication_diagnostic(public_fixture);
+     |                     ----^^^^^^^^^^
+     |                     |
+     |                     help: remove this `mut`
+
+warning: unused variable: `lens`
+   --> src/shell/events.rs:357:25
+    |
+357 |             if let Some(lens) = self.lens_windows.get_mut(&window_id) {
+    |                         ^^^^ help: if this is intentional, prefix it with an underscore: `_lens`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `caption`
+   --> src/shell/render.rs:883:13
+    |
+883 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+
+warning: unused variable: `node`
+   --> src/shell/render.rs:932:54
+    |
+932 |                 crate::surface::SurfaceKind::Content(node) => {
+    |                                                      ^^^^ help: if this is intentional, prefix it with an underscore: `_node`
+
+warning: variable `surface_frame` is assigned to, but never used
+   --> src/shell/render.rs:933:25
+    |
+933 |                     let mut surface_frame = None;
+    |                         ^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_surface_frame` instead
+
+warning: value assigned to `surface_frame` is never read
+   --> src/shell/render.rs:937:29
+    |
+937 | ...                   surface_frame = Some(frame);
+    |                       ^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `host`
+   --> src/shell/lens.rs:306:18
+    |
+306 |         let Some(host) = lens.host.as_ref() else {
+    |                  ^^^^ help: if this is intentional, prefix it with an underscore: `_host`
+
+warning: unused variable: `space`
+    --> src/shell/lens.rs:1136:19
+     |
+1136 |     let Some(Some(space)) = app.lenses.get(ordinal) else {
+     |                   ^^^^^ help: if this is intentional, prefix it with an underscore: `_space`
+
+warning: variable does not need to be mutable
+   --> src/shell/mod.rs:909:17
+    |
+909 |             let mut can_replace = true;
+    |                 ----^^^^^^^^^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: method `sync` is never used
+   --> src/arrange_pane.rs:576:12
+    |
+485 | impl ArrangePane {
+    | ---------------- method in this implementation
+...
+576 |     pub fn sync(&mut self, app: &App, pane_w: f32, pane_h: f32) {
+    |            ^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `save_certs` is never used
+   --> src/denizen.rs:741:8
+    |
+741 | pub fn save_certs(session_dir: &Path, subject_hex: &str, certs: &[SignedDelegationCertificate]) {
+    |        ^^^^^^^^^^
+
+warning: associated function `new` is never used
+   --> src/device_receipts_pane.rs:130:12
+    |
+129 | impl DeviceReceiptsPane {
+    | ----------------------- associated function in this implementation
+130 |     pub fn new(service: Option<Arc<DeviceReceiptsService>>) -> Self {
+    |            ^^^
+
+warning: associated function `new` is never used
+   --> src/frozen_projection_pane.rs:159:12
+    |
+158 | impl FrozenProjectionPane {
+    | ------------------------- associated function in this implementation
+159 |     pub fn new() -> Self {
+    |            ^^^
+
+warning: method `key_inline` is never used
+  --> src/inline_pane.rs:71:12
+   |
+36 | impl InlinePane {
+   | --------------- method in this implementation
+...
+71 |     pub fn key_inline(&mut self, event: cambium::KeyEvent) -> Vec<()> {
+   |            ^^^^^^^^^^
+
+warning: methods `projection_input_binding` and `runtime_projection_source` are never used
+    --> src/knot_authoring.rs:2624:12
+     |
+2414 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2624 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2634 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `split_axis` and `new_is_first` are never used
+   --> src/panes/mod.rs:349:19
+    |
+348 | impl InsertSide {
+    | --------------- methods in this implementation
+349 |     pub(crate) fn split_axis(self) -> SplitAxis {
+    |                   ^^^^^^^^^^
+...
+358 |     pub(crate) fn new_is_first(self) -> bool {
+    |                   ^^^^^^^^^^^^
+
+warning: function `spawn_bin` is never used
+   --> src/recycle.rs:166:8
+    |
+166 | pub fn spawn_bin(wake: Wake, dir: PathBuf) -> (ActorHandle<BinCommand>, Receiver<Update>) {
+    |        ^^^^^^^^^
+
+warning: function `granted_ring_names` is never used
+   --> src/ring.rs:405:8
+    |
+405 | pub fn granted_ring_names(authority: &impl AuthorityProvider, subject: Subject) -> Vec<String> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `roster_grid_rows` is never used
+   --> src/roster_view.rs:101:8
+    |
+101 | pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+   --> src/scenario.rs:263:12
+    |
+263 |     Settle(u32),
+    |     ------ ^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+263 -     Settle(u32),
+263 +     Settle(()),
+    |
+
+warning: field `0` is never read
+   --> src/scenario.rs:299:17
+    |
+299 |     AssertEvent(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+299 -     AssertEvent(String),
+299 +     AssertEvent(()),
+    |
+
+warning: field `0` is never read
+   --> src/scenario.rs:319:9
+    |
+319 |     Log(String),
+    |     --- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+319 -     Log(String),
+319 +     Log(()),
+    |
+
+warning: method `publish` is never used
+   --> src/settings_pane.rs:172:8
+    |
+158 | impl LiveSettingsHandle {
+    | ----------------------- method in this implementation
+...
+172 |     fn publish(&self, settings: &ApplicationSettings) {
+    |        ^^^^^^^
+
+warning: associated function `new` is never used
+   --> src/share_reader_pane.rs:145:12
+    |
+144 | impl SharedKnotPane {
+    | ------------------- associated function in this implementation
+145 |     pub fn new(service: Option<Arc<KnotShareReaderService>>) -> Self {
+    |            ^^^
+
+warning: variant `Imported` is never constructed
+   --> src/shell/mod.rs:608:5
+    |
+606 | enum PlannedLayer {
+    |      ------------ variant in this enum
+607 |     Scene(PlannedScene),
+608 |     Imported(CompositeLayer),
+    |     ^^^^^^^^
+
+warning: methods `has_live_content`, `has_independent_reader_appearance`, `all_content_plans`, and `pane_label` are never used
+    --> src/shell/mod.rs:1768:8
+     |
+1413 | impl Shell {
+     | ---------- methods in this implementation
+...
+1768 |     fn has_live_content(&self, node: &uuid::Uuid) -> bool {
+     |        ^^^^^^^^^^^^^^^^
+...
+1772 |     fn has_independent_reader_appearance(&self, node: &uuid::Uuid) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2053 |     fn all_content_plans(&self) -> Vec<crate::surface::Surface> {
+     |        ^^^^^^^^^^^^^^^^^
+...
+2170 |     fn pane_label(&self, id: crate::panes::PaneId) -> String {
+     |        ^^^^^^^^^^
+
+warning: method `foreign_a11y_placements_in` is never used
+  --> src/shell/foreign_a11y.rs:65:19
+   |
+ 9 | impl Shell {
+   | ---------- method in this implementation
+...
+65 |     pub(super) fn foreign_a11y_placements_in(
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `on_key` is never used
+   --> src/shell/keys.rs:362:19
+    |
+ 79 | impl Shell {
+    | ---------- method in this implementation
+...
+362 |     pub(super) fn on_key(&mut self, key: &WinitKey) {
+    |                   ^^^^^^
+
+warning: function `frame_body_rects` is never used
+  --> src/shell/outer_workspace.rs:95:15
+   |
+95 | pub(super) fn frame_body_rects(
+   |               ^^^^^^^^^^^^^^^^
+
+warning: function `ime_cursor_area` is never used
+    --> src/ui.rs:1139:8
+     |
+1139 | pub fn ime_cursor_area(state: &OmnibarState, w: u32) -> ((f32, f32), (f32, f32)) {
+     |        ^^^^^^^^^^^^^^^
+
+warning: function `chrome_has_content` is never used
+    --> src/ui.rs:1157:8
+     |
+1157 | pub fn chrome_has_content(state: &OmnibarState, caption: Option<&str>) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_with_leaves` is never used
+    --> src/ui.rs:2712:8
+     |
+2712 | pub fn scene_from_dom_with_leaves(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `stamp` is never used
+   --> src/outer_frame.rs:194:19
+    |
+ 90 | impl OuterFrame {
+    | --------------- method in this implementation
+...
+194 |     pub(crate) fn stamp(&self) -> FrameStamp {
+    |                   ^^^^^
+
+warning: `turnstone` (lib test) generated 86 warnings (run `cargo fix --lib -p turnstone --tests` to apply 58 suggestions)
+warning: unused import: `Update`
+  --> src/app/mod.rs:22:47
+   |
+22 | use crate::action::{Action, Effect, SpaceRef, Update};
+   |                                               ^^^^^^
+
+warning: unused imports: `browse` and `session`
+  --> src/app/mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^  ^^^^^^^
+
+warning: unused imports: `SessionClick` and `SessionSpawnRequest`
+  --> src/shell/mod.rs:59:30
+   |
+59 | use inker::{DocumentSession, SessionClick, SessionRegistry, SessionSpawnRequest};
+   |                              ^^^^^^^^^^^^                   ^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> src/shell/drive.rs:1548:21
+     |
+1548 |                 let mut diagnostic = self.surface_a11y.publication_diagnostic(public_fixture);
+     |                     ----^^^^^^^^^^
+     |                     |
+     |                     help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `grid_row_center_y` is never used
+   --> src/cambium_pane.rs:169:8
+    |
+169 | pub fn grid_row_center_y(idx: usize) -> f32 {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: associated items `new` and `resolve` are never used
+   --> src/cambium_pane.rs:199:12
+    |
+198 | impl RosterGrid {
+    | --------------- associated items in this implementation
+199 |     pub fn new() -> Self {
+    |            ^^^
+...
+302 |     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    |            ^^^^^^^
+
+warning: method `layout_rebuilds` is never used
+   --> src/chrome_view.rs:716:12
+    |
+658 | impl ChromeSurfaces {
+    | ------------------- method in this implementation
+...
+716 |     pub fn layout_rebuilds(&self, slot: usize) -> u32 {
+    |            ^^^^^^^^^^^^^^^
+
+warning: function `issue_install_certificates` is never used
+   --> src/denizen.rs:795:8
+    |
+795 | pub fn issue_install_certificates(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `pump_documents` is never used
+  --> src/document_pump.rs:15:15
+   |
+15 | pub(crate) fn pump_documents<K: Eq + Hash, F: 'static>(
+   |               ^^^^^^^^^^^^^^
+
+warning: function `activation_safe_update` is never used
+  --> src/foreign_a11y.rs:17:15
+   |
+17 | pub(crate) fn activation_safe_update(
+   |               ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `needs_publish`, `initial_host`, `initial_host_with_guests`, and `frame` are never used
+   --> src/foreign_a11y.rs:410:19
+    |
+242 | impl ForeignA11y {
+    | ---------------- methods in this implementation
+...
+410 |     pub(crate) fn needs_publish(&self) -> bool {
+    |                   ^^^^^^^^^^^^^
+...
+480 |     pub(crate) fn initial_host(
+    |                   ^^^^^^^^^^^^
+...
+488 |     pub(crate) fn initial_host_with_guests(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+498 |     pub(crate) fn frame(
+    |                   ^^^^^
+
+warning: function `root_subject` is never used
+   --> src/identity.rs:164:8
+    |
+164 | pub fn root_subject(provider: &impl IdentityProvider) -> servitor::Subject {
+    |        ^^^^^^^^^^^^
+
+warning: associated function `new` is never used
+   --> src/inspector_pane.rs:266:12
+    |
+265 | impl InspectorPane {
+    | ------------------ associated function in this implementation
+266 |     pub fn new() -> Self {
+    |            ^^^
+
+warning: struct `KnotRuntimeWitness` is never constructed
+   --> src/knot_authoring.rs:119:12
+    |
+119 | pub struct KnotRuntimeWitness {
+    |            ^^^^^^^^^^^^^^^^^^
+
+warning: method `matches_save_token` is never used
+   --> src/knot_authoring.rs:127:12
+    |
+123 | impl KnotRuntimeWitness {
+    | ----------------------- method in this implementation
+...
+127 |     pub fn matches_save_token(&self, candidate: &[u8]) -> bool {
+    |            ^^^^^^^^^^^^^^^^^^
+
+warning: function `knot_runtime_source_binding` is never used
+   --> src/knot_authoring.rs:151:4
+    |
+151 | fn knot_runtime_source_binding(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `status`, `projection_input_binding`, and `runtime_projection_source` are never used
+    --> src/knot_authoring.rs:2538:12
+     |
+2414 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2538 |     pub fn status(&mut self) -> &'static str {
+     |            ^^^^^^
+...
+2624 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2634 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `ops_received` is never used
+   --> src/place/lanes.rs:248:19
+    |
+184 | impl LiveLanes {
+    | -------------- method in this implementation
+...
+248 |     pub(crate) fn ops_received(&self) -> [u64; 10] {
+    |                   ^^^^^^^^^^^^
+
+warning: function `dial_holder` is never used
+    --> src/place/lanes.rs:5255:15
+     |
+5255 | pub(crate) fn dial_holder(
+     |               ^^^^^^^^^^^
+
+warning: associated function `new` is never used
+   --> src/publish_pane.rs:263:12
+    |
+262 | impl PublishPane {
+    | ---------------- associated function in this implementation
+263 |     pub fn new(service: Option<Arc<KnotPublishingService>>) -> Self {
+    |            ^^^
+
+warning: enum `EnvelopeError` is never used
+   --> src/ring.rs:418:10
+    |
+418 | pub enum EnvelopeError {
+    |          ^^^^^^^^^^^^^
+
+warning: function `decode_envelope` is never used
+   --> src/ring.rs:431:8
+    |
+431 | pub fn decode_envelope(name: &str, payload: &str) -> Result<Action, EnvelopeError> {
+    |        ^^^^^^^^^^^^^^^
+
+warning: function `remove_place_binding` is never used
+   --> src/session.rs:347:8
+    |
+347 | pub fn remove_place_binding(session_dir: &Path) -> Result<bool, PlaceSidecarError> {
+    |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `load_session_graph` is never used
+   --> src/session.rs:676:8
+    |
+676 | pub fn load_session_graph(data_root: &Path) -> Option<Graph> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `save_session_graph` is never used
+   --> src/session.rs:761:8
+    |
+761 | pub fn save_session_graph(data_root: &Path, graph: &Graph) {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `load_node_facets` is never used
+   --> src/session.rs:841:8
+    |
+841 | pub fn load_node_facets(data_root: &Path) -> Option<pandect::NodeFacetStore> {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: function `save_node_facets` is never used
+   --> src/session.rs:852:8
+    |
+852 | pub fn save_node_facets(data_root: &Path, facets: &pandect::NodeFacetStore) {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: method `shellbar_edge` is never used
+   --> src/settings_pane.rs:116:12
+    |
+ 59 | impl ChromeSettings {
+    | ------------------- method in this implementation
+...
+116 |     pub fn shellbar_edge(&self) -> ShellbarEdge {
+    |            ^^^^^^^^^^^^^
+
+warning: associated items `new`, `with_live_settings`, and `settings` are never used
+   --> src/settings_pane.rs:346:12
+    |
+345 | impl SettingsPane {
+    | ----------------- associated items in this implementation
+346 |     pub fn new(data_root: PathBuf) -> Self {
+    |            ^^^
+...
+353 |     pub fn with_live_settings(
+    |            ^^^^^^^^^^^^^^^^^^
+...
+545 |     pub fn settings(&self) -> &ApplicationSettings {
+    |            ^^^^^^^^
+
+warning: method `apply_theme_choice` is never used
+   --> src/settings_provider.rs:176:19
+    |
+ 82 | impl ApplicationSettingsProvider {
+    | -------------------------------- method in this implementation
+...
+176 |     pub(crate) fn apply_theme_choice(&mut self, choice: ThemeChoice) -> Result<(), SettingsError> {
+    |                   ^^^^^^^^^^^^^^^^^^
+
+warning: function `session_pointer_button` is never used
+   --> src/shell/controller_input.rs:164:15
+    |
+164 | pub(super) fn session_pointer_button(button: MouseButton) -> Option<SessionPointerButton> {
+    |               ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `foreign_placements` is never used
+   --> src/shell/foreign_a11y.rs:116:15
+    |
+116 | pub(super) fn foreign_placements(
+    |               ^^^^^^^^^^^^^^^^^^
+
+warning: function `focus_for_press` is never used
+   --> src/surface.rs:329:8
+    |
+329 | pub fn focus_for_press(surfaces: &[Surface], focus: FocusTarget, px: f32, py: f32) -> FocusTarget {
+    |        ^^^^^^^^^^^^^^^
+
+warning: associated items `new` and `resolve` are never used
+   --> src/swatch_pane/mod.rs:269:12
+    |
+268 | impl SwatchPane {
+    | --------------- associated items in this implementation
+269 |     pub fn new(preset: ProjectionPreset) -> Self {
+    |            ^^^
+...
+536 |     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    |            ^^^^^^^
+
+warning: field `id` is never read
+  --> src/swatch_pane/presets.rs:29:9
+   |
+27 | pub struct ProjectionPreset {
+   |            ---------------- field in this struct
+28 |     /// Stable id (`"gloss.minimap"`, `"overmap.lineage"`).
+29 |     pub id: &'static str,
+   |         ^^
+   |
+   = note: `ProjectionPreset` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: variant `Flush` is never constructed
+   --> src/trail_memory.rs:169:5
+    |
+135 | pub enum TrailCommand {
+    |          ------------ variant in this enum
+...
+169 |     Flush,
+    |     ^^^^^
+
+warning: field `frecency` is never read
+   --> src/trail_memory.rs:620:5
+    |
+613 | struct RecallIndex {
+    |        ----------- field in this struct
+...
+620 |     frecency: BTreeMap<String, f64>,
+    |     ^^^^^^^^
+
+warning: function `spawn_trail` is never used
+   --> src/trail_memory.rs:868:8
+    |
+868 | pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Receiver<Update>) {
+    |        ^^^^^^^^^^^
+
+warning: function `spawn_trail_with_capture_library` is never used
+   --> src/trail_memory.rs:878:15
+    |
+878 | pub(crate) fn spawn_trail_with_capture_library(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated items `new` and `resolve` are never used
+   --> src/trail_pane.rs:136:12
+    |
+135 | impl TrailPane {
+    | -------------- associated items in this implementation
+136 |     pub fn new() -> Self {
+    |            ^^^
+...
+277 |     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    |            ^^^^^^^
+
+warning: method `resolve` is never used
+   --> src/transcript_pane.rs:312:12
+    |
+185 | impl TranscriptPane {
+    | ------------------- method in this implementation
+...
+312 |     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    |            ^^^^^^^
+
+warning: constant `ROW_TEXT_BUDGET` is never used
+  --> src/ui.rs:48:18
+   |
+48 | pub(crate) const ROW_TEXT_BUDGET: f32 = CARD_W - 16.0 - 16.0;
+   |                  ^^^^^^^^^^^^^^^
+
+warning: function `chrome_row_width` is never used
+  --> src/ui.rs:61:15
+   |
+61 | pub(crate) fn chrome_row_width(text: &str) -> f32 {
+   |               ^^^^^^^^^^^^^^^^
+
+warning: function `recompute_suggestions` is never used
+   --> src/ui.rs:578:8
+    |
+578 | pub fn recompute_suggestions(
+    |        ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_scrolled` is never used
+    --> src/ui.rs:2379:8
+     |
+2379 | pub fn scene_from_dom_scrolled(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `hit_test_scrolled` is never used
+    --> src/ui.rs:2406:8
+     |
+2406 | pub fn hit_test_scrolled(
+     |        ^^^^^^^^^^^^^^^^^
+
+warning: function `livery_paint_list` is never used
+    --> src/ui.rs:2432:4
+     |
+2432 | fn livery_paint_list(dom: &ScriptedDom, sheet: &str, w: u32, h: u32) -> LiveryPaintList {
+     |    ^^^^^^^^^^^^^^^^^
+
+warning: function `node_rect` is never used
+    --> src/ui.rs:2437:15
+     |
+2437 | pub(crate) fn node_rect(
+     |               ^^^^^^^^^
+
+warning: method `rebuilds` is never used
+    --> src/ui.rs:2582:12
+     |
+2566 | impl RetainedSubtreeLayout {
+     | -------------------------- method in this implementation
+...
+2582 |     pub fn rebuilds(&self) -> u32 {
+     |            ^^^^^^^^
+
+warning: function `subtree_node_rect` is never used
+    --> src/ui.rs:2670:15
+     |
+2670 | pub(crate) fn subtree_node_rect(
+     |               ^^^^^^^^^^^^^^^^^
+
+warning: associated function `new` is never used
+   --> src/workbench_pane.rs:132:12
+    |
+131 | impl WorkbenchPane {
+    | ------------------ associated function in this implementation
+132 |     pub fn new() -> Self {
+    |            ^^^
+
+warning: `turnstone` (lib) generated 126 warnings (75 duplicates) (run `cargo fix --lib -p turnstone` to apply 4 suggestions)
+    Finished `test` profile [unoptimized] target(s) in 58.37s
+     Running unittests src/lib.rs (target/build/debug/deps/turnstone-5dc9cfaa7e7e3efc)
+
+running 986 tests
+test a11y::bridge_integrity::a_contributed_tree_attaches_below_its_registered_pane ... ok
+test a11y::bridge_integrity::diagnostic_gloss_rows_attach_without_routes_and_retire_after_removal ... ok
+test a11y::bridge_integrity::the_pushed_tree_has_no_dangling_children_and_no_duplicate_ids ... ok
+test a11y::lens_window_tests::lens_projection_identity_keeps_retained_links_per_window_and_refuses_missing_lenses ... ok
+test a11y::micron_form_tests::micron_host_editor_exposes_current_field_and_prompt_without_secrets ... ok
+test a11y::reading_order_tests::reading_order_follows_children_and_excludes_orphans ... ok
+test a11y::route_table::a_routed_selection_changes_the_app_and_a_miss_says_so ... ok
+test a11y::route_table::an_omnibar_route_opens_the_omnibar_through_the_spine ... ok
+test a11y::route_table::every_graph_member_is_reachable_by_route_when_an_orrery_exists ... ok
+test a11y::tests::panes_workbench_and_documents_project_under_one_root ... ok
+test a11y::tests::the_omnibar_projects_while_open ... ok
+test a11y::tests::the_stitched_tree_is_coherent ... ok
+test app::contributed_pane_arms::tests::contributed_summon_preserves_source_and_mints_one_identity ... ok
+test app::contributed_pane_arms::tests::contributed_summon_rolls_back_when_blueprint_cannot_place_target ... ok
+test app::contributed_pane_arms::tests::contributed_summon_targets_the_active_lens ... ok
+test app::contributed_pane_arms::tests::knot_file_choices_are_palette_actions_lowered_to_shell_effects ... ok
+test app::document_find_arms::tests::captured_target_and_request_drop_late_find_results ... ok
+test app::document_find_arms::tests::current_match_is_observable_and_accessible ... ok
+test app::document_find_arms::tests::engine_managed_count_is_observed_without_synthetic_matches ... ok
+test app::document_find_arms::tests::unsupported_engine_neither_offers_nor_opens_find ... ok
+test app::document_find_arms::tests::workbench_find_and_zoom_follow_the_browser_page_with_an_independent_graph_cursor ... ok
+test app::feed_arms::tests::guid_stable_episode_url_change_navigates_the_existing_member ... ok
+test app::feed_arms::tests::host_tick_runs_the_persisted_cadence ... ok
+test app::feed_arms::tests::subscription_refresh_projects_unread_entries_once ... ok
+test app::fold_arms::tests::a_single_member_and_unbound_session_cannot_create_a_durable_fold ... ok
+test app::fold_arms::tests::adopt_restores_explicit_pause_after_scene_and_layout ... ok
+test app::fold_arms::tests::commands_resolve_pane_graph_even_when_compatibility_cursor_differs ... ok
+test app::fold_arms::tests::fit_command_survives_the_next_pane_viewport_install ... ok
+test app::fold_arms::tests::product_commands_retain_graph_positions_and_have_reversible_history ... ok
+test app::fold_arms::tests::unsupported_saved_state_refuses_edit_and_reports_it ... ok
+test app::journal_origin_tests::equal_resource_and_surface_ids_cannot_transfer_scopes_across_runtimes ... ok
+test app::journal_origin_tests::exhausted_saved_cursor_refuses_capture_binding_and_allows_fresh_retry ... ok
+test app::journal_origin_tests::loaded_new_watch_table_survives_old_cascade_restore_attempt ... ok
+test app::journal_origin_tests::restored_graph_watch_cursor_cannot_hide_first_new_edit ... ok
+test app::journal_origin_tests::same_graph_reload_excludes_old_generation_even_with_equal_ids ... ok
+test app::journal_origin_tests::sample_canvas_replacement_rebinds_once_and_retains_display_budget ... ok
+test app::journal_origin_tests::scratch_fork_assembly_cannot_record_into_live_stream ... ok
+test app::node_arms::tests::committed_content_navigation_grows_the_same_members_lineage ... ok
+test app::node_arms::tests::opening_an_address_keeps_the_new_selection_through_pane_rendering ... ok
+test app::node_arms::tests::page_zoom_steps_the_chromium_ladder_and_persists_the_request ... ok
+test app::node_arms::tests::the_ladder_ends_report_rather_than_stepping_past_themselves ... ok
+test app::node_arms::tests::zoom_rows_appear_only_for_a_live_engine_that_reports_the_control ... ok
+test app::omnibar_arms::tests::captured_page_mode_drops_results_after_stale_or_empty_refresh ... ok
+test app::omnibar_arms::tests::captured_page_mode_finds_body_text_without_recall_rows ... ok
+test app::omnibar_arms::tests::captured_search_respects_a_single_row_setting ... ok
+test app::omnibar_arms::tests::committing_a_captured_source_opens_its_source_address ... ok
+test app::palette::command_menu_tests::a_bare_lane_shows_context_then_kept_then_all_commands ... ok
+test app::palette::command_menu_tests::a_command_run_from_the_palette_becomes_recent ... ok
+test app::palette::command_menu_tests::a_label_keyed_choice_for_a_shared_verb_falls_away ... ok
+test app::palette::command_menu_tests::a_right_click_asks_for_the_menu_and_a_right_drag_does_not ... ok
+test app::palette::command_menu_tests::all_commands_expands_the_lane_and_keeps_the_palette_open ... ok
+test app::palette::command_menu_tests::keeping_and_dropping_change_the_lane_and_save ... ok
+test app::palette::command_menu_tests::palette_rows_and_their_keep_controls_are_accessible ... ok
+test app::palette::command_menu_tests::search_reaches_every_command ... ok
+test app::palette::command_menu_tests::shared_verbs_register_under_catalogue_ids ... ok
+test app::palette::command_menu_tests::the_all_commands_row_survives_a_short_lane ... ok
+test app::palette::command_menu_tests::the_highlighted_command_toggles_with_ctrl_d ... ok
+test app::palette::command_menu_tests::the_lane_highlight_moves_through_its_menu_session ... ok
+test app::palette::tests::captured_collection_rows_preserve_worker_versions_and_mark_selection ... ok
+test app::palette::tests::committing_a_captured_collection_row_emits_its_exact_version ... ok
+test app::palette::tests::duplicate_collection_names_have_stable_distinct_palette_labels ... ok
+test app::palette::tests::stale_captured_collection_selection_offers_the_latest_version ... ok
+test app::pane_arms::tests::floating_pane_moves_through_live_primary_and_lens_projections ... ok
+test app::redshank_arms::tests::a_note_and_progress_project_into_the_graph_and_reopen_after_a_restart ... ok
+test app::redshank_arms::tests::opening_an_enclosure_yields_a_redshank_episode_pane ... ok
+test app::resident_admission_tests::duplicate_subjects_refuse_manual_routing_without_actions ... ok
+test app::resident_admission_tests::pause_skips_manual_runs_and_resume_is_durable ... ok
+test app::resident_admission_tests::uninstall_persists_revocation_and_rebuild_rejects_lagging_binding ... ok
+test app::resident_run_tests::adopting_foreign_run_records_clears_the_live_table_without_rewriting_them ... ok
+test app::resident_run_tests::malformed_run_store_refuses_before_manual_body_mutation ... ok
+test app::runtime_pool::tests::display_budget_survives_graph_replacement_and_unknown_rate ... ok
+test app::runtime_pool::tests::forme_runtime_key_keeps_graph_and_forme_separate ... ok
+test app::runtime_pool::tests::graph_pool_keeps_two_graph_authorities_independent ... ok
+test app::runtime_pool::tests::pane_selections_do_not_alias_on_one_graph ... ok
+test app::runtime_pool::tests::pane_viewports_do_not_alias_on_one_graph ... ok
+test app::runtime_pool::tests::workbenches_are_owned_by_their_forme_runtime ... ok
+test app::scene_tests::a_new_arrangement_discards_the_reset_return_that_has_not_reached_a_frame ... ok
+test app::scene_tests::a_scene_pick_preserves_the_persons_playing_or_paused_choice ... ok
+test app::scene_tests::app_adoption_reopens_saved_mosaic_seed_regions_and_pause_before_the_next_layout_pass ... ok
+test app::scene_tests::arrange_controls_and_physics_resolve_their_window_graph_with_a_different_active_cursor ... ok
+test app::scene_tests::foreground_attention_survives_selection_without_becoming_a_position_pin_or_truth ... ok
+test app::scene_tests::graph_scene_persistence_writes_the_explicit_owner_and_preserves_the_active_session ... ok
+test app::scene_tests::leaving_bounded_scenes_clears_regions_including_the_free_path ... ok
+test app::scene_tests::provenance_scene_places_real_derivation_steps_after_their_sources ... ok
+test app::scene_tests::refused_graph_scene_persistence_preserves_both_disk_and_live_facets ... ok
+test app::scene_tests::registered_graph_sources_retag_with_the_session_while_settings_stays_independent ... ok
+test app::scene_tests::resizing_mosaic_tiles_cancels_both_pending_and_running_reset_returns ... ok
+test app::scene_tests::scene_and_attention_commands_resolve_the_owner_instead_of_the_compatibility_cursor ... ok
+test app::scene_tests::scene_catalog_layouts_place_finite_members_and_their_bounded_regions ... ok
+test app::scene_tests::summoned_arrange_pane_binds_its_graph_and_routes_actual_seed_buttons_and_physics ... ok
+test app::session_persistence_tests::host_session_facet_write_failure_does_not_replace_graph_or_migration_evidence ... ok
+test app::session_persistence_tests::host_session_fork_manifest_failure_never_publishes_or_switches ... ok
+test app::session_persistence_tests::host_session_fork_preserves_resource_records_and_tag_assertions ... ok
+test app::session_persistence_tests::host_session_graph_write_failure_preserves_original_and_returns_failure ... ok
+test app::session_persistence_tests::host_session_interrupted_replacement_never_overwrites_its_backup ... ok
+test app::session_persistence_tests::host_session_recorded_and_absent_ordinary_save_reopen_and_replacement ... ok
+test app::session_persistence_tests::host_session_refusal_blocks_save_fork_background_and_survives_graph_replacement ... ok
+test app::surface_control_tests::surface_controls_duplicate_feed_views_have_independent_read_state ... ok
+test app::surface_control_tests::surface_controls_keep_is_local_idempotent_and_durable ... ok
+test app::surface_control_tests::surface_controls_resource_label_is_not_membership_evidence ... ok
+test app::surface_control_tests::unchanged_feed_repairs_missing_binding_as_a_new_read_view ... ok
+test app::tests::a_held_document_is_refused_outside_a_place_and_its_node_stays ... ok
+test app::tests::a_left_place_refuses_reconnect_and_rejoins_by_clearing_its_mark ... ok
+test app::tests::a_locked_vault_holds_participants_until_the_root_is_adopted ... ok
+test app::tests::a_profile_with_no_vault_still_registers_a_knot_engine ... ok
+test app::tests::a_refused_invitation_leaves_no_binding_in_app_state ... ok
+test app::tests::a_rerooted_profile_refuses_automatic_certificate_reissue ... ok
+test app::tests::a_shared_knot_address_needs_no_path_of_its_own ... ok
+test app::tests::a_stale_join_answer_cannot_bind_a_session ... ok
+test app::tests::actor_fetched_body_is_retained_for_the_requested_content_spawn ... ok
+test app::tests::adopt_session_restores_the_saved_canvas_layout_from_facets ... ok
+test app::tests::an_expired_invitation_is_reported_with_its_time ... ok
+test app::tests::available_actions_lead_with_the_contextual_rows ... ok
+test app::tests::back_forward_and_reload_flow_through_the_spine ... ok
+test app::tests::binary_page_response_becomes_durable_download_custody ... ok
+test app::tests::boot_launch_fetch_precedes_the_restored_content_spawn ... ok
+test app::tests::browser_states_refresh_and_round_trip ... ok
+test app::tests::capture_action_preserves_explicit_member_for_the_host ... ok
+test app::tests::changed_gemini_certificate_requires_an_explicit_trust_commit_before_refetch ... ok
+test app::tests::close_session_trashes_and_recover_restores_identity ... ok
+test app::tests::committing_a_node_row_selects_without_fetch_effects ... ok
+test app::tests::committing_an_action_row_runs_the_action_and_closes ... ok
+test app::tests::composing_a_gloss_pane_toggles_sections_on_its_own_leaf ... ok
+test app::tests::configured_row_limit_applies_to_the_live_omnibar_projection ... ok
+test app::tests::content_flip_lowers_and_fails_honestly ... ok
+test app::tests::copying_the_local_rendezvous_carries_the_whole_ticket ... ok
+test app::tests::corrupt_admission_state_refuses_install_without_replacing_tombstones ... ok
+test app::tests::delete_stages_into_the_bin_and_recover_restores_identity ... ok
+test app::tests::deleting_a_denizen_archives_its_world_and_recovery_restores_residency ... ok
+test app::tests::denizen_installs_after_visible_review ... ok
+test app::tests::dr_c_turnstone_identity_stays_pending ... ignored, run mere/scripts/dr_c_receipts.py against the isolated receipt keeper
+test app::tests::empty_recycle_bin_forgets_on_command ... ok
+test app::tests::every_surface_engine_takes_reload_and_stop_on_its_web_plane ... ok
+test app::tests::failed_leave_from_joining_cannot_adopt_a_late_join_answer ... ok
+test app::tests::fork_carries_denizen_worlds_as_real_copies ... ok
+test app::tests::fork_session_snapshots_the_component_with_its_facets ... ok
+test app::tests::gemini_identity_is_confirmed_once_and_reused_only_for_its_capsule ... ok
+test app::tests::graph_views_workbenches_and_followers_are_pane_scoped ... ok
+test app::tests::install_delegates_from_the_profile_identity_and_uninstall_revokes_it ... ok
+test app::tests::keep_action_is_target_bound_idempotent_and_observable ... ok
+test app::tests::leave_place_is_correlated_and_failure_keeps_a_retryable_degraded_binding ... ok
+test app::tests::lens_ops_close_removes_the_summoned_pane ... ok
+test app::tests::live_settings_snapshot_reconfigures_the_running_chrome_value_once ... ok
+test app::tests::malformed_place_binding_is_visible_without_hiding_cached_graph ... ok
+test app::tests::micron_form_editor_is_explicit_redacts_masked_input_and_emits_one_request ... ok
+test app::tests::micron_form_fixed_variable_action_selection_and_visible_edit_errors ... ok
+test app::tests::micron_form_navigation_reload_and_close_cancel_and_ignore_late_reply ... ok
+test app::tests::micron_form_refuses_submission_after_source_address_changes ... ok
+test app::tests::micron_form_rejects_refreshed_source_before_send_and_on_reply ... ok
+test app::tests::moving_a_composed_section_reorders_that_leaf_and_clamps ... ok
+test app::tests::nomadnet_omnibar_stop_and_reload_keep_native_request_identity ... ok
+test app::tests::omnibar_transcript_freezes_its_open_context_and_repeats_it ... ok
+test app::tests::ordinary_smolweb_input_navigates_and_refetches_with_a_percent_encoded_query ... ok
+test app::tests::place_artifacts_are_written_where_the_person_asked ... ok
+test app::tests::place_binding_survives_switch_and_restart_as_a_worker_open ... ok
+test app::tests::place_collection_completion_is_correlated_and_failure_keeps_the_snapshot ... ok
+test app::tests::place_collection_selection_lowers_the_exact_version_and_clear ... ok
+test app::tests::place_founding_prompts_commit_escape_and_refuse ... ok
+test app::tests::place_invite_lifetime_suffix_is_read_from_the_right ... ok
+test app::tests::place_prekey_offer_is_written_beside_its_card ... ok
+test app::tests::place_reader_invitation_and_share_rows_act_only_inside_a_place ... ok
+test app::tests::place_revoke_rows_are_a_founders_one_per_other_member ... ok
+test app::tests::place_status_leaves_the_omnibar_open_over_a_pane_open ... ok
+test app::tests::place_status_refresh_is_local_filtered_and_generation_scoped ... ok
+test app::tests::publishing_pane_is_a_summonable_window_control ... ok
+test app::tests::recall_keeps_a_footing_inside_the_row_budget ... ok
+test app::tests::recall_never_outranks_the_typed_address ... ok
+test app::tests::reconnect_metadata_failure_does_not_remove_the_admitted_binding ... ok
+test app::tests::reconnect_place_requires_binding_and_ignores_departed_generation ... ok
+test app::tests::reload_after_a_failed_native_fetch_replaces_the_error_with_a_content_spawn ... ok
+test app::tests::rename_session_through_the_omnibar_mode ... ok
+test app::tests::requested_page_scale_round_trips_through_the_store ... ok
+test app::tests::resident_petitions_run_through_the_gate ... ok
+test app::tests::resource_content_inspector_follows_shared_resource_and_navigation ... ok
+test app::tests::resource_content_recycle_capture_keeps_exact_labels_and_live_sibling ... ok
+test app::tests::retired_static_viewer_pins_migrate_to_livery ... ok
+test app::tests::sensitive_smolweb_input_is_masked_and_never_enters_graph_or_events ... ok
+test app::tests::session_restore_applies_law_before_overlays_and_records_refusal ... ok
+test app::tests::shared_knot_pane_is_a_summonable_reader_control ... ok
+test app::tests::shared_nodes_arrive_without_disturbing_the_local_canvas ... ok
+test app::tests::source_capture_carries_current_target_without_requesting_png ... ok
+test app::tests::source_capture_completion_attaches_an_ordered_node_reference_series ... ok
+test app::tests::source_capture_refuses_a_member_without_a_current_target ... ok
+test app::tests::spartan_prompt_target_resolves_against_its_source_member ... ok
+test app::tests::stale_or_failed_source_capture_completion_never_attaches_a_reference ... ok
+test app::tests::stale_place_update_from_a_departed_session_is_ignored ... ok
+test app::tests::stop_cancels_only_the_focused_request_and_rejects_its_late_answer ... ok
+test app::tests::streamed_page_spawns_from_a_prefix_then_replaces_and_settles ... ok
+test app::tests::summon_enforces_registry_multiplicity_in_one_space ... ok
+test app::tests::superseded_recall_answers_drop ... ok
+test app::tests::swapped_script_body_is_refused_before_runtime_execution ... ok
+test app::tests::tear_out_moves_the_leaf_and_keeps_its_id ... ok
+test app::tests::the_actions_lane_and_short_needles_never_recall ... ok
+test app::tests::the_cascade_budget_arrives_from_settings_and_changes_live ... ok
+test app::tests::the_overmap_composes_sections_too ... ok
+test app::tests::the_row_count_follows_the_viewport_under_the_configured_ceiling ... ok
+test app::tests::titan_address_opens_an_explicit_composer_without_uploading ... ok
+test app::tests::titan_composer_stages_body_mime_hidden_token_and_literal_confirmation ... ok
+test app::tests::typing_asks_for_recall_and_the_answer_becomes_rows ... ok
+test app::tests::workbench_actions_flow_through_the_spine ... error: test failed, to rerun pass `-p turnstone --lib`
+
+Caused by:
+  process didn't exit successfully: `/Users/markik/Code/repos/turnstone/target/build/debug/deps/turnstone-5dc9cfaa7e7e3efc --test-threads=1` (signal: 2, SIGINT: terminal interrupt signal)
+     Running unittests src/bin/g3_receipt.rs (target/build/debug/deps/g3_receipt-44aa2d7d763b4acd)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/graphshell_endpoint.rs (target/build/debug/deps/graphshell_endpoint-a8f16b6ac0819f52)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/build/debug/deps/turnstone-83034c93fc95d375)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/build/debug/deps/sandbox_bootstrap_win-7f7517fc551ac562)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests turnstone
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: 1 target failed:
+    `-p turnstone --lib`

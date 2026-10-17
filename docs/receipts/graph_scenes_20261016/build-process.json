@@ -1,0 +1,15 @@
+{
+  "source_commit": "24958a8301d7668d43f52b090ef3e5826297924e",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--offline",
+    "--bin",
+    "turnstone",
+    "-j4"
+  ],
+  "started_utc": "2026-10-17T06:28:40.106956+00:00",
+  "exit_code": 0,
+  "finished_utc": "2026-10-17T06:29:31.581862+00:00"
+}

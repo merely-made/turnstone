@@ -1,0 +1,19 @@
+
+running 14 tests
+test app::scene_tests::a_new_arrangement_discards_the_reset_return_that_has_not_reached_a_frame ... ok
+test app::scene_tests::a_scene_pick_preserves_the_persons_playing_or_paused_choice ... ok
+test app::scene_tests::app_adoption_reopens_saved_mosaic_seed_regions_and_pause_before_the_next_layout_pass ... ok
+test app::scene_tests::arrange_controls_and_physics_resolve_their_window_graph_with_a_different_active_cursor ... ok
+test app::scene_tests::foreground_attention_survives_selection_without_becoming_a_position_pin_or_truth ... ok
+test app::scene_tests::graph_scene_persistence_writes_the_explicit_owner_and_preserves_the_active_session ... ok
+test app::scene_tests::leaving_bounded_scenes_clears_regions_including_the_free_path ... ok
+test app::scene_tests::provenance_scene_places_real_derivation_steps_after_their_sources ... ok
+test app::scene_tests::refused_graph_scene_persistence_preserves_both_disk_and_live_facets ... ok
+test app::scene_tests::registered_graph_sources_retag_with_the_session_while_settings_stays_independent ... ok
+test app::scene_tests::resizing_mosaic_tiles_cancels_both_pending_and_running_reset_returns ... ok
+test app::scene_tests::scene_and_attention_commands_resolve_the_owner_instead_of_the_compatibility_cursor ... ok
+test app::scene_tests::scene_catalog_layouts_place_finite_members_and_their_bounded_regions ... ok
+test app::scene_tests::summoned_arrange_pane_binds_its_graph_and_routes_actual_seed_buttons_and_physics ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 972 filtered out; finished in 10.53s
+

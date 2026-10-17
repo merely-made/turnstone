@@ -1,0 +1,6 @@
+{
+  "source_commit": "9587071d774c1978b9f6b2b7446bb27ee9bc0c2b",
+  "status": "intentionally_interrupted",
+  "reason": "Final review exposed cross-window Arrange ownership and native comparison exposed reopen drift; source was superseded. Only our verified Turnstone test child received SIGINT.",
+  "qualification": false
+}

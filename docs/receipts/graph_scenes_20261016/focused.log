@@ -126,87 +126,6 @@ help: Check that the patched package version and available features are compatib
       with the dependency requirements. If the patch has a different version from
       what is locked in the Cargo.lock file, run `cargo update` to use the new
       version. This may also occur with an optional dependency that is not enabled.
-   Compiling muniment v0.1.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-curation v0.1.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling sceno v0.0.5 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling command-menu v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling tinct v0.2.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling inker v0.1.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling chartulary v0.2.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling scenograph v0.0.4 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling numen v0.2.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-forme v0.2.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling workbench v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling eidetic v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling meristem v0.2.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling scenomise v0.0.5 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling illume v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-surface-api v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling tabard v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling sprigging v0.2.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling backstep v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling cambium v0.3.3 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling errand v0.4.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling stickleback v0.1.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling scenotime v0.0.4 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling incipit v0.2.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling chirograph v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling armillary v0.1.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling pandect v0.1.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling nematic v0.1.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling uxtree v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling document-canvas v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling esp v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling seiche v0.0.6 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling cambium-rootstock v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-transport v0.0.2 (https://github.com/merely-made/murm.git?branch=main#bd8fe1e5)
-   Compiling mere-fleece v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling servitor v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-page-load v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling graphshell-endpoint v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling knot-file-catalog v0.0.1 (https://github.com/merely-made/knot-editor.git?branch=main#9759ee87)
-   Compiling mien v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mooting v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling knot-capture v0.0.1 (https://github.com/merely-made/knot-editor.git?branch=main#9759ee87)
-   Compiling cambium-winit-a11y v0.3.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling gemot v0.1.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-fetch v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-apparatus v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling knot-editor-host v0.1.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-cartography v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling luggage v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling reference-data v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling cambium-genet-winit-host v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling pictograph v0.2.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling script-rhai v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mora-cmudict v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling knot-composition v0.0.1 (https://github.com/merely-made/knot-editor.git?branch=main#9759ee87)
-   Compiling mere-webrtc-carrier v0.0.1 (https://github.com/merely-made/murm.git?branch=main#bd8fe1e5)
-   Compiling knot-document v0.0.1 (https://github.com/merely-made/knot-editor.git?branch=main#9759ee87)
-   Compiling mere-linked-data v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-mesh v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling platen v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling graphshell-client v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling eidetic-search v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-comms v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling redshank-surfaces v0.0.0 (https://github.com/merely-made/woodshed.git?branch=main#0a0d67d0)
-   Compiling redshank-playback v0.0.0 (https://github.com/merely-made/woodshed.git?branch=main#0a0d67d0)
-   Compiling mere v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling knot-editor v0.0.3 (https://github.com/merely-made/knot-editor.git?branch=main#9759ee87)
-   Compiling distillery v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-moot v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling graphshell-host v0.0.2 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mesquite v0.1.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling tabard-workshop v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling pelt-core v0.2.0 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling commons-spine v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-athanor v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
-   Compiling mere-chrome v0.0.1 (https://github.com/merely-made/mere.git?branch=main#7441f2f3)
    Compiling turnstone v0.1.0 (/Users/markik/Code/repos/turnstone)
 warning: unused imports: `Suggestion` and `normalize_address`
   --> src/app/mod.rs:20:31
@@ -667,14 +586,14 @@ warning: methods `projection_input_binding` and `runtime_projection_source` are 
      |            ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: methods `split_axis` and `new_is_first` are never used
-   --> src/panes/mod.rs:341:19
+   --> src/panes/mod.rs:349:19
     |
-340 | impl InsertSide {
+348 | impl InsertSide {
     | --------------- methods in this implementation
-341 |     pub(crate) fn split_axis(self) -> SplitAxis {
+349 |     pub(crate) fn split_axis(self) -> SplitAxis {
     |                   ^^^^^^^^^^
 ...
-350 |     pub(crate) fn new_is_first(self) -> bool {
+358 |     pub(crate) fn new_is_first(self) -> bool {
     |                   ^^^^^^^^^^^^
 
 warning: function `spawn_bin` is never used
@@ -836,23 +755,27 @@ warning: method `stamp` is never used
     |                   ^^^^^
 
 warning: `turnstone` (lib test) generated 86 warnings (run `cargo fix --lib -p turnstone --tests` to apply 58 suggestions)
-    Finished `test` profile [unoptimized] target(s) in 1m 59s
+    Finished `test` profile [unoptimized] target(s) in 1m 24s
      Running unittests src/lib.rs (target/build/debug/deps/turnstone-5dc9cfaa7e7e3efc)
 
-running 19 tests
+running 23 tests
 test app::fold_arms::tests::adopt_restores_explicit_pause_after_scene_and_layout ... ok
 test app::scene_tests::a_new_arrangement_discards_the_reset_return_that_has_not_reached_a_frame ... ok
 test app::scene_tests::a_scene_pick_preserves_the_persons_playing_or_paused_choice ... ok
 test app::scene_tests::app_adoption_reopens_saved_mosaic_seed_regions_and_pause_before_the_next_layout_pass ... ok
+test app::scene_tests::arrange_buttons_follow_the_unique_torn_out_graph_without_using_the_active_cursor ... ok
 test app::scene_tests::arrange_controls_and_physics_resolve_their_window_graph_with_a_different_active_cursor ... ok
+test app::scene_tests::arrange_refuses_ambiguous_foreign_graph_panes_instead_of_guessing_their_selection ... ok
 test app::scene_tests::foreground_attention_survives_selection_without_becoming_a_position_pin_or_truth ... ok
 test app::scene_tests::graph_scene_persistence_writes_the_explicit_owner_and_preserves_the_active_session ... ok
 test app::scene_tests::leaving_bounded_scenes_clears_regions_including_the_free_path ... ok
 test app::scene_tests::provenance_scene_places_real_derivation_steps_after_their_sources ... ok
 test app::scene_tests::refused_graph_scene_persistence_preserves_both_disk_and_live_facets ... ok
+test app::scene_tests::registered_graph_sources_retag_with_the_session_while_settings_stays_independent ... ok
 test app::scene_tests::resizing_mosaic_tiles_cancels_both_pending_and_running_reset_returns ... ok
 test app::scene_tests::scene_and_attention_commands_resolve_the_owner_instead_of_the_compatibility_cursor ... ok
 test app::scene_tests::scene_catalog_layouts_place_finite_members_and_their_bounded_regions ... ok
+test app::scene_tests::summoned_arrange_pane_binds_its_graph_and_routes_actual_seed_buttons_and_physics ... ok
 test graph_scenes_tests::clearing_scene_regions_and_mosaic_preserves_positions_and_the_saved_seed ... ok
 test graph_scenes_tests::restoring_recipe_seed_removes_old_seed_facets_without_losing_regions_or_mosaic ... ok
 test graph_scenes_tests::scene_restore_skips_missing_member_identities_across_all_new_facet_families ... ok
@@ -860,5 +783,5 @@ test graph_scenes_tests::scene_state_round_trips_through_the_real_facet_file_int
 test nomadnet::tests::micron_session_preserves_source_and_produces_scene ... ok
 test remote_projection::tests::disclosed_scene_retains_every_scoped_coverage_layer ... ok
 
-test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 965 filtered out; finished in 10.56s
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 966 filtered out; finished in 18.28s
 

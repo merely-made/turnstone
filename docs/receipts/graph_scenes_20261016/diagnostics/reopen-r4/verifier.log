@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/Users/markik/Code/repos/turnstone/docs/receipts/graph_scenes_20261016/verify_native.py", line 9, in <module>
+    assert s['graph']==truth, name+' changed graph truth'
+           ^^^^^^^^^^^^^^^^^
+AssertionError: 12_reopened.scene changed graph truth

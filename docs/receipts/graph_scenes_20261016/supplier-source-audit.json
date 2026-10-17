@@ -632,5 +632,38 @@
       "source": "git+https://github.com/merely-made/mere.git?branch=main#7441f2f399701c14a7a6abb67146bb08c0a8055e",
       "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f/crates/cambium/workbench/Cargo.toml"
     }
+  ],
+  "final_rechecked_utc": "2026-10-17T06:55:45.383650+00:00",
+  "final_supplier_checks": [
+    {
+      "root": "/Users/markik/.cargo/git/checkouts/dramatis-c1632f2f3bdc2597/36ca194",
+      "head": "36ca194e5d48c66ae44af9530cc12c9f6a05b0be",
+      "tracked_status": ""
+    },
+    {
+      "root": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/fa27ea5",
+      "head": "fa27ea5421c6d3913a622977b8ea37736ae303ea",
+      "tracked_status": ""
+    },
+    {
+      "root": "/Users/markik/.cargo/git/checkouts/knot-editor-87fc402d91cabea0/9759ee8",
+      "head": "9759ee872639f4f4c2c366075cdcaaaa066b4915",
+      "tracked_status": ""
+    },
+    {
+      "root": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7441f2f",
+      "head": "7441f2f399701c14a7a6abb67146bb08c0a8055e",
+      "tracked_status": ""
+    },
+    {
+      "root": "/Users/markik/.cargo/git/checkouts/murm-ebfa134ea22785bd/bd8fe1e",
+      "head": "bd8fe1e5db9690dbb15b618d0103ce6d97d701a4",
+      "tracked_status": ""
+    },
+    {
+      "root": "/Users/markik/.cargo/git/checkouts/netrender-a79f0762881dec01/8960024",
+      "head": "8960024f7b1f2b7a5ba382972f08b2f75eb7a0f0",
+      "tracked_status": ""
+    }
   ]
 }

@@ -1,0 +1,7 @@
+RESULT fail
+captured 01_partition
+captured 02_attention
+FAIL: no successful window presentation for ten seconds
+presentation frames=311 captures=2 blank=0
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r6/seed/01_partition.png digest=24a9d5713c135782 blank=false
+capture /Users/markik/Code/output/turnstone-scene-refresh-20261016/native-r6/seed/02_attention.png digest=d48b8f4ed5c6503f blank=false

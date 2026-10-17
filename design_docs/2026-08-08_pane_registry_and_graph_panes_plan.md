@@ -1559,7 +1559,7 @@ nine reviewed captures and twelve full source/storage/position checkpoints.
 
 ## Graph scene refresh (2026-10-16)
 
-**Status (2026-10-16): in progress.** Adopt the current shared graph arrangements
+**Status (2026-10-17): complete for the default macOS Orrery host.** Adopt the current shared graph arrangements
 and grammar in the native Orrery host. Portable scene-document hosting and the
 Spiral-only remote/frozen disclosure remain separate follow-ups.
 
@@ -1621,3 +1621,38 @@ Spiral-only remote/frozen disclosure remain separate follow-ups.
   the excluded attempt and exact software evidence in
   `docs/receipts/graph_scenes_20261016/`. Both receiving and supplier pushes
   remain pending the headed/reopen gate.
+
+- 2026-10-17 native continuation: the unlocked probe exposed ordinary Arrange
+  summon with no graph binding; registered Graph sources now bind and retag.
+  Controls left in another window resolve a unique explicit graph pane, with
+  ambiguous foreign views left unresolved. The scene fixture closes the lens's
+  seeded extra Orrery through its frame action and qualifies one scene-driving
+  viewport; independent multi-pane scenes remain an A2 boundary.
+- Exact fresh-process comparison then rejected geometry drift and three
+  reload-only legacy domain relations. The first host frame now preserves saved
+  paused geometry and primes the normal recompute gate; later real changes use
+  ordinary projection. New empty sessions record their known RecordedStrataV1
+  birth, while existing absent-profile inputs retain legacy behavior. The
+  source-graph equality verifier is retained without exceptions.
+- Corrected runtime `1ff6ba0`: native build, 23 focused scene tests and eight
+  session persistence tests pass. The final full workspace and headed/reopen
+  runs are underway on this frozen source. Earlier failed and superseded runs
+  are preserved separately in the scene receipt.
+
+- 2026-10-17 native acceptance: runtime `24958a8` passes both headed processes
+  (108.969/56.652 seconds). Independent verification passes 13 complete six-member
+  scene checkpoints, four fold-route checkpoints and exactly 12 reviewed
+  captures. Graph truth, positions, seed, regions, nondefault Mosaic state and
+  folds survive fresh-process reopening exactly; attention remains transient.
+  Multiwindow scenario clocks now follow successful lens presentation while
+  retaining separate primary evidence, and queued captures block later verbs.
+  The final full workspace run is underway on this frozen runtime.
+
+- 2026-10-17 completion: runtime `24958a8` passes the full locked/offline
+  workspace run: 982 passed, zero failed, ten existing ignores. The 24 new
+  receiving regressions, eight shared supplier tests, native build, headed
+  primary/lens controls and exact fresh-process reopen all pass. The byte- and
+  Git-bound packet is `docs/receipts/graph_scenes_20261016/`; earlier failed and
+  deliberately superseded runs remain excluded diagnostics. Windows/Linux,
+  portable SceneDocument hosting, remote/frozen arrangement expansion and
+  independent scene-driving views of one graph remain separate boundaries.

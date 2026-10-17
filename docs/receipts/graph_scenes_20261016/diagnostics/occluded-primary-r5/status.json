@@ -1,0 +1,5 @@
+{
+  "result": "failed_primary_only_presentation_guard",
+  "source": "1ff6ba08ffeafd2eae06da801dd7bc6611aa45b0",
+  "scope": "Unlocked session; main occluded after graph tear-out. Eight captures and515 main frames; ten-second main-only guard failed. No reopen launched. Keep as rejected diagnostic."
+}

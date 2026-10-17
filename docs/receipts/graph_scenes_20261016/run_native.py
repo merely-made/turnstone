@@ -2,9 +2,11 @@ from pathlib import Path
 import argparse, datetime, hashlib, json, os, shutil, subprocess, sys, time, uuid
 root=Path('/Users/markik/Code/repos/turnstone')
 parser=argparse.ArgumentParser()
-parser.add_argument('cohort',nargs='?',default='r2')
+parser.add_argument('cohort',nargs='?',default='r4')
+parser.add_argument('--timeout',type=int,default=300)
 parser.add_argument('--output',type=Path,default=Path('/Users/markik/Code/output/turnstone-scene-refresh-20261016'))
 args=parser.parse_args()
+assert 1 <= args.timeout <= 600, 'phase timeout must be 1..600 seconds'
 out=args.output.resolve()
 assert not out.is_relative_to(root), 'keep profiles, vaults and binaries outside the repository'
 out.mkdir(parents=True,exist_ok=True)
@@ -24,6 +26,7 @@ inputs={'captured_before_launch_utc':datetime.datetime.now(datetime.timezone.utc
  'integrated_upstream':subprocess.check_output(['git','rev-parse','origin/main'],cwd=root,text=True).strip(),
  'turnstone_source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),
  'mere_lock':'7441f2f399701c14a7a6abb67146bb08c0a8055e',
+ 'max_phase_seconds':args.timeout,
  'build_environment':{'profile_dev_debug':0,'incremental':'Cargo default; no override','native_command':'cargo build --locked --offline --bin turnstone -j4'},
  'rustc':subprocess.check_output(['rustc','-vV'],text=True),
  'cargo_config_sha256':sha(root/'.cargo/config.toml'),
@@ -47,7 +50,7 @@ for label, checkout_stem in [('mere','mere-9d8e871c24d9ba76'),('genet','genet-0b
 (base/'source.patch').write_bytes(subprocess.check_output(['git','diff','--binary'],cwd=root))
 endpoint='/tmp/ts-scene-'+uuid.uuid4().hex[:12]+'.sock'
 keeper_root=base/'keeper';keeper_log=(base/'keeper.log').open('w')
-awake=subprocess.Popen(['/usr/bin/caffeinate','-d','-i','-t','360'])
+awake=subprocess.Popen(['/usr/bin/caffeinate','-d','-i','-t',str(2*args.timeout+60)])
 keeper=subprocess.Popen([str(keeper_binary),endpoint,str(keeper_root),'no-wallet'],stdout=keeper_log,stderr=subprocess.STDOUT)
 results=[];before={}
 try:
@@ -66,7 +69,7 @@ try:
    'XDG_CACHE_HOME':str(base/'cache'),'MERE_ROOT':str(base/'mere'),'GRAPHSHELL_APP_ENDPOINT':endpoint,'TMPDIR':'/tmp'}
   scenario=frozen/('graph_scenes.scn' if mode=='seed' else 'graph_scenes_reopen.scn')
   command=[sys.executable,str(root/'docs/receipts/graph_folds_20261016/run_macos_scenario.py'),'--binary',str(binary),'--prefix','TURNSTONE',
-   '--scenario',str(scenario),'--output',str(output),'--timeout','150']
+   '--scenario',str(scenario),'--output',str(output),'--timeout',str(args.timeout)]
   for k,v in env.items():command+=['--env',k+'='+v]
   (base/(mode+'-config.json')).write_text(json.dumps({'command':command,'environment':env,'binary_sha256':sha(binary),'scenario_sha256':sha(scenario),'captured_before_launch_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()},indent=2)+'\n')
   with (base/('launch-'+mode+'.log')).open('w') as log:
