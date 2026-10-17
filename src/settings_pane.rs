@@ -577,9 +577,9 @@ mod tests {
         // UI zoom and cascade budget are number controls.
         assert_eq!(dom.all_with_class(dom.document(), "slider-track").len(), 2);
         assert_eq!(dom.all_with_class(dom.document(), "toggle").len(), 1);
-        // Four shared built-ins plus the Turnstone default, five mode choices,
+        // Six shared built-ins plus the Turnstone default, five mode choices,
         // and four shellbar edges are controlled choices in the actual pane.
-        assert_eq!(dom.all_with_class(dom.document(), "radio").len(), 14);
+        assert_eq!(dom.all_with_class(dom.document(), "radio").len(), 16);
     }
 
     #[test]
