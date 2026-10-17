@@ -1,0 +1,26 @@
+# Same retained IndexedDB profile/origin after p7_tree_promoted_link.scn.
+# tree.html?app=local&fixture=promoted-link&scenario=scenarios/p7_tree_promoted_link_reopen.scn
+click role:button Fit graph
+settle 2
+assert snap storage-reopened == true
+assert snap link-rest-ready == true
+assert snap link-rest-source-assertion-ids ~ fixture:p7:collection-primary
+assert snap promoted-link-count == 1
+remember p7-reopened-source
+reveal role:button Open promoted link 1
+capture p7_promoted_link_reopened_resource_list
+
+reveal role:button Open promoted link 1
+click role:button Open promoted link 1
+settle 2
+assert text Review Resource
+assert snap promoted-link-drift == changed
+assert snap promoted-link-frozen-assertion-ids == fixture:p7:collection-independent|fixture:p7:collection-primary
+assert snap promoted-link-frozen-withdrawn-count == 0
+assert snap promoted-link-withdrawn-ids == fixture:p7:collection-primary
+assert snap promoted-link-comment-count == 1
+assert snap promoted-link-comment-texts == Reviewed after the source assertion was withdrawn.
+same p7-reopened-source link-rest-source-facts
+reveal .promoted-link-review-comment
+capture p7_promoted_link_reopened_after_source_drift
+log promoted Resource copy, drift comparison, and review comment survived fresh-page IndexedDB reopen

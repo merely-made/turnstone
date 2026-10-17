@@ -12,6 +12,7 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
     let resident = page.resident_mere_shown();
     let paused = page.shared.canvas.borrow().physics_paused();
     let can_fit_selection = page.shared.canvas.borrow().can_fit_selection();
+    let has_selection = !page.shared.canvas.borrow().selected_members().is_empty();
     let hosted = matches!(page.dataset, HostedDataset::Loaded(_));
     let commands = [
         (
@@ -51,6 +52,14 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
         },
         ("Fit selection", CanvasCommand::FitSelection),
         ("Restore arrangement", CanvasCommand::RestoreArrangement),
+        ("Reset", CanvasCommand::ResetToSeed),
+        ("Set seed", CanvasCommand::SetSeed),
+        ("Foreground pin", CanvasCommand::ToggleForegroundPin),
+        ("Dismiss retained", CanvasCommand::DismissRetained),
+        ("Grow tile", CanvasCommand::GrowTiles),
+        ("Shrink tile", CanvasCommand::ShrinkTiles),
+        ("Territory", CanvasCommand::ToggleTerritory),
+        ("Suggestions", CanvasCommand::ToggleSuggestions),
         (
             if paused {
                 "Play physics"
@@ -64,7 +73,13 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
         .into_iter()
         .filter(|_| !resident)
         .map(|(label, command)| {
-            let enabled = command != CanvasCommand::FitSelection || can_fit_selection;
+            let enabled = match command {
+                CanvasCommand::FitSelection => can_fit_selection,
+                CanvasCommand::ToggleForegroundPin
+                | CanvasCommand::GrowTiles
+                | CanvasCommand::ShrinkTiles => has_selection,
+                _ => true,
+            };
             let mut control = focusable_if(
                 on_click(
                     el("button", label.to_owned()),
@@ -81,6 +96,7 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
                             return;
                         }
                         command.apply(&mut *canvas, page.shared.size.get());
+                        crate::web_suggestions::after_command(command, &canvas);
                         page.shared.dirty.set(true);
                     },
                 ),
@@ -124,6 +140,62 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
             )
             .attr("aria-keyshortcuts", "Control+k Meta+k Shift+F10"),
         ));
+    }
+    #[cfg(feature = "product")]
+    if !resident && !hosted {
+        let canvas = page.shared.canvas.borrow();
+        let local_ready = page.product.as_ref().is_some_and(|p| !p.selection_locked());
+        for (label, show, enabled) in [
+            (
+                "Hide selected link",
+                false,
+                local_ready && !canvas.selected_link_keys().is_empty(),
+            ),
+            (
+                "Show hidden links",
+                true,
+                local_ready && !canvas.hidden_link_keys().is_empty(),
+            ),
+        ] {
+            let mut control = focusable_if(
+                on_click(el("button", label), move |page: &mut TreePage, _| {
+                    if page.resident_mere_shown()
+                        || matches!(page.dataset, HostedDataset::Loaded(_))
+                    {
+                        return;
+                    }
+                    if let Some(product) = &mut page.product {
+                        let canvas = page.shared.canvas.borrow();
+                        let result = if show {
+                            product.show_hidden_links(&canvas)
+                        } else {
+                            product.hide_selected_links(&canvas)
+                        };
+                        if let Err(error) = result {
+                            product.status = error;
+                        }
+                        page.shared.dirty.set(true);
+                    }
+                }),
+                enabled,
+            )
+            .attr("data-link-visibility", if show { "show" } else { "hide" });
+            if !enabled {
+                control = control.attr("disabled", "").attr("aria-disabled", "true");
+            }
+            buttons.push(Box::new(control));
+        }
+    }
+    #[cfg(feature = "product")]
+    if let Some(product) = &page.product {
+        let (state, message) = product.link_visibility_state();
+        if state != "idle" {
+            buttons.push(Box::new(
+                el("span", message.to_owned())
+                    .attr("role", "status")
+                    .attr("data-link-visibility-status", state),
+            ));
+        }
     }
     // Collapsed, the Graph tools region opens over the canvas from here.
     if !tools_docked(page) {
@@ -224,9 +296,9 @@ impl TreePage {
                 canvas.pointer_up(button, x, y);
                 #[cfg(feature = "product")]
                 if event.button == PointerButton::Primary {
-                    let pairs = canvas.selected_link_pairs();
-                    if pairs.len() == 1 {
-                        opened_pair = pairs.first().copied();
+                    let keys = canvas.selected_link_keys();
+                    if keys.len() == 1 {
+                        opened_pair = canvas.link_appearance_pair(&keys[0]);
                     }
                 }
                 context = canvas.take_context_request();
@@ -394,6 +466,15 @@ pub(super) fn named_command(id: &str) -> Option<CanvasCommand> {
             dy: PAN_STEP,
         }),
         "physics:toggle" => Some(CanvasCommand::TogglePhysics),
+        "reset-to-seed" => Some(CanvasCommand::ResetToSeed),
+        "set-seed" => Some(CanvasCommand::SetSeed),
+        "restore-recipe-seed" => Some(CanvasCommand::RestoreRecipeSeed),
+        "foreground-pin" => Some(CanvasCommand::ToggleForegroundPin),
+        "dismiss-retained" => Some(CanvasCommand::DismissRetained),
+        "tile-grow" => Some(CanvasCommand::GrowTiles),
+        "tile-shrink" => Some(CanvasCommand::ShrinkTiles),
+        "territory-field" => Some(CanvasCommand::ToggleTerritory),
+        "suggestions" => Some(CanvasCommand::ToggleSuggestions),
         _ => None,
     }
 }

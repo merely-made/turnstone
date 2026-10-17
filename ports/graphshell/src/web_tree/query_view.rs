@@ -6,8 +6,10 @@
 //! Author shared query Resources; read-only views retain source strata and access identities.
 use super::*;
 use cambium::{TextInput, button, lens, text_field_typed};
+use graphshell::query_views::{PresentedLink, presented_links};
 use mere::kernel::graph::GraphStratum;
 use mere::query_view::{self as model, *};
+use sceno::{LinkKey, LinkMarks, LinkStratum};
 use uuid::Uuid;
 const LABELS: [&str; 5] = [
     "Query view title",
@@ -17,6 +19,7 @@ const LABELS: [&str; 5] = [
     "Query relation budget",
 ];
 const SAVE_FAILED: &str = "Query write failed. Retry the existing pending save in Graph tools.";
+
 pub(super) struct Pane {
     inputs: Vec<TextInput>,
     scope: Option<(Uuid, String)>,
@@ -485,24 +488,86 @@ pub(super) fn render(snapshot: (Result<QueryProjection, String>, Option<(Uuid, S
         row[column] += 1;
     }
     let mut diagram: Vec<Child> = vec![];
-    for relation in &projection.relations {
-        let Some((_, ax, ay)) = positions.iter().find(|(id, ..)| *id == relation.from) else {
-            continue;
-        };
-        let Some((_, bx, by)) = positions.iter().find(|(id, ..)| *id == relation.to) else {
-            continue;
-        };
-        let (dx, dy) = (bx - ax, by - ay);
-        let length = dx.hypot(dy);
-        let angle = dy.atan2(dx).to_degrees();
-        let cue = relation.kind.cue(&projection.spec.styles);
-        let pieces: Vec<Child> = model::stroke_parts(cue, length).into_iter().map(|part| {
+    let links = presented_links(&projection);
+    let mut add_stroke =
+        |relation: &QueryRelation,
+         cue,
+         label: String,
+         data_kind: String,
+         link_attrs: Option<(LinkKey, LinkMarks, usize)>| {
+            let Some((_, ax, ay)) = positions.iter().find(|(id, ..)| *id == relation.from) else {
+                return;
+            };
+            let Some((_, bx, by)) = positions.iter().find(|(id, ..)| *id == relation.to) else {
+                return;
+            };
+            let (dx, dy) = (bx - ax, by - ay);
+            let length = dx.hypot(dy);
+            let angle = dy.atan2(dx).to_degrees();
+            let pieces: Vec<Child> = model::stroke_parts(cue, length).into_iter().map(|part| {
                 Box::new(el("div", ()).attr("aria-hidden", "true").attr("style", format!(
                     "display:block;position:absolute;left:{}px;top:{}px;width:{}px;height:{}px;background:currentColor;border-radius:{}px",
                 part.offset, part.top, part.width, part.height, if part.rounded { 1.5 } else { 0.0 }
             ))) as Child
         }).collect();
-        diagram.push(Box::new(el("div", pieces).attr("role", "img").attr("aria-label", format!("{}: {} to {}; source {:?} to {:?}", relation.kind.label(), relation.from.id, relation.to.id, relation.source_from.stratum, relation.source_to.stratum)).attr("data-query-relation", format!("{:?}", relation.kind)).attr("style", format!("position:absolute;left:{}px;top:{}px;width:{length}px;height:3px;transform-origin:0 0;transform:rotate({angle}deg)", ax+145.0, ay+48.0))));
+            let mut stroke = el("div", pieces)
+            .attr("role", "img")
+            .attr("aria-label", label)
+            .attr("data-query-relation", data_kind)
+            .attr("style", format!("position:absolute;left:{}px;top:{}px;width:{length}px;height:3px;transform-origin:0 0;transform:rotate({angle}deg)", ax+145.0, ay+48.0));
+            if let Some((key, marks, strength)) = link_attrs {
+                stroke = stroke
+                    .attr("data-link-key", key.stable_id())
+                    .attr("data-link-forward", marks.forward.to_string())
+                    .attr("data-link-reverse", marks.reverse.to_string())
+                    .attr("data-link-opposed", marks.opposed.to_string())
+                    .attr("data-link-strength", strength.to_string());
+            }
+            diagram.push(Box::new(stroke));
+        };
+    for link in &links {
+        let relation = &projection.relations[link.representative];
+        let kind = match link.key.stratum {
+            LinkStratum::Resource => model::VisualRelationKind::ResourceLink,
+            LinkStratum::Surface => model::VisualRelationKind::SurfaceLink,
+        };
+        let label = format!(
+            "{}: {} to {}; {} held contributions; forward {}, reverse {}, opposed {}",
+            kind.label(),
+            link.key.first,
+            link.key.second,
+            link.strength,
+            link.marks.forward,
+            link.marks.reverse,
+            link.marks.opposed
+        );
+        add_stroke(
+            relation,
+            kind.cue(&projection.spec.styles),
+            label,
+            format!("{kind:?}"),
+            Some((link.key.clone(), link.marks, link.strength)),
+        );
+    }
+    for relation in projection
+        .relations
+        .iter()
+        .filter(|relation| relation.kind == model::VisualRelationKind::ShownBinding)
+    {
+        add_stroke(
+            relation,
+            relation.kind.cue(&projection.spec.styles),
+            format!(
+                "{}: {:?} {} to {:?} {}",
+                relation.kind.label(),
+                relation.source_from.stratum,
+                relation.source_from.id,
+                relation.source_to.stratum,
+                relation.source_to.id
+            ),
+            format!("{:?}", relation.kind),
+            None,
+        );
     }
     for (node, (_, x, y)) in projection.nodes.iter().zip(&positions) {
         let mut content: Vec<Child> = vec![
@@ -600,14 +665,26 @@ pub(super) fn render(snapshot: (Result<QueryProjection, String>, Option<(Uuid, S
             ),
         )),
     ];
-    for (index, relation) in projection.relations.iter().enumerate() {
+    for link in &links {
         let source = projection.clone();
         let lease = scope.clone();
+        let key = link.key.clone();
+        let representative = projection.relations[link.representative].clone();
+        let direction = match (link.marks.forward, link.marks.reverse) {
+            (true, true) => "↔",
+            (true, false) => "→",
+            (false, true) => "←",
+            (false, false) => "—",
+        };
+        let opposed = if link.marks.opposed {
+            " · opposed"
+        } else {
+            ""
+        };
         children.push(Box::new(button(
             format!(
-                "Inspect query relation {}: {}",
-                index + 1,
-                relation.kind.label()
+                "Open {:?} link {} {} {} · {} held contributions{}",
+                key.stratum, key.first, direction, key.second, link.strength, opposed
             ),
             move |p: &mut TreePage, _| {
                 let result = p
@@ -618,31 +695,82 @@ pub(super) fn render(snapshot: (Result<QueryProjection, String>, Option<(Uuid, S
                         if product.retained_scope() != lease
                             || !source.is_current(product.source_graph()?)
                         {
-                            return Err("Query relation belongs to an obsolete source".into());
+                            return Err("Query link belongs to an obsolete source".into());
                         }
-                        serde_json::to_string_pretty(&source.relations[index])
-                            .map_err(|e| e.to_string())
+                        let graph = product.source_graph()?;
+                        let (first, second) = match key.stratum {
+                            LinkStratum::Surface => (
+                                representative.source_from.id,
+                                representative.source_to.id,
+                            ),
+                            LinkStratum::Resource => {
+                                let from = source
+                                    .nodes
+                                    .iter()
+                                    .find(|node| {
+                                        node.identity == representative.source_from
+                                    })
+                                    .and_then(|node| node.held_accesses.first())
+                                    .copied()
+                                    .ok_or("Resource link has no held appearance at its first endpoint")?;
+                                let to = source
+                                    .nodes
+                                    .iter()
+                                    .find(|node| node.identity == representative.source_to)
+                                    .and_then(|node| node.held_accesses.first())
+                                    .copied()
+                                    .ok_or("Resource link has no held appearance at its second endpoint")?;
+                                source.access_for(graph, representative.source_from.id, from)?;
+                                source.access_for(graph, representative.source_to.id, to)?;
+                                (from, to)
+                            },
+                        };
+                        Ok(graphshell::link_inspection::LinkTarget::new(first, second))
                     });
                 match result {
-                    Ok(text) => {
-                        if let Some(scope) = lease.clone() {
-                            p.query_views.inspection = Some((scope, source.source_revision, text));
+                    Ok(target) => {
+                        if p.inspected_link != Some(target) {
+                            p.opened_link_layout = None;
+                            p.opened_link_error = None;
+                            p.inspected_statement = None;
+                            p.inspected_link_member = None;
                         }
+                        p.inspected_link = Some(target);
+                        p.tools_open = true;
+                        p.query_views.status = "Opened source link reading".into();
+                        p.shared.dirty.set(true);
                     },
-                    Err(e) => p.query_views.status = e,
+                    Err(error) => p.query_views.status = error,
                 }
             },
         )));
         children.push(Box::new(el(
             "p",
             format!(
-                "{} · {:?} {} → {:?} {} · {} statements · hop cost {}",
+                "{:?} link · {} merged projection rows · forward {} · reverse {} · opposed {} · strength {}",
+                link.key.stratum,
+                link.rows,
+                link.marks.forward,
+                link.marks.reverse,
+                link.marks.opposed,
+                link.strength
+            ),
+        )));
+    }
+    for relation in projection
+        .relations
+        .iter()
+        .filter(|relation| relation.kind == model::VisualRelationKind::ShownBinding)
+    {
+        children.push(Box::new(el(
+            "p",
+            format!(
+                "{} · {:?} {} → {:?} {} · hop cost {}",
                 relation.kind.label(),
                 relation.source_from.stratum,
                 relation.source_from.id,
                 relation.source_to.stratum,
                 relation.source_to.id,
-                relation.statements.len(),
                 relation.hop_cost
             ),
         )));

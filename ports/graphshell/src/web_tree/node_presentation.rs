@@ -66,13 +66,17 @@ pub(super) fn refresh(page: &TreePage) -> Option<Input> {
     let selected = canvas.selected_members();
     let mut contexts = Vec::with_capacity(members.len());
     for (key, member) in members {
-        let view = ViewInputs {
+        let mut view = ViewInputs {
             selected: Some(selected.contains(&member)),
             position_pinned: Some(canvas.arrangement_role_of(key) == Role::Pinned),
             inspected: page.inspected_access == Some(member),
             screen_size: canvas.node_presentation_screen_size(member),
             ..Default::default()
         };
+        view.set_attention(
+            canvas.member_attention(member),
+            canvas.member_foreground_pinned(member),
+        );
         match bind(graph, &Occurrence::Access { member }, &view, None) {
             Ok(context) => contexts.push(context),
             Err(message) => return error(page, message),

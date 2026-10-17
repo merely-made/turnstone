@@ -379,3 +379,33 @@ fn invalid_rule_is_not_hidden_by_unavailable_input_filter() {
         .push(Effect::RegionGuides { visible: true });
     assert!(bound.resolve(&rules).is_err());
 }
+#[test]
+fn attention_binds_as_states_only_when_supplied() {
+    use scenograph::attention::Attention;
+    let (graph, [a, ..]) = fixture();
+    let access = Occurrence::Access { member: a };
+    let mut view = ViewInputs::default();
+    view.set_attention(Some(Attention::Retained), Some(false));
+    let retained = bind(&graph, &access, &view, None).unwrap();
+    assert!(retained.context.states.contains(&ViewState::Retained));
+    assert!(!retained.context.states.contains(&ViewState::Suggested));
+    for state in [
+        ViewState::ForegroundPinned,
+        ViewState::Retained,
+        ViewState::Suggested,
+    ] {
+        assert!(retained.available_states.contains(&state));
+    }
+    view.set_attention(Some(Attention::Forward), Some(true));
+    let pinned = bind(&graph, &access, &view, None).unwrap();
+    assert!(pinned.context.states.contains(&ViewState::ForegroundPinned));
+    assert!(!pinned.context.states.contains(&ViewState::Retained));
+    let unknown = bind(&graph, &access, &ViewInputs::default(), None).unwrap();
+    assert!(!unknown.available_states.contains(&ViewState::Retained));
+    assert!(
+        unknown
+            .notes
+            .iter()
+            .any(|note| note.contains("Overview state has no adapter"))
+    );
+}

@@ -668,20 +668,20 @@ pub(super) fn view(page: &TreePage) -> Child {
 }
 
 pub(super) const SHEET: &str = "\
-    .applet-library { display:flex;flex-direction:column;gap:10px;color:#e6f0ee;background:#17232b;box-sizing:border-box; } \
+    .applet-library { display:flex;flex-direction:column;gap:10px;color:var(--tabard-color-text, #e6f0ee);background:var(--tabard-color-bg, #17232b);box-sizing:border-box; } \
     .applet-library h1 { font-size:23px;margin:0 0 8px; } \
     .applet-library h2 { font-size:18px;margin:8px 0; } \
     .applet-library p { margin:4px 0;overflow-wrap:anywhere; } \
-    .applet-library button { color:#edf4f1;background:#294943;border:1px solid #77968f;padding:8px 12px;margin:6px 8px 6px 0; } \
-    .applet-library button:disabled { color:#a1b3ae;background:#263837; } \
-    .applet-search-field { color:#edf4f1;background:#142723;border:1px solid #77968f;padding:8px;width:280px;min-height:36px; } \
+    .applet-library button { color:var(--tabard-color-text, #edf4f1);background:var(--tabard-color-surface-2, #294943);border:1px solid var(--tabard-color-border-strong, #77968f);padding:8px 12px;margin:6px 8px 6px 0; } \
+    .applet-library button:disabled { color:var(--tabard-color-text-disabled, #a1b3ae);background:var(--tabard-color-surface, #263837); } \
+    .applet-search-field { color:var(--tabard-color-text, #edf4f1);background:var(--tabard-color-surface-2, #142723);border:1px solid var(--tabard-color-border-strong, #77968f);padding:8px;width:280px;min-height:36px; } \
     .applet-library ul { margin:0;padding:0;list-style:none; } \
-    .applet-library li { padding:10px 14px;margin-bottom:8px;background:#1f3533;border:1px solid #506c67; } \
-    .applet-library pre { color:#e6f0ee;background:#102723;padding:12px;white-space:pre-wrap;font-family:Roboto; } \
+    .applet-library li { padding:10px 14px;margin-bottom:8px;background:var(--tabard-color-surface, #1f3533);border:1px solid var(--tabard-color-border, #506c67); } \
+    .applet-library pre { color:var(--tabard-color-text, #e6f0ee);background:var(--tabard-color-bg, #102723);padding:12px;white-space:pre-wrap;font-family:IBM Plex Mono,monospace; } \
     .applet-readings { display:flex;flex-direction:row;flex-wrap:wrap;gap:12px; } \
-    .applet-reader { flex:1 1 360px;min-width:260px;padding:12px;border:1px solid #506c67;box-sizing:border-box; } \
-    .applet-reader[data-selected=true] { border-color:#b6d3c9; } \
+    .applet-reader { flex:1 1 360px;min-width:260px;padding:12px;border:1px solid var(--tabard-color-border, #506c67);box-sizing:border-box; } \
+    .applet-reader[data-selected=true] { border-color:var(--tabard-color-border-strong, #b6d3c9); } \
     .applet-reader pre { max-height:180px;overflow:auto; } \
     .applet-reading-controls { display:flex;flex-wrap:wrap;gap:4px; } \
     .applet-reading-controls button { padding:6px 8px;margin:0; } \
-    .applet-review { background:#203b36;padding:12px;border:1px solid #739389; }";
+    .applet-review { background:var(--tabard-color-surface-2, #203b36);padding:12px;border:1px solid var(--tabard-color-border, #739389); }";

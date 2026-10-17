@@ -20,7 +20,9 @@ resident device host.
 | `smoke-action-form.mjs`, `smoke-capture-model.mjs`, `smoke-capture-background.mjs`, `smoke-native-host.mjs`, `smoke-transfer-accept.mjs`, `smoke-resource-chunk.mjs` | Node smoke tests |
 
 `prepare-extension` also copies `index.html` (as `graph.html`), `styles.css`,
-`loader.js`, `mount.js`, `extension-profile.js`, `GraphshellSans.ttf`, and
+`loader.js`, `mount.js`, `extension-profile.js`, the fonts and their notices
+(`IBMPlexSans-Regular.ttf`, `IBMPlexMono-Regular.ttf`, `Newsreader-Regular.ttf`,
+`OFL-IBMPlex.txt`, `OFL-Newsreader.txt`), and
 `pkg/` from the parent `web/` directory into the destination. `dist/` is
 gitignored, so it is the usual destination.
 

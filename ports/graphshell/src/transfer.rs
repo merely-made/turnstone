@@ -1666,7 +1666,7 @@ mod tests {
         pollster::block_on(async {
             use mere::kernel::persistence::{
                 PersistedEdge, PersistedEdgeFamily, PersistedResourceRecord,
-                PersistedSemanticEdgeData, PersistedSemanticStatement, PersistedShownResource,
+                PersistedSemanticStatement, PersistedShownResource,
             };
             let source = source_fixture().await;
             let manifest =
@@ -1687,24 +1687,22 @@ mod tests {
                 from_node_id: resource_id.clone(),
                 to_node_id: tag_id,
                 families: vec![PersistedEdgeFamily::Semantic],
-                semantic: Some(PersistedSemanticEdgeData {
-                    statements: vec![PersistedSemanticStatement {
-                        statement_id: "copied-tag-handle".into(),
-                        predicate: mere::kernel::graph::resource::TAGGED_WITH_IRI.into(),
-                        recognized_sub_kind: None,
-                        label: Some("tag".into()),
-                        basis: mere::kernel::types::AssertionBasis {
-                            note: Some("tag".into()),
-                            ..Default::default()
-                        },
-                        graph_scope: mere::kernel::types::GraphScope::Default,
-                        provenance_iri: Some("https://tagger.test/".into()),
-                        asserted_at_ms: Some(23),
-                        first_asserted_ms: Some(23),
-                        withdrawn: None,
-                    }],
-                    ..Default::default()
-                }),
+                semantic: None,
+                assertions: Some(vec![PersistedSemanticStatement {
+                    statement_id: "copied-tag-handle".into(),
+                    predicate: mere::kernel::graph::resource::TAGGED_WITH_IRI.into(),
+                    recognized_sub_kind: None,
+                    label: Some("tag".into()),
+                    basis: mere::kernel::types::AssertionBasis {
+                        note: Some("tag".into()),
+                        ..Default::default()
+                    },
+                    graph_scope: mere::kernel::types::GraphScope::Default,
+                    provenance_iri: Some("https://tagger.test/".into()),
+                    asserted_at_ms: Some(23),
+                    first_asserted_ms: Some(23),
+                    withdrawn: None,
+                }]),
                 traversal: None,
                 containment: None,
                 arrangement: None,
@@ -1798,7 +1796,11 @@ mod tests {
             let (copied, mapping) = copied_product(&product, &copy_manifest).unwrap();
             assert_eq!(copied.placement, product.placement);
             let carried = &copied.graph.edges[0];
-            assert_eq!(carried.semantic, held.semantic);
+            assert_eq!(
+                carried.retained_assertions(),
+                held.retained_assertions(),
+                "copy preserves exact canonical assertion records"
+            );
             assert!(
                 mapping.iter().any(|id| id.source == source.file
                     && id.destination.to_string() == carried.from_node_id)
@@ -1857,8 +1859,7 @@ mod tests {
                 .graph
                 .resource_edges
                 .iter()
-                .filter_map(|edge| edge.semantic.as_ref())
-                .flat_map(|bucket| &bucket.statements)
+                .flat_map(|edge| edge.retained_assertions())
                 .next()
                 .unwrap()
                 .statement_id
@@ -2074,8 +2075,7 @@ mod tests {
                 .graph
                 .resource_edges
                 .iter()
-                .filter_map(|edge| edge.semantic.as_ref())
-                .flat_map(|bucket| &bucket.statements)
+                .flat_map(|edge| edge.retained_assertions())
                 .next()
                 .unwrap()
                 .clone();
@@ -2089,9 +2089,11 @@ mod tests {
                 .graph
                 .resource_edges
                 .iter_mut()
-                .find_map(|edge| edge.semantic.as_mut())
+                .find(|edge| !edge.retained_assertions().is_empty())
                 .unwrap()
-                .statements
+                .assertions
+                .as_mut()
+                .unwrap()
                 .push(carried.clone());
             let record = mere::kernel::persistence::PersistedResourceRecord {
                 canonical_iri: "urn:mere:replicated-note".into(),
@@ -2137,8 +2139,7 @@ mod tests {
             let claims: Vec<_> = snapshot
                 .resource_edges
                 .iter()
-                .filter_map(|edge| edge.semantic.as_ref())
-                .flat_map(|bucket| &bucket.statements)
+                .flat_map(|edge| edge.retained_assertions())
                 .collect();
             assert!(claims.contains(&&carried));
             assert!(claims.contains(&&old_claim));
@@ -2182,10 +2183,10 @@ mod tests {
                 .graph
                 .resource_edges
                 .iter_mut()
-                .find_map(|edge| edge.semantic.as_mut())
+                .find(|edge| !edge.retained_assertions().is_empty())
                 .unwrap();
             bucket
-                .statements
+                .retained_assertions_mut()
                 .iter_mut()
                 .find(|claim| claim.statement_id == carried.statement_id)
                 .unwrap()
@@ -2384,11 +2385,9 @@ mod tests {
             assert_eq!(offer.relations, product.graph.edges.len() as u64);
             assert!(!product.graph.resource_edges.is_empty());
             assert!(product.graph.resource_edges.iter().any(|edge| {
-                edge.semantic.as_ref().is_some_and(|bucket| {
-                    bucket.statements.iter().any(|statement| {
-                        statement.recognized_sub_kind
-                            == Some(mere::kernel::persistence::PersistedSemanticSubKind::Cites)
-                    })
+                edge.retained_assertions().iter().any(|statement| {
+                    statement.recognized_sub_kind
+                        == Some(mere::kernel::persistence::PersistedSemanticSubKind::Cites)
                 })
             }));
             assert_eq!(offer.blobs, manifest.blobs.len() as u64);

@@ -1091,11 +1091,7 @@ pub(crate) fn product_import_edits(
         .iter_mut()
         .chain(&mut snapshot.resource_edges)
     {
-        for statement in edge
-            .semantic
-            .iter_mut()
-            .flat_map(|semantic| &mut semantic.statements)
-        {
+        for statement in edge.retained_assertions_mut() {
             statement.provenance_iri.get_or_insert_with(|| {
                 mere::kernel::graph::edge_data::UNKNOWN_LEGACY_ASSERTER_IRI.into()
             });
@@ -1194,11 +1190,7 @@ pub(crate) fn product_import_edits(
         .map(|edge| (false, edge))
         .chain(joined.resource_edges.iter().map(|edge| (true, edge)))
     {
-        for claim in expected
-            .semantic
-            .iter()
-            .flat_map(|semantic| &semantic.statements)
-        {
+        for claim in expected.retained_assertions() {
             let edges = if resource {
                 &actual.resource_edges
             } else {
@@ -1207,10 +1199,7 @@ pub(crate) fn product_import_edits(
             if !edges.iter().any(|edge| {
                 same_id(&edge.from_node_id, &expected.from_node_id)
                     && same_id(&edge.to_node_id, &expected.to_node_id)
-                    && edge
-                        .semantic
-                        .as_ref()
-                        .is_some_and(|semantic| semantic.statements.contains(claim))
+                    && edge.retained_assertions().contains(claim)
             }) {
                 return Err(ProductError::InvalidCodicil(format!(
                     "the import edits did not preserve assertion {:?}",
@@ -1294,12 +1283,10 @@ fn filtered_snapshot(graph: &Graph, members: &HashSet<Uuid>, exported_at_ms: u64
         .iter()
         .filter(|edge| {
             resource_ids.contains(&edge.from_node_id)
-                && edge.semantic.as_ref().is_some_and(|semantic| {
-                    semantic
-                        .statements
-                        .iter()
-                        .any(|statement| statement.predicate == TAGGED_WITH_IRI)
-                })
+                && edge
+                    .retained_assertions()
+                    .iter()
+                    .any(|statement| statement.predicate == TAGGED_WITH_IRI)
         })
         .map(|edge| edge.to_node_id.clone())
         .collect();
@@ -1334,8 +1321,7 @@ fn filtered_snapshot(graph: &Graph, members: &HashSet<Uuid>, exported_at_ms: u64
             .chain(snapshot.resource_edges.iter().filter(|edge| {
                 resource_ids.contains(&edge.from_node_id) && resource_ids.contains(&edge.to_node_id)
             }))
-            .flat_map(|edge| &edge.semantic)
-            .flat_map(|semantic| &semantic.statements)
+            .flat_map(|edge| edge.retained_assertions())
             .map(|statement| {
                 chartulary::resource_id_from_canonical_iri(&statement.predicate).to_string()
             })
@@ -1418,47 +1404,9 @@ fn filter_scene(mut scene: SavedSceneV3, members: &HashSet<Uuid>) -> SavedSceneV
         }
         scene.dynamics = SavedDynamics::from_spec(&spec);
     }
-    scene.cartography = CartographyGeometry::from_positions(
-        scene
-            .cartography
-            .iter()
-            .filter(|(id, _)| members.contains(id)),
-    )
-    .with_sizes(
-        scene
-            .cartography
-            .size_iter()
-            .filter(|(id, _)| members.contains(id)),
-    )
-    .with_size_by_degree(scene.cartography.size_by_degree())
-    .with_size_by_importance(scene.cartography.size_by_importance())
-    .with_importance_metric(scene.cartography.importance_metric())
-    .with_sprites(
-        scene
-            .cartography
-            .sprite_iter()
-            .filter(|(id, _)| members.contains(id))
-            .map(|(id, uri)| (id, uri.to_string())),
-    )
-    .with_sprite_hulls(
-        scene
-            .cartography
-            .sprite_hull_iter()
-            .filter(|(id, _)| members.contains(id)),
-    )
-    .with_materials(
-        scene
-            .cartography
-            .material_iter()
-            .filter(|(id, _)| members.contains(id)),
-    )
-    .with_faces(
-        scene
-            .cartography
-            .face_iter()
-            .filter(|(id, _)| members.contains(id))
-            .map(|(id, face)| (id, face.to_string())),
-    );
+    scene
+        .cartography
+        .retain_members(|id| members.contains(id));
     scene
 }
 
@@ -1807,18 +1755,15 @@ mod tests {
             None
         );
         assert!(host.graph().to_snapshot().edges.iter().any(|edge| {
-            edge.semantic.as_ref().is_some_and(|semantic| {
-                semantic
-                    .statements
-                    .iter()
-                    .any(|claim| claim.statement_id == "held-profile-handle")
-            })
+            edge.retained_assertions()
+                .iter()
+                .any(|claim| claim.statement_id == "held-profile-handle")
         }));
     }
 
     fn resource_selection_graph() -> (Graph, Vec<Uuid>, mere::kernel::persistence::PersistedEdge) {
         use mere::kernel::persistence::{
-            PersistedEdge, PersistedEdgeFamily, PersistedResourceRecord, PersistedSemanticEdgeData,
+            PersistedEdge, PersistedEdgeFamily, PersistedResourceRecord,
             PersistedSemanticStatement, PersistedShownResource,
         };
         let mut graph = Graph::new();
@@ -1868,24 +1813,22 @@ mod tests {
             from_node_id: ids[from].clone(),
             to_node_id: ids[to].clone(),
             families: vec![PersistedEdgeFamily::Semantic],
-            semantic: Some(PersistedSemanticEdgeData {
-                statements: vec![PersistedSemanticStatement {
-                    statement_id: handle.into(),
-                    predicate: predicate.into(),
-                    recognized_sub_kind: None,
-                    label: Some("retained relation".into()),
-                    basis: mere::kernel::types::AssertionBasis {
-                        note: Some("retained relation".into()),
-                        ..Default::default()
-                    },
-                    graph_scope: mere::kernel::types::GraphScope::Default,
-                    provenance_iri: Some("https://tagger.test/".into()),
-                    asserted_at_ms: Some(23),
-                    first_asserted_ms: Some(23),
-                    withdrawn: None,
-                }],
-                ..Default::default()
-            }),
+            semantic: None,
+            assertions: Some(vec![PersistedSemanticStatement {
+                statement_id: handle.into(),
+                predicate: predicate.into(),
+                recognized_sub_kind: None,
+                label: Some("retained relation".into()),
+                basis: mere::kernel::types::AssertionBasis {
+                    note: Some("retained relation".into()),
+                    ..Default::default()
+                },
+                graph_scope: mere::kernel::types::GraphScope::Default,
+                provenance_iri: Some("https://tagger.test/".into()),
+                asserted_at_ms: Some(23),
+                first_asserted_ms: Some(23),
+                withdrawn: None,
+            }]),
             traversal: None,
             containment: None,
             arrangement: None,
@@ -1936,6 +1879,7 @@ mod tests {
         traversal.to_node_id = extras[0].to_string();
         traversal.families = vec![PersistedEdgeFamily::Traversal];
         traversal.semantic = None;
+        traversal.assertions = Some(Vec::new());
         traversal.traversal = Some(PersistedTraversalEdgeData::default());
         snapshot.edges.push(traversal.clone());
         let mut graph = Graph::try_from_recorded_snapshot(&snapshot).unwrap();
@@ -2012,15 +1956,11 @@ mod tests {
         assert!(!semantic.contains(&extras[2]));
         let exported = filtered_snapshot(host.graph(), &members, 17);
         assert!(exported.edges.contains(&traversal));
-        assert!(
-            exported
-                .resource_edges
+        assert!(exported.resource_edges.iter().any(|edge| {
+            edge.retained_assertions()
                 .iter()
-                .any(|edge| edge.semantic.as_ref().is_some_and(|bucket| bucket
-                    .statements
-                    .iter()
-                    .any(|claim| claim.statement_id == "outside-content-handle")))
-        );
+                .any(|claim| claim.statement_id == "outside-content-handle")
+        }));
     }
 
     #[test]
@@ -2082,19 +2022,18 @@ mod tests {
             .to_snapshot()
             .resource_edges
             .into_iter()
-            .filter_map(|edge| edge.semantic)
-            .flat_map(|bucket| bucket.statements)
+            .flat_map(|edge| edge.retained_assertions().to_vec())
             .filter(|claim| claim.provenance_iri.as_deref() == Some("urn:mere:peer-test"))
             .collect::<Vec<_>>();
         assert_eq!(peer_claims.len(), 2);
         host.edit_node(surfaces[0], "tagged page", ["Shared".into()])
             .unwrap();
         let actual = host.graph().to_snapshot().resource_edges;
-        assert!(peer_claims.iter().all(|claim| actual.iter().any(|edge| {
-            edge.semantic
-                .as_ref()
-                .is_some_and(|bucket| bucket.statements.contains(claim))
-        })));
+        assert!(peer_claims.iter().all(|claim| {
+            actual
+                .iter()
+                .any(|edge| edge.retained_assertions().contains(claim))
+        }));
         assert!(
             !host
                 .graph()
@@ -2214,10 +2153,9 @@ mod tests {
             let mut edge = exact_tag.clone();
             edge.from_node_id = from;
             edge.to_node_id = to;
-            let semantic = edge.semantic.as_mut().unwrap();
-            semantic.predicate = Some(predicate.into());
-            semantic.statements[0].predicate = predicate.into();
-            semantic.statements[0].statement_id = handle.into();
+            let statement = &mut edge.retained_assertions_mut()[0];
+            statement.predicate = predicate.into();
+            statement.statement_id = handle.into();
             edge
         };
         source.edges = vec![
@@ -2239,14 +2177,13 @@ mod tests {
             .iter_mut()
             .find(|edge| edge.to_node_id == id("https://vocab.test/#Selected"))
             .unwrap();
-        let mut resource_claim = selected_tag.semantic.as_ref().unwrap().statements[0].clone();
+        let mut resource_claim = selected_tag.retained_assertions()[0].clone();
         resource_claim.predicate = RESOURCE.into();
         resource_claim.statement_id = "selected-resource-claim".into();
         selected_tag
-            .semantic
+            .assertions
             .as_mut()
             .unwrap()
-            .statements
             .push(resource_claim);
         source.resource_edges.push(relation(
             id(SURFACE),
@@ -2326,16 +2263,36 @@ mod tests {
         let surface_claims: HashSet<_> = exported
             .edges
             .iter()
-            .filter_map(|edge| edge.semantic.as_ref())
-            .flat_map(|semantic| &semantic.statements)
+            .flat_map(|edge| edge.retained_assertions())
             .map(|claim| claim.statement_id.as_str())
             .collect();
         assert!(surface_claims.contains("selected-surface-claim"));
         assert!(!surface_claims.contains("outside-surface-claim"));
+        let derived: Vec<_> = exported
+            .edges
+            .iter()
+            .flat_map(|edge| edge.retained_assertions())
+            .filter(|claim| {
+                RelationKind::from_predicate_iri(&claim.predicate)
+                    == Some(RelationKind::Containment(ContainmentSubKind::Domain))
+            })
+            .collect();
         assert!(
-            exported.edges.iter().any(|edge| edge.containment.is_some()),
-            "selected same-host surfaces retain their derived containment"
+            !derived.is_empty(),
+            "selected same-host surfaces retain the rule-derived domain claim"
         );
+        for claim in derived {
+            assert!(claim.statement_id.starts_with("urn:uuid:"));
+            assert_eq!(
+                claim.provenance_iri.as_deref(),
+                Some("urn:mere:rule:derived-containment:v1")
+            );
+            let method = claim.basis.method.as_ref().unwrap();
+            assert_eq!(method.iri, "urn:mere:method:derived-containment");
+            assert_eq!(method.version.as_deref(), Some("1"));
+            assert_eq!(claim.first_asserted_ms, None);
+            assert_eq!(claim.asserted_at_ms, None);
+        }
         let retained: HashSet<_> = wanted.into_iter().map(id).collect();
         let expected_edges: Vec<_> = baseline
             .resource_edges
@@ -2380,9 +2337,7 @@ mod tests {
     #[test]
     fn product_surface_sidecars_reject_resource_handle_collisions_before_edits() {
         let (graph, surfaces, edge) = resource_selection_graph();
-        let held = edge.semantic.as_ref().unwrap().statements[0]
-            .statement_id
-            .clone();
+        let held = edge.retained_assertions()[0].statement_id.clone();
         let mut product = ProductCodicilV3 {
             schema: PRODUCT_CODICIL_SCHEMA.into(),
             scope: TransferScope::SelectedSubgraph,
@@ -2669,12 +2624,11 @@ mod tests {
         codicil.graph.edges.clear();
         surface.from_node_id = surfaces[0].to_string();
         surface.to_node_id = surfaces[1].to_string();
-        surface.semantic.as_mut().unwrap().predicate = Some(IMPORT_PREDICATE.into());
-        surface.semantic.as_mut().unwrap().statements[0].predicate = IMPORT_PREDICATE.into();
-        surface.semantic.as_mut().unwrap().statements[0].statement_id = "surface-alice".into();
+        surface.retained_assertions_mut()[0].predicate = IMPORT_PREDICATE.into();
+        surface.retained_assertions_mut()[0].statement_id = "surface-alice".into();
         codicil.graph.edges.push(surface.clone());
         let mut parallel = surface.clone();
-        parallel.semantic.as_mut().unwrap().statements[0].statement_id = "surface-bob".into();
+        parallel.retained_assertions_mut()[0].statement_id = "surface-bob".into();
         codicil.graph.edges.push(parallel);
         let declarations = PredicateDeclarations {
             variants: vec![PredicateDeclaration {
@@ -2741,9 +2695,8 @@ mod tests {
             .graph()
             .to_snapshot()
             .edges
-            .into_iter()
-            .filter_map(|edge| edge.semantic)
-            .flat_map(|semantic| semantic.statements)
+            .iter()
+            .flat_map(|edge| edge.retained_assertions().to_vec())
             .map(|claim| claim.statement_id)
             .collect::<HashSet<_>>();
         assert!(claims.contains("surface-alice") && claims.contains("surface-bob"));
@@ -2758,42 +2711,23 @@ mod tests {
         assert_eq!(host.graph_session().changes().len(), changes);
 
         let mut payload_collision = codicil.clone();
-        payload_collision.graph.edges[0]
-            .semantic
-            .as_mut()
-            .unwrap()
-            .statements[0]
-            .label = Some("divergent".into());
-        payload_collision.graph.edges[0]
-            .semantic
-            .as_mut()
-            .unwrap()
-            .statements[0]
+        payload_collision.graph.edges[0].retained_assertions_mut()[0].label =
+            Some("divergent".into());
+        payload_collision.graph.edges[0].retained_assertions_mut()[0]
             .basis
             .note = Some("divergent".into());
         let mut pair_collision = codicil.clone();
         pair_collision.graph.edges[0].to_node_id = surfaces[0].to_string();
         let mut store_collision = codicil.clone();
-        store_collision.graph.edges[0]
-            .semantic
-            .as_mut()
-            .unwrap()
-            .statements[0]
-            .statement_id = store_collision.graph.resource_edges[0]
-            .semantic
-            .as_ref()
-            .unwrap()
-            .statements[0]
-            .statement_id
-            .clone();
+        store_collision.graph.edges[0].retained_assertions_mut()[0].statement_id =
+            store_collision.graph.resource_edges[0].retained_assertions()[0]
+                .statement_id
+                .clone();
         store_collision.graph.resource_edges.clear();
         let mut source_collision = codicil.clone();
         let mut duplicate = surface;
-        duplicate.semantic.as_mut().unwrap().statements[0].label =
-            Some("raw source divergence".into());
-        duplicate.semantic.as_mut().unwrap().statements[0]
-            .basis
-            .note = Some("raw source divergence".into());
+        duplicate.retained_assertions_mut()[0].label = Some("raw source divergence".into());
+        duplicate.retained_assertions_mut()[0].basis.note = Some("raw source divergence".into());
         source_collision.graph.edges.push(duplicate);
         let mut invalid_declaration = codicil.clone();
         invalid_declaration
@@ -2835,7 +2769,7 @@ mod tests {
         }
 
         let mut legacy = codicil.clone();
-        legacy.graph.edges[0].semantic.as_mut().unwrap().statements[0].provenance_iri = None;
+        legacy.graph.edges[0].retained_assertions_mut()[0].provenance_iri = None;
         let mut legacy_host = MereHost::empty(
             MemoryBackend::new(),
             selected_persona(),
@@ -2852,8 +2786,7 @@ mod tests {
         let legacy_claim = normalized
             .edges
             .iter()
-            .filter_map(|edge| edge.semantic.as_ref())
-            .flat_map(|semantic| &semantic.statements)
+            .flat_map(|edge| edge.retained_assertions())
             .find(|claim| claim.statement_id == "surface-alice")
             .unwrap();
         assert_eq!(
@@ -2864,8 +2797,7 @@ mod tests {
         let known_claim = normalized
             .edges
             .iter()
-            .filter_map(|edge| edge.semantic.as_ref())
-            .flat_map(|semantic| &semantic.statements)
+            .flat_map(|edge| edge.retained_assertions())
             .find(|claim| claim.statement_id == "surface-bob")
             .unwrap();
         assert_eq!(
@@ -2879,9 +2811,9 @@ mod tests {
             legacy_journal,
             "missing-source legacy reimport equals its normalized marker"
         );
-        legacy.graph.edges[0].semantic.as_mut().unwrap().statements[0].label =
+        legacy.graph.edges[0].retained_assertions_mut()[0].label =
             Some("different legacy claim".into());
-        legacy.graph.edges[0].semantic.as_mut().unwrap().statements[0]
+        legacy.graph.edges[0].retained_assertions_mut()[0]
             .basis
             .note = Some("different legacy claim".into());
         assert!(

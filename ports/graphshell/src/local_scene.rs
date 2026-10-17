@@ -19,7 +19,11 @@ pub fn capture_scene(
     let camera = canvas.camera();
     Ok(SavedSceneV3 {
         name: "Graphshell working scene".into(),
-        selected: canvas.selected_members(),
+        selected: canvas
+            .selected_members()
+            .into_iter()
+            .filter(|member| !canvas.is_derived_member(*member))
+            .collect(),
         physics_paused: canvas.physics_paused(),
         dynamics: SavedDynamics::from_spec(&spec),
         camera_offset: camera.offset,
@@ -92,6 +96,7 @@ pub fn restore_scene(
     canvas.apply_cartography_sprite_hulls(scene.cartography.sprite_hull_iter());
     canvas.apply_cartography_materials(scene.cartography.material_iter());
     canvas.apply_cartography_faces(scene.cartography.face_iter());
+    canvas.apply_cartography_scene_state(&scene.cartography);
     // Binding was checked above, before the graph changed.
     canvas
         .set_dynamics_spec(&spec)

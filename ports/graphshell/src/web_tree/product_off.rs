@@ -78,6 +78,26 @@ impl SavedProduct {
         false
     }
 
+    pub(super) fn initial_fixture_positions(
+        &self,
+    ) -> Option<
+        Vec<(
+            mere::kernel::graph::NodeKey,
+            mere::kernel::geometry::PortablePoint,
+        )>,
+    > {
+        match self.never {}
+    }
+    pub(super) fn link_visibility_state(&self) -> (&'static str, &str) {
+        match self.never {}
+    }
+    pub(super) fn assertion_visibility_state(&self) -> (&'static str, &str) {
+        match self.never {}
+    }
+    pub(super) fn restore_canvas_link_hides(&mut self, _canvas: &mut Canvas) {
+        match self.never {}
+    }
+
     pub(super) fn graph(&self) -> Graph {
         match self.never {}
     }

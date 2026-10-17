@@ -293,8 +293,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &mut app, limits,
     ))?;
     let mut content = ContentHost::with_native_presentation(
-        vec![include_bytes!("../web/GraphshellSans.ttf").to_vec()],
-        Some("Roboto".into()),
+        vec![include_bytes!("../web/IBMPlexSans-Regular.ttf").to_vec()],
+        Some("IBM Plex Sans".into()),
     );
     let mut views = vec![];
     let mut accesses = vec![];

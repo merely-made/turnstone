@@ -120,6 +120,9 @@ pub(crate) fn placed_canvas(
     canvas.set_layout_strategy(Some(LAYOUT.to_string()));
     canvas.apply_strategy_positions(positions);
     canvas.fit_to_content();
+    // Graphshell's scene is Territory (DECISIONS, Scene defaults).
+    canvas.set_territory_field(true);
+    canvas.set_graph_grammar(true);
     canvas
 }
 
@@ -135,5 +138,7 @@ pub(crate) fn prepared_canvas(graph: Graph, width: u32, height: u32) -> Canvas {
     );
     canvas.apply_strategy_positions(&positions);
     canvas.fit_to_content();
+    canvas.set_territory_field(true);
+    canvas.set_graph_grammar(true);
     canvas
 }

@@ -28,7 +28,9 @@ Copy-Item -LiteralPath (Join-Path $scriptRoot "bridge.js") -Destination $destina
 $webRoot = Split-Path -Parent $scriptRoot
 Copy-Item -LiteralPath (Join-Path $webRoot "index.html") -Destination (Join-Path $destinationPath "graph.html")
 Copy-Item -LiteralPath (Join-Path $webRoot "styles.css") -Destination $destinationPath
-Copy-Item -LiteralPath (Join-Path $webRoot "GraphshellSans.ttf") -Destination $destinationPath
+foreach ($font in @("IBMPlexSans-Regular.ttf", "IBMPlexMono-Regular.ttf", "Newsreader-Regular.ttf", "OFL-IBMPlex.txt", "OFL-Newsreader.txt")) {
+  Copy-Item -LiteralPath (Join-Path $webRoot $font) -Destination $destinationPath
+}
 Copy-Item -LiteralPath (Join-Path $webRoot "loader.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $webRoot "mount.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $webRoot "extension-profile.js") -Destination $destinationPath

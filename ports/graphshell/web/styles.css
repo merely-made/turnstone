@@ -1,3 +1,9 @@
+/* Colours read Tabard's roles (--tabard-color-<role>, published by web_appearance.rs) and fall back to the
+   values this sheet always had, so nothing changes until a theme is applied. Hairlines read
+   --tabard-color-border; control and floating-panel outlines read --tabard-color-border-strong (3:1); the
+   focus outline reads --tabard-color-focus. The "working" capture status is ink plus its word (activity is never a
+   colour change). Mapping: the Merely design system's design_docs/2026-10-16_graphshell_theme_and_font_brief.md (that
+   project, not this repository). */
 /* The component is its own box: the canvas fills it and the semantic
    overlay is positioned within it, whether it fills the page (index.html)
    or sits in a column of someone else's (embed.html). */
@@ -6,7 +12,7 @@ graphshell-view {
   position: relative;
   overflow: hidden;
   color-scheme: inherit;
-  background: #071015;
+  background: var(--tabard-color-bg, #071015);
   font-family: system-ui, sans-serif;
 }
 
@@ -21,7 +27,7 @@ body.full-page:has(graphshell-view[data-practice-workspace]) { overflow:auto; }
 #gs-practice-controls > * { position:absolute;margin:0;padding:0;border:0;color:transparent;background:transparent;overflow:hidden; }
 #gs-practice-controls > button { pointer-events:auto;cursor:pointer;font:inherit; }
 #gs-practice-controls > button[data-practice-body] { touch-action:none;cursor:grab; }
-#gs-practice-controls > button:focus-visible { outline:2px solid #d4e6b9;outline-offset:3px; }
+#gs-practice-controls > button:focus-visible { outline:2px solid var(--tabard-color-focus, #d4e6b9);outline-offset:3px; }
 
 /* These semantic buttons use the same rectangles as Genet's painted views. */
 #gs-projection-live { position: absolute; inset: 0; pointer-events: none; }
@@ -30,7 +36,7 @@ body.full-page:has(graphshell-view[data-practice-workspace]) { overflow:auto; }
   position: absolute; pointer-events: auto; color: transparent;
   background: transparent; border: 0; padding: 0; margin: 0; cursor: pointer;
 }
-#gs-projection-live button:focus-visible { outline: 2px solid #f0c674; outline-offset: 3px; }
+#gs-projection-live button:focus-visible { outline: 2px solid var(--tabard-color-tertiary, #f0c674); outline-offset: 3px; }
 
 html.full-page,
 body.full-page {
@@ -38,7 +44,7 @@ body.full-page {
   height: 100%;
   margin: 0;
   overflow: hidden;
-  background: #071015;
+  background: var(--tabard-color-bg, #071015);
 }
 
 body.full-page graphshell-view {
@@ -53,7 +59,7 @@ graphshell-tree {
   position: relative;
   overflow: hidden;
   color-scheme: inherit;
-  background: #071015;
+  background: var(--tabard-color-bg, #071015);
 }
 
 body.full-page graphshell-tree {
@@ -69,14 +75,14 @@ body.full-page graphshell-tree {
 #gs-graphshell-canvas {
   display: block;
   touch-action: none;
-  background: #071015;
+  background: var(--tabard-color-bg, #071015);
 }
 
 #gs-semantic-host {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  color: #dce5e8;
+  color: var(--tabard-color-text, #dce5e8);
 }
 
 #gs-semantic-host header button,
@@ -93,7 +99,7 @@ body.full-page graphshell-tree {
 }
 
 #gs-semantic-host button:focus-visible {
-  outline: 2px solid #f0c674;
+  outline: 2px solid var(--tabard-color-tertiary, #f0c674);
   outline-offset: 2px;
 }
 
@@ -163,7 +169,7 @@ nav button:nth-child(8) { left: 254px; }
   padding: 16px;
   pointer-events: auto;
   background: rgba(15, 27, 35, 0.97);
-  border: 1px solid #41616b;
+  border: 1px solid var(--tabard-color-border-strong, #41616b);
   border-radius: 12px;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
 }
@@ -195,19 +201,19 @@ nav button:nth-child(8) { left: 254px; }
   padding: 12px;
   pointer-events: auto;
   background: rgba(12, 24, 31, 0.96);
-  border: 1px solid #29404a;
+  border: 1px solid var(--tabard-color-border, #29404a);
   border-radius: 12px;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
 }
 
 #gs-product-panel section + section {
-  border-top: 1px solid #29404a;
+  border-top: 1px solid var(--tabard-color-border, #29404a);
   margin-top: 14px;
   padding-top: 12px;
 }
 
 #gs-projection-editor {
-  border-color: #41616b;
+  border-color: var(--tabard-color-border-strong, #41616b);
 }
 
 #gs-projection-editor[hidden] {
@@ -222,14 +228,14 @@ nav button:nth-child(8) { left: 254px; }
 
 #gs-projection-editor-panels button {
   margin-top: 0;
-  color: #a9c7ba;
-  background: #17242c;
-  border: 1px solid #35505b;
+  color: var(--tabard-color-secondary, #a9c7ba);
+  background: var(--tabard-color-surface-2, #17242c);
+  border: 1px solid var(--tabard-color-border-strong, #35505b);
 }
 
 #gs-projection-editor-panels button[aria-selected="true"] {
-  color: #172028;
-  background: #d39b4a;
+  color: var(--tabard-color-on-primary, #172028);
+  background: var(--tabard-color-primary, #d39b4a);
 }
 
 #gs-projection-editor-status,
@@ -237,7 +243,7 @@ nav button:nth-child(8) { left: 254px; }
 #gs-projection-editor-dirty,
 #gs-projection-editor-source,
 #gs-projection-editor-provenance {
-  color: #a9c7ba;
+  color: var(--tabard-color-secondary, #a9c7ba);
   font-size: 11px;
   overflow-wrap: anywhere;
 }
@@ -249,19 +255,19 @@ nav button:nth-child(8) { left: 254px; }
 }
 
 #gs-projection-editor-validation {
-  color: #8db8a4;
+  color: var(--tabard-color-success, #8db8a4);
 }
 
 #gs-projection-editor-source,
 #gs-projection-editor-provenance {
-  color: #89a6af;
+  color: var(--tabard-color-text-dim, #89a6af);
 }
 
 #gs-semantic-host h1,
 #gs-semantic-host h2,
 #gs-semantic-host h3 {
   margin: 0 0 9px;
-  color: #f5e7c4;
+  color: var(--tabard-color-text-header, #f5e7c4);
   font-size: 14px;
   font-weight: 600;
 }
@@ -278,7 +284,7 @@ nav button:nth-child(8) { left: 254px; }
 
 #gs-detail-address {
   margin: -4px 0 13px;
-  color: #89a6af;
+  color: var(--tabard-color-text-dim, #89a6af);
   font-size: 11px;
   overflow-wrap: anywhere;
 }
@@ -286,9 +292,9 @@ nav button:nth-child(8) { left: 254px; }
 #gs-action-draft-surface {
   margin: 0 0 16px;
   padding: 12px;
-  border: 1px solid #35505b;
+  border: 1px solid var(--tabard-color-border, #35505b);
   border-radius: 8px;
-  background: #101c24;
+  background: var(--tabard-color-surface, #101c24);
 }
 
 #gs-action-draft-surface[hidden] {
@@ -301,7 +307,7 @@ nav button:nth-child(8) { left: 254px; }
 
 #gs-action-draft-surface p {
   margin: 0 0 8px;
-  color: #9fb1b7;
+  color: var(--tabard-color-text-dim, #9fb1b7);
   font-size: 11px;
 }
 
@@ -312,18 +318,18 @@ nav button:nth-child(8) { left: 254px; }
 }
 
 #gs-action-draft-surface legend {
-  color: #a9c7ba;
+  color: var(--tabard-color-secondary, #a9c7ba);
   font-size: 11px;
 }
 
 #gs-action-draft-surface [role="alert"] {
-  color: #e99387;
+  color: var(--tabard-color-danger, #e99387);
 }
 
 #gs-semantic-host label {
   display: block;
   margin: 8px 0 4px;
-  color: #8da2a9;
+  color: var(--tabard-color-text-dim, #8da2a9);
   font-size: 10px;
   letter-spacing: 0.03em;
 }
@@ -337,9 +343,9 @@ nav button:nth-child(8) { left: 254px; }
   width: 100%;
   min-height: 32px;
   padding: 7px 9px;
-  color: #dce5e8;
-  background: #17242c;
-  border: 1px solid #35505b;
+  color: var(--tabard-color-text, #dce5e8);
+  background: var(--tabard-color-surface-2, #17242c);
+  border: 1px solid var(--tabard-color-border-strong, #35505b);
   border-radius: 6px;
   font: 12px system-ui, sans-serif;
 }
@@ -354,7 +360,7 @@ nav button:nth-child(8) { left: 254px; }
   margin: 6px 0 0;
   padding-left: 20px;
   overflow: auto;
-  color: #b8c8cd;
+  color: var(--tabard-color-text-dim, #b8c8cd);
   font-size: 10px;
 }
 
@@ -377,8 +383,8 @@ nav button:nth-child(8) { left: 254px; }
   height: auto;
   margin-top: 8px;
   pointer-events: auto;
-  color: #172028;
-  background: #d39b4a;
+  color: var(--tabard-color-on-primary, #172028);
+  background: var(--tabard-color-primary, #d39b4a);
   border: 0;
   cursor: pointer;
 }
@@ -386,7 +392,7 @@ nav button:nth-child(8) { left: 254px; }
 .file-picker {
   display: block !important;
   text-align: center;
-  color: #172028 !important;
+  color: var(--tabard-color-on-primary, #172028) !important;
   letter-spacing: 0 !important;
   font-size: 12px !important;
 }
@@ -485,7 +491,7 @@ nav button:nth-child(8) { left: 254px; }
 
   #gs-product-panel section + section {
     border-top: 0;
-    border-left: 1px solid #29404a;
+    border-left: 1px solid var(--tabard-color-border, #29404a);
     margin: 0;
     padding: 0 0 0 12px;
   }
@@ -498,7 +504,7 @@ nav button:nth-child(8) { left: 254px; }
   }
 
   #gs-product-panel section + section {
-    border-top: 1px solid #29404a;
+    border-top: 1px solid var(--tabard-color-border, #29404a);
     border-left: 0;
     margin-top: 14px;
     padding: 12px 0 0;
@@ -509,11 +515,11 @@ nav button:nth-child(8) { left: 254px; }
 }
 
 #gs-capture-status[data-state="failed"] {
-  color: #ff9f92;
+  color: var(--tabard-color-danger, #ff9f92);
 }
 
 #gs-capture-status[data-state="working"] {
-  color: #f4cf7b;
+  color: var(--tabard-color-text, #dce5e8);
 }
 
 /* The command context menu (Scenograph editor plan, track C1). */
@@ -525,9 +531,9 @@ nav button:nth-child(8) { left: 254px; }
   overflow: auto;
   padding: 8px;
   pointer-events: auto;
-  color: #dce5e8;
-  background: #101820;
-  border: 1px solid #41616b;
+  color: var(--tabard-color-text, #dce5e8);
+  background: var(--tabard-color-surface, #101820);
+  border: 1px solid var(--tabard-color-border-strong, #41616b);
   border-radius: 8px;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 }
@@ -547,8 +553,8 @@ nav button:nth-child(8) { left: 254px; }
   pointer-events: auto;
   min-height: 28px;
   padding: 5px 8px;
-  color: #dce5e8;
-  background: #17242c;
+  color: var(--tabard-color-text, #dce5e8);
+  background: var(--tabard-color-surface-2, #17242c);
   border: 0;
   border-radius: 6px;
   font: 12px system-ui, sans-serif;
@@ -562,23 +568,23 @@ nav button:nth-child(8) { left: 254px; }
 
 #gs-command-menu button:hover,
 #gs-command-menu button:focus-visible {
-  background: #294b52;
+  background: var(--tabard-color-surface-hover, #294b52);
 }
 
 #gs-command-menu button[disabled] {
-  color: #6f858c;
+  color: var(--tabard-color-text-dim, #6f858c);
   cursor: default;
 }
 
 #gs-command-menu .command-keep {
   width: 28px;
-  color: #8da2a9;
+  color: var(--tabard-color-text-dim, #8da2a9);
   text-align: center;
 }
 
 #gs-command-menu p {
   margin: 8px 4px;
-  color: #8da2a9;
+  color: var(--tabard-color-text-dim, #8da2a9);
   font-size: 11px;
 }
 
@@ -590,89 +596,89 @@ nav button:nth-child(8) { left: 254px; }
 #gs-projection-arrangement-options .option-refusal {
   min-height: 0;
   margin: 2px 0 0;
-  color: #e3a07a;
+  color: var(--tabard-color-danger, #e3a07a);
   font-size: 10px;
 }
 
 #gs-projection-arrangement-options [aria-invalid="true"] {
-  border-color: #c4734f;
+  border-color: var(--tabard-color-danger, #c4734f);
 }
 
 #gs-projection-arrangement-options p {
-  color: #8da2a9;
+  color: var(--tabard-color-text-dim, #8da2a9);
   font-size: 11px;
 }
 
 /* Appearance belongs to the component. These browser controls share the
    computed roles used by Genet and Canvas, including authored Tabard CSS. */
 :is(graphshell-view, graphshell-tree) {
-  background: var(--gs-app-background, #071015);
-  color: var(--gs-app-text, #dce5e8);
+  background: var(--gs-app-background, var(--tabard-color-bg, #071015));
+  color: var(--gs-app-text, var(--tabard-color-text, #dce5e8));
 }
 :is(graphshell-view, graphshell-tree) canvas {
-  background: var(--gs-app-background, #071015);
+  background: var(--gs-app-background, var(--tabard-color-bg, #071015));
 }
-graphshell-view #gs-semantic-host { color: var(--gs-app-text, #dce5e8); }
+graphshell-view #gs-semantic-host { color: var(--gs-app-text, var(--tabard-color-text, #dce5e8)); }
 graphshell-view #gs-semantic-host :is(aside, section, fieldset) {
-  background-color: var(--gs-app-surface, #17242c);
-  border-color: var(--gs-app-edge, #35505b);
-  color: var(--gs-app-text, #dce5e8);
+  background-color: var(--gs-app-surface, var(--tabard-color-surface-2, #17242c));
+  border-color: var(--gs-app-edge, var(--tabard-color-border, #35505b));
+  color: var(--gs-app-text, var(--tabard-color-text, #dce5e8));
 }
 graphshell-view #gs-semantic-host :is(input, select, textarea, aside button, section button) {
-  background-color: var(--gs-app-surface, #17242c);
-  border-color: var(--gs-app-edge, #35505b);
-  color: var(--gs-app-text, #dce5e8);
+  background-color: var(--gs-app-surface, var(--tabard-color-surface-2, #17242c));
+  border-color: var(--gs-app-edge, var(--tabard-color-border-strong, #35505b));
+  color: var(--gs-app-text, var(--tabard-color-text, #dce5e8));
 }
-graphshell-view #gs-semantic-host :is(label, legend) { color:var(--gs-app-text, #dce5e8); }
+graphshell-view #gs-semantic-host :is(label, legend) { color:var(--gs-app-text, var(--tabard-color-text, #dce5e8)); }
 graphshell-view #gs-command-menu {
-  background:var(--gs-app-surface, #101820); color:var(--gs-app-text, #dce5e8);
-  border-color:var(--gs-app-edge, #41616b);
+  background:var(--gs-app-surface, var(--tabard-color-surface, #101820)); color:var(--gs-app-text, var(--tabard-color-text, #dce5e8));
+  border-color:var(--gs-app-edge, var(--tabard-color-border-strong, #41616b));
 }
 graphshell-view #gs-command-menu button {
-  background:var(--gs-app-surface, #17242c); color:var(--gs-app-text, #dce5e8);
+  background:var(--gs-app-surface, var(--tabard-color-surface-2, #17242c)); color:var(--gs-app-text, var(--tabard-color-text, #dce5e8));
 }
 graphshell-view #gs-semantic-host :is(h1, h2, h3, #gs-history-results, #gs-projection-editor-status, #gs-projection-editor-dirty) {
-  color:var(--gs-app-text, #dce5e8);
+  color:var(--gs-app-text, var(--tabard-color-text, #dce5e8));
 }
 graphshell-view #gs-semantic-host :is(p, #gs-detail-address, #gs-projection-editor-source, #gs-projection-editor-provenance, .command-keep) {
-  color:var(--gs-app-edge, #89a6af);
+  color:var(--gs-app-edge, var(--tabard-color-text-dim, #89a6af));
 }
 graphshell-view #gs-semantic-host :is(aside button, section button, .file-picker, button[aria-selected="true"]) {
-  background:var(--gs-app-primary, #d39b4a); color:var(--gs-app-on-primary, #172028);
+  background:var(--gs-app-primary, var(--tabard-color-primary, #d39b4a)); color:var(--gs-app-on-primary, var(--tabard-color-on-primary, #172028));
 }
-graphshell-view #gs-semantic-host .file-picker { color:var(--gs-app-on-primary, #172028) !important; }
+graphshell-view #gs-semantic-host .file-picker { color:var(--gs-app-on-primary, var(--tabard-color-on-primary, #172028)) !important; }
 graphshell-view #gs-command-menu :is(button:hover, button:focus-visible) {
-  background:var(--gs-app-primary, #294b52); color:var(--gs-app-on-primary, #172028);
+  background:var(--gs-app-primary, var(--tabard-color-surface-hover, #294b52)); color:var(--gs-app-on-primary, var(--tabard-color-on-primary, #172028));
 }
-graphshell-view #gs-command-menu button[disabled] { color:var(--gs-app-edge, #6f858c); }
+graphshell-view #gs-command-menu button[disabled] { color:var(--gs-app-edge, var(--tabard-color-text-dim, #6f858c)); }
 graphshell-view #gs-semantic-host :is([role="alert"], .option-refusal, #gs-capture-status[data-state="failed"]) {
-  color:var(--gs-app-danger, #e99387);
+  color:var(--gs-app-danger, var(--tabard-color-danger, #e99387));
 }
-graphshell-view #gs-semantic-host :is(#gs-projection-editor-validation, #gs-capture-status[data-state="working"]) {
-  color:var(--gs-app-success, #8db8a4);
+graphshell-view #gs-semantic-host #gs-projection-editor-validation {
+  color:var(--gs-app-success, var(--tabard-color-success, #8db8a4));
 }
-graphshell-view #gs-semantic-host [aria-invalid="true"] { border-color:var(--gs-app-danger, #c4734f); }
-graphshell-view #gs-semantic-host :focus-visible { outline-color:var(--gs-app-primary, #f0c674); }
+graphshell-view #gs-semantic-host [aria-invalid="true"] { border-color:var(--gs-app-danger, var(--tabard-color-danger, #c4734f)); }
+graphshell-view #gs-semantic-host :focus-visible { outline-color:var(--gs-app-primary, var(--tabard-color-tertiary, #f0c674)); }
 .graphshell-appearance {
   position:absolute; right:12px; top:10px; z-index:40;
   max-width:340px; max-height:80%; overflow:auto;
-  border:1px solid var(--gs-app-edge, #35505b);
+  border:1px solid var(--gs-app-edge, var(--tabard-color-border-strong, #35505b));
   border-radius:6px; padding:8px 12px;
-  color:var(--gs-app-text, #dce5e8);
-  background:var(--gs-app-surface, #17242c);
+  color:var(--gs-app-text, var(--tabard-color-text, #dce5e8));
+  background:var(--gs-app-surface, var(--tabard-color-surface-2, #17242c));
   font:13px system-ui,sans-serif; pointer-events:auto;
 }
 .graphshell-appearance summary { cursor:pointer; }
 .graphshell-appearance label { display:block; margin-top:10px; }
 .graphshell-appearance :is(select, textarea) {
   display:block; width:100%; margin-top:4px; padding:5px;
-  color:var(--gs-app-text, #dce5e8);
-  background:var(--gs-app-background, #071015);
-  border:1px solid var(--gs-app-edge, #35505b); font:inherit;
+  color:var(--gs-app-text, var(--tabard-color-text, #dce5e8));
+  background:var(--gs-app-background, var(--tabard-color-bg, #071015));
+  border:1px solid var(--gs-app-edge, var(--tabard-color-border-strong, #35505b)); font:inherit;
 }
 .graphshell-appearance button {
   margin-top:8px; padding:6px 10px;
-  background:var(--gs-app-primary, #f0c674); color:var(--gs-app-on-primary, #071015);
+  background:var(--gs-app-primary, var(--tabard-color-tertiary, #f0c674)); color:var(--gs-app-on-primary, var(--tabard-color-bg, #071015));
   border:0; border-radius:4px; cursor:pointer; font:inherit;
 }
 .graphshell-appearance p { margin:8px 0 0; max-width:300px; overflow-wrap:anywhere; }

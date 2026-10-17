@@ -308,6 +308,7 @@ fn local_events(role: Role) -> Vec<PersonalGraphEvent> {
     ];
     if matches!(role, Role::Windows) {
         events.push(PersonalGraphEvent::AssertRelation {
+            assertion_version: None,
             statement_id: None,
             asserted_at_ms: None,
             from: A,

@@ -121,6 +121,9 @@ webrtc-join = [
 # (physics catalog plan, P5c; mere `canvas-gpu`, ruled 2026-10-02).
 canvas-gpu = ["web", "mere/canvas-gpu"]
 web = [
+    # Promoted links name Cambium's link-member target; the web crate links
+    # Cambium anyway, so the viewer pays nothing for it.
+    "dep:cambium",
     "dep:command-menu",
     "dep:tabard",
     "dep:async-trait",
@@ -167,7 +170,7 @@ personal-sync = [
 genet-render-host = { workspace = true, optional = true }
 cambium = { workspace = true, optional = true }
 moot = { package = "mere-moot", path = "../moot", features = ["resource-view", "presentation"], optional = true }
-fleece = { workspace = true, features = ["portable-clip"], optional = true }
+fleece = { workspace = true, features = ["portable-clip", "page-links"], optional = true }
 wgpu = { workspace = true, optional = true }
 pelt-core = { workspace = true, features = ["genet"], optional = true }
 inker = { workspace = true, optional = true }

@@ -74,6 +74,9 @@ impl CanvasProducer {
                 remote.board.set_step_budget(Some(budget));
                 remote.board.tick();
                 let remote = &mut *remote;
+                remote
+                    .text
+                    .set_font_roles(&shared.appearance.borrow().font_roles());
                 let empty = mere::canvas::BoardScene::default();
                 let painted = if remote.mounted().is_some() {
                     remote.board.scene()

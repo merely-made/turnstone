@@ -5,19 +5,19 @@
 use super::*;
 use cambium::{button, el, lens, text_field_typed};
 use graphshell::local_projection::{compile_editor, draft_from_definition, snapshot_editor};
+use graphshell::projection_compile::initial_projection_draft;
 use graphshell::projection_compile::{
     CompiledProjection, ProjectionDataset, ProjectionSnapshot, default_definition,
 };
 use graphshell::projection_dynamics_compare::{
     DynamicsComparison, compare_arrangements_dynamics, compare_dynamics,
 };
-use graphshell::projection_compile::initial_projection_draft;
-use scenograph::Channel;
-use scenomise::authoring::{EditorAction, ProjectionEditor, ProjectionPanel};
 use mere::canvas::PhysicsLaw;
 use mere::canvas::dynamics_recipe::preset_slot;
 use mere::canvas::projection_dynamics::ProjectionDynamics;
 use sceno::InstanceId;
+use scenograph::Channel;
+use scenomise::authoring::{EditorAction, ProjectionEditor, ProjectionPanel};
 mod comparison;
 mod options;
 const PRACTICE: &str = include_str!("../../../web/fixtures/woodshed-stage.json");
@@ -355,7 +355,11 @@ impl ProjectionControls {
                 graphshell::retained_policy::clamp_comparison_page(
                     (self.compare_column, self.compare_row),
                     comparison.facet.columns.labels.len(),
-                    comparison.facet.rows.as_ref().map_or(1, |axis| axis.labels.len()),
+                    comparison
+                        .facet
+                        .rows
+                        .as_ref()
+                        .map_or(1, |axis| axis.labels.len()),
                 );
         }
     }

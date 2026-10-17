@@ -6305,8 +6305,10 @@ version = "0.0.1"
 dependencies = [
  "eidetic",
  "fleece",
+ "genet-static-dom",
  "serde",
  "serde_json",
+ "url",
 ]
 
 [[package]]
@@ -6452,6 +6454,7 @@ dependencies = [
  "cambium",
  "incipit",
  "mere-cartography",
+ "mere-curation",
  "mere-kernel",
  "pictograph",
  "sprigging",
@@ -8043,6 +8046,7 @@ dependencies = [
  "muniment",
  "notochord",
  "personae",
+ "sceno",
  "serde",
  "serde_json",
  "tabard",
@@ -10566,7 +10570,7 @@ dependencies = [
 
 [[package]]
 name = "tabard"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -10777,7 +10781,7 @@ dependencies = [
 
 [[package]]
 name = "tinct"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
  "serde",
 ]

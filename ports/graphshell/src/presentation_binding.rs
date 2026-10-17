@@ -58,6 +58,24 @@ pub struct ViewInputs {
     pub screen_size: Option<f64>,
     pub hovered: Option<bool>,
     pub visible: Option<bool>,
+    /// The graph grammar's attention (`scenograph::attention`).
+    pub foreground_pinned: Option<bool>,
+    pub retained: Option<bool>,
+    pub suggested: Option<bool>,
+}
+impl ViewInputs {
+    /// Supply attention from the view's book: `None` leaves all three
+    /// unavailable.
+    pub fn set_attention(
+        &mut self,
+        attention: Option<scenograph::attention::Attention>,
+        foreground_pinned: Option<bool>,
+    ) {
+        use scenograph::attention::Attention;
+        self.foreground_pinned = foreground_pinned;
+        self.retained = attention.map(|a| a == Attention::Retained);
+        self.suggested = attention.map(|a| a == Attention::Suggestion);
+    }
 }
 /// Forme's separate arrangement owner, not a Numen scalar field.
 #[derive(Clone, Debug, PartialEq)]
@@ -122,7 +140,7 @@ pub fn bind_with_source(
         occurrence: occurrence.clone(),
         context: Context { id: occurrence.id(), kind, facts: BTreeMap::new(), states: BTreeSet::new(), screen_size: view.screen_size, previous_matches: BTreeSet::new() },
         available_states: BTreeSet::new(),
-        notes: vec!["Facts are held locally; absent metadata is not a completeness claim. Foreground pins and overview state have no adapter yet.".into()],
+        notes: vec!["Facts are held locally; absent metadata is not a completeness claim. Overview state has no adapter yet.".into()],
         link_source: None,
     };
     let facts = &mut bound.context.facts;
@@ -155,6 +173,13 @@ pub fn bind_with_source(
             }
             state(&mut bound, ViewState::Selected, view.selected);
             state(&mut bound, ViewState::PositionPinned, view.position_pinned);
+            state(
+                &mut bound,
+                ViewState::ForegroundPinned,
+                view.foreground_pinned,
+            );
+            state(&mut bound, ViewState::Retained, view.retained);
+            state(&mut bound, ViewState::Suggested, view.suggested);
         },
         Occurrence::Assertion { pair, statement } => {
             let inspected =

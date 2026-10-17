@@ -74,85 +74,85 @@ const TOOLS_WIDTH: u32 = 300;
 const TOOLS_DOCK_MIN_WIDTH: u32 = TOOLS_WIDTH + 600;
 
 const SHEET: &str = "\
-    :root { font-family: Roboto, sans-serif; font-size: 14px; color: #dce3e8; background: #070c0f; } \
+    :root { font-family: IBM Plex Sans, sans-serif; font-size: 14px; color: var(--tabard-color-text, #dce3e8); background: var(--tabard-color-bg, #070c0f); } \
     main { display: flex; flex-direction: column; } \
     h1 { font-size: 16px; margin: 8px 12px 0; } \
     .tree-status { margin: 4px 12px 8px; } \
     .tree-controls { display:flex; gap:6px; padding:6px 12px; flex-wrap:wrap; } \
-    .tree-controls button { background:#263640; color:#dce3e8; padding:5px 10px; border:1px solid #637581; } \
+    .tree-controls button { background:var(--tabard-color-surface-2, #263640); color:var(--tabard-color-text, #dce3e8); padding:5px 10px; border:1px solid var(--tabard-color-border-strong, #637581); } \
     .tree-controls button[disabled] { opacity:.45; } \
-    .tree-grouping { max-height:180px; overflow-y:auto; padding:4px 12px; border-bottom:1px solid #2c3b44; } \
+    .tree-grouping { max-height:180px; overflow-y:auto; padding:4px 12px; border-bottom:1px solid var(--tabard-color-border, #2c3b44); } \
     .tree-grouping h2 { font-size:14px; margin:2px 0; } \
     .tree-grouping p { font-size:12px; margin:3px 0; overflow-wrap:anywhere; } \
     .tree-grouping ul { margin:3px 0; padding-left:18px; } \
-    .tree-grouping button { background:#263640; color:#dce3e8; padding:4px 8px; margin:2px 4px; border:1px solid #637581; } \
+    .tree-grouping button { background:var(--tabard-color-surface-2, #263640); color:var(--tabard-color-text, #dce3e8); padding:4px 8px; margin:2px 4px; border:1px solid var(--tabard-color-border-strong, #637581); } \
     .tree-grouped .tree-relations { max-height:110px; overflow-y:auto; padding:0 12px; overflow-wrap:anywhere; } \
-    .tree-body { display:flex; flex-direction:row; flex:1 1 auto; min-height:0; position:relative; }     .tools-overlay { position:absolute; top:0; right:0; bottom:0; z-index:10; }     .tools-storage { margin:2px 0 6px; color:#9fb0bb; font-size:12px; } \
+    .tree-body { display:flex; flex-direction:row; flex:1 1 auto; min-height:0; position:relative; }     .tools-overlay { position:absolute; top:0; right:0; bottom:0; z-index:10; }     .tools-storage { margin:2px 0 6px; color:var(--tabard-color-text-dim, #9fb0bb); font-size:12px; } \
     .tree-graph { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; position:relative; } \
     .forme-drop-cue { position:absolute; pointer-events:none; z-index:6; box-sizing:border-box; border:2px dashed currentColor; } \
     .forme-drop-stack { border:5px double currentColor; } \
-    .forme-drop-label { display:block; width:230px; padding:4px 6px; color:#dce3e8; background:#17232b; border:1px solid currentColor; font-size:12px; } \
+    .forme-drop-label { display:block; width:230px; padding:4px 6px; color:var(--tabard-color-text, #dce3e8); background:var(--tabard-color-surface, #17232b); border:1px solid currentColor; font-size:12px; } \
     .tree-canvas { display: block; flex: 1 1 auto; min-height: 0; } \
-    .tree-tools { flex:0 0 auto; width:279px; padding:4px 10px; background:#0d161b; border-left:1px solid #2c3b44; overflow-y:auto; min-height:0; } \
+    .tree-tools { flex:0 0 auto; width:279px; padding:4px 10px; background:var(--tabard-color-surface, #0d161b); border-left:1px solid var(--tabard-color-border, #2c3b44); overflow-y:auto; min-height:0; } \
     .tree-tools .disclosure-trigger { display:block; width:100%; text-align:left; font-size:14px; background:transparent; border:none; padding:2px 0 4px; margin:0; } \
-    .tools-cards { margin:2px 0 4px; padding:0 0 0 16px; font-size:12px; color:#dce3e8; } \
+    .tools-cards { margin:2px 0 4px; padding:0 0 0 16px; font-size:12px; color:var(--tabard-color-text, #dce3e8); } \
     .tree-tools h2 { font-size:14px; margin:2px 0 4px; } \
     .tree-tools h3 { font-size:13px; margin:4px 0 2px; } \
-    .tree-rules [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
+    .tree-rules [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:var(--tabard-color-surface-2, #263640); border:1px solid var(--tabard-color-border-strong, #637581); } \
     .tree-rules pre, .tree-dynamics pre, .moot-opened-content { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; } \
-    .tree-coupling [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
-    .tree-query [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:#263640; border:1px solid #637581; } \
+    .tree-coupling [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:var(--tabard-color-surface-2, #263640); border:1px solid var(--tabard-color-border-strong, #637581); } \
+    .tree-query [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:var(--tabard-color-surface-2, #263640); border:1px solid var(--tabard-color-border-strong, #637581); } \
     .tree-inspection { overflow-wrap:anywhere; } \
     .tree-inspection p, .tree-inspection li { font-size:12px; } \
     .tree-tools .detail-section-title { font-weight:bold; margin:6px 0 4px; } \
-    .tree-tools .detail-key { display:block; font-size:12px; color:#9fb0bb; } \
+    .tree-tools .detail-key { display:block; font-size:12px; color:var(--tabard-color-text-dim, #9fb0bb); } \
     .tree-tools .detail-value { display:block; margin:2px 0 8px; overflow-wrap:anywhere; } \
-    .tools-section + .tools-section { margin-top:10px; border-top:1px solid #2c3b44; padding-top:4px; } \
-    .tools-switch button[aria-pressed=true] { background:#2d5a63; border-color:#79a9be; } \
-    .tools-active { margin:4px 0; color:#f0dfb8; font-size:12px; } \
+    .tools-section + .tools-section { margin-top:10px; border-top:1px solid var(--tabard-color-border, #2c3b44); padding-top:4px; } \
+    .tools-switch button[aria-pressed=true] { background:var(--tabard-color-tertiary, #2d5a63); color:var(--tabard-color-on-tertiary, #dce3e8); border-color:var(--tabard-color-primary, #79a9be); } \
+    .tools-active { margin:4px 0; color:var(--tabard-color-text, #f0dfb8); font-size:12px; } \
     .tree-tools label { display:block; margin:3px 0; } \
-    .tree-tools .tools-caption { display:block; color:#9fb0bb; font-size:12px; } \
-    .tree-tools button { background:#263640; color:#dce3e8; padding:3px 10px; margin:2px 0 4px; border:1px solid #637581; } \
+    .tree-tools .tools-caption { display:block; color:var(--tabard-color-text-dim, #9fb0bb); font-size:12px; } \
+    .tree-tools button { background:var(--tabard-color-surface-2, #263640); color:var(--tabard-color-text, #dce3e8); padding:3px 10px; margin:2px 0 4px; border:1px solid var(--tabard-color-border-strong, #637581); } \
     .tools-overlays { display:flex; flex-wrap:wrap; margin:2px 0; } \
     .tools-overlays label { width:136px; margin:1px 0; } \
     .tools-overlays label.disabled { opacity:.45; } \
-    .tools-note { margin:2px 0 4px; color:#c9b27c; font-size:12px; } \
-    .tools-status { margin:4px 0; color:#9fb0bb; font-size:12px; } \
-    .select-box { background:#263640; border:1px solid #637581; padding:2px 8px; } \
-    .select-list { background:#17232b; border:1px solid #637581; z-index:20; width:262px; } \
+    .tools-note { margin:2px 0 4px; color:var(--tabard-color-text-dim, #c9b27c); font-size:12px; } \
+    .tools-status { margin:4px 0; color:var(--tabard-color-text-dim, #9fb0bb); font-size:12px; } \
+    .select-box { background:var(--tabard-color-surface-2, #263640); border:1px solid var(--tabard-color-border-strong, #637581); padding:2px 8px; } \
+    .select-list { background:var(--tabard-color-surface-2, #17232b); border:1px solid var(--tabard-color-border-strong, #637581); z-index:20; width:262px; } \
     .select-option { padding:1px 8px; } \
     .tree-product { position:absolute;top:8px;left:12px;max-width:360px;max-height:90%;overflow-y:auto;z-index:5; } \
     .tree-product-workbench { position:static;flex:0 0 auto;max-width:none;max-height:140px;padding:4px 12px; } \
     .tree-product p { margin:4px 0; } \
-    .tree-projection { position:absolute;top:8px;left:12px;right:310px;max-height:90%;overflow:auto;z-index:6;background:#17232b;padding:12px; } \
-    .tree-practice { background:#1a211b;color:#e4eadc; } \
+    .tree-projection { position:absolute;top:8px;left:12px;right:310px;max-height:90%;overflow:auto;z-index:6;background:var(--tabard-color-surface, #17232b);padding:12px; } \
+    .tree-practice { background:var(--tabard-color-surface, #1a211b);color:var(--tabard-color-text, #e4eadc); } \
     .practice-control { box-sizing:border-box; padding:8px; font-size:14px; } \
-    .practice-button,.practice-card { background:#29352a;border:1px solid #627255; } \
-    .practice-selected { background:#3a4c30;border:2px solid #bdd59e; } \
+    .practice-button,.practice-card { background:var(--tabard-color-surface-2, #29352a);border:1px solid var(--tabard-color-border-strong, #627255); } \
+    .practice-selected { background:var(--tabard-color-surface-hover, #3a4c30);border:2px solid var(--tabard-color-border-strong, #bdd59e); } \
     .practice-label,.practice-detail { display:block; } \
     .practice-heading { font-size:24px; } \
     .practice-detail { font-size:12px; } \
-    .tree-detail { background:#17232b;border:1px solid #637581;padding:12px; } \
+    .tree-detail { background:var(--tabard-color-surface-2, #17232b);border:1px solid var(--tabard-color-border, #637581);padding:12px; } \
     .tree-detail label { display:block;margin:8px 0; } \
     .tree-detail .detail-key { display:block; } \
     .tree-detail .detail-value { display:block;margin:2px 0 8px;overflow-wrap:anywhere; } \
-    .tree-product [data-cambium-text-value] { display:block;width:280px;min-height:1.2em;height:26px;color:#dce3e8;background:#263640;border:1px solid #637581; } \
-    .tree-tools [data-cambium-text-value], .tree-projection [data-cambium-text-value], .tree-command-menu [data-cambium-text-value] { display:block;box-sizing:border-box;width:100%;min-height:1.2em;height:26px;color:#dce3e8;background:#263640;border:1px solid #637581; } \
-    .tree-product button { background:#263640;color:#dce3e8;padding:5px 10px;border:1px solid #637581; } \
+    .tree-product [data-cambium-text-value] { display:block;width:280px;min-height:1.2em;height:26px;color:var(--tabard-color-text, #dce3e8);background:var(--tabard-color-surface-2, #263640);border:1px solid var(--tabard-color-border-strong, #637581); } \
+    .tree-tools [data-cambium-text-value], .tree-projection [data-cambium-text-value], .tree-command-menu [data-cambium-text-value] { display:block;box-sizing:border-box;width:100%;min-height:1.2em;height:26px;color:var(--tabard-color-text, #dce3e8);background:var(--tabard-color-surface-2, #263640);border:1px solid var(--tabard-color-border-strong, #637581); } \
+    .tree-product button { background:var(--tabard-color-surface-2, #263640);color:var(--tabard-color-text, #dce3e8);padding:5px 10px;border:1px solid var(--tabard-color-border-strong, #637581); } \
     .tree-relations { margin:0 12px 6px; font-size:12px; } \
     .tree-relations h2 { font-size:13px; margin:0 0 2px; } \
     .tree-relations ul { margin:0; padding:0 0 0 16px; max-height:96px; overflow-y:auto; } \
-    .tree-refusal { margin:4px 12px 8px; padding:8px; color:#f3d2c6; background:#3a1f1a; border:1px solid #a4574a; } \
+    .tree-refusal { margin:4px 12px 8px; padding:8px; color:var(--tabard-color-text, #f3d2c6); background:var(--tabard-color-surface-2, #3a1f1a); border:1px solid var(--tabard-color-danger, #a4574a); } \
     .tree-relations ul, .history-changes { max-height:72px; } \
     .tree-history { margin:0 12px 6px; font-size:12px; } \
     .history-control { display:flex; flex-direction:row; align-items:center; gap:8px; } \
-    .history-control button { background:#263640; color:#dce3e8; padding:3px 10px; border:1px solid #637581; } \
+    .history-control button { background:var(--tabard-color-surface-2, #263640); color:var(--tabard-color-text, #dce3e8); padding:3px 10px; border:1px solid var(--tabard-color-border-strong, #637581); } \
     .history-control button[aria-disabled=true] { opacity:.45; } \
     .history-slider { position:relative; width:240px; height:18px; } \
-    .history-track { position:absolute; left:0; right:0; top:8px; height:2px; background:#637581; } \
-    .history-thumb { position:absolute; top:2px; width:10px; height:14px; margin-left:-5px; background:#79a9be; } \
+    .history-track { position:absolute; left:0; right:0; top:8px; height:2px; background:var(--tabard-color-border-strong, #637581); } \
+    .history-thumb { position:absolute; top:2px; width:10px; height:14px; margin-left:-5px; background:var(--tabard-color-primary, #79a9be); } \
     .history-value { margin:4px 0 0; overflow-wrap:anywhere; } \
-    .history-summary { margin:2px 0; color:#f0dfb8; } \
+    .history-summary { margin:2px 0; color:var(--tabard-color-text, #f0dfb8); } \
     .history-changes { margin:0; padding:0 0 0 16px; overflow-y:auto; }";
 
 // Applets retain their host stylesheet; application appearance enters last.
@@ -175,9 +175,10 @@ fn tree_stylesheet(appearance: &str) -> String {
     #[cfg(not(feature = "remote"))]
     let reservoir_sheet = "";
     format!(
-        "{SHEET}\n{}\n{}\n{workspace_sheet}\n{applet_sheet}\n{reservoir_sheet}\n{appearance}",
+        "{SHEET}\n{}\n{}\n{workspace_sheet}\n{applet_sheet}\n{reservoir_sheet}\n{}\n{appearance}",
         format!("{}\n{}", commands::SHEET, presenter::SHEET),
-        forme_sheet()
+        forme_sheet(),
+        cambium::BACKDROP_SCENE_CSS
     )
 }
 
@@ -452,6 +453,10 @@ pub(crate) struct TreePage {
     presentation: presentation::Pane,
     #[cfg(feature = "product")]
     query_views: query_view::Pane,
+    #[cfg(feature = "product")]
+    backdrop: Rc<RefCell<backdrop::Pane>>,
+    #[cfg(feature = "product")]
+    promoted_links: promoted_links::Pane,
     #[cfg(feature = "product")]
     dynamics_inspector: dynamics_inspection::Pane,
     #[cfg(feature = "product")]
@@ -729,6 +734,10 @@ fn view(page: &TreePage) -> Child {
     #[cfg(not(feature = "product"))]
     let scene_header: Option<Child> = None;
     #[cfg(feature = "product")]
+    let backdrop_workspace = backdrop::workspace(page);
+    #[cfg(not(feature = "product"))]
+    let backdrop_workspace: Option<Child> = None;
+    #[cfg(feature = "product")]
     let app_header = instrument::app_header(page);
     #[cfg(not(feature = "product"))]
     let app_header: Option<Child> = None;
@@ -781,7 +790,9 @@ fn view(page: &TreePage) -> Child {
                                 "div",
                                 (
                                     scene_header,
-                                    workbench.unwrap_or_else(|| Box::new(graph)),
+                                    backdrop_workspace
+                                        .or(workbench)
+                                        .unwrap_or_else(|| Box::new(graph)),
                                     drop_feedback,
                                 ),
                             )
@@ -882,6 +893,10 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(product::find_section(page));
     children.push(product::scenes_section(page));
     children.push(product::projection_section(page));
+    #[cfg(feature = "product")]
+    if page.product.is_some() {
+        children.push(backdrop::control(page));
+    }
     children.push(product::history_section(page));
     #[cfg(feature = "product")]
     children.push(dynamics_inspection::section(page));
@@ -895,6 +910,8 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(presentation::section(page));
     #[cfg(feature = "product")]
     children.push(query_view::section(page));
+    #[cfg(feature = "product")]
+    children.push(promoted_links::section(page));
     #[cfg(feature = "product")]
     children.push(node_presentation::section(page));
     #[cfg(feature = "product")]
@@ -933,6 +950,7 @@ impl TreePage {
                 return true;
             }
             action.apply(&mut *self.shared.canvas.borrow_mut(), self.size);
+            crate::web_suggestions::after_command(action, &self.shared.canvas.borrow());
             self.shared
                 .events
                 .borrow_mut()
@@ -1201,6 +1219,21 @@ fn boot(
     Box::pin(boot_inner(root, epoch))
 }
 
+fn page_fonts() -> Vec<HostFont> {
+    let face = |bytes: &[u8]| HostFont {
+        family: None,
+        bytes: bytes.to_vec(),
+    };
+    #[allow(unused_mut)]
+    let mut fonts = vec![face(include_bytes!("../web/IBMPlexSans-Regular.ttf"))];
+    #[cfg(feature = "product")]
+    fonts.extend([
+        face(include_bytes!("../web/IBMPlexMono-Regular.ttf")),
+        face(include_bytes!("../web/Newsreader-Regular.ttf")),
+    ]);
+    fonts
+}
+
 async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
     if !root.is_connected() || TREE_EPOCH.with(|current| current.get() != epoch) {
         return Err("appearance boot cancelled".into());
@@ -1246,7 +1279,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
     if presenter_options.is_some() && hosted.is_none() {
         return Err("Inspector presenter requires a disclosed host dataset".into());
     }
-    let product = if hosted.is_some() {
+    let mut product = if hosted.is_some() {
         None
     } else {
         product::open(&root).await?
@@ -1290,6 +1323,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
             },
         }
     } else if let Some(product) = &product {
+        placed = product.initial_fixture_positions();
         (product.graph(), "saved graph".to_string())
     } else {
         match web_graphs::requested() {
@@ -1355,9 +1389,13 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         appearance,
         appearance_revision,
 
-        canvas: RefCell::new(match &placed {
-            Some(positions) => web_graphs::placed_canvas(graph, positions, width, height),
-            None => web_graphs::prepared_canvas(graph, width, height),
+        canvas: RefCell::new({
+            let mut canvas = match &placed {
+                Some(positions) => web_graphs::placed_canvas(graph, positions, width, height),
+                None => web_graphs::prepared_canvas(graph, width, height),
+            };
+            canvas.set_suggestion_settings(crate::web_suggestions::load());
+            canvas
         }),
         dirty: Cell::new(true),
         moving: Cell::new(false),
@@ -1391,6 +1429,10 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         root: root.clone(),
         gestures: RefCell::new(gestures::Gestures::default()),
     });
+    if let Some(product) = &mut product {
+        product.restore_canvas_link_hides(&mut shared.canvas.borrow_mut());
+    }
+
     shared
         .appearance
         .borrow()
@@ -1483,6 +1525,10 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 #[cfg(feature = "product")]
                 query_views: query_view::Pane::default(),
                 #[cfg(feature = "product")]
+                backdrop: Rc::new(RefCell::new(backdrop::Pane::default())),
+                #[cfg(feature = "product")]
+                promoted_links: promoted_links::Pane::default(),
+                #[cfg(feature = "product")]
                 dynamics_inspector: dynamics_inspection::Pane::default(),
                 #[cfg(feature = "product")]
                 node_presentation: node_presentation::Pane::default(),
@@ -1520,11 +1566,11 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
             },
             logic: view as Logic,
             sheet: initial_sheet,
-            // A browser lends genet no system faces, so the page brings one.
-            fonts: vec![HostFont {
-                family: None,
-                bytes: include_bytes!("../web/GraphshellSans.ttf").to_vec(),
-            }],
+            // A browser lends genet no system faces, so the page brings its own: the
+            // design system's interface face, and in the product its code and reading
+            // faces (OFL; notices in web/). The viewer carries one face to hold its
+            // size budget.
+            fonts: page_fonts(),
             images: Vec::new(),
         },
         hooks(shared.clone()),
@@ -1739,6 +1785,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 ctx.runner.update(query_view::poll);
             }
             #[cfg(feature = "product")]
+            if promoted_links::ready(ctx.runner.state()) {
+                ctx.runner.update(promoted_links::poll);
+            }
+            #[cfg(feature = "product")]
             field_inspection::reveal(ctx);
             #[cfg(feature = "product")]
             coupling::reveal(ctx);
@@ -1829,6 +1879,7 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             #[cfg(feature = "product")]
             {
                 reading::prepare(ctx.runner.state());
+                backdrop::register(ctx);
                 frame_shared.reading.borrow_mut().register(ctx);
                 if frame_shared.reading.borrow_mut().poll() {
                     ctx.runner.update(|_| {});
@@ -1998,6 +2049,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             if let Some(slot) = query_view::focused_text(runner) {
                 return Some(slot);
             }
+            #[cfg(feature = "product")]
+            if let Some(slot) = promoted_links::focused_text(runner) {
+                return Some(slot);
+            }
             appearance::focused_text(runner)
         }),
         key_intercept: Box::new(|_runner, _press| false),
@@ -2132,6 +2187,8 @@ mod host_boundary;
 mod inspection;
 #[cfg(feature = "product")]
 mod instrument;
+#[cfg(feature = "product")]
+mod backdrop;
 mod lane;
 #[cfg(feature = "product")]
 mod link_inspection;
@@ -2159,6 +2216,8 @@ mod product;
 mod product;
 #[cfg(feature = "product")]
 mod query_view;
+#[cfg(feature = "product")]
+mod promoted_links;
 #[cfg(feature = "product")]
 mod reading;
 #[cfg(feature = "remote")]

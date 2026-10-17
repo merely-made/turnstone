@@ -6,7 +6,7 @@
 
 //! Mere graph truth adapted to Graphshell's portable endpoint vocabulary.
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::time::{Duration, SystemTime};
 
 use chartulary::{FacetError, FacetId};
@@ -19,7 +19,9 @@ use chirograph::{
 };
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, ProjectionSource};
 use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
-use mere::kernel::graph::{Author, CapturedDelta, Graph, NodeFacetStore, NodeKey, RelationKind};
+use mere::kernel::graph::{
+    Author, CapturedDelta, Graph, NodeFacetStore, NodeKey, RelationKey, RelationKind,
+};
 use mere::kernel::persistence::GraphSnapshot;
 use mere::kernel::time::wall_clock_now;
 use muniment::{Backend, JsonSlots, StoreError};
@@ -30,8 +32,8 @@ use pandect::{
     GraphSession, MereSessions, Pending, Reverted, SessionError, SessionId, ViewIntent, ViewKey,
 };
 use sceno::{
-    Arrangement, Footprint, InstanceId, ProjectedItem, Rect, Representation, RoutedRelation, Scene,
-    Score, Size2, SourceRef, Transform2, Vec2,
+    Arrangement, Footprint, InstanceId, LinkKey, LinkStratum, ProjectedItem, Rect, Representation,
+    RoutedRelation, Scene, Score, Size2, SourceRef, Transform2, Vec2,
 };
 use scenograph::SourceBinding;
 use scenograph::link::{LinkSource, LinkSourceRevision};
@@ -79,6 +81,10 @@ pub const FIXTURE_DEVICE_TWO_ADDRESS: &str = "personae://device/phone";
 pub const FIXTURE_KEY_ADDRESS: &str = "personae://key/ssh-ed25519/test";
 pub const FIXTURE_GRANT_ADDRESS: &str = "personae://grant/open-addresses";
 pub const FIXTURE_RECEIPT_ADDRESS: &str = "personae://receipt/signing/test";
+pub const LINK_REST_A1_ADDRESS: &str = "https://link-rest.fixture/a/first";
+pub const LINK_REST_A2_ADDRESS: &str = "https://link-rest.fixture/a/alias";
+pub const LINK_REST_B1_ADDRESS: &str = "https://link-rest.fixture/b/first";
+pub const LINK_REST_B2_ADDRESS: &str = "https://link-rest.fixture/b/alias";
 pub const UNKNOWN_FIXTURE_FACET: &str = "future.graphshell.transport-route/v7";
 
 /// Public identity selection injected by the host.
@@ -1119,7 +1125,47 @@ impl<B: Backend> MereHost<B> {
             resources.insert(resource, bytes);
         }
 
-        for (_, relation) in self.graph().projected_relations() {
+        let mut routed_links = BTreeSet::new();
+        for (relation_key, relation) in self.graph().projected_relations() {
+            let Some(key) = routed_link_key(self.graph(), relation_key, relation.from, relation.to)
+            else {
+                continue;
+            };
+            let display_pair = if relation.from <= relation.to {
+                (relation.from, relation.to)
+            } else {
+                (relation.to, relation.from)
+            };
+            if !routed_links.insert((key.clone(), display_pair)) {
+                continue;
+            }
+            let from_id = self
+                .graph()
+                .get_node(relation.from)
+                .ok_or(MereHostError::MissingResource)?
+                .id;
+            let to_id = self
+                .graph()
+                .get_node(relation.to)
+                .ok_or(MereHostError::MissingResource)?
+                .id;
+            let reading = mere::canvas::link_reading::read_link(
+                self.graph(),
+                from_id,
+                to_id,
+                self.link_source(),
+            )
+            .map_err(MereHostError::InvalidSnapshot)?;
+            let summary = reading
+                .links
+                .iter()
+                .find(|link| link.key == key)
+                .ok_or_else(|| {
+                    MereHostError::InvalidSnapshot(
+                        "A routed source link was absent from its reading".into(),
+                    )
+                })?
+                .rest_summary(&from_id.to_string(), &to_id.to_string());
             let (Some(&from), Some(&to)) = (
                 instance_of.get(&relation.from),
                 instance_of.get(&relation.to),
@@ -1136,8 +1182,17 @@ impl<B: Backend> MereHost<B> {
                     Vec2::new(from_position.x, from_position.y),
                     Vec2::new(to_position.x, to_position.y),
                 ],
-                kind: Some(relation_kind_label(relation.kind).to_string()),
+                kind: Some(
+                    match key.stratum {
+                        LinkStratum::Surface => "link.surface",
+                        LinkStratum::Resource => "link.resource",
+                    }
+                    .into(),
+                ),
                 weight: Some(1.0),
+                link_key: Some(key),
+                marks: summary.marks,
+                strength: Some(summary.strength),
             });
         }
 
@@ -1215,7 +1270,7 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
 #[cfg(test)]
 pub(crate) fn placement_test_graph() -> Graph {
     use mere::kernel::persistence::{
-        PersistedEdge, PersistedEdgeFamily, PersistedSemanticEdgeData, PersistedSemanticStatement,
+        PersistedEdge, PersistedEdgeFamily, PersistedSemanticStatement,
     };
     let mut graph = Graph::new();
     let ids = [uuid::Uuid::from_u128(1), uuid::Uuid::from_u128(2)];
@@ -1235,25 +1290,22 @@ pub(crate) fn placement_test_graph() -> Graph {
         from_node_id: ids[0].to_string(),
         to_node_id: ids[1].to_string(),
         families: vec![PersistedEdgeFamily::Semantic],
-        semantic: Some(PersistedSemanticEdgeData {
-            predicate: Some("urn:mere:profile:held-custom".into()),
-            statements: vec![PersistedSemanticStatement {
-                statement_id: "held-profile-handle".into(),
-                predicate: "urn:mere:profile:held-custom".into(),
-                recognized_sub_kind: None,
-                label: Some("held Surface claim".into()),
-                basis: mere::kernel::types::AssertionBasis {
-                    note: Some("held Surface claim".into()),
-                    ..Default::default()
-                },
-                graph_scope: mere::kernel::types::GraphScope::Default,
-                provenance_iri: Some("urn:mere:profile:source".into()),
-                asserted_at_ms: Some(42),
-                first_asserted_ms: Some(42),
-                withdrawn: None,
-            }],
-            ..Default::default()
-        }),
+        semantic: None,
+        assertions: Some(vec![PersistedSemanticStatement {
+            statement_id: "held-profile-handle".into(),
+            predicate: "urn:mere:profile:held-custom".into(),
+            recognized_sub_kind: None,
+            label: Some("held Surface claim".into()),
+            basis: mere::kernel::types::AssertionBasis {
+                note: Some("held Surface claim".into()),
+                ..Default::default()
+            },
+            graph_scope: mere::kernel::types::GraphScope::Default,
+            provenance_iri: Some("urn:mere:profile:source".into()),
+            asserted_at_ms: Some(42),
+            first_asserted_ms: Some(42),
+            withdrawn: None,
+        }]),
         traversal: None,
         containment: None,
         arrangement: None,
@@ -1385,6 +1437,33 @@ fn address_kind_label(kind: mere::kernel::address::AddressKind) -> &'static str 
         AddressKind::GraphshellClip => "clip",
         AddressKind::Directory => "directory",
         AddressKind::Unknown => "custom",
+    }
+}
+
+/// Resolve a portable link identity from the owning relation handle, never
+/// from its display kind (custom declarations can place kinds in either
+/// graph stratum).
+fn routed_link_key(
+    graph: &Graph,
+    relation: RelationKey,
+    from: NodeKey,
+    to: NodeKey,
+) -> Option<LinkKey> {
+    match relation {
+        RelationKey::Surface(_) => Some(LinkKey::new(
+            LinkStratum::Surface,
+            graph.get_node(from)?.id.to_string(),
+            graph.get_node(to)?.id.to_string(),
+        )),
+        RelationKey::Resource(_) => {
+            let from = graph.resource(graph.shown_resource_id(from)?)?;
+            let to = graph.resource(graph.shown_resource_id(to)?)?;
+            Some(LinkKey::new(
+                LinkStratum::Resource,
+                from.canonical_iri(),
+                to.canonical_iri(),
+            ))
+        },
     }
 }
 
@@ -1667,12 +1746,9 @@ mod tests {
                 let host = opened(&backend).await;
                 assert_eq!(host.snapshot_placement(), placement);
                 assert!(host.graph().to_snapshot().edges.iter().any(|edge| {
-                    edge.semantic.as_ref().is_some_and(|semantic| {
-                        semantic
-                            .statements
-                            .iter()
-                            .any(|claim| claim.statement_id == "held-profile-handle")
-                    })
+                    edge.retained_assertions()
+                        .iter()
+                        .any(|claim| claim.statement_id == "held-profile-handle")
                 }));
                 if placement.is_some() {
                     assert_eq!(host.graph().to_snapshot().edges, saved.graph.edges);
@@ -1829,8 +1905,25 @@ mod tests {
         let snapshot = host.snapshot(request).unwrap();
         assert_eq!(
             snapshot.scene.tables.relations.len(),
-            5,
-            "four lifted self-resource pairs plus one held Surface claim"
+            4,
+            "three unordered Resource appearances plus one held Surface link"
+        );
+        assert_eq!(
+            snapshot
+                .scene
+                .tables
+                .relations
+                .iter()
+                .flatten()
+                .filter(|relation| {
+                    relation
+                        .link_key
+                        .as_ref()
+                        .is_some_and(|key| key.stratum == scenograph::link::LinkStratum::Resource)
+                })
+                .count(),
+            3,
+            "the two directed cross-alias buckets share one resting appearance"
         );
         let shared_cards = |host: &MereHost<MemoryBackend>| {
             host.resources

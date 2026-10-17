@@ -138,6 +138,10 @@ pub enum PersonalGraphEvent {
         from: Uuid,
         to: Uuid,
         assertion: EdgeAssertion,
+        /// `None` is the legacy assertion event shape. Version 1 adds exact
+        /// IDs and authored time for every relation family.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        assertion_version: Option<u8>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         statement_id: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1409,7 +1413,7 @@ pub async fn materialize<B: Backend + Clone + Send + Sync + 'static>(
                     &asserter_iri,
                     &fallback_id,
                     event,
-                );
+                )?;
             }
         }
     }
@@ -1487,7 +1491,7 @@ fn apply_event(
     asserter_iri: &str,
     fallback_id: &str,
     event: &PersonalGraphEvent,
-) {
+) -> Result<(), PersonalGraphError> {
     match event {
         PersonalGraphEvent::AddNode { id, address, title } => {
             if graph.get_node_key_by_id(*id).is_none() {
@@ -1542,25 +1546,24 @@ fn apply_event(
             from,
             to,
             assertion,
+            assertion_version,
             statement_id,
             asserted_at_ms,
             basis,
         } => {
-            if let EdgeAssertion::Semantic {
-                sub_kind, label, ..
-            } = assertion
+            if matches!(assertion_version, Some(1))
+                || matches!(assertion, EdgeAssertion::Semantic { .. })
             {
                 assertions::assert_statement(
                     graph,
                     *from,
                     *to,
-                    *sub_kind,
-                    label.clone(),
+                    assertion,
                     asserter_iri,
                     statement_id.as_deref().unwrap_or(fallback_id),
                     *asserted_at_ms,
                     basis.clone(),
-                );
+                )?;
             } else {
                 apply_graph_delta(
                     graph,
@@ -1575,7 +1578,7 @@ fn apply_event(
         },
         PersonalGraphEvent::RetractRelation { from, to, selector } => {
             if assertions::retract_legacy(graph, *from, *to, *selector, asserter_iri) {
-                return;
+                return Ok(());
             }
             apply_graph_delta(
                 graph,
@@ -1651,6 +1654,7 @@ fn apply_event(
         | PersonalGraphEvent::AdmitReader { .. }
         | PersonalGraphEvent::RetireReader { .. } => {},
     }
+    Ok(())
 }
 
 /// Fold the reader set from the operations that named it.
@@ -1830,7 +1834,10 @@ mod tests {
     use super::*;
     use crate::access::{AccessAction, AccessTransition};
     use mere::canvas::CartographyGeometry;
-    use mere::kernel::graph::{EdgeFamily, RelationKind, SemanticSubKind};
+    use mere::kernel::graph::{
+        ArrangementSubKind, ContainmentSubKind, EdgeFamily, ImportedSubKind, ProvenanceSubKind,
+        RelationKind, SemanticSubKind,
+    };
     use muniment::{MemoryBackend, RedbBackend};
     use personae::{IdentityProvider, InMemoryProvider};
     use std::sync::Arc;
@@ -1895,6 +1902,7 @@ mod tests {
                 from: A,
                 to: B,
                 assertion: relation(),
+                assertion_version: None,
                 statement_id: None,
                 asserted_at_ms: None,
                 basis: None,
@@ -1906,6 +1914,7 @@ mod tests {
                 from: A,
                 to: B,
                 assertion: relation(),
+                assertion_version: None,
                 statement_id: None,
                 asserted_at_ms: None,
                 basis: None,
@@ -1928,7 +1937,7 @@ mod tests {
         projection
             .graph
             .projected_relations_between(from, to)
-            .flat_map(|(_, edge)| edge.held_semantic_statements().cloned())
+            .flat_map(|(_, edge)| edge.held_assertions().cloned())
             .collect()
     }
 
@@ -1971,6 +1980,310 @@ mod tests {
             first, second,
             "unchanged operations must preserve assertion handles"
         );
+    }
+
+    #[tokio::test]
+    async fn p6_sync_authors_and_replays_exact_ids_for_every_relation_family() {
+        let (mut replica, alice, _) = assertion_fixture().await;
+        let baseline = assertion_statements(&replica.projection().await.unwrap())
+            .into_iter()
+            .map(|statement| (statement.statement_id.clone(), statement))
+            .collect::<std::collections::BTreeMap<_, _>>();
+        assert_eq!(
+            baseline.len(),
+            2,
+            "the fixture begins with two signed citations"
+        );
+        assert!(baseline.values().all(|statement| {
+            statement.predicate
+                == RelationKind::Semantic(SemanticSubKind::Cites)
+                    .predicate_iri()
+                    .unwrap()
+        }));
+        let assertions = [
+            EdgeAssertion::Semantic {
+                sub_kind: SemanticSubKind::Supports,
+                label: Some("supports the source passage".into()),
+                decay_progress: None,
+            },
+            EdgeAssertion::Containment {
+                sub_kind: ContainmentSubKind::CollectionMember,
+            },
+            EdgeAssertion::Containment {
+                sub_kind: ContainmentSubKind::CollectionMember,
+            },
+            EdgeAssertion::Arrangement {
+                sub_kind: ArrangementSubKind::TileGroup,
+            },
+            EdgeAssertion::Imported {
+                sub_kind: ImportedSubKind::BookmarkFolder,
+            },
+            EdgeAssertion::Provenance {
+                sub_kind: ProvenanceSubKind::ClippedFrom,
+            },
+        ];
+        let operation = replica
+            .author(
+                assertions
+                    .iter()
+                    .cloned()
+                    .map(|assertion| PersonalGraphEvent::AssertRelation {
+                        from: A,
+                        to: B,
+                        assertion,
+                        assertion_version: None,
+                        statement_id: None,
+                        asserted_at_ms: None,
+                        basis: Some(AssertionBasis {
+                            note: Some("signed sync fixture".into()),
+                            evidence: vec!["urn:evidence:fixture".into()],
+                            ..Default::default()
+                        }),
+                    })
+                    .collect(),
+            )
+            .await
+            .unwrap();
+        let authored = from_operation(&operation, None).unwrap();
+        assert!(authored.events.iter().all(|event| matches!(
+            event,
+            PersonalGraphEvent::AssertRelation {
+                assertion_version: Some(1),
+                statement_id: Some(_),
+                asserted_at_ms: Some(_),
+                ..
+            }
+        )));
+        let authored_ids = authored
+            .events
+            .iter()
+            .filter_map(|event| match event {
+                PersonalGraphEvent::AssertRelation {
+                    assertion_version: Some(1),
+                    statement_id: Some(id),
+                    ..
+                } => Some(id.clone()),
+                _ => None,
+            })
+            .collect::<std::collections::BTreeSet<_>>();
+        assert_eq!(authored_ids.len(), assertions.len());
+        let authored_records = |projection: &SyncProjection| {
+            assertion_statements(projection)
+                .into_iter()
+                .filter(|statement| authored_ids.contains(&statement.statement_id))
+                .collect::<Vec<_>>()
+        };
+        let baseline_records = |projection: &SyncProjection| {
+            assertion_statements(projection)
+                .into_iter()
+                .filter(|statement| !authored_ids.contains(&statement.statement_id))
+                .map(|statement| (statement.statement_id.clone(), statement))
+                .collect::<std::collections::BTreeMap<_, _>>()
+        };
+        let initial_projection = replica.projection().await.unwrap();
+        let held = assertion_statements(&initial_projection);
+        let authored_held = authored_records(&initial_projection);
+        assert_eq!(held.len(), assertions.len() + 2);
+        assert_eq!(authored_held.len(), assertions.len());
+        assert_eq!(
+            baseline_records(&initial_projection),
+            baseline,
+            "adding all-family assertions preserves both existing signed citations exactly"
+        );
+        let ids: Vec<_> = authored_held
+            .iter()
+            .map(|statement| statement.statement_id.clone())
+            .collect();
+        assert_eq!(
+            ids.iter().collect::<std::collections::BTreeSet<_>>().len(),
+            assertions.len()
+        );
+        for statement in &authored_held {
+            assert_eq!(statement.provenance_iri.as_deref(), Some(alice.as_str()));
+            assert_eq!(statement.asserted_at_ms, statement.first_asserted_ms);
+            assert!(statement.asserted_at_ms.is_some());
+            assert_eq!(
+                statement.graph_scope,
+                mere::kernel::types::GraphScope::Default
+            );
+            assert_eq!(statement.basis.note.as_deref(), Some("signed sync fixture"));
+            assert_eq!(
+                statement.basis.evidence,
+                vec!["urn:evidence:fixture".to_owned()]
+            );
+            assert!(statement.withdrawn.is_none());
+        }
+
+        let collection_ids: Vec<_> = authored_held
+            .iter()
+            .filter(|statement| {
+                statement.relation_kind()
+                    == RelationKind::Containment(ContainmentSubKind::CollectionMember)
+            })
+            .map(|statement| statement.statement_id.clone())
+            .collect();
+        assert_eq!(collection_ids.len(), 2);
+        let collection_id = collection_ids[0].clone();
+        let sibling_id = collection_ids[1].clone();
+        replica
+            .author(vec![PersonalGraphEvent::RetractAssertion {
+                from: A,
+                to: B,
+                statement_id: collection_id.clone(),
+                withdrawn_at_ms: Some(777),
+            }])
+            .await
+            .unwrap();
+        let history = replica.projection().await.unwrap();
+        let retained = history.graph.find_assertion(&collection_id).unwrap().1;
+        assert_eq!(retained.withdrawn.as_ref().unwrap().at_ms, Some(777));
+        assert_eq!(
+            retained.withdrawn.as_ref().unwrap().by.as_deref(),
+            Some(alice.as_str())
+        );
+        assert_eq!(assertion_statements(&history).len(), assertions.len() + 1);
+        assert_eq!(authored_records(&history).len(), assertions.len() - 1);
+        assert_eq!(
+            baseline_records(&history),
+            baseline,
+            "withdrawing one new assertion preserves both prior signed citations exactly"
+        );
+        assert!(
+            history
+                .graph
+                .find_assertion(&sibling_id)
+                .unwrap()
+                .1
+                .is_held()
+        );
+        for before in authored_held
+            .iter()
+            .filter(|claim| claim.statement_id != collection_id)
+        {
+            assert_eq!(
+                history
+                    .graph
+                    .find_assertion(&before.statement_id)
+                    .unwrap()
+                    .1,
+                before,
+                "withdrawing one exact reason preserves every other authored record"
+            );
+        }
+
+        let receiver = PersonalGraphReplica::new(
+            MemoryBackend::new(),
+            GRAPH,
+            replica.signing_seed,
+            replica.roster.clone(),
+            selection(),
+        );
+        let (records, _) = load_records(&replica.store, GRAPH, None).await.unwrap();
+        let order = causal_projection(&causal_entries(&records)).unwrap().order;
+        for index in order {
+            receiver.accept(&records[index].operation).await.unwrap();
+        }
+        let replayed = receiver.projection().await.unwrap();
+        assert_eq!(assertion_statements(&replayed).len(), assertions.len() + 1);
+        assert_eq!(authored_records(&replayed).len(), assertions.len() - 1);
+        assert_eq!(baseline_records(&replayed), baseline);
+        let replayed_tombstone = replayed.graph.find_assertion(&collection_id).unwrap().1;
+        assert_eq!(
+            replayed_tombstone.withdrawn.as_ref().unwrap().at_ms,
+            Some(777)
+        );
+        assert_eq!(
+            replayed_tombstone.withdrawn.as_ref().unwrap().by.as_deref(),
+            Some(alice.as_str())
+        );
+        assert_eq!(
+            replayed.graph.find_assertion(&sibling_id).unwrap().1,
+            history.graph.find_assertion(&sibling_id).unwrap().1
+        );
+    }
+
+    #[tokio::test]
+    async fn p6_legacy_selector_retracts_only_source_authored_nonsemantic_records() {
+        let (mut replica, alice, bob) = assertion_fixture().await;
+        let alice_identity = InMemoryProvider::from_seed([0xa1; 32]);
+        let bob_identity = InMemoryProvider::from_seed([0xb2; 32]);
+        let roster = SyncRoster::new([
+            alice_identity.master_public_key().to_bytes(),
+            bob_identity.master_public_key().to_bytes(),
+        ]);
+        let create = |id: &str| PersonalGraphEvent::AssertRelation {
+            from: A,
+            to: B,
+            assertion: EdgeAssertion::Arrangement {
+                sub_kind: ArrangementSubKind::TileGroup,
+            },
+            assertion_version: Some(1),
+            statement_id: Some(id.into()),
+            asserted_at_ms: Some(50),
+            basis: Some(AssertionBasis {
+                note: Some("tile grouping".into()),
+                ..Default::default()
+            }),
+        };
+        let alice_event = create("urn:assertion:alice-arrangement");
+        replica.author(vec![alice_event]).await.unwrap();
+        let mut bob_replica = PersonalGraphReplica::for_identity(
+            MemoryBackend::new(),
+            GRAPH,
+            &bob_identity,
+            roster,
+            selection(),
+        )
+        .unwrap();
+        let (records, _) = load_records(&replica.store, GRAPH, None).await.unwrap();
+        for index in causal_projection(&causal_entries(&records)).unwrap().order {
+            bob_replica.accept(&records[index].operation).await.unwrap();
+        }
+        let bob_event = PersonalGraphEvent::AssertRelation {
+            from: A,
+            to: B,
+            assertion: EdgeAssertion::Arrangement {
+                sub_kind: ArrangementSubKind::TileGroup,
+            },
+            assertion_version: Some(1),
+            statement_id: Some("urn:assertion:bob-arrangement".into()),
+            asserted_at_ms: Some(51),
+            basis: Some(AssertionBasis {
+                note: Some("tile grouping".into()),
+                ..Default::default()
+            }),
+        };
+        let bob_operation = bob_replica.author(vec![bob_event]).await.unwrap();
+        replica.accept(&bob_operation).await.unwrap();
+        assert!(
+            replica
+                .author(vec![PersonalGraphEvent::RetractRelation {
+                    from: A,
+                    to: B,
+                    selector: mere::kernel::graph::RelationSelector::Arrangement(
+                        ArrangementSubKind::TileGroup,
+                    ),
+                }])
+                .await
+                .is_ok()
+        );
+        let projection = replica.projection().await.unwrap();
+        let graph = &projection.graph;
+        let alice_statement = graph
+            .find_assertion("urn:assertion:alice-arrangement")
+            .unwrap()
+            .1;
+        let bob_statement = graph
+            .find_assertion("urn:assertion:bob-arrangement")
+            .unwrap()
+            .1;
+        assert_eq!(
+            alice_statement.provenance_iri.as_deref(),
+            Some(alice.as_str())
+        );
+        assert!(alice_statement.withdrawn.is_some());
+        assert_eq!(bob_statement.provenance_iri.as_deref(), Some(bob.as_str()));
+        assert!(bob_statement.withdrawn.is_none());
     }
 
     #[tokio::test]
@@ -2073,6 +2386,7 @@ mod tests {
                 label: None,
                 decay_progress: None,
             },
+            assertion_version: None,
             statement_id: Some(id.into()),
             asserted_at_ms: Some(time),
             basis: None,
@@ -2088,10 +2402,14 @@ mod tests {
             .await
             .unwrap();
         let record = from_operation(&operation, None).unwrap();
-        assert_eq!(
-            record.events,
-            vec![statement_event(SemanticSubKind::Supports, id, 100)]
-        );
+        let mut newly_authored = statement_event(SemanticSubKind::Supports, id, 100);
+        if let PersonalGraphEvent::AssertRelation {
+            assertion_version, ..
+        } = &mut newly_authored
+        {
+            *assertion_version = Some(1);
+        }
+        assert_eq!(record.events, vec![newly_authored]);
         replica
             .author(vec![statement_event(
                 SemanticSubKind::Supports,
@@ -2247,6 +2565,7 @@ mod tests {
             from: A,
             to: B,
             assertion: relation(),
+            assertion_version: None,
             statement_id: None,
             asserted_at_ms: None,
             basis: None,
@@ -2263,6 +2582,7 @@ mod tests {
                 },
                 from: A,
                 to: B,
+                assertion_version: None,
                 statement_id: None,
                 asserted_at_ms: None,
                 basis: None,
@@ -2330,8 +2650,8 @@ mod tests {
     #[tokio::test]
     async fn p1_sync_legacy_retraction_keeps_exact_claims_in_both_stores() {
         use mere::kernel::persistence::{
-            PersistedEdge, PersistedEdgeFamily, PersistedSemanticEdgeData,
-            PersistedSemanticStatement, PersistedSemanticSubKind,
+            PersistedEdge, PersistedEdgeFamily, PersistedSemanticStatement,
+            PersistedSemanticSubKind,
         };
 
         let (replica, alice, bob) = assertion_fixture().await;
@@ -2366,15 +2686,13 @@ mod tests {
                     from_node_id: A.to_string(),
                     to_node_id: B.to_string(),
                     families: vec![PersistedEdgeFamily::Semantic],
-                    semantic: Some(PersistedSemanticEdgeData {
-                        statements,
-                        ..Default::default()
-                    }),
+                    semantic: None,
                     traversal: None,
                     containment: None,
                     arrangement: None,
                     imported: None,
                     provenance: None,
+                    assertions: Some(statements),
                 }],
             },
         );
@@ -2545,6 +2863,7 @@ mod tests {
                     from: A,
                     to: B,
                     assertion: relation(),
+                    assertion_version: None,
                     statement_id: None,
                     asserted_at_ms: None,
                     basis: None,

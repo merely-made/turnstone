@@ -27,7 +27,9 @@ cp "$script_root/bridge.css" "$destination_path/bridge.css"
 cp "$script_root/bridge.js" "$destination_path/bridge.js"
 cp "$web_root/index.html" "$destination_path/graph.html"
 cp "$web_root/styles.css" "$destination_path/styles.css"
-cp "$web_root/GraphshellSans.ttf" "$destination_path/GraphshellSans.ttf"
+for font in IBMPlexSans-Regular.ttf IBMPlexMono-Regular.ttf Newsreader-Regular.ttf OFL-IBMPlex.txt OFL-Newsreader.txt; do
+  cp "$web_root/$font" "$destination_path/$font"
+done
 cp "$web_root/loader.js" "$destination_path/loader.js"
 cp "$web_root/mount.js" "$destination_path/mount.js"
 cp "$web_root/extension-profile.js" "$destination_path/extension-profile.js"

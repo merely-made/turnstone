@@ -31,7 +31,8 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
     /// Read this graph's settings, keeping the compatibility defaults when none
     /// were stored.
     pub async fn load_resident_settings(&mut self) -> Result<(), MereHostError> {
-        let key = ResidentSettings::slot_key(*self.graph_session.manifest().root_graph_id.as_uuid());
+        let key =
+            ResidentSettings::slot_key(*self.graph_session.manifest().root_graph_id.as_uuid());
         let stored: Option<ResidentSettings> = self.slots.load(&key).await?;
         if let Some(settings) = &stored {
             settings.validate()?;
@@ -56,7 +57,8 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         if !store.is_published().await? {
             self.graph_session.publish_resident_checkpoint().await?;
         }
-        let key = ResidentSettings::slot_key(*self.graph_session.manifest().root_graph_id.as_uuid());
+        let key =
+            ResidentSettings::slot_key(*self.graph_session.manifest().root_graph_id.as_uuid());
         let ops = vec![
             muniment::WriteOp::Put {
                 key,
@@ -216,14 +218,22 @@ mod tests {
             )
             .await
             .unwrap();
-            assert_eq!(host.presentation_graph().node_count(), 3, "union of both panes");
+            assert_eq!(
+                host.presentation_graph().node_count(),
+                3,
+                "union of both panes"
+            );
             host.set_resident_pins(BTreeSet::from([GraphAddress::Surface(Uuid::from_u128(6))]))
                 .await
                 .unwrap();
             assert_eq!(host.presentation_graph().node_count(), 4);
             // Closing a pane releases only what no one else needs.
             host.close_pane_roots(&pane("second")).await.unwrap();
-            assert_eq!(host.presentation_graph().node_count(), 2, "first's node plus the pin");
+            assert_eq!(
+                host.presentation_graph().node_count(),
+                2,
+                "first's node plus the pin"
+            );
             host.close_pane_roots(&pane("first")).await.unwrap();
             assert_eq!(host.presentation_graph().node_count(), 1, "the pin alone");
             // Full clears the limit and presents the writer again.
@@ -288,7 +298,9 @@ mod tests {
             let mut host = host_on(&MemoryBackend::new(), true);
             host.persist(1).await.unwrap();
             let zero = ResidentSettings {
-                refresh: ResidentRefreshMode::HostDriven { minimum_check_ms: 0 },
+                refresh: ResidentRefreshMode::HostDriven {
+                    minimum_check_ms: 0,
+                },
                 ..neighborhood(1)
             };
             let before = host.store().list("").await.unwrap().len();
