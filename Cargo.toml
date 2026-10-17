@@ -351,7 +351,7 @@ servo-wgpu-interop-adapter = { git = "https://github.com/merely-made/wgpu-graft.
 webview2-com = { version = "=0.39.1", optional = true }
 # Weld owns CEF's callback-time copy; Grafting owns the generic DX12 shared
 # handle import on Turnstone's existing wgpu device.
-welding = { git = "https://github.com/merely-made/wgpu-weld.git", branch = "main", features = ["cef-runtime"], optional = true }
+welding = { version = "0.15.0", features = ["cef-runtime"], optional = true }
 grafting = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "bb48281bd4a88a726a009e0518706881b74b7604", default-features = false, features = ["wgpu-30"], optional = true }
 windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 
@@ -382,8 +382,9 @@ icu_capi = { git = "https://github.com/unicode-org/icu4x", rev = "30120d6a07fc5b
 # in docs/receipts/browser_family_20261007/icu-manifest-compat/.
 mozjs_icu_collator = { path = "vendor/mozjs-icu-collator" }
 mozjs_icu_normalizer = { path = "vendor/mozjs-icu-normalizer" }
-# Current published capture and WPE safety repairs; qualification is per platform.
-scrying = { git = "https://github.com/merely-made/wgpu-scry.git", rev = "2c3ebd24118851cf6125cfb193f55aab20e3ad67" }
+# The Servo interop adapter is git-only and carries this Grafting rev, so
+# registry consumers (Scrying, Welding) must share it to keep one Grafting.
+grafting = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "bb48281bd4a88a726a009e0518706881b74b7604" }
 # Match Distillery's stable Burn graph; root patches are not inherited.
 cubecl-runtime = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 burn-remote = { git = "https://github.com/merely-made/mere.git", branch = "main" }
