@@ -1192,7 +1192,10 @@ impl Shell {
                 self.detach_render_surface(0);
                 return false;
             },
-            genet_render_host::SurfaceAcquire::Unavailable { .. } => return false,
+            genet_render_host::SurfaceAcquire::Unavailable { reason } => {
+                tracing::debug!(%reason, "main surface acquire skipped");
+                return false;
+            },
         };
         let target = frame
             .texture

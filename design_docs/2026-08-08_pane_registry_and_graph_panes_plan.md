@@ -1603,3 +1603,10 @@ Spiral-only remote/frozen disclosure remain separate follow-ups.
 
 - 2026-10-16: currentness/source audit complete; implementation and qualification
   underway. Mere primary checkout and other active lanes are preserved.
+- 2026-10-16: supplier `7441f2f3` retains the prior inference API and corrects
+  canonical tag membership; eight shared tests pass. Receiving scene tests pass
+  19/19 (16 new), and the native build passes. The first native attempt presented
+  zero frames while macOS reported the console session locked; it is excluded
+  from acceptance. The full software suite and an unlocked headed/reopen run
+  remain required before publication. Unavailable surface acquisition reasons
+  now appear in the existing debug log.
