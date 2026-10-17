@@ -1192,6 +1192,10 @@ impl Shell {
                 self.detach_render_surface(0);
                 return false;
             },
+            genet_render_host::SurfaceAcquire::Reconfigured => {
+                tracing::debug!("main surface reconfigured; frame skipped");
+                return false;
+            },
             genet_render_host::SurfaceAcquire::Unavailable { reason } => {
                 tracing::debug!(%reason, "main surface acquire skipped");
                 return false;
