@@ -54,13 +54,23 @@ impl FoldSidecar {
         };
         if value.get("version") != Some(&json!(1))
             || !value.get("records").is_some_and(Value::is_array)
+            || value
+                .get("refused_records")
+                .is_some_and(|records| !records.is_array())
         {
             return Self {
                 read_only: true,
                 retained: vec![],
             };
         }
-        let mut state = Self::default();
+        let mut state = Self {
+            read_only: false,
+            retained: value
+                .get("refused_records")
+                .and_then(Value::as_array)
+                .cloned()
+                .unwrap_or_default(),
+        };
         let mut records = Vec::new();
         for raw in value["records"].as_array().expect("checked array") {
             match serde_json::from_value::<FoldRecord>(raw.clone()) {
@@ -86,10 +96,13 @@ impl FoldSidecar {
         if self.read_only {
             return Err("unreadable fold sidecar preserved".into());
         }
-        let mut records: Vec<Value> = records.iter().map(|record| json!(record)).collect();
-        records.extend(self.retained.iter().cloned());
-        let bytes = serde_json::to_vec_pretty(&json!({"version": 1, "records": records}))
-            .map_err(|e| e.to_string())?;
+        let records: Vec<Value> = records.iter().map(|record| json!(record)).collect();
+        let bytes = serde_json::to_vec_pretty(&json!({
+            "version": 1,
+            "records": records,
+            "refused_records": self.retained,
+        }))
+        .map_err(|e| e.to_string())?;
         std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
         let tmp = dir.join("folds.json.tmp");
         std::fs::write(&tmp, bytes).map_err(|e| e.to_string())?;
@@ -183,7 +196,14 @@ mod tests {
         let saved: Value =
             serde_json::from_slice(&std::fs::read(dir.path().join("folds.json")).unwrap()).unwrap();
         for raw in rejected {
-            assert!(saved["records"].as_array().unwrap().contains(&raw));
+            assert!(saved["refused_records"].as_array().unwrap().contains(&raw));
         }
+        // Expanding an accepted record cannot resurrect an overlapping one
+        // from the refused set at the next ordinary reopen.
+        canvas.expand_selected_fold();
+        state.save(dir.path(), canvas.fold_records()).unwrap();
+        let reopened = FoldSidecar::restore(dir.path(), graph, &mut canvas);
+        assert!(canvas.fold_records().is_empty());
+        assert_eq!(reopened.retained.len(), 4);
     }
 }
