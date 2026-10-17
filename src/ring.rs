@@ -151,6 +151,11 @@ pub fn ring_of(action: &Action) -> Ring {
         | KeepNode { .. }
         | SetViewerOverride { .. }
         | ReseedLayout
+        | FoldSelection
+        | ExpandFold
+        | ExpandAllFolds
+        | UndoFold
+        | RedoFold
         | FitView
         | SetLayoutStrategy(_)
         | SetPhysicsLaw(_)
