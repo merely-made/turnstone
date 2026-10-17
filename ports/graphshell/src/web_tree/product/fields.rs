@@ -127,9 +127,7 @@ pub(in crate::web_tree) fn focused_text(
             }),
     )
     .find_map(|(label, field, visible)| {
-        (visible
-            && taproot::matching(&dom, &Selector::role("textbox").containing(label))
-                .contains(&node))
+        (visible && focused_field_has_label(&dom, node, label))
         .then_some(field)
     })?;
     Some(cambium_rootstock::FocusedTextSlot {

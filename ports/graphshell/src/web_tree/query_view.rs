@@ -240,9 +240,9 @@ pub(super) fn focused_text(
     let node = runner.focus()?;
     let dom = runner.dom();
     let dom = dom.borrow();
-    let index = LABELS.iter().position(|label| {
-        taproot::matching(&dom, &Selector::role("textbox").containing(*label)).contains(&node)
-    })?;
+    let index = LABELS
+        .iter()
+        .position(|label| focused_field_has_label(&dom, node, label))?;
     Some(cambium_rootstock::FocusedTextSlot {
         node,
         get: Box::new(move |page| &page.query_views.inputs[index]),

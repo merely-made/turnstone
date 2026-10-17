@@ -133,11 +133,7 @@ pub(super) fn focused_text(
     let dom = runner.dom();
     let dom = dom.borrow();
     if runner.state().appearance_controls.open
-        && taproot::matching(
-            &dom,
-            &Selector::role("textbox").containing("Tabard theme JSON"),
-        )
-        .contains(&node)
+        && focused_field_has_label(&dom, node, "Tabard theme JSON")
     {
         return Some(cambium_rootstock::FocusedTextSlot {
             node,
@@ -146,7 +142,7 @@ pub(super) fn focused_text(
         });
     }
     #[cfg(feature = "applets")]
-    if taproot::matching(&dom, &Selector::class("applet-search-field")).contains(&node) {
+    if taproot::matching_classes(&dom, &Selector::class("applet-search-field")).contains(&node) {
         return Some(cambium_rootstock::FocusedTextSlot {
             node,
             get: Box::new(|page| &page.applet_query),

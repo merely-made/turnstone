@@ -420,8 +420,7 @@ pub(super) fn focused_text(
     let index = LABELS.into_iter().enumerate().find_map(|(i, label)| {
         (((i == 6 && pane.binding.is_none())
             || (i < 6 && pane.editing() && pane.selected.is_some()))
-            && taproot::matching(&dom, &Selector::role("textbox").containing(label))
-                .contains(&node))
+            && focused_field_has_label(&dom, node, label))
         .then_some(i)
     })?;
     Some(cambium_rootstock::FocusedTextSlot {

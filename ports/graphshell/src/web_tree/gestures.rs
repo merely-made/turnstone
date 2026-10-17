@@ -106,7 +106,7 @@ pub(super) fn layout_rects(ctx: &AppCtx<'_, TreePage, Logic, Child>) -> (Option<
     let first = |class: &str| {
         let dom = ctx.runner.dom();
         let dom = dom.borrow();
-        taproot::matching(&dom, &Selector::class(class))
+        taproot::matching_classes(&dom, &Selector::class(class))
             .into_iter()
             .next()
     };
@@ -114,7 +114,7 @@ pub(super) fn layout_rects(ctx: &AppCtx<'_, TreePage, Logic, Child>) -> (Option<
     let overlays = graphshell::retained_policy::painted_overlays(|class| {
         let dom = ctx.runner.dom();
         let dom = dom.borrow();
-        taproot::matching(&dom, &Selector::class(class))
+        taproot::matching_classes(&dom, &Selector::class(class))
             .into_iter()
             .filter_map(|node| ctx.painted_rect(node))
             .collect::<Vec<_>>()

@@ -485,12 +485,7 @@ pub(super) fn focused_text(
 ) -> Option<cambium_rootstock::FocusedTextSlot<TreePage>> {
     runner.state().commands.open.as_ref()?;
     let node = runner.focus()?;
-    if !taproot::matching(
-        &runner.dom().borrow(),
-        &Selector::role("textbox").containing("Search graph commands"),
-    )
-    .contains(&node)
-    {
+    if !focused_field_has_label(&runner.dom().borrow(), node, "Search graph commands") {
         return None;
     }
     Some(cambium_rootstock::FocusedTextSlot {

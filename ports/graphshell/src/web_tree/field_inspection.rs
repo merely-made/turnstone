@@ -92,7 +92,7 @@ pub(super) fn focused_detail(ctx: &AppCtx<'_, TreePage, Logic, Child>) -> &'stat
         ("field-inspected-field", "field"),
         ("field-inspected-coupling", "coupling"),
     ] {
-        if taproot::matching(&dom, &Selector::class(id)).contains(&focus) {
+        if taproot::matching_classes(&dom, &Selector::class(id)).contains(&focus) {
             return label;
         }
     }

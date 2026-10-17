@@ -176,7 +176,7 @@ fn leaf_rect(ctx: &AppCtx<'_, TreePage, Logic, Child>) -> Option<(f32, f32, f32,
     let leaf = {
         let dom = ctx.runner.dom();
         let dom = dom.borrow();
-        taproot::matching(&dom, &Selector::class("tree-canvas"))
+        taproot::matching_classes(&dom, &Selector::class("tree-canvas"))
             .into_iter()
             .next()
     }?;
@@ -434,18 +434,22 @@ impl TreeLane {
         let canvas = self.shared.canvas.borrow();
         let choice = mere::canvas::PhysicsChoice::live(&canvas);
         let checked = {
+            let projection = ctx.a11y_projection();
             let dom = ctx.runner.dom();
             let dom = dom.borrow();
             mere::canvas::CANVAS_PHYSICS_OVERLAYS
                 .iter()
                 .filter(|(_, label)| {
-                    !taproot::matching(
-                        &dom,
-                        &Selector::role("checkbox")
-                            .containing(*label)
-                            .with_attr("aria-checked", "true"),
-                    )
-                    .is_empty()
+                    projection.as_ref().is_some_and(|projection| {
+                        !taproot::matching_with_projection(
+                            &dom,
+                            &Selector::role("checkbox")
+                                .containing(*label)
+                                .with_attr("aria-checked", "true"),
+                            projection,
+                        )
+                        .is_empty()
+                    })
                 })
                 .map(|(id, _)| *id)
                 .collect::<Vec<_>>()
@@ -453,18 +457,22 @@ impl TreeLane {
         };
         // The overlay boxes greyed: those the picked law refuses.
         let disabled = {
+            let projection = ctx.a11y_projection();
             let dom = ctx.runner.dom();
             let dom = dom.borrow();
             mere::canvas::CANVAS_PHYSICS_OVERLAYS
                 .iter()
                 .filter(|(_, label)| {
-                    !taproot::matching(
-                        &dom,
-                        &Selector::role("checkbox")
-                            .containing(*label)
-                            .with_attr("aria-disabled", "true"),
-                    )
-                    .is_empty()
+                    projection.as_ref().is_some_and(|projection| {
+                        !taproot::matching_with_projection(
+                            &dom,
+                            &Selector::role("checkbox")
+                                .containing(*label)
+                                .with_attr("aria-disabled", "true"),
+                            projection,
+                        )
+                        .is_empty()
+                    })
                 })
                 .count()
                 .to_string()
@@ -795,7 +803,7 @@ impl TreeLane {
         let leaf = {
             let dom = ctx.runner.dom();
             let dom = dom.borrow();
-            taproot::matching(&dom, &Selector::class("tree-canvas"))
+            taproot::matching_classes(&dom, &Selector::class("tree-canvas"))
                 .into_iter()
                 .next()
         }
@@ -866,9 +874,12 @@ impl Product for TreeLane {
         let focus_kind = focus.map_or("none", |node| {
             let dom = ctx.runner.dom();
             let dom = dom.borrow();
-            if taproot::matching(&dom, &Selector::class("tree-canvas")).contains(&node) {
+            if taproot::matching_classes(&dom, &Selector::class("tree-canvas")).contains(&node) {
                 "graph"
-            } else if taproot::matching(&dom, &Selector::role("button")).contains(&node) {
+            } else if ctx.a11y_projection().is_some_and(|projection| {
+                taproot::matching_with_projection(&dom, &Selector::role("button"), &projection)
+                    .contains(&node)
+            }) {
                 "button"
             } else {
                 "other"
@@ -899,7 +910,7 @@ impl Product for TreeLane {
             .and_then(|(x, y)| {
                 let (px, py) = self.pointer?;
                 let dom = ctx.runner.dom();
-                let leaf = taproot::matching(&dom.borrow(), &Selector::class("tree-canvas"))
+                let leaf = taproot::matching_classes(&dom.borrow(), &Selector::class("tree-canvas"))
                     .into_iter()
                     .next()?;
                 let (left, top, _, _) = ctx.painted_rect(leaf)?;
@@ -1882,10 +1893,15 @@ impl Product for TreeLane {
                 if !text.trim().is_empty() {
                     selector = selector.containing(text.trim());
                 }
+                let projection = ctx
+                    .a11y_projection()
+                    .ok_or("reveal projection is unavailable")?;
                 let node = {
                     let dom = ctx.runner.dom();
                     let dom = dom.borrow();
-                    taproot::matching(&dom, &selector).into_iter().next()
+                    taproot::matching_with_projection(&dom, &selector, &projection)
+                        .into_iter()
+                        .next()
                 }
                 .ok_or_else(|| format!("reveal {rest}: nothing matches"))?;
                 ctx.scroll_into_view(node, cambium_rootstock::ScrollAlign::Nearest);

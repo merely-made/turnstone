@@ -192,12 +192,7 @@ pub(super) fn focused_text(
     }
     let node = runner.focus()?;
     let dom = runner.dom();
-    if !taproot::matching(
-        &dom.borrow(),
-        &Selector::role("textbox").containing("Coupling strength"),
-    )
-    .contains(&node)
-    {
+    if !focused_field_has_label(&dom.borrow(), node, "Coupling strength") {
         return None;
     }
     Some(cambium_rootstock::FocusedTextSlot {

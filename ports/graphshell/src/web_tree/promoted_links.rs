@@ -576,11 +576,7 @@ pub(super) fn focused_text(
     let node = runner.focus()?;
     let dom = runner.dom();
     let dom = dom.borrow();
-    let matches = taproot::matching(
-        &dom,
-        &taproot::Selector::role("textbox").containing("Review comment"),
-    );
-    if !matches.contains(&node) {
+    if !focused_field_has_label(&dom, node, "Review comment") {
         return None;
     }
     Some(cambium_rootstock::FocusedTextSlot {

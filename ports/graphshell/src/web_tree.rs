@@ -42,6 +42,7 @@ use netrender::{ColorLoad, NetrenderOptions};
 use serde_json::json;
 use taproot::ProbeSnapshot;
 use taproot::Selector;
+use layout_dom_api::{LayoutDom, LocalName, Namespace};
 use wasm_bindgen::prelude::*;
 use web_sys::{Element, Event, HtmlCanvasElement};
 
@@ -64,6 +65,20 @@ const CANVAS_RASTER: u64 = 0x7472_6565;
 /// How far an arrow key pans and plus or minus zooms, as the main page does.
 const PAN_STEP: f32 = 42.0;
 const ZOOM_STEP: f32 = 40.0;
+
+// Text routing already has the runner's focused node. Identify the authored
+// field directly rather than performing a second semantic selector query
+// against a DOM with no retained layout attached to this callback.
+fn focused_field_has_label(
+    dom: &genet_scripted_dom::ScriptedDom,
+    node: genet_scripted_dom::NodeId,
+    label: &str,
+) -> bool {
+    dom.attribute(node, &Namespace::default(), &LocalName::from("aria-label")) == Some(label)
+        && dom
+            .attribute(node, &Namespace::default(), &LocalName::from("data-cambium-text-value"))
+            .is_some()
+}
 /// The docked "Graph tools" region's width, logical px. The canvas takes the
 /// rest of the row.
 const TOOLS_WIDTH: u32 = 300;
