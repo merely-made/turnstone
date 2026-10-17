@@ -1345,7 +1345,7 @@ impl Shell {
                 let session = runtime.session.ok_or("session absent")?;
                 let dir = crate::session::session_dir(&self.app.data_root, session);
                 let mut value = value;
-                value["presented_frames"] = serde_json::json!(self.main_receipt.presented);
+                value["main_presented_frames"] = serde_json::json!(self.main_receipt.presented);
                 for file in ["facets.json", "view-intent.json"] {
                     if let Ok(bytes) = std::fs::read(dir.join(file)) {
                         value[format!("stored_{file}")] = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;

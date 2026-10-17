@@ -1004,7 +1004,14 @@ impl App {
         match session::try_load_session_graph(&sdir) {
             Ok(input) => {
                 let (graph, placement) = input.map(|input| (input.graph, input.placement))
-                    .unwrap_or_else(|| (mere::kernel::graph::Graph::new(), None));
+                    .unwrap_or_else(|| {
+                        // This graph is born here, with no persisted input to
+                        // qualify. Record that known construction so reopening
+                        // cannot add legacy URL-derived Surface relations.
+                        // Existing unprofiled inputs retain their None above.
+                        (mere::kernel::graph::Graph::new(),
+                            Some(pandect::graph_placement::PlacementProfile::RecordedStrataV1))
+                    });
                 self.graph_runtimes.adopt_graph(graph,
                     crate::session_persistence::SessionPersistence::writable(sdir.clone(), placement));
             }
@@ -1246,6 +1253,7 @@ impl App {
             Err(error) => tracing::warn!(%error, "content-class reconciliation failed"),
         }
         let positions = pandect::read_arrangement_positions(self.graph_runtimes.facets());
+        let has_saved_positions = !positions.is_empty();
         self.graph_runtimes.seed_cartography(positions);
         // The participant runtime derives from the binding facets (agency) + the
         // graph's `Node.nested` pointers (structure) + the nested logs.
@@ -1434,6 +1442,11 @@ impl App {
         if let Some(paused) = physics_paused {
             self.graph_runtimes.set_physics_paused(paused);
         }
+        let graph = self.graph_runtimes.active_graph();
+        let runtime = self.graph_runtimes.get_mut(graph).expect("adopted graph runtime");
+        runtime.scene_restore_pending = physics_paused == Some(true)
+            && has_saved_positions
+            && runtime.canvas.layout_strategy().is_some();
         self.window_count = 1;
         if let Err(error) = self.bind_behavior_journal() {
             self.refuse_behavior(error);

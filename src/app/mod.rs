@@ -481,7 +481,28 @@ impl App {
     /// no host ran until now (projection-engine proof 1). A no-op under
     /// force-directed. Called by the shell right before `canvas.frame()`.
     pub fn drive_layout_strategy(&mut self, w: u32, h: u32) {
-        Self::drive_layout_strategy_for(&mut self.graph_runtimes, w, h);
+        let graph = self.graph_runtimes.active_graph();
+        let runtime = self.graph_runtimes.get_mut(graph).expect("active graph runtime");
+        let restored = std::mem::take(&mut runtime.scene_restore_pending);
+        if !restored || !Self::prime_restored_layout(&mut runtime.canvas, w, h) {
+            Self::drive_layout_strategy_for(&mut runtime.canvas, w, h);
+        }
+    }
+
+    /// The first host frame adopts the saved paused geometry as its layout.
+    /// Record the actual receiving viewport without replacing that geometry
+    /// with a projection measured from fresh, transient selection/footprints.
+    /// Subsequent viewport, graph or footprint changes use the normal gate.
+    fn prime_restored_layout(canvas: &mut mere::canvas::Canvas, w: u32, h: u32) -> bool {
+        let Some(id) = canvas.layout_strategy().map(str::to_owned) else {
+            return false;
+        };
+        if !canvas.physics_paused() {
+            return false;
+        }
+        canvas.refresh_community_cache(&id);
+        canvas.note_strategy_computed(&id, w, h, canvas.focused_key());
+        true
     }
 
     /// Run the graph-scoped layout strategy while a particular pane has its
@@ -737,10 +758,13 @@ impl App {
     ) -> Option<(netrender::Scene, bool)> {
         let graph = self.graph_for_pane(pane)?;
         let mut transition = self.graph_runtimes.get_mut(graph)?.scene_transition.take();
+        let restored = std::mem::take(&mut self.graph_runtimes.get_mut(graph)?.scene_restore_pending);
         static CLOCK: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
         let host_ms = CLOCK.get_or_init(std::time::Instant::now).elapsed().as_secs_f64() * 1000.0;
         let result = self.with_graph_pane(pane, |canvas| {
-            if Self::drive_layout_strategy_for(canvas, width, height) {
+            if (!restored || !Self::prime_restored_layout(canvas, width, height))
+                && Self::drive_layout_strategy_for(canvas, width, height)
+            {
                 // A resized/recomputed scene supersedes any older return.
                 transition = None;
                 canvas.take_stop_return();

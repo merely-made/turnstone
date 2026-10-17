@@ -34,6 +34,7 @@ pub struct GraphRuntime {
     pub session: Option<SessionId>,
     pub canvas: Canvas,
     pub(crate) scene_save_pending: bool,
+    pub(crate) scene_restore_pending: bool,
     pub(crate) scene_transition: Option<mere::canvas::physics_controls::ArrangementTransition>,
     pub(crate) folds: crate::graph_folds::FoldSidecar,
     origin: Option<crate::host_journal::RuntimeOrigin>,
@@ -52,6 +53,7 @@ impl GraphRuntime {
             canvas,
             scene_transition: None,
             scene_save_pending: false,
+            scene_restore_pending: false,
             folds: Default::default(),
             origin: None,
             persistence: crate::session_persistence::SessionPersistence::Unbound,
@@ -152,6 +154,7 @@ impl GraphRuntimePool {
         canvas.set_graph_grammar(true);
         runtime.scene_transition = None;
         runtime.scene_save_pending = false;
+        runtime.scene_restore_pending = false;
         runtime.canvas = canvas;
         runtime.origin = None;
         let _ = self.bind_recording(self.active);
@@ -169,6 +172,7 @@ impl GraphRuntimePool {
         let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
         runtime.scene_transition = None;
         runtime.scene_save_pending = false;
+        runtime.scene_restore_pending = false;
         runtime.canvas.set_graph(graph);
         runtime.persistence = state;
         runtime.origin = None;
@@ -182,6 +186,7 @@ impl GraphRuntimePool {
         runtime.persistence.clear_placement();
         runtime.scene_transition = None;
         runtime.scene_save_pending = false;
+        runtime.scene_restore_pending = false;
         runtime.canvas.set_graph(graph);
         runtime.origin = None;
         let _ = self.bind_recording(self.active);

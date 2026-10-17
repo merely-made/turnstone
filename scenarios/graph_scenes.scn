@@ -102,6 +102,19 @@ act Tear out pane
 settle 25
 assert windows == 2
 assert lens-pane 0:orrery
+# Tear-out seeds an extra Orrery. Close that placeholder through its real
+# frame action, retaining the transferred pane and one scene-driving viewport.
+frame-a11y-window 1 click close 2
+settle 8
+key-window 1 escape
+# The still-bound Arrange controls in primary follow this graph into its lens.
+click role:button Restore recipe seed
+settle 3
+assert snap scene-saved-seed == false
+click role:button Set seed
+settle 3
+assert snap scene-saved-seed == true
+key-window 1 escape
 act Layout: Partition (by site)
 settle 10
 act Fit to view

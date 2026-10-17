@@ -44,6 +44,62 @@ fn host_session_fork_preserves_resource_records_and_tag_assertions() {
 }
 
 #[test]
+fn new_session_records_its_birth_and_reopens_same_site_relations_exactly() {
+    let root = tempfile::tempdir().unwrap();
+    let mut app = App::test_stub_at(root.path().to_path_buf());
+    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(root.path()));
+    let effects = app.update(Action::NewSession);
+    let id = effects.iter().find_map(|effect| match effect {
+        Effect::SwitchSession { id } => Some(*id),
+        _ => None,
+    }).expect("new session requests ordinary adoption");
+    app.adopt_session(id);
+    for url in [
+        "mere://alpha.example/one", "mere://alpha.example/two",
+        "mere://beta.example/one", "mere://beta.example/two",
+        "mere://gamma.example/one", "mere://gamma.example/two",
+    ] {
+        app.graph_runtimes.visit(url);
+    }
+    let expected = app.graph_runtimes.graph().to_snapshot_at(0);
+    assert!(expected.edges.is_empty(), "fresh siblings have no Surface containment");
+    assert_eq!(expected.nodes.len(), 6);
+    assert_eq!(expected.resources.len(), 6);
+    assert_eq!(expected.resource_edges.len(), 5);
+    let legacy = Graph::try_from_snapshot(&expected).unwrap().to_snapshot_at(0);
+    assert_eq!(legacy.edges.len(), 3,
+        "the unprofiled control must expose the reopen-only Domain derivation");
+
+    app.persist_session_graph().unwrap();
+    let directory = app.session_dir();
+    let path = directory.join(pandect::session_graph_store::GRAPH_FILE);
+    let stored = pandect::session_graph_store::load_profiled_snapshot(&path)
+        .unwrap().unwrap();
+    assert_eq!(stored.placement, Some(PlacementProfile::RecordedStrataV1));
+    let bytes = std::fs::read(&path).unwrap();
+
+    let mut reopened = App::test_stub_at(root.path().to_path_buf());
+    reopened.sessions.load_from_disk(session::sessions_root(root.path())).unwrap();
+    reopened.adopt_session(id);
+    assert_eq!(
+        serde_json::to_value(reopened.graph_runtimes.graph().to_snapshot_at(0)).unwrap(),
+        serde_json::to_value(&expected).unwrap(),
+        "fresh application adoption preserves every recorded graph column",
+    );
+    assert_eq!(std::fs::read(&path).unwrap(), bytes,
+        "adoption does not rewrite the recorded graph");
+    reopened.persist_session_graph().unwrap();
+    let saved = pandect::session_graph_store::load_profiled_snapshot(&path)
+        .unwrap().unwrap();
+    assert_eq!(saved.placement, Some(PlacementProfile::RecordedStrataV1));
+    let mut actual = saved.snapshot;
+    actual.timestamp_secs = 0;
+    assert_eq!(serde_json::to_value(actual).unwrap(),
+        serde_json::to_value(expected).unwrap(),
+        "ordinary re-save preserves all source facts and recorded placement");
+}
+
+#[test]
 fn host_session_recorded_and_absent_ordinary_save_reopen_and_replacement() {
     for placement in [Some(PlacementProfile::RecordedStrataV1), None] {
         let mut app = App::test_stub();

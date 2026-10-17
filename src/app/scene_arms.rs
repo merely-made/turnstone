@@ -5,7 +5,9 @@ use super::*;
 use mere::canvas::controls::CanvasCommand;
 
 impl App {
-    /// Arrange controls resolve a graph pane in their own window space.
+    /// Arrange controls prefer a graph pane in their own window. A sole
+    /// matching graph pane in another window remains the explicit owner
+    /// after a tear-out; ambiguous foreign selections are not guessed.
     pub(crate) fn scene_command_pane(&self) -> Option<PaneId> {
         if let Some(pane) = self.graph_command_pane() {
             return Some(pane);
@@ -15,10 +17,27 @@ impl App {
             return None;
         }
         let graph = self.graph_for_pane(pane)?;
-        self.space(self.space_of(pane)?)?
+        if let Some(local) = self
+            .space(self.space_of(pane)?)?
             .iter_leaves()
             .find(|(_, content, owner)| **content == PaneContent::Orrery && *owner == graph)
             .map(|(id, _, _)| id)
+        {
+            return Some(local);
+        }
+        let mut matching = self
+            .frisket
+            .iter_leaves()
+            .chain(
+                self.lenses
+                    .iter()
+                    .flatten()
+                    .flat_map(|space| space.iter_leaves()),
+            )
+            .filter(|(_, content, owner)| **content == PaneContent::Orrery && *owner == graph)
+            .map(|(id, _, _)| id);
+        let sole = matching.next()?;
+        matching.next().is_none().then_some(sole)
     }
 
     pub(crate) fn mark_graph_scene_changed(&mut self, pane: PaneId) {
@@ -27,6 +46,7 @@ impl App {
             .and_then(|g| self.graph_runtimes.get_mut(g))
         {
             runtime.scene_save_pending = true;
+            runtime.scene_restore_pending = false;
         }
     }
 
@@ -124,6 +144,12 @@ impl App {
         let Some(pane) = self.scene_command_pane() else {
             return vec![];
         };
+        if let Some(runtime) = self
+            .graph_for_pane(pane)
+            .and_then(|graph| self.graph_runtimes.get_mut(graph))
+        {
+            runtime.scene_restore_pending = false;
+        }
         let durable = !matches!(
             action,
             Action::ToggleForegroundPin | Action::DismissRetained
