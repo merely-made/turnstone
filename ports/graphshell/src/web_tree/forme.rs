@@ -1068,6 +1068,22 @@ pub(super) fn section(page: &TreePage) -> Child {
     )
 }
 
+/// Offer an opened page's unvisited links as suggestions, once per page and
+/// only while suggestions are on (`link_suggestions.rs` in pictograph).
+fn offer_links(page: &TreePage, member: Uuid, address: &str, media_type: Option<&str>, body: &str) {
+    let Ok(mut canvas) = page.shared.canvas.try_borrow_mut() else {
+        return;
+    };
+    if !canvas.suggestion_settings().on || canvas.has_offered_links(member) {
+        return;
+    }
+    canvas.offer_page_links(
+        member,
+        fleece::page_links::html_links(address, media_type, body),
+    );
+    page.shared.dirty.set(true);
+}
+
 pub(super) fn workbench(page: &TreePage) -> Option<Child> {
     let pane = page.forme.as_ref().filter(|p| p.workbench)?;
     let graph = page.shared.canvas.borrow().graph().clone();
@@ -1105,6 +1121,9 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                             reading_store.clone(),
                         ))
                     } else {
+                        if let Some(body) = &node.body {
+                            offer_links(page, member, &address, node.media_type.as_deref(), body);
+                        }
                         node.body.as_ref().map(|body| {
                             super::reading::appearance(
                                 &reading_shared,

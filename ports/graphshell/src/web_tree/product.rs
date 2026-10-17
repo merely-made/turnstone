@@ -95,6 +95,8 @@ pub(super) struct SavedProduct {
     file_requested: bool,
     /// A created but unacknowledged member. Retrying stores this same object.
     pending_intake: Option<Uuid>,
+    /// Suggested links the person kept, written one at a time as their own.
+    kept_links: std::collections::VecDeque<mere::canvas::link_suggestions::KeptLink>,
     pending_detail: Option<CompletedEdit>,
     detail: detail::DetailControls,
     find: find::FindControls,
@@ -257,6 +259,7 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         intake_title: TextInput::new(""),
         file_requested: false,
         pending_intake: None,
+        kept_links: Default::default(),
         pending_detail: None,
         detail: detail::DetailControls::default(),
         find: find::FindControls::default(),
@@ -1035,6 +1038,33 @@ impl SavedProduct {
         }
     }
 
+    /// Write a kept suggestion as the person's own object, through the same
+    /// intake as an added address; the acknowledged graph then replaces the
+    /// canvas's derived member.
+    fn keep_links(&mut self, canvas: &mut Canvas) {
+        self.kept_links.extend(canvas.take_kept_links());
+        if self.saving
+            || self.pending_intake.is_some()
+            || self.pending_detail.is_some()
+            || self.selection_locked()
+        {
+            return;
+        }
+        let Some(kept) = self.kept_links.pop_front() else {
+            return;
+        };
+        let Some(app) = self.app.as_mut() else {
+            return;
+        };
+        match create_address(app, &kept.url, &kept.url) {
+            Ok(member) => self.store_intake(member),
+            Err(error) => {
+                self.status = error;
+                self.save_state = "error";
+            },
+        }
+    }
+
     fn store_intake(&mut self, member: Uuid) {
         if self.saving {
             return;
@@ -1078,6 +1108,7 @@ impl SavedProduct {
 
     pub(super) fn poll(&mut self, canvas: &mut Canvas) -> bool {
         self.history.poll();
+        self.keep_links(canvas);
         let projection_advanced = self.projection.advance();
         let projection_changed = self.projection.changed();
         if projection_changed {

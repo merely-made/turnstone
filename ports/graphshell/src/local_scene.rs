@@ -19,7 +19,11 @@ pub fn capture_scene(
     let camera = canvas.camera();
     Ok(SavedSceneV3 {
         name: "Graphshell working scene".into(),
-        selected: canvas.selected_members(),
+        selected: canvas
+            .selected_members()
+            .into_iter()
+            .filter(|member| !canvas.is_derived_member(*member))
+            .collect(),
         physics_paused: canvas.physics_paused(),
         dynamics: SavedDynamics::from_spec(&spec),
         camera_offset: camera.offset,

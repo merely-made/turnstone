@@ -52,7 +52,7 @@ mere-view = { path="../../../crates/cambium/mere-view", optional=true }
 # The shared mere panel over the remote board's admitted route (stack lift plan L14).
 mere-overmap = { path = "../../../crates/cambium/mere-overmap", optional = true }
 mere-document-lanes = { path = "../../../crates/system/document-lanes", features = ["retained-clips"], optional = true }
-fleece = { package = "mere-fleece", path = "../../../crates/fleece", features = ["portable-clip"], optional = true }
+fleece = { package = "mere-fleece", path = "../../../crates/fleece", features = ["portable-clip", "page-links"], optional = true }
 eidetic = { path = "../../../crates/eidetic/eidetic-core", default-features = false }
 moot = { package = "mere-moot", path = "../../moot", default-features = false, features = ["presentation"], optional = true }
 # `webrtc-browser` is the C4 door's peer half (`webrtc_browser`, `webrtc_join`)

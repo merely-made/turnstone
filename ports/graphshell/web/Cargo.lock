@@ -6305,8 +6305,10 @@ version = "0.0.1"
 dependencies = [
  "eidetic",
  "fleece",
+ "genet-static-dom",
  "serde",
  "serde_json",
+ "url",
 ]
 
 [[package]]

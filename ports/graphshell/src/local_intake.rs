@@ -93,6 +93,10 @@ pub fn sync_canvas_intake(canvas: &mut Canvas, owner: &Graph, member: Uuid) -> R
         return Err("the saved object is no longer in the local graph".into());
     }
     for (key, node) in canvas.graph().nodes() {
+        // Suggested links are the canvas's own, session-only.
+        if canvas.is_derived_member(node.id) {
+            continue;
+        }
         if owner.get_node_key_by_id(node.id) != Some(key) {
             return Err("the canvas no longer matches the local graph".into());
         }
