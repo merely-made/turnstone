@@ -291,20 +291,20 @@ impl Shell {
     /// the primary uses. That shared runner is the identity story: a pane torn
     /// out to a lens keeps its DOM, widget state, and scroll because the
     /// runner never moved — only its leaf changed trees.
-    pub(super) fn render_lens(&mut self, id: WindowId) {
+    pub(super) fn render_lens(&mut self, id: WindowId) -> bool {
         if !self.poll_render_recovery() {
-            return;
+            return false;
         }
         self.bind_lens_capture();
         if self.poll_live_settings() {
             self.request_redraw();
         }
         let Some(lens) = self.lens_windows.get(&id) else {
-            return;
+            return false;
         };
         let (lw, lh, ordinal) = (lens.width, lens.height, lens.ordinal);
         let Some(host) = lens.host.as_ref() else {
-            return;
+            return false;
         };
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         let (surface_device, surface_queue) = (host.device().clone(), host.queue().clone());
@@ -319,7 +319,7 @@ impl Shell {
         }
         let surfaces = self.lens_plan(ordinal, lw, lh);
         if surfaces.is_empty() {
-            return;
+            return false;
         }
         // Visibility includes every open window. Each render invocation pumps
         // a retained document once; separate window events remain separate polls.
@@ -449,14 +449,14 @@ impl Shell {
         }
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         if self.fail_surface_frames(surface_failures) {
-            return;
+            return false;
         }
         // Pass 2 is all-or-refused; keep textures alive until presentation/capture.
         let Some(lens) = self.lens_windows.get_mut(&id) else {
-            return;
+            return false;
         };
         let Some(host) = lens.host.as_ref() else {
-            return;
+            return false;
         };
         let generation = host.core().generation();
         let mut raster_textures = Vec::new();
@@ -504,7 +504,7 @@ impl Shell {
                 #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
                 drop((surface_device, surface_queue));
                 self.refuse_raster_frame(ordinal as u64 + 1, generation, source, failure);
-                return;
+                return false;
             },
         };
         let layers = if shared_frame {
@@ -529,7 +529,7 @@ impl Shell {
                     drop(frames);
                     drop(raster_textures);
                     self.refuse_native_composition(ordinal as u64 + 1, generation, failure);
-                    return;
+                    return false;
                 },
             }
         } else {
@@ -548,7 +548,7 @@ impl Shell {
                     0,
                     genet_render_host::RasterizeFailure::DeviceLost(loss),
                 );
-                return;
+                return false;
             },
             genet_render_host::SurfaceAcquire::SurfaceLost => {
                 drop(layers);
@@ -556,9 +556,9 @@ impl Shell {
                 #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
                 drop((surface_device, surface_queue));
                 self.detach_render_surface(ordinal as u64 + 1);
-                return;
+                return false;
             },
-            genet_render_host::SurfaceAcquire::Unavailable { .. } => return,
+            genet_render_host::SurfaceAcquire::Unavailable { .. } => return false,
         };
         let target = frame
             .texture
@@ -587,9 +587,10 @@ impl Shell {
                 0,
                 genet_render_host::RasterizeFailure::DeviceLost(loss),
             );
-            return;
+            return false;
         }
         host.queue().present(frame);
+        self.main_receipt.lens_presented();
         // Only the request's chosen Lens may consume it. Failure participates
         // in the same scenario receipt as the primary, rather than warning only.
         if self.pending_lens_capture_window == Some(id) {
@@ -608,13 +609,19 @@ impl Shell {
             lens.window.request_redraw();
         }
         self.finish_inline_frame();
+        true
     }
 
     /// Route one lens window's event: pane presses dispatch into the SHARED
     /// retained runners (the same round trips the primary uses); canvas
     /// gestures run with the lens's own camera installed around the pass
     /// (pan, zoom, grab); resize, close.
-    pub(super) fn lens_event(&mut self, id: WindowId, event: WindowEvent) {
+    pub(super) fn lens_event(
+        &mut self,
+        event_loop: &ActiveEventLoop,
+        id: WindowId,
+        event: WindowEvent,
+    ) {
         let Some(lens) = self.lens_windows.get(&id) else {
             return;
         };
@@ -755,8 +762,11 @@ impl Shell {
                 return;
             },
             WindowEvent::RedrawRequested => {
-                self.render_lens(id);
+                let presented = self.render_lens(id);
                 self.push_a11y_tree();
+                if presented {
+                    self.scenario_pump(event_loop);
+                }
                 return;
             },
             WindowEvent::MouseInput {

@@ -86,7 +86,7 @@ impl ApplicationHandler for Shell {
             outcome.ok = false;
             outcome
                 .log
-                .push("FAIL: no successful main presentation for ten seconds".into());
+                .push("FAIL: no successful window presentation for ten seconds".into());
             self.write_shared_done(&outcome);
             event_loop.exit();
             return;
@@ -354,8 +354,8 @@ impl ApplicationHandler for Shell {
         if self.window.as_ref().map(|w| w.id()) != Some(window_id) {
             // A lens window's event (rung 7): canvas gestures through the
             // lens's own camera; everything else is the primary's.
-            if let Some(lens) = self.lens_windows.get_mut(&window_id) {
-                self.lens_event(window_id, event);
+            if self.lens_windows.contains_key(&window_id) {
+                self.lens_event(event_loop, window_id, event);
                 self.drain_pending_windows(event_loop);
             }
             return;

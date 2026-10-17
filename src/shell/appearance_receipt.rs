@@ -131,6 +131,14 @@ impl MainReceipt {
         self.last_presented = Some(now);
         self.deadline_origin = Some(now);
     }
+    /// A Lens can keep the multiwindow driver alive without supplying any
+    /// evidence that the primary window presented or was captured.
+    pub fn lens_presented(&mut self) {
+        self.lens_presented_at(Instant::now());
+    }
+    fn lens_presented_at(&mut self, now: Instant) {
+        self.deadline_origin = Some(now);
+    }
     pub fn presentation_stalled(&mut self, child_active: bool) -> bool {
         self.presentation_stalled_at(Instant::now(), child_active)
     }
@@ -140,7 +148,7 @@ impl MainReceipt {
             return false;
         }
         if std::mem::take(&mut self.deadline_suspended) {
-            // Returning from a child grants the main window its normal budget.
+            // Returning from a child grants the app windows their normal budget.
             // This is a deadline reset, never an invented presentation.
             self.deadline_origin = Some(now);
         }
@@ -224,6 +232,61 @@ mod tests {
             Some(start),
             "suspension cannot create presentation evidence"
         );
+    }
+
+    #[test]
+    fn lens_activity_keeps_the_driver_alive_without_changing_main_evidence() {
+        let start = Instant::now();
+        let mut receipt = MainReceipt {
+            presented: 12,
+            last_presented: Some(start),
+            deadline_origin: Some(start),
+            ..Default::default()
+        };
+        // The main window may be occluded for longer than its old deadline,
+        // while actual successful Lens presents continue the scenario.
+        for seconds in [8, 16, 24, 32] {
+            let presented = start + Duration::from_secs(seconds);
+            receipt.lens_presented_at(presented);
+            assert!(!receipt.presentation_stalled_at(presented + Duration::from_secs(9), false));
+        }
+        assert_eq!(receipt.presented, 12);
+        assert_eq!(receipt.last_presented, Some(start));
+        assert!(receipt.captures.is_empty());
+        assert!(receipt.presentation_stalled_at(start + Duration::from_secs(43), false));
+    }
+
+    #[test]
+    fn lens_only_success_cannot_qualify_an_unpresented_main_window() {
+        let mut receipt = MainReceipt::default();
+        let now = Instant::now();
+        receipt.lens_presented_at(now);
+        assert!(!receipt.presentation_stalled_at(now + Duration::from_secs(9), false));
+        let mut outcome = taproot::Outcome {
+            ok: true,
+            log: Vec::new(),
+        };
+        receipt.qualify(&mut outcome);
+        assert!(!outcome.ok);
+        assert!(
+            outcome
+                .log
+                .iter()
+                .any(|line| line == "FAIL: no successful main presentation")
+        );
+        assert_eq!(receipt.presented, 0);
+        assert_eq!(receipt.last_presented, None);
+    }
+
+    #[test]
+    fn no_window_presentations_still_exhaust_the_driver_budget() {
+        let start = Instant::now();
+        let mut receipt = MainReceipt::default();
+        assert!(!receipt.presentation_stalled_at(start, false));
+        assert!(!receipt.presentation_stalled_at(start + Duration::from_secs(9), false));
+        assert!(receipt.presentation_stalled_at(start + Duration::from_secs(11), false));
+        assert_eq!(receipt.presented, 0);
+        assert_eq!(receipt.last_presented, None);
     }
 
     #[test]

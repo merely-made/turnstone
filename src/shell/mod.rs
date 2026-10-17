@@ -2946,7 +2946,11 @@ impl Shell {
             event_loop.exit();
             return;
         }
-        if self.pending_capture_readback.is_some() || !self.pending_native_diagnostics.is_empty() {
+        if self.pending_capture.is_some()
+            || self.pending_lens_capture.is_some()
+            || self.pending_capture_readback.is_some()
+            || !self.pending_native_diagnostics.is_empty()
+        {
             self.request_redraw();
             return;
         }
