@@ -400,14 +400,134 @@ fn app_adoption_reopens_saved_mosaic_seed_regions_and_pause_before_the_next_layo
     reopened.adopt_session(id);
     assert!(!reopened.session_load_refused());
     let reopened_pane = reopened.default_graph_pane();
+    assert!(
+        reopened
+            .graph_runtimes
+            .get(graph)
+            .unwrap()
+            .scene_restore_pending
+    );
+    for _ in 0..3 {
+        // The actual host loop receives a new viewport on reopen. It must
+        // prime its recompute gate rather than replace saved paused geometry.
+        reopened.graph_pane_frame(reopened_pane, 960, 720).unwrap();
+        reopened
+            .with_graph_pane(reopened_pane, |canvas| {
+                assert!(canvas.graph_grammar());
+                assert!(canvas.physics_paused());
+                assert_eq!(canvas.layout_strategy(), Some("mosaic.default"));
+                let actual = canvas.cartography_geometry();
+                assert_eq!(
+                    actual.iter().collect::<BTreeMap<_, _>>(),
+                    expected.iter().collect::<BTreeMap<_, _>>()
+                );
+                assert_eq!(
+                    actual
+                        .seed()
+                        .unwrap()
+                        .iter()
+                        .copied()
+                        .collect::<BTreeMap<_, _>>(),
+                    expected
+                        .seed()
+                        .unwrap()
+                        .iter()
+                        .copied()
+                        .collect::<BTreeMap<_, _>>()
+                );
+                assert_eq!(actual.regions(), expected.regions());
+                let a = actual.mosaic().unwrap();
+                let e = expected.mosaic().unwrap();
+                assert_eq!(
+                    a.group_of.iter().cloned().collect::<BTreeMap<_, _>>(),
+                    e.group_of.iter().cloned().collect::<BTreeMap<_, _>>()
+                );
+                assert_eq!(
+                    a.scale.iter().copied().collect::<BTreeMap<_, _>>(),
+                    e.scale.iter().copied().collect::<BTreeMap<_, _>>()
+                );
+                assert_eq!(a.member_order, e.member_order);
+                assert_eq!(a.group_order, e.group_order);
+                assert!(canvas.physics_paused());
+            })
+            .unwrap();
+    }
+    assert!(
+        !reopened
+            .graph_runtimes
+            .get(graph)
+            .unwrap()
+            .scene_restore_pending
+    );
+    // A subsequent resize resumes the ordinary projection contract. Mosaic
+    // is an infinite workspace: its configured aspect and world-area budget
+    // can legitimately produce the same geometry at a different viewport.
+    let (projected_positions, projected_regions) = reopened
+        .with_graph_pane(reopened_pane, |canvas| {
+            let focus = canvas.focused_key();
+            assert!(!canvas.needs_strategy_recompute("mosaic.default", 960, 720, focus));
+            assert!(canvas.needs_strategy_recompute("mosaic.default", 1200, 900, focus));
+            let extents = canvas.strategy_extents();
+            let projection = canvas.project_arrangement_for_view(
+                "mosaic.default",
+                1200,
+                900,
+                Some(&extents),
+                canvas.size_by_recency(),
+                canvas.camera().zoom,
+                None,
+            );
+            let positions = projection
+                .positions
+                .iter()
+                .map(|(key, p)| (canvas.graph().get_node(*key).unwrap().id, (p.x, p.y)))
+                .collect::<BTreeMap<_, _>>();
+            (positions, projection.regions)
+        })
+        .unwrap();
+    reopened.graph_pane_frame(reopened_pane, 1200, 900).unwrap();
     reopened
         .with_graph_pane(reopened_pane, |canvas| {
-            assert!(canvas.graph_grammar());
+            assert!(!canvas.needs_strategy_recompute(
+                "mosaic.default",
+                1200,
+                900,
+                canvas.focused_key()
+            ));
+            assert_eq!(
+                canvas
+                    .cartography_geometry()
+                    .iter()
+                    .collect::<BTreeMap<_, _>>(),
+                projected_positions
+            );
+            assert_eq!(canvas.strategy_regions(), projected_regions);
+        })
+        .unwrap();
+
+    // A person's new arrangement command before the first host frame must
+    // win over the saved Mosaic placement, while keeping their saved seed.
+    let mut changed = App::test_stub_at(dir.path().to_path_buf());
+    changed
+        .sessions
+        .insert(pandect::GraphSessionManifest::new(id, graph));
+    changed.adopt_session(id);
+    assert!(!changed.session_load_refused());
+    let changed_pane = changed.default_graph_pane();
+    changed.active_pane = Some(changed_pane);
+    changed.focus = FocusTarget::Graph(changed_pane);
+    changed.update(Action::SetLayoutStrategy(Some("grid.default")));
+    changed.graph_pane_frame(changed_pane, 960, 720).unwrap();
+    changed
+        .with_graph_pane(changed_pane, |canvas| {
+            assert_eq!(canvas.layout_strategy(), Some("grid.default"));
             assert!(canvas.physics_paused());
-            assert_eq!(canvas.layout_strategy(), Some("mosaic.default"));
-            // A normal first recompute must respect the restored Mosaic state.
-            App::drive_layout_strategy_for(canvas, 800, 600);
             let actual = canvas.cartography_geometry();
+            assert!(actual.regions().is_empty());
+            assert_ne!(
+                actual.iter().collect::<BTreeMap<_, _>>(),
+                expected.iter().collect::<BTreeMap<_, _>>()
+            );
             assert_eq!(
                 actual
                     .seed()
@@ -422,20 +542,6 @@ fn app_adoption_reopens_saved_mosaic_seed_regions_and_pause_before_the_next_layo
                     .copied()
                     .collect::<BTreeMap<_, _>>()
             );
-            assert_eq!(actual.regions(), expected.regions());
-            let a = actual.mosaic().unwrap();
-            let e = expected.mosaic().unwrap();
-            assert_eq!(
-                a.group_of.iter().cloned().collect::<BTreeMap<_, _>>(),
-                e.group_of.iter().cloned().collect::<BTreeMap<_, _>>()
-            );
-            assert_eq!(
-                a.scale.iter().copied().collect::<BTreeMap<_, _>>(),
-                e.scale.iter().copied().collect::<BTreeMap<_, _>>()
-            );
-            assert_eq!(a.member_order, e.member_order);
-            assert_eq!(a.group_order, e.group_order);
-            assert!(canvas.physics_paused());
         })
         .unwrap();
 }
@@ -603,7 +709,19 @@ fn summoned_arrange_pane_binds_its_graph_and_routes_actual_seed_buttons_and_phys
     // The physical native press focuses the clicked pane before invoking
     // its retained handler. Reproduce that real focus transition here.
     app.focus = FocusTarget::Pane(arrange);
-    assert_eq!(app.scene_command_pane(), Some(graph_pane));
+    assert_eq!(
+        app.scene_command_pane(),
+        Some(graph_pane),
+        "active={:?}, focus={:?}, primary={:?}, lenses={:?}, arrange={arrange:?}",
+        app.active_pane,
+        app.focus,
+        app.frisket.iter_leaves().collect::<Vec<_>>(),
+        app.lenses
+            .iter()
+            .flatten()
+            .map(|s| s.iter_leaves().collect::<Vec<_>>())
+            .collect::<Vec<_>>()
+    );
     let mut renderer = ArrangePane::new();
     for (label, saved) in [("Set seed", true), ("Restore recipe seed", false)] {
         renderer.sync_for_pane(&app, arrange, 600.0, 800.0);
@@ -662,6 +780,141 @@ fn registered_graph_sources_retag_with_the_session_while_settings_stays_independ
         assert!(
             !PaneContent::Registered(crate::panes::PaneKindId::new(kind)).follows_active_graph(),
             "non-graph provider {kind} must stay independent"
+        );
+    }
+}
+
+fn arrange_after_ordinary_graph_tear_out() -> (App, PaneId, PaneId, GraphId) {
+    let (mut app, graph_pane, _) = fixture();
+    let owner = app.graph_for_pane(graph_pane).unwrap();
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::ARRANGE,
+    )));
+    let arrange = app.active_pane.unwrap();
+    app.active_pane = Some(graph_pane);
+    app.focus = FocusTarget::Graph(graph_pane);
+    app.update(Action::TearOutActivePane);
+    assert!(
+        app.lenses.iter().flatten().any(|space| space
+            .iter_leaves()
+            .any(|(id, content, graph)| id == graph_pane
+                && *content == PaneContent::Orrery
+                && graph == owner))
+    );
+    assert!(
+        !app.frisket
+            .iter_leaves()
+            .any(|(_, content, _)| *content == PaneContent::Orrery)
+    );
+    assert_eq!(app.graph_for_pane(arrange), Some(owner));
+    // Ordinary tear-out seeds its destination with an Orrery before moving
+    // the original beside it. Close that seed through the normal pane action
+    // to establish one explicit selection owner in the receiving window.
+    let seed = app
+        .lenses
+        .iter()
+        .flatten()
+        .flat_map(|space| space.iter_leaves())
+        .find(|(id, content, graph)| {
+            *id != graph_pane && **content == PaneContent::Orrery && *graph == owner
+        })
+        .map(|(id, _, _)| id)
+        .expect("tear-out seeds a destination graph pane");
+    app.active_pane = Some(seed);
+    app.focus = FocusTarget::Graph(seed);
+    app.update(Action::CloseActivePane);
+    assert_eq!(app.pane_content(seed), None);
+    assert_eq!(app.graph_for_pane(graph_pane), Some(owner));
+    app.active_pane = Some(arrange);
+    app.focus = FocusTarget::Pane(arrange);
+    (app, arrange, graph_pane, owner)
+}
+
+#[test]
+fn arrange_buttons_follow_the_unique_torn_out_graph_without_using_the_active_cursor() {
+    use crate::arrange_pane::ArrangePane;
+    let (mut app, arrange, graph_pane, owner) = arrange_after_ordinary_graph_tear_out();
+    let unrelated = GraphId::from_uuid(uuid::Uuid::new_v4());
+    let mut unrelated_canvas = Canvas::new();
+    unrelated_canvas.visit("mere://unrelated-compatibility-cursor");
+    app.graph_runtimes
+        .activate_or_insert(unrelated, None, unrelated_canvas);
+    assert_eq!(
+        app.scene_command_pane(),
+        Some(graph_pane),
+        "active={:?}, focus={:?}, primary={:?}, lenses={:?}, arrange={arrange:?}",
+        app.active_pane,
+        app.focus,
+        app.frisket.iter_leaves().collect::<Vec<_>>(),
+        app.lenses
+            .iter()
+            .flatten()
+            .map(|s| s.iter_leaves().collect::<Vec<_>>())
+            .collect::<Vec<_>>()
+    );
+    let mut renderer = ArrangePane::new();
+    for (label, saved) in [("Set seed", true), ("Restore recipe seed", false)] {
+        renderer.sync_for_pane(&app, arrange, 600.0, 800.0);
+        renderer.scene(600, 800);
+        let selector = taproot::Selector::role("button").containing(label);
+        let (x, y) = renderer.inline_selector(&selector).unwrap().unwrap();
+        let intents = renderer.click(x, y, 600, 800);
+        assert_eq!(intents.len(), 1);
+        for intent in intents {
+            app.update(intent.into_action().unwrap());
+        }
+        assert_eq!(
+            app.graph_runtimes.canvas(owner).unwrap().has_saved_seed(),
+            saved
+        );
+        assert!(
+            !app.graph_runtimes
+                .canvas(unrelated)
+                .unwrap()
+                .has_saved_seed()
+        );
+    }
+    app.update(Action::SetPhysicsLaw("orbit.gravity"));
+    assert_eq!(
+        mere::canvas::PhysicsChoice::live(app.graph_runtimes.canvas(owner).unwrap())
+            .law
+            .id(),
+        "orbit.gravity"
+    );
+    assert_eq!(
+        mere::canvas::PhysicsChoice::live(app.graph_runtimes.canvas(unrelated).unwrap()).law,
+        mere::canvas::PhysicsLaw::Springs
+    );
+    assert_eq!(app.graph_runtimes.active_graph(), unrelated);
+}
+
+#[test]
+fn arrange_refuses_ambiguous_foreign_graph_panes_instead_of_guessing_their_selection() {
+    let (mut app, _, _, owner) = arrange_after_ordinary_graph_tear_out();
+    app.lenses.push(Some(FrisketLayout {
+        root: PaneNode::Leaf {
+            pane_id: PaneId(9000),
+            content: PaneContent::Orrery,
+            graph_id: owner,
+        },
+        ..Default::default()
+    }));
+    app.index_pane_spaces();
+    let unrelated = GraphId::from_uuid(uuid::Uuid::new_v4());
+    app.graph_runtimes
+        .activate_or_insert(unrelated, None, Canvas::new());
+    assert_eq!(app.scene_command_pane(), None);
+    assert!(app.update(Action::SetSeed).is_empty());
+    assert!(
+        app.update(Action::SetPhysicsLaw("orbit.gravity"))
+            .is_empty()
+    );
+    for graph in [owner, unrelated] {
+        let canvas = app.graph_runtimes.canvas(graph).unwrap();
+        assert!(!canvas.has_saved_seed());
+        assert_eq!(
+            mere::canvas::PhysicsChoice::live(canvas).law,
+            mere::canvas::PhysicsLaw::Springs
         );
     }
 }

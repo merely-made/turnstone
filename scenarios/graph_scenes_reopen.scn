@@ -11,6 +11,14 @@ assert snap scene-foreground-pins == 0
 record-graph-scene 12_reopened
 record-graph-folds 12_reopened 1
 capture-lens 12_reopened
+# The primary Arrange remains bound after this fresh-process adoption too.
+click role:button Restore recipe seed
+settle 3
+assert snap scene-saved-seed == false
+click role:button Set seed
+settle 3
+assert snap scene-saved-seed == true
+key-window 1 escape
 act Expand all folds
 settle 8
 record-graph-folds 13_expanded 0
