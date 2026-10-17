@@ -87,7 +87,10 @@ click role:button Set seed
 settle 3
 assert snap scene-saved-seed == true
 capture 09_controls
-act Close pane
+# Keep Arrange in the primary window: tear-out must leave one pane behind.
+# Activate the graph through its ordinary frame accessibility click route.
+frame-a11y-window 0 click tab 0
+key escape
 settle 8
 act Set seed
 act Save session
