@@ -256,8 +256,8 @@ The builder uses the standalone web lock, `--profile viewer` and
 LTO; the full application's release profile remains separate. It writes
 `viewer-delivery.json` with source, compiler, profile, asset hashes and sizes,
 then rejects a package that exceeds any interaction cap at gzip level 6 or 9:
-Wasm 3,460,300 B (3.30 MiB, per route artifact; Mark's 2026-10-15 ruling
-amending R157's 3.25 MiB), glue 20 KiB, mount 8 KiB, and the site history
+Wasm 3,670,016 B (3.50 MiB, per route artifact; Mark's 2026-10-16 ruling
+amending R157's 3.25 MiB, after 3.30 MiB on 2026-10-15), glue 20 KiB, mount 8 KiB, and the site history
 fixture 128 KiB.
 The report remains available when the gate refuses a package. `--target-dir`
 can keep a delivery lane's build artifacts isolated; `--offline` requires the

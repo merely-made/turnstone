@@ -49,7 +49,7 @@ export DISPLAY=:0 XAUTHORITY=$(ls /run/user/$UID/.mutter-Xwaylandauth.* | head -
 unset WAYLAND_DISPLAY
 ```
 
-1. Package both route artifacts with the pinned tools: `wasm-bindgen-cli` 0.2.129 (`cargo install wasm-bindgen-cli --version 0.2.129 --locked --root <tools>`) and Terser 5.51.2 (`npm ci --ignore-scripts` in `$WEB/scripts`, then `$WEB/scripts/node_modules/.bin/terser`). The build refuses unless every cap passes (Wasm 3,460,300 B gzip per route artifact, glue 20,480, mount 8,192, history 131,072); it writes `viewer-delivery.json` beside the artifacts.
+1. Package both route artifacts with the pinned tools: `wasm-bindgen-cli` 0.2.129 (`cargo install wasm-bindgen-cli --version 0.2.129 --locked --root <tools>`) and Terser 5.51.2 (`npm ci --ignore-scripts` in `$WEB/scripts`, then `$WEB/scripts/node_modules/.bin/terser`). The build refuses unless every cap passes (Wasm 3,670,016 B gzip per route artifact, glue 20,480, mount 8,192, history 131,072); it writes `viewer-delivery.json` beside the artifacts.
 
    ```bash
    $GUARD python3 $WEB/scripts/build-viewer.py --out-dir $OUT/pkg \
