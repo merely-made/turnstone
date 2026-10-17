@@ -243,10 +243,18 @@ impl PaneContent {
             | PaneContent::Inspector
             | PaneContent::Trail
             | PaneContent::Tile(_) => true,
-            PaneContent::Comms
-            | PaneContent::Alembic
-            | PaneContent::Overmap(_)
-            | PaneContent::Registered(_) => false,
+            // Registered graph consumers use the same source declaration
+            // as their registry entry. App/settings/external providers stay
+            // independent; Arrange must bind on summon and follow retagging.
+            PaneContent::Registered(kind) => {
+                pane_definition(kind.as_str()).is_some_and(|definition| {
+                    definition
+                        .source_shape
+                        .fixed
+                        .contains(&FixedSourceKind::Graph)
+                })
+            },
+            PaneContent::Comms | PaneContent::Alembic | PaneContent::Overmap(_) => false,
         }
     }
 }

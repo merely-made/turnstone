@@ -585,3 +585,83 @@ fn resizing_mosaic_tiles_cancels_both_pending_and_running_reset_returns() {
         assert!(runtime.scene_save_pending);
     }
 }
+
+#[test]
+fn summoned_arrange_pane_binds_its_graph_and_routes_actual_seed_buttons_and_physics() {
+    use crate::arrange_pane::{ArrangeIntent, ArrangePane};
+    let (mut app, graph_pane, _) = fixture();
+    let graph = app.graph_for_pane(graph_pane).unwrap();
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::ARRANGE,
+    )));
+    let arrange = app.active_pane.expect("ordinary summon activates Arrange");
+    assert_eq!(
+        app.graph_for_pane(arrange),
+        Some(graph),
+        "a registry-declared graph source must be bound on summon"
+    );
+    // The physical native press focuses the clicked pane before invoking
+    // its retained handler. Reproduce that real focus transition here.
+    app.focus = FocusTarget::Pane(arrange);
+    assert_eq!(app.scene_command_pane(), Some(graph_pane));
+    let mut renderer = ArrangePane::new();
+    for (label, saved) in [("Set seed", true), ("Restore recipe seed", false)] {
+        renderer.sync_for_pane(&app, arrange, 600.0, 800.0);
+        renderer.scene(600, 800);
+        let selector = taproot::Selector::role("button").containing(label);
+        let (x, y) = renderer
+            .inline_selector(&selector)
+            .unwrap()
+            .expect("visible seed button");
+        let intents = renderer.click(x, y, 600, 800);
+        assert_eq!(intents.len(), 1, "physical button produces one intent");
+        for intent in intents {
+            app.update(intent.into_action().unwrap());
+        }
+        assert_eq!(
+            app.graph_runtimes.canvas(graph).unwrap().has_saved_seed(),
+            saved
+        );
+    }
+    let physics = ArrangeIntent::SetLaw("orbit.gravity".into())
+        .into_action()
+        .unwrap();
+    app.update(physics);
+    assert_eq!(
+        mere::canvas::PhysicsChoice::live(app.graph_runtimes.canvas(graph).unwrap())
+            .law
+            .id(),
+        "orbit.gravity"
+    );
+}
+
+#[test]
+fn registered_graph_sources_retag_with_the_session_while_settings_stays_independent() {
+    let (mut app, graph_pane, _) = fixture();
+    let outgoing = app.graph_for_pane(graph_pane).unwrap();
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::ARRANGE,
+    )));
+    let arrange = app.active_pane.unwrap();
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::SETTINGS,
+    )));
+    let settings = app.active_pane.unwrap();
+    assert_eq!(app.graph_for_pane(arrange), Some(outgoing));
+    assert_eq!(app.graph_for_pane(settings), None);
+    let incoming = GraphId::from_uuid(uuid::Uuid::new_v4());
+    app.frisket.retag_graph_bound_from(outgoing, incoming);
+    assert_eq!(app.graph_for_pane(graph_pane), Some(incoming));
+    assert_eq!(app.graph_for_pane(arrange), Some(incoming));
+    assert_eq!(app.graph_for_pane(settings), None);
+    for kind in [
+        crate::panes::kind::SETTINGS,
+        crate::panes::kind::PUBLISHING,
+        crate::panes::kind::SHARED_KNOT,
+    ] {
+        assert!(
+            !PaneContent::Registered(crate::panes::PaneKindId::new(kind)).follows_active_graph(),
+            "non-graph provider {kind} must stay independent"
+        );
+    }
+}
