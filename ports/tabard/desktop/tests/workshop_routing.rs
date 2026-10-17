@@ -29,7 +29,7 @@ fn narrow_workshop_wheel_reaches_the_preview_specimens() {
     let mut host = harness(WorkshopState::in_memory());
     host.layout_at(640.0, 780.0);
     let chrome = host.with_dom(|dom| {
-        taproot::matching(dom, &Selector::class("chrome-specimen"))
+        taproot::matching_classes(dom, &Selector::class("chrome-specimen"))
             .into_iter()
             .next()
             .expect("the shared surface has an application-chrome specimen")

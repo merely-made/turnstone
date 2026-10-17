@@ -86,9 +86,11 @@ fn state_values(state: &WorkshopState) -> Value {
 fn seal(ctx: &Context<'_>) -> Result<Authority, String> {
     let state = ctx.runner.state();
     let dom = ctx.runner.dom();
-    let node = taproot::matching(
+    let projection = ctx.a11y_projection().ok_or("production projection absent")?;
+    let node = taproot::matching_prefer_exact_with_projection(
         &*dom.borrow(),
         &Selector::role("textbox").with_attr("data-field", "name"),
+        &projection,
     )
     .into_iter()
     .next()
