@@ -1,0 +1,15 @@
+{
+  "genet_commit": "7f13b85f53c48fa90f433a6cd2ad45cd744e8b02",
+  "mere_commit": "8c299283f2145d38069f100fbedb25a54b00b746",
+  "source_sha256": {
+    "src/shell/lens.rs": "427fa523300746e7f3bab8209742f90513d902f9fa42279d91e2aa7a6353aaa6",
+    "src/shell/render.rs": "c7bcf85933f53204afe61bad22fb829c1a4edde12d07fa226562f2ea199d2a73"
+  },
+  "validation": {
+    "retained_roster_tests_passed": 8,
+    "git_only_metadata": "locked offline; normalized package versions, features and dependency edge sets match tested local graph; all Genet/Mere resolved packages use the stated commits"
+  },
+  "lock_sha256": "e66c0e54cf0e2d90aadc36b71bfcc90caf9e1d0874d4a014fd63caa730e89f4b",
+  "qualification": "Tests used recorded local sources; source identity and dependency graph verified against published pins. Actual browser and Wayland witnesses are in Genet slice5 receipt. No Windows/Apple qualification claimed.",
+  "evidence_directory": "/home/markik/Code/testing/audits/genet-architecture-20261017/remaining-slices"
+}

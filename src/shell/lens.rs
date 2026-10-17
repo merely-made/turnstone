@@ -558,6 +558,10 @@ impl Shell {
                 self.detach_render_surface(ordinal as u64 + 1);
                 return false;
             },
+            genet_render_host::SurfaceAcquire::Reconfigured => {
+                tracing::debug!(window = ordinal + 1, "lens surface reconfigured; frame skipped");
+                return false;
+            },
             genet_render_host::SurfaceAcquire::Unavailable { reason } => {
                 tracing::debug!(%reason, window = ordinal + 1, "lens surface acquire skipped");
                 return false;
