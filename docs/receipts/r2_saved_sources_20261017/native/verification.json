@@ -1,0 +1,88 @@
+{
+  "result": "pass",
+  "verifier_sha256": "7336f3cb369e307906da365157b4c97c613cb4a1f7649b1774b9a328e2eeda4e",
+  "headed_processes": 2,
+  "binary_sha256": "6db4f6e06e9ae931422f8446095efa3b809389b38df6957f65109c5ae610a02b",
+  "origin_stopped_before_offline_search_and_reader": true,
+  "origin_tcp_refused": true,
+  "post_stop_requests": 0,
+  "private_admissions": [
+    "blake3:3c01d7ed6ed974357269505fcb16999269406fd66fa9fde15d109fb14262f77e",
+    "blake3:a3a8c82260cda3c91a7b6cbdc74ce723d0cb93e4762f87b95c330ef70f1572e8",
+    "blake3:08725a3d8432901b024281e2503dc8b2d69341947c0e57bf2ea6ca7ba4e14a17"
+  ],
+  "a1_reader_target": {
+    "key": {
+      "annotation_manifest": "blake3:3c01d7ed6ed974357269505fcb16999269406fd66fa9fde15d109fb14262f77e",
+      "graph": "b9a2645b-4950-4e28-b62c-25b4be0fb93e",
+      "node": "6b6e8218-657f-4e9d-a1a2-610869c18bff",
+      "session": "f4013057-4867-4b76-9738-2665123ca17f"
+    },
+    "selector": {
+      "end": 56,
+      "start": 44
+    },
+    "text_hash": "blake3:810f0f9a2ba1ccb4eb1de01da50957be53fd82e26dcb0d656ab11d969e52711f"
+  },
+  "foreign_session_excluded": true,
+  "visited_only_x_excluded": true,
+  "offline_fresh_process_reader": true,
+  "visual_review_captures": [
+    {
+      "path": "reopen/09_reopen_A1_search.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "f680ddd3bd0c8fe99a710a492ed5714750b256c132763d6ff146424939e3a4b8"
+    },
+    {
+      "path": "reopen/10_reopen_A1_reader.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "cbff052dca92e517f4177026d2069f695d1ad33c4bb1be3dff0313612d37d727"
+    },
+    {
+      "path": "seed/04_foreign_session_source.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "6a2a067d40c0375e6b3bbc2c514c92825f2351ce1ae3df401b2e2db5ae220775"
+    },
+    {
+      "path": "seed/05_A1_search.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "44713b2fd4111e817507364d41ad7054bce2251f0088f4d3a94eb2573a9d7ece"
+    },
+    {
+      "path": "seed/06_A1_reader.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "f0d76e1afef6258711b8f3c8fb43590f0c13a3c41a51cc4a51b46d4b3e4c047d"
+    },
+    {
+      "path": "seed/07_offline_A1_search.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "938570842ff43853393036371a01b57add404ef96d57549c00f7dd531f6adfaf"
+    },
+    {
+      "path": "seed/08_offline_A1_reader.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "862af6b34453fb56c28ab666ebb26138121513971a0165e0074239fd21cb0a93"
+    }
+  ]
+}

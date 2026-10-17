@@ -1,0 +1,65 @@
+[
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r2-focused-polished-final.log",
+    "raw_sha256": "e20b0c930e0456427a2cc739bb6b90727529746b2ce4c0f23c2c552b5afd254a",
+    "committed_path": "checks/focused.log",
+    "committed_sha256": "63e59ed2bb54b06fc32e0cd8e9b97015f0220727d174c5d4004221f7cccfc80d",
+    "normalization": "Trailing whitespace and extra blank EOF lines removed only; raw output preserved at raw_path."
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r2-bounded-library-polished.log",
+    "raw_sha256": "8e4ec3f752b8e94f85fb7bcc53b1691d9bc464394e7496743eac19ef205e647c",
+    "committed_path": "checks/bounded-library.log",
+    "committed_sha256": "ecf79e75d86feecb723ed234e0cfd4900566484f8732e03cb871c1531511db8b",
+    "normalization": "Trailing whitespace and extra blank EOF lines removed only; raw output preserved at raw_path."
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r2-capture-library-polished.log",
+    "raw_sha256": "b76ebd954fa1fd6c357802f948ac10a866fa4e82db1a2288d096b7594a2e8b7c",
+    "committed_path": "checks/capture-library.log",
+    "committed_sha256": "85f9d53f0c36f056b9e29a8f318aa7b423e1aa95667d7b8e8668c09cfb6990d1",
+    "normalization": "Trailing whitespace and extra blank EOF lines removed only; raw output preserved at raw_path."
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r2-clippy-polished.log",
+    "raw_sha256": "f51cd61f96dcc69e195af74901ab4e946d95e2cf9d291a831383826d83a56cdf",
+    "committed_path": "checks/clippy.log",
+    "committed_sha256": "c365223a9ec84def0ef0e00d2f00987a83b2cc774ce49db44e2940eef5143c7e",
+    "normalization": "Trailing whitespace and extra blank EOF lines removed only; raw output preserved at raw_path."
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r2-native-build-polished.log",
+    "raw_sha256": "5777bd3ab71cb47a7dec5b614da05b214d02762633c08730ebb775bac20c7834",
+    "committed_path": "checks/native-build.log",
+    "committed_sha256": "5777bd3ab71cb47a7dec5b614da05b214d02762633c08730ebb775bac20c7834",
+    "normalization": "Trailing whitespace and extra blank EOF lines removed only; raw output preserved at raw_path."
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r2-cargo-mode-polished.log",
+    "raw_sha256": "ab8f814f949da4102a9641795384883ded86bf6e78f70d4bef35294ccebd2634",
+    "committed_path": "checks/cargo-mode.log",
+    "committed_sha256": "ab8f814f949da4102a9641795384883ded86bf6e78f70d4bef35294ccebd2634",
+    "normalization": "Trailing whitespace and extra blank EOF lines removed only; raw output preserved at raw_path."
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r2-bounded-library.log",
+    "raw_sha256": "1372b38adc44beb235284c115db58f162e189bd1980a4e47ba5ffbe491a4adae",
+    "committed_path": "diagnostics/initial-catalog-bounded-library.log",
+    "committed_sha256": "b1d4a1ccfb26473e25bbfa6ee882fbd229263a1347a619f09d2c053c1fb9edbc",
+    "normalization": "Trailing whitespace and extra blank EOF lines removed only; raw output preserved at raw_path."
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r2-bounded-library-final.log",
+    "raw_sha256": "8e1759bd5baddfd7e82f3177f8eec6d48a1826577471aeccfd4d9fe30b0c32b2",
+    "committed_path": "diagnostics/identity-race-bounded-library.log",
+    "committed_sha256": "dc8032f481d05cfb9bb99e12dc0edbefdae1b7ce2b0cf2c46e04cb9218289f56",
+    "normalization": "Trailing whitespace and extra blank EOF lines removed only; raw output preserved at raw_path."
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r2-identity-serial.log",
+    "raw_sha256": "0bb5fcabb036e9393c09d8a4c809f3bf50340c9319394654fb560fcdc8a1cd22",
+    "committed_path": "diagnostics/identity-race-isolated-pass.log",
+    "committed_sha256": "c0eba53e6c6193f28e9a9efa7250eea2731d23aa9a7822b724bbdff77b983b35",
+    "normalization": "Trailing whitespace and extra blank EOF lines removed only; raw output preserved at raw_path."
+  }
+]

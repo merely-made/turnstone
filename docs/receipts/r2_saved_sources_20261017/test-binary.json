@@ -1,0 +1,6 @@
+{
+  "path": "/Users/markik/Code/output/turnstone-r2-qualified-tests-polished/turnstone-a8f1418604963df6",
+  "sha256": "b9fcd042d710b35994bcca6ea1a848f881c6ae1b149c66a0fa3ab3ae13da6673",
+  "toolchain": "rustup run 1.99.1",
+  "build_log": "checks/focused.log"
+}

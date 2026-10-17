@@ -1,0 +1,782 @@
+warning: skipping duplicate package `mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/proofs/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/system/proofs/Cargo.toml
+
+warning: skipping duplicate package `muniment v0.1.2 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/eidetic/muniment/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/eidetic/muniment/Cargo.toml
+
+warning: skipping duplicate package `mere-apparatus v0.0.1 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/domain/apparatus/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/domain/apparatus/Cargo.toml
+
+warning: skipping duplicate package `armillary v0.1.1 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/armillary/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/armillary/Cargo.toml
+
+warning: skipping duplicate package `cambium v0.3.3 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/cambium/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/cambium/cambium/Cargo.toml
+
+warning: skipping duplicate package `cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/cambium-winit/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/cambium/cambium-winit/Cargo.toml
+
+warning: skipping duplicate package `chartulary v0.2.2 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/eidetic/chartulary/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/eidetic/chartulary/Cargo.toml
+
+warning: skipping duplicate package `eidetic v0.0.2 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/eidetic/eidetic-core/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/eidetic/eidetic-core/Cargo.toml
+
+warning: skipping duplicate package `errand v0.4.0 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/errand/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/system/errand/Cargo.toml
+
+warning: skipping duplicate package `mere-fetch v0.0.1 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/fetch/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/system/fetch/Cargo.toml
+
+warning: skipping duplicate package `incipit v0.2.0 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/incipit/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/incipit/Cargo.toml
+
+warning: skipping duplicate package `inker v0.1.1 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/inker/inker/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/inker/inker/Cargo.toml
+
+warning: skipping duplicate package `mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/document-lanes/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/system/document-lanes/Cargo.toml
+
+warning: skipping duplicate package `mere-surface-api v0.1.0 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/surface-api/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/system/surface-api/Cargo.toml
+
+warning: skipping duplicate package `nematic v0.1.1 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/nematic/nematic/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/nematic/nematic/Cargo.toml
+
+warning: skipping duplicate package `mere-page-load v0.0.1 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/page-load/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/system/page-load/Cargo.toml
+
+warning: skipping duplicate package `pandect v0.1.1 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/pandect/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/system/pandect/Cargo.toml
+
+warning: skipping duplicate package `servitor v0.0.2 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/servitor/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/servitor/Cargo.toml
+
+warning: skipping duplicate package `sprigging v0.2.1 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/sprigging/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/cambium/sprigging/Cargo.toml
+
+warning: skipping duplicate package `stickleback v0.1.1 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/stickleback/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/stickleback/Cargo.toml
+
+warning: skipping duplicate package `uxtree v0.0.2 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/forme/uxtree/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/forme/uxtree/Cargo.toml
+
+warning: skipping duplicate package `workbench v0.1.0 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/workbench/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/cambium/workbench/Cargo.toml
+
+error: invalid type: boolean `true`, expected a map
+ --> ../../../.cargo/git/checkouts/servo-e53a6e7b994a25fe/aac43a3/python/tidy/tests/lints-configuration/no-workspace/Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+warning: skipping duplicate package `mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/distillery/alembic/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/distillery/alembic/Cargo.toml
+
+warning: skipping duplicate package `mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/graph/graph-kernel/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/graph/graph-kernel/Cargo.toml
+
+warning: skipping duplicate package `meristem v0.2.0 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/meristem/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/cambium/meristem/Cargo.toml
+
+warning: skipping duplicate package `illume v0.0.2 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/nematic/illume/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/nematic/illume/Cargo.toml
+
+warning: skipping duplicate package `mere-linked-data v0.0.1 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/graph/linked-data/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/graph/linked-data/Cargo.toml
+
+warning: skipping duplicate package `document-canvas v0.1.0 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/inker/document-canvas/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/inker/document-canvas/Cargo.toml
+
+warning: skipping duplicate package `numen v0.2.0 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/conatus/numen/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/a9b5dd6/crates/conatus/numen/Cargo.toml
+
+warning: patch `burn-remote v0.22.0 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://github.com/merely-made/mere.git?branch=main#a9b5dd66)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling turnstone v0.1.0 (/Users/markik/Code/worktrees/turnstone-r0-save)
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src/app/mod.rs:20:31
+   |
+20 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `browse`
+  --> src/app/mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^
+
+warning: unused import: `Admission`
+ --> src/app/r2_saved_source_tests.rs:7:28
+  |
+7 | use crate::saved_sources::{Admission, Content, Entry, Key, Selector, Target};
+  |                            ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src/app/node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src/app/omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src/app/palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src/app/session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src/app/session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: unused import: `Update`
+    --> src/denizen.rs:1141:33
+     |
+1141 |     use crate::action::{Action, Update};
+     |                                 ^^^^^^
+
+warning: unused import: `NodeKind`
+    --> src/knot_authoring.rs:3023:37
+     |
+3023 |     use layout_dom_api::{LayoutDom, NodeKind};
+     |                                     ^^^^^^^^
+
+warning: unused imports: `MOOT_ACT_ACTION` and `MOOT_DELEGATION_DOMAIN`
+    --> src/place/worker.rs:2730:44
+     |
+2730 |         CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
+     |                                            ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilityScope`, `DelegationCertificate`, `DelegationParent`, and `delegation_signing_salt`
+    --> src/place/worker.rs:2743:9
+     |
+2743 |         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+     |         ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+2744 |         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
+     |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Hash`
+  --> src/retained_clip.rs:12:15
+   |
+12 | use eidetic::{Hash, ManifestId, ProvenanceRecord, Timestamp, TrustEnvelope};
+   |               ^^^^
+
+warning: unused import: `Write`
+  --> src/retained_clip.rs:16:16
+   |
+16 |     io::{Read, Write},
+   |                ^^^^^
+
+warning: unused import: `NodeSessions`
+  --> src/shell/controller_input.rs:17:13
+   |
+17 | use super::{NodeSessions, NodeSurfaces, Shell, content_link_target};
+   |             ^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src/shell/drive.rs:17:23
+   |
+17 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+    --> src/shell/drive.rs:1354:13
+     |
+1354 |         use crate::action::CaretMove;
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `EditKey`
+    --> src/shell/drive.rs:1355:38
+     |
+1355 |         use crate::scenario::{CmpOp, EditKey, Step};
+     |                                      ^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src/shell/effects.rs:14:5
+   |
+14 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src/shell/effects.rs:16:13
+   |
+16 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src/shell/effects.rs:18:46
+   |
+18 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src/shell/effects.rs:23:5
+   |
+23 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `netrender::external_texture::ExternalTexturePlacement`
+  --> src/shell/render.rs:20:5
+   |
+20 | use netrender::external_texture::ExternalTexturePlacement;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `inker::SessionClick`
+  --> src/shell/lens.rs:29:5
+   |
+29 | use inker::SessionClick;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ContentKey`
+ --> src/shell/lens_tests.rs:7:20
+  |
+7 |     content_pool::{ContentKey, HostPlacement, NodeDocuments},
+  |                    ^^^^^^^^^^
+
+warning: unused import: `NodeSessions`
+  --> src/shell/input.rs:15:13
+   |
+15 | use super::{NodeSessions, NodeSurfaces};
+   |             ^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src/shell/input.rs:17:23
+   |
+17 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `SessionClick` and `SessionScrollKey`
+  --> src/shell/input.rs:21:13
+   |
+21 | use inker::{SessionClick, SessionScrollKey};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src/shell/input.rs:25:29
+   |
+25 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src/shell/input.rs:28:20
+   |
+28 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: unused imports: `SessionNavigationCommand` and `SessionSpawnRequest`
+  --> src/shell/window_input_tests.rs:17:53
+   |
+17 |     Cookie, FocusReason, KeyboardEvent, MouseEvent, SessionNavigationCommand, SessionSpawnRequest,
+   |                                                     ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `PeltLane`
+  --> src/shell/window_input_tests.rs:20:30
+   |
+20 | use pelt_core::{PeltContent, PeltLane, PeltRoute, PeltRouteSource, PeltRouteState};
+   |                              ^^^^^^^^
+
+warning: unused import: `input::pointer_button`
+  --> src/shell/mod.rs:49:5
+   |
+49 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src/shell/mod.rs:52:5
+   |
+52 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src/shell/mod.rs:59:5
+   |
+59 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src/shell/mod.rs:61:5
+   |
+61 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ReaderSessionEngine`
+  --> src/shell/mod.rs:63:5
+   |
+63 |     ReaderSessionEngine, RemoteFetcher, SmolwebInlineMediaPolicy, SmolwebSessionEngine,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src/shell/mod.rs:67:17
+   |
+67 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src/shell/mod.rs:68:5
+   |
+68 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src/shell/mod.rs:69:18
+   |
+69 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src/shell/mod.rs:70:20
+   |
+70 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src/shell/mod.rs:72:23
+   |
+72 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `A11yRoutes`
+ --> src/shell/window_a11y.rs:6:23
+  |
+6 |     a11y::{A11yRoute, A11yRoutes},
+  |                       ^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src/shell/mod.rs:82:29
+   |
+82 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src/shell/mod.rs:85:21
+   |
+85 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: unused import: `mere::canvas::palette`
+  --> src/swatch_pane/mod.rs:32:5
+   |
+32 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src/swatch_pane/mod.rs:33:17
+   |
+33 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src/swatch_pane/mod.rs:37:5
+   |
+37 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src/swatch_pane/mod.rs:38:5
+   |
+38 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> src/shell/native_composition.rs:63:10
+   |
+63 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+   |          ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+63 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+63 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+   --> src/shell/native_composition.rs:133:10
+    |
+133 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |          ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+133 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+133 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |
+
+warning: unused import: `genet_clipboard::TextClipboard`
+   --> src/shell/effects.rs:970:25
+    |
+970 |                     use genet_clipboard::TextClipboard as _;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::NodeSessions`
+  --> src/shell/lens.rs:14:5
+   |
+14 | use super::NodeSessions;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> src/place/worker.rs:3882:13
+     |
+3882 |         let mut welcome = |open: &mut OpenPlace, seed: u8| {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+    --> src/shell/drive.rs:1637:21
+     |
+1637 |                 let mut diagnostic = self.surface_a11y.publication_diagnostic(public_fixture);
+     |                     ----^^^^^^^^^^
+     |                     |
+     |                     help: remove this `mut`
+
+warning: unused variable: `caption`
+   --> src/shell/render.rs:883:13
+    |
+883 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `node`
+   --> src/shell/render.rs:932:54
+    |
+932 |                 crate::surface::SurfaceKind::Content(node) => {
+    |                                                      ^^^^ help: if this is intentional, prefix it with an underscore: `_node`
+
+warning: variable `surface_frame` is assigned to, but never used
+   --> src/shell/render.rs:933:25
+    |
+933 |                     let mut surface_frame = None;
+    |                         ^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_surface_frame` instead
+
+warning: value assigned to `surface_frame` is never read
+   --> src/shell/render.rs:937:29
+    |
+937 | ...                   surface_frame = Some(frame);
+    |                       ^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `host`
+   --> src/shell/lens.rs:306:18
+    |
+306 |         let Some(host) = lens.host.as_ref() else {
+    |                  ^^^^ help: if this is intentional, prefix it with an underscore: `_host`
+
+warning: unused variable: `space`
+    --> src/shell/lens.rs:1155:19
+     |
+1155 |     let Some(Some(space)) = app.lenses.get(ordinal) else {
+     |                   ^^^^^ help: if this is intentional, prefix it with an underscore: `_space`
+
+warning: variable does not need to be mutable
+   --> src/shell/mod.rs:911:17
+    |
+911 |             let mut can_replace = true;
+    |                 ----^^^^^^^^^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: method `sync` is never used
+   --> src/arrange_pane.rs:576:12
+    |
+485 | impl ArrangePane {
+    | ---------------- method in this implementation
+...
+576 |     pub fn sync(&mut self, app: &App, pane_w: f32, pane_h: f32) {
+    |            ^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `save_certs` is never used
+   --> src/denizen.rs:741:8
+    |
+741 | pub fn save_certs(session_dir: &Path, subject_hex: &str, certs: &[SignedDelegationCertificate]) {
+    |        ^^^^^^^^^^
+
+warning: associated function `new` is never used
+   --> src/device_receipts_pane.rs:130:12
+    |
+129 | impl DeviceReceiptsPane {
+    | ----------------------- associated function in this implementation
+130 |     pub fn new(service: Option<Arc<DeviceReceiptsService>>) -> Self {
+    |            ^^^
+
+warning: associated function `new` is never used
+   --> src/frozen_projection_pane.rs:159:12
+    |
+158 | impl FrozenProjectionPane {
+    | ------------------------- associated function in this implementation
+159 |     pub fn new() -> Self {
+    |            ^^^
+
+warning: method `key_inline` is never used
+  --> src/inline_pane.rs:71:12
+   |
+36 | impl InlinePane {
+   | --------------- method in this implementation
+...
+71 |     pub fn key_inline(&mut self, event: cambium::KeyEvent) -> Vec<()> {
+   |            ^^^^^^^^^^
+
+warning: methods `projection_input_binding` and `runtime_projection_source` are never used
+    --> src/knot_authoring.rs:2634:12
+     |
+2414 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2634 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2644 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `split_axis` and `new_is_first` are never used
+   --> src/panes/mod.rs:349:19
+    |
+348 | impl InsertSide {
+    | --------------- methods in this implementation
+349 |     pub(crate) fn split_axis(self) -> SplitAxis {
+    |                   ^^^^^^^^^^
+...
+358 |     pub(crate) fn new_is_first(self) -> bool {
+    |                   ^^^^^^^^^^^^
+
+warning: function `spawn_bin` is never used
+   --> src/recycle.rs:166:8
+    |
+166 | pub fn spawn_bin(wake: Wake, dir: PathBuf) -> (ActorHandle<BinCommand>, Receiver<Update>) {
+    |        ^^^^^^^^^
+
+warning: function `granted_ring_names` is never used
+   --> src/ring.rs:407:8
+    |
+407 | pub fn granted_ring_names(authority: &impl AuthorityProvider, subject: Subject) -> Vec<String> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `roster_grid_rows` is never used
+   --> src/roster_view.rs:101:8
+    |
+101 | pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+   --> src/scenario.rs:272:12
+    |
+272 |     Settle(u32),
+    |     ------ ^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+272 -     Settle(u32),
+272 +     Settle(()),
+    |
+
+warning: field `0` is never read
+   --> src/scenario.rs:308:17
+    |
+308 |     AssertEvent(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+308 -     AssertEvent(String),
+308 +     AssertEvent(()),
+    |
+
+warning: field `0` is never read
+   --> src/scenario.rs:344:9
+    |
+344 |     Log(String),
+    |     --- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+344 -     Log(String),
+344 +     Log(()),
+    |
+
+warning: method `publish` is never used
+   --> src/settings_pane.rs:172:8
+    |
+158 | impl LiveSettingsHandle {
+    | ----------------------- method in this implementation
+...
+172 |     fn publish(&self, settings: &ApplicationSettings) {
+    |        ^^^^^^^
+
+warning: associated function `new` is never used
+   --> src/share_reader_pane.rs:145:12
+    |
+144 | impl SharedKnotPane {
+    | ------------------- associated function in this implementation
+145 |     pub fn new(service: Option<Arc<KnotShareReaderService>>) -> Self {
+    |            ^^^
+
+warning: variant `Imported` is never constructed
+   --> src/shell/mod.rs:610:5
+    |
+608 | enum PlannedLayer {
+    |      ------------ variant in this enum
+609 |     Scene(PlannedScene),
+610 |     Imported(CompositeLayer),
+    |     ^^^^^^^^
+
+warning: methods `has_live_content`, `has_independent_reader_appearance`, `all_content_plans`, and `pane_label` are never used
+    --> src/shell/mod.rs:1778:8
+     |
+1420 | impl Shell {
+     | ---------- methods in this implementation
+...
+1778 |     fn has_live_content(&self, node: &uuid::Uuid) -> bool {
+     |        ^^^^^^^^^^^^^^^^
+...
+1782 |     fn has_independent_reader_appearance(&self, node: &uuid::Uuid) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2063 |     fn all_content_plans(&self) -> Vec<crate::surface::Surface> {
+     |        ^^^^^^^^^^^^^^^^^
+...
+2180 |     fn pane_label(&self, id: crate::panes::PaneId) -> String {
+     |        ^^^^^^^^^^
+
+warning: method `foreign_a11y_placements_in` is never used
+  --> src/shell/foreign_a11y.rs:65:19
+   |
+ 9 | impl Shell {
+   | ---------- method in this implementation
+...
+65 |     pub(super) fn foreign_a11y_placements_in(
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `on_key` is never used
+   --> src/shell/keys.rs:362:19
+    |
+ 79 | impl Shell {
+    | ---------- method in this implementation
+...
+362 |     pub(super) fn on_key(&mut self, key: &WinitKey) {
+    |                   ^^^^^^
+
+warning: function `frame_body_rects` is never used
+  --> src/shell/outer_workspace.rs:95:15
+   |
+95 | pub(super) fn frame_body_rects(
+   |               ^^^^^^^^^^^^^^^^
+
+warning: function `ime_cursor_area` is never used
+    --> src/ui.rs:1141:8
+     |
+1141 | pub fn ime_cursor_area(state: &OmnibarState, w: u32) -> ((f32, f32), (f32, f32)) {
+     |        ^^^^^^^^^^^^^^^
+
+warning: function `chrome_has_content` is never used
+    --> src/ui.rs:1159:8
+     |
+1159 | pub fn chrome_has_content(state: &OmnibarState, caption: Option<&str>) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_with_leaves` is never used
+    --> src/ui.rs:2762:8
+     |
+2762 | pub fn scene_from_dom_with_leaves(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `stamp` and `dom_ref` are never used
+   --> src/outer_frame.rs:248:19
+    |
+ 90 | impl OuterFrame {
+    | --------------- methods in this implementation
+...
+248 |     pub(crate) fn stamp(&self) -> FrameStamp {
+    |                   ^^^^^
+...
+418 |     pub(crate) fn dom_ref(&self) -> std::cell::Ref<'_, ScriptedDom> {
+    |                   ^^^^^^^
+
+warning: `turnstone` (lib test) generated 86 warnings (run `cargo fix --lib -p turnstone --tests` to apply 58 suggestions)
+    Finished `test` profile [unoptimized] target(s) in 45.02s
+     Running unittests src/lib.rs (target/build/debug/deps/turnstone-a8f1418604963df6)
+
+running 16 tests
+test app::r2_saved_source_tests::admissions_follow_live_session_graph_facets_and_preserve_occurrences ... ok
+test app::r2_saved_source_tests::exact_read_is_local_and_detaching_reference_withdraws_the_retained_reader ... ok
+test app::r2_saved_source_tests::asynchronous_corpus_answers_are_rejected_after_generation_or_facets_change ... ok
+test app::r2_saved_source_tests::opening_saved_source_uses_the_focused_panes_graph_not_the_compatibility_cursor ... ok
+test app::r2_saved_source_tests::retargeted_or_old_generation_read_replies_cannot_install_saved_text ... ok
+test saved_sources::tests::document_keeps_original_address_as_an_explicit_link ... ok
+test saved_sources::tests::internal_address_round_trips_and_rejects_noncanonical_routes ... ok
+test saved_sources::tests::search_keeps_equal_text_provenance_separate_and_deduplicates_occurrences ... ok
+test scenario::tests::saved_source_observation_commands_parse_and_reject_bad_arguments ... ok
+test shell::saved_sources::tests::another_document_or_forged_presentation_identity_is_refused ... ok
+test shell::saved_sources::tests::only_host_resolved_local_identity_spawns_the_real_retained_session ... ok
+test app::r2_saved_source_tests::saved_reader_navigation_back_restores_exact_offline_selector_and_rejects_bad_targets ... ok
+test trail_memory::saved_sources::tests::actor_load_and_read_require_current_owner_generation_and_exact_store ... ok
+test trail_memory::saved_sources::tests::canonical_text_hash_and_unicode_scalar_range_are_enforced ... ok
+test trail_memory::saved_sources::tests::corrupt_typed_annotation_becomes_unavailable_without_origin_fallback ... ok
+test trail_memory::saved_sources::tests::exact_live_admissions_reopen_offline_and_reject_wrong_or_missing_ids ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 1052 filtered out; finished in 3.71s

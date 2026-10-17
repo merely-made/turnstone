@@ -1,0 +1,28 @@
+# Fresh process after the origin server has exited. The named private session
+# is explicitly selected, then the same search result is read from the saved
+# annotation with no fetcher or resident available.
+settle 5
+key escape
+assert snap network-offline == true
+omnibar actions
+type Switch to session R2 Private One
+key enter
+settle 8
+act Search saved sources
+type naïve — 東京 🐦
+wait-saved-sources 600
+assert snap saved-sources-status == Ready
+assert suggestions == 1
+assert snap suggestions ~ Source A
+assert no-row unkept orchid-only sentinel
+capture 09_reopen_A1_search
+key enter
+wait-saved-reader 600
+assert snap saved-reader-state == Ready
+assert snap saved-reader-text ~ Archive A1 opening
+assert snap saved-reader-quote == naïve — 東京 🐦
+assert snap saved-reader-origin ~ /A
+assert a11y Open original address
+capture 10_reopen_A1_reader
+record-saved-sources 10_reopen_A1_reader
+log R2 fresh-process offline reopen complete

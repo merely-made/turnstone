@@ -179,6 +179,10 @@ pub enum Action {
     },
     /// Retry the same explicit request; never recapture a replacement response.
     RetrySourceDocumentCapture { request: uuid::Uuid },
+    /// Search the current session's explicitly attached saved evidence.
+    SearchSavedSources,
+    /// Read immutable source text at an optional exact Unicode passage.
+    OpenSavedSource(crate::saved_sources::Target),
     ChoosePermission {
         request: crate::user_agent_decision::UserAgentRequestKey,
         choice: crate::user_agent_decision::PermissionChoice,
@@ -727,6 +731,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
             "Open Knot document read-only",
             Action::ChooseKnotDocumentFile { read_only: true },
         ),
+        ("Search saved sources", Action::SearchSavedSources),
         ("Ask retained text", Action::OpenAnswers),
         (
             "Open Sky reference",
@@ -1132,6 +1137,20 @@ pub enum Effect {
     PersistSourceCapture {
         request: uuid::Uuid,
     },
+    LoadSavedSources {
+        generation: uuid::Uuid,
+        request: uuid::Uuid,
+        session: crate::panes::SessionId,
+        admissions: Vec<crate::saved_sources::Admission>,
+    },
+    ReadSavedSource {
+        generation: uuid::Uuid,
+        request: uuid::Uuid,
+        node: uuid::Uuid,
+        url: String,
+        target: crate::saved_sources::Target,
+        admission: crate::saved_sources::Admission,
+    },
     /// Ask one exact live content owner to replace or step its retained find.
     FindContent {
         node: uuid::Uuid,
@@ -1226,6 +1245,21 @@ impl std::fmt::Debug for MicronSubmission {
 /// state through [`crate::app::apply_update`]. App-owned types only; port
 /// adapters convert.
 pub enum Update {
+    SavedSourcesLoaded {
+        generation: uuid::Uuid,
+        request: uuid::Uuid,
+        session: crate::panes::SessionId,
+        admissions: Vec<crate::saved_sources::Admission>,
+        result: Result<Vec<crate::saved_sources::Entry>, String>,
+    },
+    SavedSourceRead {
+        generation: uuid::Uuid,
+        request: uuid::Uuid,
+        node: uuid::Uuid,
+        url: String,
+        target: crate::saved_sources::Target,
+        result: Result<crate::saved_sources::Content, String>,
+    },
     /// Exact Gemini response bytes arrived before the terminal fetch answer.
     PageStreamed {
         request: fetch::FetchRequestId,

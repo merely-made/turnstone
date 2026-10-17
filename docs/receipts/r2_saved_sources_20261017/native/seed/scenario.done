@@ -1,0 +1,13 @@
+RESULT ok
+captured 04_foreign_session_source
+captured 05_A1_search
+captured 06_A1_reader
+captured 07_offline_A1_search
+captured 08_offline_A1_reader
+R2 seed complete after origin shutdown
+presentation frames=204 captures=5 blank=0
+capture /Users/markik/Code/output/turnstone-r2-native-final-03/seed/04_foreign_session_source.png digest=c087866021d4a7bb blank=false
+capture /Users/markik/Code/output/turnstone-r2-native-final-03/seed/05_A1_search.png digest=e638004dfd705705 blank=false
+capture /Users/markik/Code/output/turnstone-r2-native-final-03/seed/06_A1_reader.png digest=bd6cf93eb54abd86 blank=false
+capture /Users/markik/Code/output/turnstone-r2-native-final-03/seed/07_offline_A1_search.png digest=60e88804509cc37b blank=false
+capture /Users/markik/Code/output/turnstone-r2-native-final-03/seed/08_offline_A1_reader.png digest=3af107505dd08f15 blank=false

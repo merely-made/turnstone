@@ -1,0 +1,12 @@
+{
+  "result": "pass",
+  "only_change": "78 exact Mere source records, including unused patches; no package/version/dependency/other-source changes",
+  "old_mere": "1be0bc04f44eacf4cecce62afc84bda68625cf87",
+  "new_mere": "a9b5dd6635e7528ff3d2aec1e389075d628fcb6c",
+  "records_changed": 78,
+  "package_records_before": 1688,
+  "package_records_after": 1688,
+  "old_lock_sha256": "5c69d432c9081e44bfe18c95ade703e82157473d4a4f2abc42946e5ef3de2007",
+  "new_lock_sha256": "da3a3bf8b6cfde9b3dd692757c6f93d632efd07c6d9d23d2ed36155c16f60458",
+  "cargo_manifest_unchanged": true
+}

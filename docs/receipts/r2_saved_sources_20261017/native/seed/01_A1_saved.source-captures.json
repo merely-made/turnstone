@@ -1,0 +1,24 @@
+[
+  {
+    "error": null,
+    "graph": "b9a2645b-4950-4e28-b62c-25b4be0fb93e",
+    "keep": true,
+    "node": "6b6e8218-657f-4e9d-a1a2-610869c18bff",
+    "ordinal": 1,
+    "phase": "saved",
+    "request": "5e91eca1-e48f-4ffa-a75b-319bad87d1be",
+    "session": "f4013057-4867-4b76-9738-2665123ca17f",
+    "source": {
+      "acquired_at_ms": 1792274807482,
+      "body_hash": "blake3:fba44add7056fd91ed3f40250134ca5853c1701b42547394a2d52a778e13c776",
+      "content_type": "text/html; charset=utf-8",
+      "effective_url": "http://127.0.0.1:65507/A",
+      "hash": "blake3:fba44add7056fd91ed3f40250134ca5853c1701b42547394a2d52a778e13c776"
+    },
+    "stored": {
+      "annotation_manifest": "blake3:3c01d7ed6ed974357269505fcb16999269406fd66fa9fde15d109fb14262f77e",
+      "raw_manifest": "blake3:fba44add7056fd91ed3f40250134ca5853c1701b42547394a2d52a778e13c776"
+    },
+    "url": "http://127.0.0.1:65507/A"
+  }
+]

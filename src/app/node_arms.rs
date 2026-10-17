@@ -527,6 +527,7 @@ impl App {
         };
         let (node, url) = target;
         self.events.push(AppEvent::Reloaded(url.clone()));
+        self.saved_readers.remove(&node);
         self.link_preview = None;
         let mut find_effects = self.invalidate_document_find_for(node);
         find_effects.extend(self.invalidate_micron_submission());
@@ -1530,6 +1531,13 @@ impl App {
     }
 
     pub(super) fn open_address(&mut self, url: String) -> Vec<Effect> {
+        let saved = match crate::saved_sources::parse_address(&url) {
+            Ok(Some(target)) if !self.saved_source_admitted(&target.key) => {
+                return self.saved_source_refusal("This saved source is not attached in the current session".into());
+            },
+            Ok(target) => target,
+            Err(error) => return self.saved_source_refusal(error),
+        };
         if let Some(effects) = self.retained_clip_control(&url) { return effects; }
         let mut effects = self.invalidate_micron_submission();
         self.events.push(AppEvent::AddressOpened(url.clone()));
@@ -1547,12 +1555,33 @@ impl App {
         let pane = self
             .focused_graph_pane()
             .unwrap_or_else(|| self.default_graph_pane());
+        if saved.is_some() && !self.graph_for_pane(pane)
+            .and_then(|graph| self.graph_runtimes.get(graph))
+            .is_some_and(|runtime| runtime.session == Some(self.session_id)) {
+            return self.saved_source_refusal("The reader view belongs to another session".into());
+        }
         let Some(key) = self.with_graph_pane(pane, |canvas| canvas.visit(&url)) else {
             effects.push(Effect::Redraw);
             return effects;
         };
         self.history.visit(url.clone());
         effects.push(Effect::Redraw);
+        if saved.is_some()
+            && let Some(node) = self.graph_for_pane(pane)
+                .and_then(|graph| self.graph_runtimes.canvas(graph))
+                .and_then(|canvas| canvas.graph().get_node(key))
+                .map(|node| node.id)
+        {
+            // The internal address is durable reader intent, never a new origin
+            // fetch or source capture. Every explicit open revalidates locally.
+            self.saved_readers.remove(&node);
+            self.browser.entry(node).content_on = true;
+            self.content.note_requested(node);
+            effects.push(Effect::CloseContent { node });
+            effects.push(Effect::SpawnContent { node, url });
+            effects.push(Effect::SaveSession);
+            return effects;
+        }
         if matches!(crate::retained_clip::request(&url), Ok(Some(crate::retained_clip::ClipRequest::Read(_))))
             && let Some(node) = self.graph_runtimes.graph().get_node(key).map(|n| n.id) {
             self.content.note_requested(node);
@@ -1621,6 +1650,9 @@ impl App {
         if already_current || !canvas.navigate_member(member, &url) {
             return Vec::new();
         }
+        // A retained read belongs to this view's exact address. Dropping it
+        // also cancels the pending-read dedup fence when navigating away.
+        self.saved_readers.remove(&member);
         self.events
             .push(AppEvent::ContentNavigated { node: member, url });
         let mut effects = self.invalidate_document_find_for(member);
@@ -1701,6 +1733,7 @@ impl App {
         }) else {
             return vec![Effect::Redraw];
         };
+        self.saved_readers.remove(&node);
         if back {
             self.events.push(AppEvent::NavigatedBack(url.clone()));
         } else {

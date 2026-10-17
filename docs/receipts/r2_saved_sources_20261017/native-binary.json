@@ -1,0 +1,7 @@
+{
+  "path": "/Users/markik/Code/worktrees/turnstone-r0-save/target/debug/turnstone",
+  "sha256": "6db4f6e06e9ae931422f8446095efa3b809389b38df6957f65109c5ae610a02b",
+  "toolchain": "rustup run 1.99.1",
+  "build_command": "cargo build --locked --offline --bin turnstone -j2",
+  "log": "checks/native-build.log"
+}

@@ -1,0 +1,127 @@
+# R2 private saved-source seed. All bodies are admitted through ordinary fetch
+# and the source-bound Save source and keep action. Never seed storage directly.
+# Give fetch completions ordinary frame turns; the offered Save control and
+# its acknowledged manifest/body checks are the readiness proof. Global graph
+# quiescence is unrelated to source reading and is deliberately not a gate.
+settle 5
+key escape
+act New session
+settle 5
+act Rename session
+type R2 Private One
+key enter
+settle 5
+
+open ${TURNSTONE_R2_FIXTURE_URL}/A
+settle 8
+assert focused /A
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+assert row Saved captures: 1
+record-source-captures 01_A1_saved
+
+open ${TURNSTONE_R2_FIXTURE_URL}/B
+settle 8
+assert focused /B
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+assert row Saved captures: 1
+record-source-captures 02_B_saved
+
+# Visit X as metadata/address history only; there is no Save gesture here.
+open ${TURNSTONE_R2_FIXTURE_URL}/X
+settle 8
+assert focused /X
+
+# Change A at the same URL through a real HTTP response and explicitly retain A2.
+open ${TURNSTONE_R2_FIXTURE_URL}/swap-a
+settle 8
+open ${TURNSTONE_R2_FIXTURE_URL}/A
+settle 8
+assert focused /A
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+assert row Saved captures: 2
+record-source-captures 03_A2_saved
+act Save session
+
+# Exercise another session's saved sentinel. Its source must never enter this
+# session's listing/search even though both sessions share the same profile.
+act New session
+settle 5
+act Rename session
+type R2 Foreign Two
+key enter
+settle 5
+open ${TURNSTONE_R2_FIXTURE_URL}/Foreign
+settle 8
+assert focused /Foreign
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+act Save session
+act Search saved sources
+type copperfield
+wait-saved-sources 600
+assert snap saved-sources-status == Ready
+assert snap saved-reader-state == None
+assert suggestions == 1
+assert snap suggestions ~ Foreign Source
+capture 04_foreign_session_source
+record-saved-sources 04_foreign_session_source
+
+# Return to the original private session and search its source corpus.
+omnibar actions
+type Switch to session R2 Private One
+key enter
+settle 8
+act Search saved sources
+type naïve — 東京 🐦
+wait-saved-sources 600
+assert snap saved-sources-status == Ready
+assert snap saved-reader-state == None
+assert suggestions == 1
+assert no-row unkept orchid-only sentinel
+assert snap suggestions ~ Source A
+assert snap suggestions ~ Read saved source:
+capture 05_A1_search
+
+# Open the exact search result. The reader exposes both the selected quote and
+# complete immutable canonical source, along with the annotation provenance.
+key enter
+wait-saved-reader 600
+assert snap saved-reader-state == Ready
+assert snap saved-reader-text ~ Archive A1 opening
+assert snap saved-reader-quote == naïve — 東京 🐦
+assert snap saved-reader-origin ~ /A
+assert a11y Open original address
+capture 06_A1_reader
+record-saved-sources 06_A1_reader
+
+# Signal the runner to stop the real origin. Search and reading after this point
+# are valid only after the external runner records process death and TCP refusal.
+touch ${TURNSTONE_R2_STOP_ORIGIN}
+wait-file 600 ${TURNSTONE_R2_ORIGIN_STOPPED}
+key escape
+act Search saved sources
+type naïve — 東京 🐦
+wait-saved-sources 600
+assert snap saved-sources-status == Ready
+assert suggestions == 1
+assert snap suggestions ~ Source A
+capture 07_offline_A1_search
+key enter
+wait-saved-reader 600
+assert snap saved-reader-state == Ready
+assert snap saved-reader-quote == naïve — 東京 🐦
+assert snap saved-reader-text ~ Archive A1 opening
+capture 08_offline_A1_reader
+record-saved-sources 08_offline_A1_reader
+log R2 seed complete after origin shutdown

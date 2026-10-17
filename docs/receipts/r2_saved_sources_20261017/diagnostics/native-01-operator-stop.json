@@ -1,0 +1,5 @@
+{
+  "reason": "Stopped the owned headed candidate after identifying shared wait 1800 was held by global graph settling on B, rather than source-save acknowledgement; replace unrelated quiescence dependency with source-bound controls.",
+  "owned_pid": 55721,
+  "utc": "2026-10-17T21:55:49.590161+00:00"
+}

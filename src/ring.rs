@@ -118,7 +118,7 @@ pub fn ring_of(action: &Action) -> Ring {
     }
     match action {
         // Moving through content.
-        OpenAddress(_) | NavBack | NavForward | Reload | Stop => Ring::Navigate,
+        OpenAddress(_) | OpenSavedSource(_) | NavBack | NavForward | Reload | Stop => Ring::Navigate,
 
         // Window / pane / workbench arrangement.
         NewWindow
@@ -277,6 +277,7 @@ pub fn ring_of(action: &Action) -> Ring {
         // admission gesture literal until attachment disclosure has its own
         // narrower authority.
         | CapturePage { .. }
+        | SearchSavedSources
         | CaptureSourceDocument { .. }
         | RetrySourceDocumentCapture { .. }
         // Joining a place is a trust act, not a session act, so it sits at the

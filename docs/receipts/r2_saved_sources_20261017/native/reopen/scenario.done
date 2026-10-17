@@ -1,0 +1,7 @@
+RESULT ok
+captured 09_reopen_A1_search
+captured 10_reopen_A1_reader
+R2 fresh-process offline reopen complete
+presentation frames=41 captures=2 blank=0
+capture /Users/markik/Code/output/turnstone-r2-native-final-03/reopen/09_reopen_A1_search.png digest=04af848b5406e82b blank=false
+capture /Users/markik/Code/output/turnstone-r2-native-final-03/reopen/10_reopen_A1_reader.png digest=918d2e402406d066 blank=false

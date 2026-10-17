@@ -216,6 +216,10 @@ impl GraphRuntimePool {
         self.runtimes.contains_key(&graph)
     }
 
+    pub(crate) fn iter(&self) -> impl Iterator<Item = &GraphRuntime> {
+        self.runtimes.values()
+    }
+
     pub fn get(&self, graph: GraphId) -> Option<&GraphRuntime> {
         self.runtimes.get(&graph)
     }

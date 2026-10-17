@@ -1,0 +1,88 @@
+{
+  "result": "pass",
+  "verifier_sha256": "4526eeba777e1261cc798bdbca19747b7a00cea2dacd65606cd1f5614d92127f",
+  "headed_processes": 2,
+  "binary_sha256": "cab07dd0003a6bdf88a2c47573c9b2e19d595bd122ddd6a272fa569592db3a78",
+  "origin_stopped_before_offline_search_and_reader": true,
+  "origin_tcp_refused": true,
+  "post_stop_requests": 0,
+  "private_admissions": [
+    "blake3:e80877e0d8835614ade9ddcacc9c42da6dc00a1285b63059d2a5287c68ef14ec",
+    "blake3:0d8743102d83b76e3700ab1d19eb9d330c4837489282dae17110b87ccc2daa28",
+    "blake3:9e39dc72e6e12bdf76824a2198cd68d6a1c370a626808913ace69873fa5cf8f6"
+  ],
+  "a1_reader_target": {
+    "key": {
+      "annotation_manifest": "blake3:e80877e0d8835614ade9ddcacc9c42da6dc00a1285b63059d2a5287c68ef14ec",
+      "graph": "924be997-4981-463d-890b-007e8cbbd75b",
+      "node": "3b127eea-e972-4506-88e3-6c6c531a4abe",
+      "session": "0611b7ce-f01e-48bf-8a51-9288df1ca199"
+    },
+    "selector": {
+      "end": 56,
+      "start": 44
+    },
+    "text_hash": "blake3:810f0f9a2ba1ccb4eb1de01da50957be53fd82e26dcb0d656ab11d969e52711f"
+  },
+  "foreign_session_excluded": true,
+  "visited_only_x_excluded": true,
+  "offline_fresh_process_reader": true,
+  "visual_review_captures": [
+    {
+      "path": "reopen/09_reopen_A1_search.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "f93dcb2c0696844722f6e55568c875c68691b9be9fc153579dc5e77059125561"
+    },
+    {
+      "path": "reopen/10_reopen_A1_reader.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "ec645e33dcbe6481a081962089773e55cc8a71584592afa5858c89f7324755e4"
+    },
+    {
+      "path": "seed/04_foreign_session_source.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "1da04b20cbe3201c29952cbffcdddf220206c92598da3bb71fa92bf083e6dd52"
+    },
+    {
+      "path": "seed/05_A1_search.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "7221b8ecd28559ecffcbab0a1f8e4b8401a58a90c88a800c282dcfd87d692670"
+    },
+    {
+      "path": "seed/06_A1_reader.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "625b2a3b96b4990300dfc873ab113c5c53065d93c7b1df474630d669d0219c62"
+    },
+    {
+      "path": "seed/07_offline_A1_search.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "1d90ab3fa2054626b9db64f0c6f12e8f84ff7c2e7887861def85c302942c1d0f"
+    },
+    {
+      "path": "seed/08_offline_A1_reader.png",
+      "size": [
+        1024,
+        600
+      ],
+      "sha256": "8c9cf8633b7e057197b5f1a21da4eedc4aeb4d37f0829741b5a03649018f066e"
+    }
+  ]
+}

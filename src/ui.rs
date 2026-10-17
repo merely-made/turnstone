@@ -408,6 +408,8 @@ pub enum OmnibarMode {
     Address,
     /// Search only the currently projected captured-page cache for this place.
     CapturedPages,
+    /// Search private source captures attached in the current session.
+    SavedSources,
     /// Filter the active place's local status observations.
     PlaceStatus,
     RenameSession(crate::panes::SessionId),
