@@ -1082,9 +1082,7 @@ impl Shell {
                                 }
                                 handled
                             },
-                            ElementState::Released => self
-                                .app
-                                .graph_pane_pointer_up(pane, button, local_x, local_y),
+                            ElementState::Released => self.release_graph_pointer(pane, button, local_x, local_y),
                         };
                     }
                 }

@@ -34,6 +34,7 @@ mod journal_origin_tests;
 mod resident_admission_tests;
 #[cfg(test)]
 mod resident_run_tests;
+mod fold_arms;
 mod runtime_pool;
 mod user_agent_decision_arms;
 
@@ -1141,6 +1142,11 @@ impl App {
             Action::UnsubscribeFocusedFeed => self.unsubscribe_focused_feed(),
             Action::RefreshFeeds => self.refresh_feeds(),
             Action::MarkFocusedFeedEntryRead => self.mark_focused_feed_entry_read(),
+            action @ (Action::FoldSelection
+            | Action::ExpandFold
+            | Action::ExpandAllFolds
+            | Action::UndoFold
+            | Action::RedoFold) => self.edit_graph_folds(action),
             Action::ReseedLayout => self.reseed_layout(),
             Action::SetLayoutStrategy(id) => self.set_layout_strategy(id),
             Action::SetPhysicsLaw(id) => {

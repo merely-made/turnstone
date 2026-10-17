@@ -33,6 +33,7 @@ pub struct GraphRuntime {
     pub graph: GraphId,
     pub session: Option<SessionId>,
     pub canvas: Canvas,
+    pub(crate) folds: crate::graph_folds::FoldSidecar,
     origin: Option<crate::host_journal::RuntimeOrigin>,
     pub(crate) persistence: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile>,
 }
@@ -46,6 +47,7 @@ impl GraphRuntime {
             graph,
             session,
             canvas,
+            folds: Default::default(),
             origin: None,
             persistence: crate::session_persistence::SessionPersistence::Unbound,
         }

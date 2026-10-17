@@ -1125,6 +1125,12 @@ impl App {
         self.redshank = self.redshank.reopen(&sdir);
         self.redshank_members.clear();
         self.reconcile_redshank_fields();
+        {
+            let graph = self.graph_runtimes.active_graph();
+            let runtime = self.graph_runtimes.get_mut(graph).expect("active graph");
+            runtime.folds =
+                crate::graph_folds::FoldSidecar::restore(&sdir, graph, &mut runtime.canvas);
+        }
         if let Some(score) = session::load_projection_score(&sdir) {
             self.graph_runtimes.restore_projection_score(score);
         }

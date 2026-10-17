@@ -1277,6 +1277,117 @@ impl Shell {
         match step {
             // ---- interactions: drive the Shell (the former Tick execution) ----
             Step::Open(url) => self.act(Action::OpenAddress(url.clone())),
+            Step::SelectGraphMember(url) => {
+                let pane = self.app.fold_owner_pane().ok_or("no graph owner pane")?;
+                self.app
+                    .with_graph_pane(pane, |canvas| {
+                        if url == "none" {
+                            canvas.clear_selection();
+                            return Ok(());
+                        }
+                        let id = canvas
+                            .graph()
+                            .get_node_by_url(url)
+                            .map(|(_, node)| node.id)
+                            .ok_or("source member absent")?;
+                        if canvas.fold_of_member(id).is_some() {
+                            return Err("member already folded");
+                        }
+                        canvas.toggle_select_member(id);
+                        Ok(())
+                    })
+                    .ok_or("graph absent")??;
+                self.app.focus = crate::surface::FocusTarget::Graph(pane);
+                self.request_redraw();
+            },
+            Step::ActivateGraphFold(index) => {
+                let pane = self.app.fold_owner_pane().ok_or("no graph owner pane")?;
+                let badge = self
+                    .app
+                    .with_graph_pane(pane, |canvas| canvas.fold_badges().get(*index).cloned())
+                    .flatten()
+                    .ok_or("fold badge absent")?;
+                self.app.graph_pane_pointer_down(
+                    pane,
+                    mere::canvas::PointerButton::Left,
+                    badge.at.0,
+                    badge.at.1,
+                );
+                self.release_graph_pointer(
+                    pane,
+                    mere::canvas::PointerButton::Left,
+                    badge.at.0,
+                    badge.at.1,
+                );
+                self.request_redraw();
+            },
+            Step::RecordGraphFolds(name, expected) => {
+                let pane = self.app.fold_owner_pane().ok_or("no graph owner pane")?;
+                let graph = self.app.graph_for_pane(pane).ok_or("graph absent")?;
+                let value = self.app.with_graph_pane(pane, |canvas| {
+                    if canvas.fold_records().len() != *expected {
+                        return Err(format!("expected {expected} folds, got {}", canvas.fold_records().len()));
+                    }
+                    let mut positions: Vec<_> = canvas.graph().nodes().map(|(key, node)| {
+                        let pos = canvas.world_position_of(key).map(|p| [p.x, p.y]);
+                        (node.id.to_string(), pos)
+                    }).collect();
+                    positions.sort_by(|a, b| a.0.cmp(&b.0));
+                    let routes: Vec<_> = canvas.fold_routes().iter().map(|route| {
+                        serde_json::json!({
+                            "from": format!("{:?}", route.from),
+                            "to": format!("{:?}", route.to),
+                            "family": format!("{:?}", route.family),
+                            "count": route.count,
+                        })
+                    }).collect();
+                    let relations: Vec<_> = canvas.graph().projected_relations().map(|(_, relation)| {
+                        serde_json::json!({
+                            "from": format!("{:?}", relation.from),
+                            "to": format!("{:?}", relation.to),
+                            "family": format!("{:?}", relation.kind.family()),
+                        })
+                    }).collect();
+                    let member_keys: Vec<_> = canvas.graph().nodes().map(|(key, node)| {
+                        serde_json::json!({"id": node.id, "key": format!("{:?}", key)})
+                    }).collect();
+                    Ok(serde_json::json!({
+                        "member_keys": member_keys,
+                        "graph": canvas.graph().to_snapshot_at(0),
+                        "positions": positions,
+                        "records": canvas.fold_records(),
+                        "routes": routes,
+                        "relations": relations,
+                        "hidden": canvas.fold_hidden_keys().len(),
+                        "physics_paused": canvas.physics_paused(),
+                    }))
+                }).ok_or("graph absent")??;
+                let runtime = self.app.graph_runtimes.get(graph).ok_or("runtime absent")?;
+                let session = runtime.session.ok_or("session absent")?;
+                let dir = crate::session::session_dir(&self.app.data_root, session);
+                let saved: serde_json::Value = serde_json::from_slice(
+                    &std::fs::read(dir.join("folds.json")).map_err(|e| e.to_string())?,
+                )
+                .map_err(|e| e.to_string())?;
+                if saved["records"] != value["records"] {
+                    return Err("native and stored fold records differ".into());
+                }
+                let mut value = value;
+                value["stored"] = saved;
+                value["presented_frames"] = serde_json::json!(self.main_receipt.presented);
+                for file in ["graph.json", "facets.json"] {
+                    let bytes = std::fs::read(dir.join(file)).map_err(|e| e.to_string())?;
+                    value[format!("stored_{file}_blake3")] =
+                        serde_json::json!(blake3::hash(&bytes).to_hex().to_string());
+                }
+                value["graph_id"] = serde_json::json!(graph.as_uuid());
+                value["session_id"] = serde_json::json!(session.as_uuid());
+                std::fs::write(
+                    self.shared_out_dir.join(format!("{name}.folds.json")),
+                    serde_json::to_vec_pretty(&value).map_err(|e| e.to_string())?,
+                )
+                .map_err(|e| e.to_string())?;
+            },
             Step::ImportClip(path) => {
                 self.act(Action::ImportClipPackage(std::path::PathBuf::from(path)))
             },

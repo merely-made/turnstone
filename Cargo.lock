@@ -16726,6 +16726,7 @@ dependencies = [
  "mere-athanor",
  "mere-cartography",
  "mere-chrome",
+ "mere-curation",
  "mere-document-lanes",
  "mere-fetch",
  "mere-fleece",
