@@ -1494,7 +1494,11 @@ scoped continuation control do not claim early scrollbar opacity pixels.
 
 ## Native graph folds (2026-10-16)
 
-**Status (2026-10-16): in progress.**
+**Status (2026-10-16): complete for the default macOS primary Orrery consumer.**
+The [native fold receipt](../docs/receipts/graph_folds_20261016/README.md) binds
+source `f74fb679`, 958 passing workspace tests (ten ignores), the native build,
+288 headed creation/history frames and 91 fresh-process reopen frames, with
+nine reviewed captures and twelve full source/storage/position checkpoints.
 
 ### Phases and done conditions
 
@@ -1518,8 +1522,8 @@ scoped continuation control do not claim early scrollbar opacity pixels.
 
 ### Progress
 
-- 2026-10-16: commands and session sidecar integration implemented; validation
-  pending. This scope is the Orrery graph, with Gloss and Overmap separate
+- 2026-10-16 implementation checkpoint: commands and session sidecar integration
+  implemented before qualification. This scope is the Orrery graph, with Gloss and Overmap separate
   projection consumers.
 
 - 2026-10-16 headed probe: native creation, badge expansion and fresh reopen
@@ -1537,3 +1541,17 @@ scoped continuation control do not claim early scrollbar opacity pixels.
   containment cells on load. This precedes folds and is a separate legacy
   normalization behavior. The final fixture uses the ordinary New session
   action and six linked members; no raw profile patching establishes its graph.
+
+- 2026-10-16 completion: the full locked/offline workspace suite passes 958
+  tests with no failures and ten existing ignores. Ten new tests cover native
+  record persistence/refusal, explicit pause restoration, pane camera fitting,
+  graph routing, authority and reversible view history. Both real app processes
+  pass, all nine readbacks were reviewed, and twelve checkpoints agree on full
+  source truth, every member position and the unchanged graph/facet file bytes.
+  The six-member/five-cell fixture creates two simultaneous summaries and verifies
+  their directed boundary counts, badge expansion, undo/redo and exact reopen.
+- Folds follow the incumbent Canvas runtime/session; graph panes sharing that
+  runtime share curation. Independent per-pane fold sets remain an A2 boundary.
+  Gloss/Overmap, headed lens behavior, other platforms, physical GPU recovery
+  and human assistive technology retain separate gates. The generated keeper
+  and both native processes exited, with original helper inputs unchanged.

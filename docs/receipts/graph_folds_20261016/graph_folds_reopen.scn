@@ -1,0 +1,23 @@
+# Fresh process, reusing only the first process's isolated ordinary profile.
+settle 40
+key escape
+assert physics paused
+act Fit to view
+settle 5
+record-graph-folds 08_reopened 2
+capture 08_reopened
+act Expand fold
+settle 5
+record-graph-folds 09_expanded 1
+capture 09_expanded
+act Undo fold
+settle 5
+record-graph-folds 10_reopen_undo 2
+act Redo fold
+settle 5
+record-graph-folds 11_reopen_redo 1
+act Expand all folds
+settle 5
+record-graph-folds 12_all_expanded 0
+capture 12_all_expanded
+log Reopened folds expanded and persisted without changing source members

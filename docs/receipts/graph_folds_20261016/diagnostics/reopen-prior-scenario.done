@@ -1,0 +1,10 @@
+RESULT fail
+FAIL: assert physics paused: it is running
+captured 08_reopened
+captured 09_expanded
+captured 12_all_expanded
+Reopened folds expanded and persisted without changing source members
+presentation frames=91 captures=3 blank=0
+capture /Users/markik/Code/output/turnstone-graph-folds-20261016/native-r2/reopen/08_reopened.png digest=d35a5f2576a29f95 blank=false
+capture /Users/markik/Code/output/turnstone-graph-folds-20261016/native-r2/reopen/09_expanded.png digest=ad83f66707f90b5d blank=false
+capture /Users/markik/Code/output/turnstone-graph-folds-20261016/native-r2/reopen/12_all_expanded.png digest=8d37359c86a04ae4 blank=false

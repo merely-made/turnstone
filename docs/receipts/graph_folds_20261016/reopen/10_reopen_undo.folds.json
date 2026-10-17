@@ -1,0 +1,853 @@
+{
+  "graph": {
+    "couplings": [],
+    "edges": [],
+    "fields": [],
+    "import_records": [],
+    "navigation": {
+      "snapshot": {
+        "entries": [
+          {
+            "first_seen_at_ms": 1792202041651,
+            "key": "mere://fold-alpha",
+            "last_seen_at_ms": 1792202041651,
+            "payload": "mere://fold-alpha",
+            "privacy": "LocalOnly",
+            "visit_count": 1
+          },
+          {
+            "first_seen_at_ms": 1792202042665,
+            "key": "mere://fold-beta",
+            "last_seen_at_ms": 1792202042665,
+            "payload": "mere://fold-beta",
+            "privacy": "LocalOnly",
+            "visit_count": 1
+          },
+          {
+            "first_seen_at_ms": 1792202043706,
+            "key": "mere://fold-gamma",
+            "last_seen_at_ms": 1792202043706,
+            "payload": "mere://fold-gamma",
+            "privacy": "LocalOnly",
+            "visit_count": 1
+          },
+          {
+            "first_seen_at_ms": 1792202044785,
+            "key": "mere://fold-delta",
+            "last_seen_at_ms": 1792202044785,
+            "payload": "mere://fold-delta",
+            "privacy": "LocalOnly",
+            "visit_count": 1
+          },
+          {
+            "first_seen_at_ms": 1792202045886,
+            "key": "mere://fold-epsilon",
+            "last_seen_at_ms": 1792202045886,
+            "payload": "mere://fold-epsilon",
+            "privacy": "LocalOnly",
+            "visit_count": 1
+          },
+          {
+            "first_seen_at_ms": 1792202047022,
+            "key": "mere://fold-zeta",
+            "last_seen_at_ms": 1792202047022,
+            "payload": "mere://fold-zeta",
+            "privacy": "LocalOnly",
+            "visit_count": 1
+          }
+        ],
+        "owners": [
+          {
+            "creator": null,
+            "current": 0,
+            "identity": {
+              "Node": "5b959a89-c798-4d26-aef5-257ccca29f33"
+            },
+            "origin": 0,
+            "owned_visits": [
+              0
+            ],
+            "pending_origin_parent": null
+          },
+          {
+            "creator": 0,
+            "current": 1,
+            "identity": {
+              "Node": "b5268047-9bda-4718-8f38-6c3e8737a05d"
+            },
+            "origin": 1,
+            "owned_visits": [
+              1
+            ],
+            "pending_origin_parent": null
+          },
+          {
+            "creator": 1,
+            "current": 2,
+            "identity": {
+              "Node": "f84c0d2d-256e-43de-aff2-7608fddfe755"
+            },
+            "origin": 2,
+            "owned_visits": [
+              2
+            ],
+            "pending_origin_parent": null
+          },
+          {
+            "creator": 2,
+            "current": 3,
+            "identity": {
+              "Node": "1185795e-c9e5-442d-a38f-859621c78d09"
+            },
+            "origin": 3,
+            "owned_visits": [
+              3
+            ],
+            "pending_origin_parent": null
+          },
+          {
+            "creator": 3,
+            "current": 4,
+            "identity": {
+              "Node": "be657a0a-e02f-4449-8e8b-4dce97d7de6b"
+            },
+            "origin": 4,
+            "owned_visits": [
+              4
+            ],
+            "pending_origin_parent": null
+          },
+          {
+            "creator": 4,
+            "current": 5,
+            "identity": {
+              "Node": "c3de43ba-a682-4f08-ba23-8c2fb34855a3"
+            },
+            "origin": 5,
+            "owned_visits": [
+              5
+            ],
+            "pending_origin_parent": null
+          }
+        ],
+        "visits": [
+          {
+            "bindings": [
+              {
+                "forward_child": null,
+                "last_accessed_at_ms": 1792202041651,
+                "owner": 0
+              },
+              {
+                "forward_child": 1,
+                "last_accessed_at_ms": 1792202042665,
+                "owner": 1
+              }
+            ],
+            "children": [
+              1
+            ],
+            "context": null,
+            "created_at_ms": 1792202041651,
+            "entry": 0,
+            "inbound": null,
+            "parent": null
+          },
+          {
+            "bindings": [
+              {
+                "forward_child": null,
+                "last_accessed_at_ms": 1792202042665,
+                "owner": 1
+              },
+              {
+                "forward_child": 2,
+                "last_accessed_at_ms": 1792202043706,
+                "owner": 2
+              }
+            ],
+            "children": [
+              2
+            ],
+            "context": null,
+            "created_at_ms": 1792202042665,
+            "entry": 1,
+            "inbound": {
+              "at_ms": 1792202042665,
+              "kind": "UrlTyped"
+            },
+            "parent": 0
+          },
+          {
+            "bindings": [
+              {
+                "forward_child": 3,
+                "last_accessed_at_ms": 1792202044785,
+                "owner": 3
+              },
+              {
+                "forward_child": null,
+                "last_accessed_at_ms": 1792202043706,
+                "owner": 2
+              }
+            ],
+            "children": [
+              3
+            ],
+            "context": null,
+            "created_at_ms": 1792202043706,
+            "entry": 2,
+            "inbound": {
+              "at_ms": 1792202043706,
+              "kind": "UrlTyped"
+            },
+            "parent": 1
+          },
+          {
+            "bindings": [
+              {
+                "forward_child": null,
+                "last_accessed_at_ms": 1792202044785,
+                "owner": 3
+              },
+              {
+                "forward_child": 4,
+                "last_accessed_at_ms": 1792202045886,
+                "owner": 4
+              }
+            ],
+            "children": [
+              4
+            ],
+            "context": null,
+            "created_at_ms": 1792202044785,
+            "entry": 3,
+            "inbound": {
+              "at_ms": 1792202044785,
+              "kind": "UrlTyped"
+            },
+            "parent": 2
+          },
+          {
+            "bindings": [
+              {
+                "forward_child": 5,
+                "last_accessed_at_ms": 1792202047022,
+                "owner": 5
+              },
+              {
+                "forward_child": null,
+                "last_accessed_at_ms": 1792202045886,
+                "owner": 4
+              }
+            ],
+            "children": [
+              5
+            ],
+            "context": null,
+            "created_at_ms": 1792202045886,
+            "entry": 4,
+            "inbound": {
+              "at_ms": 1792202045886,
+              "kind": "UrlTyped"
+            },
+            "parent": 3
+          },
+          {
+            "bindings": [
+              {
+                "forward_child": null,
+                "last_accessed_at_ms": 1792202047022,
+                "owner": 5
+              }
+            ],
+            "children": [],
+            "context": null,
+            "created_at_ms": 1792202047022,
+            "entry": 5,
+            "inbound": {
+              "at_ms": 1792202047022,
+              "kind": "UrlTyped"
+            },
+            "parent": 4
+          }
+        ]
+      }
+    },
+    "nodes": [
+      {
+        "address": {
+          "Custom": "mere://fold-alpha"
+        },
+        "body": null,
+        "cached_host": null,
+        "classifications": [],
+        "derivations": [],
+        "frame_layout_hints": [],
+        "frame_split_offer_suppressed": false,
+        "import_provenance": [],
+        "is_pinned": false,
+        "last_session_visited": 0,
+        "mime_hint": null,
+        "nested": null,
+        "node_id": "5b959a89-c798-4d26-aef5-257ccca29f33",
+        "properties": [],
+        "session_state": {
+          "form_draft": null,
+          "last_visited_ms": null,
+          "scroll_x": null,
+          "scroll_y": null
+        },
+        "tag_presentation": {
+          "icon_overrides": {},
+          "ordered_tags": []
+        },
+        "tags": [],
+        "title": "mere://fold-alpha",
+        "url": "mere://fold-alpha"
+      },
+      {
+        "address": {
+          "Custom": "mere://fold-beta"
+        },
+        "body": null,
+        "cached_host": null,
+        "classifications": [],
+        "derivations": [],
+        "frame_layout_hints": [],
+        "frame_split_offer_suppressed": false,
+        "import_provenance": [],
+        "is_pinned": false,
+        "last_session_visited": 0,
+        "mime_hint": null,
+        "nested": null,
+        "node_id": "b5268047-9bda-4718-8f38-6c3e8737a05d",
+        "properties": [],
+        "session_state": {
+          "form_draft": null,
+          "last_visited_ms": null,
+          "scroll_x": null,
+          "scroll_y": null
+        },
+        "tag_presentation": {
+          "icon_overrides": {},
+          "ordered_tags": []
+        },
+        "tags": [],
+        "title": "mere://fold-beta",
+        "url": "mere://fold-beta"
+      },
+      {
+        "address": {
+          "Custom": "mere://fold-gamma"
+        },
+        "body": null,
+        "cached_host": null,
+        "classifications": [],
+        "derivations": [],
+        "frame_layout_hints": [],
+        "frame_split_offer_suppressed": false,
+        "import_provenance": [],
+        "is_pinned": false,
+        "last_session_visited": 0,
+        "mime_hint": null,
+        "nested": null,
+        "node_id": "f84c0d2d-256e-43de-aff2-7608fddfe755",
+        "properties": [],
+        "session_state": {
+          "form_draft": null,
+          "last_visited_ms": null,
+          "scroll_x": null,
+          "scroll_y": null
+        },
+        "tag_presentation": {
+          "icon_overrides": {},
+          "ordered_tags": []
+        },
+        "tags": [],
+        "title": "mere://fold-gamma",
+        "url": "mere://fold-gamma"
+      },
+      {
+        "address": {
+          "Custom": "mere://fold-delta"
+        },
+        "body": null,
+        "cached_host": null,
+        "classifications": [],
+        "derivations": [],
+        "frame_layout_hints": [],
+        "frame_split_offer_suppressed": false,
+        "import_provenance": [],
+        "is_pinned": false,
+        "last_session_visited": 0,
+        "mime_hint": null,
+        "nested": null,
+        "node_id": "1185795e-c9e5-442d-a38f-859621c78d09",
+        "properties": [],
+        "session_state": {
+          "form_draft": null,
+          "last_visited_ms": null,
+          "scroll_x": null,
+          "scroll_y": null
+        },
+        "tag_presentation": {
+          "icon_overrides": {},
+          "ordered_tags": []
+        },
+        "tags": [],
+        "title": "mere://fold-delta",
+        "url": "mere://fold-delta"
+      },
+      {
+        "address": {
+          "Custom": "mere://fold-epsilon"
+        },
+        "body": null,
+        "cached_host": null,
+        "classifications": [],
+        "derivations": [],
+        "frame_layout_hints": [],
+        "frame_split_offer_suppressed": false,
+        "import_provenance": [],
+        "is_pinned": false,
+        "last_session_visited": 0,
+        "mime_hint": null,
+        "nested": null,
+        "node_id": "be657a0a-e02f-4449-8e8b-4dce97d7de6b",
+        "properties": [],
+        "session_state": {
+          "form_draft": null,
+          "last_visited_ms": null,
+          "scroll_x": null,
+          "scroll_y": null
+        },
+        "tag_presentation": {
+          "icon_overrides": {},
+          "ordered_tags": []
+        },
+        "tags": [],
+        "title": "mere://fold-epsilon",
+        "url": "mere://fold-epsilon"
+      },
+      {
+        "address": {
+          "Custom": "mere://fold-zeta"
+        },
+        "body": null,
+        "cached_host": null,
+        "classifications": [],
+        "derivations": [],
+        "frame_layout_hints": [],
+        "frame_split_offer_suppressed": false,
+        "import_provenance": [],
+        "is_pinned": false,
+        "last_session_visited": 0,
+        "mime_hint": null,
+        "nested": null,
+        "node_id": "c3de43ba-a682-4f08-ba23-8c2fb34855a3",
+        "properties": [],
+        "session_state": {
+          "form_draft": null,
+          "last_visited_ms": null,
+          "scroll_x": null,
+          "scroll_y": null
+        },
+        "tag_presentation": {
+          "icon_overrides": {},
+          "ordered_tags": []
+        },
+        "tags": [],
+        "title": "mere://fold-zeta",
+        "url": "mere://fold-zeta"
+      }
+    ],
+    "resource_edges": [
+      {
+        "arrangement": null,
+        "containment": null,
+        "families": [
+          "Semantic"
+        ],
+        "from_node_id": "06d6d1ea-f27f-57f9-a3a6-b7a4a2c05989",
+        "imported": null,
+        "provenance": null,
+        "semantic": {
+          "agent_decay_progress": null,
+          "label": null,
+          "predicate": "https://mere.computer/ns/rel#hyperlink",
+          "statements": [
+            {
+              "asserted_at_ms": 1792202043706,
+              "first_asserted_ms": 1792202043706,
+              "predicate": "https://mere.computer/ns/rel#hyperlink",
+              "provenance_iri": "https://mere.computer/ns/agent#person/user",
+              "recognized_sub_kind": "Hyperlink",
+              "statement_id": "01a14790f13a-3146313e1e119225-0000000000000012"
+            }
+          ],
+          "sub_kinds": [
+            "Hyperlink"
+          ]
+        },
+        "to_node_id": "fd3d3401-c179-5e25-ac62-f277f48e6294",
+        "traversal": null
+      },
+      {
+        "arrangement": null,
+        "containment": null,
+        "families": [
+          "Semantic"
+        ],
+        "from_node_id": "89170fba-0ea2-536d-a538-5147bd4dff14",
+        "imported": null,
+        "provenance": null,
+        "semantic": {
+          "agent_decay_progress": null,
+          "label": null,
+          "predicate": "https://mere.computer/ns/rel#hyperlink",
+          "statements": [
+            {
+              "asserted_at_ms": 1792202045886,
+              "first_asserted_ms": 1792202045886,
+              "predicate": "https://mere.computer/ns/rel#hyperlink",
+              "provenance_iri": "https://mere.computer/ns/agent#person/user",
+              "recognized_sub_kind": "Hyperlink",
+              "statement_id": "01a14790f9be-3146313e1e119225-0000000000000014"
+            }
+          ],
+          "sub_kinds": [
+            "Hyperlink"
+          ]
+        },
+        "to_node_id": "919e47c0-fb8f-5107-849a-6c930cc5a3bb",
+        "traversal": null
+      },
+      {
+        "arrangement": null,
+        "containment": null,
+        "families": [
+          "Semantic"
+        ],
+        "from_node_id": "919e47c0-fb8f-5107-849a-6c930cc5a3bb",
+        "imported": null,
+        "provenance": null,
+        "semantic": {
+          "agent_decay_progress": null,
+          "label": null,
+          "predicate": "https://mere.computer/ns/rel#hyperlink",
+          "statements": [
+            {
+              "asserted_at_ms": 1792202047022,
+              "first_asserted_ms": 1792202047022,
+              "predicate": "https://mere.computer/ns/rel#hyperlink",
+              "provenance_iri": "https://mere.computer/ns/agent#person/user",
+              "recognized_sub_kind": "Hyperlink",
+              "statement_id": "01a14790fe2e-3146313e1e119225-0000000000000015"
+            }
+          ],
+          "sub_kinds": [
+            "Hyperlink"
+          ]
+        },
+        "to_node_id": "5a9853b3-972a-5d4f-8776-4e744e1353a0",
+        "traversal": null
+      },
+      {
+        "arrangement": null,
+        "containment": null,
+        "families": [
+          "Semantic"
+        ],
+        "from_node_id": "d8d19e8b-f25d-59a8-a6d1-7835636e76c4",
+        "imported": null,
+        "provenance": null,
+        "semantic": {
+          "agent_decay_progress": null,
+          "label": null,
+          "predicate": "https://mere.computer/ns/rel#hyperlink",
+          "statements": [
+            {
+              "asserted_at_ms": 1792202042665,
+              "first_asserted_ms": 1792202042665,
+              "predicate": "https://mere.computer/ns/rel#hyperlink",
+              "provenance_iri": "https://mere.computer/ns/agent#person/user",
+              "recognized_sub_kind": "Hyperlink",
+              "statement_id": "01a14790ed29-3146313e1e119225-0000000000000011"
+            }
+          ],
+          "sub_kinds": [
+            "Hyperlink"
+          ]
+        },
+        "to_node_id": "06d6d1ea-f27f-57f9-a3a6-b7a4a2c05989",
+        "traversal": null
+      },
+      {
+        "arrangement": null,
+        "containment": null,
+        "families": [
+          "Semantic"
+        ],
+        "from_node_id": "fd3d3401-c179-5e25-ac62-f277f48e6294",
+        "imported": null,
+        "provenance": null,
+        "semantic": {
+          "agent_decay_progress": null,
+          "label": null,
+          "predicate": "https://mere.computer/ns/rel#hyperlink",
+          "statements": [
+            {
+              "asserted_at_ms": 1792202044785,
+              "first_asserted_ms": 1792202044785,
+              "predicate": "https://mere.computer/ns/rel#hyperlink",
+              "provenance_iri": "https://mere.computer/ns/agent#person/user",
+              "recognized_sub_kind": "Hyperlink",
+              "statement_id": "01a14790f571-3146313e1e119225-0000000000000013"
+            }
+          ],
+          "sub_kinds": [
+            "Hyperlink"
+          ]
+        },
+        "to_node_id": "89170fba-0ea2-536d-a538-5147bd4dff14",
+        "traversal": null
+      }
+    ],
+    "resources": [
+      {
+        "canonical_iri": "mere://fold-alpha",
+        "facets": []
+      },
+      {
+        "canonical_iri": "mere://fold-beta",
+        "facets": []
+      },
+      {
+        "canonical_iri": "mere://fold-gamma",
+        "facets": []
+      },
+      {
+        "canonical_iri": "mere://fold-delta",
+        "facets": []
+      },
+      {
+        "canonical_iri": "mere://fold-epsilon",
+        "facets": []
+      },
+      {
+        "canonical_iri": "mere://fold-zeta",
+        "facets": []
+      }
+    ],
+    "shown_resources": [
+      {
+        "resource_id": "89170fba-0ea2-536d-a538-5147bd4dff14",
+        "surface_id": "1185795e-c9e5-442d-a38f-859621c78d09"
+      },
+      {
+        "resource_id": "d8d19e8b-f25d-59a8-a6d1-7835636e76c4",
+        "surface_id": "5b959a89-c798-4d26-aef5-257ccca29f33"
+      },
+      {
+        "resource_id": "06d6d1ea-f27f-57f9-a3a6-b7a4a2c05989",
+        "surface_id": "b5268047-9bda-4718-8f38-6c3e8737a05d"
+      },
+      {
+        "resource_id": "919e47c0-fb8f-5107-849a-6c930cc5a3bb",
+        "surface_id": "be657a0a-e02f-4449-8e8b-4dce97d7de6b"
+      },
+      {
+        "resource_id": "5a9853b3-972a-5d4f-8776-4e744e1353a0",
+        "surface_id": "c3de43ba-a682-4f08-ba23-8c2fb34855a3"
+      },
+      {
+        "resource_id": "fd3d3401-c179-5e25-ac62-f277f48e6294",
+        "surface_id": "f84c0d2d-256e-43de-aff2-7608fddfe755"
+      }
+    ],
+    "timestamp_secs": 0
+  },
+  "graph_id": "35188fad-ce8c-4e80-858f-72982893d8a6",
+  "hidden": 4,
+  "member_keys": [
+    {
+      "id": "5b959a89-c798-4d26-aef5-257ccca29f33",
+      "key": "NodeIndex(0)"
+    },
+    {
+      "id": "b5268047-9bda-4718-8f38-6c3e8737a05d",
+      "key": "NodeIndex(1)"
+    },
+    {
+      "id": "f84c0d2d-256e-43de-aff2-7608fddfe755",
+      "key": "NodeIndex(2)"
+    },
+    {
+      "id": "1185795e-c9e5-442d-a38f-859621c78d09",
+      "key": "NodeIndex(3)"
+    },
+    {
+      "id": "be657a0a-e02f-4449-8e8b-4dce97d7de6b",
+      "key": "NodeIndex(4)"
+    },
+    {
+      "id": "c3de43ba-a682-4f08-ba23-8c2fb34855a3",
+      "key": "NodeIndex(5)"
+    }
+  ],
+  "physics_paused": true,
+  "positions": [
+    [
+      "1185795e-c9e5-442d-a38f-859621c78d09",
+      [
+        54.842010498046875,
+        134.32640075683594
+      ]
+    ],
+    [
+      "5b959a89-c798-4d26-aef5-257ccca29f33",
+      [
+        -110.00740051269531,
+        -107.3797378540039
+      ]
+    ],
+    [
+      "b5268047-9bda-4718-8f38-6c3e8737a05d",
+      [
+        -64.26786804199219,
+        60.14738845825195
+      ]
+    ],
+    [
+      "be657a0a-e02f-4449-8e8b-4dce97d7de6b",
+      [
+        226.78350830078125,
+        121.40054321289062
+      ]
+    ],
+    [
+      "c3de43ba-a682-4f08-ba23-8c2fb34855a3",
+      [
+        333.21734619140625,
+        240.14247131347656
+      ]
+    ],
+    [
+      "f84c0d2d-256e-43de-aff2-7608fddfe755",
+      [
+        81.15283203125,
+        -24.926841735839844
+      ]
+    ]
+  ],
+  "presented_frames": 71,
+  "records": [
+    {
+      "boundary_policy": "BundleByRelationFamily",
+      "id": "b23cd5a4-313c-4f1b-9597-0042c24c2600",
+      "members": [
+        "5b959a89-c798-4d26-aef5-257ccca29f33",
+        "b5268047-9bda-4718-8f38-6c3e8737a05d"
+      ],
+      "rule": "Selection",
+      "source_scope": "turnstone:graph:35188fad-ce8c-4e80-858f-72982893d8a6",
+      "stand_in": {
+        "Summary": {}
+      },
+      "version": 2
+    },
+    {
+      "boundary_policy": "BundleByRelationFamily",
+      "id": "f86f81b0-363f-48d2-9a92-dcd6984def57",
+      "members": [
+        "1185795e-c9e5-442d-a38f-859621c78d09",
+        "f84c0d2d-256e-43de-aff2-7608fddfe755"
+      ],
+      "rule": "Selection",
+      "source_scope": "turnstone:graph:35188fad-ce8c-4e80-858f-72982893d8a6",
+      "stand_in": {
+        "Summary": {}
+      },
+      "version": 2
+    }
+  ],
+  "relations": [
+    {
+      "family": "Semantic",
+      "from": "NodeIndex(1)",
+      "to": "NodeIndex(2)"
+    },
+    {
+      "family": "Semantic",
+      "from": "NodeIndex(3)",
+      "to": "NodeIndex(4)"
+    },
+    {
+      "family": "Semantic",
+      "from": "NodeIndex(4)",
+      "to": "NodeIndex(5)"
+    },
+    {
+      "family": "Semantic",
+      "from": "NodeIndex(0)",
+      "to": "NodeIndex(1)"
+    },
+    {
+      "family": "Semantic",
+      "from": "NodeIndex(2)",
+      "to": "NodeIndex(3)"
+    }
+  ],
+  "routes": [
+    {
+      "count": 1,
+      "family": "Semantic",
+      "from": "Fold(0)",
+      "to": "Fold(1)"
+    },
+    {
+      "count": 1,
+      "family": "Semantic",
+      "from": "Fold(1)",
+      "to": "Node(NodeIndex(4))"
+    }
+  ],
+  "session_id": "bf21e4ca-6fdc-4541-940a-21a340834109",
+  "stored": {
+    "records": [
+      {
+        "boundary_policy": "BundleByRelationFamily",
+        "id": "b23cd5a4-313c-4f1b-9597-0042c24c2600",
+        "members": [
+          "5b959a89-c798-4d26-aef5-257ccca29f33",
+          "b5268047-9bda-4718-8f38-6c3e8737a05d"
+        ],
+        "rule": "Selection",
+        "source_scope": "turnstone:graph:35188fad-ce8c-4e80-858f-72982893d8a6",
+        "stand_in": {
+          "Summary": {}
+        },
+        "version": 2
+      },
+      {
+        "boundary_policy": "BundleByRelationFamily",
+        "id": "f86f81b0-363f-48d2-9a92-dcd6984def57",
+        "members": [
+          "1185795e-c9e5-442d-a38f-859621c78d09",
+          "f84c0d2d-256e-43de-aff2-7608fddfe755"
+        ],
+        "rule": "Selection",
+        "source_scope": "turnstone:graph:35188fad-ce8c-4e80-858f-72982893d8a6",
+        "stand_in": {
+          "Summary": {}
+        },
+        "version": 2
+      }
+    ],
+    "refused_records": [],
+    "version": 1
+  },
+  "stored_facets.json_blake3": "643a1d0762b9130e56683ec92996c8998f6f056bdad6079884f3b01ebda2ce6d",
+  "stored_graph.json_blake3": "a6f4fea970f008510d157ddb8536a8996e379005fcf58fb64f66f03e512aa582"
+}

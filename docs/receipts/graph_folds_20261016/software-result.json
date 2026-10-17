@@ -1,0 +1,65 @@
+{
+  "status": "passed",
+  "source": "f74fb679f169106cb52d85777b93586d562f1230",
+  "workspace_command": "cargo test --locked --offline --workspace --no-fail-fast -j4 -- --test-threads=1",
+  "workspace_exit_code": 0,
+  "passed": 958,
+  "failed": 0,
+  "ignored": 10,
+  "summaries": [
+    {
+      "status": "ok",
+      "passed": 958,
+      "failed": 0,
+      "ignored": 10
+    },
+    {
+      "status": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "status": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "status": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "status": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "status": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    }
+  ],
+  "ignored_tests": [
+    "test app::tests::dr_c_turnstone_identity_stays_pending ... ignored, run mere/scripts/dr_c_receipts.py against the isolated receipt keeper",
+    "test knot_authoring::tests::inspector_clip_crosses_the_typed_endpoint_action ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint",
+    "test knot_authoring::tests::inspector_clip_retains_livery_source_evidence_end_to_end ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint",
+    "test knot_authoring::tests::real_knot_consumer_saves_rejects_stale_and_reopens ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint",
+    "test knot_authoring::tests::received_communal_auto_run_waits_for_explicit_confirmation ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint",
+    "test knot_authoring::tests::resolve_and_run_cross_the_consented_authoring_path ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint",
+    "test trail_memory::evaluation::captured_trail_frecency_receipt ... ignored, requires an explicit private Turnstone session",
+    "test trail_memory::evaluation::captured_trail_mint_receipt ... ignored, requires an explicit private Turnstone session",
+    "test trail_memory::evaluation::firefox_history_corpus_receipt ... ignored, requires an exported Firefox history corpus",
+    "test trail_memory::tests::mint_receipt_scale_ladder ... ignored, measurement run: cargo test --release ... -- --ignored --nocapture"
+  ],
+  "focused_fold_command": "cargo test --locked --offline --lib fold -j4 -- --test-threads=1",
+  "focused_passed": 13,
+  "new_task_tests": 10,
+  "native_build_command": "cargo build --locked --offline --bin turnstone -j4",
+  "native_build_exit_code": 0,
+  "logs_byte_preserved": true
+}

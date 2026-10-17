@@ -1,0 +1,15 @@
+RESULT ok
+captured 01_source
+captured 02_one_fold
+captured 03_undone
+captured 05_two_folds
+captured 06_badge_expanded
+captured 07_saved
+Native graph folds saved for a fresh process
+presentation frames=288 captures=6 blank=0
+capture /Users/markik/Code/output/turnstone-graph-folds-20261016/native-r3/seed/01_source.png digest=ad08869adc827f8b blank=false
+capture /Users/markik/Code/output/turnstone-graph-folds-20261016/native-r3/seed/02_one_fold.png digest=7ce9ea73ce7df14c blank=false
+capture /Users/markik/Code/output/turnstone-graph-folds-20261016/native-r3/seed/03_undone.png digest=5b765aca6f75a00c blank=false
+capture /Users/markik/Code/output/turnstone-graph-folds-20261016/native-r3/seed/05_two_folds.png digest=4f3881bb3c0a1e5e blank=false
+capture /Users/markik/Code/output/turnstone-graph-folds-20261016/native-r3/seed/06_badge_expanded.png digest=2830c794885938da blank=false
+capture /Users/markik/Code/output/turnstone-graph-folds-20261016/native-r3/seed/07_saved.png digest=4f3881bb3c0a1e5e blank=false
