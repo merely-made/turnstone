@@ -35,6 +35,7 @@
 //! select-graph-member <url>|none # Canvas multi-selection in the owner pane
 //! activate-graph-fold <index> # press/release a real native fold badge
 //! record-graph-folds <name> <count> # read native/source/saved-state checkpoint
+//! record-graph-scene <name> # read owning graph scene, geometry and saved facets
 //! script <inline lua>        # run a Piccolo control script; its Actions lower
 //!                            # through the same spine (the automation runner —
 //!                            # needs the `piccolo` feature)
@@ -178,6 +179,8 @@ pub enum Step {
     SelectGraphMember(String),
     /// Read graph truth, native fold routes and the saved session sidecar.
     RecordGraphFolds(String, usize),
+    /// Read the owning graph scene, geometry, source truth and saved facets.
+    RecordGraphScene(String),
     /// Activate a real native fold badge by index through pointer input.
     ActivateGraphFold(usize),
     /// Click the list-pane (Trail/Roster) row whose text contains this substring.
@@ -608,6 +611,10 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
             "record-idle" if !rest.is_empty() => Step::RecordIdle(rest.to_string()),
             "select-graph-member" if !rest.is_empty() => Step::SelectGraphMember(rest.to_string()),
             "activate-graph-fold" => Step::ActivateGraphFold(rest.parse().map_err(|_| format!("line {}: fold index required", i + 1))?),
+            "record-graph-scene" if !rest.is_empty() => {
+                if rest.contains(['/', '\\']) { return err("simple checkpoint name required"); }
+                Step::RecordGraphScene(rest.into())
+            },
             "record-graph-folds" => {
                 let (name, count) = rest.split_once(' ').ok_or_else(|| format!("line {}: name and fold count required", i + 1))?;
                 if name.contains(['/', '\\']) { return err("simple checkpoint name required"); }

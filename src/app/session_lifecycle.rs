@@ -1304,6 +1304,8 @@ impl App {
         let faces = pandect::read_arrangement_faces(self.graph_runtimes.facets());
         self.graph_runtimes
             .apply_cartography_faces(faces.iter().map(|(id, code)| (*id, code.as_str())));
+        let container = self.container_id();
+        crate::graph_scenes::restore(&mut self.graph_runtimes, container);
         // Session-scoped view state resets.
         self.omnibar = OmnibarState::default();
         self.document_find = crate::document_find::DocumentFindState::default();

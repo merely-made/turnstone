@@ -27,7 +27,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, PointerClick, el, setting_row,
+    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, PointerClick, button, el,
+    setting_row,
 };
 use genet_scripted_dom::ScriptedDom;
 use layout_dom_api::LayoutDom;
@@ -56,6 +57,13 @@ const CUSTOM_PROFILE_ID: &str = "custom";
 pub enum ArrangeIntent {
     /// An arrangement id from the canvas catalog, or [`FREE_LAYOUT_ID`].
     SetLayout(String),
+    ResetToSeed,
+    SetSeed,
+    RestoreRecipeSeed,
+    ToggleForegroundPin,
+    DismissRetained,
+    GrowTiles,
+    ShrinkTiles,
     SetLaw(String),
     SetOverlay {
         id: String,
@@ -76,6 +84,13 @@ impl ArrangeIntent {
     /// not know (a stale row, a typo in a script).
     pub fn into_action(self) -> Option<Action> {
         match self {
+            Self::ResetToSeed => Some(Action::ResetToSeed),
+            Self::SetSeed => Some(Action::SetSeed),
+            Self::RestoreRecipeSeed => Some(Action::RestoreRecipeSeed),
+            Self::ToggleForegroundPin => Some(Action::ToggleForegroundPin),
+            Self::DismissRetained => Some(Action::DismissRetained),
+            Self::GrowTiles => Some(Action::GrowTiles),
+            Self::ShrinkTiles => Some(Action::ShrinkTiles),
             ArrangeIntent::SetLayout(id) if id == FREE_LAYOUT_ID => {
                 Some(Action::SetLayoutStrategy(None))
             },
@@ -113,29 +128,44 @@ struct Choice {
     depth: String,
     profile: String,
     refusal: Option<String>,
+    saved_seed: bool,
+    regions: usize,
 }
 
 impl Choice {
     fn of(app: &App) -> Self {
-        let canvas = &app.graph_runtimes;
+        Self::for_graph(
+            app,
+            app.scene_command_pane()
+                .and_then(|pane| app.graph_for_pane(pane)),
+        )
+    }
+
+    fn for_graph(app: &App, graph: Option<crate::panes::GraphId>) -> Self {
+        let canvas = graph
+            .and_then(|graph| app.graph_runtimes.canvas(graph))
+            .unwrap_or(&app.graph_runtimes);
+        let physics = mere::canvas::PhysicsChoice::live(canvas);
         Self {
             layout: canvas
                 .layout_strategy()
                 .map(str::to_string)
                 .unwrap_or_else(|| FREE_LAYOUT_ID.to_string()),
-            law: canvas.physics_law().id().to_string(),
-            overlays: canvas
-                .physics_overlays()
+            law: physics.law.id().to_string(),
+            overlays: physics
+                .overlays
                 .iter()
                 .map(|overlay| overlay.id().to_string())
                 .collect(),
-            kind: canvas.physics_kind_source().id().to_string(),
-            mass: canvas.physics_mass_source().id().to_string(),
-            depth: canvas.physics_depth_source().id().to_string(),
-            profile: canvas
-                .physics_profile_id()
+            kind: physics.kind.id().to_string(),
+            mass: physics.mass.id().to_string(),
+            depth: physics.depth.id().to_string(),
+            profile: physics
+                .profile_id()
                 .unwrap_or(CUSTOM_PROFILE_ID)
                 .to_string(),
+            saved_seed: canvas.has_saved_seed(),
+            regions: canvas.strategy_regions().len(),
             refusal: app.physics_refusal().map(ToString::to_string),
         }
     }
@@ -174,6 +204,11 @@ pub fn arrange_rows(app: &App) -> Vec<String> {
         .unwrap_or_else(|| CUSTOM_PROFILE_ID.to_string());
     let mut rows = vec![
         format!("Arrangement: {layout}"),
+        format!(
+            "Seed: {}",
+            if choice.saved_seed { "saved" } else { "recipe" }
+        ),
+        format!("Regions: {}", choice.regions),
         format!("Physics: {}", label(CANVAS_PHYSICS_LAWS, &choice.law)),
         format!("Overlays: {overlays}"),
         format!(
@@ -282,6 +317,15 @@ fn section(title: &str) -> ArrangeView {
     )
 }
 
+fn scene_button(label: &'static str, intent: ArrangeIntent) -> ArrangeView {
+    Box::new(
+        button(label, move |_: &mut ArrangeState, _: PointerClick| {
+            Some(intent.clone())
+        })
+        .attr("class", "setting-apply"),
+    )
+}
+
 fn arrange_view(state: &ArrangeState) -> ArrangeView {
     let choice = &state.choice;
     let mut layouts = vec![(
@@ -308,13 +352,36 @@ fn arrange_view(state: &ArrangeState) -> ArrangeView {
         el::<_, ArrangeState, ArrangeIntent>(
             "div",
             (
-                section("Arrangement"),
-                choice_row(
-                    "arrangement",
-                    "Arrangement",
-                    layouts,
-                    &choice.layout,
-                    ArrangeIntent::SetLayout,
+                el::<_, ArrangeState, ArrangeIntent>(
+                    "div",
+                    (
+                        section("Arrangement"),
+                        choice_row(
+                            "arrangement",
+                            "Arrangement",
+                            layouts,
+                            &choice.layout,
+                            ArrangeIntent::SetLayout,
+                        ),
+                        el::<_, ArrangeState, ArrangeIntent>(
+                            "div",
+                            format!(
+                                "{} seed · {} regions",
+                                if choice.saved_seed { "Saved" } else { "Recipe" },
+                                choice.regions
+                            ),
+                        )
+                        .attr("role", "status"),
+                        vec![
+                            scene_button("Reset to seed", ArrangeIntent::ResetToSeed),
+                            scene_button("Set seed", ArrangeIntent::SetSeed),
+                            scene_button("Restore recipe seed", ArrangeIntent::RestoreRecipeSeed),
+                            scene_button("Foreground pin", ArrangeIntent::ToggleForegroundPin),
+                            scene_button("Dismiss retained", ArrangeIntent::DismissRetained),
+                            scene_button("Grow tiles", ArrangeIntent::GrowTiles),
+                            scene_button("Shrink tiles", ArrangeIntent::ShrinkTiles),
+                        ],
+                    ),
                 ),
                 section("Physics"),
                 el::<_, ArrangeState, ArrangeIntent>(
@@ -435,6 +502,8 @@ impl ArrangePane {
                 depth: PhysicsDepthSource::Roots.id().to_string(),
                 profile: CUSTOM_PROFILE_ID.to_string(),
                 refusal: None,
+                saved_seed: false,
+                regions: 0,
             },
             viewport_w: 0.0,
             viewport_h: 0.0,
@@ -505,7 +574,24 @@ impl ArrangePane {
 
     /// Mirror the active canvas's choice at the pane's size.
     pub fn sync(&mut self, app: &App, pane_w: f32, pane_h: f32) {
-        let choice = Choice::of(app);
+        self.sync_choice(Choice::of(app), pane_w, pane_h);
+    }
+
+    pub(crate) fn sync_for_pane(
+        &mut self,
+        app: &App,
+        pane: crate::panes::PaneId,
+        pane_w: f32,
+        pane_h: f32,
+    ) {
+        self.sync_choice(
+            Choice::for_graph(app, app.graph_for_pane(pane)),
+            pane_w,
+            pane_h,
+        );
+    }
+
+    fn sync_choice(&mut self, choice: Choice, pane_w: f32, pane_h: f32) {
         self.runner.update(|state| {
             state.choice = choice;
             state.viewport_w = pane_w;

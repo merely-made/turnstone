@@ -1,0 +1,26 @@
+settle 55
+key escape
+assert windows == 2
+assert lens-pane 0:orrery
+# Reopened graph is in the lens; activate it through ordinary native key input.
+key-window 1 escape
+assert physics paused
+assert snap scene-arrangement == mosaic.default
+assert snap scene-saved-seed == true
+assert snap scene-foreground-pins == 0
+record-graph-scene 12_reopened
+record-graph-folds 12_reopened 1
+capture-lens 12_reopened
+act Expand all folds
+settle 8
+record-graph-folds 13_expanded 0
+act Undo fold
+settle 5
+record-graph-folds 14_restored_fold 1
+act Restore recipe seed
+act Save session
+settle 5
+assert snap scene-saved-seed == false
+record-graph-scene 15_recipe_restored
+capture-lens 15_recipe_restored
+log Graph scene reopening complete

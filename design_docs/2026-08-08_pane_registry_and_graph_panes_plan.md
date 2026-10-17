@@ -1555,3 +1555,51 @@ nine reviewed captures and twelve full source/storage/position checkpoints.
   Gloss/Overmap, headed lens behavior, other platforms, physical GPU recovery
   and human assistive technology retain separate gates. The generated keeper
   and both native processes exited, with original helper inputs unchanged.
+
+
+## Graph scene refresh (2026-10-16)
+
+**Status (2026-10-16): in progress.** Adopt the current shared graph arrangements
+and grammar in the native Orrery host. Portable scene-document hosting and the
+Spiral-only remote/frozen disclosure remain separate follow-ups.
+
+### Phases and done conditions
+
+1. Integrate a coherent published Mere supplier containing both the previously
+   pinned resident inference wire and current graph scenes. Preserve active work.
+2. Carry Partition, Sets, Provenance and Mosaic through the owning graph pane;
+   install region geometry, preserve Mosaic organization and a person's pause
+   choice. Expose shared attention, seed/reset and tile-size controls on the
+   ordinary action spine. Persist seed, regions and Mosaic through Pandect.
+3. Qualify focused ownership/persistence tests, workspace checks, headed primary
+   and lens interaction, fold coexistence and fresh-process reopening. Push the
+   receiving change only after those gates pass.
+
+### Findings
+
+- The prior Mere lock `65b97b0` is published on the inference branch and diverges
+  from main; replacing it with main loses `distillery/inference-wire`. A supplier
+  integration must retain that existing product capability.
+- The old driver discarded region geometry and used the stateless projection
+  helper; Mosaic needs Canvas-owned state.
+- Shared attention is transient and remains coupled to the incumbent graph
+  runtime across panes. Foreground pins are independent of position pins and
+  keeping. Durable saved seeds, regions and Mosaic are separate from attention.
+- Scene saves resolve `runtime.session` and its placement authority, independent
+  of the compatibility cursor. Rendered geometry is saved after projection or a
+  reset return lands; explicit save/close also flushes pending graph views.
+- Reset uses the shared host-clock transition. A new arrangement, play toggle,
+  tile resize, pointer gesture or viewport-driven reprojection supersedes an old
+  return rather than replaying its coordinates over new regions.
+- The canonical-tag fixture exposed a supplier seam: Sets read legacy Surface
+  tags while the public mutation writes Resource tags. The shared adapter must
+  read `Graph::node_content_tags`; tests retain the canonical public path.
+- The native six-member fixture has sites and navigation relations, with no
+  supplied tags or provenance derivations. Native Sets/Provenance gates cover
+  catalog, empty/remainder cases and rendering. Tagged membership and multi-step
+  provenance order have separate CPU consumer tests.
+
+### Progress
+
+- 2026-10-16: currentness/source audit complete; implementation and qualification
+  underway. Mere primary checkout and other active lanes are preserved.

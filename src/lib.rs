@@ -83,6 +83,9 @@ mod script;
 mod sections;
 mod session;
 mod graph_folds;
+pub mod graph_scenes;
+#[cfg(test)]
+mod graph_scenes_tests;
 mod session_persistence;
 mod settings_pane;
 pub mod settings_provider;

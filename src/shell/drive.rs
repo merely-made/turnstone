@@ -648,6 +648,12 @@ impl taproot::Automatable for Shell {
         let appearance = self.live_settings.snapshot();
         let kept = snap.focused.as_ref().is_some_and(|node| node.kept);
         let mut out = taproot::ProbeSnapshot::default()
+            .with_field("scene-arrangement", snap.graph_scene.arrangement)
+            .with_field("scene-saved-seed", snap.graph_scene.saved_seed.to_string())
+            .with_field("scene-regions", snap.graph_scene.regions.to_string())
+            .with_field("scene-foreground-pins", snap.graph_scene.foreground_pins.to_string())
+            .with_field("scene-retained", snap.graph_scene.retained.to_string())
+            .with_field("scene-grammar", snap.graph_scene.grammar.to_string())
             .with_field("focus", snap.focus)
             .with_field(
                 "host-surface-producers",
@@ -1320,6 +1326,33 @@ impl Shell {
                     badge.at.1,
                 );
                 self.request_redraw();
+            },
+            Step::RecordGraphScene(name) => {
+                let pane = self.app.scene_command_pane().ok_or("no graph owner pane")?;
+                let graph = self.app.graph_for_pane(pane).ok_or("graph absent")?;
+                let value = self.app.with_graph_pane(pane, |canvas| {
+                    serde_json::json!({
+                        "facts": crate::graph_scenes::facts(canvas),
+                        "geometry": canvas.cartography_geometry(),
+                        "graph": canvas.graph().to_snapshot_at(0),
+                        "folds": canvas.fold_records(),
+                        "physics_paused": canvas.physics_paused(),
+                        "selected": canvas.selected_members(),
+                        "graph_id": graph.as_uuid(),
+                    })
+                }).ok_or("graph absent")?;
+                let runtime = self.app.graph_runtimes.get(graph).ok_or("runtime absent")?;
+                let session = runtime.session.ok_or("session absent")?;
+                let dir = crate::session::session_dir(&self.app.data_root, session);
+                let mut value = value;
+                value["presented_frames"] = serde_json::json!(self.main_receipt.presented);
+                for file in ["facets.json", "view-intent.json"] {
+                    if let Ok(bytes) = std::fs::read(dir.join(file)) {
+                        value[format!("stored_{file}")] = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
+                    }
+                }
+                std::fs::write(self.shared_out_dir.join(format!("{name}.scene.json")),
+                    serde_json::to_vec_pretty(&value).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
             },
             Step::RecordGraphFolds(name, expected) => {
                 let pane = self.app.graph_command_pane().ok_or("no graph owner pane")?;

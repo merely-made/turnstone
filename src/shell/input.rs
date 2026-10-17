@@ -1549,7 +1549,12 @@ impl Shell {
         let graph = self.app.graph_for_pane(pane);
         let before = graph.and_then(|g| self.app.graph_runtimes.canvas(g))
             .map(|c| c.fold_records().to_vec());
+        let mosaic_before = graph.and_then(|g| self.app.graph_runtimes.canvas(g))
+            .and_then(|c| c.cartography_geometry().mosaic().cloned());
         let handled = self.app.graph_pane_pointer_up(pane, button, x, y);
+        let mosaic_after = graph.and_then(|g| self.app.graph_runtimes.canvas(g))
+            .and_then(|c| c.cartography_geometry().mosaic().cloned());
+        if mosaic_before != mosaic_after { self.app.mark_graph_scene_changed(pane); }
         if let Some(graph) = graph {
             let after = self.app.graph_runtimes.canvas(graph).map(|c| c.fold_records().to_vec());
             if before != after { self.save_graph_folds(graph); }

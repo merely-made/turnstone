@@ -666,7 +666,7 @@ impl Shell {
                     .arrange
                     .entry(pane_id)
                     .or_insert_with(|| crate::arrange_pane::ArrangePane::new_in(mount()));
-                pane.sync(&self.app, rw as f32, rh as f32);
+                pane.sync_for_pane(&self.app, pane_id, rw as f32, rh as f32);
                 pane.scene(rw, rh)
             },
             Some(PaneContent::Registered(kind))
@@ -924,6 +924,7 @@ impl Shell {
                         .app
                         .graph_pane_frame(pane, rw, rh)
                         .unwrap_or_else(|| (Scene::default(), false));
+                    self.save_ready_graph_scene(pane);
                     needs_redraw |= animating;
                     needs_redraw |= self.app.resolve_pending_images() > 0;
                     (scene, wgpu::Color::WHITE)
