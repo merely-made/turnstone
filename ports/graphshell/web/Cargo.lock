@@ -3183,6 +3183,7 @@ dependencies = [
  "serde",
  "serde_json",
  "url",
+ "zeroize",
 ]
 
 [[package]]
@@ -3413,6 +3414,7 @@ name = "esp"
 version = "0.1.0"
 dependencies = [
  "serde",
+ "zeroize",
 ]
 
 [[package]]
