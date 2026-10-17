@@ -530,6 +530,7 @@ impl Producer {
         }
         let appearance = self.appearance.borrow();
         let theme = appearance.backdrop_theme();
+        let font_roles = appearance.font_roles();
         let appearance_revision = appearance.revision;
         drop(appearance);
         let active = if self.related {
@@ -537,8 +538,9 @@ impl Producer {
         } else {
             pane.surface.as_mut()
         };
+        let active = active.ok_or(PortableProducerError::InvalidSource)?;
+        active.set_font_roles(&font_roles);
         let scene = active
-            .ok_or(PortableProducerError::InvalidSource)?
             .paint(size.0, size.1, &theme)
             .map_err(|error| {
                 pane.error = error;

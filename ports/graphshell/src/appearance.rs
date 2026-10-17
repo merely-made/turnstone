@@ -119,6 +119,11 @@ impl Appearance {
     pub fn resolved(&self) -> &ResolvedThemeChoice {
         &self.resolved
     }
+    /// The theme's authored font-role custom properties, for surfaces that
+    /// keep their own document; empty when the theme authors none.
+    pub fn font_roles(&self) -> String {
+        self.resolved.theme.typography.css_property_declarations()
+    }
 
     /// Reuse the shared face-palette mapping with the six browser-computed
     /// roles that mapping actually consumes. Other palette fields are unused;
@@ -323,6 +328,32 @@ mod tests {
             assert_eq!(reopened.resolved().resolved.theme_mode, Some(mode));
             assert_eq!(reopened.resolved().theme, imported_theme());
         }
+    }
+
+    #[test]
+    fn font_roles_follow_the_resolved_theme() {
+        let mut theme = imported_theme();
+        let family = Some("Probe Sans".to_owned());
+        let style = tabard::ThemeFontStyle {
+            family,
+            ..Default::default()
+        };
+        theme
+            .typography
+            .set(tabard::FontRole::Interface, style)
+            .unwrap();
+        let appearance = Appearance::default()
+            .with_import(&tabard::portable::theme_json(&theme).unwrap())
+            .unwrap()
+            .with_choice(ThemeChoice::new("theme:graphshell-test", Some(Mode::Dark)))
+            .unwrap();
+        assert!(
+            appearance
+                .font_roles()
+                .contains("--tabard-font-interface: ")
+        );
+        assert!(appearance.font_roles().contains("Probe Sans"));
+        assert!(Appearance::default().font_roles().is_empty());
     }
 
     #[test]

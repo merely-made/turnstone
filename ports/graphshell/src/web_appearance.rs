@@ -214,6 +214,9 @@ impl Session {
     pub fn sheet(&self) -> &str {
         &self.sheet
     }
+    pub fn font_roles(&self) -> String {
+        self.appearance.font_roles()
+    }
     pub fn backdrop_theme(&self) -> mere::canvas::backdrop_surface::SurfaceTheme {
         use mere::canvas::backdrop_surface::SurfaceTheme;
         if self.colors.len() != PAINT.len() {
