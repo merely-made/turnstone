@@ -1,0 +1,72 @@
+{
+  "result": "pass",
+  "real_model": true,
+  "citation_basis": "verbatim_passage",
+  "resumed_after_positive_token": true,
+  "exact_scopes": [
+    [
+      "blake3:c7d29bd8b2e266dd1e8350dfa988cae2764ce3fb2b33a1e15af509d4d9666c2a",
+      "blake3:3f05bf5717e20ecd2a279e3ffca66506fef7b62f5d8fd25dcd02fdee820f2336"
+    ],
+    [
+      "blake3:3f05bf5717e20ecd2a279e3ffca66506fef7b62f5d8fd25dcd02fdee820f2336"
+    ]
+  ],
+  "old_A1_citation_survives_B_only_selection": true,
+  "cold_generation_changed": true,
+  "origin_process_gone": true,
+  "post_stop_origin_requests": 0,
+  "generation_runs": 2,
+  "empty_and_oversize_new_runs": 0,
+  "unicode_quote": "The Pelican observatory's access word is café.",
+  "pngs": [
+    {
+      "path": "reopen/10_cold_reopened_scope_and_history.png",
+      "sha256": "61f72cb18402c244be136303a9f28dd0789905b7f9fb3e4eb4ce196c783cb191"
+    },
+    {
+      "path": "reopen/11_cold_reopened_exact_A1_citation.png",
+      "sha256": "917aefbe2aac8dff75c89e742681fcfac2c678d98708e9fa0455623f86c7d58c"
+    },
+    {
+      "path": "reopen/12_oversize_publication_refused.png",
+      "sha256": "fe82ce016de2de20a7e1c26720cde5705bc6f89c9e0f6fec1e784590e3b2588d"
+    },
+    {
+      "path": "reopen/13_oversize_source_readable_offline.png",
+      "sha256": "1c4dd9ff89cb52684499c52b8cc7ee7da6da12151c856c763ffb67bf45dea42d"
+    },
+    {
+      "path": "seed/04_foreign_session_source.png",
+      "sha256": "57b86e214dc5c923904e108f6f3ee8d295541fc2739cb584a60aad8119c79d42"
+    },
+    {
+      "path": "seed/05_empty_scope_refused.png",
+      "sha256": "76d695d8839b6b5ff5505470e1a7d4fd7ebee6898e9d0a808dc92f18ac5cf5d7"
+    },
+    {
+      "path": "seed/06_explicit_A1_B_scope.png",
+      "sha256": "fd5693554ec537975685ff5c7d7fd2f41a1f11f2cb629445e7cc1d2d7d630090"
+    },
+    {
+      "path": "seed/06b_paused_scoped_answer.png",
+      "sha256": "bb9a522b7f821bbfa8b45e11e38c8c1c889d35c7961277d1a3b34bed3849166c"
+    },
+    {
+      "path": "seed/07_scoped_answer_origin_gone.png",
+      "sha256": "d70b2e242d5f432ff7cb6faa62ecdf360913a807ad135c739c59fbd4b8a11199"
+    },
+    {
+      "path": "seed/08_changed_scope_old_answer.png",
+      "sha256": "6dcda2150db2745653de9d9ae5b6606c9c5c8f2fbd5fa06bcbf4e800a7ae0de0"
+    },
+    {
+      "path": "seed/08b_cancelled_B_only_ask.png",
+      "sha256": "7cf4f8317535fae31fdea09adb8e25e9dfdd16dccbf3096ea5b31342cad212ab"
+    },
+    {
+      "path": "seed/09_exact_A1_citation_origin_gone.png",
+      "sha256": "086d1381fec85213272e3964159f5bf9d15e752c105f75ef43d66936657495f1"
+    }
+  ]
+}

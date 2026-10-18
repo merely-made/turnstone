@@ -1,0 +1,7 @@
+{
+  "path": "/Users/markik/Code/output/turnstone-r3-qualified-tests-04/turnstone-tests",
+  "sha256": "5085e2b85a859335dfe4e086319b20f7bc0f7f1e22e15c8528b8253f8cddf0dd",
+  "toolchain": "rustup run 1.99.1",
+  "build_log": "checks/tests-build.log",
+  "source_inputs": "source-inputs.json"
+}

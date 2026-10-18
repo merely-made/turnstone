@@ -210,6 +210,7 @@ pub struct App {
     pub source_captures: HashMap<uuid::Uuid, crate::source_capture::CaptureAttempt>,
     pub(crate) source_capture_generation: uuid::Uuid,
     pub(crate) saved_sources: saved_source_arms::SavedSourcesState,
+    pub(crate) research: crate::research::Bridge,
     pub(crate) saved_readers: HashMap<uuid::Uuid, saved_source_arms::SavedReader>,
     /// Transient host engine availability; retained across session switches.
     pub engine_inventory: Vec<crate::content::EngineDescriptor>,
@@ -1382,6 +1383,7 @@ impl App {
             Action::ChooseKnotDocumentFile { read_only } => {
                 vec![Effect::ChooseKnotDocumentFile { read_only }]
             }
+            Action::SetAnswerSelection { generation, expected, chosen } => self.set_answer_selection(generation, expected, chosen),
             Action::OpenAnswers => self.summon_contributed_pane(
                 crate::panes::PaneKindId::new(crate::inference_surface::PANE_KIND),
                 crate::inference_surface::answer_source(self.session_id.0),

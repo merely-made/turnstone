@@ -178,7 +178,10 @@ impl OuterFrame {
             .collect()
     }
     pub fn scene(&mut self) -> netrender::Scene {
-        self.scene_resources().scene
+        match self.scene_resources() {
+            Ok(translated) => translated.scene,
+            Err(error) => crate::ui::pane_scene(&format!("Frame cannot render: {error}"), self.size.0, self.size.1),
+        }
     }
     /// Resolve only frame-owned furniture. Mounted pane descendants share the
     /// same DOM and fragments, but their selectors belong to the pane owner.
@@ -234,7 +237,7 @@ impl OuterFrame {
         }
         Ok(Some(point))
     }
-    pub(crate) fn scene_resources(&mut self) -> paint_list_render::TranslatedDisplayList {
+    pub(crate) fn scene_resources(&mut self) -> Result<paint_list_render::TranslatedDisplayList, paint_list_render::TranslationError> {
         self.layout.borrow_mut().scene_resources(
             &mut self.controls.dom.borrow_mut(),
             &self.sheet,
@@ -713,7 +716,7 @@ mod native_aperture_tests {
         frame.sheet.push_str(
             "\n.workspace-float{opacity:0.55;box-shadow:10px 12px 18px rgba(255,64,0,0.75);}",
         );
-        let translated = frame.scene_resources();
+        let translated = frame.scene_resources().unwrap();
         let root_rect = frame
             .layout
             .borrow()

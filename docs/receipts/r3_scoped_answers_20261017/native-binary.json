@@ -1,0 +1,7 @@
+{
+  "path": "/Users/markik/Code/output/turnstone-r3-native-06/frozen/turnstone",
+  "sha256": "14d467e067eb73c35c01eebc065bd461f4e06126bec1a490b014e08fcf2a2742",
+  "toolchain": "rustup run 1.99.1",
+  "build_log": "checks/native-build.log",
+  "source_inputs": "source-inputs.json"
+}

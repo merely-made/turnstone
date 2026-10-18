@@ -1,0 +1,11 @@
+{
+  "result": "pass",
+  "origin_absent": true,
+  "resident_endpoint_deliberately_absent": true,
+  "source_profile": "copy of native-05 acknowledged ordinary capture profile",
+  "quote": "oversize saved marker",
+  "canonical_characters": 100021,
+  "body_paragraphs": 25,
+  "every_display_part_at_most_utf8_bytes": 4096,
+  "all_canonical_bytes_preserved": true
+}

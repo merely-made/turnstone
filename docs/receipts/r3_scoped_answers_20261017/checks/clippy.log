@@ -1,0 +1,3543 @@
+warning: skipping duplicate package `mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/proofs/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/system/proofs/Cargo.toml
+
+warning: skipping duplicate package `muniment v0.1.2 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/eidetic/muniment/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/eidetic/muniment/Cargo.toml
+
+warning: skipping duplicate package `mere-apparatus v0.0.1 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/domain/apparatus/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/domain/apparatus/Cargo.toml
+
+warning: skipping duplicate package `armillary v0.1.1 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/armillary/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/armillary/Cargo.toml
+
+warning: skipping duplicate package `cambium v0.3.3 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/cambium/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/cambium/cambium/Cargo.toml
+
+warning: skipping duplicate package `cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/cambium-winit/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/cambium/cambium-winit/Cargo.toml
+
+warning: skipping duplicate package `chartulary v0.2.2 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/eidetic/chartulary/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/eidetic/chartulary/Cargo.toml
+
+warning: skipping duplicate package `eidetic v0.0.2 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/eidetic/eidetic-core/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/eidetic/eidetic-core/Cargo.toml
+
+warning: skipping duplicate package `errand v0.4.0 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/errand/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/system/errand/Cargo.toml
+
+warning: skipping duplicate package `mere-fetch v0.0.1 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/fetch/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/system/fetch/Cargo.toml
+
+warning: skipping duplicate package `incipit v0.2.0 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/incipit/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/incipit/Cargo.toml
+
+warning: skipping duplicate package `inker v0.1.1 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/inker/inker/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/inker/inker/Cargo.toml
+
+warning: skipping duplicate package `mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/document-lanes/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/system/document-lanes/Cargo.toml
+
+warning: skipping duplicate package `mere-surface-api v0.1.0 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/surface-api/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/system/surface-api/Cargo.toml
+
+warning: skipping duplicate package `nematic v0.1.1 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/nematic/nematic/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/nematic/nematic/Cargo.toml
+
+warning: skipping duplicate package `mere-page-load v0.0.1 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/page-load/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/system/page-load/Cargo.toml
+
+warning: skipping duplicate package `pandect v0.1.1 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/pandect/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/system/pandect/Cargo.toml
+
+warning: skipping duplicate package `servitor v0.0.2 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/servitor/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/servitor/Cargo.toml
+
+warning: skipping duplicate package `sprigging v0.2.1 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/sprigging/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/cambium/sprigging/Cargo.toml
+
+warning: skipping duplicate package `stickleback v0.1.1 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/stickleback/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/stickleback/Cargo.toml
+
+warning: skipping duplicate package `uxtree v0.0.2 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/forme/uxtree/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/forme/uxtree/Cargo.toml
+
+warning: skipping duplicate package `workbench v0.1.0 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/workbench/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/cambium/workbench/Cargo.toml
+
+error: invalid type: boolean `true`, expected a map
+ --> ../../../.cargo/git/checkouts/servo-e53a6e7b994a25fe/aac43a3/python/tidy/tests/lints-configuration/no-workspace/Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+warning: skipping duplicate package `mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/distillery/alembic/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/distillery/alembic/Cargo.toml
+
+warning: skipping duplicate package `mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/graph/graph-kernel/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/graph/graph-kernel/Cargo.toml
+
+warning: skipping duplicate package `meristem v0.2.0 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/meristem/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/cambium/meristem/Cargo.toml
+
+warning: skipping duplicate package `illume v0.0.2 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/nematic/illume/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/nematic/illume/Cargo.toml
+
+warning: skipping duplicate package `mere-linked-data v0.0.1 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/graph/linked-data/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/graph/linked-data/Cargo.toml
+
+warning: skipping duplicate package `document-canvas v0.1.0 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/inker/document-canvas/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/inker/document-canvas/Cargo.toml
+
+warning: skipping duplicate package `numen v0.2.0 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/conatus/numen/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/e6250fd/crates/conatus/numen/Cargo.toml
+
+warning: patch `burn-remote v0.22.0 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://github.com/merely-made/mere.git?branch=main#e6250fd1)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+    Checking turnstone v0.1.0 (/Users/markik/Code/repos/turnstone)
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src/app/mod.rs:20:31
+   |
+20 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Update`
+  --> src/app/mod.rs:22:47
+   |
+22 | use crate::action::{Action, Effect, SpaceRef, Update};
+   |                                               ^^^^^^
+
+warning: unused imports: `browse` and `session`
+  --> src/app/mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^  ^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src/app/node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src/app/omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src/app/palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src/app/session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src/app/session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: duplicated attribute
+    --> src/knot_authoring.rs:1823:9
+     |
+1823 | #[allow(clippy::too_many_arguments)]
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+note: first defined here
+    --> src/knot_authoring.rs:1822:9
+     |
+1822 | #[allow(clippy::too_many_arguments)]
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: remove this attribute
+    --> src/knot_authoring.rs:1823:9
+     |
+1823 | #[allow(clippy::too_many_arguments)]
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#duplicated_attributes
+     = note: `#[warn(clippy::duplicated_attributes)]` on by default
+
+warning: unused import: `Hash`
+  --> src/retained_clip.rs:12:15
+   |
+12 | use eidetic::{Hash, ManifestId, ProvenanceRecord, Timestamp, TrustEnvelope};
+   |               ^^^^
+
+warning: unused import: `Write`
+  --> src/retained_clip.rs:16:16
+   |
+16 |     io::{Read, Write},
+   |                ^^^^^
+
+warning: unused import: `NodeSessions`
+  --> src/shell/controller_input.rs:17:13
+   |
+17 | use super::{NodeSessions, NodeSurfaces, Shell, content_link_target};
+   |             ^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src/shell/drive.rs:17:23
+   |
+17 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+    --> src/shell/drive.rs:1357:13
+     |
+1357 |         use crate::action::CaretMove;
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `EditKey`
+    --> src/shell/drive.rs:1358:38
+     |
+1358 |         use crate::scenario::{CmpOp, EditKey, Step};
+     |                                      ^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src/shell/effects.rs:14:5
+   |
+14 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src/shell/effects.rs:16:13
+   |
+16 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src/shell/effects.rs:18:46
+   |
+18 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src/shell/effects.rs:23:5
+   |
+23 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `netrender::external_texture::ExternalTexturePlacement`
+  --> src/shell/render.rs:20:5
+   |
+20 | use netrender::external_texture::ExternalTexturePlacement;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::NodeSessions`
+  --> src/shell/lens.rs:14:5
+   |
+14 | use super::NodeSessions;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `inker::SessionClick`
+  --> src/shell/lens.rs:29:5
+   |
+29 | use inker::SessionClick;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `NodeSessions`
+  --> src/shell/input.rs:15:13
+   |
+15 | use super::{NodeSessions, NodeSurfaces};
+   |             ^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src/shell/input.rs:17:23
+   |
+17 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `SessionClick` and `SessionScrollKey`
+  --> src/shell/input.rs:21:13
+   |
+21 | use inker::{SessionClick, SessionScrollKey};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src/shell/input.rs:25:29
+   |
+25 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src/shell/input.rs:28:20
+   |
+28 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: empty line after doc comment
+    --> src/shell/input.rs:1027:5
+     |
+1027 | /     /// and the scenario runner.
+1028 | |
+     | |_^
+...
+1038 |       pub(super) fn deliver_hover(&mut self, x: f32, y: f32) {
+     |       --------------------------- the comment documents this function
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+     = note: `#[warn(clippy::empty_line_after_doc_comments)]` on by default
+     = help: if the empty line is unintentional, remove it
+help: if the documentation should include the empty line include it in the comment
+     |
+1028 |     ///
+     |
+
+warning: unused import: `input::pointer_button`
+  --> src/shell/mod.rs:49:5
+   |
+49 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src/shell/mod.rs:52:5
+   |
+52 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src/shell/mod.rs:59:5
+   |
+59 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `SessionClick` and `SessionSpawnRequest`
+  --> src/shell/mod.rs:60:30
+   |
+60 | use inker::{DocumentSession, SessionClick, SessionRegistry, SessionSpawnRequest};
+   |                              ^^^^^^^^^^^^                   ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src/shell/mod.rs:61:5
+   |
+61 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ReaderSessionEngine`
+  --> src/shell/mod.rs:63:5
+   |
+63 |     ReaderSessionEngine, RemoteFetcher, SmolwebInlineMediaPolicy, SmolwebSessionEngine,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src/shell/mod.rs:67:17
+   |
+67 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src/shell/mod.rs:68:5
+   |
+68 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src/shell/mod.rs:69:18
+   |
+69 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src/shell/mod.rs:70:20
+   |
+70 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src/shell/mod.rs:72:23
+   |
+72 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `A11yRoutes`
+ --> src/shell/window_a11y.rs:6:23
+  |
+6 |     a11y::{A11yRoute, A11yRoutes},
+  |                       ^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src/shell/mod.rs:82:29
+   |
+82 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src/shell/mod.rs:85:21
+   |
+85 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: empty line after doc comment
+    --> src/shell/mod.rs:2195:5
+     |
+2195 | /     /// shared pointer path — a receipt names a row by text, not pixels.
+2196 | |
+     | |_^
+...
+2204 |       fn pane_click_actions(
+     |       --------------------- the comment documents this function
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+     = help: if the empty line is unintentional, remove it
+help: if the documentation should include the empty line include it in the comment
+     |
+2196 |     ///
+     |
+
+warning: unused import: `mere::canvas::palette`
+  --> src/swatch_pane/mod.rs:32:5
+   |
+32 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src/swatch_pane/mod.rs:33:17
+   |
+33 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src/swatch_pane/mod.rs:37:5
+   |
+37 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src/swatch_pane/mod.rs:38:5
+   |
+38 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+warning: empty line after doc comment
+    --> src/ui.rs:1200:1
+     |
+1200 | / /// Livery/Buckram path the chrome runs.
+...    |
+1205 | |
+     | |_^
+1206 |   fn finish_scene(dom: &ScriptedDom, w: u32, h: u32) -> netrender::Scene {
+     |   --------------- the comment documents this function
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+     = help: if the empty line is unintentional, remove it
+help: if the doc comment should not document function `finish_scene` then comment it out
+     |
+1196 ~ // /// The Trail pane (rung 5 slice D): its rows rendered as a panel of absolutely
+1197 ~ // /// positioned rows at the fixed geometry the click router shares, so a pointer
+1198 ~ // /// hits exactly the row it sees. Navigable rows read in a link color; muted
+1199 ~ // /// hints and section titles are dimmed. Built on the same `ScriptedDom` +
+1200 ~ // /// Livery/Buckram path the chrome runs.
+     |
+
+warning: unused import: `browse`
+  --> src/app/mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^
+
+warning: unused import: `Admission`
+ --> src/app/r2_saved_source_tests.rs:7:28
+  |
+7 | use crate::saved_sources::{Admission, Content, Entry, Key, Selector, Target};
+  |                            ^^^^^^^^^
+
+warning: unused import: `Update`
+    --> src/denizen.rs:1141:33
+     |
+1141 |     use crate::action::{Action, Update};
+     |                                 ^^^^^^
+
+warning: unused import: `NodeKind`
+    --> src/knot_authoring.rs:3023:37
+     |
+3023 |     use layout_dom_api::{LayoutDom, NodeKind};
+     |                                     ^^^^^^^^
+
+warning: unused imports: `MOOT_ACT_ACTION` and `MOOT_DELEGATION_DOMAIN`
+    --> src/place/worker.rs:2730:44
+     |
+2730 |         CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
+     |                                            ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilityScope`, `DelegationCertificate`, `DelegationParent`, and `delegation_signing_salt`
+    --> src/place/worker.rs:2743:9
+     |
+2743 |         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+     |         ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+2744 |         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
+     |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ContentKey`
+ --> src/shell/lens_tests.rs:7:20
+  |
+7 |     content_pool::{ContentKey, HostPlacement, NodeDocuments},
+  |                    ^^^^^^^^^^
+
+warning: unused imports: `SessionNavigationCommand` and `SessionSpawnRequest`
+  --> src/shell/window_input_tests.rs:17:53
+   |
+17 |     Cookie, FocusReason, KeyboardEvent, MouseEvent, SessionNavigationCommand, SessionSpawnRequest,
+   |                                                     ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `PeltLane`
+  --> src/shell/window_input_tests.rs:20:30
+   |
+20 | use pelt_core::{PeltContent, PeltLane, PeltRoute, PeltRouteSource, PeltRouteState};
+   |                              ^^^^^^^^
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> src/shell/native_composition.rs:63:10
+   |
+63 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+   |          ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+63 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+63 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+   --> src/shell/native_composition.rs:133:10
+    |
+133 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |          ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+133 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+133 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |
+
+warning: unused import: `genet_clipboard::TextClipboard`
+   --> src/shell/effects.rs:971:25
+    |
+971 |                     use genet_clipboard::TextClipboard as _;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> src/shell/drive.rs:1640:21
+     |
+1640 |                 let mut diagnostic = self.surface_a11y.publication_diagnostic(public_fixture);
+     |                     ----^^^^^^^^^^
+     |                     |
+     |                     help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `caption`
+   --> src/shell/render.rs:883:13
+    |
+883 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `node`
+   --> src/shell/render.rs:932:54
+    |
+932 |                 crate::surface::SurfaceKind::Content(node) => {
+    |                                                      ^^^^ help: if this is intentional, prefix it with an underscore: `_node`
+
+warning: variable `surface_frame` is assigned to, but never used
+   --> src/shell/render.rs:933:25
+    |
+933 |                     let mut surface_frame = None;
+    |                         ^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_surface_frame` instead
+
+warning: value assigned to `surface_frame` is never read
+   --> src/shell/render.rs:937:29
+    |
+937 | ...                   surface_frame = Some(frame);
+    |                       ^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `host`
+   --> src/shell/lens.rs:306:18
+    |
+306 |         let Some(host) = lens.host.as_ref() else {
+    |                  ^^^^ help: if this is intentional, prefix it with an underscore: `_host`
+
+warning: unused variable: `space`
+    --> src/shell/lens.rs:1155:19
+     |
+1155 |     let Some(Some(space)) = app.lenses.get(ordinal) else {
+     |                   ^^^^^ help: if this is intentional, prefix it with an underscore: `_space`
+
+warning: variable does not need to be mutable
+   --> src/shell/mod.rs:914:17
+    |
+914 |             let mut can_replace = true;
+    |                 ----^^^^^^^^^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: method `sync` is never used
+   --> src/arrange_pane.rs:576:12
+    |
+485 | impl ArrangePane {
+    | ---------------- method in this implementation
+...
+576 |     pub fn sync(&mut self, app: &App, pane_w: f32, pane_h: f32) {
+    |            ^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `grid_row_center_y` is never used
+   --> src/cambium_pane.rs:169:8
+    |
+169 | pub fn grid_row_center_y(idx: usize) -> f32 {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: associated items `new` and `resolve` are never used
+   --> src/cambium_pane.rs:199:12
+    |
+198 | impl RosterGrid {
+    | --------------- associated items in this implementation
+199 |     pub fn new() -> Self {
+    |            ^^^
+...
+299 |     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    |            ^^^^^^^
+
+warning: method `layout_rebuilds` is never used
+   --> src/chrome_view.rs:716:12
+    |
+658 | impl ChromeSurfaces {
+    | ------------------- method in this implementation
+...
+716 |     pub fn layout_rebuilds(&self, slot: usize) -> u32 {
+    |            ^^^^^^^^^^^^^^^
+
+warning: function `save_certs` is never used
+   --> src/denizen.rs:741:8
+    |
+741 | pub fn save_certs(session_dir: &Path, subject_hex: &str, certs: &[SignedDelegationCertificate]) {
+    |        ^^^^^^^^^^
+
+warning: function `issue_install_certificates` is never used
+   --> src/denizen.rs:795:8
+    |
+795 | pub fn issue_install_certificates(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function `new` is never used
+   --> src/device_receipts_pane.rs:130:12
+    |
+129 | impl DeviceReceiptsPane {
+    | ----------------------- associated function in this implementation
+130 |     pub fn new(service: Option<Arc<DeviceReceiptsService>>) -> Self {
+    |            ^^^
+
+warning: function `pump_documents` is never used
+  --> src/document_pump.rs:15:15
+   |
+15 | pub(crate) fn pump_documents<K: Eq + Hash, F: 'static>(
+   |               ^^^^^^^^^^^^^^
+
+warning: function `activation_safe_update` is never used
+  --> src/foreign_a11y.rs:17:15
+   |
+17 | pub(crate) fn activation_safe_update(
+   |               ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `needs_publish`, `initial_host`, `initial_host_with_guests`, and `frame` are never used
+   --> src/foreign_a11y.rs:410:19
+    |
+242 | impl ForeignA11y {
+    | ---------------- methods in this implementation
+...
+410 |     pub(crate) fn needs_publish(&self) -> bool {
+    |                   ^^^^^^^^^^^^^
+...
+480 |     pub(crate) fn initial_host(
+    |                   ^^^^^^^^^^^^
+...
+488 |     pub(crate) fn initial_host_with_guests(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+498 |     pub(crate) fn frame(
+    |                   ^^^^^
+
+warning: associated function `new` is never used
+   --> src/frozen_projection_pane.rs:159:12
+    |
+158 | impl FrozenProjectionPane {
+    | ------------------------- associated function in this implementation
+159 |     pub fn new() -> Self {
+    |            ^^^
+
+warning: function `root_subject` is never used
+   --> src/identity.rs:164:8
+    |
+164 | pub fn root_subject(provider: &impl IdentityProvider) -> servitor::Subject {
+    |        ^^^^^^^^^^^^
+
+warning: associated function `new` is never used
+   --> src/inspector_pane.rs:310:12
+    |
+309 | impl InspectorPane {
+    | ------------------ associated function in this implementation
+310 |     pub fn new() -> Self {
+    |            ^^^
+
+warning: method `key_inline` is never used
+  --> src/inline_pane.rs:71:12
+   |
+36 | impl InlinePane {
+   | --------------- method in this implementation
+...
+71 |     pub fn key_inline(&mut self, event: cambium::KeyEvent) -> Vec<()> {
+   |            ^^^^^^^^^^
+
+warning: struct `KnotRuntimeWitness` is never constructed
+   --> src/knot_authoring.rs:119:12
+    |
+119 | pub struct KnotRuntimeWitness {
+    |            ^^^^^^^^^^^^^^^^^^
+
+warning: method `matches_save_token` is never used
+   --> src/knot_authoring.rs:127:12
+    |
+123 | impl KnotRuntimeWitness {
+    | ----------------------- method in this implementation
+...
+127 |     pub fn matches_save_token(&self, candidate: &[u8]) -> bool {
+    |            ^^^^^^^^^^^^^^^^^^
+
+warning: function `knot_runtime_source_binding` is never used
+   --> src/knot_authoring.rs:151:4
+    |
+151 | fn knot_runtime_source_binding(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `status`, `projection_input_binding`, and `runtime_projection_source` are never used
+    --> src/knot_authoring.rs:2548:12
+     |
+2414 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2548 |     pub fn status(&mut self) -> &'static str {
+     |            ^^^^^^
+...
+2634 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2644 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `split_axis` and `new_is_first` are never used
+   --> src/panes/mod.rs:349:19
+    |
+348 | impl InsertSide {
+    | --------------- methods in this implementation
+349 |     pub(crate) fn split_axis(self) -> SplitAxis {
+    |                   ^^^^^^^^^^
+...
+358 |     pub(crate) fn new_is_first(self) -> bool {
+    |                   ^^^^^^^^^^^^
+
+warning: method `ops_received` is never used
+   --> src/place/lanes.rs:248:19
+    |
+184 | impl LiveLanes {
+    | -------------- method in this implementation
+...
+248 |     pub(crate) fn ops_received(&self) -> [u64; 10] {
+    |                   ^^^^^^^^^^^^
+
+warning: function `dial_holder` is never used
+    --> src/place/lanes.rs:5255:15
+     |
+5255 | pub(crate) fn dial_holder(
+     |               ^^^^^^^^^^^
+
+warning: associated function `new` is never used
+   --> src/publish_pane.rs:263:12
+    |
+262 | impl PublishPane {
+    | ---------------- associated function in this implementation
+263 |     pub fn new(service: Option<Arc<KnotPublishingService>>) -> Self {
+    |            ^^^
+
+warning: function `spawn_bin` is never used
+   --> src/recycle.rs:166:8
+    |
+166 | pub fn spawn_bin(wake: Wake, dir: PathBuf) -> (ActorHandle<BinCommand>, Receiver<Update>) {
+    |        ^^^^^^^^^
+
+warning: function `granted_ring_names` is never used
+   --> src/ring.rs:408:8
+    |
+408 | pub fn granted_ring_names(authority: &impl AuthorityProvider, subject: Subject) -> Vec<String> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: enum `EnvelopeError` is never used
+   --> src/ring.rs:421:10
+    |
+421 | pub enum EnvelopeError {
+    |          ^^^^^^^^^^^^^
+
+warning: function `decode_envelope` is never used
+   --> src/ring.rs:434:8
+    |
+434 | pub fn decode_envelope(name: &str, payload: &str) -> Result<Action, EnvelopeError> {
+    |        ^^^^^^^^^^^^^^^
+
+warning: function `roster_grid_rows` is never used
+   --> src/roster_view.rs:101:8
+    |
+101 | pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+   --> src/scenario.rs:272:12
+    |
+272 |     Settle(u32),
+    |     ------ ^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+272 -     Settle(u32),
+272 +     Settle(()),
+    |
+
+warning: field `0` is never read
+   --> src/scenario.rs:308:17
+    |
+308 |     AssertEvent(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+308 -     AssertEvent(String),
+308 +     AssertEvent(()),
+    |
+
+warning: field `0` is never read
+   --> src/scenario.rs:344:9
+    |
+344 |     Log(String),
+    |     --- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+344 -     Log(String),
+344 +     Log(()),
+    |
+
+warning: function `remove_place_binding` is never used
+   --> src/session.rs:347:8
+    |
+347 | pub fn remove_place_binding(session_dir: &Path) -> Result<bool, PlaceSidecarError> {
+    |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `load_session_graph` is never used
+   --> src/session.rs:676:8
+    |
+676 | pub fn load_session_graph(data_root: &Path) -> Option<Graph> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `save_session_graph` is never used
+   --> src/session.rs:761:8
+    |
+761 | pub fn save_session_graph(data_root: &Path, graph: &Graph) {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `load_node_facets` is never used
+   --> src/session.rs:841:8
+    |
+841 | pub fn load_node_facets(data_root: &Path) -> Option<pandect::NodeFacetStore> {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: function `save_node_facets` is never used
+   --> src/session.rs:852:8
+    |
+852 | pub fn save_node_facets(data_root: &Path, facets: &pandect::NodeFacetStore) {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: method `shellbar_edge` is never used
+   --> src/settings_pane.rs:116:12
+    |
+ 59 | impl ChromeSettings {
+    | ------------------- method in this implementation
+...
+116 |     pub fn shellbar_edge(&self) -> ShellbarEdge {
+    |            ^^^^^^^^^^^^^
+
+warning: method `publish` is never used
+   --> src/settings_pane.rs:172:8
+    |
+158 | impl LiveSettingsHandle {
+    | ----------------------- method in this implementation
+...
+172 |     fn publish(&self, settings: &ApplicationSettings) {
+    |        ^^^^^^^
+
+warning: associated items `new`, `with_live_settings`, and `settings` are never used
+   --> src/settings_pane.rs:346:12
+    |
+345 | impl SettingsPane {
+    | ----------------- associated items in this implementation
+346 |     pub fn new(data_root: PathBuf) -> Self {
+    |            ^^^
+...
+353 |     pub fn with_live_settings(
+    |            ^^^^^^^^^^^^^^^^^^
+...
+548 |     pub fn settings(&self) -> &ApplicationSettings {
+    |            ^^^^^^^^
+
+warning: method `apply_theme_choice` is never used
+   --> src/settings_provider.rs:176:19
+    |
+ 82 | impl ApplicationSettingsProvider {
+    | -------------------------------- method in this implementation
+...
+176 |     pub(crate) fn apply_theme_choice(&mut self, choice: ThemeChoice) -> Result<(), SettingsError> {
+    |                   ^^^^^^^^^^^^^^^^^^
+
+warning: associated function `new` is never used
+   --> src/share_reader_pane.rs:145:12
+    |
+144 | impl SharedKnotPane {
+    | ------------------- associated function in this implementation
+145 |     pub fn new(service: Option<Arc<KnotShareReaderService>>) -> Self {
+    |            ^^^
+
+warning: variant `Imported` is never constructed
+   --> src/shell/mod.rs:610:5
+    |
+608 | enum PlannedLayer {
+    |      ------------ variant in this enum
+609 |     Scene(PlannedScene),
+610 |     Imported(CompositeLayer),
+    |     ^^^^^^^^
+
+warning: methods `has_live_content`, `has_independent_reader_appearance`, `all_content_plans`, and `pane_label` are never used
+    --> src/shell/mod.rs:1784:8
+     |
+1423 | impl Shell {
+     | ---------- methods in this implementation
+...
+1784 |     fn has_live_content(&self, node: &uuid::Uuid) -> bool {
+     |        ^^^^^^^^^^^^^^^^
+...
+1788 |     fn has_independent_reader_appearance(&self, node: &uuid::Uuid) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2069 |     fn all_content_plans(&self) -> Vec<crate::surface::Surface> {
+     |        ^^^^^^^^^^^^^^^^^
+...
+2186 |     fn pane_label(&self, id: crate::panes::PaneId) -> String {
+     |        ^^^^^^^^^^
+
+warning: function `session_pointer_button` is never used
+   --> src/shell/controller_input.rs:164:15
+    |
+164 | pub(super) fn session_pointer_button(button: MouseButton) -> Option<SessionPointerButton> {
+    |               ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `foreign_a11y_placements_in` is never used
+  --> src/shell/foreign_a11y.rs:65:19
+   |
+ 9 | impl Shell {
+   | ---------- method in this implementation
+...
+65 |     pub(super) fn foreign_a11y_placements_in(
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `foreign_placements` is never used
+   --> src/shell/foreign_a11y.rs:116:15
+    |
+116 | pub(super) fn foreign_placements(
+    |               ^^^^^^^^^^^^^^^^^^
+
+warning: method `on_key` is never used
+   --> src/shell/keys.rs:362:19
+    |
+ 79 | impl Shell {
+    | ---------- method in this implementation
+...
+362 |     pub(super) fn on_key(&mut self, key: &WinitKey) {
+    |                   ^^^^^^
+
+warning: function `frame_body_rects` is never used
+  --> src/shell/outer_workspace.rs:95:15
+   |
+95 | pub(super) fn frame_body_rects(
+   |               ^^^^^^^^^^^^^^^^
+
+warning: function `focus_for_press` is never used
+   --> src/surface.rs:329:8
+    |
+329 | pub fn focus_for_press(surfaces: &[Surface], focus: FocusTarget, px: f32, py: f32) -> FocusTarget {
+    |        ^^^^^^^^^^^^^^^
+
+warning: associated items `new` and `resolve` are never used
+   --> src/swatch_pane/mod.rs:269:12
+    |
+268 | impl SwatchPane {
+    | --------------- associated items in this implementation
+269 |     pub fn new(preset: ProjectionPreset) -> Self {
+    |            ^^^
+...
+536 |     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    |            ^^^^^^^
+
+warning: field `id` is never read
+  --> src/swatch_pane/presets.rs:29:9
+   |
+27 | pub struct ProjectionPreset {
+   |            ---------------- field in this struct
+28 |     /// Stable id (`"gloss.minimap"`, `"overmap.lineage"`).
+29 |     pub id: &'static str,
+   |         ^^
+   |
+   = note: `ProjectionPreset` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: variants `InferenceSnapshot`, `InferenceSource`, and `Flush` are never constructed
+   --> src/trail_memory.rs:161:5
+    |
+134 | pub enum TrailCommand {
+    |          ------------ variants in this enum
+...
+161 |     InferenceSnapshot {
+    |     ^^^^^^^^^^^^^^^^^
+...
+168 |     InferenceSource {
+    |     ^^^^^^^^^^^^^^^
+...
+195 |     Flush,
+    |     ^^^^^
+
+warning: field `frecency` is never read
+   --> src/trail_memory.rs:844:5
+    |
+837 | struct RecallIndex {
+    |        ----------- field in this struct
+...
+844 |     frecency: BTreeMap<String, f64>,
+    |     ^^^^^^^^
+
+warning: function `spawn_trail` is never used
+    --> src/trail_memory.rs:1092:8
+     |
+1092 | pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Receiver<Update>) {
+     |        ^^^^^^^^^^^
+
+warning: function `spawn_trail_with_capture_library` is never used
+    --> src/trail_memory.rs:1102:15
+     |
+1102 | pub(crate) fn spawn_trail_with_capture_library(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `TrailInferenceOwner` is never constructed
+    --> src/trail_memory.rs:1901:19
+     |
+1901 | pub(crate) struct TrailInferenceOwner(pub std::sync::Arc<ActorHandle<TrailCommand>>);
+     |                   ^^^^^^^^^^^^^^^^^^^
+
+warning: associated items `new` and `resolve` are never used
+   --> src/trail_pane.rs:136:12
+    |
+135 | impl TrailPane {
+    | -------------- associated items in this implementation
+136 |     pub fn new() -> Self {
+    |            ^^^
+...
+277 |     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    |            ^^^^^^^
+
+warning: method `resolve` is never used
+   --> src/transcript_pane.rs:312:12
+    |
+185 | impl TranscriptPane {
+    | ------------------- method in this implementation
+...
+312 |     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    |            ^^^^^^^
+
+warning: constant `ROW_TEXT_BUDGET` is never used
+  --> src/ui.rs:48:18
+   |
+48 | pub(crate) const ROW_TEXT_BUDGET: f32 = CARD_W - 16.0 - 16.0;
+   |                  ^^^^^^^^^^^^^^^
+
+warning: function `chrome_row_width` is never used
+  --> src/ui.rs:61:15
+   |
+61 | pub(crate) fn chrome_row_width(text: &str) -> f32 {
+   |               ^^^^^^^^^^^^^^^^
+
+warning: function `recompute_suggestions` is never used
+   --> src/ui.rs:580:8
+    |
+580 | pub fn recompute_suggestions(
+    |        ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `ime_cursor_area` is never used
+    --> src/ui.rs:1141:8
+     |
+1141 | pub fn ime_cursor_area(state: &OmnibarState, w: u32) -> ((f32, f32), (f32, f32)) {
+     |        ^^^^^^^^^^^^^^^
+
+warning: function `chrome_has_content` is never used
+    --> src/ui.rs:1159:8
+     |
+1159 | pub fn chrome_has_content(state: &OmnibarState, caption: Option<&str>) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_scrolled` is never used
+    --> src/ui.rs:2435:8
+     |
+2435 | pub fn scene_from_dom_scrolled(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `hit_test_scrolled` is never used
+    --> src/ui.rs:2462:8
+     |
+2462 | pub fn hit_test_scrolled(
+     |        ^^^^^^^^^^^^^^^^^
+
+warning: function `livery_paint_list` is never used
+    --> src/ui.rs:2488:4
+     |
+2488 | fn livery_paint_list(dom: &ScriptedDom, sheet: &str, w: u32, h: u32) -> LiveryPaintList {
+     |    ^^^^^^^^^^^^^^^^^
+
+warning: function `node_rect` is never used
+    --> src/ui.rs:2493:15
+     |
+2493 | pub(crate) fn node_rect(
+     |               ^^^^^^^^^
+
+warning: method `rebuilds` is never used
+    --> src/ui.rs:2638:12
+     |
+2622 | impl RetainedSubtreeLayout {
+     | -------------------------- method in this implementation
+...
+2638 |     pub fn rebuilds(&self) -> u32 {
+     |            ^^^^^^^^
+
+warning: function `subtree_node_rect` is never used
+    --> src/ui.rs:2726:15
+     |
+2726 | pub(crate) fn subtree_node_rect(
+     |               ^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_with_leaves` is never used
+    --> src/ui.rs:2768:8
+     |
+2768 | pub fn scene_from_dom_with_leaves(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `stamp` and `dom_ref` are never used
+   --> src/outer_frame.rs:251:19
+    |
+ 90 | impl OuterFrame {
+    | --------------- methods in this implementation
+...
+251 |     pub(crate) fn stamp(&self) -> FrameStamp {
+    |                   ^^^^^
+...
+421 |     pub(crate) fn dom_ref(&self) -> std::cell::Ref<'_, ScriptedDom> {
+    |                   ^^^^^^^
+
+warning: associated function `new` is never used
+   --> src/workbench_pane.rs:132:12
+    |
+131 | impl WorkbenchPane {
+    | ------------------ associated function in this implementation
+132 |     pub fn new() -> Self {
+    |            ^^^
+
+warning: this `.fold` can be written more succinctly using another method
+  --> src/app/fold_arms.rs:52:26
+   |
+52 |                         .fold(false, |changed, id| canvas.expand_fold(id) || changed)
+   |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `any(|id| canvas.expand_fold(id))`
+   |
+   = note: the `any` method is short circuiting and may change the program semantics if the iterator has side effects
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#unnecessary_fold
+   = note: `#[warn(clippy::unnecessary_fold)]` on by default
+
+warning: this `if` statement can be collapsed
+  --> src/app/scene_arms.rs:88:9
+   |
+88 | /         if action == Action::TogglePhysics {
+89 | |             if let Some(graph) = self.graph_for_pane(pane) {
+90 | |                 self.graph_runtimes.get_mut(graph).unwrap().scene_transition = None;
+91 | |             }
+92 | |         }
+   | |_________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+   = note: `#[warn(clippy::collapsible_if)]` on by default
+help: collapse nested if block
+   |
+88 ~         if action == Action::TogglePhysics
+89 ~             && let Some(graph) = self.graph_for_pane(pane) {
+90 |                 self.graph_runtimes.get_mut(graph).unwrap().scene_transition = None;
+91 ~             }
+   |
+
+warning: unneeded `return` statement
+   --> src/app/denizen_arms.rs:296:13
+    |
+296 |             return Err((servitor::ResultKind::Refused, "this build carries no script runtime".into()));
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_return
+    = note: `#[warn(clippy::needless_return)]` on by default
+help: remove `return`
+    |
+296 -             return Err((servitor::ResultKind::Refused, "this build carries no script runtime".into()));
+296 +             Err((servitor::ResultKind::Refused, "this build carries no script runtime".into()))
+    |
+
+warning: variable does not need to be mutable
+    --> src/place/worker.rs:3882:13
+     |
+3882 |         let mut welcome = |open: &mut OpenPlace, seed: u8| {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: this function has too many arguments (8/7)
+   --> src/app/denizen_arms.rs:489:5
+    |
+489 | /     fn persist_local_action_outcome(
+490 | |         &mut self,
+491 | |         captured_session: crate::panes::SessionId,
+492 | |         run_id: servitor::RunId,
+...   |
+497 | |         usage: servitor::Usage,
+498 | |     ) -> Result<(), String> {
+    | |___________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#too_many_arguments
+    = note: `#[warn(clippy::too_many_arguments)]` on by default
+
+warning: casting to the same type is unnecessary (`u64` -> `u64`)
+   --> src/app/fixtures.rs:128:67
+    |
+128 | ...or::RunLimits { decisions: crate::denizen::RUN_BUDGET as u64, tool_calls: 0, tokens: 0, elapsed_ms: 30_000, consecutive_failures...
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `crate::denizen::RUN_BUDGET`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#unnecessary_cast
+    = note: `#[warn(clippy::unnecessary_cast)]` on by default
+
+warning: variable does not need to be mutable
+    --> src/shell/drive.rs:1640:21
+     |
+1640 |                 let mut diagnostic = self.surface_a11y.publication_diagnostic(public_fixture);
+     |                     ----^^^^^^^^^^
+     |                     |
+     |                     help: remove this `mut`
+
+warning: this `if` statement can be collapsed
+   --> src/app/node_arms.rs:579:9
+    |
+579 | /         if let Some(request) = self.content.active_fetch(node) {
+580 | |             if self.content.stop_fetch(node, request) {
+581 | |                 self.events.push(AppEvent::ContentState {
+582 | |                     node,
+...   |
+587 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+579 ~         if let Some(request) = self.content.active_fetch(node)
+580 ~             && self.content.stop_fetch(node, request) {
+581 |                 self.events.push(AppEvent::ContentState {
+...
+585 |                 return vec![Effect::CancelPage { request, node }, Effect::Redraw];
+586 ~             }
+    |
+
+warning: this method chain can be written more clearly with `if .. else ..`
+   --> src/app/omnibar_arms.rs:169:28
+    |
+169 |                   let hits = (searchable && !query.is_empty())
+    |  ____________________________^
+170 | |                     .then(|| {
+171 | |                         snapshot
+172 | |                             .captured
+173 | |                             .search(query, row_limit.saturating_sub(1).max(1))
+174 | |                     })
+175 | |                     .unwrap_or_default();
+    | |________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#obfuscated_if_else
+    = note: `#[warn(clippy::obfuscated_if_else)]` on by default
+help: try
+    |
+169 ~                 let hits = if searchable && !query.is_empty() { {
+170 +                         snapshot
+171 +                             .captured
+172 +                             .search(query, row_limit.saturating_sub(1).max(1))
+173 ~                     } } else { Default::default() };
+    |
+
+warning: unneeded `return` statement
+   --> src/app/omnibar_arms.rs:478:9
+    |
+478 |         return self.update(Action::OmnibarCommit);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_return
+help: remove `return`
+    |
+478 -         return self.update(Action::OmnibarCommit);
+478 +         self.update(Action::OmnibarCommit)
+    |
+
+warning: this method chain can be written more clearly with `if .. else ..`
+   --> src/app/palette.rs:516:21
+    |
+516 |                     all_selected.then_some(" (selected)").unwrap_or_default()
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `if all_selected { " (selected)" } else { Default::default() }`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#obfuscated_if_else
+
+warning: this method chain can be written more clearly with `if .. else ..`
+   --> src/app/palette.rs:584:26
+    |
+584 |               let suffix = has_named_choice
+    |  __________________________^
+585 | |                 .then(|| {
+586 | |                     format!(
+587 | |                         " ({})",
+...   |
+590 | |                 })
+591 | |                 .unwrap_or_default();
+    | |____________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#obfuscated_if_else
+help: try
+    |
+584 ~             let suffix = if has_named_choice { {
+585 +                     format!(
+586 +                         " ({})",
+587 +                         collection_id_suffix(current, &snapshot.collection_choices, name)
+588 +                     )
+589 ~                 } } else { Default::default() };
+    |
+
+warning: this method chain can be written more clearly with `if .. else ..`
+  --> src/app/pane_arms.rs:76:24
+   |
+76 |           let graph_id = content
+   |  ________________________^
+77 | |             .follows_active_graph()
+78 | |             .then(|| {
+79 | |                 anchor
+...  |
+86 | |             })
+87 | |             .unwrap_or_else(GraphId::nil);
+   | |_________________________________________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#obfuscated_if_else
+help: try
+   |
+76 ~         let graph_id = if content
+77 +             .follows_active_graph() { {
+78 +                 anchor
+79 +                     .and_then(|pane| self.graph_for_pane(pane))
+80 +                     .or_else(|| {
+81 +                         self.focused_graph_pane()
+82 +                             .and_then(|pane| self.graph_for_pane(pane))
+83 +                     })
+84 +                     .unwrap_or_else(|| self.graph_runtimes.active_graph())
+85 ~             } } else { GraphId::nil() };
+   |
+
+warning: this `if` statement can be collapsed
+  --> src/app/outer_workspace_arms.rs:36:9
+   |
+36 | /         if let Some(id) = id {
+37 | |             if self.space_of(id) != Some(space) {
+38 | |                 return vec![Effect::Redraw];
+39 | |             }
+40 | |         }
+   | |_________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+   |
+36 ~         if let Some(id) = id
+37 ~             && self.space_of(id) != Some(space) {
+38 |                 return vec![Effect::Redraw];
+39 ~             }
+   |
+
+warning: manual implementation of `.is_multiple_of()`
+  --> src/app/workspace_stations.rs:76:23
+   |
+76 |         let rect = if frame.workspace.floating().len() % 2 == 0 {
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace with: `frame.workspace.floating().len().is_multiple_of(2)`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#manual_is_multiple_of
+   = note: `#[warn(clippy::manual_is_multiple_of)]` on by default
+
+warning: casting to the same type is unnecessary (`u64` -> `u64`)
+   --> src/app/session_lifecycle.rs:146:67
+    |
+146 | ...or::RunLimits { decisions: crate::denizen::RUN_BUDGET as u64, tool_calls: 0, tokens: 0, elapsed_ms: 30_000, consecutive_failures...
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `crate::denizen::RUN_BUDGET`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#unnecessary_cast
+
+warning: local variable doesn't need to be boxed here
+   --> src/app/session_lifecycle.rs:664:9
+    |
+664 |         card: Box<crate::place::PlaceCardV1>,
+    |         ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#boxed_local
+    = note: `#[warn(clippy::boxed_local)]` on by default
+
+warning: this `if` statement can be collapsed
+    --> src/app/session_lifecycle.rs:1047:9
+     |
+1047 | /         if self.sessions.update(id, |m| m.touch()) {
+1048 | |             if let Err(err) = self.sessions.flush_dirty() {
+1049 | |                 tracing::warn!(%err, "failed to touch the adopted session's manifest");
+1050 | |             }
+1051 | |         }
+     | |_________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+     |
+1047 ~         if self.sessions.update(id, |m| m.touch())
+1048 ~             && let Err(err) = self.sessions.flush_dirty() {
+1049 |                 tracing::warn!(%err, "failed to touch the adopted session's manifest");
+1050 ~             }
+     |
+
+warning: this `if` statement can be collapsed
+   --> src/browse.rs:524:17
+    |
+524 | /                 if let Some(title) = fleece::extract(&doc).title {
+525 | |                     if canvas.set_node_title_for(node, title.clone()) {
+526 | |                         tracing::info!(%url, %title, "node title enriched from the page");
+527 | |                     }
+528 | |                 }
+    | |_________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+524 ~                 if let Some(title) = fleece::extract(&doc).title
+525 ~                     && canvas.set_node_title_for(node, title.clone()) {
+526 |                         tracing::info!(%url, %title, "node title enriched from the page");
+527 ~                     }
+    |
+
+warning: this `if` statement can be collapsed
+   --> src/browse.rs:597:5
+    |
+597 | /     if let Some(href) = linked_icon_href(doc) {
+598 | |         if let Ok(resolved) = base.join(&href) {
+599 | |             return Some(resolved.to_string());
+600 | |         }
+601 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+597 ~     if let Some(href) = linked_icon_href(doc)
+598 ~         && let Ok(resolved) = base.join(&href) {
+599 |             return Some(resolved.to_string());
+600 ~         }
+    |
+
+warning: this `if` statement can be collapsed
+   --> src/browse.rs:602:5
+    |
+602 | /     if matches!(base.scheme(), "http" | "https") {
+603 | |         if let Ok(fallback) = base.join("/favicon.ico") {
+604 | |             return Some(fallback.to_string());
+605 | |         }
+606 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+602 ~     if matches!(base.scheme(), "http" | "https")
+603 ~         && let Ok(fallback) = base.join("/favicon.ico") {
+604 |             return Some(fallback.to_string());
+605 ~         }
+    |
+
+warning: large size difference between variants
+   --> src/chrome_view.rs:92:1
+    |
+ 92 | /   enum DecisionCard {
+ 93 | | /     Permission {
+ 94 | | |         request: crate::user_agent_decision::UserAgentRequestKey,
+ 95 | | |         prompt: String,
+ 96 | | |         queued: usize,
+ 97 | | |         submitting: bool,
+ 98 | | |         error: Option<String>,
+ 99 | | |     },
+    | | |_____- the second-largest variant contains at least 81 bytes
+100 | | /     Authentication {
+101 | | |         request: crate::user_agent_decision::UserAgentRequestKey,
+102 | | |         prompt: String,
+103 | | |         queued: usize,
+...   | |
+109 | | |         error: Option<String>,
+110 | | |     },
+    | | |_____- the largest variant contains at least 563 bytes
+111 | |   }
+    | |___^ the entire enum is at least 568 bytes
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#large_enum_variant
+    = note: `#[warn(clippy::large_enum_variant)]` on by default
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+    |
+104 ~         username: Box<TextInput>,
+105 ~         password: Box<TextInput>,
+    |
+
+warning: this `let...else` may be rewritten with the `?` operator
+   --> src/contributed_surface.rs:666:9
+    |
+666 | /         let Some(projected) = self.document_projection() else {
+667 | |             return None;
+668 | |         };
+    | |__________^ help: replace it with: `let projected = self.document_projection()?;`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#question_mark
+    = note: `#[warn(clippy::question_mark)]` on by default
+
+warning: this `let...else` may be rewritten with the `?` operator
+   --> src/contributed_surface.rs:670:9
+    |
+670 | /         let Some(semantic) = projected.nodes().iter().find(|candidate| {
+671 | |             candidate.id.get() == layout_dom_api::LayoutDom::opaque_id(&*dom, node)
+672 | |         }) else {
+673 | |             return None;
+674 | |         };
+    | |__________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#question_mark
+help: replace it with
+    |
+670 ~         let semantic = projected.nodes().iter().find(|candidate| {
+671 +             candidate.id.get() == layout_dom_api::LayoutDom::opaque_id(&*dom, node)
+672 +         })?;
+    |
+
+warning: using `chunks_exact` with a constant chunk size
+   --> src/distillery_installed_surface.rs:183:33
+    |
+183 |     for (index, chunk) in bytes.chunks_exact(2).enumerate() {
+    |                                 ^^^^^^^^^^^^^^^ help: consider using `as_chunks` instead: `as_chunks::<2>().0.iter()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#chunks_exact_to_as_chunks
+    = note: `#[warn(clippy::chunks_exact_to_as_chunks)]` on by default
+
+warning: this method chain can be written more clearly with `if .. else ..`
+   --> src/feed.rs:812:20
+    |
+812 |               title: (!label.is_empty())
+    |  ____________________^
+813 | |                 .then_some(label)
+814 | |                 .unwrap_or_else(|| url.clone()),
+    | |_______________________________________________^ help: try: `if !label.is_empty() { label } else { url.clone() }`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#obfuscated_if_else
+
+warning: very complex type used. Consider factoring parts into `type` definitions
+   --> src/foreign_a11y.rs:443:10
+    |
+443 |       ) -> Result<
+    |  __________^
+444 | |         (
+445 | |             Composition,
+446 | |             HashMap<TreeId, Vec<TreeUpdate>>,
+...   |
+449 | |         String,
+450 | |     > {
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#type_complexity
+    = note: `#[warn(clippy::type_complexity)]` on by default
+
+warning: this `if` statement can be collapsed
+   --> src/foreign_a11y.rs:724:9
+    |
+724 | /         if protected.insert(id) {
+725 | |             if let Some(node) = nodes.get(&id) {
+726 | |                 pending.extend(node.children().iter().copied());
+727 | |             }
+728 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+724 ~         if protected.insert(id)
+725 ~             && let Some(node) = nodes.get(&id) {
+726 |                 pending.extend(node.children().iter().copied());
+727 ~             }
+    |
+
+warning: this `if` statement can be collapsed
+   --> src/frame_controls.rs:528:13
+    |
+528 | /             if let Some(Control::Divider { index, .. }) = control.as_ref() {
+529 | |                 if let Some((_, children)) = self.divider_tree(control.as_ref().unwrap()) {
+530 | |                     let pair = children[*index].fraction + children[*index + 1].fraction;
+531 | |                     for (name, value) in [
+...   |
+549 | |             }
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+528 ~             if let Some(Control::Divider { index, .. }) = control.as_ref()
+529 ~                 && let Some((_, children)) = self.divider_tree(control.as_ref().unwrap()) {
+530 |                     let pair = children[*index].fraction + children[*index + 1].fraction;
+...
+547 |                     }
+548 ~                 }
+    |
+
+warning: this `if` statement can be collapsed
+   --> src/frame_a11y.rs:173:13
+    |
+173 | /             if !node.is_hidden() {
+174 | |                 if let Some(control) = controls.control_at(dom_node) {
+175 | |                     if matches!(control, crate::frame_controls::Control::Body { .. }) {
+...   |
+222 | |             }
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+173 ~             if !node.is_hidden()
+174 ~                 && let Some(control) = controls.control_at(dom_node) {
+175 |                     if matches!(control, crate::frame_controls::Control::Body { .. }) {
+...
+220 |                     }
+221 ~                 }
+    |
+
+warning: this `if` statement can be collapsed
+   --> src/frame_a11y.rs:267:9
+    |
+267 | /         if let Some(body) = pane_roots
+268 | |             .get(tile)
+269 | |             .filter(|body| tree.nodes.iter().any(|(id, _)| id == *body))
+...   |
+274 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+269 ~             .filter(|body| tree.nodes.iter().any(|(id, _)| id == *body))
+270 ~             && let Some((_, node)) = frame.nodes.iter_mut().find(|(id, _)| id == slot) {
+271 |                 node.set_children(vec![*body]);
+272 ~             }
+    |
+
+warning: doc list item without indentation
+  --> src/gemini_identity.rs:11:5
+   |
+11 | //! domain-separated child key when needed, so private material never lands in
+   |     ^
+   |
+   = help: if this is supposed to be its own paragraph, add a blank line
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#doc_lazy_continuation
+   = note: `#[warn(clippy::doc_lazy_continuation)]` on by default
+help: indent this line
+   |
+11 | //!   domain-separated child key when needed, so private material never lands in
+   |     ++
+
+warning: doc list item without indentation
+  --> src/gemini_identity.rs:12:5
+   |
+12 | //! Turnstone's files. The same persona and capsule reproduce the same X.509
+   |     ^
+   |
+   = help: if this is supposed to be its own paragraph, add a blank line
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#doc_lazy_continuation
+help: indent this line
+   |
+12 | //!   Turnstone's files. The same persona and capsule reproduce the same X.509
+   |     ++
+
+warning: doc list item without indentation
+  --> src/gemini_identity.rs:13:5
+   |
+13 | //! fingerprint; another capsule receives a different key.
+   |     ^
+   |
+   = help: if this is supposed to be its own paragraph, add a blank line
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#doc_lazy_continuation
+help: indent this line
+   |
+13 | //!   fingerprint; another capsule receives a different key.
+   |     ++
+
+warning: using `chunks_exact` with a constant chunk size
+   --> src/gemini_trust.rs:209:42
+    |
+209 |     for (index, chunk) in hex.as_bytes().chunks_exact(2).enumerate() {
+    |                                          ^^^^^^^^^^^^^^^ help: consider using `as_chunks` instead: `as_chunks::<2>().0.iter()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#chunks_exact_to_as_chunks
+
+warning: returning the result of a `let` binding from a block
+   --> src/inspector_controls.rs:113:5
+    |
+ 92 | /     let capabilities = member
+ 93 | |         .and_then(|member| app.content.facts(member))
+ 94 | |         .map(|facts| {
+ 95 | |             vec![
+...   |
+111 | |         })
+112 | |         .unwrap_or_else(|| vec!["No live document capabilities".to_string()]);
+    | |______________________________________________________________________________- unnecessary `let` binding
+113 |       capabilities
+    |       ^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#let_and_return
+    = note: `#[warn(clippy::let_and_return)]` on by default
+help: return the expression directly
+    |
+ 92 ~
+ 93 ~     member
+ 94 +         .and_then(|member| app.content.facts(member))
+ 95 +         .map(|facts| {
+ 96 +             vec![
+ 97 +                 format!(
+ 98 +                     "Find in page: {}",
+ 99 +                     facts.capabilities.find_in_page.describe()
+100 +                 ),
+101 +                 format!("Page zoom: {}", facts.capabilities.page_zoom.describe()),
+102 +                 format!("Requested page zoom: {requested_zoom}"),
+103 +                 format!(
+104 +                     "Page capture: {}",
+105 +                     facts.capabilities.page_capture.describe()
+106 +                 ),
+107 +                 format!(
+108 +                     "Navigation controls: {}",
+109 +                     facts.capabilities.navigation.describe()
+110 +                 ),
+111 +             ]
+112 +         })
+113 +         .unwrap_or_else(|| vec!["No live document capabilities".to_string()])
+    |
+
+warning: this function has too many arguments (8/7)
+   --> src/inspector_pane.rs:415:5
+    |
+415 | /     pub fn sync(
+416 | |         &mut self,
+417 | |         app: &App,
+418 | |         pane_id: crate::panes::PaneId,
+...   |
+423 | |         clip_status: &str,
+424 | |     ) {
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#too_many_arguments
+
+warning: this manual char comparison can be written more succinctly
+   --> src/inspector_view.rs:246:24
+    |
+246 |                 .split(|c: char| c == ' ' || c == '{' || c == '(')
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider using an array of `char`: `[' ', '{', '(']`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#manual_pattern_char_comparison
+    = note: `#[warn(clippy::manual_pattern_char_comparison)]` on by default
+
+warning: this `if` statement can be collapsed
+   --> src/inspector_view.rs:261:5
+    |
+261 | /     if author.kind == AuthorKind::Script {
+262 | |         if let Some(resident) = app
+263 | |             .denizens
+264 | |             .residents
+...   |
+270 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+261 ~     if author.kind == AuthorKind::Script
+262 ~         && let Some(resident) = app
+263 |             .denizens
+...
+268 |             display.id = resident.label.clone();
+269 ~         }
+    |
+
+warning: casting to the same type is unnecessary (`u8` -> `u8`)
+   --> src/knot_authoring.rs:904:32
+    |
+904 |                     max_depth: max_depth as u8,
+    |                                ^^^^^^^^^^^^^^^ help: try: `max_depth`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#unnecessary_cast
+
+warning: writing `&PathBuf` instead of `&Path` involves a new object where a slice will do
+    --> src/knot_authoring.rs:1204:13
+     |
+1204 |     source: &PathBuf,
+     |             ^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#ptr_arg
+     = note: `#[warn(clippy::ptr_arg)]` on by default
+help: change this to
+     |
+1204 -     source: &PathBuf,
+1204 +     source: &Path,
+     |
+
+warning: called `expect` on `mounted` after checking its variant with `is_some`
+    --> src/knot_authoring.rs:1610:29
+     |
+1606 |                 if mounted.is_some() {
+     |                 -------------------- help: try: `if let Some(<item>) = &mounted`
+...
+1610 |                             mounted.as_ref().expect("checked"),
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#unnecessary_unwrap
+     = note: `#[warn(clippy::unnecessary_unwrap)]` on by default
+
+warning: using `chunks_exact` with a constant chunk size
+  --> src/nomadnet.rs:58:50
+   |
+58 |     for (index, chunk) in destination.as_bytes().chunks_exact(2).enumerate() {
+   |                                                  ^^^^^^^^^^^^^^^ help: consider using `as_chunks` instead: `as_chunks::<2>().0.iter()`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#chunks_exact_to_as_chunks
+
+warning: this method chain can be written more clearly with `if .. else ..`
+    --> src/observe.rs:1152:21
+     |
+1152 |           trail_rows: app
+     |  _____________________^
+1153 | |             .frisket
+1154 | |             .iter_leaves()
+1155 | |             .any(|(_, c, _)| matches!(c, crate::panes::PaneContent::Trail))
+...    |
+1161 | |             })
+1162 | |             .unwrap_or_default(),
+     | |________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#obfuscated_if_else
+help: try
+     |
+1152 ~         trail_rows: if app
+1153 +             .frisket
+1154 +             .iter_leaves()
+1155 +             .any(|(_, c, _)| matches!(c, crate::panes::PaneContent::Trail)) { {
+1156 +                 crate::trail_view::trail_rows(app)
+1157 +                     .into_iter()
+1158 +                     .map(|r| r.text)
+1159 +                     .collect()
+1160 ~             } } else { Default::default() },
+     |
+
+warning: this method chain can be written more clearly with `if .. else ..`
+    --> src/observe.rs:1163:22
+     |
+1163 |           roster_rows: app
+     |  ______________________^
+1164 | |             .frisket
+1165 | |             .iter_leaves()
+1166 | |             .any(|(_, c, _)| matches!(c, crate::panes::PaneContent::Roster))
+...    |
+1172 | |             })
+1173 | |             .unwrap_or_default(),
+     | |________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#obfuscated_if_else
+help: try
+     |
+1163 ~         roster_rows: if app
+1164 +             .frisket
+1165 +             .iter_leaves()
+1166 +             .any(|(_, c, _)| matches!(c, crate::panes::PaneContent::Roster)) { {
+1167 +                 crate::roster_view::roster_rows(app)
+1168 +                     .into_iter()
+1169 +                     .map(|r| r.text)
+1170 +                     .collect()
+1171 ~             } } else { Default::default() },
+     |
+
+warning: this method chain can be written more clearly with `if .. else ..`
+    --> src/observe.rs:1174:25
+     |
+1174 |           inspector_rows: app
+     |  _________________________^
+1175 | |             .frisket
+1176 | |             .iter_leaves()
+1177 | |             .any(|(_, c, _)| matches!(c, crate::panes::PaneContent::Inspector))
+1178 | |             .then(|| crate::inspector_view::inspector_lines(app))
+1179 | |             .unwrap_or_default(),
+     | |________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#obfuscated_if_else
+help: try
+     |
+1174 ~         inspector_rows: if app
+1175 +             .frisket
+1176 +             .iter_leaves()
+1177 ~             .any(|(_, c, _)| matches!(c, crate::panes::PaneContent::Inspector)) { crate::inspector_view::inspector_lines(app) } else { Default::default() },
+     |
+
+warning: this method chain can be written more clearly with `if .. else ..`
+    --> src/observe.rs:1180:23
+     |
+1180 |           arrange_rows: app
+     |  _______________________^
+1181 | |             .frisket
+1182 | |             .iter_leaves()
+1183 | |             .any(|(_, c, _)| {
+...    |
+1186 | |             .then(|| crate::arrange_pane::arrange_rows(app))
+1187 | |             .unwrap_or_default(),
+     | |________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#obfuscated_if_else
+help: try
+     |
+1180 ~         arrange_rows: if app
+1181 +             .frisket
+1182 +             .iter_leaves()
+1183 +             .any(|(_, c, _)| {
+1184 +                 matches!(c, crate::panes::PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::ARRANGE)
+1185 ~             }) { crate::arrange_pane::arrange_rows(app) } else { Default::default() },
+     |
+
+warning: this `if` statement can be collapsed
+   --> src/pane.rs:160:13
+    |
+160 | /             if let Some(tile) = stack.tabs.get(stack.active) {
+161 | |                 if let Some((content, graph_id)) = frame.panes.get(&tile.id.0) {
+162 | |                     out.panes.push(PanePlacement {
+163 | |                         id: PaneId(tile.id.0),
+...   |
+170 | |             }
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+160 ~             if let Some(tile) = stack.tabs.get(stack.active)
+161 ~                 && let Some((content, graph_id)) = frame.panes.get(&tile.id.0) {
+162 |                     out.panes.push(PanePlacement {
+...
+168 |                     });
+169 ~                 }
+    |
+
+warning: this method chain can be written more clearly with `if .. else ..`
+   --> src/panes/blueprint/presentation.rs:187:5
+    |
+187 |     value.is_finite().then_some(value).unwrap_or_default()
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `if value.is_finite() { value } else { Default::default() }`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#obfuscated_if_else
+
+warning: the loop variable `row` is used to index `heights`
+   --> src/panes/blueprint/presentation.rs:276:16
+    |
+276 |     for row in 0..rows {
+    |                ^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_range_loop
+    = note: `#[warn(clippy::needless_range_loop)]` on by default
+help: consider using an iterator and enumerate()
+    |
+276 -     for row in 0..rows {
+276 +     for (row, <item>) in heights.iter().enumerate().take(rows) {
+    |
+
+warning: the loop variable `column` is used to index `widths`
+   --> src/panes/blueprint/presentation.rs:278:23
+    |
+278 |         for column in 0..columns {
+    |                       ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+278 -         for column in 0..columns {
+278 +         for (column, <item>) in widths.iter().enumerate().take(columns) {
+    |
+
+warning: methods `projection_input_binding` and `runtime_projection_source` are never used
+    --> src/knot_authoring.rs:2634:12
+     |
+2414 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2634 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2644 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: taken reference of right operand
+  --> src/app/journal_origin_tests.rs:98:26
+   |
+98 |             .any(|scope| scope.segments() == &[folder_a.clone(), surface.clone()])
+   |                          ^^^^^^^^^^^^^^^^^^^^------------------------------------
+   |                                              |
+   |                                              help: use the right value directly: `[folder_a.clone(), surface.clone()]`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#op_ref
+   = note: `#[warn(clippy::op_ref)]` on by default
+
+warning: using `chunks_exact` with a constant chunk size
+  --> src/place.rs:48:43
+   |
+48 |     for (index, pair) in value.as_bytes().chunks_exact(2).enumerate() {
+   |                                           ^^^^^^^^^^^^^^^ help: consider using `as_chunks` instead: `as_chunks::<2>().0.iter()`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#chunks_exact_to_as_chunks
+
+warning: large size difference between variants
+   --> src/place.rs:525:1
+    |
+525 | /  pub enum CapturedCollectionSelection {
+526 | |      /// Search every currently effective captured-page contribution in the Moot.
+527 | |      #[default]
+528 | |      AllEffective,
+    | |      ------------ the second-largest variant carries no data at all
+529 | |      /// Search only one exact, historically identified collection version.
+530 | |/     Collection {
+531 | ||         requested: PlaceCollectionVersion,
+532 | ||         status: CapturedCollectionSelectionStatus,
+533 | ||     },
+    | ||_____- the largest variant contains at least 240 bytes
+534 | |  }
+    | |__^ the entire enum is at least 240 bytes
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#large_enum_variant
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+    |
+532 -         status: CapturedCollectionSelectionStatus,
+532 +         status: Box<CapturedCollectionSelectionStatus>,
+    |
+
+warning: large size difference between variants
+   --> src/place.rs:706:1
+    |
+706 | /   pub enum PlaceState {
+707 | |       Personal,
+708 | |       /// An invitation is being admitted.
+709 | |       ///
+...   |
+721 | | /     Offline {
+722 | | |         binding: PlaceBindingV1,
+723 | | |         generation: u64,
+724 | | |         snapshot: OfflinePlaceSnapshot,
+725 | | |     },
+    | | |_____- the largest variant contains at least 888 bytes
+726 | | /     Degraded {
+727 | | |         binding: PlaceBindingV1,
+728 | | |         generation: u64,
+729 | | |         error: String,
+730 | | |     },
+    | | |_____- the second-largest variant contains at least 160 bytes
+...   |
+744 | |       },
+745 | |   }
+    | |___^ the entire enum is at least 888 bytes
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#large_enum_variant
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+    |
+724 -         snapshot: OfflinePlaceSnapshot,
+724 +         snapshot: Box<OfflinePlaceSnapshot>,
+    |
+
+warning: this `impl` can be derived
+   --> src/place.rs:758:1
+    |
+758 | / impl Default for PlaceState {
+759 | |     fn default() -> Self {
+760 | |         Self::Personal
+761 | |     }
+762 | | }
+    | |_^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#derivable_impls
+    = note: `#[warn(clippy::derivable_impls)]` on by default
+help: replace the manual implementation with a derive attribute and mark the default variant
+    |
+706 + #[derive(Default)]
+707 | pub enum PlaceState {
+708 ~     #[default]
+709 ~     Personal,
+    |
+
+warning: this `if` statement can be collapsed
+   --> src/redshank_host.rs:158:9
+    |
+158 | /         if self.snapshot().preview.as_ref().is_some_and(|p| p.id == format!("clip:{id}")) {
+159 | |             if !self.send(PlaybackCommand::StopPreview) { return Err("The audio runtime is unavailable".into()); }
+160 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+158 ~         if self.snapshot().preview.as_ref().is_some_and(|p| p.id == format!("clip:{id}"))
+159 ~             && !self.send(PlaybackCommand::StopPreview) { return Err("The audio runtime is unavailable".into()); }
+    |
+
+warning: this `let...else` may be rewritten with the `?` operator
+   --> src/redshank_host.rs:289:9
+    |
+289 | /         let Some(source) = self.model.library.get(id).map(|item| item.source().clone()) else {
+290 | |             return None;
+291 | |         };
+    | |__________^ help: replace it with: `let source = self.model.library.get(id).map(|item| item.source().clone())?;`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#question_mark
+
+warning: consider using `sort_by_key`
+   --> src/sections.rs:216:5
+    |
+216 |     rows.sort_by(|a, b| b.0.cmp(&a.0));
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#unnecessary_sort_by
+    = note: `#[warn(clippy::unnecessary_sort_by)]` on by default
+help: try
+    |
+216 -     rows.sort_by(|a, b| b.0.cmp(&a.0));
+216 +     rows.sort_by_key(|a| std::cmp::Reverse(a.0));
+    |
+
+warning: this `if` statement can be collapsed
+   --> src/settings_provider.rs:217:9
+    |
+217 | /         if let Some(choice) = &self.settings.theme {
+218 | |             if !choice.theme_id.is_empty()
+219 | |                 && self
+220 | |                     .theme_catalog
+...   |
+230 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+217 ~         if let Some(choice) = &self.settings.theme
+218 ~             && !choice.theme_id.is_empty()
+219 |                 && self
+...
+228 |                 });
+229 ~             }
+    |
+
+warning: this `if` statement can be collapsed
+   --> src/settings_provider.rs:244:9
+    |
+244 | /         if let Some(mode) = self
+245 | |             .settings
+246 | |             .theme
+247 | |             .as_ref()
+...   |
+256 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+248 ~             .and_then(|choice| choice.theme_mode.as_ref())
+249 ~             && !modes.iter().any(|option| option.value == mode.as_key()) {
+250 |                 modes.push(SettingOption {
+...
+253 |                 });
+254 ~             }
+    |
+
+warning: very complex type used. Consider factoring parts into `type` definitions
+  --> src/shell/appearance_receipt.rs:58:6
+   |
+58 |   ) -> Result<
+   |  ______^
+59 | |     (
+60 | |         HostHooks<WorkshopState, WorkshopLogic, WorkshopView>,
+61 | |         Option<Rc<Cell<Option<bool>>>>,
+62 | |     ),
+63 | |     String,
+64 | | > {
+   | |_^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#type_complexity
+
+warning: very complex type used. Consider factoring parts into `type` definitions
+  --> src/shell/appearance_receipt.rs:71:6
+   |
+71 |   ) -> Result<
+   |  ______^
+72 | |     (
+73 | |         HostHooks<WorkshopState, WorkshopLogic, WorkshopView>,
+74 | |         Option<Rc<Cell<Option<bool>>>>,
+75 | |     ),
+76 | |     String,
+77 | | > {
+   | |_^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#type_complexity
+
+warning: this `if` statement can be collapsed
+   --> src/shell/controller_input.rs:327:17
+    |
+327 | /                 if let crate::surface::SurfaceKind::Pane(pane) = pointer.surface.kind {
+328 | |                     if let Some(surface) = self.renderers.contributed.get_mut(pane) {
+329 | |                         surface.mouse_cancel(0., 0.);
+330 | |                     }
+331 | |                 }
+    | |_________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+327 ~                 if let crate::surface::SurfaceKind::Pane(pane) = pointer.surface.kind
+328 ~                     && let Some(surface) = self.renderers.contributed.get_mut(pane) {
+329 |                         surface.mouse_cancel(0., 0.);
+330 ~                     }
+    |
+
+warning: this `if` statement can be collapsed
+   --> src/shell/document_a11y.rs:729:9
+    |
+729 | /         if !tree
+730 | |             .nodes
+731 | |             .iter()
+732 | |             .any(|(_, node)| node.children().contains(&root))
+...   |
+739 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+732 ~             .any(|(_, node)| node.children().contains(&root))
+733 ~             && let Some((_, node)) = tree.nodes.iter_mut().find(|(id, _)| *id == tree.root) {
+734 |                 let mut children = node.children().to_vec();
+735 |                 children.push(root);
+736 |                 node.set_children(children);
+737 ~             }
+    |
+
+warning: this `if` statement can be collapsed
+   --> src/shell/drive.rs:862:9
+    |
+862 | /         if self
+863 | |             .app
+864 | |             .blueprint_space(crate::action::SpaceRef::Primary)
+865 | |             .is_none()
+...   |
+872 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+865 ~             .is_none()
+866 ~             && let Some(frame) = self.outer_frames.borrow().get(&0) {
+867 |                 out = out
+868 |                     .with_field("frame-css", frame.stylesheet())
+869 |                     .with_field("frame-header-height", frame.header_height().to_string());
+870 ~             }
+    |
+
+warning: this `if` has identical blocks
+    --> src/shell/drive.rs:1556:98
+     |
+1556 |                   } else if self.deliver_contributed_ime(&winit::event::Ime::Commit(text.clone())) {
+     |  __________________________________________________________________________________________________^
+1557 | |                     self.request_redraw();
+1558 | |                 } else if self.deliver_document_ime(&winit::event::Ime::Commit(text.clone())) {
+     | |_________________^
+     |
+note: same as this
+    --> src/shell/drive.rs:1558:95
+     |
+1558 |                   } else if self.deliver_document_ime(&winit::event::Ime::Commit(text.clone())) {
+     |  _______________________________________________________________________________________________^
+1559 | |                     self.request_redraw();
+1560 | |                 } else if self.type_surface_text(text) {
+     | |_________________^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#if_same_then_else
+     = note: `#[warn(clippy::if_same_then_else)]` on by default
+
+warning: redundant closure
+   --> src/shell/render.rs:756:39
+    |
+756 |                 let label = other.map(|c| pane_display_label(c)).unwrap_or_default();
+    |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the function itself: `pane_display_label`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#redundant_closure
+    = note: `#[warn(clippy::redundant_closure)]` on by default
+
+warning: taken reference of right operand
+    --> src/behaviors.rs:1173:34
+     |
+1173 |                     .any(|scope| scope.segments() == &[parent_id.clone(), leaf.clone()]),
+     |                                  ^^^^^^^^^^^^^^^^^^^^----------------------------------
+     |                                                      |
+     |                                                      help: use the right value directly: `[parent_id.clone(), leaf.clone()]`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#op_ref
+
+warning: this expression creates a reference which is immediately dereferenced by the compiler
+    --> src/shell/render.rs:1207:34
+     |
+1207 |         clear_composition_target(&host, &target);
+     |                                  ^^^^^ help: change this to: `host`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_borrow
+     = note: `#[warn(clippy::needless_borrow)]` on by default
+
+warning: this expression creates a reference which is immediately dereferenced by the compiler
+   --> src/shell/lens.rs:573:49
+    |
+573 |         super::render::clear_composition_target(&host, &target);
+    |                                                 ^^^^^ help: change this to: `host`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_borrow
+
+warning: this `if` statement can be collapsed
+   --> src/shell/lens.rs:605:13
+    |
+605 | /             if let Some(path) = self.pending_lens_capture.take() {
+606 | |                 if !capture_composed(host, &layers, lw, lh, &path) {
+607 | |                     self.main_receipt.errors.push(format!(
+608 | |                         "lens capture {} window={}: readback or PNG failed",
+...   |
+613 | |             }
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+605 ~             if let Some(path) = self.pending_lens_capture.take()
+606 ~                 && !capture_composed(host, &layers, lw, lh, &path) {
+607 |                     self.main_receipt.errors.push(format!(
+...
+611 |                     ));
+612 ~                 }
+    |
+
+warning: this `if` statement can be collapsed
+    --> src/shell/lens.rs:1112:9
+     |
+1112 | /         if redraw {
+1113 | |             if let Some(lens) = self.lens_windows.get_mut(&id) {
+1114 | |                 lens.window.request_redraw();
+1115 | |             }
+1116 | |         }
+     | |_________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+     |
+1112 ~         if redraw
+1113 ~             && let Some(lens) = self.lens_windows.get_mut(&id) {
+1114 |                 lens.window.request_redraw();
+1115 ~             }
+     |
+
+warning: very complex type used. Consider factoring parts into `type` definitions
+    --> src/shell/lens.rs:1159:51
+     |
+1159 |       let (pane_rects, divider_rects, float_rects): (
+     |  ___________________________________________________^
+1160 | |         Vec<(crate::panes::PaneId, Rect)>,
+1161 | |         Vec<(u32, Rect)>,
+1162 | |         Vec<(crate::panes::PaneId, Rect)>,
+1163 | |     ) = match app.blueprint_space(crate::action::SpaceRef::Lens(ordinal)) {
+     | |_____^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#type_complexity
+
+warning: this `if` statement can be collapsed
+    --> src/shell/lens.rs:1379:13
+     |
+1379 | /             if retired.insert(child) {
+1380 | |                 if let Some((_, n)) = frame.tree.nodes.iter().find(|(id, _)| *id == child) {
+1381 | |                     pending.extend(n.children().iter().copied());
+1382 | |                 }
+1383 | |             }
+     | |_____________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+     |
+1379 ~             if retired.insert(child)
+1380 ~                 && let Some((_, n)) = frame.tree.nodes.iter().find(|(id, _)| *id == child) {
+1381 |                     pending.extend(n.children().iter().copied());
+1382 ~                 }
+     |
+
+warning: this `if` statement can be collapsed
+   --> src/shell/frame_keys.rs:109:13
+    |
+109 | /             if let Some(old) = self.outer_focus.take() {
+110 | |                 if let Some(frame) = self.outer_frames.borrow_mut().get_mut(&old.slot) {
+111 | |                     frame.focus_control(None);
+112 | |                 }
+113 | |             }
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+109 ~             if let Some(old) = self.outer_focus.take()
+110 ~                 && let Some(frame) = self.outer_frames.borrow_mut().get_mut(&old.slot) {
+111 |                     frame.focus_control(None);
+112 ~                 }
+    |
+
+warning: unneeded `return` statement
+   --> src/shell/input.rs:994:21
+    |
+994 |                     return;
+    |                     ^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_return
+help: remove `return`
+    |
+993 -                     self.request_redraw();
+994 -                     return;
+993 +                     self.request_redraw();
+    |
+
+warning: unneeded `return` statement
+    --> src/shell/input.rs:1002:21
+     |
+1002 |                     return;
+     |                     ^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_return
+help: remove `return`
+     |
+1001 -                     self.request_redraw();
+1002 -                     return;
+1001 +                     self.request_redraw();
+     |
+
+warning: this `if` statement can be collapsed
+    --> src/shell/input.rs:1273:9
+     |
+1273 | /         if let Some(surface) = self.renderers.contributed.get_mut(pane) {
+1274 | |             if surface.mouse_move(x - admitted.surface.rect.x, y - admitted.surface.rect.y)
+1275 | |                 == crate::contributed_surface::SurfaceRequest::Redraw
+...    |
+1279 | |         }
+     | |_________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+     |
+1273 ~         if let Some(surface) = self.renderers.contributed.get_mut(pane)
+1274 ~             && surface.mouse_move(x - admitted.surface.rect.x, y - admitted.surface.rect.y)
+1275 |                 == crate::contributed_surface::SurfaceRequest::Redraw
+1276 |             {
+1277 |                 self.request_redraw();
+1278 ~             }
+     |
+
+warning: this `if` statement can be collapsed
+    --> src/shell/input.rs:1299:9
+     |
+1299 | /         if let Some(surface) = self.renderers.contributed.get_mut(pane) {
+1300 | |             if surface.mouse_release(x - admitted.surface.rect.x, y - admitted.surface.rect.y)
+1301 | |                 == crate::contributed_surface::SurfaceRequest::Redraw
+...    |
+1305 | |         }
+     | |_________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+     |
+1299 ~         if let Some(surface) = self.renderers.contributed.get_mut(pane)
+1300 ~             && surface.mouse_release(x - admitted.surface.rect.x, y - admitted.surface.rect.y)
+1301 |                 == crate::contributed_surface::SurfaceRequest::Redraw
+1302 |             {
+1303 |                 self.request_redraw();
+1304 ~             }
+     |
+
+warning: this `if` statement can be collapsed
+    --> src/shell/input.rs:1495:13
+     |
+1495 | /             if button == MouseButton::Left {
+1496 | |                 if surface.mouse_release(local_x, local_y)
+1497 | |                     == crate::contributed_surface::SurfaceRequest::Redraw
+...    |
+1501 | |             }
+     | |_____________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+     |
+1495 ~             if button == MouseButton::Left
+1496 ~                 && surface.mouse_release(local_x, local_y)
+1497 |                     == crate::contributed_surface::SurfaceRequest::Redraw
+1498 |                 {
+1499 |                     self.request_redraw();
+1500 ~                 }
+     |
+
+warning: this function has too many arguments (8/7)
+    --> src/shell/input.rs:1615:5
+     |
+1615 | /     pub(super) fn deliver_touch_contact_in(
+1616 | |         &mut self,
+1617 | |         window: u64,
+1618 | |         host_id: u64,
+...    |
+1623 | |         altitude_angle: Option<f32>,
+1624 | |     ) {
+     | |_____^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#too_many_arguments
+
+warning: this `if` statement can be collapsed
+   --> src/shell/native_composition.rs:273:9
+    |
+273 | /         if let Some((path, pending, window_scale)) = diagnostic.as_mut() {
+274 | |             if let Some(texture) = &layer.raster {
+275 | |                 let readback = core
+276 | |                     .start_rgba8_readback(texture, layer.dimensions[0], layer.dimensions[1])
+...   |
+303 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+273 ~         if let Some((path, pending, window_scale)) = diagnostic.as_mut()
+274 ~             && let Some(texture) = &layer.raster {
+275 |                 let readback = core
+...
+301 |                 });
+302 ~             }
+    |
+
+warning: very complex type used. Consider factoring parts into `type` definitions
+  --> src/shell/outer_workspace.rs:70:6
+   |
+70 | ) -> Option<(Vec<(PaneId, Rect)>, Vec<(PaneId, Rect, Rect)>)> {
+   |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#type_complexity
+
+warning: this function has too many arguments (11/7)
+  --> src/shell/window_input.rs:24:5
+   |
+24 | /     pub(super) fn deliver(
+25 | |         &mut self,
+26 | |         pool: &mut Pool,
+27 | |         plan: &[Surface],
+...  |
+35 | |         modifiers: KeyboardModifiers,
+36 | |     ) -> bool {
+   | |_____________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#too_many_arguments
+
+warning: this `if` statement can be collapsed
+  --> src/shell/window_input.rs:54:13
+   |
+54 | /             if let Some(previous) = self.contacts.remove(&key) {
+55 | |                 if let Some(placement) = pool.captured_placement(previous.pointer_id).copied() {
+56 | |                     let mut event = touch_event(
+57 | |                         previous,
+...  |
+67 | |             }
+   | |_____________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+   |
+54 ~             if let Some(previous) = self.contacts.remove(&key)
+55 ~                 && let Some(placement) = pool.captured_placement(previous.pointer_id).copied() {
+56 |                     let mut event = touch_event(
+...
+65 |                     pool.input(&placement, PeltInput::Pointer(event));
+66 ~                 }
+   |
+
+warning: this function has too many arguments (8/7)
+   --> src/shell/window_input.rs:228:1
+    |
+228 | / pub(super) fn native_mouse_input(
+229 | |     pool: &mut Pool,
+230 | |     window_buttons: &mut HashMap<u64, PointerButtons>,
+231 | |     window: u64,
+...   |
+236 | |     modifiers: KeyboardModifiers,
+237 | | ) -> Option<(ContentKey, PeltHostEffect)> {
+    | |_________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#too_many_arguments
+
+warning: this function has too many arguments (8/7)
+   --> src/shell/window_input.rs:260:1
+    |
+260 | / pub(super) fn content_mouse_input(
+261 | |     pool: &mut Pool,
+262 | |     window_buttons: &HashMap<u64, PointerButtons>,
+263 | |     window: u64,
+...   |
+268 | |     modifiers: KeyboardModifiers,
+269 | | ) -> Option<(ContentKey, PeltHostEffect)> {
+    | |_________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#too_many_arguments
+
+warning: this `if` statement can be collapsed
+   --> src/shell/mod.rs:805:9
+    |
+805 | /         if let Some(id) = self.pending_lens_capture_window {
+806 | |             if let Some(lens) = self.lens_windows.get(&id) {
+807 | |                 let window = lens.ordinal as u64 + 1;
+808 | |                 let generation = lens
+...   |
+820 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+805 ~         if let Some(id) = self.pending_lens_capture_window
+806 ~             && let Some(lens) = self.lens_windows.get(&id) {
+807 |                 let window = lens.ordinal as u64 + 1;
+...
+818 |                 );
+819 ~             }
+    |
+
+warning: this `if` statement can be collapsed
+   --> src/shell/mod.rs:871:13
+    |
+871 | /             if let SurfaceKind::Pane(pane) = held.surface.kind {
+872 | |                 if let Some(surface) = self.renderers.contributed.get_mut(pane) {
+873 | |                     surface.mouse_cancel(0., 0.);
+874 | |                 }
+875 | |             }
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+871 ~             if let SurfaceKind::Pane(pane) = held.surface.kind
+872 ~                 && let Some(surface) = self.renderers.contributed.get_mut(pane) {
+873 |                     surface.mouse_cancel(0., 0.);
+874 ~                 }
+    |
+
+warning: this `if` statement can be collapsed
+    --> src/shell/mod.rs:1026:13
+     |
+1026 | /             if let Some((failed, error)) = &lens.recovery.surface_failure {
+1027 | |                 if *failed == generation {
+1028 | |                     refusals.push((lens.ordinal as u64 + 1, error.clone()));
+1029 | |                     continue;
+1030 | |                 }
+1031 | |             }
+     | |_____________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+     |
+1026 ~             if let Some((failed, error)) = &lens.recovery.surface_failure
+1027 ~                 && *failed == generation {
+1028 |                     refusals.push((lens.ordinal as u64 + 1, error.clone()));
+1029 |                     continue;
+1030 ~                 }
+     |
+
+warning: this `if` statement can be collapsed
+    --> src/shell/mod.rs:2608:17
+     |
+2608 | /                 if retired.insert(child) {
+2609 | |                     if let Some((_, old)) =
+2610 | |                         tree.nodes.iter().find(|(candidate, _)| *candidate == child)
+...    |
+2614 | |                 }
+     | |_________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+     |
+2608 ~                 if retired.insert(child)
+2609 ~                     && let Some((_, old)) =
+2610 |                         tree.nodes.iter().find(|(candidate, _)| *candidate == child)
+2611 |                     {
+2612 |                         pending.extend(old.children().iter().copied());
+2613 ~                     }
+     |
+
+warning: this `if` statement can be collapsed
+    --> src/shell/mod.rs:2870:13
+     |
+2870 | /             if let Some(crate::a11y::A11yRoute::SelectMember { pane, .. }) = &route {
+2871 | |                 if self.app.space_of(*pane) != Some(frame_keys::space(slot)) {
+2872 | |                     self.app.note(crate::observe::AppEvent::InteractionMissed {
+2873 | |                         what: "a11y-action",
+...    |
+2878 | |             }
+     | |_____________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+     |
+2870 ~             if let Some(crate::a11y::A11yRoute::SelectMember { pane, .. }) = &route
+2871 ~                 && self.app.space_of(*pane) != Some(frame_keys::space(slot)) {
+2872 |                     self.app.note(crate::observe::AppEvent::InteractionMissed {
+ ...
+2876 |                     continue;
+2877 ~                 }
+     |
+
+warning: unneeded `return` statement
+    --> src/shell/mod.rs:3027:13
+     |
+3027 |             return;
+     |             ^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_return
+help: remove `return`
+     |
+3026 -             }
+3027 -             return;
+3026 +             }
+     |
+
+warning: very complex type used. Consider factoring parts into `type` definitions
+    --> src/shell/mod.rs:3475:51
+     |
+3475 |       let (pane_rects, divider_rects, float_rects): (
+     |  ___________________________________________________^
+3476 | |         Vec<(crate::panes::PaneId, Rect)>,
+3477 | |         Vec<(u32, Rect)>,
+3478 | |         Vec<(crate::panes::PaneId, Rect)>,
+3479 | |     ) = match app.blueprint_space(crate::action::SpaceRef::Primary) {
+     | |_____^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#type_complexity
+
+warning: this expression creates a reference which is immediately dereferenced by the compiler
+    --> src/shell/mod.rs:3518:42
+     |
+3518 |                 && contents.contains_key(&m)
+     |                                          ^^ help: change this to: `m`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_borrow
+
+warning: large size difference between variants
+   --> src/shell_services.rs:317:1
+    |
+317 | / pub enum ShellIntent {
+318 | |     SelectNode { url: String },
+    | |     -------------------------- the second-largest variant contains at least 24 bytes
+319 | |     Navigate { url: String },
+320 | |     Command { label: String, action: Action },
+    | |     ----------------------------------------- the largest variant contains at least 232 bytes
+321 | | }
+    | |_^ the entire enum is at least 232 bytes
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#large_enum_variant
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+    |
+320 -     Command { label: String, action: Action },
+320 +     Command { label: String, action: Box<Action> },
+    |
+
+warning: unnecessary use of `clone` to create a slice from a reference
+   --> src/foreign_a11y.rs:957:63
+    |
+957 |             .initial_host_with_guests(host.clone(), &visible, &[local.clone()])
+    |                                                               ^^^^^^^^^^^^^^^^ help: try: `std::slice::from_ref(&local)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#cloned_ref_to_slice_refs
+    = note: `#[warn(clippy::cloned_ref_to_slice_refs)]` on by default
+
+warning: unnecessary use of `clone` to create a slice from a reference
+   --> src/foreign_a11y.rs:961:56
+    |
+961 |             .frame_with_guests(host.clone(), &visible, &[local.clone()])
+    |                                                        ^^^^^^^^^^^^^^^^ help: try: `std::slice::from_ref(&local)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#cloned_ref_to_slice_refs
+
+warning: large size difference between variants
+   --> src/sky_timeline.rs:365:1
+    |
+365 | / pub enum SkyTimelineItem {
+366 | |     Position(SkyPositionFact),
+    | |     ------------------------- the second-largest variant contains at least 264 bytes
+367 | |     LunarPhase(LunarPhaseEvent),
+368 | |     RiseSet(ConventionalRiseSetEvent),
+    | |     --------------------------------- the largest variant contains at least 496 bytes
+369 | |     MeridianTransit(MeridianTransitEvent),
+370 | | }
+    | |_^ the entire enum is at least 496 bytes
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#large_enum_variant
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+    |
+368 -     RiseSet(ConventionalRiseSetEvent),
+368 +     RiseSet(Box<ConventionalRiseSetEvent>),
+    |
+
+warning: this `if` statement can be collapsed
+   --> src/saved_sources.rs:286:9
+    |
+286 | /         if end < text.len() {
+287 | |             if let Some((boundary, whitespace)) = text[..end]
+288 | |                 .char_indices()
+289 | |                 .rfind(|(_, ch)| ch.is_whitespace())
+...   |
+294 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+286 ~         if end < text.len()
+287 ~             && let Some((boundary, whitespace)) = text[..end]
+288 |                 .char_indices()
+...
+292 |                 end = boundary + whitespace.len_utf8();
+293 ~             }
+    |
+
+warning: methods with the following characteristics: (`to_*` and `self` type is `Copy`) usually take `self` by value
+  --> src/surface.rs:69:21
+   |
+69 |     pub fn to_local(&self, px: f32, py: f32) -> (f32, f32) {
+   |                     ^^^^^
+   |
+   = help: consider choosing a less ambiguous name
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#wrong_self_convention
+   = note: `#[warn(clippy::wrong_self_convention)]` on by default
+
+warning: large size difference between variants
+  --> src/identity.rs:46:1
+   |
+46 | / pub enum RootIdentity {
+47 | |     /// The persona djinn holds (the only production face).
+48 | |     Custody(CustodyIdentity),
+   | |     ------------------------ the largest variant contains at least 368 bytes
+49 | |     /// A test fixture's in-memory root.
+50 | |     #[cfg(test)]
+51 | |     Local(identity::InMemoryProvider),
+   | |     --------------------------------- the second-largest variant contains at least 8 bytes
+52 | | }
+   | |_^ the entire enum is at least 368 bytes
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#large_enum_variant
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+   |
+48 -     Custody(CustodyIdentity),
+48 +     Custody(Box<CustodyIdentity>),
+   |
+
+warning: this `if` statement can be collapsed
+   --> src/trail_memory.rs:546:5
+    |
+546 | /     if let Some(manifest) = &manifest {
+547 | |         if manifest.id != id
+548 | |             || manifest.content_hash != id.0
+549 | |             || manifest.schema != schema
+...   |
+556 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+546 ~     if let Some(manifest) = &manifest
+547 ~         && (manifest.id != id
+548 |             || manifest.content_hash != id.0
+549 |             || manifest.schema != schema
+550 ~             || manifest.privacy != privacy)
+551 |         {
+...
+554 |             ));
+555 ~         }
+    |
+
+warning: this `if` statement can be collapsed
+   --> src/trail_memory.rs:560:5
+    |
+560 | /     if let Some(bytes) = &bytes {
+561 | |         if eidetic::Hash::of(bytes) != id.0 || expected.is_some_and(|expected| expected != bytes) {
+562 | |             return Err(format!(
+563 | |                 "source artifact preflight: payload integrity mismatch at {id}"
+...   |
+566 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+560 ~     if let Some(bytes) = &bytes
+561 ~         && (eidetic::Hash::of(bytes) != id.0 || expected.is_some_and(|expected| expected != bytes)) {
+562 |             return Err(format!(
+563 |                 "source artifact preflight: payload integrity mismatch at {id}"
+564 |             ));
+565 ~         }
+    |
+
+warning: unnecessary use of `clone` to create a slice from a reference
+   --> src/research.rs:187:27
+    |
+187 |             scope(&owner, &[a.clone()], &available).unwrap(),
+    |                           ^^^^^^^^^^^^ help: try: `std::slice::from_ref(&a)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#cloned_ref_to_slice_refs
+
+warning: unnecessary use of `clone` to create a slice from a reference
+   --> src/research.rs:197:56
+    |
+197 |         assert!(scope("turnstone/foreign/research/v1", &[a.clone()], &available).is_err());
+    |                                                        ^^^^^^^^^^^^ help: try: `std::slice::from_ref(&a)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#cloned_ref_to_slice_refs
+
+warning: this `if` statement can be collapsed
+    --> src/trail_memory.rs:1317:25
+     |
+1317 | / ...   if result.is_ok() {
+1318 | | ...       if let Some((store, _)) = state.as_mut()
+1319 | | ...           && let Err(error) = crate::place::captured_collection::refresh_local_capture_library(store, &current_dir, &capture...
+1320 | | ...       { capture_library.unavailable(error); }
+1321 | | ...   }
+     | |_______^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+     |
+1317 ~                         if result.is_ok()
+1318 ~                             && let Some((store, _)) = state.as_mut()
+1319 |                                 && let Err(error) = crate::place::captured_collection::refresh_local_capture_library(store, &current_dir, &capture_library)
+1320 ~                             { capture_library.unavailable(error); }
+     |
+
+warning: this `if` statement can be collapsed
+   --> src/ui.rs:155:9
+    |
+155 | /         if let Some((previous_zoom, metrics)) = *cached.borrow() {
+156 | |             if previous_zoom == zoom {
+157 | |                 return metrics;
+158 | |             }
+159 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+155 ~         if let Some((previous_zoom, metrics)) = *cached.borrow()
+156 ~             && previous_zoom == zoom {
+157 |                 return metrics;
+158 ~             }
+    |
+
+warning: unnecessarily eager cloning of iterator items
+   --> src/ui.rs:760:13
+    |
+760 | /              actions
+761 | |                  .iter()
+    | | ________________________-
+762 | ||                 .cloned()
+763 | ||                 .filter(|(label, _)| needle.is_empty() || label.to_lowercase().contains(&needle))
+    | ||_________________________________________________________________________________________________^
+    |  |_________________________________________________________________________________________________|
+    |                                                                                                    help: try: `.filter(|&(label, _)| needle.is_empty() || label.to_lowercase().contains(&needle)).cloned()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#iter_overeager_cloned
+    = note: `#[warn(clippy::iter_overeager_cloned)]` on by default
+
+warning: consider using `sort_by_key`
+   --> src/ui.rs:814:5
+    |
+814 |     matches.sort_by(|a, b| b.0.cmp(&a.0));
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#unnecessary_sort_by
+help: try
+    |
+814 -     matches.sort_by(|a, b| b.0.cmp(&a.0));
+814 +     matches.sort_by_key(|a| std::cmp::Reverse(a.0));
+    |
+
+warning: this `if` statement can be collapsed
+    --> src/ui.rs:1929:13
+     |
+1929 | /             if semantic.role == document_session_api::DocumentA11yRole::TextField {
+1930 | |                 if let Some(value) = dom.attribute(
+1931 | |                     node,
+1932 | |                     &Namespace::default(),
+...    |
+1943 | |             }
+     | |_____________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+     |
+1929 ~             if semantic.role == document_session_api::DocumentA11yRole::TextField
+1930 ~                 && let Some(value) = dom.attribute(
+1931 |                     node,
+ ...
+1941 |                     ) == Some("true");
+1942 ~                 }
+     |
+
+warning: this `if` statement can be collapsed
+    --> src/ui.rs:2186:13
+     |
+2186 | /             if let Some(snapshot) = &layout.snapshot {
+2187 | |                 if let Some(fragment) = snapshot.fragments.get(owner) {
+2188 | |                     let scoped = cambium_rootstock::WindowDom::new(dom, owner);
+2189 | |                     let extent = content_extent(&scoped, &snapshot.fragments);
+...    |
+2213 | |             }
+     | |_____________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+     |
+2186 ~             if let Some(snapshot) = &layout.snapshot
+2187 ~                 && let Some(fragment) = snapshot.fragments.get(owner) {
+2188 |                     let scoped = cambium_rootstock::WindowDom::new(dom, owner);
+ ...
+2211 |                     }
+2212 ~                 }
+     |
+
+warning: this function has too many arguments (8/7)
+    --> src/ui.rs:2372:5
+     |
+2372 | /     pub fn hit_test_scrolled(
+2373 | |         &mut self,
+2374 | |         dom: &mut ScriptedDom,
+2375 | |         sheet: &str,
+...    |
+2380 | |         scroll: &PaneScroll,
+2381 | |     ) -> Option<DomNodeId> {
+     | |__________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#too_many_arguments
+
+warning: this function has too many arguments (8/7)
+    --> src/ui.rs:2702:5
+     |
+2702 | /     pub fn hit_test(
+2703 | |         &mut self,
+2704 | |         dom: &ScriptedDom,
+2705 | |         root: DomNodeId,
+...    |
+2710 | |         y: f32,
+2711 | |     ) -> Option<DomNodeId> {
+     | |__________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#too_many_arguments
+
+warning: this `if` statement can be collapsed
+   --> src/outer_frame.rs:127:9
+    |
+127 | /         if let Some(id) = maximize {
+128 | |             if let Some(tile) = workspace.find(TileId(id.0)).cloned() {
+129 | |                 workspace = Workspace::new(TileTree::single(tile));
+130 | |             }
+131 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+127 ~         if let Some(id) = maximize
+128 ~             && let Some(tile) = workspace.find(TileId(id.0)).cloned() {
+129 |                 workspace = Workspace::new(TileTree::single(tile));
+130 ~             }
+    |
+
+warning: useless conversion to the same type: `impl std::iter::Iterator<Item = genet_scripted_dom::NodeId> + '_`
+   --> src/outer_frame.rs:478:24
+    |
+478 |           let branches = dom
+    |  ________________________^
+479 | |             .dom_children(parent)
+480 | |             .into_iter()
+    | |________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#useless_conversion
+    = note: `#[warn(clippy::useless_conversion)]` on by default
+help: consider removing `.into_iter()`
+    |
+478 ~         let branches = dom
+479 +             .dom_children(parent)
+    |
+
+warning: struct `UserAgentDecisionState` has a public `len` method, but no `is_empty` method
+   --> src/user_agent_decision.rs:196:5
+    |
+196 |     pub fn len(&self) -> usize {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#len_without_is_empty
+    = note: `#[warn(clippy::len_without_is_empty)]` on by default
+
+warning: using `contains()` instead of `iter().any()` is more efficient
+   --> src/web_policy.rs:364:19
+    |
+364 |         } else if states.iter().any(|state| *state == PermissionState::Denied) {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `states.contains(&PermissionState::Denied)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#manual_contains
+    = note: `#[warn(clippy::manual_contains)]` on by default
+
+warning: items after a test module
+    --> src/place/lanes.rs:387:1
+     |
+ 387 |   mod tests {
+     |   ^^^^^^^^^
+...
+5237 |   pub(crate) type PlaceProjectionCarrier = NetworkCarrier<P2pandaStream>;
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+5255 | / pub(crate) fn dial_holder(
+5256 | |     lanes: &LiveLanes,
+5257 | |     holder_ticket: &str,
+5258 | |     grant: &[u8],
+5259 | |     identity: &dyn IdentityProvider,
+5260 | |     nonce: [u8; 32],
+5261 | | ) -> Result<(PlaceProjectionCarrier, PeerID), String> {
+     | |_____________________________________________________^
+...
+5280 |   pub(crate) struct HolderDial {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+5287 |   impl HolderDial {
+     |   ^^^^^^^^^^^^^^^
+...
+5318 | / pub(crate) fn holder_dial(
+5319 | |     lanes: &LiveLanes,
+5320 | |     holder_ticket: &str,
+5321 | |     grant: &[u8],
+5322 | |     identity: &dyn IdentityProvider,
+5323 | |     nonce: [u8; 32],
+5324 | | ) -> Result<HolderDial, String> {
+     | |_______________________________^
+...
+5382 |   fn group_key_overlay(moot: [u8; 32]) -> [u8; 32] {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+5388 |   fn transport_salt(moot: [u8; 32]) -> Vec<u8> {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+5405 | / pub(crate) fn join_live(
+5406 | |     open: &OpenPlace,
+5407 | |     binding: &PlaceBindingV1,
+5408 | |     identity: &dyn IdentityProvider,
+...    |
+5415 | |     )>,
+5416 | | ) -> Result<LiveLanes, String> {
+     | |______________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#items_after_test_module
+     = note: `#[warn(clippy::items_after_test_module)]` on by default
+     = help: move the items to before the test module was defined
+
+warning: this expression creates a reference which is immediately dereferenced by the compiler
+   --> src/place/lanes.rs:673:43
+    |
+673 |                 P2pandaTransport::builder(&founder.master_keypair())
+    |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^ help: change this to: `founder.master_keypair()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_borrow
+    = note: `#[warn(clippy::needless_borrow)]` on by default
+
+warning: this expression creates a reference which is immediately dereferenced by the compiler
+   --> src/place/lanes.rs:920:43
+    |
+920 |                 P2pandaTransport::builder(&founder.master_keypair())
+    |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^ help: change this to: `founder.master_keypair()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_borrow
+
+warning: this expression creates a reference which is immediately dereferenced by the compiler
+    --> src/place/lanes.rs:1194:43
+     |
+1194 |                 P2pandaTransport::builder(&founder.master_keypair())
+     |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^ help: change this to: `founder.master_keypair()`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_borrow
+
+warning: this expression creates a reference which is immediately dereferenced by the compiler
+    --> src/place/lanes.rs:1365:43
+     |
+1365 |                 P2pandaTransport::builder(&founder.master_keypair())
+     |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^ help: change this to: `founder.master_keypair()`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_borrow
+
+warning: the function `eidetic::Store::put` doesn't need a mutable reference
+   --> src/retained_clip/tests.rs:282:9
+    |
+282 |         &mut store,
+    |         ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#unnecessary_mut_passed
+    = note: `#[warn(clippy::unnecessary_mut_passed)]` on by default
+help: remove this `mut`
+    |
+282 -         &mut store,
+282 +         &store,
+    |
+
+warning: the function `eidetic::Store::put` doesn't need a mutable reference
+   --> src/retained_clip/tests.rs:359:44
+    |
+359 |     pollster::block_on(eidetic::Store::put(&mut store, &key, &changed)).unwrap();
+    |                                            ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#unnecessary_mut_passed
+help: remove this `mut`
+    |
+359 -     pollster::block_on(eidetic::Store::put(&mut store, &key, &changed)).unwrap();
+359 +     pollster::block_on(eidetic::Store::put(&store, &key, &changed)).unwrap();
+    |
+
+warning: the function `eidetic::Store::delete` doesn't need a mutable reference
+   --> src/retained_clip/tests.rs:364:47
+    |
+364 |     pollster::block_on(eidetic::Store::delete(&mut store, &key)).unwrap();
+    |                                               ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#unnecessary_mut_passed
+help: remove this `mut`
+    |
+364 -     pollster::block_on(eidetic::Store::delete(&mut store, &key)).unwrap();
+364 +     pollster::block_on(eidetic::Store::delete(&store, &key)).unwrap();
+    |
+
+warning: used `assert_eq!` with a literal bool
+    --> src/session.rs:1402:9
+     |
+1402 |         assert_eq!(update_place_binding(&root, &binding).unwrap(), false);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#bool_assert_comparison
+     = note: `#[warn(clippy::bool_assert_comparison)]` on by default
+help: replace it with `assert!(..)`
+     |
+1402 -         assert_eq!(update_place_binding(&root, &binding).unwrap(), false);
+1402 +         assert!(!update_place_binding(&root, &binding).unwrap());
+     |
+
+warning: used `assert_eq!` with a literal bool
+    --> src/session.rs:1410:9
+     |
+1410 |         assert_eq!(update_place_binding(&root, &renamed).unwrap(), true);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#bool_assert_comparison
+help: replace it with `assert!(..)`
+     |
+1410 -         assert_eq!(update_place_binding(&root, &renamed).unwrap(), true);
+1410 +         assert!(update_place_binding(&root, &renamed).unwrap());
+     |
+
+warning: used `assert_eq!` with a literal bool
+    --> src/session.rs:1427:9
+     |
+1427 |         assert_eq!(remove_place_binding(&root).unwrap(), true);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#bool_assert_comparison
+help: replace it with `assert!(..)`
+     |
+1427 -         assert_eq!(remove_place_binding(&root).unwrap(), true);
+1427 +         assert!(remove_place_binding(&root).unwrap());
+     |
+
+warning: used `assert_eq!` with a literal bool
+    --> src/session.rs:1430:9
+     |
+1430 |         assert_eq!(remove_place_binding(&root).unwrap(), false);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#bool_assert_comparison
+help: replace it with `assert!(..)`
+     |
+1430 -         assert_eq!(remove_place_binding(&root).unwrap(), false);
+1430 +         assert!(!remove_place_binding(&root).unwrap());
+     |
+
+warning: used `assert_eq!` with a literal bool
+    --> src/session.rs:1463:9
+     |
+1463 |         assert_eq!(clear_place_left(&root).unwrap(), true);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#bool_assert_comparison
+help: replace it with `assert!(..)`
+     |
+1463 -         assert_eq!(clear_place_left(&root).unwrap(), true);
+1463 +         assert!(clear_place_left(&root).unwrap());
+     |
+
+warning: used `assert_eq!` with a literal bool
+    --> src/session.rs:1465:9
+     |
+1465 |         assert_eq!(clear_place_left(&root).unwrap(), false);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#bool_assert_comparison
+help: replace it with `assert!(..)`
+     |
+1465 -         assert_eq!(clear_place_left(&root).unwrap(), false);
+1465 +         assert!(!clear_place_left(&root).unwrap());
+     |
+
+warning: deref which would be done by auto-deref
+   --> src/settings_pane.rs:595:13
+    |
+595 |             &*pane.dom_ref(),
+    |             ^^^^^^^^^^^^^^^^ help: try: `&pane.dom_ref()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#explicit_auto_deref
+    = note: `#[warn(clippy::explicit_auto_deref)]` on by default
+
+warning: deref which would be done by auto-deref
+    --> src/settings_pane.rs:1011:60
+     |
+1011 |             let node = taproot::matching_estimated_fixture(&*pane.dom_ref(), &selector)[0];
+     |                                                            ^^^^^^^^^^^^^^^^ help: try: `&pane.dom_ref()`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#explicit_auto_deref
+
+warning: deref which would be done by auto-deref
+    --> src/settings_pane.rs:1024:17
+     |
+1024 |                 &*dom,
+     |                 ^^^^^ help: try: `&dom`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#explicit_auto_deref
+
+warning: deref which would be done by auto-deref
+    --> src/settings_pane.rs:1051:60
+     |
+1051 |             let node = taproot::matching_estimated_fixture(&*pane.dom_ref(), &selector)[0];
+     |                                                            ^^^^^^^^^^^^^^^^ help: try: `&pane.dom_ref()`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#explicit_auto_deref
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+   --> src/settings_provider.rs:616:9
+    |
+616 |         settings.theme = Some(choice.clone());
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: consider initializing the variable with `pandect::ApplicationSettings { theme: Some(choice.clone()), ..Default::default() }` and removing relevant reassignments
+   --> src/settings_provider.rs:615:9
+    |
+615 |         let mut settings = ApplicationSettings::default();
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#field_reassign_with_default
+    = note: `#[warn(clippy::field_reassign_with_default)]` on by default
+
+warning: deref which would be done by auto-deref
+   --> src/share_reader_pane.rs:302:58
+    |
+302 |         let target = taproot::matching_estimated_fixture(&*dom.borrow(), &taproot::Selector::role("textbox"))[0];
+    |                                                          ^^^^^^^^^^^^^^ help: try: `&dom.borrow()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#explicit_auto_deref
+
+warning: unnecessary use of `clone` to create a slice from a reference
+   --> src/shell/content_pool.rs:337:9
+    |
+337 |         assert_eq!(schedule.due_work(timer), [work.clone()]);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#cloned_ref_to_slice_refs
+
+warning: items after a test module
+   --> src/shell/controller_input.rs:212:1
+    |
+212 | mod tests {
+    | ^^^^^^^^^
+...
+237 | impl Shell {
+    | ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#items_after_test_module
+    = help: move the items to before the test module was defined
+
+warning: items after a test module
+   --> src/shell/document_a11y.rs:301:1
+    |
+301 |   mod tests {
+    |   ^^^^^^^^^
+...
+696 |   pub(super) struct Projected {
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+704 | / fn guest_id(
+705 | |     key: uuid::Uuid,
+706 | |     identity: PeltSessionIdentity,
+707 | |     placement: crate::surface::SurfaceId,
+708 | | ) -> TreeId {
+    | |___________^
+...
+716 |   fn replace_document(tree: &mut uxtree::UxTree, root: NodeId, replacement: Option<uxtree::UxTree>) {
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+754 |   impl super::Shell {
+    |   ^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#items_after_test_module
+    = help: move the items to before the test module was defined
+
+warning: `turnstone` (lib) generated 240 warnings (run `cargo clippy --fix --lib -p turnstone -- -D clippy::correctness` to apply 126 suggestions)
+warning: this expression creates a reference which is immediately dereferenced by the compiler
+    --> src/shell/render.rs:1207:34
+     |
+1207 |         clear_composition_target(&host, &target);
+     |                                  ^^^^^ help: change this to: `host`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_borrow
+
+warning: items after a test module
+   --> src/shell/outer_workspace.rs:153:1
+    |
+153 | mod tests {
+    | ^^^^^^^^^
+...
+251 | impl Shell {
+    | ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#items_after_test_module
+    = help: move the items to before the test module was defined
+
+warning: very complex type used. Consider factoring parts into `type` definitions
+   --> src/shell/window_input_tests.rs:858:30
+    |
+858 |   fn overlap_surface_pool() -> (
+    |  ______________________________^
+859 | |     Pool,
+860 | |     [Arc<Mutex<Vec<inker::PointerEvent>>>; 2],
+861 | |     Vec<Surface>,
+862 | | ) {
+    | |_^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#type_complexity
+
+warning: the borrowed expression implements the required traits
+   --> src/swatch_pane/mod.rs:962:44
+    |
+962 |                     .with_attr("data-key", &donor.0.to_string()),
+    |                                            ^^^^^^^^^^^^^^^^^^^^ help: change this to: `donor.0.to_string()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_borrows_for_generic_args
+    = note: `#[warn(clippy::needless_borrows_for_generic_args)]` on by default
+
+warning: the borrowed expression implements the required traits
+   --> src/swatch_pane/mod.rs:982:36
+    |
+982 |             .with_attr("data-key", &donor.0.to_string());
+    |                                    ^^^^^^^^^^^^^^^^^^^^ help: change this to: `donor.0.to_string()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_borrows_for_generic_args
+
+warning: unnecessary use of `clone` to create a slice from a reference
+    --> src/trail_memory.rs:2287:52
+     |
+2287 |         assert!(crate::research::scope(&namespace, &[a1_target.clone()], &sources).is_ok());
+     |                                                    ^^^^^^^^^^^^^^^^^^^^ help: try: `std::slice::from_ref(&a1_target)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#cloned_ref_to_slice_refs
+
+warning: `turnstone` (lib test) generated 235 warnings (187 duplicates) (run `cargo clippy --fix --lib -p turnstone --tests -- -D clippy::correctness` to apply 43 suggestions)
+    Finished `dev` profile [unoptimized] target(s) in 15.72s

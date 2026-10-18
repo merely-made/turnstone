@@ -129,8 +129,16 @@ set.
   proves exact A1 search/read and fresh reopen after actual origin shutdown and
   TCP refusal, with A2/X/foreign-session isolation. Its internal view URL binds
   session, graph, node, annotation, text hash and scalar selector; the original
-  URL is a separate explicit link. R3-R4 and the full research workflow retain
-  their individual gates.
+  URL is a separate explicit link. R3 scoped saved-source Answers now has bounded
+  macOS qualification: 979 regression passes, three capture-library controls,
+  an actual admitted-route wrong-owner probe, Clippy/Cargo verification and two
+  fresh headed processes with 12 reviewed captures. The
+  [R3 receipt](../docs/receipts/r3_scoped_answers_20261017/README.md) independently
+  binds chosen A1+B then B-only scope, sealed prompts, exact-quotation citation
+  hashes/Unicode ranges and cold old-A1 reading after actual origin shutdown.
+  Oversized publication refuses while full offline reading remains available.
+  Earlier uncited marker attempts and repaired native failures remain diagnostics.
+  R4 and the full research workflow retain their individual gates.
 - [Trail recall evaluation](2026-09-02_trail_recall_evaluation_plan.md): private captured-corpus protocol for selecting or rejecting configurable phrase recall against BM25 with held-out ranking and resource budgets.
 - [Page capture and provenance](2026-08-28_page_capture_plan.md): ruled path
   for durable node-attached page captures; P1 owner contracts and exact pins

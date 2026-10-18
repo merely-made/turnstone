@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-18",
+  "status": "R3 bounded macOS qualification passed",
+  "turnstone_base": "0ab2d5e0944a0c4d8f9f5ca26d2e7fdb48888e2e",
+  "source_inputs": "source-inputs.json",
+  "native_binary": "native-binary.json",
+  "test_executable": "test-binary.json",
+  "source_file_count": 410,
+  "currentness": {
+    "checked_utc": "2026-10-18T04:49:39.438209+00:00",
+    "turnstone_fetched_main_before_publication": "0ab2d5e0944a0c4d8f9f5ca26d2e7fdb48888e2e",
+    "mere_remote_main_verified": "e6250fd1c460dfbb3d6d2a076ec0fdf6748d35bb",
+    "other_work": "Other Turnstone worktrees and active Mere work were preserved."
+  },
+  "stack": {
+    "mere": "e6250fd1c460dfbb3d6d2a076ec0fdf6748d35bb",
+    "genet": "4733c557e4c7e54f9e928116b8008671f69fe4bf",
+    "netrender": "c5efc94f876e93caba20807709189c5f9589492b",
+    "lock_delta": "checks/lock-delta.json",
+    "supplier_rust_sources_changed": false,
+    "new_dependencies": false
+  },
+  "platform": {
+    "os": "ProductName:\t\tmacOS\nProductVersion:\t\t15.8.1\nBuildVersion:\t\t24H32\n",
+    "architecture": "x86_64",
+    "build_tests_clippy_toolchain": "rustup run 1.99.1",
+    "inference_gpu": "AMD Radeon Pro Vega 56 (Metal, discrete adapter)"
+  },
+  "product_contract": [
+    "Version-2 Answers pane stores exact chosen session/graph/member/annotation/text-hash targets only; R0 SaveSession acknowledgement persists the view, with no durable corpus or answer-store copy.",
+    "Research owner is derived from validated current session. All valid attached capture versions are published through one coordinated publisher per owner/opening; every ask validates a nonempty exact subset. Any unavailable chosen source fails the whole ask.",
+    "Existing trail actor is the only Fjall owner; exact reads use R2 NoFetcher plus R0 integrity validation, with live facet, session/store and generation checks.",
+    "Visited-only X, legacy PageText, orphan inventory, unchosen A2 and foreign-session sources never substitute for chosen evidence. Equal text under distinct provenance remains separately selectable.",
+    "Citation activation checks run namespace, supplied passage identity, exact requested scope, full canonical hash, nonempty Unicode scalar range and excerpt before queueing the R2 saved-source reader.",
+    "Source choice changes preserve past asks/citations while those versions remain admitted. Durable answer/prompt evidence stays in the existing resident.",
+    "Complete encoded corpus including JSON escaping must fit the existing 128 KiB ceiling; excess visibly refuses before generation, without truncation or blocking local reading.",
+    "Legacy version-1 pane payloads receive explicit admission help; PageText data, namespaces, history and strict resolver are preserved without implicit capture conversion or a UI migration claim."
+  ],
+  "integration_repairs": [
+    "Worker completion queues a generation-fenced semantic citation intent and wakes the host independently of viewport rendering; repeat activation re-resolves.",
+    "Citation destination sets graph focus and transfers maximization when needed.",
+    "Malformed Unicode manifest labels use character-safe display shortening and remain unavailable without poisoning the bridge.",
+    "Saved reader body and quote use display paragraphs bounded to 4096 UTF-8 bytes to avoid the observed Harfrust u16 glyph-counter overflow; full canonical bytes, hash and global selectors remain unchanged.",
+    "Current supplier raster source errors remain attributable capture refusals; native translation errors propagate to presentation/capture failure and legacy inner scenes show explicit diagnostics."
+  ],
+  "tests": {
+    "bounded_library": {
+      "command": "/Users/markik/Code/output/turnstone-r3-qualified-tests-04/turnstone-tests --test-threads=1 --skip place:: --skip sky_surface:: --skip sky_timeline::",
+      "exit_code": 0,
+      "passed": 979,
+      "failed": 0,
+      "ignored": 11,
+      "filtered_out": 89,
+      "seconds": 430.95,
+      "log": "checks/bounded-library.log"
+    },
+    "capture_library": {
+      "command": "/Users/markik/Code/output/turnstone-r3-qualified-tests-04/turnstone-tests place::captured_collection --test-threads=1",
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0,
+      "seconds": 0.7,
+      "log": "checks/capture-library.log"
+    },
+    "admitted_wrong_owner": {
+      "command": "inference_service::tests::admitted_research_route_refuses_wrong_owner --ignored --exact --nocapture",
+      "exit_code": 0,
+      "passed": 1,
+      "actual_admitted_route": true,
+      "included_in_11_ignored_of_bounded_suite": true,
+      "receipt": "native/wrong-owner-probe.json",
+      "log": "native/wrong-owner-probe.log"
+    },
+    "clippy": {
+      "command": "rustup run 1.99.1 cargo clippy --locked --offline --lib --tests -j2 -- -D clippy::correctness",
+      "exit_code": 0,
+      "other_warnings_present": true,
+      "log": "checks/clippy.log"
+    },
+    "portable_cargo": {
+      "command": "python3 scripts/cargo_mode.py verify",
+      "exit_code": 0,
+      "packages": 1279,
+      "toolchain": "Homebrew cargo 1.99.0 wrapper default",
+      "log": "checks/cargo-mode.log"
+    },
+    "native_build": {
+      "exit_code": 0,
+      "log": "checks/native-build.log"
+    },
+    "tests_build": {
+      "exit_code": 0,
+      "log": "checks/tests-build.log"
+    },
+    "scoped_rustfmt": {
+      "command": "rustup run 1.99.1 rustfmt --check --edition 2024 --config skip_children=true src/research.rs src/inference_service.rs src/inference_surface.rs src/saved_sources.rs src/app/contributed_pane_arms.rs src/app/r2_saved_source_tests.rs",
+      "exit_code": 0,
+      "log": "checks/rustfmt-scoped.log"
+    },
+    "long_reader_control": {
+      "passed": 1,
+      "part_of_bounded_library": true,
+      "log": "checks/long-reader.log"
+    }
+  },
+  "headed_native": {
+    "result": "pass",
+    "raw_output": "/Users/markik/Code/output/turnstone-r3-native-06",
+    "same_frozen_binary": true,
+    "fresh_turnstone_processes": 2,
+    "resident_composition_reopened_same_os_process": true,
+    "runs": [
+      {
+        "phase": "seed",
+        "launcher_exit": 0,
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": true,
+          "elapsed_seconds": 256.126,
+          "binary_sha256": "14d467e067eb73c35c01eebc065bd461f4e06126bec1a490b014e08fcf2a2742",
+          "scenario_sha256": "9beadfbe2d2032ea1f7a9a68bcb32520ff40baaf8a38b35f2a9ac639661a49fd",
+          "receipt": "scenario.done",
+          "captures": 8
+        }
+      },
+      {
+        "phase": "reopen",
+        "launcher_exit": 0,
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": true,
+          "elapsed_seconds": 220.38,
+          "binary_sha256": "14d467e067eb73c35c01eebc065bd461f4e06126bec1a490b014e08fcf2a2742",
+          "scenario_sha256": "dbf28b90dc3ab216b9943fbd3ff448bf9f57a2ab0eeb3a4f49dcd9ac7bd5e6af",
+          "receipt": "scenario.done",
+          "captures": 4
+        }
+      }
+    ],
+    "presentation_frames": {
+      "seed": 1127,
+      "reopen": 425
+    },
+    "reviewed_captures": 12,
+    "blank_captures": 0,
+    "visual_review": "visual-review.json",
+    "verification": "native/verification.json",
+    "verified_on_copied_packet": true,
+    "origin_process_gone": true,
+    "zero_origin_requests_after_shutdown": true,
+    "generation_runs": 2,
+    "exact_requested_scopes": [
+      "A1 and B",
+      "B only, cancelled"
+    ],
+    "uncited_empty_oversize_or_wrong_owner_generations": 0,
+    "citation": {
+      "basis": "verbatim_passage",
+      "ui_label": "Exact quotation",
+      "text": "The Pelican observatory's access word is café.",
+      "unicode_scalars": 46,
+      "utf8_bytes": 47,
+      "selector": {
+        "start": 0,
+        "end": 46
+      },
+      "old_A1_survives_changed_scope_A2_and_cold_reopen": true
+    },
+    "model": {
+      "model_id": "HuggingFaceTB/SmolLM2-360M-Instruct",
+      "revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+      "artifacts": [
+        [
+          "config.json",
+          846,
+          "224f72354f10d617a359cc82ad15a3c96e866b9b2ffadb81997eeea9e88e22ee"
+        ],
+        [
+          "tokenizer.json",
+          2104556,
+          "9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c"
+        ],
+        [
+          "tokenizer_config.json",
+          3764,
+          "4ec77d44f62efeb38d7e044a1db318f6a939438425312dfa333b8382dbad98df"
+        ],
+        [
+          "model.safetensors",
+          723674912,
+          "e6bffe7435d7ddc10fd3b9a9efd429dafbacb1cb17015fb5562664e7532bf86e"
+        ]
+      ]
+    },
+    "resident_test_binary_sha256": "6c131d08dcaed7b67014bb0a6bfd4c1efd7273ff3a5640c048789484b67469a4",
+    "supplier_test": "djinn-host inference_route::serve_trained_model_for_headed_turnstone (inference-gpu)",
+    "custody": "Isolated test-owned inference resident. Personal identity/cookie custody is intentionally not provided or installed."
+  },
+  "no_resident_reader": {
+    "result": "pass",
+    "packet": "no-resident",
+    "source": "Copy of native-05 profile containing an ordinarily acknowledged source capture; no direct DB seeding.",
+    "origin_absent": true,
+    "resident_endpoint_deliberately_absent": true,
+    "final_binary_sha256": "14d467e067eb73c35c01eebc065bd461f4e06126bec1a490b014e08fcf2a2742",
+    "canonical_characters": 100021,
+    "backslashes": 50000,
+    "display_body_paragraphs": 25,
+    "full_bytes_preserved": true,
+    "verification": "no-resident/verification.json"
+  },
+  "earlier_diagnostics": "diagnostics/summary.json",
+  "qualification_limits": [
+    "11 ignored and 89 shared-place/Sky tests are not counted as bounded passes. The opt-in wrong-owner probe is reported separately as actually executed; three capture-library controls also run separately.",
+    "The native model earns an exact-quotation citation. Three earlier marker prompts produced uncited answers; no headed model-marker reliability or broad answer-quality claim.",
+    "Two fresh Turnstone OS processes and reopened resident composition/journal in the same resident host process. No installed resident lifecycle or resident OS-process restart qualification.",
+    "App-native controls and real presentation/readback on macOS only; no Windows/Linux, OS assistive activation or human AT qualification.",
+    "R0 acknowledged writes and tested process reopen are preserved. No new power-loss guarantee or atomic transaction across graph, facets, frame and resident journal.",
+    "Ordinary saved HTML canonical text only; hosted page replay, PDFs/screenshots, authored Knot notes, deliberate sharing and the separate R4 complete research task remain outside this slice."
+  ]
+}

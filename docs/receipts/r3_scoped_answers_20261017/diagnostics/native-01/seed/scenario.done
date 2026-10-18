@@ -1,0 +1,18 @@
+RESULT fail
+captured 04_foreign_session_source
+captured 05_empty_scope_refused
+captured 06_explicit_A1_B_scope
+captured 06b_paused_scoped_answer
+captured 07_scoped_answer_origin_gone
+captured 08_changed_scope_old_answer
+captured 08b_cancelled_B_only_ask
+FAIL: wait-saved-reader after 600 frames: focused reader state is None
+FAIL: no successful window presentation for ten seconds
+presentation frames=1137 captures=7 blank=0
+capture /Users/markik/Code/output/turnstone-r3-native-01/seed/04_foreign_session_source.png digest=27972e93948b6bdd blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-01/seed/05_empty_scope_refused.png digest=b7795b7274e300f0 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-01/seed/06_explicit_A1_B_scope.png digest=940bf37fdf490bb1 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-01/seed/06b_paused_scoped_answer.png digest=7be51aba5637690a blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-01/seed/07_scoped_answer_origin_gone.png digest=36666cd30eda5925 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-01/seed/08_changed_scope_old_answer.png digest=25d8b5fbd800e822 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-01/seed/08b_cancelled_B_only_ask.png digest=a7ba746c1aec98d1 blank=false

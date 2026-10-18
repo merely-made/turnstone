@@ -324,7 +324,8 @@ pub fn ring_of(action: &Action) -> Ring {
         // participant, so a participant could otherwise rewrite what the
         // palette keeps for them.
         | OmnibarToggleKeepRow(_)
-        | OmnibarToggleKeepSelected => Ring::HostOnly,
+        | OmnibarToggleKeepSelected
+        | SetAnswerSelection { .. } => Ring::HostOnly,
     }
 }
 

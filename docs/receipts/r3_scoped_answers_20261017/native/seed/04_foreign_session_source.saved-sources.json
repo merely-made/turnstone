@@ -1,0 +1,45 @@
+{
+  "admissions": [
+    {
+      "error": null,
+      "key": {
+        "annotation_manifest": "blake3:cb26eb39b4e8e5f460e662ed4f51d3733a741f7e9e6256e3a445e923459fbd79",
+        "graph": "864e7c1d-475b-4bed-b295-8d7e300651cd",
+        "node": "9e5ab92c-755b-4c11-b5ad-3a29ac28bd2b",
+        "session": "71509755-392d-45e0-8716-97707427dca3"
+      },
+      "occurrence": 0,
+      "title": "Foreign Source",
+      "url": "http://127.0.0.1:60279/Foreign"
+    }
+  ],
+  "entries": [
+    {
+      "admission": {
+        "error": null,
+        "key": {
+          "annotation_manifest": "blake3:cb26eb39b4e8e5f460e662ed4f51d3733a741f7e9e6256e3a445e923459fbd79",
+          "graph": "864e7c1d-475b-4bed-b295-8d7e300651cd",
+          "node": "9e5ab92c-755b-4c11-b5ad-3a29ac28bd2b",
+          "session": "71509755-392d-45e0-8716-97707427dca3"
+        },
+        "occurrence": 0,
+        "title": "Foreign Source",
+        "url": "http://127.0.0.1:60279/Foreign"
+      },
+      "content": {
+        "captured_at_ms": 1792298412280,
+        "origin": "http://127.0.0.1:60279/Foreign",
+        "raw_manifest": "blake3:377e703a61edce76f753f25b2edb25e6d8efe2b16d8caf33978a3d125e7dc8ed",
+        "text": "copperfield foreign-session sentinel",
+        "text_hash": "blake3:7abed83092d2bbba2540c97aa8b3456ca358b0e62540f7ba253ee2d21c0c405e",
+        "title": "Foreign Source"
+      },
+      "error": null
+    }
+  ],
+  "generation": "9175ce6e-a0bc-41b1-9e59-75c48ef1689c",
+  "readers": [],
+  "session": "71509755-392d-45e0-8716-97707427dca3",
+  "status": "Ready"
+}

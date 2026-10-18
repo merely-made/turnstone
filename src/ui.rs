@@ -2129,7 +2129,10 @@ impl RetainedLayout {
         w: u32,
         h: u32,
     ) -> netrender::Scene {
-        self.scene_resources(dom, sheet, w, h).scene
+        match self.scene_resources(dom, sheet, w, h) {
+            Ok(translated) => translated.scene,
+            Err(error) => pane_scene(&format!("Surface cannot render: {error}"), w, h),
+        }
     }
 
     /// Keep the GPU mask requests together with the exact emitted scene.
@@ -2140,7 +2143,7 @@ impl RetainedLayout {
         sheet: &str,
         w: u32,
         h: u32,
-    ) -> paint_list_render::TranslatedDisplayList {
+    ) -> Result<paint_list_render::TranslatedDisplayList, paint_list_render::TranslationError> {
         self.ensure(dom, sheet, w, h);
         let scoped =
             cambium_rootstock::WindowDom::new(dom, self.root.unwrap_or_else(|| dom.document()));
@@ -2399,12 +2402,15 @@ impl RetainedLayout {
 
 /// The one composite step every scene builder ends with.
 fn composite<P: PaintList>(viewport: DeviceIntSize, plist: &P) -> netrender::Scene {
-    composite_resources(viewport, plist).scene
+    match composite_resources(viewport, plist) {
+        Ok(translated) => translated.scene,
+        Err(error) => pane_scene(&format!("Surface cannot render: {error}"), viewport.width.max(1) as u32, viewport.height.max(1) as u32),
+    }
 }
 fn composite_resources<P: PaintList>(
     viewport: DeviceIntSize,
     plist: &P,
-) -> paint_list_render::TranslatedDisplayList {
+) -> Result<paint_list_render::TranslatedDisplayList, paint_list_render::TranslationError> {
     let layers = [CompositeLayer {
         commands: plist.commands(),
         fonts: plist.fonts(),

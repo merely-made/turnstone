@@ -1,0 +1,19 @@
+RESULT ok
+captured 04_foreign_session_source
+captured 05_empty_scope_refused
+captured 06_explicit_A1_B_scope
+captured 06b_paused_scoped_answer
+captured 07_scoped_answer_origin_gone
+captured 08_changed_scope_old_answer
+captured 08b_cancelled_B_only_ask
+captured 09_exact_A1_citation_origin_gone
+R3 explicitly scoped real-model answer and exact offline citation complete
+presentation frames=1094 captures=8 blank=0
+capture /Users/markik/Code/output/turnstone-r3-native-05/seed/04_foreign_session_source.png digest=36d7bbc59aee4537 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-05/seed/05_empty_scope_refused.png digest=c9f4e9b685b54295 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-05/seed/06_explicit_A1_B_scope.png digest=e502d9e17453f44f blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-05/seed/06b_paused_scoped_answer.png digest=69d5476581a4b291 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-05/seed/07_scoped_answer_origin_gone.png digest=402770c263e60e56 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-05/seed/08_changed_scope_old_answer.png digest=db60dd119376a281 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-05/seed/08b_cancelled_B_only_ask.png digest=e49a61f99c6af234 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-05/seed/09_exact_A1_citation_origin_gone.png digest=9c3c3daed1a4c940 blank=false

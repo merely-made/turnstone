@@ -1,0 +1,8 @@
+{
+  "actual_admitted_route": true,
+  "ask_error": "inference recall: retained source owner is unavailable",
+  "publication_error": "inference recall: source identity names another owner",
+  "source_kind": "fleece",
+  "wrong_owner_ask_refused": true,
+  "wrong_owner_publication_refused": true
+}

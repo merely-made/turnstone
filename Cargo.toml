@@ -225,14 +225,14 @@ taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git",
 # neither the app nor the place worker ever holds a clipboard handle.
 genet-clipboard = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/genet.git", branch = "main" }
-paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
-paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
+paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "c5efc94f876e93caba20807709189c5f9589492b" }
+paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "c5efc94f876e93caba20807709189c5f9589492b" }
 # Suggestion rows key node identity by the graph's stable UUIDs.
 uuid = "1"
 # Resolve a declared icon href (or the /favicon.ico fallback) against the page URL.
 url = "2.5"
 # Rasterize + composite the canvas Scene through the shared present stack.
-netrender = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
+netrender = { git = "https://github.com/merely-made/netrender.git", rev = "c5efc94f876e93caba20807709189c5f9589492b" }
 genet-winit-host = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-render-host = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # The view toolkit (rung 5 slice D, the toolkit adoption): cambium (the xilem
@@ -408,10 +408,10 @@ layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/gen
 # the host cannot receive source-distinct `Scene` or paint vocabulary types.
 # `netrender_text` is only Netrender's dev-only Parley adapter, so it does not
 # reach this application graph and must not add an unused root patch.
-netrender = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
-netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
-paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
-paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
+netrender = { git = "https://github.com/merely-made/netrender.git", rev = "c5efc94f876e93caba20807709189c5f9589492b" }
+netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "c5efc94f876e93caba20807709189c5f9589492b" }
+paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "c5efc94f876e93caba20807709189c5f9589492b" }
+paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "c5efc94f876e93caba20807709189c5f9589492b" }
 #
 # The tagged `mere-p2panda-net =0.7.5` source owns the exact-ALPN net crate.
 # It resolves through this root patch until its crates.io release is available.

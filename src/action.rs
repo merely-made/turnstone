@@ -454,6 +454,11 @@ pub enum Action {
     SummonPane(PaneKindId),
     /// Ask over this browsing session through the resident inference route.
     OpenAnswers,
+    SetAnswerSelection {
+        generation: uuid::Uuid,
+        expected: crate::inference_surface::AnswerSourceV2,
+        chosen: Vec<crate::saved_sources::Target>,
+    },
     /// Ask the platform shell to choose a local Knot document. The resulting
     /// path becomes a contributed source only after the user chooses it.
     ChooseKnotDocumentFile {
@@ -732,7 +737,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
             Action::ChooseKnotDocumentFile { read_only: true },
         ),
         ("Search saved sources", Action::SearchSavedSources),
-        ("Ask retained text", Action::OpenAnswers),
+        ("Ask saved sources", Action::OpenAnswers),
         (
             "Open Sky reference",
             Action::SummonContributedPane {

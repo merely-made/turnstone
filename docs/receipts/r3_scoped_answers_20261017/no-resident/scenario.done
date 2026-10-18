@@ -1,0 +1,5 @@
+RESULT ok
+captured 01_large_saved_text_without_resident
+Large saved text displayed completely without origin or resident
+presentation frames=33 captures=1 blank=0
+capture /Users/markik/Code/output/turnstone-r3-huge-smoke-01/run/01_large_saved_text_without_resident.png digest=dd160576a9ad59b6 blank=false

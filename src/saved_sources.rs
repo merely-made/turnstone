@@ -272,6 +272,33 @@ fn parse_hex_hash(hex: &str) -> Result<eidetic::Hash, String> {
         .map_err(|_| "saved source hash is malformed".into())
 }
 
+// Keep each display paragraph well below a shaper's 16-bit glyph counters.
+// This is presentation segmentation only: hashes and selectors keep using the
+// complete canonical stream, and concatenating the parts reproduces every byte.
+const DISPLAY_BLOCK_BYTES: usize = 4096;
+fn display_parts(mut text: &str) -> Vec<&str> {
+    let mut parts = Vec::new();
+    while !text.is_empty() {
+        let mut end = text.len().min(DISPLAY_BLOCK_BYTES);
+        while !text.is_char_boundary(end) {
+            end -= 1;
+        }
+        if end < text.len() {
+            if let Some((boundary, whitespace)) = text[..end]
+                .char_indices()
+                .rfind(|(_, ch)| ch.is_whitespace())
+                && boundary > 0
+            {
+                end = boundary + whitespace.len_utf8();
+            }
+        }
+        let (part, rest) = text.split_at(end);
+        parts.push(part);
+        text = rest;
+    }
+    parts
+}
+
 /// Lower an already admitted canonical text version into the shared document
 /// packet. The original URL is represented as an explicit link and is never
 /// used as the document address, so opening this packet cannot fetch it.
@@ -304,16 +331,23 @@ pub fn document(content: &Content, target: &Target) -> Result<inker::EngineDocum
     }
     if let Some(quote) = selected {
         blocks.push(inker::Block::Quote {
-            blocks: vec![inker::Block::Paragraph {
-                spans: vec![inker::InlineSpan::Strong(vec![inker::InlineSpan::Text(
-                    quote,
-                )])],
-            }],
+            blocks: display_parts(&quote)
+                .into_iter()
+                .map(|part| inker::Block::Paragraph {
+                    spans: vec![inker::InlineSpan::Strong(vec![inker::InlineSpan::Text(
+                        part.to_owned(),
+                    )])],
+                })
+                .collect(),
         });
     }
-    blocks.push(inker::Block::Paragraph {
-        spans: vec![inker::InlineSpan::Text(content.text.clone())],
-    });
+    blocks.extend(
+        display_parts(&content.text)
+            .into_iter()
+            .map(|part| inker::Block::Paragraph {
+                spans: vec![inker::InlineSpan::Text(part.to_owned())],
+            }),
+    );
     blocks.push(inker::Block::Paragraph {
         spans: vec![inker::InlineSpan::Link {
             url: content.origin.clone(),
@@ -441,5 +475,79 @@ mod tests {
             inker::Block::Paragraph { spans }
                 if spans.iter().any(|span| matches!(span, inker::InlineSpan::Link { url, .. } if url == &content.origin))
         )));
+    }
+    #[test]
+    fn long_reader_body_and_quote_are_bounded_without_truncating_canonical_unicode() {
+        let text = "naïve — 東京 🐦 \\ ".repeat(10000);
+        let entry = entry(
+            key(
+                uuid::Uuid::new_v4(),
+                &eidetic::ManifestId::of_blob(b"large").to_string(),
+            ),
+            0,
+            &text,
+            "Long source",
+        );
+        let content = entry.content.unwrap();
+        let target = Target {
+            key: entry.admission.key,
+            text_hash: content.text_hash.clone(),
+            selector: Some(Selector {
+                start: 0,
+                end: text.chars().count(),
+            }),
+        };
+        let doc = document(&content, &target).unwrap();
+        let inker::Block::Quote {
+            blocks: quote_blocks,
+        } = &doc.blocks[4]
+        else {
+            panic!("selected quotation")
+        };
+        let quote: Vec<&str> = quote_blocks
+            .iter()
+            .map(|block| {
+                let inker::Block::Paragraph { spans } = block else {
+                    panic!("quote paragraph")
+                };
+                let inker::InlineSpan::Strong(spans) = &spans[0] else {
+                    panic!("highlighted quote")
+                };
+                let inker::InlineSpan::Text(text) = &spans[0] else {
+                    panic!("exact quote text")
+                };
+                text.as_str()
+            })
+            .collect();
+        let body: Vec<&str> = doc.blocks[5..doc.blocks.len() - 1]
+            .iter()
+            .map(|block| {
+                let inker::Block::Paragraph { spans } = block else {
+                    panic!("body paragraph")
+                };
+                let inker::InlineSpan::Text(text) = &spans[0] else {
+                    panic!("exact body text")
+                };
+                text.as_str()
+            })
+            .collect();
+        assert!(quote.len() > 1 && body.len() > 1);
+        assert!(
+            quote
+                .iter()
+                .chain(&body)
+                .all(|part| part.len() <= DISPLAY_BLOCK_BYTES)
+        );
+        assert_eq!(quote.concat(), text);
+        assert_eq!(body.concat(), text);
+        assert_eq!(doc.address, address(&target).unwrap());
+        assert_eq!(
+            eidetic::Hash::of(body.concat().as_bytes()).to_string(),
+            target.text_hash
+        );
+        let unbroken = "é🐦".repeat(10000);
+        let parts = display_parts(&unbroken);
+        assert!(parts.iter().all(|part| part.len() <= DISPLAY_BLOCK_BYTES));
+        assert_eq!(parts.concat(), unbroken);
     }
 }

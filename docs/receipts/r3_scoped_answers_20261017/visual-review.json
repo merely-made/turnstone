@@ -1,0 +1,78 @@
+{
+  "reviewer": "Codex visual inspection of each returned PNG",
+  "captures": [
+    {
+      "path": "seed/04_foreign_session_source.png",
+      "sha256": "57b86e214dc5c923904e108f6f3ee8d295541fc2739cb584a60aad8119c79d42",
+      "blank": false,
+      "observation": "Foreign named session shows only its saved sentinel result."
+    },
+    {
+      "path": "seed/05_empty_scope_refused.png",
+      "sha256": "76d695d8839b6b5ff5505470e1a7d4fd7ebee6898e9d0a808dc92f18ac5cf5d7",
+      "blank": false,
+      "observation": "Empty selection clearly refuses Ask."
+    },
+    {
+      "path": "seed/06_explicit_A1_B_scope.png",
+      "sha256": "fd5693554ec537975685ff5c7d7fd2f41a1f11f2cb629445e7cc1d2d7d630090",
+      "blank": false,
+      "observation": "A1 and B selected; A2 separately offered and unselected."
+    },
+    {
+      "path": "seed/06b_paused_scoped_answer.png",
+      "sha256": "bb9a522b7f821bbfa8b45e11e38c8c1c889d35c7961277d1a3b34bed3849166c",
+      "blank": false,
+      "observation": "Real answer paused at token 1, with Resume and Cancel visible."
+    },
+    {
+      "path": "seed/07_scoped_answer_origin_gone.png",
+      "sha256": "d70b2e242d5f432ff7cb6faa62ecdf360913a807ad135c739c59fbd4b8a11199",
+      "blank": false,
+      "observation": "Finished real answer with exact-quotation A1 source control and scalar range."
+    },
+    {
+      "path": "seed/08_changed_scope_old_answer.png",
+      "sha256": "6dcda2150db2745653de9d9ae5b6606c9c5c8f2fbd5fa06bcbf4e800a7ae0de0",
+      "blank": false,
+      "observation": "Next scope B only; old A1 answer and citation retained."
+    },
+    {
+      "path": "seed/08b_cancelled_B_only_ask.png",
+      "sha256": "7cf4f8317535fae31fdea09adb8e25e9dfdd16dccbf3096ea5b31342cad212ab",
+      "blank": false,
+      "observation": "B-only ask visibly cancelled; earlier finished answer in history."
+    },
+    {
+      "path": "seed/09_exact_A1_citation_origin_gone.png",
+      "sha256": "086d1381fec85213272e3964159f5bf9d15e752c105f75ef43d66936657495f1",
+      "blank": false,
+      "observation": "A1 reader revealed, Unicode quote bold, full text and separate origin link."
+    },
+    {
+      "path": "reopen/10_cold_reopened_scope_and_history.png",
+      "sha256": "61f72cb18402c244be136303a9f28dd0789905b7f9fb3e4eb4ce196c783cb191",
+      "blank": false,
+      "observation": "Cold pane restores B-only scope and past asks; narrow pane wraps controls."
+    },
+    {
+      "path": "reopen/11_cold_reopened_exact_A1_citation.png",
+      "sha256": "917aefbe2aac8dff75c89e742681fcfac2c678d98708e9fa0455623f86c7d58c",
+      "blank": false,
+      "observation": "Cold A1 citation opens same old quote alongside the reopened answer."
+    },
+    {
+      "path": "reopen/12_oversize_publication_refused.png",
+      "sha256": "fe82ce016de2de20a7e1c26720cde5705bc6f89c9e0f6fec1e784590e3b2588d",
+      "blank": false,
+      "observation": "Encoded corpus refusal explicitly preserves offline reading."
+    },
+    {
+      "path": "reopen/13_oversize_source_readable_offline.png",
+      "sha256": "1c4dd9ff89cb52684499c52b8cc7ee7da6da12151c856c763ffb67bf45dea42d",
+      "blank": false,
+      "observation": "Large offline source shows saved provenance, bold selected quote and full body continuation."
+    }
+  ],
+  "additional_no_resident": "The separate smoke PNG was also viewed: source body and selected quote are visible while Answers reports the absent transport endpoint."
+}
