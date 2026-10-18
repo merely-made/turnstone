@@ -257,6 +257,7 @@ fn failure_message(failure: &mere::canvas::responsive_links::LinkPathFailure) ->
         },
         LinkPathFailure::StaleCompatibleLink(_) => "a grouped link is no longer in this graph",
         LinkPathFailure::InvalidFieldStrength => "field strength is outside the allowed range",
+        LinkPathFailure::InvalidProjection => "the current view cannot project link paths",
         LinkPathFailure::FieldDependencyTooLarge => "the field expression exceeds the path limits",
         LinkPathFailure::FieldSampleKindMismatch(_) => "a sampled field has the wrong value type",
         LinkPathFailure::Adapter(_) => "the bounded path evaluator refused these inputs",

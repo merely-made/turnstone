@@ -202,8 +202,8 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
             let screen = |point: (f32, f32)| canvas.screen_point_of(point);
             let endpoint_screen = screen(endpoint);
             let next_screen = screen(next);
-            let point = euclid::default::Point2D::new(endpoint_screen.0, endpoint_screen.1);
-            let next_point = euclid::default::Point2D::new(next_screen.0, next_screen.1);
+            let point = endpoint_screen.into();
+            let next_point = next_screen.into();
             let ground = (billboard.ground_anchor.x, billboard.ground_anchor.y);
             let center = (billboard.center.x, billboard.center.y);
             let has_stem = distance(ground, center) >= 0.5;
@@ -327,34 +327,31 @@ fn strict_reentry(
 ) -> usize {
     let points = world_points
         .iter()
-        .map(|&point| {
-            let screen = canvas.screen_point_of(point);
-            euclid::default::Point2D::new(screen.0, screen.1)
-        })
+        .map(|&point| canvas.screen_point_of(point))
         .collect::<Vec<_>>();
     let mut exited = !points
         .first()
-        .is_some_and(|point| billboard.contains_screen(*point));
+        .is_some_and(|point| billboard.contains_screen((*point).into()));
     let mut violations = 0usize;
     for pair in points.windows(2) {
-        let interval = billboard.segment_interior_interval(pair[0], pair[1]);
+        let interval = billboard.segment_interior_interval(pair[0].into(), pair[1].into());
         if let Some((enter, exit)) = interval.filter(|(enter, exit)| exit - enter > 1.0e-5) {
-            let midpoint = euclid::default::Point2D::new(
-                pair[0].x + (pair[1].x - pair[0].x) * (enter + exit) * 0.5,
-                pair[0].y + (pair[1].y - pair[0].y) * (enter + exit) * 0.5,
+            let midpoint = (
+                pair[0].0 + (pair[1].0 - pair[0].0) * (enter + exit) * 0.5,
+                pair[0].1 + (pair[1].1 - pair[0].1) * (enter + exit) * 0.5,
             );
             if billboard
-                .signed_distance_screen(midpoint)
+                .signed_distance_screen(midpoint.into())
                 .is_some_and(|distance| distance < -1.0e-5)
             {
                 if allow_initial_stem_exit && !exited {
-                    exited = !billboard.contains_screen(pair[1]);
+                    exited = !billboard.contains_screen(pair[1].into());
                 } else {
                     violations += 1;
                 }
             }
         }
-        if !billboard.contains_screen(pair[1]) {
+        if !billboard.contains_screen(pair[1].into()) {
             exited = true;
         }
     }
