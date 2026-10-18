@@ -1,0 +1,74 @@
+{
+  "version": 2,
+  "layout": {
+    "id": "content",
+    "label": "content",
+    "root": {
+      "Workspace": {
+        "workspace": {
+          "tiled": {
+            "Split": {
+              "axis": "Row",
+              "children": [
+                {
+                  "fraction": 0.5,
+                  "tree": {
+                    "Stack": {
+                      "tabs": [
+                        {
+                          "id": 0,
+                          "title": "Orrery",
+                          "content": {
+                            "Open": {
+                              "kind": "turnstone.pane",
+                              "id": "0"
+                            }
+                          },
+                          "accent": null
+                        }
+                      ],
+                      "active": 0
+                    }
+                  }
+                },
+                {
+                  "fraction": 0.5,
+                  "tree": {
+                    "Stack": {
+                      "tabs": [
+                        {
+                          "id": 1,
+                          "title": "inspector",
+                          "content": {
+                            "Open": {
+                              "kind": "turnstone.pane",
+                              "id": "1"
+                            }
+                          },
+                          "accent": null
+                        }
+                      ],
+                      "active": 0
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "floating": []
+        },
+        "panes": {
+          "0": [
+            "Orrery",
+            "316722a5-ac1f-4d60-ba23-76968e302de3"
+          ],
+          "1": [
+            "Inspector",
+            "316722a5-ac1f-4d60-ba23-76968e302de3"
+          ]
+        },
+        "descriptors": {}
+      }
+    }
+  }
+}

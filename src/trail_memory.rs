@@ -2206,6 +2206,53 @@ impl crate::inference_service::RetainedSourceOwner for CaptureInferenceOwner {
 mod research_owner_tests {
     use super::*;
     use crate::inference_service::RetainedSourceOwner;
+
+    #[test]
+    #[ignore = "requires an exited R4 headed profile and an output receipt path"]
+    fn independently_inspect_exited_research_profile() {
+        let root = PathBuf::from(std::env::var_os("TURNSTONE_R4_PROFILE").expect("R4 profile"));
+        let observations: serde_json::Value = serde_json::from_slice(
+            &std::fs::read(std::env::var_os("TURNSTONE_R4_OBSERVATION").expect("R4 observation"))
+                .unwrap(),
+        )
+        .unwrap();
+        let session = observations["session"].as_str().unwrap();
+        let admissions: Vec<crate::saved_sources::Admission> =
+            serde_json::from_value(observations["admissions"].clone()).unwrap();
+        let mut reports = Vec::new();
+        for entry in std::fs::read_dir(root.join("sessions")).unwrap() {
+            let directory = entry.unwrap().path();
+            if !directory.join("memory/version").is_file() {
+                continue;
+            }
+            let mut store = FjallStore::open(directory.join("memory")).unwrap();
+            let references = pollster::block_on(PageTextStore::new(&store).references()).unwrap();
+            assert!(
+                references.is_empty(),
+                "fresh ordinary history retained a PageText body"
+            );
+            let mut report = serde_json::json!({"session":directory.file_name().unwrap().to_string_lossy(),"page_text_references":references.len()});
+            if directory.file_name().unwrap() == session {
+                let entries = saved_sources::load(&mut store, &admissions);
+                assert_eq!(entries.len(), 3);
+                assert!(
+                    entries
+                        .iter()
+                        .all(|entry| entry.error.is_none() && entry.content.is_some())
+                );
+                report["validated_captures"] = serde_json::to_value(entries).unwrap();
+            }
+            reports.push(report);
+        }
+        assert!(
+            reports
+                .iter()
+                .any(|report| report.get("validated_captures").is_some())
+        );
+        std::fs::write(std::env::var_os("TURNSTONE_R4_STORE_RECEIPT").expect("R4 store receipt"),
+            serde_json::to_vec_pretty(&serde_json::json!({"result":"pass","independent_after_app_exit":true,"sessions":reports})).unwrap()).unwrap();
+    }
+
     use crate::saved_sources::{Admission, Key, Target};
     #[test]
     fn research_owner_loads_only_live_captures_and_reopens_exact_versions_without_page_text_fallback()

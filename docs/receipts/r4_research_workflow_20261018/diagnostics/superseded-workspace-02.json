@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-18T06:36:56.585527+00:00",
+  "pid": 15172,
+  "command": "cargo test --workspace --locked --offline --no-fail-fast -j2 -- --test-threads=1",
+  "result": "superseded before completion",
+  "reason": "Final withdrawal-edit regression reproduced; validate final repaired source. Partial runs are not full passes.",
+  "child_cleanup": {
+    "pid": 15473,
+    "utc": "2026-10-18T06:44:12.659835+00:00",
+    "owner_proof": "p15473\nf1\nn/Users/markik/Code/output/turnstone-r4-workspace-tests-02.log\nf2\nn/Users/markik/Code/output/turnstone-r4-workspace-tests-02.log\n",
+    "reason": "Cargo interruption left this superseded test child running; stop only the child bound to this run log. Final-source test PID 18421 remains running."
+  }
+}

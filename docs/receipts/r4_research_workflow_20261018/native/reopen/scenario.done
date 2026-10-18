@@ -1,0 +1,15 @@
+RESULT ok
+captured 15_cold_reader_before_resident_restart
+captured 16_cold_scope_resident_absent
+captured 17_cold_scope_and_history
+captured 18_cold_exact_A1_citation
+captured 19_oversize_publication_refused
+captured 20_oversize_source_readable_offline
+R4 cold reopen and independent resident process restart complete
+presentation frames=459 captures=6 blank=0
+capture /Users/markik/Code/output/turnstone-r4-native-03/reopen/15_cold_reader_before_resident_restart.png digest=6084e972fd2c539d blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/reopen/16_cold_scope_resident_absent.png digest=2019046af02f7f34 blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/reopen/17_cold_scope_and_history.png digest=263da9f97351e7f3 blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/reopen/18_cold_exact_A1_citation.png digest=b0881f693514bebb blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/reopen/19_oversize_publication_refused.png digest=11752aa2eb0a435b blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/reopen/20_oversize_source_readable_offline.png digest=3e1b7a7face54b14 blank=false

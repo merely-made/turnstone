@@ -1,0 +1,7 @@
+
+running 3 tests
+test app::pane_arms::tests::summoning_a_tool_reveals_it_from_a_maximized_reader_without_growing_on_reentry ... ok
+test app::contributed_pane_arms::research_view_tests::reopening_answers_reuses_the_saved_view_and_reveals_it_from_a_maximized_reader ... ok
+test app::r2_saved_source_tests::opening_saved_source_from_answers_reveals_and_focuses_the_graph_reader ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 1080 filtered out; finished in 0.86s

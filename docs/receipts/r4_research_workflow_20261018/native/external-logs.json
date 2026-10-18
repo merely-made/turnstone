@@ -1,0 +1,67 @@
+[
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r4-native-03/reopen-store-inspection.log",
+    "sha256": "9ad32f1e3dbe00ae64ac4b71a1cf92ea3c59adc33a6591b17f55716452a8864e",
+    "bytes": 209
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r4-native-03/wrong-owner-probe.log",
+    "sha256": "ec86c7e0336ea3b176ed027d861489eb0df8aa2055a9632cc9c6f2cdb77b196f",
+    "bytes": 197
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r4-native-03/origin-0.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r4-native-03/origin-1.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r4-native-03/launch-seed.log",
+    "sha256": "1282e2a7bbede39b8927345d6add5f5bab5d72ee4d6e0742a1927e1bf9c5252e",
+    "bytes": 2573
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r4-native-03/seed-store-inspection.log",
+    "sha256": "9bfc6ad852072803fddb94ea93d23ba10916b35b7f05a0ac57e53514a49ede7a",
+    "bytes": 209
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r4-native-03/launch-reopen.log",
+    "sha256": "dddf9433bc93090d107d3554ee39a8b3b868f2b9c925b4b24d9ee8279f308bcf",
+    "bytes": 1537
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r4-native-03/resident-0.log",
+    "sha256": "095159761024a4677240c3ff444912f7b58932b3e2fe5bb46363393a11acb10b",
+    "bytes": 323
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r4-native-03/resident-1.log",
+    "sha256": "602f4d278a215390f172c4e14b9918dd5b10929c645d78d86675d4f789600677",
+    "bytes": 323
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r4-native-03/seed/native.log",
+    "sha256": "c52aff101b8c15f4a7456f2ad503a6685689bb0e7b1e4300442f6f98e3147228",
+    "bytes": 2742844
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r4-native-03/seed/launcher.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r4-native-03/reopen/native.log",
+    "sha256": "79b0bca38cdc70908bf5d585065473b71dbb03d47841daad89e99aa7cdd4ff5d",
+    "bytes": 836128
+  },
+  {
+    "raw_path": "/Users/markik/Code/output/turnstone-r4-native-03/reopen/launcher.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  }
+]

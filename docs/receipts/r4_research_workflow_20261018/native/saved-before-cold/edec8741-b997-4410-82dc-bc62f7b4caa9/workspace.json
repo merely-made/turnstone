@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "layout": {
+    "id": "content",
+    "label": "content",
+    "root": {
+      "Workspace": {
+        "workspace": {
+          "tiled": {
+            "Stack": {
+              "tabs": [
+                {
+                  "id": 0,
+                  "title": "Orrery",
+                  "content": {
+                    "Open": {
+                      "kind": "turnstone.pane",
+                      "id": "0"
+                    }
+                  },
+                  "accent": null
+                }
+              ],
+              "active": 0
+            }
+          },
+          "floating": []
+        },
+        "panes": {
+          "0": [
+            "Orrery",
+            "7aa93764-30bc-48ff-8c32-81f10e74721c"
+          ]
+        },
+        "descriptors": {}
+      }
+    }
+  }
+}

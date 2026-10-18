@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "session_id": "b3983275-946e-4216-adb7-27e1d0518859",
+  "root_graph_id": "316722a5-ac1f-4d60-ba23-76968e302de3",
+  "sub_graph_refs": [],
+  "display_name": "R4 Foreign Two",
+  "persona_id": "00000000-0000-0000-0000-000000000001",
+  "created_at": {
+    "secs_since_epoch": 1792305654,
+    "nanos_since_epoch": 277052000
+  },
+  "updated_at": {
+    "secs_since_epoch": 1792305669,
+    "nanos_since_epoch": 883041000
+  },
+  "parent_session": null,
+  "consolidated_codicils": [],
+  "last_consolidated_at": null,
+  "active_workers": [],
+  "engine_profile": "PersonaScoped",
+  "policy": {
+    "overrides": []
+  },
+  "storage_path": "/Users/markik/Code/output/turnstone-r4-native-03/profile/sessions/b3983275-946e-4216-adb7-27e1d0518859",
+  "forked_at": null,
+  "trashed": null,
+  "source_codicil": null,
+  "codicil_read_only": false,
+  "picked_from": null,
+  "lineage": "fork",
+  "merged": null
+}

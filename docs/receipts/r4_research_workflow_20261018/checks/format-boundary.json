@@ -1,0 +1,19 @@
+{
+  "scope": [
+    "src/app/contributed_pane_arms.rs",
+    "src/app/pane_arms.rs",
+    "src/inference_service.rs"
+  ],
+  "trail_memory": {
+    "baseline_exit": 1,
+    "current_exit": 1,
+    "boundary": "Existing formatting differences left unchanged; newly added test block checked separately."
+  },
+  "scope_exit_code": 0,
+  "new_inspector_block_exit_code": 0,
+  "saved_source_arms": {
+    "baseline_exit": 1,
+    "current_exit": 1,
+    "boundary": "Unchanged pre-existing line wrap; source diff remains the shared reveal call only."
+  }
+}

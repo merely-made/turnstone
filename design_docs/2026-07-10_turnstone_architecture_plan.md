@@ -869,6 +869,23 @@ done-conditions story.
   that plan's B3. The resident helper unit is named **servitor** (reserved on
   crates.io); chartulary's nesting substrate (B0) landed the same day.
 
+- 2026-10-18: **R4 complete private research task bounded-qualified on macOS.**
+  The named Answers action re-enters a valid current-session pane, preserving
+  selected immutable IDs and serialized arrangement. One destination reveal
+  operation serves Answers, tools and saved readers; source availability is
+  validated before the resident connection. Selection editing permits removal
+  of detached choices while new additions and every complete ask remain
+  admission-checked. The existing pane schema, trail/Fjall/Fleece owner and
+  resident publication/journal owners remain unchanged. The full workspace
+  command passes (1,071 library tests, 12 ignored), with real-route/store probes
+  executed separately. Nineteen reviewed headed captures and independent
+  Fleece/prompt checks prove reading before both resident startups, exact old
+  A1 after A2 and cold return across distinct app/resident processes while the
+  origin is gone. The shared supplier change is an opt-in extension of its
+  existing ignored test, requiring no runtime repin. Evidence and remaining
+  platform/custody/note/sharing boundaries belong to the
+  [R4 lifecycle qualification](2026-09-06_page_lifecycle_plan.md#r4-one-end-to-end-acceptance-receipt).
+
 - 2026-10-18: **R3 capture-backed Answers bounded-qualified on macOS.** The current
   `Ask saved sources` action uses a version-2 pane payload and a derived
   research owner. Chosen exact Fleece source IDs persist in pane state; every

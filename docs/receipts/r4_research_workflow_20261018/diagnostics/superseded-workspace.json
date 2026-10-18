@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-18T06:15:08.013491+00:00",
+  "pid": 12953,
+  "command": "cargo test --workspace --locked --offline --no-fail-fast -j2 -- --test-threads=1",
+  "result": "stopped after source superseded",
+  "reason": "Visual acceptance found missing focus on newly created Answers panes; requalify the final source. No partial run is counted as a full pass.",
+  "subsequent_child_observation": {
+    "full_library_result": [
+      "test result: ok. 1070 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 2029.00s"
+    ],
+    "boundary": "The interrupted Cargo parent did not stop its child. Its later library success is preserved as superseded source evidence; no workspace completion or final-source pass is claimed."
+  }
+}

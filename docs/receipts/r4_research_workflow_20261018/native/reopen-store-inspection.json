@@ -1,0 +1,93 @@
+{
+  "independent_after_app_exit": true,
+  "result": "pass",
+  "sessions": [
+    {
+      "page_text_references": 0,
+      "session": "0953c81b-fa50-4b77-a7a3-db97e723cc33",
+      "validated_captures": [
+        {
+          "admission": {
+            "error": null,
+            "key": {
+              "annotation_manifest": "blake3:1a1da810f370313ed8a8186a95a9a951ae6ef3696f96458e7b3ac619e99e306a",
+              "graph": "e1821c6f-8904-466a-b5f0-4ff879465a68",
+              "node": "249a9a00-6797-4a56-b40a-477e2de90427",
+              "session": "0953c81b-fa50-4b77-a7a3-db97e723cc33"
+            },
+            "occurrence": 0,
+            "title": "Source B",
+            "url": "http://127.0.0.1:64648/B"
+          },
+          "content": {
+            "captured_at_ms": 1792305636492,
+            "origin": "http://127.0.0.1:64648/B",
+            "raw_manifest": "blake3:5a39b17dd36643890b08247318b48f0852bf9cd25d53de7d52ae5e6059abd53e",
+            "text": "amber harbor main-session sentinel",
+            "text_hash": "blake3:7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+            "title": "Source B"
+          },
+          "error": null
+        },
+        {
+          "admission": {
+            "error": null,
+            "key": {
+              "annotation_manifest": "blake3:383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29",
+              "graph": "e1821c6f-8904-466a-b5f0-4ff879465a68",
+              "node": "bb627dde-56b4-4586-84c8-258e94e8552a",
+              "session": "0953c81b-fa50-4b77-a7a3-db97e723cc33"
+            },
+            "occurrence": 0,
+            "title": "Source A",
+            "url": "http://127.0.0.1:64648/A"
+          },
+          "content": {
+            "captured_at_ms": 1792305627064,
+            "origin": "http://127.0.0.1:64648/A",
+            "raw_manifest": "blake3:00d30c18b7000c55584bf9dc589c1b031a28a26ce9114b29bb6ba74a1f3ae3ee",
+            "text": "The Pelican observatory's access word is café.",
+            "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+            "title": "Source A"
+          },
+          "error": null
+        },
+        {
+          "admission": {
+            "error": null,
+            "key": {
+              "annotation_manifest": "blake3:55be1588f674ad1d6d0b803a24486b674cbe2e1a785b30ca24b7619fffe5443c",
+              "graph": "e1821c6f-8904-466a-b5f0-4ff879465a68",
+              "node": "bb627dde-56b4-4586-84c8-258e94e8552a",
+              "session": "0953c81b-fa50-4b77-a7a3-db97e723cc33"
+            },
+            "occurrence": 1,
+            "title": "Source A",
+            "url": "http://127.0.0.1:64648/A"
+          },
+          "content": {
+            "captured_at_ms": 1792305946899,
+            "origin": "http://127.0.0.1:64648/A",
+            "raw_manifest": "blake3:60a670119530da418659183e02de193625a1a7a897d8d6904de5ccde3b4b72c9",
+            "text": "Source A revision 2 Live A2 replacement. The brisk — 大阪 🦊 passage records violet geometry and changing rivers.",
+            "text_hash": "blake3:fae57def96f23c2c233b65ce851fdaf4d2d033dc123a335016cd1fee7cebb1bd",
+            "title": "Source A"
+          },
+          "error": null
+        }
+      ]
+    },
+    {
+      "page_text_references": 0,
+      "session": "b3983275-946e-4216-adb7-27e1d0518859"
+    },
+    {
+      "page_text_references": 0,
+      "session": "edec8741-b997-4410-82dc-bc62f7b4caa9"
+    },
+    {
+      "page_text_references": 0,
+      "session": "765d29e8-b2f0-4a66-921e-6ba1025d856e"
+    }
+  ]
+}

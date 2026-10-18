@@ -1,0 +1,73 @@
+# New app process. Origin and resident have both exited. Read BEFORE restart.
+settle 15
+key escape
+assert snap network-offline == true
+act Search saved sources
+type café
+wait-saved-sources 600
+assert suggestions == 1
+key enter
+wait-saved-reader 600
+assert snap saved-reader-state == Ready
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+assert snap saved-reader-quote == café
+capture 15_cold_reader_before_resident_restart
+record-saved-sources 15_cold_reader_before_resident_restart
+act Ask saved sources
+settle 15
+act Maximize pane
+settle 5
+assert text 1 saved sources chosen
+assert text Answers needs the inference resident.
+assert text Remove source: Source B · saved version 1
+assert text Choose source: Source A · saved version 1
+assert text Choose source: Source A · saved version 2
+capture 16_cold_scope_resident_absent
+touch ${R4_CONTROL}/start-resident-1
+wait-file 18000 ${R4_CONTROL}/resident-started-1
+settle 100
+assert text Connected to resident inference.
+assert text 1 saved sources chosen
+assert text Past asks
+capture 17_cold_scope_and_history
+click surface:contributed role:button Reopen: Repeat the retained sentence about the Pelican observatory
+settle 5
+assert text café
+assert text Source 1:
+click surface:contributed role:button Source 1:
+settle 8
+wait-saved-reader 600
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+assert snap saved-reader-quote == The Pelican observatory's access word is café.
+capture 18_cold_exact_A1_citation
+record-saved-sources 18_cold_exact_A1_citation
+key escape
+omnibar actions
+type Switch to session R4 Oversize Three
+key enter
+settle 8
+act Ask saved sources
+settle 100
+act Maximize pane
+settle 5
+assert text This session has too much saved text for Answers.
+capture 19_oversize_publication_refused
+act Search saved sources
+type oversize saved marker
+wait-saved-sources 600
+assert suggestions == 1
+key enter
+wait-saved-reader 1200
+assert snap saved-reader-state == Ready
+assert snap saved-reader-quote == oversize saved marker
+capture 20_oversize_source_readable_offline
+record-saved-sources 20_oversize_source_readable_offline
+key escape
+omnibar actions
+type Switch to session R4 Private One
+key enter
+settle 100
+assert text Connected to resident inference.
+assert text 1 saved sources chosen
+act Save session
+log R4 cold reopen and independent resident process restart complete

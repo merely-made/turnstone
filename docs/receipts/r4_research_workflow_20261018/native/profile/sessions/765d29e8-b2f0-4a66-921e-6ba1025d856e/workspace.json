@@ -1,0 +1,137 @@
+{
+  "version": 2,
+  "layout": {
+    "id": "content",
+    "label": "content",
+    "root": {
+      "Workspace": {
+        "workspace": {
+          "tiled": {
+            "Split": {
+              "axis": "Row",
+              "children": [
+                {
+                  "fraction": 0.5,
+                  "tree": {
+                    "Split": {
+                      "axis": "Row",
+                      "children": [
+                        {
+                          "fraction": 0.5,
+                          "tree": {
+                            "Stack": {
+                              "tabs": [
+                                {
+                                  "id": 0,
+                                  "title": "Orrery",
+                                  "content": {
+                                    "Open": {
+                                      "kind": "turnstone.pane",
+                                      "id": "0"
+                                    }
+                                  },
+                                  "accent": null
+                                }
+                              ],
+                              "active": 0
+                            }
+                          }
+                        },
+                        {
+                          "fraction": 0.5,
+                          "tree": {
+                            "Stack": {
+                              "tabs": [
+                                {
+                                  "id": 2,
+                                  "title": "turnstone.answers",
+                                  "content": {
+                                    "Open": {
+                                      "kind": "turnstone.pane",
+                                      "id": "2"
+                                    }
+                                  },
+                                  "accent": null
+                                }
+                              ],
+                              "active": 0
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "fraction": 0.5,
+                  "tree": {
+                    "Stack": {
+                      "tabs": [
+                        {
+                          "id": 1,
+                          "title": "inspector",
+                          "content": {
+                            "Open": {
+                              "kind": "turnstone.pane",
+                              "id": "1"
+                            }
+                          },
+                          "accent": null
+                        }
+                      ],
+                      "active": 0
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "floating": []
+        },
+        "panes": {
+          "0": [
+            "Orrery",
+            "521f13a7-1e25-4524-9335-667f61639167"
+          ],
+          "1": [
+            "Inspector",
+            "521f13a7-1e25-4524-9335-667f61639167"
+          ],
+          "2": [
+            {
+              "Registered": "turnstone.answers"
+            },
+            "00000000-0000-0000-0000-000000000000"
+          ]
+        },
+        "descriptors": {
+          "2": {
+            "config": {
+              "payload": null,
+              "schema": "turnstone.answers.config",
+              "version": 1
+            },
+            "context": "Own",
+            "id": 2,
+            "kind": "turnstone.answers",
+            "source": {
+              "Fixed": {
+                "External": {
+                  "payload": {
+                    "payload": {
+                      "chosen": [],
+                      "session": "765d29e8-b2f0-4a66-921e-6ba1025d856e",
+                      "view": "2b73b63a-0476-407e-bc11-b1b6673beef5"
+                    },
+                    "version": 2
+                  },
+                  "schema": "turnstone.answers.v1"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

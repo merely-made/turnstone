@@ -1,0 +1,8 @@
+{
+  "utc": "2026-10-18T06:42:00.916243+00:00",
+  "prior_resident_exited": true,
+  "origin_refused_before_start": true,
+  "resident_endpoint_absent_before_start": true,
+  "source_read_observation": "seed/04_A1_search_read_no_origin_no_resident.saved-sources.json",
+  "source_read_sha256": "5fd19e7125121fc00997cab8d9b8b41012cf06569045c34bb05fc750a4d1c145"
+}

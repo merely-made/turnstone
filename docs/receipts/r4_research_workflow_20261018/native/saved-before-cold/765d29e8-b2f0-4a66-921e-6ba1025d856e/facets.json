@@ -1,0 +1,53 @@
+{
+  "nodes": {
+    "521f13a7-1e25-4524-9335-667f61639167": {
+      "scene.importance_metric": "degree",
+      "scene.physics_damping": 2.5,
+      "scene.size_by_degree": false,
+      "scene.size_by_importance": false
+    },
+    "ff4c48b7-4c83-4198-b682-3018038bf80f": {
+      "arrangement.position": {
+        "x": 11.967567443847656,
+        "y": 11.967567443847656
+      },
+      "capture.source-annotations/v1": [
+        "blake3:c7ce463daf4d5da7615276f01f0d0744eb65aad01b47257a9c66f1e4ec122ab0"
+      ],
+      "capture.source-requests/v1": [
+        {
+          "request": {
+            "graph": "521f13a7-1e25-4524-9335-667f61639167",
+            "id": "a6480bcf-e7d5-470d-b788-f3fe29578b45",
+            "keep": true,
+            "node": "ff4c48b7-4c83-4198-b682-3018038bf80f",
+            "session": "765d29e8-b2f0-4a66-921e-6ba1025d856e",
+            "source": {
+              "acquired_at_ms": 1792305672433,
+              "body_hash": "blake3:8fe5b8782fae34871b856f80ef567ca29c7cb19ea830756a815f0fdd7123de85",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:64648/Huge",
+              "hash": "blake3:8fe5b8782fae34871b856f80ef567ca29c7cb19ea830756a815f0fdd7123de85"
+            },
+            "url": "http://127.0.0.1:64648/Huge"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:c7ce463daf4d5da7615276f01f0d0744eb65aad01b47257a9c66f1e4ec122ab0",
+            "raw_manifest": "blake3:8fe5b8782fae34871b856f80ef567ca29c7cb19ea830756a815f0fdd7123de85"
+          }
+        }
+      ],
+      "chartulary.class": "turnstone.web-page",
+      "turnstone.controls.v1.keep": true,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792305672029
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:64648/Huge",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    }
+  }
+}

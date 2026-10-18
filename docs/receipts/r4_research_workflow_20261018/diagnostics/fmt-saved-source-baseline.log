@@ -1,0 +1,58 @@
+Diff in /Users/markik/Code/output/turnstone-r4-saved-source-arms-before.rs:234:
+                 {
+                     self.saved_sources.entries = entries;
+                     self.saved_sources.status = "Ready".into();
+-                },
++                }
+                 Ok(_) => {
+                     self.saved_sources.entries.clear();
+                     self.saved_sources.status =
+Diff in /Users/markik/Code/output/turnstone-r4-saved-source-arms-before.rs:241:
+                         "Saved source response does not match its admission".into();
+-                },
++                }
+                 Err(error) => {
+                     self.saved_sources.entries.clear();
+                     self.saved_sources.status = format!("Unavailable: {error}");
+Diff in /Users/markik/Code/output/turnstone-r4-saved-source-arms-before.rs:246:
+-                },
++                }
+             }
+         }
+         if self.omnibar.open && self.omnibar.mode == OmnibarMode::SavedSources {
+Diff in /Users/markik/Code/output/turnstone-r4-saved-source-arms-before.rs:272:
+             Ok(url) => {
+                 // A citation may originate in a maximized contributed Answers
+                 // pane. Reveal the existing graph-owned reader at its destination.
+-                let pane = self.focused_graph_pane().unwrap_or_else(|| self.default_graph_pane());
+-                if self.maximized.is_some() { self.maximized = Some(pane); }
++                let pane = self
++                    .focused_graph_pane()
++                    .unwrap_or_else(|| self.default_graph_pane());
++                if self.maximized.is_some() {
++                    self.maximized = Some(pane);
++                }
+                 self.active_pane = Some(pane);
+                 self.focus = crate::surface::FocusTarget::Graph(pane);
+                 self.open_address(url)
+Diff in /Users/markik/Code/output/turnstone-r4-saved-source-arms-before.rs:280:
+-            },
++            }
+             Err(error) => self.saved_source_refusal(error),
+         }
+     }
+Diff in /Users/markik/Code/output/turnstone-r4-saved-source-arms-before.rs:409:
+                 let mut effects = self.set_content_title(node, title);
+                 effects.push(Effect::SpawnContent { node, url });
+                 effects
+-            },
++            }
+             Err(error) => {
+                 reader.content = None;
+                 reader.error = Some(error.clone());
+Diff in /Users/markik/Code/output/turnstone-r4-saved-source-arms-before.rs:416:
+                 self.apply_update(Update::ContentFailed { node, error })
+-            },
++            }
+         }
+     }
