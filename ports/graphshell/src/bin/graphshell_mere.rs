@@ -8,14 +8,13 @@
 //! owns presentation only; its worker never opens persona files.
 use cambium::{AnyView, GenetCtx, GenetElement, el};
 use cambium_genet_winit_host::{AppCtx, HostOptions, Init, inert_hooks, run};
-use chirograph::{
-    CarrierRequestBody, CarrierResponseBody, ContentHash, PortableCardV1, ProjectionSnapshot,
-};
-use graphshell_endpoint::door::{
-    app_admission::{AppId, AppRouteId},
-    app_client::AppBrokerClient,
-};
-use mere_overmap::route as mere_route;
+use chirograph::PortableCardV1;
+#[path = "graphshell_mere/connection.rs"]
+mod connection;
+use connection::Connection;
+#[cfg(test)]
+#[path = "graphshell_mere/app_tests.rs"]
+mod app_tests;
 use mere_view::{
     HostAction, MereView, MereViewModel, MereViewRequest, MereViewState, StatusNote, ViewStatus,
 };
@@ -31,311 +30,13 @@ struct Reading {
     graph_epoch: u64,
     saved_focus: Option<String>,
     read_only: bool,
+    selected: Option<String>,
+    view_saved: bool,
 }
-struct Connection {
-    client: AppBrokerClient,
-    sessions: ProjectionSnapshot,
-    graph: ProjectionSnapshot,
-    archive: Option<ProjectionSnapshot>,
-    cards: HashMap<String, PortableCardV1>,
-    saved_view: pandect::ViewIntent,
-    read_only: bool,
-    /// The pending merge the resident discloses, and the choices made on it
-    /// here so far, by conflict key, until Apply sends them.
-    merge: Option<mere_overmap::wire::PendingMergeV1>,
-    merge_choices: std::collections::BTreeMap<String, mere_view::MergeOption>,
-    requests: (
-        chirograph::ProjectionRequest,
-        chirograph::ProjectionRequest,
-        Option<chirograph::ProjectionRequest>,
-    ),
-}
-impl Connection {
-    async fn open(domain: &str) -> Result<Self, String> {
-        let mut client = AppBrokerClient::open_route(
-            AppId::new("graphshell"),
-            AppRouteId::new(format!("mere/{domain}")).map_err(|e| e.to_string())?,
-        )
-        .await
-        .map_err(|e| e.to_string())?;
-        let descriptor = client
-            .open_session()
-            .await
-            .map_err(|e| e.to_string())?
-            .descriptor;
-        let (sessions, graph) = mere_route::requests(&descriptor)
-            .ok_or("The route offers no mere sessions and graph.")?;
-        let requests = (
-            sessions.clone(),
-            graph.clone(),
-            mere_route::archive_request(&descriptor),
-        );
-        let sessions = client.snapshot(sessions).await.map_err(|e| e.to_string())?;
-        let graph = client.snapshot(graph).await.map_err(|e| e.to_string())?;
-        let archive = if let Some(request) = mere_route::archive_request(&descriptor) {
-            Some(client.snapshot(request).await.map_err(|e| e.to_string())?)
-        } else {
-            None
-        };
-        Ok(Self {
-            client,
-            sessions,
-            graph,
-            archive,
-            requests,
-            cards: HashMap::new(),
-            saved_view: Default::default(),
-            read_only: false,
-            merge: None,
-            merge_choices: Default::default(),
-        })
-    }
-    async fn read(&mut self) -> Result<Reading, String> {
-        self.sessions = self
-            .client
-            .snapshot(self.requests.0.clone())
-            .await
-            .map_err(|e| e.to_string())?;
-        self.graph = self
-            .client
-            .snapshot(self.requests.1.clone())
-            .await
-            .map_err(|e| e.to_string())?;
-        self.archive = if let Some(request) = self.requests.2.clone() {
-            Some(
-                self.client
-                    .snapshot(request)
-                    .await
-                    .map_err(|e| e.to_string())?,
-            )
-        } else {
-            None
-        };
-        let mut bytes: HashMap<ContentHash, Vec<u8>> = HashMap::new();
-        for snapshot in [&self.sessions, &self.graph]
-            .into_iter()
-            .chain(self.archive.iter())
-        {
-            for request in mere_route::card_requests(snapshot) {
-                let content = self
-                    .client
-                    .resource(request.session, request.resource)
-                    .await
-                    .map_err(|e| e.to_string())?;
-                bytes.insert(request.resource, content);
-            }
-        }
-        let mut model = MereViewModel::default();
-        model.actions = vec![HostAction::new("refresh", "Refresh")];
-        model.layout = "spectral.default".into();
-        model.layouts = vec![
-            ("spectral.default".into(), "Spectral".into()),
-            ("grid.default".into(), "Grid".into()),
-            ("phyllotaxis.default".into(), "Spiral".into()),
-        ];
-        mere_route::fill(&mut model, &self.sessions, &self.graph, &bytes);
-        if let Some(archive) = &self.archive {
-            mere_route::fill_archive(&mut model, &self.sessions, archive, &bytes);
-        }
-        // A pending merge: its material, the carried and dropped choices of a
-        // new plan taken in once, and the choices made here kept.
-        let merge = match mere_route::merge_material_request(&self.sessions, &bytes) {
-            Some(request) => {
-                let material = self
-                    .client
-                    .resource(request.session, request.resource)
-                    .await
-                    .map_err(|e| e.to_string())?;
-                let merge: mere_overmap::wire::PendingMergeV1 =
-                    serde_json::from_slice(&material).map_err(|e| e.to_string())?;
-                if merge.schema != mere_overmap::wire::PENDING_MERGE_SCHEMA {
-                    return Err("The pending merge material has another schema.".into());
-                }
-                Some(merge)
-            },
-            None => None,
-        };
-        if merge != self.merge {
-            if let Some(merge) = &merge {
-                mere_route::adopt_merge(&mut self.merge_choices, merge);
-            }
-            self.merge = merge;
-        }
-        let pending: Vec<String> = self
-            .merge
-            .iter()
-            .flat_map(|merge| &merge.conflicts)
-            .map(|conflict| mere_route::conflict_key(&conflict.part))
-            .collect();
-        self.merge_choices.retain(|key, _| pending.contains(key));
-        let mut cards = mere_route::node_cards(&self.graph, &bytes);
-        if let Some(request) = mere_route::session_graph_request(&self.graph, &bytes) {
-            let material = self
-                .client
-                .resource(request.session, request.resource)
-                .await
-                .map_err(|e| e.to_string())?;
-            let material: mere_overmap::wire::SessionGraphV1 =
-                serde_json::from_slice(&material).map_err(|e| e.to_string())?;
-            let attached = model
-                .sessions
-                .iter()
-                .find(|entry| entry.attached)
-                .ok_or("The graph has no attached session.")?
-                .id;
-            if material.schema != mere_overmap::wire::SESSION_GRAPH_SCHEMA
-                || material.application != "graphshell"
-                || material.session != attached
-                || material.epoch != self.graph.scene.epoch
-                || material.revision != self.graph.scene.revision
-            {
-                return Err(
-                    "The disclosed records no longer match the selected session; refresh.".into(),
-                );
-            }
-            self.saved_view = material
-                .views
-                .get("graphshell.mere")
-                .cloned()
-                .unwrap_or_default();
-            if let Some(strategy) = &self.saved_view.strategy {
-                model.layout = strategy.clone();
-            }
-            self.read_only = material.read_only;
-            mere_route::add_node_facets(&mut cards, &material.facets)?;
-        }
-        mere_route::fill_merge(&mut model, self.merge.as_ref(), &self.merge_choices);
-        let saved_focus = self.saved_view.focus.as_ref().and_then(|focus| {
-            cards
-                .iter()
-                .find(|(_, card)| {
-                    card.values
-                        .iter()
-                        .any(|value| value.label == "Address" && &value.value == focus)
-                })
-                .map(|(key, _)| key.clone())
-        });
-        self.cards = cards.clone();
-        Ok(Reading {
-            saved_focus,
-            read_only: self.read_only,
-            model,
-            cards,
-            graph_epoch: self.graph.scene.epoch.0,
-        })
-    }
-    async fn take(&mut self, request: &MereViewRequest) -> Result<Option<String>, String> {
-        // A choice stays here until Apply sends them all.
-        if let MereViewRequest::Merge(mere_view::MergeRequest::Choose(key, option)) = request {
-            if !self.merge.as_ref().is_some_and(|merge| {
-                merge
-                    .conflicts
-                    .iter()
-                    .any(|conflict| &mere_route::conflict_key(&conflict.part) == key)
-            }) {
-                return Ok(Some("That conflict is no longer pending.".into()));
-            }
-            self.merge_choices.insert(key.clone(), option.clone());
-            return Ok(None);
-        }
-        let view_request = match request {
-            MereViewRequest::Activate(key) | MereViewRequest::Layout(key) => {
-                if self.read_only {
-                    return Ok(Some(
-                        "Viewing a read-only archive; this view is not saved.".into(),
-                    ));
-                }
-                let target = self
-                    .graph
-                    .scene
-                    .active_items_in_order()
-                    .into_iter()
-                    .find(|(_, item)| {
-                        self.graph.scene.tables.sources[item.source.0 as usize]
-                            .as_ref()
-                            .is_some_and(|source| {
-                                source.adapter == mere_overmap::wire::SESSION_ITEM_SOURCE
-                            })
-                    })
-                    .map(|(instance, _)| instance)
-                    .ok_or("The owner offers no view action.")?;
-                if !self
-                    .graph
-                    .presentation
-                    .offers_for(target)
-                    .is_some_and(|offers| {
-                        offers.iter().any(|offer| {
-                            offer.semantics.actions.iter().any(|action| {
-                                action.intent.0 == mere_overmap::wire::SET_VIEW_INTENT
-                            })
-                        })
-                    })
-                {
-                    return Ok(Some("The owner does not offer saving this view.".into()));
-                }
-                let mut view = self.saved_view.clone();
-                if matches!(request, MereViewRequest::Activate(_)) {
-                    let address = self
-                        .cards
-                        .get(key)
-                        .and_then(|card| card.values.iter().find(|value| value.label == "Address"))
-                        .map(|value| value.value.clone())
-                        .ok_or("The selected record is no longer disclosed.")?;
-                    view.focus = Some(address);
-                    view.strategy =
-                        Some(view.strategy.unwrap_or_else(|| "spectral.default".into()));
-                } else {
-                    view.strategy = Some(key.clone());
-                }
-                Some(chirograph::IntentInvocation {
-                    session: self.graph.session.clone(),
-                    target,
-                    observed_epoch: self.graph.scene.epoch,
-                    observed_revision: self.graph.scene.revision,
-                    intent: mere_overmap::wire::SET_VIEW_INTENT.into(),
-                    payload: serde_json::to_vec(&mere_overmap::wire::SetViewV1::new(
-                        "graphshell.mere",
-                        view,
-                    ))
-                    .map_err(|e| e.to_string())?,
-                })
-            },
-            _ => None,
-        };
-        let invocation = view_request
-            .or_else(|| mere_route::intent(request, &self.sessions))
-            .or_else(|| {
-                self.archive.as_ref().and_then(|archive| {
-                    mere_route::archive_intent(request, &self.sessions, archive)
-                })
-            })
-            .or_else(|| {
-                self.merge.as_ref().and_then(|merge| {
-                    mere_route::merge_intent(request, &self.sessions, merge, &self.merge_choices)
-                })
-            });
-        let Some(invocation) = invocation else {
-            if matches!(
-                request,
-                MereViewRequest::Merge(mere_view::MergeRequest::Apply)
-            ) && self.merge.is_some()
-            {
-                return Ok(Some("Choose for every conflict before applying.".into()));
-            }
-            return Ok(Some(
-                "The owner no longer offers that action; refresh the mere.".into(),
-            ));
-        };
-        match self
-            .client
-            .request_body(CarrierRequestBody::Intent(invocation))
-            .await
-            .map_err(|e| e.to_string())?
-        {
-            CarrierResponseBody::Intent(result) => Ok(mere_route::declined(&result)),
-            _ => Err("The resident did not answer the action.".into()),
-        }
-    }
+struct PendingActivation {
+    epoch: u64,
+    session: Option<pandect::SessionId>,
+    key: String,
 }
 struct App {
     model: MereViewModel,
@@ -346,52 +47,39 @@ struct App {
     sender: mpsc::Sender<MereViewRequest>,
     receiver: mpsc::Receiver<Result<Reading, String>>,
     pending: bool,
+    queued_activation: Option<PendingActivation>,
     events: Vec<String>,
     graph_epoch: u64,
     saved_focus: Option<String>,
-    saved_layout: String,
+    view_saved: bool,
     read_only: bool,
 }
 type Child = Box<dyn AnyView<App, (), GenetCtx, GenetElement>>;
 type Logic = fn(&App) -> Child;
 impl App {
     fn request(&mut self, request: MereViewRequest) {
-        match request {
-            MereViewRequest::Activate(key) => {
+        if let MereViewRequest::Activate(key) = &request {
+            if self.cards.contains_key(key) {
                 self.selected = Some(key.clone());
+                self.view_saved = false;
                 self.events.push(format!("selected {key}"));
-                if !self.pending && !self.read_only {
-                    self.pending = true;
-                    if self.sender.send(MereViewRequest::Activate(key)).is_err() {
-                        self.pending = false;
-                        self.model.notice = Some("The resident worker stopped.".into());
-                    }
-                }
-            },
-            MereViewRequest::Layout(layout) => {
                 if self.pending {
+                    self.queued_activation = Some(PendingActivation {
+                        epoch: self.graph_epoch,
+                        session: self.attached_session(),
+                        key: key.clone(),
+                    });
                     return;
                 }
-                self.model.layout = layout.clone();
-                self.relayout();
-                if !self.read_only {
-                    self.pending = true;
-                    if self.sender.send(MereViewRequest::Layout(layout)).is_err() {
-                        self.pending = false;
-                        self.model.notice = Some("The resident worker stopped.".into());
-                    }
-                }
-            },
-            request => {
-                if self.pending {
-                    return;
-                }
-                self.pending = true;
-                if self.sender.send(request).is_err() {
-                    self.pending = false;
-                    self.model.notice = Some("The resident worker stopped.".into());
-                }
-            },
+            }
+        }
+        if self.pending {
+            return;
+        }
+        self.pending = true;
+        if self.sender.send(request).is_err() {
+            self.pending = false;
+            self.model.notice = Some("The resident worker stopped.".into());
         }
     }
     fn drain(&mut self) {
@@ -399,33 +87,19 @@ impl App {
             self.pending = false;
             match answer {
                 Ok(reading) => {
-                    self.saved_layout = reading.model.layout.clone();
+                    self.view_saved = reading.view_saved;
                     self.read_only = reading.read_only;
                     self.saved_focus = reading.saved_focus;
-                    if self.selected.is_none() {
-                        self.selected = self.saved_focus.clone();
-                    }
+                    self.selected = reading.selected;
                     self.model = reading.model;
                     self.cards = reading.cards;
                     self.graph_epoch = reading.graph_epoch;
-                    if self
-                        .selected
-                        .as_ref()
-                        .is_some_and(|key| !self.cards.contains_key(key))
-                    {
-                        self.selected = None;
-                    }
-                    if self.selected.is_none() {
-                        self.selected = self
-                            .saved_focus
-                            .clone()
-                            .filter(|key| self.cards.contains_key(key));
-                    }
                     self.events.push("resident refreshed".into());
                 },
                 Err(reason) => {
+                    self.queued_activation = None;
                     self.saved_focus = None;
-                    self.saved_layout.clear();
+                    self.view_saved = false;
                     self.read_only = false;
                     self.graph_epoch = 0;
                     self.model.layout.clear();
@@ -445,8 +119,26 @@ impl App {
                     self.events.push("resident unavailable".into());
                 },
             }
+            // Keep a click responsive while the worker finishes its current
+            // operation, then let the shared controller handle the latest one.
+            // A different session epoch cannot inherit that pending selection.
+            if let Some(activation) = self.queued_activation.take() {
+                if activation.epoch == self.graph_epoch
+                    && activation.session == self.attached_session()
+                    && self.cards.contains_key(&activation.key)
+                {
+                    self.request(MereViewRequest::Activate(activation.key));
+                }
+            }
             self.relayout();
         }
+    }
+    fn attached_session(&self) -> Option<pandect::SessionId> {
+        self.model
+            .sessions
+            .iter()
+            .find(|entry| entry.attached)
+            .map(|entry| entry.id)
     }
     fn relayout(&mut self) {
         self.view
@@ -491,10 +183,7 @@ fn root(app: &App) -> Child {
                 .attr("aria-label", "Selected record"),
             el(
                 "p",
-                if app.selected.is_some()
-                    && app.selected == app.saved_focus
-                    && app.model.layout == app.saved_layout
-                {
+                if app.view_saved {
                     "View saved"
                 } else if app.selected.is_some() {
                     "View not saved"
@@ -547,13 +236,7 @@ impl Product for LaneProduct {
             )
             .with_field("selected", app.selected.clone().unwrap_or_default())
             .with_field("saved-focus", app.saved_focus.clone().unwrap_or_default())
-            .with_field(
-                "view-saved",
-                (app.selected.is_some()
-                    && app.saved_focus == app.selected
-                    && app.model.layout == app.saved_layout)
-                    .to_string(),
-            )
+            .with_field("view-saved", app.view_saved.to_string())
             .with_field(
                 "record",
                 app.selected
@@ -688,10 +371,11 @@ fn main() {
                 sender,
                 receiver,
                 pending: true,
+                queued_activation: None,
                 events: Vec::new(),
                 graph_epoch: 0,
                 saved_focus: None,
-                saved_layout: String::new(),
+                view_saved: false,
                 read_only: false,
             };
             Init {
@@ -752,17 +436,15 @@ fn spawn_worker(
                 };
                 if request.is_none() {
                     let notice = match &mut connection {
-                        Ok(connection) => {
-                            tokio::time::timeout(deadline, connection.client.take_notice())
-                                .await
-                                .map_err(|_| "The resident notice read timed out.".to_string())
-                                .and_then(|notice| notice.map_err(|e| e.to_string()))
-                        },
+                        Ok(connection) => tokio::time::timeout(deadline, connection.take_notice())
+                            .await
+                            .map_err(|_| "The resident notice read timed out.".to_string())
+                            .and_then(|notice| notice),
                         Err(_) => continue,
                     };
                     match notice {
-                        Ok(None) => continue,
-                        Ok(Some(_)) => {},
+                        Ok(false) => continue,
+                        Ok(true) => {},
                         Err(reason) => {
                             connection = Err(reason.clone());
                             if answers.send(Err(reason)).is_err() {
@@ -779,15 +461,10 @@ fn spawn_worker(
                 }
                 let answer = match &mut connection {
                     Ok(connection) => tokio::time::timeout(deadline, async {
-                        let notice = match request {
-                            Some(MereViewRequest::Host(ref key)) if key == "refresh" => None,
-                            Some(ref request) => connection.take(request).await?,
-                            None => None,
-                        };
-                        connection.read().await.map(|mut reading| {
-                            reading.model.notice = notice;
-                            reading
-                        })
+                        if let Some(request) = request {
+                            connection.take(request);
+                        }
+                        connection.read().await
                     })
                     .await
                     .unwrap_or_else(|_| Err("The resident operation timed out.".into())),
