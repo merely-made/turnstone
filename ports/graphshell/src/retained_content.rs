@@ -322,6 +322,8 @@ impl ContentSlot {
 pub struct ContentHost {
     registries: PeltRegistries<Scene>,
     slots: BTreeMap<Uuid, Rc<RefCell<ContentSlot>>>,
+    /// Segmenter dictionaries the host has loaded, handed to every lane session.
+    dictionaries: Vec<mere_document_lanes::DictionaryBlob>,
 }
 impl Default for ContentHost {
     fn default() -> Self {
@@ -371,7 +373,30 @@ impl ContentHost {
         Self {
             registries,
             slots: BTreeMap::new(),
+            dictionaries: Vec::new(),
         }
+    }
+    /// Hand loaded segmenter dictionaries to every open lane session and every
+    /// later one; a session whose text wanted them lays out again.
+    pub fn set_segmenter_dictionaries(
+        &mut self,
+        dictionaries: Vec<mere_document_lanes::DictionaryBlob>,
+    ) {
+        self.dictionaries = dictionaries;
+        for slot in self.slots.values() {
+            lane_dictionaries(&mut slot.borrow_mut().content, Some(&self.dictionaries));
+        }
+    }
+    /// Dictionaries the open lane sessions' text met without: what the host
+    /// should fetch and hand to [`Self::set_segmenter_dictionaries`].
+    pub fn wanted_segmenter_dictionaries(&self) -> mere_document_lanes::SegmenterDictionaries {
+        let mut wanted = mere_document_lanes::SegmenterDictionaries::default();
+        for slot in self.slots.values() {
+            let found = lane_dictionaries(&mut slot.borrow_mut().content, None);
+            wanted.southeast_asian |= found.southeast_asian;
+            wanted.chinese_japanese |= found.chinese_japanese;
+        }
+        wanted
     }
     pub fn get(&self, access: Uuid) -> Option<Rc<RefCell<ContentSlot>>> {
         self.slots.get(&access).cloned()
@@ -406,6 +431,10 @@ impl ContentHost {
         if content.document().is_none() {
             return Err("Retained content requires a registered document session".into());
         }
+        let mut content = content;
+        if !self.dictionaries.is_empty() {
+            lane_dictionaries(&mut content, Some(&self.dictionaries));
+        }
         let slot = Rc::new(RefCell::new(ContentSlot {
             content,
             source,
@@ -437,6 +466,32 @@ impl ContentHost {
             slot.borrow_mut().visible = false;
             slot.borrow_mut().content.set_hidden(true);
         }
+    }
+}
+
+/// Give a lane session `load`ed dictionaries, if any, and report what its
+/// text still wants. Livery sessions lay out through Genet and are skipped.
+fn lane_dictionaries(
+    content: &mut PeltContent<Scene>,
+    load: Option<&[mere_document_lanes::DictionaryBlob]>,
+) -> mere_document_lanes::SegmenterDictionaries {
+    let Some(controller) = content.document_mut() else {
+        return Default::default();
+    };
+    let session = controller.session_mut().as_any();
+    if let Some(doc) = session.downcast_mut::<mere_document_lanes::SmolwebDocumentSession>() {
+        let doc = doc.document_mut();
+        if let Some(load) = load {
+            doc.set_segmenter_dictionaries(load.to_vec());
+        }
+        doc.wanted_segmenter_dictionaries()
+    } else if let Some(doc) = session.downcast_mut::<mere_document_lanes::ReaderDocumentSession>() {
+        if let Some(load) = load {
+            doc.set_segmenter_dictionaries(load.to_vec());
+        }
+        doc.wanted_segmenter_dictionaries()
+    } else {
+        Default::default()
     }
 }
 

@@ -731,3 +731,48 @@ fn content_view_cancel_with_auxiliary_button_retires_actual_genet_press_before_r
             .is_some_and(|navigation| navigation.request.address == "https://held.example/target")
     }));
 }
+
+#[test]
+fn held_thai_text_asks_for_its_dictionary_and_lays_out_again_with_it() {
+    let mut host = ContentHost::default();
+    let access = Uuid::new_v4();
+    let thai = "ภาษาไทยเป็นภาษาที่มีระดับเสียงของคำแน่นอน ".repeat(40);
+    let slot = host
+        .open(access, HeldContent::text("mere://saved/thai", "Thai", thai))
+        .unwrap();
+    host.show_only(&[access]);
+    assert!(
+        host.wanted_segmenter_dictionaries().is_empty(),
+        "nothing laid out yet"
+    );
+    slot.borrow_mut().frame(300., 200., 1.).unwrap();
+    let wanted = host.wanted_segmenter_dictionaries();
+    assert!(
+        wanted.southeast_asian && !wanted.chinese_japanese,
+        "{wanted:?}"
+    );
+
+    let blob = mere_document_lanes::DictionaryBlob::new(
+        include_bytes!("../../web/dictionaries/segmenter-southeast-asian.dict").to_vec(),
+    )
+    .unwrap();
+    host.set_segmenter_dictionaries(vec![blob]);
+    slot.borrow_mut().frame(300., 200., 1.).unwrap();
+    assert!(
+        host.wanted_segmenter_dictionaries().is_empty(),
+        "the dictionary is held and the text laid out with it"
+    );
+    let later = Uuid::new_v4();
+    let other = host
+        .open(
+            later,
+            HeldContent::text("mere://saved/thai-2", "Thai", "ภาษาไทย ".repeat(40)),
+        )
+        .unwrap();
+    host.show_only(&[later]);
+    other.borrow_mut().frame(300., 200., 1.).unwrap();
+    assert!(
+        host.wanted_segmenter_dictionaries().is_empty(),
+        "later sessions get it too"
+    );
+}

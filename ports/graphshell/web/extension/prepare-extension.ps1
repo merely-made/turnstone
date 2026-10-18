@@ -31,6 +31,12 @@ Copy-Item -LiteralPath (Join-Path $webRoot "styles.css") -Destination $destinati
 foreach ($font in @("IBMPlexSans-Regular.ttf", "IBMPlexMono-Regular.ttf", "Newsreader-Regular.ttf", "OFL-IBMPlex.txt", "OFL-Newsreader.txt")) {
   Copy-Item -LiteralPath (Join-Path $webRoot $font) -Destination $destinationPath
 }
+# Segmenter dictionaries the page fetches when reading text needs them.
+$dictionaries = Join-Path $destinationPath "dictionaries"
+New-Item -ItemType Directory -Force -Path $dictionaries | Out-Null
+foreach ($file in @("segmenter-southeast-asian.dict", "segmenter-chinese-japanese.dict", "LICENSE-Unicode.txt")) {
+  Copy-Item -LiteralPath (Join-Path (Join-Path $webRoot "dictionaries") $file) -Destination $dictionaries
+}
 Copy-Item -LiteralPath (Join-Path $webRoot "loader.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $webRoot "mount.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $webRoot "extension-profile.js") -Destination $destinationPath

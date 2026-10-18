@@ -75,7 +75,91 @@ pub(super) struct Reading {
     players: BTreeMap<Uuid, MediaPlayer>,
     media_answers: BTreeMap<Uuid, (u64, Rc<RefCell<Option<String>>>)>,
     requests: Vec<(Uuid, String)>,
+    dictionaries: Dictionaries,
 }
+
+/// Segmenter dictionaries fetched beside the page when reading text needs
+/// them, rather than compiled into it (Thai, Lao, Khmer and Burmese breaking;
+/// Chinese and Japanese word boundaries).
+#[derive(Default)]
+struct Dictionaries {
+    requested: mere_document_lanes::SegmenterDictionaries,
+    held: Vec<mere_document_lanes::DictionaryBlob>,
+    arrived: Rc<RefCell<Vec<Result<mere_document_lanes::DictionaryBlob, String>>>>,
+    in_flight: usize,
+}
+
+impl Dictionaries {
+    const SOUTHEAST_ASIAN: &str = "dictionaries/segmenter-southeast-asian.dict";
+    const CHINESE_JAPANESE: &str = "dictionaries/segmenter-chinese-japanese.dict";
+
+    /// Fetch what `host`'s sessions want and nobody has asked for; hand
+    /// arrivals to the host. True when a session must lay out again.
+    fn poll(&mut self, host: &mut ContentHost) -> bool {
+        let arrived: Vec<_> = self.arrived.borrow_mut().drain(..).collect();
+        let mut loaded = false;
+        for result in arrived {
+            self.in_flight -= 1;
+            match result {
+                Ok(blob) => {
+                    self.held.push(blob);
+                    loaded = true;
+                },
+                Err(error) => web_sys::console::warn_1(&error.into()),
+            }
+        }
+        if loaded {
+            host.set_segmenter_dictionaries(self.held.clone());
+        }
+        let wanted = host
+            .wanted_segmenter_dictionaries()
+            .missing_from(self.requested);
+        for (want, url) in [
+            (wanted.southeast_asian, Self::SOUTHEAST_ASIAN),
+            (wanted.chinese_japanese, Self::CHINESE_JAPANESE),
+        ] {
+            if want {
+                self.fetch(url);
+            }
+        }
+        self.requested.southeast_asian |= wanted.southeast_asian;
+        self.requested.chinese_japanese |= wanted.chinese_japanese;
+        loaded
+    }
+
+    fn fetch(&mut self, url: &'static str) {
+        self.in_flight += 1;
+        let arrived = self.arrived.clone();
+        wasm_bindgen_futures::spawn_local(async move {
+            let result = fetch_bytes(url)
+                .await
+                .and_then(|bytes| {
+                    mere_document_lanes::DictionaryBlob::new(bytes).map_err(|e| e.to_string())
+                })
+                .map_err(|error| format!("segmenter dictionary {url}: {error}"));
+            arrived.borrow_mut().push(result);
+        });
+    }
+}
+
+async fn fetch_bytes(url: &str) -> Result<Vec<u8>, String> {
+    use wasm_bindgen::JsCast;
+    let window = web_sys::window().ok_or("no browser window")?;
+    let response = wasm_bindgen_futures::JsFuture::from(window.fetch_with_str(url))
+        .await
+        .map_err(|_| "fetch failed")?
+        .dyn_into::<web_sys::Response>()
+        .map_err(|_| "not a response")?;
+    if !response.ok() {
+        return Err(format!("HTTP {}", response.status()));
+    }
+    let buffer =
+        wasm_bindgen_futures::JsFuture::from(response.array_buffer().map_err(|_| "no body")?)
+            .await
+            .map_err(|_| "body read failed")?;
+    Ok(js_sys::Uint8Array::new(&buffer).to_vec())
+}
+
 impl Default for Reading {
     fn default() -> Self {
         Self {
@@ -99,6 +183,7 @@ impl Default for Reading {
             players: Default::default(),
             media_answers: Default::default(),
             requests: Default::default(),
+            dictionaries: Default::default(),
         }
     }
 }
@@ -330,7 +415,7 @@ impl Reading {
         }
     }
     pub(super) fn poll(&mut self) -> bool {
-        let mut changed = false;
+        let mut changed = self.dictionaries.poll(&mut self.host);
         self.download_urls
             .retain(|_, url| js_sys::Date::now() < url.revoke_at);
         // While a product operation owns the app asynchronously, retain the
@@ -512,7 +597,10 @@ impl Reading {
         changed
     }
     pub(super) fn busy(&self) -> bool {
-        !self.clips.is_empty() || !self.media_answers.is_empty() || !self.exports.is_empty()
+        !self.clips.is_empty()
+            || !self.media_answers.is_empty()
+            || !self.exports.is_empty()
+            || self.dictionaries.in_flight > 0
     }
     fn export_scope(&self, access: Uuid) -> Option<ClipExportScope> {
         let binding = self.bindings.get(&access)?;

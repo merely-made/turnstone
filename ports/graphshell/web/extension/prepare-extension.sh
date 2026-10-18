@@ -30,6 +30,9 @@ cp "$web_root/styles.css" "$destination_path/styles.css"
 for font in IBMPlexSans-Regular.ttf IBMPlexMono-Regular.ttf Newsreader-Regular.ttf OFL-IBMPlex.txt OFL-Newsreader.txt; do
   cp "$web_root/$font" "$destination_path/$font"
 done
+# Segmenter dictionaries the page fetches when reading text needs them.
+mkdir -p "$destination_path/dictionaries"
+cp "$web_root/dictionaries/"*.dict "$web_root/dictionaries/LICENSE-Unicode.txt" "$destination_path/dictionaries/"
 cp "$web_root/loader.js" "$destination_path/loader.js"
 cp "$web_root/mount.js" "$destination_path/mount.js"
 cp "$web_root/extension-profile.js" "$destination_path/extension-profile.js"
