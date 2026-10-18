@@ -22,7 +22,7 @@ pub fn scene_producer<T: PreviewScene>(
     preview: Rc<RefCell<T>>,
     raster_key: u64,
 ) -> SceneProducer<T> {
-    SceneProducer::new(preview, raster_key, T::frame, T::revision, |source| {
+    SceneProducer::new_checked(preview, raster_key, T::try_frame, T::revision, |source| {
         Some(ProducerSemantics {
             role: Some(ProducerRole::Image),
             name: Some(source.accessible_name().to_owned()),
