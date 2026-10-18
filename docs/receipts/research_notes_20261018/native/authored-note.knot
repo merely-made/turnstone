@@ -1,0 +1,14 @@
+# Research note
+
+
+My authored A1 commentary.
+
+```knot.clip.provenance
+{"discovered_edges":[],"evidence":[{"canonical_uri":"mere://saved-source/db116fc6-6f3b-422d-9319-9a5d5bfebfcb/d42abf62-1652-4a5c-b8be-a75736cf40e0/276f6e7a-ca67-4c33-b59d-6de56b749ff4/570a63fd6db9343bc52bd5c29d82e5bc5c55fb2adc3792630d061b57bbe79399/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275","content":{"byte_size":47,"portable_id":"ni:///sha-256;2TbMj6QfnEcYi0868aagla2tnWB3mRr01Iqc2SFk1RM","transport":"blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275"},"media_type":"text/plain; charset=utf-8; profile=saved-source","role":"observed-representation"}],"fidelity":[{"class":"arrangement-unchecked","detail":"The semantic lowering did not compare computed layout."}],"schema":"knot.clip.insert/v2","selectors":[{"artifact_role":"observed-representation","end":45,"start":41,"type":"text-position"},{"artifact_role":"observed-representation","exact":"café","type":"text-quote"}],"source_url":"mere://saved-source/db116fc6-6f3b-422d-9319-9a5d5bfebfcb/d42abf62-1652-4a5c-b8be-a75736cf40e0/276f6e7a-ca67-4c33-b59d-6de56b749ff4/570a63fd6db9343bc52bd5c29d82e5bc5c55fb2adc3792630d061b57bbe79399/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=41&end=45","title":"Source A"}
+```
+
+# Source A
+
+café
+
+[Read saved passage: Source A](mere://saved-source/db116fc6-6f3b-422d-9319-9a5d5bfebfcb/d42abf62-1652-4a5c-b8be-a75736cf40e0/276f6e7a-ca67-4c33-b59d-6de56b749ff4/570a63fd6db9343bc52bd5c29d82e5bc5c55fb2adc3792630d061b57bbe79399/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=41&end=45)

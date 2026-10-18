@@ -1,0 +1,32 @@
+settle 20
+key escape
+act New session
+settle 5
+act Rename session
+type Authored research
+key enter
+act New research note
+settle 20
+settle 10
+assert content-live
+capture 01_new_note
+click surface:knot role:textbox
+key end
+key enter
+insert My authored A1 commentary.
+key ctrl+s
+settle 30
+assert text saved
+capture 02_authored_note
+act New research note
+settle 20
+settle 10
+click surface:knot role:textbox
+key end
+key enter
+insert Other note stays independent.
+key ctrl+s
+settle 30
+capture 03_other_note
+act Save session
+settle 20

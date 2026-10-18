@@ -454,6 +454,11 @@ pub enum Action {
     SummonPane(PaneKindId),
     /// Ask over this browsing session through the resident inference route.
     OpenAnswers,
+    NewResearchNote,
+    OpenResearchNote,
+    ChooseResearchNote { choice: crate::app::research_note_arms::NoteChoice },
+    CommitResearchNote { choice: crate::app::research_note_arms::NoteChoice },
+    ResearchNoteCreated { generation: uuid::Uuid, address: String },
     SetAnswerSelection {
         generation: uuid::Uuid,
         expected: crate::inference_surface::AnswerSourceV2,
@@ -738,6 +743,8 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ),
         ("Search saved sources", Action::SearchSavedSources),
         ("Ask saved sources", Action::OpenAnswers),
+        ("New research note", Action::NewResearchNote),
+        ("Open research note", Action::OpenResearchNote),
         (
             "Open Sky reference",
             Action::SummonContributedPane {
@@ -990,6 +997,8 @@ pub enum Effect {
     ChooseKnotDocumentFile {
         read_only: bool,
     },
+    CreateResearchNote { generation: uuid::Uuid },
+    ChooseResearchNote { choice: crate::app::research_note_arms::NoteChoice },
     ChooseClipPackageFile,
     ImportClipPackage(std::path::PathBuf),
     ChooseClipExportFile {

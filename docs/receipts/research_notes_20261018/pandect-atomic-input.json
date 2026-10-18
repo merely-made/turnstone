@@ -1,0 +1,6 @@
+{
+  "supplier_commit": "500bc78a7fa9e0b9abe8f35d189c465f93d3ccab",
+  "source": "crates/system/pandect/src/atomic_file.rs",
+  "sha256": "fea4a90ad91bfa08c168d7958d07a55fa2176d0c45730f91f115f9cabfd857cf",
+  "gate": "standalone source file unit tests; std-only module compiled with Rust 1.99.1, not the full Pandect crate"
+}

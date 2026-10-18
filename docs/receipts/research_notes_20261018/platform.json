@@ -1,0 +1,13 @@
+{
+  "os": "ProductName:\t\tmacOS\nProductVersion:\t\t15.8.1\nBuildVersion:\t\t24H32\n",
+  "architecture": "x86_64",
+  "compiler": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+  "displays": [
+    {
+      "_name": "kHW_AMDRadeonProVega56Item",
+      "sppci_model": "Radeon Pro Vega 56",
+      "spdisplays_vram": "8 GB",
+      "spdisplays_vendor": "sppci_vendor_amd"
+    }
+  ]
+}

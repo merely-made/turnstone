@@ -55,6 +55,7 @@ mod inspector_pane;
 mod inline_pane;
 mod inspector_view;
 mod knot_authoring;
+mod knot_saved_citations;
 pub mod knot_document_surface;
 pub mod launch;
 pub mod nomadnet;

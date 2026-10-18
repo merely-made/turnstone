@@ -1,0 +1,13 @@
+RESULT fail
+captured 06_saved_passage
+FAIL: assert text 'Knot clip: clip saved': not on any surface
+captured 07_clip_saved
+captured 08_note_and_citation
+captured 09_follow_exact_citation
+captured 11_old_A1_after_A2
+presentation frames=333 captures=5 blank=0
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-01/seed/06_saved_passage.png digest=f5febfc15e0c918f blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-01/seed/07_clip_saved.png digest=a0129a3307467b2a blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-01/seed/08_note_and_citation.png digest=9151f65bb130d33f blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-01/seed/09_follow_exact_citation.png digest=5c20d025bfc2b3db blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-01/seed/11_old_A1_after_A2.png digest=5c20d025bfc2b3db blank=false

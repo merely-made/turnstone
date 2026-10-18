@@ -2208,6 +2208,44 @@ mod research_owner_tests {
     use crate::inference_service::RetainedSourceOwner;
 
     #[test]
+    #[ignore = "requires an exited headed research-note profile"]
+    fn independently_inspect_exited_research_notes() {
+        let root = PathBuf::from(std::env::var_os("TURNSTONE_NOTES_PROFILE").expect("profile"));
+        let observation:serde_json::Value = serde_json::from_slice(&std::fs::read(std::env::var_os("TURNSTONE_NOTES_OBSERVATION").expect("source observation")).unwrap()).unwrap();
+        let admissions:Vec<crate::saved_sources::Admission> = serde_json::from_value(observation["admissions"].clone()).unwrap();
+        let mut source_store = FjallStore::open(root.join("sessions").join(observation["session"].as_str().unwrap()).join("memory")).unwrap();
+        let entries = saved_sources::load(&mut source_store, &admissions);
+        assert!(entries.iter().all(|e| e.error.is_none()));
+        let retained = knot::BlobClipEvidenceStore::open(root.join("knot-evidence"),65536).unwrap();
+        let runtime=tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+        let mut reports=Vec::new();
+        for file in std::fs::read_dir(root.join("notes")).unwrap() {
+            let path=file.unwrap().path();
+            let source=std::fs::read_to_string(&path).unwrap();
+            let citations=knot::clip_citations(source.as_bytes()).unwrap();
+            if citations.is_empty() {assert!(source.contains("Other note stays independent."));continue;}
+            assert!(source.contains("My authored A1 commentary."));
+            assert_eq!(citations.len(),1);
+            for citation in citations {
+                let target=crate::saved_sources::parse_address(&citation.source_url).unwrap().unwrap();
+                let entry=entries.iter().find(|e| e.admission.key==target.key).unwrap();
+                let content=entry.content.as_ref().unwrap();
+                let quote=crate::saved_sources::validate_selector(content,&target).unwrap().unwrap();
+                assert_eq!(quote,"café");
+                assert_eq!(content.text,"The Pelican observatory's access word is café.");
+                let reference=&citation.evidence[0];
+                let bytes=runtime.block_on(retained.blob_store().get_bytes(reference.blob_hash().unwrap())).unwrap();
+                assert_eq!(bytes.as_ref(),content.text.as_bytes());
+                assert_eq!(citation.read_passage(0,&bytes).unwrap(),quote);
+                let mut corrupt=bytes.to_vec();corrupt[0]^=1;assert!(citation.read_passage(0,&corrupt).is_err());
+                reports.push(serde_json::json!({"note":path.file_name().unwrap(),"source_url":citation.source_url,"target":target,"evidence":reference,"quote":quote,"verified_against_turnstone_capture":true,"portable_and_transport_hashes_verified":true,"corrupt_bytes_refused":true}));
+            }
+        }
+        assert_eq!(reports.len(),1);
+        std::fs::write(std::env::var_os("TURNSTONE_NOTES_STORE_RECEIPT").expect("receipt"),serde_json::to_vec_pretty(&serde_json::json!({"result":"pass","independent_after_app_exit":true,"citations":reports})).unwrap()).unwrap();
+    }
+
+    #[test]
     #[ignore = "requires an exited R4 headed profile and an output receipt path"]
     fn independently_inspect_exited_research_profile() {
         let root = PathBuf::from(std::env::var_os("TURNSTONE_R4_PROFILE").expect("R4 profile"));

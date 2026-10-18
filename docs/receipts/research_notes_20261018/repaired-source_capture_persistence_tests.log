@@ -1,0 +1,30 @@
+
+running 25 tests
+test app::source_capture_persistence_tests::deliberate_identical_capture_requests_remain_distinct_ordered_occurrences ... ok
+test app::source_capture_persistence_tests::detached_request_ledger_refuses_an_otherwise_successful_late_acknowledgement ... ok
+test app::source_capture_persistence_tests::disappeared_live_response_is_refused_but_verified_recovered_receipt_can_retry_offline ... ok
+test app::source_capture_persistence_tests::failed_receipt_acknowledgement_reopens_and_retries_historical_attachment_after_navigation ... ok
+test app::source_capture_persistence_tests::missing_sole_reference_refuses_save_retry_and_late_ack_without_repairing_the_ledger ... ok
+test app::source_capture_persistence_tests::navigation_after_required_save_preserves_historical_capture_acknowledgement_and_revalidation ... ok
+test app::source_capture_persistence_tests::one_of_two_identical_manifest_references_cannot_satisfy_both_request_occurrences ... ok
+test app::source_capture_persistence_tests::queued_capture_updates_from_a_prior_opening_cannot_requalify_a_warm_reopened_session ... ok
+test app::source_capture_persistence_tests::real_fjall_capture_failure_retry_and_reopen_cross_abrupt_process_exits ... ok
+test app::source_capture_persistence_tests::receipt_acknowledgement_failure_can_retry_same_saved_attachment_without_live_response ... ok
+test app::source_capture_persistence_tests::recovered_receipt_retries_partial_facet_graph_write_without_duplicate_attachment ... ok
+test app::source_capture_persistence_tests::recovery_inventory_cannot_override_in_flight_or_differently_bound_requests ... ok
+test app::source_capture_persistence_tests::replaced_response_at_same_address_cannot_complete_an_earlier_request ... ok
+test app::source_capture_persistence_tests::required_file_write_failure_is_attributable_and_retry_preserves_previous_evidence ... ok
+test app::source_capture_persistence_tests::session_adoption_requires_explicit_retry_for_unfinished_capture_operations ... ok
+test app::source_capture_persistence_tests::session_fork_carries_evidence_and_foreign_facets_without_copying_capture_operation_admission ... ok
+test app::source_capture_persistence_tests::source_capture_failure_retry_and_second_reopen_cross_fresh_processes ... ok
+test app::source_capture_persistence_tests::source_capture_real_stack_process_worker ... ok
+test app::source_capture_persistence_tests::source_capture_save_process_boundary_worker ... ok
+test app::source_capture_persistence_tests::source_capture_success_waits_for_owning_save_and_duplicate_completions_are_idempotent ... ok
+test app::source_capture_persistence_tests::stale_target_or_wrong_session_never_attaches_or_acknowledges_saved ... ok
+test app::source_capture_persistence_tests::unsolicited_or_substituted_deposit_and_save_completions_are_rejected ... ok
+test app::source_capture_persistence_tests::warm_reopen_cannot_retain_saved_when_inventory_fails_or_the_store_never_answers ... ok
+test app::source_capture_persistence_tests::warm_reopen_with_intact_artifact_receipt_demotes_saved_when_owning_attachment_is_detached ... ok
+test app::source_capture_persistence_tests::warm_session_reopen_demotes_failed_fresh_verification_and_preserves_original_retry_identity ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 1064 filtered out; finished in 29.53s
+

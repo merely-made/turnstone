@@ -30,7 +30,14 @@ use crate::inspector_view::{InspectorSection, inspector_member, inspector_sectio
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum InspectorIntent {
-    ClipToKnot,
+    ClipToKnot {
+        offer: uuid::Uuid,
+    },
+    NewResearchNote,
+    OpenResearchNote,
+    ChooseResearchNote {
+        choice: crate::app::research_note_arms::NoteChoice,
+    },
     CaptureSourceDocument {
         target: crate::source_capture::SourceCaptureTarget,
     },
@@ -49,8 +56,10 @@ struct InspectorState {
     viewer_options: Vec<crate::inspector_controls::ViewerOption>,
     capabilities: Vec<String>,
     clip_target: Option<String>,
-    clip_source_available: bool,
+    clip_offer: Option<uuid::Uuid>,
     clip_status: String,
+    saved_passage: bool,
+    note_choice: Option<crate::app::research_note_arms::NoteChoice>,
     source_target: Option<crate::source_capture::SourceCaptureTarget>,
     source_status: String,
     source_unavailable: String,
@@ -174,26 +183,37 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
             )
         })
         .collect();
-    let clip_label = match (&state.clip_target, state.clip_source_available) {
-        (Some(target), true) => format!("Clip document to {target}"),
-        (None, _) => "Knot clipping is not configured".into(),
-        (Some(_), false) => "This document cannot supply a clip".into(),
+    let clip_label = match (&state.clip_target, state.clip_offer.is_some()) {
+        (Some(target), true) => format!(
+            "Clip {} to {target}",
+            if state.saved_passage {
+                "saved passage"
+            } else {
+                "document"
+            }
+        ),
+        (None, _) => "Create or choose a research note first".into(),
+        (Some(_), false) => "Clip unavailable; see status below".into(),
     };
     let clip_status = el::<_, InspectorState, InspectorIntent>(
         "div",
         format!("Knot clip: {}", state.clip_status),
     )
     .attr("class", "detail-value");
+    let offered_clip = state.clip_offer;
     let clip_button = button(
         clip_label,
-        |state: &mut InspectorState, _click: PointerClick| {
-            (state.clip_target.is_some() && state.clip_source_available)
-                .then_some(InspectorIntent::ClipToKnot)
+        move |state: &mut InspectorState, _click: PointerClick| {
+            state
+                .clip_target
+                .as_ref()
+                .and(offered_clip)
+                .map(|offer| InspectorIntent::ClipToKnot { offer })
         },
     )
     .attr(
         "class",
-        if state.clip_target.is_some() && state.clip_source_available {
+        if state.clip_target.is_some() && state.clip_offer.is_some() {
             "list-row action"
         } else {
             "list-row muted"
@@ -201,7 +221,7 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
     )
     .attr(
         "aria-disabled",
-        if state.clip_target.is_some() && state.clip_source_available {
+        if state.clip_target.is_some() && state.clip_offer.is_some() {
             "false"
         } else {
             "true"
@@ -268,16 +288,62 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
         el::<_, InspectorState, InspectorIntent>(
             "div",
             (
-                el::<_, InspectorState, InspectorIntent>("div", "Viewer")
-                    .attr("class", "list-section-title"),
-                viewer,
                 el::<_, InspectorState, InspectorIntent>("div", "Document controls")
                     .attr("class", "list-section-title"),
-                capabilities,
+                el::<_, InspectorState, InspectorIntent>(
+                    "div",
+                    format!(
+                        "Research note: {}",
+                        state
+                            .clip_target
+                            .as_deref()
+                            .unwrap_or("choose or create a note")
+                    ),
+                )
+                .attr("class", "detail-value")
+                .attr("style", "overflow-wrap: anywhere;"),
+                el(
+                    "div",
+                    (
+                        button("New research note", |_: &mut InspectorState, _| {
+                            InspectorIntent::NewResearchNote
+                        }),
+                        button("Open research note", |state: &mut InspectorState, _| {
+                            state
+                                .clip_target
+                                .as_ref()
+                                .map(|_| InspectorIntent::OpenResearchNote)
+                        }),
+                        {
+                            let choice = state.note_choice.clone();
+                            button(
+                                "Use this Knot document as research note",
+                                move |_: &mut InspectorState, _| {
+                                    choice.clone().map(|choice| {
+                                        InspectorIntent::ChooseResearchNote { choice }
+                                    })
+                                },
+                            )
+                            .attr(
+                                "style",
+                                if state.note_choice.is_some() {
+                                    ""
+                                } else {
+                                    "display: none;"
+                                },
+                            )
+                        },
+                    ),
+                )
+                .attr("style", "display: flex; flex-wrap: wrap; gap: 4px;"),
                 clip_status,
                 clip_button,
                 source_button,
                 source_status,
+                capabilities,
+                el::<_, InspectorState, InspectorIntent>("div", "Viewer")
+                    .attr("class", "list-section-title"),
+                viewer,
                 detail_panel(&sections),
             ),
         )
@@ -295,6 +361,7 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
 /// The Inspector pane: a retained cambium runner over the detail sections.
 /// Held by the shell like the other panes.
 pub struct InspectorPane {
+    admission: uuid::Uuid,
     dom: DomHandle,
     runner: InspectorRunner,
     scroll: crate::ui::PaneScroll,
@@ -307,6 +374,10 @@ pub struct InspectorPane {
 }
 
 impl InspectorPane {
+    pub(crate) fn admission(&self) -> uuid::Uuid {
+        self.admission
+    }
+
     pub fn new() -> Self {
         Self::new_in(None)
     }
@@ -327,8 +398,10 @@ impl InspectorPane {
             }],
             capabilities: Vec::new(),
             clip_target: None,
-            clip_source_available: false,
+            clip_offer: None,
+            note_choice: None,
             clip_status: "unconfigured".into(),
+            saved_passage: false,
             source_target: None,
             source_status: "Unavailable: No source member".into(),
             source_unavailable: String::new(),
@@ -344,6 +417,7 @@ impl InspectorPane {
             state,
         );
         Self {
+            admission: uuid::Uuid::new_v4(),
             mount: mount.clone(),
             dom,
             runner,
@@ -419,7 +493,7 @@ impl InspectorPane {
         pane_w: f32,
         pane_h: f32,
         clip_target: Option<&str>,
-        clip_source_available: bool,
+        clip_offer: Option<uuid::Uuid>,
         clip_status: &str,
     ) {
         let sections = inspector_sections_for_pane(app, pane_id);
@@ -431,6 +505,17 @@ impl InspectorPane {
         let synced_viewer =
             crate::inspector_controls::index_for_viewer(&viewer_options, saved_viewer);
         let capabilities = crate::inspector_controls::capabilities(app, member);
+        let note_choice = member
+            .and_then(|member| app.note_choice(member))
+            .filter(|choice| {
+                app.content
+                    .facts(choice.member)
+                    .is_some_and(|f| f.engine == crate::knot_authoring::ENGINE_ID)
+                    && app
+                        .knot_documents()
+                        .iter()
+                        .any(|d| d.address == choice.address && d.status == "local")
+            });
         let source_target = member.and_then(|member| app.source_capture_target(member).ok());
         let source_status = app.source_capture_status(member);
         let source_unavailable = member
@@ -444,13 +529,17 @@ impl InspectorPane {
             state.radio.focus_request = None;
             state.viewer_options = viewer_options;
             state.capabilities = capabilities;
+            state.note_choice = note_choice;
             state.source_target = source_target;
             state.source_status = source_status;
             state.source_unavailable = source_unavailable;
             state.sections = sections;
             state.clip_target = clip_target.map(str::to_string);
-            state.clip_source_available = clip_source_available;
+            state.clip_offer = clip_offer;
             state.clip_status = clip_status.to_string();
+            state.saved_passage = member
+                .and_then(|m| app.content.facts(m))
+                .is_some_and(|f| f.engine == crate::saved_sources::ENGINE_ID);
             state.viewport_w = pane_w;
             state.viewport_h = pane_h;
         });

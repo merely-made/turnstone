@@ -70,6 +70,38 @@ pub struct Hit {
     pub excerpt: String,
 }
 
+/// Clip the exact canonical version and scalar range already held by the
+/// private reader. Its bytes are a derived observed representation, never a
+/// fabricated raw HTTP response. Knot owns their subsequent retention.
+pub fn clip(content: &Content, target: &Target) -> Result<inker::DocumentClip, String> {
+    let quote = validate_selector(content, target)?
+        .ok_or("Choose an exact saved passage before clipping to a research note.")?;
+    let selector = target
+        .selector
+        .as_ref()
+        .ok_or("The saved passage has no range.")?;
+    let mut whole = target.clone();
+    whole.selector = None;
+    Ok(inker::DocumentClip {
+        source_url: address(target)?,
+        title: Some(content.title.clone()),
+        text: quote,
+        selector: Some(
+            serde_json::json!({
+                "type":"text-position", "start":selector.start, "end":selector.end
+            })
+            .to_string(),
+        ),
+        links: Vec::new(),
+        artifacts: vec![inker::DocumentClipArtifact {
+            role: inker::DocumentClipArtifactRole::ObservedRepresentation,
+            media_type: "text/plain; charset=utf-8; profile=saved-source".into(),
+            canonical_uri: address(&whole)?,
+            bytes: content.text.as_bytes().to_vec(),
+        }],
+    })
+}
+
 /// Return one hit per admitted source identity, preserving first occurrence
 /// order for list mode and result tie ordering. Search is exact-case substring
 /// matching over canonical text; selectors count Unicode scalar values.

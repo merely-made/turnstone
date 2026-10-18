@@ -25,8 +25,6 @@ use cambium::{
     AnyView, CompositionEvent, DomHandle, GenetAppRunner, GenetCtx, GenetElement, Key, KeyEvent,
     NamedKey, PointerClick, StyleRange, button, el, lens, styled_textarea,
 };
-use genet_scripted_dom::ScriptedDom;
-use graphshell_client::{ResolvedContent, ResolvedPresentation, RetainedEndpointSession};
 use chirograph::{
     AdvertisedAction, CapabilityProfile, DerivedTextV1, EDITABLE_TEXT_SAVE_INTENT, EditableTextV1,
     InsertKnotClipV1, InsertKnotClipV2, IntentResult, KNOT_BLOCK_RUN_INTENT,
@@ -34,6 +32,8 @@ use chirograph::{
     KnotClipArtifactRoleV1, KnotClipArtifactV1, KnotClipFidelityV1, KnotClipObservedEdgeV1,
     KnotClipSelectorV1, KnotEffectV1, PresentationCapability, ProjectionSession, SaveTextV1,
 };
+use genet_scripted_dom::ScriptedDom;
+use graphshell_client::{ResolvedContent, ResolvedPresentation, RetainedEndpointSession};
 use inker::{
     ContentReport, DocumentSession, OutlineEntry, SessionButtonState, SessionClick, SessionEffect,
     SessionEngine, SessionError, SessionIme, SessionKey, SessionLink, SessionModifiers,
@@ -82,6 +82,8 @@ pub(crate) const KNOT_SHEET: &str = "\
                  border: 1px solid rgb(52, 62, 86); padding: 3px 10px; } \
     .knot-effect { color: rgb(103, 184, 235); background-color: rgb(28, 34, 50); \
                    border: 1px solid rgb(52, 62, 86); padding: 3px 10px; } \
+    .knot-citations { padding: 4px 10px; } \
+    .knot-saved-citation { color: rgb(103, 184, 235); background-color: rgb(28, 34, 50); padding: 3px 8px; } \
     .knot-body { display: flex; } \
     .knot-editor-wrap { width: 70%; padding: 10px; } \
     .knot-editor-wrap textarea, .knot-editor-wrap [role=textbox][data-cambium-text-value] { color: rgb(218, 224, 236); \
@@ -174,6 +176,7 @@ enum HubCommand {
         source: String,
     },
     InsertClip {
+        expected_base: Option<Vec<u8>>,
         address: String,
         clip: PendingClip,
         status: Arc<Mutex<KnotClipStatus>>,
@@ -247,6 +250,7 @@ struct Subscriber {
 }
 
 pub(crate) struct KnotHub {
+    directory: Option<PathBuf>,
     commands: Sender<HubCommand>,
     next_registration: AtomicU64,
 }
@@ -288,12 +292,24 @@ impl KnotClipStatus {
 /// UI-thread handle for the endpoint-owned clip action.
 #[derive(Clone)]
 pub struct KnotClipHandle {
+    expected_base: Option<Vec<u8>>,
     hub: Arc<KnotHub>,
     target: String,
     status: Arc<Mutex<KnotClipStatus>>,
 }
 
 impl KnotClipHandle {
+    pub(crate) fn same_admission(&self, other: &Self) -> bool {
+        self.same_endpoint(other) && self.expected_base == other.expected_base
+    }
+    pub(crate) fn same_endpoint(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.hub, &other.hub) && self.target == other.target
+    }
+    pub(crate) fn keep_status_from(&mut self, previous: &Self) {
+        if self.same_endpoint(previous) {
+            self.status = previous.status.clone();
+        }
+    }
     pub fn insert(&self, clip: inker::DocumentClip) -> Result<(), String> {
         let artifacts = clip
             .artifacts
@@ -302,10 +318,10 @@ impl KnotClipHandle {
                 role: match artifact.role {
                     inker::DocumentClipArtifactRole::SourceResponse => {
                         KnotClipArtifactRoleV1::SourceResponse
-                    }
+                    },
                     inker::DocumentClipArtifactRole::ObservedRepresentation => {
                         KnotClipArtifactRoleV1::ObservedRepresentation
-                    }
+                    },
                 },
                 media_type: artifact.media_type,
                 canonical_uri: artifact.canonical_uri,
@@ -383,6 +399,7 @@ impl KnotClipHandle {
         self.hub
             .commands
             .send(HubCommand::InsertClip {
+                expected_base: self.expected_base.clone(),
                 address: self.target.clone(),
                 clip: pending,
                 status: self.status.clone(),
@@ -419,6 +436,30 @@ fn clip_knot_body(fragment: &fleece::clip::ClipFragment) -> String {
         blocks: fleece::clip::fragment_blocks(fragment),
     }
     .write_knot_body(&mut body);
+    if fragment.source_url.starts_with("mere://saved-source/") {
+        let citation = inker::EngineDocument {
+            address: fragment.source_url.clone(),
+            title: None,
+            content_type: "text/x-knot".into(),
+            lang: None,
+            provenance: Default::default(),
+            trust: inker::DocumentTrustState::Unknown,
+            diagnostics: vec![],
+            navigation: Default::default(),
+            blocks: vec![inker::Block::Paragraph {
+                spans: vec![inker::InlineSpan::Link {
+                    url: fragment.source_url.clone(),
+                    title: None,
+                    spans: vec![inker::InlineSpan::Text(format!(
+                        "Read saved passage: {}",
+                        fragment.title.as_deref().unwrap_or("Saved source")
+                    ))],
+                    predicate: None,
+                }],
+            }],
+        };
+        citation.write_knot_body(&mut body);
+    }
     body
 }
 
@@ -430,6 +471,26 @@ fn clip_selectors(
     let has_observed_representation = artifacts
         .iter()
         .any(|artifact| artifact.role == KnotClipArtifactRoleV1::ObservedRepresentation);
+    if has_observed_representation
+        && let Some(value) =
+            selector.and_then(|s| serde_json::from_str::<serde_json::Value>(s).ok())
+        && value.get("type").and_then(|v| v.as_str()) == Some("text-position")
+        && let (Some(start), Some(end)) = (value["start"].as_u64(), value["end"].as_u64())
+    {
+        return vec![
+            KnotClipSelectorV1::TextPosition {
+                artifact_role: KnotClipArtifactRoleV1::ObservedRepresentation,
+                start,
+                end,
+            },
+            KnotClipSelectorV1::TextQuote {
+                artifact_role: KnotClipArtifactRoleV1::ObservedRepresentation,
+                exact: text.into(),
+                prefix: None,
+                suffix: None,
+            },
+        ];
+    }
     let dom_range = has_observed_representation
         .then_some(selector)
         .flatten()
@@ -521,6 +582,9 @@ impl KnotHub {
         max_source_bytes: u64,
         wake: Wake,
     ) -> Result<(Arc<Self>, Option<knot::KnotPublishSource>), String> {
+        let directory = match &source {
+            HostedKnot::Directory { root } => Some(root.clone()),
+        };
         let (commands, receiver) = mpsc::channel();
         let (ready_send, ready_receive) =
             mpsc::sync_channel::<Result<Option<knot::KnotPublishSource>, String>>(1);
@@ -537,7 +601,7 @@ impl KnotHub {
                         knot::KnotEndpoint::open_writable(&root, grant)
                             .map_err(|error| format!("could not open the Knot directory: {error}"))
                             .map(|endpoint| (endpoint, None::<knot::KnotPublishSource>))
-                    }
+                    },
                 };
                 let retained = opened
                     .and_then(|(mut endpoint, publish_source)| {
@@ -571,10 +635,10 @@ impl KnotHub {
                     Ok((retained, publish_source)) => {
                         let _ = ready_send.send(Ok(publish_source));
                         run_hub(retained, receiver, wake, false);
-                    }
+                    },
                     Err(error) => {
                         let _ = ready_send.send(Err(error));
-                    }
+                    },
                 }
             })
             .map_err(|error| format!("could not start Knot authoring worker: {error}"))?;
@@ -585,6 +649,7 @@ impl KnotHub {
             Arc::new(Self {
                 commands,
                 next_registration: AtomicU64::new(1),
+                directory,
             }),
             publish_source,
         ))
@@ -631,6 +696,7 @@ impl KnotHub {
         Ok(Arc::new(Self {
             commands,
             next_registration: AtomicU64::new(1),
+            directory: None,
         }))
     }
 
@@ -653,10 +719,10 @@ impl KnotHub {
                     Ok(retained) => {
                         let _ = ready_send.send(Ok(()));
                         run_hub(retained, receiver, wake, false);
-                    }
+                    },
                     Err(error) => {
                         let _ = ready_send.send(Err(error));
-                    }
+                    },
                 }
             })
             .map_err(|error| format!("could not start Knot authoring worker: {error}"))?;
@@ -666,6 +732,7 @@ impl KnotHub {
         Ok(Arc::new(Self {
             commands,
             next_registration: AtomicU64::new(1),
+            directory: None,
         }))
     }
 
@@ -696,10 +763,10 @@ impl KnotHub {
                     Ok(retained) => {
                         let _ = ready_send.send(Ok(()));
                         run_hub(retained, receiver, wake, false);
-                    }
+                    },
                     Err(error) => {
                         let _ = ready_send.send(Err(error));
-                    }
+                    },
                 }
             })
             .map_err(|error| format!("could not start Knot authoring worker: {error}"))?;
@@ -709,6 +776,7 @@ impl KnotHub {
         Ok(Arc::new(Self {
             commands,
             next_registration: AtomicU64::new(1),
+            directory: None,
         }))
     }
 
@@ -797,6 +865,23 @@ pub struct KnotAuthoringEngine {
 
 impl KnotAuthoringEngine {
     pub fn from_env(wake: Wake, visits: KnotVisits) -> Result<Option<Self>, String> {
+        Self::from_env_in(wake, visits, None)
+    }
+    pub(crate) fn for_profile(
+        wake: Wake,
+        visits: KnotVisits,
+        profile: &std::path::Path,
+    ) -> Result<Option<Self>, String> {
+        Self::from_env_in(wake, visits, Some(profile))
+    }
+    pub(crate) fn notes_root(&self) -> Option<PathBuf> {
+        self.hub.as_ref().and_then(|hub| hub.directory.clone())
+    }
+    fn from_env_in(
+        wake: Wake,
+        visits: KnotVisits,
+        profile: Option<&std::path::Path>,
+    ) -> Result<Option<Self>, String> {
         let mode =
             std::env::var("TURNSTONE_KNOT_MODE").unwrap_or_else(|_| "directory-write".into());
         if !matches!(mode.as_str(), "directory-write" | "persona-vault") {
@@ -813,7 +898,13 @@ impl KnotAuthoringEngine {
             })
             .transpose()?
             .unwrap_or(DEFAULT_MAX_SOURCE_BYTES);
-        let evidence_root = env_path("TURNSTONE_KNOT_EVIDENCE_ROOT");
+        let default_profile = profile.filter(|_| {
+            mode == "directory-write"
+                && std::env::var_os("TURNSTONE_KNOT_ROOT").is_none()
+                && std::env::var_os("TURNSTONE_KNOT_ENDPOINT").is_none()
+        });
+        let evidence_root = env_path("TURNSTONE_KNOT_EVIDENCE_ROOT")
+            .or_else(|| default_profile.map(|p| p.join("knot-evidence")));
         let max_evidence_bytes = env_integer(
             "TURNSTONE_KNOT_EVIDENCE_MAX_BYTES",
             DEFAULT_MAX_SOURCE_BYTES,
@@ -876,7 +967,9 @@ impl KnotAuthoringEngine {
             }));
         }
 
-        let Some(root) = env_path("TURNSTONE_KNOT_ROOT") else {
+        let Some(root) =
+            env_path("TURNSTONE_KNOT_ROOT").or_else(|| default_profile.map(|p| p.join("notes")))
+        else {
             // No vault of this profile's own. The engine still registers, so a
             // place-held `knot://<holder>/<path>` address routes to the hub the
             // shell dialed for that holder instead of falling off the end of
@@ -884,6 +977,11 @@ impl KnotAuthoringEngine {
             // LOCAL address has nowhere to go, and that is refused by name.
             return Ok(Some(Self::visit_only(visits, clip_target)));
         };
+
+        if default_profile.is_some() {
+            std::fs::create_dir_all(&root)
+                .map_err(|e| format!("Could not create the private notes directory: {e}"))?;
+        }
 
         // Host in-process where the endpoint's constructor is a plain
         // directory open. A spawned endpoint cannot exist in a browser tab or
@@ -938,10 +1036,9 @@ impl KnotAuthoringEngine {
         }
 
         reject_nested_evidence_root(&root, evidence_root.as_deref())?;
-        let endpoint = env_path("TURNSTONE_KNOT_ENDPOINT")
-            .ok_or_else(|| {
-                "TURNSTONE_KNOT_ENDPOINT disappeared while opening directory mode".to_string()
-            })?;
+        let endpoint = env_path("TURNSTONE_KNOT_ENDPOINT").ok_or_else(|| {
+            "TURNSTONE_KNOT_ENDPOINT disappeared while opening directory mode".to_string()
+        })?;
         let endpoint_mode = match (effects_enabled, evidence_root.is_some()) {
             (false, false) => "directory-write",
             (false, true) => "directory-write-evidence",
@@ -1003,6 +1100,7 @@ impl KnotAuthoringEngine {
         // clip into, whatever `TURNSTONE_KNOT_CLIP_TARGET` names.
         let hub = self.hub.clone()?;
         self.clip_target.as_ref().map(|target| KnotClipHandle {
+            expected_base: None,
             hub,
             target: target.clone(),
             status: Arc::new(Mutex::new(KnotClipStatus::Ready)),
@@ -1180,7 +1278,9 @@ impl SessionEngine<Scene> for KnotAuthoringEngine {
                 (hub, false)
             },
         };
-        let opened = hub.open(&request.address).map_err(SessionError::SpawnFailed)?;
+        let opened = hub
+            .open(&request.address)
+            .map_err(SessionError::SpawnFailed)?;
         Ok(Box::new(KnotDocumentSession::new(
             hub,
             opened,
@@ -1224,10 +1324,10 @@ fn normalized_absolute(path: &std::path::Path) -> Result<PathBuf, String> {
     let mut normalized = PathBuf::new();
     for component in absolute.components() {
         match component {
-            std::path::Component::CurDir => {}
+            std::path::Component::CurDir => {},
             std::path::Component::ParentDir => {
                 normalized.pop();
-            }
+            },
             component => normalized.push(component.as_os_str()),
         }
     }
@@ -1460,7 +1560,10 @@ fn vault_relative(path: &std::path::Path, vault_root: &std::path::Path) -> Optio
     let canonical_root = std::fs::canonicalize(vault_root);
     let candidates = [
         (Some(path), Some(vault_root)),
-        (canonical_path.as_deref().ok(), canonical_root.as_deref().ok()),
+        (
+            canonical_path.as_deref().ok(),
+            canonical_root.as_deref().ok(),
+        ),
         (canonical_path.as_deref().ok(), Some(vault_root)),
         (Some(path), canonical_root.as_deref().ok()),
     ];
@@ -1531,7 +1634,7 @@ fn run_hub(
                         (registration, binding)
                     });
                 let _ = reply.send(result);
-            }
+            },
             Ok(HubCommand::Save {
                 registration,
                 base_token,
@@ -1548,8 +1651,9 @@ fn run_hub(
                     &wake,
                     visiting,
                 );
-            }
+            },
             Ok(HubCommand::InsertClip {
+                expected_base,
                 address,
                 clip,
                 status,
@@ -1560,12 +1664,13 @@ fn run_hub(
                     &mut bindings,
                     &subscribers,
                     &address,
+                    expected_base,
                     clip,
                     &status,
                     &wake,
                     visiting,
                 );
-            }
+            },
             Ok(HubCommand::Effect {
                 registration,
                 kind,
@@ -1582,7 +1687,7 @@ fn run_hub(
                     &wake,
                     visiting,
                 );
-            }
+            },
             Ok(HubCommand::Reload { registration }) => {
                 reload_subscriber(
                     &mut retained,
@@ -1592,7 +1697,7 @@ fn run_hub(
                     registration,
                     &wake,
                 );
-            }
+            },
             Ok(HubCommand::Unregister { registration }) => {
                 subscribers.remove(&registration);
                 if subscribers.is_empty() {
@@ -1601,7 +1706,7 @@ fn run_hub(
                     }
                     bindings.clear();
                 }
-            }
+            },
             Err(RecvTimeoutError::Timeout) => {
                 if mounted.is_some() {
                     match retained.poll_for_change() {
@@ -1613,14 +1718,14 @@ fn run_hub(
                             &wake,
                             visiting,
                         ),
-                        Ok(false) => {}
+                        Ok(false) => {},
                         Err(error) => {
                             broadcast(&subscribers, lost(visiting, error), &wake);
                             break;
-                        }
+                        },
                     }
                 }
-            }
+            },
             Err(RecvTimeoutError::Disconnected) => break,
         }
     }
@@ -1678,10 +1783,7 @@ impl LivenessWatch {
                     if stop.load(Ordering::SeqCst) {
                         return;
                     }
-                    let silent = heard
-                        .lock()
-                        .map(|last| last.elapsed())
-                        .unwrap_or_default();
+                    let silent = heard.lock().map(|last| last.elapsed()).unwrap_or_default();
                     if silent < budget {
                         continue;
                     }
@@ -1755,7 +1857,7 @@ fn ensure_binding(
             let session = retained.mount(0)?;
             *mounted = Some(session.clone());
             session
-        }
+        },
     };
     let binding = resolve_binding(retained, &session, address)?;
     bindings.insert(address.to_string(), binding.clone());
@@ -1870,14 +1972,14 @@ fn save_from_subscriber(
                     bindings.insert(subscriber.address.clone(), binding.clone());
                     send_event(subscriber, HubEvent::Saved { source, binding }, wake);
                     refresh_subscribers(retained, session, bindings, subscribers, wake, visiting);
-                }
+                },
                 Err(error) => send_event(subscriber, HubEvent::Rejected(error), wake),
             }
-        }
+        },
         Ok(IntentResult::Stale { .. }) => send_event(subscriber, HubEvent::Stale, wake),
         Ok(IntentResult::Rejected { reason }) => {
             send_event(subscriber, HubEvent::Rejected(reason), wake)
-        }
+        },
         Err(error) => send_event(subscriber, HubEvent::Rejected(error), wake),
     }
 }
@@ -1889,12 +1991,26 @@ fn insert_clip(
     bindings: &mut BTreeMap<String, DocumentBinding>,
     subscribers: &BTreeMap<u64, Subscriber>,
     address: &str,
+    expected_base: Option<Vec<u8>>,
     clip: PendingClip,
     status: &Arc<Mutex<KnotClipStatus>>,
     wake: &Wake,
     visiting: bool,
 ) {
     let result = ensure_binding(retained, mounted, bindings, address).and_then(|binding| {
+        if expected_base
+            .as_ref()
+            .is_some_and(|base| base != &binding.editable.base_token)
+        {
+            return Err(
+                "The Knot destination revision changed; choose or retry the current note.".into(),
+            );
+        }
+        if !clip.artifacts.is_empty()
+            && binding.clip_action.payload_schema != KNOT_CLIP_INSERT_SCHEMA_V2
+        {
+            return Err("This Knot destination cannot retain citation evidence.".into());
+        }
         let session = mounted
             .as_ref()
             .expect("ensure_binding mounted the session");
@@ -2035,17 +2151,22 @@ fn invoke_effect(
             );
             match result {
                 IntentResult::Accepted => match retained.wait_for_change() {
-                    Ok(_) => {
-                        refresh_subscribers(retained, session, bindings, subscribers, wake, visiting)
-                    },
+                    Ok(_) => refresh_subscribers(
+                        retained,
+                        session,
+                        bindings,
+                        subscribers,
+                        wake,
+                        visiting,
+                    ),
                     Err(error) => send_event(subscriber, HubEvent::Rejected(error), wake),
                 },
                 IntentResult::Stale { .. } => send_event(subscriber, HubEvent::Stale, wake),
                 IntentResult::Rejected { reason } => {
                     send_event(subscriber, HubEvent::Rejected(reason), wake)
-                }
+                },
             }
-        }
+        },
         Err(error) => send_event(subscriber, HubEvent::Rejected(error), wake),
     }
 }
@@ -2073,7 +2194,7 @@ fn reload_subscriber(
         Ok(binding) => {
             bindings.insert(subscriber.address.clone(), binding.clone());
             send_event(subscriber, HubEvent::Reloaded(binding), wake);
-        }
+        },
         Err(error) => send_event(subscriber, HubEvent::Revoked(error), wake),
     }
 }
@@ -2100,7 +2221,7 @@ fn refresh_subscribers(
                 {
                     send_event(subscriber, HubEvent::Remote(binding.clone()), wake);
                 }
-            }
+            },
             Err(error) => {
                 bindings.remove(&address);
                 for subscriber in subscribers
@@ -2109,7 +2230,7 @@ fn refresh_subscribers(
                 {
                     send_event(subscriber, lost(visiting, error.clone()), wake);
                 }
-            }
+            },
         }
     }
 }
@@ -2157,8 +2278,12 @@ enum AuthoringStatus {
 /// order in the drain site rather than the user's, and had to be cleared
 /// through `runner.update` — a full view rebuild per flag, just to reset a
 /// bool.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 enum AuthoringRequest {
+    OpenSavedCitation {
+        address: String,
+        expected_source: blake3::Hash,
+    },
     Save,
     Resolve,
     Run,
@@ -2328,6 +2453,30 @@ fn authoring_view(state: &AuthoringState) -> AuthoringView {
             .attr("data-projection-intent", receipt.intent.clone())
             .attr("data-intent-result", receipt.result_word())
     });
+    let mut citations: Vec<AuthoringView> = Vec::new();
+    match crate::knot_saved_citations::controls(state.editor.source()) {
+        Ok(controls) => {
+            let expected_source = blake3::hash(state.editor.source().as_bytes());
+            for (label, address) in controls {
+                citations.push(Box::new(
+                    button(
+                        label,
+                        move |state: &mut AuthoringState, _click: PointerClick| {
+                            state.requests.push(AuthoringRequest::OpenSavedCitation {
+                                address: address.clone(),
+                                expected_source,
+                            });
+                        },
+                    )
+                    .attr("class", "knot-saved-citation"),
+                ));
+            }
+        },
+        Err(error) => citations.push(Box::new(el::<_, AuthoringState, ()>(
+            "div",
+            format!("Saved citations unavailable: {error}"),
+        ))),
+    }
     let editor = el::<_, AuthoringState, ()>("div", field).attr("class", "knot-editor-wrap");
     let readout = el::<_, AuthoringState, ()>(
         "div",
@@ -2340,6 +2489,7 @@ fn authoring_view(state: &AuthoringState) -> AuthoringView {
             (
                 toolbar,
                 intent_receipt,
+                el("div", citations).attr("class", "knot-citations"),
                 el("div", (editor, readout)).attr("class", "knot-body"),
             ),
         )
@@ -2393,6 +2543,7 @@ fn format_cache_age(age_ms: u64) -> String {
 
 /// The visible editor retained in Turnstone's ordinary content-session map.
 pub struct KnotDocumentSession {
+    clip_available: bool,
     hub: Arc<KnotHub>,
     registration: u64,
     address: String,
@@ -2412,6 +2563,49 @@ pub struct KnotDocumentSession {
 }
 
 impl KnotDocumentSession {
+    fn run_authoring_requests(&mut self) -> Option<String> {
+        // One drain, in the order the toolbar was pressed. Taking the whole
+        // queue in a single `update` also costs one rebuild rather than one
+        // per verb.
+        let requests = if self.runner.state().requests.is_empty() {
+            Vec::new()
+        } else {
+            let mut taken = Vec::new();
+            self.runner
+                .update(|state| taken = std::mem::take(&mut state.requests));
+            taken
+        };
+        let mut navigation = None;
+        for request in requests {
+            match request {
+                AuthoringRequest::OpenSavedCitation {
+                    address,
+                    expected_source,
+                } => {
+                    let source = self.runner.state().editor.source();
+                    if blake3::hash(source.as_bytes()) == expected_source
+                        && crate::knot_saved_citations::controls(source).is_ok_and(|controls| {
+                            controls.iter().any(|(_, target)| target == &address)
+                        })
+                    {
+                        navigation = Some(address);
+                        continue;
+                    }
+                    self.runner.update(|state| {
+                        state.detail =
+                            "Saved citation changed; use the current passage control.".into();
+                        state.status = AuthoringStatus::Rejected;
+                    });
+                },
+                AuthoringRequest::Save => self.save(),
+                AuthoringRequest::Resolve => self.invoke_effect(KnotEffectKind::Resolve),
+                AuthoringRequest::Run => self.invoke_effect(KnotEffectKind::Run),
+                AuthoringRequest::Reload => self.reload(),
+            }
+        }
+        navigation
+    }
+
     fn new(
         hub: Arc<KnotHub>,
         opened: OpenedDocument,
@@ -2445,6 +2639,7 @@ impl KnotDocumentSession {
             state,
         );
         let session = Self {
+            clip_available: opened.binding.clip_action.payload_schema == KNOT_CLIP_INSERT_SCHEMA_V2,
             hub,
             registration: opened.registration,
             address,
@@ -2494,6 +2689,24 @@ impl KnotDocumentSession {
 
     /// The retained document surface exposed to Genet Probe. The borrow stays
     /// inside `Automatable::with_surfaces`, matching Turnstone's pane DOMs.
+    pub(crate) fn research_clip_handle(&self) -> Result<KnotClipHandle, String> {
+        if self.visiting || !self.clip_available {
+            return Err("This note does not offer local citation retention.".into());
+        }
+        if self.runner.state().editor.is_dirty() {
+            return Err("Save note edits before clipping a passage.".into());
+        }
+        if !matches!(self.runner.state().status, AuthoringStatus::Current) {
+            return Err("The note is not currently writable; reopen or reload it.".into());
+        }
+        Ok(KnotClipHandle {
+            expected_base: Some(self.base_token.clone()),
+            hub: self.hub.clone(),
+            target: self.address.clone(),
+            status: Arc::new(Mutex::new(KnotClipStatus::Ready)),
+        })
+    }
+
     pub fn address(&self) -> &str {
         &self.address
     }
@@ -2697,6 +2910,13 @@ impl KnotDocumentSession {
 
     fn drain_events(&mut self) {
         while let Ok(event) = self.events.try_recv() {
+            if let HubEvent::Remote(binding)
+            | HubEvent::Reloaded(binding)
+            | HubEvent::Saved { binding, .. } = &event
+            {
+                self.clip_available =
+                    binding.clip_action.payload_schema == KNOT_CLIP_INSERT_SCHEMA_V2;
+            }
             match event {
                 HubEvent::Remote(binding) => {
                     self.revision_refreshes += 1;
@@ -2747,7 +2967,7 @@ impl KnotDocumentSession {
                             state.detail.clear();
                         });
                     }
-                }
+                },
                 HubEvent::Intent(receipt) => self.runner.update(|state| {
                     state.last_intent = Some(receipt);
                 }),
@@ -2769,7 +2989,7 @@ impl KnotDocumentSession {
                         state.status = AuthoringStatus::Current;
                         state.detail.clear();
                     });
-                }
+                },
                 HubEvent::Saved { source, binding } => {
                     let target = binding.target;
                     self.projection_input = Some(knot_projection_input_binding(&binding.editable));
@@ -2786,7 +3006,7 @@ impl KnotDocumentSession {
                         state.status = AuthoringStatus::Current;
                         state.detail.clear();
                     });
-                }
+                },
                 HubEvent::Stale => self.runner.update(|state| {
                     state.status = AuthoringStatus::Stale;
                     state.detail = "the endpoint refused an old base token".into();
@@ -2807,7 +3027,7 @@ impl KnotDocumentSession {
                         state.status = AuthoringStatus::Unavailable;
                         state.detail = reason;
                     });
-                }
+                },
                 HubEvent::Revoked(reason) => {
                     self.base_token.clear();
                     self.projection_input = None;
@@ -2820,7 +3040,7 @@ impl KnotDocumentSession {
                         state.status = AuthoringStatus::Revoked;
                         state.detail = reason;
                     });
-                }
+                },
             }
         }
     }
@@ -2904,7 +3124,10 @@ impl DocumentSession<Scene> for KnotDocumentSession {
         let Some(event) = cambium_key(key, modifiers) else {
             return SessionEffect::Ignored;
         };
-        if self.dispatch_key(event) {
+        let handled = self.dispatch_key(event);
+        if let Some(address) = self.run_authoring_requests() {
+            SessionEffect::Navigate(address)
+        } else if handled {
             SessionEffect::Handled
         } else {
             SessionEffect::Ignored
@@ -2920,7 +3143,9 @@ impl DocumentSession<Scene> for KnotDocumentSession {
     fn ime_input(&mut self, ime: SessionIme) -> bool {
         let composition = match ime {
             SessionIme::Enabled => CompositionEvent::Enabled,
-            SessionIme::Preedit { text, selection } => CompositionEvent::Preedit { text, selection },
+            SessionIme::Preedit { text, selection } => {
+                CompositionEvent::Preedit { text, selection }
+            },
             SessionIme::Commit(text) => CompositionEvent::Commit(text),
             SessionIme::Disabled => CompositionEvent::Disabled,
         };
@@ -2943,24 +3168,8 @@ impl DocumentSession<Scene> for KnotDocumentSession {
             return SessionClick::Miss;
         };
         let _: Vec<()> = self.runner.dispatch_click(node, PointerClick::at((x, y)));
-        // One drain, in the order the toolbar was pressed. Taking the whole
-        // queue in a single `update` also costs one rebuild rather than one
-        // per verb.
-        let requests = if self.runner.state().requests.is_empty() {
-            Vec::new()
-        } else {
-            let mut taken = Vec::new();
-            self.runner
-                .update(|state| taken = std::mem::take(&mut state.requests));
-            taken
-        };
-        for request in requests {
-            match request {
-                AuthoringRequest::Save => self.save(),
-                AuthoringRequest::Resolve => self.invoke_effect(KnotEffectKind::Resolve),
-                AuthoringRequest::Run => self.invoke_effect(KnotEffectKind::Run),
-                AuthoringRequest::Reload => self.reload(),
-            }
+        if let Some(address) = self.run_authoring_requests() {
+            return SessionClick::Navigate(address);
         }
         SessionClick::Handled
     }
@@ -3023,6 +3232,98 @@ mod tests {
     use layout_dom_api::{LayoutDom, NodeKind};
 
     use super::*;
+
+    #[test]
+    fn research_note_revision_grant_and_citation_control_refuse_stale_edits() {
+        let temp = tempfile::tempdir().unwrap();
+        let notes = temp.path().join("notes");
+        fs::create_dir(&notes).unwrap();
+        let path = notes.join("field.knot");
+        let (source, target) = crate::knot_saved_citations::tests::fixture();
+        fs::write(&path, &source).unwrap();
+        let (hub, _) = KnotHub::host(
+            HostedKnot::Directory { root: notes },
+            None,
+            Some(HostedEvidence {
+                root: temp.path().join("evidence"),
+                max_artifact_bytes: 65536,
+            }),
+            65536,
+            Arc::new(|| {}),
+        )
+        .unwrap();
+        let address = file_address(&path);
+        let mut note = KnotDocumentSession::new(
+            hub.clone(),
+            hub.open(&address).unwrap(),
+            (900, 600),
+            false,
+            false,
+            false,
+        );
+        let offered = note.research_clip_handle().unwrap();
+        let reader = crate::saved_sources::address(&target).unwrap();
+        let expected_source = blake3::hash(source.as_bytes());
+        note.runner.update(|state| {
+            state.requests.push(AuthoringRequest::OpenSavedCitation {
+                address: reader.clone(),
+                expected_source,
+            })
+        });
+        assert_eq!(note.run_authoring_requests(), Some(reader.clone()));
+        focus_editor(&mut note);
+        type_text(&mut note, "Local unsaved commentary.");
+        assert!(note.research_clip_handle().is_err());
+        note.runner.update(|state| {
+            state.requests.push(AuthoringRequest::OpenSavedCitation {
+                address: reader,
+                expected_source,
+            })
+        });
+        assert_eq!(note.run_authoring_requests(), None);
+        assert!(note.runner.state().detail.contains("changed"));
+        // An offer already queued at the endpoint cannot overwrite a later save.
+        fs::write(&path, format!("{source}\nRemote saved revision.\n")).unwrap();
+        let clip = inker::DocumentClip {
+            source_url: "https://gone.test".into(),
+            title: None,
+            text: "Stale clip must not appear".into(),
+            selector: None,
+            links: vec![],
+            artifacts: vec![inker::DocumentClipArtifact {
+                role: inker::DocumentClipArtifactRole::ObservedRepresentation,
+                media_type: "text/plain".into(),
+                canonical_uri: "https://gone.test".into(),
+                bytes: b"Stale clip must not appear".to_vec(),
+            }],
+        };
+        offered.insert(clip).unwrap();
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while matches!(offered.status(), KnotClipStatus::Sending) && Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        assert!(
+            matches!(
+                offered.status(),
+                KnotClipStatus::Rejected(_) | KnotClipStatus::Stale
+            ),
+            "{:?}",
+            offered.status()
+        );
+        note.drain_events();
+        assert!(
+            note.runner
+                .state()
+                .editor
+                .source()
+                .contains("Local unsaved commentary.")
+        );
+        assert!(
+            !fs::read_to_string(path)
+                .unwrap()
+                .contains("Stale clip must not appear")
+        );
+    }
 
     #[test]
     fn semantic_clip_body_omits_document_frontmatter() {
@@ -3295,8 +3596,7 @@ mod tests {
 
         let hit = taproot::resolve_estimated_fixture(
             &surfaces,
-            &taproot::Selector::class("knot-resolve")
-                .with_attr("data-projection-instance", "17"),
+            &taproot::Selector::class("knot-resolve").with_attr("data-projection-instance", "17"),
         );
         assert!(
             hit.is_some(),
@@ -3330,11 +3630,13 @@ mod tests {
             &layout_dom_api::Namespace::from(""),
             &layout_dom_api::LocalName::from("role"),
         ) == Some("textbox")
-            && dom.attribute(
-                node,
-                &layout_dom_api::Namespace::from(""),
-                &layout_dom_api::LocalName::from("data-cambium-text-value"),
-            ).is_some();
+            && dom
+                .attribute(
+                    node,
+                    &layout_dom_api::Namespace::from(""),
+                    &layout_dom_api::LocalName::from("data-cambium-text-value"),
+                )
+                .is_some();
         if native || marked {
             return Some(node);
         }
@@ -3354,24 +3656,24 @@ mod tests {
         }
 
         let dom: DomHandle = Rc::new(std::cell::RefCell::new(ScriptedDom::new()));
-        let _runner = GenetAppRunner::new(
-            dom.clone(),
-            marked_fixture as fn(&()) -> FixtureView,
-            (),
-        );
+        let _runner =
+            GenetAppRunner::new(dom.clone(), marked_fixture as fn(&()) -> FixtureView, ());
         let dom = dom.borrow();
         let field = find_text_control(&dom, dom.document())
             .expect("the marked DIV is recognized as the editor field");
         assert_eq!(
-            dom.element_name(field)
-                .map(|name| name.local.as_ref()),
+            dom.element_name(field).map(|name| name.local.as_ref()),
             Some("div")
         );
-        assert!(dom.attribute(
-            field,
-            &layout_dom_api::Namespace::from(""),
-            &layout_dom_api::LocalName::from("aria-label"),
-        ).is_none(), "the unnamed Knot field stays unnamed");
+        assert!(
+            dom.attribute(
+                field,
+                &layout_dom_api::Namespace::from(""),
+                &layout_dom_api::LocalName::from("aria-label"),
+            )
+            .is_none(),
+            "the unnamed Knot field stays unnamed"
+        );
     }
 
     fn focus_editor(session: &mut KnotDocumentSession) {
@@ -3379,11 +3681,15 @@ mod tests {
             let dom = session.dom.borrow();
             let field = find_text_control(&dom, session.runner.root())
                 .expect("authoring view should contain a text control");
-            assert!(dom.attribute(
-                field,
-                &layout_dom_api::Namespace::from(""),
-                &layout_dom_api::LocalName::from("aria-label"),
-            ).is_none(), "the Knot editor remains unnamed");
+            assert!(
+                dom.attribute(
+                    field,
+                    &layout_dom_api::Namespace::from(""),
+                    &layout_dom_api::LocalName::from("aria-label"),
+                )
+                .is_none(),
+                "the Knot editor remains unnamed"
+            );
             field
         };
         session
@@ -3611,7 +3917,10 @@ mod tests {
         // Outside the vault: not this mere's to offer.
         let outside = temp.path().join("elsewhere.knot");
         std::fs::write(&outside, "# Elsewhere\n").unwrap();
-        assert_eq!(place_held_rewrite(&file_address(&outside), &vault, &root), None);
+        assert_eq!(
+            place_held_rewrite(&file_address(&outside), &vault, &root),
+            None
+        );
     }
 
     #[test]
@@ -3793,7 +4102,11 @@ mod tests {
 
         let engine = KnotAuthoringEngine::connect_directory(program, &root, 4096).unwrap();
         let handle = KnotClipHandle {
-            hub: engine.hub.clone().expect("a connected fixture has a local hub"),
+            expected_base: None,
+            hub: engine
+                .hub
+                .clone()
+                .expect("a connected fixture has a local hub"),
             target: address,
             status: Arc::new(Mutex::new(KnotClipStatus::Ready)),
         };
@@ -3851,7 +4164,11 @@ mod tests {
             KnotAuthoringEngine::connect_directory_evidence(program, &root, 4096, &evidence, 4096)
                 .unwrap();
         let handle = KnotClipHandle {
-            hub: engine.hub.clone().expect("a connected fixture has a local hub"),
+            expected_base: None,
+            hub: engine
+                .hub
+                .clone()
+                .expect("a connected fixture has a local hub"),
             target: address,
             status: Arc::new(Mutex::new(KnotClipStatus::Ready)),
         };

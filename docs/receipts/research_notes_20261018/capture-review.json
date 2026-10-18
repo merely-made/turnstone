@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "reviewed_captures": 12,
+  "captures": {
+    "create/01_new_note.png": {
+      "sha256": "ae19e7e7f4dd70cf1bfd534909d167898267f56fa79bae8ea42d45edacd4685a",
+      "review": "Product-created private note opens immediately in the native Knot editor; Save and kept member visible."
+    },
+    "create/02_authored_note.png": {
+      "sha256": "4d5740345f430dc1c7bd46245a98418b9df3a0f923c77e51f0cfcbb5570c27bd",
+      "review": "Authored commentary and saved state visible."
+    },
+    "create/03_other_note.png": {
+      "sha256": "aa19ba6c480f0c9b9b2ff8aa1d1fb4c8fe5a31197e505646294a0277ff8a93ac",
+      "review": "Second independent authored note visible; independent checksum is retained."
+    },
+    "seed/06_saved_passage.png": {
+      "sha256": "a2e8ba821010593cd3d23aced223cbbe370dee2d350dbebf5134550f486cb8a0",
+      "review": "Exact café passage with origin stopped, and chosen note destination in Inspector."
+    },
+    "seed/07_clip_saved.png": {
+      "sha256": "267d74f951072a65243b60efe4a0e88b7082f9229f2cd248a38162303ef1ab2a",
+      "review": "Painted Inspector acknowledgement says clip saved, and destination identifies the chosen note."
+    },
+    "seed/08_note_and_citation.png": {
+      "sha256": "0fdcfe6103dcc33b48c5e53afe84113bb1025f3222608441d88e0f521252b27d",
+      "review": "Commentary survives the clip; actual Read saved passage control is above the source editor."
+    },
+    "seed/09_follow_exact_citation.png": {
+      "sha256": "a5166b88725bfcaa46265563672b4f6920d53d2d363f8a5deec9ca3852af384d",
+      "review": "The ordinary citation control reveals the exact café range and A1 text."
+    },
+    "seed/11_old_A1_after_A2.png": {
+      "sha256": "671810fd82c682e41aa90b2d899f747b40cfee6cc6e28a2a649203dd57236cc0",
+      "review": "Old A1 passage remains identical after A2 at the original address; the separate capture ledger proves the new version."
+    },
+    "reopen/12_cold_authored_note.png": {
+      "sha256": "25623786233512b098ed5f226f8270e14d1078f61ffa461cd6827cbc9f5ae3a1",
+      "review": "Fresh app/endpoint opens the persisted chosen note with commentary and citation control."
+    },
+    "reopen/13_cold_exact_A1.png": {
+      "sha256": "2a4dda147878f8b571e0e8b2418f5ccfe15c360c32ef34cf7fc572e8b30b2628",
+      "review": "Cold citation follows A1 and exact café range with origin gone."
+    },
+    "reopen/14_cold_A2_is_distinct.png": {
+      "sha256": "69065d3123795238d63ebe715743511e6c5561e82e0c9ef3dab04072c89a5d56",
+      "review": "Separate cold search reads A2/violet and its different saved version."
+    },
+    "reopen/15_cold_old_A1_after_A2.png": {
+      "sha256": "1f72c98fee41571ea0b4593279125755e647af7ae1399e9a2bf0c350fc13dcc5",
+      "review": "Returning through the authored note again reads old A1/café, not A2."
+    }
+  }
+}

@@ -1,0 +1,11 @@
+
+running 6 tests
+test tests::a_completed_write_cleans_a_backup_left_by_an_interrupted_earlier_write ... ok
+test tests::a_failed_replacement_restores_the_previous_document ... ok
+test tests::a_non_destination_conflict_does_not_trigger_backup_fallback ... ok
+test tests::a_second_write_replaces_the_document_and_cleans_up ... ok
+test tests::overwrite_uses_one_direct_rename_when_supported ... ok
+test tests::temporary_creation_skips_a_name_already_created_by_another_writer ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+

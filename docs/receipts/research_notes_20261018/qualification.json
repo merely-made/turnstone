@@ -1,0 +1,71 @@
+{
+  "result": "pass",
+  "scope": "Turnstone integrated native Knot authoring and private saved-source reader on macOS 15.8.1 x86_64",
+  "native_receipt": "native/qualification.json",
+  "capture_review": "capture-review.json",
+  "reviewed_captures": 12,
+  "independent_exited_store_reads": 2,
+  "software": {
+    "command": "rustup run 1.99.1 cargo test --workspace --locked --offline -j2 -- --test-threads=1",
+    "passed": 1077,
+    "failed": 0,
+    "ignored": 13,
+    "result_groups": [
+      {
+        "passed": 1077,
+        "failed": 0,
+        "ignored": 13
+      },
+      {
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      }
+    ]
+  },
+  "knot_owner": {
+    "commit": "ceaf41fbd4075a6746c316c46cc66bce976d0546",
+    "passed": 154,
+    "failed": 0,
+    "ignored": 1,
+    "log": "knot-current-lib.log"
+  },
+  "shared_atomic_file": {
+    "passed": 6,
+    "failed": 0,
+    "gate": "standalone std-only module tests from pinned Mere 500bc78a, not full Pandect suite",
+    "inputs": "pandect-atomic-input.json"
+  },
+  "runtime_inputs": "native/inputs.json",
+  "resolved_stack": "resolved-stack.json",
+  "committed_archive_match_required_before_push": true,
+  "raw_output": "/Users/markik/Code/output/turnstone-knot-notes-20261018",
+  "diagnostics": "diagnostics/",
+  "limits": [
+    "Standalone Knot desktop citation navigation",
+    "Other operating systems and OS assistive activation",
+    "Deliberate sharing and personal custody installation",
+    "Physical power loss and interactive page replay",
+    "No inference request belongs to this slice"
+  ]
+}

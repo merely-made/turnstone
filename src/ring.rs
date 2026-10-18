@@ -325,7 +325,10 @@ pub fn ring_of(action: &Action) -> Ring {
         // palette keeps for them.
         | OmnibarToggleKeepRow(_)
         | OmnibarToggleKeepSelected
-        | SetAnswerSelection { .. } => Ring::HostOnly,
+        | SetAnswerSelection { .. }
+        | NewResearchNote | OpenResearchNote
+        | ChooseResearchNote { .. } | CommitResearchNote { .. }
+        | ResearchNoteCreated { .. } => Ring::HostOnly,
     }
 }
 

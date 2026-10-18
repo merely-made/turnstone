@@ -1,0 +1,10 @@
+RESULT ok
+captured 12_cold_authored_note
+captured 13_cold_exact_A1
+captured 14_cold_A2_is_distinct
+captured 15_cold_old_A1_after_A2
+presentation frames=119 captures=4 blank=0
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-final/reopen/12_cold_authored_note.png digest=d30b94014b3b6291 blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-final/reopen/13_cold_exact_A1.png digest=4ed7d95b9a0d7f1e blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-final/reopen/14_cold_A2_is_distinct.png digest=758c93bb6c77f392 blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-final/reopen/15_cold_old_A1_after_A2.png digest=9cc6fac17e85a24f blank=false
