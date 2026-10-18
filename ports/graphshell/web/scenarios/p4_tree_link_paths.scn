@@ -2,8 +2,7 @@
 # tree.html?app=local&fixture=link-rest&scenario=scenarios/p4_tree_link_paths.scn
 click role:button Fit graph
 settle 2
-click role:button Pause physics
-settle 2
+assert snap physics-paused == true
 assert snap link-rest-ready == true
 assert snap link-path-state == disabled
 assert snap link-path-field-response == false
@@ -11,7 +10,7 @@ assert snap link-path-compatible-attraction == false
 assert snap link-path-group-count == 0
 assert snap link-path-count == 6
 assert snap link-path-responsive-count == 0
-assert snap link-path-max-bend == 0
+assert snap link-path-max-bend == 0.000
 remember ordinary-path-source
 remember ordinary-path-baseline
 capture ordinary_link_paths_baseline
@@ -82,7 +81,7 @@ assert snap link-path-count == 6
 assert snap link-path-responsive-count >= 1
 assert snap link-path-max-bend >= 1
 assert snap link-path-compatible-max-bend >= 1
-assert snap link-path-other-max-bend == 0
+assert snap link-path-other-max-bend == 0.000
 same ordinary-path-baseline link-path-endpoints
 same ordinary-path-baseline link-path-surface-geometry
 same ordinary-path-source link-rest-source-facts
