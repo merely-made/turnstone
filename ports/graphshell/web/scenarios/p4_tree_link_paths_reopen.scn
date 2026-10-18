@@ -1,0 +1,30 @@
+# Relaunch the same ordinary graph route and database in the headed profile.
+# Response controls and group membership are intentionally view-local/reset;
+# source graph identity and saved whole-link hide intent remain durable.
+# tree.html?app=local&fixture=link-rest&scenario=scenarios/p4_tree_link_paths_reopen.scn
+click role:button Fit graph
+settle 2
+assert snap link-rest-ready == true
+assert snap link-path-state == disabled
+assert snap link-path-field-response == false
+assert snap link-path-compatible-attraction == false
+assert snap link-path-group-count == 0
+assert snap link-path-selected-field-count == 0
+assert snap link-path-configured-field == None
+assert snap link-rest-hidden-count == 1
+assert snap link-rest-hidden ~ link:v1:resource
+assert snap link-path-count == 2
+assert snap link-path-responsive-count == 0
+remember ordinary-path-reopened-source
+capture ordinary_link_paths_reopened_hidden
+click role:button Show hidden links
+settle 120
+assert snap link-visibility-save-state == saved
+assert snap link-rest-hidden-count == 0
+assert snap link-path-state == disabled
+assert snap link-path-count == 6
+assert snap link-path-responsive-count == 0
+same ordinary-path-reopened-source link-rest-source-facts
+same ordinary-path-reopened-source link-rest-graph-revision
+capture ordinary_link_paths_reopened_shown
+log Fresh-process route reopen restores source graph and whole-link hide intent while responsive settings and temporary group reset

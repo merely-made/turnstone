@@ -7,6 +7,7 @@
 //! Product observations and actions for Mesquite on the tree page.
 use super::*;
 pub(super) mod overlay_observation;
+mod link_paths;
 
 /// The tree page's half of the scenario lane.
 pub(super) struct TreeLane {
@@ -1259,9 +1260,12 @@ impl Product for TreeLane {
                     .join("|"),
             );
         let snapshot = link_rest_fields(&canvas, snapshot);
+        let snapshot = link_paths::fields(&canvas, snapshot);
         let faces = self.shared.faces.get().unwrap_or_default().fields();
         let snapshot = practice::fields(page, snapshot);
         let snapshot = responsive_links::fields(page, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = ordinary_link_paths::fields(page, snapshot);
         // Host-boundary receipts come from the existing validated loader and
         // Tabard adapter. Missing evidence stays absent, never a passing default.
         let snapshot = [
@@ -1744,6 +1748,7 @@ impl Product for TreeLane {
             // Pick a source-owned P4 appearance through the ordinary canvas
             // pointer route. The stratum offset selects one of the two
             // parallel strokes when both are present on the same surfaces.
+            "click-link-path" => link_paths::click(self, ctx, rest),
             "click-link-rest" => {
                 use graphshell::mere_host::{
                     LINK_REST_A1_ADDRESS, LINK_REST_A2_ADDRESS, LINK_REST_B1_ADDRESS,

@@ -920,6 +920,8 @@ fn tools_region(page: &TreePage) -> Child {
     #[cfg(feature = "product")]
     children.push(link_inspection::section(page));
     #[cfg(feature = "product")]
+    children.push(ordinary_link_paths::section(page));
+    #[cfg(feature = "product")]
     children.push(field_inspection::section(page));
     #[cfg(feature = "product")]
     children.push(presentation::section(page));
@@ -2277,3 +2279,5 @@ fn forme_sheet() -> String {
 }
 
 mod responsive_links;
+#[cfg(feature = "product")]
+mod ordinary_link_paths;
