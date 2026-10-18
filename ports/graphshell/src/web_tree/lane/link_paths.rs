@@ -7,6 +7,19 @@
 //! Scenario input samples the ordinary canvas's current painted path.
 use super::*;
 
+/// Retain the actual source observations with the opt-in scenario receipt so
+/// an external driver can compare independent page/process runs.
+pub(super) fn source_receipt(canvas: &mere::canvas::Canvas) -> Option<serde_json::Value> {
+    let snapshot = super::link_rest_fields(canvas, ProbeSnapshot::default());
+    if snapshot.field("link-rest-ready") != Some("true") {
+        return None;
+    }
+    Some(serde_json::json!({
+        "link-rest-source-facts": snapshot.field("link-rest-source-facts")?,
+        "link-rest-graph-revision": snapshot.field("link-rest-graph-revision")?,
+    }))
+}
+
 pub(super) fn click(
     lane: &TreeLane,
     ctx: &mut mesquite::Ctx<'_, TreeLane>,

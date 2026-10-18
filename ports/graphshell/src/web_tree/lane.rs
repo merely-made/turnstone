@@ -854,6 +854,7 @@ impl Product for TreeLane {
                 "title": product.title.text(), "tags": product.tags.text(),
                 "save_state": product.save_state, "reopened": product.reopened,
                 "owner_observation": owner_receipt(ctx.runner.state()),
+                "link_path_source": link_paths::source_receipt(&self.shared.canvas.borrow()),
             })
         });
         publish(outcome.ok, &lines.join("\n"), &self.shared, saved);
