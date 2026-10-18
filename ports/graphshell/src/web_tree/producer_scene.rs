@@ -91,6 +91,14 @@ impl CanvasProducer {
                     &mut remote.text,
                 )
             };
+            let scene = match scene {
+                Ok(scene) => scene,
+                Err(_) => {
+                    self.scene = None;
+                    shared.dirty.set(true);
+                    return Err(PortableProducerError::InvalidSource);
+                },
+            };
             shared.dirty.set(false);
             shared.physical_size.set(frame.physical_size);
             return self.remember_scene(scene);
@@ -120,6 +128,11 @@ impl CanvasProducer {
                 None => canvas.frame(size.0, size.1),
             }
         };
+        if canvas.last_translation_error().is_some() {
+            self.scene = None;
+            shared.dirty.set(true);
+            return Err(PortableProducerError::InvalidSource);
+        }
         if profile && let Some(report) = canvas.elapsed_step_report() {
             shared.timing.borrow_mut().counts([
                 ("physics_steps", report.steps as usize),

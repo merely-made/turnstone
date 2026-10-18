@@ -49,18 +49,15 @@ impl ContentProducer {
     pub fn same_source(&self, slot: &Rc<RefCell<ContentSlot>>) -> bool {
         Rc::ptr_eq(&self.slot, slot)
     }
-    fn scene(&mut self, frame: &ProducerFrameInfo) -> Result<Scene, PortableProducerError> {
-        self.slot
-            .borrow_mut()
-            .frame(
-                frame.logical_size.0.max(1.),
-                frame.logical_size.1.max(1.),
-                frame
-                    .timestamp
-                    .map(|t| t.as_secs_f64() * 1000.)
-                    .unwrap_or(0.),
-            )
-            .map_err(|_| PortableProducerError::InvalidSource)
+    fn scene(&mut self, frame: &ProducerFrameInfo) -> Result<Scene, String> {
+        self.slot.borrow_mut().frame(
+            frame.logical_size.0.max(1.),
+            frame.logical_size.1.max(1.),
+            frame
+                .timestamp
+                .map(|t| t.as_secs_f64() * 1000.)
+                .unwrap_or(0.),
+        )
     }
 }
 impl TextureProducer for ContentProducer {
@@ -68,7 +65,9 @@ impl TextureProducer for ContentProducer {
         &mut self,
         frame: &ProducerFrameInfo,
     ) -> Result<ProducedScene, PortableProducerError> {
-        let scene = self.scene(frame)?;
+        let scene = self
+            .scene(frame)
+            .map_err(|_| PortableProducerError::InvalidSource)?;
         let slot = self.slot.borrow();
         let identity = slot
             .session_identity()
@@ -88,9 +87,9 @@ impl TextureProducer for ContentProducer {
         &mut self,
         cx: &ProducerContext<'_>,
     ) -> Result<Option<ProducedTexture>, genet_render_host::RasterizeFailure> {
-        let Ok(scene) = self.scene(cx.frame) else {
-            return Ok(None);
-        };
+        let scene = self
+            .scene(cx.frame)
+            .map_err(genet_render_host::RasterizeFailure::SourceError)?;
         let [width, height] = cx.frame.physical_size;
         let (texture, view) = cx.core.try_rasterize_scaled_for(
             self.raster_key,

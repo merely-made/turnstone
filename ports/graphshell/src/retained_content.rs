@@ -30,8 +30,8 @@ mod view;
 pub use view::{content_view, filling_content_view};
 mod producer;
 pub use producer::ContentProducer;
-pub mod fixture;
 mod export;
+pub mod fixture;
 pub use export::ClipExportScope;
 
 /// Admit an explicitly selected package through its Fleece owner, then add the
@@ -296,7 +296,7 @@ impl ContentSlot {
         if self.content.pump() {
             self.revision = self.revision.wrapping_add(1);
         }
-        match self.content.frame(
+        match self.content.try_frame(
             WorkspaceRect {
                 x: 0.,
                 y: 0.,
@@ -304,7 +304,7 @@ impl ContentSlot {
                 height,
             },
             1.,
-        ) {
+        )? {
             PeltLayer::Document(scene) => {
                 self.glyph_runs = scene
                     .ops
