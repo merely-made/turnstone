@@ -331,27 +331,17 @@ fn strict_reentry(
         .collect::<Vec<_>>();
     let mut exited = !points
         .first()
-        .is_some_and(|point| billboard.contains_screen((*point).into()));
+        .is_some_and(|point| billboard.strictly_contains_screen((*point).into()));
     let mut violations = 0usize;
     for pair in points.windows(2) {
-        let interval = billboard.segment_interior_interval(pair[0].into(), pair[1].into());
-        if let Some((enter, exit)) = interval.filter(|(enter, exit)| exit - enter > 1.0e-5) {
-            let midpoint = (
-                pair[0].0 + (pair[1].0 - pair[0].0) * (enter + exit) * 0.5,
-                pair[0].1 + (pair[1].1 - pair[0].1) * (enter + exit) * 0.5,
-            );
-            if billboard
-                .signed_distance_screen(midpoint.into())
-                .is_some_and(|distance| distance < -1.0e-5)
-            {
-                if allow_initial_stem_exit && !exited {
-                    exited = !billboard.contains_screen(pair[1].into());
-                } else {
-                    violations += 1;
-                }
+        if billboard.segment_crosses_interior(pair[0].into(), pair[1].into()) {
+            if allow_initial_stem_exit && !exited {
+                exited = !billboard.strictly_contains_screen(pair[1].into());
+            } else {
+                violations += 1;
             }
         }
-        if !billboard.contains_screen(pair[1].into()) {
+        if !billboard.strictly_contains_screen(pair[1].into()) {
             exited = true;
         }
     }
