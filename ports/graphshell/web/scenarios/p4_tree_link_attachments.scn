@@ -1,0 +1,146 @@
+# Scripted profiles exercise shared ordinary-view camera, billboard, grammar,
+# shape and height behavior. These commands are qualification inputs; they are
+# not presented as ordinary user controls or source-graph settings.
+# tree.html?app=local&fixture=link-rest&scenario=scenarios/p4_tree_link_attachments.scn
+click role:button Fit graph
+settle 2
+assert snap physics-paused == true
+assert snap link-rest-ready == true
+assert snap link-path-state == disabled
+assert snap link-path-count == 6
+link-attachment-profile flat
+settle 2
+assert snap link-attachment-profile == scripted-shared-view
+assert snap link-attachment-profile-name == flat
+assert snap link-attachment-invalid == 0
+assert snap link-attachment-visible-body-count >= 1
+assert snap link-attachment-body-readback-missing == 0
+assert snap link-attachment-body-readback-error == none
+assert snap link-attachment-max-body-rect-error <= 0.050
+remember ordinary-attachment-source
+remember ordinary-attachment-flat
+capture ordinary_link_attachments_flat
+
+# Turn on an ordinary temporary field response. The graph, labels and world
+# endpoints remain source-identical while camera and node presentation change.
+click role:button Temporary flow
+settle 2
+assert snap link-path-state == applied
+assert snap link-path-responsive-count == 6
+assert snap link-path-presentation-fallbacks == 0
+assert snap link-attachment-responsive-paths == 6
+assert snap link-attachment-max-boundary-error <= 0.050
+assert snap link-attachment-interior-violations == 0
+assert snap link-attachment-visible-body-count >= 1
+assert snap link-attachment-body-readback-missing == 0
+assert snap link-attachment-body-readback-error == none
+assert snap link-attachment-max-body-rect-error <= 0.050
+same ordinary-attachment-source link-rest-source-facts
+same ordinary-attachment-source link-rest-graph-revision
+capture ordinary_link_attachments_response
+
+link-attachment-profile tilted
+settle 2
+assert snap link-attachment-profile-name == tilted
+assert snap link-attachment-invalid == 0
+assert snap link-attachment-visible-body-count >= 1
+assert snap link-attachment-body-readback-missing == 0
+assert snap link-attachment-body-readback-error == none
+assert snap link-attachment-max-body-rect-error <= 0.050
+assert snap link-attachment-max-stem == 0.000
+assert snap link-path-responsive-count >= 1
+assert snap link-path-presentation-fallbacks == 0
+assert snap link-attachment-responsive-paths >= 1
+assert snap link-attachment-max-boundary-error <= 0.050
+assert snap link-attachment-interior-violations == 0
+differs ordinary-attachment-flat link-attachment-camera
+same ordinary-attachment-source link-rest-source-facts
+same ordinary-attachment-source link-rest-graph-revision
+remember ordinary-attachment-tilted
+capture ordinary_link_attachments_tilted
+
+link-attachment-profile rounded
+settle 2
+assert snap link-attachment-profile-name == rounded
+assert snap link-attachment-invalid == 0
+assert snap link-attachment-visible-body-count >= 1
+assert snap link-attachment-body-readback-missing == 0
+assert snap link-attachment-body-readback-error == none
+assert snap link-attachment-max-body-rect-error <= 0.050
+assert snap link-path-responsive-count >= 1
+assert snap link-path-presentation-fallbacks == 0
+assert snap link-attachment-responsive-paths >= 1
+assert snap link-attachment-max-boundary-error <= 0.050
+assert snap link-attachment-interior-violations == 0
+same ordinary-attachment-source link-rest-source-facts
+same ordinary-attachment-source link-rest-graph-revision
+capture ordinary_link_attachments_rounded
+
+link-attachment-profile circle
+settle 2
+assert snap link-attachment-profile-name == circle
+assert snap link-attachment-invalid == 0
+assert snap link-attachment-visible-body-count >= 1
+assert snap link-attachment-body-readback-missing == 0
+assert snap link-attachment-body-readback-error == none
+assert snap link-attachment-max-body-rect-error <= 0.050
+assert snap link-path-responsive-count >= 1
+assert snap link-path-presentation-fallbacks == 0
+assert snap link-attachment-responsive-paths >= 1
+assert snap link-attachment-max-boundary-error <= 0.050
+assert snap link-attachment-interior-violations == 0
+same ordinary-attachment-source link-rest-source-facts
+same ordinary-attachment-source link-rest-graph-revision
+capture ordinary_link_attachments_circle
+
+link-attachment-profile suggestion
+settle 2
+assert snap link-attachment-profile-name == suggestion
+assert snap link-attachment-grammar == true
+assert snap link-attachment-suggestions == true
+assert snap link-attachment-invalid == 0
+assert snap link-attachment-visible-body-count >= 1
+assert snap link-attachment-body-readback-missing == 0
+assert snap link-attachment-body-readback-error == none
+assert snap link-attachment-max-body-rect-error <= 0.050
+assert snap link-path-responsive-count >= 1
+assert snap link-path-presentation-fallbacks == 0
+assert snap link-attachment-responsive-paths >= 1
+assert snap link-attachment-max-boundary-error <= 0.050
+assert snap link-attachment-interior-violations == 0
+same ordinary-attachment-source link-rest-source-facts
+same ordinary-attachment-source link-rest-graph-revision
+capture ordinary_link_attachments_suggestion
+
+link-attachment-profile lifted
+settle 2
+assert snap link-attachment-profile-name == lifted
+assert snap link-attachment-height == true
+assert snap link-attachment-max-stem >= 1
+assert snap link-attachment-max-foot-error <= 0.050
+assert snap link-attachment-invalid == 0
+assert snap link-attachment-visible-body-count >= 1
+assert snap link-attachment-body-readback-missing == 0
+assert snap link-attachment-body-readback-error == none
+assert snap link-attachment-max-body-rect-error <= 0.050
+assert snap link-path-responsive-count >= 1
+assert snap link-path-state == applied
+assert snap link-path-presentation-fallbacks == 0
+assert snap link-attachment-responsive-paths >= 1
+assert snap link-attachment-interior-violations == 0
+same ordinary-attachment-source link-rest-source-facts
+same ordinary-attachment-source link-rest-graph-revision
+capture ordinary_link_attachments_lifted
+
+# Native input samples the current painted path in projected screen space and
+# resolves back to the correct ordinary source identity.
+click-link-path a1-b1 resource midpoint
+settle 2
+assert snap link-rest-selected ~ link:v1:resource
+assert snap link-path-selected-display-pair == a1-b1
+assert snap link-path-selected-source == true
+same ordinary-attachment-source link-rest-source-facts
+same ordinary-attachment-source link-rest-graph-revision
+capture ordinary_link_attachments_lifted_selected
+
+log Scripted shared-view attachment profiles preserve ordinary source facts and graph revision

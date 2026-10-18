@@ -1,0 +1,40 @@
+# Run in a new native browser process after the attachment seed scenario.
+# Scripted view profiles and responsive settings are temporary; the source graph
+# and its stable facts remain the basis for the ordinary reopened view.
+# tree.html?app=local&fixture=link-rest&scenario=scenarios/p4_tree_link_attachments_reopen.scn
+click role:button Fit graph
+settle 2
+assert snap physics-paused == true
+assert snap link-rest-ready == true
+assert snap link-path-state == disabled
+assert snap link-path-field-response == false
+assert snap link-path-compatible-attraction == false
+assert snap link-path-group-count == 0
+assert snap link-path-count == 6
+assert snap link-path-responsive-count == 0
+assert snap link-attachment-profile-name == flat
+assert snap link-attachment-height == false
+assert snap link-attachment-grammar == false
+assert snap link-attachment-suggestions == false
+assert snap link-attachment-invalid == 0
+assert snap link-attachment-visible-body-count >= 1
+assert snap link-attachment-body-readback-missing == 0
+assert snap link-attachment-body-readback-error == none
+assert snap link-attachment-max-body-rect-error <= 0.050
+remember ordinary-attachment-reopened-source
+capture ordinary_link_attachments_reopened_default
+
+link-attachment-profile tilted
+settle 2
+assert snap link-attachment-profile-name == tilted
+assert snap link-attachment-invalid == 0
+assert snap link-attachment-visible-body-count >= 1
+assert snap link-attachment-body-readback-missing == 0
+assert snap link-attachment-body-readback-error == none
+assert snap link-attachment-max-body-rect-error <= 0.050
+assert snap link-path-state == disabled
+same ordinary-attachment-reopened-source link-rest-source-facts
+same ordinary-attachment-reopened-source link-rest-graph-revision
+capture ordinary_link_attachments_reopened_tilted
+
+log Fresh process restores the ordinary source graph while scripted camera, shape, grammar and height profiles begin reset
