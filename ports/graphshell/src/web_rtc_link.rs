@@ -14,7 +14,7 @@
 //! hook. A page implements [`RemoteHost`] over wherever it keeps the session;
 //! the retained page keeps it in its shared state.
 
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use futures_channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
@@ -51,6 +51,8 @@ pub(crate) struct Transport {
     writer: BrowserWriter,
     pub(crate) subject: String,
     pub(crate) session_id: String,
+    /// The admitted transport binding changes when this logical session rejoins.
+    shared_link: [u8; 16],
     /// What a reconnect presents again: the same signaling server and the
     /// same invitation (the delegation and subject come back from the
     /// retired session).
@@ -83,7 +85,8 @@ impl LiveRemote {
     pub(crate) fn flush(&mut self) {
         for line in self.session.take_outgoing() {
             if self.transport.outbox.unbounded_send(line).is_err() {
-                self.session.fail("the session writer is gone");
+                self.session.link_failed("the session writer is gone");
+                self.transport.writer.close();
                 break;
             }
         }
@@ -186,6 +189,7 @@ async fn join<H: RemoteHost>(
                 writer: writer.clone(),
                 subject,
                 session_id,
+                shared_link: session.joined.shared_link,
                 signal_url,
                 invite_fragment,
             },
@@ -207,10 +211,32 @@ fn spawn_pumps<H: RemoteHost>(
     writer: BrowserWriter,
     mut inbox: UnboundedReceiver<String>,
 ) {
+    let channel_open = Rc::new(Cell::new(true));
+    let sender_open = channel_open.clone();
+    let send_state = Rc::downgrade(&state);
+    let send_link = session.joined.shared_link;
     spawn_local(async move {
         while let Some(line) = inbox.next().await {
+            if !sender_open.get() {
+                break;
+            }
             if let Err(error) = writer.send_line(&line).await {
-                web_sys::console::error_1(&format!("remote send: {error}").into());
+                if sender_open.replace(false)
+                    && let Some(state) = send_state.upgrade()
+                {
+                    let mut host = state.borrow_mut();
+                    // An old sender may finish after a replacement link was
+                    // installed. Its failure must not disconnect the new session.
+                    if host
+                        .live()
+                        .is_some_and(|live| live.transport.shared_link == send_link)
+                    {
+                        host.stream_closed(Some(format!("send: {error}")));
+                        host.changed();
+                    }
+                }
+                // Closing wakes the receive pump so it can retire the channel.
+                writer.close();
                 break;
             }
         }
@@ -218,7 +244,13 @@ fn spawn_pumps<H: RemoteHost>(
 
     spawn_local(async move {
         loop {
+            if !channel_open.get() {
+                break;
+            }
             let read = session.next_line().await;
+            if !channel_open.get() {
+                break;
+            }
             let mut host = state.borrow_mut();
             let done = match read {
                 Ok(Some(line)) => {
@@ -226,11 +258,15 @@ fn spawn_pumps<H: RemoteHost>(
                     false
                 },
                 Ok(None) => {
-                    host.stream_closed(None);
+                    if channel_open.replace(false) {
+                        host.stream_closed(None);
+                    }
                     true
                 },
                 Err(error) => {
-                    host.stream_closed(Some(format!("recv: {error}")));
+                    if channel_open.replace(false) {
+                        host.stream_closed(Some(format!("recv: {error}")));
+                    }
                     true
                 },
             };
@@ -347,6 +383,7 @@ async fn rejoin<H: RemoteHost>(
         live.transport.outbox = outbox;
         live.transport.writer = writer.clone();
         live.transport.session_id = session_id;
+        live.transport.shared_link = session.joined.shared_link;
         host.rejoined();
         host.changed();
     }
