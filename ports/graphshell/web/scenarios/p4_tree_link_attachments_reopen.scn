@@ -14,7 +14,9 @@ assert snap link-path-count == 6
 assert snap link-path-responsive-count == 0
 assert snap link-attachment-profile-name == flat
 assert snap link-attachment-height == false
-assert snap link-attachment-grammar == false
+# Graphshell's ordinary host default enables grammar. The profile's temporary
+# grammar-off setting resets to that default, alongside camera/shape/height.
+assert snap link-attachment-grammar == true
 assert snap link-attachment-suggestions == false
 assert snap link-attachment-invalid == 0
 assert snap link-attachment-visible-body-count >= 1
