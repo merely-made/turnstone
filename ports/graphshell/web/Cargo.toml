@@ -96,8 +96,8 @@ layout-dom-api = { git = "https://github.com/merely-made/genet.git", branch = "m
 # Named genet-probe until genet 7baa554c (2026-09-14).
 taproot = { git = "https://github.com/merely-made/genet.git", branch = "main", default-features = false }
 js-sys = "0.3"
-netrender = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
-netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "e8cda06efc11c11595f2fa1bb30bce7e72979537" }
+netrender = { git = "https://github.com/merely-made/netrender.git", rev = "c5efc94f876e93caba20807709189c5f9589492b" }
+netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "c5efc94f876e93caba20807709189c5f9589492b" }
 serde_json = "1"
 # The remote link's outbound queue: the host enqueues lines synchronously,
 # a task drains them onto the channel.
