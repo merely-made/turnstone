@@ -66,6 +66,10 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
             report.responsive_paths.to_string(),
         )
         .with_field(
+            "link-path-presentation-fallbacks",
+            report.presentation_fallbacks.to_string(),
+        )
+        .with_field(
             "link-path-excluded-endpoints",
             report.excluded_endpoints.to_string(),
         )

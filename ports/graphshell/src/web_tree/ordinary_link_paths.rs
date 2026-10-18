@@ -221,7 +221,18 @@ fn status(report: &LinkPathResponseReport) -> String {
     match report.state {
         LinkPathState::Disabled => "Responses off".into(),
         LinkPathState::Applied if report.responsive_paths > 0 => {
-            format!("Curving {} links", report.responsive_paths)
+            if report.presentation_fallbacks > 0 {
+                format!(
+                    "Curving {} appearances · {} kept at rest",
+                    report.responsive_paths, report.presentation_fallbacks
+                )
+            } else {
+                format!("Curving {} appearances", report.responsive_paths)
+            }
+        },
+        LinkPathState::Applied if report.presentation_fallbacks > 0 => {
+            "Responses on · paths kept at rest because they cannot attach clear of node faces"
+                .into()
         },
         LinkPathState::Applied => "Responses on · no visible bending".into(),
         LinkPathState::Refused => format!(
@@ -265,6 +276,10 @@ pub(super) fn section(page: &TreePage) -> Child {
         Box::new(el(
             "p",
             "Temporary paths bend alongside ordinary graph behavior; they do not move or save nodes. Settings clear when this view closes.",
+        )),
+        Box::new(el(
+            "p",
+            "Surface paths are gold; Resource paths are blue. Arrows show direction, cross ticks show opposition, and selection adds a halo.",
         )),
         Box::new(
             button(
@@ -389,7 +404,7 @@ pub(super) fn section(page: &TreePage) -> Child {
     children.push(Box::new(el(
         "p",
         format!(
-            "Field: {} · strength: {} · field response {} · compatible attraction {} · group: {} link(s) · maximum visible bend: {} units.",
+            "Field: {} · strength: {} · field response {} · compatible attraction {} · group: {} link(s) · maximum visible bend: {:.1} units.",
             configured_field(&response),
             response.field_strength,
             response.field_response,
