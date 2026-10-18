@@ -1,0 +1,170 @@
+{
+  "schema": "distillery.inference-runs/v1",
+  "model": "HuggingFaceTB/SmolLM2-360M-Instruct",
+  "session": {
+    "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+    "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+  },
+  "load_error": null,
+  "runs": [
+    {
+      "run": "turnstone/c0e022b4-6b0a-4779-8c0a-5fcee2039643/research/v1/9a888351-30f4-4dae-9f68-12c15723f827",
+      "question": "Repeat the retained sentence about the Pelican observatory exactly.",
+      "state": "finished",
+      "text": "The Pelican observatory's access word is café.",
+      "error": null,
+      "session": {
+        "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+        "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+      },
+      "tokens": 10,
+      "continuations": [
+        {
+          "device": "device:58c79fc9d7c729482fdd8c02144de2f5",
+          "at_token": 0,
+          "reason": "ask",
+          "first_differing_token": null,
+          "compared_token_ids_hash": null
+        },
+        {
+          "device": "device:58c79fc9d7c729482fdd8c02144de2f5",
+          "at_token": 1,
+          "reason": "user",
+          "first_differing_token": null,
+          "compared_token_ids_hash": null
+        }
+      ],
+      "recall": {
+        "owner": "turnstone/c0e022b4-6b0a-4779-8c0a-5fcee2039643/research/v1",
+        "scope": [
+          {
+            "kind": "fleece",
+            "owner": "turnstone/c0e022b4-6b0a-4779-8c0a-5fcee2039643/research/v1",
+            "source": "mere://saved-source/c0e022b4-6b0a-4779-8c0a-5fcee2039643/48e4b340-d561-4531-98e6-bb54c33e6761/fd554d4c-6eb7-4594-a721-3ee9a32d074b/c7d29bd8b2e266dd1e8350dfa988cae2764ce3fb2b33a1e15af509d4d9666c2a/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+            "node": "fd554d4c-6eb7-4594-a721-3ee9a32d074b"
+          },
+          {
+            "kind": "fleece",
+            "owner": "turnstone/c0e022b4-6b0a-4779-8c0a-5fcee2039643/research/v1",
+            "source": "mere://saved-source/c0e022b4-6b0a-4779-8c0a-5fcee2039643/48e4b340-d561-4531-98e6-bb54c33e6761/08160e52-80f2-4b24-8f8a-ebc2b2fa6499/3f05bf5717e20ecd2a279e3ffca66506fef7b62f5d8fd25dcd02fdee820f2336/7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+            "node": "08160e52-80f2-4b24-8f8a-ebc2b2fa6499"
+          }
+        ],
+        "config": {
+          "chunk_chars": 512,
+          "max_passages": 1,
+          "min_quote_chars": 32,
+          "max_context_chars": 12000,
+          "max_corpus_chars": 1000000
+        },
+        "passages": [
+          {
+            "handle": 1,
+            "passage": {
+              "source": {
+                "kind": "fleece",
+                "owner": "turnstone/c0e022b4-6b0a-4779-8c0a-5fcee2039643/research/v1",
+                "source": "mere://saved-source/c0e022b4-6b0a-4779-8c0a-5fcee2039643/48e4b340-d561-4531-98e6-bb54c33e6761/fd554d4c-6eb7-4594-a721-3ee9a32d074b/c7d29bd8b2e266dd1e8350dfa988cae2764ce3fb2b33a1e15af509d4d9666c2a/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+                "node": "fd554d4c-6eb7-4594-a721-3ee9a32d074b"
+              },
+              "version": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+              "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+              "selector": {
+                "start": 0,
+                "end": 46
+              },
+              "chunker": "mere.unicode-chunks/v1/512",
+              "text": "The Pelican observatory's access word is café."
+            }
+          }
+        ],
+        "stale": [
+          {
+            "source": {
+              "kind": "fleece",
+              "owner": "turnstone/c0e022b4-6b0a-4779-8c0a-5fcee2039643/research/v1",
+              "source": "mere://saved-source/c0e022b4-6b0a-4779-8c0a-5fcee2039643/48e4b340-d561-4531-98e6-bb54c33e6761/fd554d4c-6eb7-4594-a721-3ee9a32d074b/c7d29bd8b2e266dd1e8350dfa988cae2764ce3fb2b33a1e15af509d4d9666c2a/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+              "node": "fd554d4c-6eb7-4594-a721-3ee9a32d074b"
+            },
+            "indexed_version": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+            "current_version": null,
+            "error": "source owner is unavailable"
+          }
+        ]
+      }
+    },
+    {
+      "run": "turnstone/c0e022b4-6b0a-4779-8c0a-5fcee2039643/research/v1/d910f700-7234-4856-b28c-f56df51105a7",
+      "question": "What is the harbor sentinel? Cite [1] and explain it in twenty sentences.",
+      "state": "cancelled",
+      "text": "",
+      "error": null,
+      "session": {
+        "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+        "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+      },
+      "tokens": 0,
+      "continuations": [
+        {
+          "device": "device:58c79fc9d7c729482fdd8c02144de2f5",
+          "at_token": 0,
+          "reason": "ask",
+          "first_differing_token": null,
+          "compared_token_ids_hash": null
+        }
+      ],
+      "recall": {
+        "owner": "turnstone/c0e022b4-6b0a-4779-8c0a-5fcee2039643/research/v1",
+        "scope": [
+          {
+            "kind": "fleece",
+            "owner": "turnstone/c0e022b4-6b0a-4779-8c0a-5fcee2039643/research/v1",
+            "source": "mere://saved-source/c0e022b4-6b0a-4779-8c0a-5fcee2039643/48e4b340-d561-4531-98e6-bb54c33e6761/08160e52-80f2-4b24-8f8a-ebc2b2fa6499/3f05bf5717e20ecd2a279e3ffca66506fef7b62f5d8fd25dcd02fdee820f2336/7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+            "node": "08160e52-80f2-4b24-8f8a-ebc2b2fa6499"
+          }
+        ],
+        "config": {
+          "chunk_chars": 512,
+          "max_passages": 1,
+          "min_quote_chars": 32,
+          "max_context_chars": 12000,
+          "max_corpus_chars": 1000000
+        },
+        "passages": [
+          {
+            "handle": 1,
+            "passage": {
+              "source": {
+                "kind": "fleece",
+                "owner": "turnstone/c0e022b4-6b0a-4779-8c0a-5fcee2039643/research/v1",
+                "source": "mere://saved-source/c0e022b4-6b0a-4779-8c0a-5fcee2039643/48e4b340-d561-4531-98e6-bb54c33e6761/08160e52-80f2-4b24-8f8a-ebc2b2fa6499/3f05bf5717e20ecd2a279e3ffca66506fef7b62f5d8fd25dcd02fdee820f2336/7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+                "node": "08160e52-80f2-4b24-8f8a-ebc2b2fa6499"
+              },
+              "version": "blake3:7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+              "text_hash": "blake3:7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+              "selector": {
+                "start": 0,
+                "end": 34
+              },
+              "chunker": "mere.unicode-chunks/v1/512",
+              "text": "amber harbor main-session sentinel"
+            }
+          }
+        ],
+        "stale": [
+          {
+            "source": {
+              "kind": "fleece",
+              "owner": "turnstone/c0e022b4-6b0a-4779-8c0a-5fcee2039643/research/v1",
+              "source": "mere://saved-source/c0e022b4-6b0a-4779-8c0a-5fcee2039643/48e4b340-d561-4531-98e6-bb54c33e6761/08160e52-80f2-4b24-8f8a-ebc2b2fa6499/3f05bf5717e20ecd2a279e3ffca66506fef7b62f5d8fd25dcd02fdee820f2336/7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+              "node": "08160e52-80f2-4b24-8f8a-ebc2b2fa6499"
+            },
+            "indexed_version": "blake3:7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+            "current_version": null,
+            "error": "source owner is unavailable"
+          }
+        ]
+      }
+    }
+  ]
+}

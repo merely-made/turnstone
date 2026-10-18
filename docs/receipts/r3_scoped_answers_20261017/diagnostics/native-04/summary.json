@@ -1,0 +1,57 @@
+{
+  "qualification": false,
+  "raw_output": "/Users/markik/Code/output/turnstone-r3-native-04",
+  "result": "valid quotation citation and live reader; destination focus remained on Answers",
+  "model_text": "The Pelican observatory's access word is café.",
+  "validated_citations": [
+    {
+      "handle": 1,
+      "passage": "blake3:24228514c6b34d325e65a7914cd37c04cce072a347bb4b7b54e72c5dea17344f",
+      "basis": "verbatim_passage",
+      "answer_selector": {
+        "start": 0,
+        "end": 46
+      }
+    }
+  ],
+  "repair": "OpenSavedSource now transfers FocusTarget as well as active/maximized pane; a regression control covers that route.",
+  "raw_evidence_sha256": {
+    "fixture-ready.json": "98db21515553778dbe3e52ebb6fceb86d139d9493ffc4d0befa4843c726cfdb1",
+    "wrong-owner-probe.log": "8cee51d266318e77fdcddb78cd68266ee297357aa0fb233d2fab0ff48420026d",
+    "fixture.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "seed-command.json": "2eb259787ee02b3be79e2baf8133a5a232741bcc7f5bd188c28cadfb15512b06",
+    "requests-at-origin-stop.json": "bc8e0cf70978698fc010a2b1379956adc7e555667dc3b58ae128e46e3b92d413",
+    "resident.log": "4a4d25719b95f9effe40344f37c4f44ba2322d68bcaa516685608b4866a438b2",
+    "wrong-owner-probe.json": "241f897d00fd931f437681052e47c6794d9a7605bc7876b03bdad135c204bea5",
+    "launch-seed.log": "ea0fd5d7284650e94cb154a528337ad023b8bdce7711008907a639e23007d16b",
+    "origin-stop.json": "90a27b221a57cd8aea96372bd6de60d210b4452991b5512eb2f47bd6b67e4f16",
+    "inputs.json": "f7eddc5d5201f2dd523354e2b00c4b1cfe53de8fc6cbbf07226ee596cb3d8b03",
+    "runs.json": "62765dfb5a020ab7518dd7efe3f37e754dc229ae59a97e239ae73180915ea13e",
+    "seed/01_A1_saved.source-captures.json": "8e2db6879f703923feeb6136492adcc4cb339e89465e33af14df760885526c33",
+    "seed/05_empty_scope_refused.png": "cc717e7b4d2858f6a9e2e0bfdd3bbb73709de3f5d70555e16d1967ef0d049aaa",
+    "seed/03_A2_saved.source-captures.json": "308f523df39e9e6d82f5ea0be70cc909c503eee95e184c68f7c8ac4db291ca88",
+    "seed/06b_paused_scoped_answer.png": "618dce00e46c1789cd1b639418e8b6ea05562bb418c9ad150a0c06f61a702799",
+    "seed/04_foreign_session_source.png": "5630205b5783a57636b337575c4affbfcf78878d0bc29b325aa0baca6a174af2",
+    "seed/02_B_saved.source-captures.json": "86b7ec53102728cb73812529dc3a103597a4a50fe70a287e1d959a08d6ce35b1",
+    "seed/08_changed_scope_old_answer.png": "d901b8b21b050cee2af796cbfe7beb07cd4f30abc62226d2ea55d6655ebc30d0",
+    "seed/06_explicit_A1_B_scope.png": "0fa81b8bf46b409205fd400ea9523cc61bb3a4584f6638962558bd7568b7eab5",
+    "seed/diagnostics.json": "d1f077baed1205326928256a00eae79481717d6b5266aa00694a1e01eff73f88",
+    "seed/07_scoped_answer_origin_gone.png": "ea184fd5bcb096681a6cebc8bfadb22a9c0b37b88ce7fa2cf7f89de97ef0f527",
+    "seed/08b_cancelled_B_only_ask.png": "4ac2b8813923cca64a2144f14a0774847fb4976b55348fb0488cf4b581f4ae7a",
+    "seed/native.log": "92f2b5ea759fd2a04454991cb87bbbf12fb865172473d1bf6e0c41e8e5f0259e",
+    "seed/scenario.done": "1f6d76e8edd2f8f7016efa5aff98710ac581062521be2897105561607bddedec",
+    "seed/process.json": "22d915a1ac48b64fb2734c7d0e5d27ac2cab2248bc723cf67537201dc221a77b",
+    "seed/launcher.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "seed/04_foreign_session_source.saved-sources.json": "46156edcda40b04a0f77317d2aef3814af6f2e720614373b86305a2372eecb28",
+    "fixture/requests.json": "bc8e0cf70978698fc010a2b1379956adc7e555667dc3b58ae128e46e3b92d413",
+    "resident/cancelled.json": "32ac49bbb14cee572c76f0483bb616ba752f98fd7cb138b725a44e6edb5bc1f3",
+    "resident/ready-0.json": "e5d743319d685456ab1e6c6f2ca543bc56210bade2a52d606d9e4a01a67dd162",
+    "resident/paused.json": "16ddc5796d787541116e9be086bd9953217c68b9a3f749afba8f72816ec5ad7b",
+    "resident/finished.json": "1162129cb241e889914396882e18f613ae263008ee9b1b69d7d1b683a4c113e8",
+    "resident/streaming.json": "fa383b64539775f16e688cfc46caf191fee19561f1780f17a3e7d2e9b7c5a711",
+    "resident/endpoint.txt": "dc7b890a7f66f2898aedbea5a21de80948a39af0c0bb7532a2a7073094965a9b",
+    "resident/second-started.json": "03494afd4248c42f5fa1237bf2eeebe751ab8d9c977d55405fcb17469dbd91f8",
+    "control/origin-stopped": "a6814dd1c2c6d37ffd352b710ecd0f63871b78f17ea71618bbaaa1a77ace2601",
+    "control/stop-origin": "7c34ee8c3de68a60833ad48675da46483dc2c7b1cb42333fd6a528a93a39f652"
+  }
+}

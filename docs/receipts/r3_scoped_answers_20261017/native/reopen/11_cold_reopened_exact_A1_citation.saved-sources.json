@@ -1,0 +1,178 @@
+{
+  "admissions": [
+    {
+      "error": null,
+      "key": {
+        "annotation_manifest": "blake3:3f05bf5717e20ecd2a279e3ffca66506fef7b62f5d8fd25dcd02fdee820f2336",
+        "graph": "48e4b340-d561-4531-98e6-bb54c33e6761",
+        "node": "08160e52-80f2-4b24-8f8a-ebc2b2fa6499",
+        "session": "c0e022b4-6b0a-4779-8c0a-5fcee2039643"
+      },
+      "occurrence": 0,
+      "title": "Source B",
+      "url": "http://127.0.0.1:60279/B"
+    },
+    {
+      "error": null,
+      "key": {
+        "annotation_manifest": "blake3:c7d29bd8b2e266dd1e8350dfa988cae2764ce3fb2b33a1e15af509d4d9666c2a",
+        "graph": "48e4b340-d561-4531-98e6-bb54c33e6761",
+        "node": "fd554d4c-6eb7-4594-a721-3ee9a32d074b",
+        "session": "c0e022b4-6b0a-4779-8c0a-5fcee2039643"
+      },
+      "occurrence": 0,
+      "title": "Source A",
+      "url": "http://127.0.0.1:60279/A"
+    },
+    {
+      "error": null,
+      "key": {
+        "annotation_manifest": "blake3:9255cfbbbabec77b792e3090dc3900a10a6052884b31b9ccd4279c3dc1a4ab7e",
+        "graph": "48e4b340-d561-4531-98e6-bb54c33e6761",
+        "node": "fd554d4c-6eb7-4594-a721-3ee9a32d074b",
+        "session": "c0e022b4-6b0a-4779-8c0a-5fcee2039643"
+      },
+      "occurrence": 1,
+      "title": "Source A",
+      "url": "http://127.0.0.1:60279/A"
+    }
+  ],
+  "entries": [],
+  "generation": "ee428efb-effb-4186-af83-784eb99a4548",
+  "readers": [
+    {
+      "content": {
+        "captured_at_ms": 1792298377694,
+        "origin": "http://127.0.0.1:60279/A",
+        "raw_manifest": "blake3:00d30c18b7000c55584bf9dc589c1b031a28a26ce9114b29bb6ba74a1f3ae3ee",
+        "text": "The Pelican observatory's access word is café.",
+        "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+        "title": "Source A"
+      },
+      "engine": "turnstone.saved-source",
+      "error": null,
+      "node": "d5e57686-043d-4373-9e74-c0dea3fd68a0",
+      "phase": "Ready",
+      "rendered_document": {
+        "address": "mere://saved-source/c0e022b4-6b0a-4779-8c0a-5fcee2039643/48e4b340-d561-4531-98e6-bb54c33e6761/fd554d4c-6eb7-4594-a721-3ee9a32d074b/c7d29bd8b2e266dd1e8350dfa988cae2764ce3fb2b33a1e15af509d4d9666c2a/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=0&end=46",
+        "blocks": [
+          {
+            "Heading": {
+              "level": 1,
+              "spans": [
+                {
+                  "Text": "Source A"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved from http://127.0.0.1:60279/A"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Captured 2026-10-18T04:39:37Z"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved version: c7d29bd8b2e2"
+                }
+              ]
+            }
+          },
+          {
+            "Quote": {
+              "blocks": [
+                {
+                  "Paragraph": {
+                    "spans": [
+                      {
+                        "Strong": [
+                          {
+                            "Text": "The Pelican observatory's access word is café."
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "The Pelican observatory's access word is café."
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Link": {
+                    "predicate": null,
+                    "spans": [
+                      {
+                        "Text": "Open original address"
+                      }
+                    ],
+                    "title": "Open original address",
+                    "url": "http://127.0.0.1:60279/A"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "content_type": "text/plain; profile=saved-source",
+        "diagnostics": [],
+        "lang": null,
+        "navigation": {
+          "anchors": [],
+          "block_count": 0,
+          "folds": []
+        },
+        "provenance": {
+          "canonical_uri": "mere://saved-source/c0e022b4-6b0a-4779-8c0a-5fcee2039643/48e4b340-d561-4531-98e6-bb54c33e6761/fd554d4c-6eb7-4594-a721-3ee9a32d074b/c7d29bd8b2e266dd1e8350dfa988cae2764ce3fb2b33a1e15af509d4d9666c2a/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=0&end=46",
+          "fetched_at": null,
+          "source_kind": "turnstone.saved-source",
+          "source_label": "http://127.0.0.1:60279/A"
+        },
+        "title": "Source A",
+        "trust": "Unknown"
+      },
+      "target": {
+        "key": {
+          "annotation_manifest": "blake3:c7d29bd8b2e266dd1e8350dfa988cae2764ce3fb2b33a1e15af509d4d9666c2a",
+          "graph": "48e4b340-d561-4531-98e6-bb54c33e6761",
+          "node": "fd554d4c-6eb7-4594-a721-3ee9a32d074b",
+          "session": "c0e022b4-6b0a-4779-8c0a-5fcee2039643"
+        },
+        "selector": {
+          "end": 46,
+          "start": 0
+        },
+        "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275"
+      },
+      "url": "mere://saved-source/c0e022b4-6b0a-4779-8c0a-5fcee2039643/48e4b340-d561-4531-98e6-bb54c33e6761/fd554d4c-6eb7-4594-a721-3ee9a32d074b/c7d29bd8b2e266dd1e8350dfa988cae2764ce3fb2b33a1e15af509d4d9666c2a/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=0&end=46"
+    }
+  ],
+  "session": "c0e022b4-6b0a-4779-8c0a-5fcee2039643",
+  "status": ""
+}

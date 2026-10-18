@@ -30,22 +30,36 @@ use std::{
 
 pub const PANE_KIND: &str = "turnstone.answers";
 pub const SOURCE_SCHEMA: &str = "turnstone.answers.v1";
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct AnswerSourceV1 {
+pub struct AnswerSourceV2 {
     pub session: uuid::Uuid,
+    pub view: uuid::Uuid,
+    pub chosen: Vec<crate::saved_sources::Target>,
 }
 pub fn answer_source(session: uuid::Uuid) -> PaneSource {
+    answer_source_value(AnswerSourceV2 {
+        session,
+        view: uuid::Uuid::new_v4(),
+        chosen: Vec::new(),
+    })
+}
+pub(crate) fn answer_source_value(value: AnswerSourceV2) -> PaneSource {
     PaneSource::Fixed(SourceRef::External {
         schema: SourceSchemaId::new(SOURCE_SCHEMA),
         payload: SerializedSource {
-            version: 1,
-            payload: serde_json::to_value(AnswerSourceV1 { session }).unwrap(),
+            version: 2,
+            payload: serde_json::to_value(value).unwrap(),
         },
     })
 }
 #[derive(Clone, Default)]
 pub(crate) struct AnswerConnections(Rc<RefCell<BTreeMap<String, Weak<InferenceService>>>>);
+#[derive(Clone, Default)]
+struct Draft {
+    question: TextInput,
+    active: Option<String>,
+}
 pub struct AnswerProvider {
     kind: PaneKindId,
     schema: SourceSchemaId,
@@ -53,9 +67,15 @@ pub struct AnswerProvider {
     owner: Arc<dyn RetainedSourceOwner>,
     wake: armillary::Wake,
     connections: AnswerConnections,
+    bridge: crate::research::Bridge,
+    drafts: RefCell<BTreeMap<String, std::rc::Weak<RefCell<Draft>>>>,
 }
 impl AnswerProvider {
-    pub(crate) fn new(owner: Arc<dyn RetainedSourceOwner>, wake: armillary::Wake) -> Self {
+    pub(crate) fn new(
+        owner: Arc<dyn RetainedSourceOwner>,
+        wake: armillary::Wake,
+        bridge: crate::research::Bridge,
+    ) -> Self {
         Self {
             kind: PaneKindId::new(PANE_KIND),
             schema: SourceSchemaId::new(SOURCE_SCHEMA),
@@ -68,6 +88,8 @@ impl AnswerProvider {
             owner,
             wake,
             connections: Default::default(),
+            drafts: Default::default(),
+            bridge,
         }
     }
 }
@@ -109,17 +131,26 @@ impl SurfaceProvider for AnswerProvider {
         let PaneSource::Fixed(SourceRef::External { schema, payload }) = source else {
             return Err(invalid("Answers need a browsing-session source.".into()));
         };
-        if schema != &self.schema || payload.version != 1 {
-            return Err(invalid("Unsupported answer source.".into()));
+        if schema != &self.schema || payload.version != 2 {
+            return Err(invalid(
+                "Open Ask saved sources to choose an explicit saved-source scope.".into(),
+            ));
         }
-        let source: AnswerSourceV1 =
+        let source: AnswerSourceV2 =
             serde_json::from_value(payload.payload.clone()).map_err(|e| invalid(e.to_string()))?;
-        let namespace = format!("turnstone/{}", source.session);
+        let context = self.bridge.context().map_err(invalid)?;
+        if *context.session.as_uuid() != source.session {
+            return Err(invalid(
+                "Answers belong to another browsing session.".into(),
+            ));
+        }
+        let namespace = crate::research::namespace(context.session);
+        let connection_key = format!("{namespace}/{}", context.generation);
         let existing = self
             .connections
             .0
             .borrow()
-            .get(&namespace)
+            .get(&connection_key)
             .and_then(Weak::upgrade);
         let service = match existing {
             Some(service) => service,
@@ -133,17 +164,31 @@ impl SurfaceProvider for AnswerProvider {
                 self.connections
                     .0
                     .borrow_mut()
-                    .insert(namespace, Arc::downgrade(&service));
+                    .insert(connection_key, Arc::downgrade(&service));
                 service
             },
         };
+        let draft_key = format!("{namespace}/{}/{}", context.generation, source.view);
+        let draft = self
+            .drafts
+            .borrow()
+            .get(&draft_key)
+            .and_then(std::rc::Weak::upgrade)
+            .unwrap_or_else(|| Rc::new(RefCell::new(Draft::default())));
+        self.drafts
+            .borrow_mut()
+            .insert(draft_key, Rc::downgrade(&draft));
+        let previous = draft.borrow().clone();
         let state = AnswerState {
             snapshot: service.snapshot(),
+            source,
+            context,
+            bridge: self.bridge.clone(),
             service,
-            question: TextInput::default(),
-            active: None,
+            draft,
+            question: previous.question,
+            active: previous.active,
             local_status: String::new(),
-            source_open: false,
             width: 0.,
             height: 0.,
         };
@@ -155,12 +200,15 @@ impl SurfaceProvider for AnswerProvider {
     }
 }
 struct AnswerState {
+    draft: Rc<RefCell<Draft>>,
+    source: AnswerSourceV2,
+    context: crate::research::Context,
+    bridge: crate::research::Bridge,
     service: Arc<InferenceService>,
     snapshot: ClientSnapshot,
     question: TextInput,
     active: Option<String>,
     local_status: String,
-    source_open: bool,
     width: f32,
     height: f32,
 }
@@ -199,10 +247,17 @@ fn ask(state: &mut AnswerState, _: PointerClick) {
     if !state.snapshot.ready {
         return;
     }
-    match state.service.ask(state.question.text().to_owned()) {
+    if state.source.chosen.is_empty() {
+        state.local_status = "Choose at least one saved source before asking.".into();
+        return;
+    }
+    match state.service.ask(
+        state.question.text().to_owned(),
+        state.source.chosen.clone(),
+    ) {
         Ok(run) => {
             state.active = Some(run);
-            state.source_open = false;
+            state.question = TextInput::default();
             state.local_status = "Sending question…".into();
         },
         Err(error) => state.local_status = error,
@@ -211,7 +266,11 @@ fn ask(state: &mut AnswerState, _: PointerClick) {
 fn answer_view(state: &AnswerState) -> AnswerView {
     let mut body: Vec<AnswerView> = vec![
         Box::new(el::<_, AnswerState, ()>("h2", "Answers").attr("class", "answer-heading")),
-        row("Ask about retained text in this browsing session."),
+        row("Ask only about the saved sources you choose below."),
+        row(format!(
+            "{} saved sources chosen",
+            state.source.chosen.len()
+        )),
         Box::new(
             el::<_, AnswerState, ()>("div", state.snapshot.status.clone())
                 .attr("class", "answer-status")
@@ -235,6 +294,76 @@ fn answer_view(state: &AnswerState) -> AnswerView {
             |state: &mut AnswerState| &mut state.question,
         )),
     ];
+    let mut choices = vec![row("Saved sources for this question")];
+    for choice in &state.snapshot.choices {
+        if let Some(target) = &choice.target {
+            let target = target.clone();
+            let chosen = state.source.chosen.contains(&target);
+            choices.push(button(
+                format!(
+                    "{}: {}",
+                    if chosen {
+                        "Remove source"
+                    } else {
+                        "Choose source"
+                    },
+                    choice.label
+                ),
+                move |state, _| {
+                    let mut chosen = state.source.chosen.clone();
+                    if chosen.contains(&target) {
+                        chosen.retain(|item| item != &target);
+                    } else {
+                        chosen.push(target.clone());
+                    }
+                    state.bridge.send(crate::research::Intent::Selection {
+                        context: state.context.clone(),
+                        expected: state.source.clone(),
+                        chosen,
+                    });
+                },
+            ));
+        } else {
+            choices.push(row(format!(
+                "Unavailable: {} · {}",
+                choice.label,
+                choice.error.as_deref().unwrap_or("Unreadable saved source")
+            )));
+        }
+    }
+    for chosen in &state.source.chosen {
+        if !state
+            .snapshot
+            .choices
+            .iter()
+            .any(|choice| choice.target.as_ref() == Some(chosen))
+        {
+            let missing = chosen.clone();
+            choices.push(button(
+                format!(
+                    "Remove unavailable source: {}",
+                    chosen.key.annotation_manifest
+                ),
+                move |state, _| {
+                    let chosen = state
+                        .source
+                        .chosen
+                        .iter()
+                        .filter(|target| *target != &missing)
+                        .cloned()
+                        .collect();
+                    state.bridge.send(crate::research::Intent::Selection {
+                        context: state.context.clone(),
+                        expected: state.source.clone(),
+                        chosen,
+                    });
+                },
+            ));
+        }
+    }
+    body.push(Box::new(
+        el::<_, AnswerState, ()>("div", choices).attr("class", "answer-scope"),
+    ));
     if !state.local_status.is_empty() {
         body.push(row(state.local_status.clone()));
     }
@@ -307,6 +436,9 @@ fn answer_view(state: &AnswerState) -> AnswerView {
             el::<_, AnswerState, ()>("div", controls).attr("class", "answer-controls"),
         ));
         if let Some(evidence) = &run.recall {
+            if evidence.citations.is_empty() && run.state == RunStateV1::Finished {
+                card.push(row("No validated citations in this answer."));
+            }
             if !evidence.stale.is_empty() {
                 card.push(row("Some retained sources changed or became unavailable. Their citations are withdrawn."));
             }
@@ -330,9 +462,20 @@ fn answer_view(state: &AnswerState) -> AnswerView {
                         },
                     };
                     card.push(button(
-                        format!("Source {handle}: {}", supplied.passage.source.source),
+                        format!(
+                            "Source {handle}: {}",
+                            state
+                                .snapshot
+                                .choices
+                                .iter()
+                                .find(|choice| choice.target.as_ref().is_some_and(|target| {
+                                    crate::research::source_id(target).ok().as_ref()
+                                        == Some(&supplied.passage.source)
+                                }))
+                                .map(|choice| choice.label.as_str())
+                                .unwrap_or("Saved source")
+                        ),
                         move |state, _| {
-                            state.source_open = true;
                             if let Err(e) = state.service.source(id.clone(), handle) {
                                 state.local_status = e;
                             }
@@ -343,7 +486,14 @@ fn answer_view(state: &AnswerState) -> AnswerView {
                             "div",
                             format!(
                                 "{basis} · {} · characters {}..{}",
-                                supplied.passage.version,
+                                supplied
+                                    .passage
+                                    .version
+                                    .strip_prefix("blake3:")
+                                    .unwrap_or(&supplied.passage.version)
+                                    .chars()
+                                    .take(12)
+                                    .collect::<String>(),
                                 supplied.passage.selector.start,
                                 supplied.passage.selector.end
                             ),
@@ -352,38 +502,6 @@ fn answer_view(state: &AnswerState) -> AnswerView {
                     ));
                 }
             }
-        }
-        if state.source_open
-            && let Some(source) = state.snapshot.source.as_ref().filter(|s| s.run == run.run)
-        {
-            card.push(Box::new(
-                el::<_, AnswerState, ()>(
-                    "div",
-                    vec![
-                        row("Retained source version"),
-                        row(source.retained.source.source.clone()),
-                        Box::new(
-                            el::<_, AnswerState, ()>(
-                                "div",
-                                format!(
-                                    "{} · cited characters {}..{}",
-                                    source.retained.version,
-                                    source.selector.start,
-                                    source.selector.end
-                                ),
-                            )
-                            .attr("class", "answer-version"),
-                        ),
-                        Box::new(
-                            el::<_, AnswerState, ()>("pre", source.retained.text.clone())
-                                .attr("class", "answer-body")
-                                .attr("data-answer-source", "true"),
-                        ),
-                        button("Close source", |state, _| state.source_open = false),
-                    ],
-                )
-                .attr("class", "answer-source"),
-            ));
         }
         body.push(Box::new(
             el::<_, AnswerState, ()>("section", card).attr("data-answer-run", run.run.clone()),
@@ -401,7 +519,6 @@ fn answer_view(state: &AnswerState) -> AnswerView {
                 ),
                 move |state, _| {
                     state.active = Some(id.clone());
-                    state.source_open = false;
                     state.local_status = String::new();
                 },
             ));
@@ -425,6 +542,11 @@ struct AnswerSession {
 }
 impl AnswerSession {
     fn effects(&mut self) -> Vec<SurfaceEffect> {
+        let state = self.runner.state();
+        *state.draft.borrow_mut() = Draft {
+            question: state.question.clone(),
+            active: state.active.clone(),
+        };
         let mut effects = vec![SurfaceEffect::Redraw];
         if let Some(exit) = self.runner.take_focus_exit() {
             effects.push(SurfaceEffect::FocusExit(exit));
@@ -485,7 +607,12 @@ impl RetainedSurfaceSession for AnswerSession {
             return Vec::new();
         }
         self.runner.update(|state| {
-            if state.snapshot.revision != next.revision {
+            if state.local_status == "Sending question…"
+                && state
+                    .active
+                    .as_ref()
+                    .is_some_and(|id| next.runs.iter().any(|run| &run.run == id))
+            {
                 state.local_status.clear();
             }
             state.snapshot = next;
@@ -519,5 +646,74 @@ impl RetainedSurfaceSession for AnswerSession {
             },
         }
         self.effects()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    struct NoIo;
+    impl RetainedSourceOwner for NoIo {
+        fn snapshot(
+            &self,
+            _: &str,
+        ) -> Result<Vec<eidetic::models::recall::RetainedSourceText>, String> {
+            unreachable!()
+        }
+        fn resolve(
+            &self,
+            _: &eidetic::models::recall::RecallSourceId,
+            _: &str,
+        ) -> Result<String, String> {
+            unreachable!()
+        }
+    }
+    #[test]
+    fn research_panes_share_one_publisher_and_reject_foreign_or_legacy_sources() {
+        let bridge = crate::research::Bridge::default();
+        let context = crate::research::Context {
+            session: crate::panes::SessionId::new(),
+            generation: uuid::Uuid::new_v4(),
+            admissions: Vec::new(),
+        };
+        bridge.project(context.clone());
+        let provider = AnswerProvider::new(Arc::new(NoIo), Arc::new(|| {}), bridge);
+        let namespace = crate::research::namespace(context.session);
+        let service = InferenceService::inert_for_surface_test(namespace.clone());
+        provider.connections.0.borrow_mut().insert(
+            format!("{namespace}/{}", context.generation),
+            Arc::downgrade(&service),
+        );
+        let dom = || Rc::new(RefCell::new(genet_scripted_dom::ScriptedDom::new()));
+        let first = provider
+            .admit(&answer_source(*context.session.as_uuid()), dom())
+            .unwrap();
+        let second = provider
+            .admit(&answer_source(*context.session.as_uuid()), dom())
+            .unwrap();
+        assert_eq!(
+            Arc::strong_count(&service),
+            3,
+            "two admitted runners borrow exactly one publisher"
+        );
+        assert!(
+            provider
+                .admit(&answer_source(uuid::Uuid::new_v4()), dom())
+                .is_err()
+        );
+        let legacy = PaneSource::Fixed(SourceRef::External {
+            schema: SourceSchemaId::new(SOURCE_SCHEMA),
+            payload: SerializedSource {
+                version: 1,
+                payload: serde_json::json!({ "session": context.session.as_uuid() }),
+            },
+        });
+        assert!(
+            provider.admit(&legacy, dom()).is_err(),
+            "legacy PageText source cannot become a capture ask implicitly"
+        );
+        drop(first);
+        drop(second);
+        assert_eq!(Arc::strong_count(&service), 1);
     }
 }

@@ -1,0 +1,74 @@
+{
+  "run": "turnstone/e475fa91-e71c-4c31-bc9e-e317198019ff/research/v1/312538fb-74c3-4f76-9389-98079640d392",
+  "question": "What is the Pelican observatory's access word? Start your short answer with the literal text [1].",
+  "state": "finished",
+  "text": "The Pelican observatory's access word is amberstone.",
+  "error": null,
+  "session": {
+    "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+    "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+  },
+  "tokens": 11,
+  "continuations": [
+    {
+      "device": "device:00d7ada2665aae278ef37f2feaa4c544",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    },
+    {
+      "device": "device:00d7ada2665aae278ef37f2feaa4c544",
+      "at_token": 1,
+      "reason": "user",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "owner": "turnstone/e475fa91-e71c-4c31-bc9e-e317198019ff/research/v1",
+    "scope": [
+      {
+        "kind": "fleece",
+        "owner": "turnstone/e475fa91-e71c-4c31-bc9e-e317198019ff/research/v1",
+        "source": "mere://saved-source/e475fa91-e71c-4c31-bc9e-e317198019ff/06b9c66d-26e3-4388-b8dc-4f0e5c396b68/41012de0-5587-40bc-86d5-66fb1e37f9a1/a84abc8690e825d713bcaf359d84b79ed20e8a22ec5d4fe20d4acbb1e8a425a7/1d09bcf0ae5dd9b53496896981966c96f81cb0caecbe1282382abaa73e3bee0a",
+        "node": "41012de0-5587-40bc-86d5-66fb1e37f9a1"
+      },
+      {
+        "kind": "fleece",
+        "owner": "turnstone/e475fa91-e71c-4c31-bc9e-e317198019ff/research/v1",
+        "source": "mere://saved-source/e475fa91-e71c-4c31-bc9e-e317198019ff/06b9c66d-26e3-4388-b8dc-4f0e5c396b68/ea183254-1ede-4e76-987a-76fb1d968dbc/81643af41f39bc266830bce9ef59b1b16a5fa5c2827db1b9a76e4d2b18c7b2c8/7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+        "node": "ea183254-1ede-4e76-987a-76fb1d968dbc"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 1,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "fleece",
+            "owner": "turnstone/e475fa91-e71c-4c31-bc9e-e317198019ff/research/v1",
+            "source": "mere://saved-source/e475fa91-e71c-4c31-bc9e-e317198019ff/06b9c66d-26e3-4388-b8dc-4f0e5c396b68/41012de0-5587-40bc-86d5-66fb1e37f9a1/a84abc8690e825d713bcaf359d84b79ed20e8a22ec5d4fe20d4acbb1e8a425a7/1d09bcf0ae5dd9b53496896981966c96f81cb0caecbe1282382abaa73e3bee0a",
+            "node": "41012de0-5587-40bc-86d5-66fb1e37f9a1"
+          },
+          "version": "blake3:1d09bcf0ae5dd9b53496896981966c96f81cb0caecbe1282382abaa73e3bee0a",
+          "text_hash": "blake3:1d09bcf0ae5dd9b53496896981966c96f81cb0caecbe1282382abaa73e3bee0a",
+          "selector": {
+            "start": 0,
+            "end": 165
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "Source A revision 1 Archive A1 opening. The Pelican observatory's access word is amberstone. The naïve — 東京 🐦 passage records cedar mathematics and persistent tides."
+        }
+      }
+    ],
+    "stale": []
+  }
+}

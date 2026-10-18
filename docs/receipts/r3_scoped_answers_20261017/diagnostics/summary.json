@@ -1,0 +1,30 @@
+{
+  "runs": [
+    {
+      "packet": "native-01",
+      "summary": "Uncited model answer and source handoff blocked on viewport projection; not qualified.",
+      "detail": "native-01/summary.json"
+    },
+    {
+      "packet": "native-02",
+      "summary": "Historical marker instruction still produced uncited real-model text; no fabricated citation.",
+      "detail": "native-02/summary.json"
+    },
+    {
+      "packet": "native-03",
+      "summary": "Explicit marker request still produced uncited text; not model-marker qualification.",
+      "detail": "native-03/summary.json"
+    },
+    {
+      "packet": "native-04",
+      "summary": "Real exact-quotation citation resolved, but graph reader focus was not revealed; repaired with destination focus/maximization and regression control.",
+      "detail": "native-04/summary.json"
+    },
+    {
+      "packet": "native-05",
+      "summary": "Seed and cold A1 citation passed; oversized source publication refused, but full body rendering exposed Harfrust glyph-counter overflow. Repaired with bounded display paragraphs preserving the entire canonical stream; whole run not qualified.",
+      "detail": "native-05/summary.json"
+    }
+  ],
+  "limits": "Earlier source/input identities and raw-output hashes remain in each packet; final qualification uses native-06, not a union of failed runs."
+}

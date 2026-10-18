@@ -1,0 +1,58 @@
+[
+  {
+    "path": "native-build.log",
+    "raw_path": "/Users/markik/Code/output/turnstone-r3-final05-native-build.log",
+    "raw_sha256": "8eed6839cb6ee3bf1f00fd1e4895c2982610f00561de8682e9dc74e12cc6102a",
+    "copy_sha256": "8eed6839cb6ee3bf1f00fd1e4895c2982610f00561de8682e9dc74e12cc6102a",
+    "normalization": "trim trailing whitespace and excess final blank lines; one final newline"
+  },
+  {
+    "path": "tests-build.log",
+    "raw_path": "/Users/markik/Code/output/turnstone-r3-final06-tests-build.log",
+    "raw_sha256": "afdf0a6925fd8084eb48c200a09a37eafa332193cc6d3858b4a8d8b9b8c9e44b",
+    "copy_sha256": "afdf0a6925fd8084eb48c200a09a37eafa332193cc6d3858b4a8d8b9b8c9e44b",
+    "normalization": "trim trailing whitespace and excess final blank lines; one final newline"
+  },
+  {
+    "path": "clippy.log",
+    "raw_path": "/Users/markik/Code/output/turnstone-r3-final05-clippy.log",
+    "raw_sha256": "19e08ecaa41bc68b1a32785f15a88088a08ec8ebc9794cc65a3070eb1fe51d95",
+    "copy_sha256": "1c08b52f4bf2ad2c9b703ebdc7e485e47d4e61cd5d3f3f0fefa115ef9e2a5322",
+    "normalization": "trim trailing whitespace and excess final blank lines; one final newline"
+  },
+  {
+    "path": "cargo-mode.log",
+    "raw_path": "/Users/markik/Code/output/turnstone-r3-cargo-verify.log",
+    "raw_sha256": "2a19e29605b6dafdac2dba03de1540e73724f762321ae693578b6066d92da2d5",
+    "copy_sha256": "2a19e29605b6dafdac2dba03de1540e73724f762321ae693578b6066d92da2d5",
+    "normalization": "trim trailing whitespace and excess final blank lines; one final newline"
+  },
+  {
+    "path": "capture-library.log",
+    "raw_path": "/Users/markik/Code/output/turnstone-r3-final-capture-library.log",
+    "raw_sha256": "fbf05fb9abb5e2fde10183c7b30c42b299e8da012dd06dace44ef80efb263570",
+    "copy_sha256": "16fa1f002122210e8e3505515714940c2a593d7c08ca4d59b083c302df8a006a",
+    "normalization": "trim trailing whitespace and excess final blank lines; one final newline"
+  },
+  {
+    "path": "long-reader.log",
+    "raw_path": "/Users/markik/Code/output/turnstone-r3-long-reader-tests.log",
+    "raw_sha256": "ef94bc120a4d14faaa2f0d720955a67074f522d1c7a97dde4f5a1b17ae986a66",
+    "copy_sha256": "7512144490d2fce705e7be78ce7b9bfafbf416d894461988b8403373943c9790",
+    "normalization": "trim trailing whitespace and excess final blank lines; one final newline"
+  },
+  {
+    "path": "bounded-library.log",
+    "raw_path": "/Users/markik/Code/output/turnstone-r3-final04-bounded-tests.log",
+    "raw_sha256": "dfefca15cc76a433716dac6bc3ef21df19503da3f1e8f1943eb5519eed1df321",
+    "copy_sha256": "d944aa613e6acf53a55e1bf6437c88544a15bb0d50b444074df07de079a842c4",
+    "normalization": "trim trailing whitespace and excess final blank lines; one final newline"
+  },
+  {
+    "path": "../native/wrong-owner-probe.log",
+    "raw_path": "/Users/markik/Code/output/turnstone-r3-native-06/wrong-owner-probe.log",
+    "raw_sha256": "3a9442af122b05a5c594ab3c6eab876c409626934a8f5740f1b93aa397480528",
+    "copy_sha256": "799893f2b3dd820e9c5dcae7f908f2abfcb5a0b0e36d4e5e94735fe2e2a99863",
+    "normalization": "trim excess final blank lines; one final newline"
+  }
+]

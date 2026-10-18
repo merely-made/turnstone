@@ -99,6 +99,7 @@ impl ApplicationHandler for Shell {
         let effects = self.app.tick(crate::denizen::now_ms());
         self.run_effects(effects);
         self.pump_redshank();
+        self.pump_research();
         #[cfg(all(feature = "servo", windows))]
         if let Err(error) = super::servo::pump() {
             tracing::warn!(%error, "Servo process event pump failed");
@@ -563,6 +564,20 @@ impl Shell {
     /// The Redshank command loop, one turn per event batch: take what the
     /// mounted docks issued, apply it through the app's one listening
     /// authority, then show every dock what the model and runtime now say.
+    pub(super) fn pump_research(&mut self) {
+        self.app.sync_research_context();
+        for intent in self.app.research.drain() {
+            let effects = match intent {
+                crate::research::Intent::Selection { context, expected, chosen } => self.app.update(crate::action::Action::SetAnswerSelection { generation: context.generation, expected, chosen }),
+                crate::research::Intent::Citation { context, target } => {
+                    if context.session != self.app.session_id || context.generation != self.app.source_capture_generation { continue; }
+                    self.app.update(crate::action::Action::OpenSavedSource(target))
+                },
+            };
+            self.run_effects(effects);
+        }
+    }
+
     fn pump_redshank(&mut self) {
         let commands = self.redshank_docks.drain();
         if !commands.is_empty() {

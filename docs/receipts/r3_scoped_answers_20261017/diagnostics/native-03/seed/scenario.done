@@ -1,0 +1,20 @@
+RESULT fail
+captured 04_foreign_session_source
+captured 05_empty_scope_refused
+captured 06_explicit_A1_B_scope
+captured 06b_paused_scoped_answer
+FAIL: assert text 'Source 1:': not on any surface
+captured 07_scoped_answer_origin_gone
+captured 08_changed_scope_old_answer
+captured 08b_cancelled_B_only_ask
+FAIL: assert text 'Source 1:': not on any surface
+FAIL: wait-saved-reader after 600 frames: focused reader state is None
+FAIL: no successful window presentation for ten seconds
+presentation frames=1099 captures=7 blank=0
+capture /Users/markik/Code/output/turnstone-r3-native-03/seed/04_foreign_session_source.png digest=18c222ee333dc206 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-03/seed/05_empty_scope_refused.png digest=82373a9acfcbd720 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-03/seed/06_explicit_A1_B_scope.png digest=247116ff927bfb25 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-03/seed/06b_paused_scoped_answer.png digest=4087695c0ab0d294 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-03/seed/07_scoped_answer_origin_gone.png digest=e043a4321e5fc4c5 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-03/seed/08_changed_scope_old_answer.png digest=f372ef3fff4c512c blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-03/seed/08b_cancelled_B_only_ask.png digest=284c1f4818ea3d77 blank=false

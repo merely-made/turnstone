@@ -922,6 +922,7 @@ impl Shell {
 
     /// The effect runner: the one place effects meet ports.
     pub(super) fn run_effects(&mut self, effects: Vec<Effect>) {
+        self.app.sync_research_context();
         self.publish_engine_inventory();
         // Semantic events noted by the update that produced these effects
         // drain to their consumers first (the trail-memory capture today;

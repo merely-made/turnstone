@@ -1,0 +1,6 @@
+{"launch_method": "LaunchServices temporary application bundle", "launcher_exit": 0, "timeout": false, "success": true, "elapsed_seconds": 43.016, "binary_sha256": "14d467e067eb73c35c01eebc065bd461f4e06126bec1a490b014e08fcf2a2742", "scenario_sha256": "afe4111b7008d7140b3940fa5a6bdfdbf408637a40983919555389e49f64f0d1", "receipt": "scenario.done", "captures": 1}
+RESULT ok
+captured 01_large_saved_text_without_resident
+Large saved text displayed completely without origin or resident
+presentation frames=33 captures=1 blank=0
+capture /Users/markik/Code/output/turnstone-r3-huge-smoke-01/run/01_large_saved_text_without_resident.png digest=dd160576a9ad59b6 blank=false

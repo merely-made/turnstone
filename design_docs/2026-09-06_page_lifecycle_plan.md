@@ -1,9 +1,9 @@
 # Page lifecycle plan
 
-**Status:** in progress, refreshed 2026-10-17. Rulings L1-L7 were made with Mark on
+**Status:** in progress, refreshed 2026-10-18. Rulings L1-L7 were made with Mark on
 2026-09-06. The research-workflow section below records the R0/R1 bounded
 qualifications, the bounded macOS R2 private search/reader qualification,
-and the still-planned R3/R4 work; it does not replace those rulings. Source
+the bounded macOS R3 scoped-Answers qualification, and the still-planned R4 work; it does not replace those rulings. Source
 capture and collection-scoped search now have app consumers. The Keep, bin
 custody, and other lifecycle joins remain governed by their individual
 done-conditions. This plan joins rules that
@@ -299,7 +299,7 @@ Done-conditions:
 
 ## Research workflow: smallest complete slice (2026-10-17)
 
-**Status: R0 qualified; R1 bounded macOS qualification passed; R2 bounded macOS qualification passed; R3-R4 remain planned.** Mark asked
+**Status: R0 qualified; R1 bounded macOS qualification passed; R2 bounded macOS qualification passed; R3 bounded macOS qualification passed; R4 remains planned.** Mark asked
 for the existing research workflow to be traced, its missing joins identified,
 and the smallest complete slice planned. This section owns that product join;
 the capture, pane, Knot and resident plans retain their domain gates.
@@ -311,7 +311,7 @@ with Rust pinned to 1.99.1 and Mere locked to
 `a17e5bb97c79332b932d10cce70f465b022a3a1a`. The October 16 scene/answer receipts
 qualify their recorded earlier sources; they are supporting evidence, not a
 research-workflow receipt for this source. The following inventory records that
-planning cut; the R0 and R1 implementation/qualification sections below update
+planning cut; the R0-R3 implementation/qualification sections below update
 their respective missing joins. Named tests/scenarios were inspected, not
 executed for the initial plan.
 
@@ -714,6 +714,22 @@ and power-loss guarantees remain separate gates.
 
 #### R3. Capture-backed, explicitly scoped Answers
 
+**2026-10-18: implemented and bounded macOS qualification passed.** The version-2 pane
+payload stores chosen exact saved-source targets only. A research context uses
+`turnstone/<session>/research/v1`; all its live, validated capture versions stay
+published so changing a question's chosen subset does not withdraw old citations.
+Every ask carries a nonempty validated subset. The one trail actor supplies
+Fleece reads through its existing store, with opening generation, session,
+member/facet admission and canonical-text validation. Citation activation checks
+supplied passage identity, scope, text hash and Unicode range, then reveals R2's
+reader. Provider connections are shared per context/opening; unsent drafts and
+history selection survive source-choice edits without durable corpus copies.
+
+The current Mere pin also requires its coherent Genet and Netrender revisions.
+Turnstone now preserves source-raster refusal and propagates frame translation
+errors to native presentation/capture refusal; inner legacy scenes show an
+explicit rendering diagnostic. Supplier Rust sources are unchanged by R3.
+
 Extend the same actor's owner interface with a capture-specific snapshot and
 exact resolve; keep the legacy PageText resolver restrictions. The locked
 `RecallSourceId` already supports `Fleece`/`Capture`, owner, source and node;
@@ -742,6 +758,48 @@ reveals/highlights its exact Unicode passage and repeats hash/range validation.
 Oversize encoded publication refuses visibly with zero new generation; source
 reading remains available. Reconnecting preserves owner/run isolation and does
 not let an old control mutate another session's ask.
+
+The [R3 receipt](../docs/receipts/r3_scoped_answers_20261017/README.md) binds
+fetched Turnstone `0ab2d5e`, published Mere `e6250fd1`, coherent Genet
+`4733c557` and Netrender `c5efc94f`. The lock delta changes source pins only.
+979 bounded regression tests pass (11 ignored, 89 shared-place/Sky controls
+excluded), alongside three capture-library controls, Clippy correctness,
+portable Cargo verification and the native build. An explicit actual admitted
+route probe rejects wrong-owner publication and ask. One of the 11 ignored
+controls is this opt-in probe, executed separately against the resident.
+
+Two fresh headed Turnstone processes present 1,552 frames with 12 reviewed
+nonblank captures. The real local SmolLM2 model streams, pauses at token 1,
+resumes and supplies the exact retained Unicode sentence. Independent verification
+binds A1+B requested scope and its sealed prompt to admitted captures, then a
+B-only cancelled ask. X, A2 and the foreign-session sentinel stay outside both
+scopes/prompts. A1 remains resolvable after selection changes. Actual origin
+shutdown and TCP refusal precede generation; zero later origin requests are
+observed. Cold app reopen restores the B-only choice, past asks and exact old
+A1 reader. The resident composition/journal reopens in the same host process;
+this is not a resident OS-process restart or an installed-resident lifecycle test.
+
+The headed citation uses the shared stack's **Exact quotation** basis, not a
+model-emitted marker. The exact 46-scalar/47-byte sentence, full canonical hash,
+passage identity and reader selection are independently compared. Three earlier
+marker-prompt runs produced uncited answers and remain diagnostics; no marker
+reliability or general answer-quality qualification is claimed. Legacy V1
+pane payloads show explicit admission help for the new saved-source action;
+PageText storage/resolver/history namespaces are preserved without implicit
+conversion, widening or a UI migration claim.
+
+The 128 KiB complete encoded-corpus limit visibly refuses oversized publication
+with zero generation. Full local reading still works, also in a separate headed
+check with the resident endpoint absent. A 100,021-character source exposed a
+Harfrust counter overflow: display paragraphs now bound body and quote to 4,096
+UTF-8 bytes while preserving every canonical byte, hash and global selector.
+A multilingual/unbroken-text regression control and independent retained-document
+concatenation prove preservation. Other native findings repaired the semantic
+citation handoff's dependence on viewport rendering, reader destination focus
+and maximization, and unsafe byte slicing of malformed Unicode manifest labels.
+The final combined packet uses one frozen binary; earlier failed packets retain
+their exact source/input identities. R4, other platforms, OS assistive activation,
+installed personal custody and power-loss durability remain separate gates.
 
 #### R4. One end-to-end acceptance receipt
 
@@ -978,7 +1036,7 @@ refreshed 2026-09-12.
   controls, 46 supplier tests, Clippy correctness and two headed fresh processes
   pass. Twelve reviewed captures and exact offline request/reference recovery
   are retained in the R1 receipt. R2 is now bounded-qualified in the following entry;
-  R3-R4 remain planned.
+  R3 is now bounded-qualified below; R4 remains planned.
 
 - **2026-10-17, R2 private saved-source reader bounded-qualified on macOS:**
   the current branch adds session-facet admissions, exact-case canonical-text
@@ -994,3 +1052,14 @@ refreshed 2026-09-12.
   precedes offline A1 search/read and fresh reopen of its exact Unicode target.
   Reader labels/version presentation and the identity-test scheduling assertion
   are repaired; R3/R4 and hosted capture gates remain open.
+
+- **2026-10-18, R3 scoped Answers bounded-qualified on macOS:** capture-backed
+  ownership, persisted exact chosen subsets, one coordinated publisher and
+  actor-resolved exact saved-source citations are joined. 979 bounded tests,
+  three capture-library controls, actual wrong-owner route refusal, Clippy,
+  portable Cargo verification and both headed processes pass. Twelve reviewed
+  captures and independent scope/prompt/hash/Unicode checks prove old A1
+  citation reopening after B-only selection and actual origin shutdown. The
+  real model earns an exact-quotation citation; earlier uncited marker attempts
+  remain diagnostics. The large offline reader now segments presentation
+  without truncating canonical bytes. R4 retains its complete-task gate.

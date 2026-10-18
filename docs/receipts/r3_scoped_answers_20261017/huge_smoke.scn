@@ -1,0 +1,19 @@
+# Reopen the prior run's acknowledged profile copy with the origin and resident gone.
+settle 5
+key escape
+omnibar actions
+type Switch to session R3 Oversize Three
+key enter
+settle 8
+act Search saved sources
+type oversize saved marker
+wait-saved-sources 600
+assert suggestions == 1
+key enter
+wait-saved-reader 1200
+assert snap saved-reader-state == Ready
+assert snap saved-reader-quote == oversize saved marker
+capture 01_large_saved_text_without_resident
+record-saved-sources 01_large_saved_text_without_resident
+act Save session
+log Large saved text displayed completely without origin or resident

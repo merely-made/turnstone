@@ -1,0 +1,59 @@
+[
+  {
+    "path": "/Users/markik/Code/output/turnstone-r3-native-06/seed/native.log",
+    "bytes": 1808296,
+    "sha256": "6cdafaf6ef93b85fa52aeb8bdb00e5083e45b6ecaed1dd7cd3d0ffba6482fc5e"
+  },
+  {
+    "path": "/Users/markik/Code/output/turnstone-r3-native-06/reopen/native.log",
+    "bytes": 772936,
+    "sha256": "56572fb1e6e46bb6ec5954771ba88d628800cf10f3ca4fe8c2186b249616862d"
+  },
+  {
+    "path": "/Users/markik/Code/output/turnstone-r3-native-06/resident.log",
+    "bytes": 396,
+    "sha256": "78954a1a7205a7e261487182f42556fbc13cac84afaf20678a5709dfd00e5e08"
+  },
+  {
+    "path": "/Users/markik/Code/output/turnstone-r3-native-06/fixture.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "/Users/markik/Code/output/turnstone-r3-native-06/launch-seed.log",
+    "bytes": 1804,
+    "sha256": "f49b12bdc54bbd1fdff3ac84e561c5b05c2c35932e31abed02a62428345ed984"
+  },
+  {
+    "path": "/Users/markik/Code/output/turnstone-r3-native-06/launch-reopen.log",
+    "bytes": 1297,
+    "sha256": "e3db27c7e39f915de40a8030d4770f91adb06ee9f3c4941fce0c22cbb9abe041"
+  },
+  {
+    "path": "/Users/markik/Code/output/turnstone-r3-native-06/frozen/run_native.py",
+    "bytes": 8455,
+    "sha256": "5da6c5262ff840a3b81db4383d9136456e82574b8122cfb6fcf2aba600f9436c"
+  },
+  {
+    "path": "/Users/markik/Code/output/turnstone-r3-native-06/frozen/seed.scn",
+    "bytes": 5344,
+    "sha256": "9beadfbe2d2032ea1f7a9a68bcb32520ff40baaf8a38b35f2a9ac639661a49fd"
+  },
+  {
+    "path": "/Users/markik/Code/output/turnstone-r3-native-06/frozen/reopen.scn",
+    "bytes": 1980,
+    "sha256": "dbf28b90dc3ab216b9943fbd3ff448bf9f57a2ab0eeb3a4f49dcd9ac7bd5e6af"
+  },
+  {
+    "path": "/Users/markik/Code/output/turnstone-r3-native-06/frozen/fixture_server.py",
+    "bytes": 3650,
+    "sha256": "0256bf006ffe53ded2236af2a8bb411a1a80e5428d408fdc29bc048c3242182a"
+  },
+  {
+    "path": "/Users/markik/Code/output/turnstone-r3-native-06/resident/second-started.json",
+    "bytes": 7,
+    "sha256": "03494afd4248c42f5fa1237bf2eeebe751ab8d9c977d55405fcb17469dbd91f8",
+    "packet_path": "resident/second-started.marker",
+    "note": "Plain readiness marker named .json by supplier fixture; archived with its actual content type."
+  }
+]

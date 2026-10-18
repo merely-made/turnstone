@@ -686,6 +686,9 @@ fn raster_capture_refusal(
         genet_render_host::RasterizeFailure::DeviceLost(notice) => {
             cambium_rootstock::CaptureRefusal::DeviceLost(notice)
         },
+        genet_render_host::RasterizeFailure::SourceError(error) => {
+            cambium_rootstock::CaptureRefusal::SurfaceUnavailable { generation, error }
+        },
         genet_render_host::RasterizeFailure::ProviderError(error) => {
             cambium_rootstock::CaptureRefusal::ProviderError {
                 generation,
@@ -1611,16 +1614,19 @@ impl Shell {
         // Redshank's own compact dock, admitted rather than copied. The shell
         // holds the dock handles; the app holds the one listening authority,
         // which is where the device is opened.
+        app.sync_research_context();
         let answers_proxy = proxy.clone();
         let answers_wake: armillary::Wake = Arc::new(move || {
             let _ = answers_proxy.send_event(());
         });
         surface_providers
             .register_provider(crate::inference_surface::AnswerProvider::new(
-                Arc::new(crate::trail_memory::TrailInferenceOwner(
-                    trail_handle.clone(),
-                )),
+                Arc::new(crate::trail_memory::CaptureInferenceOwner {
+                    trail: trail_handle.clone(),
+                    bridge: app.research.clone(),
+                }),
                 answers_wake,
+                app.research.clone(),
             ))
             .expect("the answer provider is unique");
         let redshank_docks = crate::redshank_episode_surface::RedshankDocks::new();
@@ -3928,6 +3934,13 @@ mod render_recovery_tests {
 
     #[test]
     fn render_capture_refusal_preserves_provider_and_installed_loss_identity() {
+        match raster_capture_refusal(genet_render_host::RasterizeFailure::SourceError("unsupported border".into()), 23, 71) {
+            cambium_rootstock::CaptureRefusal::SurfaceUnavailable { generation, error } => {
+                assert_eq!(generation, 23);
+                assert_eq!(error, "unsupported border");
+            },
+            other => panic!("source failure was not preserved: {other:?}"),
+        }
         let error = Arc::new(netrender::VelloError::CurveQualityReadbackFailed);
         match raster_capture_refusal(
             genet_render_host::RasterizeFailure::ProviderError(error.clone()),

@@ -1,0 +1,61 @@
+{
+  "run": "turnstone/51e15b4c-e160-45b5-8d3c-83a0e5c18ae0/research/v1/729ea598-639a-4b76-bda4-7259ce9fdd4f",
+  "question": "What is the harbor sentinel? Cite [1] and explain it in twenty sentences.",
+  "state": "cancelled",
+  "text": "",
+  "error": null,
+  "session": {
+    "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+    "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+  },
+  "tokens": 0,
+  "continuations": [
+    {
+      "device": "device:719b336da88fa238d51c69a3dbf632a7",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "owner": "turnstone/51e15b4c-e160-45b5-8d3c-83a0e5c18ae0/research/v1",
+    "scope": [
+      {
+        "kind": "fleece",
+        "owner": "turnstone/51e15b4c-e160-45b5-8d3c-83a0e5c18ae0/research/v1",
+        "source": "mere://saved-source/51e15b4c-e160-45b5-8d3c-83a0e5c18ae0/44f10561-dcd2-49c9-acc9-a9b139ac29d6/a5f1dd29-e795-423c-a487-1ed6efa26d06/8cea8de24729370697347968e84e473b694f8a7199ba54891cfc8dfe7e4ae38e/7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+        "node": "a5f1dd29-e795-423c-a487-1ed6efa26d06"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 1,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "fleece",
+            "owner": "turnstone/51e15b4c-e160-45b5-8d3c-83a0e5c18ae0/research/v1",
+            "source": "mere://saved-source/51e15b4c-e160-45b5-8d3c-83a0e5c18ae0/44f10561-dcd2-49c9-acc9-a9b139ac29d6/a5f1dd29-e795-423c-a487-1ed6efa26d06/8cea8de24729370697347968e84e473b694f8a7199ba54891cfc8dfe7e4ae38e/7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+            "node": "a5f1dd29-e795-423c-a487-1ed6efa26d06"
+          },
+          "version": "blake3:7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+          "text_hash": "blake3:7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+          "selector": {
+            "start": 0,
+            "end": 34
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "amber harbor main-session sentinel"
+        }
+      }
+    ],
+    "stale": []
+  }
+}

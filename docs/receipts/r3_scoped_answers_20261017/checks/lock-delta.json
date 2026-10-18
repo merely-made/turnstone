@@ -1,0 +1,14 @@
+{
+  "result": "pass",
+  "package_rows": 1688,
+  "changed_source_rows": {
+    "mere:package": 76,
+    "genet:package": 33,
+    "netrender:package": 4,
+    "mere:patch": 2
+  },
+  "package_version_dependency_changes": 0,
+  "lock_sha256": "03cc8291430d8fb6a9fd619d3213dfe89f1b4ebb499efd87d2eec72491f3efd6",
+  "head": "0ab2d5e0944a0c4d8f9f5ca26d2e7fdb48888e2e",
+  "origin_main": "0ab2d5e0944a0c4d8f9f5ca26d2e7fdb48888e2e"
+}

@@ -1,0 +1,231 @@
+{
+  "nodes": {
+    "08160e52-80f2-4b24-8f8a-ebc2b2fa6499": {
+      "arrangement.frame-layout": [],
+      "arrangement.pin": false,
+      "arrangement.position": {
+        "x": -69.31591033935547,
+        "y": 89.8919906616211
+      },
+      "arrangement.split-offer-suppressed": false,
+      "capture.source-annotations/v1": [
+        "blake3:3f05bf5717e20ecd2a279e3ffca66506fef7b62f5d8fd25dcd02fdee820f2336"
+      ],
+      "capture.source-requests/v1": [
+        {
+          "request": {
+            "graph": "48e4b340-d561-4531-98e6-bb54c33e6761",
+            "id": "69ee6b75-e3c3-4c77-a310-ec12100b6e2f",
+            "keep": true,
+            "node": "08160e52-80f2-4b24-8f8a-ebc2b2fa6499",
+            "session": "c0e022b4-6b0a-4779-8c0a-5fcee2039643",
+            "source": {
+              "acquired_at_ms": 1792298384009,
+              "body_hash": "blake3:5a39b17dd36643890b08247318b48f0852bf9cd25d53de7d52ae5e6059abd53e",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:60279/B",
+              "hash": "blake3:5a39b17dd36643890b08247318b48f0852bf9cd25d53de7d52ae5e6059abd53e"
+            },
+            "url": "http://127.0.0.1:60279/B"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:3f05bf5717e20ecd2a279e3ffca66506fef7b62f5d8fd25dcd02fdee820f2336",
+            "raw_manifest": "blake3:5a39b17dd36643890b08247318b48f0852bf9cd25d53de7d52ae5e6059abd53e"
+          }
+        }
+      ],
+      "chartulary.class": "turnstone.web-page",
+      "presentation.tags": {
+        "icon_overrides": {},
+        "ordered_tags": []
+      },
+      "provenance.derivations": [],
+      "provenance.import": [],
+      "semantic.classifications": [],
+      "semantic.properties": [],
+      "turnstone.controls.v1.feed": false,
+      "turnstone.controls.v1.keep": true,
+      "turnstone.controls.v1.unread": false,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792298382961
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:60279/B",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    },
+    "48e4b340-d561-4531-98e6-bb54c33e6761": {
+      "scene.importance_metric": "degree",
+      "scene.physics_damping": 2.5,
+      "scene.size_by_degree": false,
+      "scene.size_by_importance": false
+    },
+    "7e79db59-ef3c-4671-a78f-4bee4b3dd41c": {
+      "arrangement.frame-layout": [],
+      "arrangement.pin": false,
+      "arrangement.position": {
+        "x": 122.07554626464844,
+        "y": 159.6137237548828
+      },
+      "arrangement.split-offer-suppressed": false,
+      "chartulary.class": "turnstone.web-page",
+      "presentation.tags": {
+        "icon_overrides": {},
+        "ordered_tags": []
+      },
+      "provenance.derivations": [],
+      "provenance.import": [],
+      "semantic.classifications": [],
+      "semantic.properties": [],
+      "turnstone.controls.v1.feed": false,
+      "turnstone.controls.v1.unread": false,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792298396470
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:60279/swap-a",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    },
+    "b55a2c16-7889-4a0e-bac5-5e5cc5e82db4": {
+      "arrangement.frame-layout": [],
+      "arrangement.pin": false,
+      "arrangement.position": {
+        "x": 73.47949981689453,
+        "y": -3.2535340785980225
+      },
+      "arrangement.split-offer-suppressed": false,
+      "chartulary.class": "turnstone.web-page",
+      "presentation.tags": {
+        "icon_overrides": {},
+        "ordered_tags": []
+      },
+      "provenance.derivations": [],
+      "provenance.import": [],
+      "semantic.classifications": [],
+      "semantic.properties": [],
+      "turnstone.controls.v1.feed": false,
+      "turnstone.controls.v1.unread": false,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792298391736
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:60279/X",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    },
+    "d5e57686-043d-4373-9e74-c0dea3fd68a0": {
+      "arrangement.frame-layout": [],
+      "arrangement.pin": false,
+      "arrangement.position": {
+        "x": 39.26067352294922,
+        "y": -170.2668914794922
+      },
+      "arrangement.split-offer-suppressed": false,
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "presentation.tags": {
+        "icon_overrides": {},
+        "ordered_tags": []
+      },
+      "provenance.derivations": [],
+      "provenance.import": [],
+      "semantic.classifications": [],
+      "semantic.properties": [],
+      "turnstone.controls.v1.feed": false,
+      "turnstone.controls.v1.unread": false,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792298728624
+      },
+      "web.content": true
+    },
+    "fd554d4c-6eb7-4594-a721-3ee9a32d074b": {
+      "arrangement.frame-layout": [],
+      "arrangement.pin": false,
+      "arrangement.position": {
+        "x": -148.88380432128906,
+        "y": -60.55966567993164
+      },
+      "arrangement.split-offer-suppressed": false,
+      "capture.source-annotations/v1": [
+        "blake3:c7d29bd8b2e266dd1e8350dfa988cae2764ce3fb2b33a1e15af509d4d9666c2a",
+        "blake3:9255cfbbbabec77b792e3090dc3900a10a6052884b31b9ccd4279c3dc1a4ab7e"
+      ],
+      "capture.source-requests/v1": [
+        {
+          "request": {
+            "graph": "48e4b340-d561-4531-98e6-bb54c33e6761",
+            "id": "676b64fb-3510-4924-80c1-33d5d5d1d1e2",
+            "keep": true,
+            "node": "fd554d4c-6eb7-4594-a721-3ee9a32d074b",
+            "session": "c0e022b4-6b0a-4779-8c0a-5fcee2039643",
+            "source": {
+              "acquired_at_ms": 1792298377694,
+              "body_hash": "blake3:00d30c18b7000c55584bf9dc589c1b031a28a26ce9114b29bb6ba74a1f3ae3ee",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:60279/A",
+              "hash": "blake3:00d30c18b7000c55584bf9dc589c1b031a28a26ce9114b29bb6ba74a1f3ae3ee"
+            },
+            "url": "http://127.0.0.1:60279/A"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:c7d29bd8b2e266dd1e8350dfa988cae2764ce3fb2b33a1e15af509d4d9666c2a",
+            "raw_manifest": "blake3:00d30c18b7000c55584bf9dc589c1b031a28a26ce9114b29bb6ba74a1f3ae3ee"
+          }
+        },
+        {
+          "request": {
+            "graph": "48e4b340-d561-4531-98e6-bb54c33e6761",
+            "id": "1e4c57d4-8ffd-4d20-aca2-fbdc13e0745f",
+            "keep": true,
+            "node": "fd554d4c-6eb7-4594-a721-3ee9a32d074b",
+            "session": "c0e022b4-6b0a-4779-8c0a-5fcee2039643",
+            "source": {
+              "acquired_at_ms": 1792298401340,
+              "body_hash": "blake3:60a670119530da418659183e02de193625a1a7a897d8d6904de5ccde3b4b72c9",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:60279/A",
+              "hash": "blake3:60a670119530da418659183e02de193625a1a7a897d8d6904de5ccde3b4b72c9"
+            },
+            "url": "http://127.0.0.1:60279/A"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:9255cfbbbabec77b792e3090dc3900a10a6052884b31b9ccd4279c3dc1a4ab7e",
+            "raw_manifest": "blake3:60a670119530da418659183e02de193625a1a7a897d8d6904de5ccde3b4b72c9"
+          }
+        }
+      ],
+      "chartulary.class": "turnstone.web-page",
+      "presentation.tags": {
+        "icon_overrides": {},
+        "ordered_tags": []
+      },
+      "provenance.derivations": [],
+      "provenance.import": [],
+      "semantic.classifications": [],
+      "semantic.properties": [],
+      "turnstone.controls.v1.feed": false,
+      "turnstone.controls.v1.keep": true,
+      "turnstone.controls.v1.unread": false,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792298400814
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:60279/A",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    }
+  }
+}

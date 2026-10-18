@@ -1,0 +1,58 @@
+# New Turnstone process and reopened resident composition; origin is still dead.
+settle 100
+key escape
+assert snap network-offline == true
+assert text Connected to resident inference.
+assert text 1 saved sources chosen
+assert text Past asks
+capture 10_cold_reopened_scope_and_history
+click surface:contributed role:button Reopen: Repeat the retained sentence about the Pelican observatory
+settle 5
+assert text Finished
+assert text café
+assert text Source 1:
+click surface:contributed role:button Source 1:
+settle 8
+wait-saved-reader 600
+assert snap saved-reader-state == Ready
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+assert snap saved-reader-quote == The Pelican observatory's access word is café.
+assert snap saved-reader-origin ~ /A
+capture 11_cold_reopened_exact_A1_citation
+record-saved-sources 11_cold_reopened_exact_A1_citation
+act Save session
+log R3 cold reopen retains chosen B, old answer, exact A1 and Unicode passage
+
+# The encoded corpus cap refuses Answers visibly and never blocks local reading.
+key escape
+omnibar actions
+type Switch to session R3 Oversize Three
+key enter
+settle 8
+act Ask saved sources
+settle 120
+act Maximize pane
+settle 5
+assert text This session has too much saved text for Answers.
+capture 12_oversize_publication_refused
+act Search saved sources
+type oversize saved marker
+wait-saved-sources 600
+assert suggestions == 1
+key enter
+wait-saved-reader 1200
+assert snap saved-reader-state == Ready
+assert snap saved-reader-quote == oversize saved marker
+capture 13_oversize_source_readable_offline
+record-saved-sources 13_oversize_source_readable_offline
+log Oversize publication refused while exact local source reading remains available
+
+# Restore the original research context before the resident's final checkpoint.
+key escape
+omnibar actions
+type Switch to session R3 Private One
+key enter
+settle 120
+assert text Connected to resident inference.
+assert text 1 saved sources chosen
+act Save session

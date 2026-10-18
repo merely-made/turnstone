@@ -1,0 +1,166 @@
+# R3 private saved-source seed. All bodies are admitted through ordinary fetch
+# and the source-bound Save source and keep action. Never seed storage directly.
+# Give fetch completions ordinary frame turns; the offered Save control and
+# its acknowledged manifest/body checks are the readiness proof. Global graph
+# quiescence is unrelated to source reading and is deliberately not a gate.
+settle 5
+key escape
+act New session
+settle 5
+act Rename session
+type R3 Private One
+key enter
+settle 5
+
+open ${TURNSTONE_R3_FIXTURE_URL}/A
+settle 8
+assert focused /A
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+assert row Saved captures: 1
+record-source-captures 01_A1_saved
+
+open ${TURNSTONE_R3_FIXTURE_URL}/B
+settle 8
+assert focused /B
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+assert row Saved captures: 1
+record-source-captures 02_B_saved
+
+# Visit X as metadata/address history only; there is no Save gesture here.
+open ${TURNSTONE_R3_FIXTURE_URL}/X
+settle 8
+assert focused /X
+
+# Change A at the same URL through a real HTTP response and explicitly retain A2.
+open ${TURNSTONE_R3_FIXTURE_URL}/swap-a
+settle 8
+open ${TURNSTONE_R3_FIXTURE_URL}/A
+settle 8
+assert focused /A
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+assert row Saved captures: 2
+record-source-captures 03_A2_saved
+act Save session
+
+# Exercise another session's saved sentinel. Its source must never enter this
+# session's listing/search even though both sessions share the same profile.
+act New session
+settle 5
+act Rename session
+type R3 Foreign Two
+key enter
+settle 5
+open ${TURNSTONE_R3_FIXTURE_URL}/Foreign
+settle 8
+assert focused /Foreign
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+act Save session
+act Search saved sources
+type copperfield
+wait-saved-sources 600
+assert snap saved-sources-status == Ready
+assert snap saved-reader-state == None
+assert suggestions == 1
+assert snap suggestions ~ Foreign Source
+capture 04_foreign_session_source
+record-saved-sources 04_foreign_session_source
+
+# A separate ordinary saved source exercises the encoded publication limit.
+key escape
+act New session
+settle 5
+act Rename session
+type R3 Oversize Three
+key enter
+settle 5
+open ${TURNSTONE_R3_FIXTURE_URL}/Huge
+settle 8
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+act Save session
+# Reopen the private session with A1, A2 and B already admitted.
+omnibar actions
+type Switch to session R3 Private One
+key enter
+settle 8
+act Ask saved sources
+settle 100
+act Maximize pane
+settle 5
+assert text Connected to resident inference.
+assert text 0 saved sources chosen
+click surface:contributed role:textbox Question
+click surface:contributed role:button Ask
+settle 5
+assert text Choose at least one saved source before asking.
+capture 05_empty_scope_refused
+click surface:contributed role:button Choose source: Source A · saved version 1
+settle 5
+click surface:contributed role:button Choose source: Source B · saved version 1
+settle 5
+assert text 2 saved sources chosen
+capture 06_explicit_A1_B_scope
+# Stop the actual origin before asking; no source may be reacquired.
+touch ${TURNSTONE_R3_STOP_ORIGIN}
+wait-file 600 ${TURNSTONE_R3_ORIGIN_STOPPED}
+click surface:contributed role:textbox Question
+insert Repeat the retained sentence about the Pelican observatory exactly.
+click surface:contributed role:button Ask
+wait-file 18000 ${DJINN_HEADED_DIR}/streaming.json
+click surface:contributed role:button Pause
+wait-file 18000 ${DJINN_HEADED_DIR}/paused.json
+settle 5
+assert text Paused
+capture 06b_paused_scoped_answer
+click surface:contributed role:button Resume
+wait-file 18000 ${DJINN_HEADED_DIR}/finished.json
+settle 20
+assert text Finished
+assert text café
+assert text Source 1:
+capture 07_scoped_answer_origin_gone
+# Choosing B for the next question does not withdraw A1 from past answers.
+click surface:contributed role:button Remove source: Source A · saved version 1
+settle 8
+assert text 1 saved sources chosen
+assert text Finished
+capture 08_changed_scope_old_answer
+# The existing resident fixture also exercises cancellation through the B-only scope.
+click surface:contributed role:textbox Question
+insert What is the harbor sentinel? Cite [1] and explain it in twenty sentences.
+click surface:contributed role:button Ask
+wait-file 18000 ${DJINN_HEADED_DIR}/second-started.json
+click surface:contributed role:button Cancel
+wait-file 18000 ${DJINN_HEADED_DIR}/cancelled.json
+settle 10
+assert text Cancelled
+capture 08b_cancelled_B_only_ask
+click surface:contributed role:button Reopen: Repeat the retained sentence about the Pelican observatory
+settle 5
+assert text Source 1:
+click surface:contributed role:button Source 1:
+settle 8
+wait-saved-reader 600
+assert snap saved-reader-state == Ready
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+assert snap saved-reader-quote == The Pelican observatory's access word is café.
+assert snap saved-reader-origin ~ /A
+assert a11y Open original address
+capture 09_exact_A1_citation_origin_gone
+record-saved-sources 09_exact_A1_citation_origin_gone
+act Save session
+log R3 explicitly scoped real-model answer and exact offline citation complete

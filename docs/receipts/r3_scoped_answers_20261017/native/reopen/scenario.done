@@ -1,0 +1,12 @@
+RESULT ok
+captured 10_cold_reopened_scope_and_history
+captured 11_cold_reopened_exact_A1_citation
+R3 cold reopen retains chosen B, old answer, exact A1 and Unicode passage
+captured 12_oversize_publication_refused
+captured 13_oversize_source_readable_offline
+Oversize publication refused while exact local source reading remains available
+presentation frames=425 captures=4 blank=0
+capture /Users/markik/Code/output/turnstone-r3-native-06/reopen/10_cold_reopened_scope_and_history.png digest=05456ec8b87ed24c blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-06/reopen/11_cold_reopened_exact_A1_citation.png digest=64835c9a8db487c7 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-06/reopen/12_oversize_publication_refused.png digest=e1981d78c6735e95 blank=false
+capture /Users/markik/Code/output/turnstone-r3-native-06/reopen/13_oversize_source_readable_offline.png digest=5ff8e5b8817d8873 blank=false

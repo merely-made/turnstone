@@ -32,11 +32,21 @@ use wire::recall::{
 pub(crate) trait RetainedSourceOwner: Send + Sync {
     fn snapshot(&self, owner: &str) -> Result<Vec<RetainedSourceText>, String>;
     fn resolve(&self, source: &RecallSourceId, version: &str) -> Result<String, String>;
+    fn choices(&self) -> Vec<crate::research::Choice> {
+        Vec::new()
+    }
+    fn generation(&self) -> Option<uuid::Uuid> {
+        None
+    }
+    fn open_source(&self, _: &OpenSource, _: Option<uuid::Uuid>) -> Result<(), String> {
+        Ok(())
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct OpenSource {
     pub run: String,
+    pub handle: u32,
     pub retained: RetainedSourceText,
     pub selector: PassageSelector,
 }
@@ -47,6 +57,7 @@ pub(crate) struct ClientSnapshot {
     pub ready: bool,
     pub model: Option<String>,
     pub runs: Vec<RunV1>,
+    pub choices: Vec<crate::research::Choice>,
     pub source: Option<OpenSource>,
 }
 #[derive(Clone, Copy)]
@@ -65,9 +76,19 @@ impl Control {
     }
 }
 enum Command {
-    Ask { run: String, question: String },
-    Control { run: String, control: Control },
-    Source { run: String, handle: u32 },
+    Ask {
+        run: String,
+        question: String,
+        chosen: Vec<crate::saved_sources::Target>,
+    },
+    Control {
+        run: String,
+        control: Control,
+    },
+    Source {
+        run: String,
+        handle: u32,
+    },
     Refresh,
 }
 
@@ -90,9 +111,10 @@ impl InferenceService {
         }));
         let state = snapshot.clone();
         let namespace = owner.clone();
+        let generation = sources.generation();
         let worker = std::thread::Builder::new()
             .name("turnstone-inference".into())
-            .spawn(move || worker(namespace, sources, rx, state, wake))
+            .spawn(move || worker(namespace, generation, sources, rx, state, wake))
             .map_err(|e| e.to_string())?;
         Ok(Arc::new(Self {
             commands,
@@ -100,6 +122,16 @@ impl InferenceService {
             worker: Mutex::new(Some(worker)),
             owner,
         }))
+    }
+    #[cfg(test)]
+    pub(crate) fn inert_for_surface_test(owner: String) -> Arc<Self> {
+        let (commands, _) = mpsc::sync_channel(1);
+        Arc::new(Self {
+            commands,
+            snapshot: Arc::new(Mutex::new(ClientSnapshot::default())),
+            worker: Mutex::new(None),
+            owner,
+        })
     }
     pub fn snapshot(&self) -> ClientSnapshot {
         self.snapshot.lock().unwrap().clone()
@@ -109,14 +141,22 @@ impl InferenceService {
             .try_send(command)
             .map_err(|_| "The answer connection is busy or closed.".into())
     }
-    pub fn ask(&self, question: String) -> Result<String, String> {
+    pub fn ask(
+        &self,
+        question: String,
+        chosen: Vec<crate::saved_sources::Target>,
+    ) -> Result<String, String> {
         if question.trim().is_empty() {
             return Err("Enter a question.".into());
+        }
+        if chosen.is_empty() {
+            return Err("Choose at least one saved source before asking.".into());
         }
         let run = format!("{}/{}", self.owner, uuid::Uuid::new_v4());
         self.send(Command::Ask {
             run: run.clone(),
             question,
+            chosen,
         })?;
         Ok(run)
     }
@@ -124,6 +164,16 @@ impl InferenceService {
         self.send(Command::Control { run, control })
     }
     pub fn source(&self, run: String, handle: u32) -> Result<(), String> {
+        if !run.starts_with(&format!("{}/", self.owner)) {
+            return Err("The citation belongs to another browsing session.".into());
+        }
+        // A repeated activation must resolve again even when its contents are
+        // identical; retaining the previous result would suppress its revision.
+        {
+            let mut snapshot = self.snapshot.lock().unwrap();
+            snapshot.source = None;
+            snapshot.revision += 1;
+        }
         self.send(Command::Source { run, handle })
     }
     pub fn refresh(&self) -> Result<(), String> {
@@ -157,6 +207,7 @@ fn update(state: &Mutex<ClientSnapshot>, wake: &Wake, mut next: ClientSnapshot) 
 }
 fn worker(
     owner: String,
+    generation: Option<uuid::Uuid>,
     sources: Arc<dyn RetainedSourceOwner>,
     commands: mpsc::Receiver<Command>,
     snapshot: Arc<Mutex<ClientSnapshot>>,
@@ -192,54 +243,137 @@ fn worker(
             continue;
         }
         let previous = snapshot.lock().unwrap().clone();
-        let result=runtime.block_on(async {tokio::time::timeout(Duration::from_secs(5),async {
-            if connection.is_none() {
-                let mut client=AppBrokerClient::open_route(AppId::new("turnstone"),AppRouteId::new(wire::INFERENCE_ASK_ROUTE).map_err(|e|e.to_string())?).await.map_err(|e|e.to_string())?;
-                let opened=client.open_session().await.map_err(|e|e.to_string())?;
-                let request=opened.descriptor.projections.first().ok_or("The resident exposes no answer view.")?.request.clone();
-                connection=Some(Connection {client,request,published:None});next_sources=Instant::now();
-            }
-            let connection=connection.as_mut().unwrap();
-            let mut changed=false;
-            if connection.published.is_none() || Instant::now()>=next_sources || matches!(&command,Some(Command::Ask {..})|Some(Command::Refresh)) {
-                let retained=sources.snapshot(&owner)?;
-                let publication=PublishCorpusRequestV1 {owner:owner.clone(),sources:retained};
-                let bytes=serde_json::to_vec(&publication).map_err(|e|e.to_string())?;
-                if bytes.len()>MAX_PUBLISHED_CORPUS_BYTES {return Err("Retained text is too large for this connection. Use a smaller browsing session.".into());}
-                let fingerprint=eidetic::Hash::of(&bytes);
-                if connection.published!=Some(fingerprint) {
-                    intent(connection,PUBLISH_CORPUS_INTENT,bytes).await?;
-                    connection.published=Some(fingerprint);changed=true;
+        let result = runtime.block_on(async {
+            tokio::time::timeout(Duration::from_secs(5), async {
+                if sources.generation() != generation {
+                    return Err(
+                        "This answer connection belongs to an earlier session opening.".into(),
+                    );
                 }
-                next_sources=Instant::now()+Duration::from_secs(1);
-            }
-            let mut next=previous.clone();
-            if let Some(command)=command {
-                match command {
-                    Command::Ask {run,question}=> {
-                        intent(connection,ASK_PUBLISHED_INTENT,serde_json::to_vec(&PublishedAskRequestV1 {owner:owner.clone(),ask:wire::AskRequestV1 {run,question},scope:vec![]}).map_err(|e|e.to_string())?).await?;
-                    },
-                    Command::Control {run,control}=> {
-                        if !run.starts_with(&format!("{owner}/")) {return Err("The answer belongs to another browsing session.".into());}
-                        intent(connection,control.intent(),serde_json::to_vec(&wire::CancelRequestV1 {run}).map_err(|e|e.to_string())?).await?;
-                    },
-                    Command::Source {run,handle}=> {
-                        // Refresh first so an old click cannot reopen a withdrawn citation.
-                        next.runs=read_runs(connection).await?.runs.into_iter().filter(|r|r.run.starts_with(&format!("{owner}/"))).collect();
-                        next.source=Some(resolve_source(sources.as_ref(),&next.runs,&run,handle)?);
-                    },
-                    Command::Refresh=>{},
+                if connection.is_none() {
+                    let mut client = AppBrokerClient::open_route(
+                        AppId::new("turnstone"),
+                        AppRouteId::new(wire::INFERENCE_ASK_ROUTE).map_err(|e| e.to_string())?,
+                    )
+                    .await
+                    .map_err(|e| e.to_string())?;
+                    let opened = client.open_session().await.map_err(|e| e.to_string())?;
+                    let request = opened
+                        .descriptor
+                        .projections
+                        .first()
+                        .ok_or("The resident exposes no answer view.")?
+                        .request
+                        .clone();
+                    connection = Some(Connection {
+                        client,
+                        request,
+                        published: None,
+                    });
+                    next_sources = Instant::now();
                 }
-                changed=true;
-            }
-            if changed || connection.client.take_notice().await.map_err(|e|e.to_string())?.is_some() {
-                let table=read_runs(connection).await?;
-                next.ready=table.session.is_some() && table.load_error.is_none();next.model=table.model;
-                next.status=table.load_error.unwrap_or_else(||if next.ready {"Connected to resident inference.".into()} else {"Loading the answer model…".into()});
-                next.runs=table.runs.into_iter().filter(|r|r.run.starts_with(&format!("{owner}/"))).collect();
-            }
-            Ok::<_,String>(next)
-        }).await.map_err(|_|"The answer connection timed out.".to_string())?});
+                let connection = connection.as_mut().unwrap();
+                let mut changed = false;
+                let mut ask_scope = None;
+                if connection.published.is_none()
+                    || Instant::now() >= next_sources
+                    || matches!(&command, Some(Command::Ask { .. }) | Some(Command::Refresh))
+                {
+                    let retained = sources.snapshot(&owner)?;
+                    if let Some(Command::Ask { chosen, .. }) = &command {
+                        ask_scope = Some(crate::research::scope(&owner, chosen, &retained)?);
+                    }
+                    let bytes = publication(&owner, retained)?;
+                    let fingerprint = eidetic::Hash::of(&bytes);
+                    if connection.published != Some(fingerprint) {
+                        intent(connection, PUBLISH_CORPUS_INTENT, bytes).await?;
+                        connection.published = Some(fingerprint);
+                        changed = true;
+                    }
+                    next_sources = Instant::now() + Duration::from_secs(1);
+                }
+                let mut next = previous.clone();
+                if let Some(command) = command {
+                    match command {
+                        Command::Ask { run, question, .. } => {
+                            intent(
+                                connection,
+                                ASK_PUBLISHED_INTENT,
+                                serde_json::to_vec(&PublishedAskRequestV1 {
+                                    owner: owner.clone(),
+                                    ask: wire::AskRequestV1 { run, question },
+                                    scope: ask_scope.ok_or(
+                                        "No explicitly chosen saved-source scope is available.",
+                                    )?,
+                                })
+                                .map_err(|e| e.to_string())?,
+                            )
+                            .await?;
+                        },
+                        Command::Control { run, control } => {
+                            if !run.starts_with(&format!("{owner}/")) {
+                                return Err(
+                                    "The answer belongs to another browsing session.".into()
+                                );
+                            }
+                            intent(
+                                connection,
+                                control.intent(),
+                                serde_json::to_vec(&wire::CancelRequestV1 { run })
+                                    .map_err(|e| e.to_string())?,
+                            )
+                            .await?;
+                        },
+                        Command::Source { run, handle } => {
+                            // Refresh first so an old click cannot reopen a withdrawn citation.
+                            next.runs = read_runs(connection)
+                                .await?
+                                .runs
+                                .into_iter()
+                                .filter(|r| r.run.starts_with(&format!("{owner}/")))
+                                .collect();
+                            let opened =
+                                resolve_source(sources.as_ref(), &next.runs, &run, handle)?;
+                            sources.open_source(&opened, generation)?;
+                            // The intent is semantic work even if an identical
+                            // source snapshot would not advance its revision.
+                            wake();
+                            next.source = Some(opened);
+                        },
+                        Command::Refresh => {},
+                    }
+                    changed = true;
+                }
+                if changed
+                    || connection
+                        .client
+                        .take_notice()
+                        .await
+                        .map_err(|e| e.to_string())?
+                        .is_some()
+                {
+                    let table = read_runs(connection).await?;
+                    next.ready = table.session.is_some() && table.load_error.is_none();
+                    next.model = table.model;
+                    next.status = table.load_error.unwrap_or_else(|| {
+                        if next.ready {
+                            "Connected to resident inference.".into()
+                        } else {
+                            "Loading the answer model…".into()
+                        }
+                    });
+                    next.runs = table
+                        .runs
+                        .into_iter()
+                        .filter(|r| r.run.starts_with(&format!("{owner}/")))
+                        .collect();
+                }
+                next.choices = sources.choices();
+                Ok::<_, String>(next)
+            })
+            .await
+            .map_err(|_| "The answer connection timed out.".to_string())?
+        });
         match result {
             Ok(next) => update(&snapshot, &wake, next),
             Err(error) => {
@@ -250,7 +384,10 @@ fn worker(
                     &wake,
                     ClientSnapshot {
                         status: error,
-                        ..Default::default()
+                        ready: false,
+                        source: None,
+                        choices: sources.choices(),
+                        ..previous
                     },
                 );
             },
@@ -262,6 +399,26 @@ fn worker(
         });
     }
 }
+fn publication(owner: &str, sources: Vec<RetainedSourceText>) -> Result<Vec<u8>, String> {
+    for source in &sources {
+        let target = crate::research::target(&source.source, &source.version)?;
+        if source.source.owner.as_deref() != Some(owner)
+            || target.text_hash != eidetic::Hash::of(source.text.as_bytes()).to_string()
+        {
+            return Err("Saved-source publication failed identity or text validation.".into());
+        }
+    }
+    let bytes = serde_json::to_vec(&PublishCorpusRequestV1 {
+        owner: owner.into(),
+        sources,
+    })
+    .map_err(|e| e.to_string())?;
+    if bytes.len() > MAX_PUBLISHED_CORPUS_BYTES {
+        return Err("This session has too much saved text for Answers. Offline source reading remains available.".into());
+    }
+    Ok(bytes)
+}
+
 async fn intent(connection: &mut Connection, name: &str, payload: Vec<u8>) -> Result<(), String> {
     let result = connection
         .client
@@ -340,8 +497,15 @@ fn resolve_source(
     if citation.passage != passage.id() {
         return Err("The citation does not name its supplied passage.".into());
     }
+    if passage.source.kind == eidetic::models::recall::RecallSourceKind::Fleece
+        && (evidence.owner != passage.source.owner || !evidence.scope.contains(&passage.source))
+    {
+        return Err(
+            "The cited saved source was outside the explicitly chosen answer scope.".into(),
+        );
+    }
     let text = owner.resolve(&passage.source, &passage.version)?;
-    if passage.selector.start > passage.selector.end || passage.selector.end > text.chars().count()
+    if passage.selector.start >= passage.selector.end || passage.selector.end > text.chars().count()
     {
         return Err("The cited source range is invalid.".into());
     }
@@ -358,6 +522,7 @@ fn resolve_source(
     }
     Ok(OpenSource {
         run: run.into(),
+        handle,
         retained: RetainedSourceText {
             source: passage.source.clone(),
             version: passage.version.clone(),
@@ -471,5 +636,107 @@ mod tests {
                 .unwrap_err()
                 .contains("range is invalid")
         );
+        let evidence = runs[0].recall.as_mut().unwrap();
+        evidence.passages[0].passage.selector.end = evidence.passages[0].passage.selector.start;
+        evidence.citations[0].passage = evidence.passages[0].passage.id();
+        assert!(
+            resolve_source(&owner, &runs, "retained", 1)
+                .unwrap_err()
+                .contains("range is invalid")
+        );
+    }
+    fn saved_fixture(text: &str) -> RetainedSourceText {
+        let target = crate::saved_sources::Target {
+            key: crate::saved_sources::Key {
+                session: crate::panes::SessionId::new(),
+                graph: crate::panes::GraphId::new(),
+                node: uuid::Uuid::new_v4(),
+                annotation_manifest: eidetic::ManifestId::of_blob(b"saved-A1").to_string(),
+            },
+            text_hash: eidetic::Hash::of(text.as_bytes()).to_string(),
+            selector: None,
+        };
+        RetainedSourceText {
+            source: crate::research::source_id(&target).unwrap(),
+            version: target.text_hash,
+            title: Some("A1".into()),
+            text: text.into(),
+        }
+    }
+    #[test]
+    fn publication_bounds_encoded_bytes_and_rejects_owner_hash_and_legacy_substitution() {
+        let source = saved_fixture("ordinary saved text");
+        let owner = source.source.owner.as_ref().unwrap().clone();
+        assert!(publication(&owner, vec![source.clone()]).is_ok());
+        assert!(publication("another owner", vec![source.clone()]).is_err());
+        let mut corrupt = source.clone();
+        corrupt.text.push('!');
+        assert!(publication(&owner, vec![corrupt]).is_err());
+        let mut legacy = source;
+        legacy.source.kind = RecallSourceKind::PageText;
+        assert!(publication(&owner, vec![legacy]).is_err());
+        // JSON escaping exceeds the wire cap before raw Unicode character count.
+        let big = saved_fixture(&"\u{0000}".repeat(MAX_PUBLISHED_CORPUS_BYTES / 5));
+        let big_owner = big.source.owner.as_ref().unwrap().clone();
+        assert!(
+            publication(&big_owner, vec![big])
+                .unwrap_err()
+                .contains("too much saved text")
+        );
+    }
+    #[test]
+    fn saved_citation_requires_requested_scope_and_exact_unicode_passage() {
+        let (mut owner, mut runs) = fixture();
+        owner.text = "α 🐦 東京 saved citation".into();
+        let source = saved_fixture(&owner.text);
+        let evidence = runs[0].recall.as_mut().unwrap();
+        evidence.owner = source.source.owner.clone();
+        evidence.scope = vec![source.source.clone()];
+        let passage = &mut evidence.passages[0].passage;
+        passage.source = source.source.clone();
+        passage.version = source.version.clone();
+        passage.text_hash = eidetic::Hash::of(owner.text.as_bytes());
+        passage.selector = PassageSelector { start: 2, end: 6 };
+        passage.text = owner.text.chars().skip(2).take(4).collect();
+        evidence.citations[0].passage = passage.id();
+        let opened = resolve_source(&owner, &runs, "retained", 1).unwrap();
+        assert_eq!(opened.selector, PassageSelector { start: 2, end: 6 });
+        assert_eq!(
+            opened
+                .retained
+                .text
+                .chars()
+                .skip(2)
+                .take(4)
+                .collect::<String>(),
+            "🐦 東京"
+        );
+        runs[0].recall.as_mut().unwrap().scope.clear();
+        assert!(
+            resolve_source(&owner, &runs, "retained", 1)
+                .unwrap_err()
+                .contains("outside")
+        );
+    }
+    #[test]
+    #[ignore = "requires the isolated R3 real resident and a public probe receipt path"]
+    fn admitted_research_route_refuses_wrong_owner() {
+        let output = std::path::PathBuf::from(
+            std::env::var_os("TURNSTONE_R3_PROBE_RECEIPT").expect("explicit probe receipt path"),
+        );
+        tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap().block_on(async {
+            let mut client = AppBrokerClient::open_route(AppId::new("turnstone"), AppRouteId::new(wire::INFERENCE_ASK_ROUTE).unwrap()).await.unwrap();
+            let opened = client.open_session().await.unwrap();
+            let request = opened.descriptor.projections.first().unwrap().request.clone();
+            let mut connection = Connection { client, request, published: None };
+            let source = saved_fixture("Public R3 wrong-owner boundary probe.");
+            let wrong_owner = "turnstone/r3-wrong-owner/research/v1";
+            let publish = PublishCorpusRequestV1 { owner: wrong_owner.into(), sources: vec![source.clone()] };
+            let publication_error = intent(&mut connection, PUBLISH_CORPUS_INTENT, serde_json::to_vec(&publish).unwrap()).await.unwrap_err();
+            let ask = PublishedAskRequestV1 { owner: wrong_owner.into(), ask: wire::AskRequestV1 { run: format!("{wrong_owner}/probe"), question: "This wrong-owner ask must never generate.".into() }, scope: vec![source.source.clone()] };
+            let ask_error = intent(&mut connection, ASK_PUBLISHED_INTENT, serde_json::to_vec(&ask).unwrap()).await.unwrap_err();
+            connection.client.close().await.unwrap();
+            std::fs::write(output, serde_json::to_vec_pretty(&serde_json::json!({ "actual_admitted_route": true, "source_kind": "fleece", "wrong_owner_publication_refused": true, "wrong_owner_ask_refused": true, "publication_error": publication_error, "ask_error": ask_error })).unwrap()).unwrap();
+        });
     }
 }

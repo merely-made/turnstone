@@ -869,7 +869,24 @@ done-conditions story.
   that plan's B3. The resident helper unit is named **servitor** (reserved on
   crates.io); chartulary's nesting substrate (B0) landed the same day.
 
-- 2026-10-16: **Resident answer card qualified through I5.** The palette's
+- 2026-10-18: **R3 capture-backed Answers bounded-qualified on macOS.** The current
+  `Ask saved sources` action uses a version-2 pane payload and a derived
+  research owner. Chosen exact Fleece source IDs persist in pane state; every
+  ask validates and transmits its explicit nonempty subset. All valid attached
+  captures remain published through one connection per session/opening, so
+  changing the next question's subset preserves older citations. Citation
+  activation resolves through the trail actor and opens the R2 saved-source
+  reader at the verified Unicode passage. The older PageText resolver retains
+  its restrictions; a legacy version-1 pane is never implicitly widened or
+  converted into a capture ask. 979 bounded tests, three capture-library
+  controls, real-route wrong-owner refusal and both headed processes pass.
+  Twelve reviewed captures and independent sealed-prompt/hash/Unicode checks
+  prove exact old A1 citation reopening with the origin gone. The real model
+  supplies an exact-quotation citation; uncited marker attempts remain
+  diagnostics. Qualification and platform/process limits belong to the R3 section of the
+  [page lifecycle plan](2026-09-06_page_lifecycle_plan.md#r3-capture-backed-explicitly-scoped-answers).
+
+- 2026-10-16: **Resident answer card qualified through I5 (historical producer).** The palette's
   `Ask retained text` action opens `turnstone.answers`, scoped to the current
   browsing session. A decoder-free worker speaks Djinn's admitted `inference.ask`
   route, publishes retained text borrowed from the existing trail actor, and

@@ -207,3 +207,141 @@ mod tests {
         assert_eq!(app.primary_blueprint, Some(invalid));
     }
 }
+
+impl App {
+    pub(crate) fn sync_research_context(&self) {
+        self.research.project(crate::research::Context {
+            session: self.session_id,
+            generation: self.source_capture_generation,
+            admissions: self.saved_source_admissions(),
+        });
+    }
+    pub(crate) fn set_answer_selection(
+        &mut self,
+        generation: uuid::Uuid,
+        expected: crate::inference_surface::AnswerSourceV2,
+        mut chosen: Vec<crate::saved_sources::Target>,
+    ) -> Vec<Effect> {
+        if generation != self.source_capture_generation
+            || expected.session != *self.session_id.as_uuid()
+            || chosen
+                .iter()
+                .any(|target| target.selector.is_some() || !self.saved_source_admitted(&target.key))
+        {
+            return self.saved_source_refusal(
+                "The answer selection belongs to a stale view or unavailable saved source.".into(),
+            );
+        }
+        let mut seen = std::collections::HashSet::new();
+        chosen.retain(|target| seen.insert(target.clone()));
+        let old = crate::inference_surface::answer_source_value(expected.clone());
+        let next = crate::inference_surface::answer_source_value(
+            crate::inference_surface::AnswerSourceV2 { chosen, ..expected },
+        );
+        let mut changed = false;
+        for layout in std::iter::once(&mut self.frisket).chain(self.lenses.iter_mut().flatten()) {
+            if let Some(frame) = layout.workspace_mut() {
+                for value in frame.descriptors.values_mut() {
+                    if let Ok(mut spec) = serde_json::from_value::<PaneSpec>(value.clone())
+                        && spec.kind.as_str() == crate::inference_surface::PANE_KIND
+                        && spec.source == old
+                    {
+                        spec.source = next.clone();
+                        *value = serde_json::to_value(spec).expect("answer pane serialization");
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if changed {
+            vec![Effect::SaveSession, Effect::Redraw]
+        } else {
+            Vec::new()
+        }
+    }
+}
+
+#[cfg(test)]
+mod research_view_tests {
+    use super::*;
+    use crate::action::Action;
+    fn source(app: &App, pane: PaneId) -> crate::inference_surface::AnswerSourceV2 {
+        let frame = app.frisket.outer_workspace().unwrap();
+        let spec: PaneSpec = serde_json::from_value(frame.descriptors[&pane.0].clone()).unwrap();
+        let PaneSource::Fixed(crate::panes::SourceRef::External { payload, .. }) = spec.source
+        else {
+            panic!("external source")
+        };
+        assert_eq!(payload.version, 2);
+        serde_json::from_value(payload.payload).unwrap()
+    }
+    #[test]
+    fn chosen_capture_intent_persists_in_the_pane_and_stale_controls_cannot_edit_it() {
+        let mut app = App::test_stub();
+        let key = app.graph_runtimes.visit("https://gone.test/A");
+        let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
+        crate::source_capture::append_reference(
+            app.graph_runtimes.facets_mut(),
+            node,
+            eidetic::ManifestId::of_blob(b"A1").to_string(),
+        )
+        .unwrap();
+        app.update(Action::OpenAnswers);
+        let pane = app.active_pane.unwrap();
+        let initial = source(&app, pane);
+        assert!(initial.chosen.is_empty());
+        let target = crate::saved_sources::Target {
+            key: app.saved_source_admissions()[0].key.clone(),
+            text_hash: eidetic::Hash::of(b"saved text").to_string(),
+            selector: None,
+        };
+        let generation = app.source_capture_generation;
+        let select = |expected, chosen| Action::SetAnswerSelection {
+            generation,
+            expected,
+            chosen,
+        };
+        let effects = app.update(select(initial.clone(), vec![target.clone()]));
+        assert!(
+            effects
+                .iter()
+                .any(|effect| matches!(effect, Effect::SaveSession))
+        );
+        let chosen = source(&app, pane);
+        assert_eq!(chosen.chosen, vec![target.clone()]);
+        // frame.json's ordinary serialized pane authority carries identities only.
+        let serialized = serde_json::to_vec(&app.frisket).unwrap();
+        let reopened: crate::panes::FrisketLayout = serde_json::from_slice(&serialized).unwrap();
+        let frame = reopened.outer_workspace().unwrap();
+        let spec: PaneSpec = serde_json::from_value(frame.descriptors[&pane.0].clone()).unwrap();
+        assert_eq!(
+            spec.source,
+            crate::inference_surface::answer_source_value(chosen.clone())
+        );
+        assert!(
+            !String::from_utf8(serialized)
+                .unwrap()
+                .contains("saved text")
+        );
+        assert!(
+            app.update(select(initial, vec![])).is_empty(),
+            "an old UI control cannot replace a newer choice"
+        );
+        assert_eq!(source(&app, pane), chosen);
+        app.update(Action::SetAnswerSelection {
+            generation: uuid::Uuid::new_v4(),
+            expected: chosen.clone(),
+            chosen: vec![],
+        });
+        assert_eq!(source(&app, pane), chosen);
+        let mut foreign = target;
+        foreign.key.session = crate::panes::SessionId::new();
+        app.update(select(chosen.clone(), vec![foreign]));
+        assert_eq!(source(&app, pane), chosen);
+        app.update(select(chosen, vec![]));
+        assert!(
+            source(&app, pane).chosen.is_empty(),
+            "clearing scope persists without selecting every capture"
+        );
+    }
+}

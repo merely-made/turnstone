@@ -148,6 +148,15 @@ pub enum TrailCommand {
         admission: crate::saved_sources::Admission,
         directory: PathBuf,
     },
+    ResearchSnapshot {
+        context: crate::research::Context,
+        reply: std::sync::mpsc::SyncSender<Result<Vec<crate::saved_sources::Entry>, String>>,
+    },
+    ResearchSource {
+        context: crate::research::Context,
+        target: crate::saved_sources::Target,
+        reply: std::sync::mpsc::SyncSender<Result<crate::saved_sources::Content, String>>,
+    },
     /// Read exact retained texts through this actor's existing store handle.
     InferenceSnapshot {
         owner: String,
@@ -1149,6 +1158,51 @@ pub(crate) fn spawn_trail_for_session(
                         }};
                         out.emit(Update::SavedSourceRead { generation, request, node, url, target, result });
                     },
+                    TrailCommand::ResearchSnapshot { context, reply } => {
+                        let valid = context.generation == current_capture_generation
+                            && inference_owner(&current_dir).ok()
+                                == Some(format!("turnstone/{}", context.session.as_uuid()))
+                            && context
+                                .admissions
+                                .iter()
+                                .all(|a| a.key.session == context.session);
+                        let result = if !valid {
+                            Err("The saved-source owner belongs to another session opening.".into())
+                        } else {
+                            state
+                                .as_mut()
+                                .map(|(store, _)| saved_sources::load(store, &context.admissions))
+                                .ok_or_else(|| "The session evidence store is unavailable.".into())
+                        };
+                        let _ = reply.send(result);
+                    },
+                    TrailCommand::ResearchSource {
+                        context,
+                        target,
+                        reply,
+                    } => {
+                        let valid = context.generation == current_capture_generation
+                            && inference_owner(&current_dir).ok()
+                                == Some(format!("turnstone/{}", context.session.as_uuid()))
+                            && target.key.session == context.session;
+                        let result = if !valid {
+                            Err("The cited source belongs to another session opening.".into())
+                        } else if let Some(admission) = context
+                            .admissions
+                            .iter()
+                            .find(|a| a.key == target.key && a.error.is_none())
+                        {
+                            match state.as_mut() {
+                                Some((store, _)) => {
+                                    saved_sources::resolve(store, admission, &target)
+                                },
+                                None => Err("The session evidence store is unavailable.".into()),
+                            }
+                        } else {
+                            Err("The cited saved source was withdrawn from this session.".into())
+                        };
+                        let _ = reply.send(result);
+                    },
                     TrailCommand::InferenceSnapshot { owner, reply } => {
                         let result = inference_snapshot(
                             state.as_ref().map(|(store, _)| store),
@@ -2025,5 +2079,299 @@ fn emit_capture_recovery(
             }
         },
         Err(error) => out.emit(Update::SourceCaptureRecoveryFailed { capture_generation, error }),
+    }
+}
+
+/// Capture-specific owner. It never delegates to the PageText compatibility resolver.
+pub(crate) struct CaptureInferenceOwner {
+    pub trail: std::sync::Arc<ActorHandle<TrailCommand>>,
+    pub bridge: crate::research::Bridge,
+}
+impl crate::inference_service::RetainedSourceOwner for CaptureInferenceOwner {
+    fn snapshot(
+        &self,
+        owner: &str,
+    ) -> Result<Vec<eidetic::models::recall::RetainedSourceText>, String> {
+        let context = self.bridge.context()?;
+        if owner != crate::research::namespace(context.session) {
+            return Err("The answer belongs to another saved-source owner.".into());
+        }
+        let (reply, receive) = std::sync::mpsc::sync_channel(1);
+        if !self.trail.command(TrailCommand::ResearchSnapshot {
+            context: context.clone(),
+            reply,
+        }) {
+            return Err("The saved-source owner is closed.".into());
+        }
+        let entries = receive
+            .recv_timeout(Duration::from_secs(2))
+            .map_err(|_| "The saved-source owner did not answer.")??;
+        self.bridge.loaded(&context, &entries)?;
+        let mut sources = Vec::new();
+        for entry in entries {
+            if let Some(content) = entry.content {
+                let target = crate::saved_sources::Target {
+                    key: entry.admission.key,
+                    text_hash: content.text_hash.clone(),
+                    selector: None,
+                };
+                let source = crate::research::source_id(&target)?;
+                if !sources
+                    .iter()
+                    .any(|entry: &eidetic::models::recall::RetainedSourceText| {
+                        entry.source == source
+                    })
+                {
+                    sources.push(eidetic::models::recall::RetainedSourceText {
+                        source,
+                        version: content.text_hash,
+                        title: Some(content.title),
+                        text: content.text,
+                    });
+                }
+            }
+        }
+        Ok(sources)
+    }
+    fn resolve(
+        &self,
+        source: &eidetic::models::recall::RecallSourceId,
+        version: &str,
+    ) -> Result<String, String> {
+        let target = crate::research::target(source, version)?;
+        let context = self.bridge.context()?;
+        if source.owner.as_deref() != Some(crate::research::namespace(context.session).as_str()) {
+            return Err("The citation belongs to another saved-source owner.".into());
+        }
+        let (reply, receive) = std::sync::mpsc::sync_channel(1);
+        if !self.trail.command(TrailCommand::ResearchSource {
+            context: context.clone(),
+            target,
+            reply,
+        }) {
+            return Err("The saved-source owner is closed.".into());
+        }
+        let content = receive
+            .recv_timeout(Duration::from_secs(2))
+            .map_err(|_| "The saved-source owner did not answer.")??;
+        if self.bridge.context()? != context {
+            return Err("The cited source session or admissions changed.".into());
+        }
+        Ok(content.text)
+    }
+    fn open_source(
+        &self,
+        opened: &crate::inference_service::OpenSource,
+        generation: Option<uuid::Uuid>,
+    ) -> Result<(), String> {
+        let context = self.bridge.context()?;
+        if Some(context.generation) != generation
+            || opened.retained.source.owner.as_deref()
+                != Some(crate::research::namespace(context.session).as_str())
+        {
+            return Err("The citation belongs to an earlier session opening.".into());
+        }
+        let mut target =
+            crate::research::target(&opened.retained.source, &opened.retained.version)?;
+        if target.text_hash != eidetic::Hash::of(opened.retained.text.as_bytes()).to_string()
+            || opened.selector.start >= opened.selector.end
+            || opened.selector.end > opened.retained.text.chars().count()
+        {
+            return Err("The cited source text or Unicode range is invalid.".into());
+        }
+        target.selector = Some(crate::saved_sources::Selector {
+            start: opened.selector.start,
+            end: opened.selector.end,
+        });
+        if !context
+            .admissions
+            .iter()
+            .any(|admission| admission.key == target.key && admission.error.is_none())
+        {
+            return Err("The cited saved source was withdrawn from this session.".into());
+        }
+        self.bridge
+            .send(crate::research::Intent::Citation { context, target });
+        Ok(())
+    }
+    fn choices(&self) -> Vec<crate::research::Choice> {
+        self.bridge.choices()
+    }
+    fn generation(&self) -> Option<uuid::Uuid> {
+        self.bridge.context().ok().map(|c| c.generation)
+    }
+}
+
+#[cfg(test)]
+mod research_owner_tests {
+    use super::*;
+    use crate::inference_service::RetainedSourceOwner;
+    use crate::saved_sources::{Admission, Key, Target};
+    #[test]
+    fn research_owner_loads_only_live_captures_and_reopens_exact_versions_without_page_text_fallback()
+     {
+        let root = tempfile::tempdir().unwrap();
+        let session = crate::panes::SessionId::new();
+        let directory = root
+            .path()
+            .join(session.as_uuid().to_string())
+            .join("memory");
+        std::fs::create_dir_all(&directory).unwrap();
+        let mut store = FjallStore::open(&directory).unwrap();
+        let make = |label: &str| {
+            let body =
+                format!("<html><main>{label}: naïve — 東京 🐦 saved answer evidence</main></html>");
+            crate::content::FetchedDocument {
+                bytes: body.as_bytes().to_vec(),
+                body,
+                content_type: Some("text/html".into()),
+                effective_url: Some("https://gone.test/A".into()),
+                acquired_at_ms: 123456,
+            }
+        };
+        let a1 = capture_source_document_in(&mut store, &make("A1")).unwrap();
+        let a2 = capture_source_document_in(&mut store, &make("A2")).unwrap();
+        let orphan =
+            capture_source_document_in(&mut store, &make("orphan foreign sentinel")).unwrap();
+        drop(store);
+        let node = uuid::Uuid::new_v4();
+        let admitted = |manifest: String| Admission {
+            key: Key {
+                session,
+                graph: crate::panes::GraphId::nil(),
+                node,
+                annotation_manifest: manifest,
+            },
+            occurrence: 0,
+            title: "Source A".into(),
+            url: "https://gone.test/A".into(),
+            error: None,
+        };
+        let generation = uuid::Uuid::new_v4();
+        let context = crate::research::Context {
+            session,
+            generation,
+            admissions: vec![
+                admitted(a1.annotation_manifest.clone()),
+                admitted(a2.annotation_manifest.clone()),
+            ],
+        };
+        let (actor, _) = spawn_trail_for_session(
+            std::sync::Arc::new(|| {}),
+            Some(directory.clone()),
+            Default::default(),
+            generation,
+        );
+        let actor = std::sync::Arc::new(actor);
+        let bridge = crate::research::Bridge::default();
+        bridge.project(context.clone());
+        let owner = CaptureInferenceOwner {
+            trail: actor.clone(),
+            bridge: bridge.clone(),
+        };
+        let namespace = crate::research::namespace(session);
+        let sources = owner.snapshot(&namespace).unwrap();
+        assert_eq!(sources.len(), 2);
+        assert!(sources.iter().all(|source| !source.text.contains("orphan")));
+        let source_a1 = sources
+            .iter()
+            .find(|source| source.text.starts_with("A1"))
+            .unwrap();
+        assert!(
+            owner
+                .resolve(&source_a1.source, &source_a1.version)
+                .unwrap()
+                .starts_with("A1")
+        );
+        let a1_target = crate::research::target(&source_a1.source, &source_a1.version).unwrap();
+        assert!(crate::research::scope(&namespace, &[a1_target.clone()], &sources).is_ok());
+        assert!(crate::research::scope(&namespace, &[], &sources).is_err());
+        let opened = crate::inference_service::OpenSource {
+            run: format!("{namespace}/citation"),
+            handle: 1,
+            retained: source_a1.clone(),
+            selector: eidetic::models::recall::PassageSelector {
+                start: 0,
+                end: source_a1.text.chars().count(),
+            },
+        };
+        owner.open_source(&opened, Some(generation)).unwrap();
+        let intents = bridge.drain();
+        assert_eq!(
+            intents.len(),
+            1,
+            "citation completion queues an App action without any surface frame"
+        );
+        match &intents[0] {
+            crate::research::Intent::Citation {
+                context: actual,
+                target,
+            } => {
+                assert_eq!(actual, &context);
+                assert_eq!(target.key, a1_target.key);
+                assert!(target.selector.is_some());
+            }
+            _ => panic!("expected exact citation intent"),
+        }
+        assert!(
+            owner
+                .open_source(&opened, Some(uuid::Uuid::new_v4()))
+                .is_err()
+        );
+        assert!(bridge.drain().is_empty());
+
+        assert!(owner.snapshot("turnstone/wrong/research/v1").is_err());
+        let mut false_source = source_a1.source.clone();
+        false_source.owner = Some("foreign".into());
+        assert!(owner.resolve(&false_source, &source_a1.version).is_err());
+        let unadmitted = Target {
+            key: Key {
+                annotation_manifest: orphan.annotation_manifest,
+                ..a1_target.key.clone()
+            },
+            ..a1_target.clone()
+        };
+        assert!(
+            owner
+                .resolve(
+                    &crate::research::source_id(&unadmitted).unwrap(),
+                    &unadmitted.text_hash
+                )
+                .is_err()
+        );
+        // Selection is ask intent only: old A1 remains resolvable alongside A2.
+        assert!(owner.resolve(&source_a1.source, &source_a1.version).is_ok());
+        bridge.project(crate::research::Context {
+            admissions: vec![admitted(a2.annotation_manifest)],
+            ..context.clone()
+        });
+        assert!(
+            owner
+                .resolve(&source_a1.source, &source_a1.version)
+                .unwrap_err()
+                .contains("withdrawn")
+        );
+        bridge.project(crate::research::Context {
+            generation: uuid::Uuid::new_v4(),
+            ..context
+        });
+        assert!(
+            owner.snapshot(&namespace).is_err(),
+            "an old opening cannot read the new actor context"
+        );
+        let (ack, receive) = std::sync::mpsc::sync_channel(1);
+        actor.command(TrailCommand::Release(ack));
+        receive.recv_timeout(Duration::from_secs(5)).unwrap();
+        drop(owner);
+        std::sync::Arc::try_unwrap(actor).ok().unwrap().join();
+        let mut reopened = FjallStore::open(&directory).unwrap();
+        assert!(
+            saved_sources::load(&mut reopened, &[admitted(a1.annotation_manifest)])[0]
+                .content
+                .as_ref()
+                .unwrap()
+                .text
+                .starts_with("A1")
+        );
     }
 }
