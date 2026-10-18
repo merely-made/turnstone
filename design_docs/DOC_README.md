@@ -109,7 +109,9 @@ set.
   audited `428deb5` and sequences save acknowledgement/recovery, ordinary
   capture/Keep, private saved-source search and offline text reading, then
   explicitly scoped capture-backed Answers and cold-reopen acceptance. Authored
-  Knot notes and deliberate attachment sharing are named follow-ons. R0 save
+  Knot notes now join this workflow: the [October 18 receipt](../docs/receipts/research_notes_20261018/README.md)
+  qualifies ordinary note creation/choice, exact source citations and a cold
+  origin-gone return. Deliberate attachment sharing remains next. R0 save
   acknowledgement/recovery is implemented from fetched `b7e1529`, adopting
   published Mere `00e444286`:
   940 bounded regression tests pass, including 50 capture and 16 scene controls;

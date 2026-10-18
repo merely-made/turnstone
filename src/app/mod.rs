@@ -36,6 +36,7 @@ mod resident_admission_tests;
 mod resident_run_tests;
 mod source_capture_arms;
 mod saved_source_arms;
+pub(crate) mod research_note_arms;
 #[cfg(test)]
 mod r2_saved_source_tests;
 #[cfg(test)]
@@ -1385,6 +1386,11 @@ impl App {
             }
             Action::SetAnswerSelection { generation, expected, chosen } => self.set_answer_selection(generation, expected, chosen),
             Action::OpenAnswers => self.open_answers(),
+            Action::NewResearchNote => vec![Effect::CreateResearchNote { generation: self.source_capture_generation }],
+            Action::ChooseResearchNote { choice } => vec![Effect::ChooseResearchNote { choice }],
+            Action::CommitResearchNote { choice } => self.commit_research_note(choice),
+            Action::ResearchNoteCreated { generation, address } => self.research_note_created(generation, address),
+            Action::OpenResearchNote => self.open_research_note(),
             Action::SummonContributedPane { kind, source } => {
                 self.summon_contributed_pane(kind, source)
             }

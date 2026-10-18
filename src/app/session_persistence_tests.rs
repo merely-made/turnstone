@@ -219,12 +219,12 @@ fn host_session_facet_write_failure_does_not_replace_graph_or_migration_evidence
     app.persist_session_graph().unwrap();
     let file = directory.join(pandect::session_graph_store::GRAPH_FILE);
     let original = std::fs::read(&file).unwrap();
-    let blocked = pandect::node_facets_path(&directory).with_extension("json.tmp");
-    std::fs::create_dir(&blocked).unwrap();
+    let blocked = pandect::node_facets_path(&directory).to_path_buf();
+    let blocked = crate::session_persistence::BlockedReplacement::new(&blocked);
     app.graph_runtimes.visit("https://write-failure.test/page");
     assert!(app.persist_session_graph().is_err());
     assert_eq!(std::fs::read(&file).unwrap(), original);
-    std::fs::remove_dir(blocked).unwrap();
+    blocked.restore();
     app.persist_session_graph().unwrap();
     assert_ne!(std::fs::read(file).unwrap(), original);
 }
@@ -236,13 +236,13 @@ fn host_session_graph_write_failure_preserves_original_and_returns_failure() {
     app.persist_session_graph().unwrap();
     let file = directory.join(pandect::session_graph_store::GRAPH_FILE);
     let original = std::fs::read(&file).unwrap();
-    let blocked = file.with_extension("json.tmp");
-    std::fs::create_dir(&blocked).unwrap();
+    let blocked = file.to_path_buf();
+    let blocked = crate::session_persistence::BlockedReplacement::new(&blocked);
     app.graph_runtimes
         .visit("https://graph-write-failure.test/page");
     assert!(app.persist_session_graph().is_err());
-    assert_eq!(std::fs::read(&file).unwrap(), original);
-    std::fs::remove_dir(blocked).unwrap();
+    assert_eq!(blocked.read_preserved(&file).unwrap(), original);
+    blocked.restore();
     app.persist_session_graph().unwrap();
     assert_ne!(std::fs::read(file).unwrap(), original);
 }
@@ -291,6 +291,37 @@ fn host_session_interrupted_replacement_never_overwrites_its_backup() {
     app.persist_session_graph().unwrap();
     let file = directory.join(pandect::session_graph_store::GRAPH_FILE);
     let backup = file.with_extension("json.previous");
+    let original = std::fs::read(&file).unwrap();
+    std::fs::rename(&file, &backup).unwrap();
+    app.adopt_session(app.session_id);
+    assert!(app.session_load_refused());
+    assert!(app.persist_session_graph().is_err());
+    assert!(!file.exists());
+    assert_eq!(std::fs::read(&backup).unwrap(), original);
+    assert!(
+        app.available_actions()
+            .iter()
+            .any(|(label, _)| label == "Retry session")
+    );
+    assert!(
+        app.command_lane(
+            &cambium::MenuSession::open(Some(super::palette::CONTEXT_COMMANDS)),
+            10,
+        )
+        .iter()
+        .any(|(label, _)| label == "Retry session")
+    );
+}
+
+#[test]
+fn host_session_interrupted_unique_temporary_preserves_evidence_and_refuses_save() {
+    let mut app = App::test_stub();
+    let directory = app.session_dir();
+    app.graph_runtimes
+        .visit("https://interrupted-replacement.test/page");
+    app.persist_session_graph().unwrap();
+    let file = directory.join(pandect::session_graph_store::GRAPH_FILE);
+    let backup = file.with_extension("json.42.7.tmp");
     let original = std::fs::read(&file).unwrap();
     std::fs::rename(&file, &backup).unwrap();
     app.adopt_session(app.session_id);

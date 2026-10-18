@@ -1,0 +1,354 @@
+warning: skipping duplicate package `mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/proofs/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/system/proofs/Cargo.toml
+
+warning: skipping duplicate package `muniment v0.1.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/eidetic/muniment/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/eidetic/muniment/Cargo.toml
+
+warning: skipping duplicate package `mere-apparatus v0.0.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/domain/apparatus/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/domain/apparatus/Cargo.toml
+
+warning: skipping duplicate package `cambium v0.3.3 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/cambium/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/cambium/cambium/Cargo.toml
+
+warning: skipping duplicate package `inker v0.1.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/inker/inker/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/inker/inker/Cargo.toml
+
+warning: skipping duplicate package `nematic v0.1.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/nematic/nematic/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/nematic/nematic/Cargo.toml
+
+warning: skipping duplicate package `sprigging v0.2.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/sprigging/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/cambium/sprigging/Cargo.toml
+
+warning: skipping duplicate package `workbench v0.1.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/workbench/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/cambium/workbench/Cargo.toml
+
+warning: skipping duplicate package `chartulary v0.2.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/eidetic/chartulary/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/eidetic/chartulary/Cargo.toml
+
+warning: skipping duplicate package `eidetic v0.0.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/eidetic/eidetic-core/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/eidetic/eidetic-core/Cargo.toml
+
+warning: skipping duplicate package `mere-fetch v0.0.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/fetch/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/system/fetch/Cargo.toml
+
+warning: skipping duplicate package `pandect v0.1.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/pandect/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/system/pandect/Cargo.toml
+
+warning: skipping duplicate package `servitor v0.0.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/servitor/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/servitor/Cargo.toml
+
+warning: skipping duplicate package `stickleback v0.1.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/stickleback/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/stickleback/Cargo.toml
+
+warning: skipping duplicate package `illume v0.0.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/nematic/illume/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/nematic/illume/Cargo.toml
+
+warning: skipping duplicate package `mere-surface-api v0.1.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/surface-api/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/system/surface-api/Cargo.toml
+
+warning: skipping duplicate package `meristem v0.2.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/meristem/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/cambium/meristem/Cargo.toml
+
+warning: skipping duplicate package `cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/cambium/cambium-winit/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/cambium/cambium-winit/Cargo.toml
+
+warning: skipping duplicate package `incipit v0.2.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/incipit/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/incipit/Cargo.toml
+
+warning: skipping duplicate package `mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/graph/graph-kernel/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/graph/graph-kernel/Cargo.toml
+
+warning: skipping duplicate package `errand v0.4.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/errand/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/system/errand/Cargo.toml
+
+warning: skipping duplicate package `armillary v0.1.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/armillary/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/armillary/Cargo.toml
+
+warning: skipping duplicate package `numen v0.2.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/conatus/numen/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/conatus/numen/Cargo.toml
+
+warning: skipping duplicate package `document-canvas v0.1.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/inker/document-canvas/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/inker/document-canvas/Cargo.toml
+
+warning: skipping duplicate package `mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/document-lanes/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/system/document-lanes/Cargo.toml
+
+warning: skipping duplicate package `mere-page-load v0.0.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/system/page-load/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/system/page-load/Cargo.toml
+
+warning: skipping duplicate package `mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)`:
+  /Users/markik/Code/worktrees/mere-vello-release-adoption/crates/distillery/alembic/Cargo.toml
+in favor of /Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/500bc78/crates/distillery/alembic/Cargo.toml
+
+warning: patch `netrender_device v0.1.2 (https://github.com/merely-made/netrender.git?branch=main#8960024f)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/merely-made/netrender.git
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling data-encoding-macro-internal v0.1.19
+   Compiling muniment v0.1.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling data-encoding-macro v0.1.21
+   Compiling iroh-base v1.3.0
+   Compiling sceno v0.0.5 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling mere-curation v0.1.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling iroh-dns v1.3.0
+   Compiling chartulary v0.2.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling iroh-relay v1.3.0
+   Compiling command-menu v0.1.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling numen v0.2.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling mere-forme v0.2.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling iroh v1.3.0
+   Compiling mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling iroh-mdns-address-lookup v0.6.0
+   Compiling iroh-gossip v0.101.0
+   Compiling inker v0.1.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling mere-p2panda-net v0.7.5 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)
+   Compiling scenotime v0.0.4 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling scenograph v0.0.4 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling tinct v0.2.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling stickleback v0.1.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling tabard v0.0.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling errand v0.4.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling scenomise v0.0.5 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling eidetic v0.0.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling incipit v0.2.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling workbench v0.1.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling mere-surface-api v0.1.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling meristem v0.2.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling pandect v0.1.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling sprigging v0.2.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling chirograph v0.0.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling iroh-util v0.6.0
+   Compiling iroh-tickets v1.0.0
+   Compiling backstep v0.1.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling cambium v0.3.3 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling iroh-blobs v0.103.1
+   Compiling nematic v0.1.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling illume v0.0.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling knot-file-catalog v0.0.1 (/Users/markik/Code/repos/knot-editor/crates/knot-file-catalog)
+   Compiling luggage v0.1.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling seiche v0.0.6 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling graphshell-endpoint v0.0.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling mere-webrtc-carrier v0.0.1 (https://github.com/merely-made/murm.git?branch=main#7c2432ab)
+   Compiling mere-transport v0.0.2 (https://github.com/merely-made/murm.git?branch=main#7c2432ab)
+   Compiling knot-capture v0.0.1 (/Users/markik/Code/repos/knot-editor/crates/knot-capture)
+   Compiling knot-editor-host v0.1.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling graphshell-client v0.0.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling mien v0.0.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling servitor v0.0.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling mooting v0.1.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling reference-data v0.0.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling armillary v0.1.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling mere-page-load v0.0.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling mere-fetch v0.0.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling knot-composition v0.0.1 (/Users/markik/Code/repos/knot-editor/crates/knot-composition)
+   Compiling mora-cmudict v0.0.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling script-rhai v0.0.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling knot-document v0.0.1 (/Users/markik/Code/repos/knot-editor/crates/knot-document)
+   Compiling gemot v0.1.1 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling graphshell-host v0.0.2 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling esp v0.1.0 (https://github.com/merely-made/mere.git?branch=main#500bc78a)
+   Compiling knot-editor v0.0.3 (/Users/markik/Code/repos/knot-editor/crates/knot-editor)
+warning: unused variable: `path`
+  --> crates/knot-editor/src/directory.rs:53:13
+   |
+53 |     fn read(path: &Path, _metadata: &Metadata) -> io::Result<Self> {
+   |             ^^^^ help: if this is intentional, prefix it with an underscore: `_path`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `knot-editor` (lib test) generated 1 warning (run `cargo fix --lib -p knot-editor --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3m 31s
+     Running unittests src/lib.rs (/Users/markik/Code/worktrees/turnstone-r0-save/target/build/debug/deps/knot_editor-b2240a174406cb85)
+
+running 155 tests
+test authority::tests::losing_a_route_changes_reachability_materialization_not_rights ... ok
+test authority::tests::revision_covers_each_independent_dimension_but_not_input_order ... ok
+test clip_evidence::tests::djot_provenance_yields_deduplicated_validated_references ... ok
+test clip_evidence::tests::equal_bytes_from_distinct_saved_sources_keep_distinct_provenance ... ok
+test clip_evidence::tests::file_store_is_content_addressed_and_idempotent ... ok
+test clip_evidence::tests::portable_and_transport_hashes_must_both_match ... ok
+test clip_evidence::tests::saved_passage_reopens_with_unicode_position_and_both_hashes ... ok
+test clip_evidence::tests::transport_blob_store_retains_and_reopens_verified_evidence ... ok
+test content_classes::tests::note_class_admits_a_valid_file_and_note_profile ... ok
+test content_classes::tests::schemas_reject_malformed_known_profiles ... ok
+test content_classes::tests::unknown_class_stays_inert_and_discoverable ... ok
+test did_key::tests::base58btc_matches_the_published_bitcoin_vectors ... ok
+test did_key::tests::did_key_carries_the_ed25519_multicodec_and_round_trips ... ok
+test did_key::tests::did_key_matches_the_w3c_ed25519_examples ... ok
+test did_key::tests::foreign_prefixes_are_refused_rather_than_reinterpreted ... ok
+test directory::tests::ignore_policy_is_configurable ... ok
+test directory::tests::rename_preserves_identity_and_host_facets ... ok
+test directory::tests::scan_keeps_file_bytes_out_of_graph_state ... ok
+test djot_merge::tests::merges_edits_to_adjacent_paragraphs_in_one_section ... ok
+test djot_merge::tests::preserves_djot_attributes_and_authored_spacing ... ok
+test djot_merge::tests::refuses_ambiguous_structure_changes ... ok
+test embedding::tests::a_bert_preference_without_a_path_refuses_by_name ... ok
+test embedding::tests::a_digest_covers_every_artifact_and_moves_when_one_does ... ok
+test embedding::tests::a_pinned_digest_that_moved_refuses_and_names_both ... ok
+test embedding::tests::a_verified_directory_reaches_the_model_and_never_the_lexical_provider ... ok
+test embedding::tests::an_absent_or_incomplete_model_directory_refuses_with_its_reason ... ok
+test embedding::tests::identical_weights_are_the_same_model_under_any_directory_name ... ok
+test embedding::tests::identity_round_trips_through_serde_and_compares_field_by_field ... ok
+test embedding::tests::lexical_is_the_default_and_needs_no_weights ... ok
+test embedding::tests::record_equality_sees_the_label_that_is_same_model_ignores ... ok
+test embedding::tests::the_preference_round_trips_as_a_host_would_persist_it ... ok
+test endpoint::tests::auto_run_stops_at_the_injected_operation_budget ... ok
+test endpoint::tests::clip_insert_records_typed_provenance_and_refuses_stale_or_invalid_input ... ok
+test endpoint::tests::commons_epoch_rotation_makes_the_old_cache_unavailable ... ok
+test endpoint::tests::disk_edit_is_visible_on_next_resume ... ok
+test endpoint::tests::disk_edit_rings_once_before_the_host_resumes ... ok
+test endpoint::tests::dom_range_selectors_require_an_observed_representation ... ok
+test endpoint::tests::evidence_clip_retains_bytes_and_authors_only_a_portable_reference ... ok
+test endpoint::tests::file_save_is_revision_checked_and_rings_once ... ok
+test endpoint::tests::fixture_discloses_cards_and_resources ... ok
+test endpoint::tests::html_transclusion_lowers_only_the_sanitized_semantic_fragment ... ok
+test endpoint::tests::invalid_saved_source_scalar_ranges_are_not_admitted ... ok
+test endpoint::tests::personal_vault_restores_only_matching_attributable_sealed_cache ... ok
+test endpoint::tests::rejected_saved_passages_do_not_write_notes_or_retain_artifacts ... ok
+test endpoint::tests::resident_vault_sessions_share_truth_without_sharing_notice_cursors ... ok
+test endpoint::tests::resolve_and_run_are_consented_revisioned_derived_state ... ok
+test endpoint::tests::revoked_watcher_holds_the_last_revision_until_regranted ... ok
+test endpoint::tests::rosette_sessions_ring_independently_and_drop_deleted_source ... ok
+test endpoint::tests::sealed_vault_save_is_one_signed_event_then_a_rematerialized_view ... ok
+test endpoint::tests::unchanged_resume_is_current ... ok
+test endpoint::tests::unrelated_directory_churn_does_not_invalidate_the_document_token ... ok
+test endpoint::tests::vault_disclosure_contains_neither_key_nor_authored_body ... ok
+test endpoint::tests::writable_file_discloses_editable_text_only_to_protocol_1_2 ... ok
+test file_revision::tests::capture_denies_unknown_missing_and_oversize_files ... ok
+test file_revision::tests::capture_enforces_zero_bound_and_handles_usize_max_without_giant_allocation ... ok
+test file_revision::tests::capture_preserves_arbitrary_bytes_and_indexed_metadata ... ok
+test file_revision::tests::capture_requires_catalog ... ok
+test mark::tests::conditional_and_denied_reads_do_not_reveal_an_export ... ok
+test mark::tests::request_parser_rejects_bodies_and_path_traversal ... ok
+test mark::tests::snapshots_are_commonmark_versions_with_a_sha256_chain ... ok
+test mark::tests::standard_quic_mark_alpn_serves_a_snapshot ... ok
+test predicates::tests::a_chain_keeps_one_iri_and_shows_its_current_label ... ok
+test predicates::tests::a_minted_iri_names_its_signing_key_and_its_root ... ok
+test predicates::tests::definition_payload_validation_refuses_the_shapes_it_names ... ok
+test publish::tests::a_ticket_checks_its_pinned_causal_head_and_exact_bytes ... ok
+test publish::tests::deletes_conflicts_and_pending_history_are_not_available ... ok
+test publish::tests::owner_controls_issue_and_revoke_one_recipient_share ... ok
+test publish::tests::selected_current_and_retained_versions_are_the_only_source_reads ... ok
+test publish_client::tests::handoff_encoding_rejects_a_ticket_without_a_delegation ... ok
+test publish_host::tests::memory_carrier_reaches_source_only_after_noise_and_notochord_then_revokes ... ok
+test publish_host::tests::p2panda_loopback_uses_the_real_noise_and_notochord_path ... ok
+test publish_host::tests::response_guard_linearizes_revocation_and_slots_release_on_drop ... ok
+test publish_host::tests::ticket_client_reads_only_its_named_publication ... ok
+test publish_wire::tests::candidate_corpus_covers_semantics_and_refusals ... ok
+test publish_wire::tests::response_limits_and_digests_fail_closed ... ok
+test publish_wire::tests::trailing_or_oversized_data_is_refused_before_use ... ok
+test relations::tests::a_core_predicate_is_a_bare_slug_on_the_wire_and_an_iri_resolves_to_it ... ok
+test relations::tests::an_unrecognized_label_is_refused_by_payload_validation ... ok
+test relations::tests::captured_context_is_bounded_and_needs_a_quote ... ok
+test relations::tests::context_is_captured_on_character_boundaries_and_truncates_at_the_edges ... ok
+test resident::tests::communal_blob_and_document_permissions_come_from_gemot_paths ... ok
+test resident::tests::nothing_is_written_back_when_no_device_is_talking ... ok
+test resident::tests::only_connected_peers_have_their_addresses_written_back ... ok
+test resident::tests::paired_peers_replicate_djot_then_fetch_and_reopen_verified_evidence ... ok
+test resident::tests::signed_gemot_grant_and_revocation_update_every_live_consumer ... ok
+test rosette::tests::poem_and_lyric_are_two_deterministic_rosette_receipts ... ok
+test rosette::tests::slant_rhyme_and_meter_are_derived_without_touching_source_truth ... ok
+test rosette::tests::unknown_words_are_reported_with_source_spans ... ok
+test search::tests::a_bert_preference_with_an_absent_path_refuses_and_never_builds_lexical ... ok
+test search::tests::a_built_search_and_its_reports_cross_a_thread_boundary ... ok
+test search::tests::a_moved_weights_digest_is_refused_against_the_sealed_record ... ok
+test search::tests::a_pinned_digest_mismatch_refuses_before_any_index_exists ... ok
+test search::tests::a_record_sealed_by_b7168a3_still_loads_and_compares_by_digest ... ok
+test search::tests::a_subject_without_the_vault_grant_sees_neither_hits_nor_a_refusal ... ok
+test search::tests::a_vault_index_sealed_before_identity_still_loads_and_queries_as_lexical ... ok
+test search::tests::an_index_sealed_under_another_identity_is_refused_naming_both_and_offers_rebuild ... ok
+test search::tests::building_reports_progress_per_lane_including_skipped_documents ... ok
+test search::tests::lexical_is_the_default_and_seals_its_identity ... ok
+test search::tests::locked_vault_has_no_hits_and_its_derived_index_is_sealed ... ok
+test search::tests::search_spans_disk_and_vault_but_respects_lane_grants ... ok
+test settings::tests::a_hint_is_only_written_when_it_changes ... ok
+test settings::tests::a_missing_file_is_unconfigured_but_a_malformed_one_is_an_error ... ok
+test settings::tests::a_misspelled_key_is_refused_rather_than_ignored ... ok
+test settings::tests::a_route_never_creates_an_admission ... ok
+test settings::tests::an_older_flat_writer_list_still_loads ... ok
+test settings::tests::hints_are_absent_until_a_device_has_connected ... ok
+test settings::tests::pairing_round_trips_and_is_idempotent ... ok
+test settings::tests::re_pairing_keeps_a_learned_route_and_unpairing_drops_it ... ok
+test settings::tests::settings_sit_beside_the_vault_they_configure ... ok
+test settings::tests::the_new_form_round_trips_through_a_save_and_load ... ok
+test settings::tests::unpairing_removes_one_and_twice_is_not_an_error ... ok
+test startup::dr_c_receipts::dr_c_knot_identity_stays_pending ... ignored, run mere/scripts/dr_c_receipts.py against the isolated receipt keeper
+test startup::existing_attachment_tests::a_pending_persona_opens_nothing ... ok
+test startup::existing_attachment_tests::a_release_missing_a_key_is_refused ... ok
+test startup::existing_attachment_tests::missing_mere_refuses_before_asking_djinn_or_creating_root ... ok
+test startup::tests::released_keys_open_signed_sealed_persona_truth ... ok
+test sync::coordination_tests::concurrent_retained_captures_reuse_one_operation ... ok
+test sync::coordination_tests::mutation_gate_makes_accept_author_and_retain_pending_until_release ... ok
+test sync::coordination_tests::queued_retention_observes_admission_after_gate_release ... ok
+test sync::coordination_tests::same_writer_authors_are_serial_and_have_distinct_operations ... ok
+test sync::tests::a_forged_endpoint_context_is_refused_at_authoring_and_rejected_at_replay ... ok
+test sync::tests::a_personal_projection_defaults_to_tolerant ... ok
+test sync::tests::a_resolution_cannot_name_a_version_outside_its_causal_history ... ok
+test sync::tests::a_resolution_does_not_erase_an_unseen_concurrent_version ... ok
+test sync::tests::a_signed_encryption_profile_cannot_replay_into_another_knot_profile ... ok
+test sync::tests::a_tolerant_commons_projection_reads_the_subset_before_epoch_removal ... ok
+test sync::tests::an_explicit_resolution_replaces_exact_conflicting_versions ... ok
+test sync::tests::an_unknown_bare_label_decodes_and_is_rejected_at_replay ... ok
+test sync::tests::commons_documents_use_group_epochs_instead_of_personal_vault_keys ... ok
+test sync::tests::communal_capture_before_any_relation_holds_its_epoch_after_checkpoint ... ok
+test sync::tests::communal_execution_revalidates_commits_and_reopens ... ok
+test sync::tests::communal_proposal_keeps_pending_and_policy_held_epochs ... ok
+test sync::tests::communal_relation_history_holds_all_relation_epochs_after_a_checkpoint ... ok
+test sync::tests::concurrent_writers_for_one_document_are_refused_at_projection ... ok
+test sync::tests::file_captures_verify_relations_without_replacing_same_id_vault_documents ... ok
+test sync::tests::independent_text_edits_merge_and_a_later_put_makes_them_durable ... ok
+test sync::tests::malformed_and_unadmitted_file_captures_cannot_be_relation_targets ... ok
+test sync::tests::missing_history_blocks_only_its_document_branch ... ok
+test sync::tests::overlapping_text_edits_remain_an_explicit_conflict ... ok
+test sync::tests::pending_undecipherable_operation_does_not_block_closed_document_projection ... ok
+test sync::tests::redb_reopen_restores_author_head_and_observed_frontier ... ok
+test sync::tests::refreshed_writer_authority_changes_live_operation_admission ... ok
+test sync::tests::relations_keep_independent_authors_and_retraction_history_across_checkpoint_reopen ... ok
+test sync::tests::retained_file_revision_lookup_refuses_pending_causal_history ... ok
+test sync::tests::retained_file_revision_lookup_requires_same_writer_and_exact_metadata ... ok
+test sync::tests::two_instances_converge_over_real_p2panda_logsync ... ok
+test sync::tests::two_memory_stores_converge_through_the_accept_seam ... ok
+test vault::tests::lock_drops_documents_and_wrong_key_cannot_unlock ... ok
+test vault::tests::removing_a_projected_document_collects_its_derived_cache ... ok
+test vault::tests::sealed_document_survives_reopen_without_plaintext_on_disk ... ok
+test vault::tests::search_index_identity_round_trips_and_an_unidentified_record_still_loads ... ok
+test watcher::tests::os_events_commit_once_under_the_watcher_subject ... ok
+test watcher::tests::revocation_discards_events_without_stopping_the_watcher ... ok
+test web_annotation::tests::a_relation_endpoint_exports_character_offsets_and_re_anchors_its_quote ... ok
+test web_annotation::tests::serializes_and_independently_resolves_sibling_fleece_selectors ... ok
+
+test result: ok. 154 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 30.63s
+

@@ -1,0 +1,15 @@
+
+running 1 test
+test app::session_persistence_tests::host_session_graph_write_failure_preserves_original_and_returns_failure ... 
+thread 'app::session_persistence_tests::host_session_graph_write_failure_preserves_original_and_returns_failure' (45287987) panicked at src/app/session_persistence_tests.rs:243:5:
+assertion failed: app.persist_session_graph().is_err()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    app::session_persistence_tests::host_session_graph_write_failure_preserves_original_and_returns_failure
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1088 filtered out; finished in 0.78s
+

@@ -1,0 +1,10 @@
+RESULT fail
+captured 01_new_note
+FAIL: line 1: key wants enter|escape|tab|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space|ctrl+s|ctrl+f|ctrl+d: 'key ctrl+end'
+captured 02_authored_note
+FAIL: line 1: key wants enter|escape|tab|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space|ctrl+s|ctrl+f|ctrl+d: 'key ctrl+end'
+captured 03_other_note
+presentation frames=201 captures=3 blank=0
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/create-preflight-01/01_new_note.png digest=4f24c7b1839e9ea9 blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/create-preflight-01/02_authored_note.png digest=ddc70e3c65276515 blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/create-preflight-01/03_other_note.png digest=290224b396717d56 blank=false

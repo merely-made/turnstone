@@ -800,9 +800,12 @@ impl Shell {
                                 };
                                 for intent in intents {
                                     match intent {
-                                        crate::inspector_pane::InspectorIntent::ClipToKnot => {
-                                            self.clip_focused_document_to_knot()
+                                        crate::inspector_pane::InspectorIntent::ClipToKnot { offer } => {
+                                            self.clip_document_to_knot(offer)
                                         },
+                                        crate::inspector_pane::InspectorIntent::NewResearchNote => self.act(Action::NewResearchNote),
+                                        crate::inspector_pane::InspectorIntent::OpenResearchNote => self.act(Action::OpenResearchNote),
+                                        crate::inspector_pane::InspectorIntent::ChooseResearchNote { choice } => self.act(Action::ChooseResearchNote { choice }),
                                         crate::inspector_pane::InspectorIntent::CaptureSourceDocument { target } => self.act(Action::CaptureSourceDocument { target }),
                                         crate::inspector_pane::InspectorIntent::SetViewer {
                                             member,

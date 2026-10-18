@@ -1,0 +1,76 @@
+settle 20
+key escape
+open ${FIRST_NOTE}
+settle 20
+act Use this Knot document as research note
+settle 10
+open ${NOTES_ORIGIN}/A
+settle 15
+act Open Inspector pane
+settle 5
+click-row Save source and keep
+wait-row 600 Source save: Saved
+record-source-captures 04_A1_saved
+open ${NOTES_ORIGIN}/B
+settle 15
+act Open Inspector pane
+settle 5
+click-row Save source and keep
+wait-row 600 Source save: Saved
+record-source-captures 05_B_saved
+act Save session
+touch ${NOTES_CONTROL}/stop-origin-0
+wait-file 600 ${NOTES_CONTROL}/origin-stopped-0
+act Search saved sources
+type café
+wait-saved-sources 600
+key enter
+wait-saved-reader 600
+assert snap saved-reader-quote == café
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+record-saved-sources 06_saved_passage
+act Open Inspector pane
+settle 8
+capture 06_saved_passage
+click role:button Clip saved passage
+settle 60
+# Inline Inspector text is absent from the generic ProbeSurface inventory.
+# Review the painted acknowledgement here; the next ordinary note readback
+# plus exited-process owner inspection prove the accepted write.
+capture 07_clip_saved
+act Open research note
+settle 20
+assert text My authored A1 commentary.
+assert text Read saved passage 1: Source A
+capture 08_note_and_citation
+click .knot-saved-citation Read saved passage 1:
+wait-saved-reader 600
+assert snap saved-reader-quote == café
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+record-saved-sources 09_follow_exact_citation
+capture 09_follow_exact_citation
+touch ${NOTES_CONTROL}/start-origin-1
+wait-file 600 ${NOTES_CONTROL}/origin-started-1
+open ${NOTES_ORIGIN}/swap-a
+settle 15
+open ${NOTES_ORIGIN}/A
+settle 15
+act Open Inspector pane
+settle 5
+click-row Save source and keep
+wait-row 600 Source save: Saved
+assert row Saved captures: 2
+record-source-captures 10_A2_saved
+touch ${NOTES_CONTROL}/stop-origin-1
+wait-file 600 ${NOTES_CONTROL}/origin-stopped-1
+act Open research note
+settle 20
+assert text My authored A1 commentary.
+click .knot-saved-citation Read saved passage 1:
+wait-saved-reader 600
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+assert snap saved-reader-quote == café
+record-saved-sources 11_old_A1_after_A2
+capture 11_old_A1_after_A2
+act Save session
+settle 20

@@ -884,20 +884,85 @@ ledger, reviewed readbacks, unavailable outcomes and cleanup. Historical I5
 and scene receipts cannot substitute for this run. Windows/Linux, human AT and
 physical device/recovery qualification retain separate gates.
 
-### Explicit next joins and exclusions
+### Authored research note join — 2026-10-18
 
-- **Sourced authored research note:** choose/create an actual Knot-owned
-  document as this session's destination, make its identity visible and durable,
-  and carry a selected saved passage with its artifact/hash/selector into the
-  note beside authored commentary. Opening an existing local Knot file is not
-  itself a graph binding or a clipping target. Reuse the pane plan's
-  “Next Inspector surface: ownership before semantic routes” prerequisite:
-  displayed source A versus cursor B, source/content/endpoint admission and
-  stale-token revalidation. Preserve `DocumentClip` and `KnotClipHandle.insert`;
-  the current environment-only target is not the finished chooser. A standalone
-  research document can be a referenced note under L6; page-leaf annotations
-  and promotion still belong to L-P4. Prove note/evidence/reopen together before
-  claiming this next join complete.
+**Status: implemented and qualified on macOS.** Mark authorized joining saved sources
+with authored Knot notes, current Turnstone/Knot intake, exact citation cold
+reopening and headed checks before publication. This is the next bounded join
+after R4; deliberate sharing and general page annotation remain separate.
+
+1. **Knot evidence ownership.** Reuse `DocumentClip` and the endpoint's existing
+   v2 insertion and content-retention authority. Retain canonical saved text as
+   an observed representation, rather than mislabelling derived text as a raw
+   HTTP response. Preserve the exact annotation/text identity in its canonical
+   saved-source URI, plus scalar position and exact quote. Validate selectors
+   before retention/write. Distinct provenance over identical bytes must stay
+   distinct while the blob itself remains deduplicated. Expose an owner-side
+   hash-checked offline citation read for independent cold verification.
+2. **Ordinary note choice and authored text.** Create a private local note
+   through Knot's existing document authority, or explicitly select an admitted
+   local Knot authoring document. Persist the chosen note as an existing graph
+   node facet in this browsing session, with visible destination identity and
+   an ordinary Open action. Use the existing authoring editor and Save path;
+   clipping must preserve commentary and refuse dirty/unavailable targets.
+   Default profile-owned note/evidence roots remove the environment-only target
+   prerequisite; explicit configured and visiting-only authority stays bounded.
+3. **Source-bound action.** Inspector Clip follows its displayed member, never
+   the unrelated global graph cursor. A runtime offer binds pane/context,
+   session opening, source admission, exact source text/selector and endpoint
+   admission/revision. Re-rendering A/B/A, removal/replacement, changed note
+   choice and a cold opening retire old offers. Revalidate before insertion;
+   no URL-label comparison or silent fallback confers authority.
+4. **Acceptance.** Fresh ordinary saves and non-ASCII saved passage selection;
+   create/select two notes; author commentary; clip to the chosen note; inspect
+   exact artifact/hash/selector and unchanged other note. Capture A2 at the
+   original address, then terminate origin and app/endpoint. Cold reopen with
+   origin refused: note choice, commentary, old A1 citation and exact selected
+   bytes survive. Exercise stale source/destination, dirty note, wrong range,
+   withdrawn source, missing/corrupt evidence and equal-text distinct provenance
+   controls. Record actual headed readbacks, independent owner/store reads,
+   coherent dependency identities, current-source tests and publication.
+
+**Initial audit (before implementation, 2026-10-18):** Turnstone `d3d5d18`
+was current; Knot advanced cleanly from `7e196c5` to published `88eeb975`.
+Knot's lock then used Mere `9b8c161a` and Genet `7114f91c`; Turnstone's older
+embedded Knot intake needed reconciliation with that family. The clip action
+was unit-valued and read the global cursor, while availability followed the
+Inspector member. Its destination was environment-only. Knot deduplicated
+references by digest and rejected differing source metadata for identical
+bytes, while selector intake checked roles without scalar bounds. These were
+the specific gaps this join addressed; no second storage or clip wire was
+introduced.
+
+Current intake includes concurrent Knot main updates and published Knot
+`ceaf41fbd4075a6746c316c46cc66bce976d0546`, with Mere
+`500bc78a7fa9e0b9abe8f35d189c465f93d3ccab` and Genet
+`7114f91ce928937ac0891d7db816655706843204`. Current Knot's isolated source-edit
+revision exception remains unchanged. The receiving join uses an address-bound
+owned-member facet and the existing clip/save/read authorities. The intake also
+repairs missing-file admission beside Pandect's new unique temporaries, and
+updates R0's real failure controls without relying on private temp filenames.
+
+The [authored note receipt](../docs/receipts/research_notes_20261018/README.md)
+qualifies three fresh native processes, 12 reviewed captures, origin shutdown
+and TCP refusal, A1 return after A2, two independent exited-process owner/store
+reads, exact Unicode selectors, both content hashes and an unchanged second
+note. Full workspace: **1077 passed, 0 failed, 13 ignored**. Knot:
+**154 passed, 0 failed, 1 ignored**; pinned shared atomic-file module: **6
+passed**. The generic text-probe exclusion for inline Inspector mounts and the
+superseded fault-control run are preserved as diagnostics; painted save
+acknowledgement, ordinary note readback and owner/store reads provide the
+accepted evidence. Final publication must match committed runtime files with
+the frozen source hashes. This scope is the integrated macOS note/reader path;
+standalone Knot desktop navigation, sharing, other platforms, OS assistive
+activation and physical power-loss recovery remain separate.
+
+### Research workflow joins and exclusions
+
+- **Sourced authored research note: implemented.** The qualified join above
+  provides ordinary creation/choice, authored commentary, exact retained
+  citations and cold return through existing Knot ownership. General page-leaf
+  annotation and promotion still belong to L-P4.
 - **Deliberate selected sharing:** consume L7/L-P5 and place authority for
   individually chosen attachments, disclose destination and transferred
   material, and qualify reader refusal/withdrawal plus exact selected export.

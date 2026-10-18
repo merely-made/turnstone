@@ -214,23 +214,23 @@ fn required_file_write_failure_is_attributable_and_retry_preserves_previous_evid
         } else {
             &graph_path
         }
-        .with_extension("json.tmp");
-        std::fs::create_dir(&blocked).unwrap();
+        .to_path_buf();
+        let blocked = crate::session_persistence::BlockedReplacement::new(&blocked);
         let result = app.persist_source_capture(request.id);
         assert!(result.is_err(), "the actual required file write must fail");
         acknowledge(&mut app, &request, result);
         assert_eq!(app.source_captures[&request.id].phase, CapturePhase::Failed);
         assert!(app.source_captures[&request.id].error.is_some());
         assert_eq!(saved_events(&mut app), 0);
-        assert_eq!(std::fs::read(&graph_path).unwrap(), graph_before);
+        assert_eq!(blocked.read_preserved(&graph_path).unwrap(), graph_before);
         if fail_facets {
-            assert_eq!(std::fs::read(&facets_path).unwrap(), facets_before);
+            assert_eq!(blocked.read_preserved(&facets_path).unwrap(), facets_before);
         }
         assert_eq!(
             app.source_captures[&request.id].stored.as_ref().unwrap(),
             &stored()
         );
-        std::fs::remove_dir(&blocked).unwrap();
+        blocked.restore();
         retry(&mut app, &request);
         deposited(&mut app, &request);
         let result = app.persist_source_capture(request.id);
@@ -259,14 +259,14 @@ fn recovered_receipt_retries_partial_facet_graph_write_without_duplicate_attachm
         } else {
             directory.join(pandect::session_graph_store::GRAPH_FILE)
         }
-        .with_extension("json.tmp");
-        std::fs::create_dir(&blocked).unwrap();
+        .to_path_buf();
+        let blocked = crate::session_persistence::BlockedReplacement::new(&blocked);
         let result = app.persist_source_capture(request.id);
         assert!(result.is_err());
         acknowledge(&mut app, &request, result);
         assert_eq!(saved_events(&mut app), 0);
         drop(app);
-        std::fs::remove_dir(&blocked).unwrap();
+        blocked.restore();
         let mut reopened = app_at(root.path());
         reopened
             .sessions
@@ -1309,13 +1309,13 @@ fn source_capture_save_process_boundary_worker() {
             let blocked = app
                 .session_dir()
                 .join(pandect::session_graph_store::GRAPH_FILE)
-                .with_extension("json.tmp");
-            std::fs::create_dir(&blocked).unwrap();
+                .to_path_buf();
+            let blocked = crate::session_persistence::BlockedReplacement::new(&blocked);
             let result = app.persist_source_capture(request.id);
             assert!(result.is_err());
             acknowledge(&mut app, &request, result);
             assert_eq!(saved_events(&mut app), 0);
-            std::fs::remove_dir(blocked).unwrap();
+            blocked.restore();
         },
         "retry" | "verify" => {
             let request: CaptureRequest =
@@ -1635,8 +1635,8 @@ fn source_capture_real_stack_process_worker() {
             } else {
                 graph.clone()
             };
-            let blocked = target.with_extension("json.tmp");
-            std::fs::create_dir(&blocked).unwrap();
+            let blocked = target.to_path_buf();
+            let blocked = crate::session_persistence::BlockedReplacement::new(&blocked);
             let result = app.persist_source_capture(request.id);
             assert!(
                 result.is_err(),
@@ -1645,8 +1645,8 @@ fn source_capture_real_stack_process_worker() {
             acknowledge(&mut app, &request, result);
             assert_eq!(app.source_captures[&request.id].phase, CapturePhase::Failed);
             assert_eq!(saved_events(&mut app), 0);
-            assert_eq!(std::fs::read(&graph).unwrap(), graph_before);
-            std::fs::remove_dir(blocked).unwrap();
+            assert_eq!(blocked.read_preserved(&graph).unwrap(), graph_before);
+            blocked.restore();
         },
         "retry-save" => {
             let result = app.persist_source_capture(request.id);

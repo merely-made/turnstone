@@ -588,3 +588,37 @@ fn opening_saved_source_from_answers_reveals_and_focuses_the_graph_reader() {
         Effect::FetchPage { .. } | Effect::FetchFavicon { .. }
     )));
 }
+
+#[test]
+fn direct_saved_citation_address_reveals_and_focuses_the_graph_reader() {
+    let root = tempfile::tempdir().unwrap();
+    let mut app = app_at(root.path());
+    let graph = app.graph_runtimes.active_graph();
+    let node = visit(&mut app, "https://gone.test/citation");
+    attach(
+        &mut app,
+        graph,
+        node,
+        &eidetic::ManifestId::of_blob(b"A1").to_string(),
+    );
+    let key = app.saved_source_admissions()[0].key.clone();
+    let (target, _) = target(key, "An exact 🐦 saved passage.");
+    let url = crate::saved_sources::address(&target).unwrap();
+    app.update(Action::OpenAnswers);
+    let answer_pane = app.active_pane.unwrap();
+    app.focus = crate::surface::FocusTarget::Pane(answer_pane);
+    app.maximized = Some(answer_pane);
+    let effects = app.update(Action::OpenAddress(url.clone()));
+    let pane = app.default_graph_pane();
+    assert_eq!(app.active_pane, Some(pane));
+    assert_eq!(app.focus, crate::surface::FocusTarget::Graph(pane));
+    assert_eq!(app.maximized, Some(pane));
+    let reader = app
+        .graph_pane_focused_member(pane)
+        .expect("the reader is focused in its owning graph");
+    assert!(effects.iter().any(|effect| matches!(effect, Effect::SpawnContent { node, url: actual } if *node == reader && *actual == url)));
+    assert!(!effects.iter().any(|effect| matches!(
+        effect,
+        Effect::FetchPage { .. } | Effect::FetchFavicon { .. }
+    )));
+}

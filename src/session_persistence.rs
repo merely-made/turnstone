@@ -27,6 +27,33 @@ pub(crate) fn require_complete_file(path: &Path) -> io::Result<bool> {
             ));
         }
     }
+    // Current Pandect creates unique sibling temporaries. A missing target
+    // beside any same-target temporary remains interrupted-save evidence,
+    // regardless of the writer's private process/counter naming scheme.
+    if let (Some(parent), Some(name)) = (path.parent(), path.file_name()) {
+        let prefix = format!("{}.", name.to_string_lossy());
+        match std::fs::read_dir(parent) {
+            Ok(entries) => {
+                for entry in entries {
+                    let entry = entry?;
+                    let name = entry.file_name();
+                    let name = name.to_string_lossy();
+                    if name.starts_with(&prefix) && name.ends_with(".tmp") {
+                        return Err(io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            format!(
+                                "incomplete replacement at {}; preserved {}",
+                                path.display(),
+                                entry.path().display()
+                            ),
+                        ));
+                    }
+                }
+            },
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {},
+            Err(error) => return Err(error),
+        }
+    }
     Ok(false)
 }
 
@@ -265,5 +292,79 @@ mod tests {
         std::fs::write(&target, b"successfully installed graph").unwrap();
         assert!(require_complete_file(&target).unwrap());
         std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+/// A real destination-replacement fault, independent of the writer's private
+/// temporary filename. Used only with test-owned directories. The old file is
+/// held beside the obstruction, checked unchanged, and restored before retry.
+#[cfg(test)]
+pub(crate) struct BlockedReplacement {
+    target: PathBuf,
+    held: PathBuf,
+    backup: PathBuf,
+    had_original: bool,
+    active: bool,
+}
+
+#[cfg(test)]
+impl BlockedReplacement {
+    pub(crate) fn new(target: &Path) -> Self {
+        let held = target.with_extension("fixture-held");
+        let backup = target.with_extension(format!(
+            "{}.previous",
+            target.extension().unwrap().to_string_lossy()
+        ));
+        assert!(
+            !held.exists() && !backup.exists(),
+            "fault fixture must own fresh paths"
+        );
+        let had_original = target.exists();
+        if had_original {
+            std::fs::rename(target, &held).unwrap();
+        }
+        std::fs::create_dir(target).unwrap();
+        // A platform using the documented backup-rename fallback must also
+        // refuse this non-file destination rather than bypass the obstruction.
+        std::fs::create_dir(&backup).unwrap();
+        Self {
+            target: target.into(),
+            held,
+            backup,
+            had_original,
+            active: true,
+        }
+    }
+    pub(crate) fn read_preserved(&self, path: &Path) -> io::Result<Vec<u8>> {
+        std::fs::read(if path == self.target && self.had_original {
+            &self.held
+        } else {
+            path
+        })
+    }
+    pub(crate) fn restore(mut self) {
+        self.reset().unwrap();
+    }
+    fn reset(&mut self) -> io::Result<()> {
+        if !self.active {
+            return Ok(());
+        }
+        if self.target.is_dir() {
+            std::fs::remove_dir(&self.target)?;
+        } else if self.target.exists() {
+            std::fs::remove_file(&self.target)?;
+        }
+        std::fs::remove_dir(&self.backup)?;
+        if self.had_original {
+            std::fs::rename(&self.held, &self.target)?;
+        }
+        self.active = false;
+        Ok(())
+    }
+}
+#[cfg(test)]
+impl Drop for BlockedReplacement {
+    fn drop(&mut self) {
+        let _ = self.reset();
     }
 }

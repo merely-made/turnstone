@@ -1,0 +1,12 @@
+RESULT ok
+captured 06_saved_passage
+captured 07_clip_saved
+captured 08_note_and_citation
+captured 09_follow_exact_citation
+captured 11_old_A1_after_A2
+presentation frames=332 captures=5 blank=0
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-final/seed/06_saved_passage.png digest=a50df2dbea1ee5dd blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-final/seed/07_clip_saved.png digest=c27e1cd8c99c7f0f blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-final/seed/08_note_and_citation.png digest=dad41c851fdec3f5 blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-final/seed/09_follow_exact_citation.png digest=6cc2d7c30e573b49 blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-final/seed/11_old_A1_after_A2.png digest=3936daff4e276b22 blank=false

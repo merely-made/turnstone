@@ -1560,6 +1560,13 @@ impl App {
             .is_some_and(|runtime| runtime.session == Some(self.session_id)) {
             return self.saved_source_refusal("The reader view belongs to another session".into());
         }
+        if saved.is_some() {
+            // A saved citation can originate inside an authored document.
+            // Reveal its reader and retire the previous content focus just as
+            // the saved-source palette and Answers routes do.
+            self.reveal_pane(pane);
+            self.focus = FocusTarget::Graph(pane);
+        }
         let Some(key) = self.with_graph_pane(pane, |canvas| canvas.visit(&url)) else {
             effects.push(Effect::Redraw);
             return effects;

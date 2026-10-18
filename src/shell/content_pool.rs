@@ -60,10 +60,15 @@ impl HostPlacement {
 
 #[derive(Default)]
 pub(crate) struct NodeDocuments {
+    admissions: std::collections::HashMap<uuid::Uuid, uuid::Uuid>,
     pub(super) pool: PeltControllerPool<ContentKey, SurfaceId, Scene>,
 }
 
 impl NodeDocuments {
+    pub(super) fn admission(&self, node: uuid::Uuid) -> Option<uuid::Uuid> {
+        self.admissions.get(&node).copied()
+    }
+
     pub fn get(&self, node: &uuid::Uuid) -> Option<&PeltContent<Scene>> {
         self.pool.content(&ContentKey::Node(*node))
     }
@@ -88,13 +93,16 @@ impl NodeDocuments {
         content: PeltContent<Scene>,
     ) -> Option<PeltContent<Scene>> {
         self.clear_appearances(node);
+        self.admissions.insert(node, uuid::Uuid::new_v4());
         self.pool.insert(ContentKey::Node(node), content)
     }
     pub fn remove(&mut self, node: &uuid::Uuid) -> Option<PeltContent<Scene>> {
         self.clear_appearances(*node);
+        self.admissions.remove(node);
         self.pool.remove_content(&ContentKey::Node(*node))
     }
     pub fn clear(&mut self) {
+        self.admissions.clear();
         let keys: Vec<_> = self.pool.keys().copied().collect();
         for key in keys {
             self.pool.remove_content(&key);

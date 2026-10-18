@@ -1,0 +1,8 @@
+RESULT ok
+captured 01_new_note
+captured 02_authored_note
+captured 03_other_note
+presentation frames=201 captures=3 blank=0
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-final/create/01_new_note.png digest=a627d6b993449ed4 blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-final/create/02_authored_note.png digest=50c9427aae9bfa7e blank=false
+capture /Users/markik/Code/output/turnstone-knot-notes-20261018/native-final/create/03_other_note.png digest=a1cc52de4b413810 blank=false

@@ -1,0 +1,21 @@
+{
+  "a_revision": 1,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/A"
+    },
+    {
+      "method": "GET",
+      "path": "/favicon.ico"
+    },
+    {
+      "method": "GET",
+      "path": "/B"
+    },
+    {
+      "method": "GET",
+      "path": "/favicon.ico"
+    }
+  ]
+}

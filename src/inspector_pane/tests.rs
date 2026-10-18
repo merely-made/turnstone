@@ -19,7 +19,7 @@ fn synced_sections_reach_the_dom() {
             rows: vec![("URL".to_string(), "https://example.test/".to_string())],
         }];
         state.clip_target = Some("file:///notes/field.knot".into());
-        state.clip_source_available = true;
+        state.clip_offer = Some(uuid::Uuid::nil());
         state.clip_status = "ready".into();
         state.viewport_w = 400.0;
         state.viewport_h = 600.0;
@@ -42,26 +42,24 @@ fn clip_button_bubbles_a_typed_inspector_intent() {
     let mut pane = InspectorPane::new();
     pane.runner.update(|state| {
         state.clip_target = Some("file:///notes/field.knot".into());
-        state.clip_source_available = true;
+        state.clip_offer = Some(uuid::Uuid::nil());
         state.viewport_w = 400.0;
         state.viewport_h = 600.0;
     });
-    let (x, y) = {
-        let dom = pane.dom.borrow();
-        let button = dom
-            .dom_children(pane.runner.root())
-            .find(|&node| {
-                dom.element_name(node)
-                    .is_some_and(|name| name.local.as_ref() == "button")
-            })
-            .expect("the inspector action is a real button");
-        let (x, y, w, h) =
-            crate::ui::node_rect(&dom, button, crate::ui::CAMBIUM_SHEET, 400, 600).unwrap();
-        (x + w / 2.0, y + h / 2.0)
-    };
+    let _ = pane.scene(400, 600);
+    let (x, y) = pane
+        .selector_point(
+            &taproot::Selector::role("button")
+                .containing("Clip document")
+                .on_surface("inspector"),
+        )
+        .unwrap()
+        .expect("the clip action is visible");
     assert_eq!(
         pane.click(x, y, 400, 600),
-        vec![InspectorIntent::ClipToKnot]
+        vec![InspectorIntent::ClipToKnot {
+            offer: uuid::Uuid::nil()
+        }]
     );
 }
 
@@ -76,7 +74,7 @@ fn probe_resolved_clip_button_reaches_the_pane_at_receipt_size() {
                 .collect(),
         }];
         state.clip_target = Some("clip_target_receipt.knot".into());
-        state.clip_source_available = true;
+        state.clip_offer = Some(uuid::Uuid::nil());
         state.clip_status = "ready".into();
         state.viewport_w = 509.0;
         state.viewport_h = 576.0;
@@ -96,7 +94,9 @@ fn probe_resolved_clip_button_reaches_the_pane_at_receipt_size() {
     );
     assert_eq!(
         pane.click(x, y, 509, 576),
-        vec![InspectorIntent::ClipToKnot]
+        vec![InspectorIntent::ClipToKnot {
+            offer: uuid::Uuid::nil()
+        }]
     );
 }
 /// A click on a radio option reports the viewer intent — and the sidecar
@@ -112,7 +112,7 @@ fn picking_a_viewer_reports_the_intent_and_mirrors_back() {
         400.0,
         600.0,
         None,
-        false,
+        None,
         "unconfigured",
     );
     // Resolve the livery option's centre off the laid-out DOM.
@@ -147,7 +147,7 @@ fn picking_a_viewer_reports_the_intent_and_mirrors_back() {
         400.0,
         600.0,
         None,
-        false,
+        None,
         "unconfigured",
     );
     assert_eq!(
@@ -219,7 +219,7 @@ fn focused_document_capabilities_sit_beside_the_viewer_picker() {
         400.0,
         600.0,
         None,
-        false,
+        None,
         "unconfigured",
     );
     assert!(
@@ -267,7 +267,7 @@ fn the_requested_page_zoom_is_mirrored_beside_the_capability() {
         400.0,
         600.0,
         None,
-        false,
+        None,
         "unconfigured",
     );
     assert!(
@@ -285,7 +285,7 @@ fn the_requested_page_zoom_is_mirrored_beside_the_capability() {
         400.0,
         600.0,
         None,
-        false,
+        None,
         "unconfigured",
     );
     assert!(
@@ -315,7 +315,7 @@ fn the_requested_page_zoom_is_mirrored_beside_the_capability() {
         400.0,
         600.0,
         None,
-        false,
+        None,
         "unconfigured",
     );
     assert!(
@@ -343,7 +343,7 @@ fn viewer_controls_write_the_followed_member_instead_of_the_runtime_cursor() {
     )));
     let id = app.active_pane.unwrap();
     let mut pane = InspectorPane::new();
-    pane.sync(&app, id, 400.0, 600.0, None, false, "unconfigured");
+    pane.sync(&app, id, 400.0, 600.0, None, None, "unconfigured");
     assert_eq!(pane.runner.state().member, Some(followed));
     let _ = pane.scene(400, 600);
     let (x, y) = pane
@@ -386,7 +386,7 @@ fn viewer_controls_write_the_followed_member_instead_of_the_runtime_cursor() {
             .and_then(|state| state.viewer_override.as_deref())
             .is_none()
     );
-    pane.sync(&app, id, 400.0, 600.0, None, false, "unconfigured");
+    pane.sync(&app, id, 400.0, 600.0, None, None, "unconfigured");
     assert_eq!(pane.runner.state().radio.selected, 2);
 }
 
@@ -455,7 +455,7 @@ fn engine_inventory_saved_unknown_is_selected_disabled_and_refuses_click() {
         400.0,
         2000.0,
         None,
-        false,
+        None,
         "unconfigured",
     );
     let selected = pane.runner.state().radio.selected;
@@ -514,7 +514,7 @@ fn engine_inventory_human_label_keeps_engine_id_scenario_target() {
         400.0,
         2000.0,
         None,
-        false,
+        None,
         "unconfigured",
     );
     let _ = pane.scene(400, 2000);
@@ -572,7 +572,7 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
                 detail: "Windows Scry is built; construction occurs on selection".into(),
             };
             app.browser.entry(a).viewer_override = Some("scrying.web".into());
-            pane.sync(&app, inspector, 256.0, 570.0, None, false, "unconfigured");
+            pane.sync(&app, inspector, 256.0, 570.0, None, None, "unconfigured");
             let _ = pane.scene(256, 570);
         }
         app.update(Action::OpenAddress(
@@ -596,7 +596,7 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
                 capabilities: crate::content::DocumentCapabilityFacts::default(),
             }),
         );
-        pane.sync(&app, inspector, 251.0, 570.0, None, false, "unconfigured");
+        pane.sync(&app, inspector, 251.0, 570.0, None, None, "unconfigured");
         assert_eq!(pane.runner.state().member, Some(b));
         let _ = pane.scene(251, 570);
         let selector = taproot::Selector::class("radio")
@@ -649,11 +649,14 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
         // A short pane clips the row until a real scroll paints it in view.
         // Scenario geometry must follow that scroll, rather than the DOM's
         // unchanged estimated coordinates.
-        pane.sync(&app, inspector, 251.0, 100.0, None, false, "unconfigured");
+        pane.sync(&app, inspector, 251.0, 100.0, None, None, "unconfigured");
         let _ = pane.scene(251, 100);
         assert_eq!(pane.selector_point(&selector), Ok(None));
-        pane.scroll_by(0.0, 200.0);
-        let _ = pane.scene(251, 100);
+        for _ in 0..16 {
+            if pane.selector_point(&selector).unwrap().is_some() { break; }
+            pane.scroll_by(0.0, 80.0);
+            let _ = pane.scene(251, 100);
+        }
         let (scrolled_x, scrolled_y) = pane
             .selector_point(&selector)
             .unwrap()
@@ -680,7 +683,7 @@ fn engine_inventory_resync_discards_focus_request_when_rows_change() {
         400.0,
         2000.0,
         None,
-        false,
+        None,
         "unconfigured",
     );
     pane.runner
@@ -699,7 +702,7 @@ fn engine_inventory_resync_discards_focus_request_when_rows_change() {
         400.0,
         2000.0,
         None,
-        false,
+        None,
         "unconfigured",
     );
     assert_eq!(pane.runner.state().radio.focus_request, None);

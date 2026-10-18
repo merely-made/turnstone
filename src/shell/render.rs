@@ -602,34 +602,17 @@ impl Shell {
                 pane.scene(rw, rh)
             },
             Some(PaneContent::Inspector) => {
-                let clip_source_available = self
-                    .app
-                    .follower_context(pane_id)
-                    .and_then(|context| context.member)
-                    .and_then(|member| self.content_sessions.session(&member))
-                    .and_then(|session| session.clip())
-                    .is_some();
-                let clip_target = self
-                    .knot_clip
-                    .as_ref()
-                    .map(|handle| handle.target().to_string());
-                let clip_status = self
-                    .knot_clip
-                    .as_ref()
-                    .map(|handle| handle.status().label())
-                    .unwrap_or_else(|| "unconfigured".into());
-                let pane = self
-                    .renderers
-                    .inspector
-                    .entry(pane_id)
-                    .or_insert_with(|| crate::inspector_pane::InspectorPane::new_in(mount()));
+                let admission = self.renderers.inspector.entry(pane_id)
+                    .or_insert_with(|| crate::inspector_pane::InspectorPane::new_in(mount())).admission();
+                let (clip_target, clip_offer, clip_status) = self.research_clip_offer(pane_id, admission);
+                let pane = self.renderers.inspector.get_mut(&pane_id).unwrap();
                 pane.sync(
                     &self.app,
                     pane_id,
                     rw as f32,
                     rh as f32,
                     clip_target.as_deref(),
-                    clip_source_available,
+                    clip_offer,
                     &clip_status,
                 );
                 pane.scene(rw, rh)

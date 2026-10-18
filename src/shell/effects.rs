@@ -979,6 +979,8 @@ impl Shell {
                         self.run_effects(follow_up);
                     }
                 }
+                Effect::CreateResearchNote { generation } => self.create_research_note(generation),
+                Effect::ChooseResearchNote { choice } => self.choose_research_note(choice),
                 Effect::ChooseKnotDocumentFile { read_only } => {
                     if let Some(path) = rfd::FileDialog::new()
                         .add_filter(

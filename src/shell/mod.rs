@@ -29,6 +29,7 @@ mod render;
 mod renderers;
 mod retained_clips;
 mod saved_sources;
+mod research_notes;
 #[cfg(all(feature = "scry", windows))]
 mod scry;
 #[cfg(all(feature = "servo", windows))]
@@ -1301,6 +1302,8 @@ pub struct Shell {
     /// Configured Knot destination for typed Inspector clips. The handle owns
     /// neither file authority nor vault keys; it only queues endpoint intents.
     knot_clip: Option<crate::knot_authoring::KnotClipHandle>,
+    knot_notes_root: Option<std::path::PathBuf>,
+    clip_offers: HashMap<crate::panes::PaneId, research_notes::ClipOffer>,
     /// Mere's routing vocabulary over inker's engine rules: address -> engine id.
     route_policy: inker::EngineRoutePolicy,
     /// Profile/origin user-agent policy, pending prompts, and the process-only
@@ -1559,6 +1562,7 @@ impl Shell {
             let _ = knot_proxy.send_event(());
         });
         let mut knot_clip = None;
+        let mut knot_notes_root = None;
         let mut publish_service = None;
         let shared_knot_service = app
             .identity
@@ -1574,9 +1578,10 @@ impl Shell {
                 },
             };
         let knot_visits = crate::knot_authoring::KnotVisits::default();
-        match crate::knot_authoring::KnotAuthoringEngine::from_env(knot_wake, knot_visits.clone()) {
+        match crate::knot_authoring::KnotAuthoringEngine::for_profile(knot_wake, knot_visits.clone(), &app.data_root) {
             Ok(Some(mut engine)) => {
                 knot_clip = engine.clip_handle();
+                knot_notes_root = engine.notes_root();
                 if let Some(source) = engine.take_publish_source() {
                     match app.identity.clone() {
                         Some(root) if !network_offline => {
@@ -1741,6 +1746,8 @@ impl Shell {
             next_visit_request: 1,
             knot_visit_refusals: Vec::new(),
             knot_clip,
+            knot_notes_root,
+            clip_offers: HashMap::new(),
             route_policy: standard_route_policy(),
             web_policy,
             epoch: std::time::Instant::now(),
@@ -2364,9 +2371,12 @@ impl Shell {
                     .unwrap_or_default();
                 for intent in intents {
                     match intent {
-                        crate::inspector_pane::InspectorIntent::ClipToKnot => {
-                            self.clip_focused_document_to_knot()
+                        crate::inspector_pane::InspectorIntent::ClipToKnot { offer } => {
+                            self.clip_document_to_knot(offer)
                         },
+                        crate::inspector_pane::InspectorIntent::NewResearchNote => out.push(Action::NewResearchNote),
+                        crate::inspector_pane::InspectorIntent::OpenResearchNote => out.push(Action::OpenResearchNote),
+                        crate::inspector_pane::InspectorIntent::ChooseResearchNote { choice } => out.push(Action::ChooseResearchNote { choice }),
                         crate::inspector_pane::InspectorIntent::CaptureSourceDocument { target } => out.push(Action::CaptureSourceDocument { target }),
                         crate::inspector_pane::InspectorIntent::SetViewer { member, viewer } => {
                             out.push(Action::SetViewerOverride { member, viewer })
@@ -2883,24 +2893,6 @@ impl Shell {
         }
     }
 
-    fn clip_focused_document_to_knot(&mut self) {
-        let Some(handle) = self.knot_clip.clone() else {
-            return;
-        };
-        let Some(member) = self.app.graph_runtimes.focused_member() else {
-            return;
-        };
-        let Some(clip) = self
-            .content_sessions
-            .session(&member)
-            .and_then(|session| session.clip())
-        else {
-            return;
-        };
-        if let Err(error) = handle.insert(clip) {
-            tracing::warn!(%error, "Knot clip could not be queued");
-        }
-    }
 
     /// Run a scenario `script` step through the Piccolo control lane and lower
     /// its Actions through the same `act` spine a keypress takes — the
