@@ -6,7 +6,7 @@
 
 //! Read-only access / Resource inspection of the owner's currently held graph.
 //! Addresses are labels, never a substitute for the recorded association.
-use mere::kernel::graph::{CoverageNote, Graph};
+use mere::kernel::graph::{CoverageNote, Graph, Node, NodeKey};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
@@ -16,6 +16,28 @@ pub struct AccessSummary {
     pub member: Uuid,
     pub title: String,
     pub address: String,
+}
+
+impl AccessSummary {
+    fn from_node(node: &Node) -> Self {
+        Self {
+            member: node.id,
+            title: node.title.clone(),
+            address: node.url().to_owned(),
+        }
+    }
+}
+
+/// Look up the held access without computing Resource facts or coverage.
+/// The key lets inspectors continue from the same lookup when they need it.
+pub(crate) fn access_summary(
+    graph: &Graph,
+    member: Uuid,
+) -> Result<(NodeKey, AccessSummary), String> {
+    let (key, node) = graph
+        .get_node_by_id(member)
+        .ok_or_else(|| format!("The inspected access {member} is no longer held here"))?;
+    Ok((key, AccessSummary::from_node(node)))
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -47,14 +69,7 @@ pub struct AccessInspection {
 }
 
 pub fn inspect_access(graph: &Graph, member: Uuid) -> Result<AccessInspection, String> {
-    let (key, node) = graph
-        .get_node_by_id(member)
-        .ok_or_else(|| format!("The inspected access {member} is no longer held here"))?;
-    let access = AccessSummary {
-        member,
-        title: node.title.clone(),
-        address: node.url().to_owned(),
-    };
+    let (key, access) = access_summary(graph, member)?;
     let resource_id = graph.shown_resource_id(key);
     let held_accesses = resource_id
         .map(|id| graph.surface_ids_showing_resource(id))
@@ -78,11 +93,7 @@ pub fn inspect_access(graph: &Graph, member: Uuid) -> Result<AccessInspection, S
             .iter()
             .filter(|id| **id != member)
             .filter_map(|id| graph.get_node_by_id(*id))
-            .map(|(_, node)| AccessSummary {
-                member: node.id,
-                title: node.title.clone(),
-                address: node.url().to_owned(),
-            })
+            .map(|(_, node)| AccessSummary::from_node(node))
             .collect();
         other_accesses.sort_by_key(|access| access.member);
         Some(ResourceInspection {
@@ -148,7 +159,10 @@ mod tests {
         assert_ne!(first.access, second.access);
         assert_eq!(first.resource.unwrap().other_accesses, vec![second.access]);
         assert_eq!(second.resource.unwrap().other_accesses, vec![first.access]);
-        assert_eq!(serde_json::to_value(graph.to_snapshot_at(0)).unwrap(), before);
+        assert_eq!(
+            serde_json::to_value(graph.to_snapshot_at(0)).unwrap(),
+            before
+        );
     }
 
     #[test]

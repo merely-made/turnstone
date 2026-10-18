@@ -20,7 +20,7 @@ use serde_json::Value;
 use serde_json::json;
 use uuid::Uuid;
 
-use crate::access_inspection::AccessSummary;
+use crate::access_inspection::{AccessSummary, access_summary};
 
 /// An undirected displayed bundle. Its records retain their own direction.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -150,17 +150,6 @@ pub struct LinkHistoryInspection {
     pub coverage: CoverageNote,
 }
 
-fn access(graph: &Graph, member: Uuid) -> Result<AccessSummary, String> {
-    let (_, node) = graph
-        .get_node_by_id(member)
-        .ok_or_else(|| format!("The inspected access {member} is no longer held here"))?;
-    Ok(AccessSummary {
-        member,
-        title: node.title.clone(),
-        address: node.url().to_owned(),
-    })
-}
-
 fn owner(graph: &Graph, stratum: GraphStratum, from: Uuid, to: Uuid) -> LinkOwner {
     let endpoint = |id| SourceEndpoint {
         id,
@@ -230,15 +219,16 @@ fn kernel_coverage(coverage: scenograph::link::LinkCoverage) -> Result<CoverageN
 /// Held adjacent accesses only, deterministic and deduplicated by member UUID.
 /// Self-links yield this same access once. Equal URLs are never merged.
 pub fn linked_accesses(graph: &Graph, member: Uuid) -> Result<Vec<AccessSummary>, String> {
-    let (key, _) = graph
-        .get_node_by_id(member)
-        .ok_or_else(|| format!("The inspected access {member} is no longer held here"))?;
+    let (key, _) = access_summary(graph, member)?;
     let neighbors: BTreeSet<_> = graph
         .projected_outgoing_relations(key)
         .chain(graph.projected_incoming_relations(key))
         .filter_map(|(neighbor, _, _)| graph.get_node(neighbor).map(|node| node.id))
         .collect();
-    neighbors.into_iter().map(|id| access(graph, id)).collect()
+    neighbors
+        .into_iter()
+        .map(|id| access_summary(graph, id).map(|(_, summary)| summary))
+        .collect()
 }
 
 pub fn inspect_link(graph: &Graph, target: LinkTarget) -> Result<LinkInspection, String> {
@@ -258,8 +248,8 @@ pub fn inspect_link_with_source(
     target: LinkTarget,
     source: scenograph::link::LinkSource,
 ) -> Result<LinkInspection, String> {
-    let first = access(graph, target.first)?;
-    let second = access(graph, target.second)?;
+    let first = access_summary(graph, target.first)?.1;
+    let second = access_summary(graph, target.second)?.1;
     let mut notes = Vec::new();
     for member in [target.first, target.second] {
         let key = graph
@@ -398,8 +388,8 @@ pub fn inspect_link_history_with_source(
     target: LinkTarget,
     source: scenograph::link::LinkSource,
 ) -> Result<LinkHistoryInspection, String> {
-    let first = access(graph, target.first)?;
-    let second = access(graph, target.second)?;
+    let first = access_summary(graph, target.first)?.1;
+    let second = access_summary(graph, target.second)?.1;
     let mut notes = Vec::new();
     for member in [target.first, target.second] {
         let key = graph
