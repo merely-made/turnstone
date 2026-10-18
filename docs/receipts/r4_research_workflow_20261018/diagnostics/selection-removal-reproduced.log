@@ -1,0 +1,14 @@
+
+running 1 test
+
+thread 'app::contributed_pane_arms::research_view_tests::detached_choices_can_be_removed_incrementally_but_cannot_be_reintroduced' (43862079) panicked at src/app/contributed_pane_arms.rs:401:9:
+assertion failed: effects.iter().any(|effect| matches!(effect, Effect::SaveSession))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test app::contributed_pane_arms::research_view_tests::detached_choices_can_be_removed_incrementally_but_cannot_be_reintroduced ... FAILED
+
+failures:
+
+failures:
+    app::contributed_pane_arms::research_view_tests::detached_choices_can_be_removed_incrementally_but_cannot_be_reintroduced
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1082 filtered out; finished in 1.91s

@@ -3,7 +3,7 @@
 **Status:** in progress, refreshed 2026-10-18. Rulings L1-L7 were made with Mark on
 2026-09-06. The research-workflow section below records the R0/R1 bounded
 qualifications, the bounded macOS R2 private search/reader qualification,
-the bounded macOS R3 scoped-Answers qualification, and the still-planned R4 work; it does not replace those rulings. Source
+the bounded macOS R3 scoped-Answers qualification, and the bounded macOS R4 complete-task qualification; it does not replace those rulings. Source
 capture and collection-scoped search now have app consumers. The Keep, bin
 custody, and other lifecycle joins remain governed by their individual
 done-conditions. This plan joins rules that
@@ -299,7 +299,7 @@ Done-conditions:
 
 ## Research workflow: smallest complete slice (2026-10-17)
 
-**Status: R0 qualified; R1 bounded macOS qualification passed; R2 bounded macOS qualification passed; R3 bounded macOS qualification passed; R4 remains planned.** Mark asked
+**Status: R0 qualified; R1 bounded macOS qualification passed; R2 bounded macOS qualification passed; R3 bounded macOS qualification passed; R4 bounded macOS complete-task qualification passed.** Mark asked
 for the existing research workflow to be traced, its missing joins identified,
 and the smallest complete slice planned. This section owns that product join;
 the capture, pane, Knot and resident plans retain their domain gates.
@@ -798,10 +798,51 @@ concatenation prove preservation. Other native findings repaired the semantic
 citation handoff's dependence on viewport rendering, reader destination focus
 and maximization, and unsafe byte slicing of malformed Unicode manifest labels.
 The final combined packet uses one frozen binary; earlier failed packets retain
-their exact source/input identities. R4, other platforms, OS assistive activation,
-installed personal custody and power-loss durability remain separate gates.
+their exact source/input identities. The assembled private task is qualified by
+R4 below. Other platforms, OS assistive activation, installed personal custody
+and power-loss durability remain separate gates.
 
 #### R4. One end-to-end acceptance receipt
+
+**2026-10-18: bounded macOS qualification passed.** The
+[R4 receipt](../docs/receipts/r4_research_workflow_20261018/README.md) drives one
+fresh ordinary capture/find/read/ask/revise/return task from fetched Turnstone
+`b34a03c`, retaining the coherent R3 runtime lock (Mere `e6250fd1`, Genet
+`4733c557`, Netrender `c5efc94`). Two real headed app launches and two distinct
+resident OS processes pass, with 19 directly reviewed captures. Source reading
+works before both resident startups with the origin actually stopped. The
+same origin address returns only to capture A2 after the A1 answer, then exits
+again. Exact old A1 citation, Keep, ordered capture references, B-only next-ask
+scope and serialized tiled/floating arrangement survive cold return. An
+independent post-exit inspector checks exact Fleece and zero new PageText
+bodies in all fresh sessions. The full workspace command passes, including
+1,071 library tests (12 ignored); the ignored wrong-owner live-route probe
+and two post-exit inspections execute separately. Clippy correctness passes.
+
+The named `Ask saved sources` action now re-enters the existing valid
+current-session pane. One shared reveal operation transfers activation and
+maximization to destination tools/readers, and Answers owns pane focus. Local
+source validation precedes inference connection setup, so resident absence
+leaves valid held evidence selectable and reports its separate requirement.
+Multiple detached choices can be removed incrementally; new additions still
+require admission, stale controls cannot overwrite current intent, and every
+ask validates its whole scope. These repairs retain the existing store,
+publisher, pane schema and actor owners rather than adding parallel state.
+
+The opt-in process fixture is published as Mere `dd9d5c523`; it changes only
+the existing ignored Djinn test plus documentation/receipt. Its compiled
+runtime base and exact source hash are recorded separately; no runtime repin
+is needed for the fixture extension. The first complete run exposed an outer
+record enumeration difference: the fixture compares by immutable run ID while
+preserving exact fields and inner passage order. Capture recovery can renumber
+transient display ordinals, so the verifier binds initial gestures to immutable
+annotation/raw/member identities and separately checks the durable A1/A2 facet
+order. Earlier failed, superseded and pre-final-repair runs retain their own
+identities in diagnostics. This qualifies the first private saved-HTML task;
+Knot-authored notes, sharing, other platforms, personal custody installation,
+OS assistive activation and physical/power-loss recovery remain separate.
+
+Protocol used for this receipt and future repeats:
 
 Use a new isolated profile, two small public fixture HTML pages A/B, a unique
 sentinel on visited-only X, and a second session with a distinct sentinel. Use
@@ -1036,7 +1077,7 @@ refreshed 2026-09-12.
   controls, 46 supplier tests, Clippy correctness and two headed fresh processes
   pass. Twelve reviewed captures and exact offline request/reference recovery
   are retained in the R1 receipt. R2 is now bounded-qualified in the following entry;
-  R3 is now bounded-qualified below; R4 remains planned.
+  R3 and R4 are now bounded-qualified below.
 
 - **2026-10-17, R2 private saved-source reader bounded-qualified on macOS:**
   the current branch adds session-facet admissions, exact-case canonical-text
@@ -1062,4 +1103,18 @@ refreshed 2026-09-12.
   citation reopening after B-only selection and actual origin shutdown. The
   real model earns an exact-quotation citation; earlier uncited marker attempts
   remain diagnostics. The large offline reader now segments presentation
-  without truncating canonical bytes. R4 retains its complete-task gate.
+  without truncating canonical bytes. R4 closes its complete-task gate in the
+  following entry.
+
+- **2026-10-18, R4 complete private task bounded-qualified on macOS:** ordinary
+  capture/find/read/ask/revise/return passes through two app launches and two
+  distinct resident OS processes, with the origin gone and source reading
+  before both resident startups. Nineteen reviewed captures, independent
+  post-exit Fleece inspections and exact sealed-prompt/citation checks pass.
+  The final full workspace command passes: 1,071 library tests, zero failures,
+  12 ignored, with live wrong-owner and post-exit probes executed separately.
+  Re-entry, shared destination reveal, resident-independent source choices and
+  incremental removal of withdrawn choices are repaired. The existing owners,
+  schema and runtime lock remain; Mere `dd9d5c523` adds only the opt-in process
+  test fixture and its evidence. Notes, sharing, custody installation and
+  other-platform/physical recovery retain their separate gates.

@@ -1,0 +1,11 @@
+{
+  "text_marker": {
+    "raw_path": "/Users/markik/Code/output/turnstone-r4-native-03/resident/second-started.json",
+    "raw_name": "second-started.json",
+    "actual_content_type": "text/plain",
+    "raw_sha256": "03494afd4248c42f5fa1237bf2eeebe751ab8d9c977d55405fcb17469dbd91f8",
+    "copied_path": "resident/second-started.marker",
+    "copied_sha256": "03494afd4248c42f5fa1237bf2eeebe751ab8d9c977d55405fcb17469dbd91f8"
+  },
+  "visual_review": "../visual-review.json is the canonical reviewed-image record."
+}

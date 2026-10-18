@@ -1,0 +1,102 @@
+{
+  "status": "pass",
+  "images": [
+    {
+      "path": "seed/01_A1_saved.png",
+      "sha256": "33845be2a1543542658d4315c99155e16559441d81e97c06a268931b8e6ff7fa",
+      "observation": "Inspector visibly reports Source save: Saved; live source is Kept."
+    },
+    {
+      "path": "seed/02_B_saved.png",
+      "sha256": "e9c4c95d1b89364d5ac12d6c0090cb00d3adf2b7d8666a834c33b9e9394d786d",
+      "observation": "B is Kept and its Inspector visibly reports Source save: Saved."
+    },
+    {
+      "path": "seed/03_foreign_session_source.png",
+      "sha256": "20036dafb18e0f737bf77cdec6c0b45089513082a299f878fa52042d66cc5756",
+      "observation": "Foreign session search shows the copperfield match for Foreign Source."
+    },
+    {
+      "path": "seed/04_A1_search_read_no_origin_no_resident.png",
+      "sha256": "500a15e2e73e505cfef23da8e0b163361ac5e5d9c5bb3cc94f2a0ab744b1b34d",
+      "observation": "Saved A1 title, capture identity, accented café quote and full canonical sentence render; original address is a separate link. Inspector describes saved-source recapture as unavailable."
+    },
+    {
+      "path": "seed/05_answers_require_resident.png",
+      "sha256": "e3ab9def3f92df4a0d0bcf74e997e3474f4013c37d90c1d26db76a408f037638",
+      "observation": "Answers cleanly owns the maximized surface without leftover reader chrome. A and B choices remain available beside the explicit missing-resident status."
+    },
+    {
+      "path": "seed/06_empty_scope_refused.png",
+      "sha256": "b7921ad8faceb2cd885a2d74b4dfb668eacf34994c0e68dd64980d50a782bb9f",
+      "observation": "Connected Answers visibly refuses an Ask with zero selected sources."
+    },
+    {
+      "path": "seed/07_explicit_A1_B_scope.png",
+      "sha256": "eb1937672b6f64dec2e2b416f26d1f30eba14397e3eed7beba1c5e5ba6c60814",
+      "observation": "Exactly two chosen source rows are shown, A1 and B, with distinct saved version identities."
+    },
+    {
+      "path": "seed/08_paused_answer.png",
+      "sha256": "99be3af91b553be66b3f03b5911e2cd7ec40beca11815d787407b3c3f82502fe",
+      "observation": "Real answer is paused at one token with Resume and Cancel controls visible."
+    },
+    {
+      "path": "seed/09_scoped_answer_origin_gone.png",
+      "sha256": "b96f22e4d60c174a81bc3d8171850b1dc035e5d8423e58fa380b5abc179056ef",
+      "observation": "Finished ten-token exact sentence is visible, with A1 citation labelled Exact quotation and characters 0..46."
+    },
+    {
+      "path": "seed/10_exact_A1_citation.png",
+      "sha256": "5e478e9ccfaf537fd48f94da59a6b18751edfe69de44b4e6d0a67e5ac7b1821c",
+      "observation": "Citation reveals the maximized saved A1 reader; complete accented sentence appears in quote and canonical body with separate original-address link."
+    },
+    {
+      "path": "seed/12_B_scope_old_A1_answer.png",
+      "sha256": "2cdc9e354d62c1d018c19454a65ffc91404a974bf666b88061efca4c9727b8ce",
+      "observation": "B alone is selected for the next question, A1 and A2 remain distinct available choices, and the earlier A1 answer/citation stays visible."
+    },
+    {
+      "path": "seed/13_cancelled_B_only_ask.png",
+      "sha256": "4eb95e23071cc929443628f1979226c78b9e396ad600d3132d2de398843ec20a",
+      "observation": "The B-only second question is visibly Cancelled at zero tokens; Past asks retains both runs."
+    },
+    {
+      "path": "seed/14_old_A1_after_A2_and_scope_change.png",
+      "sha256": "5e478e9ccfaf537fd48f94da59a6b18751edfe69de44b4e6d0a67e5ac7b1821c",
+      "observation": "Old A1 full quote and exact saved version reopen after A2 capture and scope change."
+    },
+    {
+      "path": "reopen/15_cold_reader_before_resident_restart.png",
+      "sha256": "a298e4730f93843bcaa0607041d03537809c1bd5151e6d1ef0f88c5e40699942",
+      "observation": "Fresh app renders accented café and A1 canonical sentence before resident restart. Serialized tiled panes return with the saved B-only choice and a separate missing-resident status; narrow reader text wraps."
+    },
+    {
+      "path": "reopen/16_cold_scope_resident_absent.png",
+      "sha256": "fbc4a5d0c590b2a92da6fa28e9ad1ebe79b6f5c009ed028c14e0df047cf15cfc",
+      "observation": "Re-entered maximized Answers preserves B-only scope and separately lists A1 and A2 while resident connection is refused."
+    },
+    {
+      "path": "reopen/17_cold_scope_and_history.png",
+      "sha256": "633d6adb54452424df19fe0fb2f4ffa19b70924dbb28867e1ef03fed97e021d7",
+      "observation": "After distinct resident process starts, Answers is connected and both finished and cancelled historical questions are listed; no duplicate empty view."
+    },
+    {
+      "path": "reopen/18_cold_exact_A1_citation.png",
+      "sha256": "5e478e9ccfaf537fd48f94da59a6b18751edfe69de44b4e6d0a67e5ac7b1821c",
+      "observation": "Old A1 exact full quote, accented text and saved version render after cold app/resident reopening; original address remains separate."
+    },
+    {
+      "path": "reopen/19_oversize_publication_refused.png",
+      "sha256": "f2fe2a1c960c6af57cc587d04c10a3f39ce8a132c9200652b5e255c85fd5f923",
+      "observation": "Answers explicitly refuses the oversized session while saying offline reading remains available; its source row remains visible."
+    },
+    {
+      "path": "reopen/20_oversize_source_readable_offline.png",
+      "sha256": "d4afec432a742b6b31cdeed7b14b688038fab8cd29f98576e5fe4aa8277f2724",
+      "observation": "Complete oversized saved reader opens locally, visibly showing title, original address, saved version, exact marker and unbroken backslash body; independent document verification owns completeness."
+    }
+  ],
+  "boundary": "Native test screenshots reviewed directly. This does not qualify OS assistive technology or interactive live HTML fidelity.",
+  "all_19_captures_reviewed": true
+}

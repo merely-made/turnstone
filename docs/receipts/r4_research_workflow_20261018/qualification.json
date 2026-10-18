@@ -1,0 +1,432 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-18",
+  "status": "R4 bounded macOS complete-workflow qualification passed",
+  "turnstone_base": "b34a03c60bc242bb53bcac1e6b734283095f1b92",
+  "source_inputs": "source-inputs.json",
+  "source_file_count": 410,
+  "native_binary": "native-binary.json",
+  "test_executable": "test-binary.json",
+  "stack": {
+    "result": "pass",
+    "turnstone_base": "b34a03c60bc242bb53bcac1e6b734283095f1b92",
+    "lock_sha256": "03cc8291430d8fb6a9fd619d3213dfe89f1b4ebb499efd87d2eec72491f3efd6",
+    "manifest_unchanged": true,
+    "lock_unchanged": true,
+    "runtime": {
+      "mere": "e6250fd1c460dfbb3d6d2a076ec0fdf6748d35bb",
+      "genet": "4733c557e4c7e54f9e928116b8008671f69fe4bf",
+      "netrender": "c5efc94f876e93caba20807709189c5f9589492b"
+    },
+    "supplier_fixture": {
+      "published_commit": "dd9d5c523c092baf72be31cdbc1d28c4ae179fa0",
+      "published_parent": "f38de787247e5f82ea40a8a1b6cb47d991bec033",
+      "compiled_runtime_base": "e6250fd1c460dfbb3d6d2a076ec0fdf6748d35bb",
+      "scope": "Existing ignored headed inference test and its documentation/receipt only. Rebased on fetched Mere main; compiled test hash unchanged. Runtime pins deliberately retain the frozen qualified stack.",
+      "test_sha256": "6d1abc305fda289cce1680cda40f9a70ab8a3e13c47dec41bd3b52480e5f29df"
+    },
+    "new_dependencies": false
+  },
+  "platform": {
+    "os": "ProductName:\t\tmacOS\nProductVersion:\t\t15.8.1\nBuildVersion:\t\t24H32\n",
+    "architecture": "x86_64",
+    "toolchain": "rustup run 1.99.1",
+    "inference_gpu": "AMD Radeon Pro Vega 56 (Metal, discrete)"
+  },
+  "product_repairs": [
+    "The named Ask saved sources action re-enters the existing valid current-session version-2 pane, preserving exact choices and serialized arrangement. Explicit generic pane creation still supports independent views.",
+    "One shared reveal operation activates destination tools/readers and transfers current maximization. Newly created and reused Answers receive pane focus, avoiding hidden destinations or leftover reader chrome.",
+    "The inference worker prepares its one local source snapshot before connecting. Resident outages leave verified saved choices available and report the separate resident requirement; no extra cache/store/publisher was added.",
+    "Selection editing validates new additions while permitting existing detached choices to be removed incrementally. Exact expected-view and session/opening fences remain; every ask validates the entire chosen scope, and removed stale targets cannot be reintroduced."
+  ],
+  "headed": {
+    "result": "pass",
+    "commands": "run_native.py plus verify_native.py; full arguments in native/*-command.json and this README",
+    "runs": [
+      {
+        "phase": "seed",
+        "launcher_exit": 0,
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": true,
+          "elapsed_seconds": 429.841,
+          "binary_sha256": "558579cedafa491f3b65420be0e1a9c2c81839f03b41bc63730e0ccc15346e44",
+          "scenario_sha256": "4f3919988c36dce4885de042e7f0eff5ed4d51d846c5975fb4bfe36dfe1cd789",
+          "receipt": "scenario.done",
+          "captures": 13
+        },
+        "presentation": {
+          "frames": 1723,
+          "captures": 13,
+          "blank": 0
+        }
+      },
+      {
+        "phase": "reopen",
+        "launcher_exit": 0,
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": true,
+          "elapsed_seconds": 212.942,
+          "binary_sha256": "558579cedafa491f3b65420be0e1a9c2c81839f03b41bc63730e0ccc15346e44",
+          "scenario_sha256": "8c0542f9c573caa25fad0eccdbf9b9a9ce73abd76299216da946cddf2122c1cf",
+          "receipt": "scenario.done",
+          "captures": 6
+        },
+        "presentation": {
+          "frames": 459,
+          "captures": 6,
+          "blank": 0
+        }
+      }
+    ],
+    "real_app_launches": 2,
+    "real_resident_processes": [
+      {
+        "clean_shutdown": true,
+        "phase": 0,
+        "pid": 18474
+      },
+      {
+        "clean_shutdown": true,
+        "phase": 1,
+        "pid": 19137
+      }
+    ],
+    "model": {
+      "model_id": "HuggingFaceTB/SmolLM2-360M-Instruct",
+      "revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+      "artifacts": [
+        [
+          "config.json",
+          846,
+          "224f72354f10d617a359cc82ad15a3c96e866b9b2ffadb81997eeea9e88e22ee"
+        ],
+        [
+          "tokenizer.json",
+          2104556,
+          "9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c"
+        ],
+        [
+          "tokenizer_config.json",
+          3764,
+          "4ec77d44f62efeb38d7e044a1db318f6a939438425312dfa333b8382dbad98df"
+        ],
+        [
+          "model.safetensors",
+          723674912,
+          "e6bffe7435d7ddc10fd3b9a9efd429dafbacb1cb17015fb5562664e7532bf86e"
+        ]
+      ]
+    },
+    "independent_verification": "native/verification.json",
+    "public_packet_reverification": "pass",
+    "reviewed_captures": 19,
+    "visual_review": "visual-review.json",
+    "source_and_resident_binaries_frozen": true,
+    "wrong_owner_actual_route": "native/wrong-owner-probe.json"
+  },
+  "verified_workflow": {
+    "result": "pass",
+    "workflow": "collect-find-inspect-ask-verify-return",
+    "fresh_app_processes": 2,
+    "fresh_resident_processes": 2,
+    "source_read_before_resident_start_and_restart": true,
+    "restored_reader_intent_ready_before_resident_restart": true,
+    "same_origin_address_restarted_only_for_A2": true,
+    "origin_gone_on_cold_reopen": true,
+    "new_page_text_bodies": 0,
+    "keep_and_exact_capture_refs_preserved": true,
+    "arrangement_and_single_answers_view_preserved": true,
+    "exact_scopes": [
+      [
+        "blake3:383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29",
+        "blake3:1a1da810f370313ed8a8186a95a9a951ae6ef3696f96458e7b3ac619e99e306a"
+      ],
+      [
+        "blake3:1a1da810f370313ed8a8186a95a9a951ae6ef3696f96458e7b3ac619e99e306a"
+      ]
+    ],
+    "generation_runs": 2,
+    "exact_old_A1_after_A2_and_cold_reopen": true,
+    "citation_basis": "verbatim_passage",
+    "non_ascii_search": "café",
+    "full_quote": "The Pelican observatory's access word is café.",
+    "oversize_refusal_preserves_full_reader": true,
+    "pngs": [
+      {
+        "path": "seed/01_A1_saved.png",
+        "sha256": "33845be2a1543542658d4315c99155e16559441d81e97c06a268931b8e6ff7fa"
+      },
+      {
+        "path": "seed/02_B_saved.png",
+        "sha256": "e9c4c95d1b89364d5ac12d6c0090cb00d3adf2b7d8666a834c33b9e9394d786d"
+      },
+      {
+        "path": "seed/03_foreign_session_source.png",
+        "sha256": "20036dafb18e0f737bf77cdec6c0b45089513082a299f878fa52042d66cc5756"
+      },
+      {
+        "path": "seed/04_A1_search_read_no_origin_no_resident.png",
+        "sha256": "500a15e2e73e505cfef23da8e0b163361ac5e5d9c5bb3cc94f2a0ab744b1b34d"
+      },
+      {
+        "path": "seed/05_answers_require_resident.png",
+        "sha256": "e3ab9def3f92df4a0d0bcf74e997e3474f4013c37d90c1d26db76a408f037638"
+      },
+      {
+        "path": "seed/06_empty_scope_refused.png",
+        "sha256": "b7921ad8faceb2cd885a2d74b4dfb668eacf34994c0e68dd64980d50a782bb9f"
+      },
+      {
+        "path": "seed/07_explicit_A1_B_scope.png",
+        "sha256": "eb1937672b6f64dec2e2b416f26d1f30eba14397e3eed7beba1c5e5ba6c60814"
+      },
+      {
+        "path": "seed/08_paused_answer.png",
+        "sha256": "99be3af91b553be66b3f03b5911e2cd7ec40beca11815d787407b3c3f82502fe"
+      },
+      {
+        "path": "seed/09_scoped_answer_origin_gone.png",
+        "sha256": "b96f22e4d60c174a81bc3d8171850b1dc035e5d8423e58fa380b5abc179056ef"
+      },
+      {
+        "path": "seed/10_exact_A1_citation.png",
+        "sha256": "5e478e9ccfaf537fd48f94da59a6b18751edfe69de44b4e6d0a67e5ac7b1821c"
+      },
+      {
+        "path": "seed/12_B_scope_old_A1_answer.png",
+        "sha256": "2cdc9e354d62c1d018c19454a65ffc91404a974bf666b88061efca4c9727b8ce"
+      },
+      {
+        "path": "seed/13_cancelled_B_only_ask.png",
+        "sha256": "4eb95e23071cc929443628f1979226c78b9e396ad600d3132d2de398843ec20a"
+      },
+      {
+        "path": "seed/14_old_A1_after_A2_and_scope_change.png",
+        "sha256": "5e478e9ccfaf537fd48f94da59a6b18751edfe69de44b4e6d0a67e5ac7b1821c"
+      },
+      {
+        "path": "reopen/15_cold_reader_before_resident_restart.png",
+        "sha256": "a298e4730f93843bcaa0607041d03537809c1bd5151e6d1ef0f88c5e40699942"
+      },
+      {
+        "path": "reopen/16_cold_scope_resident_absent.png",
+        "sha256": "fbc4a5d0c590b2a92da6fa28e9ad1ebe79b6f5c009ed028c14e0df047cf15cfc"
+      },
+      {
+        "path": "reopen/17_cold_scope_and_history.png",
+        "sha256": "633d6adb54452424df19fe0fb2f4ffa19b70924dbb28867e1ef03fed97e021d7"
+      },
+      {
+        "path": "reopen/18_cold_exact_A1_citation.png",
+        "sha256": "5e478e9ccfaf537fd48f94da59a6b18751edfe69de44b4e6d0a67e5ac7b1821c"
+      },
+      {
+        "path": "reopen/19_oversize_publication_refused.png",
+        "sha256": "f2fe2a1c960c6af57cc587d04c10a3f39ce8a132c9200652b5e255c85fd5f923"
+      },
+      {
+        "path": "reopen/20_oversize_source_readable_offline.png",
+        "sha256": "d4afec432a742b6b31cdeed7b14b688038fab8cd29f98576e5fe4aa8277f2724"
+      }
+    ]
+  },
+  "store_ownership": {
+    "ordinary_history_new_page_text_bodies": 0,
+    "inspection_after_each_app_exit": true,
+    "inspections": [
+      "native/seed-store-inspection.json",
+      "native/reopen-store-inspection.json"
+    ],
+    "owner": "Existing trail actor owns browsing Fjall; R2 NoFetcher and R0 capture validation load exact Fleece. Resident retains its existing model/journal evidence; pane state contains IDs only.",
+    "keep_and_capture_ids": true,
+    "serialized_tiled_floating_arrangement_equal": true,
+    "transient_maximization_persistence_claim": false
+  },
+  "tests": {
+    "workspace": {
+      "status": "pass",
+      "command": "rustup run 1.99.1 cargo test --workspace --locked --offline --no-fail-fast -j2 -- --test-threads=1",
+      "log": "checks/workspace.log",
+      "exit_code": 0,
+      "summaries": [
+        {
+          "status": "ok",
+          "passed": 1071,
+          "failed": 0,
+          "ignored": 12,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": 1773.14
+        },
+        {
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": 0.0
+        },
+        {
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": 0.0
+        },
+        {
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": 0.0
+        },
+        {
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": 0.0
+        },
+        {
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": 0.0
+        }
+      ],
+      "library_passed": 1071,
+      "library_ignored": 12,
+      "library_filtered_out": 0,
+      "source_and_frozen_binary_match": true,
+      "process_completion": "Cargo tool returned exit 0 after all targets and doc-tests completed."
+    },
+    "pane_reveal": {
+      "passed": 3,
+      "failed": 0,
+      "seconds": 0.86,
+      "exit_code": 0,
+      "log": "checks/reveal.log"
+    },
+    "withdrawn_selection": {
+      "passed": 1,
+      "failed": 0,
+      "seconds": 0.42,
+      "exit_code": 0,
+      "log": "checks/selection-removal.log",
+      "before_fix": "diagnostics/selection-removal-reproduced.log"
+    },
+    "clippy_correctness": {
+      "exit_code": 0,
+      "seconds": 31.12,
+      "command": "rustup run 1.99.1 cargo clippy --lib --tests --locked --offline -j2 -- -D clippy::correctness",
+      "warnings_remain": true,
+      "log": "checks/clippy.log"
+    },
+    "portable_cargo_metadata": {
+      "exit_code": 0,
+      "packages": 1279,
+      "lock_unchanged": true,
+      "command": "python3 scripts/cargo_mode.py verify",
+      "log": "checks/cargo-metadata.log"
+    },
+    "formatting": {
+      "result": "scoped pass with existing surrounding formatting differences retained",
+      "details": "checks/format-boundary.json",
+      "scope_log": "checks/fmt-scoped.log",
+      "new_test_block_log": "checks/fmt-inspector.log"
+    },
+    "negative_controls": "negative-controls.json",
+    "executed_ignored_controls": {
+      "actual_wrong_owner_route": {
+        "passed": 1,
+        "log": "native/wrong-owner-probe.log"
+      },
+      "independent_store_inspector": {
+        "passed": 2,
+        "logs": [
+          "native/seed-store-inspection.log",
+          "native/reopen-store-inspection.log"
+        ]
+      }
+    },
+    "baseline": {
+      "result": "unchanged R3 full library passed: 1068 passed, 11 ignored, zero filtered",
+      "seconds": 2207.11,
+      "receipt": "diagnostics/baseline.json",
+      "boundary": "Separate baseline, not final R4 workspace evidence."
+    },
+    "native_build": {
+      "exit_code": 0,
+      "log": "checks/native-build.log",
+      "binary_sha256": "558579cedafa491f3b65420be0e1a9c2c81839f03b41bc63730e0ccc15346e44"
+    },
+    "test_build": {
+      "exit_code": 0,
+      "log": "checks/test-build.log",
+      "binary_sha256": "0fd80df71ef36fb67f8ae8822cfa0391e27adf8e437e079f312a6234576888fd"
+    },
+    "resident_build": {
+      "exit_code": 0,
+      "log": "checks/resident-build.log",
+      "binary_sha256": "3fc1513163d4c92db413f883285eef64cc97045cc9219b4d214b997259d12623",
+      "source_hashes": {
+        "ports/djinn/tests/inference_route.rs": "6d1abc305fda289cce1680cda40f9a70ab8a3e13c47dec41bd3b52480e5f29df",
+        "ports/djinn/tests/common/mod.rs": "6b938c8fff40e86f0458c8ee1f698ca145ce4054208313baf3851ac3ccf02793",
+        "Cargo.lock": "7ca0a260c7c57d6b9360564ebe0db9a4077aadff62a28ae492640f86063b7f17",
+        "Cargo.toml": "05987f160a05d6185738281852f3f87d5baa87aee7ee2ec24a7ce9ad9c72e406"
+      }
+    },
+    "negative_control_execution": "checks/negative-control-execution.json"
+  },
+  "evidence": {
+    "raw_run": "/Users/markik/Code/output/turnstone-r4-native-03",
+    "logs": "native/external-logs.json",
+    "checks": "checks/log-ledger.json",
+    "source_hash_guard": "All 410 compiled source inputs unchanged across native phases; full workspace test executable hash equals frozen qualified test executable.",
+    "previous_runs": [
+      "diagnostics/native-01/",
+      "diagnostics/native-02/"
+    ],
+    "diagnostic_boundary": "First complete native task exposed an outer-record enumeration comparison and pane-focus issue. Second passed before the final withdrawal-edit repair. Neither substitutes for final native/."
+  },
+  "qualification_boundaries": [
+    "First private saved-HTML collect/find/inspect/ask/verify/return task on declared macOS/GPU/model, using real headed app and existing admitted-route test resident.",
+    "Real origin shutdown and TCP refusal; no resident on initial or cold saved reading; distinct resident OS processes with live/final citation and sealed-evidence equality.",
+    "Exact quotation (verbatim_passage) citation verifies supplied text identity and scalar range. This does not qualify general model quality, entailment or reliable model-emitted markers.",
+    "Storage-fault, invalid-range, stale-action, session-switch and withdrawal controls are current-source component/process tests, not simulated headed UI successes.",
+    "Ordinary session sidecar survival is exercised through normal save/exit; it does not extend R0 capture Save acknowledgement into a universal atomic pane-layout transaction.",
+    "Installed personal identity/custody, OS assistive activation, other platforms, abrupt power loss, authored Knot notes, deliberate sharing and interactive live-page replay remain separate gates."
+  ],
+  "cleanup": {
+    "headed_apps_exited": true,
+    "resident_processes_exited": true,
+    "origin_processes_exited": true,
+    "private_profiles_and_binary_evidence_retained_under": "/Users/markik/Code/output/turnstone-r4-native-03",
+    "temporary_supplier_worktree_removed": true,
+    "active_work_preserved": "Primary Mere checkout and other Turnstone worktrees left untouched."
+  },
+  "currentness": {
+    "checked_utc": "2026-10-18T07:11:59.965928+00:00",
+    "turnstone_fetched_main_before_publication": "b34a03c60bc242bb53bcac1e6b734283095f1b92",
+    "turnstone_base": "b34a03c60bc242bb53bcac1e6b734283095f1b92",
+    "mere_test_fixture_published": "dd9d5c523c092baf72be31cdbc1d28c4ae179fa0",
+    "runtime_pins": "unchanged frozen coherent runtime stack; see checks/stack.json",
+    "other_work": "Other Turnstone worktrees and primary Mere checkout preserved."
+  }
+}

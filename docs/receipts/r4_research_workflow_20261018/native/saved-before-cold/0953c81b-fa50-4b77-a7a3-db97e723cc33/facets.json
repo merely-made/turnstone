@@ -1,0 +1,221 @@
+{
+  "nodes": {
+    "249a9a00-6797-4a56-b40a-477e2de90427": {
+      "arrangement.frame-layout": [],
+      "arrangement.pin": false,
+      "arrangement.position": {
+        "x": -1.3454599380493164,
+        "y": 80.42339324951172
+      },
+      "arrangement.split-offer-suppressed": false,
+      "capture.source-annotations/v1": [
+        "blake3:1a1da810f370313ed8a8186a95a9a951ae6ef3696f96458e7b3ac619e99e306a"
+      ],
+      "capture.source-requests/v1": [
+        {
+          "request": {
+            "graph": "e1821c6f-8904-466a-b5f0-4ff879465a68",
+            "id": "e38acb64-64b1-4370-b6de-443b73866f0f",
+            "keep": true,
+            "node": "249a9a00-6797-4a56-b40a-477e2de90427",
+            "session": "0953c81b-fa50-4b77-a7a3-db97e723cc33",
+            "source": {
+              "acquired_at_ms": 1792305636492,
+              "body_hash": "blake3:5a39b17dd36643890b08247318b48f0852bf9cd25d53de7d52ae5e6059abd53e",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:64648/B",
+              "hash": "blake3:5a39b17dd36643890b08247318b48f0852bf9cd25d53de7d52ae5e6059abd53e"
+            },
+            "url": "http://127.0.0.1:64648/B"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:1a1da810f370313ed8a8186a95a9a951ae6ef3696f96458e7b3ac619e99e306a",
+            "raw_manifest": "blake3:5a39b17dd36643890b08247318b48f0852bf9cd25d53de7d52ae5e6059abd53e"
+          }
+        }
+      ],
+      "chartulary.class": "turnstone.web-page",
+      "presentation.tags": {
+        "icon_overrides": {},
+        "ordered_tags": []
+      },
+      "provenance.derivations": [],
+      "provenance.import": [],
+      "semantic.classifications": [],
+      "semantic.properties": [],
+      "turnstone.controls.v1.feed": false,
+      "turnstone.controls.v1.keep": true,
+      "turnstone.controls.v1.unread": false,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792305635097
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:64648/B",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    },
+    "37c9e499-4af2-4aec-aff0-97702bd0ee76": {
+      "arrangement.position": {
+        "x": 79.0108642578125,
+        "y": -11.602021217346191
+      },
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792306024500
+      },
+      "web.content": true
+    },
+    "465485eb-effd-4d07-835b-b49225dfd78e": {
+      "arrangement.position": {
+        "x": -48.789390563964844,
+        "y": -87.54163360595703
+      },
+      "chartulary.class": "turnstone.note",
+      "note.document": {
+        "format": "text/djot",
+        "version": 1
+      },
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792305685980
+      },
+      "web.content": true
+    },
+    "9c563159-de52-40ae-9994-d7343068f3fc": {
+      "arrangement.position": {
+        "x": 110.19205474853516,
+        "y": 182.00494384765625
+      },
+      "chartulary.class": "turnstone.web-page",
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792305945392
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:64648/swap-a",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    },
+    "bb627dde-56b4-4586-84c8-258e94e8552a": {
+      "arrangement.frame-layout": [],
+      "arrangement.pin": false,
+      "arrangement.position": {
+        "x": -98.79682159423828,
+        "y": -79.41320037841797
+      },
+      "arrangement.split-offer-suppressed": false,
+      "capture.source-annotations/v1": [
+        "blake3:383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29",
+        "blake3:55be1588f674ad1d6d0b803a24486b674cbe2e1a785b30ca24b7619fffe5443c"
+      ],
+      "capture.source-requests/v1": [
+        {
+          "request": {
+            "graph": "e1821c6f-8904-466a-b5f0-4ff879465a68",
+            "id": "ed40cc5e-8970-4a50-9ee0-c9bbb94ce5b2",
+            "keep": true,
+            "node": "bb627dde-56b4-4586-84c8-258e94e8552a",
+            "session": "0953c81b-fa50-4b77-a7a3-db97e723cc33",
+            "source": {
+              "acquired_at_ms": 1792305627064,
+              "body_hash": "blake3:00d30c18b7000c55584bf9dc589c1b031a28a26ce9114b29bb6ba74a1f3ae3ee",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:64648/A",
+              "hash": "blake3:00d30c18b7000c55584bf9dc589c1b031a28a26ce9114b29bb6ba74a1f3ae3ee"
+            },
+            "url": "http://127.0.0.1:64648/A"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29",
+            "raw_manifest": "blake3:00d30c18b7000c55584bf9dc589c1b031a28a26ce9114b29bb6ba74a1f3ae3ee"
+          }
+        },
+        {
+          "request": {
+            "graph": "e1821c6f-8904-466a-b5f0-4ff879465a68",
+            "id": "5a7a630b-d231-418f-a7b7-4bb4e1f807ab",
+            "keep": true,
+            "node": "bb627dde-56b4-4586-84c8-258e94e8552a",
+            "session": "0953c81b-fa50-4b77-a7a3-db97e723cc33",
+            "source": {
+              "acquired_at_ms": 1792305946899,
+              "body_hash": "blake3:60a670119530da418659183e02de193625a1a7a897d8d6904de5ccde3b4b72c9",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:64648/A",
+              "hash": "blake3:60a670119530da418659183e02de193625a1a7a897d8d6904de5ccde3b4b72c9"
+            },
+            "url": "http://127.0.0.1:64648/A"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:55be1588f674ad1d6d0b803a24486b674cbe2e1a785b30ca24b7619fffe5443c",
+            "raw_manifest": "blake3:60a670119530da418659183e02de193625a1a7a897d8d6904de5ccde3b4b72c9"
+          }
+        }
+      ],
+      "chartulary.class": "turnstone.web-page",
+      "presentation.tags": {
+        "icon_overrides": {},
+        "ordered_tags": []
+      },
+      "provenance.derivations": [],
+      "provenance.import": [],
+      "semantic.classifications": [],
+      "semantic.properties": [],
+      "turnstone.controls.v1.feed": false,
+      "turnstone.controls.v1.keep": true,
+      "turnstone.controls.v1.unread": false,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792305946772
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:64648/A",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    },
+    "bf0674b0-bdb2-4b99-8f43-0bdcc1d6e01e": {
+      "arrangement.frame-layout": [],
+      "arrangement.pin": false,
+      "arrangement.position": {
+        "x": 166.670654296875,
+        "y": 109.89506530761719
+      },
+      "arrangement.split-offer-suppressed": false,
+      "chartulary.class": "turnstone.web-page",
+      "presentation.tags": {
+        "icon_overrides": {},
+        "ordered_tags": []
+      },
+      "provenance.derivations": [],
+      "provenance.import": [],
+      "semantic.classifications": [],
+      "semantic.properties": [],
+      "turnstone.controls.v1.feed": false,
+      "turnstone.controls.v1.unread": false,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792305647527
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:64648/X",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    },
+    "e1821c6f-8904-466a-b5f0-4ff879465a68": {
+      "scene.importance_metric": "degree",
+      "scene.physics_damping": 2.5,
+      "scene.size_by_degree": false,
+      "scene.size_by_importance": false
+    }
+  }
+}

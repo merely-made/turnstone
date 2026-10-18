@@ -1,0 +1,170 @@
+# One task: ordinary capture -> find/read without origin/resident -> real ask
+# -> origin changes -> exact old citation -> save and exit.
+settle 5
+key escape
+act New session
+settle 5
+act Rename session
+type R4 Private One
+key enter
+settle 5
+open ${R4_ORIGIN}/A
+settle 8
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+record-source-captures 01_A1_saved
+capture 01_A1_saved
+open ${R4_ORIGIN}/B
+settle 8
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+record-source-captures 02_B_saved
+capture 02_B_saved
+open ${R4_ORIGIN}/X
+settle 8
+act Save session
+act New session
+settle 5
+act Rename session
+type R4 Foreign Two
+key enter
+settle 5
+open ${R4_ORIGIN}/Foreign
+settle 8
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+act Save session
+act Search saved sources
+type copperfield
+wait-saved-sources 600
+assert suggestions == 1
+capture 03_foreign_session_source
+record-saved-sources 03_foreign_session_source
+key escape
+act New session
+settle 5
+act Rename session
+type R4 Oversize Three
+key enter
+settle 5
+open ${R4_ORIGIN}/Huge
+settle 8
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+act Save session
+omnibar actions
+type Switch to session R4 Private One
+key enter
+settle 8
+touch ${R4_CONTROL}/stop-origin-0
+wait-file 600 ${R4_CONTROL}/origin-stopped-0
+act Search saved sources
+type café
+wait-saved-sources 600
+assert suggestions == 1
+key enter
+wait-saved-reader 600
+assert snap saved-reader-state == Ready
+assert snap saved-reader-quote == café
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+capture 04_A1_search_read_no_origin_no_resident
+record-saved-sources 04_A1_search_read_no_origin_no_resident
+act Ask saved sources
+settle 30
+act Maximize pane
+settle 5
+assert text Answers needs the inference resident.
+assert text Choose source: Source A · saved version 1
+assert text Choose source: Source B · saved version 1
+capture 05_answers_require_resident
+touch ${R4_CONTROL}/start-resident-0
+wait-file 18000 ${R4_CONTROL}/resident-started-0
+settle 80
+assert text Connected to resident inference.
+assert text 0 saved sources chosen
+click surface:contributed role:button Ask
+settle 5
+assert text Choose at least one saved source before asking.
+capture 06_empty_scope_refused
+click surface:contributed role:button Choose source: Source A · saved version 1
+settle 5
+click surface:contributed role:button Choose source: Source B · saved version 1
+settle 5
+assert text 2 saved sources chosen
+capture 07_explicit_A1_B_scope
+click surface:contributed role:textbox Question
+insert Repeat the retained sentence about the Pelican observatory exactly.
+click surface:contributed role:button Ask
+wait-file 18000 ${R4_RESIDENT}/streaming.json
+click surface:contributed role:button Pause
+wait-file 18000 ${R4_RESIDENT}/paused.json
+settle 5
+assert text Paused
+capture 08_paused_answer
+click surface:contributed role:button Resume
+wait-file 18000 ${R4_RESIDENT}/finished.json
+settle 20
+assert text café
+assert text Source 1:
+capture 09_scoped_answer_origin_gone
+click surface:contributed role:button Source 1:
+settle 8
+wait-saved-reader 600
+assert snap saved-reader-quote == The Pelican observatory's access word is café.
+capture 10_exact_A1_citation
+record-saved-sources 10_exact_A1_citation
+# Restart the SAME address and capture live A2 only AFTER answering from A1.
+touch ${R4_CONTROL}/start-origin-1
+wait-file 600 ${R4_CONTROL}/origin-started-1
+open ${R4_ORIGIN}/swap-a
+settle 8
+open ${R4_ORIGIN}/A
+settle 8
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+assert row Saved captures: 2
+record-source-captures 11_A2_saved
+act Save session
+touch ${R4_CONTROL}/stop-origin-1
+wait-file 600 ${R4_CONTROL}/origin-stopped-1
+act Ask saved sources
+settle 40
+settle 5
+assert text 2 saved sources chosen
+click surface:contributed role:button Remove source: Source A · saved version 1
+settle 8
+assert text 1 saved sources chosen
+click surface:contributed role:button Reopen: Repeat the retained sentence about the Pelican observatory
+settle 5
+assert text Source 1:
+capture 12_B_scope_old_A1_answer
+click surface:contributed role:textbox Question
+insert What is the harbor sentinel? Cite [1] and explain it in twenty sentences.
+click surface:contributed role:button Ask
+wait-file 18000 ${R4_RESIDENT}/second-started.json
+click surface:contributed role:button Cancel
+wait-file 18000 ${R4_RESIDENT}/cancelled.json
+settle 10
+assert text Cancelled
+capture 13_cancelled_B_only_ask
+click surface:contributed role:button Reopen: Repeat the retained sentence about the Pelican observatory
+settle 5
+click surface:contributed role:button Source 1:
+settle 8
+wait-saved-reader 600
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+assert snap saved-reader-quote == The Pelican observatory's access word is café.
+capture 14_old_A1_after_A2_and_scope_change
+record-saved-sources 14_old_A1_after_A2_and_scope_change
+act Save session
+log R4 ordinary research task saved; origin stopped; app exits before resident exits

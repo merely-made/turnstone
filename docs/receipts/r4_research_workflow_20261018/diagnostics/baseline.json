@@ -1,0 +1,17 @@
+{
+  "result": "pass",
+  "scope": "unchanged fetched R3 baseline full library, not workspace",
+  "base": "b34a03c60bc242bb53bcac1e6b734283095f1b92",
+  "compiled_source_files": 410,
+  "source_map_matches_git_base": true,
+  "frozen_test_sha256": "5085e2b85a859335dfe4e086319b20f7bc0f7f1e22e15c8528b8253f8cddf0dd",
+  "command": "/Users/markik/Code/output/turnstone-r3-qualified-tests-04/turnstone-tests --test-threads=1",
+  "passed": 1068,
+  "failed": 0,
+  "ignored": 11,
+  "filtered": 0,
+  "seconds": 2207.11,
+  "raw_log": "/Users/markik/Code/output/turnstone-r4-baseline-full-tests.log",
+  "raw_log_sha256": "65ad99d151663495cbd6206a8b07350497736407e157b5072a2e818b6006d986",
+  "boundary": "A distinct baseline result. Final R4 workspace qualification is recorded separately."
+}

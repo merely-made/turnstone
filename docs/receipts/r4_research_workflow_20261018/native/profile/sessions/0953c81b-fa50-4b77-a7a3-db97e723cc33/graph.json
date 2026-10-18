@@ -1,0 +1,603 @@
+{
+  "nodes": [
+    {
+      "node_id": "bb627dde-56b4-4586-84c8-258e94e8552a",
+      "address": {
+        "Http": "http://127.0.0.1:64648/A"
+      },
+      "url": "http://127.0.0.1:64648/A",
+      "cached_host": null,
+      "title": "Source A",
+      "tags": [],
+      "tag_presentation": {
+        "ordered_tags": [],
+        "icon_overrides": {}
+      },
+      "import_provenance": [],
+      "is_pinned": false,
+      "session_state": {
+        "scroll_x": null,
+        "scroll_y": null,
+        "form_draft": null,
+        "last_visited_ms": null
+      },
+      "mime_hint": null,
+      "classifications": [],
+      "frame_layout_hints": [],
+      "frame_split_offer_suppressed": false,
+      "properties": [],
+      "derivations": [],
+      "body": null,
+      "last_session_visited": 0,
+      "nested": null
+    },
+    {
+      "node_id": "249a9a00-6797-4a56-b40a-477e2de90427",
+      "address": {
+        "Http": "http://127.0.0.1:64648/B"
+      },
+      "url": "http://127.0.0.1:64648/B",
+      "cached_host": null,
+      "title": "Source B",
+      "tags": [],
+      "tag_presentation": {
+        "ordered_tags": [],
+        "icon_overrides": {}
+      },
+      "import_provenance": [],
+      "is_pinned": false,
+      "session_state": {
+        "scroll_x": null,
+        "scroll_y": null,
+        "form_draft": null,
+        "last_visited_ms": null
+      },
+      "mime_hint": null,
+      "classifications": [],
+      "frame_layout_hints": [],
+      "frame_split_offer_suppressed": false,
+      "properties": [],
+      "derivations": [],
+      "body": null,
+      "last_session_visited": 0,
+      "nested": null
+    },
+    {
+      "node_id": "bf0674b0-bdb2-4b99-8f43-0bdcc1d6e01e",
+      "address": {
+        "Http": "http://127.0.0.1:64648/X"
+      },
+      "url": "http://127.0.0.1:64648/X",
+      "cached_host": null,
+      "title": "Visited only X",
+      "tags": [],
+      "tag_presentation": {
+        "ordered_tags": [],
+        "icon_overrides": {}
+      },
+      "import_provenance": [],
+      "is_pinned": false,
+      "session_state": {
+        "scroll_x": null,
+        "scroll_y": null,
+        "form_draft": null,
+        "last_visited_ms": null
+      },
+      "mime_hint": null,
+      "classifications": [],
+      "frame_layout_hints": [],
+      "frame_split_offer_suppressed": false,
+      "properties": [],
+      "derivations": [],
+      "body": null,
+      "last_session_visited": 0,
+      "nested": null
+    },
+    {
+      "node_id": "465485eb-effd-4d07-835b-b49225dfd78e",
+      "address": {
+        "Custom": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=41&end=45"
+      },
+      "url": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=41&end=45",
+      "cached_host": null,
+      "title": "Saved: Source A",
+      "tags": [],
+      "tag_presentation": {
+        "ordered_tags": [],
+        "icon_overrides": {}
+      },
+      "import_provenance": [],
+      "is_pinned": false,
+      "session_state": {
+        "scroll_x": null,
+        "scroll_y": null,
+        "form_draft": null,
+        "last_visited_ms": null
+      },
+      "mime_hint": null,
+      "classifications": [],
+      "frame_layout_hints": [],
+      "frame_split_offer_suppressed": false,
+      "properties": [],
+      "derivations": [],
+      "body": null,
+      "last_session_visited": 0,
+      "nested": null
+    },
+    {
+      "node_id": "37c9e499-4af2-4aec-aff0-97702bd0ee76",
+      "address": {
+        "Custom": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=0&end=46"
+      },
+      "url": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=0&end=46",
+      "cached_host": null,
+      "title": "Saved: Source A",
+      "tags": [],
+      "tag_presentation": {
+        "ordered_tags": [],
+        "icon_overrides": {}
+      },
+      "import_provenance": [],
+      "is_pinned": false,
+      "session_state": {
+        "scroll_x": null,
+        "scroll_y": null,
+        "form_draft": null,
+        "last_visited_ms": null
+      },
+      "mime_hint": null,
+      "classifications": [],
+      "frame_layout_hints": [],
+      "frame_split_offer_suppressed": false,
+      "properties": [],
+      "derivations": [],
+      "body": null,
+      "last_session_visited": 0,
+      "nested": null
+    },
+    {
+      "node_id": "9c563159-de52-40ae-9994-d7343068f3fc",
+      "address": {
+        "Http": "http://127.0.0.1:64648/swap-a"
+      },
+      "url": "http://127.0.0.1:64648/swap-a",
+      "cached_host": null,
+      "title": "Source A",
+      "tags": [],
+      "tag_presentation": {
+        "ordered_tags": [],
+        "icon_overrides": {}
+      },
+      "import_provenance": [],
+      "is_pinned": false,
+      "session_state": {
+        "scroll_x": null,
+        "scroll_y": null,
+        "form_draft": null,
+        "last_visited_ms": null
+      },
+      "mime_hint": null,
+      "classifications": [],
+      "frame_layout_hints": [],
+      "frame_split_offer_suppressed": false,
+      "properties": [],
+      "derivations": [],
+      "body": null,
+      "last_session_visited": 0,
+      "nested": null
+    }
+  ],
+  "edges": [],
+  "import_records": [],
+  "timestamp_secs": 1792306245,
+  "fields": [],
+  "couplings": [],
+  "navigation": {
+    "snapshot": {
+      "entries": [
+        {
+          "key": "http://127.0.0.1:64648/A",
+          "payload": "http://127.0.0.1:64648/A",
+          "first_seen_at_ms": 1792305626639,
+          "last_seen_at_ms": 1792305626639,
+          "visit_count": 1,
+          "privacy": "LocalOnly"
+        },
+        {
+          "key": "http://127.0.0.1:64648/B",
+          "payload": "http://127.0.0.1:64648/B",
+          "first_seen_at_ms": 1792305635097,
+          "last_seen_at_ms": 1792305635097,
+          "visit_count": 1,
+          "privacy": "LocalOnly"
+        },
+        {
+          "key": "http://127.0.0.1:64648/X",
+          "payload": "http://127.0.0.1:64648/X",
+          "first_seen_at_ms": 1792305647527,
+          "last_seen_at_ms": 1792305647527,
+          "visit_count": 1,
+          "privacy": "LocalOnly"
+        },
+        {
+          "key": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=41&end=45",
+          "payload": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=41&end=45",
+          "first_seen_at_ms": 1792305685980,
+          "last_seen_at_ms": 1792305685980,
+          "visit_count": 1,
+          "privacy": "LocalOnly"
+        },
+        {
+          "key": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=0&end=46",
+          "payload": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=0&end=46",
+          "first_seen_at_ms": 1792305940516,
+          "last_seen_at_ms": 1792305940516,
+          "visit_count": 1,
+          "privacy": "LocalOnly"
+        },
+        {
+          "key": "http://127.0.0.1:64648/swap-a",
+          "payload": "http://127.0.0.1:64648/swap-a",
+          "first_seen_at_ms": 1792305945392,
+          "last_seen_at_ms": 1792305945392,
+          "visit_count": 1,
+          "privacy": "LocalOnly"
+        }
+      ],
+      "visits": [
+        {
+          "entry": 0,
+          "parent": null,
+          "children": [
+            1
+          ],
+          "created_at_ms": 1792305626639,
+          "context": null,
+          "inbound": null,
+          "bindings": [
+            {
+              "owner": 1,
+              "forward_child": 1,
+              "last_accessed_at_ms": 1792305635097
+            },
+            {
+              "owner": 0,
+              "forward_child": null,
+              "last_accessed_at_ms": 1792305626639
+            }
+          ]
+        },
+        {
+          "entry": 1,
+          "parent": 0,
+          "children": [
+            2
+          ],
+          "created_at_ms": 1792305635097,
+          "context": null,
+          "inbound": {
+            "kind": "UrlTyped",
+            "at_ms": 1792305635097
+          },
+          "bindings": [
+            {
+              "owner": 2,
+              "forward_child": 2,
+              "last_accessed_at_ms": 1792305647527
+            },
+            {
+              "owner": 1,
+              "forward_child": null,
+              "last_accessed_at_ms": 1792305635097
+            }
+          ]
+        },
+        {
+          "entry": 2,
+          "parent": 1,
+          "children": [],
+          "created_at_ms": 1792305647527,
+          "context": null,
+          "inbound": {
+            "kind": "UrlTyped",
+            "at_ms": 1792305647527
+          },
+          "bindings": [
+            {
+              "owner": 2,
+              "forward_child": null,
+              "last_accessed_at_ms": 1792305647527
+            }
+          ]
+        },
+        {
+          "entry": 3,
+          "parent": null,
+          "children": [
+            4
+          ],
+          "created_at_ms": 1792305685980,
+          "context": null,
+          "inbound": null,
+          "bindings": [
+            {
+              "owner": 3,
+              "forward_child": null,
+              "last_accessed_at_ms": 1792305685980
+            },
+            {
+              "owner": 4,
+              "forward_child": 4,
+              "last_accessed_at_ms": 1792305940516
+            }
+          ]
+        },
+        {
+          "entry": 4,
+          "parent": 3,
+          "children": [
+            5
+          ],
+          "created_at_ms": 1792305940516,
+          "context": null,
+          "inbound": {
+            "kind": "UrlTyped",
+            "at_ms": 1792305940516
+          },
+          "bindings": [
+            {
+              "owner": 5,
+              "forward_child": 5,
+              "last_accessed_at_ms": 1792305945392
+            },
+            {
+              "owner": 4,
+              "forward_child": null,
+              "last_accessed_at_ms": 1792305940516
+            }
+          ]
+        },
+        {
+          "entry": 5,
+          "parent": 4,
+          "children": [],
+          "created_at_ms": 1792305945392,
+          "context": null,
+          "inbound": {
+            "kind": "UrlTyped",
+            "at_ms": 1792305945392
+          },
+          "bindings": [
+            {
+              "owner": 5,
+              "forward_child": null,
+              "last_accessed_at_ms": 1792305945392
+            }
+          ]
+        }
+      ],
+      "owners": [
+        {
+          "identity": {
+            "Node": "bb627dde-56b4-4586-84c8-258e94e8552a"
+          },
+          "origin": 0,
+          "current": 0,
+          "creator": null,
+          "pending_origin_parent": null,
+          "owned_visits": [
+            0
+          ]
+        },
+        {
+          "identity": {
+            "Node": "249a9a00-6797-4a56-b40a-477e2de90427"
+          },
+          "origin": 1,
+          "current": 1,
+          "creator": 0,
+          "pending_origin_parent": null,
+          "owned_visits": [
+            1
+          ]
+        },
+        {
+          "identity": {
+            "Node": "bf0674b0-bdb2-4b99-8f43-0bdcc1d6e01e"
+          },
+          "origin": 2,
+          "current": 2,
+          "creator": 1,
+          "pending_origin_parent": null,
+          "owned_visits": [
+            2
+          ]
+        },
+        {
+          "identity": {
+            "Node": "465485eb-effd-4d07-835b-b49225dfd78e"
+          },
+          "origin": 3,
+          "current": 3,
+          "creator": null,
+          "pending_origin_parent": null,
+          "owned_visits": [
+            3
+          ]
+        },
+        {
+          "identity": {
+            "Node": "37c9e499-4af2-4aec-aff0-97702bd0ee76"
+          },
+          "origin": 4,
+          "current": 4,
+          "creator": 3,
+          "pending_origin_parent": null,
+          "owned_visits": [
+            4
+          ]
+        },
+        {
+          "identity": {
+            "Node": "9c563159-de52-40ae-9994-d7343068f3fc"
+          },
+          "origin": 5,
+          "current": 5,
+          "creator": 4,
+          "pending_origin_parent": null,
+          "owned_visits": [
+            5
+          ]
+        }
+      ]
+    }
+  },
+  "resources": [
+    {
+      "canonical_iri": "http://127.0.0.1:64648/A",
+      "facets": []
+    },
+    {
+      "canonical_iri": "http://127.0.0.1:64648/B",
+      "facets": []
+    },
+    {
+      "canonical_iri": "http://127.0.0.1:64648/X",
+      "facets": []
+    },
+    {
+      "canonical_iri": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=41&end=45",
+      "facets": []
+    },
+    {
+      "canonical_iri": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=0&end=46",
+      "facets": []
+    },
+    {
+      "canonical_iri": "http://127.0.0.1:64648/swap-a",
+      "facets": []
+    }
+  ],
+  "resource_edges": [
+    {
+      "from_node_id": "b814d23a-f789-50b1-bae9-9df4db2f2808",
+      "to_node_id": "bc0cf522-0374-582e-8cde-e16dc295ac6d",
+      "families": [
+        "Semantic"
+      ],
+      "semantic": null,
+      "traversal": null,
+      "containment": null,
+      "arrangement": null,
+      "imported": null,
+      "provenance": null,
+      "assertions": [
+        {
+          "statement_id": "01a14dbd9f19-e5461fe850d82f13-0000000000000011",
+          "predicate": "https://mere.computer/ns/rel#hyperlink",
+          "recognized_sub_kind": "Hyperlink",
+          "provenance_iri": "https://mere.computer/ns/agent#person/user",
+          "asserted_at_ms": 1792305635097,
+          "first_asserted_ms": 1792305635097
+        }
+      ]
+    },
+    {
+      "from_node_id": "bc0cf522-0374-582e-8cde-e16dc295ac6d",
+      "to_node_id": "c7d429db-a4d6-5d74-8b12-f797cf7cd300",
+      "families": [
+        "Semantic"
+      ],
+      "semantic": null,
+      "traversal": null,
+      "containment": null,
+      "arrangement": null,
+      "imported": null,
+      "provenance": null,
+      "assertions": [
+        {
+          "statement_id": "01a14dbdcfa7-e5461fe850d82f13-0000000000000012",
+          "predicate": "https://mere.computer/ns/rel#hyperlink",
+          "recognized_sub_kind": "Hyperlink",
+          "provenance_iri": "https://mere.computer/ns/agent#person/user",
+          "asserted_at_ms": 1792305647527,
+          "first_asserted_ms": 1792305647527
+        }
+      ]
+    },
+    {
+      "from_node_id": "cc406fe4-a43f-55ae-bbf2-1a3e32bff9aa",
+      "to_node_id": "5aa530c7-ad2b-5b98-b507-95262ad4bd91",
+      "families": [
+        "Semantic"
+      ],
+      "semantic": null,
+      "traversal": null,
+      "containment": null,
+      "arrangement": null,
+      "imported": null,
+      "provenance": null,
+      "assertions": [
+        {
+          "statement_id": "01a14dc25b30-e5461fe850d82f13-0000000000000014",
+          "predicate": "https://mere.computer/ns/rel#hyperlink",
+          "recognized_sub_kind": "Hyperlink",
+          "provenance_iri": "https://mere.computer/ns/agent#person/user",
+          "asserted_at_ms": 1792305945392,
+          "first_asserted_ms": 1792305945392
+        }
+      ]
+    },
+    {
+      "from_node_id": "ead30d99-3864-5a2a-b20e-d75ea2480d02",
+      "to_node_id": "cc406fe4-a43f-55ae-bbf2-1a3e32bff9aa",
+      "families": [
+        "Semantic"
+      ],
+      "semantic": null,
+      "traversal": null,
+      "containment": null,
+      "arrangement": null,
+      "imported": null,
+      "provenance": null,
+      "assertions": [
+        {
+          "statement_id": "01a14dc24824-e5461fe850d82f13-0000000000000013",
+          "predicate": "https://mere.computer/ns/rel#hyperlink",
+          "recognized_sub_kind": "Hyperlink",
+          "provenance_iri": "https://mere.computer/ns/agent#person/user",
+          "asserted_at_ms": 1792305940516,
+          "first_asserted_ms": 1792305940516
+        }
+      ]
+    }
+  ],
+  "shown_resources": [
+    {
+      "surface_id": "249a9a00-6797-4a56-b40a-477e2de90427",
+      "resource_id": "bc0cf522-0374-582e-8cde-e16dc295ac6d"
+    },
+    {
+      "surface_id": "37c9e499-4af2-4aec-aff0-97702bd0ee76",
+      "resource_id": "cc406fe4-a43f-55ae-bbf2-1a3e32bff9aa"
+    },
+    {
+      "surface_id": "465485eb-effd-4d07-835b-b49225dfd78e",
+      "resource_id": "ead30d99-3864-5a2a-b20e-d75ea2480d02"
+    },
+    {
+      "surface_id": "9c563159-de52-40ae-9994-d7343068f3fc",
+      "resource_id": "5aa530c7-ad2b-5b98-b507-95262ad4bd91"
+    },
+    {
+      "surface_id": "bb627dde-56b4-4586-84c8-258e94e8552a",
+      "resource_id": "b814d23a-f789-50b1-bae9-9df4db2f2808"
+    },
+    {
+      "surface_id": "bf0674b0-bdb2-4b99-8f43-0bdcc1d6e01e",
+      "resource_id": "c7d429db-a4d6-5d74-8b12-f797cf7cd300"
+    }
+  ],
+  "assertion_schema": 1,
+  "placement": "recorded-strata-v1"
+}

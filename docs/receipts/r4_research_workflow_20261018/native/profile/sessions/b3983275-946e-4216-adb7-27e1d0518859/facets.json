@@ -1,0 +1,53 @@
+{
+  "nodes": {
+    "316722a5-ac1f-4d60-ba23-76968e302de3": {
+      "scene.importance_metric": "degree",
+      "scene.physics_damping": 2.5,
+      "scene.size_by_degree": false,
+      "scene.size_by_importance": false
+    },
+    "caa7be0a-546f-4cf7-bc35-c3bb05f19edf": {
+      "arrangement.position": {
+        "x": 11.949048042297363,
+        "y": 11.949048042297363
+      },
+      "capture.source-annotations/v1": [
+        "blake3:d94c9cd4c8e8bed3d000454310ab6dd88ade4500cac2a1032bbc9d26ee9bf9d1"
+      ],
+      "capture.source-requests/v1": [
+        {
+          "request": {
+            "graph": "316722a5-ac1f-4d60-ba23-76968e302de3",
+            "id": "5e9b6173-3b99-4d8c-9595-4b157ebafed9",
+            "keep": true,
+            "node": "caa7be0a-546f-4cf7-bc35-c3bb05f19edf",
+            "session": "b3983275-946e-4216-adb7-27e1d0518859",
+            "source": {
+              "acquired_at_ms": 1792305658573,
+              "body_hash": "blake3:377e703a61edce76f753f25b2edb25e6d8efe2b16d8caf33978a3d125e7dc8ed",
+              "content_type": "text/html; charset=utf-8",
+              "effective_url": "http://127.0.0.1:64648/Foreign",
+              "hash": "blake3:377e703a61edce76f753f25b2edb25e6d8efe2b16d8caf33978a3d125e7dc8ed"
+            },
+            "url": "http://127.0.0.1:64648/Foreign"
+          },
+          "stored": {
+            "annotation_manifest": "blake3:d94c9cd4c8e8bed3d000454310ab6dd88ade4500cac2a1032bbc9d26ee9bf9d1",
+            "raw_manifest": "blake3:377e703a61edce76f753f25b2edb25e6d8efe2b16d8caf33978a3d125e7dc8ed"
+          }
+        }
+      ],
+      "chartulary.class": "turnstone.web-page",
+      "turnstone.controls.v1.keep": true,
+      "visit.history": {
+        "last_session_visited": 0,
+        "last_visited_ms": 1792305658126
+      },
+      "web.page": {
+        "address": "http://127.0.0.1:64648/Foreign",
+        "host": "127.0.0.1",
+        "version": 1
+      }
+    }
+  }
+}

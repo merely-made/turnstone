@@ -1,0 +1,14 @@
+{
+  "layout_strategy": null,
+  "physics_law": "spring.rapier",
+  "physics_paused": false,
+  "physics_overlays": [],
+  "physics_kind_source": "site",
+  "physics_mass_source": "degree",
+  "physics_depth_source": "roots",
+  "command_menu": {
+    "added": [],
+    "removed": [],
+    "recent": []
+  }
+}

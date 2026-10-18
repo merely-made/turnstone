@@ -1,0 +1,583 @@
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:190:
+         document: Option<crate::content::FetchedDocument>,
+     },
+     /// Commit the durable request receipt after owning facet/graph save ack.
+-    AcknowledgeSourceCapture { capture_generation: uuid::Uuid, request: crate::source_capture::CaptureRequest, directory: PathBuf },
++    AcknowledgeSourceCapture {
++        capture_generation: uuid::Uuid,
++        request: crate::source_capture::CaptureRequest,
++        directory: PathBuf,
++    },
+     /// Flush every open segment to the store (a lifecycle edge).
+     Flush,
+     /// Answer lexical recall over the stored corpus (the omnibar's recall
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:204:
+     },
+     /// Flush, re-point the store at another session's memory dir (a session
+     /// switch), and restart origin chaining.
+-    Reopen { directory: PathBuf, capture_generation: uuid::Uuid },
++    Reopen {
++        directory: PathBuf,
++        capture_generation: uuid::Uuid,
++    },
+     /// Flush, drop the open store, and ack — the close path's handshake:
+     /// Windows cannot rename a directory whose files are open, so the shell
+     /// releases the memory store BEFORE moving the session dir to the trash.
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:267:
+             capture_library.unavailable(format!("open session capture store: {err}"));
+             tracing::warn!(%err, dir = %dir.display(), "trail memory: open failed; capture disabled until reopen");
+             return None;
+-        },
++        }
+     };
+     if let Err(err) = pollster::block_on(bootstrap_browsing_schema(&mut store)) {
+         capture_library.unavailable(format!("bootstrap browsing schema: {err}"));
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:284:
+                 capture_library.unavailable(error);
+             }
+             Some((store, memory))
+-        },
++        }
+         Err(err) => {
+             capture_library.unavailable(format!("load browsing corpus: {err}"));
+             tracing::warn!(%err, "trail memory: corpus load failed; capture disabled until reopen");
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:291:
+             None
+-        },
++        }
+     }
+ }
+
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:604:
+             return Err(format!("source manifest identity mismatch at {id}"));
+         }
+         if manifest.privacy != PrivacyClass::LocalOnly {
+-            return Err(format!("source manifest {id} is not private local evidence"));
++            return Err(format!(
++                "source manifest {id} is not private local evidence"
++            ));
+         }
+         let key = format!("blob:{}", id.0.to_hex());
+-        if !manifest.sources.iter().any(|source| {
+-            matches!(source, eidetic::BlobSource::Local { key: local } if local == &key)
+-        }) {
++        if !manifest.sources.iter().any(
++            |source| matches!(source, eidetic::BlobSource::Local { key: local } if local == &key),
++        ) {
+             return Err(format!("source manifest {id} has no exact local payload"));
+         }
+         let bytes = pollster::block_on(store.get(&key))
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:628:
+     let record = pollster::block_on(fleece::load_fleece_annotation(store, annotation_id))
+         .map_err(|error| format!("source annotation validation: {error}"))?
+         .ok_or_else(|| "source annotation is missing".to_string())?;
+-    let evidence = record.extraction.capture.evidence.as_ref()
++    let evidence = record
++        .extraction
++        .capture
++        .evidence
++        .as_ref()
+         .ok_or_else(|| "source annotation lacks acquisition evidence".to_string())?;
+-    let html = evidence.response_content_type.as_deref().is_some_and(|content_type| {
+-        content_type.split(';').next()
+-            .is_some_and(|media| media.trim().eq_ignore_ascii_case("text/html"))
+-    });
++    let html = evidence
++        .response_content_type
++        .as_deref()
++        .is_some_and(|content_type| {
++            content_type
++                .split(';')
++                .next()
++                .is_some_and(|media| media.trim().eq_ignore_ascii_case("text/html"))
++        });
+     if !evidence.has_authoritative_acquisition_context()
+         || evidence.dom_mode != CaptureDomMode::Source
+         || !html
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:651:
+         return Err("source annotation and raw acquisition provenance disagree".to_string());
+     }
+     pollster::block_on(eidetic::load_typed::<eidetic::models::OpaqueBlob>(
+-        store, &mut eidetic::NoFetcher, raw_id,
++        store,
++        &mut eidetic::NoFetcher,
++        raw_id,
+     ))
+     .map_err(|error| format!("raw source validation: {error}"))?
+     .ok_or_else(|| "raw source is missing".to_string())?;
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:671:
+         Err(err) => {
+             tracing::warn!(%err, "trail memory: page texts unreadable; recall falls back to titles");
+             PageTexts::default()
+-        },
++        }
+     }
+ }
+
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:719:
+             match latest.get_mut(&fingerprint) {
+                 Some(entry) if event.at_ms >= entry.1.at_ms => {
+                     *entry = (trace.owner.clone(), event.clone());
+-                },
+-                Some(_) => {},
++                }
++                Some(_) => {}
+                 None => {
+                     latest.insert(fingerprint, (trace.owner.clone(), event.clone()));
+-                },
++                }
+             }
+         }
+     }
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1134:
+             let mut last_to: HashMap<String, PageRef> = HashMap::new();
+             while let Ok(command) = commands.recv() {
+                 match command {
+-                    TrailCommand::LoadSavedSources { generation, request, session, admissions, directory } => {
+-                        let owner = current_dir.parent().and_then(Path::file_name).and_then(|name| name.to_str());
+-                        let result = if generation != current_capture_generation || directory != current_dir
++                    TrailCommand::LoadSavedSources {
++                        generation,
++                        request,
++                        session,
++                        admissions,
++                        directory,
++                    } => {
++                        let owner = current_dir
++                            .parent()
++                            .and_then(Path::file_name)
++                            .and_then(|name| name.to_str());
++                        let result = if generation != current_capture_generation
++                            || directory != current_dir
+                             || owner != Some(session.as_uuid().to_string().as_str())
+-                            || admissions.iter().any(|admission| admission.key.session != session)
+-                        { Err("Saved source search belongs to another session opening or store".into()) }
+-                        else { match state.as_mut() {
+-                            Some((store, _)) => Ok(saved_sources::load(store, &admissions)),
+-                            None => Err("The session evidence store is unavailable".into()),
+-                        }};
+-                        out.emit(Update::SavedSourcesLoaded { generation, request, session, admissions, result });
+-                    },
+-                    TrailCommand::ReadSavedSource { generation, request, node, url, target, admission, directory } => {
+-                        let owner = current_dir.parent().and_then(Path::file_name).and_then(|name| name.to_str());
+-                        let result = if generation != current_capture_generation || directory != current_dir
++                            || admissions
++                                .iter()
++                                .any(|admission| admission.key.session != session)
++                        {
++                            Err(
++                                "Saved source search belongs to another session opening or store"
++                                    .into(),
++                            )
++                        } else {
++                            match state.as_mut() {
++                                Some((store, _)) => Ok(saved_sources::load(store, &admissions)),
++                                None => Err("The session evidence store is unavailable".into()),
++                            }
++                        };
++                        out.emit(Update::SavedSourcesLoaded {
++                            generation,
++                            request,
++                            session,
++                            admissions,
++                            result,
++                        });
++                    }
++                    TrailCommand::ReadSavedSource {
++                        generation,
++                        request,
++                        node,
++                        url,
++                        target,
++                        admission,
++                        directory,
++                    } => {
++                        let owner = current_dir
++                            .parent()
++                            .and_then(Path::file_name)
++                            .and_then(|name| name.to_str());
++                        let result = if generation != current_capture_generation
++                            || directory != current_dir
+                             || owner != Some(target.key.session.as_uuid().to_string().as_str())
+                             || admission.key != target.key
+-                        { Err("Saved source reading belongs to another session opening or attachment".into()) }
+-                        else { match state.as_mut() {
+-                            Some((store, _)) => saved_sources::resolve(store, &admission, &target),
+-                            None => Err("The session evidence store is unavailable".into()),
+-                        }};
+-                        out.emit(Update::SavedSourceRead { generation, request, node, url, target, result });
+-                    },
++                        {
++                            Err("Saved source reading belongs to another session opening or attachment".into())
++                        } else {
++                            match state.as_mut() {
++                                Some((store, _)) => {
++                                    saved_sources::resolve(store, &admission, &target)
++                                }
++                                None => Err("The session evidence store is unavailable".into()),
++                            }
++                        };
++                        out.emit(Update::SavedSourceRead {
++                            generation,
++                            request,
++                            node,
++                            url,
++                            target,
++                            result,
++                        });
++                    }
+                     TrailCommand::ResearchSnapshot { context, reply } => {
+                         let valid = context.generation == current_capture_generation
+                             && inference_owner(&current_dir).ok()
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1175:
+                                 .ok_or_else(|| "The session evidence store is unavailable.".into())
+                         };
+                         let _ = reply.send(result);
+-                    },
++                    }
+                     TrailCommand::ResearchSource {
+                         context,
+                         target,
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1195:
+                             match state.as_mut() {
+                                 Some((store, _)) => {
+                                     saved_sources::resolve(store, admission, &target)
+-                                },
++                                }
+                                 None => Err("The session evidence store is unavailable.".into()),
+                             }
+                         } else {
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1202:
+                             Err("The cited saved source was withdrawn from this session.".into())
+                         };
+                         let _ = reply.send(result);
+-                    },
++                    }
+                     TrailCommand::InferenceSnapshot { owner, reply } => {
+                         let result = inference_snapshot(
+                             state.as_ref().map(|(store, _)| store),
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1210:
+                             &owner,
+                         );
+                         let _ = reply.send(result);
+-                    },
++                    }
+                     TrailCommand::InferenceSource {
+                         source,
+                         version,
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1223:
+                             &version,
+                         );
+                         let _ = reply.send(result);
+-                    },
++                    }
+                     TrailCommand::Record {
+                         owner,
+                         url,
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1246:
+                         if memory.record_traversal(&owner, event) {
+                             flush(store, memory);
+                         }
+-                    },
++                    }
+                     TrailCommand::Recall {
+                         query,
+                         limit,
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1280:
+                             Ok(hits) => out.emit(Update::RecallHits { query, hits }),
+                             Err(error) => out.emit(Update::RecallFailed { error }),
+                         }
+-                    },
++                    }
+                     TrailCommand::RecordText { url, text } => {
+                         if let Some((store, _)) = state.as_ref() {
+                             keep_page_text(store, &url, &text);
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1287:
+                         }
+-                    },
+-                    TrailCommand::CaptureSourceDocument { capture_generation, request, directory, document } => {
+-                        let admitted_session = current_dir.parent().and_then(Path::file_name).and_then(|name| name.to_str());
++                    }
++                    TrailCommand::CaptureSourceDocument {
++                        capture_generation,
++                        request,
++                        directory,
++                        document,
++                    } => {
++                        let admitted_session = current_dir
++                            .parent()
++                            .and_then(Path::file_name)
++                            .and_then(|name| name.to_str());
+                         let result = if directory != current_dir
+                             || capture_generation != current_capture_generation
+-                            || admitted_session != Some(request.session.as_uuid().to_string().as_str())
++                            || admitted_session
++                                != Some(request.session.as_uuid().to_string().as_str())
+                         {
+-                            Err("the capture actor belongs to another session opening or directory".into())
++                            Err(
++                                "the capture actor belongs to another session opening or directory"
++                                    .into(),
++                            )
+                         } else {
+                             match state.as_mut() {
+-                                Some((store, _)) => source_capture_receipts::capture_request(store, &request, document.as_ref()),
++                                Some((store, _)) => source_capture_receipts::capture_request(
++                                    store,
++                                    &request,
++                                    document.as_ref(),
++                                ),
+                                 None => Err("the session Eidetic store is not open".into()),
+                             }
+                         };
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1302:
+-                        out.emit(Update::SourceDocumentCaptured { capture_generation, request, result });
+-                    },
+-                    TrailCommand::AcknowledgeSourceCapture { capture_generation, request, directory } => {
+-                        let admitted_session = current_dir.parent().and_then(Path::file_name).and_then(|name| name.to_str());
++                        out.emit(Update::SourceDocumentCaptured {
++                            capture_generation,
++                            request,
++                            result,
++                        });
++                    }
++                    TrailCommand::AcknowledgeSourceCapture {
++                        capture_generation,
++                        request,
++                        directory,
++                    } => {
++                        let admitted_session = current_dir
++                            .parent()
++                            .and_then(Path::file_name)
++                            .and_then(|name| name.to_str());
+                         let result = if directory != current_dir
+                             || capture_generation != current_capture_generation
+-                            || admitted_session != Some(request.session.as_uuid().to_string().as_str())
++                            || admitted_session
++                                != Some(request.session.as_uuid().to_string().as_str())
+                         {
+                             Err("capture save acknowledgement belongs to another session opening or store".into())
+                         } else {
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1312:
+                             match state.as_mut() {
+-                                Some((store, _)) => source_capture_receipts::acknowledge_saved(store, &request),
++                                Some((store, _)) => {
++                                    source_capture_receipts::acknowledge_saved(store, &request)
++                                }
+                                 None => Err("the session Eidetic store is not open".into()),
+                             }
+                         };
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1317:
+                         if result.is_ok() {
+                             if let Some((store, _)) = state.as_mut()
+-                                && let Err(error) = crate::place::captured_collection::refresh_local_capture_library(store, &current_dir, &capture_library)
+-                            { capture_library.unavailable(error); }
++                                && let Err(error) =
++                                    crate::place::captured_collection::refresh_local_capture_library(
++                                        store,
++                                        &current_dir,
++                                        &capture_library,
++                                    )
++                            {
++                                capture_library.unavailable(error);
++                            }
+                         }
+-                        out.emit(Update::SourceCaptureSaved { capture_generation, request: request.id, result });
+-                    },
++                        out.emit(Update::SourceCaptureSaved {
++                            capture_generation,
++                            request: request.id,
++                            result,
++                        });
++                    }
+                     TrailCommand::Flush => {
+                         if let Some((store, memory)) = state.as_mut() {
+                             flush(store, memory);
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1327:
+                         }
+-                    },
+-                    TrailCommand::Reopen { directory: dir, capture_generation } => {
++                    }
++                    TrailCommand::Reopen {
++                        directory: dir,
++                        capture_generation,
++                    } => {
+                         if let Some((store, memory)) = state.as_mut() {
+                             flush(store, memory);
+                         }
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1342:
+                         state = open_memory(&dir, &capture_library);
+                         current_dir = dir;
+                         current_capture_generation = capture_generation;
+-                        emit_capture_recovery(&mut state, &current_dir, current_capture_generation, &out);
+-                    },
++                        emit_capture_recovery(
++                            &mut state,
++                            &current_dir,
++                            current_capture_generation,
++                            &out,
++                        );
++                    }
+                     TrailCommand::Release(ack) => {
+                         if let Some((store, memory)) = state.as_mut() {
+                             flush(store, memory);
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1355:
+                         last_to.clear();
+                         capture_library.unavailable("the session capture store is released");
+                         let _ = ack.send(());
+-                    },
++                    }
+                 }
+             }
+         },
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1537:
+         // Exercise the actor's boundary directly, including stale queued work.
+         keep_page_text(&store, url, BODY);
+         let texts = stored_page_texts(&store);
+-        assert!(texts.is_empty(), "ordinary fetch text never enters PageText");
++        assert!(
++            texts.is_empty(),
++            "ordinary fetch text never enters PageText"
++        );
+
+         let traces = vec![BrowsingTrace::from_events(
+             "p",
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:1568:
+             .unwrap();
+         assert!(body_hits.is_empty(), "body-only terms are not searchable");
+
+-        let title_hits = index.search(
+-            "Notes",
+-            5,
+-            RecallConfig::default().with_frecency_weight(0.0),
+-        ).unwrap();
++        let title_hits = index
++            .search(
++                "Notes",
++                5,
++                RecallConfig::default().with_frecency_weight(0.0),
++            )
++            .unwrap();
+         assert_eq!(title_hits.len(), 1, "title recall remains available");
+         assert_eq!(title_hits[0].url, url, "address remains attached to recall");
+-        let address_hits = index.search(
+-            "field",
+-            5,
+-            RecallConfig::default().with_frecency_weight(0.0),
+-        ).unwrap();
++        let address_hits = index
++            .search(
++                "field",
++                5,
++                RecallConfig::default().with_frecency_weight(0.0),
++            )
++            .unwrap();
+         assert_eq!(address_hits.len(), 1, "address recall remains available");
+         assert_eq!(address_hits[0].url, url);
+     }
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:2019:
+             "https://retained.test/note",
+             "nebula amberstone",
+             1,
+-        )).unwrap();
+-        let (handle, _updates) =
+-            spawn_trail_for_session(std::sync::Arc::new(|| {}), Some(dir), Default::default(), uuid::Uuid::nil());
++        ))
++        .unwrap();
++        let (handle, _updates) = spawn_trail_for_session(
++            std::sync::Arc::new(|| {}),
++            Some(dir),
++            Default::default(),
++            uuid::Uuid::nil(),
++        );
+         let owner = TrailInferenceOwner(std::sync::Arc::new(handle));
+         let namespace = format!("turnstone/{session}");
+         let old = owner.snapshot(&namespace).unwrap().remove(0);
+Diff in /Users/markik/Code/output/turnstone-r4-trail-memory-before.rs:2053:
+ mod source_capture_receipts;
+
+ fn emit_capture_recovery(
+-    state: &mut Option<(FjallStore, BrowsingMemory)>, directory: &Path, capture_generation: uuid::Uuid, out: &Emitter<Update>,
++    state: &mut Option<(FjallStore, BrowsingMemory)>,
++    directory: &Path,
++    capture_generation: uuid::Uuid,
++    out: &Emitter<Update>,
+ ) {
+-    let Some((store, _)) = state.as_mut() else { return; };
++    let Some((store, _)) = state.as_mut() else {
++        return;
++    };
+     match source_capture_receipts::recover_receipts(store) {
+-        Ok(receipts) => for receipt in receipts {
+-            // Directory admission comes from the live actor, not saved JSON.
+-            let owner = directory.parent().and_then(Path::file_name).and_then(|name| name.to_str());
+-            if owner != Some(receipt.request.session.as_uuid().to_string().as_str()) {
+-                out.emit(Update::SourceCaptureRecoveryFailed { capture_generation, error: "capture receipt owner does not match the admitted session store".into() });
+-                continue;
+-            }
+-            if receipt.saved {
+-                if let Err(error) = source_capture_receipts::verify_receipt(store, &receipt) {
+-                    let id = receipt.request.id;
+-                    out.emit(Update::SourceCaptureRecovered { capture_generation, request: receipt.request, stored: receipt.stored });
+-                    out.emit(Update::SourceCaptureRecoveryFailed { capture_generation, error: format!("capture request {id} verification failed: {error}") });
+-                } else if let Some(stored) = receipt.stored {
+-                    out.emit(Update::SourceCaptureRevalidated { capture_generation, request: receipt.request, stored });
++        Ok(receipts) => {
++            for receipt in receipts {
++                // Directory admission comes from the live actor, not saved JSON.
++                let owner = directory
++                    .parent()
++                    .and_then(Path::file_name)
++                    .and_then(|name| name.to_str());
++                if owner != Some(receipt.request.session.as_uuid().to_string().as_str()) {
++                    out.emit(Update::SourceCaptureRecoveryFailed {
++                        capture_generation,
++                        error: "capture receipt owner does not match the admitted session store"
++                            .into(),
++                    });
++                    continue;
++                }
++                if receipt.saved {
++                    if let Err(error) = source_capture_receipts::verify_receipt(store, &receipt) {
++                        let id = receipt.request.id;
++                        out.emit(Update::SourceCaptureRecovered {
++                            capture_generation,
++                            request: receipt.request,
++                            stored: receipt.stored,
++                        });
++                        out.emit(Update::SourceCaptureRecoveryFailed {
++                            capture_generation,
++                            error: format!("capture request {id} verification failed: {error}"),
++                        });
++                    } else if let Some(stored) = receipt.stored {
++                        out.emit(Update::SourceCaptureRevalidated {
++                            capture_generation,
++                            request: receipt.request,
++                            stored,
++                        });
++                    } else {
++                        out.emit(Update::SourceCaptureRecoveryFailed {
++                            capture_generation,
++                            error: "saved capture receipt has no artifacts".into(),
++                        });
++                    }
+                 } else {
+-                    out.emit(Update::SourceCaptureRecoveryFailed { capture_generation, error: "saved capture receipt has no artifacts".into() });
++                    out.emit(Update::SourceCaptureRecovered {
++                        capture_generation,
++                        request: receipt.request,
++                        stored: receipt.stored,
++                    });
+                 }
+-            } else {
+-                out.emit(Update::SourceCaptureRecovered { capture_generation, request: receipt.request, stored: receipt.stored });
+             }
+-        },
+-        Err(error) => out.emit(Update::SourceCaptureRecoveryFailed { capture_generation, error }),
++        }
++        Err(error) => out.emit(Update::SourceCaptureRecoveryFailed {
++            capture_generation,
++            error,
++        }),
+     }
+ }

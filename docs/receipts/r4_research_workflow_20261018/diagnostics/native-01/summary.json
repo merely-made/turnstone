@@ -1,0 +1,61 @@
+{
+  "status": "diagnostic, not final qualification",
+  "raw_output": "/Users/markik/Code/output/turnstone-r4-native-01",
+  "both_headed_app_processes_passed": true,
+  "clean_resident_shutdowns": true,
+  "resident_test_exit": 101,
+  "failure": "Final equality compared backend enumeration order across independent OS processes. Exact evidence is identical by stable run ID.",
+  "exact_evidence_equal_by_run": true,
+  "original_run_orders": [
+    [
+      "turnstone/623ec276-86fe-452e-802f-094ce5e8577b/research/v1/5a756925-31f1-49aa-9774-0e3a0a93ecc4",
+      "turnstone/623ec276-86fe-452e-802f-094ce5e8577b/research/v1/42547a7b-871d-4347-8a3d-1699153e2433"
+    ],
+    [
+      "turnstone/623ec276-86fe-452e-802f-094ce5e8577b/research/v1/42547a7b-871d-4347-8a3d-1699153e2433",
+      "turnstone/623ec276-86fe-452e-802f-094ce5e8577b/research/v1/5a756925-31f1-49aa-9774-0e3a0a93ecc4"
+    ]
+  ],
+  "repairs": [
+    "Canonical outer evidence ordering by immutable run ID; every field and inner supplied-passage order still compared exactly.",
+    "New Answers panes receive pane focus, removing leftover source chrome; a repeat on final source is required."
+  ],
+  "external_evidence": [
+    {
+      "path": "/Users/markik/Code/output/turnstone-r4-native-01/seed/native.log",
+      "sha256": "c78019406e37acfb9b980adfdcc07615cfa9edad003ce12a02f1fd5e7a798f35"
+    },
+    {
+      "path": "/Users/markik/Code/output/turnstone-r4-native-01/reopen/native.log",
+      "sha256": "268e8d35e0cc91c041520e9fde4afaf7b439051204a4436a6980f5b13f3b5bd6"
+    },
+    {
+      "path": "/Users/markik/Code/output/turnstone-r4-native-01/resident-0.log",
+      "sha256": "cf2893cf3994e7f99a4037048b66b42a599a5181f925c4ece8e80198a0912882"
+    },
+    {
+      "path": "/Users/markik/Code/output/turnstone-r4-native-01/resident-1.log",
+      "sha256": "64822c170f7cc7db729442a6ecbc5abf087775d29790754345da48ab91cab37a"
+    },
+    {
+      "path": "/Users/markik/Code/output/turnstone-r4-native-01/resident/resident-receipt.json",
+      "sha256": "ae340c97ce9ce6a4e1a6abdd550bb40d1b5c9b4666a15c3900e0b14ebf2672e5"
+    },
+    {
+      "path": "/Users/markik/Code/output/turnstone-r4-native-01/resident/snapshot-0.json",
+      "sha256": "74b83bd9c25c2c5f3323b6f72ed294b43cfb02f87bd1c3a847664d70d3aa1353"
+    },
+    {
+      "path": "/Users/markik/Code/output/turnstone-r4-native-01/resident/snapshot-1.json",
+      "sha256": "b32fa56661ca7755eda527ab42b793598e43f9edfb630ae1940055b1f3f48db9"
+    },
+    {
+      "path": "/Users/markik/Code/output/turnstone-r4-native-01/seed-store-inspection.json",
+      "sha256": "967a564e32d5857dbc4e7ebf1893f563815dc96b45aabff766a59b326a01495e"
+    },
+    {
+      "path": "/Users/markik/Code/output/turnstone-r4-native-01/reopen-store-inspection.json",
+      "sha256": "967a564e32d5857dbc4e7ebf1893f563815dc96b45aabff766a59b326a01495e"
+    }
+  ]
+}

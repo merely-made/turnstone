@@ -1,0 +1,5 @@
+{
+  "result": "pass",
+  "origin_and_resident_exited_before_cold_app": true,
+  "distinct_resident_pids": true
+}

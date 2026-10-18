@@ -1,0 +1,20 @@
+{
+  "result": "pass",
+  "turnstone_base": "b34a03c60bc242bb53bcac1e6b734283095f1b92",
+  "lock_sha256": "03cc8291430d8fb6a9fd619d3213dfe89f1b4ebb499efd87d2eec72491f3efd6",
+  "manifest_unchanged": true,
+  "lock_unchanged": true,
+  "runtime": {
+    "mere": "e6250fd1c460dfbb3d6d2a076ec0fdf6748d35bb",
+    "genet": "4733c557e4c7e54f9e928116b8008671f69fe4bf",
+    "netrender": "c5efc94f876e93caba20807709189c5f9589492b"
+  },
+  "supplier_fixture": {
+    "published_commit": "dd9d5c523c092baf72be31cdbc1d28c4ae179fa0",
+    "published_parent": "f38de787247e5f82ea40a8a1b6cb47d991bec033",
+    "compiled_runtime_base": "e6250fd1c460dfbb3d6d2a076ec0fdf6748d35bb",
+    "scope": "Existing ignored headed inference test and its documentation/receipt only. Rebased on fetched Mere main; compiled test hash unchanged. Runtime pins deliberately retain the frozen qualified stack.",
+    "test_sha256": "6d1abc305fda289cce1680cda40f9a70ab8a3e13c47dec41bd3b52480e5f29df"
+  },
+  "new_dependencies": false
+}

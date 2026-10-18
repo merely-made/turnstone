@@ -1,0 +1,62 @@
+{
+  "status": "mapped; final execution results are in qualification.json",
+  "software_controls": {
+    "failed_deposit": [
+      "trail_memory::source_capture_tests::deposit_failure_at_each_real_write_reopens_preserves_and_retries"
+    ],
+    "failed_attachment_save_retry_reopen": [
+      "app::source_capture_persistence_tests::required_file_write_failure_is_attributable_and_retry_preserves_previous_evidence",
+      "app::source_capture_persistence_tests::real_fjall_capture_failure_retry_and_reopen_cross_abrupt_process_exits"
+    ],
+    "empty_scope_and_no_corpus_fallback": [
+      "research::tests::scope_is_nonempty_exact_and_never_falls_back_to_the_corpus"
+    ],
+    "encoded_publication_limit_identity_and_hash": [
+      "inference_service::tests::publication_bounds_encoded_bytes_and_rejects_owner_hash_and_legacy_substitution"
+    ],
+    "missing_and_corrupt_fleece_no_fetch": [
+      "trail_memory::saved_sources::tests::exact_live_admissions_reopen_offline_and_reject_wrong_or_missing_ids",
+      "trail_memory::saved_sources::tests::corrupt_typed_annotation_becomes_unavailable_without_origin_fallback"
+    ],
+    "invalid_unicode_range": [
+      "trail_memory::saved_sources::tests::canonical_text_hash_and_unicode_scalar_range_are_enforced",
+      "inference_service::tests::a_selector_beyond_the_source_is_refused_even_when_it_would_copy_the_same_text"
+    ],
+    "wrong_owner_and_generation": [
+      "trail_memory::saved_sources::tests::actor_load_and_read_require_current_owner_generation_and_exact_store",
+      "inference_service::tests::admitted_research_route_refuses_wrong_owner"
+    ],
+    "stale_selection_control": [
+      "app::contributed_pane_arms::research_view_tests::chosen_capture_intent_persists_in_the_pane_and_stale_controls_cannot_edit_it"
+    ],
+    "session_switch_late_completion": [
+      "app::source_capture_persistence_tests::queued_capture_updates_from_a_prior_opening_cannot_requalify_a_warm_reopened_session",
+      "app::source_capture_persistence_tests::stale_target_or_wrong_session_never_attaches_or_acknowledges_saved"
+    ],
+    "withdrawal_and_wrong_text": [
+      "app::r2_saved_source_tests::exact_read_is_local_and_detaching_reference_withdraws_the_retained_reader",
+      "inference_service::tests::withdrawn_citations_and_wrong_source_text_cannot_open",
+      "app::contributed_pane_arms::research_view_tests::detached_choices_can_be_removed_incrementally_but_cannot_be_reintroduced"
+    ],
+    "live_replacement_never_substitutes_old_capture": [
+      "app::source_capture_persistence_tests::replaced_response_at_same_address_cannot_complete_an_earlier_request",
+      "app::source_capture_persistence_tests::disappeared_live_response_is_refused_but_verified_recovered_receipt_can_retry_offline"
+    ],
+    "pane_reentry_and_visible_destination": [
+      "app::contributed_pane_arms::research_view_tests::reopening_answers_reuses_the_saved_view_and_reveals_it_from_a_maximized_reader",
+      "app::pane_arms::tests::summoning_a_tool_reveals_it_from_a_maximized_reader_without_growing_on_reentry",
+      "app::r2_saved_source_tests::opening_saved_source_from_answers_reveals_and_focuses_the_graph_reader"
+    ]
+  },
+  "headed_controls": [
+    "empty selection",
+    "oversize publication with full saved reader still available",
+    "foreign-session isolation",
+    "A2 revision leaves exact A1 citation intact",
+    "B-only scope excludes A1/A2/X/foreign from its prompt",
+    "source reading before both resident startups"
+  ],
+  "actual_admitted_route": "wrong-owner publication and ask are refused by the live resident probe",
+  "independent_store_probe": "trail_memory::research_owner_tests::independently_inspect_exited_research_profile",
+  "limit": "Store faults, invalid ranges and stale queued completions are component/process controls on current source, not simulated headed UI successes."
+}

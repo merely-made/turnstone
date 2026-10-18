@@ -1,0 +1,100 @@
+{
+  "nodes": [
+    {
+      "node_id": "ff4c48b7-4c83-4198-b682-3018038bf80f",
+      "address": {
+        "Http": "http://127.0.0.1:64648/Huge"
+      },
+      "url": "http://127.0.0.1:64648/Huge",
+      "cached_host": null,
+      "title": "Oversize source",
+      "tags": [],
+      "tag_presentation": {
+        "ordered_tags": [],
+        "icon_overrides": {}
+      },
+      "import_provenance": [],
+      "is_pinned": false,
+      "session_state": {
+        "scroll_x": null,
+        "scroll_y": null,
+        "form_draft": null,
+        "last_visited_ms": null
+      },
+      "mime_hint": "text/html",
+      "classifications": [],
+      "frame_layout_hints": [],
+      "frame_split_offer_suppressed": false,
+      "properties": [],
+      "derivations": [],
+      "body": null,
+      "last_session_visited": 0,
+      "nested": null
+    }
+  ],
+  "edges": [],
+  "import_records": [],
+  "timestamp_secs": 1792305680,
+  "fields": [],
+  "couplings": [],
+  "navigation": {
+    "snapshot": {
+      "entries": [
+        {
+          "key": "http://127.0.0.1:64648/Huge",
+          "payload": "http://127.0.0.1:64648/Huge",
+          "first_seen_at_ms": 1792305672029,
+          "last_seen_at_ms": 1792305672029,
+          "visit_count": 1,
+          "privacy": "LocalOnly"
+        }
+      ],
+      "visits": [
+        {
+          "entry": 0,
+          "parent": null,
+          "children": [],
+          "created_at_ms": 1792305672029,
+          "context": null,
+          "inbound": null,
+          "bindings": [
+            {
+              "owner": 0,
+              "forward_child": null,
+              "last_accessed_at_ms": 1792305672029
+            }
+          ]
+        }
+      ],
+      "owners": [
+        {
+          "identity": {
+            "Node": "ff4c48b7-4c83-4198-b682-3018038bf80f"
+          },
+          "origin": 0,
+          "current": 0,
+          "creator": null,
+          "pending_origin_parent": null,
+          "owned_visits": [
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "resources": [
+    {
+      "canonical_iri": "http://127.0.0.1:64648/Huge",
+      "facets": []
+    }
+  ],
+  "resource_edges": [],
+  "shown_resources": [
+    {
+      "surface_id": "ff4c48b7-4c83-4198-b682-3018038bf80f",
+      "resource_id": "aadc24c4-11ad-5ebd-a2f5-75a6fc1ca6eb"
+    }
+  ],
+  "assertion_schema": 1,
+  "placement": "recorded-strata-v1"
+}

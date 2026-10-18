@@ -1,0 +1,345 @@
+{
+  "admissions": [
+    {
+      "error": null,
+      "key": {
+        "annotation_manifest": "blake3:1a1da810f370313ed8a8186a95a9a951ae6ef3696f96458e7b3ac619e99e306a",
+        "graph": "e1821c6f-8904-466a-b5f0-4ff879465a68",
+        "node": "249a9a00-6797-4a56-b40a-477e2de90427",
+        "session": "0953c81b-fa50-4b77-a7a3-db97e723cc33"
+      },
+      "occurrence": 0,
+      "title": "Source B",
+      "url": "http://127.0.0.1:64648/B"
+    },
+    {
+      "error": null,
+      "key": {
+        "annotation_manifest": "blake3:383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29",
+        "graph": "e1821c6f-8904-466a-b5f0-4ff879465a68",
+        "node": "bb627dde-56b4-4586-84c8-258e94e8552a",
+        "session": "0953c81b-fa50-4b77-a7a3-db97e723cc33"
+      },
+      "occurrence": 0,
+      "title": "Source A",
+      "url": "http://127.0.0.1:64648/A"
+    }
+  ],
+  "entries": [
+    {
+      "admission": {
+        "error": null,
+        "key": {
+          "annotation_manifest": "blake3:1a1da810f370313ed8a8186a95a9a951ae6ef3696f96458e7b3ac619e99e306a",
+          "graph": "e1821c6f-8904-466a-b5f0-4ff879465a68",
+          "node": "249a9a00-6797-4a56-b40a-477e2de90427",
+          "session": "0953c81b-fa50-4b77-a7a3-db97e723cc33"
+        },
+        "occurrence": 0,
+        "title": "Source B",
+        "url": "http://127.0.0.1:64648/B"
+      },
+      "content": {
+        "captured_at_ms": 1792305636492,
+        "origin": "http://127.0.0.1:64648/B",
+        "raw_manifest": "blake3:5a39b17dd36643890b08247318b48f0852bf9cd25d53de7d52ae5e6059abd53e",
+        "text": "amber harbor main-session sentinel",
+        "text_hash": "blake3:7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+        "title": "Source B"
+      },
+      "error": null
+    },
+    {
+      "admission": {
+        "error": null,
+        "key": {
+          "annotation_manifest": "blake3:383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29",
+          "graph": "e1821c6f-8904-466a-b5f0-4ff879465a68",
+          "node": "bb627dde-56b4-4586-84c8-258e94e8552a",
+          "session": "0953c81b-fa50-4b77-a7a3-db97e723cc33"
+        },
+        "occurrence": 0,
+        "title": "Source A",
+        "url": "http://127.0.0.1:64648/A"
+      },
+      "content": {
+        "captured_at_ms": 1792305627064,
+        "origin": "http://127.0.0.1:64648/A",
+        "raw_manifest": "blake3:00d30c18b7000c55584bf9dc589c1b031a28a26ce9114b29bb6ba74a1f3ae3ee",
+        "text": "The Pelican observatory's access word is café.",
+        "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+        "title": "Source A"
+      },
+      "error": null
+    }
+  ],
+  "generation": "75bb12d4-d0f3-4052-9d47-223dd55cf50f",
+  "readers": [
+    {
+      "content": {
+        "captured_at_ms": 1792305627064,
+        "origin": "http://127.0.0.1:64648/A",
+        "raw_manifest": "blake3:00d30c18b7000c55584bf9dc589c1b031a28a26ce9114b29bb6ba74a1f3ae3ee",
+        "text": "The Pelican observatory's access word is café.",
+        "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+        "title": "Source A"
+      },
+      "engine": "turnstone.saved-source",
+      "error": null,
+      "node": "37c9e499-4af2-4aec-aff0-97702bd0ee76",
+      "phase": "Ready",
+      "rendered_document": {
+        "address": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=0&end=46",
+        "blocks": [
+          {
+            "Heading": {
+              "level": 1,
+              "spans": [
+                {
+                  "Text": "Source A"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved from http://127.0.0.1:64648/A"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Captured 2026-10-18T06:40:27Z"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved version: 383fd0ea6e34"
+                }
+              ]
+            }
+          },
+          {
+            "Quote": {
+              "blocks": [
+                {
+                  "Paragraph": {
+                    "spans": [
+                      {
+                        "Strong": [
+                          {
+                            "Text": "The Pelican observatory's access word is café."
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "The Pelican observatory's access word is café."
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Link": {
+                    "predicate": null,
+                    "spans": [
+                      {
+                        "Text": "Open original address"
+                      }
+                    ],
+                    "title": "Open original address",
+                    "url": "http://127.0.0.1:64648/A"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "content_type": "text/plain; profile=saved-source",
+        "diagnostics": [],
+        "lang": null,
+        "navigation": {
+          "anchors": [],
+          "block_count": 0,
+          "folds": []
+        },
+        "provenance": {
+          "canonical_uri": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=0&end=46",
+          "fetched_at": null,
+          "source_kind": "turnstone.saved-source",
+          "source_label": "http://127.0.0.1:64648/A"
+        },
+        "title": "Source A",
+        "trust": "Unknown"
+      },
+      "target": {
+        "key": {
+          "annotation_manifest": "blake3:383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29",
+          "graph": "e1821c6f-8904-466a-b5f0-4ff879465a68",
+          "node": "bb627dde-56b4-4586-84c8-258e94e8552a",
+          "session": "0953c81b-fa50-4b77-a7a3-db97e723cc33"
+        },
+        "selector": {
+          "end": 46,
+          "start": 0
+        },
+        "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275"
+      },
+      "url": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=0&end=46"
+    },
+    {
+      "content": {
+        "captured_at_ms": 1792305627064,
+        "origin": "http://127.0.0.1:64648/A",
+        "raw_manifest": "blake3:00d30c18b7000c55584bf9dc589c1b031a28a26ce9114b29bb6ba74a1f3ae3ee",
+        "text": "The Pelican observatory's access word is café.",
+        "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+        "title": "Source A"
+      },
+      "engine": "turnstone.saved-source",
+      "error": null,
+      "node": "465485eb-effd-4d07-835b-b49225dfd78e",
+      "phase": "Ready",
+      "rendered_document": {
+        "address": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=41&end=45",
+        "blocks": [
+          {
+            "Heading": {
+              "level": 1,
+              "spans": [
+                {
+                  "Text": "Source A"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved from http://127.0.0.1:64648/A"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Captured 2026-10-18T06:40:27Z"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved version: 383fd0ea6e34"
+                }
+              ]
+            }
+          },
+          {
+            "Quote": {
+              "blocks": [
+                {
+                  "Paragraph": {
+                    "spans": [
+                      {
+                        "Strong": [
+                          {
+                            "Text": "café"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "The Pelican observatory's access word is café."
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Link": {
+                    "predicate": null,
+                    "spans": [
+                      {
+                        "Text": "Open original address"
+                      }
+                    ],
+                    "title": "Open original address",
+                    "url": "http://127.0.0.1:64648/A"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "content_type": "text/plain; profile=saved-source",
+        "diagnostics": [],
+        "lang": null,
+        "navigation": {
+          "anchors": [],
+          "block_count": 0,
+          "folds": []
+        },
+        "provenance": {
+          "canonical_uri": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=41&end=45",
+          "fetched_at": null,
+          "source_kind": "turnstone.saved-source",
+          "source_label": "http://127.0.0.1:64648/A"
+        },
+        "title": "Source A",
+        "trust": "Unknown"
+      },
+      "target": {
+        "key": {
+          "annotation_manifest": "blake3:383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29",
+          "graph": "e1821c6f-8904-466a-b5f0-4ff879465a68",
+          "node": "bb627dde-56b4-4586-84c8-258e94e8552a",
+          "session": "0953c81b-fa50-4b77-a7a3-db97e723cc33"
+        },
+        "selector": {
+          "end": 45,
+          "start": 41
+        },
+        "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275"
+      },
+      "url": "mere://saved-source/0953c81b-fa50-4b77-a7a3-db97e723cc33/e1821c6f-8904-466a-b5f0-4ff879465a68/bb627dde-56b4-4586-84c8-258e94e8552a/383fd0ea6e347dfa7c5372833d8e578ac69ef55a31cb6ca0b1284fac4fcfdb29/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=41&end=45"
+    }
+  ],
+  "session": "0953c81b-fa50-4b77-a7a3-db97e723cc33",
+  "status": "Ready"
+}

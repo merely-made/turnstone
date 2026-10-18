@@ -1,0 +1,29 @@
+RESULT ok
+captured 01_A1_saved
+captured 02_B_saved
+captured 03_foreign_session_source
+captured 04_A1_search_read_no_origin_no_resident
+captured 05_answers_require_resident
+captured 06_empty_scope_refused
+captured 07_explicit_A1_B_scope
+captured 08_paused_answer
+captured 09_scoped_answer_origin_gone
+captured 10_exact_A1_citation
+captured 12_B_scope_old_A1_answer
+captured 13_cancelled_B_only_ask
+captured 14_old_A1_after_A2_and_scope_change
+R4 ordinary research task saved; origin stopped; app exits before resident exits
+presentation frames=1723 captures=13 blank=0
+capture /Users/markik/Code/output/turnstone-r4-native-03/seed/01_A1_saved.png digest=8c990569e0b0e12a blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/seed/02_B_saved.png digest=7815acdb578dd91f blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/seed/03_foreign_session_source.png digest=343693eef762e35f blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/seed/04_A1_search_read_no_origin_no_resident.png digest=5192c35e42836f83 blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/seed/05_answers_require_resident.png digest=bac068ebf9a40aa4 blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/seed/06_empty_scope_refused.png digest=1e79a5a64b3a3392 blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/seed/07_explicit_A1_B_scope.png digest=11a0a5fca4b11bcb blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/seed/08_paused_answer.png digest=f4cf662e4c238dc1 blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/seed/09_scoped_answer_origin_gone.png digest=84fee38e1bc95cc9 blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/seed/10_exact_A1_citation.png digest=b0881f693514bebb blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/seed/12_B_scope_old_A1_answer.png digest=ca66b5b239427de8 blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/seed/13_cancelled_B_only_ask.png digest=897a88244ec43eed blank=false
+capture /Users/markik/Code/output/turnstone-r4-native-03/seed/14_old_A1_after_A2_and_scope_change.png digest=b0881f693514bebb blank=false

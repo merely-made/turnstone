@@ -1,0 +1,7 @@
+{
+  "result": "complete native task passed before final withdrawal-edit repair",
+  "final_source_gate": "../../native/",
+  "raw_path": "/Users/markik/Code/output/turnstone-r4-native-02",
+  "source_hashes": "inputs.json",
+  "boundary": "Passed evidence is preserved without attributing it to the later guard repair."
+}

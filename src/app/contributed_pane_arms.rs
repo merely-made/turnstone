@@ -89,7 +89,7 @@ impl App {
         }
         frame.descriptors.insert(pane.0, descriptor);
         self.next_pane_id += 1;
-        self.active_pane = Some(pane);
+        self.reveal_pane(pane);
         self.index_pane_spaces();
         vec![Effect::SaveSession, Effect::Redraw]
     }
@@ -209,6 +209,59 @@ mod tests {
 }
 
 impl App {
+    pub(super) fn open_answers(&mut self) -> Vec<Effect> {
+        // Re-enter the existing research view, retaining its exact choices.
+        // Explicit generic pane creation still supports separate question views.
+        let mut existing = Vec::new();
+        for layout in std::iter::once(&self.frisket).chain(self.lenses.iter().flatten()) {
+            let Ok(frame) = layout.outer_workspace() else {
+                continue;
+            };
+            for (pane, content, _) in layout.iter_leaves() {
+                if content.kind_id().as_str() != crate::inference_surface::PANE_KIND {
+                    continue;
+                }
+                let Some(value) = frame.descriptors.get(&pane.0) else {
+                    continue;
+                };
+                let Ok(spec) = serde_json::from_value::<PaneSpec>(value.clone()) else {
+                    continue;
+                };
+                let PaneSource::Fixed(crate::panes::SourceRef::External { schema, payload }) =
+                    spec.source
+                else {
+                    continue;
+                };
+                if schema.as_str() == crate::inference_surface::SOURCE_SCHEMA
+                    && payload.version == 2
+                    && serde_json::from_value::<crate::inference_surface::AnswerSourceV2>(
+                        payload.payload,
+                    )
+                    .is_ok_and(|source| source.session == self.session_id.0)
+                {
+                    existing.push(pane);
+                }
+            }
+        }
+        if let Some(pane) = self
+            .active_pane
+            .filter(|pane| existing.contains(pane))
+            .or_else(|| existing.first().copied())
+        {
+            self.reveal_pane(pane);
+            self.focus = crate::surface::FocusTarget::Pane(pane);
+            return vec![Effect::Redraw];
+        }
+        let pane = PaneId(self.next_pane_id);
+        let effects = self.summon_contributed_pane(
+            PaneKindId::new(crate::inference_surface::PANE_KIND),
+            crate::inference_surface::answer_source(self.session_id.0),
+        );
+        if self.active_pane == Some(pane) {
+            self.focus = crate::surface::FocusTarget::Pane(pane);
+        }
+        effects
+    }
     pub(crate) fn sync_research_context(&self) {
         self.research.project(crate::research::Context {
             session: self.session_id,
@@ -224,9 +277,13 @@ impl App {
     ) -> Vec<Effect> {
         if generation != self.source_capture_generation
             || expected.session != *self.session_id.as_uuid()
-            || chosen
-                .iter()
-                .any(|target| target.selector.is_some() || !self.saved_source_admitted(&target.key))
+            || chosen.iter().any(|target| {
+                // Existing stale choices may remain while the person removes
+                // them. Only additions need current admission; every ask still
+                // validates the entire selected scope against exact content.
+                !expected.chosen.contains(target)
+                    && (target.selector.is_some() || !self.saved_source_admitted(&target.key))
+            })
         {
             return self.saved_source_refusal(
                 "The answer selection belongs to a stale view or unavailable saved source.".into(),
@@ -275,6 +332,102 @@ mod research_view_tests {
         assert_eq!(payload.version, 2);
         serde_json::from_value(payload.payload).unwrap()
     }
+    #[test]
+    fn reopening_answers_reuses_the_saved_view_and_reveals_it_from_a_maximized_reader() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAnswers);
+        let answers = app.active_pane.unwrap();
+        assert_eq!(app.focus, crate::surface::FocusTarget::Pane(answers));
+        let original = source(&app, answers);
+        let count = app.frisket.iter_leaves().count();
+        let graph = app.default_graph_pane();
+        app.active_pane = Some(graph);
+        app.focus = crate::surface::FocusTarget::Graph(graph);
+        app.maximized = Some(graph);
+        assert_eq!(app.update(Action::OpenAnswers), vec![Effect::Redraw]);
+        assert_eq!(app.active_pane, Some(answers));
+        assert_eq!(app.focus, crate::surface::FocusTarget::Pane(answers));
+        assert_eq!(app.maximized, Some(answers));
+        assert_eq!(source(&app, answers), original);
+        assert_eq!(app.frisket.iter_leaves().count(), count);
+        // The same lookup works after ordinary frame serialization/reopening.
+        app.frisket = serde_json::from_slice(&serde_json::to_vec(&app.frisket).unwrap()).unwrap();
+        app.active_pane = Some(graph);
+        app.update(Action::OpenAnswers);
+        assert_eq!(app.active_pane, Some(answers));
+        assert_eq!(source(&app, answers), original);
+        assert_eq!(app.frisket.iter_leaves().count(), count);
+    }
+
+    #[test]
+    fn detached_choices_can_be_removed_incrementally_but_cannot_be_reintroduced() {
+        let mut app = App::test_stub();
+        for name in ["A", "B"] {
+            let key = app
+                .graph_runtimes
+                .visit(&format!("https://gone.test/{name}"));
+            let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
+            crate::source_capture::append_reference(
+                app.graph_runtimes.facets_mut(),
+                node,
+                eidetic::ManifestId::of_blob(name.as_bytes()).to_string(),
+            )
+            .unwrap();
+        }
+        let chosen: Vec<_> = app
+            .saved_source_admissions()
+            .into_iter()
+            .map(|admission| crate::saved_sources::Target {
+                key: admission.key,
+                text_hash: eidetic::Hash::of(b"saved text").to_string(),
+                selector: None,
+            })
+            .collect();
+        assert_eq!(chosen.len(), 2);
+        app.update(Action::OpenAnswers);
+        let pane = app.active_pane.unwrap();
+        let generation = app.source_capture_generation;
+        let select = |expected, chosen| Action::SetAnswerSelection {
+            generation,
+            expected,
+            chosen,
+        };
+        app.update(select(source(&app, pane), chosen.clone()));
+        let both = source(&app, pane);
+        for target in &chosen {
+            app.graph_runtimes.facets_mut().remove(
+                &target.key.node,
+                &chartulary::FacetId::new(crate::source_capture::SOURCE_CAPTURE_REFERENCES_FACET),
+            );
+        }
+        assert!(app.saved_source_admissions().is_empty());
+        let effects = app.update(select(both.clone(), vec![chosen[1].clone()]));
+        assert!(
+            effects
+                .iter()
+                .any(|effect| matches!(effect, Effect::SaveSession))
+        );
+        let remaining = source(&app, pane);
+        assert_eq!(remaining.chosen, vec![chosen[1].clone()]);
+        assert!(
+            crate::research::scope(
+                &crate::research::namespace(app.session_id),
+                &remaining.chosen,
+                &[]
+            )
+            .is_err(),
+            "editing stale choices never admits their bytes for an ask"
+        );
+        // An old control cannot erase a newer view, and retaining a stale ID
+        // does not grant authority to add a detached ID back into the view.
+        app.update(select(both, vec![]));
+        assert_eq!(source(&app, pane), remaining);
+        app.update(select(remaining.clone(), chosen));
+        assert_eq!(source(&app, pane), remaining);
+        app.update(select(remaining, vec![]));
+        assert!(source(&app, pane).chosen.is_empty());
+    }
+
     #[test]
     fn chosen_capture_intent_persists_in_the_pane_and_stale_controls_cannot_edit_it() {
         let mut app = App::test_stub();

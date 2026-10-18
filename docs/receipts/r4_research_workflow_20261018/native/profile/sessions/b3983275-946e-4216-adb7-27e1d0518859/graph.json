@@ -1,0 +1,100 @@
+{
+  "nodes": [
+    {
+      "node_id": "caa7be0a-546f-4cf7-bc35-c3bb05f19edf",
+      "address": {
+        "Http": "http://127.0.0.1:64648/Foreign"
+      },
+      "url": "http://127.0.0.1:64648/Foreign",
+      "cached_host": null,
+      "title": "Foreign Source",
+      "tags": [],
+      "tag_presentation": {
+        "ordered_tags": [],
+        "icon_overrides": {}
+      },
+      "import_provenance": [],
+      "is_pinned": false,
+      "session_state": {
+        "scroll_x": null,
+        "scroll_y": null,
+        "form_draft": null,
+        "last_visited_ms": null
+      },
+      "mime_hint": "text/html",
+      "classifications": [],
+      "frame_layout_hints": [],
+      "frame_split_offer_suppressed": false,
+      "properties": [],
+      "derivations": [],
+      "body": null,
+      "last_session_visited": 0,
+      "nested": null
+    }
+  ],
+  "edges": [],
+  "import_records": [],
+  "timestamp_secs": 1792305669,
+  "fields": [],
+  "couplings": [],
+  "navigation": {
+    "snapshot": {
+      "entries": [
+        {
+          "key": "http://127.0.0.1:64648/Foreign",
+          "payload": "http://127.0.0.1:64648/Foreign",
+          "first_seen_at_ms": 1792305658126,
+          "last_seen_at_ms": 1792305658126,
+          "visit_count": 1,
+          "privacy": "LocalOnly"
+        }
+      ],
+      "visits": [
+        {
+          "entry": 0,
+          "parent": null,
+          "children": [],
+          "created_at_ms": 1792305658126,
+          "context": null,
+          "inbound": null,
+          "bindings": [
+            {
+              "owner": 0,
+              "forward_child": null,
+              "last_accessed_at_ms": 1792305658126
+            }
+          ]
+        }
+      ],
+      "owners": [
+        {
+          "identity": {
+            "Node": "caa7be0a-546f-4cf7-bc35-c3bb05f19edf"
+          },
+          "origin": 0,
+          "current": 0,
+          "creator": null,
+          "pending_origin_parent": null,
+          "owned_visits": [
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "resources": [
+    {
+      "canonical_iri": "http://127.0.0.1:64648/Foreign",
+      "facets": []
+    }
+  ],
+  "resource_edges": [],
+  "shown_resources": [
+    {
+      "surface_id": "caa7be0a-546f-4cf7-bc35-c3bb05f19edf",
+      "resource_id": "53d7504b-aef1-54c7-929f-7f5e06eb8360"
+    }
+  ],
+  "assertion_schema": 1,
+  "placement": "recorded-strata-v1"
+}

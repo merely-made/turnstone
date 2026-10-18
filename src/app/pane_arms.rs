@@ -20,6 +20,15 @@ use crate::panes::{
 use super::App;
 
 impl App {
+    /// Named navigation must reveal its destination, including from a maximized
+    /// reader. Focus still belongs to the destination's graph or pane surface.
+    pub(super) fn reveal_pane(&mut self, pane: PaneId) {
+        self.active_pane = Some(pane);
+        if self.maximized.is_some() {
+            self.maximized = Some(pane);
+        }
+    }
+
     pub(super) fn summon_pane(&mut self, kind: PaneKindId) -> Vec<Effect> {
         let Some(definition) = crate::panes::pane_definition(kind.as_str()) else {
             self.events.push(AppEvent::InteractionMissed {
@@ -70,7 +79,7 @@ impl App {
             })
             .flatten();
         if let Some(existing) = existing {
-            self.active_pane = Some(existing);
+            self.reveal_pane(existing);
             return vec![Effect::Redraw];
         }
         let graph_id = content
@@ -98,7 +107,7 @@ impl App {
         };
         if layout.summon_leaf(&anchor_path, InsertSide::Right, new_leaf) {
             self.next_pane_id += 1;
-            self.active_pane = Some(id);
+            self.reveal_pane(id);
             self.index_pane_spaces();
             self.events
                 .push(AppEvent::PaneSummoned(definition.display_name));
@@ -434,6 +443,23 @@ impl App {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn summoning_a_tool_reveals_it_from_a_maximized_reader_without_growing_on_reentry() {
+        let mut app = App::test_stub();
+        let graph = app.default_graph_pane();
+        app.maximized = Some(graph);
+        app.update(Action::SummonPane(PaneKindId::new(kind::INSPECTOR)));
+        let inspector = app.active_pane.unwrap();
+        assert_ne!(inspector, graph);
+        assert_eq!(app.maximized, Some(inspector));
+        let count = app.frisket.iter_leaves().count();
+        app.reveal_pane(graph);
+        app.update(Action::SummonPane(PaneKindId::new(kind::INSPECTOR)));
+        assert_eq!(app.active_pane, Some(inspector));
+        assert_eq!(app.maximized, Some(inspector));
+        assert_eq!(app.frisket.iter_leaves().count(), count);
+    }
 
     #[test]
     fn floating_pane_moves_through_live_primary_and_lens_projections() {

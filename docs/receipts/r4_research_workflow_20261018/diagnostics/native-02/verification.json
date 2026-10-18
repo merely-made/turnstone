@@ -1,0 +1,106 @@
+{
+  "result": "pass",
+  "workflow": "collect-find-inspect-ask-verify-return",
+  "fresh_app_processes": 2,
+  "fresh_resident_processes": 2,
+  "source_read_before_resident_start_and_restart": true,
+  "restored_reader_intent_ready_before_resident_restart": true,
+  "same_origin_address_restarted_only_for_A2": true,
+  "origin_gone_on_cold_reopen": true,
+  "new_page_text_bodies": 0,
+  "keep_and_exact_capture_refs_preserved": true,
+  "arrangement_and_single_answers_view_preserved": true,
+  "exact_scopes": [
+    [
+      "blake3:9ad2e695c65e642b2b8c215ffcc9187f7626b177307c40699e3d4b39c059ca39",
+      "blake3:c10f77002d8a5e00653e2a1282b68361d891a1b04363fc0d129abd5ac4968d29"
+    ],
+    [
+      "blake3:c10f77002d8a5e00653e2a1282b68361d891a1b04363fc0d129abd5ac4968d29"
+    ]
+  ],
+  "generation_runs": 2,
+  "exact_old_A1_after_A2_and_cold_reopen": true,
+  "citation_basis": "verbatim_passage",
+  "non_ascii_search": "café",
+  "full_quote": "The Pelican observatory's access word is café.",
+  "oversize_refusal_preserves_full_reader": true,
+  "pngs": [
+    {
+      "path": "seed/01_A1_saved.png",
+      "sha256": "14bd93db5d5a6782410c730fe8e2bee0c84cacf2ca0f77aaee003236577a6144"
+    },
+    {
+      "path": "seed/02_B_saved.png",
+      "sha256": "91d6c9cedb99427af908cfa1b6407abedd5e4ff90ffaed2f1df796df2e47f6cd"
+    },
+    {
+      "path": "seed/03_foreign_session_source.png",
+      "sha256": "0cfe40f1ddefeeb722816fa880d721e4645cc428b71ceae6ceb8fbfb98b68958"
+    },
+    {
+      "path": "seed/04_A1_search_read_no_origin_no_resident.png",
+      "sha256": "6cc816a41cf7ecf5cb11d653996b1965851ba7faaadffb29052cbe861f9deff1"
+    },
+    {
+      "path": "seed/05_answers_require_resident.png",
+      "sha256": "41d1b6b4e5fd860b89935cbf1184ac17dd082e1a971560e547d142731011712f"
+    },
+    {
+      "path": "seed/06_empty_scope_refused.png",
+      "sha256": "cc145a9c5d21f9079c8b0b5caf8d263ee0d87e396ff1ba4e439a30507eadf26e"
+    },
+    {
+      "path": "seed/07_explicit_A1_B_scope.png",
+      "sha256": "92a6a1003f5109e0062bf3170f715f06a7c6503307a0091ed959ebfff1cfd5f8"
+    },
+    {
+      "path": "seed/08_paused_answer.png",
+      "sha256": "e4973e877aa3698ea0f96d351ed7967eaeddcb26ecf8c64d328b9e0a08829f80"
+    },
+    {
+      "path": "seed/09_scoped_answer_origin_gone.png",
+      "sha256": "02bf9f910add9433f6497316f9112a90426db31e9846c8ec96e5245a2f68bd91"
+    },
+    {
+      "path": "seed/10_exact_A1_citation.png",
+      "sha256": "1acd7e69ef05fdf1dda0a927e8fd237c156402ca0ae11447accefe0ef1dd74cc"
+    },
+    {
+      "path": "seed/12_B_scope_old_A1_answer.png",
+      "sha256": "b0756031263fcc0a065bb526719fbaec48de67f8d8d04cfebf57733b3dbcdc5c"
+    },
+    {
+      "path": "seed/13_cancelled_B_only_ask.png",
+      "sha256": "3f13dfa2fe8c044a4bbf1efdbd577b5342f44b7466a0e1a144df7d021cf2b7d0"
+    },
+    {
+      "path": "seed/14_old_A1_after_A2_and_scope_change.png",
+      "sha256": "1acd7e69ef05fdf1dda0a927e8fd237c156402ca0ae11447accefe0ef1dd74cc"
+    },
+    {
+      "path": "reopen/15_cold_reader_before_resident_restart.png",
+      "sha256": "38a744a33e57eb29a8c67ce2e0d0b94c79a8bd9d954835547f6aba4122959434"
+    },
+    {
+      "path": "reopen/16_cold_scope_resident_absent.png",
+      "sha256": "4d4de82606a4933ca5231f6233fd2048bdabad0bc4bec49e69e2119471d32767"
+    },
+    {
+      "path": "reopen/17_cold_scope_and_history.png",
+      "sha256": "64267764ee734181fcff43eeb8f6e67eb82e0787d85a643318ac2807bb25c454"
+    },
+    {
+      "path": "reopen/18_cold_exact_A1_citation.png",
+      "sha256": "d8b0fd9eb13a294140472d085a4ec11cecc932c28b1de606ccd4acd5a6ae016e"
+    },
+    {
+      "path": "reopen/19_oversize_publication_refused.png",
+      "sha256": "858040b3fdbcd88fa1bc810472348e661b57c12b985e2678a1914942a999d2c6"
+    },
+    {
+      "path": "reopen/20_oversize_source_readable_offline.png",
+      "sha256": "24973f0506fd943dce3904c4c5c7704d9c64142567cc37dc9eb617e88932e51b"
+    }
+  ]
+}

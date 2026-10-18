@@ -1,0 +1,164 @@
+{
+  "result": "pass",
+  "source_inputs": "../source-inputs.json",
+  "test_binary_sha256": "0fd80df71ef36fb67f8ae8822cfa0391e27adf8e437e079f312a6234576888fd",
+  "controls": {
+    "failed_deposit": [
+      {
+        "test": "trail_memory::source_capture_tests::deposit_failure_at_each_real_write_reopens_preserves_and_retries",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      }
+    ],
+    "failed_attachment_save_retry_reopen": [
+      {
+        "test": "app::source_capture_persistence_tests::required_file_write_failure_is_attributable_and_retry_preserves_previous_evidence",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      },
+      {
+        "test": "app::source_capture_persistence_tests::real_fjall_capture_failure_retry_and_reopen_cross_abrupt_process_exits",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      }
+    ],
+    "empty_scope_and_no_corpus_fallback": [
+      {
+        "test": "research::tests::scope_is_nonempty_exact_and_never_falls_back_to_the_corpus",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      }
+    ],
+    "encoded_publication_limit_identity_and_hash": [
+      {
+        "test": "inference_service::tests::publication_bounds_encoded_bytes_and_rejects_owner_hash_and_legacy_substitution",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      }
+    ],
+    "missing_and_corrupt_fleece_no_fetch": [
+      {
+        "test": "trail_memory::saved_sources::tests::exact_live_admissions_reopen_offline_and_reject_wrong_or_missing_ids",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      },
+      {
+        "test": "trail_memory::saved_sources::tests::corrupt_typed_annotation_becomes_unavailable_without_origin_fallback",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      }
+    ],
+    "invalid_unicode_range": [
+      {
+        "test": "trail_memory::saved_sources::tests::canonical_text_hash_and_unicode_scalar_range_are_enforced",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      },
+      {
+        "test": "inference_service::tests::a_selector_beyond_the_source_is_refused_even_when_it_would_copy_the_same_text",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      }
+    ],
+    "wrong_owner_and_generation": [
+      {
+        "test": "trail_memory::saved_sources::tests::actor_load_and_read_require_current_owner_generation_and_exact_store",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      },
+      {
+        "test": "inference_service::tests::admitted_research_route_refuses_wrong_owner",
+        "scope": "actual live admitted route with final frozen test binary",
+        "result": "pass",
+        "receipt": "native/wrong-owner-probe.json"
+      }
+    ],
+    "stale_selection_control": [
+      {
+        "test": "app::contributed_pane_arms::research_view_tests::chosen_capture_intent_persists_in_the_pane_and_stale_controls_cannot_edit_it",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      }
+    ],
+    "session_switch_late_completion": [
+      {
+        "test": "app::source_capture_persistence_tests::queued_capture_updates_from_a_prior_opening_cannot_requalify_a_warm_reopened_session",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      },
+      {
+        "test": "app::source_capture_persistence_tests::stale_target_or_wrong_session_never_attaches_or_acknowledges_saved",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      }
+    ],
+    "withdrawal_and_wrong_text": [
+      {
+        "test": "app::r2_saved_source_tests::exact_read_is_local_and_detaching_reference_withdraws_the_retained_reader",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      },
+      {
+        "test": "inference_service::tests::withdrawn_citations_and_wrong_source_text_cannot_open",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      },
+      {
+        "test": "app::contributed_pane_arms::research_view_tests::detached_choices_can_be_removed_incrementally_but_cannot_be_reintroduced",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      }
+    ],
+    "live_replacement_never_substitutes_old_capture": [
+      {
+        "test": "app::source_capture_persistence_tests::replaced_response_at_same_address_cannot_complete_an_earlier_request",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      },
+      {
+        "test": "app::source_capture_persistence_tests::disappeared_live_response_is_refused_but_verified_recovered_receipt_can_retry_offline",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      }
+    ],
+    "pane_reentry_and_visible_destination": [
+      {
+        "test": "app::contributed_pane_arms::research_view_tests::reopening_answers_reuses_the_saved_view_and_reveals_it_from_a_maximized_reader",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      },
+      {
+        "test": "app::pane_arms::tests::summoning_a_tool_reveals_it_from_a_maximized_reader_without_growing_on_reentry",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      },
+      {
+        "test": "app::r2_saved_source_tests::opening_saved_source_from_answers_reveals_and_focuses_the_graph_reader",
+        "scope": "named execution in successful final full workspace/library command",
+        "result": "pass",
+        "log": "checks/workspace.log"
+      }
+    ]
+  },
+  "post_exit_inspector_passes": 2
+}

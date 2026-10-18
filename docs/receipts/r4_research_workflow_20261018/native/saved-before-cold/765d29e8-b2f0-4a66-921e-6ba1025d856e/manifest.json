@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "session_id": "765d29e8-b2f0-4a66-921e-6ba1025d856e",
+  "root_graph_id": "521f13a7-1e25-4524-9335-667f61639167",
+  "sub_graph_refs": [],
+  "display_name": "R4 Oversize Three",
+  "persona_id": "00000000-0000-0000-0000-000000000001",
+  "created_at": {
+    "secs_since_epoch": 1792305669,
+    "nanos_since_epoch": 877043000
+  },
+  "updated_at": {
+    "secs_since_epoch": 1792305680,
+    "nanos_since_epoch": 381865000
+  },
+  "parent_session": null,
+  "consolidated_codicils": [],
+  "last_consolidated_at": null,
+  "active_workers": [],
+  "engine_profile": "PersonaScoped",
+  "policy": {
+    "overrides": []
+  },
+  "storage_path": "/Users/markik/Code/output/turnstone-r4-native-03/profile/sessions/765d29e8-b2f0-4a66-921e-6ba1025d856e",
+  "forked_at": null,
+  "trashed": null,
+  "source_codicil": null,
+  "codicil_read_only": false,
+  "picked_from": null,
+  "lineage": "fork",
+  "merged": null
+}

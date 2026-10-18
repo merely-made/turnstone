@@ -138,7 +138,17 @@ set.
   hashes/Unicode ranges and cold old-A1 reading after actual origin shutdown.
   Oversized publication refuses while full offline reading remains available.
   Earlier uncited marker attempts and repaired native failures remain diagnostics.
-  R4 and the full research workflow retain their individual gates.
+  [R4](../docs/receipts/r4_research_workflow_20261018/README.md) now qualifies one
+  complete private saved-HTML collect/find/inspect/ask/verify/return task: two
+  app launches, distinct resident OS processes, actual origin shutdown, source
+  reads before both resident startups, 19 reviewed captures and independently
+  checked Fleece/prompt evidence. The full workspace command passes (1,071
+  library tests, 12 ignored); live wrong-owner and post-exit store probes run
+  separately. Re-entry preserves the existing Answers view, one shared reveal
+  operation fixes hidden destinations, and detached choices can be removed
+  without admitting them to an ask. Authored Knot notes, deliberate sharing,
+  personal custody installation and other-platform/physical recovery retain
+  their separate gates.
 - [Trail recall evaluation](2026-09-02_trail_recall_evaluation_plan.md): private captured-corpus protocol for selecting or rejecting configurable phrase recall against BM25 with held-out ranking and resource budgets.
 - [Page capture and provenance](2026-08-28_page_capture_plan.md): ruled path
   for durable node-attached page captures; P1 owner contracts and exact pins

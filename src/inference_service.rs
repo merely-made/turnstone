@@ -250,13 +250,31 @@ fn worker(
                         "This answer connection belongs to an earlier session opening.".into(),
                     );
                 }
+                // Local source availability is independent of the resident.
+                // Prepare once, before connecting, so an outage cannot turn
+                // a valid saved choice into an unavailable source row.
+                let mut ask_scope = None;
+                let corpus = if connection
+                    .as_ref()
+                    .is_none_or(|c: &Connection| c.published.is_none())
+                    || Instant::now() >= next_sources
+                    || matches!(&command, Some(Command::Ask { .. }) | Some(Command::Refresh))
+                {
+                    let retained = sources.snapshot(&owner)?;
+                    if let Some(Command::Ask { chosen, .. }) = &command {
+                        ask_scope = Some(crate::research::scope(&owner, chosen, &retained)?);
+                    }
+                    Some(publication(&owner, retained)?)
+                } else {
+                    None
+                };
                 if connection.is_none() {
                     let mut client = AppBrokerClient::open_route(
                         AppId::new("turnstone"),
                         AppRouteId::new(wire::INFERENCE_ASK_ROUTE).map_err(|e| e.to_string())?,
                     )
                     .await
-                    .map_err(|e| e.to_string())?;
+                    .map_err(|e| format!("Answers needs the inference resident. {e}"))?;
                     let opened = client.open_session().await.map_err(|e| e.to_string())?;
                     let request = opened
                         .descriptor
@@ -270,20 +288,10 @@ fn worker(
                         request,
                         published: None,
                     });
-                    next_sources = Instant::now();
                 }
                 let connection = connection.as_mut().unwrap();
                 let mut changed = false;
-                let mut ask_scope = None;
-                if connection.published.is_none()
-                    || Instant::now() >= next_sources
-                    || matches!(&command, Some(Command::Ask { .. }) | Some(Command::Refresh))
-                {
-                    let retained = sources.snapshot(&owner)?;
-                    if let Some(Command::Ask { chosen, .. }) = &command {
-                        ask_scope = Some(crate::research::scope(&owner, chosen, &retained)?);
-                    }
-                    let bytes = publication(&owner, retained)?;
+                if let Some(bytes) = corpus {
                     let fingerprint = eidetic::Hash::of(&bytes);
                     if connection.published != Some(fingerprint) {
                         intent(connection, PUBLISH_CORPUS_INTENT, bytes).await?;
