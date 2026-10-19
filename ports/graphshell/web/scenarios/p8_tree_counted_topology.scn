@@ -25,9 +25,9 @@ assert snap dynamics-inspector-topology-mode == relation_rows
 assert snap dynamics-inspector-held-rows == 3
 assert snap dynamics-inspector-visible-rows == 3
 assert snap dynamics-inspector-pair-inputs == 3
-assert snap dynamics-inspector-pair-edge-runs == 1
-assert snap dynamics-inspector-pair-topology-rows ~ link:v1:surface
-assert snap dynamics-inspector-pair-topology-rows ~ link:v1:resource
+assert snap dynamics-inspector-pair-edge-runs == 2
+assert snap dynamics-inspector-pair-topology-rows ~ "stratum":"surface"
+assert snap dynamics-inspector-pair-topology-rows ~ "stratum":"resource"
 reveal .tree-dynamics
 capture p8_pair_topology_initial
 
@@ -42,7 +42,7 @@ assert snap link-rest-surface-strength == 1
 assert snap dynamics-inspector-held-rows == 3
 assert snap dynamics-inspector-visible-rows == 2
 assert snap dynamics-inspector-pair-inputs == 2
-assert snap dynamics-inspector-pair-edge-runs == 1
+assert snap dynamics-inspector-pair-edge-runs == 2
 assert snap link-inspector-statements == 3
 assert text Independent collection membership
 same p8-source-before link-rest-source-facts
@@ -88,7 +88,7 @@ assert text Independent collection membership
 assert snap dynamics-inspector-held-rows == 2
 assert snap dynamics-inspector-visible-rows == 2
 assert snap dynamics-inspector-pair-inputs == 2
-assert snap dynamics-inspector-pair-edge-runs == 1
+assert snap dynamics-inspector-pair-edge-runs == 2
 remember p8-source-after-withdrawal
 reveal .promoted-link-current
 capture p8_promoted_copy_after_withdrawal

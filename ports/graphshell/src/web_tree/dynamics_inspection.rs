@@ -69,6 +69,31 @@ pub(super) fn section(page: &TreePage) -> Child {
                 children.push(Box::new(el("p", error.clone()).attr("role", "status")))
             },
             Some(Ok(report)) => {
+                if let Some(count) = report.pair_controller_edges {
+                    let source_name = match report.topology_mode {
+                        mere::canvas::DynamicsTopologyMode::RelationRows => "visible relation rows",
+                        mere::canvas::DynamicsTopologyMode::OccurrenceController => {
+                            "disclosed occurrence inputs"
+                        },
+                    };
+                    children.push(Box::new(el(
+                        "p",
+                        format!(
+                            "This pair contributes {count} {source_name} to the controller topology."
+                        ),
+                    )));
+                }
+                if let Some(pair) = &report.pair_inputs {
+                    children.push(Box::new(el(
+                        "p",
+                        format!(
+                            "Held relation rows {} · visible inputs {} · hidden {}",
+                            pair.held_rows,
+                            pair.visible_rows,
+                            pair.held_rows - pair.visible_rows
+                        ),
+                    )));
+                }
                 children.push(Box::new(detail_panel(&[DetailSection::new(
                     "Current view",
                     vec![
@@ -186,30 +211,7 @@ pub(super) fn section(page: &TreePage) -> Child {
                         },
                     )));
                 }
-                if let Some(count) = report.pair_controller_edges {
-                    let source_name = match report.topology_mode {
-                        mere::canvas::DynamicsTopologyMode::RelationRows => "visible relation rows",
-                        mere::canvas::DynamicsTopologyMode::OccurrenceController => {
-                            "disclosed occurrence inputs"
-                        },
-                    };
-                    children.push(Box::new(el(
-                        "p",
-                        format!(
-                            "This pair contributes {count} {source_name} to the controller topology."
-                        ),
-                    )));
-                }
                 if let Some(pair) = &report.pair_inputs {
-                    children.push(Box::new(el(
-                        "p",
-                        format!(
-                            "Held relation rows {} · visible inputs {} · hidden {}",
-                            pair.held_rows,
-                            pair.visible_rows,
-                            pair.held_rows - pair.visible_rows
-                        ),
-                    )));
                     let mut assertion_number = 0;
                     for (index, cell) in pair.cells.iter().enumerate() {
                         children.push(Box::new(detail_panel(&[DetailSection::new(
@@ -225,7 +227,7 @@ pub(super) fn section(page: &TreePage) -> Child {
                                 DetailRow::new("Owned to", cell.owner.source_to.to_string()),
                                 DetailRow::new("Relation selector", json(&cell.owner.selector)),
                                 DetailRow::new("Projected input rows", cell.rows.to_string()),
-                                DetailRow::new("Hidden in this view", cell.hidden.to_string()),
+                                DetailRow::new("Whole cell/link hidden", cell.hidden.to_string()),
                                 DetailRow::new(
                                     "Held assertion handles",
                                     cell.assertions
