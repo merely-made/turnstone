@@ -300,6 +300,158 @@ fn a_readers_drag_starts_a_keyboard_move_the_arrows_steer() {
     );
 }
 
+fn recycled_slot_fixture(
+    intent: &str,
+    refresh: bool,
+) -> (
+    Harness<Page, Logic, View>,
+    Rc<RefCell<Canvas>>,
+    mere::canvas::DescribedItem,
+    ProducedAction,
+    uuid::Uuid,
+) {
+    let canvas = sample_canvas();
+    let mut host = harness(canvas.clone(), Plant::None);
+    let old = canvas.borrow().describe_items(DESCRIBED_ITEMS).items[0].clone();
+    let stale = host
+        .a11y_produced_actions()
+        .into_values()
+        .find(|action| action.key == old.key && action.id == intent)
+        .expect("the original action is described");
+    let old_slot = canvas
+        .borrow()
+        .graph()
+        .get_node_key_by_id(old.member)
+        .unwrap();
+    let replacement = uuid::Uuid::from_u128(0x6f6c645f616374696f6e5f726570726f);
+    let mut replacement_slot = None;
+    assert!(canvas.borrow_mut().ingest_graph(|graph| {
+        use mere::kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
+        assert!(matches!(
+            apply_graph_delta(graph, GraphDelta::RemoveNode { key: old_slot }),
+            GraphDeltaResult::NodeRemoved(true)
+        ));
+        replacement_slot = Some(
+            match apply_graph_delta(
+                graph,
+                GraphDelta::AddNode {
+                    id: Some(replacement),
+                    url: "https://stale-action-replacement.example/".into(),
+                    position: mere::kernel::geometry::PortablePoint::zero(),
+                },
+            ) {
+                GraphDeltaResult::NodeAdded(key) => key,
+                other => panic!("unexpected add result: {other:?}"),
+            },
+        );
+        true
+    }));
+    assert_eq!(
+        replacement_slot.unwrap().index(),
+        old_slot.index(),
+        "graph slot reused"
+    );
+    if refresh {
+        // Rebuild semantics after replacement. A queued action still carries
+        // the identity token from the old description.
+        host.prepare_frame();
+    }
+    (host, canvas, old, stale, replacement)
+}
+
+#[test]
+fn captured_pin_does_not_target_a_replacement_before_description_refresh() {
+    let (mut host, canvas, old, stale, replacement) = recycled_slot_fixture(PIN_INTENT, false);
+    host.a11y_produced_request(A11yAction::Click, stale);
+    let replacement_key = canvas
+        .borrow()
+        .graph()
+        .get_node_key_by_id(replacement)
+        .unwrap();
+    assert_ne!(
+        canvas.borrow().arrangement_role_of(replacement_key),
+        ItemRole::Pinned
+    );
+    assert_ne!(described_key(&canvas, replacement), old.key);
+}
+
+#[test]
+fn captured_pin_does_not_target_a_replacement_after_description_refresh() {
+    let (mut host, canvas, old, stale, replacement) = recycled_slot_fixture(PIN_INTENT, true);
+    host.a11y_produced_request(A11yAction::Click, stale);
+    let replacement_key = canvas
+        .borrow()
+        .graph()
+        .get_node_key_by_id(replacement)
+        .unwrap();
+    assert_ne!(
+        canvas.borrow().arrangement_role_of(replacement_key),
+        ItemRole::Pinned
+    );
+    assert_ne!(described_key(&canvas, replacement), old.key);
+}
+
+#[test]
+fn captured_drag_does_not_target_a_replacement_before_description_refresh() {
+    let (mut host, canvas, old, stale, replacement) = recycled_slot_fixture(DRAG_INTENT, false);
+    host.a11y_produced_request(A11yAction::Click, stale);
+    assert_ne!(canvas.borrow().key_moving(), Some(replacement));
+    assert_ne!(described_key(&canvas, replacement), old.key);
+}
+
+#[test]
+fn captured_drag_does_not_target_a_replacement_after_description_refresh() {
+    let (mut host, canvas, old, stale, replacement) = recycled_slot_fixture(DRAG_INTENT, true);
+    host.a11y_produced_request(A11yAction::Click, stale);
+    assert_ne!(canvas.borrow().key_moving(), Some(replacement));
+    assert_ne!(described_key(&canvas, replacement), old.key);
+}
+
+fn described_key(canvas: &Rc<RefCell<Canvas>>, member: uuid::Uuid) -> u64 {
+    canvas
+        .borrow()
+        .describe_items(DESCRIBED_ITEMS)
+        .items
+        .into_iter()
+        .find(|item| item.member == member)
+        .expect("member is described")
+        .key
+}
+
+#[test]
+fn captured_action_for_survivor_remains_valid_after_unrelated_graph_change() {
+    let canvas = sample_canvas();
+    let mut host = harness(canvas.clone(), Plant::None);
+    let item = canvas.borrow().describe_items(DESCRIBED_ITEMS).items[1].clone();
+    let action = host
+        .a11y_produced_actions()
+        .into_values()
+        .find(|action| action.key == item.key && action.id == PIN_INTENT)
+        .expect("survivor Pin is described");
+    assert!(canvas.borrow_mut().ingest_graph(|graph| {
+        use mere::kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
+        matches!(
+            apply_graph_delta(
+                graph,
+                GraphDelta::AddNode {
+                    id: Some(uuid::Uuid::from_u128(0x756e72656c617465645f6d7574617469)),
+                    url: "https://unrelated-mutation.example/".into(),
+                    position: mere::kernel::geometry::PortablePoint::zero(),
+                }
+            ),
+            GraphDeltaResult::NodeAdded(_)
+        )
+    }));
+    host.prepare_frame();
+    host.a11y_produced_request(A11yAction::Click, action);
+    let key = canvas
+        .borrow()
+        .graph()
+        .get_node_key_by_id(item.member)
+        .unwrap();
+    assert_eq!(canvas.borrow().arrangement_role_of(key), ItemRole::Pinned);
+}
+
 fn app() -> GraphshellApp<muniment::MemoryBackend> {
     GraphshellApp::fixture(
         muniment::MemoryBackend::new(),
