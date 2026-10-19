@@ -87,7 +87,6 @@ pub(crate) fn generated(nodes: usize, seed: u64, links: Links) -> Graph {
     let link = || EdgeAssertion::Semantic {
         sub_kind: SemanticSubKind::Hyperlink,
         label: None,
-        decay_progress: None,
     };
     for index in 1..nodes {
         let earlier = (next() % index as u64) as usize;

@@ -1853,7 +1853,6 @@ mod tests {
         EdgeAssertion::Semantic {
             sub_kind: SemanticSubKind::Cites,
             label: None,
-            decay_progress: None,
         }
     }
 
@@ -2004,7 +2003,6 @@ mod tests {
             EdgeAssertion::Semantic {
                 sub_kind: SemanticSubKind::Supports,
                 label: Some("supports the source passage".into()),
-                decay_progress: None,
             },
             EdgeAssertion::Containment {
                 sub_kind: ContainmentSubKind::CollectionMember,
@@ -2384,7 +2382,6 @@ mod tests {
             assertion: EdgeAssertion::Semantic {
                 sub_kind: kind,
                 label: None,
-                decay_progress: None,
             },
             assertion_version: None,
             statement_id: Some(id.into()),
@@ -2578,7 +2575,6 @@ mod tests {
                 assertion: EdgeAssertion::Semantic {
                     sub_kind: SemanticSubKind::Supports,
                     label: None,
-                    decay_progress: None,
                 },
                 from: A,
                 to: B,

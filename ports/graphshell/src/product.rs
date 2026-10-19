@@ -198,17 +198,14 @@ impl EditableRelation {
             Self::UserGrouped => EdgeAssertion::Semantic {
                 sub_kind: SemanticSubKind::UserGrouped,
                 label: None,
-                decay_progress: None,
             },
             Self::Cites => EdgeAssertion::Semantic {
                 sub_kind: SemanticSubKind::Cites,
                 label: None,
-                decay_progress: None,
             },
             Self::Hyperlink => EdgeAssertion::Semantic {
                 sub_kind: SemanticSubKind::Hyperlink,
                 label: None,
-                decay_progress: None,
             },
             Self::CollectionMember => EdgeAssertion::Containment {
                 sub_kind: ContainmentSubKind::CollectionMember,
@@ -4005,7 +4002,6 @@ mod tests {
                     EdgeAssertion::Semantic {
                         sub_kind: SemanticSubKind::Hyperlink,
                         label: None,
-                        decay_progress: None,
                     },
                 );
             }

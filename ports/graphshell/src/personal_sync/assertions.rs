@@ -352,7 +352,6 @@ mod lifecycle_tests {
             EdgeAssertion::Semantic {
                 sub_kind: SemanticSubKind::Cites,
                 label: None,
-                decay_progress: None,
             },
             EdgeAssertion::Containment {
                 sub_kind: ContainmentSubKind::CollectionMember,
@@ -435,7 +434,6 @@ mod lifecycle_tests {
             assertion: EdgeAssertion::Semantic {
                 sub_kind: SemanticSubKind::Cites,
                 label: None,
-                decay_progress: None,
             },
             assertion_version: None,
             statement_id: Some(id.into()),
@@ -522,7 +520,6 @@ mod lifecycle_tests {
             assertion: EdgeAssertion::Semantic {
                 sub_kind: SemanticSubKind::Cites,
                 label: None,
-                decay_progress: None,
             },
             assertion_version: None,
             statement_id: Some(id.into()),
@@ -562,7 +559,6 @@ mod lifecycle_tests {
             assertion: EdgeAssertion::Semantic {
                 sub_kind: SemanticSubKind::Cites,
                 label: None,
-                decay_progress: None,
             },
             assertion_version: None,
             statement_id: Some("urn:assertion:same-reason".into()),

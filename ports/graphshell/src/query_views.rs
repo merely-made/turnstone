@@ -178,7 +178,6 @@ pub async fn seed_fixture<B: Backend + Clone>(app: &mut GraphshellApp<B>) -> Res
                         assertion: EdgeAssertion::Semantic {
                             sub_kind: kind,
                             label: Some("query fixture".into()),
-                            decay_progress: None,
                         },
                         asserter_iri: "urn:author:fixture".into(),
                     },

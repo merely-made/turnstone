@@ -633,7 +633,6 @@ impl<B: Backend + Clone> MereHost<B> {
                 EdgeAssertion::Semantic {
                     sub_kind: SemanticSubKind::Hyperlink,
                     label: Some("I2P endpoint".to_string()),
-                    decay_progress: None,
                 },
             );
             assert_relation(
@@ -643,7 +642,6 @@ impl<B: Backend + Clone> MereHost<B> {
                 EdgeAssertion::Semantic {
                     sub_kind: SemanticSubKind::Cites,
                     label: Some("working notes".to_string()),
-                    decay_progress: None,
                 },
             );
             assert_relation(
@@ -669,7 +667,6 @@ impl<B: Backend + Clone> MereHost<B> {
                 EdgeAssertion::Semantic {
                     sub_kind: SemanticSubKind::Elaborates,
                     label: Some("mounted beside local graph".to_string()),
-                    decay_progress: None,
                 },
             );
             assert_relation(
@@ -695,7 +692,6 @@ impl<B: Backend + Clone> MereHost<B> {
                 EdgeAssertion::Semantic {
                     sub_kind: SemanticSubKind::DependsOn,
                     label: Some("public key reference".to_string()),
-                    decay_progress: None,
                 },
             );
             assert_relation(
@@ -705,7 +701,6 @@ impl<B: Backend + Clone> MereHost<B> {
                 EdgeAssertion::Semantic {
                     sub_kind: SemanticSubKind::Supports,
                     label: Some("subject".to_string()),
-                    decay_progress: None,
                 },
             );
             assert_relation(

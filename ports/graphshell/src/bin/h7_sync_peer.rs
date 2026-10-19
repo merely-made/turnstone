@@ -316,7 +316,6 @@ fn local_events(role: Role) -> Vec<PersonalGraphEvent> {
             assertion: EdgeAssertion::Semantic {
                 sub_kind: SemanticSubKind::Cites,
                 label: None,
-                decay_progress: None,
             },
             basis: None,
         });
