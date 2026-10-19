@@ -29,5 +29,6 @@ assert snap dynamics-inspector-pair-inputs == 2
 assert snap dynamics-inspector-pair-edge-runs == 1
 assert snap dynamics-inspector-pair-topology-rows ~ link:v1:surface
 assert snap dynamics-inspector-pair-topology-rows ~ link:v1:resource
+reveal .tree-dynamics
 capture p8_counted_topology_fresh_reopen
 log Fresh process restores the withdrawn source reason, independent sibling and promoted copy; pair inspection reads the two currently held topology rows

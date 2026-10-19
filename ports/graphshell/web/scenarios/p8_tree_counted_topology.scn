@@ -28,6 +28,7 @@ assert snap dynamics-inspector-pair-inputs == 3
 assert snap dynamics-inspector-pair-edge-runs == 1
 assert snap dynamics-inspector-pair-topology-rows ~ link:v1:surface
 assert snap dynamics-inspector-pair-topology-rows ~ link:v1:resource
+reveal .tree-dynamics
 capture p8_pair_topology_initial
 
 # Hiding one exact reason changes only this view's counted input. It does not
@@ -46,6 +47,7 @@ assert snap link-inspector-statements == 3
 assert text Independent collection membership
 same p8-source-before link-rest-source-facts
 same p8-source-before link-rest-graph-revision
+reveal .tree-dynamics
 capture p8_pair_topology_exact_reason_hidden
 
 # Restore the view input, then separately exercise author-authorized source
@@ -70,6 +72,7 @@ assert snap promoted-link-drift == unchanged
 assert snap promoted-link-frozen-assertion-ids == fixture:p7:collection-independent|fixture:p7:collection-primary
 assert snap promoted-link-frozen-withdrawn-count == 0
 same p8-source-before link-rest-source-facts
+reveal .promoted-link-current
 capture p8_promoted_source_before_withdrawal
 
 reveal role:button Withdraw this personal assertion
@@ -88,5 +91,7 @@ assert snap dynamics-inspector-pair-inputs == 2
 assert snap dynamics-inspector-pair-edge-runs == 1
 remember p8-source-after-withdrawal
 reveal .promoted-link-current
+capture p8_promoted_copy_after_withdrawal
+reveal .tree-dynamics
 capture p8_pair_topology_after_withdrawal
 log P8 exact view hide and authorized withdrawal independently update shared counted pair topology while preserving source and promoted-copy invariants
