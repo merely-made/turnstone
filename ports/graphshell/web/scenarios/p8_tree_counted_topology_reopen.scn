@@ -1,0 +1,33 @@
+# Fresh page/process, same retained origin/profile and promoted-link fixture.
+# tree.html?app=local&fixture=promoted-link&scenario=scenarios/p8_tree_counted_topology_reopen.scn
+click role:button Fit graph
+settle 2
+assert snap storage-reopened == true
+assert snap link-rest-ready == true
+assert snap link-rest-hidden-assertion-count == 0
+assert snap link-rest-source-assertion-ids ~ fixture:p7:collection-primary
+assert snap promoted-link-count == 1
+assert snap promoted-link-drift == changed
+assert snap promoted-link-withdrawn-ids == fixture:p7:collection-primary
+assert snap promoted-link-frozen-assertion-ids == fixture:p7:collection-independent|fixture:p7:collection-primary
+assert snap promoted-link-frozen-withdrawn-count == 0
+
+click-link-rest a1-b1 surface
+settle 2
+assert snap link-inspector-open == true
+assert snap link-inspector-ready == true
+assert snap link-inspector-statements == 2
+assert text Independent collection membership
+reveal role:button Explain pair dynamics
+click role:button Explain pair dynamics
+settle 2
+assert snap dynamics-inspector-ready == true
+assert snap dynamics-inspector-topology-mode == relation_rows
+assert snap dynamics-inspector-held-rows == 2
+assert snap dynamics-inspector-visible-rows == 2
+assert snap dynamics-inspector-pair-inputs == 2
+assert snap dynamics-inspector-pair-edge-runs == 1
+assert snap dynamics-inspector-pair-topology-rows ~ link:v1:surface
+assert snap dynamics-inspector-pair-topology-rows ~ link:v1:resource
+capture p8_counted_topology_fresh_reopen
+log Fresh process restores the withdrawn source reason, independent sibling and promoted copy; pair inspection reads the two currently held topology rows

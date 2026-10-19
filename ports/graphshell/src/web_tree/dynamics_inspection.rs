@@ -87,9 +87,15 @@ pub(super) fn section(page: &TreePage) -> Child {
                         DetailRow::new("Overlays", report.overlays.join(", ")),
                         DetailRow::new("Topology source", &report.topology_source),
                         DetailRow::new(
-                            "Controller edge slots",
-                            report.controller_edges.to_string(),
+                            "Topology mode",
+                            match report.topology_mode {
+                                mere::canvas::DynamicsTopologyMode::RelationRows => "relation rows",
+                                mere::canvas::DynamicsTopologyMode::OccurrenceController => {
+                                    "disclosed occurrence inputs"
+                                },
+                            },
                         ),
+                        DetailRow::new("Controller inputs", report.controller_edges.to_string()),
                     ],
                 )])));
                 // These are two independent reads; a schedule's record is not its current stage.
@@ -181,9 +187,17 @@ pub(super) fn section(page: &TreePage) -> Child {
                     )));
                 }
                 if let Some(count) = report.pair_controller_edges {
+                    let source_name = match report.topology_mode {
+                        mere::canvas::DynamicsTopologyMode::RelationRows => "visible relation rows",
+                        mere::canvas::DynamicsTopologyMode::OccurrenceController => {
+                            "disclosed occurrence inputs"
+                        },
+                    };
                     children.push(Box::new(el(
                         "p",
-                        format!("This pair supplies {count} current topology edge slots."),
+                        format!(
+                            "This pair contributes {count} {source_name} to the controller topology."
+                        ),
                     )));
                 }
                 if let Some(pair) = &report.pair_inputs {
@@ -275,16 +289,60 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
             report.map(|report| report.law.clone()).unwrap_or_default(),
         )
         .with_field(
+            "dynamics-inspector-topology-mode",
+            report.map_or_else(String::new, |report| match report.topology_mode {
+                mere::canvas::DynamicsTopologyMode::RelationRows => "relation_rows".into(),
+                mere::canvas::DynamicsTopologyMode::OccurrenceController => {
+                    "occurrence_controller".into()
+                },
+            }),
+        )
+        .with_field(
             "dynamics-inspector-pair-inputs",
             report
                 .and_then(|report| report.pair_controller_edges)
                 .map_or_else(String::new, |count| count.to_string()),
         )
         .with_field(
+            "dynamics-inspector-pair-edge-slots",
+            report
+                .and_then(|report| report.pair_controller_edges)
+                .map_or_else(String::new, |count| count.to_string()),
+        )
+        .with_field(
+            "dynamics-inspector-controller-edge-slots",
+            report.map_or_else(String::new, |report| report.controller_edges.to_string()),
+        )
+        .with_field(
+            "dynamics-inspector-controller-edge-runs",
+            report.map_or_else(String::new, |report| {
+                report.controller_edge_runs.to_string()
+            }),
+        )
+        .with_field(
+            "dynamics-inspector-pair-edge-runs",
+            report
+                .and_then(|report| report.pair_controller_edge_runs)
+                .map_or_else(String::new, |count| count.to_string()),
+        )
+        .with_field(
+            "dynamics-inspector-pair-topology-rows",
+            report
+                .and_then(|report| report.pair_topology_rows.as_ref())
+                .and_then(|rows| serde_json::to_string(rows).ok())
+                .unwrap_or_default(),
+        )
+        .with_field(
             "dynamics-inspector-held-rows",
             report
                 .and_then(|report| report.pair_inputs.as_ref())
                 .map_or_else(String::new, |pair| pair.held_rows.to_string()),
+        )
+        .with_field(
+            "dynamics-inspector-visible-rows",
+            report
+                .and_then(|report| report.pair_inputs.as_ref())
+                .map_or_else(String::new, |pair| pair.visible_rows.to_string()),
         )
         .with_field(
             "dynamics-inspector-forme-holds",

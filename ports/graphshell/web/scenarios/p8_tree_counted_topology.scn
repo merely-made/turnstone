@@ -1,0 +1,92 @@
+# Dedicated retained origin/profile using the P7 promoted-link fixture.
+# tree.html?app=local&fixture=promoted-link&scenario=scenarios/p8_tree_counted_topology.scn
+click role:button Fit graph
+settle 2
+assert snap storage-reopened == false
+assert snap source == saved graph
+assert snap link-rest-ready == true
+assert snap link-rest-source-assertion-ids ~ fixture:p7:collection-primary
+assert snap link-rest-source-assertion-ids ~ fixture:p7:collection-independent
+assert snap promoted-link-count == 0
+remember p8-source-before
+
+# Pair inspection reads the same relation rows that currently feed the
+# controller. The two Surface reasons and Resource control form three slots.
+click-link-rest a1-b1 surface
+settle 2
+assert snap link-inspector-open == true
+assert snap link-inspector-ready == true
+assert text Primary collection membership
+assert text Independent collection membership
+click role:button Explain pair dynamics
+settle 2
+assert snap dynamics-inspector-ready == true
+assert snap dynamics-inspector-topology-mode == relation_rows
+assert snap dynamics-inspector-held-rows == 3
+assert snap dynamics-inspector-visible-rows == 3
+assert snap dynamics-inspector-pair-inputs == 3
+assert snap dynamics-inspector-pair-edge-runs == 1
+assert snap dynamics-inspector-pair-topology-rows ~ link:v1:surface
+assert snap dynamics-inspector-pair-topology-rows ~ link:v1:resource
+capture p8_pair_topology_initial
+
+# Hiding one exact reason changes only this view's counted input. It does not
+# mutate the held source or the sibling reason / Resource link.
+reveal role:button Hide this assertion from the view
+click-link-rest-assertion fixture:p7:collection-primary hide
+settle 120
+assert snap assertion-visibility-save-state == saved
+assert snap link-rest-hidden-assertions == fixture:p7:collection-primary
+assert snap link-rest-surface-strength == 1
+assert snap dynamics-inspector-held-rows == 3
+assert snap dynamics-inspector-visible-rows == 2
+assert snap dynamics-inspector-pair-inputs == 2
+assert snap dynamics-inspector-pair-edge-runs == 1
+assert snap link-inspector-statements == 3
+assert text Independent collection membership
+same p8-source-before link-rest-source-facts
+same p8-source-before link-rest-graph-revision
+capture p8_pair_topology_exact_reason_hidden
+
+# Restore the view input, then separately exercise author-authorized source
+# withdrawal. The independent reason and frozen promoted copy must survive.
+reveal role:button Show hidden assertions
+click role:button Show hidden assertions
+settle 120
+assert snap assertion-visibility-save-state == saved
+assert snap link-rest-hidden-assertion-count == 0
+assert snap link-rest-surface-strength == 2
+assert snap dynamics-inspector-visible-rows == 3
+assert snap dynamics-inspector-pair-inputs == 3
+same p8-source-before link-rest-source-facts
+same p8-source-before link-rest-graph-revision
+
+reveal role:button Freeze Surface link for review
+click role:button Freeze Surface link for review
+settle 120
+assert snap promoted-link-count == 1
+assert snap promoted-link-write-status ~ saved and readable
+assert snap promoted-link-drift == unchanged
+assert snap promoted-link-frozen-assertion-ids == fixture:p7:collection-independent|fixture:p7:collection-primary
+assert snap promoted-link-frozen-withdrawn-count == 0
+same p8-source-before link-rest-source-facts
+capture p8_promoted_source_before_withdrawal
+
+reveal role:button Withdraw this personal assertion
+click-link-rest-assertion fixture:p7:collection-primary withdraw
+settle 120
+assert snap link-rest-surface-strength == 1
+assert snap promoted-link-drift == changed
+assert snap promoted-link-withdrawn-ids == fixture:p7:collection-primary
+assert snap promoted-link-frozen-assertion-ids == fixture:p7:collection-independent|fixture:p7:collection-primary
+assert snap promoted-link-frozen-withdrawn-count == 0
+assert snap link-inspector-statements == 2
+assert text Independent collection membership
+assert snap dynamics-inspector-held-rows == 2
+assert snap dynamics-inspector-visible-rows == 2
+assert snap dynamics-inspector-pair-inputs == 2
+assert snap dynamics-inspector-pair-edge-runs == 1
+remember p8-source-after-withdrawal
+reveal .promoted-link-current
+capture p8_pair_topology_after_withdrawal
+log P8 exact view hide and authorized withdrawal independently update shared counted pair topology while preserving source and promoted-copy invariants
