@@ -7,6 +7,10 @@ assert snap link-rest-ready == true
 assert snap link-rest-hidden-assertion-count == 0
 assert snap link-rest-source-assertion-ids ~ fixture:p7:collection-primary
 assert snap promoted-link-count == 1
+reveal role:button Open promoted link 1
+click role:button Open promoted link 1
+settle 2
+assert text Review Resource
 assert snap promoted-link-drift == changed
 assert snap promoted-link-withdrawn-ids == fixture:p7:collection-primary
 assert snap promoted-link-frozen-assertion-ids == fixture:p7:collection-independent|fixture:p7:collection-primary
