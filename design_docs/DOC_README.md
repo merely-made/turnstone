@@ -211,3 +211,5 @@ They are inputs, not implementation authority.
 - [Smolweb graph enrichment and accessibility](2026-04-09_smolweb_graph_enrichment_and_accessibility_note.md): recovered enrichment and accessible-structure research.
 - [Smolnet capability model and scroll alignment](2026-04-16_smolnet_capability_model_and_scroll_alignment.md): recovered protocol-capability and text-view alignment note.
 - [Smolweb compliance and Middlenet HTML contract](2026-04-16_smolweb_compliance_and_middlenet_html_contract.md): recovered constrained-HTML contract research.
+
+Foundation source adoption (2026-10-19): canonical promoted-family revisions and consumer source validation are recorded in `mere/design_docs/mere_docs/implementation_strategy/2026-10-19_family_promotion_plan.md`. Existing application and domain authority remain with their owning components.
