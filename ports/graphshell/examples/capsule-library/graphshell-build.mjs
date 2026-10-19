@@ -13,7 +13,7 @@ import { blake3 } from '@noble/hashes/blake3.js';
 
 if (!process.argv[2] || !process.argv[3]) throw new Error('Pass the proof site and built graphshell_web.wasm');
 const here = dirname(fileURLToPath(import.meta.url));
-const root = resolve(here, '../../../../..');
+const root = resolve(here, '../../../..');
 const site = resolve(process.argv[2]);
 const digest = bytes => Buffer.from(blake3(bytes)).toString('hex');
 const fixture = JSON.parse(await readFile(join(site, 'fixture.json'), 'utf8'));
