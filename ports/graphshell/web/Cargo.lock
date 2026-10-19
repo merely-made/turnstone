@@ -745,7 +745,7 @@ dependencies = [
 [[package]]
 name = "browsing-context-api"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "url",
 ]
@@ -753,7 +753,7 @@ dependencies = [
 [[package]]
 name = "buckram"
 version = "0.0.3"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "genet-css-flow",
  "genet-taffy",
@@ -851,7 +851,7 @@ dependencies = [
 [[package]]
 name = "cadency"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "cssparser",
 ]
@@ -2304,7 +2304,7 @@ dependencies = [
  "libc",
  "option-ext",
  "redox_users 0.5.3",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -2380,7 +2380,7 @@ dependencies = [
 [[package]]
 name = "document-session-api"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "serde",
 ]
@@ -2592,7 +2592,7 @@ dependencies = [
 [[package]]
 name = "engine-observables-api"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "genet-paint-types",
  "serde",
@@ -2653,7 +2653,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -2802,7 +2802,7 @@ dependencies = [
 [[package]]
 name = "fleece"
 version = "0.5.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "layout-dom-api",
  "sha2 0.10.9",
@@ -2848,15 +2848,6 @@ name = "foldhash"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb"
-
-[[package]]
-name = "font-types"
-version = "0.11.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b38ad915f6dadd993ced50848a8291a543bd41ca62bc10740d5e64e2ab4cfd7"
-dependencies = [
- "bytemuck",
-]
 
 [[package]]
 name = "font-types"
@@ -3104,12 +3095,12 @@ dependencies = [
 [[package]]
 name = "genet-css-flow"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 
 [[package]]
 name = "genet-document-resources"
 version = "0.2.1"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "genet-host-api",
  "layout-dom-api",
@@ -3118,7 +3109,7 @@ dependencies = [
 [[package]]
 name = "genet-documents"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "browsing-context-api",
  "data-url",
@@ -3141,7 +3132,7 @@ dependencies = [
 [[package]]
 name = "genet-fontique"
 version = "0.10.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "hashbrown 0.17.1",
  "linebender_resource_handle",
@@ -3151,7 +3142,7 @@ dependencies = [
  "objc2-core-text",
  "objc2-foundation 0.3.2",
  "parlance",
- "read-fonts 0.39.2",
+ "read-fonts",
  "roxmltree",
  "smallvec",
  "windows",
@@ -3162,7 +3153,7 @@ dependencies = [
 [[package]]
 name = "genet-host-api"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "serde",
 ]
@@ -3170,7 +3161,7 @@ dependencies = [
 [[package]]
 name = "genet-livery"
 version = "0.0.4"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "buckram",
  "cssparser",
@@ -3193,7 +3184,7 @@ dependencies = [
 [[package]]
 name = "genet-paint-types"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "app_units",
  "euclid",
@@ -3203,7 +3194,7 @@ dependencies = [
 [[package]]
 name = "genet-parley"
 version = "0.10.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "genet-fontique",
  "harfrust",
@@ -3215,14 +3206,14 @@ dependencies = [
  "linebender_resource_handle",
  "parlance",
  "parley_data",
- "skrifa 0.42.1",
+ "skrifa",
  "zerovec",
 ]
 
 [[package]]
 name = "genet-render"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "accesskit",
  "document-session-api",
@@ -3237,7 +3228,7 @@ dependencies = [
 [[package]]
 name = "genet-render-host"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "gloo-timers",
  "js-sys",
@@ -3252,7 +3243,7 @@ dependencies = [
 [[package]]
 name = "genet-scripted-dom"
 version = "0.1.2"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "encoding_rs",
  "engine-observables-api",
@@ -3269,7 +3260,7 @@ dependencies = [
 [[package]]
 name = "genet-static-dom"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "html5ever",
  "layout-dom-api",
@@ -3279,7 +3270,7 @@ dependencies = [
 [[package]]
 name = "genet-taffy"
 version = "0.14.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "arrayvec",
  "serde",
@@ -3290,7 +3281,7 @@ dependencies = [
 [[package]]
 name = "genet-text"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "unicode-segmentation",
 ]
@@ -3434,7 +3425,7 @@ dependencies = [
  "hashbrown 0.17.1",
  "log",
  "peniko",
- "skrifa 0.44.0",
+ "skrifa",
  "smallvec",
  "vello_common",
 ]
@@ -3667,13 +3658,13 @@ dependencies = [
 
 [[package]]
 name = "harfrust"
-version = "0.8.4"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d12c7c642d4ce8c2e784b4751a6634bd89583912265add4a679a8882d123fbcd"
+checksum = "c03d949a14aa089bbb282f7dd76a498a7f684428e4257202efc119ec010376f9"
 dependencies = [
  "bitflags 2.13.2",
  "bytemuck",
- "read-fonts 0.39.2",
+ "read-fonts",
  "smallvec",
 ]
 
@@ -4838,7 +4829,7 @@ dependencies = [
 [[package]]
 name = "layout-dom-api"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "markup5ever",
  "serde",
@@ -5117,7 +5108,7 @@ checksum = "11d3d7f243d5c5a8b9bb5d6dd2b1602c0cb0b9db1621bafc7ed66e35ff9fe092"
 [[package]]
 name = "livery"
 version = "0.0.5"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "cadency",
  "cssparser",
@@ -6055,7 +6046,7 @@ dependencies = [
  "postcard",
  "serde",
  "serde_json",
- "skrifa 0.44.0",
+ "skrifa",
  "tracing",
  "vello_common",
  "vello_gpu",
@@ -6075,7 +6066,7 @@ dependencies = [
  "log",
  "peniko",
  "png 0.18.1",
- "skrifa 0.44.0",
+ "skrifa",
  "static_assertions",
  "thiserror 2.0.21",
  "vello_encoding",
@@ -6264,7 +6255,7 @@ version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -7064,7 +7055,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.11.0",
- "skrifa 0.44.0",
+ "skrifa",
 ]
 
 [[package]]
@@ -8175,22 +8166,12 @@ dependencies = [
 
 [[package]]
 name = "read-fonts"
-version = "0.39.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4ed38b89c2c77ff968c524145ad65fb010f38af5c7a224b53b81d47ac2daa81"
-dependencies = [
- "bytemuck",
- "font-types 0.11.3",
-]
-
-[[package]]
-name = "read-fonts"
 version = "0.41.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "046a7d674daf459825b32f5062056d6882db0d2f5a479fbd76ccfc870ac18709"
 dependencies = [
  "bytemuck",
- "font-types 0.12.5",
+ "font-types",
  "once_cell",
 ]
 
@@ -8301,7 +8282,7 @@ checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
 [[package]]
 name = "regress"
 version = "0.11.1"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "hashbrown 0.16.1",
  "memchr",
@@ -8484,7 +8465,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.12.1",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -8542,7 +8523,7 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -8993,22 +8974,12 @@ checksum = "8ee5873ec9cce0195efcb7a4e9507a04cd49aec9c83d0389df45b1ef7ba2e649"
 
 [[package]]
 name = "skrifa"
-version = "0.42.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c34617370ae968efb7161bb2beb517d9084659aae19e24b89e3db25b46e4564"
-dependencies = [
- "bytemuck",
- "read-fonts 0.39.2",
-]
-
-[[package]]
-name = "skrifa"
 version = "0.44.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "819ab7d62b1d3e72d9d9dea5650bac30424f9111364bb94928dbf5ecad1baa68"
 dependencies = [
  "bytemuck",
- "read-fonts 0.41.0",
+ "read-fonts",
 ]
 
 [[package]]
@@ -9475,7 +9446,7 @@ dependencies = [
 [[package]]
 name = "taproot"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#1141804b62cec211144e0a1a2dddedb1c6e5bc9f"
+source = "git+https://github.com/merely-made/genet.git?branch=main#7b9c8c2f3de46a55858f6549e182e8e0323838d3"
 dependencies = [
  "document-session-api",
  "genet-livery",
@@ -9504,7 +9475,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix 1.1.5",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -9522,7 +9493,7 @@ version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8c27177b12a6399ffc08b98f76f7c9a1f4fe9fc967c784c5a071fa8d93cf7e1"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -10212,7 +10183,7 @@ dependencies = [
  "bytemuck",
  "guillotiere",
  "peniko",
- "skrifa 0.44.0",
+ "skrifa",
  "smallvec",
 ]
 
@@ -10805,7 +10776,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.52.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
