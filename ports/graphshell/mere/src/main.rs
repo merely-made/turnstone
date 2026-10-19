@@ -9,11 +9,9 @@
 use cambium::{AnyView, GenetCtx, GenetElement, el};
 use cambium_genet_winit_host::{AppCtx, HostOptions, Init, inert_hooks, run};
 use chirograph::PortableCardV1;
-#[path = "graphshell_mere/connection.rs"]
 mod connection;
 use connection::Connection;
 #[cfg(test)]
-#[path = "graphshell_mere/app_tests.rs"]
 mod app_tests;
 use mere_view::{
     HostAction, MereView, MereViewModel, MereViewRequest, MereViewState, StatusNote, ViewStatus,

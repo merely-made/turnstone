@@ -147,9 +147,6 @@ web = [
 # A bounded app-core host dialect over a disclosed capsule collection. Pack
 # verification is portable; the browser owns worker execution and its view.
 applets = ["web", "eidetic/pack-signing", "dep:personae"]
-# Ordinary native reservoir viewer: shared panel over the admitted resident
-# route. Its worker holds a client only; no persona graph files are opened.
-mere-view-host = ["native", "web", "dep:mere-view", "mere-overmap/view", "dep:cambium", "dep:cambium-genet-winit-host", "dep:mesquite", "dep:sprigging", "dep:taproot"]
 # Native owner composition for admitted Moot resource readings. This does not
 # enter the ordinary browser cone or install an application activity owner.
 # Finite native owner-composition proof; ordinary consumers need no window or
@@ -193,14 +190,9 @@ graphshell-endpoint = { version = "0.0.2", path = "../../crates/graphshell/graph
 graphshell-host = { version = "0.0.2", path = "../../crates/graphshell/graphshell-host", default-features = false }
 chirograph.workspace = true
 mere = { path = "../../crates/mere", default-features = false, features = ["graph", "canvas"], optional = true }
-# The mere route's wire vocabulary, and for `mere-view-host` the route panel
-# that fills the mere view (stack lift plan L14).
+# The mere route's wire vocabulary (stack lift plan L14). The native viewer
+# that hosts its route panel is the `graphshell-mere` package.
 mere-overmap = { workspace = true, optional = true }
-# The mere view `graphshell_mere` hosts.
-mere-view = { workspace = true, optional = true }
-mesquite = { workspace = true, optional = true }
-sprigging = { workspace = true, optional = true }
-taproot = { workspace = true, optional = true }
 mesh = { workspace = true, optional = true }
 muniment = { workspace = true, optional = true }
 # The session core. MereHost's truth is a pandect GraphSession in the browser
@@ -319,11 +311,6 @@ required-features = ["personal-sync"]
 name = "n4_policy_receipt"
 path = "src/bin/n4_policy_receipt.rs"
 required-features = ["native"]
-
-[[bin]]
-name = "graphshell_mere"
-path = "src/bin/graphshell_mere.rs"
-required-features = ["mere-view-host"]
 
 [[bin]]
 name = "receipt_ingest"
