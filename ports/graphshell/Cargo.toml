@@ -29,6 +29,9 @@ name = "moot_resources_reopen"
 required-features = ["moot-resources"]
 
 [features]
+# One holder-owned graph with an explicitly invited guest.
+coop = ["native", "web", "muniment/redb", "dep:pollster", "graphshell-client/pump"]
+coop-window = ["coop", "dep:cambium-genet-winit-host", "dep:mien", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
 query-views = ["web", "mere/query", "dep:cambium"]
 caller-owned-toolkit-bench = ["retained-content", "cambium-rootstock/embedding-egui", "cambium-rootstock/embedding-iced", "dep:image"]
 moot-resources = ["web", "webrtc-join", "dep:cambium", "dep:moot", "dep:gemot", "dep:eidetic", "dep:muniment"]
@@ -389,3 +392,8 @@ required-features = ["native"]
 [[test]]
 name = "c4_host_signaling"
 required-features = ["webrtc-session"]
+
+[[bin]]
+name = "graphshell-coop"
+path = "src/bin/graphshell_coop.rs"
+required-features = ["coop-window"]
