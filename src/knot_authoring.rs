@@ -3497,13 +3497,65 @@ mod tests {
         };
         pool.set_placements([(1, placement.clone())]);
         let _ = pool.frame(&1).unwrap();
-        let pointer = |x, phase| {
+
+        // Find the actual retained glyph row and caret positions for `café`.
+        // The pool accepts window coordinates, so translate these content-local
+        // points by the placement below. This keeps the gesture tied to the
+        // rendered text instead of assuming a particular line height or font.
+        let (start, end) = {
+            let session = pool
+                .content_mut(&1)
+                .unwrap()
+                .document_mut()
+                .unwrap()
+                .session_as_any_mut()
+                .downcast_mut::<KnotDocumentSession>()
+                .unwrap();
+            let field = find_text_control(&session.dom.borrow(), session.runner.root()).unwrap();
+            let (left, top, width, height) = session
+                .layout
+                .painted_rect(&session.dom.borrow(), field)
+                .unwrap();
+            let caret_byte = |session: &mut KnotDocumentSession, x, y| {
+                session
+                    .layout
+                    .text_caret_at(&mut session.dom.borrow_mut(), field, x, y)
+                    .map(|position| position.byte)
+            };
+            let start_byte = source.find("café").unwrap();
+            let end_byte = start_byte + "café".len();
+            let center_x = left + width / 2.0;
+            let line_y = (0..height.ceil() as usize)
+                .map(|row| top + row as f32 + 0.5)
+                .find(|&y| {
+                    caret_byte(session, center_x, y)
+                        .is_some_and(|byte| (start_byte..=end_byte).contains(&byte))
+                })
+                .expect("retained text geometry contains the café row");
+            let point_for_byte = |session: &mut KnotDocumentSession, target| {
+                (0..width.ceil() as usize).find_map(|column| {
+                    let x = left + column as f32 + 0.5;
+                    (caret_byte(session, x, line_y) == Some(target)).then_some(x)
+                })
+            };
+            let start_x = point_for_byte(session, start_byte)
+                .expect("retained text geometry exposes café's starting caret");
+            let end_x = point_for_byte(session, end_byte)
+                .expect("retained text geometry exposes café's ending caret");
+            assert_eq!(caret_byte(session, start_x, line_y), Some(start_byte));
+            assert_eq!(caret_byte(session, end_x, line_y), Some(end_byte));
+            (
+                (placement.rect.x + start_x, placement.rect.y + line_y),
+                (placement.rect.x + end_x, placement.rect.y + line_y),
+            )
+        };
+        let pointer = |(x, y), phase| {
             PeltInput::Pointer(inker::PointerEvent {
                 pointer_id: 1,
                 pointer_type: inker::PointerType::Mouse,
                 is_primary: true,
                 phase,
-                position: inker::PhysicalPosition { x, y: 177.0 },
+                position: inker::PhysicalPosition { x, y },
                 button: (phase != inker::PointerPhase::Move).then_some(inker::MouseButton::Left),
                 buttons: if phase == inker::PointerPhase::Up {
                     inker::PointerButtons::NONE
@@ -3523,15 +3575,18 @@ mod tests {
             })
         };
         for (x, phase) in [
-            (540.0, inker::PointerPhase::Down),
-            (570.0, inker::PointerPhase::Move),
-            (600.0, inker::PointerPhase::Move),
-            (600.0, inker::PointerPhase::Up),
+            (start, inker::PointerPhase::Down),
+            (
+                ((start.0 + end.0) / 2.0, (start.1 + end.1) / 2.0),
+                inker::PointerPhase::Move,
+            ),
+            (end, inker::PointerPhase::Move),
+            (end, inker::PointerPhase::Up),
         ] {
             pool.set_placements([(1, placement.clone())]);
             let effect = pool.input_at(0, pointer(x, phase));
             if phase != inker::PointerPhase::Move {
-                assert!(effect.handled, "{phase:?} at {x}");
+                assert!(effect.handled, "{phase:?} at {x:?}");
             }
             if phase != inker::PointerPhase::Up {
                 assert_eq!(pool.captured_placement(1), Some(&1));

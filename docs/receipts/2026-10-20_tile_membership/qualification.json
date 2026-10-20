@@ -1,0 +1,109 @@
+{
+  "date": "2026-10-20",
+  "purpose": "Carry the NetRender FrameIndex tile membership ownership cut through the retained downstream paths.",
+  "base": "0dd9b1b020aa3cdf27d15e2d97509c760f2101f3",
+  "lock_sha256": "d7fc4e2ba7a9023ab83e236bd9d4a34613bb51f4fd8529854cd16819b20c1f07",
+  "sources": {
+    "netrender.git": [
+      "git+https://github.com/merely-made/netrender.git?branch=main#54d864c20aeac9e46275cdab6e34edbd95d8ecf6"
+    ],
+    "genet.git": [
+      "git+https://github.com/merely-made/genet.git?branch=main#6ef3cd37a785a395670d3b472fb3573665497f29"
+    ],
+    "mere.git": [
+      "git+https://github.com/merely-made/mere.git?branch=main#dd342426ca4532d53cb23001cc41c8c8abc7f5ec",
+      "git+https://github.com/merely-made/mere.git?rev=70deef2c8cf3d3410ae35b496a9396514070b24f#70deef2c8cf3d3410ae35b496a9396514070b24f"
+    ],
+    "knot-editor.git": [
+      "git+https://github.com/merely-made/knot-editor.git?branch=main#086229e5630246852daa91b204cf0afbcda4777b"
+    ],
+    "eidetic.git": [
+      "git+https://github.com/merely-made/eidetic.git?rev=738ef15956a29a125820b2d6c2280d39a6214f8e#738ef15956a29a125820b2d6c2280d39a6214f8e"
+    ],
+    "esp.git": [
+      "git+https://github.com/merely-made/esp.git?rev=809deb6be341d3b6eeaad9534d9d162bd3105f4a#809deb6be341d3b6eeaad9534d9d162bd3105f4a"
+    ],
+    "gemot.git": [
+      "git+https://github.com/merely-made/gemot.git?rev=692674ca66728f5b0dbb2fc7e756acaa83626f5c#692674ca66728f5b0dbb2fc7e756acaa83626f5c"
+    ],
+    "murm.git": [
+      "git+https://github.com/merely-made/murm.git?branch=main#814c978462b42276d1be7bec0b07430b655ccd7b"
+    ]
+  },
+  "resources": {
+    "serialization": "/home/markik/Code/testing/machine-heavy.lock",
+    "memory_max": "3G",
+    "swap_max": 0,
+    "cpu_quota": "150%",
+    "build_jobs": 1,
+    "test_threads": 1,
+    "nice": 10,
+    "gate_timeout_seconds": 600
+  },
+  "checks": [
+    {
+      "label": "turnstone-retained-final",
+      "raw_log": "/home/markik/Code/testing/audits/tile-membership-downstream-20261020/turnstone-retained-final.log",
+      "sha256": "e8a99b997f34ec69b09e55709622ce12529b184b51d2ce9c2f1ebdc6192f27a4",
+      "command": "timeout --signal=TERM --kill-after=10s 600s cargo test --offline --locked -j1 --lib -- --test-threads=1 inspector_pane::tests:: knot_authoring::tests:: retained_layout_tests renderers::tests:: chrome_view::tests:: a11y",
+      "results": [
+        "test result: ok. 125 passed; 0 failed; 5 ignored; 0 measured; 987 filtered out; finished in 17.58s"
+      ],
+      "max_rss_kib": 3191424,
+      "swaps": 0,
+      "exit_code": 0
+    }
+  ],
+  "qualification_boundary": "Focused default-feature Turnstone library tests on Linux. Full suite remains unqualified. Upstream Servo conversion is Windows-feature code and was not compiled or runtime-qualified here. No new native-window or browser runtime qualification.",
+  "toolchain": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+  "published_upstream": {
+    "netrender": "54d864c20aeac9e46275cdab6e34edbd95d8ecf6",
+    "genet": "6ef3cd37a785a395670d3b472fb3573665497f29",
+    "mere": "dd342426ca4532d53cb23001cc41c8c8abc7f5ec",
+    "knot-editor": "086229e5630246852daa91b204cf0afbcda4777b"
+  },
+  "notes": [
+    "Pulled c889038 (AccessKit cohort and Servo conversion) and 0dd9b1b (compact header and float transfer fixes) before final tests; the overlapping local migration draft was backed up and discarded in favor of upstream.",
+    "The root lock carries the exact qualified supplier revisions. Updating Knot temporarily selected newer Mere branch packages; these were aligned back to dd342426 before testing. The subsequent Mere 2af95d3 resident-door changes are not part of this locked qualification.",
+    "Mere-source-edit retains its independent immutable 70deef2 contract. Current Mere packages share dd342426 and Murm packages share 814c9784.",
+    "Mere root retains Knot aa81a33; the later Knot 086229e changes only its root lock and qualification receipt. Each application root lock owns dependency composition, so there is no recursive lock-only repin cycle.",
+    "Two stale interaction fixtures were corrected without changing production code: scroll the Inspector row into view using its retained painted bounds; derive the Knot drag points from retained caret geometry. Strict selector ambiguity, member B identity, pointer capture across two moves, exact Unicode range 16..21, and persisted source assertions remain.",
+    "The binary target built successfully but contains zero tests and is not counted as test qualification. The broad library suite was stopped during slow peer-network tests after exposing the two interaction failures. Focused repros confirmed both failures before the fixture corrections. The final focused gate covers the requested retained paths; the full suite is not claimed passing.",
+    "Cargo source discovery emits a diagnostic from a Servo negative-test Cargo.toml; the locked native build and final focused gate themselves complete successfully."
+  ],
+  "retained_path_passes": {
+    "inspector_pane::tests::": 15,
+    "knot_authoring::tests::": 23,
+    "ui::retained_layout_tests::": 4,
+    "shell::renderers::tests::": 5,
+    "foreign_a11y::tests::": 18,
+    "chrome_view::tests::": 23
+  },
+  "prior_attempts": [
+    {
+      "log": "/home/markik/Code/testing/audits/tile-membership-downstream-20261020/turnstone-tests.log",
+      "sha256": "3b206c536c0af3fec3d6040e2dfa3270cfa05cf5b0447635eacf17571174d2f2",
+      "outcome": "Cancelled to pull current upstream"
+    },
+    {
+      "log": "/home/markik/Code/testing/audits/tile-membership-downstream-20261020/turnstone-tests-final.log",
+      "sha256": "77d7d35e3811719277570f4a9097e43a617f64e7b1965a4ad71a9e692fe4e971",
+      "outcome": "Binary compiled successfully; zero tests"
+    },
+    {
+      "log": "/home/markik/Code/testing/audits/tile-membership-downstream-20261020/turnstone-library-tests.log",
+      "sha256": "17524f02bdcdc9a3aa499c768776aed28f299c1487b726e2a329f7c973420a43",
+      "outcome": "Incomplete broad suite; stopped during peer-network tests"
+    },
+    {
+      "log": "/home/markik/Code/testing/audits/tile-membership-downstream-20261020/turnstone-inspector-repro.log",
+      "sha256": "002ae7323c1f80a1138cd8cf098d6284f17b77de6595b9104b47beb2adad24c1",
+      "outcome": "Failed: selected row outside visible viewport"
+    },
+    {
+      "log": "/home/markik/Code/testing/audits/tile-membership-downstream-20261020/turnstone-knot-repro.log",
+      "sha256": "d7b7143bc0b58a0e9f9bf05ec48ae66e9f3ba71bdfac4150c610379a547a58ed",
+      "outcome": "Failed: fixed coordinates selected 0..10 instead of 16..21"
+    }
+  ]
+}
