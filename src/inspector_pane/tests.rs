@@ -616,6 +616,20 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
             .expect("the registered System webview row is probe-visible")
             .point
         };
+        // The document controls above Viewer can wrap below this narrow
+        // viewport. Scroll the actual retained row into view before probing
+        // its visible point, as the shell does for a user scrolling the pane.
+        let (row_x, row_y, row_w, row_h) = {
+            let dom = pane.dom_ref();
+            let rows = pane.layout.matching_nodes(&dom, &selector);
+            assert_eq!(rows.len(), 1, "the registered viewer has one retained row");
+            pane.layout.painted_rect(&dom, rows[0]).unwrap()
+        };
+        pane.scroll_by(
+            (row_x + row_w - 251.0).max(0.0),
+            (row_y + row_h - 570.0).max(0.0),
+        );
+        let _ = pane.scene(251, 570);
         let (x, y) = pane
             .selector_point(&selector)
             .unwrap()
@@ -649,6 +663,8 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
         // A short pane clips the row until a real scroll paints it in view.
         // Scenario geometry must follow that scroll, rather than the DOM's
         // unchanged estimated coordinates.
+        let (scroll_x, scroll_y) = pane.scroll.offset();
+        pane.scroll_by(-scroll_x, -scroll_y);
         pane.sync(&app, inspector, 251.0, 100.0, None, None, "unconfigured");
         let _ = pane.scene(251, 100);
         assert_eq!(pane.selector_point(&selector), Ok(None));
