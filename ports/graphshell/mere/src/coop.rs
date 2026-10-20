@@ -285,6 +285,7 @@ async fn owner_call(
     client: &mut AppBrokerClient,
     session: &chirograph::ProjectionRequest,
     command: control::Request,
+    observed: &mut (scenotime::SceneEpoch, scenotime::Revision),
 ) -> Result<control::Reply, String> {
     let result = client
         .request_body(chirograph::CarrierRequestBody::Intent(
@@ -310,6 +311,7 @@ async fn owner_call(
         .snapshot(session.clone())
         .await
         .map_err(|e| e.to_string())?;
+    *observed = (snapshot.scene.epoch, snapshot.scene.revision);
     let offer = snapshot
         .presentation
         .offers
@@ -354,9 +356,13 @@ fn owner_worker(
                     .ok_or("no owner controls")?
                     .request
                     .clone();
-                connection = Some((client, request));
+                connection = Some((
+                    client,
+                    request,
+                    (scenotime::SceneEpoch(1), scenotime::Revision(0)),
+                ));
             }
-            let (client, session) = connection.as_mut().unwrap();
+            let (client, session, observed) = connection.as_mut().unwrap();
             let mut export = None;
             let request = match command {
                 Command::Read(graph) => control::Request::Read { graph },
@@ -381,7 +387,7 @@ fn owner_worker(
                 },
                 Command::Reconnect => return Err("select this graph again".into()),
             };
-            let reply = owner_call(client, session, request).await?;
+            let reply = owner_call(client, session, request, observed).await?;
             if let Some(folder) = export {
                 if folder.as_os_str().is_empty() {
                     return Err("Choose an invitation folder".into());

@@ -35,6 +35,7 @@ pub struct Reply {
 }
 pub struct Endpoint {
     session: ProjectionSession,
+    revision: Revision,
     call: Arc<dyn Fn(Request) -> Result<Reply, String> + Send + Sync>,
     current: Option<Vec<u8>>,
     authorize: Arc<dyn Fn() -> Result<(), String> + Send + Sync>,
@@ -47,6 +48,7 @@ impl Endpoint {
     ) -> Self {
         Self {
             session,
+            revision: Revision(0),
             call,
             authorize,
             current: None,
@@ -82,9 +84,21 @@ impl IntentSink for Endpoint {
         {
             return Err("not an owner control request".into());
         }
+        if intent.observed_epoch != SceneEpoch(1) || intent.observed_revision != self.revision {
+            return Ok(IntentResult::Stale {
+                current_epoch: SceneEpoch(1),
+                current_revision: self.revision,
+            });
+        }
         let request = serde_json::from_slice(&intent.payload).map_err(|e| e.to_string())?;
         match (self.call)(request) {
             Ok(reply) => {
+                self.revision = Revision(
+                    self.revision
+                        .0
+                        .checked_add(1)
+                        .ok_or("control revision exhausted")?,
+                );
                 self.current = Some(
                     serde_json::to_vec(&PortableCardV1 {
                         title: "Graph co-op controls".into(),
@@ -149,14 +163,22 @@ impl ProjectionSource for Endpoint {
                     label: "Owner controls".into(),
                     role: SemanticRole::Graphic,
                     bounds: BoundsRelationship::FitWithinFootprint,
-                    actions: vec![],
+                    actions: vec![AdvertisedAction {
+                        intent: IntentReference(INTENT.into()),
+                        label: "Control this graph's co-op".into(),
+                        explanation: "Owner-only selection, invitation, editing and revocation"
+                            .into(),
+                        payload_schema: INTENT.into(),
+                        input_form: None,
+                        effect: IntentEffect::DomainTruth,
+                    }],
                 },
             }],
         );
         Ok(ProjectionSnapshot {
             version: ProtocolVersion::V1,
             session: self.session.clone(),
-            scene: scenotime::SceneSnapshot::from_dense(SceneEpoch(1), Revision(1), scene)
+            scene: scenotime::SceneSnapshot::from_dense(SceneEpoch(1), self.revision, scene)
                 .map_err(|e| format!("{e:?}"))?,
             presentation,
             cache_policy: CachePolicy::default(),
@@ -211,7 +233,7 @@ mod tests {
             session: request.session.clone(),
             target: sceno::InstanceId(0),
             observed_epoch: SceneEpoch(1),
-            observed_revision: Revision(1),
+            observed_revision: Revision(0),
             intent: INTENT.into(),
             payload: serde_json::to_vec(&Request::Read { graph }).unwrap(),
         };
@@ -220,6 +242,11 @@ mod tests {
             IntentResult::Accepted
         );
         let snapshot = endpoint.snapshot(request.clone()).unwrap();
+        assert_eq!(snapshot.scene.revision, Revision(1));
+        assert!(matches!(
+            endpoint.invoke(intent.clone()).unwrap(),
+            IntentResult::Stale { .. }
+        ));
         let resource = ResourceRequest {
             session: request.session.clone(),
             resource: snapshot
