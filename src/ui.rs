@@ -2032,6 +2032,50 @@ impl RetainedLayout {
         )
     }
 
+    /// Resolve a painted text point to a byte in this control's descendants.
+    /// Keep the retained shaping, transforms, and scroll offsets used by paint.
+    pub(crate) fn text_caret_at(
+        &mut self,
+        dom: &mut ScriptedDom,
+        node: DomNodeId,
+        x: f32,
+        y: f32,
+    ) -> Option<cambium::CaretPosition> {
+        if let Some((layout, owner)) = self.inline_target() {
+            let mut layout = layout.borrow_mut();
+            let (ox, oy, _, _) = layout.painted_rect(dom, owner)?;
+            return layout.text_caret_at(dom, node, x + ox, y + oy);
+        }
+        self.snapshot.as_ref()?;
+        // Selection and caret projection can replace styled text nodes between
+        // moves in one native event batch. Resolve against their current shape.
+        let sheet = self.sheet.clone();
+        self.ensure(dom, &sheet, self.size.0, self.size.1);
+        let snapshot = self.snapshot.as_ref()?;
+        let translated = accumulated_translation(dom, snapshot, node);
+        let scroll = ancestor_scroll(dom, node, &self.element_scroll);
+        let own_scroll = self.element_scroll.get(&node).copied().unwrap_or_default();
+        let (text_node, offset) = snapshot.fragments.text_position_at_point(
+            x - translated.0 + scroll.0 + own_scroll.0 + self.viewport_scroll.0,
+            y - translated.1 + scroll.1 + own_scroll.1 + self.viewport_scroll.1,
+        )?;
+        let (mut before, mut found) = (0, false);
+        walk_dom(dom, node, &mut |descendant| {
+            if found {
+                return;
+            }
+            if descendant == text_node {
+                found = true;
+            } else if let Some(text) = dom.text(descendant) {
+                before += text.len();
+            }
+        });
+        found.then_some(cambium::CaretPosition {
+            byte: before + offset,
+            affinity: cambium::CaretAffinity::Downstream,
+        })
+    }
+
     /// Request the nearest viewport movement; the next paint clamps it and
     /// supplies a new visible rectangle. Ancestor clips remain authoritative:
     /// moving the viewport cannot make a hidden nested target clickable.

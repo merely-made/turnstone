@@ -1,0 +1,49 @@
+{
+  "source_removal": {
+    "source_unchanged": true,
+    "removed": [
+      {
+        "path": "/Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/producer-spaced/notes/selected.djot",
+        "sha256": "8f52fbbd79c5be7c1545c8ac38614f97741bc77d18a964a7c7b02755f35cfeeb"
+      },
+      {
+        "path": "/Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/trace-producer/notes/selected.djot",
+        "sha256": "8f52fbbd79c5be7c1545c8ac38614f97741bc77d18a964a7c7b02755f35cfeeb"
+      },
+      {
+        "path": "/Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/knot-producer/notes/selected.djot",
+        "sha256": "8f52fbbd79c5be7c1545c8ac38614f97741bc77d18a964a7c7b02755f35cfeeb"
+      },
+      {
+        "path": "/Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/producer-final/notes/selected.djot",
+        "sha256": "8f52fbbd79c5be7c1545c8ac38614f97741bc77d18a964a7c7b02755f35cfeeb"
+      },
+      {
+        "path": "/Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/final-producer/notes/selected.djot",
+        "sha256": "8f52fbbd79c5be7c1545c8ac38614f97741bc77d18a964a7c7b02755f35cfeeb"
+      },
+      {
+        "path": "/Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/qualified-producer/notes/selected.djot",
+        "sha256": "8f52fbbd79c5be7c1545c8ac38614f97741bc77d18a964a7c7b02755f35cfeeb"
+      },
+      {
+        "path": "/Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/before-observation/notes/selected.djot",
+        "sha256": "8f52fbbd79c5be7c1545c8ac38614f97741bc77d18a964a7c7b02755f35cfeeb"
+      }
+    ]
+  },
+  "transfer_inputs_removed": [
+    {
+      "path": "/Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/selected-knot.mereclip",
+      "sha256": "103dde1cfbcc68ee9c8e1e2a304040dcdb334be30c4717f0a4b3a80fba17bec4"
+    },
+    {
+      "path": "/Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/voice-fixture.mereclip",
+      "sha256": "5a827b54732c76cbe8e630b423f43fd68670e7c44f56f5998f4d7289d59265cc"
+    }
+  ],
+  "producer_stopped": true,
+  "first_receiver_stopped": true,
+  "first_custodian_stopped": true,
+  "custodian_restarted": true
+}

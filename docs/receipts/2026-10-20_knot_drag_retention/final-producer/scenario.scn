@@ -1,0 +1,27 @@
+settle 12
+key escape
+open file:///Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/final-producer/notes/selected.djot
+settle 25
+act Open node in Workbench
+settle 12
+assert content-live
+capture 00_knot_source_ready
+drag 540 177 600 177
+settle 8
+assert snap actions ~ Retain selected Knot text
+capture 01_knot_selected_text
+act Retain selected Knot text
+settle 25
+assert content-live
+act Open node in Workbench
+settle 12
+capture 02_knot_retained
+click-at 850 193
+settle 3
+assert snap actions ~ Export retained clip
+export-clip /Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/selected-knot.mereclip
+wait-file 30 /Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/selected-knot.mereclip
+assert event clip-package-exported
+assert snap offline-acquisition-attempts == 0
+capture 03_knot_selection_exported
+act Save session
