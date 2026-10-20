@@ -242,7 +242,7 @@ genet-render-host = { git = "https://github.com/merely-made/genet.git", branch =
 # gitignored local patch applies, like genet. Rung 3's hand-built ScriptedDom
 # chrome migrates onto this over time; panes that need a grid or a paint leaf
 # adopt it first.
-cambium = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+cambium = { version = "0.5.0", git = "https://github.com/merely-made/mere.git", branch = "main" }
 cambium-winit = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # Authority-free source buffer plus Knot highlighting/outline/folds/preview.
 # Storage, sync, grants, and keys stay in the endpoint process.

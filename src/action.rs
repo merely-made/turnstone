@@ -28,6 +28,9 @@
 //!   types at the boundary. The universal vocabulary must not depend on one
 //!   port implementation.
 
+mod command_metadata;
+pub(crate) use command_metadata::command_metadata;
+
 use crate::panes::{PaneKindId, PaneSource};
 
 /// A short-lived secret whose debug representation never contains the value.

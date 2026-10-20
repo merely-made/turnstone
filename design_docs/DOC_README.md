@@ -67,6 +67,8 @@ set.
 
 ## Current implementation plans and product direction
 
+- [Hest declarations and Cambium 0.5 adoption](2026-10-06_unusual_protocols_browser_plan.md#hest-declarations-and-cambium-05-adoption-2026-10-20): canonical source and Git-backed receiving qualified locally on Mere `0151950f8` and embedded Knot `65a6632`; 14 palette/sidecar cases, 1103 full-library passes, all-target checking and metadata verification. Push/publication and native GUI acceptance remain held.
+
 - Resident answer card: source-owner publication, exact-version citations and
   headed I5 acceptance are tracked in
   `mere/design_docs/mere_docs/implementation_strategy/2026-10-15_resident_inference_and_recall_plan.md`.

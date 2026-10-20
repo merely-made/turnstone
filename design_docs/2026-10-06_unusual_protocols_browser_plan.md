@@ -2072,3 +2072,51 @@ continue serially in the existing shared target cache.
   - [Reticulum browsing](2026-08-03_reticulum_browsing_plan.md)
   - [page capture](2026-08-28_page_capture_plan.md)
   - [pane registry](2026-08-08_pane_registry_and_graph_panes_plan.md)
+
+
+### Hest declarations and Cambium 0.5 adoption (2026-10-20)
+
+**Status:** canonical source adoption and locked receiving checks passed
+locally. Push and publication remain deferred by Mark's direction. The shared design
+and version rulings live in
+`mere/design_docs/cambium_docs/implementation_strategy/2026-10-20_hest_command_architecture_plan.md`.
+
+**Findings:** Turnstone starts at fetched `0dd9b1b`. Its actual palette now
+registers the qualified Hest effect/destructive declarations through Cambium,
+with an exhaustive host-owned match over the 164 `Action` variants in
+`src/action/command_metadata.rs`. Delete node, empty recycle bin and close
+session carry the destructive flag. This does not alter reducer, ring or
+confirmation policy. Existing choices retain their JSON fields and defaults.
+
+**Receiving gate:** lock the canonical Mere Git URL/branch to the local supplier
+commit containing Cambium 0.5.0 and Hest 0.2.0; run the actual palette tests,
+stored-choice compatibility, all-target workspace checking and the library
+suite. Preserve unrelated dependencies and local edits. Since the supplier is
+unpublished, seed its Git object locally for checks; the receiving lock gains
+no path override. Fresh remote resolution waits for later supplier delivery.
+
+**Progress:** applied the previously qualified source changes to canonical
+`src/action.rs` and `src/app/palette.rs`, added the declarations module, and
+required Cambium 0.5.0. Source, dependency and receiving receipts will identify
+the exact local supplier commit and the tested tree.
+
+**Qualification:** canonical Turnstone selects Cambium 0.5.0 and Hest 0.2.0
+from local Mere `0151950f8`, and embedded Knot `65a6632`; no source path override
+is present. All 14 command-menu/sidecar cases pass. The full default library
+suite passes 1103 with 15 ignored and zero failures,
+run serially with `TMPDIR=/tmp`; the 14 focused cases are included in that
+full-suite count. Workspace all-target checking and portable metadata
+verification pass. The [receiving receipt](../docs/receipts/hest-cambium-adoption-20261020/qualification.json)
+records the source hashes, exact commands and logs in the shared owner packet.
+
+Only two existing Rust files changed, plus the new declaration module;
+242 existing Rust files and 1,604 unrelated lock package blocks remain
+byte-identical. The immutable source-edit revision exception is preserved.
+Standalone Knot's compatibility export passes 53 default cases with the old
+Cambium 0.4 cohort and 66 engine cases with 0.5, with one existing ignore in
+each run; its desktop workspace and lock were not repinned.
+
+The Git objects were fetched locally from the canonical supplier checkouts.
+Fresh remote-only resolution waits for authorized delivery of Knot, Mere and
+then this consumer commit. Native GUI, restart and human AT acceptance remain
+separate. H3/H4 were not implemented by this adoption.

@@ -317,7 +317,8 @@ impl App {
             let shared = (index >= contextual)
                 .then(|| crate::action::shared_command_id(&action))
                 .flatten();
-            let command = match shared.and_then(cambium::catalogue::command) {
+            let (effect, destructive) = crate::action::command_metadata(&action);
+            let mut command = match shared.and_then(cambium::catalogue::command) {
                 Some(command) => command,
                 None => {
                     let category = if index < contextual {
@@ -325,9 +326,11 @@ impl App {
                     } else {
                         STATIC_COMMANDS
                     };
-                    cambium::Command::new(label.clone(), label.clone(), category)
+                    cambium::Command::new(label.clone(), label.clone(), category, effect)
                 },
             };
+            command.effect = effect;
+            command.destructive = destructive;
             if set.get(&command.id).is_some() {
                 continue;
             }
@@ -897,6 +900,32 @@ mod command_menu_tests {
             .iter()
             .map(|(label, _)| label.clone())
             .collect()
+    }
+
+    #[test]
+    fn offered_actions_carry_the_hosts_effect_and_destructive_declarations() {
+        use cambium::{EffectClass, catalogue::ids};
+        let app = App::test_stub();
+        let catalog = app.command_catalog();
+        // Exercise actual static and contextual registrations, including the
+        // fallback constructor for Turnstone-owned ids.
+        assert!(!catalog.actions.is_empty());
+        for (id, action) in &catalog.actions {
+            let offered = catalog.set.get(id).expect("each action is offered");
+            assert_eq!(
+                (offered.effect, offered.destructive),
+                crate::action::command_metadata(action),
+                "metadata must follow the exact offered Action: {id}"
+            );
+        }
+        let delete = catalog.set.get(ids::NODE_DELETE).unwrap();
+        assert_eq!((delete.effect, delete.destructive), (EffectClass::DomainTruth, true));
+        let fit = catalog.set.get(ids::VIEW_FIT).unwrap();
+        assert_eq!((fit.effect, fit.destructive), (EffectClass::Curation, false));
+        let save = catalog.set.get(ids::SESSION_SAVE).unwrap();
+        assert_eq!((save.effect, save.destructive), (EffectClass::ExternalEffect, false));
+        assert_eq!(crate::action::command_metadata(&Action::EmptyRecycleBin), (EffectClass::DomainTruth, true));
+        assert_eq!(crate::action::command_metadata(&Action::CloseSession), (EffectClass::DomainTruth, true));
     }
 
     #[test]
