@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "commit": null,
+  "place_ids": {
+    "moot": "ee6fc093ef61461c2e6c7067523bf4bb0f80f48acb1ff6684620f9d9e8e4d87e",
+    "root": "642a7fae7f2f34735e8e345254791bf00375d33f260dc18a8e0cbd61a5e23bbc",
+    "chat": "caa1b386735ac6105b9420aa7804b13f89d8dca62e6f5b78b515dc7441612a01",
+    "default_channel": "general"
+  },
+  "personae_roots": {
+    "founder": "ef15562394a14522f4146686d0580daf2e7a5396589e4d15603cfbc3603521cf",
+    "joiner": "343a662e257afb9d5353411326c1efbd6dd0329ca1372c9be6ed92267e8e2a1a",
+    "reader": "427d1fe8e6fd35d514fae377b4dea0b6c4b6a34af538592c9fc2779c3330c075"
+  },
+  "initial_messages": 2,
+  "absent_messages": 3,
+  "converged_messages": 5,
+  "cold_retained_messages": 5,
+  "cold_reconnected_messages": 7,
+  "shared_graph_digest": "23ed76f90365fea3d071bf177376a68f7aecdfe3f180b8d462129f96692877b6",
+  "chat_digest_before_cold": "cc99acb28ef27e544e95f8d21365f73ee6310dd1d7a40a12ce3f80d35b5d93a5",
+  "chat_digest_after_cold": "bb0894395b8942ba98311b9f395595c4be5ab39ad63168d54562076b767792af",
+  "exited_cache_address_scope": {
+    "founder": [
+      "http://127.0.0.1:55586/founder-private.html",
+      "http://127.0.0.1:55586/shared.html"
+    ],
+    "joiner": [
+      "http://127.0.0.1:55586/shared.html"
+    ],
+    "reader": [
+      "http://127.0.0.1:55586/reader-private.html",
+      "http://127.0.0.1:55586/shared.html"
+    ]
+  },
+  "origin_gone_before_cold_reopen": true,
+  "explicit_current_contact_refresh": true,
+  "foreign_contact_refused_without_scope_change": true,
+  "independent_resident_restarts": true,
+  "reader_write_refused": true,
+  "native_processes": 6,
+  "native_pids": [
+    6050,
+    6087,
+    6139,
+    6184,
+    6254,
+    6275
+  ],
+  "presented_frames": 2368,
+  "nonblank_captures": 15,
+  "scope": "Same-host native place admission, selected address/title sharing, retained reopening and live catch-up"
+}

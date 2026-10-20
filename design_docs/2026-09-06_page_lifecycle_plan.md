@@ -986,7 +986,7 @@ route, separate from authoring a place contribution. L7's default-off attachment
 rule still applies. The existing research-note receipt remains a local
 authoring/citation receipt.
 
-**The current-stack shared-place address/title and chat baseline is now
+**The current-stack shared-place address and chat baseline is now
 qualified separately.** The [macOS receipt](../docs/receipts/place_sharing_20261019/README.md)
 exercises create, invite, writer/reader join, one deliberate address share,
 reader write refusal and absent-authoring catch-up. After all apps/residents

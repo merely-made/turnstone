@@ -1,0 +1,41 @@
+{
+  "source_commit": "48fd33851ed0e9386ea06b511acb0a3b5f33bc04",
+  "tracked_source_clean_and_stable": true,
+  "guarded_rust_and_cargo_files": 3091,
+  "cargo_lock_sha256": "a74613ca04c545e8302ace31d6932cc33d18780f2ea28caa95defa5c7cdaf5c0",
+  "binary_sha256": "17b40152b95e9029ff36802a022fbb077de47c65f9a79196a23b96cb99300990",
+  "build_command": "rustup run 1.99.1 cargo build --locked --offline --manifest-path <mere>/ports/djinn/Cargo.toml --bin djinn --features passphrase-fd -j2",
+  "selected_dependencies": [
+    {
+      "name": "dramatis",
+      "version": "0.0.3",
+      "source": "git+https://github.com/merely-made/dramatis.git?branch=main#cf562f47f33ab0b6ad0db1c5ac3123775769979e"
+    },
+    {
+      "name": "eidetic",
+      "version": "0.0.2",
+      "source": "git+https://github.com/merely-made/eidetic.git?rev=543f5ff38f87a09afc04dbc59f57c2dfbc6a9943#543f5ff38f87a09afc04dbc59f57c2dfbc6a9943"
+    },
+    {
+      "name": "genet-render",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#83114ac2d3dd323e6d9af8bb5e763a39ffd7f41e"
+    },
+    {
+      "name": "knot-editor",
+      "version": "0.0.3",
+      "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#88eeb9750f2e9a15a2ff9dfe797bb5c1e15d7fd8"
+    },
+    {
+      "name": "mere-transport",
+      "version": "0.0.2",
+      "source": "git+https://github.com/merely-made/murm.git?branch=main#7c2432ab16723daeb8119f21014a66f0a8121ff8"
+    },
+    {
+      "name": "personae",
+      "version": "0.3.0",
+      "source": "git+https://github.com/merely-made/dramatis.git?branch=main#cf562f47f33ab0b6ad0db1c5ac3123775769979e"
+    }
+  ],
+  "passphrase_handoff": "Owner-supported receipt stdin feature; real encrypted isolated vaults; no password environment or fixture identity fallback"
+}

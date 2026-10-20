@@ -1,0 +1,7 @@
+{"at_ms":1792464591292,"event":"started","installed":false,"pid":6039,"schema":"djinn.resident-events/v1","version":"0.0.2"}
+{"at_ms":1792464591312,"creating":true,"event":"waiting-for-unlock","pid":6039,"schema":"djinn.resident-events/v1"}
+{"at_ms":1792464591787,"event":"vault-created","pid":6039,"schema":"djinn.resident-events/v1"}
+{"agent":"/private/tmp/tspl-3nm_nem0/reader/agent.sock","app":"/private/tmp/tspl-3nm_nem0/reader/app.sock","at_ms":1792464592021,"browser":"/private/tmp/tspl-3nm_nem0/reader/browser.sock","event":"listening","pid":6039,"schema":"djinn.resident-events/v1","ticket":null}
+{"at_ms":1792464592021,"event":"ready","pid":6039,"schema":"djinn.resident-events/v1"}
+{"at_ms":1792464744959,"event":"stopping","pid":6039,"reason":"stop intent","schema":"djinn.resident-events/v1"}
+{"at_ms":1792464745036,"event":"stopped","ok":true,"pid":6039,"reason":"stop intent","schema":"djinn.resident-events/v1"}

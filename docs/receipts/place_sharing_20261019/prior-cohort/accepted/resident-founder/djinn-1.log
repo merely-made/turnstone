@@ -1,0 +1,18 @@
+2026-10-20T02:49:50.047810Z  INFO djinn: Personae storage open storage=passphrase-encrypted vault at /private/tmp/tspl-3nm_nem0/founder/vault/vault.json
+2026-10-20T02:49:50.049493Z  WARN djinn: selected profile was created profile=founder
+2026-10-20T02:49:50.051018Z  INFO djinn::lock_triggers::host: lock triggers settings=LockSettings { session_lock: true, suspend: true, idle: true, idle_minutes: 15 }
+2026-10-20T02:49:50.228176Z  WARN djinn: resident reservoir unavailable reason=no persona wallet exists under /private/tmp/tspl-3nm_nem0/founder/mere yet; pair this device first, or name a persona
+2026-10-20T02:49:50.228510Z  INFO djinn: SSH agent listening endpoint="/private/tmp/tspl-3nm_nem0/founder/agent.sock"
+2026-10-20T02:49:50.228623Z  INFO djinn::personal_sync: owner settings path=/private/tmp/tspl-3nm_nem0/founder/local/graphshell/settings/founder.json configured=false
+2026-10-20T02:50:04.650022Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:13.229903Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:14.690334Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:14.733870Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:16.469051Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:16.504434Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:17.036186Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:17.476433Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:18.226999Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:18.418678Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:52:24.683965Z  INFO djinn: stop requested on the control route
+2026-10-20T02:52:24.684852Z  INFO djinn: resident tasks cancelled and joined tasks=3

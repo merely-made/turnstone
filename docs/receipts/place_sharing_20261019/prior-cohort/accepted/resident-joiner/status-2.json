@@ -1,0 +1,17 @@
+{
+  "schema": "djinn.resident-status/v1",
+  "pid": 6247,
+  "started_ms": 1792464746597,
+  "installed": false,
+  "ready": true,
+  "startup_unlock": "passphrase",
+  "protection": "passphrase",
+  "lock": "unlocked",
+  "endpoints": {
+    "agent": "/private/tmp/tspl-3nm_nem0/joiner/agent.sock",
+    "agent_listener": "receipt",
+    "browser": "/private/tmp/tspl-3nm_nem0/joiner/browser.sock",
+    "app": "/private/tmp/tspl-3nm_nem0/joiner/app.sock"
+  },
+  "sync": null
+}

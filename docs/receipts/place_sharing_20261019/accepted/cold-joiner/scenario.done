@@ -1,0 +1,8 @@
+RESULT ok
+captured 15_joiner_cold_retained
+captured 15a_foreign_contact_refused
+captured 16_joiner_cold_converged
+presentation frames=121 captures=3 blank=0
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-10/cold-joiner/15_joiner_cold_retained.png digest=8d5f3f24d768b37b blank=false
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-10/cold-joiner/15a_foreign_contact_refused.png digest=259cf7b4da3a9a1f blank=false
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-10/cold-joiner/16_joiner_cold_converged.png digest=9551c59ec80c6f1f blank=false

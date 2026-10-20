@@ -1,0 +1,10 @@
+RESULT ok
+captured 01_founder_listening
+captured invitation_attempt
+captured 02_founder_selected_address
+captured 05_founder_final
+presentation frames=1125 captures=4 blank=0
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-09/founder/01_founder_listening.png digest=c10322908b360489 blank=false
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-09/founder/invitation_attempt.png digest=80d8e05d934b1f59 blank=false
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-09/founder/02_founder_selected_address.png digest=003004835a88b041 blank=false
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-09/founder/05_founder_final.png digest=d65cc4bb585ad514 blank=false

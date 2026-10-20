@@ -1,0 +1,30 @@
+{
+  "place": {
+    "passed": 76,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 723.83,
+    "log": "place-tests.log.gz"
+  },
+  "app_place": {
+    "passed": 12,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 11.35,
+    "log": "app-place-tests.log.gz"
+  },
+  "frame_wait": {
+    "passed": 3,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 0.04,
+    "log": "frame-wait-tests.log.gz"
+  },
+  "ring": {
+    "passed": 25,
+    "failed": 0,
+    "ignored": 5,
+    "seconds": 0.58,
+    "log": "ring-tests.log.gz"
+  }
+}
