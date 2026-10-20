@@ -2120,3 +2120,13 @@ The Git objects were fetched locally from the canonical supplier checkouts.
 Fresh remote-only resolution waits for authorized delivery of Knot, Mere and
 then this consumer commit. Native GUI, restart and human AT acceptance remain
 separate. H3/H4 were not implemented by this adoption.
+
+**Final reconciliation:** published Turnstone `1d13185` arrived during the
+first qualification. Merge `8e3e5cb` preserves its retained-renderer and
+painted-geometry fixture updates, while retaining the local Cambium 0.5/Hest
+0.2 supplier pins. NetRender is coherently `54d864c2`; Genet remains `6ef3cd37`.
+Fresh merged-tree checks pass 14 command-menu/sidecar, 15 Inspector and 23 Knot
+authoring cases (5 existing ignores), plus all-targets and portable metadata.
+The complete merged library passes 1103 with 15 existing ignores
+and zero failures. Focused cases overlap that full-suite count. The updated
+receiving receipt distinguishes this merged cohort from the first pass.
