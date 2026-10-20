@@ -32,7 +32,7 @@ use std::{
 use cambium_genet_winit_host::{
     AppCtx, CloseDisposition, CloseRequest, HostHooks, WindowCommand, WinitHost,
 };
-use cambium_rootstock::{PresentedFrame, ProducerImageIdentity, start_frame_readback};
+use cambium_rootstock::{CaptureFrame, PresentedFrame, ProducerImageIdentity};
 use genet_render_host::{
     PendingRgbaReadback, RecoveryStatus, RenderCore, RgbaFrame, SharedRenderCore,
 };
@@ -118,13 +118,35 @@ fn image_json(image: &ProducerImageIdentity) -> Value {
            "stamp":image.stamp,"size":image.size,"owner":format!("{:?}",image.owner)})
 }
 
+/// The presented source is read back by the host, branded with the stamp it
+/// was presented under; the producer copies are this gate's own readbacks.
+enum Pending {
+    Presented(CaptureFrame, PresentedFrame),
+    Producer(PendingRgbaReadback),
+}
+impl Pending {
+    fn poll(&mut self) -> Option<Result<RgbaFrame, String>> {
+        match self {
+            Self::Presented(capture, stamp) => capture.poll().map(|result| {
+                let (presented, frame) = result.map_err(|e| e.to_string())?;
+                require(
+                    presented == *stamp,
+                    "presented readback carries a different presentation stamp",
+                )?;
+                Ok(frame)
+            }),
+            Self::Producer(pending) => pending.poll().map(|r| r.map_err(|e| e.to_string())),
+        }
+    }
+}
+
 struct CopyJob {
-    pending: Option<PendingRgbaReadback>,
+    pending: Option<Pending>,
     started: Instant,
     frame: Option<RgbaFrame>,
 }
 impl CopyJob {
-    fn new(pending: PendingRgbaReadback) -> Self {
+    fn new(pending: Pending) -> Self {
         Self {
             pending: Some(pending),
             started: Instant::now(),
@@ -188,12 +210,14 @@ struct Captured {
 }
 struct CaptureSlot {
     seal: Option<Result<Authority, String>>,
+    stamp: Option<PresentedFrame>,
     presented: Option<Result<(PresentedFrame, CopyJob), String>>,
 }
 impl CaptureSlot {
     fn new() -> Self {
         Self {
             seal: None,
+            stamp: None,
             presented: None,
         }
     }
@@ -201,14 +225,18 @@ impl CaptureSlot {
 
 fn arm(host: &mut NativeHost, slot: Rc<RefCell<CaptureSlot>>) {
     let sealed = slot.clone();
-    host.s.pending_presentation_observer = Some(Box::new(move |ctx, _| {
-        sealed.borrow_mut().seal = Some(seal(ctx));
+    host.s.pending_presentation_observer = Some(Box::new(move |ctx, stamp| {
+        let mut sealed = sealed.borrow_mut();
+        sealed.seal = Some(seal(ctx));
+        sealed.stamp = Some(stamp);
     }));
     host.s.pending_stamped_capture = Some(Box::new(move |result| {
+        // The observer runs before capture callbacks, so the stamp is here.
+        let stamp = slot.borrow_mut().stamp.take();
         let result = result
             .map_err(|e| format!("complete presented capture refused: {e}"))
             .and_then(|capture| {
-                let p = capture.presentation;
+                let p = stamp.ok_or("presented capture lacks its presentation stamp")?;
                 let bytes = (p.width as usize)
                     .checked_mul(p.height as usize)
                     .and_then(|n| n.checked_mul(4));
@@ -216,8 +244,7 @@ fn arm(host: &mut NativeHost, slot: Rc<RefCell<CaptureSlot>>) {
                     bytes.is_some_and(|n| n > 0 && n <= MAX_FRAME_BYTES),
                     "presented source exceeds32MiB",
                 )?;
-                let copy = start_frame_readback(capture.surface, capture.view, p.width, p.height)?;
-                Ok((p, CopyJob::new(copy)))
+                Ok((p, CopyJob::new(Pending::Presented(capture, p))))
             });
         slot.borrow_mut().presented = Some(result);
     }));
@@ -268,7 +295,7 @@ fn source_copy(
         .map_err(|e| format!("complete producer raster refused: {e:?}"))?;
     let pending = core.start_rgba8_readback(&texture, w, h)?;
     // No texture/view survives this function; queued readback owns the copy.
-    Ok(CopyJob::new(pending))
+    Ok(CopyJob::new(Pending::Producer(pending)))
 }
 
 fn collect(
