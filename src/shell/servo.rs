@@ -38,6 +38,15 @@ use winit::dpi::PhysicalSize;
 
 pub(super) const FRAME_KIND: &str = "turnstone.servo.imported-frame";
 
+/// Servo pins AccessKit 0.24 while Mere's surface contract is 0.25. 0.25 only
+/// adds node properties and renames `Tree` to `TreeInfo`, so the serde form of
+/// a 0.24 update is a valid 0.25 update. Convert there, at this one boundary.
+fn surface_update_from_servo(
+    update: &servo::accesskit::TreeUpdate,
+) -> Result<SurfaceAccessibilityUpdate, serde_json::Error> {
+    serde_json::from_value(serde_json::to_value(update)?)
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct ServoHostOptions {
     pub profile_name: String,
@@ -384,7 +393,16 @@ impl Delegate {
 }
 impl WebViewDelegate for Delegate {
     fn notify_accessibility_tree_update(&self, _: WebView, update: servo::accesskit::TreeUpdate) {
-        self.push_accessibility_update(update);
+        match surface_update_from_servo(&update) {
+            Ok(update) => self.push_accessibility_update(update),
+            Err(error) => {
+                // A dropped delta would leave the host applying later deltas
+                // to the wrong tree. Retire the forest; resync re-admits it.
+                tracing::error!(target: "turnstone::servo::a11y",
+                    %error, "Servo accessibility update did not convert");
+                self.deactivate_accessibility();
+            },
+        }
     }
     fn request_permission(&self, _: WebView, request: PermissionRequest) {
         // This host slice exposes no permission UI or decision persistence.
@@ -472,7 +490,7 @@ impl GraftSurface for TurnstoneServoSurface {
         // this returns. The host admits the returned root before draining them.
         self.delegate.accessibility_active.set(true);
         match self.view().set_accessibility_active(true) {
-            Some(tree) => Ok(Some(tree)),
+            Some(tree) => Ok(Some(SurfaceAccessibilityTreeId(tree.0))),
             None => {
                 self.delegate.deactivate_accessibility();
                 Err(unsupported("accessibility activation"))
@@ -877,22 +895,56 @@ mod tests {
         tree: SurfaceAccessibilityTreeId,
         grafted: Option<SurfaceAccessibilityTreeId>,
     ) -> SurfaceAccessibilityUpdate {
-        use servo::accesskit::{Node, NodeId, Role, Tree};
+        use accesskit::{Node, NodeId, Role, TreeInfo};
         let mut node = Node::new(Role::GenericContainer);
         if let Some(grafted) = grafted {
             node.set_tree_id(grafted);
         }
         SurfaceAccessibilityUpdate {
             nodes: vec![(NodeId(0), node)],
-            tree: Some(Tree::new(NodeId(0))),
+            tree: Some(TreeInfo::new(NodeId(0))),
             tree_id: tree,
             focus: NodeId(0),
         }
     }
 
     #[test]
+    fn servo_updates_convert_to_the_surface_contract_unchanged() {
+        use servo::accesskit as servo_ak;
+        let mut root = servo_ak::Node::new(servo_ak::Role::RootWebArea);
+        root.set_children(vec![servo_ak::NodeId(2)]);
+        root.set_tree_id(servo_ak::TreeId(servo_ak::Uuid::from_u64_pair(0, 110)));
+        let mut child = servo_ak::Node::new(servo_ak::Role::Button);
+        child.set_label("supplier node");
+        child.add_action(servo_ak::Action::Click);
+        child.set_bounds(servo_ak::Rect::new(1.0, 2.0, 30.0, 40.0));
+        let servo_update = servo_ak::TreeUpdate {
+            nodes: vec![(servo_ak::NodeId(1), root), (servo_ak::NodeId(2), child)],
+            tree: Some(servo_ak::Tree::new(servo_ak::NodeId(1))),
+            tree_id: servo_ak::TreeId(servo_ak::Uuid::from_u64_pair(0, 109)),
+            focus: servo_ak::NodeId(2),
+        };
+
+        use accesskit::{Action, Node, NodeId, Rect, Role, TreeId, TreeInfo, Uuid};
+        let mut root = Node::new(Role::RootWebArea);
+        root.set_children(vec![NodeId(2)]);
+        root.set_tree_id(TreeId(Uuid::from_u64_pair(0, 110)));
+        let mut child = Node::new(Role::Button);
+        child.set_label("supplier node");
+        child.add_action(Action::Click);
+        child.set_bounds(Rect::new(1.0, 2.0, 30.0, 40.0));
+        let expected = SurfaceAccessibilityUpdate {
+            nodes: vec![(NodeId(1), root), (NodeId(2), child)],
+            tree: Some(TreeInfo::new(NodeId(1))),
+            tree_id: TreeId(Uuid::from_u64_pair(0, 109)),
+            focus: NodeId(2),
+        };
+        assert_eq!(surface_update_from_servo(&servo_update).unwrap(), expected);
+    }
+
+    #[test]
     fn accessibility_callbacks_preserve_order_and_nested_supplier_ids() {
-        use servo::accesskit::{NodeId, TreeId, Uuid};
+        use accesskit::{NodeId, TreeId, Uuid};
         let delegate = accessibility_delegate();
         let wrapper = TreeId(Uuid::from_u64_pair(0, 101));
         let document = TreeId(Uuid::from_u64_pair(0, 102));
@@ -917,7 +969,7 @@ mod tests {
 
     #[test]
     fn accessibility_deactivation_retires_queued_and_late_callbacks() {
-        use servo::accesskit::{TreeId, Uuid};
+        use accesskit::{TreeId, Uuid};
         let delegate = accessibility_delegate();
         let old = TreeId(Uuid::from_u64_pair(0, 104));
         let replacement = TreeId(Uuid::from_u64_pair(0, 105));
@@ -935,7 +987,7 @@ mod tests {
 
     #[test]
     fn accessibility_focus_policy_projects_only_focus_after_raw_fifo_admission() {
-        use servo::accesskit::{Action, Node, NodeId, Role, Tree, TreeId, Uuid};
+        use accesskit::{Action, Node, NodeId, Role, TreeId, TreeInfo, Uuid};
         for policy in [A11yFocusPolicy::Upstream, A11yFocusPolicy::DocumentRoot] {
             let delegate = accessibility_delegate();
             delegate.accessibility_active.set(true);
@@ -947,7 +999,7 @@ mod tests {
                 child.add_action(Action::Click);
                 SurfaceAccessibilityUpdate {
                     nodes: vec![(NodeId(root_id), root), (NodeId(root_id + 1), child)],
-                    tree: Some(Tree::new(NodeId(root_id))),
+                    tree: Some(TreeInfo::new(NodeId(root_id))),
                     tree_id: TreeId(Uuid::from_u64_pair(0, id)),
                     focus: NodeId(1),
                 }
@@ -983,7 +1035,7 @@ mod tests {
 
     #[test]
     fn accessibility_focus_projection_does_not_invent_missing_metadata() {
-        use servo::accesskit::{NodeId, TreeId, Uuid};
+        use accesskit::{NodeId, TreeId, Uuid};
         let delegate = accessibility_delegate();
         delegate.accessibility_active.set(true);
         let mut raw = accessibility_update(TreeId(Uuid::from_u64_pair(0, 108)), None);
