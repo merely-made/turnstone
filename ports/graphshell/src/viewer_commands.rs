@@ -5,7 +5,10 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! The retained viewer's supported commands, independent of a browser/store.
-use command_menu::{Command, CommandSet, catalogue::ids};
+use hest::{
+    catalogue::ids,
+    menu::{Command, CommandSet},
+};
 
 use mere::canvas::{controls::CanvasCommand, gestures::WheelMode};
 
@@ -142,7 +145,7 @@ pub fn commands(available: Availability) -> CommandSet {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use command_menu::{CommandChoices, MenuSession};
+    use hest::menu::{CommandChoices, MenuSession};
 
     #[test]
     fn browsing_pages_cover_commands_and_follow_keyboard_selection() {

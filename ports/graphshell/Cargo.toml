@@ -128,7 +128,7 @@ web = [
     # Promoted links name Cambium's link-member target; the web crate links
     # Cambium anyway, so the viewer pays nothing for it.
     "dep:cambium",
-    "dep:command-menu",
+    "dep:hest",
     "dep:tabard",
     "dep:async-trait",
     # The canvas's producer semantics for a screen reader (`canvas_reader`;
@@ -181,7 +181,7 @@ pelt-core = { workspace = true, features = ["genet"], optional = true }
 inker = { workspace = true, optional = true }
 netrender = { workspace = true, optional = true }
 mere-document-lanes = { workspace = true, features = ["retained-clips"], optional = true }
-command-menu = { path = "../../crates/cambium/command-menu", optional = true }
+hest = { workspace = true, optional = true }
 # The check conclusions and faults, named directly (insigne proofs plan, B).
 insigne = { workspace = true, features = ["verify"] }
 async-trait = { version = "0.1", optional = true }
