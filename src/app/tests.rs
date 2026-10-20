@@ -3672,6 +3672,43 @@ fn workbench_actions_flow_through_the_spine() {
     assert!(app.active_workbench().unwrap().has_tile(a));
 }
 
+#[test]
+fn workbench_initial_reader_shares_orrery_stack_and_survives_restart() {
+    let mut app = App::test_stub();
+    let graph = app.default_graph_pane();
+    app.update(Action::OpenAddress("https://example.com/reading".into()));
+    app.update(Action::OpenInWorkbench);
+    let reader = app.active_pane.unwrap();
+    assert_ne!(reader, graph);
+    let restored: crate::panes::FrisketLayout = serde_json::from_str(
+        &serde_json::to_string(&app.frisket).unwrap()).unwrap();
+    let frame = restored.outer_workspace().unwrap();
+    let workbench::TileTree::Stack(stack) = frame.workspace.tiled() else {
+        panic!("initial reading must not reserve half the window for Orrery")
+    };
+    assert_eq!(stack.tabs.iter().map(|t| t.id.0).collect::<Vec<_>>(), vec![graph.0, reader.0]);
+    assert_eq!(stack.tabs[stack.active].id.0, reader.0);
+    drop(frame);
+    app.frisket = restored;
+    app.update(Action::OuterWorkspace { space: crate::action::SpaceRef::Primary,
+        event: workbench::TileEvent::Activated(workbench::TileId(graph.0)).into() });
+    assert_eq!(app.active_pane, Some(graph));
+    assert_eq!(app.frisket.outer_workspace().unwrap().active_ids(), vec![workbench::TileId(graph.0)]);
+}
+
+#[test]
+fn workbench_open_preserves_an_existing_custom_split() {
+    let mut app = App::test_stub();
+    let graph = app.default_graph_pane();
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(crate::panes::kind::INSPECTOR)));
+    app.active_pane = Some(graph);
+    app.update(Action::OpenAddress("https://example.com/reading".into()));
+    app.update(Action::OpenInWorkbench);
+    let frame = app.frisket.outer_workspace().unwrap();
+    assert_eq!(frame.active_ids().len(), 3, "custom splits remain visible");
+    assert!(matches!(frame.workspace.tiled(), workbench::TileTree::Split { .. }));
+}
+
 /// A Workbench page can differ from the canvas selection. Browser controls
 /// act on that page without changing or operating on its graph sibling.
 #[test]

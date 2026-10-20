@@ -484,12 +484,25 @@ impl App {
                 result,
             ),
             Update::ContentSpawned { node, facts } => {
+                // Retained engines report their document title at admission,
+                // before later title-change events. Give tabs and captions
+                // the same identity as the opened document immediately.
+                let title = facts
+                    .as_ref()
+                    .and_then(|facts| facts.structure.as_ref())
+                    .and_then(|structure| structure.title.as_ref())
+                    .filter(|title| !title.trim().is_empty())
+                    .cloned();
+                let mut effects = title
+                    .map(|title| self.set_content_title(node, title))
+                    .unwrap_or_default();
                 self.content.note_live(node, facts);
                 self.events.push(AppEvent::ContentState {
                     node,
                     state: "live".to_string(),
                 });
-                vec![Effect::Redraw]
+                effects.push(Effect::Redraw);
+                effects
             },
             Update::DocumentFindChanged {
                 node,
