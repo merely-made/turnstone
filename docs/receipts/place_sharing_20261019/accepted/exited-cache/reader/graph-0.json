@@ -1,0 +1,174 @@
+{
+  "nodes": [
+    {
+      "node_id": "e7385757-4fd4-48d9-aea2-6e6ba4eb28b0",
+      "address": {
+        "Http": "http://127.0.0.1:55961/shared.html"
+      },
+      "url": "http://127.0.0.1:55961/shared.html",
+      "cached_host": null,
+      "title": "http://127.0.0.1:55961/shared.html",
+      "tags": [],
+      "tag_presentation": {
+        "ordered_tags": [],
+        "icon_overrides": {}
+      },
+      "import_provenance": [],
+      "is_pinned": false,
+      "session_state": {
+        "scroll_x": null,
+        "scroll_y": null,
+        "form_draft": null,
+        "last_visited_ms": null
+      },
+      "mime_hint": "text/html",
+      "classifications": [],
+      "frame_layout_hints": [],
+      "frame_split_offer_suppressed": false,
+      "properties": [],
+      "derivations": [],
+      "body": null,
+      "last_session_visited": 0,
+      "nested": null
+    },
+    {
+      "node_id": "7367f8e3-40b9-4841-b764-704eb68bbaf2",
+      "address": {
+        "Http": "http://127.0.0.1:55961/reader-private.html"
+      },
+      "url": "http://127.0.0.1:55961/reader-private.html",
+      "cached_host": null,
+      "title": "Refused reader sentinel",
+      "tags": [],
+      "tag_presentation": {
+        "ordered_tags": [],
+        "icon_overrides": {}
+      },
+      "import_provenance": [],
+      "is_pinned": false,
+      "session_state": {
+        "scroll_x": null,
+        "scroll_y": null,
+        "form_draft": null,
+        "last_visited_ms": null
+      },
+      "mime_hint": "text/html",
+      "classifications": [],
+      "frame_layout_hints": [],
+      "frame_split_offer_suppressed": false,
+      "properties": [],
+      "derivations": [],
+      "body": null,
+      "last_session_visited": 0,
+      "nested": null
+    }
+  ],
+  "edges": [],
+  "import_records": [],
+  "timestamp_secs": 1792465875,
+  "fields": [],
+  "couplings": [],
+  "navigation": {
+    "snapshot": {
+      "entries": [
+        {
+          "key": "http://127.0.0.1:55961/shared.html",
+          "payload": "http://127.0.0.1:55961/shared.html",
+          "first_seen_at_ms": 1792465867326,
+          "last_seen_at_ms": 1792465867326,
+          "visit_count": 1,
+          "privacy": "LocalOnly"
+        },
+        {
+          "key": "http://127.0.0.1:55961/reader-private.html",
+          "payload": "http://127.0.0.1:55961/reader-private.html",
+          "first_seen_at_ms": 1792465867796,
+          "last_seen_at_ms": 1792465867796,
+          "visit_count": 1,
+          "privacy": "LocalOnly"
+        }
+      ],
+      "visits": [
+        {
+          "entry": 0,
+          "parent": null,
+          "children": [],
+          "created_at_ms": 1792465867326,
+          "context": null,
+          "inbound": null,
+          "bindings": [
+            {
+              "owner": 0,
+              "forward_child": null,
+              "last_accessed_at_ms": 1792465867326
+            }
+          ]
+        },
+        {
+          "entry": 1,
+          "parent": null,
+          "children": [],
+          "created_at_ms": 1792465867796,
+          "context": null,
+          "inbound": null,
+          "bindings": [
+            {
+              "owner": 1,
+              "forward_child": null,
+              "last_accessed_at_ms": 1792465867796
+            }
+          ]
+        }
+      ],
+      "owners": [
+        {
+          "identity": {
+            "Node": "e7385757-4fd4-48d9-aea2-6e6ba4eb28b0"
+          },
+          "origin": 0,
+          "current": 0,
+          "creator": null,
+          "pending_origin_parent": null,
+          "owned_visits": [
+            0
+          ]
+        },
+        {
+          "identity": {
+            "Node": "7367f8e3-40b9-4841-b764-704eb68bbaf2"
+          },
+          "origin": 1,
+          "current": 1,
+          "creator": null,
+          "pending_origin_parent": null,
+          "owned_visits": [
+            1
+          ]
+        }
+      ]
+    }
+  },
+  "resources": [
+    {
+      "canonical_iri": "http://127.0.0.1:55961/shared.html",
+      "facets": []
+    },
+    {
+      "canonical_iri": "http://127.0.0.1:55961/reader-private.html",
+      "facets": []
+    }
+  ],
+  "resource_edges": [],
+  "shown_resources": [
+    {
+      "surface_id": "7367f8e3-40b9-4841-b764-704eb68bbaf2",
+      "resource_id": "2fbbb3b8-65c2-5adf-ada4-65a660e9aefa"
+    },
+    {
+      "surface_id": "e7385757-4fd4-48d9-aea2-6e6ba4eb28b0",
+      "resource_id": "3c8d671b-e51e-55aa-ac4b-a9a3631f98b1"
+    }
+  ],
+  "assertion_schema": 1,
+  "placement": "recorded-strata-v1"
+}

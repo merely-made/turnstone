@@ -1304,7 +1304,7 @@ content sessions so a hub's bell or loss is visible to it.
 The [current-stack receipt](../docs/receipts/place_sharing_20261019/README.md)
 records six successful headed native phases using three isolated,
 custody-backed profiles. A founder creates a place, admits a writer and a
-reader, exchanges messages, and shares one chosen HTTP address/title. The
+reader, exchanges messages, and shares one chosen HTTP address. The
 writer returns in a fresh process and catches up on absent authoring. The
 reader receives the share but cannot publish its own private address. Exited
 profile caches and canonical projection digests establish the exact scope.
@@ -1328,10 +1328,13 @@ only bounded contact metadata; it neither replays admission nor changes a
 grant. Status/file waits now use the same normal rendered-frame pump, keeping
 the presentation watchdog active while another process starts.
 
-This qualifies the address/title and chat baseline on the recorded locked
+This qualifies the address and chat baseline on the recorded locked
 macOS stack, including deliberate contact renewal. Automatic discovery,
 cross-machine/WAN reachability, offline HTTP body replay, current document
 projection/editing and research-source/note attachment transfer remain separate.
 The historical T5c document projection receipt above is not requalified by this
 run. Named-recipient document publishing retains its separate source-owner gate.
-No supplier release policy, shared wire schema or dependency pin was widened.
+The place repair widens no projection-signer release policy or shared wire
+schema. The concurrent retained-custody intake `01658c7` advanced the supplier
+cohort during this work; the final receipt repeats qualification on the merged
+current source and preserves the earlier passed cohort separately.

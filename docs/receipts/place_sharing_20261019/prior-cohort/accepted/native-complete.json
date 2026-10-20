@@ -1,0 +1,120 @@
+{
+  "result": "pass",
+  "origin_stopped_before_cold_reopen": true,
+  "runs": {
+    "founder": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "activation": {
+        "method": "LaunchServices activation of the owned temporary bundle",
+        "requested": true,
+        "exit_code": 0,
+        "owned_native_pids": [
+          6050
+        ]
+      },
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 152.1,
+      "binary_sha256": "614f81d236cb7455845da4bbae2aa852b59da38b59c87fd3f877913b85897ffa",
+      "scenario_sha256": "fd9152404ba04059777e77da983778191381ecbb8574a05f10450b416ec62a74",
+      "receipt": "scenario.done",
+      "captures": 4
+    },
+    "joiner": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "activation": {
+        "method": "LaunchServices activation of the owned temporary bundle",
+        "requested": true,
+        "exit_code": 0,
+        "owned_native_pids": [
+          6087
+        ]
+      },
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 51.981,
+      "binary_sha256": "614f81d236cb7455845da4bbae2aa852b59da38b59c87fd3f877913b85897ffa",
+      "scenario_sha256": "dc470bb7a66eafe52726144a4975a3a98d71f8e45dedf8672d4cfe689c9b0a19",
+      "receipt": "scenario.done",
+      "captures": 2
+    },
+    "joiner-return": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "activation": {
+        "method": "LaunchServices activation of the owned temporary bundle",
+        "requested": true,
+        "exit_code": 0,
+        "owned_native_pids": [
+          6139
+        ]
+      },
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 65.364,
+      "binary_sha256": "614f81d236cb7455845da4bbae2aa852b59da38b59c87fd3f877913b85897ffa",
+      "scenario_sha256": "b61dbb35125b68726d184da081087da8c5ae2e8bba2024beb18d1e0a50817401",
+      "receipt": "scenario.done",
+      "captures": 2
+    },
+    "reader": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "activation": {
+        "method": "LaunchServices activation of the owned temporary bundle",
+        "requested": true,
+        "exit_code": 0,
+        "owned_native_pids": [
+          6184
+        ]
+      },
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 41.364,
+      "binary_sha256": "614f81d236cb7455845da4bbae2aa852b59da38b59c87fd3f877913b85897ffa",
+      "scenario_sha256": "e151b2c11bf1d8d09a70a4fa33e347f181dd4cd2e9e1246d303aba482ae7257c",
+      "receipt": "scenario.done",
+      "captures": 2
+    },
+    "cold-founder": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "activation": {
+        "method": "LaunchServices activation of the owned temporary bundle",
+        "requested": true,
+        "exit_code": 0,
+        "owned_native_pids": [
+          6254
+        ]
+      },
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 50.374,
+      "binary_sha256": "614f81d236cb7455845da4bbae2aa852b59da38b59c87fd3f877913b85897ffa",
+      "scenario_sha256": "d91dbf49225a0c4cccaf33df10d213e3a331641dc2fd40cad8118a7814c94cf9",
+      "receipt": "scenario.done",
+      "captures": 2
+    },
+    "cold-joiner": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "activation": {
+        "method": "LaunchServices activation of the owned temporary bundle",
+        "requested": true,
+        "exit_code": 0,
+        "owned_native_pids": [
+          6275
+        ]
+      },
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 29.556,
+      "binary_sha256": "614f81d236cb7455845da4bbae2aa852b59da38b59c87fd3f877913b85897ffa",
+      "scenario_sha256": "8a1a62e64c134300c47d98a69f4a640ec523e679c430d0f7f0815d15ebad3948",
+      "receipt": "scenario.done",
+      "captures": 3
+    }
+  }
+}

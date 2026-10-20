@@ -1,0 +1,17 @@
+{
+  "schema": "djinn.resident-status/v1",
+  "pid": 7865,
+  "started_ms": 1792465733137,
+  "installed": false,
+  "ready": true,
+  "startup_unlock": "passphrase",
+  "protection": "passphrase",
+  "lock": "unlocked",
+  "endpoints": {
+    "agent": "/private/tmp/tspl-n95k4wb1/founder/agent.sock",
+    "agent_listener": "receipt",
+    "browser": "/private/tmp/tspl-n95k4wb1/founder/browser.sock",
+    "app": "/private/tmp/tspl-n95k4wb1/founder/app.sock"
+  },
+  "sync": null
+}

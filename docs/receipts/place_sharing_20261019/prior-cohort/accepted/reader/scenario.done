@@ -1,0 +1,6 @@
+RESULT ok
+captured 11_reader_refused
+captured 12_reader_final
+presentation frames=208 captures=2 blank=0
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-09/reader/11_reader_refused.png digest=915ba392f9e0722f blank=false
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-09/reader/12_reader_final.png digest=754882123e62b46b blank=false

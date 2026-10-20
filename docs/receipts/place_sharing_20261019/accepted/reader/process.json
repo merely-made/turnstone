@@ -1,0 +1,19 @@
+{
+  "launch_method": "LaunchServices temporary application bundle",
+  "activation": {
+    "method": "LaunchServices activation of the owned temporary bundle",
+    "requested": true,
+    "exit_code": 0,
+    "owned_native_pids": [
+      8050
+    ]
+  },
+  "launcher_exit": 0,
+  "timeout": false,
+  "success": true,
+  "elapsed_seconds": 42.752,
+  "binary_sha256": "0ed6bb43174b45db34f7772375a709118e5243d1cdacb8e1f9917e61403df47e",
+  "scenario_sha256": "e151b2c11bf1d8d09a70a4fa33e347f181dd4cd2e9e1246d303aba482ae7257c",
+  "receipt": "scenario.done",
+  "captures": 2
+}

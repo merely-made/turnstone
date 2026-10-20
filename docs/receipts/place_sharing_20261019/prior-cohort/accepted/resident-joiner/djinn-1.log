@@ -1,0 +1,21 @@
+2026-10-20T02:49:50.926638Z  INFO djinn: Personae storage open storage=passphrase-encrypted vault at /private/tmp/tspl-3nm_nem0/joiner/vault/vault.json
+2026-10-20T02:49:50.928195Z  WARN djinn: selected profile was created profile=joiner
+2026-10-20T02:49:50.929634Z  INFO djinn::lock_triggers::host: lock triggers settings=LockSettings { session_lock: true, suspend: true, idle: true, idle_minutes: 15 }
+2026-10-20T02:49:51.153543Z  WARN djinn: resident reservoir unavailable reason=no persona wallet exists under /private/tmp/tspl-3nm_nem0/joiner/mere yet; pair this device first, or name a persona
+2026-10-20T02:49:51.171182Z  INFO djinn: SSH agent listening endpoint="/private/tmp/tspl-3nm_nem0/joiner/agent.sock"
+2026-10-20T02:49:51.171329Z  INFO djinn::personal_sync: owner settings path=/private/tmp/tspl-3nm_nem0/joiner/local/graphshell/settings/joiner.json configured=false
+2026-10-20T02:50:34.597737Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:43.457320Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:43.474712Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:50.113839Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:50.723413Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:50.973014Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:50:51.215940Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:51:17.122935Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:51:17.354285Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:51:17.575247Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:51:19.260746Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:51:19.518463Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:51:30.382270Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:52:24.822347Z  INFO djinn: stop requested on the control route
+2026-10-20T02:52:24.823181Z  INFO djinn: resident tasks cancelled and joined tasks=4
