@@ -37,7 +37,7 @@ presentation-webgl2 = ["cambium-genet-web-host/webgl"]
 without-classic-vello = ["genet-render-host/without-classic-vello"]
 # What a page saves: IndexedDB, saved scenes, the tree's product mode,
 # `web_product` and `web_practice`.
-product = ["muniment/indexeddb", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "graphshell/query-views", "mere/query", "dep:mere-document-lanes", "dep:fleece"]
+product = ["muniment/indexeddb", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "graphshell/query-views", "graphshell/editable-blocks", "mere/query", "dep:mere-document-lanes", "dep:fleece", "dep:woodshed-notation"]
 applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.
@@ -48,6 +48,9 @@ canvas-gpu = ["graphshell/canvas-gpu", "mere/canvas-gpu"]
 image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mesquite/image-decode", "cambium-genet-web-host/image-decode", "graphshell/image-decode", "mere/image-decode"]
 
 [dependencies]
+# Product document readings only; the read-only graph viewer has no music cone.
+# Graphshell supplies the accessible label and event controls itself.
+woodshed-notation = { git = "https://github.com/merely-made/woodshed.git", rev = "a0ae58f97ca962b29fcd6ae08c9e6aec35d74c61", default-features = false, optional = true }
 mere-view = { path="../../../crates/cambium/mere-view", optional=true }
 # The shared mere panel over the remote board's admitted route (stack lift plan L14).
 mere-overmap = { path = "../../../crates/cambium/mere-overmap", optional = true }
@@ -267,6 +270,7 @@ rust-version = "1.97.1"
 # The standalone host uses the same release-identity contract as the parent
 # workspace when Murm's carrier names its published compatibility dependency.
 [patch."https://github.com/merely-made/mere.git"]
+sprigging = { path = "../../../crates/cambium/sprigging" }
 # Promoted sources shared with immutable older Mere suppliers.
 armillary = { git = "https://github.com/merely-made/armillary.git", rev = "e67c5def1c735be047492a867bcdc8b41fba22b8" }
 chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
