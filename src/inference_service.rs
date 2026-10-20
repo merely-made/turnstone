@@ -600,6 +600,7 @@ mod tests {
                 owner: Some("turnstone/session".into()),
                 scope: vec![],
                 config: Default::default(),
+                embedding: None,
                 passages: vec![SuppliedPassage { handle: 1, passage }],
                 stale: vec![],
                 citations: vec![citation],
