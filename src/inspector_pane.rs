@@ -197,7 +197,7 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
     };
     let clip_status = el::<_, InspectorState, InspectorIntent>(
         "div",
-        format!("Knot clip: {}", state.clip_status),
+        format!("Passage: {}", state.clip_status),
     )
     .attr("class", "detail-value");
     let offered_clip = state.clip_offer;
@@ -317,7 +317,10 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
                         {
                             let choice = state.note_choice.clone();
                             button(
-                                "Use this Knot document as research note",
+                                choice
+                                    .as_ref()
+                                    .map(|choice| choice.use_label())
+                                    .unwrap_or_else(|| "Use this document as research note".into()),
                                 move |_: &mut InspectorState, _| {
                                     choice.clone().map(|choice| {
                                         InspectorIntent::ChooseResearchNote { choice }

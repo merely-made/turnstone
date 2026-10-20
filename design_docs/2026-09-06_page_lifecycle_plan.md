@@ -1,6 +1,6 @@
 # Page lifecycle plan
 
-**Status:** in progress, refreshed 2026-10-18. Rulings L1-L7 were made with Mark on
+**Status:** in progress, refreshed 2026-10-19. Rulings L1-L7 were made with Mark on
 2026-09-06. The research-workflow section below records the R0/R1 bounded
 qualifications, the bounded macOS R2 private search/reader qualification,
 the bounded macOS R3 scoped-Answers qualification, and the bounded macOS R4 complete-task qualification; it does not replace those rulings. Source
@@ -976,6 +976,85 @@ activation and physical power-loss recovery remain separate.
   schema or shared research framework. Existing deletion must conservatively
   preserve evidence and withdraw missing admission; no irreversible “Forget”
   promise is added before its custody/GC gates land.
+
+### Named-recipient sharing boundary, 2026-10-19
+
+**Status: implementation blocked at the source-owner handoff; sharing is not
+qualified.** Mark chose one named recipient, one chosen document, and
+individually chosen saved-source attachments. This is the private publishing
+route, separate from authoring a place contribution. L7's default-off attachment
+rule still applies. The existing research-note receipt remains a local
+authoring/citation receipt.
+
+Fetched Turnstone `9c8420d` and Knot `2a4a204` are the inspected product heads.
+Knot's wording-only continuation `2a7231a` is the locked intake for the
+format/local-note receipt; it does not add publication authority.
+The ordinary hosted directory constructor returns no `KnotPublishSource`
+(`src/knot_authoring.rs`, `KnotHub::host`); persona-vault mode also returns no
+local publishing source because the resident owns the source. The shell only
+starts publishing after `take_publish_source` returns a source. Merely opening
+the Publishing panel cannot connect the authored research note to publication.
+Knot's existing `KnotPublishSource` comes from
+`StartupUnlockedPersonalVault::into_resident_source_and_publish_source`, over
+that owner's signed operation store and sealed vault. Reopening that live
+resident's store in Turnstone would violate its single-owner contract.
+
+Knot already has a useful narrower retention seam:
+`KnotResidentSource::capture_retention` issues `KnotFileCapturePort` for exact
+immutable `KnotFileRevisionV1` observations, with destination/grant rechecks and
+same-writer retry lookup. That is not publication authority or an attachment
+disclosure inventory. The current publisher reads eligible authored vault
+documents; retaining a file observation does not make it a chosen publication.
+Reuse that owner discipline where appropriate without equating retention with
+permission to share.
+
+Two further joins are required. `src/publish_service.rs` starts with an empty
+publication catalog and keeps issued tickets/revocations in memory; it has no
+cold restore of a chosen publication or withdrawal. `src/share_reader_service.rs`
+only refreshes on a new Open request and holds a successful body until the next
+read. A recipient's still-visible body is not proof of continued access. Knot's
+current publisher serves one Djot/legacy document body; retained clip evidence
+references do not themselves authorize or transfer the referenced source bytes.
+
+The smallest complete owner continuation is:
+
+1. Add an explicit Knot-owned selected-publication handoff over the existing
+   admitted source authority. Bind the saved document revision and exact bytes,
+   destination persona/endpoint, recipient key, expiry, and each chosen saved
+   source's immutable identity. Use the existing signed source and publisher;
+   no second vault/store owner or ambient directory publication.
+2. Present the complete disclosure inventory before issue. A chosen document
+   already includes its authored quotations and citation metadata. Each extra
+   attachment must explicitly say whether it discloses the full saved text or
+   a passage. Never silently export a whole retained artifact because its
+   selector names a short quote. Unselected captures, newer captures, other
+   documents, response bodies and custody metadata stay out.
+3. Persist the publication selection and signed withdrawal through the owner
+   before acknowledging them. Restore the same decision after holder restart;
+   stale source/destination/recipient controls must refuse. Retry may not widen
+   selection or resurrect a withdrawn publication.
+4. Revalidate recipient reads, clear the displayed body on refusal or failed
+   authorization refresh, and fail closed after cold reopen. Withdrawal stops
+   future reads through the publisher; it cannot erase plaintext already
+   received or promise revocation of an independently exported copy. This first
+   route grants reading, not offline editing or paired-writer authority.
+5. Qualify with independent holder/recipient processes: exact selection and
+   newer/unselected sentinels, wrong recipient, stale review, per-recipient
+   revoke, publication withdrawal, old tickets after holder and reader cold
+   reopen, missing/corrupt chosen evidence, and failure/retry acknowledgement.
+   Stop the web origin before reader checks. Inspect exited stores separately
+   and bind the receipt to committed source inputs.
+
+The format-facing wording pass uses Knot's existing format-label API for the
+research-note choice and creates new notes as `.djot`. Legacy `.knot` notes
+remain supported and are labelled as that compatibility format. Generic file
+and recipient-reader controls say document; internal route, action and schema
+identities retain their compatibility spellings. This wording work does not
+close the selected-sharing gate.
+The [format/local-note receipt](../docs/receipts/document_formats_20261019/README.md)
+records three headed app launches, fourteen reviewed captures and two separate
+exited-store inspections, including exact old-capture return after origin
+shutdown and cold reopen. This is a local authoring regression qualification.
 
 ### Implementation entry and stop rules
 

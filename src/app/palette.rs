@@ -290,7 +290,7 @@ impl App {
             rows.push(("Export retained clip".into(), Action::ChooseClipExportFile));
         }
         if let Some(choice) = self.offered_research_note() {
-            rows.push(("Use this Knot document as research note".into(), Action::ChooseResearchNote { choice }));
+            rows.push((choice.use_label(), Action::ChooseResearchNote { choice }));
         }
         rows.extend(crate::action::palette_actions());
         rows

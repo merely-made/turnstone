@@ -17,7 +17,7 @@ use cambium::{
 use genet_scripted_dom::ScriptedDom;
 use layout_dom_api::LayoutDom;
 
-use crate::publish_service::{KnotPublishingService, PublishSnapshot};
+use crate::publish_service::{KnotPublishingService, PublishSnapshot, PUBLISHING_UNAVAILABLE};
 
 struct PublishPaneState {
     service: Option<Arc<KnotPublishingService>>,
@@ -40,7 +40,7 @@ fn refresh(state: &mut PublishPaneState, _: cambium::PointerClick) {
             service.refresh();
             state.local_status = "Refreshing retained source eligibility…".into();
         },
-        None => state.local_status = "Publishing needs TURNSTONE_KNOT_MODE=persona-vault.".into(),
+        None => state.local_status = PUBLISHING_UNAVAILABLE.into(),
     }
 }
 
@@ -52,7 +52,7 @@ fn select_source(state: &mut PublishPaneState, _: cambium::PointerClick) {
         service.select_source(source);
         state.local_status = "Selecting source…".into();
     } else {
-        state.local_status = "Publishing needs TURNSTONE_KNOT_MODE=persona-vault.".into();
+        state.local_status = PUBLISHING_UNAVAILABLE.into();
     }
 }
 
@@ -61,7 +61,7 @@ fn issue_share(state: &mut PublishPaneState, _: cambium::PointerClick) {
         Ok(reader) => reader,
         Err(_) => {
             state.local_status =
-                "Reader key must be the 64-hex key shown by their Shared Knot pane.".into();
+                "Reader key must be the 64-hex key shown by their Shared document pane.".into();
             return;
         },
     };
@@ -77,7 +77,7 @@ fn issue_share(state: &mut PublishPaneState, _: cambium::PointerClick) {
         service.issue_selected(reader, Some(expires_at_ms));
         state.local_status = "Issuing reader-bound share…".into();
     } else {
-        state.local_status = "Publishing needs TURNSTONE_KNOT_MODE=persona-vault.".into();
+        state.local_status = PUBLISHING_UNAVAILABLE.into();
     }
 }
 
@@ -89,7 +89,7 @@ fn revoke_latest(state: &mut PublishPaneState, _: cambium::PointerClick) {
         },
         (_, None) => state.local_status = "No retained share is selected for revocation.".into(),
         (None, _) => {
-            state.local_status = "Publishing needs TURNSTONE_KNOT_MODE=persona-vault.".into()
+            state.local_status = PUBLISHING_UNAVAILABLE.into()
         },
     }
 }
@@ -102,7 +102,7 @@ fn withdraw_selected(state: &mut PublishPaneState, _: cambium::PointerClick) {
         },
         (_, None) => state.local_status = "Select a publication before withdrawing it.".into(),
         (None, _) => {
-            state.local_status = "Publishing needs TURNSTONE_KNOT_MODE=persona-vault.".into()
+            state.local_status = PUBLISHING_UNAVAILABLE.into()
         },
     }
 }
@@ -213,7 +213,7 @@ fn publish_pane_view(state: &PublishPaneState) -> PublishPaneView {
         el::<_, PublishPaneState, ()>(
             "div",
             (
-                el::<_, PublishPaneState, ()>("div", "Private Knot publishing")
+                el::<_, PublishPaneState, ()>("div", "Private document publishing")
                     .attr("class", "list-section-title"),
                 el::<_, PublishPaneState, ()>("div", state.snapshot.route.clone())
                     .attr("class", "list-row muted"),
@@ -223,7 +223,7 @@ fn publish_pane_view(state: &PublishPaneState) -> PublishPaneView {
                 field(|state| &mut state.source_document, "Source document id"),
                 field(
                     |state| &mut state.reader,
-                    "Reader key from their Shared Knot pane",
+                    "Reader key from their Shared document pane",
                 ),
                 field(|state| &mut state.hours, "Share expiry hours"),
                 el::<_, PublishPaneState, ()>("div", controls).attr("class", "setting-row"),
@@ -231,7 +231,9 @@ fn publish_pane_view(state: &PublishPaneState) -> PublishPaneView {
                     .attr("class", "list-section-title"),
                 el::<_, PublishPaneState, ()>("div", share_rows),
                 el::<_, PublishPaneState, ()>("div", ticket).attr("class", "list-row muted"),
-                el::<_, PublishPaneState, ()>("div", status).attr("class", "list-row muted"),
+                el::<_, PublishPaneState, ()>("div", status)
+                    .attr("class", "list-row muted")
+                    .attr("style", "white-space: normal; overflow-wrap: anywhere;"),
             ),
         )
         .attr("class", "pane")
@@ -428,7 +430,7 @@ mod tests {
                 .into_iter()
                 .flat_map(|node| dom.dom_children(node))
                 .filter_map(|child| dom.text(child))
-                .any(|text| text.contains("Knot publishing")),
+                .any(|text| text.contains("Private document publishing")),
             "the unavailable panel still names the service it is configured for"
         );
     }

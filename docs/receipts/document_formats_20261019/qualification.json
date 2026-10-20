@@ -1,0 +1,66 @@
+{
+  "result": "pass",
+  "scope": "Bounded macOS document-format wording and local authored-note exact-citation regression",
+  "selected_sharing": "not implemented or qualified",
+  "native_receipt": "native/qualification.json",
+  "capture_review": "capture-review.json",
+  "reviewed_captures": 14,
+  "independent_exited_store_inspections": 2,
+  "fresh_process_scope": "Three native app launches, each recreating its in-process hosted Knot endpoint worker; store inspectors run separately. No independent holder/recipient acceptance is claimed.",
+  "software": {
+    "knot-current-lib": {
+      "passed": 154,
+      "failed": 0,
+      "ignored": 1,
+      "log": "software/knot-current-lib.log"
+    },
+    "knot-protocol": {
+      "passed": 13,
+      "failed": 0,
+      "ignored": 0,
+      "log": "software/knot-protocol.log"
+    },
+    "knot": {
+      "passed": 32,
+      "failed": 0,
+      "ignored": 5,
+      "log": "software/knot.log"
+    },
+    "inspector": {
+      "passed": 15,
+      "failed": 0,
+      "ignored": 0,
+      "log": "software/inspector.log"
+    },
+    "research_note_arms": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "log": "software/research_note_arms.log"
+    },
+    "panes-registry": {
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0,
+      "log": "software/panes-registry.log"
+    },
+    "turnstone-publishing": {
+      "passed": 17,
+      "failed": 0,
+      "ignored": 0,
+      "log": "software/turnstone-publishing.log"
+    }
+  },
+  "turnstone_full_suite": "not rerun",
+  "knot_commit": "2a7231ac9c1948eb350ca37ef2c6fcc0c74c48c0",
+  "runtime_inputs": "native/inputs.json",
+  "resolved_stack": "resolved-stack.json",
+  "committed_archive_match_required_before_push": true,
+  "raw_output": "/Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated",
+  "limits": [
+    "Named-recipient publication, individually chosen source attachment transfer, recipient withdrawal and sharing cold reopen remain open at the source-owner handoff.",
+    "Headed format choice covered Djot; no additional authoring formats were introduced.",
+    "Ordinary application fullscreen behavior is unqualified; the interrupted acceptance run is preserved.",
+    "Other operating systems, physical keyboard/IME, OS assistive activation, power loss and personal resident/custody installation remain separate."
+  ]
+}

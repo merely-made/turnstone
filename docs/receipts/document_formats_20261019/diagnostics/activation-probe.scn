@@ -1,0 +1,12 @@
+settle 5
+key escape
+act New session
+settle 3
+act New research note
+settle 10
+click surface:knot role:textbox
+insert Native focus probe.
+key ctrl+s
+settle 5
+assert text Native focus probe.
+capture focus_probe

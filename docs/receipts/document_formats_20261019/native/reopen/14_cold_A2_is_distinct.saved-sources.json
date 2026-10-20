@@ -1,0 +1,380 @@
+{
+  "admissions": [
+    {
+      "error": null,
+      "key": {
+        "annotation_manifest": "blake3:4df4e93bfb46fec8d4041ae44994af41a851050faa29b149313d9a5fa28de4c1",
+        "graph": "d7775a88-6786-4408-9aa9-0ec7bc827480",
+        "node": "3837bb8a-9a56-45e7-bbaa-8a151d22b953",
+        "session": "058a68f4-1f12-499e-a34a-a8b68e15d4dc"
+      },
+      "occurrence": 0,
+      "title": "Source A",
+      "url": "http://127.0.0.1:52712/A"
+    },
+    {
+      "error": null,
+      "key": {
+        "annotation_manifest": "blake3:4825866430543f8270f9fb21fcb8efecd86da19e36ba7d36c5e630377196cd7f",
+        "graph": "d7775a88-6786-4408-9aa9-0ec7bc827480",
+        "node": "3837bb8a-9a56-45e7-bbaa-8a151d22b953",
+        "session": "058a68f4-1f12-499e-a34a-a8b68e15d4dc"
+      },
+      "occurrence": 1,
+      "title": "Source A",
+      "url": "http://127.0.0.1:52712/A"
+    },
+    {
+      "error": null,
+      "key": {
+        "annotation_manifest": "blake3:0441ef6bb95ac8099fc6cff20f7c0305ca1c2f41a8567793382844f1845fffa8",
+        "graph": "d7775a88-6786-4408-9aa9-0ec7bc827480",
+        "node": "557e634a-58a6-477c-8312-f41349416b94",
+        "session": "058a68f4-1f12-499e-a34a-a8b68e15d4dc"
+      },
+      "occurrence": 0,
+      "title": "Source B",
+      "url": "http://127.0.0.1:52712/B"
+    }
+  ],
+  "entries": [
+    {
+      "admission": {
+        "error": null,
+        "key": {
+          "annotation_manifest": "blake3:4df4e93bfb46fec8d4041ae44994af41a851050faa29b149313d9a5fa28de4c1",
+          "graph": "d7775a88-6786-4408-9aa9-0ec7bc827480",
+          "node": "3837bb8a-9a56-45e7-bbaa-8a151d22b953",
+          "session": "058a68f4-1f12-499e-a34a-a8b68e15d4dc"
+        },
+        "occurrence": 0,
+        "title": "Source A",
+        "url": "http://127.0.0.1:52712/A"
+      },
+      "content": {
+        "captured_at_ms": 1792459016349,
+        "origin": "http://127.0.0.1:52712/A",
+        "raw_manifest": "blake3:00d30c18b7000c55584bf9dc589c1b031a28a26ce9114b29bb6ba74a1f3ae3ee",
+        "text": "The Pelican observatory's access word is café.",
+        "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+        "title": "Source A"
+      },
+      "error": null
+    },
+    {
+      "admission": {
+        "error": null,
+        "key": {
+          "annotation_manifest": "blake3:4825866430543f8270f9fb21fcb8efecd86da19e36ba7d36c5e630377196cd7f",
+          "graph": "d7775a88-6786-4408-9aa9-0ec7bc827480",
+          "node": "3837bb8a-9a56-45e7-bbaa-8a151d22b953",
+          "session": "058a68f4-1f12-499e-a34a-a8b68e15d4dc"
+        },
+        "occurrence": 1,
+        "title": "Source A",
+        "url": "http://127.0.0.1:52712/A"
+      },
+      "content": {
+        "captured_at_ms": 1792459162911,
+        "origin": "http://127.0.0.1:52712/A",
+        "raw_manifest": "blake3:60a670119530da418659183e02de193625a1a7a897d8d6904de5ccde3b4b72c9",
+        "text": "Source A revision 2 Live A2 replacement. The brisk — 大阪 🦊 passage records violet geometry and changing rivers.",
+        "text_hash": "blake3:fae57def96f23c2c233b65ce851fdaf4d2d033dc123a335016cd1fee7cebb1bd",
+        "title": "Source A"
+      },
+      "error": null
+    },
+    {
+      "admission": {
+        "error": null,
+        "key": {
+          "annotation_manifest": "blake3:0441ef6bb95ac8099fc6cff20f7c0305ca1c2f41a8567793382844f1845fffa8",
+          "graph": "d7775a88-6786-4408-9aa9-0ec7bc827480",
+          "node": "557e634a-58a6-477c-8312-f41349416b94",
+          "session": "058a68f4-1f12-499e-a34a-a8b68e15d4dc"
+        },
+        "occurrence": 0,
+        "title": "Source B",
+        "url": "http://127.0.0.1:52712/B"
+      },
+      "content": {
+        "captured_at_ms": 1792459029540,
+        "origin": "http://127.0.0.1:52712/B",
+        "raw_manifest": "blake3:5a39b17dd36643890b08247318b48f0852bf9cd25d53de7d52ae5e6059abd53e",
+        "text": "amber harbor main-session sentinel",
+        "text_hash": "blake3:7f224f74e3acff5aa8dbf7a275972c4ef3ce7a4dd4f9c42a6f1b10c8c250cde9",
+        "title": "Source B"
+      },
+      "error": null
+    }
+  ],
+  "generation": "c104e751-434a-4c9a-975b-cf7399d468dd",
+  "readers": [
+    {
+      "content": {
+        "captured_at_ms": 1792459016349,
+        "origin": "http://127.0.0.1:52712/A",
+        "raw_manifest": "blake3:00d30c18b7000c55584bf9dc589c1b031a28a26ce9114b29bb6ba74a1f3ae3ee",
+        "text": "The Pelican observatory's access word is café.",
+        "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+        "title": "Source A"
+      },
+      "engine": "turnstone.saved-source",
+      "error": null,
+      "node": "4ccaa47d-1a8a-4a2e-b8b0-97e944dd9fd6",
+      "phase": "Ready",
+      "rendered_document": {
+        "address": "mere://saved-source/058a68f4-1f12-499e-a34a-a8b68e15d4dc/d7775a88-6786-4408-9aa9-0ec7bc827480/3837bb8a-9a56-45e7-bbaa-8a151d22b953/4df4e93bfb46fec8d4041ae44994af41a851050faa29b149313d9a5fa28de4c1/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=41&end=45",
+        "blocks": [
+          {
+            "Heading": {
+              "level": 1,
+              "spans": [
+                {
+                  "Text": "Source A"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved from http://127.0.0.1:52712/A"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Captured 2026-10-20T01:16:56Z"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved version: 4df4e93bfb46"
+                }
+              ]
+            }
+          },
+          {
+            "Quote": {
+              "blocks": [
+                {
+                  "Paragraph": {
+                    "spans": [
+                      {
+                        "Strong": [
+                          {
+                            "Text": "café"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "The Pelican observatory's access word is café."
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Link": {
+                    "predicate": null,
+                    "spans": [
+                      {
+                        "Text": "Open original address"
+                      }
+                    ],
+                    "title": "Open original address",
+                    "url": "http://127.0.0.1:52712/A"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "content_type": "text/plain; profile=saved-source",
+        "diagnostics": [],
+        "lang": null,
+        "navigation": {
+          "anchors": [],
+          "block_count": 0,
+          "folds": []
+        },
+        "provenance": {
+          "canonical_uri": "mere://saved-source/058a68f4-1f12-499e-a34a-a8b68e15d4dc/d7775a88-6786-4408-9aa9-0ec7bc827480/3837bb8a-9a56-45e7-bbaa-8a151d22b953/4df4e93bfb46fec8d4041ae44994af41a851050faa29b149313d9a5fa28de4c1/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=41&end=45",
+          "fetched_at": null,
+          "source_kind": "turnstone.saved-source",
+          "source_label": "http://127.0.0.1:52712/A"
+        },
+        "title": "Source A",
+        "trust": "Unknown"
+      },
+      "target": {
+        "key": {
+          "annotation_manifest": "blake3:4df4e93bfb46fec8d4041ae44994af41a851050faa29b149313d9a5fa28de4c1",
+          "graph": "d7775a88-6786-4408-9aa9-0ec7bc827480",
+          "node": "3837bb8a-9a56-45e7-bbaa-8a151d22b953",
+          "session": "058a68f4-1f12-499e-a34a-a8b68e15d4dc"
+        },
+        "selector": {
+          "end": 45,
+          "start": 41
+        },
+        "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275"
+      },
+      "url": "mere://saved-source/058a68f4-1f12-499e-a34a-a8b68e15d4dc/d7775a88-6786-4408-9aa9-0ec7bc827480/3837bb8a-9a56-45e7-bbaa-8a151d22b953/4df4e93bfb46fec8d4041ae44994af41a851050faa29b149313d9a5fa28de4c1/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=41&end=45"
+    },
+    {
+      "content": {
+        "captured_at_ms": 1792459162911,
+        "origin": "http://127.0.0.1:52712/A",
+        "raw_manifest": "blake3:60a670119530da418659183e02de193625a1a7a897d8d6904de5ccde3b4b72c9",
+        "text": "Source A revision 2 Live A2 replacement. The brisk — 大阪 🦊 passage records violet geometry and changing rivers.",
+        "text_hash": "blake3:fae57def96f23c2c233b65ce851fdaf4d2d033dc123a335016cd1fee7cebb1bd",
+        "title": "Source A"
+      },
+      "engine": "turnstone.saved-source",
+      "error": null,
+      "node": "8a1d2ee0-6da9-4b05-b9b1-bf289fba3756",
+      "phase": "Ready",
+      "rendered_document": {
+        "address": "mere://saved-source/058a68f4-1f12-499e-a34a-a8b68e15d4dc/d7775a88-6786-4408-9aa9-0ec7bc827480/3837bb8a-9a56-45e7-bbaa-8a151d22b953/4825866430543f8270f9fb21fcb8efecd86da19e36ba7d36c5e630377196cd7f/fae57def96f23c2c233b65ce851fdaf4d2d033dc123a335016cd1fee7cebb1bd?start=74&end=80",
+        "blocks": [
+          {
+            "Heading": {
+              "level": 1,
+              "spans": [
+                {
+                  "Text": "Source A"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved from http://127.0.0.1:52712/A"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Captured 2026-10-20T01:19:22Z"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved version: 482586643054"
+                }
+              ]
+            }
+          },
+          {
+            "Quote": {
+              "blocks": [
+                {
+                  "Paragraph": {
+                    "spans": [
+                      {
+                        "Strong": [
+                          {
+                            "Text": "violet"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Source A revision 2 Live A2 replacement. The brisk — 大阪 🦊 passage records violet geometry and changing rivers."
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Link": {
+                    "predicate": null,
+                    "spans": [
+                      {
+                        "Text": "Open original address"
+                      }
+                    ],
+                    "title": "Open original address",
+                    "url": "http://127.0.0.1:52712/A"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "content_type": "text/plain; profile=saved-source",
+        "diagnostics": [],
+        "lang": null,
+        "navigation": {
+          "anchors": [],
+          "block_count": 0,
+          "folds": []
+        },
+        "provenance": {
+          "canonical_uri": "mere://saved-source/058a68f4-1f12-499e-a34a-a8b68e15d4dc/d7775a88-6786-4408-9aa9-0ec7bc827480/3837bb8a-9a56-45e7-bbaa-8a151d22b953/4825866430543f8270f9fb21fcb8efecd86da19e36ba7d36c5e630377196cd7f/fae57def96f23c2c233b65ce851fdaf4d2d033dc123a335016cd1fee7cebb1bd?start=74&end=80",
+          "fetched_at": null,
+          "source_kind": "turnstone.saved-source",
+          "source_label": "http://127.0.0.1:52712/A"
+        },
+        "title": "Source A",
+        "trust": "Unknown"
+      },
+      "target": {
+        "key": {
+          "annotation_manifest": "blake3:4825866430543f8270f9fb21fcb8efecd86da19e36ba7d36c5e630377196cd7f",
+          "graph": "d7775a88-6786-4408-9aa9-0ec7bc827480",
+          "node": "3837bb8a-9a56-45e7-bbaa-8a151d22b953",
+          "session": "058a68f4-1f12-499e-a34a-a8b68e15d4dc"
+        },
+        "selector": {
+          "end": 80,
+          "start": 74
+        },
+        "text_hash": "blake3:fae57def96f23c2c233b65ce851fdaf4d2d033dc123a335016cd1fee7cebb1bd"
+      },
+      "url": "mere://saved-source/058a68f4-1f12-499e-a34a-a8b68e15d4dc/d7775a88-6786-4408-9aa9-0ec7bc827480/3837bb8a-9a56-45e7-bbaa-8a151d22b953/4825866430543f8270f9fb21fcb8efecd86da19e36ba7d36c5e630377196cd7f/fae57def96f23c2c233b65ce851fdaf4d2d033dc123a335016cd1fee7cebb1bd?start=74&end=80"
+    }
+  ],
+  "session": "058a68f4-1f12-499e-a34a-a8b68e15d4dc",
+  "status": "Ready"
+}

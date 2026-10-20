@@ -141,11 +141,11 @@ mod tests {
     fn knot_file_choices_are_palette_actions_lowered_to_shell_effects() {
         let rows = crate::action::palette_actions();
         assert!(rows.iter().any(|(label, action)| {
-            label == "Open Knot document"
+            label == "Open document"
                 && matches!(action, Action::ChooseKnotDocumentFile { read_only: false })
         }));
         assert!(rows.iter().any(|(label, action)| {
-            label == "Open Knot document read-only"
+            label == "Open document read-only"
                 && matches!(action, Action::ChooseKnotDocumentFile { read_only: true })
         }));
 
