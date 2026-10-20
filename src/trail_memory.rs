@@ -2043,7 +2043,7 @@ mod inference_owner_tests {
         receive.recv_timeout(Duration::from_secs(2)).unwrap();
         assert!(owner.snapshot(&namespace).is_err());
         match std::sync::Arc::try_unwrap(owner.0) {
-            Ok(actor) => actor.join(),
+            Ok(actor) => actor.join().unwrap(),
             Err(_) => panic!("unexpected actor borrower"),
         }
     }
@@ -2448,7 +2448,11 @@ mod research_owner_tests {
         actor.command(TrailCommand::Release(ack));
         receive.recv_timeout(Duration::from_secs(5)).unwrap();
         drop(owner);
-        std::sync::Arc::try_unwrap(actor).ok().unwrap().join();
+        std::sync::Arc::try_unwrap(actor)
+            .ok()
+            .unwrap()
+            .join()
+            .unwrap();
         let mut reopened = FjallStore::open(&directory).unwrap();
         assert!(
             saved_sources::load(&mut reopened, &[admitted(a1.annotation_manifest)])[0]

@@ -734,7 +734,7 @@ fn protected_nodes(tree: &TreeUpdate) -> HashSet<NodeId> {
 mod tests {
     use super::*;
     use accesskit::{Action, Uuid as TreeUuid};
-    use accesskit_consumer::{Node as ConsumerNode, Tree as ConsumerTree, TreeChangeHandler};
+    use accesskit_consumer::{NodeRef as ConsumerNode, Tree as ConsumerTree, TreeChangeHandler};
 
     fn tree(id: u64) -> TreeId {
         TreeId(TreeUuid::from_u64_pair(0, id))
@@ -1079,15 +1079,16 @@ mod tests {
         );
     }
 
-    // Exercise this host's recursive expansion against each platform's actual
-    // consumer. The older Windows consumer lacks node_by_tree_local_id, so
-    // resolve its global nodes through the admitted subtree and locate_node.
+    // Exercise this host's recursive expansion against the consumer the
+    // platform adapters run. AccessKit 0.25 gives Windows, Unix and macOS one
+    // consumer (0.39); the tests still resolve global nodes through the
+    // admitted subtree and locate_node, as the older Windows consumer required.
     macro_rules! platform_recursive_consumer {
         ($module:ident, $consumer:ident) => {
             mod $module {
                 use super::*;
                 use $consumer::{
-                    Node as PlatformNode, Tree as PlatformTree,
+                    NodeRef as PlatformNode, Tree as PlatformTree,
                     TreeChangeHandler as PlatformChangeHandler,
                 };
 
@@ -1253,8 +1254,7 @@ mod tests {
         };
     }
 
-    platform_recursive_consumer!(windows_consumer, accesskit_consumer_windows);
-    platform_recursive_consumer!(unix_consumer, accesskit_consumer_unix);
+    platform_recursive_consumer!(platform_consumer, accesskit_consumer);
 
     #[test]
     fn idle_delta_reaches_consumer_without_a_pixel_frame() {

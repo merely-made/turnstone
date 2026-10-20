@@ -424,6 +424,6 @@ mod tests {
         let (ack, receive) = std::sync::mpsc::sync_channel(1);
         assert!(actor.command(TrailCommand::Release(ack)));
         receive.recv_timeout(Duration::from_secs(5)).unwrap();
-        actor.join();
+        actor.join().unwrap();
     }
 }
