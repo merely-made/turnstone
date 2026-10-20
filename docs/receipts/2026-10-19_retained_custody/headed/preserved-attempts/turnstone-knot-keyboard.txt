@@ -1,0 +1,8 @@
+RESULT fail
+captured 01_knot_selected_text
+captured 02_knot_retained
+FAIL: The current content is not a retained clip
+wait-file '/Users/markik/Code/output/eidetic-headed-20261019/runtime/selected-knot.mereclip': still missing or empty
+presentation frames=140 captures=2 blank=0
+capture /Users/markik/Code/output/eidetic-headed-20261019/turnstone-knot-keyboard/01_knot_selected_text.png digest=36c3cdbe3bafb70e blank=false
+capture /Users/markik/Code/output/eidetic-headed-20261019/turnstone-knot-keyboard/02_knot_retained.png digest=5a1d9d4c5bfad5e2 blank=false
