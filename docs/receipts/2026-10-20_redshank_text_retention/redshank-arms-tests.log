@@ -1,0 +1,6 @@
+
+running 2 tests
+test app::redshank_arms::tests::opening_an_enclosure_yields_a_redshank_episode_pane ... ok
+test app::redshank_arms::tests::a_note_and_progress_project_into_the_graph_and_reopen_after_a_restart ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1106 filtered out; finished in 1.90s

@@ -79,8 +79,10 @@ set.
   playback in the receiving mere; published suppliers and bounded headed sealed
   Knot/voice receive, cold playback and onward export are qualified locally.
   Embedded Knot primary-mouse selection, immediate retention and cold export
-  are qualified in the October 20 continuation. Personal vault/migration,
-  broader editor input and format gates remain.
+  are qualified in the October 20 continuation. A separate October 20 receipt
+  qualifies embedded Redshank selected text-note retention, source-absent cold
+  reopen and onward export through an independent receiver. Personal
+  vault/migration, broader editor input and format gates remain.
 - [q-pc lane handoff, 2026-10-14](2026-10-14_qpc_lane_handoff.md): the lane's
   resume point on q-pc (Mac), with Windows gates on o-pc. Main is the only live line after the ThinkPad
   branch/worktree reconciliation; lists pins, the lens-label fix, ordered open
@@ -192,7 +194,9 @@ set.
   as an episode tile, enclosure routing, one app-owned audio and model
   authority, and the item/progress/note graph projection. Landed; the fetch
   path closed 2026-09-22 through Mere's fetch handle and the pins are
-  aligned; the microphone and a headed receipt remain open.
+  aligned. Embedded selected text-note retention has an October 20 headed
+  source-absent cold/export receipt using a typed owner-model fixture; full
+  owner authoring/menu, embedded audio and microphone gates remain separate.
 - [Turnstone surfaces in Cambium](2026-07-15_turnstone_surfaces_in_cambium.md): mapping from product surfaces to Cambium components or non-Cambium lanes.
 - [Turnstone founding](2026-07-08_turnstone_founding.md): naming, role swap, and original sequencing, with later authority corrections called out in the document.
 - [Meerkat harvest](2026-07-18_meerkat_harvest.md): port, note, or leave audit made before retiring the donor application.
