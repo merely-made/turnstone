@@ -529,13 +529,20 @@ fn export_recipe(json: &str) -> Result<String, String> {
         serde_json::to_vec_pretty(&input)
     }
     .map_err(|e| e.to_string())?;
+    export_material(&bytes, "application/json", "scene-recipe.json")
+}
+pub(super) fn export_material(
+    bytes: &[u8],
+    media_type: &str,
+    filename: &str,
+) -> Result<String, String> {
     let document = web_sys::window()
         .and_then(|w| w.document())
         .ok_or("No browser document")?;
     let parts = js_sys::Array::new();
-    parts.push(&js_sys::Uint8Array::from(bytes.as_slice()));
+    parts.push(&js_sys::Uint8Array::from(bytes));
     let options = web_sys::BlobPropertyBag::new();
-    options.set_type("application/json");
+    options.set_type(media_type);
     let blob = web_sys::Blob::new_with_u8_array_sequence_and_options(&parts, &options)
         .map_err(|e| format!("Cannot prepare recipe export: {e:?}"))?;
     let url = web_sys::Url::create_object_url_with_blob(&blob)
@@ -550,7 +557,7 @@ fn export_recipe(json: &str) -> Result<String, String> {
             .set_attribute("href", &url)
             .map_err(|e| format!("Cannot set download URL: {e:?}"))?;
         anchor
-            .set_attribute("download", "scene-recipe.json")
+            .set_attribute("download", filename)
             .map_err(|e| format!("Cannot name recipe: {e:?}"))?;
         document
             .body()

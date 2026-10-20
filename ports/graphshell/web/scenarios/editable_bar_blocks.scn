@@ -1,0 +1,68 @@
+# Fresh origin: same source editor/history as the rhyme example.
+reveal role:button Editable document
+click role:button Editable document
+remember original-document
+reveal .blocks-insert-progression
+click .blocks-insert-progression
+assert snap blocks-dirty == true
+remember inserted-document
+reveal .blocks-preview-command
+click .blocks-preview-command
+assert snap blocks-preview == true
+same inserted-document blocks-source
+reveal .blocks-swatch
+wait 1
+wait 1
+capture bar_group_preview
+reveal .blocks-cancel
+click .blocks-cancel
+same inserted-document blocks-source
+reveal .blocks-preview-command
+click .blocks-preview-command
+reveal .blocks-apply
+click .blocks-apply
+assert snap blocks-status == Bar grouping applied · musical timing unchanged
+remember grouped-document
+reveal .blocks-undo
+click .blocks-undo
+same inserted-document blocks-source
+reveal .blocks-undo
+click .blocks-undo
+same original-document blocks-source
+reveal .blocks-redo
+click .blocks-redo
+same inserted-document blocks-source
+reveal .blocks-redo
+click .blocks-redo
+same grouped-document blocks-source
+reveal .blocks-save
+click .blocks-save
+wait 180
+assert snap blocks-saving == false
+assert snap blocks-dirty == false
+reveal .blocks-export-plaintext
+click .blocks-export-plaintext
+same grouped-document blocks-source
+assert snap blocks-status == Plaintext chart exported · structured source retains timing and voicings
+reveal role:textbox Bar grouping
+click role:textbox Bar grouping
+input-text 1 + 3
+reveal .blocks-preview-command
+click .blocks-preview-command
+same grouped-document blocks-source
+reveal .blocks-apply
+click .blocks-apply
+same grouped-document blocks-source
+assert snap blocks-dirty == false
+assert snap blocks-status == No changes accepted · document unchanged
+reveal .blocks-close
+click .blocks-close
+assert snap blocks-open == false
+capture graph_controls_restored
+reveal role:button Editable document
+click role:button Editable document
+same grouped-document blocks-source
+reveal .blocks-swatch
+wait 1
+wait 1
+capture bar_group_saved

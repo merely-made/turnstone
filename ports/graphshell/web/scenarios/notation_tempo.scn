@@ -1,0 +1,54 @@
+# Fresh qualification origin. Full written-tempo range, then normal save/reopen.
+reveal role:button Editable document
+click role:button Editable document
+reveal .blocks-insert-progression
+click .blocks-insert-progression
+remember cards-only
+reveal role:textbox Notation tempo (BPM)
+click role:textbox Notation tempo (BPM)
+input-text 0
+reveal .blocks-write-notation
+click .blocks-write-notation
+assert snap blocks-status == Notation tempo must be a whole number from 1 to 400 BPM
+same cards-only blocks-source
+reveal role:textbox Notation tempo (BPM)
+click role:textbox Notation tempo (BPM)
+input-text 401
+reveal .blocks-write-notation
+click .blocks-write-notation
+assert snap blocks-status == Notation tempo must be a whole number from 1 to 400 BPM
+same cards-only blocks-source
+reveal role:textbox Notation tempo (BPM)
+click role:textbox Notation tempo (BPM)
+input-text 1.5
+reveal .blocks-write-notation
+click .blocks-write-notation
+assert snap blocks-status == Enter a whole-number notation tempo from 1 to 400 BPM
+same cards-only blocks-source
+reveal role:textbox Notation tempo (BPM)
+click role:textbox Notation tempo (BPM)
+input-text 1
+reveal .blocks-write-notation
+click .blocks-write-notation
+assert snap blocks-notation-view == Chart
+remember written-notation
+reveal .blocks-reading-score
+click .blocks-reading-score
+reveal .blocks-notation-leaf
+wait 200
+capture one_bpm_score
+reveal .blocks-undo
+click .blocks-undo
+same cards-only blocks-source
+reveal .blocks-redo
+click .blocks-redo
+same written-notation blocks-source
+reveal .blocks-save
+click .blocks-save
+wait 180
+assert snap blocks-saving == false
+assert snap blocks-dirty == false
+assert snap blocks-status == Document saved
+reveal .blocks-close
+click .blocks-close
+assert snap blocks-open == false

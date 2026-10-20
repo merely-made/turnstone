@@ -1,0 +1,12 @@
+# Same qualification origin/profile as editable_rhyme_blocks.scn.
+reveal role:button Editable document
+click role:button Editable document
+assert snap blocks-open == true
+assert snap blocks-dirty == false
+assert snap blocks-preview == false
+assert snap blocks-status == Saved document reopened
+assert text rhyme="A B B A"
+reveal .blocks-swatch
+wait 1
+wait 1
+capture rhyme_reopened

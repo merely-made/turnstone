@@ -33,6 +33,7 @@ use cambium_rootstock::{
 };
 use graphshell::app::GraphshellApp;
 use graphshell::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
+use layout_dom_api::{LayoutDom, LocalName, Namespace};
 use mere::canvas::Canvas;
 use mere::canvas::controls::CanvasCommand;
 use mere::kernel::graph::Graph;
@@ -42,7 +43,6 @@ use netrender::{ColorLoad, NetrenderOptions};
 use serde_json::json;
 use taproot::ProbeSnapshot;
 use taproot::Selector;
-use layout_dom_api::{LayoutDom, LocalName, Namespace};
 use wasm_bindgen::prelude::*;
 use web_sys::{Element, Event, HtmlCanvasElement};
 
@@ -76,7 +76,11 @@ fn focused_field_has_label(
 ) -> bool {
     dom.attribute(node, &Namespace::default(), &LocalName::from("aria-label")) == Some(label)
         && dom
-            .attribute(node, &Namespace::default(), &LocalName::from("data-cambium-text-value"))
+            .attribute(
+                node,
+                &Namespace::default(),
+                &LocalName::from("data-cambium-text-value"),
+            )
             .is_some()
 }
 /// The docked "Graph tools" region's width, logical px. The canvas takes the
@@ -471,6 +475,8 @@ pub(crate) struct TreePage {
     #[cfg(feature = "product")]
     backdrop: Rc<RefCell<backdrop::Pane>>,
     #[cfg(feature = "product")]
+    blocks: blocks::Pane,
+    #[cfg(feature = "product")]
     promoted_links: promoted_links::Pane,
     #[cfg(feature = "product")]
     dynamics_inspector: dynamics_inspection::Pane,
@@ -681,7 +687,8 @@ fn view(page: &TreePage) -> Child {
     let (width, height) = page.size;
     // Genet does not stretch a custom leaf across its cross axis, so the
     // canvas column is told the width the tools region leaves it.
-    let docked = tools_docked(page);
+    let document_active = blocks_active(page);
+    let docked = !document_active && tools_docked(page);
     let canvas_width = if presenter::docked(page) {
         width.saturating_sub(presenter::WIDTH).max(1)
     } else if docked {
@@ -716,7 +723,7 @@ fn view(page: &TreePage) -> Child {
                 |page: &mut TreePage, event: cambium::PointerEvent| page.pointer(event),
             ),
             |page: &mut TreePage, event: cambium::KeyEvent| {
-                if commands::shortcut(page, &event) {
+                if !blocks_active(page) && commands::shortcut(page, &event) {
                     return;
                 }
                 #[cfg(feature = "product")]
@@ -745,11 +752,15 @@ fn view(page: &TreePage) -> Child {
     let showing_workbench = workbench.is_some();
     let inline_product_controls = showing_workbench || !instrument_class(page).is_empty();
     #[cfg(feature = "product")]
-    let scene_header = instrument::scene_header(page, showing_workbench);
+    let scene_header = if document_active {
+        blocks::toolbar(page)
+    } else {
+        instrument::scene_header(page, showing_workbench)
+    };
     #[cfg(not(feature = "product"))]
     let scene_header: Option<Child> = None;
     #[cfg(feature = "product")]
-    let backdrop_workspace = backdrop::workspace(page);
+    let backdrop_workspace = blocks::workspace(page).or_else(|| backdrop::workspace(page));
     #[cfg(not(feature = "product"))]
     let backdrop_workspace: Option<Child> = None;
     #[cfg(feature = "product")]
@@ -757,7 +768,7 @@ fn view(page: &TreePage) -> Child {
     #[cfg(not(feature = "product"))]
     let app_header: Option<Child> = None;
     #[cfg(feature = "product")]
-    let drop_feedback = (!showing_workbench)
+    let drop_feedback = (!showing_workbench && !document_active)
         .then(|| forme::drop_feedback(page))
         .flatten();
     #[cfg(not(feature = "product"))]
@@ -776,31 +787,38 @@ fn view(page: &TreePage) -> Child {
                                 .to_owned(),
                         ))
                     }),
-                    el("p", page.status())
-                        .attr("class", "tree-status")
-                        .attr("role", "status"),
-                    history::region(page),
-                    page.presenter
-                        .is_none()
-                        .then(|| hosted_dataset(page))
+                    (!document_active).then(|| {
+                        Box::new(
+                            el("p", page.status())
+                                .attr("class", "tree-status")
+                                .attr("role", "status"),
+                        ) as Child
+                    }),
+                    (!document_active).then(|| history::region(page)),
+                    (!document_active)
+                        .then(|| page.presenter.is_none().then(|| hosted_dataset(page)))
+                        .flatten()
                         .flatten(),
-                    page.presenter
-                        .is_none()
-                        .then(|| grouping::controls(page))
+                    (!document_active)
+                        .then(|| page.presenter.is_none().then(|| grouping::controls(page)))
+                        .flatten()
                         .flatten(),
-                    if page.presenter.is_some() {
-                        presenter::toolbar(page)
-                    } else {
-                        controls::toolbar(page)
-                    },
-                    forme_toolbar(page),
-                    inline_product_controls.then(|| product::controls(page)),
+                    (!document_active).then(|| {
+                        if page.presenter.is_some() {
+                            presenter::toolbar(page)
+                        } else {
+                            controls::toolbar(page)
+                        }
+                    }),
+                    (!document_active).then(|| forme_toolbar(page)),
+                    (!document_active && inline_product_controls).then(|| product::controls(page)),
                     el(
                         "div",
                         (
-                            (!inline_product_controls).then(|| product::controls(page)),
-                            product::projection_editor(page),
-                            product::menu(page),
+                            (!document_active && !inline_product_controls)
+                                .then(|| product::controls(page)),
+                            (!document_active).then(|| product::projection_editor(page)),
+                            (!document_active).then(|| product::menu(page)),
                             el(
                                 "div",
                                 (
@@ -813,7 +831,9 @@ fn view(page: &TreePage) -> Child {
                             )
                             .attr("class", "tree-graph"),
                             presenter::panel(page),
-                            if docked {
+                            if document_active {
+                                None
+                            } else if docked {
                                 Some(tools_region(page))
                             } else {
                                 page.tools_open.then(|| {
@@ -860,7 +880,9 @@ fn view(page: &TreePage) -> Child {
                 format!("position:relative;width:{width}px;height:{height}px;"),
             ),
             |page: &mut TreePage, event| {
-                commands::shortcut(page, &event);
+                if !blocks_active(page) {
+                    commands::shortcut(page, &event);
+                }
             },
         )
         .capture(true)
@@ -876,6 +898,17 @@ fn instrument_class(page: &TreePage) -> &'static str {
     #[cfg(not(feature = "product"))]
     let _ = page;
     ""
+}
+
+/// Whether an editable document owns the current scene canvas.
+fn blocks_active(page: &TreePage) -> bool {
+    #[cfg(feature = "product")]
+    return blocks::active(page);
+    #[cfg(not(feature = "product"))]
+    {
+        let _ = page;
+        false
+    }
 }
 
 /// Whether the Graph tools region docks beside the canvas at this width.
@@ -1302,6 +1335,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         product::open(&root).await?
     };
     #[cfg(feature = "product")]
+    let blocks = blocks::Pane::load(product.as_ref()).await;
+    #[cfg(feature = "product")]
     let (mut forme, mut forme_error) = match &product {
         Some(p) => match forme::Pane::open(p).await {
             Ok(pane) => (Some(pane), None),
@@ -1543,6 +1578,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 query_views: query_view::Pane::default(),
                 #[cfg(feature = "product")]
                 backdrop: Rc::new(RefCell::new(backdrop::Pane::default())),
+                #[cfg(feature = "product")]
+                blocks,
                 #[cfg(feature = "product")]
                 promoted_links: promoted_links::Pane::default(),
                 #[cfg(feature = "product")]
@@ -1897,6 +1934,7 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             {
                 reading::prepare(ctx.runner.state());
                 backdrop::register(ctx);
+                blocks::register(ctx);
                 frame_shared.reading.borrow_mut().register(ctx);
                 if frame_shared.reading.borrow_mut().poll() {
                     ctx.runner.update(|_| {});
@@ -2063,6 +2101,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 return Some(slot);
             }
             #[cfg(feature = "product")]
+            if let Some(slot) = blocks::focused_text(runner) {
+                return Some(slot);
+            }
+            #[cfg(feature = "product")]
             if let Some(slot) = query_view::focused_text(runner) {
                 return Some(slot);
             }
@@ -2185,6 +2227,10 @@ impl NoRepulsionLane for mere::canvas::Canvas {
 mod appearance;
 #[cfg(feature = "applets")]
 mod applet;
+#[cfg(feature = "product")]
+mod backdrop;
+#[cfg(feature = "product")]
+mod blocks;
 mod commands;
 mod controls;
 #[cfg(feature = "product")]
@@ -2204,8 +2250,6 @@ mod host_boundary;
 mod inspection;
 #[cfg(feature = "product")]
 mod instrument;
-#[cfg(feature = "product")]
-mod backdrop;
 mod lane;
 #[cfg(feature = "product")]
 mod link_inspection;
@@ -2232,9 +2276,9 @@ mod product;
 #[path = "web_tree/product_off.rs"]
 mod product;
 #[cfg(feature = "product")]
-mod query_view;
-#[cfg(feature = "product")]
 mod promoted_links;
+#[cfg(feature = "product")]
+mod query_view;
 #[cfg(feature = "product")]
 mod reading;
 #[cfg(feature = "remote")]
@@ -2273,11 +2317,11 @@ fn forme_workbench(page: &TreePage) -> Option<Child> {
 }
 fn forme_sheet() -> String {
     #[cfg(feature = "product")]
-    return format!("{}{}", cambium::FRISKET_CSS, forme::SHEET);
+    return format!("{}{}{}", cambium::FRISKET_CSS, forme::SHEET, blocks::SHEET);
     #[cfg(not(feature = "product"))]
     String::new()
 }
 
-mod responsive_links;
 #[cfg(feature = "product")]
 mod ordinary_link_paths;
+mod responsive_links;

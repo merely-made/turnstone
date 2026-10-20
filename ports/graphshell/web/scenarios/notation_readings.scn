@@ -1,0 +1,50 @@
+reveal role:button Editable document
+click role:button Editable document
+remember original-document
+reveal .blocks-insert-progression
+click .blocks-insert-progression
+remember cards-only
+reveal .blocks-reading-score
+click .blocks-reading-score
+same cards-only blocks-source
+reveal .blocks-write-notation
+click .blocks-write-notation
+assert snap blocks-notation-view == Chart
+remember written-notation
+reveal .blocks-notation-leaf
+wait 200
+capture chart
+reveal .blocks-notation-event-1-1
+click .blocks-notation-event-1-1
+assert snap blocks-notation-selected == 1:1
+same written-notation blocks-source
+reveal .blocks-reading-tab
+click .blocks-reading-tab
+assert snap blocks-notation-view == Tab
+assert snap blocks-notation-selected == 1:1
+same written-notation blocks-source
+reveal .blocks-notation-leaf
+wait 200
+capture tab_rest
+reveal .blocks-reading-score
+click .blocks-reading-score
+assert snap blocks-notation-view == Score
+assert snap blocks-notation-selected == 1:1
+same written-notation blocks-source
+reveal .blocks-notation-leaf
+wait 200
+capture score_rest
+reveal .blocks-undo
+click .blocks-undo
+same cards-only blocks-source
+reveal .blocks-redo
+click .blocks-redo
+same written-notation blocks-source
+reveal .blocks-save
+click .blocks-save
+wait 180
+assert snap blocks-saving == false
+assert snap blocks-dirty == false
+reveal .blocks-close
+click .blocks-close
+assert snap blocks-open == false
