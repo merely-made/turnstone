@@ -1,0 +1,90 @@
+{
+  "citations": [
+    {
+      "corrupt_bytes_refused": true,
+      "evidence": {
+        "canonical_uri": "mere://saved-source/058a68f4-1f12-499e-a34a-a8b68e15d4dc/d7775a88-6786-4408-9aa9-0ec7bc827480/3837bb8a-9a56-45e7-bbaa-8a151d22b953/4df4e93bfb46fec8d4041ae44994af41a851050faa29b149313d9a5fa28de4c1/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+        "content": {
+          "byte_size": 47,
+          "portable_id": "ni:///sha-256;2TbMj6QfnEcYi0868aagla2tnWB3mRr01Iqc2SFk1RM",
+          "transport": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275"
+        },
+        "media_type": "text/plain; charset=utf-8; profile=saved-source",
+        "role": "observed-representation"
+      },
+      "note": {
+        "Unix": [
+          114,
+          101,
+          115,
+          101,
+          97,
+          114,
+          99,
+          104,
+          45,
+          100,
+          53,
+          53,
+          50,
+          54,
+          98,
+          99,
+          53,
+          45,
+          49,
+          98,
+          57,
+          49,
+          45,
+          52,
+          49,
+          55,
+          53,
+          45,
+          98,
+          53,
+          49,
+          102,
+          45,
+          101,
+          49,
+          55,
+          54,
+          101,
+          54,
+          98,
+          51,
+          99,
+          101,
+          53,
+          52,
+          46,
+          100,
+          106,
+          111,
+          116
+        ]
+      },
+      "portable_and_transport_hashes_verified": true,
+      "quote": "café",
+      "source_url": "mere://saved-source/058a68f4-1f12-499e-a34a-a8b68e15d4dc/d7775a88-6786-4408-9aa9-0ec7bc827480/3837bb8a-9a56-45e7-bbaa-8a151d22b953/4df4e93bfb46fec8d4041ae44994af41a851050faa29b149313d9a5fa28de4c1/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275?start=41&end=45",
+      "target": {
+        "key": {
+          "annotation_manifest": "blake3:4df4e93bfb46fec8d4041ae44994af41a851050faa29b149313d9a5fa28de4c1",
+          "graph": "d7775a88-6786-4408-9aa9-0ec7bc827480",
+          "node": "3837bb8a-9a56-45e7-bbaa-8a151d22b953",
+          "session": "058a68f4-1f12-499e-a34a-a8b68e15d4dc"
+        },
+        "selector": {
+          "end": 45,
+          "start": 41
+        },
+        "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275"
+      },
+      "verified_against_turnstone_capture": true
+    }
+  ],
+  "independent_after_app_exit": true,
+  "result": "pass"
+}

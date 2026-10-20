@@ -1,0 +1,35 @@
+# New app process and new hosted Knot endpoint. Origin remains stopped.
+settle 20
+key escape
+assert snap network-offline == true
+act Open research note
+settle 20
+assert content-live
+assert text My authored A1 commentary.
+assert text Read saved passage 1: Source A
+capture 12_cold_authored_note
+click .knot-saved-citation Read saved passage 1:
+wait-saved-reader 600
+assert snap saved-reader-quote == café
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+record-saved-sources 13_cold_exact_A1
+capture 13_cold_exact_A1
+act Search saved sources
+type violet
+wait-saved-sources 600
+assert suggestions == 1
+key enter
+wait-saved-reader 600
+assert snap saved-reader-quote == violet
+record-saved-sources 14_cold_A2_is_distinct
+capture 14_cold_A2_is_distinct
+act Open research note
+settle 20
+click .knot-saved-citation Read saved passage 1:
+wait-saved-reader 600
+assert snap saved-reader-quote == café
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+record-saved-sources 15_cold_old_A1_after_A2
+capture 15_cold_old_A1_after_A2
+act Save session
+settle 20

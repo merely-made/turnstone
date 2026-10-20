@@ -33,6 +33,9 @@ set.
 - Keep authority boundaries sharp: Turnstone owns product actions and policy,
   Mere owns reusable graph/projection primitives, and Genet engines own
   document behavior. Promote a shared contract when a real consumer forces it.
+- Name the actual document format in user-facing choices (Djot, Markdown,
+  Gemtext, and so on); use document when no format has been selected. Preserve
+  provider, route, schema, action and compatibility-format identities.
 - Use one action catalog and one observable state spine. UI, automation, and
   accessibility should consume the same named actions and facts.
 - Apply graph camera edits through the owning pane's `with_graph_pane` boundary.
@@ -111,7 +114,11 @@ set.
   explicitly scoped capture-backed Answers and cold-reopen acceptance. Authored
   Knot notes now join this workflow: the [October 18 receipt](../docs/receipts/research_notes_20261018/README.md)
   qualifies ordinary note creation/choice, exact source citations and a cold
-  origin-gone return. Deliberate attachment sharing remains next. R0 save
+  origin-gone return. The October 19 named-recipient assessment records the
+  missing source-owner publication handoff and durable withdrawal decision;
+  deliberate attachment sharing remains unqualified. The
+  [format/local-note receipt](../docs/receipts/document_formats_20261019/README.md)
+  records the bounded naming and exact-citation regression checks. R0 save
   acknowledgement/recovery is implemented from fetched `b7e1529`, adopting
   published Mere `00e444286`:
   940 bounded regression tests pass, including 50 capture and 16 scene controls;

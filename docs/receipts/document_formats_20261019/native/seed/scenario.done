@@ -1,0 +1,12 @@
+RESULT ok
+captured 06_saved_passage
+captured 07_clip_saved
+captured 08_note_and_citation
+captured 09_follow_exact_citation
+captured 11_old_A1_after_A2
+presentation frames=332 captures=5 blank=0
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated/seed/06_saved_passage.png digest=67748e90b1abd3dd blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated/seed/07_clip_saved.png digest=8e97eeb78037f2f9 blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated/seed/08_note_and_citation.png digest=f2444ee9e67633f3 blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated/seed/09_follow_exact_citation.png digest=c6dd09d4220168b8 blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated/seed/11_old_A1_after_A2.png digest=334bf18dcab4dc5e blank=false

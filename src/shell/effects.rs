@@ -984,7 +984,7 @@ impl Shell {
                 Effect::ChooseKnotDocumentFile { read_only } => {
                     if let Some(path) = rfd::FileDialog::new()
                         .add_filter(
-                            "Knot, Djot, Scroll, Gemtext, or Micron",
+                            "Djot, Scrolltext, Gemtext, Micron, or legacy .knot",
                             &["knot", "djot", "scroll", "gmi", "gemini", "mu", "micron"],
                         )
                         .pick_file()

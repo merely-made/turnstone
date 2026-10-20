@@ -1,0 +1,14 @@
+RESULT fail
+captured 01_new_note
+FAIL: insert: no focused text editor
+captured 02_authored_note
+captured 02b_format_choice
+FAIL: insert: no focused text editor
+captured 03_other_note
+captured 03b_publication_authority_unavailable
+presentation frames=255 captures=5 blank=0
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-final/create/01_new_note.png digest=4ef68c4b7243d7e4 blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-final/create/02_authored_note.png digest=16dbd7bd67045f74 blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-final/create/02b_format_choice.png digest=307f985738b1c4ba blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-final/create/03_other_note.png digest=f57642a18a65f1dc blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-final/create/03b_publication_authority_unavailable.png digest=28532deac1936051 blank=false

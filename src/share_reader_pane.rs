@@ -92,7 +92,7 @@ fn shared_knot_pane_view(state: &SharedKnotPaneState) -> SharedKnotPaneView {
         el::<_, SharedKnotPaneState, ()>(
             "div",
             (
-                el::<_, SharedKnotPaneState, ()>("div", "Shared Knot")
+                el::<_, SharedKnotPaneState, ()>("div", "Shared document")
                     .attr("class", "list-section-title"),
                 el::<_, SharedKnotPaneState, ()>("div", state.snapshot.route.clone())
                     .attr("class", "list-row muted"),

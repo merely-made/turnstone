@@ -1,0 +1,12 @@
+{
+  "head": "2a7231ac9c1948eb350ca37ef2c6fcc0c74c48c0",
+  "clean": true,
+  "paths": {
+    "Cargo.toml": "8c347aae7f43fd3ee30dfd8ffe715455e7bde157c8823a0fbf5906628313e7da",
+    "Cargo.lock": "729eabed6c0909dd4592d29ac566acba0b9d45ed16a33663d4d14b3d4d7ac913",
+    "crates/knot-document/src/document_view.rs": "5bb1f2da447199c80c334dd72cd5dbc41e6c8991dce7d4e78dfd9e9c3a0ba6b8"
+  },
+  "library_suite": "154 passed; 0 failed; 1 ignored",
+  "focused_protocol_suite": "13 passed; 0 failed",
+  "scope": "Existing admitted one-document publisher and owner library, not selected document plus source attachments."
+}

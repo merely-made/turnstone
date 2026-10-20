@@ -7521,7 +7521,7 @@ checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 [[package]]
 name = "knot-capture"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#ceaf41fbd4075a6746c316c46cc66bce976d0546"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#2a7231ac9c1948eb350ca37ef2c6fcc0c74c48c0"
 dependencies = [
  "knot-file-catalog",
 ]
@@ -7529,7 +7529,7 @@ dependencies = [
 [[package]]
 name = "knot-composition"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#ceaf41fbd4075a6746c316c46cc66bce976d0546"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#2a7231ac9c1948eb350ca37ef2c6fcc0c74c48c0"
 dependencies = [
  "blake3",
  "knot-capture",
@@ -7549,7 +7549,7 @@ dependencies = [
 [[package]]
 name = "knot-document"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#ceaf41fbd4075a6746c316c46cc66bce976d0546"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#2a7231ac9c1948eb350ca37ef2c6fcc0c74c48c0"
 dependencies = [
  "cambium",
  "illume",
@@ -7566,7 +7566,7 @@ dependencies = [
 [[package]]
 name = "knot-editor"
 version = "0.0.3"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#ceaf41fbd4075a6746c316c46cc66bce976d0546"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#2a7231ac9c1948eb350ca37ef2c6fcc0c74c48c0"
 dependencies = [
  "base64 0.22.1",
  "blake3",
@@ -7635,7 +7635,7 @@ dependencies = [
 [[package]]
 name = "knot-file-catalog"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#ceaf41fbd4075a6746c316c46cc66bce976d0546"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#2a7231ac9c1948eb350ca37ef2c6fcc0c74c48c0"
 dependencies = [
  "muniment",
  "pollster 0.4.0",

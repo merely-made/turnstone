@@ -32,6 +32,8 @@ const AUTHORITY_CONTEXT: &str = "turnstone.knot-publish.authority.v1";
 pub(super) const PROFILE_ID: &str = "mere.knot.publish";
 pub(super) const PROFILE_REVISION: u32 = 1;
 const DEFAULT_SHARE_HOURS: u64 = 24;
+pub(crate) const PUBLISHING_UNAVAILABLE: &str =
+    "Private document sharing is unavailable: the document owner has not offered publication authority.";
 
 /// The owner-visible status of one source candidate.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -71,7 +73,7 @@ pub struct PublishSnapshot {
 impl Default for PublishSnapshot {
     fn default() -> Self {
         Self {
-            status: "Knot publishing is unavailable: configure a persona-vault Knot host.".into(),
+            status: PUBLISHING_UNAVAILABLE.into(),
             route: "mDNS direct LAN preferred; no relay configured".into(),
             candidates: Vec::new(),
             shares: Vec::new(),

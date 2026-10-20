@@ -1,0 +1,10 @@
+
+running 5 tests
+test panes::registry::tests::built_in_ids_and_schemas_are_unique_and_namespaced ... ok
+test panes::registry::tests::publishing_workflows_are_typed_registrations ... ok
+test panes::registry::tests::registration_is_the_legacy_content_factory ... ok
+test panes::registry::tests::retired_system_and_placeholder_are_not_registered ... ok
+test panes::registry::tests::source_shapes_validate_fixed_and_following_sources ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1085 filtered out; finished in 0.00s
+

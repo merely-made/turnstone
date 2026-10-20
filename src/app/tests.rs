@@ -3345,7 +3345,7 @@ fn shared_knot_pane_is_a_summonable_reader_control() {
         crate::action::palette_actions()
             .iter()
             .any(|(label, action)| {
-                *label == "Open Shared Knot pane"
+                *label == "Open Shared document pane"
                     && matches!(action, Action::SummonPane(id) if id.as_str() == crate::panes::kind::SHARED_KNOT)
             })
     );

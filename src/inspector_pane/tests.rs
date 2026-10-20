@@ -34,7 +34,7 @@ fn synced_sections_reach_the_dom() {
         .filter_map(|c| dom.text(c).map(str::to_string))
         .collect();
     assert!(text.contains("https://example.test/"));
-    assert!(text.contains("Knot clip: ready"));
+    assert!(text.contains("Passage: ready"));
 }
 
 #[test]

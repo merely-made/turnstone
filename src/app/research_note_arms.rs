@@ -20,6 +20,21 @@ pub struct NoteChoice {
     pub address: String,
 }
 
+impl NoteChoice {
+    pub(crate) fn use_label(&self) -> String {
+        let format = url::Url::parse(&self.address).ok().and_then(|url| {
+            knot_document::DocumentFormat::from_path(std::path::Path::new(url.path()))
+        });
+        match format {
+            Some(format) => format!(
+                "Use this {} document as research note",
+                knot_document::knot_document_format_label(format)
+            ),
+            None => "Use this document as research note".into(),
+        }
+    }
+}
+
 impl App {
     pub(crate) fn note_choice(&self, member: uuid::Uuid) -> Option<NoteChoice> {
         let graph = self.graph_runtimes.graph_containing_member(member)?;

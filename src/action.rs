@@ -734,11 +734,11 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Import clip package", Action::ChooseClipPackageFile),
         shared(Action::SaveSession),
         (
-            "Open Knot document",
+            "Open document",
             Action::ChooseKnotDocumentFile { read_only: false },
         ),
         (
-            "Open Knot document read-only",
+            "Open document read-only",
             Action::ChooseKnotDocumentFile { read_only: true },
         ),
         ("Search saved sources", Action::SearchSavedSources),
