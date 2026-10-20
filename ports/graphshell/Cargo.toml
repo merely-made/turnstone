@@ -361,7 +361,7 @@ proofs.workspace = true
 mien.workspace = true
 genet-scripted-dom.workspace = true
 layout_dom_api.workspace = true
-accesskit = "0.24"
+accesskit.workspace = true
 cambium-genet-winit-host = { workspace = true }
 cambium-winit-a11y = { workspace = true }
 
