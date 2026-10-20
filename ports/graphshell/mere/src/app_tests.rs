@@ -15,6 +15,7 @@ fn app() -> (
     let (answers, receiver) = mpsc::channel();
     (
         App {
+            coop: None,
             model: MereViewModel::default(),
             view: MereViewState::default(),
             size: (1100, 800),

@@ -8,14 +8,18 @@ repository.workspace = true
 description = "Native Graphshell mere viewer over the admitted resident route."
 publish = false
 
-# Its own package so the viewer builds from the stack crates it uses alone:
-# a binary in `graphshell` always got the Graphshell library and every
-# feature turned on for it, whose features then reached shared crates.
+# Keep the native view's feature selection independent of Graphshell's
+# document-host defaults. Co-op reuses its admitted protocol/client and the
+# ordinary view continues to read the resident-owned graph through the door.
 [[bin]]
 name = "graphshell_mere"
 path = "src/main.rs"
 
 [dependencies]
+graphshell = { path = "..", default-features = false, features = ["coop"] }
+serde_json.workspace = true
+uuid.workspace = true
+serde = { version = "1", features = ["derive"] }
 cambium.workspace = true
 cambium-genet-winit-host.workspace = true
 # `HostWake`; image decoding as the viewer had it inside Graphshell.
