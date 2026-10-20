@@ -927,6 +927,7 @@ dependencies = [
 name = "cambium-rootstock"
 version = "0.1.0"
 dependencies = [
+ "accesskit",
  "cambium",
  "cambium-winit",
  "document-session-api",
