@@ -28,6 +28,8 @@ pub enum HeaderHit {
 pub struct OuterFrame {
     window_scope: NodeId,
     window_root: NodeId,
+    workspace_root: NodeId,
+    workspace_area: Option<Rect>,
     scrolls: Vec<(u64, u32, u32)>,
     pub(crate) body_focus: Option<NodeId>,
     pub(crate) controls: FrameControls,
@@ -60,7 +62,9 @@ impl OuterFrame {
         let document = dom.borrow().document();
         dom.borrow_mut().append_child(document, scope);
         dom.borrow_mut().append_child(scope, root);
-        let controls = FrameControls::new_at(dom, root);
+        let workspace_root = dom.borrow_mut().create_element(cambium::html_qual("div"));
+        dom.borrow_mut().append_child(root, workspace_root);
+        let controls = FrameControls::new_at(dom, workspace_root);
         let workspace = Workspace::default();
         let appearance = crate::shell_services::AppearanceConfig::default();
         let sheet = crate::frame_style::stylesheet(
@@ -73,6 +77,8 @@ impl OuterFrame {
         Self {
             window_scope: scope,
             window_root: root,
+            workspace_root,
+            workspace_area: None,
             scrolls: Vec::new(),
             body_focus: None,
             controls,
@@ -88,6 +94,12 @@ impl OuterFrame {
     }
 }
 impl OuterFrame {
+    pub(crate) fn set_workspace_area(&mut self, area: Rect) {
+        if self.workspace_area != Some(area) {
+            self.workspace_area = Some(area);
+            self.controls.invalidate();
+        }
+    }
     pub fn prepare(
         &mut self,
         layout: &FrisketLayout,
@@ -110,6 +122,24 @@ impl OuterFrame {
                     size.0, size.1
                 ),
             );
+        }
+        {
+            use layout_dom_api::LayoutDomMut;
+            let area = self.workspace_area.unwrap_or(Rect::full(size.0, size.1));
+            let style = format!(
+                "position:absolute;left:{}px;top:{}px;width:{}px;height:{}px;",
+                area.x, area.y, area.w, area.h
+            );
+            let changed = attr(&self.controls.dom.borrow(), self.workspace_root, "style")
+                .as_deref()
+                != Some(style.as_str());
+            if changed {
+                self.controls.dom.borrow_mut().set_attribute(
+                    self.workspace_root,
+                    cambium::attr_qual("style"),
+                    &style,
+                );
+            }
         }
         if &self.appearance != appearance || self.size != size {
             self.controls.invalidate();
@@ -180,7 +210,11 @@ impl OuterFrame {
     pub fn scene(&mut self) -> netrender::Scene {
         match self.scene_resources() {
             Ok(translated) => translated.scene,
-            Err(error) => crate::ui::pane_scene(&format!("Frame cannot render: {error}"), self.size.0, self.size.1),
+            Err(error) => crate::ui::pane_scene(
+                &format!("Frame cannot render: {error}"),
+                self.size.0,
+                self.size.1,
+            ),
         }
     }
     /// Resolve only frame-owned furniture. Mounted pane descendants share the
@@ -226,10 +260,9 @@ impl OuterFrame {
         let same = match (control, physical) {
             (Control::Tab(expected), Some(HeaderHit::Tab(actual))) => expected == actual,
             (Control::Close(expected), Some(HeaderHit::Close(actual))) => expected == actual,
-            (
-                Control::Divider { path, index, .. },
-                Some(HeaderHit::Divider { target, .. }),
-            ) => path == target.path && index == target.index,
+            (Control::Divider { path, index, .. }, Some(HeaderHit::Divider { target, .. })) => {
+                path == target.path && index == target.index
+            },
             _ => false,
         };
         if !same {
@@ -237,7 +270,9 @@ impl OuterFrame {
         }
         Ok(Some(point))
     }
-    pub(crate) fn scene_resources(&mut self) -> Result<paint_list_render::TranslatedDisplayList, paint_list_render::TranslationError> {
+    pub(crate) fn scene_resources(
+        &mut self,
+    ) -> Result<paint_list_render::TranslatedDisplayList, paint_list_render::TranslationError> {
         self.layout.borrow_mut().scene_resources(
             &mut self.controls.dom.borrow_mut(),
             &self.sheet,
@@ -450,15 +485,46 @@ impl OuterFrame {
         // Body widgets share the tab-bar vocabulary (including numeric
         // data-tabkey values). Their controls belong to the retained runner,
         // even when an ancestor or descendant resembles frame furniture.
-        if cambium::slot_kind(&*dom, hit).is_some() {
-            return None;
+        if cambium::slot_kind(&*dom, hit).is_none() {
+            if let Some(id) = cambium::close_target(&*dom, hit) {
+                return Some(HeaderHit::Close(id));
+            }
+            if let Some(id) = cambium::tab_target(&*dom, hit) {
+                return Some(HeaderHit::Tab(id));
+            }
         }
-        if let Some(id) = cambium::close_target(&*dom, hit) {
-            return Some(HeaderHit::Close(id));
-        }
-        if let Some(id) = cambium::tab_target(&*dom, hit) {
-            return Some(HeaderHit::Tab(id));
-        }
+        // Keep the layout seam narrow while admitting a comfortable pointer
+        // band on either side. Only a divider in the hit's own split may win:
+        // a floating pane covering a seam must keep its input. Reverse walk
+        // order gives nested dividers precedence at intersections.
+        let hit = self
+            .controls
+            .order()
+            .into_iter()
+            .rev()
+            .find_map(|control| {
+                let Control::Divider { .. } = control else {
+                    return None;
+                };
+                let node = self.controls.node(&control)?;
+                let (rx, ry, rw, rh) = self.layout.borrow().painted_rect(&dom, node)?;
+                let vertical = attr(&dom, node, "aria-orientation").as_deref() == Some("vertical");
+                if !crate::pane::divider_grab_rect(Rect::new(rx, ry, rw, rh), vertical)
+                    .contains(x, y)
+                {
+                    return None;
+                }
+                let parent = dom.parent(node)?;
+                let mut ancestor = Some(hit);
+                while let Some(at) = ancestor {
+                    if at == parent {
+                        return Some(node);
+                    }
+                    ancestor = dom.parent(at);
+                }
+                None
+            })
+            .unwrap_or(hit);
         let target = cambium::divider_target(&*dom, hit)?;
         let tree = tree_at(self.workspace.tiled(), &target.path.0)?;
         let TileTree::Split { axis, children } = tree else {
@@ -560,7 +626,11 @@ impl OuterFrame {
     }
     /// Explicit Ctrl-docking inspects tiled apertures beneath the dragged float.
     pub(crate) fn float_dock_target(&self, x: f32, y: f32) -> Option<workbench::FloatDockTarget> {
-        if self.workspace.tiled().is_empty() && Rect::full(self.size.0, self.size.1).contains(x, y)
+        if self.workspace.tiled().is_empty()
+            && self
+                .workspace_area
+                .unwrap_or(Rect::full(self.size.0, self.size.1))
+                .contains(x, y)
         {
             return Some(workbench::FloatDockTarget::TiledRoot);
         }
@@ -676,6 +746,65 @@ mod native_aperture_tests {
                 .expect("body slot is not frame furniture"),
             None
         );
+    }
+    #[test]
+    fn compact_headers_and_hairline_dividers_keep_generous_pointer_targets() {
+        for side in [
+            crate::panes::InsertSide::Right,
+            crate::panes::InsertSide::Below,
+        ] {
+            let mut app = crate::app::App::test_stub();
+            app.frisket.summon_leaf(
+                &[],
+                side,
+                crate::panes::PaneNode::Leaf {
+                    pane_id: PaneId(90),
+                    content: crate::panes::PaneContent::Roster,
+                    graph_id: crate::panes::GraphId::nil(),
+                },
+            );
+            let mut frame = OuterFrame::default();
+            frame
+                .prepare(
+                    &app.frisket,
+                    app.active_pane,
+                    None,
+                    (900, 600),
+                    &app.shell_chrome_config().appearance,
+                    app.session_id.as_uuid().as_u128(),
+                )
+                .unwrap();
+            assert!(
+                frame.header_height() <= 36.0,
+                "compact default header: {}",
+                frame.header_height()
+            );
+            let control = frame
+                .controls
+                .order()
+                .into_iter()
+                .find(|c| matches!(c, Control::Divider { .. }))
+                .unwrap();
+            let node = frame.controls.node(&control).unwrap();
+            let (x, y, w, h) = frame
+                .layout
+                .borrow()
+                .painted_rect(&frame.controls.dom.borrow(), node)
+                .unwrap();
+            let vertical = matches!(side, crate::panes::InsertSide::Right);
+            assert_eq!(if vertical { w } else { h }, 1.0);
+            for offset in [-5.0, 0.0, 5.0] {
+                let (px, py) = if vertical {
+                    (x + w / 2.0 + offset, y + h / 2.0)
+                } else {
+                    (x + w / 2.0, y + h / 2.0 + offset)
+                };
+                assert!(
+                    matches!(frame.hit(px, py), Some(HeaderHit::Divider { .. })),
+                    "grab at {offset} on {side:?}"
+                );
+            }
+        }
     }
     #[test]
     fn the_final_floating_canvas_keeps_one_actual_native_aperture() {

@@ -240,6 +240,9 @@ pub struct ShellChromeConfig {
     pub shellbar: ShellbarConfig,
     /// Theme and UI scale consumed by the running host presentation.
     pub appearance: AppearanceConfig,
+    /// Live native caption reservations in each window's physical pixels.
+    /// Host observations only; never written into durable settings.
+    pub titlebar_insets: BTreeMap<usize, cambium_rootstock::TitlebarInsets>,
     pub transcript_placement: ChromePlacement,
     pub transcript_retention: TranscriptRetention,
 }
@@ -250,6 +253,7 @@ impl Default for ShellChromeConfig {
             omnibar: OmnibarConfig::default(),
             shellbar: ShellbarConfig::default(),
             appearance: AppearanceConfig::default(),
+            titlebar_insets: BTreeMap::new(),
             transcript_placement: ChromePlacement::Hidden,
             transcript_retention: TranscriptRetention::default(),
         }
