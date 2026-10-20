@@ -23,12 +23,14 @@ pub(super) enum Command {
 }
 #[derive(Clone, serde::Serialize)]
 pub(super) struct Update {
+    pub acknowledged: u64,
     pub data: Option<Data>,
     pub status: String,
 }
 pub(super) struct Panel {
-    tx: mpsc::Sender<Command>,
+    tx: mpsc::Sender<(u64, Command)>,
     rx: mpsc::Receiver<Update>,
+    pending: u64,
     pub update: Update,
     pub guest: bool,
     pub inputs: Vec<TextInput>,
@@ -63,7 +65,9 @@ impl Panel {
             tx,
             rx: updates,
             guest,
+            pending: 0,
             update: Update {
+                acknowledged: 0,
                 data: None,
                 status: if guest {
                     "Connecting to invited graph"
@@ -76,7 +80,11 @@ impl Panel {
         }
     }
     pub fn send(&mut self, command: Command) {
-        self.update.status = if self.tx.send(command).is_ok() {
+        self.pending = self
+            .pending
+            .checked_add(1)
+            .expect("request sequence exhausted");
+        self.update.status = if self.tx.send((self.pending, command)).is_ok() {
             "Working…"
         } else {
             "Co-op worker stopped"
@@ -86,7 +94,11 @@ impl Panel {
     pub fn drain(&mut self) -> bool {
         let mut changed = false;
         while let Ok(update) = self.rx.try_recv() {
+            let pending = update.acknowledged < self.pending;
             self.update = update;
+            if pending && self.update.data.is_some() {
+                self.update.status = "Working…".into();
+            }
             changed = true;
         }
         changed
@@ -321,11 +333,11 @@ async fn owner_call(
 fn owner_worker(
     runtime: &tokio::runtime::Runtime,
     domain: String,
-    rx: mpsc::Receiver<Command>,
+    rx: mpsc::Receiver<(u64, Command)>,
     send: impl Fn(Update) -> bool,
 ) {
     let mut connection = None;
-    while let Ok(command) = rx.recv() {
+    while let Ok((acknowledged, command)) = rx.recv() {
         let result = runtime.block_on(async {
             if connection.is_none() {
                 let mut client = AppBrokerClient::open_route(
@@ -386,12 +398,14 @@ fn owner_worker(
         });
         let update = match result {
             Ok(data) => Update {
+                acknowledged,
                 data: Some(data),
                 status: "Saved · owner acknowledged".into(),
             },
             Err(reason) => {
                 connection = None;
                 Update {
+                    acknowledged,
                     data: None,
                     status: format!("Refused: {reason}"),
                 }
@@ -406,13 +420,14 @@ fn guest_worker(
     runtime: &tokio::runtime::Runtime,
     invitation: PathBuf,
     contact: PathBuf,
-    rx: mpsc::Receiver<Command>,
+    rx: mpsc::Receiver<(u64, Command)>,
     send: impl Fn(Update) -> bool,
 ) {
     let identity = match network::identity() {
         Ok(i) => i,
         Err(e) => {
             send(Update {
+                acknowledged: 0,
                 data: None,
                 status: e,
             });
@@ -422,6 +437,7 @@ fn guest_worker(
     let mut guest = None;
     let mut reconnect = true;
     let mut last = None;
+    let mut acknowledged = 0;
     let mut status = "Connecting to invited graph".to_string();
     loop {
         if reconnect {
@@ -441,12 +457,16 @@ fn guest_worker(
             }
         }
         let command = match rx.recv_timeout(Duration::from_millis(200)) {
-            Ok(c) => Some(c),
+            Ok((sequence, c)) => {
+                acknowledged = sequence;
+                Some(c)
+            },
             Err(mpsc::RecvTimeoutError::Disconnected) => break,
             Err(_) => None,
         };
         if identity.is_locked() {
             send(Update {
+                acknowledged,
                 data: None,
                 status: "Identity locked".into(),
             });
@@ -465,9 +485,14 @@ fn guest_worker(
             _ => Ok(()),
         };
         if let Err(e) = outcome {
-            status = format!("Unavailable: {e}");
+            status = if guest.as_ref().is_some_and(|g| g.data.is_some()) {
+                format!("Save refused: {e}")
+            } else {
+                format!("Unavailable: {e}")
+            };
         }
         let update = Update {
+            acknowledged,
             data: guest.as_ref().and_then(|g| g.data.clone()),
             status: status.clone(),
         };
@@ -531,4 +556,66 @@ pub(super) fn guest_reading(data: &Data) -> (MereViewModel, HashMap<String, Port
         })
         .collect();
     (model, cards)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn an_old_background_reading_cannot_acknowledge_a_new_save() {
+        let (tx, commands) = mpsc::channel();
+        let (answers, rx) = mpsc::channel();
+        let data = Data {
+            graph: pandect::SessionId(uuid::Uuid::new_v4()),
+            owner: "owner".into(),
+            guest: None,
+            access: "uninvited".into(),
+            epoch: scenotime::SceneEpoch(1),
+            revision: scenotime::Revision(0),
+            nodes: vec![],
+            relations: vec![],
+            authors: vec![],
+        };
+        let initial = Update {
+            acknowledged: 0,
+            data: Some(data.clone()),
+            status: "Ready".into(),
+        };
+        let mut panel = Panel {
+            tx,
+            rx,
+            pending: 0,
+            update: initial,
+            guest: false,
+            inputs: vec![],
+        };
+        panel.send(Command::Edit(data.edit(Operation::Add {
+            id: uuid::Uuid::new_v4(),
+            address: "https://save.test/".into(),
+            title: "Source".into(),
+        })));
+        let (sequence, _) = commands.recv().unwrap();
+        assert_eq!(panel.update.status, "Working…");
+        answers
+            .send(Update {
+                acknowledged: sequence - 1,
+                data: Some(data.clone()),
+                status: "Saved · owner acknowledged".into(),
+            })
+            .unwrap();
+        panel.drain();
+        assert_eq!(
+            panel.update.status, "Working…",
+            "a prior reading is not the current save acknowledgement"
+        );
+        answers
+            .send(Update {
+                acknowledged: sequence,
+                data: Some(data),
+                status: "Saved · owner acknowledged".into(),
+            })
+            .unwrap();
+        panel.drain();
+        assert_eq!(panel.update.status, "Saved · owner acknowledged");
+    }
 }

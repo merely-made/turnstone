@@ -145,9 +145,9 @@ impl App {
                     let attached = self.attached_session();
                     if let Some(panel) = self.coop.as_mut() {
                         if let Some(data) = &panel.update.data {
-                            if Some(data.graph) == attached {
+                            if Some(data.graph) == attached && panel.update.status != "Working…" {
                                 panel.send(coop::Command::Read(data.graph));
-                            } else {
+                            } else if Some(data.graph) != attached {
                                 panel.update.data = None;
                                 panel.update.status =
                                     "Choose this graph explicitly before sharing it.".into();
