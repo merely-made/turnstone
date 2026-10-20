@@ -2707,6 +2707,45 @@ impl KnotDocumentSession {
         })
     }
 
+    pub(crate) fn retained_selection(&self) -> Option<crate::producer_retention::KnotSelection> {
+        let editor = &self.runner.state().editor;
+        if self.visiting
+            || editor.is_dirty()
+            || editor.input().composition().is_some()
+            || self.runner.state().status != AuthoringStatus::Current
+        {
+            return None;
+        }
+        let selection = editor.selection();
+        let start = selection.anchor.byte.min(selection.focus.byte);
+        let end = selection.anchor.byte.max(selection.focus.byte);
+        if start == end || editor.source().get(start..end).is_none() {
+            return None;
+        }
+        Some(crate::producer_retention::KnotSelection {
+            source_hash: blake3::hash(editor.source().as_bytes())
+                .to_hex()
+                .to_string(),
+            start,
+            end,
+        })
+    }
+
+    pub(crate) fn selected_retained_export(
+        &mut self,
+        expected: &crate::producer_retention::KnotSelection,
+    ) -> Result<(serde_json::Value, Vec<u8>), String> {
+        self.drain_events();
+        if self.retained_selection().as_ref() != Some(expected) {
+            return Err("The saved Knot source or selection changed; select it again".into());
+        }
+        crate::producer_retention::export_knot_selection(
+            &self.address,
+            self.runner.state().editor.source(),
+            expected,
+        )
+    }
+
     pub fn address(&self) -> &str {
         &self.address
     }
@@ -3232,6 +3271,118 @@ mod tests {
     use layout_dom_api::{LayoutDom, NodeKind};
 
     use super::*;
+
+    #[test]
+    fn saved_selection_from_neutral_keyboard_input_keeps_exact_unicode_bytes() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("selection.djot");
+        let source = "private prefix;\ncafé\nprivate suffix";
+        fs::write(&path, source).unwrap();
+        let (hub, _) = KnotHub::host(
+            HostedKnot::Directory {
+                root: root.path().into(),
+            },
+            None,
+            None,
+            65536,
+            Arc::new(|| {}),
+        )
+        .unwrap();
+        let address = file_address(&path);
+        let mut session = KnotDocumentSession::new(
+            hub.clone(),
+            hub.open(&address).unwrap(),
+            (900, 600),
+            false,
+            false,
+            false,
+        );
+        focus_editor(&mut session);
+        session.key_input(
+            SessionKey::Character("a".into()),
+            SessionButtonState::Pressed,
+            SessionModifiers {
+                control: true,
+                ..Default::default()
+            },
+            false,
+        );
+        session.key_input(
+            SessionKey::ArrowLeft,
+            SessionButtonState::Pressed,
+            Default::default(),
+            false,
+        );
+        for _ in 0..16 {
+            session.key_input(
+                SessionKey::ArrowRight,
+                SessionButtonState::Pressed,
+                Default::default(),
+                false,
+            );
+        }
+        for _ in 0..4 {
+            session.key_input(
+                SessionKey::ArrowRight,
+                SessionButtonState::Pressed,
+                SessionModifiers {
+                    shift: true,
+                    ..Default::default()
+                },
+                false,
+            );
+        }
+        let offer = session.retained_selection().expect("saved selected range");
+        assert_eq!((offer.start, offer.end), (16, 21));
+        let (export, backing) = session.selected_retained_export(&offer).unwrap();
+        assert_eq!(export["text"], "café");
+        assert_eq!(backing, source.as_bytes());
+        assert_eq!(fs::read_to_string(path).unwrap(), source);
+    }
+
+    #[test]
+    fn retained_selection_is_bound_to_the_saved_editor_offer() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("selection.knot");
+        let source = "private café source";
+        fs::write(&path, source).unwrap();
+        let (hub, _) = KnotHub::host(
+            HostedKnot::Directory {
+                root: root.path().into(),
+            },
+            None,
+            None,
+            65536,
+            Arc::new(|| {}),
+        )
+        .unwrap();
+        let address = file_address(&path);
+        let mut session = KnotDocumentSession::new(
+            hub.clone(),
+            hub.open(&address).unwrap(),
+            (900, 600),
+            false,
+            false,
+            false,
+        );
+        assert!(session.retained_selection().is_none());
+        session.runner.update(|state| {
+            state.editor.apply(cambium::TextCommand::SelectAll);
+        });
+        let offer = session.retained_selection().expect("saved selected source");
+        let (export, backing) = session.selected_retained_export(&offer).unwrap();
+        assert_eq!(export["text"], source);
+        assert_eq!(backing, source.as_bytes());
+        focus_editor(&mut session);
+        type_text(&mut session, "changed source");
+        assert!(session.retained_selection().is_none());
+        assert!(session.selected_retained_export(&offer).is_err());
+        assert_eq!(
+            fs::read_to_string(path).unwrap(),
+            source,
+            "retention never writes the source owner"
+        );
+    }
 
     #[test]
     fn research_note_revision_grant_and_citation_control_refuse_stale_edits() {

@@ -76,8 +76,9 @@ set.
 
 - [Retained clip receiver](2026-10-11_retained_clip_receiver_plan.md): Fleece
   selected-package admission, local Inker reading and Redshank voice-body
-  playback in the receiving mere; automated/native restart and selected onward
-  export into a second mere qualify text/WAV, with browser/structured/custody gates retained.
+  playback in the receiving mere; published suppliers and bounded headed sealed
+  Knot/voice receive, cold playback and onward export are qualified locally.
+  Personal vault/migration, document drag selection and broader format gates remain.
 - [q-pc lane handoff, 2026-10-14](2026-10-14_qpc_lane_handoff.md): the lane's
   resume point on q-pc (Mac), with Windows gates on o-pc. Main is the only live line after the ThinkPad
   branch/worktree reconciliation; lists pins, the lens-label fix, ordered open

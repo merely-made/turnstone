@@ -306,7 +306,10 @@ impl Shell {
             EditKey::Up => (WinitKey::Named(WinitNamedKey::ArrowUp), false),
             EditKey::Down => (WinitKey::Named(WinitNamedKey::ArrowDown), false),
             EditKey::Left => (WinitKey::Named(WinitNamedKey::ArrowLeft), false),
-            EditKey::Right => (WinitKey::Named(WinitNamedKey::ArrowRight), false),
+            EditKey::Right | EditKey::ShiftRight => {
+                (WinitKey::Named(WinitNamedKey::ArrowRight), false)
+            },
+            EditKey::SelectAll => (WinitKey::Character("a".into()), true),
             EditKey::Home => (WinitKey::Named(WinitNamedKey::Home), false),
             EditKey::End => (WinitKey::Named(WinitNamedKey::End), false),
             EditKey::PageDown => (WinitKey::Named(WinitNamedKey::PageDown), false),
@@ -318,7 +321,7 @@ impl Shell {
         };
         let previous_ctrl = self.ctrl;
         let previous_shift = self.shift;
-        self.shift |= matches!(key, EditKey::BackTab);
+        self.shift |= matches!(key, EditKey::BackTab | EditKey::ShiftRight);
         self.ctrl |= ctrl;
         // Match the text accompanying a native winit key press. In
         // Chromium, Enter's carriage-return char event activates the

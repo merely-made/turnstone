@@ -1,0 +1,293 @@
+endpoint (endpoint-final.log)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 20s
+running 43 tests
+test door::app_admission::tests::a_legacy_hello_cannot_smuggle_a_route ... ok
+test door::app_admission::tests::a_hello_naming_nothing_is_refused ... ok
+test door::app_admission::tests::a_device_can_admit_none ... ok
+test door::app_admission::tests::an_unknown_application_is_refused ... ok
+test door::app_admission::tests::app_ids_are_case_and_space_insensitive ... ok
+test door::app_admission::tests::an_ungranted_route_is_distinct_from_an_unknown_application ... ok
+test door::app_admission::tests::a_grant_added_later_admits_the_next_request ... ok
+test door::app_admission::tests::a_version_two_hello_requests_one_granted_route ... ok
+test door::app_admission::tests::the_browser_hello_is_refused_by_schema ... ok
+test door::app_admission::tests::the_default_endpoint_is_named ... ok
+test door::app_admission::tests::a_well_formed_hello_yields_its_application ... ok
+test door::app_client::resource_boundary_tests::native_resource_chunks_refuse_scope_address_order_length_and_no_progress_faults ... ok
+test door::custody_client::tests::absent_and_locked_are_pending_and_nothing_else_is ... ok
+test door::frame::tests::an_oversized_length_is_refused_before_its_body_is_read ... ok
+test door::custody::tests::a_call_and_its_answer_round_trip_as_json ... ok
+test door::custody::tests::an_epoch_release_round_trips_and_never_prints_its_key ... ok
+test door::custody_payload::tests::retained_material_is_redacted_and_hash_checked_on_the_wire ... ok
+test door::frame::tests::end_of_stream_between_frames_is_none_and_mid_prefix_is_an_error ... ok
+test door::frame::tests::frames_json_with_a_native_endian_length ... ok
+test door::custody::tests::a_released_seed_never_prints ... ok
+test door::frame::tests::asynchronous_frames_match_the_synchronous_wire ... ok
+test door::route::tests::a_route_needs_an_id_without_whitespace_and_a_poll_interval ... ok
+test door::wire::tests::a_fresh_challenge_carries_a_32_byte_nonce_under_the_shared_schema ... ok
+test door::wire::tests::the_envelope_is_tagged_snake_case ... ok
+test tests::a_chunk_request_for_an_unknown_resource_fails_rather_than_serving_bytes ... ok
+test door::local_endpoint::unix_tests::an_initially_missing_endpoint_is_safe ... ok
+test door::profile::tests::a_session_djinn_did_not_release_is_locked_not_invented ... ok
+test tests::malformed_live_view_reference_is_rejected_before_the_gate ... ok
+test tests::participant_gate_refuses_unreadable_live_view_without_a_redacted_scene ... ok
+test door::local_endpoint::unix_tests::a_stale_same_user_socket_is_removed ... ok
+test door::local_endpoint::unix_tests::a_refused_probe_followed_by_disappearance_is_safe ... ok
+test door::local_endpoint::unix_tests::disappearance_during_probe_is_safe ... ok
+test door::local_endpoint::unix_tests::a_live_socket_is_preserved ... ok
+test door::local_endpoint::unix_tests::unknown_probe_errors_preserve_the_socket ... ok
+test door::local_endpoint::unix_tests::a_socket_with_another_expected_owner_is_preserved ... ok
+test door::local_endpoint::unix_tests::regular_files_and_symlinks_are_preserved ... ok
+test door::local_endpoint::unix_tests::replacement_file_and_socket_are_preserved_after_probe ... ok
+test door::custody_client::tests::a_release_whose_key_is_not_its_attestations_is_refused ... ok
+test door::custody_client::tests::a_release_answers_its_salts_and_locks_the_rest ... ok
+test door::profile::tests::a_session_key_is_derived_stably_and_its_proof_verifies ... ok
+test tests::an_endpoint_that_only_serves_whole_resources_still_serves_chunks ... ok
+test door::custody_payload::tests::the_payload_budget_fits_the_existing_transport_and_roundtrips_seal_overhead ... ok
+test door::app_client::resource_boundary_tests::native_resource_chunks_verify_requested_scope_and_complete_content_above_one_frame ... ok
+test result: ok. 43 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+wallet_sealer (wallet-sealer.log)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 00s
+running 6 tests
+test codicil_seal::tests::tampered_ciphertext_is_rejected ... ok
+test codicil_seal::tests::reads_a_pre_rotation_epoch_via_with_epoch ... ok
+test codicil_seal::tests::a_different_epoch_key_fails_to_unseal ... ok
+test codicil_seal::tests::seal_then_unseal_round_trips ... ok
+test codicil_seal::tests::another_persona_cannot_unseal_even_with_the_same_epoch_secret ... ok
+test codicil_seal::tests::a_host_scope_keeps_the_canonical_hash_and_refuses_other_lanes ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 326 filtered out; finished in 0.00s
+
+custody_ipc_and_existing_route (custody-reviewed.log)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3m 59s
+running 2 tests
+test retained_custody_receipt_host ... ignored
+test private_payloads_use_bound_custody_and_survive_epoch_rotation ... ok
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.21s
+running 2 tests
+test an_absent_djinn_is_pending_not_a_fallback ... ok
+test an_app_reads_and_releases_through_djinn_and_nothing_else_leaves ... ok
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+turnstone_retained (client-reviewed.log)
+    Finished `test` profile [unoptimized] target(s) in 2m 27s
+running 55 tests
+test contributed_surface::tests::retained_map_reuses_one_source_and_replaces_a_repinned_source ... ok
+test contributed_surface::tests::typed_unavailability_becomes_a_generic_retained_surface ... ok
+test document_pump::tests::repeated_placements_pump_one_retained_controller ... ok
+test nomadnet::tests::unresolved_aliases_are_rejected_in_every_retained_container ... ok
+test retained_clip::custody_tests::custody_process_roundtrip_fixture ... ignored
+test redshank_host::tests::retained_voice_stop_cannot_discard_a_different_pending_preview ... ok
+test foreign_a11y::tests::window_publishers_share_retained_nodes_and_keep_mount_and_replay_independent ... ok
+test retained_clip::custody_tests::unavailable_custody_and_stale_backing_refuse_before_creating_storage ... ok
+test knot_authoring::tests::retained_selection_is_bound_to_the_saved_editor_offer ... ok
+test retained_clip::custody_tests::native_redshank_export_keeps_body_and_timed_target_distinct ... ok
+test retained_clip::custody_tests::legacy_unsealed_content_requires_migration_for_private_reads_and_exports ... ok
+test contributed_surface::tests::retained_projection_and_actions_share_the_live_dom_session ... ok
+test retained_clip::tests::internal_play_controls_are_host_only_and_refuse_paths_or_foreign_shapes ... ok
+test contributed_surface::tests::admitted_pane_exposes_its_retained_dom_and_complete_probe_stylesheet ... ok
+test retained_clip::tests::missing_unsupported_or_oversized_material_creates_no_receiver_store ... ok
+test retained_clip::tests::custody_and_session_refusals_cannot_create_clip_storage ... ok
+test app::user_agent_decision_arms::tests::permission_choice_is_retained_and_lowers_the_captured_request ... ok
+test a11y::lens_window_tests::lens_projection_identity_keeps_retained_links_per_window_and_refuses_missing_lenses ... ok
+test distillery_installed_surface::tests::retained_accessibility_projects_a_generic_status_surface ... ok
+test observe::tests::snapshot_reports_a_retained_engine_applied_page_zoom ... ok
+test shell::effects::content_spawn_dispatch_tests::browser_dispatch_preserves_other_surfaces_and_retained_sessions ... ok
+test session::tests::removing_place_binding_preserves_retained_session_files ... ok
+test app::tests::actor_fetched_body_is_retained_for_the_requested_content_spawn ... ok
+test knot_document_surface::tests::retained_accessibility_distinguishes_editable_and_read_only_documents ... ok
+test session::tests::marking_a_place_left_preserves_the_binding_and_retained_session_files ... ok
+test retained_clip::tests::export_freezes_the_workbench_clip_and_requires_host_custody ... ok
+test retained_clip::tests::clip_opens_target_the_new_reference_while_workbench_has_another_member ... ok
+test shell::renderers::tests::two_panes_of_one_kind_resolve_to_two_retained_runners ... ok
+test shell::saved_sources::tests::only_host_resolved_local_identity_spawns_the_real_retained_session ... ok
+test shell::effects::retained_page_zoom_tests::an_unsupported_retained_lane_is_absorbed_quietly ... ok
+test shell::effects::local_micron_source_tests::retained_clip_spawn_uses_held_document_through_standard_pelt_controller ... ok
+test shell::effects::retained_page_zoom_tests::a_live_livery_session_is_offered_the_zoom_rows ... ok
+test shell::effects::retained_page_zoom_tests::a_fresh_retained_session_is_seeded_with_the_persisted_request ... ok
+test shell::effects::retained_page_zoom_tests::reset_returns_a_live_retained_session_to_the_default_scale ... ok
+test shell::outer_workspace::tests::unscoped_selector_uses_a_standalone_panes_retained_route ... ok
+test ui::contributed_projection_tests::retained_selector_prefers_the_accessible_name_and_its_painted_owner ... ok
+test ui::contributed_projection_tests::retained_semantics_bounds_and_pointer_visibility_share_ancestor_clips ... ok
+test ui::retained_layout_tests::a_resized_pane_rebuilds_once_and_then_settles ... ok
+test app::r2_saved_source_tests::exact_read_is_local_and_detaching_reference_withdraws_the_retained_reader ... ok
+test web_policy::tests::dismissal_is_not_a_retained_denial ... ok
+test ui::retained_layout_tests::a_structural_change_rebuilds_but_an_attribute_change_does_not ... ok
+test ui::retained_layout_tests::repainting_an_unchanged_pane_does_not_rebuild_its_layout ... ok
+test retained_clip::tests::voice_bytes_are_local_and_recording_stays_unavailable ... ok
+test ui::retained_layout_tests::a_rebuild_keeps_the_pane_where_it_was_scrolled ... ok
+test trail_memory::tests::ordinary_page_body_is_not_retained_but_address_and_title_recall ... ok
+test ui::tests::shared_canonical_roles_and_authored_rules_reach_the_retained_chrome_cascade ... ok
+test swatch_pane::tests::diagnostic_rows_keep_producer_identity_and_retained_bounds_without_activation ... ok
+test retained_clip::tests::native_export_renders_through_real_session_after_receiver_reopen ... ok
+test retained_clip::custody_tests::native_knot_custody_reopens_and_onward_copy_excludes_private_backing ... ok
+test retained_clip::tests::onward_copy_keeps_selected_identity_source_facts_and_distinct_tag_owners ... ok
+test retained_clip::tests::onward_export_omits_private_backing_and_unselected_material ... ok
+test chrome_view::tests::live_appearance_is_applied_to_the_retained_chrome_surface ... ok
+test retained_clip::tests::export_refuses_missing_over_budget_and_existing_targets_without_replacement ... ok
+test place::worker::tests::two_profiles_reopen_their_own_retained_place_state ... ok
+test sky_surface::tests::next_day_replaces_one_retained_projection_without_rewriting_opening_provenance has been running for over 60 seconds
+test sky_surface::tests::next_day_replaces_one_retained_projection_without_rewriting_opening_provenance ... ok
+test result: ok. 54 passed; 0 failed; 1 ignored; 0 measured; 1044 filtered out; finished in 218.50s
+
+captured_producer_actions (producer-actions.log)
+running 2 tests
+test producer_retention::tests::native_selection_refuses_changed_source_and_split_unicode_without_guessing ... ok
+test producer_retention::tests::a_retention_action_cannot_follow_a_replaced_or_foreign_member ... ok
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1097 filtered out; finished in 2.46s
+
+redshank_owner_export (producer-reviewed.log)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 00s
+running 3 tests
+test selected_clip::tests::selected_voice_process_fixture ... ignored
+test selected_clip::tests::private_missing_and_changed_voice_are_refused_without_output ... ok
+test selected_clip::tests::selected_voice_uses_owned_blob_and_preserves_millisecond_target ... ok
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 80 filtered out; finished in 0.69s
+
+redshank_playback_and_surfaces (playback-surfaces.log)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5m 59s
+running 39 tests
+test controller_adapter::tests::maps_all_durable_source_variants ... ok
+test controller_adapter::tests::controller_keeps_typed_seek_and_backend_failures ... ok
+test output::tests::decoded_stream_buffer_never_discards_or_inserts_source_time ... ok
+test http_range::tests::range_source_rejects_an_exhausted_budget_before_fetching ... ok
+test backend::runtime_generation_tests::preview_with_retired_shared_runtime_fails_and_clears_its_sink ... ok
+test output::tests::rejected_stream_admission_retires_its_graph_node ... ok
+test backend::retained_blob_tests::host_blob_decodes_without_a_filesystem_source_and_has_exact_evidence ... ok
+test output::tests::old_generation_retirement_cannot_remove_a_new_contexts_sink ... ok
+test tests::captured_pcm_wav_is_decodable ... ok
+test tests::new_runtime_has_an_honest_empty_snapshot ... ok
+test tests::local_snapshot_survives_pathname_replacement ... ok
+test tests::sink_clock_helpers_preserve_frame_boundaries ... ok
+test tests::local_snapshot_survives_in_place_writes_and_truncation ... ok
+test tests::supplied_fixture_plays_each_dock_rate_at_its_wall_clock ... ignored, requires REDSHANK_PHASE4_FIXTURES and a default output device
+test tests::supplied_fixture_resumes_through_the_controller ... ignored, requires REDSHANK_PHASE4_FIXTURES with generated stereo fixtures
+test tests::supplied_fixtures_keep_their_pitch_at_every_dock_rate ... ignored, requires REDSHANK_PHASE4_FIXTURES with generated stereo fixtures
+test tests::supplied_http_fixture_decodes_progressively ... ignored, requires REDSHANK_HTTP_FIXTURE_URL served with byte ranges
+test tests::supplied_http_fixture_reaches_controller_ready ... ignored, requires REDSHANK_HTTP_FIXTURE_URL and a default output device
+test tests::supplied_local_sources_can_be_replaced ... ignored, requires REDSHANK_LOCAL_SEQUENCE or REDSHANK_PHASE4_FIXTURES and a default output device
+test tests::supplied_stereo_fixtures_preserve_two_distinct_channels ... ignored, requires REDSHANK_PHASE4_FIXTURES with generated stereo fixtures
+test tests::failed_remote_load_publishes_its_token_and_controller_error ... ok
+test tests::cached_source_receipt_requires_the_published_bytes ... ok
+test http_range::tests::range_source_reports_server_and_representation_failures ... ok
+test tests::voice_preview_preserves_the_loaded_episode_snapshot ... ok
+test tests::worker_controller_sequence_needs_no_output_device ... ok
+test tests::worker_recovers_after_an_internal_failure ... ok
+test tests::levels_report_the_effective_rate_and_the_honest_buffered_extent ... ok
+test output::tests::retimed_short_file_finishes_the_writer_before_ending_source_time ... ok
+test tests::unity_rate_leaves_the_decoded_bytes_alone ... ok
+test tests::worker_note_seek_acknowledges_only_the_matching_request ... ok
+test alignment::tests::capture_context_applies_reaction_offset_and_excludes_future_audio ... ok
+test http_range::tests::range_source_reuses_one_connection_across_ranges ... ok
+test http_range::tests::range_source_seeks_within_its_budget_and_records_representation ... ok
+test tests::local_decoder_plays_the_receipted_audio_after_source_mutation ... ok
+test alignment::tests::downloaded_wav_alignment_stores_a_second_position_without_changing_original ... ok
+test alignment::tests::changed_download_and_incomplete_search_refuse ... ok
+test backend::seek_tests::accurate_wav_seek_discards_packet_prefix_before_pcm_and_source_clock ... ok
+test tests::retiming_delivers_the_inverse_of_the_rate_in_source_time ... ok
+test output::tests::resampled_backlog_and_short_eof_preserve_exact_source_position ... ok
+test result: ok. 32 passed; 0 failed; 7 ignored; 0 measured; 0 filtered out; finished in 8.14s
+running 103 tests
+test dock::tests::voice_capture_uses_pointer_press_and_release ... ok
+test dock::tests::pressing_the_seek_track_seeks_to_the_pressed_fraction ... ok
+test dock::tests::compact_surface_has_semantic_player_and_capture_controls ... ok
+test dock::tests::player_and_capture_mount_independently_and_emit_commands ... ok
+test dock::tests::rate_and_volume_cycle ... ok
+test dock::tests::completed_offers_replay ... ok
+test dock::tests::recording_swaps_the_transport_row_and_keeps_the_rows ... ok
+test dock::tests::unavailable_transport_rejects_commands ... ok
+test rail::tests::rail_carries_the_same_facts_and_commands ... ok
+test rail::tests::recording_rail_shows_the_frozen_anchor_and_both_exits ... ok
+test scene::chain::tests::newest_episode_leads_the_vertical_chain ... ok
+test scene::chain::tests::a_pinned_episode_is_marked_and_the_card_offers_unpin ... ok
+test scene::chain::tests::overview_draws_one_row_per_feed_and_a_local_audio_row ... ok
+test scene::chain::tests::the_context_card_lists_the_neighbours_by_date ... ok
+test scene::geometry::tests::publication_dates_compare_utc_instants_across_feed_formats ... ok
+test scene::chain::tests::refresh_emits_for_the_current_feed ... ok
+test scene::orrery::tests::the_ring_carries_every_episode_and_the_notes_as_satellites ... ok
+test scene::orrery::tests::the_newest_episode_sits_at_twelve ... ok
+test scene::orrery::tests::the_centre_caption_uses_the_counts_and_the_refresh_schedule ... ok
+test scene::chain::tests::the_scene_segment_emits_select_scene ... ok
+test dock::tests::every_compact_layout_requires_an_explicit_approximate_note_action ... ok
+test scene::orrery::tests::the_selected_card_opens_the_episode ... ok
+test scene::chain::tests::vertical_chain_marks_every_episode_state_and_hangs_its_notes ... ok
+test scene::chain::tests::the_header_summarises_one_feed_and_the_whole_library ... ok
+test shell::tests::every_scope_class_is_reachable_from_the_state ... ok
+test scene::chain::tests::episode_and_note_and_card_actions_emit_commands ... ok
+test scene::trail::tests::sessions_group_by_day_with_a_total_and_a_week_summary ... ok
+test shell::tests::svg_elements_mount ... ok
+test scene::trail::tests::the_active_session_is_washed_to_its_playhead_and_carries_its_notes ... ok
+test scene::trail::tests::every_session_action_emits_select_item ... ok
+test shell::tests::rail_layout_puts_the_rail_beside_the_tab_strip ... ok
+test surface_api::tests::the_descriptor_accepts_the_episode_source_kind ... ok
+test surface_api::tests::a_pressed_control_reaches_the_host_through_the_dock_handle ... ok
+test surface_api::tests::a_host_projection_reaches_the_dock_on_the_next_frame ... ok
+test shell::tests::shell_carries_the_scope_layout_and_one_panel ... ok
+test shell::tests::notice_is_a_status_line_under_the_header ... ok
+test surface_api::tests::an_unavailable_transport_reports_itself_to_the_host ... ok
+test surface_api::tests::the_session_renders_the_dock_under_the_scope_class ... ok
+test scene::tests::the_three_projections_carry_the_same_six_episodes ... ok
+test shell::tests::segment_law_marks_the_selected_destination ... ok
+test tabs::library::tests::each_episode_has_exactly_one_primary_action ... ok
+test tabs::library::tests::library_and_scenes_share_chronological_episode_order ... ok
+test tabs::library::tests::buffering_the_current_item_swaps_its_badge ... ok
+test tabs::library::tests::refresh_failure_offers_a_retry_that_refreshes ... ok
+test tabs::library::tests::roster_row_shows_counts_badge_and_offline_bytes ... ok
+test tabs::listen::tests::a_pinned_queue_row_carries_the_mark ... ok
+test tabs::listen::tests::empty_queue_and_notes_show_quiet_rows ... ok
+test tabs::library::tests::an_episode_menu_pins_and_unpins ... ok
+test tabs::library::tests::a_feed_row_hides_refresh_behind_its_menu ... ok
+test tabs::library::tests::episodes_download_then_remove_and_leave_the_library ... ok
+test tabs::library::tests::selecting_a_feed_and_local_audio_emits_select_feed ... ok
+test tabs::listen::tests::queue_rows_carry_badge_listened_width_and_the_active_ring ... ok
+test tabs::listen::tests::note_rows_show_type_word_anchor_and_open_at ... ok
+test tabs::library::tests::the_phone_scene_block_selects_a_projection ... ok
+test tabs::listen::tests::queue_row_offers_download_then_removal ... ok
+test tabs::library::tests::the_quiet_field_subscribes_and_opens_local_files ... ok
+test tabs::listen::tests::editor_is_hidden_until_capture_then_saves_the_frozen_anchor ... ok
+test tabs::listen::tests::playing_voice_note_reports_progress_and_stops ... ok
+test tabs::library::tests::unavailable_episode_shows_its_message_and_retries ... ok
+test tabs::library::tests::the_playing_item_reads_playing_and_refuses_its_command ... ok
+test tabs::notes::tests::an_empty_episode_shows_the_quiet_row ... ok
+test tabs::listen::tests::span_capture_saves_a_span_note ... ok
+test tabs::listen::tests::queue_rows_select_and_reorder ... ok
+test tabs::listen::tests::transcript_tracks_position_and_requests_seek_without_inserting_markup ... ok
+test tabs::listen::tests::note_rows_open_edit_delete_and_play ... ok
+test tabs::notes::tests::the_playhead_cluster_is_the_one_seeded_open ... ok
+test tabs::notes::tests::the_header_reads_the_selected_item_facts ... ok
+test tabs::notes::tests::the_representation_card_reads_the_projected_receipt ... ok
+test tabs::listen::tests::the_phone_segment_counts_both_sections_and_marks_one_off ... ok
+test tabs::listen::tests::the_overflow_menu_opens_one_row_at_a_time ... ok
+test tabs::notes::tests::the_filter_segment_and_export_emit_commands ... ok
+test tabs::notes::tests::running_and_missing_fingerprint_explain_the_state_without_a_realign_action ... ok
+test tabs::notes::tests::alignment_actions_preserve_note_and_item_identity ... ok
+test tabs::notes::tests::the_cluster_chip_counts_its_notes_and_the_list_truncates ... ok
+test tabs::notes::tests::selected_clip_export_requires_owner_capability_and_a_shareable_note ... ok
+test tabs::notes::tests::the_representation_card_says_only_what_the_receipt_supports ... ok
+test tabs::notes::tests::the_strip_places_ticks_and_a_span_wash ... ok
+test tabs::notes::tests::the_span_card_plays_edits_and_deletes ... ok
+test tabs::notes::tests::cluster_collapse_keeps_the_header_and_drops_the_rows ... ok
+test tabs::listen::tests::the_note_menu_flips_privacy_per_note ... ok
+test tabs::settings::tests::capture_behaviour_and_privacy_segments_emit_their_fields ... ok
+test tabs::settings::tests::cache_budget_stepper_moves_by_256_mib ... ok
+test tabs::notes::tests::unproven_and_different_notes_show_an_explicit_approximate_action ... ok
+test tabs::settings::tests::every_section_and_control_kind_is_present ... ok
+test tabs::settings::tests::reaction_offset_steps_by_one_second ... ok
+test theme::tests::brand_dark_derives_exactly_from_tinct ... ok
+test tabs::settings::tests::rate_segment_sets_the_backend_and_the_store ... ok
+test theme::tests::wetland_dark_matches_the_canvas ... ok
+test theme::tests::wetland_derivation_drift_is_recorded ... ok
+test theme::tests::sheet_carries_every_scope_and_the_component_rules ... ok
+test tabs::settings::tests::refresh_seed_and_mode_segments_emit_their_fields ... ok
+test theme::tests::sheet_uses_no_outline_and_no_ellipsis ... ok
+test tabs::settings::tests::toggles_flip_their_field ... ok
+test tabs::settings::tests::duck_level_steps_by_five_percent_and_stops_at_the_ends ... ok
+test tabs::settings::tests::skip_steppers_emit_update_settings_with_the_changed_field ... ok
+test tabs::settings::tests::feed_limit_steps_by_one_mib_and_stays_bounded ... ok
+test tabs::settings::tests::alignment_search_limit_persists_hour_steps_and_caps_at_one_day ... ok
+test tabs::settings::tests::alignment_score_persists_similarity_threshold_between_800_and_990 ... ok
+test tabs::settings::tests::fingerprint_window_persists_disable_and_bounded_capture_choices ... ok
+test theme::hosted_role_tests::embedded_dock_paints_host_roles_and_exact_legacy_fallbacks ... ok
+test shell::tests::artwork_background_image_changes_no_geometry_and_paints_nothing ... ok
+test shell::tests::dock_height_is_identical_at_phone_width ... ok
+test shell::tests::dock_height_is_identical_in_every_transport_state ... ok
+test result: ok. 103 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.51s

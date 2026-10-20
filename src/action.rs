@@ -471,6 +471,10 @@ pub enum Action {
     },
     /// Explicit file selection for retained content in the current mere.
     ChooseClipPackageFile,
+    RetainProducerSelection {
+        choice: crate::app::research_note_arms::NoteChoice,
+        selection: crate::producer_retention::ProducerSelection,
+    },
     ImportClipPackage(std::path::PathBuf),
     ChooseClipExportFile,
     ExportClipPackage {
@@ -1000,6 +1004,10 @@ pub enum Effect {
     CreateResearchNote { generation: uuid::Uuid },
     ChooseResearchNote { choice: crate::app::research_note_arms::NoteChoice },
     ChooseClipPackageFile,
+    RetainProducerSelection {
+        choice: crate::app::research_note_arms::NoteChoice,
+        selection: crate::producer_retention::ProducerSelection,
+    },
     ImportClipPackage(std::path::PathBuf),
     ChooseClipExportFile {
         clip: eidetic::ManifestId,

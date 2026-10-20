@@ -1,0 +1,8 @@
+RESULT ok
+captured 01_knot_selected_text
+captured 02_knot_retained
+captured 03_knot_selection_exported
+presentation frames=131 captures=3 blank=0
+capture /Users/markik/Code/output/eidetic-headed-20261019/turnstone-knot-qualified/01_knot_selected_text.png digest=4eb84c00757c8136 blank=false
+capture /Users/markik/Code/output/eidetic-headed-20261019/turnstone-knot-qualified/02_knot_retained.png digest=5a1d9d4c5bfad5e2 blank=false
+capture /Users/markik/Code/output/eidetic-headed-20261019/turnstone-knot-qualified/03_knot_selection_exported.png digest=e7694c0171aedea7 blank=false

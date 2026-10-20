@@ -1138,6 +1138,7 @@ impl App {
         match action {
             Action::OpenThemeWorkshop => vec![Effect::OpenThemeWorkshop],
             Action::OpenAddress(url) => self.open_address(url),
+            Action::RetainProducerSelection { choice, selection } => self.retain_producer_selection(choice, selection),
             Action::ChooseClipPackageFile => vec![Effect::ChooseClipPackageFile],
             Action::ImportClipPackage(path) => vec![Effect::ImportClipPackage(path)],
             Action::ChooseClipExportFile => self.choose_retained_clip_export(),

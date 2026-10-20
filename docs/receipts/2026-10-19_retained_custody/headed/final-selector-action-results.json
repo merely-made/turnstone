@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "cases": {
+    "neutral_keyboard": {
+      "passed": 1,
+      "failed": 0
+    },
+    "saved_offer": {
+      "passed": 1,
+      "failed": 0
+    },
+    "producer_actions": {
+      "passed": 2,
+      "failed": 0
+    }
+  },
+  "binary": "/Users/markik/Code/repos/mere/target/build/debug/deps/turnstone-24a091943e337dcf",
+  "total_passed": 4
+}

@@ -1,0 +1,6 @@
+RESULT ok
+captured 01_owner_voice_received
+captured 02_owner_voice_reexported
+presentation frames=90 captures=2 blank=0
+capture /Users/markik/Code/output/eidetic-headed-20261019/turnstone-owner-receive/01_owner_voice_received.png digest=60a0b61bb70123bd blank=false
+capture /Users/markik/Code/output/eidetic-headed-20261019/turnstone-owner-receive/02_owner_voice_reexported.png digest=60a0b61bb70123bd blank=false

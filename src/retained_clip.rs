@@ -18,15 +18,134 @@ use std::{
 };
 
 pub use mere_document_lanes::retained_clip::{
-    ENGINE_ID, ClipBody, ClipRequest, ClipSessionEngine, ClipView, address, request,
+    ClipBody, ClipRequest, ClipSessionEngine, ClipView, ENGINE_ID, address, request,
 };
 
-fn read_store(store: &mut dyn eidetic::Store, id: ManifestId, policy: ClipLimits) -> Result<ClipView, String> {
-    pollster::block_on(mere_document_lanes::retained_clip::read_store(store, None, id, policy))
+fn read_store(
+    store: &mut dyn eidetic::Store,
+    sealer: Option<&dyn eidetic::PayloadSealer>,
+    id: ManifestId,
+    policy: ClipLimits,
+) -> Result<ClipView, String> {
+    if let Some(sealer) = sealer {
+        require_existing_seals(store, [id])?;
+        let held = pollster::block_on(eidetic::load_typed_sealed::<
+            eidetic::clip_profile::RetainedClipV1,
+        >(store, &mut eidetic::NoFetcher, Some(sealer), id))
+        .map_err(|e| e.to_string())?
+        .ok_or("Retained clip missing")?;
+        require_existing_seals(
+            store,
+            held.clip
+                .parts
+                .iter()
+                .chain(&held.private_backing)
+                .map(|part| part.manifest),
+        )?;
+    }
+    pollster::block_on(mere_document_lanes::retained_clip::read_store(
+        store, sealer, id, policy,
+    ))
 }
+#[cfg(test)]
+mod custody_tests;
 #[cfg(test)]
 mod tests;
 const STORE_DIR: &str = "retained-clips";
+
+/// Already selected by the source owner. Backing never enters onward packages.
+pub enum NativeClip<'a> {
+    Knot {
+        export: &'a serde_json::Value,
+        backing: &'a [u8],
+    },
+    Redshank {
+        export: &'a serde_json::Value,
+        voice_body: Option<&'a [u8]>,
+    },
+}
+
+async fn retain_native_into(
+    store: &mut dyn eidetic::Store,
+    sealer: &dyn eidetic::PayloadSealer,
+    source: &NativeClip<'_>,
+    context: &CaptureContext,
+    policy: ClipLimits,
+) -> eidetic::Result<ManifestId> {
+    match source {
+        NativeClip::Knot { export, backing } => {
+            fleece::portable_clip::retain_knot_export(
+                store,
+                Some(sealer),
+                export,
+                Some(backing.to_vec()),
+                context,
+                policy,
+            )
+            .await
+        },
+        NativeClip::Redshank { export, voice_body } => {
+            fleece::portable_clip::retain_redshank_export(
+                store,
+                Some(sealer),
+                export,
+                voice_body.map(<[u8]>::to_vec),
+                context,
+                policy,
+            )
+            .await
+        },
+    }
+}
+
+/// Validate custody, selectors and presentation before opening the disk store.
+/// Source owner writes and receiving graph admission remain separate operations.
+pub fn retain_native(
+    root: &Path,
+    source: NativeClip<'_>,
+    context: &CaptureContext,
+    policy: ClipLimits,
+    sealer: &dyn eidetic::PayloadSealer,
+) -> Result<ManifestId, String> {
+    let mut staging = eidetic::MemoryBackend::new();
+    let id = pollster::block_on(retain_native_into(
+        &mut staging,
+        sealer,
+        &source,
+        context,
+        policy,
+    ))
+    .map_err(|e| e.to_string())?;
+    read_store(&mut staging, Some(sealer), id, policy)?;
+    let retained = pollster::block_on(eidetic::load_typed_sealed::<
+        eidetic::clip_profile::RetainedClipV1,
+    >(
+        &mut staging, &mut eidetic::NoFetcher, Some(sealer), id
+    ))
+    .map_err(|e| e.to_string())?
+    .ok_or("Staged retained clip missing")?;
+    let mut store = open(root, true)?;
+    require_existing_seals(
+        &mut store,
+        std::iter::once(id).chain(
+            retained
+                .clip
+                .parts
+                .iter()
+                .chain(&retained.private_backing)
+                .map(|part| part.manifest),
+        ),
+    )?;
+    let received = pollster::block_on(retain_native_into(
+        &mut store, sealer, &source, context, policy,
+    ))
+    .map_err(|e| e.to_string())?;
+    if received != id {
+        return Err("Retained source changed during admission".into());
+    }
+    read_store(&mut store, Some(sealer), received, policy)?;
+    Ok(received)
+}
 
 /// Prototype settings are explicit environment overrides. Invalid settings
 /// refuse the operation rather than widening its budget.
@@ -59,7 +178,8 @@ fn open(root: &Path, create: bool) -> Result<muniment::FjallStore, String> {
     muniment::FjallStore::open(path).map_err(|e| e.to_string())
 }
 
-pub fn import(
+fn import_with_sealer(
+    sealer: Option<&dyn eidetic::PayloadSealer>,
     root: &Path,
     file: &Path,
     policy: ClipLimits,
@@ -102,42 +222,93 @@ pub fn import(
     let mut staging = eidetic::MemoryBackend::new();
     let id = pollster::block_on(fleece::portable_clip::import_clip_package(
         &mut staging,
-        None,
+        sealer,
         &package,
         &context,
         policy,
     ))
     .map_err(|e| e.to_string())?;
     // Validate the receiving capability before durable admission.
-    read_store(&mut staging, id, policy)?;
+    read_store(&mut staging, sealer, id, policy)?;
     let mut store = open(root, true)?;
+    if sealer.is_some() {
+        require_existing_seals(
+            &mut store,
+            std::iter::once(id).chain(package.payloads.iter().map(|part| part.id)),
+        )?;
+    }
     let received = pollster::block_on(fleece::portable_clip::import_clip_package(
-        &mut store, None, &package, &context, policy,
+        &mut store, sealer, &package, &context, policy,
     ))
     .map_err(|e| e.to_string())?;
+    read_store(&mut store, sealer, received, policy)?;
     // Fjall's normal handle drop owns close/reopen durability; this function
     // never reports application graph/session admission as a store transaction.
     Ok(received)
 }
 
+fn require_existing_seals(
+    store: &mut dyn eidetic::Store,
+    ids: impl IntoIterator<Item = ManifestId>,
+) -> Result<(), String> {
+    for id in ids {
+        let manifest = pollster::block_on(eidetic::manifest::load_manifest(store, id))
+            .map_err(|e| e.to_string())?;
+        if let Some(manifest) = manifest {
+            if eidetic::seal::seal_marker(&manifest)
+                .map_err(|e| e.to_string())?
+                .is_none()
+            {
+                return Err("Existing unsealed clip bytes need an explicit custody migration before private retention".into());
+            }
+        }
+    }
+    Ok(())
+}
 
-pub fn read(root: &Path, id: ManifestId, policy: ClipLimits) -> Result<ClipView, String> {
-    read_store(&mut open(root, false)?, id, policy)
+pub fn read_sealed(
+    root: &Path,
+    id: ManifestId,
+    policy: ClipLimits,
+    sealer: &dyn eidetic::PayloadSealer,
+) -> Result<ClipView, String> {
+    read_store(&mut open(root, false)?, Some(sealer), id, policy)
+}
+
+pub fn import_sealed(
+    root: &Path,
+    file: &Path,
+    policy: ClipLimits,
+    now_ms: u64,
+    sealer: &dyn eidetic::PayloadSealer,
+) -> Result<ManifestId, String> {
+    import_with_sealer(Some(sealer), root, file, policy, now_ms)
+}
+
+#[cfg(test)]
+fn import(root: &Path, file: &Path, policy: ClipLimits, now_ms: u64) -> Result<ManifestId, String> {
+    import_with_sealer(None, root, file, policy, now_ms)
+}
+#[cfg(test)]
+fn read(root: &Path, id: ManifestId, policy: ClipLimits) -> Result<ClipView, String> {
+    read_store(&mut open(root, false)?, None, id, policy)
 }
 
 /// Explicit selected-body disclosure. Fleece validates the held inventory and
 /// hashes with NoFetcher; custody manifests and private backing stay local.
 /// Finish validation before creating output, then atomically publish the file.
-pub fn export(
+fn export_with_sealer(
+    sealer: Option<&dyn eidetic::PayloadSealer>,
     root: &Path,
     id: ManifestId,
     file: &Path,
     policy: ClipLimits,
     replace: bool,
 ) -> Result<(), String> {
+    read_store(&mut open(root, false)?, sealer, id, policy)?;
     let package = pollster::block_on(fleece::portable_clip::export_selected_clip(
         &mut open(root, false)?,
-        None,
+        sealer,
         id,
         &["body".into()],
         policy,
@@ -160,8 +331,35 @@ pub fn export(
     Ok(())
 }
 
+pub fn export_sealed(
+    root: &Path,
+    id: ManifestId,
+    file: &Path,
+    policy: ClipLimits,
+    replace: bool,
+    sealer: &dyn eidetic::PayloadSealer,
+) -> Result<(), String> {
+    export_with_sealer(Some(sealer), root, id, file, policy, replace)
+}
+#[cfg(test)]
+fn export(
+    root: &Path,
+    id: ManifestId,
+    file: &Path,
+    policy: ClipLimits,
+    replace: bool,
+) -> Result<(), String> {
+    export_with_sealer(None, root, id, file, policy, replace)
+}
 
 impl crate::app::App {
+    pub(crate) fn clip_sealer(&self) -> Result<&dyn eidetic::PayloadSealer, String> {
+        self.identity
+            .as_deref()
+            .map(|identity| identity as &dyn eidetic::PayloadSealer)
+            .ok_or_else(|| crate::identity::PENDING.to_string())
+    }
+
     pub(crate) fn clip_export_target(&self) -> Result<ManifestId, String> {
         self.clip_destination()?;
         let (_, url) = self
