@@ -292,8 +292,8 @@ async fn owner_call(
             chirograph::IntentInvocation {
                 session: session.session.clone(),
                 target: sceno::InstanceId(0),
-                observed_epoch: scenotime::SceneEpoch(1),
-                observed_revision: scenotime::Revision(1),
+                observed_epoch: observed.0,
+                observed_revision: observed.1,
                 intent: control::INTENT.into(),
                 payload: serde_json::to_vec(&command).map_err(|e| e.to_string())?,
             },

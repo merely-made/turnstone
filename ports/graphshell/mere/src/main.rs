@@ -99,36 +99,37 @@ impl App {
         }
     }
     fn drain(&mut self) {
-        if let Some(panel) = self.coop.as_mut() {
-            if panel.drain() && panel.guest {
-                if let Some(data) = &panel.update.data {
-                    let (model, cards) = coop::guest_reading(data);
-                    self.model = model;
-                    self.cards = cards;
-                    self.graph_epoch = data.epoch.0;
-                    self.read_only = data.access != "editor";
-                    if self
-                        .selected
-                        .as_ref()
-                        .is_some_and(|key| !self.cards.contains_key(key))
-                    {
-                        self.selected = None;
-                    }
-                } else {
-                    self.model = MereViewModel {
-                        status: ViewStatus::Unavailable(StatusNote {
-                            message: panel.update.status.clone(),
-                            action: None,
-                        }),
-                        ..Default::default()
-                    };
-                    self.cards.clear();
+        if let Some(panel) = self.coop.as_mut()
+            && panel.drain()
+            && panel.guest
+        {
+            if let Some(data) = &panel.update.data {
+                let (model, cards) = coop::guest_reading(data);
+                self.model = model;
+                self.cards = cards;
+                self.graph_epoch = data.epoch.0;
+                self.read_only = data.access != "editor";
+                if self
+                    .selected
+                    .as_ref()
+                    .is_some_and(|key| !self.cards.contains_key(key))
+                {
                     self.selected = None;
-                    self.graph_epoch = 0;
                 }
-                self.pending = false;
-                self.relayout();
+            } else {
+                self.model = MereViewModel {
+                    status: ViewStatus::Unavailable(StatusNote {
+                        message: panel.update.status.clone(),
+                        action: None,
+                    }),
+                    ..Default::default()
+                };
+                self.cards.clear();
+                self.selected = None;
+                self.graph_epoch = 0;
             }
+            self.pending = false;
+            self.relayout();
         }
         while let Ok(answer) = self.receiver.try_recv() {
             self.pending = false;
@@ -143,15 +144,15 @@ impl App {
                     self.graph_epoch = reading.graph_epoch;
                     self.events.push("resident refreshed".into());
                     let attached = self.attached_session();
-                    if let Some(panel) = self.coop.as_mut() {
-                        if let Some(data) = &panel.update.data {
-                            if Some(data.graph) == attached && panel.update.status != "Working…" {
-                                panel.send(coop::Command::Read(data.graph));
-                            } else if Some(data.graph) != attached {
-                                panel.update.data = None;
-                                panel.update.status =
-                                    "Choose this graph explicitly before sharing it.".into();
-                            }
+                    if let Some(panel) = self.coop.as_mut()
+                        && let Some(data) = &panel.update.data
+                    {
+                        if Some(data.graph) == attached && panel.update.status != "Working…" {
+                            panel.send(coop::Command::Read(data.graph));
+                        } else if Some(data.graph) != attached {
+                            panel.update.data = None;
+                            panel.update.status =
+                                "Choose this graph explicitly before sharing it.".into();
                         }
                     }
                 },
