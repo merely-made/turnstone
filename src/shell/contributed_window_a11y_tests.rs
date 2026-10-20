@@ -57,6 +57,29 @@ fn pane_rect(plan: &[crate::surface::Surface], pane: PaneId) -> Option<Rect> {
     plan.iter()
         .find_map(|surface| (surface.kind == SurfaceKind::Pane(pane)).then_some(surface.rect))
 }
+/// The pane's float record in `space`, and the pixels it resolves to in that
+/// window's own 800x600 workspace area.
+fn float_in(app: &App, space: SpaceRef, pane: PaneId) -> (workbench::FloatingTile, Rect) {
+    let float = app
+        .space(space)
+        .unwrap()
+        .outer_workspace()
+        .unwrap()
+        .workspace
+        .floating()
+        .iter()
+        .find(|float| float.tile.id.0 == pane.0)
+        .expect("pane floats in this space")
+        .clone();
+    let slot = match space {
+        SpaceRef::Primary => 0,
+        SpaceRef::Lens(ordinal) => ordinal + 1,
+    };
+    let area =
+        crate::chrome_view::workspace_area_for_window(app.shell_chrome_config(), slot, 800, 600);
+    let (x, y, w, h) = float.resolve((area.x, area.y, area.w, area.h));
+    (float, Rect::new(x, y, w, h))
+}
 fn shared_spec(app: &App, pane: PaneId) -> PaneSpec {
     let space = app.space_of(pane).expect("pane retains its actual window");
     assert!(app.blueprint_space(space).is_none(), "shipping transfers keep shared Workspace authority");
@@ -187,14 +210,39 @@ fn stale_moved_action(action: A11yAction) {
     let old = old.clone();
     let before_generation = f.sessions.get(f.pane).unwrap().generation();
     assert_eq!(f.sessions.get(f.pane).unwrap().accessibility_focus(), None);
+    let (lens_float, lens_window) = float_in(&f.app, SpaceRef::Lens(0), f.pane);
     return_by_earlier_host_palette_request(&mut f);
     let current_primary = primary_content_plan(&f.app, &f.contents, 800, 600);
     let current_lens = lens::lens_content_plan(&f.app, &f.contents, 0, 800, 600);
+    // Floats are proportional to each window's workspace, and only the
+    // primary window reserves a navigation row, so the transfer keeps the
+    // relative record and the body's inset rather than lens pixels.
+    let (primary_float, primary_window) = float_in(&f.app, SpaceRef::Primary, f.pane);
     assert_eq!(
-        pane_rect(&current_primary, f.pane),
-        Some(old.rect),
+        (primary_float.rect, primary_float.constraints),
+        (lens_float.rect, lens_float.constraints),
         "floating transfer preserves exact window geometry"
     );
+    let inset = |body: Rect, window: Rect| {
+        [
+            body.x - window.x,
+            body.y - window.y,
+            window.w - body.w,
+            window.h - body.h,
+        ]
+    };
+    let body = pane_rect(&current_primary, f.pane).unwrap();
+    for (now, before) in inset(body, primary_window)
+        .into_iter()
+        .zip(inset(old.rect, lens_window))
+    {
+        assert!(
+            // Body rects are snapped to whole pixels after layout.
+            (now - before).abs() < 1.0,
+            "the body keeps its inset inside the transferred float: {body:?} in {primary_window:?}, was {:?} in {lens_window:?}",
+            old.rect
+        );
+    }
     assert_eq!(pane_rect(&current_lens, f.pane), None);
     assert_eq!(
         f.sessions.get(f.pane).unwrap().generation(),
