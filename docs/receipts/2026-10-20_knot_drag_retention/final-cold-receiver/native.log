@@ -1,0 +1,12 @@
+2026-10-20T04:40:41.056762Z  INFO turnstone::launch: turnstone starting
+2026-10-20T04:40:41.238279Z  INFO turnstone::identity: profile identity (djinn) protection=Ephemeral (held by djinn)
+2026-10-20T04:40:41.743891Z  INFO turnstone::session: workbench tiling restored path="/Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/final-receiver/sessions/16f63058-4b61-42f2-adbc-75fb09a3fb5e/workbench.json" tiles=2
+2026-10-20T04:40:42.282891Z  INFO turnstone::shell::effects: content session live node=6a5ac865-2231-455f-85f6-09b9eae0bc87 url=mere://clip/d87011314dd76d6a442499c617217d7fbe31f2040b82ebd3f5799a1774c99088 engine=fleece.retained-clip
+2026-10-20T04:40:42.573376Z  INFO turnstone::shell::effects: content session live node=05204dcd-e350-410d-9245-43b5d6e99c17 url=mere://clip/36dd5c80c16f76c7c0a231c9d59eec30afa3a5de0dafbc4cb33d8eed415df9dd engine=fleece.retained-clip
+2026-10-20T04:40:42.727377Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-20T04:40:56.375270Z  INFO turnstone::shell::effects: content session closed node=6a5ac865-2231-455f-85f6-09b9eae0bc87
+2026-10-20T04:40:56.670389Z  INFO turnstone::shell::effects: content session live node=6a5ac865-2231-455f-85f6-09b9eae0bc87 url=mere://clip/d87011314dd76d6a442499c617217d7fbe31f2040b82ebd3f5799a1774c99088 engine=fleece.retained-clip
+2026-10-20T04:41:11.622808Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=2 chrome=true nodes=14
+2026-10-20T04:41:12.186634Z  INFO turnstone::shell::effects: content session closed node=05204dcd-e350-410d-9245-43b5d6e99c17
+2026-10-20T04:41:12.490156Z  INFO turnstone::shell::effects: content session live node=05204dcd-e350-410d-9245-43b5d6e99c17 url=mere://clip/36dd5c80c16f76c7c0a231c9d59eec30afa3a5de0dafbc4cb33d8eed415df9dd engine=fleece.retained-clip
+2026-10-20T04:41:41.629528Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=2 chrome=true nodes=14

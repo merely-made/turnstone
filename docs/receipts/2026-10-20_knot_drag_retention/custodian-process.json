@@ -1,0 +1,8 @@
+{
+  "pid": 25838,
+  "endpoint": "/Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/custody.sock",
+  "binary": "/Users/markik/Code/repos/mere/target/build/debug/deps/custody_payload-1c8855294ff73233",
+  "binary_sha256": "6f5a514947b3a84d8bd9eacfd00d3a066133ac19e78ef45232c7f358605b95ab",
+  "fixture": "djinn::tests::retained_custody_receipt_host",
+  "identity_scope": "Synthetic family profile with persisted fixture wallet; no personal vault"
+}

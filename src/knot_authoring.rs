@@ -23,7 +23,8 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use cambium::{
     AnyView, CompositionEvent, DomHandle, GenetAppRunner, GenetCtx, GenetElement, Key, KeyEvent,
-    NamedKey, PointerClick, StyleRange, button, el, lens, styled_textarea,
+    NamedKey, PointerClick, PointerEvent, PointerPhase, StyleRange, button, el, lens,
+    styled_textarea,
 };
 use chirograph::{
     AdvertisedAction, CapabilityProfile, DerivedTextV1, EDITABLE_TEXT_SAVE_INTENT, EditableTextV1,
@@ -96,7 +97,8 @@ pub(crate) const KNOT_SHEET: &str = "\
     .syntax-link { color: rgb(103, 184, 235); } \
     .syntax-strong { color: rgb(235, 239, 247); } \
     .syntax-emphasis { color: rgb(194, 205, 224); } \
-    .syntax-codeblock, .syntax-verbatim { color: rgb(141, 207, 160); }";
+    .syntax-codeblock, .syntax-verbatim { color: rgb(141, 207, 160); } \
+    .knot-selection { background-color: rgb(42, 76, 118); color: rgb(240, 245, 255); }";
 
 type Wake = Arc<dyn Fn() + Send + Sync>;
 
@@ -2311,7 +2313,7 @@ type AuthoringRunner =
     GenetAppRunner<AuthoringState, fn(&AuthoringState) -> AuthoringView, AuthoringView, ()>;
 
 fn authoring_view(state: &AuthoringState) -> AuthoringView {
-    let styles = state
+    let mut styles = state
         .editor
         .highlights()
         .into_iter()
@@ -2320,6 +2322,29 @@ fn authoring_view(state: &AuthoringState) -> AuthoringView {
             class: format!("syntax-{:?}", span.kind).to_ascii_lowercase(),
         })
         .collect::<Vec<_>>();
+    let selection = state.editor.selection();
+    if selection.anchor.byte != selection.focus.byte {
+        let range = selection.anchor.byte.min(selection.focus.byte)
+            ..selection.anchor.byte.max(selection.focus.byte);
+        // Styled fields give smaller ranges precedence. Cover syntax runs
+        // inside the selection as well as the otherwise unstyled passage.
+        let overlaps = styles
+            .iter()
+            .filter_map(|style| {
+                let start = range.start.max(style.range.start);
+                let end = range.end.min(style.range.end);
+                (start < end).then_some(StyleRange {
+                    range: start..end,
+                    class: "knot-selection".into(),
+                })
+            })
+            .collect::<Vec<_>>();
+        styles.push(StyleRange {
+            range,
+            class: "knot-selection".into(),
+        });
+        styles.extend(overlaps);
+    }
     let field = lens(
         move |input: &mut cambium::TextInput| styled_textarea(input, &styles),
         |state: &mut AuthoringState| state.editor.input_mut(),
@@ -2560,9 +2585,65 @@ pub struct KnotDocumentSession {
     /// re-shaped the whole document to draw an unchanged screen; see
     /// [`crate::ui::RetainedLayout`] for the measurement.
     layout: crate::ui::RetainedLayout,
+    text_drag: Option<genet_scripted_dom::NodeId>,
 }
 
 impl KnotDocumentSession {
+    fn pointer_event(
+        &self,
+        node: genet_scripted_dom::NodeId,
+        phase: PointerPhase,
+        x: f32,
+        y: f32,
+    ) -> PointerEvent {
+        let (left, top, width, height) = self
+            .layout
+            .painted_rect(&self.dom.borrow(), node)
+            .unwrap_or_default();
+        PointerEvent::new(phase, (x - left, y - top), (width, height))
+    }
+
+    fn drag_selection_to(&mut self, x: f32, y: f32, extend: bool) -> bool {
+        let Some(node) = self.text_drag else {
+            return false;
+        };
+        if self.runner.focus() != Some(node) {
+            self.text_drag = None;
+            return false;
+        }
+        let Some(focus) = self
+            .layout
+            .text_caret_at(&mut self.dom.borrow_mut(), node, x, y)
+        else {
+            return false;
+        };
+        let previous = self.runner.state().editor.selection();
+        let selection = cambium::CaretSelection {
+            anchor: if extend { previous.anchor } else { focus },
+            focus,
+        };
+        if previous == selection {
+            return false;
+        }
+        self.runner.update(|state| {
+            state
+                .editor
+                .apply(cambium::TextCommand::SetSelection(selection));
+        });
+        true
+    }
+
+    fn cancel_pointer(&mut self) -> bool {
+        let had_drag = self.text_drag.take().is_some();
+        let capture = self.runner.pointer_capture();
+        if let Some(node) = capture {
+            let event = self.pointer_event(node, PointerPhase::Cancel, 0.0, 0.0);
+            self.runner.dispatch_pointer_cancel(event);
+        }
+        tracing::debug!(target: "turnstone::knot_pointer", had_drag, ?capture, "cancel pointer");
+        had_drag || capture.is_some()
+    }
+
     fn run_authoring_requests(&mut self) -> Option<String> {
         // One drain, in the order the toolbar was pressed. Taking the whole
         // queue in a single `update` also costs one rebuild rather than one
@@ -2651,6 +2732,7 @@ impl KnotDocumentSession {
             dom,
             runner,
             layout: crate::ui::RetainedLayout::new(),
+            text_drag: None,
         };
         if auto_resolve && resolve_available {
             let _ = session.hub.commands.send(HubCommand::Effect {
@@ -3196,21 +3278,90 @@ impl DocumentSession<Scene> for KnotDocumentSession {
     }
 
     fn click_at(&mut self, x: f32, y: f32) -> SessionClick {
+        let result = self.pointer_down(x, y);
+        self.pointer_up(x, y);
+        result
+    }
+
+    fn pointer_down(&mut self, x: f32, y: f32) -> SessionClick {
+        self.cancel_pointer();
         self.drain_events();
         let size = (self.runner.state().width, self.runner.state().height);
-        let hit = {
-            let dom = self.dom.borrow();
-            let sheet = format!("{} {}", crate::ui::CAMBIUM_SHEET, KNOT_SHEET);
-            crate::ui::hit_test(&dom, &sheet, size.0, size.1, x, y)
-        };
+        let sheet = format!("{} {}", crate::ui::CAMBIUM_SHEET, KNOT_SHEET);
+        let hit = self
+            .layout
+            .hit_test(&mut self.dom.borrow_mut(), &sheet, size.0, size.1, x, y);
         let Some(node) = hit else {
             return SessionClick::Miss;
         };
-        let _: Vec<()> = self.runner.dispatch_click(node, PointerClick::at((x, y)));
+        let event = self.pointer_event(node, PointerPhase::Down, x, y);
+        self.runner
+            .dispatch_click(node, PointerClick::at(event.local));
+        let mut prevented = self.runner.default_prevented();
+        if let Some(target) = self.runner.pointer_target(node) {
+            let event = self.pointer_event(target, PointerPhase::Down, x, y);
+            self.runner.dispatch_pointer_down(node, event);
+            prevented |= self.runner.default_prevented();
+        }
+        if !prevented {
+            self.text_drag = self.runner.focus().filter(|focus| {
+                use layout_dom_api::LayoutDom;
+                let dom = self.dom.borrow();
+                let mut current = Some(node);
+                while let Some(hit) = current {
+                    if hit == *focus {
+                        return self.layout.editable_focus(&dom, Some(*focus));
+                    }
+                    current = dom.parent(hit);
+                }
+                false
+            });
+            self.drag_selection_to(x, y, false);
+        }
+        tracing::debug!(target: "turnstone::knot_pointer", x, y, ?node, drag = ?self.text_drag, selection = ?self.runner.state().editor.selection(), "pointer down");
         if let Some(address) = self.run_authoring_requests() {
             return SessionClick::Navigate(address);
         }
         SessionClick::Handled
+    }
+
+    fn pointer_move(&mut self, x: f32, y: f32) -> bool {
+        let captured = self.runner.pointer_capture();
+        if let Some(node) = captured {
+            let event = self.pointer_event(node, PointerPhase::Move, x, y);
+            self.runner.dispatch_pointer_move(event);
+        }
+        let changed = self.drag_selection_to(x, y, true);
+        tracing::debug!(target: "turnstone::knot_pointer", x, y, changed, drag = ?self.text_drag, selection = ?self.runner.state().editor.selection(), "pointer move");
+        changed || captured.is_some()
+    }
+
+    fn pointer_up(&mut self, x: f32, y: f32) -> SessionClick {
+        let handled = self.text_drag.is_some() || self.runner.pointer_capture().is_some();
+        self.pointer_move(x, y);
+        self.text_drag = None;
+        if let Some(node) = self.runner.pointer_capture() {
+            let event = self.pointer_event(node, PointerPhase::Up, x, y);
+            self.runner.dispatch_pointer_up(event);
+        }
+        if let Some(address) = self.run_authoring_requests() {
+            return SessionClick::Navigate(address);
+        }
+        if handled {
+            SessionClick::Handled
+        } else {
+            SessionClick::Miss
+        }
+    }
+
+    fn cancel_input(&mut self) -> bool {
+        self.cancel_pointer()
+    }
+
+    fn focus_input(&mut self, focused: bool) {
+        if !focused {
+            self.cancel_pointer();
+        }
     }
 
     fn links(&self) -> Vec<SessionLink> {
@@ -3271,6 +3422,263 @@ mod tests {
     use layout_dom_api::{LayoutDom, NodeKind};
 
     use super::*;
+
+    #[test]
+    fn saved_selection_from_embedded_pool_pointer_gesture() {
+        use pelt_core::{
+            PeltContent, PeltController, PeltControllerConfig, PeltControllerPool, PeltInput,
+            PeltPlacement, PeltRoute, PeltRouteSource, PeltRouteState, WorkspaceRect,
+        };
+        struct Clock;
+        impl pelt_core::PeltClock for Clock {
+            fn now_ms(&self) -> f64 {
+                0.0
+            }
+        }
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("drag.djot");
+        let source = "private prefix;\ncafé\nprivate suffix";
+        fs::write(&path, source).unwrap();
+        let (hub, _) = KnotHub::host(
+            HostedKnot::Directory {
+                root: root.path().into(),
+            },
+            None,
+            None,
+            65536,
+            Arc::new(|| {}),
+        )
+        .unwrap();
+        let address = file_address(&path);
+        let session = KnotDocumentSession::new(
+            hub.clone(),
+            hub.open(&address).unwrap(),
+            (507, 508),
+            false,
+            false,
+            false,
+        );
+        let engines = Arc::new(inker::SessionRegistry::new());
+        let surfaces = Arc::new(inker::SurfaceEngineRegistry::new());
+        let controller = PeltController::from_session_shared(
+            engines,
+            surfaces,
+            PeltControllerConfig::new(ENGINE_ID, &address, (507, 508)),
+            Clock,
+            Box::new(session),
+        );
+        let decision = mere::routing::route_policy().route(&inker::EngineRouteRequest {
+            workspace_id: inker::WorkspaceRouteId::new("embedded-knot-drag"),
+            view: None,
+            node: None,
+            address,
+            content_type: None,
+            pinned_engine: Some(ENGINE_ID.into()),
+        });
+        let mut pool = PeltControllerPool::<u8, u8, Scene>::new();
+        pool.insert(
+            1,
+            PeltContent::from_controller(
+                controller,
+                PeltRoute {
+                    decision,
+                    source: PeltRouteSource::Automatic,
+                    state: PeltRouteState::Document,
+                },
+            ),
+        );
+        let placement = PeltPlacement {
+            content: 1,
+            window: 0,
+            rect: WorkspaceRect::new(517.0, 92.0, 507.0, 508.0),
+            visible: true,
+            focused: true,
+            scale_factor: 1.0,
+        };
+        pool.set_placements([(1, placement.clone())]);
+        let _ = pool.frame(&1).unwrap();
+        let pointer = |x, phase| {
+            PeltInput::Pointer(inker::PointerEvent {
+                pointer_id: 1,
+                pointer_type: inker::PointerType::Mouse,
+                is_primary: true,
+                phase,
+                position: inker::PhysicalPosition { x, y: 177.0 },
+                button: (phase != inker::PointerPhase::Move).then_some(inker::MouseButton::Left),
+                buttons: if phase == inker::PointerPhase::Up {
+                    inker::PointerButtons::NONE
+                } else {
+                    inker::PointerButtons::PRIMARY
+                },
+                modifiers: Default::default(),
+                width: 1.0,
+                height: 1.0,
+                pressure: None,
+                tangential_pressure: None,
+                tilt_x: None,
+                tilt_y: None,
+                twist: None,
+                altitude_angle: None,
+                azimuth_angle: None,
+            })
+        };
+        for (x, phase) in [
+            (540.0, inker::PointerPhase::Down),
+            (570.0, inker::PointerPhase::Move),
+            (600.0, inker::PointerPhase::Move),
+            (600.0, inker::PointerPhase::Up),
+        ] {
+            pool.set_placements([(1, placement.clone())]);
+            let effect = pool.input_at(0, pointer(x, phase));
+            if phase != inker::PointerPhase::Move {
+                assert!(effect.handled, "{phase:?} at {x}");
+            }
+            if phase != inker::PointerPhase::Up {
+                assert_eq!(pool.captured_placement(1), Some(&1));
+            }
+        }
+        let session = pool
+            .content(&1)
+            .unwrap()
+            .document()
+            .unwrap()
+            .session()
+            .as_any_ref()
+            .downcast_ref::<KnotDocumentSession>()
+            .unwrap();
+        let offer = session
+            .retained_selection()
+            .expect("embedded pool gesture selects source");
+        assert_eq!((offer.start, offer.end), (16, 21));
+        assert_eq!(fs::read_to_string(path).unwrap(), source);
+    }
+
+    #[test]
+    fn saved_selection_from_pointer_drag_survives_reverse_release_and_cancel() {
+        use inker::{SessionInput, SessionPointerButton};
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("drag.djot");
+        let source = "private prefix;\ncafé\nprivate suffix";
+        fs::write(&path, source).unwrap();
+        let (hub, _) = KnotHub::host(
+            HostedKnot::Directory {
+                root: root.path().into(),
+            },
+            None,
+            None,
+            65536,
+            Arc::new(|| {}),
+        )
+        .unwrap();
+        let address = file_address(&path);
+        let mut session = KnotDocumentSession::new(
+            hub.clone(),
+            hub.open(&address).unwrap(),
+            (900, 600),
+            false,
+            false,
+            false,
+        );
+        session.frame(900, 600);
+        let field = find_text_control(&session.dom.borrow(), session.runner.root()).unwrap();
+        let (x, y, _, _) = session
+            .layout
+            .painted_rect(&session.dom.borrow(), field)
+            .unwrap();
+        let (start, end, line) = (x + 10.0, x + 60.0, y + 31.0);
+        let button = |x, state| SessionInput::PointerButton {
+            x,
+            y: line,
+            button: SessionPointerButton::Primary,
+            state,
+            modifiers: Default::default(),
+        };
+        let movement = |x| SessionInput::PointerMoved {
+            x,
+            y: line,
+            modifiers: Default::default(),
+        };
+        assert_eq!(
+            session
+                .input(button(start, SessionButtonState::Pressed))
+                .capture,
+            Some(true)
+        );
+        session.input(movement(end));
+        session.input(button(end, SessionButtonState::Released));
+        let offer = session
+            .retained_selection()
+            .expect("drag selects saved text");
+        assert_eq!((offer.start, offer.end), (16, 21));
+        assert_eq!(
+            session.selected_retained_export(&offer).unwrap().0["text"],
+            "café"
+        );
+        let selected = session.runner.state().editor.selection();
+        session.input(movement(start));
+        assert_eq!(
+            session.runner.state().editor.selection(),
+            selected,
+            "release ends capture"
+        );
+
+        session.frame(900, 600);
+        session.input(button(end, SessionButtonState::Pressed));
+        session.input(movement(start));
+        session.input(button(start, SessionButtonState::Released));
+        let reverse = session.runner.state().editor.selection();
+        assert_eq!((reverse.anchor.byte, reverse.focus.byte), (21, 16));
+        assert_eq!(session.retained_selection(), Some(offer.clone()));
+
+        session.input(button(start, SessionButtonState::Pressed));
+        session.input(movement(end));
+        session.input(SessionInput::Cancel);
+        let cancelled = session.runner.state().editor.selection();
+        session.input(button(start, SessionButtonState::Released));
+        session.input(movement(start));
+        assert_eq!(
+            session.runner.state().editor.selection(),
+            cancelled,
+            "cancel prevents trailing selection updates"
+        );
+        session.input(button(end, SessionButtonState::Pressed));
+        session.input(SessionInput::Focus(false));
+        let blurred = session.runner.state().editor.selection();
+        session.input(movement(start));
+        assert_eq!(session.runner.state().editor.selection(), blurred);
+        assert!(
+            session.selected_retained_export(&offer).is_err(),
+            "changed selection invalidates a prior offer"
+        );
+        // A captured drag continues outside the field and across painted lines.
+        session.frame(900, 600);
+        session.input(button(end, SessionButtonState::Pressed));
+        session.input(movement(-100.0));
+        assert_eq!(session.retained_selection(), Some(offer.clone()));
+        session.pointer_move(x + 200.0, y + 47.0);
+        session.pointer_up(x + 200.0, y + 47.0);
+        let multiline = session.retained_selection().unwrap();
+        assert_eq!((multiline.start, multiline.end), (21, source.len()));
+
+        // Pressing a toolbar control while the editor has focus must not start
+        // a text drag, and its release must not activate it a second time.
+        session.frame(900, 600);
+        let save = session
+            .layout
+            .first_selector_point(
+                &session.dom.borrow(),
+                &taproot::Selector::role("button").containing("Save"),
+            )
+            .unwrap();
+        session.pointer_down(save.0, save.1);
+        assert!(session.text_drag.is_none());
+        let selection = session.runner.state().editor.selection();
+        session.pointer_move(start, line);
+        session.pointer_up(start, line);
+        assert_eq!(session.runner.state().editor.selection(), selection);
+        assert!(session.runner.state().requests.is_empty());
+        assert_eq!(fs::read_to_string(path).unwrap(), source);
+    }
 
     #[test]
     fn saved_selection_from_neutral_keyboard_input_keeps_exact_unicode_bytes() {

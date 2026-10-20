@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-20",
+  "passed": true,
+  "scope": "Bounded shipping macOS primary mouse drag in embedded Knot; immediate retention action; sealed selected export, source-absent independent receiver, custodian and receiver restart, cold re-export and previously qualified selected-voice playback",
+  "source_base": "8116a5f0b6834bfdf1c17cf9f97861f070d6ac9a",
+  "sources": {
+    "base_commit": "8116a5f0b6834bfdf1c17cf9f97861f070d6ac9a",
+    "files": {
+      "src/knot_authoring.rs": "38569e0e32ffcbf12e9cec64f113b12dea90f9d3311c3b8c4cc15621335afa70",
+      "src/ui.rs": "6ed39ea6ba9d7132b8b939146b7db92c654cf454b1ffa73505209387d49f7041",
+      "src/shell/controller_input.rs": "27d9a5288db11554cf482c1f2ec4f14ddc7548feb95bc372ad9080cea77c870b",
+      "Cargo.toml": "1fa6927ae41c1da0ef3ebfdf178c6e208e673fb1e41eb8ab41b658af6023df4f",
+      "Cargo.lock": "8210ac38946356047ef118716345391e2e79efcec45374cee4087b18a633334c"
+    },
+    "toolchain": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "target": "x86_64-apple-darwin",
+    "local_supplier_overrides": false,
+    "cargo_resolution": "--locked --offline"
+  },
+  "phases": {
+    "final-producer": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 52.753,
+      "binary_sha256": "a50b2103f8401e3c561a324fdb8997a43336736c0a71fe07759b483c607fecdb",
+      "scenario_sha256": "15fb210108d83e1604f9743771fa7dd877a29e1ce04ecf4676fd778111fc0217",
+      "receipt": "scenario.done",
+      "captures": 4
+    },
+    "final-receiver": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 51.658,
+      "binary_sha256": "a50b2103f8401e3c561a324fdb8997a43336736c0a71fe07759b483c607fecdb",
+      "scenario_sha256": "931c2e554a378e174a0db8910b3a1559670c6bb2c60d413191c0c9f83f723c95",
+      "receipt": "scenario.done",
+      "captures": 2
+    },
+    "final-cold-receiver": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 75.944,
+      "binary_sha256": "a50b2103f8401e3c561a324fdb8997a43336736c0a71fe07759b483c607fecdb",
+      "scenario_sha256": "36f05a3e7a2e153f5d70df9928be89fe432317136e867c011022711937841dd9",
+      "receipt": "scenario.done",
+      "captures": 2
+    }
+  },
+  "checks": {
+    "knot_authoring": {
+      "passed": 23,
+      "failed": 0,
+      "ignored": 5
+    },
+    "retained_clip": {
+      "passed": 15,
+      "failed": 0,
+      "ignored": 1
+    },
+    "producer_retention": {
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    "window_input": {
+      "passed": 59,
+      "failed": 0,
+      "ignored": 0
+    }
+  },
+  "reviewed_captures": 8,
+  "knot_selection": {
+    "text": "café",
+    "utf8_start": 16,
+    "utf8_end": 21,
+    "selected_body_bytes": 5,
+    "source_unchanged_before_removal": true
+  },
+  "cold_packages_equal_selected_originals": true,
+  "source_and_transfer_inputs_absent": true,
+  "raw_store_privacy_scan": {
+    "final-producer": {
+      "store_files": 5,
+      "clear_full_source_or_voice_hits": [],
+      "wav_cache_files": []
+    },
+    "final-receiver": {
+      "store_files": 5,
+      "clear_full_source_or_voice_hits": [],
+      "wav_cache_files": []
+    }
+  },
+  "custodian_restarted": true,
+  "offline_acquisition_attempts": 0,
+  "negative_control": {
+    "phase": "before-observation",
+    "expected": "fail",
+    "reason": "Pointer trace holds bytes 16..21 while the app retention command facts remain stale before the synchronous observation update"
+  },
+  "limits": [
+    "Synthetic wallet-backed custodian; no personal vault migration",
+    "Explicit scenario destination uses the ordinary export action/effect; OS save dialog not automated",
+    "Primary mouse and this bounded text fixture; no touch, bidi, autoscroll, or broad native editor acceptance claim",
+    "Voice body reused from the October 19 owner-export receipt; no renewed recording or owner export claim",
+    "Five configured external Knot endpoint checks and the custody process helper remain ignored in the ordinary focused sweep; not a full workspace gate"
+  ]
+}

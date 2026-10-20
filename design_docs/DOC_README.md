@@ -78,7 +78,9 @@ set.
   selected-package admission, local Inker reading and Redshank voice-body
   playback in the receiving mere; published suppliers and bounded headed sealed
   Knot/voice receive, cold playback and onward export are qualified locally.
-  Personal vault/migration, document drag selection and broader format gates remain.
+  Embedded Knot primary-mouse selection, immediate retention and cold export
+  are qualified in the October 20 continuation. Personal vault/migration,
+  broader editor input and format gates remain.
 - [q-pc lane handoff, 2026-10-14](2026-10-14_qpc_lane_handoff.md): the lane's
   resume point on q-pc (Mac), with Windows gates on o-pc. Main is the only live line after the ThinkPad
   branch/worktree reconciliation; lists pins, the lens-label fix, ordered open

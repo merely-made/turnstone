@@ -1,11 +1,13 @@
 # Retained clips in the receiving Turnstone host
 
-**Status (2026-10-19):** the original bounded native receiver and onward copy
+**Status (2026-10-20):** the original bounded native receiver and onward copy
 are landed and qualified at their recorded source cuts. Producer-to-retention
 integration and its custody connection now have published suppliers, refreshed
 Git pins, focused checks and bounded headed macOS acceptance with a synthetic
 wallet-backed custodian. The Turnstone implementation, pins and renewed receipt
-are recorded together in this repository. The independent Eidetic repository
+are recorded together in this repository. The embedded Knot primary-pointer
+selection, immediate retention command and source-absent cold export continuation
+are also qualified in the October 20 receipt. The independent Eidetic repository
 owns the shared plan. Earlier committed-source import,
 package-unavailable restart, local WAV playback and missing-content refusal
 passed in the real Windows host at its recorded source cut. This is Turnstone's
@@ -246,3 +248,32 @@ capability.
   the accepted native build; publication adds no runtime change or new
   qualification claim. The keyboard/drag, personal-vault, destination-dialog
   and broader format limits above remain explicit.
+
+- **2026-10-20, embedded Knot primary-pointer continuation qualified.**
+  The document adapter now forwards press, captured move, release, cancel and
+  focus loss, using retained shaped caret positions and UTF-8 offsets. Selection
+  is visibly highlighted, including overlapping syntax runs. Caret queries
+  refresh layout when selection projection replaces text nodes between moves
+  in one input batch. A toolbar press cannot start an editor text drag.
+  The initial headed diagnostic selected bytes 16–21 internally but left the
+  contextual command stale: Knot facts were refreshed only by background event
+  drains. Handled controller input now updates those facts synchronously.
+  The separate negative diagnostic is preserved with the receipt.
+
+  The final shipping build and 99 focused checks pass: Knot authoring 23,
+  retained clip 15, producer retention 2 and native input 59. Five configured
+  external endpoint checks and the explicit custody process helper remain
+  ignored in the ordinary sweep. Three native phases and eight reviewed
+  captures qualify a continuous mouse drag selecting exactly `café`, immediate
+  private retention and selected-only export, source-absent independent receive,
+  then custodian/receiver restart and cold re-export with both transfer inputs
+  removed. The cold packages equal the selected originals; the reused owner
+  voice fixture reaches Ended 100 ms, preserves its native selector, and makes
+  zero acquisition attempts. Neither fixture store contains the complete clear
+  backing/WAV body, and neither profile creates a WAV cache.
+  The [machine receipt](../docs/receipts/2026-10-20_knot_drag_retention/qualification.json)
+  binds these outcomes to the exact source files and one shipping executable.
+  Supplier pins are unchanged. This closes the bounded primary-mouse drag gate;
+  OS save-dialog automation, personal vault/migration, touch/bidi/autoscroll,
+  renewed owner recording/export and the broader format/native program retain
+  their separate gates. The October 19 receipts remain frozen.

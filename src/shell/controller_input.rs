@@ -123,6 +123,11 @@ impl Shell {
             });
             acted = true;
         }
+        // Native selection changes must reach contextual retention actions in
+        // this turn, even when the document has no background wake pending.
+        if effect.handled || acted {
+            self.refresh_knot_documents();
+        }
         if effect.redraw || acted {
             self.request_redraw();
         }
