@@ -98,6 +98,8 @@ pub struct DocumentFindModel {
 pub enum PlaceArtifactKind {
     /// A place card, read to offer a pre-key against its Moot.
     Card,
+    /// A local contact refresh, bound to the session that asked for it.
+    Contact { session: crate::panes::SessionId, generation: u64 },
     /// A published pre-key offer, read to author an invitation for it. The
     /// access it will admit at rides along: the prompt that asked for the
     /// path is what decided it, not the file.
@@ -331,6 +333,14 @@ pub enum Action {
     /// Carries no authority and no key material.
     ExportPlaceCard {
         path: String,
+    },
+    /// Refresh only contact hints from a card for the already joined place.
+    BeginRefreshPlaceContact,
+    RefreshPlaceContact { path: String },
+    ReconnectPlaceWithCard {
+        session: crate::panes::SessionId,
+        generation: u64,
+        card: Box<crate::place::PlaceCardV1>,
     },
     /// Prompt for the card path a pre-key is offered against.
     BeginOfferPlacePrekey,
@@ -1080,6 +1090,7 @@ pub enum Effect {
         session: crate::panes::SessionId,
         generation: u64,
         binding: crate::place::PlaceBindingV1,
+        contact: Option<Box<crate::place::PlaceCardV1>>,
     },
     /// Clear a local left mark. Fired alongside `ReconnectPlace` by
     /// `rejoin_place`, never on its own.

@@ -609,6 +609,7 @@ impl App {
         let action = match prompt {
             PlacePrompt::FoundPlace => Action::FoundPlace { name: text.clone() },
             PlacePrompt::ExportCard => Action::ExportPlaceCard { path: text.clone() },
+            PlacePrompt::RefreshContact => Action::RefreshPlaceContact { path: text.clone() },
             PlacePrompt::OfferPrekey => Action::OfferPlacePrekey { path: text.clone() },
             PlacePrompt::Invite | PlacePrompt::InviteReader => {
                 match crate::place::split_invite_lifetime(&text) {
@@ -644,6 +645,7 @@ impl App {
         let label = match prompt {
             PlacePrompt::FoundPlace => "Found place",
             PlacePrompt::ExportCard => "Export place card",
+            PlacePrompt::RefreshContact => "Refresh place contact",
             PlacePrompt::OfferPrekey => "Offer place pre-key",
             PlacePrompt::Invite => "Invite to place",
             PlacePrompt::InviteReader => "Invite to place as reader",

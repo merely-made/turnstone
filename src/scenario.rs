@@ -85,8 +85,8 @@
 //!                            # frame for up to <frames> frames; passes the
 //!                            # moment it matches, fails with `assert row`'s
 //!                            # diagnostics if the budget runs out
-//! wait-status <frames> <substr> # like wait-row, over the place status lines
-//!                            # (`crate::observe::snapshot(..).place_status`)
+//! wait-status <frames> <substr> # over the place status lines, without blocking
+//!                            # native frames or cross-process event delivery
 //! wait-file <frames> <path>  # like wait-row, satisfied once <path> exists
 //!                            # and is non-empty, without blocking rendered frames
 //!                            # (cross-process sequencing

@@ -1173,6 +1173,7 @@ impl Shell {
                     session,
                     generation,
                     binding,
+                    contact,
                 } => {
                     if self.app.session_id != session
                         || self.app.place.generation() != Some(generation)
@@ -1184,6 +1185,7 @@ impl Shell {
                         generation,
                         directory: session::session_dir(&self.app.data_root, session),
                         binding,
+                        contact,
                     });
                 }
                 Effect::ClearPlaceLeftMark { session } => {
@@ -2435,6 +2437,12 @@ fn read_place_artifact(
                 card: Box::new(card),
                 out: format!("{path}.prekey.json"),
             })
+        }
+        PlaceArtifactKind::Contact { session, generation } => {
+            let card: crate::place::PlaceCardV1 = serde_json::from_slice(&bytes)
+                .map_err(|error| format!("{path} is not a place card: {error}"))?;
+            card.validate()?;
+            Ok(Action::ReconnectPlaceWithCard { session, generation, card: Box::new(card) })
         }
         PlaceArtifactKind::Prekey {
             access,

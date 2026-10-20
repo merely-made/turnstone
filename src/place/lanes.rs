@@ -608,6 +608,7 @@ mod tests {
             spawn_place_worker(Arc::new(|| {}), Arc::new(founder), settings);
         let session = SessionId::new();
         worker.command(PlaceWorkerCommand::Reconnect {
+            contact: None,
             session,
             generation: 1,
             directory: host.clone(),
@@ -1498,6 +1499,7 @@ mod tests {
         // Reconnect from bounded contact metadata, without replaying the
         // invitation, then author a fact through the live peer.
         restarted.command(PlaceWorkerCommand::Reconnect {
+            contact: None,
             session,
             generation: 3,
             directory: guest.clone(),
@@ -1529,6 +1531,7 @@ mod tests {
         // Repeating the same lifecycle generation is idempotent and does not
         // tear down or duplicate the already-live lanes.
         restarted.command(PlaceWorkerCommand::Reconnect {
+            contact: None,
             session,
             generation: 3,
             directory: guest.clone(),
@@ -3241,6 +3244,7 @@ mod tests {
 
         let (worker, updates) = spawn_place_worker(Arc::new(|| {}), member(), settings());
         worker.command(PlaceWorkerCommand::Reconnect {
+            contact: None,
             session,
             generation: 1,
             directory: founder.guest.clone(),
@@ -3373,6 +3377,7 @@ mod tests {
 
         let (worker, updates) = spawn_place_worker(Arc::new(|| {}), member(), clocked.clone());
         worker.command(PlaceWorkerCommand::Reconnect {
+            contact: None,
             session,
             generation: 1,
             directory: founder.guest.clone(),
@@ -3978,6 +3983,7 @@ mod tests {
             settings(),
         );
         a_worker.command(PlaceWorkerCommand::Reconnect {
+            contact: None,
             session: a_session,
             generation: 1,
             directory: a_dir.clone(),
@@ -4290,6 +4296,7 @@ mod tests {
             settings(),
         );
         founder.command(PlaceWorkerCommand::Reconnect {
+            contact: None,
             session: f_session,
             generation: 1,
             directory: host.clone(),
@@ -4617,6 +4624,7 @@ mod tests {
             settings(),
         );
         w_worker2.command(PlaceWorkerCommand::Reconnect {
+            contact: None,
             session: w_session,
             generation: 1,
             directory: w_dir.clone(),
@@ -4770,8 +4778,16 @@ mod tests {
                 authority_clock: crate::place::worker::AuthorityClock::SystemTime,
                 ..settings()
             };
+            // This lifecycle walk checks projection-grant expiry as well as
+            // Commons authority. Offer the service whose grant it inspects.
+            let vault = root.join("vault");
+            std::fs::create_dir_all(&vault).unwrap();
+            let host_settings = crate::place::worker::PlaceWorkerSettings {
+                knot_root: Some(vault),
+                ..clock.clone()
+            };
             let identity = RootIdentity::from_seed([Self::FOUNDER_SEED; 32]);
-            let founder = spawn_place_worker(Arc::new(|| {}), Arc::new(identity), clock.clone());
+            let founder = spawn_place_worker(Arc::new(|| {}), Arc::new(identity), host_settings);
             let founder_session = SessionId::new();
             founder.0.command(PlaceWorkerCommand::Found {
                 session: founder_session,
@@ -5001,6 +5017,7 @@ mod tests {
                     spawn_place_worker(Arc::new(|| {}), identity, self.clock.clone());
                 let session = SessionId::new();
                 worker.command(PlaceWorkerCommand::Reconnect {
+                    contact: None,
                     session,
                     generation: 1,
                     directory: self.guest.clone(),

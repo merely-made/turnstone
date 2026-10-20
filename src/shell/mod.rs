@@ -1211,7 +1211,7 @@ pub struct Shell {
     /// Exact action copied from the common catalog for scenario stale-source
     /// controls; delivery still lowers through the ordinary shell action path.
     scenario_queued_action: Option<Action>,
-    pending_scenario_file: Option<drive::PendingFileWait>,
+    pending_scenario_wait: Option<drive::PendingScenarioWait>,
     held_contributed_click: Option<contributed_automation::HeldClick>,
     contributed_click_request: u64,
     /// A bounded copy of semantic events after their ordinary consumers have
@@ -1694,7 +1694,7 @@ impl Shell {
             meta: false,
             shared_scenario: shared_scenario_from_env(),
             scenario_queued_action: None,
-            pending_scenario_file: None,
+            pending_scenario_wait: None,
             held_contributed_click: None,
             contributed_click_request: 0,
             observed_events: VecDeque::with_capacity(128),
@@ -2963,15 +2963,15 @@ impl Shell {
             self.request_redraw();
             return;
         }
-        if let Some(wait) = self.pending_scenario_file.as_mut() {
-            match wait.poll() {
-                Ok(true) => self.pending_scenario_file = None,
+        if let Some(wait) = self.pending_scenario_wait.as_mut() {
+            match wait.poll(&self.app.place.status_lines()) {
+                Ok(true) => self.pending_scenario_wait = None,
                 Ok(false) => {
                     self.request_redraw();
                     return;
                 },
                 Err(error) => {
-                    self.pending_scenario_file = None;
+                    self.pending_scenario_wait = None;
                     if let Some(shared) = self.shared_scenario.take() {
                         let mut outcome = shared.finish();
                         outcome.ok = false;

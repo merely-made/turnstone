@@ -1234,6 +1234,15 @@ impl App {
                 self.begin_place_prompt(crate::ui::PlacePrompt::ExportCard)
             }
             Action::ExportPlaceCard { path } => self.export_place_card(path),
+            Action::BeginRefreshPlaceContact => self.begin_place_prompt(crate::ui::PlacePrompt::RefreshContact),
+            Action::RefreshPlaceContact { path } => self.refresh_place_contact(path),
+            Action::ReconnectPlaceWithCard { session, generation, card } => {
+                if session != self.session_id || self.place.generation() != Some(generation) {
+                    Vec::new()
+                } else {
+                    self.reconnect_place_with_contact(Some(card))
+                }
+            }
             Action::BeginOfferPlacePrekey => {
                 self.begin_place_prompt(crate::ui::PlacePrompt::OfferPrekey)
             }
