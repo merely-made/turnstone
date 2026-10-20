@@ -56,7 +56,7 @@ mere-view = { path="../../../crates/cambium/mere-view", optional=true }
 mere-overmap = { path = "../../../crates/cambium/mere-overmap", optional = true }
 mere-document-lanes = { path = "../../../crates/system/document-lanes", features = ["retained-clips"], optional = true }
 fleece = { package = "mere-fleece", path = "../../../crates/fleece", features = ["portable-clip", "page-links"], optional = true }
-eidetic = { default-features = false, git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
+eidetic = { default-features = false, git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
 moot = { package = "mere-moot", path = "../../moot", default-features = false, features = ["presentation"], optional = true }
 # `webrtc-browser` is the C4 door's peer half (`webrtc_browser`, `webrtc_join`)
 # and needs `--cfg getrandom_backend="wasm_js"` in this target's rustflags:
@@ -67,7 +67,7 @@ mere = { path = "../../../crates/mere", default-features = false, features = ["g
 # `indexeddb` supplies the browser realization of muniment's byte-store seam,
 # which this crate hands to `GraphshellApp` as its backend. It lived here until
 # the duplicate showed up; muniment owns the backend family, so it owns this.
-muniment = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
+muniment = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
 graphshell-client = { path = "../../../crates/graphshell/graphshell-client" }
 workbench = { path = "../../../crates/cambium/workbench" }
 sceno = { path = "../../../crates/cambium/scenes/sceno" }
@@ -227,19 +227,19 @@ opt-level = 3
 [patch.crates-io]
 # Canonical promoted families; keep registry and Git consumers type-identical.
 armillary = { git = "https://github.com/merely-made/armillary.git", rev = "e67c5def1c735be047492a867bcdc8b41fba22b8" }
-chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-esp = { git = "https://github.com/merely-made/esp.git", rev = "809deb6be341d3b6eeaad9534d9d162bd3105f4a" }
-gemot = { git = "https://github.com/merely-made/gemot.git", rev = "692674ca66728f5b0dbb2fc7e756acaa83626f5c" }
-luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-mien = { git = "https://github.com/merely-made/gemot.git", rev = "692674ca66728f5b0dbb2fc7e756acaa83626f5c" }
-mooting = { git = "https://github.com/merely-made/gemot.git", rev = "692674ca66728f5b0dbb2fc7e756acaa83626f5c" }
-servitor = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-stickleback = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
+chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "6d371901435b68e3fb4099a97789222d15f87cf0" }
+gemot = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
+luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+mien = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
+mooting = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
+servitor = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+stickleback = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
 # Dramatis uses published muniment; the viewer and its applets share Mere's
 # own package, as the root workspace does after DR-D.
-muniment = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
+muniment = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
 taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", branch = "main" }
 layout-dom-api = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "=0.1.1" }
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "=0.1.2" }
@@ -273,28 +273,28 @@ rust-version = "1.97.1"
 sprigging = { path = "../../../crates/cambium/sprigging" }
 # Promoted sources shared with immutable older Mere suppliers.
 armillary = { git = "https://github.com/merely-made/armillary.git", rev = "e67c5def1c735be047492a867bcdc8b41fba22b8" }
-chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-esp = { git = "https://github.com/merely-made/esp.git", rev = "809deb6be341d3b6eeaad9534d9d162bd3105f4a" }
-gemot = { git = "https://github.com/merely-made/gemot.git", rev = "692674ca66728f5b0dbb2fc7e756acaa83626f5c" }
-mien = { git = "https://github.com/merely-made/gemot.git", rev = "692674ca66728f5b0dbb2fc7e756acaa83626f5c" }
-mooting = { git = "https://github.com/merely-made/gemot.git", rev = "692674ca66728f5b0dbb2fc7e756acaa83626f5c" }
-servitor = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-muniment = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-stickleback = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
+chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "6d371901435b68e3fb4099a97789222d15f87cf0" }
+gemot = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
+mien = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
+mooting = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
+servitor = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+muniment = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+stickleback = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
 
 [patch."https://www.github.com/merely-made/mere.git"]
 armillary = { git = "https://github.com/merely-made/armillary.git", rev = "e67c5def1c735be047492a867bcdc8b41fba22b8" }
-chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-esp = { git = "https://github.com/merely-made/esp.git", rev = "809deb6be341d3b6eeaad9534d9d162bd3105f4a" }
-gemot = { git = "https://github.com/merely-made/gemot.git", rev = "692674ca66728f5b0dbb2fc7e756acaa83626f5c" }
-luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-mien = { git = "https://github.com/merely-made/gemot.git", rev = "692674ca66728f5b0dbb2fc7e756acaa83626f5c" }
-mooting = { git = "https://github.com/merely-made/gemot.git", rev = "692674ca66728f5b0dbb2fc7e756acaa83626f5c" }
-muniment = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-servitor = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
-stickleback = { git = "https://github.com/merely-made/eidetic.git", rev = "738ef15956a29a125820b2d6c2280d39a6214f8e" }
+chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "6d371901435b68e3fb4099a97789222d15f87cf0" }
+gemot = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
+luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+mien = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
+mooting = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
+muniment = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+servitor = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
+stickleback = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
