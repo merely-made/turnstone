@@ -1,0 +1,12 @@
+reveal role:button Editable document
+click role:button Editable document
+assert snap blocks-dirty == false
+assert snap blocks-preview == false
+assert snap blocks-status == Saved document reopened
+reveal .blocks-select-1
+click .blocks-select-1
+assert snap blocks-dirty == false
+reveal .blocks-swatch
+wait 1
+wait 1
+capture bar_group_reopened

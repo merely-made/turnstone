@@ -948,6 +948,8 @@ impl Product for TreeLane {
         #[cfg(feature = "product")]
         let snapshot = presentation::fields(page, snapshot);
         #[cfg(feature = "product")]
+        let snapshot = super::blocks::fields(page, snapshot);
+        #[cfg(feature = "product")]
         let snapshot = super::query_view::fields(page, snapshot);
         #[cfg(feature = "product")]
         let snapshot = dynamics_inspection::fields(page, snapshot);
@@ -2110,7 +2112,8 @@ impl Product for TreeLane {
                 .forme
                 .as_ref()
                 .is_some_and(|pane| pane.saving)
-            || ctx.runner.state().presentation.busy();
+            || ctx.runner.state().presentation.busy()
+            || super::blocks::busy(ctx.runner.state());
         #[cfg(not(feature = "product"))]
         let workspace_saving = false;
         #[cfg(feature = "moot-resources")]

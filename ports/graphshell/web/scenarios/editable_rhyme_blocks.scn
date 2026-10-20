@@ -1,0 +1,59 @@
+# Fresh qualification origin; reopen with editable_rhyme_blocks_reopen.scn.
+reveal role:button Editable document
+click role:button Editable document
+assert snap blocks-open == true
+assert snap blocks-preview == false
+remember original-document
+reveal role:textbox Rhyme scheme
+click role:textbox Rhyme scheme
+input-text ABBA
+reveal .blocks-preview-command
+click .blocks-preview-command
+assert snap blocks-preview == true
+same original-document blocks-source
+reveal .blocks-expand
+click .blocks-expand
+same original-document blocks-source
+reveal .blocks-swatch
+wait 1
+wait 1
+capture rhyme_preview_canvas
+reveal .blocks-cancel
+click .blocks-cancel
+assert snap blocks-preview == false
+same original-document blocks-source
+reveal .blocks-preview-command
+click .blocks-preview-command
+reveal .blocks-apply
+click .blocks-apply
+assert snap blocks-preview == false
+assert snap blocks-dirty == true
+remember applied-document
+reveal .blocks-undo
+click .blocks-undo
+same original-document blocks-source
+reveal .blocks-redo
+click .blocks-redo
+same applied-document blocks-source
+reveal .blocks-save
+click .blocks-save
+wait 180
+assert snap blocks-saving == false
+assert snap blocks-dirty == false
+assert snap blocks-status == Document saved
+reveal .blocks-swatch
+wait 1
+wait 1
+capture rhyme_applied_saved
+# A different proposal starts with every conflicting local label preserved.
+reveal role:textbox Rhyme scheme
+click role:textbox Rhyme scheme
+input-text AABB
+reveal .blocks-preview-command
+click .blocks-preview-command
+same applied-document blocks-source
+reveal .blocks-apply
+click .blocks-apply
+same applied-document blocks-source
+assert snap blocks-dirty == false
+assert snap blocks-status == No changes accepted · document unchanged

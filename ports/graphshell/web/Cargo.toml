@@ -37,7 +37,7 @@ presentation-webgl2 = ["cambium-genet-web-host/webgl"]
 without-classic-vello = ["genet-render-host/without-classic-vello"]
 # What a page saves: IndexedDB, saved scenes, the tree's product mode,
 # `web_product` and `web_practice`.
-product = ["muniment/indexeddb", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "graphshell/query-views", "mere/query", "dep:mere-document-lanes", "dep:fleece"]
+product = ["muniment/indexeddb", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "graphshell/query-views", "graphshell/editable-blocks", "mere/query", "dep:mere-document-lanes", "dep:fleece"]
 applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.
@@ -48,6 +48,7 @@ canvas-gpu = ["graphshell/canvas-gpu", "mere/canvas-gpu"]
 image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mesquite/image-decode", "cambium-genet-web-host/image-decode", "graphshell/image-decode", "mere/image-decode"]
 
 [dependencies]
+woodshed-notation = { path = "../../../../woodshed/crates/woodshed-notation" }
 mere-view = { path="../../../crates/cambium/mere-view", optional=true }
 # The shared mere panel over the remote board's admitted route (stack lift plan L14).
 mere-overmap = { path = "../../../crates/cambium/mere-overmap", optional = true }
@@ -285,6 +286,7 @@ rust-version = "1.97.1"
 # The standalone host uses the same release-identity contract as the parent
 # workspace when Murm's carrier names its published compatibility dependency.
 [patch."https://github.com/merely-made/mere.git"]
+sprigging = { path = "../../../crates/cambium/sprigging" }
 # Promoted sources shared with immutable older Mere suppliers.
 armillary = { git = "https://github.com/merely-made/armillary.git", rev = "6827559937f07f78a6a830dfbfcaa54210dd093c" }
 chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "543f5ff38f87a09afc04dbc59f57c2dfbc6a9943" }

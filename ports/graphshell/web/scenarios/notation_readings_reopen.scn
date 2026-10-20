@@ -1,0 +1,21 @@
+reveal role:button Editable document
+click role:button Editable document
+assert snap blocks-status == Saved document reopened
+assert snap blocks-dirty == false
+reveal .blocks-select-1
+click .blocks-select-1
+remember reopened-notation
+reveal .blocks-reading-score
+click .blocks-reading-score
+same reopened-notation blocks-source
+assert snap blocks-dirty == false
+reveal .blocks-notation-leaf
+wait 200
+capture reopened_score
+reveal .blocks-reading-tab
+click .blocks-reading-tab
+same reopened-notation blocks-source
+assert snap blocks-dirty == false
+reveal .blocks-notation-leaf
+wait 200
+capture reopened_tab

@@ -197,6 +197,10 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
             ));
         }
     }
+    #[cfg(feature = "product")]
+    if page.product.is_some() {
+        buttons.push(blocks::control(page));
+    }
     // Collapsed, the Graph tools region opens over the canvas from here.
     if !tools_docked(page) {
         buttons.push(Box::new(
