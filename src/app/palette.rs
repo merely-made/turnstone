@@ -226,6 +226,7 @@ impl App {
             return rows;
         }
         let mut rows = self.session_actions();
+        if let Some(action) = self.producer_retention_action() { rows.push(action); }
         if let Some((member, _)) = self.browser_command_target()
             && let Ok(target) = self.source_capture_target(member)
         {

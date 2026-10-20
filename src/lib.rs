@@ -70,6 +70,7 @@ mod publish_pane;
 mod publish_service;
 mod recycle;
 pub mod retained_clip;
+pub mod producer_retention;
 pub mod redshank_episode_surface;
 pub mod redshank_host;
 pub mod remote_projection;

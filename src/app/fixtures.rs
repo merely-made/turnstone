@@ -167,7 +167,6 @@ impl App {
         let relation = || EdgeAssertion::Semantic {
             sub_kind: SemanticSubKind::Hyperlink,
             label: None,
-            decay_progress: None,
         };
         let _ = assert_relation(&mut graph, notes, radios, relation());
         let _ = assert_relation(&mut graph, notes, harmony, relation());

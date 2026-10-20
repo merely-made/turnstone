@@ -1,0 +1,22 @@
+{
+  "mere": {
+    "published_commit": "e122a071e2d320c40a697d36fcfb2a3acd8797fc",
+    "verified_remote_main_at_fetch": "4d60510c40a985aa88ddde381c9f56105dbd9f9a",
+    "published_commit_reachable_from_remote_main": true
+  },
+  "woodshed": {
+    "published_commit": "62dde4c0c85fcca87e949ef9ab8b1950a4d528c0",
+    "verified_remote_main_at_fetch": "fd9fb821381af950b5dd052402a0e53d24fcec80",
+    "published_commit_reachable_from_remote_main": true
+  },
+  "knot-editor": {
+    "published_commit": "6e721d37e6bcdec38208b3c6e779ab884ed01e52",
+    "verified_remote_main_at_fetch": "806ae90f8a136acaaad9fc398fa879550f73c40d",
+    "published_commit_reachable_from_remote_main": true
+  },
+  "eidetic": {
+    "published_commit": "b97efd7d18afb20bbf06e890defbc89b3287f1ef",
+    "verified_remote_main_at_fetch": "b97efd7d18afb20bbf06e890defbc89b3287f1ef",
+    "published_commit_reachable_from_remote_main": true
+  }
+}

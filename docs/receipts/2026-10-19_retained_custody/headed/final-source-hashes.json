@@ -1,0 +1,22 @@
+{
+  "Cargo.lock": "8210ac38946356047ef118716345391e2e79efcec45374cee4087b18a633334c",
+  "Cargo.toml": "1fa6927ae41c1da0ef3ebfdf178c6e208e673fb1e41eb8ab41b658af6023df4f",
+  "src/action.rs": "7a569b251c35202de3274e9f996bcff2ebe25bbba539a127fb71076ea59be3d2",
+  "src/app/fixtures.rs": "8cc4d08303f61bf293a12a45275465e2a7bf790ead945edcba551208d6a3bc7c",
+  "src/app/mod.rs": "7c1dfc49bbe828936554cc9c7f0e5e4fbbec5d29eff247f4f043b56925592820",
+  "src/app/palette.rs": "6d3161a20202e53f3c05883ebc130c4f6ccd0e25a8c6a074c4a53cb5ae55e60d",
+  "src/identity.rs": "ce39583fa28061133d69a01ca1312a7cf94d1f77f256bd70399e20eedee2e852",
+  "src/knot_authoring.rs": "7770da1891968a2f21d341e8eabca323a271bc3de124d4b9c00e0454cd6b5977",
+  "src/lib.rs": "5760664f57d38cd8fcbb055077e0d5439a9133c3d2edd466b34af75b1fdb3d69",
+  "src/observe.rs": "dd577b795ff18f3502c379600f7d85de6fe6616ca1ef8ee3ba0e00f69ea6d35e",
+  "src/producer_retention.rs": "e95a6812e023353b515bba3101a3756b691a4863bee21a5b2652bd6b81660f58",
+  "src/redshank_host.rs": "60aaff3481843ac7beac216a006032104630159d685cb212cae134cf9094fa79",
+  "src/retained_clip.rs": "2e61689bb1a94d9f22348c4fd49a86e8ea3d2e3b8b95088998d537c8b142f049",
+  "src/retained_clip/custody_tests.rs": "d1ecfa6ca5b62008da318cdbfb80edbfecd7f415ab3cca6fbaaee15709e1d802",
+  "src/retained_clip/tests.rs": "0ddbac59f2f45732f87a0558e2573cb923e03a49b608e1eef4368b4d1f79f40a",
+  "src/ring.rs": "14d8fbd8b79e8111383f825f250819bfaba281996f24ab442e678a61877dafa4",
+  "src/scenario.rs": "fe5e4f2167030d3fe05d7ccb968c50a9051c995c5e05a0d949edaed5892186ee",
+  "src/shell/drive.rs": "7f36a89d61cae3fec8f647f4b081467ab7cae5a26ba2494a2eacc75a681d01f0",
+  "src/shell/effects.rs": "8123aaf791b6df5c7e629ced7449564bfb9ea3fba128c0778304be1d42735586",
+  "src/shell/retained_clips.rs": "57d46c7d838d75866922530dcd394e79d145b300f0dc0f4ebb41c3d406b763dd"
+}

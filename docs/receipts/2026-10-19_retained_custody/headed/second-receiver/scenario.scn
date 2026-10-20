@@ -1,0 +1,21 @@
+settle 10
+key escape
+assert snap network-offline == true
+assert snap peer-services == 0
+import-clip /Users/markik/Code/output/eidetic-headed-20261019/runtime/selected-knot.mereclip
+settle 20
+act Open node in Workbench
+settle 10
+assert snap browser-current ~ mere://clip/435e6aee27aab64d4460cd73f290f56e3d1f6f2b2db7110658fd16f219fba2ec
+capture 01_second_receiver_knot
+import-clip /Users/markik/Code/output/eidetic-headed-20261019/runtime/onward-voice.mereclip
+settle 20
+act Open node in Workbench
+settle 10
+capture 02_second_receiver_voice
+click-at 850 192
+settle 40
+assert snap retained-voice ~ Ended
+assert snap offline-acquisition-attempts == 0
+capture 03_second_receiver_played
+act Save session

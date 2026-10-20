@@ -1,0 +1,8 @@
+RESULT ok
+captured 01_second_receiver_knot
+captured 02_second_receiver_voice
+captured 03_second_receiver_played
+presentation frames=135 captures=3 blank=0
+capture /Users/markik/Code/output/eidetic-headed-20261019/second-receiver/01_second_receiver_knot.png digest=eac18c0c3d70c291 blank=false
+capture /Users/markik/Code/output/eidetic-headed-20261019/second-receiver/02_second_receiver_voice.png digest=d3f7fdedc34e494a blank=false
+capture /Users/markik/Code/output/eidetic-headed-20261019/second-receiver/03_second_receiver_played.png digest=25098e8351033b05 blank=false
