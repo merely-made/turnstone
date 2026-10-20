@@ -4857,6 +4857,7 @@ fn a_left_place_refuses_reconnect_and_rejoins_by_clearing_its_mark() {
                 session: app.session_id,
                 generation: 9,
                 binding: binding.clone(),
+                contact: None,
             },
         ]
     );
@@ -4890,6 +4891,7 @@ fn reconnect_place_requires_binding_and_ignores_departed_generation() {
             session: app.session_id,
             generation: 9,
             binding: binding.clone(),
+            contact: None,
         }]
     );
     let stale = Update::PlaceOpened {
@@ -4918,6 +4920,7 @@ fn reconnect_place_requires_binding_and_ignores_departed_generation() {
             session: app.session_id,
             generation: 10,
             binding,
+            contact: None,
         }]
     );
     assert!(
@@ -6140,4 +6143,63 @@ fn dr_c_turnstone_identity_stays_pending() {
         AppEvent::DenizenRefused(reason) if reason == crate::denizen::PENDING_IDENTITY)));
     assert!(!crate::resident_admission::path(&app.session_dir()).exists(), "no authority record may be written while pending");
     assert_eq!(std::fs::read(pack).unwrap(), b"mere.open('mere://receipt/public')");
+}
+
+#[test]
+fn place_contact_refresh_is_local_scoped_and_rechecks_the_request_session() {
+    let mut app = App::test_stub();
+    app.update(Action::BeginRefreshPlaceContact);
+    assert!(!app.omnibar.open);
+    let binding = crate::place::worker::tests::binding(0x83);
+    app.place = crate::place::PlaceState::Offline {
+        binding: binding.clone(),
+        generation: 4,
+        snapshot: Default::default(),
+    };
+    app.next_place_generation = 4;
+    app.update(Action::BeginRefreshPlaceContact);
+    assert_eq!(
+        app.omnibar.mode,
+        crate::ui::OmnibarMode::Place(crate::ui::PlacePrompt::RefreshContact)
+    );
+    app.omnibar.text = "current-card.json".into();
+    let effects = app.update(Action::OmnibarCommit);
+    assert!(matches!(&effects[..], [Effect::ReadPlaceArtifact {
+        path, kind: crate::action::PlaceArtifactKind::Contact { session, generation: 4 },
+    }, Effect::Redraw] if path == "current-card.json" && *session == app.session_id));
+    let card = crate::place::PlaceCardV1 {
+        version: crate::place::PLACE_CARD_VERSION,
+        binding: binding.clone(),
+        founder_root: "01".repeat(32),
+        rendezvous: vec![crate::place::invite::RendezvousV1 {
+            carrier: crate::place::invite::P2PANDA_ENDPOINT_TICKET.into(),
+            hint: "new-endpoint".into(),
+        }],
+    };
+    let before = app.place.clone();
+    assert!(
+        app.update(Action::ReconnectPlaceWithCard {
+            session: app.session_id,
+            generation: 3,
+            card: Box::new(card.clone()),
+        })
+        .is_empty()
+    );
+    assert_eq!(app.place, before);
+    let mut foreign = card.clone();
+    foreign.binding.root = crate::place::SharedContainerId([9; 32]);
+    app.update(Action::ReconnectPlaceWithCard {
+        session: app.session_id,
+        generation: 4,
+        card: Box::new(foreign),
+    });
+    assert_eq!(app.place, before);
+    let effects = app.update(Action::ReconnectPlaceWithCard {
+        session: app.session_id,
+        generation: 4,
+        card: Box::new(card.clone()),
+    });
+    assert!(matches!(&effects[..], [Effect::ReconnectPlace {
+        session, generation: 5, binding: actual, contact: Some(actual_card),
+    }] if *session == app.session_id && actual == &binding && **actual_card == card));
 }

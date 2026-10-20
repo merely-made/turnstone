@@ -979,22 +979,27 @@ activation and physical power-loss recovery remain separate.
 
 ### Named-recipient sharing boundary, 2026-10-19
 
-**Status: implementation blocked at the source-owner handoff; sharing is not
-qualified.** Mark chose one named recipient, one chosen document, and
+**Status: named-recipient document-and-attachment publishing remains blocked
+at the source-owner handoff and is not qualified.** Mark chose one named recipient, one chosen document, and
 individually chosen saved-source attachments. This is the private publishing
 route, separate from authoring a place contribution. L7's default-off attachment
 rule still applies. The existing research-note receipt remains a local
 authoring/citation receipt.
 
-**Shared-place acceptance is a separate open follow-up for this workflow.**
-The recent local research and note receipts have not exercised creating,
-inviting/joining, and sharing through a place on the current stack. The
-[place-port plan](2026-07-28_turnstone_place_port_plan.md) records historical
-T5b/T5c Windows loopback receipts from September 14–15, including shared-page
-access and a founder-held document visit/edit. Those bounded historical
-results are not current-stack research-workflow acceptance. Keep fresh
-shared-place qualification distinct from the named-recipient publication
-handoff below; neither route's result closes the other's gate.
+**The current-stack shared-place address/title and chat baseline is now
+qualified separately.** The [macOS receipt](../docs/receipts/place_sharing_20261019/README.md)
+exercises create, invite, writer/reader join, one deliberate address share,
+reader write refusal and absent-authoring catch-up. After all apps/residents
+stop and the origin is gone, fresh resident/native processes show the retained
+fold before opening lanes, then converge on new messages using an explicitly
+refreshed current contact card. A foreign-place card is refused without
+changing the retained scope. This does not transfer captured source bodies,
+research-note documents or individually chosen saved-source attachments, and
+does not requalify current document projection. Automatic multicast discovery
+and WAN reachability also remain separate. The
+[place-port plan](2026-07-28_turnstone_place_port_plan.md) preserves historical
+T5b/T5c Windows receipts at their own scope. Place and named-recipient
+publication results do not close each other's remaining gates.
 
 Fetched Turnstone `9c8420d` and Knot `2a4a204` are the inspected product heads.
 Knot's wording-only continuation `2a7231a` is the locked intake for the

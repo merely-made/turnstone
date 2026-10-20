@@ -426,6 +426,7 @@ impl App {
         let rows: &[(&str, Action)] = if self.place.binding().is_some() {
             &[
                 ("Export place card", Action::BeginExportPlaceCard),
+                ("Refresh place contact", Action::BeginRefreshPlaceContact),
                 ("Invite to place", Action::BeginInviteToPlace),
                 (
                     "Invite to place as reader",

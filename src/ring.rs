@@ -299,6 +299,9 @@ pub fn ring_of(action: &Action) -> Ring {
         | FoundPlace { .. }
         | BeginExportPlaceCard
         | ExportPlaceCard { .. }
+        | BeginRefreshPlaceContact
+        | RefreshPlaceContact { .. }
+        | ReconnectPlaceWithCard { .. }
         | BeginOfferPlacePrekey
         | OfferPlacePrekey { .. }
         | OfferPlacePrekeyForCard { .. }

@@ -842,7 +842,7 @@ impl PlaceState {
             },
         };
         if self.binding().is_some() {
-            rows.push("Reconnect: saved contacts must still be valid".into());
+            rows.push("Reconnect: use Refresh place contact if saved hints are stale".into());
             rows.push("Leave: detach this session and retain its history".into());
         }
         if matches!(self, Self::Left { .. }) {

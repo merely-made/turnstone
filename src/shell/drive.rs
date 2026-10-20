@@ -21,49 +21,85 @@ use crate::panes::PaneContent;
 
 use super::Shell;
 
-/// A cross-process scenario wait polled by the normal rendered-frame pump.
-pub(super) struct PendingFileWait {
-    path: std::path::PathBuf,
+/// A scenario wait polled once per normal rendered frame. Neither a remote
+/// status change nor an exchange file may hold up presentation/event delivery.
+pub(super) struct PendingScenarioWait {
+    condition: WaitCondition,
     remaining: u32,
 }
-impl PendingFileWait {
-    pub(super) fn new(path: std::path::PathBuf, frames: u32) -> Self {
-        Self { path, remaining: frames.max(1) }
+enum WaitCondition {
+    File(std::path::PathBuf),
+    Status(String),
+}
+impl PendingScenarioWait {
+    pub(super) fn file(path: std::path::PathBuf, frames: u32) -> Self {
+        Self {
+            condition: WaitCondition::File(path),
+            remaining: frames.max(1),
+        }
     }
-    pub(super) fn poll(&mut self) -> Result<bool, String> {
-        if std::fs::metadata(&self.path).is_ok_and(|meta| meta.len() > 0) {
+    pub(super) fn status(substring: String, frames: u32) -> Self {
+        Self {
+            condition: WaitCondition::Status(substring),
+            remaining: frames.max(1),
+        }
+    }
+    pub(super) fn poll(&mut self, status: &[String]) -> Result<bool, String> {
+        let ready = match &self.condition {
+            WaitCondition::File(path) => std::fs::metadata(path).is_ok_and(|meta| meta.len() > 0),
+            WaitCondition::Status(substring) => status.iter().any(|line| line.contains(substring)),
+        };
+        if ready {
             return Ok(true);
         }
         if self.remaining == 0 {
-            return Err(format!("wait-file '{}': still missing or empty", self.path.display()));
+            return Err(match &self.condition {
+                WaitCondition::File(path) => {
+                    format!("wait-file '{}': still missing or empty", path.display())
+                },
+                WaitCondition::Status(substring) => {
+                    format!("wait-status '{substring}': place status is {status:?}")
+                },
+            });
         }
         self.remaining -= 1;
         Ok(false)
     }
 }
 #[cfg(test)]
-mod file_wait_tests {
-    use super::PendingFileWait;
+mod pending_wait_tests {
+    use super::PendingScenarioWait;
     #[test]
     fn pending_file_wait_observes_empty_then_populated_file_on_later_frames() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("ready");
-        let mut wait = PendingFileWait::new(path.clone(), 3);
-        assert!(!wait.poll().unwrap());
+        let mut wait = PendingScenarioWait::file(path.clone(), 3);
+        assert!(!wait.poll(&[]).unwrap());
         std::fs::write(&path, b"").unwrap();
-        assert!(!wait.poll().unwrap());
+        assert!(!wait.poll(&[]).unwrap());
         std::fs::write(&path, b"ready").unwrap();
-        assert!(wait.poll().unwrap());
+        assert!(wait.poll(&[]).unwrap());
     }
     #[test]
     fn pending_file_wait_refuses_an_exhausted_budget_but_accepts_a_ready_last_frame() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("ready");
-        let mut wait = PendingFileWait::new(path.clone(), 1);
-        assert!(!wait.poll().unwrap());
-        assert!(wait.poll().is_err());
+        let mut wait = PendingScenarioWait::file(path.clone(), 1);
+        assert!(!wait.poll(&[]).unwrap());
+        assert!(wait.poll(&[]).is_err());
         std::fs::write(&path, b"ready").unwrap();
-        assert!(wait.poll().unwrap());
+        assert!(wait.poll(&[]).unwrap());
+    }
+    #[test]
+    fn status_wait_returns_between_frames_and_names_the_last_status_on_failure() {
+        let mut wait = PendingScenarioWait::status("3 messages".into(), 1);
+        assert!(!wait.poll(&["2 messages".into()]).unwrap());
+        let error = wait.poll(&["still 2 messages".into()]).unwrap_err();
+        assert!(error.contains("3 messages") && error.contains("still 2 messages"));
+        assert!(
+            wait.poll(&["Retained history: 1 shared nodes, 3 messages".into()])
+                .unwrap()
+        );
     }
 }
 
@@ -136,8 +172,8 @@ impl IdleDiagnosis {
 }
 
 /// Re-check `condition` once per (simulated) frame for up to `frames`
-/// attempts, sleeping briefly between attempts. `wait-row`/`wait-status`/
-/// `wait-file` are "sticky" over the SHARED taproot scenario loop's own
+/// attempts, sleeping briefly between attempts. Legacy row/document waits
+/// are "sticky" over the SHARED taproot scenario loop's own
 /// frame pump (`Scenario::tick` advances its step index unconditionally once
 /// per call — see `taproot::scenario`), so there is no hook to hold a
 /// single step across several of ITS frames. This polls within the one call
@@ -2250,18 +2286,7 @@ impl Shell {
                 }
             },
             Step::WaitStatus(frames, substr) => {
-                let ok = self.wait_frames(*frames, |shell| {
-                    crate::observe::snapshot(&shell.app)
-                        .place_status
-                        .iter()
-                        .any(|line| line.contains(substr.as_str()))
-                });
-                if !ok {
-                    let status = crate::observe::snapshot(&self.app).place_status;
-                    return Err(format!(
-                        "wait-status '{substr}' after {frames} frames: place status is {status:?}"
-                    ));
-                }
+                self.pending_scenario_wait = Some(PendingScenarioWait::status(substr.clone(), *frames));
             },
             Step::WaitKnot(frames, substr) => {
                 fn knot_lines(app: &crate::app::App) -> Vec<String> {
@@ -2333,7 +2358,7 @@ impl Shell {
                 }
             },
             Step::WaitFile(frames, path) => {
-                self.pending_scenario_file = Some(PendingFileWait::new(path.into(), *frames));
+                self.pending_scenario_wait = Some(PendingScenarioWait::file(path.into(), *frames));
             },
             Step::RecordPlace(name) => {
                 let value = crate::observe::place_record(&self.app);

@@ -375,6 +375,7 @@ pub struct GeminiTrustPrompt {
 pub enum PlacePrompt {
     FoundPlace,
     ExportCard,
+    RefreshContact,
     OfferPrekey,
     Invite,
     /// The same question as `Invite`, answered with a reader's admission.
@@ -389,6 +390,7 @@ impl PlacePrompt {
         match self {
             Self::FoundPlace => "Enter a place name and press Enter to found it",
             Self::ExportCard => "Enter a path and press Enter to write the place card",
+            Self::RefreshContact => "Enter a current card path to refresh this place contact and reconnect",
             Self::OfferPrekey => "Enter a card path and press Enter to offer a pre-key",
             Self::Invite => "Enter a pre-key path, optionally \" for 10m\" (s|m|h|d), then Enter",
             Self::InviteReader => "Enter a pre-key path and press Enter to invite a reader",
