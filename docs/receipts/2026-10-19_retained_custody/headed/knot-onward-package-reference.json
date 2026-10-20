@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "clip": {
+    "version": 1,
+    "clip_id": "selection:1bc7e977ea14db7b4b019e66ef26f509e639cb98342f2650805c5622f0c4d51f",
+    "capture_id": "selection:1bc7e977ea14db7b4b019e66ef26f509e639cb98342f2650805c5622f0c4d51f",
+    "title": "Knot selection",
+    "source": {
+      "owner": null,
+      "entity": "file:///Users/markik/Code/output/eidetic-headed-20261019/runtime/knot-producer/notes/selected.djot",
+      "revision": null
+    },
+    "source_evidence": {
+      "kind": "passage",
+      "pack_sources": [],
+      "source_tags": [],
+      "tag_asserter": null
+    },
+    "parts": [
+      {
+        "name": "body",
+        "role": "selected-body",
+        "media_type": "text/plain;charset=utf-8",
+        "schema": null,
+        "manifest": "blake3:e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+        "dependencies": []
+      }
+    ],
+    "anchors": [
+      {
+        "source": "file:///Users/markik/Code/output/eidetic-headed-20261019/runtime/knot-producer/notes/selected.djot",
+        "representation": "94a8525d32b311918577b797842f977067a86ea26661c461a0aeffbb7a05bfdd",
+        "units": "utf8-bytes",
+        "selector": {
+          "byte_span": {
+            "end": 21,
+            "start": 16
+          },
+          "document_address": "file:///Users/markik/Code/output/eidetic-headed-20261019/runtime/knot-producer/notes/selected.djot",
+          "exact_quote": "caf\u00e9",
+          "source_hash": "94a8525d32b311918577b797842f977067a86ea26661c461a0aeffbb7a05bfdd"
+        },
+        "evidence": null
+      }
+    ],
+    "tags": []
+  },
+  "payloads": [
+    {
+      "id": "blake3:e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+      "bytes": [
+        99,
+        97,
+        102,
+        195,
+        169
+      ]
+    }
+  ]
+}

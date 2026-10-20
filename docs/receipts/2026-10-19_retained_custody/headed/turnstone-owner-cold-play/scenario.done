@@ -1,0 +1,6 @@
+RESULT ok
+captured 01_voice_cold_ready
+captured 02_voice_cold_played
+presentation frames=239 captures=2 blank=0
+capture /Users/markik/Code/output/eidetic-headed-20261019/turnstone-owner-cold-play/01_voice_cold_ready.png digest=8376a52b2cb18ed1 blank=false
+capture /Users/markik/Code/output/eidetic-headed-20261019/turnstone-owner-cold-play/02_voice_cold_played.png digest=b6c01281a31a0513 blank=false

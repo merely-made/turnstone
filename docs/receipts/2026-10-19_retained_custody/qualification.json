@@ -1,0 +1,143 @@
+{
+  "date": "2026-10-19",
+  "passed": true,
+  "scope": "Focused native compilation, unit/integration tests, and isolated synthetic wallet-backed IPC and process/store reopen",
+  "checks": {
+    "endpoint": {
+      "passed": true,
+      "test_results": [
+        {
+          "passed": 43,
+          "failed": 0,
+          "ignored": 0
+        }
+      ],
+      "original_log": "endpoint-final.log"
+    },
+    "wallet_sealer": {
+      "passed": true,
+      "test_results": [
+        {
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0
+        }
+      ],
+      "original_log": "wallet-sealer.log"
+    },
+    "custody_ipc_and_existing_route": {
+      "passed": true,
+      "test_results": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 1
+        },
+        {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0
+        }
+      ],
+      "original_log": "custody-reviewed.log"
+    },
+    "turnstone_retained": {
+      "passed": true,
+      "test_results": [
+        {
+          "passed": 54,
+          "failed": 0,
+          "ignored": 1
+        }
+      ],
+      "original_log": "client-reviewed.log"
+    },
+    "captured_producer_actions": {
+      "passed": true,
+      "test_results": [
+        {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0
+        }
+      ],
+      "original_log": "producer-actions.log"
+    },
+    "redshank_owner_export": {
+      "passed": true,
+      "test_results": [
+        {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 1
+        }
+      ],
+      "original_log": "producer-reviewed.log"
+    },
+    "redshank_playback_and_surfaces": {
+      "passed": true,
+      "test_results": [
+        {
+          "passed": 32,
+          "failed": 0,
+          "ignored": 7
+        },
+        {
+          "passed": 103,
+          "failed": 0,
+          "ignored": 0
+        }
+      ],
+      "original_log": "playback-surfaces.log"
+    }
+  },
+  "process": {
+    "passed": true,
+    "custodian_pids": [
+      87911,
+      87932
+    ],
+    "receiver_pids": [
+      87914,
+      87936
+    ],
+    "producer_package_sha256": "5a827b54732c76cbe8e630b423f43fd68670e7c44f56f5998f4d7289d59265cc",
+    "source_voice_removed_before_import": true,
+    "packages_removed_before_reopen": true,
+    "scope": "Synthetic wallet-backed native IPC and process/store reopen; no headed or physical audio claim",
+    "binaries_sha256": {
+      "custodian": "6f5a514947b3a84d8bd9eacfd00d3a066133ac19e78ef45232c7f358605b95ab",
+      "receiver": "cdc3b7a96f397b2dfc0bb682b7b9419a9925edca043a09bfac55063770b8b46d",
+      "producer": "10932851114cc1b4ba999a4af2fd1558db721c50f76737dd6c304b361da9d734"
+    }
+  },
+  "toolchain": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+  "platform": "Darwin x86_64",
+  "local_supplier_overrides": [
+    "graphshell-endpoint",
+    "redshank-playback"
+  ],
+  "supplier_override_config": "/Users/markik/Code/output/eidetic-retention-20261019/client-config.toml",
+  "product_lock_keeps_remote_sources": true,
+  "configuration": "Djinn profile content.retained_persona explicitly selects an existing wallet namespace; unavailable configuration or epochs refuse",
+  "limits": {
+    "custody_payload_bytes": 524288,
+    "native_message_bytes": 1048576
+  },
+  "notes": [
+    "Existing custody-route macOS temporary socket path exceeds its native limit; qualification uses TMPDIR=/tmp.",
+    "No existing package identities were removed or repinned in the Redshank owner lock; the core retention dependency closure was added."
+  ],
+  "not_qualified": [
+    "renewed headed product interactions",
+    "installed personal custody and migration",
+    "physical audio",
+    "other platforms",
+    "browser or typed-content receiving",
+    "signed tags and generated suggestions",
+    "reviewed owner edits on reconnect",
+    "peer delivery",
+    "retention/deletion policy and rights revocation",
+    "published supplier consumption"
+  ]
+}

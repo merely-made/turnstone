@@ -1,0 +1,12 @@
+{
+  "MERE_ROOT": "/Users/markik/Code/output/eidetic-headed-20261019/runtime/shared",
+  "XDG_CONFIG_HOME": "/Users/markik/Code/output/eidetic-headed-20261019/runtime/xdg-config",
+  "XDG_CACHE_HOME": "/Users/markik/Code/output/eidetic-headed-20261019/runtime/xdg-cache",
+  "XDG_DATA_HOME": "/Users/markik/Code/output/eidetic-headed-20261019/runtime/xdg-data",
+  "TMPDIR": "/Users/markik/Code/output/eidetic-headed-20261019/runtime/tmp/",
+  "TURNSTONE_ROOT": "/Users/markik/Code/output/eidetic-headed-20261019/runtime/knot-producer",
+  "TURNSTONE_OFFLINE": "1",
+  "GRAPHSHELL_APP_ENDPOINT": "/Users/markik/Code/output/eidetic-headed-20261019/runtime/custody.sock",
+  "TURNSTONE_WIDTH": "1024",
+  "TURNSTONE_HEIGHT": "600"
+}

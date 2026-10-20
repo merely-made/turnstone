@@ -1002,6 +1002,7 @@ impl Shell {
                         });
                     }
                 }
+                Effect::RetainProducerSelection { choice, selection } => self.retain_producer_selection(choice, selection),
                 Effect::ChooseClipPackageFile => {
                     if let Some(path) = rfd::FileDialog::new().add_filter("Selected clip package", &["json", "mereclip"]).pick_file() {
                         self.act(Action::ImportClipPackage(path));
@@ -1009,7 +1010,7 @@ impl Shell {
                 }
                 Effect::ImportClipPackage(path) => {
                     let admitted = self.app.clip_destination().and_then(|root| {
-                        crate::retained_clip::import(&root, &path, crate::retained_clip::limits()?, crate::denizen::now_ms())
+                        crate::retained_clip::import_sealed(&root, &path, crate::retained_clip::limits()?, crate::denizen::now_ms(), self.app.clip_sealer()?)
                     });
                     match admitted {
                         Ok(id) => {
@@ -1023,9 +1024,9 @@ impl Shell {
                     use crate::retained_clip::ClipRequest;
                     let result = self.app.clip_destination().and_then(|root| match control {
                         ClipRequest::Play(id) => {
-                            let clip = crate::retained_clip::read(&root, id, crate::retained_clip::limits()?)?;
-                            let path = clip.playback_path(&root)?;
-                            self.app.redshank.play_retained_voice(&id.0.to_hex(), &path)
+                            let clip = crate::retained_clip::read_sealed(&root, id, crate::retained_clip::limits()?, self.app.clip_sealer()?)?;
+                            let crate::retained_clip::ClipBody::Voice(bytes) = clip.body else { return Err("This clip has no voice body".into()); };
+                            self.app.redshank.play_retained_voice_bytes(&id.0.to_hex(), bytes)
                         },
                         ClipRequest::Stop(id) => self.app.redshank.stop_retained_voice(&id.0.to_hex()),
                         ClipRequest::Read(_) | ClipRequest::Export(_) => Err("Unsupported retained clip control".into()),
@@ -1036,7 +1037,7 @@ impl Shell {
                 }
                 Effect::ChooseClipExportFile { clip } => {
                     let available = self.app.clip_destination().and_then(|root| {
-                        crate::retained_clip::read(&root, clip, crate::retained_clip::limits()?).map(|_| ())
+                        crate::retained_clip::read_sealed(&root, clip, crate::retained_clip::limits()?, self.app.clip_sealer()?).map(|_| ())
                     });
                     if let Err(error) = available {
                         self.app.note_retained_clip_refusal(error);
@@ -1053,7 +1054,7 @@ impl Shell {
                 }
                 Effect::ExportClipPackage { clip, path, replace } => {
                     let result = self.app.clip_destination().and_then(|root| {
-                        crate::retained_clip::export(&root, clip, &path, crate::retained_clip::limits()?, replace)
+                        crate::retained_clip::export_sealed(&root, clip, &path, crate::retained_clip::limits()?, replace, self.app.clip_sealer()?)
                     });
                     match result {
                         Ok(()) => self.app.note_clip_package_exported(clip, &path),
@@ -1460,10 +1461,11 @@ impl Shell {
                         match crate::retained_clip::request(&url) {
                             Ok(Some(crate::retained_clip::ClipRequest::Read(id))) => {
                                 let resolved = self.app.clip_destination().and_then(|root| {
-                                    crate::retained_clip::read(
+                                    crate::retained_clip::read_sealed(
                                         &root,
                                         id,
                                         crate::retained_clip::limits()?,
+                                        self.app.clip_sealer()?,
                                     )
                                 });
                                 match resolved {
@@ -2162,6 +2164,7 @@ impl Shell {
                     .map(|(root, _)| crate::place::hex32(&root)),
                 status: "refused".into(),
                 derived_digest: None,
+                retained_selection: None,
             });
     }
 
@@ -2225,6 +2228,7 @@ impl Shell {
                     holder: knot.holder(),
                     status: knot.hold_status().to_string(),
                     derived_digest: Some(knot.derived_digest()),
+                    retained_selection: knot.retained_selection(),
                 })
             })
             .collect();

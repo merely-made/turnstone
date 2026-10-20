@@ -100,6 +100,37 @@ impl IdentityProvider for RootIdentity {
     }
 }
 
+/// The custodian performs each operation. This adapter holds no epoch key.
+impl eidetic::PayloadSealer for RootIdentity {
+    fn seal(
+        &self,
+        hash: &eidetic::Hash,
+        bytes: &[u8],
+    ) -> eidetic::Result<(Vec<u8>, eidetic::SealedBlobRef)> {
+        match self {
+            Self::Custody(custody) => eidetic::PayloadSealer::seal(custody, hash, bytes),
+            #[cfg(test)]
+            Self::Local(_) => Err(eidetic::Error::new(
+                "the local identity fixture has no wallet epoch; inject a sealer",
+            )),
+        }
+    }
+    fn unseal(
+        &self,
+        hash: &eidetic::Hash,
+        marker: &eidetic::SealedBlobRef,
+        bytes: &[u8],
+    ) -> eidetic::Result<Vec<u8>> {
+        match self {
+            Self::Custody(custody) => eidetic::PayloadSealer::unseal(custody, hash, marker, bytes),
+            #[cfg(test)]
+            Self::Local(_) => Err(eidetic::Error::new(
+                "the local identity fixture has no wallet epoch; inject a sealer",
+            )),
+        }
+    }
+}
+
 /// Reach the profile's root identity through djinn, or `None` while it is
 /// pending (djinn absent or Locked, D12). Never mints, opens or falls back
 /// to a key of Turnstone's own.
