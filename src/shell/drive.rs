@@ -797,6 +797,7 @@ impl taproot::Automatable for Shell {
             .with_field("network-offline", self.network_offline.to_string())
             .with_field("peer-services", (usize::from(self.publish_service.is_some()) + usize::from(self.shared_knot_service.is_some())).to_string())
             .with_field("offline-acquisition-attempts", self.offline_attempts.load(std::sync::atomic::Ordering::Relaxed).to_string())
+            .with_field("producer-retention", self.app.producer_retention_action().map(|(label, _)| label).unwrap_or_else(|| "Unavailable".into()))
             .with_field("retained-voice", self.app.redshank.retained_voice_preview()
                 .map(|p| format!("{} {:?} {} ms", p.id, p.state, p.position_ms)).unwrap_or_else(|| "Ready".into()))
             .with_field("inline-roster-tabs", {

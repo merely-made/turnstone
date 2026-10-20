@@ -1,0 +1,6 @@
+RESULT ok
+captured 01_source_absent_cold_text
+captured 02_source_absent_onward_export
+presentation frames=64 captures=2 blank=0
+capture /Users/markik/Code/output/redshank-text-retention-20261020/producer-cold/01_source_absent_cold_text.png digest=acc57ac12675dce1 blank=false
+capture /Users/markik/Code/output/redshank-text-retention-20261020/producer-cold/02_source_absent_onward_export.png digest=764fbda326f8a766 blank=false

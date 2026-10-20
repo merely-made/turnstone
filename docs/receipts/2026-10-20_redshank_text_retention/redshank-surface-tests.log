@@ -1,0 +1,9 @@
+
+running 5 tests
+test redshank_episode_surface::tests::a_wrong_version_or_a_missing_enclosure_is_refused_before_admission ... ok
+test redshank_episode_surface::tests::the_registry_admits_the_published_redshank_dock_from_a_versioned_source ... ok
+test redshank_episode_surface::tests::a_host_projection_reaches_the_tile_through_the_viewport_pump ... ok
+test redshank_episode_surface::tests::the_admitted_surface_renders_the_episode_title_and_a_play_control ... ok
+test redshank_episode_surface::tests::the_dock_emits_the_same_commands_through_turnstones_registry ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1103 filtered out; finished in 0.34s

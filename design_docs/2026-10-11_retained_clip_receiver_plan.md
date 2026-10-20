@@ -7,7 +7,9 @@ Git pins, focused checks and bounded headed macOS acceptance with a synthetic
 wallet-backed custodian. The Turnstone implementation, pins and renewed receipt
 are recorded together in this repository. The embedded Knot primary-pointer
 selection, immediate retention command and source-absent cold export continuation
-are also qualified in the October 20 receipt. The independent Eidetic repository
+are also qualified in the October 20 Knot receipt. Embedded Redshank text-note
+retention, source-absent cold reopen and onward export are qualified in the
+separate October 20 text-note receipt below. The independent Eidetic repository
 owns the shared plan. Earlier committed-source import,
 package-unavailable restart, local WAV playback and missing-content refusal
 passed in the real Windows host at its recorded source cut. This is Turnstone's
@@ -277,3 +279,37 @@ capability.
   OS save-dialog automation, personal vault/migration, touch/bidi/autoscroll,
   renewed owner recording/export and the broader format/native program retain
   their separate gates. The October 19 receipts remain frozen.
+
+- **2026-10-20, embedded Redshank text-note retention qualified.**
+  Four shipping macOS phases and eight reviewed captures cover a private-note
+  negative control, shareable selected-note retention, sealed local reading,
+  export, source-absent cold reopen, and onward import into an independent
+  receiver followed by another cold re-export. Before the first cold launch,
+  the original source session and its Redshank model, source recording and
+  initial transfer are removed; before the second cold launch the onward
+  transfer is also removed. Custodian and app restart at both boundaries.
+  The final package object equals the selected original, including exact
+  Unicode text, clip/capture identity and native 1250–4500 ms target with
+  pressed offset 1400 ms and representation digest/length. Both control notes
+  and recording bytes are absent from the single text payload. The held view
+  explicitly reports the source recording unavailable. Acquisition attempts
+  remain zero; neither fixture retained store exposes the complete clear note
+  body/control markers, and neither profile has a WAV cache or owner-model
+  generation after source removal.
+
+  The host now handles the previously ignored `SetNotePrivacy`, scoped to the
+  addressed episode. Its regression covers persistence, unchanged body/target
+  and private export revocation. The native build and 36 focused cases pass
+  (host 12, retained clip 15, producer selection 2, app 2, surface 5); two process
+  helpers remain ignored in ordinary checks and the marked owner-model fixture
+  helper is explicitly executed once. The
+  [receipt](../docs/receipts/2026-10-20_redshank_text_retention/README.md) binds
+  the source hashes and one executable. Supplier pins are unchanged.
+
+  Notes are seeded through the real typed embedded owner model/store, with
+  shareability applied through the host command. This is headed selected-note
+  retention, not headed authoring or the full owner's privacy menu: that menu
+  is absent from the compact embed. Export uses the normal action with an
+  explicit destination. OS save-dialog automation, personal vault/migration,
+  renewed microphone/audio qualification, broader formats and the whole P6
+  program remain separate gates. Earlier qualification packets remain frozen.

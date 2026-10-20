@@ -651,6 +651,23 @@ impl RedshankHost {
                     },
                 }
             },
+            CompactCommand::SetNotePrivacy { id, privacy } => {
+                let Some(note) = self.model.annotations.get(&id) else {
+                    return HostOutcome::notice("That note is no longer available");
+                };
+                if note.target.item_id != *item {
+                    return HostOutcome::notice("That note belongs to another episode");
+                }
+                if note.privacy == privacy {
+                    return HostOutcome::default();
+                }
+                match self.model.set_annotation_privacy(&id, privacy) {
+                    Ok(()) => HostOutcome::changed(),
+                    Err(error) => {
+                        HostOutcome::notice(format!("Could not change note privacy: {error:?}"))
+                    },
+                }
+            },
             CompactCommand::OpenNote(id) => self.open_note(id, false, false, false),
             CompactCommand::PlaySpan(id) => self.open_note(id, false, false, true),
             CompactCommand::OpenNoteApproximately(id) => self.open_note(id, true, false, false),
@@ -1108,6 +1125,182 @@ mod tests {
             ..Default::default()
         };
         (host, snapshot, id)
+    }
+
+    #[test]
+    fn embedded_note_privacy_is_scoped_persisted_and_rechecked_for_export() {
+        use redshank_model::NotePrivacy;
+        let root = tempfile::tempdir().unwrap();
+        let (mut host, _, id) = note_host();
+        let item = ItemId("episode".into());
+        host.store = Some(JsonDirectoryStore::new(RedshankHost::model_root(
+            root.path(),
+        )));
+        let original = host.annotation(&id).unwrap().clone();
+        assert!(host.model.export_selected_note(&id).is_err());
+        let rejected = host.command(
+            &ItemId("foreign".into()),
+            CompactCommand::SetNotePrivacy {
+                id: id.clone(),
+                privacy: NotePrivacy::Shareable,
+            },
+            1,
+        );
+        assert!(rejected.notice.is_some() && !rejected.model_changed);
+        assert_eq!(host.annotation(&id), Some(&original));
+        let changed = host.command(
+            &item,
+            CompactCommand::SetNotePrivacy {
+                id: id.clone(),
+                privacy: NotePrivacy::Shareable,
+            },
+            2,
+        );
+        assert!(changed.model_changed && changed.notice.is_none());
+        let shareable = host.annotation(&id).unwrap();
+        assert_eq!(shareable.target, original.target);
+        assert_eq!(shareable.body, original.body);
+        assert!(host.model.export_selected_note(&id).is_ok());
+        host.save();
+        let mut reopened = RedshankHost::open_with(root.path(), Output::Silent, None);
+        assert_eq!(
+            reopened.annotation(&id).unwrap().privacy,
+            NotePrivacy::Shareable
+        );
+        assert!(
+            reopened
+                .command(
+                    &item,
+                    CompactCommand::SetNotePrivacy {
+                        id: id.clone(),
+                        privacy: NotePrivacy::Private
+                    },
+                    3
+                )
+                .model_changed
+        );
+        assert!(reopened.model.export_selected_note(&id).is_err());
+        assert!(
+            reopened
+                .command(
+                    &item,
+                    CompactCommand::SetNotePrivacy {
+                        id: AnnotationId("missing".into()),
+                        privacy: NotePrivacy::Shareable
+                    },
+                    4
+                )
+                .notice
+                .is_some()
+        );
+    }
+
+    #[test]
+    #[ignore = "explicit marked embedded Redshank text-note process fixture"]
+    fn embedded_text_retention_process_fixture() {
+        use redshank_model::{NotePrivacy, TimedTarget};
+        let root =
+            PathBuf::from(std::env::var_os("REDSHANK_TEXT_FIXTURE_ROOT").expect("fixture root"));
+        assert_eq!(
+            std::fs::read_to_string(root.join("fixture-marker")).unwrap(),
+            "redshank-text-retention-20261020\n"
+        );
+        let profile = root.join("producer");
+        let session = std::fs::read_to_string(profile.join("current_session")).unwrap();
+        let session: uuid::Uuid = session.trim().parse().unwrap();
+        let session_dir = profile.join("sessions").join(session.to_string());
+        let mut host = RedshankHost::open_with(&session_dir, Output::Silent, None);
+        assert!(host.model.annotations.is_empty() && host.model.library.is_empty());
+        let source = root.join("origin-recording.wav");
+        let bytes = std::fs::read(&source).unwrap();
+        let item = ItemId("embedded-recording".into());
+        host.model
+            .add_item(LibraryItem::DirectAudio {
+                id: item.clone(),
+                title: "Embedded text-note fixture".into(),
+                source: MediaSource::Local {
+                    path: source.to_string_lossy().into_owned(),
+                },
+            })
+            .unwrap();
+        for (id, text, shareable, offset) in [
+            (
+                "embedded-text-selected",
+                "Saved from the embedded listener: café → harbor.\nKeep this timed note.",
+                true,
+                1250,
+            ),
+            (
+                "embedded-text-private",
+                "PRIVATE CONTROL: do not retain this note",
+                false,
+                7000,
+            ),
+            (
+                "embedded-text-other",
+                "UNSELECTED CONTROL: another shareable note",
+                true,
+                9000,
+            ),
+        ] {
+            let id = AnnotationId(id.into());
+            host.model
+                .add_annotation(Annotation {
+                    id: id.clone(),
+                    target: TimedTarget {
+                        item_id: item.clone(),
+                        offset_ms: offset,
+                        end_offset_ms: Some(offset + 3250),
+                        pressed_offset_ms: Some(offset + 150),
+                        fingerprint: None,
+                        representation: RepresentationReceipt {
+                            byte_length: Some(bytes.len() as u64),
+                            complete_digest: Some(format!(
+                                "blake3:{}",
+                                blake3::hash(&bytes).to_hex()
+                            )),
+                            ..Default::default()
+                        },
+                    },
+                    body: NoteBody::Text {
+                        plain_text: text.into(),
+                    },
+                    created_at_ms: 7,
+                    privacy: NotePrivacy::Private,
+                })
+                .unwrap();
+            if shareable {
+                assert!(
+                    host.command(
+                        &item,
+                        CompactCommand::SetNotePrivacy {
+                            id,
+                            privacy: NotePrivacy::Shareable
+                        },
+                        8
+                    )
+                    .model_changed
+                );
+            }
+        }
+        host.save();
+        std::fs::write(
+            root.join("expected-note-export.json"),
+            serde_json::to_vec_pretty(
+                &host
+                    .model
+                    .export_selected_note(&AnnotationId("embedded-text-selected".into()))
+                    .unwrap(),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        std::fs::write(root.join("source-session"), session.to_string()).unwrap();
+        std::fs::write(
+            root.join("seed-model.json"),
+            serde_json::to_vec_pretty(&host.model).unwrap(),
+        )
+        .unwrap();
     }
 
     fn request(

@@ -1,0 +1,159 @@
+{
+  "date": "2026-10-20",
+  "passed": true,
+  "scope": "Embedded Redshank selected text-note retention in shipping macOS Turnstone, source-absent cold reopen, onward export and independent receive plus cold re-export",
+  "source_base": "648119dc4bef2b6275249da77f1aa4c4c3c30e98",
+  "sources": {
+    "base_commit": "648119dc4bef2b6275249da77f1aa4c4c3c30e98",
+    "files": {
+      "Cargo.toml": "1fa6927ae41c1da0ef3ebfdf178c6e208e673fb1e41eb8ab41b658af6023df4f",
+      "Cargo.lock": "8210ac38946356047ef118716345391e2e79efcec45374cee4087b18a633334c",
+      "src/redshank_host.rs": "94372b5fafa2b384ff7fd11223dc43a0a7cb38e11871caa9fea30d5a0d4521d9",
+      "src/shell/drive.rs": "ad40d671922cafdaff2f8e05643c2f8ccaaf7771a95f46e2f592da408328ff14",
+      "src/shell/retained_clips.rs": "57d46c7d838d75866922530dcd394e79d145b300f0dc0f4ebb41c3d406b763dd",
+      "src/producer_retention.rs": "e95a6812e023353b515bba3101a3756b691a4863bee21a5b2652bd6b81660f58",
+      "src/retained_clip.rs": "2e61689bb1a94d9f22348c4fd49a86e8ea3d2e3b8b95088998d537c8b142f049",
+      "src/app/redshank_arms.rs": "3806417f7dbc98e372745702a622a88d8f5b458a9add89a2e23d40562922b6ee"
+    },
+    "toolchain": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "target": "x86_64-apple-darwin",
+    "local_supplier_overrides": false,
+    "cargo_resolution": "--locked --offline"
+  },
+  "phases": {
+    "producer": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 52.954,
+      "binary_sha256": "8e57061d8bc231c8c686e4b2aef66db5a386d56e2cb6928b92fd431e30536852",
+      "scenario_sha256": "ebf6286a40c168836acf83c592353145c4ecf59e57f68e620eb9e7d813459484",
+      "receipt": "scenario.done",
+      "captures": 4
+    },
+    "producer-cold": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 43.525,
+      "binary_sha256": "8e57061d8bc231c8c686e4b2aef66db5a386d56e2cb6928b92fd431e30536852",
+      "scenario_sha256": "3cb48c3bd816e91c0d1d80d6a7ac09febfc0cf77ba38d8d74e5e2fde7a9db694",
+      "receipt": "scenario.done",
+      "captures": 2
+    },
+    "receiver": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 37.08,
+      "binary_sha256": "8e57061d8bc231c8c686e4b2aef66db5a386d56e2cb6928b92fd431e30536852",
+      "scenario_sha256": "4920f6f4a8b83fc33516748eb4f92412b7c368492da86d16c0ae3827b33fb516",
+      "receipt": "scenario.done",
+      "captures": 1
+    },
+    "receiver-cold": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 40.785,
+      "binary_sha256": "8e57061d8bc231c8c686e4b2aef66db5a386d56e2cb6928b92fd431e30536852",
+      "scenario_sha256": "7b6bfe314485331739cd35b7d4d228c73a696dcdaea114a66c43a3feaf812376",
+      "receipt": "scenario.done",
+      "captures": 1
+    }
+  },
+  "checks": {
+    "redshank_host": {
+      "passed": 12,
+      "failed": 0,
+      "ignored": 1
+    },
+    "retained_clip": {
+      "passed": 15,
+      "failed": 0,
+      "ignored": 1
+    },
+    "producer_retention": {
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    "redshank_app": {
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    "redshank_surface": {
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0
+    }
+  },
+  "explicit_fixture_setup_tests": 1,
+  "reviewed_captures": 8,
+  "fixture": {
+    "owner": "Turnstone embedded RedshankHost and JsonDirectoryStore",
+    "selected_id": "embedded-text-selected",
+    "selected_initial_privacy": "private",
+    "shareability_command": "RedshankHost::command(SetNotePrivacy)",
+    "note_authoring": "Typed isolated owner-model fixture; not headed authoring",
+    "controls": [
+      "private text note",
+      "unselected shareable text note"
+    ],
+    "recording": "14 second synthetic mono 48 kHz PCM16 silence; never played"
+  },
+  "selected_text": "Saved from the embedded listener: café → harbor.\nKeep this timed note.",
+  "selected_utf8_bytes": 73,
+  "native_target": {
+    "end_offset_ms": 4500,
+    "item_id": "embedded-recording",
+    "offset_ms": 1250,
+    "pressed_offset_ms": 1400,
+    "representation": {
+      "byte_length": 1344044,
+      "complete_digest": "blake3:c4f4dd0407d49e0f5c9d82dc95bdfcbcabf6f0cdf82e69072556aa68c484008c",
+      "etag": null,
+      "final_url": null,
+      "last_modified": null,
+      "media_type": null,
+      "requested_url": null,
+      "retrieved_at_ms": null
+    }
+  },
+  "content_reference": "mere://clip/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0",
+  "private_retention_offer_unavailable": true,
+  "only_selected_text_payload_exported": true,
+  "cold_export_package_object_equals_owner_selected_original": true,
+  "onward_package_object_equal_before_receiver": true,
+  "original_source_session_and_recording_removed": true,
+  "all_transfer_inputs_removed_before_independent_cold_reopen": true,
+  "raw_store_privacy_scan": {
+    "producer": {
+      "store_files": 5,
+      "clear_selected_or_control_note_hits": [],
+      "wav_cache_files": [],
+      "owner_model_generation_files": []
+    },
+    "receiver": {
+      "store_files": 5,
+      "clear_selected_or_control_note_hits": [],
+      "wav_cache_files": [],
+      "owner_model_generation_files": []
+    }
+  },
+  "custodian_restarts": 2,
+  "offline_acquisition_attempts": 0,
+  "limits": [
+    "Synthetic wallet-backed custody IPC fixture; no personal vault migration",
+    "Typed owner-model fixture contains the notes; full Redshank note authoring/privacy menu is not embedded or headed-qualified",
+    "Privacy host command is focused-tested for episode scoping, persistence, unchanged body/target and export revocation",
+    "Native scenario selects projected note addresses and invokes the ordinary retention/export actions; export uses an explicit new-file destination and does not automate the OS save dialog",
+    "Text-only qualification; no recording, microphone, acoustic or renewed audio/playback claim",
+    "36 focused tests plus one explicit fixture setup; two process helpers ignored in ordinary checks; not a full workspace gate"
+  ]
+}

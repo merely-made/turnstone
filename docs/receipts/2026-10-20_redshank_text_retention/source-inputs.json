@@ -1,0 +1,17 @@
+{
+  "base_commit": "648119dc4bef2b6275249da77f1aa4c4c3c30e98",
+  "files": {
+    "Cargo.toml": "1fa6927ae41c1da0ef3ebfdf178c6e208e673fb1e41eb8ab41b658af6023df4f",
+    "Cargo.lock": "8210ac38946356047ef118716345391e2e79efcec45374cee4087b18a633334c",
+    "src/redshank_host.rs": "94372b5fafa2b384ff7fd11223dc43a0a7cb38e11871caa9fea30d5a0d4521d9",
+    "src/shell/drive.rs": "ad40d671922cafdaff2f8e05643c2f8ccaaf7771a95f46e2f592da408328ff14",
+    "src/shell/retained_clips.rs": "57d46c7d838d75866922530dcd394e79d145b300f0dc0f4ebb41c3d406b763dd",
+    "src/producer_retention.rs": "e95a6812e023353b515bba3101a3756b691a4863bee21a5b2652bd6b81660f58",
+    "src/retained_clip.rs": "2e61689bb1a94d9f22348c4fd49a86e8ea3d2e3b8b95088998d537c8b142f049",
+    "src/app/redshank_arms.rs": "3806417f7dbc98e372745702a622a88d8f5b458a9add89a2e23d40562922b6ee"
+  },
+  "toolchain": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+  "target": "x86_64-apple-darwin",
+  "local_supplier_overrides": false,
+  "cargo_resolution": "--locked --offline"
+}
