@@ -329,6 +329,7 @@ impl Product for LaneProduct {
             .with_field("status", app.model.status.token())
             .with_field("sessions", app.model.sessions.len().to_string())
             .with_field("nodes", app.model.graph.nodes.len().to_string())
+            .with_field("relations", app.model.graph.relations.len().to_string())
             .with_field(
                 "graph-labels",
                 app.model

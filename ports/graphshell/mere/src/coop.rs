@@ -21,7 +21,7 @@ pub(super) enum Command {
     Edit(coop::Edit),
     Reconnect,
 }
-#[derive(Clone, serde::Serialize)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub(super) struct Update {
     pub acknowledged: u64,
     pub data: Option<Data>,
@@ -531,7 +531,13 @@ pub(super) fn guest_reading(data: &Data) -> (MereViewModel, HashMap<String, Port
                     key: format!("{}>{}:{}:{i}", r.from, r.to, r.kind),
                     from: r.from.to_string(),
                     to: r.to.to_string(),
-                    provenance: mere_view::Provenance::Other(r.kind.clone()),
+                    provenance: mere_view::Provenance::Other(
+                        r.kind
+                            .rsplit('#')
+                            .next()
+                            .unwrap_or(&r.kind)
+                            .replace('.', " "),
+                    ),
                 })
                 .collect(),
         },

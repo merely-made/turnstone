@@ -461,19 +461,37 @@ fn attached_ordinary_host_is_the_only_writer_and_reopens_with_guest_authorship()
     );
     assert!(host.lock().unwrap().projection_revision() > ordinary_revision);
     assert!(pollster::block_on(owner.edit(b.master_public_key().to_bytes(), edit)).is_err());
+    let second = Uuid::new_v4();
     pollster::block_on(host.lock().unwrap().transact_edits(
         "graphshell",
-        vec![pandect::CapturedDelta::ReplayAddNodeWithIdIfMissing {
-            id: Uuid::new_v4().to_string(),
-            url: "https://ordinary-live.test/".into(),
-            position: [1., 1.],
-        }],
+        vec![
+            pandect::CapturedDelta::ReplayAddNodeWithIdIfMissing {
+                id: second.to_string(),
+                url: "https://ordinary-live.test/".into(),
+                position: [1., 1.],
+            },
+            pandect::CapturedDelta::ReplayAssertRelationByIds {
+                from_id: first.to_string(),
+                to_id: second.to_string(),
+                assertion: mere::kernel::graph::EdgeAssertion::Semantic {
+                    sub_kind: mere::kernel::graph::SemanticSubKind::Cites,
+                    label: None,
+                },
+            },
+        ],
     ))
     .unwrap();
     assert_eq!(
         owner.owner_data().nodes.len(),
         2,
         "ordinary edits are visible without a second writer or reopen"
+    );
+    assert!(
+        owner
+            .owner_data()
+            .relations
+            .iter()
+            .any(|r| r.from == first && r.to == second)
     );
     let guest_author = format!("personae:{}", hex(&b.master_public_key().to_bytes()));
     assert!(
