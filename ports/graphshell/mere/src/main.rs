@@ -22,7 +22,7 @@ use sprigging::ColorF;
 use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::mpsc};
 use taproot::ProbeSnapshot;
 const LEAF: u64 = 0x6d65_7265;
-const CSS: &str = ".coop-panel{height:245px;overflow:auto;padding:8px;border-top:1px solid #6d7783}.coop-panel h2,.coop-panel p{margin:3px;overflow-wrap:anywhere}.coop-panel label{display:inline-flex;gap:4px;margin:3px}.coop-panel input{width:220px} :root{background:#16191d;color:#e8e6e1;font-family:sans-serif;font-size:14px} main{display:flex;flex-direction:column;height:100%} h1{font-size:18px;margin:8px} button{padding:4px;margin:2px;background:#22262c;color:#e8e6e1;border:1px solid #6d7783} .mere-view-session,.mere-view-archive{padding:6px;border-bottom:1px solid #353a42} .mere-view-archive-steps{gap:3px} .mere-view-session-state{font-size:12px;color:#abb4bd} .mere-view-session[data-attached=true]{color:#8cb4de} button[aria-pressed=true]{border-color:#8cb4de} .mere-record{height:180px;overflow:auto;padding:8px;border-top:1px solid #6d7783} .mere-record p{margin:3px;overflow-wrap:anywhere} .mere-view-notice{color:#f0b35a}";
+const CSS: &str = ".coop-panel{height:245px;overflow:auto;padding:8px;border-top:1px solid #6d7783}.coop-panel h2,.coop-panel p{margin:3px;overflow-wrap:anywhere}.coop-panel label{display:flex;align-items:center;gap:8px;margin:4px}.coop-input{display:block;width:460px;min-height:28px;padding:4px;border:1px solid #6d7783;background:#22262c;white-space:pre;overflow:hidden}.coop-input:focus{border-color:#8cb4de} :root{background:#16191d;color:#e8e6e1;font-family:sans-serif;font-size:14px} main{display:flex;flex-direction:column;height:100%} h1{font-size:18px;margin:8px} button{padding:4px;margin:2px;background:#22262c;color:#e8e6e1;border:1px solid #6d7783} .mere-view-session,.mere-view-archive{padding:6px;border-bottom:1px solid #353a42} .mere-view-archive-steps{gap:3px} .mere-view-session-state{font-size:12px;color:#abb4bd} .mere-view-session[data-attached=true]{color:#8cb4de} button[aria-pressed=true]{border-color:#8cb4de} .mere-record{height:180px;overflow:auto;padding:8px;border-top:1px solid #6d7783} .mere-record p{margin:3px;overflow-wrap:anywhere} .mere-view-notice{color:#f0b35a}";
 struct Reading {
     model: MereViewModel,
     cards: HashMap<String, PortableCardV1>,
@@ -430,23 +430,12 @@ impl Product for LaneProduct {
     }
     fn app_step(
         &mut self,
-        ctx: &mut AppCtx<'_, App, Logic, Child>,
+        _ctx: &mut AppCtx<'_, App, Logic, Child>,
         _: mesquite::Checkpoints<'_>,
         line: &str,
     ) -> Result<(), String> {
         if let Some(json) = line.strip_prefix("await ") {
             self.awaiting = serde_json::from_str(json).map_err(|e| e.to_string())?;
-            return Ok(());
-        }
-        if let Some(rest) = line.strip_prefix("coop-input ") {
-            let (index, text) = rest.split_once(' ').ok_or("coop-input INDEX TEXT")?;
-            let index: usize = index.parse().map_err(|_| "input index")?;
-            if index >= 4 {
-                return Err("input index".into());
-            }
-            ctx.runner.update(|app| {
-                app.coop.as_mut().unwrap().inputs[index] = cambium::TextInput::new(text)
-            });
             return Ok(());
         }
         Err(format!("unknown step: {line}"))

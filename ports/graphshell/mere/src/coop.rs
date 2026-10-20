@@ -113,6 +113,7 @@ fn field(i: usize, label: &'static str) -> Child {
                 move |input: &mut TextInput| {
                     text_field_typed(input)
                         .attr("aria-label", label)
+                        .attr("class", "coop-input")
                         .attr("id", format!("coop-field-{i}"))
                 },
                 move |app: &mut App| &mut app.coop.as_mut().unwrap().inputs[i],
