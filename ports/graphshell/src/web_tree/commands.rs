@@ -95,6 +95,7 @@ fn catalog(page: &TreePage) -> CommandSet {
                         &command_id,
                         label,
                         if picked == Some(id) { "node" } else { "fold" },
+                        cambium::EffectClass::Curation,
                     ));
                     if locked || entered {
                         set.set_disabled(
@@ -112,7 +113,12 @@ fn catalog(page: &TreePage) -> CommandSet {
                 }
             }
         }
-        set.register(Command::new("whole-graph", "Whole graph", "canvas"));
+        set.register(Command::new(
+            "whole-graph",
+            "Whole graph",
+            "canvas",
+            cambium::EffectClass::Curation,
+        ));
         set.register(Command::new(
             "relationship-evidence",
             if page.grouping_evidence {
@@ -121,6 +127,7 @@ fn catalog(page: &TreePage) -> CommandSet {
                 "Show relationship evidence"
             },
             "canvas",
+            cambium::EffectClass::Curation,
         ));
         if locked {
             set.set_disabled(

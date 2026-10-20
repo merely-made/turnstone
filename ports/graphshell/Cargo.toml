@@ -25,6 +25,10 @@ name = "moot_resources"
 required-features = ["moot-resources"]
 
 [[test]]
+name = "command_declarations"
+required-features = ["web"]
+
+[[test]]
 name = "moot_resources_reopen"
 required-features = ["moot-resources"]
 

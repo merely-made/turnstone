@@ -888,9 +888,9 @@ name = "cambium"
 version = "0.4.0"
 dependencies = [
  "backstep",
- "command-menu",
  "genet-scripted-dom",
  "genet-text",
+ "hest",
  "layout-dom-api",
  "mere-surface-api",
  "meristem",
@@ -1083,6 +1083,7 @@ version = "0.0.2"
 dependencies = [
  "base64 0.22.1",
  "blake3",
+ "hest",
  "sceno",
  "scenotime",
  "serde",
@@ -1212,13 +1213,6 @@ checksum = "cfc320937d09e6de266b31b9afb480f197d7a861be86be7cb2ea7e5d1bfffc5e"
 dependencies = [
  "bytes",
  "memchr",
-]
-
-[[package]]
-name = "command-menu"
-version = "0.1.0"
-dependencies = [
- "serde",
 ]
 
 [[package]]
@@ -3500,7 +3494,6 @@ dependencies = [
  "cambium-rootstock",
  "chartulary",
  "chirograph",
- "command-menu",
  "eidetic",
  "gemot",
  "genet-render-host",
@@ -3508,6 +3501,7 @@ dependencies = [
  "graphshell-client",
  "graphshell-endpoint",
  "graphshell-host",
+ "hest",
  "illume",
  "inker",
  "insigne",
@@ -3794,6 +3788,13 @@ name = "hermit-abi"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e17592d60ebacc7d5e169f4663c5f84f9161cc90328abcfe8456f41e4dfcb284"
+
+[[package]]
+name = "hest"
+version = "0.2.0"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "hex"
@@ -5434,10 +5435,10 @@ version = "0.0.2"
 dependencies = [
  "accesskit",
  "chartulary",
- "command-menu",
  "crossbeam-channel",
  "euclid",
  "futures-util",
+ "hest",
  "infer",
  "mere-forme",
  "mime_guess",
@@ -7100,10 +7101,10 @@ dependencies = [
  "chacha20poly1305 0.11.0",
  "chartulary",
  "ciborium",
- "command-menu",
  "dirs 5.0.1",
  "eidetic",
  "getrandom 0.3.4",
+ "hest",
  "hex",
  "incipit",
  "insigne",

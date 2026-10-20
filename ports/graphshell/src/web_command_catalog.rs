@@ -3,7 +3,7 @@
 
 //! Command records shared by Graphshell presentation paths.
 use cambium::catalogue::{self, ids};
-use cambium::{Command, CommandSet};
+use cambium::{Command, CommandSet, EffectClass};
 
 /// A shared command's label: the verbs other hosts offer too take the
 /// catalogue's id and name, and keep the page's surface (SE50).
@@ -100,7 +100,47 @@ pub(super) fn page_commands() -> CommandSet {
             "projection",
         ),
     ] {
-        set.register(Command::new(id, label, category));
+        let mut command = catalogue::command(id).unwrap_or_else(|| {
+            let effect = match id {
+                "save-scene"
+                | "reopen-scene"
+                | "export-codicil"
+                | "open-codicil"
+                | "save-projection"
+                | "reload-projection"
+                | "load-practice-projection"
+                | "reopen-practice-projection"
+                | "invoke-action" => EffectClass::ExternalEffect,
+                // The remaining host-owned verbs edit or navigate the projection/view.
+                "select-web"
+                | "pan-left"
+                | "pan-right"
+                | "pan-up"
+                | "pan-down"
+                | "session-local"
+                | "session-remote"
+                | "open-projection-editor"
+                | "close-projection-editor"
+                | "undo-projection"
+                | "redo-projection"
+                | "undo-projection-save"
+                | "redo-projection-save"
+                | "projection-grid"
+                | "compare-projection"
+                | "compare-projection-dynamics"
+                | "projection-motion"
+                | "projection-compare-left"
+                | "projection-compare-right"
+                | "projection-compare-up"
+                | "projection-compare-down"
+                | "projection-scatter" => EffectClass::Curation,
+                _ => unreachable!("page command {id} needs an effect declaration"),
+            };
+            Command::new(id, label, category, effect)
+        });
+        command.label = label.into();
+        command.category = category.into();
+        set.register(command);
     }
     set
 }

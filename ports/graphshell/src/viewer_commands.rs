@@ -6,7 +6,8 @@
 
 //! The retained viewer's supported commands, independent of a browser/store.
 use hest::{
-    catalogue::ids,
+    EffectClass,
+    catalogue::{self, ids},
     menu::{Command, CommandSet},
 };
 
@@ -121,7 +122,11 @@ pub fn commands(available: Availability) -> CommandSet {
         ("wheel-pan", "Wheel: pan graph", "preferences"),
         ("wheel-page", "Wheel: scroll page", "preferences"),
     ] {
-        set.register(Command::new(id, label, category));
+        let mut command = catalogue::command(id)
+            .unwrap_or_else(|| Command::new(id, label, category, EffectClass::Curation));
+        command.label = label.into();
+        command.category = category.into();
+        set.register(command);
         if available.locked && matches!(action(id, available.hosted), Some(Action::Canvas(_))) {
             set.set_disabled(id, Some("Finish the pending graph operation first".into()));
         }
@@ -131,6 +136,7 @@ pub fn commands(available: Availability) -> CommandSet {
             "view-history",
             if open { "Hide history" } else { "Show history" },
             "canvas",
+            EffectClass::Curation,
         ));
     }
     if !available.selection && !available.locked {
