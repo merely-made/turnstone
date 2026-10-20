@@ -986,6 +986,16 @@ route, separate from authoring a place contribution. L7's default-off attachment
 rule still applies. The existing research-note receipt remains a local
 authoring/citation receipt.
 
+**Shared-place acceptance is a separate open follow-up for this workflow.**
+The recent local research and note receipts have not exercised creating,
+inviting/joining, and sharing through a place on the current stack. The
+[place-port plan](2026-07-28_turnstone_place_port_plan.md) records historical
+T5b/T5c Windows loopback receipts from September 14–15, including shared-page
+access and a founder-held document visit/edit. Those bounded historical
+results are not current-stack research-workflow acceptance. Keep fresh
+shared-place qualification distinct from the named-recipient publication
+handoff below; neither route's result closes the other's gate.
+
 Fetched Turnstone `9c8420d` and Knot `2a4a204` are the inspected product heads.
 Knot's wording-only continuation `2a7231a` is the locked intake for the
 format/local-note receipt; it does not add publication authority.
