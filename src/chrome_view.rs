@@ -160,6 +160,7 @@ struct WindowChrome {
     caption: Option<String>,
     /// Only the primary window carries the omnibar; lenses show the chip.
     primary: bool,
+    titlebar_insets: cambium_rootstock::TitlebarInsets,
 }
 
 /// The one chrome state every projection renders (the one-state contract).
@@ -173,6 +174,7 @@ struct ChromeState {
     omnibar_placement: ChromePlacement,
     shellbar_placement: ChromePlacement,
     shellbar_visible: bool,
+    zoom: f32,
     can_back: bool,
     can_forward: bool,
     focused_node: Option<uuid::Uuid>,
@@ -197,6 +199,15 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
         return Box::new(el::<_, ChromeState, ChromeIntent>("div", ()));
     };
     let mut children: Vec<ChromeView> = Vec::new();
+    let navigation_height = navigation_height(state.zoom);
+    let status_height = status_height(state.zoom);
+    let caption_at_top = matches!(
+        state.shellbar_placement,
+        ChromePlacement::Docked(ChromeEdge::Top)
+    );
+    let title_height = titlebar_height(state.zoom, win.titlebar_insets);
+    let navigation_top = title_height + if caption_at_top { status_height } else { 0.0 };
+    children.push(window_title_bar(state, &win, slot));
 
     if win.primary && state.shellbar_visible {
         let back = browser_button("Back", state.can_back.then_some(ChromeIntent::NavBack));
@@ -230,7 +241,6 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
         strip_children.push(Box::new(
             el::<_, ChromeState, ChromeIntent>("div", status).attr("class", "browser-status"),
         ));
-        let left = ((win.w - 620.0) / 2.0).max(8.0);
         children.push(Box::new(
             el::<_, ChromeState, ChromeIntent>("div", strip_children)
                 .attr(
@@ -243,7 +253,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                 )
                 .attr(
                     "style",
-                    format!("transform: translate({left}px, 12px); width: 620px;"),
+                    format!("transform: translate(0px, {navigation_top}px); width: {}px; height: {navigation_height}px;", win.w),
                 ),
         ));
 
@@ -255,7 +265,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                         "style",
                         format!(
                             "transform: translate(12px, {}px); max-width: {}px;",
-                            (win.h - 42.0).max(8.0),
+                            (win.h - status_height - 38.0).max(8.0),
                             (win.w - 24.0).max(120.0)
                         ),
                     ),
@@ -287,19 +297,31 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                 .attr("class", "document-find")
                 .attr(
                     "style",
-                    format!("transform: translate({left}px, 58px); width: 620px;"),
+                    format!(
+                        "transform: translate({left}px, {}px); width: {}px;",
+                        navigation_top + navigation_height + 8.0,
+                        (win.w - 16.0).clamp(0.0, 620.0)
+                    ),
                 ),
         ));
     }
 
-    if let Some(caption) = &win.caption
-        && state.shellbar_visible
-        && let Some((left, top)) = chrome_position(&state.shellbar_placement, win.w, win.h, 148.0)
-    {
+    if state.shellbar_visible {
+        let top = if caption_at_top {
+            title_height
+        } else {
+            (win.h - status_height).max(0.0)
+        };
+        let align = match state.shellbar_placement {
+            ChromePlacement::Docked(ChromeEdge::Right) => "right",
+            ChromePlacement::Docked(ChromeEdge::Top | ChromeEdge::Bottom) => "center",
+            _ => "left",
+        };
         children.push(Box::new(
-            el::<_, ChromeState, ChromeIntent>("div", caption.clone())
+            el::<_, ChromeState, ChromeIntent>("div", win.caption.clone().unwrap_or_default())
                 .attr("class", "whereami")
-                .attr("style", format!("transform: translate({left}px, {top}px);")),
+                .attr("role", "status")
+                .attr("style", format!("transform: translate(0px, {top}px); width: {}px; height: {status_height}px; text-align: {align};", win.w)),
         ));
     }
 
@@ -559,6 +581,58 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
     Box::new(el::<_, ChromeState, ChromeIntent>("div", children))
 }
 
+fn window_title_bar(state: &ChromeState, win: &WindowChrome, slot: usize) -> ChromeView {
+    let height = titlebar_height(state.zoom, win.titlebar_insets);
+    let title: cambium::TitleBarSlot<ChromeState> = Box::new(
+        el(
+            "div",
+            (
+                el("span", "Turnstone").attr("class", "turnstone-title-name"),
+                el(
+                    "span",
+                    if win.primary {
+                        "Workspace".into()
+                    } else {
+                        format!("Lens {slot}")
+                    },
+                )
+                .attr("class", "turnstone-title-context"),
+            ),
+        )
+        .attr("class", "turnstone-title-identity"),
+    );
+    let ornament: cambium::TitleBarSlot<ChromeState> = Box::new(
+        el("span", el("span", ()).attr("class", "turnstone-stone-vein"))
+            .attr("class", "turnstone-stone")
+            .attr("aria-hidden", "true"),
+    );
+    let bar = cambium::title_bar(
+        ornament,
+        title,
+        Box::new(el("span", ())),
+        Box::new(el("span", ())),
+    );
+    // The identity slots are inert; window dragging is interpreted by the
+    // native shell from Cambium's computed app-region after retained hit testing.
+    let bar = cambium::map_message_result(bar, |_: &mut ChromeState, result| match result {
+        cambium::MessageResult::Action(()) | cambium::MessageResult::Nop => {
+            cambium::MessageResult::<ChromeIntent>::Nop
+        },
+        cambium::MessageResult::RequestRebuild => cambium::MessageResult::RequestRebuild,
+        cambium::MessageResult::Stale => cambium::MessageResult::Stale,
+    });
+    Box::new(el::<_, ChromeState, ChromeIntent>("div", bar)
+        .attr("class", "turnstone-title-frame")
+        .attr("style", format!(
+            "position:absolute; transform:translate(0px, 0px); width:{}px; height:{height}px; --titlebar-min-height:{height}px; --titlebar-gap:{}px; {}",
+            win.w, 10.0 * state.zoom, win.titlebar_insets.declarations(win.w),
+        )))
+}
+
+pub(crate) fn titlebar_height(zoom: f32, insets: cambium_rootstock::TitlebarInsets) -> f32 {
+    (24.0 + 16.0 * zoom).max(insets.height)
+}
+
 fn browser_button(label: impl Into<String>, intent: Option<ChromeIntent>) -> ChromeView {
     let base = el::<_, ChromeState, ChromeIntent>("div", label.into()).attr(
         "class",
@@ -576,6 +650,66 @@ fn browser_button(label: impl Into<String>, intent: Option<ChromeIntent>) -> Chr
     } else {
         Box::new(base)
     }
+}
+
+/// Shared reserved rows for the retained workspace and the chrome overlay.
+/// The control line and its padding grow with the UI zoom.
+pub(crate) fn navigation_height(zoom: f32) -> f32 {
+    28.0 + 24.0 * zoom
+}
+fn status_height(zoom: f32) -> f32 {
+    16.0 + 16.0 * zoom
+}
+pub(crate) fn workspace_area(
+    chrome: &crate::shell_services::ShellChromeConfig,
+    primary: bool,
+    width: u32,
+    height: u32,
+) -> crate::surface::Rect {
+    workspace_area_for_window(chrome, if primary { 0 } else { 1 }, width, height)
+}
+
+pub(crate) fn workspace_area_for_window(
+    chrome: &crate::shell_services::ShellChromeConfig,
+    slot: usize,
+    width: u32,
+    height: u32,
+) -> crate::surface::Rect {
+    let primary = slot == 0;
+    let title = titlebar_height(
+        chrome.appearance.zoom(),
+        chrome
+            .titlebar_insets
+            .get(&slot)
+            .copied()
+            .unwrap_or_default(),
+    );
+    let visible = chrome.projects_shellbar();
+    let status = if visible {
+        status_height(chrome.appearance.zoom())
+    } else {
+        0.0
+    };
+    let top_status = visible
+        && matches!(
+            chrome.shellbar.placement,
+            ChromePlacement::Docked(ChromeEdge::Top)
+        );
+    let top = title
+        + (if visible && primary {
+            navigation_height(chrome.appearance.zoom())
+        } else {
+            0.0
+        })
+        + if top_status { status } else { 0.0 };
+    let bottom = if top_status { 0.0 } else { status };
+    let top = top.min(height as f32);
+    crate::surface::Rect::new(
+        0.0,
+        top,
+        width as f32,
+        (height as f32 - top - bottom).max(0.0),
+    )
 }
 
 /// Map a configured projection placement to this pre-A4 chrome surface. A
@@ -669,6 +803,7 @@ impl ChromeSurfaces {
             omnibar_placement: ChromePlacement::Overlay,
             shellbar_placement: ChromePlacement::Docked(ChromeEdge::Right),
             shellbar_visible: true,
+            zoom: 1.0,
             can_back: false,
             can_forward: false,
             focused_node: None,
@@ -747,7 +882,6 @@ impl ChromeSurfaces {
         for &(slot, _, _) in sizes {
             self.ensure_slot(slot);
         }
-        let caption = crate::app::focused_caption(&app.graph_runtimes);
         let omnibar: &OmnibarState = &app.omnibar;
         let mut omnibar_input = TextInput::new(omnibar.presented_text());
         omnibar_input.set_caret_byte(omnibar.presented_cursor(), false);
@@ -791,6 +925,7 @@ impl ChromeSurfaces {
         let open = omnibar.open;
         let browser_target = app.browser_command_target();
         let focused = browser_target.as_ref().map(|(member, _)| *member);
+        let caption = crate::app::navigation_caption(app);
         let focused_kept = focused.is_some_and(|member| app.node_is_kept(member));
         let can_back = focused.is_some_and(|member| app.member_can_back(member));
         let can_forward = focused.is_some_and(|member| app.member_can_forward(member));
@@ -879,6 +1014,11 @@ impl ChromeSurfaces {
                 win.h = h;
                 win.caption = caption.clone();
                 win.primary = slot == 0;
+                win.titlebar_insets = chrome
+                    .titlebar_insets
+                    .get(&slot)
+                    .copied()
+                    .unwrap_or_default();
             }
             state.open = open;
             state.omnibar_input = omnibar_input.clone();
@@ -886,6 +1026,7 @@ impl ChromeSurfaces {
             state.omnibar_placement = chrome.omnibar.placement.clone();
             state.shellbar_placement = chrome.shellbar.placement.clone();
             state.shellbar_visible = chrome.projects_shellbar();
+            state.zoom = chrome.appearance.zoom();
             state.can_back = can_back;
             state.can_forward = can_forward;
             state.focused_node = focused;
@@ -924,6 +1065,29 @@ impl ChromeSurfaces {
         layout.scene(&dom, root, &sheet, w, h)
     }
 
+    pub(crate) fn app_region_at(
+        &mut self,
+        slot: usize,
+        x: f32,
+        y: f32,
+        w: u32,
+        h: u32,
+    ) -> cambium_rootstock::AppRegion {
+        self.absorb_dom_mutations();
+        let Some(&id) = self.projections.get(slot) else {
+            return Default::default();
+        };
+        let Some(root) = self.runner.window_root(id) else {
+            return Default::default();
+        };
+        let sheet = crate::ui::chrome_sheet(&self.appearance);
+        let dom = self.dom.borrow();
+        let Some(layout) = self.layouts.get_mut(slot) else {
+            return Default::default();
+        };
+        layout.app_region_at(&dom, root, &sheet, w, h, x, y)
+    }
+
     /// Route a click at window-local `(x, y)` into `slot`'s chrome: hit-test
     /// that window-root's own subtree layout, dispatch through the runner,
     /// return what bubbled (a row commit).
@@ -958,6 +1122,241 @@ pub(crate) mod tests {
 
     use super::*;
     use crate::action::{Action, Update};
+
+    #[test]
+    fn shared_title_bar_respects_native_controls_and_drag_regions() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("mere://alpha".into()));
+        let mut config = app.shell_chrome_config().clone();
+        config.appearance.ui_zoom = 1.0;
+        config.titlebar_insets.insert(
+            0,
+            cambium_rootstock::TitlebarInsets {
+                left: 156.0,
+                right: 0.0,
+                height: 56.0,
+            },
+        );
+        config.titlebar_insets.insert(
+            2,
+            cambium_rootstock::TitlebarInsets {
+                left: 78.0,
+                right: 0.0,
+                height: 28.0,
+            },
+        );
+        app.set_shell_chrome_config(config);
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0), (2, 640.0, 480.0)]);
+        for (slot, width, height, leading, expected_height) in
+            [(0, 1024, 600, 156.0, 56.0), (2, 640, 480, 78.0, 40.0)]
+        {
+            let (ornament, title) = {
+                let dom = chrome.dom.borrow();
+                let root = chrome.runner.window_root(chrome.projections[slot]).unwrap();
+                let sheet = crate::ui::chrome_sheet(&chrome.appearance);
+                let node = |class| dom.all_with_class(root, class)[0];
+                assert!(
+                    dom.outer_html(node("turnstone-title-name"))
+                        .contains("Turnstone")
+                );
+                let rect = |class| {
+                    crate::ui::subtree_node_rect(&dom, root, node(class), &sheet, width, height)
+                        .unwrap()
+                };
+                (rect("turnstone-stone"), rect("turnstone-title-name"))
+            };
+            assert!(ornament.0 >= leading, "ornament must clear native captions");
+            assert!(title.0 >= leading);
+            let point = (title.0 + title.2 / 2.0, title.1 + title.3 / 2.0);
+            assert_eq!(
+                chrome.app_region_at(slot, point.0, point.1, width, height),
+                cambium_rootstock::AppRegion::Drag
+            );
+            assert!(
+                chrome
+                    .click(slot, point.0, point.1, width, height)
+                    .is_empty(),
+                "identity is inert"
+            );
+            let area = workspace_area_for_window(app.shell_chrome_config(), slot, width, height);
+            assert_eq!(
+                area.y,
+                expected_height
+                    + if slot == 0 {
+                        navigation_height(1.0)
+                    } else {
+                        0.0
+                    }
+            );
+        }
+        // The adjacent navigation row uses ordinary controls, outside the
+        // shared title bar's inherited drag region.
+        assert_eq!(
+            chrome.app_region_at(0, 20.0, 80.0, 1024, 600),
+            cambium_rootstock::AppRegion::NoDrag
+        );
+        // Authored descendants can explicitly opt out of the inherited drag
+        // region without changing the window bridge or its hit geometry.
+        let mut config = app.shell_chrome_config().clone();
+        config.appearance.theme_presentation =
+            Some(tabard::ThemePresentation::AuthoredStylesheet(vec![
+                ".turnstone-title-name { --app-region: no-drag; }".into(),
+            ]));
+        app.set_shell_chrome_config(config);
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        let point = {
+            let dom = chrome.dom.borrow();
+            let root = chrome.runner.window_root(chrome.projections[0]).unwrap();
+            let title = dom.all_with_class(root, "turnstone-title-name")[0];
+            let rect = crate::ui::subtree_node_rect(
+                &dom,
+                root,
+                title,
+                &crate::ui::chrome_sheet(&chrome.appearance),
+                1024,
+                600,
+            )
+            .unwrap();
+            (rect.0 + rect.2 / 2.0, rect.1 + rect.3 / 2.0)
+        };
+        assert_eq!(
+            chrome.app_region_at(0, point.0, point.1, 1024, 600),
+            cambium_rootstock::AppRegion::NoDrag
+        );
+    }
+
+    #[test]
+    fn navigation_and_context_reserve_rows_in_the_actual_frame() {
+        for (width, height, zoom, edge) in [
+            (1024, 600, 1.0, ChromeEdge::Left),
+            (420, 400, 1.0, ChromeEdge::Right),
+            (800, 600, 2.0, ChromeEdge::Bottom),
+            (1024, 600, 1.5, ChromeEdge::Top),
+        ] {
+            let mut app = App::test_stub();
+            app.update(Action::OpenAddress("mere://alpha".into()));
+            let mut config = app.shell_chrome_config().clone();
+            config.appearance.ui_zoom = zoom;
+            config.shellbar.placement = ChromePlacement::Docked(edge);
+            app.set_shell_chrome_config(config);
+            let config = app.shell_chrome_config();
+            let area = workspace_area(config, true, width, height);
+            let mut chrome = ChromeSurfaces::new();
+            chrome.sync(&app, &[(0, width as f32, height as f32)]);
+            let dom = chrome.dom.borrow();
+            let root = chrome.runner.window_root(chrome.projections[0]).unwrap();
+            let sheet = crate::ui::chrome_sheet(&chrome.appearance);
+            let rect = |class| {
+                let node = dom.all_with_class(dom.document(), class)[0];
+                crate::ui::subtree_node_rect(&dom, root, node, &sheet, width, height).unwrap()
+            };
+            let (nx, ny, nw, nh) = rect("browser-strip");
+            let (_, cy, _, ch) = rect("whereami");
+            assert!(nx >= 0.0 && nx + nw <= width as f32 + 0.1);
+            assert!(
+                ny + nh <= area.y + 0.1,
+                "navigation must end before the frame"
+            );
+            if edge == ChromeEdge::Top {
+                assert!(cy + ch <= ny + 0.1);
+            } else {
+                assert!(cy >= area.y + area.h - 0.1);
+                assert!((cy + ch - height as f32).abs() < 0.1);
+            }
+            let mut frame = crate::outer_frame::OuterFrame::default();
+            frame.set_workspace_area(area);
+            let bodies = frame
+                .prepare(
+                    &app.frisket,
+                    app.active_pane,
+                    None,
+                    (width, height),
+                    &config.appearance,
+                    app.session_id.as_uuid().as_u128(),
+                )
+                .unwrap();
+            assert!(!bodies.is_empty());
+            for (_, body) in bodies {
+                assert!(body.y >= area.y);
+                assert!(body.y + body.h <= area.y + area.h + 0.1);
+            }
+            let (_, tab_y) = frame
+                .selector_point(&taproot::Selector::class("frisket-tab"))
+                .unwrap()
+                .unwrap();
+            assert!(
+                tab_y >= area.y,
+                "painted and clickable tabs must follow navigation"
+            );
+        }
+    }
+
+    #[test]
+    fn hidden_browser_chrome_keeps_only_the_title_row() {
+        let mut config = crate::shell_services::ShellChromeConfig::default();
+        config.shellbar.visible = false;
+        assert_eq!(
+            workspace_area(&config, true, 1024, 600),
+            crate::surface::Rect::new(
+                0.0,
+                titlebar_height(config.appearance.zoom(), Default::default()),
+                1024.0,
+                600.0 - titlebar_height(config.appearance.zoom(), Default::default())
+            )
+        );
+        config.shellbar.visible = true;
+        let lens = workspace_area(&config, false, 800, 500);
+        assert_eq!(
+            lens.y,
+            titlebar_height(config.appearance.zoom(), Default::default()),
+            "lenses reserve only the title row above content"
+        );
+        assert!(lens.h < 500.0, "lenses keep context outside their content");
+        let tiny = workspace_area(&config, true, 100, 20);
+        assert!(tiny.h >= 0.0 && tiny.y <= 20.0);
+    }
+
+    #[test]
+    fn admitted_document_title_reaches_tabs_and_the_active_context() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress(format!("mere://clip/{}", "ab".repeat(32))));
+        let member = app.graph_runtimes.focused_member().unwrap();
+        let effects = app.apply_update(Update::ContentSpawned {
+            node: member,
+            facts: Some(crate::content::ContentFacts {
+                engine: "retained-clip".into(),
+                lane: crate::content::ContentLane::Document,
+                structure: Some(crate::content::StructureFacts {
+                    title: Some("Knot selection".into()),
+                    headings: 1,
+                    links: 0,
+                    outline: vec![],
+                }),
+                lineage: None,
+                capabilities: Default::default(),
+            }),
+        });
+        assert!(
+            effects
+                .iter()
+                .any(|effect| matches!(effect, crate::action::Effect::SaveSession))
+        );
+        app.update(Action::OpenInWorkbench);
+        let pane = app.active_pane.unwrap();
+        let mut workbench = crate::workbench_pane::WorkbenchPane::new();
+        workbench.sync(&app, pane, 800.0, 500.0);
+        let dom = workbench.dom_ref();
+        assert!(dom.outer_html(dom.document()).contains("Knot selection"));
+        drop(dom);
+        app.update(Action::OpenAddress("mere://other".into()));
+        app.update(Action::WorkbenchActivate(member));
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        let dom = chrome.dom.borrow();
+        let context = dom.all_with_class(dom.document(), "whereami")[0];
+        assert!(dom.outer_html(context).contains("Knot selection"));
+    }
 
     fn open_omnibar_app() -> App {
         let mut app = App::test_stub();
@@ -1247,10 +1646,7 @@ pub(crate) mod tests {
         let dom = chrome.dom.borrow();
         let status = dom.all_with_class(dom.document(), "browser-status");
         assert_eq!(status.len(), 1);
-        assert!(
-            dom.outer_html(status[0])
-                .contains("https://example.test/a")
-        );
+        assert!(dom.outer_html(status[0]).contains("https://example.test/a"));
         assert_eq!(app.graph_runtimes.focused_member(), Some(b));
     }
 
@@ -1402,8 +1798,14 @@ pub(crate) mod tests {
         let (kx, ky) = centre_of(&chrome, "omni-keep");
         let (lx, ly) = centre_of(&chrome, "omni-row-label");
         assert!(kx > lx, "the control sits after the label");
-        assert_eq!(chrome.click(0, kx, ky, 1024, 600), vec![ChromeIntent::ToggleKeep(0)]);
-        assert_eq!(chrome.click(0, lx, ly, 1024, 600), vec![ChromeIntent::CommitRow(0)]);
+        assert_eq!(
+            chrome.click(0, kx, ky, 1024, 600),
+            vec![ChromeIntent::ToggleKeep(0)]
+        );
+        assert_eq!(
+            chrome.click(0, lx, ly, 1024, 600),
+            vec![ChromeIntent::CommitRow(0)]
+        );
     }
 
     /// The actual retained Confirm row, shared with the staged-install test.

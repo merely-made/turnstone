@@ -914,20 +914,20 @@ pub(crate) const CHROME_SHEET: &str = "\
                       padding: 5px 8px; white-space: nowrap; } \
     .whereami { position: absolute; color: rgb(170, 178, 195); \
                 background-color: rgb(20, 25, 38); font-size: 12px; \
-                padding: 3px 10px; border-radius: 10px; \
-                border: 1px solid rgb(52, 62, 86); white-space: nowrap; } \
+                box-sizing: border-box; padding: 7px 12px; border-radius: 0; overflow: hidden; \
+                border: 0; white-space: nowrap; } \
     .browser-strip { position: absolute; display: flex; align-items: center; \
                       gap: 5px; box-sizing: border-box; color: rgb(216, 222, 234); \
                       background-color: rgb(20, 25, 38); border: 1px solid rgb(52, 62, 86); \
-                      border-radius: 9px; padding: 5px 7px; } \
+                      border-radius: 0; padding: 5px 12px; overflow: hidden; } \
     .browser-loading { border-bottom: 2px solid rgb(206, 84, 47); } \
-    .browser-button, .browser-button-disabled { font-size: 12px; padding: 4px 8px; \
+    .browser-button, .browser-button-disabled { flex-shrink: 0; font-size: 12px; padding: 4px 8px; \
                       border-radius: 6px; white-space: nowrap; } \
     .browser-button { color: rgb(238, 242, 250); background-color: rgb(36, 44, 62); \
                       border: 1px solid rgb(70, 82, 110); } \
     .browser-button-disabled { color: rgb(104, 112, 130); background-color: rgb(25, 30, 43); \
                       border: 1px solid rgb(45, 53, 71); } \
-    .browser-status { color: rgb(170, 178, 195); font-size: 12px; padding: 4px 7px; \
+    .browser-status { flex: 1 1 0; min-width: 0; color: rgb(170, 178, 195); font-size: 12px; padding: 4px 7px; \
                       white-space: nowrap; overflow: hidden; } \
     .document-find { position: absolute; display: flex; align-items: center; gap: 5px; \
                      box-sizing: border-box; color: rgb(216, 222, 234); \
@@ -1042,7 +1042,14 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
     let palette = presentation_palette(appearance);
     let zoom = appearance.zoom();
     let sheet = format!(
-        "{CHROME_SHEET} \
+        "{} {CHROME_SHEET} \
+        .turnstone-title-frame {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
+        .cambium-title-bar {{ height:100%; overflow:hidden; }} \
+        .turnstone-title-identity {{ display:flex; align-items:center; gap:10px; min-width:0; overflow:hidden; white-space:nowrap; }} \
+        .turnstone-title-name {{ font-weight:600; }} \
+        .turnstone-title-context {{ color:{}; font-size:{:.2}px; }} \
+        .turnstone-stone {{ display:block; position:relative; box-sizing:border-box; width:22px; height:18px; border:2px solid {}; border-radius:7px 5px 8px 4px; transform:rotate(-16deg); }} \
+        .turnstone-stone-vein {{ display:block; position:absolute; left:3px; top:6px; width:12px; height:2px; background-color:{}; }} \
         .omni {{ background-color: {}; border-color: {}; }} \
         .omni-input {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
         .omni-input .field-preedit {{ color: {}; }} \
@@ -1057,6 +1064,14 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         .document-find-input, .decision-input {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
         .decision-prompt {{ color: {}; font-size: {:.2}px; }} \
         .decision-input-active {{ border-color: {}; }}",
+        cambium::TITLE_BAR_CSS,
+        role_color(appearance, "text-header", palette.text),
+        role_color(appearance, "surface", palette.raised),
+        13.0 * zoom,
+        role_color(appearance, "text-dim", palette.muted),
+        11.0 * zoom,
+        role_color(appearance, "primary", palette.accent),
+        role_color(appearance, "text-dim", palette.muted),
         role_color(appearance, "bg", palette.surface),
         role_color(appearance, "text-dim", palette.border),
         role_color(appearance, "text-header", palette.text),
@@ -2767,6 +2782,28 @@ impl RetainedSubtreeLayout {
             (w, h),
         )
     }
+    pub(crate) fn app_region_at(
+        &mut self,
+        dom: &ScriptedDom,
+        root: DomNodeId,
+        sheet: &str,
+        w: u32,
+        h: u32,
+        x: f32,
+        y: f32,
+    ) -> cambium_rootstock::AppRegion {
+        let Some(node) = self.hit_test(dom, root, sheet, w, h, x, y) else {
+            return Default::default();
+        };
+        let Some(snapshot) = self.snapshot.as_ref() else {
+            return Default::default();
+        };
+        let value = snapshot.styles.computed_style(node, "app-region").or_else(|| {
+            snapshot.styles.custom_properties(node)?.get("--app-region").cloned()
+        });
+        value.as_deref().map(cambium_rootstock::AppRegion::parse).unwrap_or_default()
+    }
+
 }
 
 pub(crate) fn subtree_node_rect(
@@ -2876,8 +2913,8 @@ pub const CAMBIUM_SHEET: &str = "\
     .grid-cell { color: rgb(200, 208, 224); padding: 5px 10px; \
                  white-space: nowrap; overflow: hidden; } \
     .grid-row-selected .grid-cell { color: rgb(28, 22, 10); } \
-    .pane { background-color: rgb(22, 27, 40); } \n    .tablist { display: flex; height: 30px; background-color: rgb(18, 22, 33); } \
-    .tab { color: rgb(150, 160, 180); font-size: 12px; padding: 8px 14px; \
+    .pane { background-color: rgb(22, 27, 40); } \n    .tablist { display: flex; height: 26px; background-color: rgb(18, 22, 33); } \
+    .tab { color: rgb(150, 160, 180); font-size: 12px; padding: 6px 12px; \
            white-space: nowrap; } \
     .tab.selected { color: rgb(232, 150, 40); \
                     background-color: rgb(22, 27, 40); } \
@@ -2916,7 +2953,7 @@ pub const SEAM_CLEAR: wgpu::Color = wgpu::Color {
 /// host must also state its height: the Roster subtracts it from the grid's
 /// viewport and adds it to a row's y. `tablist_height_matches_the_sheet` holds
 /// this to what the sheet actually lays out.
-pub const TABLIST_HEIGHT: f32 = 30.0;
+pub const TABLIST_HEIGHT: f32 = 26.0;
 
 fn qual(local: &str) -> QualName {
     QualName::new(None, Namespace::from(""), LocalName::from(local))
