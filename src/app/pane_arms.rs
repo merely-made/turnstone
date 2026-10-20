@@ -235,8 +235,38 @@ impl App {
         let workbench_pane = match workbench_pane {
             Some(pane) => pane,
             None => {
+                // The initial reader should use the window. Keep Orrery as a
+                // sibling tab rather than an empty half-width split. Preserve
+                // any arrangement the user has already composed.
+                let reading_stack = self.space_of(graph_pane).filter(|space| {
+                    if self.active_pane.is_some_and(|pane| pane != graph_pane) {
+                        return false;
+                    }
+                    self.space(*space).and_then(|layout| layout.outer_workspace().ok())
+                        .is_some_and(|frame| frame.workspace.floating().is_empty()
+                            && matches!(frame.workspace.tiled(), workbench::TileTree::Stack(stack)
+                                if stack.tabs.len() == 1 && stack.tabs[0].id == workbench::TileId(graph_pane.0)))
+                });
                 effects.extend(self.update(Action::SummonPane(PaneKindId::new(kind::WORKBENCH))));
-                self.active_pane.unwrap_or(graph_pane)
+                let pane = self.active_pane.unwrap_or(graph_pane);
+                if pane != graph_pane
+                    && let Some(space) = reading_stack
+                {
+                    effects.extend(
+                        self.update(Action::OuterWorkspace {
+                            space,
+                            event: workbench::TileEvent::Dragged {
+                                tile: workbench::TileId(pane.0),
+                                to: workbench::DropTarget::Stack {
+                                    stack: workbench::TilePath(vec![0]),
+                                    index: 1,
+                                },
+                            }
+                            .into(),
+                        }),
+                    );
+                }
+                pane
             },
         };
         self.active_pane = Some(workbench_pane);

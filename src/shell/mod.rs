@@ -44,6 +44,7 @@ mod lens;
 use lens::LensWindow;
 mod frame_keys;
 mod input;
+mod titlebar;
 mod native_composition;
 mod outer_workspace;
 pub(crate) mod window_input;
@@ -1375,6 +1376,7 @@ pub struct Shell {
     outer_frames: std::cell::RefCell<HashMap<usize, crate::outer_frame::OuterFrame>>,
     outer_capture: Option<outer_workspace::OuterCapture>,
     outer_focus: Option<frame_keys::HeaderFocus>,
+    titlebar_clicks: HashMap<usize, cambium_genet_winit_host::ClickCadence>,
     /// Runtime product surface factories. Concrete product state never enters
     /// the shell; admission yields the erased sessions retained above.
     surface_providers: crate::contributed_surface::SurfaceProviderRegistry,
@@ -1769,6 +1771,7 @@ impl Shell {
             outer_frames: Default::default(),
             outer_capture: None,
             outer_focus: None,
+            titlebar_clicks: HashMap::new(),
             surface_providers,
             redshank_docks,
             hovered_pane: None,
@@ -3027,6 +3030,29 @@ mod tests {
     use super::*;
 
     #[test]
+    fn reserved_workspace_keeps_frame_and_chrome_at_full_window_size() {
+        let app = App::test_stub();
+        let window = Rect::full(1024, 600);
+        let area = crate::chrome_view::workspace_area(app.shell_chrome_config(), true, 1024, 600);
+        let plan = primary_content_plan(&app, &NodeDocuments::default(), 1024, 600);
+        for kind in [SurfaceKind::Frame, SurfaceKind::Chrome] {
+            assert_eq!(
+                plan.iter().find(|surface| surface.kind == kind).unwrap().rect,
+                window,
+            );
+        }
+        for surface in &plan {
+            if matches!(
+                surface.kind,
+                SurfaceKind::Graph(_) | SurfaceKind::Pane(_) | SurfaceKind::Content(_)
+            ) {
+                assert!(surface.rect.y >= area.y);
+                assert!(surface.rect.y + surface.rect.h <= area.y + area.h + 0.1);
+            }
+        }
+    }
+
+    #[test]
     fn hidden_livery_animation_reaches_quiescence_without_redraw() {
         use std::sync::atomic::{AtomicU64, Ordering};
         struct Clock(Arc<AtomicU64>);
@@ -3460,6 +3486,9 @@ fn primary_content_plan_with_rects(
     frame_floats: &[(crate::panes::PaneId, Rect, Rect)],
 ) -> Vec<crate::surface::Surface> {
     let area = Rect::full(width.max(1), height.max(1));
+    let workspace_area = crate::chrome_view::workspace_area(
+        app.shell_chrome_config(), true, width.max(1), height.max(1),
+    );
     // A5 promotes a space to its `SpaceBlueprint` only when it enters the
     // float layer. Its placements then drive this exact compositor path;
     // legacy Frisket still supplies the payload and retained renderer
@@ -3470,7 +3499,7 @@ fn primary_content_plan_with_rects(
         Vec<(crate::panes::PaneId, Rect)>,
     ) = match app.blueprint_space(crate::action::SpaceRef::Primary) {
         Some(blueprint) => {
-            let placements = crate::panes::place_space(blueprint, area, app.maximized);
+            let placements = crate::panes::place_space(blueprint, workspace_area, app.maximized);
             (
                 placements
                     .panes
@@ -3619,15 +3648,8 @@ fn primary_content_plan_with_rects(
             })
             .map(|node| (node, crate::surface::content_rect(cr)))
     });
-    let caption = focused_graph
-        .and_then(|pane| app.graph_for_pane(pane))
-        .and_then(|graph| app.graph_runtimes.canvas(graph))
-        .and_then(crate::app::focused_caption);
-    let chrome = (app.user_agent_decision.is_open()
-        || app.document_find.open
-        || app.shell_chrome_config().projects_shellbar() && caption.is_some()
-        || app.omnibar.open && app.shell_chrome_config().projects_omnibar())
-    .then_some(area);
+    // The application title row remains visible when browser chrome is hidden.
+    let chrome = Some(area);
     let mut surfaces = crate::surface::assemble(&base, &tiles, content, None);
     let mut appearance_roles: Vec<(uuid::Uuid, u64, Rect)> = pane_rects
         .iter()

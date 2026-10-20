@@ -26,9 +26,8 @@ use uuid::Uuid;
 
 use crate::surface::Rect;
 
-/// The seam width between split children, matching cambium's split component
-/// (one visual language for every divider in the window).
-pub const WB_SEAM: f32 = 6.0;
+/// The painted seam shares the outer frame's hairline width.
+pub const WB_SEAM: f32 = crate::pane::DIVIDER_WIDTH;
 
 /// One placed cell: a tab-stack at its rect. The tab bar occupies the top
 /// `ui::TABLIST_HEIGHT` of `rect`; [`CellPlacement::body`] is what remains.
@@ -99,9 +98,12 @@ impl WorkbenchTiling {
         self.cells.iter().find(|c| c.rect.contains(x, y))
     }
 
-    /// The divider band containing pane-local `(x, y)`, if any.
+    /// The generous resize target around the painted divider, pane-local.
     pub fn divider_at(&self, x: f32, y: f32) -> Option<&WbDivider> {
-        self.dividers.iter().find(|d| d.rect.contains(x, y))
+        self.dividers.iter().rev().find(|d| {
+            d.area.contains(x, y)
+                && crate::pane::divider_grab_rect(d.rect, d.axis == Axis::Row).contains(x, y)
+        })
     }
 }
 
@@ -146,7 +148,15 @@ fn walk(node: &TreeGeometry, area: Rect, path: &mut Vec<usize>, out: &mut Workbe
             };
             for (i, (branch, frac)) in children.iter().zip(&fractions).enumerate() {
                 // Round each child's span so cells and seams tile exactly.
-                let span = (along * frac).round();
+                let end = match axis {
+                    Axis::Row => area.x + area.w,
+                    Axis::Column => area.y + area.h,
+                };
+                let span = if i + 1 == children.len() {
+                    (end - cursor).max(0.0)
+                } else {
+                    (along * frac).round()
+                };
                 let child_rect = match axis {
                     Axis::Row => Rect::new(cursor, area.y, span, area.h),
                     Axis::Column => Rect::new(area.x, cursor, area.w, span),
@@ -172,7 +182,7 @@ fn walk(node: &TreeGeometry, area: Rect, path: &mut Vec<usize>, out: &mut Workbe
                     cursor += WB_SEAM;
                 }
             }
-        }
+        },
     }
 }
 
@@ -299,6 +309,43 @@ mod tests {
         assert_eq!(r.path, vec![1]);
         assert!(t.dividers[0].path.is_empty(), "the root split's band");
         assert_eq!(t.dividers[0].pair, 0);
+    }
+
+    #[test]
+    fn hairline_dividers_keep_a_wide_grab_band_on_both_axes() {
+        for axis in [Axis::Row, Axis::Column] {
+            let rect = if axis == Axis::Row {
+                Rect::new(400.0, 0.0, 1.0, 600.0)
+            } else {
+                Rect::new(0.0, 300.0, 800.0, 1.0)
+            };
+            let tiling = WorkbenchTiling {
+                cells: vec![],
+                dividers: vec![WbDivider {
+                    index: 0,
+                    rect,
+                    area: area(),
+                    path: vec![],
+                    pair: 0,
+                    axis,
+                    fractions: vec![0.5, 0.5],
+                }],
+            };
+            for offset in [-5.0, 0.0, 5.0] {
+                let (x, y) = if axis == Axis::Row {
+                    (400.5 + offset, 100.0)
+                } else {
+                    (100.0, 300.5 + offset)
+                };
+                assert!(tiling.divider_at(x, y).is_some());
+            }
+            let (x, y) = if axis == Axis::Row {
+                (407.0, 100.0)
+            } else {
+                (100.0, 307.0)
+            };
+            assert!(tiling.divider_at(x, y).is_none());
+        }
     }
 
     #[test]

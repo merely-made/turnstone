@@ -23,7 +23,6 @@ use genet_winit_host::SurfaceHost;
 use mere::canvas::WHEEL_PAN_SCALE;
 use netrender::NetrenderOptions;
 use winit::dpi::PhysicalSize;
-use winit::window::Window;
 
 use crate::action::Action;
 use crate::browse;
@@ -161,7 +160,7 @@ impl ApplicationHandler for Shell {
         if self.window.is_some() {
             return;
         }
-        let attributes = Window::default_attributes()
+        let attributes = super::titlebar::window_attributes()
             .with_title("Turnstone")
             .with_inner_size(PhysicalSize::new(self.width, self.height))
             // Hidden at creation on purpose: the AccessKit adapter must be
@@ -173,6 +172,7 @@ impl ApplicationHandler for Shell {
                 .create_window(attributes)
                 .expect("failed to create the turnstone window"),
         );
+        self.publish_titlebar_insets(0, &window);
         self.a11y_adapter = Some(crate::shell::a11y_bridge::install(
             &window,
             self.a11y_actions.clone(),
@@ -257,6 +257,9 @@ impl ApplicationHandler for Shell {
         event: WindowEvent,
     ) {
         if self.theme_editor_event(window_id, &event) {
+            return;
+        }
+        if self.titlebar_event(window_id, &event) {
             return;
         }
         if let (Some(adapter), Some(window)) = (self.a11y_adapter.as_mut(), self.window.as_ref())

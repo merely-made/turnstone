@@ -61,23 +61,25 @@ pub(crate) fn stylesheet(
         .frisket-tab {{ color:var(--tabard-color-text); background:var(--tabard-color-surface-2); padding:{:.2}px {:.2}px; font-size:{:.2}px; line-height:1.2; }}\n\
         .frisket-tab.active {{ color:var(--tabard-color-text-header); background:var(--tabard-color-bg); }}\n\
         .frisket-close {{ color:var(--tabard-color-text-dim); font-size:{:.2}px; width:{:.2}px; flex-basis:{:.2}px; min-height:{:.2}px; height:auto; padding:{:.2}px 0; }}\n\
-        .frisket-divider {{ background:var(--tabard-color-text-dim); }}\n\
+        .frisket-divider {{ flex-basis:1px; background:var(--tabard-color-surface-2); border:0; box-sizing:border-box; }}\n\
+        .frisket-divider[aria-orientation=vertical] {{ border-left-width:1px; }}\n\
+        .frisket-divider[aria-orientation=horizontal] {{ border-top-width:1px; }}\n\
         .frisket-content {{ background:transparent; }}\n\
         .turnstone-window-root {{ background:var(--tabard-color-bg); }}\n",
         cambium::FRISKET_CSS,
         cambium::WORKSPACE_CSS,
         palette.css_custom_properties(),
-        44.0 * zoom,
-        4.0 * zoom,
+        28.0 * zoom,
         2.0 * zoom,
-        8.0 * zoom,
-        10.0 * zoom,
-        15.0 * zoom,
-        15.0 * zoom,
-        28.0 * zoom,
-        28.0 * zoom,
-        28.0 * zoom,
+        2.0 * zoom,
         4.0 * zoom,
+        8.0 * zoom,
+        13.0 * zoom,
+        13.0 * zoom,
+        20.0 * zoom,
+        20.0 * zoom,
+        20.0 * zoom,
+        2.0 * zoom,
     );
     sheet.push_str("[data-frame-focus=true]{outline:2px solid var(--tabard-color-primary);outline-offset:-2px;}\n");
     // Only Interface is adopted here. Reading/Code belong to pane bodies.

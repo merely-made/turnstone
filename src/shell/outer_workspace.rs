@@ -73,6 +73,12 @@ pub(super) fn frame_body_geometry(
     }
     let layout = app.space(space)?;
     let mut frame = crate::outer_frame::OuterFrame::default();
+    frame.set_workspace_area(crate::chrome_view::workspace_area_for_window(
+        app.shell_chrome_config(),
+        match space { SpaceRef::Primary => 0, SpaceRef::Lens(ordinal) => ordinal + 1 },
+        size.0,
+        size.1,
+    ));
     let docked = frame
         .prepare(
             layout,
@@ -393,10 +399,17 @@ impl Shell {
         maximize: Option<PaneId>,
         size: (u32, u32),
     ) -> Vec<(PaneId, Rect)> {
-        self.outer_frames
-            .borrow_mut()
+        let mut frames = self.outer_frames.borrow_mut();
+        let frame = frames
             .entry(slot)
-            .or_insert_with(|| crate::outer_frame::OuterFrame::new(self.renderers.dom.clone()))
+            .or_insert_with(|| crate::outer_frame::OuterFrame::new(self.renderers.dom.clone()));
+        frame.set_workspace_area(crate::chrome_view::workspace_area_for_window(
+            self.app.shell_chrome_config(),
+            slot,
+            size.0,
+            size.1,
+        ));
+        frame
             .prepare(
                 layout,
                 self.app.active_pane,
@@ -712,10 +725,13 @@ impl Shell {
                 if (x - start.0).hypot(y - start.1) < 5.0 {
                     return true;
                 }
+                let area = crate::chrome_view::workspace_area_for_window(
+                    self.app.shell_chrome_config(), slot, size.0, size.1,
+                );
                 let mut next = *rect;
-                next.x = (rect.x + (x - start.0) / size.0.max(1) as f32)
+                next.x = (rect.x + (x - start.0) / area.w.max(1.0))
                     .clamp(0.0, (1.0 - rect.width).max(0.0));
-                next.y = (rect.y + (y - start.1) / size.1.max(1) as f32)
+                next.y = (rect.y + (y - start.1) / area.h.max(1.0))
                     .clamp(0.0, (1.0 - rect.height).max(0.0));
                 WorkspaceEvent::Float(FloatEvent::SetRect {
                     tile: *id,
