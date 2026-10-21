@@ -42,6 +42,9 @@ access clears the guest view and survives a cold reopen. The
 [ordinary-view co-op receipt](docs/receipts/coop_graph_view_20261020/README.md)
 records contact/invitation commands, scope, qualification and limits. This
 integration covers native resident graphs; browser IndexedDB is not migrated.
+The [two-machine receipt](docs/receipts/coop_two_machines_20261020/README.md)
+qualifies an Intel Mac owner and M4 Mac guest over observed direct LAN paths,
+including scope, saved attribution, revocation and both custodians restarting.
 
 ## Modules
 
