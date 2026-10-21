@@ -548,6 +548,8 @@ pub enum Action {
     /// Primary reading and graph views keep the same document identity.
     SetWorkspaceMap(bool),
     ReadGraphMember(uuid::Uuid),
+    NavigateRelationship(crate::relationship_navigation::RelationshipTarget),
+    SetPaneBinding(crate::pane_binding::BindingIntent),
     /// Reveal an existing graph member without changing its reading arrangement.
     RevealGraphMember(uuid::Uuid),
     /// Hide retains the pane in an inactive stack; show restores its split.

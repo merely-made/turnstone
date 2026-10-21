@@ -63,10 +63,12 @@ pub enum ChromeIntent {
     WorkspaceMap(bool),
     Tool(&'static str),
     ReadMember(uuid::Uuid),
+    NavigateRelationship(crate::relationship_navigation::RelationshipTarget),
     RevealMember(uuid::Uuid),
     Layout(crate::chrome_layout::ChromeLayout),
     AllPanes,
     Territory,
+    FitGraph,
     MenuChanged,
     FindPrevious,
     FindNext,
@@ -177,12 +179,14 @@ struct ChromeState {
     menu: Option<ChromeMenu>,
     menu_selected: usize,
     documents_start: usize,
+    relationships_start: usize,
     layout: crate::chrome_layout::ChromeLayout,
     map_active: bool,
     territory: bool,
     tools: Vec<(&'static str, String, bool)>,
-    connections: Vec<(uuid::Uuid, String)>,
+    connections: Vec<crate::relationship_navigation::RelationshipRow>,
     documents: Vec<(uuid::Uuid, String, bool)>,
+    reading_stacks: Vec<Vec<(uuid::Uuid, String, bool)>>,
     windows: Vec<WindowChrome>,
     open: bool,
     inline_address: bool,
@@ -319,12 +323,9 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                     .map(ChromeIntent::KeepNode),
             ));
         }
-        if !tiny || available >= 230.0 * state.zoom {
-            controls.push(cambium::shell_projection_switch(
-                state.map_active,
-                tiny,
-                |_: &mut ChromeState, map| ChromeIntent::WorkspaceMap(map),
-            ));
+        if !state.layout.activity_rail && (!tiny || available >= 230.0 * state.zoom) {
+            controls.push(cambium::shell_projection_switch(state.map_active, tiny,
+                |_: &mut ChromeState, map| ChromeIntent::WorkspaceMap(map)));
         }
         if !compact {
             controls.push(menu_button(
@@ -334,21 +335,17 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                 ChromeMenu::Documents,
             ));
         }
-        if wide {
+        if !compact {
             controls.push(menu_button(
                 state,
                 format!("Related {}", state.connections.len()),
                 "Document connections",
                 ChromeMenu::Connections,
             ));
-            for (id, label) in [
-                (crate::panes::kind::INSPECTOR, "Inspect"),
-                (crate::panes::kind::TRAIL, "Trail"),
-            ] {
-                let visible = state
-                    .tools
-                    .iter()
-                    .any(|(kind, _, visible)| *kind == id && *visible);
+        }
+        if wide && !state.layout.activity_rail {
+            for (id, label) in [(crate::panes::kind::INSPECTOR, "Inspect"), (crate::panes::kind::TRAIL, "Trail")] {
+                let visible = state.tools.iter().any(|(kind, _, visible)| *kind == id && *visible);
                 controls.push(selected_button(label, ChromeIntent::Tool(id), visible));
             }
         }
@@ -367,6 +364,43 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
         children.push(Box::new(el::<_, ChromeState, ChromeIntent>("div", cambium::shell_toolbar("Document graph navigation", leading_controls, location, controls))
             .attr("class", if state.fetching { "browser-strip browser-loading" } else { "browser-strip" })
             .attr("style", format!("transform:translate({left_padding}px,{navigation_top}px);width:{}px;height:{height}px;padding-left:0px;--app-region:{};",(win.w-left_padding).max(0.0), if merged { "drag" } else { "no-drag" }))));
+
+        let top_status = matches!(state.shellbar_placement, ChromePlacement::Docked(ChromeEdge::Top));
+        let rail_top = title_height + if top_status { status_height } else { 0.0 };
+        let rail_bottom = if top_status { 0.0 } else { status_height }
+            + if state.layout.toolbar_bottom { navigation_height } else { 0.0 };
+        let rail_height = (win.h - rail_top - rail_bottom).max(0.0);
+        let rail_width = if state.layout.activity_rail { cambium::ShellMetrics::ACTIVITY_RAIL_WIDTH * state.zoom } else { 0.0 };
+        if state.layout.activity_rail {
+        let projections = vec![
+            activity_button("▤", "Read", "Read", ChromeIntent::WorkspaceMap(false), Some(!state.map_active)),
+            activity_button("◇", "Map", "Map", ChromeIntent::WorkspaceMap(true), Some(state.map_active)),
+        ];
+        let mut tools = Vec::new();
+        for (mark, label, id) in [("ⓘ", "Inspect", crate::panes::kind::INSPECTOR), ("↶", "Trail", crate::panes::kind::TRAIL)] {
+            let visible = state.tools.iter().any(|(kind, _, visible)| *kind == id && *visible);
+            tools.push(activity_button(mark, label, label, ChromeIntent::Tool(id), Some(visible)));
+        }
+        tools.push(activity_button("⌕", "Search", "Search document graph", ChromeIntent::Address, None));
+        tools.push(activity_button("▥", "Tabs", "Reading tabs", ChromeIntent::Layout(crate::chrome_layout::ChromeLayout { document_rail: !state.layout.document_rail, ..state.layout }), Some(state.layout.document_rail)));
+        let utilities = vec![activity_button("⌖", "Fit", "Fit graph", ChromeIntent::FitGraph, None)];
+        children.push(Box::new(el("div", cambium::shell_activity_rail(projections, tools, utilities))
+            .attr("class", "turnstone-activity-rail")
+            .attr("style", format!("position:absolute;left:0px;top:{rail_top}px;width:{rail_width}px;height:{rail_height}px;--shell-rail-width:{rail_width}px;--shell-activity-size:{}px;--shell-activity-mark-size:{}px;--shell-activity-caption-size:{}px;", 46.0*state.zoom,18.0*state.zoom,10.0*state.zoom))));
+        }
+        if state.layout.document_rail {
+            let groups = if state.reading_stacks.is_empty() {
+                vec![("Reading tiles".into(), vec![browser_button("No arranged documents", None)])]
+            } else {
+                state.reading_stacks.iter().enumerate().map(|(i, stack)| {
+                    (format!("Tile {}", i + 1), stack.iter().map(|(member, title, active)| selected_button(title, ChromeIntent::ReadMember(*member), *active)).collect())
+                }).collect()
+            };
+            let width = cambium::ShellMetrics::DOCUMENT_NAV_WIDTH * state.zoom;
+            children.push(Box::new(el("div", cambium::shell_document_rail(groups))
+                .attr("class", "turnstone-reading-tabs")
+                .attr("style", format!("position:absolute;left:{rail_width}px;top:{rail_top}px;width:{width}px;height:{rail_height}px;--shell-document-width:{width}px;"))));
+        }
 
         if let Some(menu) = state.menu {
             children.push(Box::new(on_click(
@@ -400,10 +434,17 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                         rows.push(selected_button(label, ChromeIntent::Tool(kind), *visible));
                     }
                     rows.push(selected_button("Territory", ChromeIntent::Territory, state.territory));
+                    rows.push(selected_button("Activity rail", ChromeIntent::Layout(crate::chrome_layout::ChromeLayout {
+                        activity_rail: !state.layout.activity_rail, ..state.layout
+                    }), state.layout.activity_rail));
+                    rows.push(selected_button("Reading tabs", ChromeIntent::Layout(crate::chrome_layout::ChromeLayout {
+                        document_rail: !state.layout.document_rail, ..state.layout
+                    }), state.layout.document_rail));
+                    rows.push(browser_button("Fit graph", Some(ChromeIntent::FitGraph)));
                     rows.push(menu_button(
                         state,
                         "Document connections…".into(),
-                        "Document connections",
+                        "Browse document connections",
                         ChromeMenu::Connections,
                     ));
                     rows.push(menu_button(
@@ -450,11 +491,22 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                         "Reveal this document in Map",
                         state.focused_node.map(ChromeIntent::RevealMember),
                     ));
-                    for (member, label) in state.connections.iter().take(12) {
-                        rows.push(browser_button(
-                            label.clone(),
-                            Some(ChromeIntent::ReadMember(*member)),
-                        ));
+                    if state.relationships_start > 0 {
+                        rows.push(Box::new(on_click(
+                            el::<_, ChromeState, ChromeIntent>("button", "Previous relationships").attr("class", "shell-control").attr("aria-label", "Previous relationships"),
+                            |state: &mut ChromeState, _: PointerClick| { state.relationships_start = state.relationships_start.saturating_sub(6); state.menu_selected = 0; ChromeIntent::MenuChanged },
+                        )));
+                    }
+                    for row in state.connections.iter().skip(state.relationships_start).take(6) {
+                        let target = row.target;
+                        rows.push(cambium::shell_navigation_item(row.title.clone(), format!("{} · {}", row.relationship, row.address), Default::default(),
+                            move |_: &mut ChromeState, _| ChromeIntent::NavigateRelationship(target)));
+                    }
+                    if state.relationships_start + 6 < state.connections.len() {
+                        rows.push(Box::new(on_click(
+                            el::<_, ChromeState, ChromeIntent>("button", "More relationships").attr("class", "shell-control").attr("aria-label", "More relationships"),
+                            |state: &mut ChromeState, _: PointerClick| { state.relationships_start += 6; state.menu_selected = 0; ChromeIntent::MenuChanged },
+                        )));
                     }
                     if state.connections.is_empty() {
                         rows.push(browser_button("No connected documents yet", None));
@@ -516,7 +568,10 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
             } else {
                 rows.len()
             };
-            let menu_height = row_count as f32 * (22.0 + 6.0 * state.zoom) + 16.0;
+            let menu_height = if menu == ChromeMenu::Connections {
+                row_count as f32 * (38.0 + 6.0 * state.zoom) + 16.0
+            } else { row_count as f32 * (22.0 + 6.0 * state.zoom) + 16.0 };
+            let menu_height = menu_height.min((win.h - title_height - navigation_height - 12.0).max(0.0));
             let top = if state.layout.toolbar_bottom {
                 (navigation_top - menu_height - 4.0).max(title_height)
             } else {
@@ -554,6 +609,8 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                         "class",
                         if menu == ChromeMenu::Panes {
                             "chrome-menu chrome-panes-menu"
+                        } else if menu == ChromeMenu::Connections {
+                            "chrome-menu chrome-relations-menu"
                         } else {
                             "chrome-menu"
                         },
@@ -561,7 +618,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                     .attr(
                         "style",
                         format!(
-                            "position:absolute;transform:translate({}px,{top}px);width:{width}px;",
+                            "position:absolute;transform:translate({}px,{top}px);width:{width}px;max-height:{menu_height}px;overflow-y:auto;",
                             (win.w - width - 8.0).max(0.0)
                         ),
                     ),
@@ -1029,6 +1086,11 @@ fn menu_button(state: &ChromeState, label: String, name: &str, menu: ChromeMenu)
     )
 }
 
+fn activity_button(mark: &str, label: &str, name: &str, intent: ChromeIntent, pressed: Option<bool>) -> ChromeView {
+    cambium::shell_activity_control(mark, label, name, cambium::ShellControl { pressed, ..Default::default() },
+        move |_: &mut ChromeState, _: PointerClick| intent)
+}
+
 /// Shared reserved rows for the retained workspace and the chrome overlay.
 /// The control line and its padding grow with the UI zoom.
 pub(crate) fn navigation_height(zoom: f32) -> f32 {
@@ -1080,10 +1142,16 @@ pub(crate) fn workspace_area_for_window(
             0.0
         };
     let top = top.min(height as f32);
+    let rail = if primary && visible {
+        ((if chrome.layout.activity_rail { cambium::ShellMetrics::ACTIVITY_RAIL_WIDTH } else { 0.0 })
+            + if chrome.layout.document_rail { cambium::ShellMetrics::DOCUMENT_NAV_WIDTH } else { 0.0 })
+            * chrome.appearance.zoom()
+    } else { 0.0 };
+    let left = rail.min(width as f32);
     crate::surface::Rect::new(
-        0.0,
+        left,
         top,
-        width as f32,
+        (width as f32 - left).max(0.0),
         (height as f32 - top - bottom).max(0.0),
     )
 }
@@ -1178,12 +1246,14 @@ impl ChromeSurfaces {
             menu: None,
             menu_selected: 0,
             documents_start: 0,
+            relationships_start: 0,
             layout: Default::default(),
             map_active: false,
             territory: false,
             tools: Vec::new(),
             connections: Vec::new(),
             documents: Vec::new(),
+            reading_stacks: Vec::new(),
             windows: vec![WindowChrome {
                 primary: true,
                 ..WindowChrome::default()
@@ -1356,10 +1426,13 @@ impl ChromeSurfaces {
                     )
                 })
             });
-        let mut connections = Vec::new();
         // The document navigator projects graph membership, not open tabs.
-        let navigation_graph = focused
-            .and_then(|member| app.graph_runtimes.graph_containing_member(member))
+        let navigation_graph = app.active_pane.and_then(|pane| {
+            let context = if app.has_pane_binding(pane) { app.pane_bound_context(pane) } else {
+                app.pane_context.resolve_context(pane, &crate::panes::ContextBinding::Own, crate::panes::SourceSelector::Graph)
+            };
+            context.filter(|context| context.member == focused).and_then(|context| context.graph)
+        }).or_else(|| focused.and_then(|member| app.graph_runtimes.graph_containing_member(member)))
             .or_else(|| app.active_pane.and_then(|pane| app.graph_for_pane(pane)))
             .unwrap_or_else(|| app.graph_runtimes.active_graph());
         let arranged = app
@@ -1369,6 +1442,16 @@ impl ChromeSurfaces {
             .filter_map(|(pane, _, _)| app.workbench_for_pane(pane))
             .flat_map(|workbench| workbench.open_members())
             .collect::<std::collections::HashSet<_>>();
+        let reading_stacks = app.primary_graph_for_navigation(focused)
+            .and_then(|pane| app.workbench_for_pane(pane))
+            .map(|workbench| workbench.slot_views().map(|slot| {
+                slot.members.iter().enumerate().map(|(i, member)| {
+                    let title = app.graph_runtimes.canvas(navigation_graph)
+                        .and_then(|canvas| canvas.graph().get_node_by_id(*member).map(|(key, _)| canvas.graph().node_display_label(key)))
+                        .unwrap_or_else(|| "Unavailable document".into());
+                    (*member, title, slot.active == i)
+                }).collect::<Vec<_>>()
+            }).collect::<Vec<_>>()).unwrap_or_default();
         let mut documents = app
             .graph_runtimes
             .canvas(navigation_graph)
@@ -1388,31 +1471,9 @@ impl ChromeSurfaces {
             })
             .collect::<Vec<_>>();
         documents.sort_by(|a, b| a.1.cmp(&b.1).then(a.0.cmp(&b.0)));
-        if let Some(member) = focused
-            && let Some(canvas) = app
-                .graph_runtimes
-                .graph_containing_member(member)
-                .and_then(|graph| app.graph_runtimes.canvas(graph))
-            && let Some((key, _)) = canvas.graph().get_node_by_id(member)
-        {
-            // Semantic document links live in the resource graph. Project them
-            // onto their displayed members alongside surface relationships.
-            for (_, relation) in canvas.graph().projected_relations() {
-                let other = if relation.from == key {
-                    relation.to
-                } else if relation.to == key {
-                    relation.from
-                } else {
-                    continue;
-                };
-                if let Some(node) = canvas.graph().get_node(other) {
-                    if node.id != member && !connections.iter().any(|(id, _)| *id == node.id) {
-                        connections.push((node.id, canvas.graph().node_display_label(other)));
-                    }
-                }
-            }
-            connections.sort_by(|a, b| a.1.cmp(&b.1).then(a.0.cmp(&b.0)));
-        }
+        let connections = focused.and_then(|member| app.graph_runtimes.canvas(navigation_graph).map(|canvas| {
+            crate::relationship_navigation::relationships(navigation_graph, canvas.graph(), member)
+        })).unwrap_or_default();
         let focused_kept = focused.is_some_and(|member| app.node_is_kept(member));
         let can_back = focused.is_some_and(|member| app.member_can_back(member));
         let can_forward = focused.is_some_and(|member| app.member_can_forward(member));
@@ -1502,8 +1563,13 @@ impl ChromeSurfaces {
             }
             state.layout = chrome.layout;
             state.tools = tools.clone();
+            if state.focused_node != focused || state.connections != connections {
+                state.relationships_start = 0;
+                if state.menu == Some(ChromeMenu::Connections) { state.menu_selected = 0; }
+            }
             state.connections = connections.clone();
             state.documents = documents.clone();
+            state.reading_stacks = reading_stacks.clone();
             state.map_active = map_active;
             state.territory = app.graph_runtimes.canvas(navigation_graph).is_some_and(|canvas| canvas.territory_field());
             for &(slot, w, h) in sizes {
@@ -1653,36 +1719,30 @@ impl ChromeSurfaces {
         if !matches!(key, "up" | "down" | "left" | "right" | "enter") {
             return None;
         }
-        let (w, h) = {
-            let win = &self.runner.state().windows[0];
-            (win.w as u32, win.h as u32)
-        };
-        self.absorb_dom_mutations();
-        let points = {
+        // Keyboard activation targets the retained control itself. Measuring
+        // every menu row with a separate full cascade made arrow navigation
+        // increasingly expensive as the shared shell gained more controls.
+        let targets = {
             let dom = self.dom.borrow();
             let root = self.runner.window_root(self.projections[0])?;
             let menu = dom.all_with_class(root, "chrome-menu").into_iter().next()?;
-            let sheet = crate::ui::chrome_sheet(&self.appearance);
-            dom.all_with_class(menu, "shell-control")
-                .into_iter()
-                .filter_map(|node| {
-                    crate::ui::subtree_node_rect(&dom, root, node, &sheet, w, h)
-                        .map(|(x, y, w, h)| (x + w / 2.0, y + h / 2.0))
-                })
-                .collect::<Vec<_>>()
+            dom.all_with_class(menu, "shell-control").into_iter().filter(|node| {
+                dom.attribute(*node, &layout_dom_api::Namespace::from(""), &layout_dom_api::LocalName::from("aria-disabled")) != Some("true")
+            }).collect::<Vec<_>>()
         };
-        if points.is_empty() {
-            return Some(Vec::new());
-        }
-        let selected = self.runner.state().menu_selected.min(points.len() - 1);
+        if targets.is_empty() { return Some(Vec::new()); }
+        let selected = self.runner.state().menu_selected.min(targets.len() - 1);
         if key == "enter" {
-            let (x, y) = points[selected];
-            return Some(self.click(0, x, y, w, h));
+            let intents = self.runner.dispatch_click(self.projections[0], targets[selected], PointerClick::at((0.0, 0.0)));
+            if intents.iter().any(|intent| !matches!(intent, ChromeIntent::MenuChanged)) {
+                self.runner.update(|state| state.menu = None);
+            }
+            return Some(intents);
         }
         let next = if matches!(key, "up" | "left") {
-            (selected + points.len() - 1) % points.len()
+            (selected + targets.len() - 1) % targets.len()
         } else {
-            (selected + 1) % points.len()
+            (selected + 1) % targets.len()
         };
         self.runner.update(|state| state.menu_selected = next);
         Some(Vec::new())
@@ -1720,6 +1780,66 @@ pub(crate) mod tests {
         )
         .unwrap();
         (x + w / 2.0, y + h / 2.0)
+    }
+
+    #[test]
+    fn toolbar_is_default_and_panes_switches_activity_navigation_without_duplicate_controls() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.test/first".into()));
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        assert!(!app.shell_chrome_config().layout.activity_rail);
+        assert_eq!(workspace_area(app.shell_chrome_config(), true, 1024, 600).x, 0.0);
+        assert!(chrome.dom.borrow().all_with_class(chrome.dom.borrow().document(), "turnstone-activity-rail").is_empty());
+        let (_, y) = toolbar_point(&chrome, "Read", 1024, 600);
+        assert!(y < workspace_area(app.shell_chrome_config(), true, 1024, 600).y);
+        let (x,y) = toolbar_point(&chrome, "Panes", 1024, 600);
+        chrome.click(0,x,y,1024,600);
+        let (x,y) = toolbar_point(&chrome, "Activity rail", 1024, 600);
+        let intents = chrome.click(0,x,y,1024,600);
+        let [ChromeIntent::Layout(layout)] = intents.as_slice() else { panic!("layout toggle must dispatch through the existing action spine"); };
+        assert!(layout.activity_rail);
+        app.update(Action::SetChromeLayout(*layout));
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        let (x,y) = toolbar_point(&chrome, "Read", 1024, 600);
+        let area = workspace_area(app.shell_chrome_config(), true, 1024, 600);
+        assert!(x < area.x && y > area.y);
+        let dom = chrome.dom.borrow();
+        let root = chrome.runner.window_root(chrome.projections[0]).unwrap();
+        assert_eq!(dom.all_with_class(root, "shell-control").into_iter().filter(|node| {
+            dom.outer_html(*node).contains("aria-label=\"Read\"")
+        }).count(), 1);
+    }
+
+    #[test]
+    fn rail_tabs_project_each_tile_and_keep_native_content_outside_the_rail() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.test/first".into()));
+        let first = app.graph_runtimes.focused_member().unwrap();
+        app.update(Action::ReadGraphMember(first));
+        let reader = app.active_pane.unwrap();
+        let map = app.default_graph_pane();
+        let second = app.with_graph_pane(map, |canvas| canvas.open_member_as_new_node(Some(first), "https://example.test/second")).unwrap();
+        app.update(Action::ReadGraphMember(second));
+        app.update(Action::WorkbenchSplitOut { dragged: second, axis: crate::action::WbAxis::Row, after: true });
+        let before = (app.workbench_for_pane(reader).unwrap().slot_views().map(|slot| (slot.members.to_vec(), slot.weight)).collect::<Vec<_>>(), app.workbench_for_pane(reader).unwrap().weights());
+        let mut config = app.shell_chrome_config().clone();
+        config.layout.document_rail = true;
+        config.layout.activity_rail = true;
+        app.set_shell_chrome_config(config);
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        assert_eq!(chrome.runner.state().reading_stacks.len(), 2);
+        assert_eq!(chrome.runner.state().reading_stacks.iter().flatten().filter(|(_, _, active)| *active).count(), 2);
+        let title = chrome.runner.state().reading_stacks[0][0].1.clone();
+        let (x,y) = toolbar_point(&chrome, &title, 1024, 600);
+        assert_eq!(chrome.click(0, x, y, 1024, 600), vec![ChromeIntent::ReadMember(first)]);
+        app.update(Action::ReadGraphMember(first));
+        assert_eq!((app.workbench_for_pane(reader).unwrap().slot_views().map(|slot| (slot.members.to_vec(), slot.weight)).collect::<Vec<_>>(), app.workbench_for_pane(reader).unwrap().weights()), before);
+        assert_eq!(app.browser_command_target().unwrap().0, first);
+        let area = workspace_area(app.shell_chrome_config(), true, 1024, 600);
+        assert_eq!(area.x, (cambium::ShellMetrics::ACTIVITY_RAIL_WIDTH + cambium::ShellMetrics::DOCUMENT_NAV_WIDTH) * app.shell_chrome_config().appearance.zoom());
+        assert_eq!(area.x + area.w, 1024.0);
     }
 
     #[test]
@@ -1799,6 +1919,57 @@ pub(crate) mod tests {
     }
 
     #[test]
+    fn relationship_menu_opens_from_panes_without_an_ambiguous_toolbar_target() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.test/root".into()));
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0,360.0,600.0)]);
+        let (x,y) = toolbar_point(&chrome,"Panes",360,600);
+        chrome.click(0,x,y,360,600);
+        let (x,y) = toolbar_point(&chrome,"Browse document connections",360,600);
+        assert_eq!(chrome.click(0,x,y,360,600),vec![ChromeIntent::MenuChanged]);
+        assert_eq!(chrome.runner.state().menu,Some(ChromeMenu::Connections));
+    }
+
+    #[test]
+    fn relationship_menu_keeps_direction_and_pages_past_twelve_neighbors() {
+        use mere::kernel::graph::{EdgeAssertion, SemanticSubKind, apply::assert_relation};
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.test/root".into()));
+        let pane = app.default_graph_pane();
+        let source = app.graph_pane_focused_member(pane).unwrap();
+        let mut members = Vec::new();
+        for i in 0..15 {
+            let member = app.with_graph_pane(pane, |canvas| canvas.open_member_as_new_node(None, &format!("https://example.test/{i:02}"))).unwrap();
+            app.with_graph_pane(pane, |canvas| {
+                canvas.ingest_graph(|graph| {
+                let a = graph.get_node_by_id(source).unwrap().0;
+                let b = graph.get_node_by_id(member).unwrap().0;
+                assert_relation(graph,a,b,EdgeAssertion::Semantic { sub_kind: SemanticSubKind::Cites,label:None }).unwrap();
+                true
+                });
+            });
+            members.push(member);
+        }
+        app.graph_pane_select_member(pane,source);
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app,&[(0,1024.0,700.0)]);
+        let (x,y) = toolbar_point(&chrome,"Document connections",1024,700);
+        chrome.click(0,x,y,1024,700);
+        for _ in 0..2 {
+            let (x,y) = toolbar_point(&chrome,"More relationships",1024,700);
+            assert_eq!(chrome.click(0,x,y,1024,700),vec![ChromeIntent::MenuChanged]);
+        }
+        assert_eq!(chrome.runner.state().relationships_start,12);
+        let row = chrome.runner.state().connections.last().unwrap().clone();
+        let (x,y) = toolbar_point(&chrome,&format!("{} · {}: {}",row.relationship,row.address,row.title),1024,700);
+        assert_eq!(chrome.click(0,x,y,1024,700),vec![ChromeIntent::NavigateRelationship(row.target)]);
+        assert_eq!(row.target.member,*members.last().unwrap());
+        assert_eq!(row.relationship,"Cites");
+        assert_eq!(app.graph_runtimes.graph().nodes().count(),16);
+    }
+
+    #[test]
     fn toolbar_connections_come_from_graph_edges_and_keep_member_identity() {
         let mut app = App::test_stub();
         app.update(Action::OpenAddress("https://example.test/a".into()));
@@ -1828,7 +1999,7 @@ pub(crate) mod tests {
                 .state()
                 .connections
                 .iter()
-                .any(|(id, _)| *id == a)
+                .any(|row| row.target.member == a)
         );
         app.update(Action::ReadGraphMember(a));
         chrome.sync(&app, &[(0, 1024.0, 600.0)]);
@@ -1838,7 +2009,7 @@ pub(crate) mod tests {
                 .state()
                 .connections
                 .iter()
-                .any(|(id, _)| *id == b)
+                .any(|row| row.target.member == b)
         );
         assert_eq!(app.graph_runtimes.graph().nodes().count(), 2);
     }

@@ -433,11 +433,16 @@ impl DerefMut for GraphRuntimePool {
 /// without silently sharing camera, pan inertia, yaw, or tilt.
 #[derive(Default)]
 pub struct GraphPaneViews {
+    pending_fits: std::collections::HashSet<PaneId>,
     viewports: HashMap<PaneId, Viewport>,
     selections: HashMap<PaneId, Vec<uuid::Uuid>>,
 }
 
 impl GraphPaneViews {
+    /// Finish an explicit fit after this pane receives its actual render size.
+    pub(crate) fn request_fit(&mut self, pane: PaneId) { self.pending_fits.insert(pane); }
+    pub(crate) fn take_fit(&mut self, pane: PaneId) -> bool { self.pending_fits.remove(&pane) }
+
     /// Install `pane`'s saved viewport, or capture the runtime's current
     /// viewport for a fresh pane. Call before the pane's input/render pass.
     pub fn install(&mut self, pane: PaneId, canvas: &mut Canvas) {
@@ -464,6 +469,7 @@ impl GraphPaneViews {
     }
 
     pub fn remove(&mut self, pane: PaneId) -> Option<Viewport> {
+        self.pending_fits.remove(&pane);
         self.selections.remove(&pane);
         self.viewports.remove(&pane)
     }

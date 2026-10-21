@@ -1116,13 +1116,14 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         .chrome-menu-entry {{ width:100%; }}
         .chrome-menu-entry[data-menu-focus=true] {{ outline:1px solid currentColor; outline-offset:-1px; }}
         .chrome-menu .shell-control {{ text-align:left; width:100%; height:{:.2}px; overflow:hidden; white-space:nowrap; flex-shrink:0; }}
+        .chrome-relations-menu .shell-navigation-item {{ height:auto; min-height:{:.2}px; }}
         .chrome-menu .shell-popup {{ padding:0; border:0; background:transparent; max-height:none; }}
         .chrome-panes-menu .shell-popup {{ flex-direction:row; flex-wrap:wrap; }}
         .chrome-panes-menu .chrome-menu-entry {{ width:50%; flex-basis:50%; }}",
         12.0*zoom,
         role_color(appearance,"surface-2",palette.field),role_color(appearance,"text-header",palette.text),
         role_color(appearance,"text-dim",palette.border),role_color(appearance,"bg",palette.surface),role_color(appearance,"text",palette.body_text),
-        role_color(appearance,"surface",palette.raised),role_color(appearance,"text",palette.body_text),role_color(appearance,"text-dim",palette.border),22.0+6.0*zoom,
+        role_color(appearance,"surface",palette.raised),role_color(appearance,"text",palette.body_text),role_color(appearance,"text-dim",palette.border),22.0+6.0*zoom,38.0+6.0*zoom,
     );
     themed_sheet(appearance, format!("{sheet}\n{}\n{controls}", cambium::SHELL_CSS))
 }
@@ -1167,7 +1168,7 @@ pub(crate) fn cambium_sheet(appearance: &crate::shell_services::AppearanceConfig
         role_color(appearance, "primary", palette.accent),
         role_color(appearance, "text-dim", palette.border),
     );
-    themed_sheet(appearance, sheet)
+    themed_sheet(appearance, format!("{sheet}\n{}", cambium::SHELL_CSS))
 }
 
 /// Where the omnibar caret roughly sits on screen, as `(position, size)` in
@@ -3674,4 +3675,10 @@ mod contributed_projection_tests {
             "a superseded DOM label cannot retarget the click"
         );
     }
+}
+
+/// Baseline pane sheet for retained standalone probes as well as live shared controls.
+pub(crate) fn cambium_shell_sheet() -> &'static str {
+    static SHEET: std::sync::LazyLock<String> = std::sync::LazyLock::new(|| format!("{CAMBIUM_SHEET}\n{}", cambium::SHELL_CSS));
+    &SHEET
 }

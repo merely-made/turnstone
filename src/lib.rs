@@ -64,6 +64,8 @@ mod offline;
 pub mod observe;
 mod overmap;
 mod pane;
+pub mod pane_binding;
+pub mod relationship_navigation;
 /// Turnstone's own pane model (was the `frisket` crate; folded in 2026-07-25).
 pub mod panes;
 pub mod place;
