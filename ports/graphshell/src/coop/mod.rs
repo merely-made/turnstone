@@ -31,6 +31,7 @@ use std::{
 };
 use uuid::Uuid;
 
+pub mod control;
 pub mod network;
 pub const TRANSPORT_SALT: &[u8] = b"graphshell/endpoint-session/coop/v1";
 pub const DOMAIN: &str = "mere.graphshell";
@@ -179,9 +180,28 @@ fn slot(graph: SessionId) -> String {
 
 /// Only this object writes the selected session. Its lock also serializes an
 /// edit against a revocation, including the durable acknowledgement of each.
+/// A live application host supplies its existing graph under its own lock.
+/// `transact` must compare the stored journal position and install only after
+/// the same durable acknowledgement used by the ordinary graph view.
+pub trait GraphAuthority: Send + Sync {
+    fn read(&self) -> GraphReading;
+    fn transact(
+        &self,
+        expected: Revision,
+        author: Author,
+        deltas: Vec<GraphDelta>,
+    ) -> Result<(), String>;
+}
+pub struct GraphReading {
+    pub graph: mere::kernel::graph::Graph,
+    pub revision: Revision,
+    pub authors: Vec<Author>,
+}
 pub struct Owner<B> {
     backend: B,
-    graph: GraphSession<B>,
+    graph: Option<GraphSession<B>>,
+    authority: Option<Arc<dyn GraphAuthority>>,
+    access_guard: Option<Arc<dyn Fn() -> bool + Send + Sync>>,
     saved: Saved,
 }
 pub type SharedOwner<B> = Arc<Mutex<Owner<B>>>;
@@ -191,6 +211,24 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> Owner<B> {
             .await
             .map_err(|e| e.to_string())?;
         session.ensure_writable().map_err(|e| e.to_string())?;
+        Self::load(backend, graph, owner, Some(session), None).await
+    }
+    /// Attach without opening a second GraphSession or writer for this graph.
+    pub async fn attach(
+        backend: B,
+        graph: SessionId,
+        owner: [u8; 32],
+        authority: Arc<dyn GraphAuthority>,
+    ) -> Result<Self, String> {
+        Self::load(backend, graph, owner, None, Some(authority)).await
+    }
+    async fn load(
+        backend: B,
+        graph: SessionId,
+        owner: [u8; 32],
+        session: Option<GraphSession<B>>,
+        authority: Option<Arc<dyn GraphAuthority>>,
+    ) -> Result<Self, String> {
         let slots = JsonSlots::new(backend.clone());
         let mut saved = slots
             .load::<Saved>(&slot(graph))
@@ -234,8 +272,13 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> Owner<B> {
         Ok(Self {
             backend,
             graph: session,
+            authority,
+            access_guard: None,
             saved,
         })
+    }
+    pub fn set_access_guard(&mut self, guard: Arc<dyn Fn() -> bool + Send + Sync>) {
+        self.access_guard = Some(guard);
     }
     pub fn graph_id(&self) -> SessionId {
         self.saved.graph
@@ -256,10 +299,30 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> Owner<B> {
     /// process-local notification counter. The separately stored epoch changes
     /// on reopen; this pair is a projection position, not a content identity.
     pub fn revision(&self) -> Revision {
-        Revision(self.graph.journal().live_cursor().0)
+        self.read_graph().revision
     }
-    pub fn graph(&self) -> &GraphSession<B> {
-        &self.graph
+    /// Only standalone owners hold a session here. An attached application's
+    /// session stays in that application's authority.
+    pub fn graph(&self) -> Option<&GraphSession<B>> {
+        self.graph.as_ref()
+    }
+    fn read_graph(&self) -> GraphReading {
+        if let Some(authority) = &self.authority {
+            return authority.read();
+        }
+        let session = self.graph().expect("standalone graph");
+        GraphReading {
+            graph: session.graph().clone(),
+            revision: Revision(session.journal().live_cursor().0),
+            authors: session
+                .changes()
+                .iter()
+                .rev()
+                .take(32)
+                .rev()
+                .map(|c| c.author.clone())
+                .collect(),
+        }
     }
     pub async fn invite(
         &mut self,
@@ -352,6 +415,9 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> Owner<B> {
         Ok(())
     }
     fn guest(&self, peer: [u8; 32], write: bool) -> Result<[u8; 32], String> {
+        if self.access_guard.as_ref().is_some_and(|guard| !guard()) {
+            return Err("owner authority unavailable".into());
+        }
         let i = self
             .saved
             .invitation
@@ -396,6 +462,7 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> Owner<B> {
         self.data()
     }
     fn data(&self) -> Data {
+        let reading = self.read_graph();
         Data {
             graph: self.saved.graph,
             owner: hex(&self.saved.owner),
@@ -417,10 +484,9 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> Owner<B> {
             }
             .into(),
             epoch: self.epoch(),
-            revision: self.revision(),
-            nodes: self
+            revision: reading.revision,
+            nodes: reading
                 .graph
-                .graph()
                 .nodes()
                 .map(|(_, n)| Node {
                     id: n.id,
@@ -428,15 +494,22 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> Owner<B> {
                     title: n.title.clone(),
                 })
                 .collect(),
-            authors: self
+            relations: reading
                 .graph
-                .changes()
-                .iter()
-                .rev()
-                .take(32)
-                .rev()
-                .map(|c| c.author.clone())
+                .projected_relations()
+                .filter_map(|(_, relation)| {
+                    Some(Relation {
+                        from: reading.graph.get_node(relation.from)?.id,
+                        to: reading.graph.get_node(relation.to)?.id,
+                        kind: relation
+                            .kind
+                            .predicate_iri()
+                            .unwrap_or("related")
+                            .to_string(),
+                    })
+                })
                 .collect(),
+            authors: reading.authors,
         }
     }
     pub fn guest_data(&self, peer: [u8; 32]) -> Result<Data, String> {
@@ -453,7 +526,8 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> Owner<B> {
         if edit.epoch != self.epoch() || edit.revision != self.revision() {
             return Err("graph changed; refresh before retrying".into());
         }
-        let g = self.graph.graph();
+        let reading = self.read_graph();
+        let g = &reading.graph;
         let deltas = match edit.operation {
             Operation::Add { id, address, title } => {
                 if g.node_count() >= MAX_NODES
@@ -490,10 +564,16 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> Owner<B> {
         // Resolve stable IDs inside the transaction. Add + title is one journaled
         // edit; no numeric key from the guest crosses the authority boundary.
         let author = Author::person(format!("personae:{}", hex(&root))).via("graphshell.coop");
-        self.graph
-            .transact_deltas(author, deltas, SystemTime::now())
-            .await
-            .map_err(|e| e.to_string())?;
+        if let Some(authority) = &self.authority {
+            authority.transact(edit.revision, author, deltas)?;
+        } else {
+            self.graph
+                .as_mut()
+                .expect("standalone graph")
+                .transact_deltas(author, deltas, SystemTime::now())
+                .await
+                .map_err(|e| e.to_string())?;
+        }
         Ok(())
     }
 }
@@ -502,6 +582,12 @@ pub struct Node {
     pub id: Uuid,
     pub address: String,
     pub title: String,
+}
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Relation {
+    pub from: Uuid,
+    pub to: Uuid,
+    pub kind: String,
 }
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Data {
@@ -513,6 +599,8 @@ pub struct Data {
     pub revision: Revision,
     pub nodes: Vec<Node>,
     pub authors: Vec<Author>,
+    #[serde(default)]
+    pub relations: Vec<Relation>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

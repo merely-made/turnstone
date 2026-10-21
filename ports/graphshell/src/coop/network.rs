@@ -398,6 +398,7 @@ mod tests {
                 .lock()
                 .unwrap()
                 .graph()
+                .unwrap()
                 .changes()
                 .last()
                 .unwrap()

@@ -33,6 +33,16 @@ endpoint and persona name; djinn owns the vault path, unlock gate and private
 command execution. With djinn absent or Locked, commands needing identity
 stay pending. The public `profiles` roster remains readable while Locked.
 
+The ordinary native viewer, `cargo run --locked -p graphshell-mere -- DOMAIN`,
+can invite one named guest to an existing resident graph. Choose the graph in
+Sessions, then **Use this graph for co-op**. The owner and guest use the same
+MereView canvas and node selection; the resident's existing host and journal
+remain the sole writer. Guest edits retain admitted authorship, and ending
+access clears the guest view and survives a cold reopen. The
+[ordinary-view co-op receipt](docs/receipts/coop_graph_view_20261020/README.md)
+records contact/invitation commands, scope, qualification and limits. This
+integration covers native resident graphs; browser IndexedDB is not migrated.
+
 ## Modules
 
 The serving half these compose (admission and its action check, the accept
@@ -91,6 +101,7 @@ Under `personal-sync`:
 | `native` (default) | Admitted sessions, native transports, Personae composition, the binaries | `graphshell-endpoint` (`network`, `stdio`), `notochord`, `transport`, `personae`, `session-runtime`, `ssh-agent-lib`, `ssh-key`, `light-file-dialog`, Tokio |
 | `web` | The portable graph and canvas cone | `mere` (`graph`, `canvas`), `chartulary`, `eidetic`, `muniment`, `url`, `sha2` |
 | `personal-sync` | `native` + `web` + device synchronization | `muniment/redb`, `p2panda-core`, `p2panda-store`, `stickleback` |
+| `coop` | One chosen graph, owner and named guest; standalone or attached to an existing resident host | `native`, `web`, `muniment/redb`, `graphshell-client/pump` |
 
 Crates under `crates/` may not depend on this package.
 `scripts/check_port_boundaries.py` enforces that, checks that `graphshell` has

@@ -8,6 +8,36 @@
 use super::*;
 
 impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
+    /// Co-op's admitted endpoint supplies the author from its carrier binding.
+    /// Keep the existing host as the sole writer and publish the ordinary
+    /// projection only after the graph transaction acknowledges storage.
+    #[cfg(feature = "coop")]
+    pub async fn transact_coop(
+        &mut self,
+        expected: scenotime::Revision,
+        author: Author,
+        deltas: Vec<GraphDelta>,
+    ) -> Result<(), MereHostError> {
+        if expected.0 != self.graph_session.journal().live_cursor().0 {
+            return Err(MereHostError::Session(SessionError::NotReplayable(
+                "graph changed; refresh before retrying".into(),
+            )));
+        }
+        if self.resident_publication {
+            let (_, generation) = self
+                .graph_session
+                .transact_deltas_published(author, deltas, wall_clock_now())
+                .await?;
+            self.resident_generation = Some(generation);
+        } else {
+            self.graph_session
+                .transact_deltas(author, deltas, wall_clock_now())
+                .await?;
+        }
+        self.projection_revision = self.projection_revision.wrapping_add(1);
+        Ok(())
+    }
+
     pub async fn transact_edits(
         &mut self,
         via: &str,
