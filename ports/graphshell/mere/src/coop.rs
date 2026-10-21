@@ -26,6 +26,8 @@ pub(super) struct Update {
     pub acknowledged: u64,
     pub data: Option<Data>,
     pub status: String,
+    /// Read-only carrier observations for connection diagnostics and receipts.
+    pub connection: Vec<String>,
 }
 pub(super) struct Panel {
     tx: mpsc::Sender<(u64, Command)>,
@@ -69,6 +71,7 @@ impl Panel {
             update: Update {
                 acknowledged: 0,
                 data: None,
+                connection: vec![],
                 status: if guest {
                     "Connecting to invited graph"
                 } else {
@@ -408,6 +411,7 @@ fn owner_worker(
                 acknowledged,
                 data: Some(data),
                 status: "Saved · owner acknowledged".into(),
+                connection: vec![],
             },
             Err(reason) => {
                 connection = None;
@@ -415,6 +419,7 @@ fn owner_worker(
                     acknowledged,
                     data: None,
                     status: format!("Refused: {reason}"),
+                    connection: vec![],
                 }
             },
         };
@@ -437,6 +442,7 @@ fn guest_worker(
                 acknowledged: 0,
                 data: None,
                 status: e,
+                connection: vec![],
             });
             return;
         },
@@ -476,6 +482,7 @@ fn guest_worker(
                 acknowledged,
                 data: None,
                 status: "Identity locked".into(),
+                connection: vec![],
             });
             break;
         }
@@ -502,6 +509,22 @@ fn guest_worker(
             acknowledged,
             data: guest.as_ref().and_then(|g| g.data.clone()),
             status: status.clone(),
+            connection: guest
+                .as_ref()
+                .map(|g| match g.peer_paths() {
+                    Ok(paths) => paths
+                        .into_iter()
+                        .map(|path| {
+                            format!(
+                                "{} {}",
+                                if path.active { "active" } else { "available" },
+                                path.addr
+                            )
+                        })
+                        .collect(),
+                    Err(error) => vec![format!("unavailable: {error}")],
+                })
+                .unwrap_or_default(),
         };
         let encoded = serde_json::to_string(&update).unwrap();
         if last.as_ref() != Some(&encoded) {
@@ -593,6 +616,7 @@ mod tests {
             acknowledged: 0,
             data: Some(data.clone()),
             status: "Ready".into(),
+            connection: vec![],
         };
         let mut panel = Panel {
             tx,
@@ -614,6 +638,7 @@ mod tests {
                 acknowledged: sequence - 1,
                 data: Some(data.clone()),
                 status: "Saved · owner acknowledged".into(),
+                connection: vec![],
             })
             .unwrap();
         panel.drain();
@@ -626,6 +651,7 @@ mod tests {
                 acknowledged: sequence,
                 data: Some(data),
                 status: "Saved · owner acknowledged".into(),
+                connection: vec![],
             })
             .unwrap();
         panel.drain();

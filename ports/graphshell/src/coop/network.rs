@@ -132,6 +132,16 @@ pub struct Guest {
     _transport: Arc<P2pandaTransport>,
 }
 impl Guest {
+    /// Current transport observations, including which route carries traffic.
+    /// This reads the existing carrier; it never establishes another session.
+    pub fn peer_paths(&self) -> Result<Vec<transport::PeerPath>, String> {
+        let peer = transport::PeerID::from_bytes(&self.invitation.owner.peer())
+            .map_err(|e| e.to_string())?;
+        self.runtime
+            .block_on(self._transport.peer_paths(peer))
+            .map_err(|e| e.to_string())
+    }
+
     /// The native product worker drives the shared line pump on this runtime.
     /// Transport and host accept tasks remain asynchronous.
     pub fn connect(
