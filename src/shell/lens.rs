@@ -1246,7 +1246,7 @@ fn lens_content_plan_with_rects(
             let geom = app
                 .workbench_for_pane(pane)
                 .and_then(|workbench| workbench.to_arrangement().1);
-            crate::workbench_tiling::place_workbench(geom.as_ref(), rect)
+            crate::workbench_tiling::place_workbench_at(geom.as_ref(), rect, app.shell_chrome_config().layout.document_tabs)
                 .cells
                 .iter()
                 .filter_map(|c| {
@@ -1262,7 +1262,7 @@ fn lens_content_plan_with_rects(
         let geom = app
             .workbench_for_pane(pane)
             .and_then(|workbench| workbench.to_arrangement().1);
-        for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), rect).cells {
+        for cell in crate::workbench_tiling::place_workbench_at(geom.as_ref(), rect, app.shell_chrome_config().layout.document_tabs).cells {
             if let Some(node) = cell.active_member()
                 && contents.contains_key(&node)
             {
@@ -1320,7 +1320,7 @@ fn lens_content_plan_with_rects(
             let geom = app
                 .workbench_for_pane(id)
                 .and_then(|w| w.to_arrangement().1);
-            for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), rect).cells {
+            for cell in crate::workbench_tiling::place_workbench_at(geom.as_ref(), rect, app.shell_chrome_config().layout.document_tabs).cells {
                 if let Some(node) = cell.active_member().filter(|n| contents.contains_key(n)) {
                     let body = cell.body();
                     appearance_roles.push((

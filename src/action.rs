@@ -275,6 +275,8 @@ pub enum Action {
     DismissRetained,
     GrowTiles,
     ShrinkTiles,
+    /// Toggle the owning Map's categorical ground; leaves graph data and arrangement intact.
+    ToggleTerritory,
     /// Native view curation; never changes graph truth or source positions.
     FoldSelection,
     ExpandFold,
@@ -543,6 +545,14 @@ pub enum Action {
     /// Workbench pane if absent, opens the tile in platen's model, and spawns
     /// the node's content if it has none.
     OpenInWorkbench,
+    /// Primary reading and graph views keep the same document identity.
+    SetWorkspaceMap(bool),
+    ReadGraphMember(uuid::Uuid),
+    /// Reveal an existing graph member without changing its reading arrangement.
+    RevealGraphMember(uuid::Uuid),
+    /// Hide retains the pane in an inactive stack; show restores its split.
+    ToggleToolPane(PaneKindId),
+    SetChromeLayout(crate::chrome_layout::ChromeLayout),
     /// Tear a tile OUT of the workbench — the tab drag released outside the
     /// pane. The tile leaves platen's tiling and becomes a pinned
     /// `PaneContent::Tile` pane in a lens window: the tear-out trichotomy's
@@ -730,6 +740,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Dismiss retained", Action::DismissRetained),
         ("Grow tiles", Action::GrowTiles),
         ("Shrink tiles", Action::ShrinkTiles),
+        ("Territory", Action::ToggleTerritory),
         shared(Action::FitView),
         shared(Action::FoldSelection),
         shared(Action::ExpandFold),
@@ -789,6 +800,8 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Return pane to primary", Action::ReturnActivePaneToPrimary),
         ("Fork from node", Action::ForkFocusedNode),
         ("Open node in Workbench", Action::OpenInWorkbench),
+        ("Read document", Action::SetWorkspaceMap(false)),
+        ("Show document in map", Action::SetWorkspaceMap(true)),
         ("Close workbench tile", Action::CloseWorkbenchTile),
         shared(Action::DeleteFocusedNode),
         ("Empty recycle bin", Action::EmptyRecycleBin),
@@ -1006,6 +1019,7 @@ pub enum Effect {
     },
     /// Persist the session through the persistence port.
     SaveSession,
+    SaveChromeLayout(crate::chrome_layout::ChromeLayout),
     /// Put `text` on the system clipboard. The clipboard itself stays behind
     /// the shell; neither the app nor the place worker holds one.
     CopyText(String),

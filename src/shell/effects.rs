@@ -966,6 +966,11 @@ impl Shell {
                     }
                 },
                 Effect::SaveSession => self.save_session(),
+                Effect::SaveChromeLayout(layout) => {
+                    if let Err(error) = layout.save(&self.app.data_root) {
+                        tracing::warn!(%error, "chrome placement could not be saved");
+                    }
+                },
                 Effect::SaveGraphFolds { graph } => self.save_graph_folds(graph),
                 Effect::CopyText(text) => {
                     use genet_clipboard::TextClipboard as _;
