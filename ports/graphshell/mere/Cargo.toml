@@ -18,6 +18,7 @@ path = "src/main.rs"
 [dependencies]
 graphshell = { path = "..", default-features = false, features = ["coop"] }
 serde_json.workspace = true
+url = "2"
 uuid.workspace = true
 serde = { version = "1", features = ["derive"] }
 cambium.workspace = true
@@ -38,7 +39,7 @@ sceno.workspace = true
 scenotime.workspace = true
 sprigging.workspace = true
 taproot.workspace = true
-tokio = { version = "1", features = ["io-std", "io-util", "macros", "net", "rt-multi-thread", "sync", "time"] }
+tokio = { version = "1", features = ["io-std", "io-util", "macros", "net", "rt-multi-thread", "sync", "time", "process"] }
 
 [dev-dependencies]
 genet-scripted-dom.workspace = true
