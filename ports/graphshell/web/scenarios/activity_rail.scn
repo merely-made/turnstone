@@ -1,0 +1,34 @@
+# Activity controls are projections of the current graph and Forme.
+assert snap shell-projection == Map
+click role:button Fit graph
+settle 10
+capture activity_rail_map
+click-node https://example.test/i2p-port
+click role:button Read
+wait 120
+assert snap shell-projection == Read
+assert snap forme-accesses == 1
+click role:button Map
+click-node file:///Graphshell/reference-notes.md
+click role:button Panes
+click role:button Read selected
+wait 120
+assert snap forme-accesses == 2
+click role:button Inspector
+reveal role:button Unlock forme
+click role:button Unlock forme
+reveal role:button Arrange side by side
+click role:button Arrange side by side
+reveal role:button Lock and apply
+click role:button Lock and apply
+wait 120
+click role:button Inspector
+click role:button Reading tabs
+settle 10
+remember tiled
+capture activity_rail_tiled_read
+click role:button Fit graph
+settle 10
+same tiled forme
+same tiled node-count
+capture activity_rail_tabs_map

@@ -1290,3 +1290,13 @@ pub(super) const SHEET: &str = " .forme-workbench { width:100%;height:100%;min-h
     .pelt-reading > p { flex-shrink:0; } \
     .reading-pane button { padding:5px 10px;border:1px solid currentColor; } \
     .reading-address { overflow-wrap:anywhere; } .reading-body { white-space:pre-wrap;overflow-wrap:anywhere; } ";
+
+/// Activate an already arranged member without changing its tile or split.
+pub(super) fn activate_from_rail(page: &mut TreePage, member: Uuid) {
+    if !page.forme.as_ref().is_some_and(|pane| pane.current().layout().has_tile(member)) { return; }
+    edit(page, None, true, |workspace, graph| workspace.open(member, graph));
+    if let Some(pane) = &mut page.forme { pane.workbench = true; }
+    page.shared.canvas.borrow_mut().select_member(member);
+    selection_changed(page);
+    page.shared.dirty.set(true);
+}

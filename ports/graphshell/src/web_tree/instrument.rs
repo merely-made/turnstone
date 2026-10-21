@@ -11,7 +11,7 @@
 use super::{Child, TreePage};
 use cambium::{
     ShellControl, ShellDensity, WorkspacePaneStatus, el, shell_control, shell_popup,
-    shell_projection_switch, shell_toolbar, title_bar, workspace_pane_header,
+    shell_toolbar, title_bar, workspace_pane_header,
 };
 
 #[derive(Default)]
@@ -19,6 +19,7 @@ pub(super) struct State {
     pub panes_open: bool,
     pub graph_controls: bool,
     pub document_controls: bool,
+    pub document_rail: bool,
 }
 
 pub(super) const SHEET: &str = r#"
@@ -39,6 +40,7 @@ pub(super) const SHEET: &str = r#"
 .tree-instrument .tree-controls { padding:6px 12px; border-bottom:1px solid var(--workspace-rule); }
 .tree-instrument > .tree-product { position:static; flex:0 0 auto; max-width:none; max-height:140px; overflow-y:auto; padding:6px 12px; border-bottom:1px solid var(--workspace-rule); }
 .tree-instrument .tree-controls button, .tree-instrument .tree-tools button, .tree-instrument .tree-product button { border-radius:0; font-size:13px; }
+.tree-instrument .tree-body > .cambium-activity-rail, .tree-instrument .tree-body > .cambium-shell-documents { height:auto; align-self:stretch; }
 .tree-instrument .tree-body { border-top:1px solid var(--workspace-rule); }
 .tree-instrument .tree-tools { padding:0 10px 10px; border-left:1px solid var(--workspace-rule); }
 .tree-instrument .tree-tools > .workspace-pane-header { padding-left:0; padding-right:0; margin-bottom:10px; }
@@ -67,29 +69,6 @@ pub(super) fn app_header(page: &TreePage) -> Option<Child> {
     let density = ShellDensity::for_width(page.size.0 as f32, 1.0);
     let narrow = density.is_compact();
     let mut trailing: Vec<Child> = Vec::new();
-    if navigation_active && page.forme.is_some() {
-        trailing.push(shell_projection_switch(
-            !page.forme.as_ref().is_some_and(|pane| pane.workbench),
-            density == ShellDensity::Tiny,
-            |page: &mut TreePage, map| {
-                super::forme::show_projection(page, map);
-                page.instrument.panes_open = false;
-            },
-        ));
-    }
-    if navigation_active && !narrow {
-        trailing.push(control(
-            "Inspector",
-            ShellControl {
-                pressed: Some(page.tools_open),
-                ..Default::default()
-            },
-            |page| {
-                page.tools_open = !page.tools_open;
-                page.instrument.panes_open = false;
-            },
-        ));
-    }
     if navigation_active {
         trailing.push(control(
             "Panes",
@@ -242,4 +221,52 @@ pub(super) fn inspector_header(page: &TreePage) -> Option<Child> {
         },
         Box::new(el("div", ())),
     ))
+}
+
+/// The same shared shell rail as the native browser, with this host's smaller tool set.
+pub(super) fn activity_rail(page: &TreePage) -> Option<Child> {
+    if !enabled(page) || super::blocks_active(page) { return None; }
+    let map = !page.forme.as_ref().is_some_and(|pane| pane.workbench);
+    let ready = page.forme.is_some();
+    let mut projections = Vec::new();
+    for (mark, label, is_map) in [("▤", "Read", false), ("◇", "Map", true)] {
+        projections.push(activity(mark, label, label, ShellControl { pressed: Some(map == is_map), disabled: !ready, ..Default::default() }, move |p| super::forme::show_projection(p, is_map)));
+    }
+    let tools = vec![
+        activity("ⓘ", "Inspect", "Inspector", ShellControl { pressed: Some(page.tools_open), ..Default::default() }, |p| p.tools_open = !p.tools_open),
+        activity("▥", "Tabs", "Reading tabs", ShellControl { pressed: Some(page.instrument.document_rail), ..Default::default() }, |p| p.instrument.document_rail = !p.instrument.document_rail),
+        activity("⌕", "Search", "All commands…", ShellControl::default(), super::commands::open_keyboard),
+    ];
+    let utilities = vec![activity("⌖", "Fit", "Fit graph", ShellControl::default(), |p| {
+        super::forme::show_projection(p, true);
+        p.shared.fit_pending.set(true);
+    })];
+    Some(cambium::shell_activity_rail(projections, tools, utilities))
+}
+
+fn activity(mark: &str, label: &str, name: &str, state: ShellControl, activate: impl Fn(&mut TreePage) + 'static) -> Child {
+    cambium::shell_activity_control(mark, label, name, state, move |p: &mut TreePage, _| {
+        activate(p);
+        p.instrument.panes_open = false;
+        p.shared.dirty.set(true);
+    })
+}
+
+pub(super) fn document_rail(page: &TreePage) -> Option<Child> {
+    if !enabled(page) || super::blocks_active(page) || !page.instrument.document_rail { return None; }
+    let graph = page.shared.canvas.borrow().graph().clone();
+    let groups = page.forme.as_ref().map(|pane| {
+        let layout = pane.current().layout();
+        layout.slot_views().enumerate().map(|(i, slot)| {
+            (format!("Tile {}", i + 1), slot.members.iter().enumerate().map(|(index, member)| {
+                let member = *member;
+                let title = graph.get_node_by_id(member).map(|(key, _)| graph.node_display_label(key)).unwrap_or_else(|| "Unavailable document".into());
+                shell_control(title.clone(), title, ShellControl { pressed: Some(slot.active == index), ..Default::default() }, move |p: &mut TreePage, _| {
+                    super::forme::activate_from_rail(p, member);
+                })
+            }).collect())
+        }).collect::<Vec<_>>()
+    }).unwrap_or_default();
+    let groups = if groups.is_empty() { vec![("Reading tiles".into(), vec![control("No arranged documents", ShellControl { disabled:true, ..Default::default() }, |_| {})])] } else { groups };
+    Some(cambium::shell_document_rail(groups))
 }

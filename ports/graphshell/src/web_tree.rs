@@ -220,6 +220,8 @@ struct Shared {
     canvas: RefCell<Canvas>,
     /// Input or a new graph since the producer last drew.
     dirty: Cell<bool>,
+    /// Fit once the producer has the real canvas aperture, not the full page.
+    fit_pending: Cell<bool>,
     /// Whether the layout moved on the last frame, so frames keep coming.
     moving: Cell<bool>,
     /// The canvas's size in logical px, as last laid out.
@@ -830,6 +832,8 @@ fn view(page: &TreePage) -> Child {
                     el(
                         "div",
                         (
+                            activity_rail(page),
+                            document_rail(page),
                             (!document_active && !inline_product_controls && document_controls)
                                 .then(|| product::controls(page)),
                             (!document_active).then(|| product::projection_editor(page)),
@@ -1480,6 +1484,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
             canvas
         }),
         dirty: Cell::new(true),
+        fit_pending: Cell::new(product.is_some() && presenter.is_none()),
         moving: Cell::new(false),
         size: Cell::new((width, height)),
         physical_size: Cell::new([0, 0]),
@@ -2357,3 +2362,12 @@ fn forme_sheet() -> String {
 #[cfg(feature = "product")]
 mod ordinary_link_paths;
 mod responsive_links;
+
+#[cfg(feature = "product")]
+fn activity_rail(page: &TreePage) -> Option<Child> { instrument::activity_rail(page) }
+#[cfg(not(feature = "product"))]
+fn activity_rail(_: &TreePage) -> Option<Child> { None }
+#[cfg(feature = "product")]
+fn document_rail(page: &TreePage) -> Option<Child> { instrument::document_rail(page) }
+#[cfg(not(feature = "product"))]
+fn document_rail(_: &TreePage) -> Option<Child> { None }
