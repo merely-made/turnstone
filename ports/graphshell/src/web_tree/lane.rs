@@ -436,6 +436,17 @@ impl TreeLane {
         let page = ctx.runner.state();
         let canvas = self.shared.canvas.borrow();
         let choice = mere::canvas::PhysicsChoice::live(&canvas);
+        // The authored grouping partition belongs to the grouped root. It is
+        // independent of Group pull (`choice.groups`) and the role target's
+        // group source, both of which can be edited on this panel.
+        let grouping_partition = canvas
+            .dynamics_spec()
+            .ok()
+            .and_then(|spec| match spec.root {
+                mere::canvas::dynamics_spec::Node::Grouped { partition, .. } => Some(partition),
+                _ => None,
+            })
+            .unwrap_or_default();
         let checked = {
             let projection = ctx.a11y_projection();
             let dom = ctx.runner.dom();
@@ -562,6 +573,39 @@ impl TreeLane {
                 "panel-mix-second-share",
                 page.physics.mix_second_share.text(),
             )
+            .with_field(
+                "panel-grouping-partition",
+                mere::canvas::PhysicsKindSource::ALL[page
+                    .physics
+                    .group_partition
+                    .selected
+                    .min(mere::canvas::PhysicsKindSource::ALL.len() - 1)]
+                .id(),
+            )
+            .with_field(
+                "panel-grouping-outer",
+                mere::canvas::PhysicsLaw::ALL[page
+                    .physics
+                    .group_outer
+                    .selected
+                    .min(mere::canvas::PhysicsLaw::ALL.len() - 1)]
+                .id(),
+            )
+            .with_field(
+                "panel-grouping-inner",
+                mere::canvas::PhysicsLaw::ALL[page
+                    .physics
+                    .group_inner
+                    .selected
+                    .min(mere::canvas::PhysicsLaw::ALL.len() - 1)]
+                .id(),
+            )
+            .with_field(
+                "panel-grouping-outer-share",
+                page.physics.group_outer_share.text(),
+            )
+            .with_field("panel-grouping-note", page.physics.group_note.clone())
+            .with_field("grouping-partition", grouping_partition)
             .with_field(
                 "physics-root-spec",
                 canvas
