@@ -141,9 +141,23 @@ impl App {
     }
 
     pub(super) fn edit_graph_scene(&mut self, action: Action) -> Vec<Effect> {
-        let Some(pane) = self.scene_command_pane() else {
+        let pane = self.scene_command_pane().or_else(|| {
+            matches!(action, Action::ToggleTerritory)
+                .then(|| {
+                    let member = self.browser_command_target().map(|(member, _)| member);
+                    self.primary_graph_for_navigation(member)
+                })
+                .flatten()
+        });
+        let Some(pane) = pane else {
             return vec![];
         };
+        if matches!(action, Action::ToggleTerritory) {
+            self.with_graph_pane(pane, |canvas| {
+                canvas.set_territory_field(!canvas.territory_field());
+            });
+            return vec![Effect::Redraw];
+        }
         if let Some(runtime) = self
             .graph_for_pane(pane)
             .and_then(|graph| self.graph_runtimes.get_mut(graph))

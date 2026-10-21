@@ -955,9 +955,14 @@ pub fn snapshot(app: &App) -> Snapshot {
     // is the frisket tree — the Orrery leaf is the canvas, every other leaf a
     // pane — then content over the canvas when the focused node is Live, then
     // chrome on top when it has something to show.
+    let visible = app.frisket.outer_workspace().ok().map(|frame| frame.active_ids()).unwrap_or_default();
+    let visible_pane = |pane: crate::panes::PaneId| {
+        app.maximized.map_or_else(|| visible.contains(&workbench::TileId(pane.0)), |id| id == pane)
+    };
     let mut surfaces: Vec<String> = app
         .frisket
         .iter_leaves()
+        .filter(|(pane, _, _)| visible_pane(*pane))
         .map(|(_, content, _)| {
             match content {
                 crate::panes::PaneContent::Orrery => "canvas".to_string(),
@@ -984,7 +989,7 @@ pub fn snapshot(app: &App) -> Snapshot {
     let wb_in_primary = app
         .frisket
         .iter_leaves()
-        .any(|(_, c, _)| matches!(c, crate::panes::PaneContent::Workbench));
+        .any(|(pane, c, _)| visible_pane(pane) && matches!(c, crate::panes::PaneContent::Workbench));
     let wb_in_lens = app.lenses.iter().flatten().any(|space| {
         space
             .iter_leaves()
@@ -1020,6 +1025,7 @@ pub fn snapshot(app: &App) -> Snapshot {
     let tile_content_here = wb_in_primary && tiled.iter().any(|m| live(*m));
     let focused_inset = app.graph_runtimes.focused_member().is_some_and(|m| {
         live(m)
+            && !app.map_navigation_active()
             && !((wb_in_primary || wb_in_lens) && tiled.contains(&m))
             && !tile_panes.contains(&m)
     });

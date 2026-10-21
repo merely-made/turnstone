@@ -557,6 +557,7 @@ impl taproot::Automatable for Shell {
 
     fn selector_target(&self, selector: &taproot::Selector) -> taproot::SelectorTarget {
         match selector.surface.as_deref() {
+            Some("chrome") => self.chrome.selector_point(selector).map_or(taproot::SelectorTarget::Miss,|point|taproot::SelectorTarget::Hit(taproot::Hit{surface:"chrome",point})),
             None => self.retained_pane_selector_target(selector),
             Some("frame") => {
                 let mut frames = self.outer_frames.borrow_mut();
@@ -781,6 +782,7 @@ impl taproot::Automatable for Shell {
             .with_field("scene-foreground-pins", snap.graph_scene.foreground_pins.to_string())
             .with_field("scene-retained", snap.graph_scene.retained.to_string())
             .with_field("scene-grammar", snap.graph_scene.grammar.to_string())
+            .with_field("scene-territory", snap.graph_scene.territory.to_string())
             .with_field("focus", snap.focus)
             .with_field("saved-sources-status", self.app.saved_sources.status.clone())
             .with_field("saved-reader-state", saved_reader_state)

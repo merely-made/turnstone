@@ -1105,7 +1105,26 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         14.0 * zoom,
         role_color(appearance, "primary", palette.accent),
     );
-    themed_sheet(appearance, sheet)
+    let controls = format!(
+        ".turnstone-stone-hidden {{ display:none; }}
+        .browser-strip {{ background-color:transparent; border:0; border-radius:0; gap:2px; padding:0; }}
+        .shell-control {{ color:inherit; font-size:{:.2}px; }}
+        .shell-control[aria-pressed=true] {{ background-color:{}; color:{}; }}
+        .browser-status {{ --app-region:no-drag; text-align:left; flex:1 1 0; min-width:0; border:1px solid {}; border-radius:5px; background-color:{}; color:{}; padding:4px 7px; overflow:hidden; white-space:nowrap; }}
+        .chrome-menu-dismiss {{ --app-region:no-drag; background:transparent; }}
+        .chrome-menu {{ --app-region:no-drag; display:flex; flex-direction:column; box-sizing:border-box; padding:8px; gap:0; background-color:{}; color:{}; border:1px solid {}; border-radius:6px; }}
+        .chrome-menu-entry {{ width:100%; }}
+        .chrome-menu-entry[data-menu-focus=true] {{ outline:1px solid currentColor; outline-offset:-1px; }}
+        .chrome-menu .shell-control {{ text-align:left; width:100%; height:{:.2}px; overflow:hidden; white-space:nowrap; flex-shrink:0; }}
+        .chrome-menu .shell-popup {{ padding:0; border:0; background:transparent; max-height:none; }}
+        .chrome-panes-menu .shell-popup {{ flex-direction:row; flex-wrap:wrap; }}
+        .chrome-panes-menu .chrome-menu-entry {{ width:50%; flex-basis:50%; }}",
+        12.0*zoom,
+        role_color(appearance,"surface-2",palette.field),role_color(appearance,"text-header",palette.text),
+        role_color(appearance,"text-dim",palette.border),role_color(appearance,"bg",palette.surface),role_color(appearance,"text",palette.body_text),
+        role_color(appearance,"surface",palette.raised),role_color(appearance,"text",palette.body_text),role_color(appearance,"text-dim",palette.border),22.0+6.0*zoom,
+    );
+    themed_sheet(appearance, format!("{sheet}\n{}\n{controls}", cambium::SHELL_CSS))
 }
 
 /// The Settings pane's live Cambium sheet. Other pane kinds retain their
@@ -2672,6 +2691,8 @@ pub struct RetainedSubtreeLayout {
     sheet: String,
     dirty: bool,
     rebuilds: u32,
+    /// DOM revision represented by the painted fragments, even after a drain.
+    mutation_cursor: u64,
 }
 
 impl Default for RetainedSubtreeLayout {
@@ -2681,6 +2702,27 @@ impl Default for RetainedSubtreeLayout {
 }
 
 impl RetainedSubtreeLayout {
+    pub(crate) fn selector_point(&self,dom:&ScriptedDom,root:DomNodeId,selector:&taproot::Selector)->Option<(f32,f32)> {
+        let (base, pending) = dom.pending_mutations();
+        if self.dirty || self.mutation_cursor != base + pending.len() as u64 { return None; }
+        let snapshot=self.snapshot.as_ref()?;
+        let scoped=cambium_rootstock::WindowDom::new(dom,root);
+        let nodes=if matches!(selector.matcher,taproot::Match::Class(_)) {
+            taproot::matching_classes(dom,selector)
+        } else {
+            let projection=genet_render::document_a11y_projection(&scoped,&snapshot.fragments,None,0);
+            taproot::matching_prefer_exact_with_projection(dom,selector,&projection)
+        };
+        let view=SubtreeView::new(dom,root);
+        let mut point=None;
+        for node in nodes.into_iter().filter(|node| scoped.contains(*node)) {
+            let Some((x,y,w,h))=snapshot_visible_rect(&view,snapshot,node,&HashMap::new(),(0.0,0.0),self.size) else {continue};
+            if w<=0.0 || h<=0.0 {continue;}
+            if point.is_some() {return None;}
+            point=Some((x+w/2.0,y+h/2.0));
+        }
+        point
+    }
     pub fn new() -> Self {
         Self {
             snapshot: None,
@@ -2688,6 +2730,7 @@ impl RetainedSubtreeLayout {
             sheet: String::new(),
             dirty: true,
             rebuilds: 0,
+            mutation_cursor: 0,
         }
     }
 
@@ -2707,9 +2750,12 @@ impl RetainedSubtreeLayout {
     }
 
     fn ensure(&mut self, dom: &ScriptedDom, root: DomNodeId, sheet: &str, w: u32, h: u32) {
+        let (base, pending) = dom.pending_mutations();
+        let revision = base + pending.len() as u64;
         let resized = self.size != (w, h);
         let resheeted = self.sheet != sheet;
-        if self.snapshot.is_some() && !self.dirty && !resized && !resheeted {
+        if self.snapshot.is_some() && !self.dirty && !resized && !resheeted
+            && self.mutation_cursor == revision {
             return;
         }
         self.rebuilds = self.rebuilds.saturating_add(1);
@@ -2731,6 +2777,7 @@ impl RetainedSubtreeLayout {
         self.size = (w, h);
         self.sheet = sheet.to_string();
         self.dirty = false;
+        self.mutation_cursor = revision;
     }
 
     /// This root's scene, cascading only when something actually changed.
@@ -2913,9 +2960,11 @@ pub const CAMBIUM_SHEET: &str = "\
     .grid-cell { color: rgb(200, 208, 224); padding: 5px 10px; \
                  white-space: nowrap; overflow: hidden; } \
     .grid-row-selected .grid-cell { color: rgb(28, 22, 10); } \
-    .pane { background-color: rgb(22, 27, 40); } \n    .tablist { display: flex; height: 26px; background-color: rgb(18, 22, 33); } \
-    .tab { color: rgb(150, 160, 180); font-size: 12px; padding: 6px 12px; \
+    .pane { background-color: rgb(22, 27, 40); } \n    .tablist { display: flex; height: 24px; background-color: rgb(18, 22, 33); } \
+    .tab { color: rgb(150, 160, 180); font-size: 12px; padding: 4px 9px; \
            white-space: nowrap; } \
+    .wb-tabs-vertical .tablist { flex-direction: column; width: 100%; height: 100%; } \
+    .wb-tabs-vertical .tab { flex-shrink: 0; overflow: hidden; width: 100%; min-width: 0; box-sizing: border-box; } \
     .tab.selected { color: rgb(232, 150, 40); \
                     background-color: rgb(22, 27, 40); } \
     .pane-empty { color: rgb(120, 130, 150); font-size: 12px; padding: 12px; } \
@@ -2953,7 +3002,7 @@ pub const SEAM_CLEAR: wgpu::Color = wgpu::Color {
 /// host must also state its height: the Roster subtracts it from the grid's
 /// viewport and adds it to a row's y. `tablist_height_matches_the_sheet` holds
 /// this to what the sheet actually lays out.
-pub const TABLIST_HEIGHT: f32 = 26.0;
+pub const TABLIST_HEIGHT: f32 = cambium::ShellMetrics::DOCUMENT_ROW_HEIGHT;
 
 fn qual(local: &str) -> QualName {
     QualName::new(None, Namespace::from(""), LocalName::from(local))
