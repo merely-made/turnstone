@@ -38,7 +38,9 @@ passes independently against both the raw runs and the public subset. Nineteen
 focused supplier cases passed: three publication/owner/lock/withdrawal cases,
 fourteen recall/embedding cases and two resident route cases. This is not a full
 workspace suite. See `software-checks.json`, `toolchain.json` and
-`compiled-source-proof.json` for exact source/build boundaries.
+`compiled-source-proof.json` for exact source/build boundaries. The same nineteen
+focused cases also pass after merging supplier main; `integration-status.json`
+and `integration/` record that software gate and the later consumer source boundary.
 
 ## Frozen retrieval comparison
 
