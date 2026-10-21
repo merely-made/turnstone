@@ -91,8 +91,9 @@ set.
   vault/migration, broader editor input and format gates remain. The October 21
   continuation qualifies both retained text bodies in explicit Answers scope,
   real fused recall, local citations and source-absent cold export on its recorded
-  receiving cut. Current-main shell integration is checked separately; the
-  four-scalar citation/model limit remains explicit.
+  receiving cut. A companion packet also qualifies the final shared shell and
+  shared Apparatus-core SDK `7edfe3b09`; the four-scalar citation/model limit
+  remains explicit.
 - [q-pc lane handoff, 2026-10-14](2026-10-14_qpc_lane_handoff.md): the lane's
   resume point on q-pc (Mac), with Windows gates on o-pc. Main is the only live line after the ThinkPad
   branch/worktree reconciliation; lists pins, the lens-label fix, ordered open

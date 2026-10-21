@@ -1,0 +1,10 @@
+{
+  "schema": "distillery.inference-runs/v1",
+  "model": "HuggingFaceTB/SmolLM2-360M-Instruct",
+  "session": {
+    "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+    "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+  },
+  "load_error": null,
+  "runs": []
+}

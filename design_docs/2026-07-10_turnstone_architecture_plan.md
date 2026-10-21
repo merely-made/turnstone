@@ -969,8 +969,8 @@ lexical/vector/fused benchmark retains its original source receipt.
 
 ### Retained selection/note Answers admission, 2026-10-20
 
-**Status:** implementation and bounded native qualification complete on the
-recorded receiving cut; current-main integration follows separately. The
+**Status:** implementation and bounded native qualification complete,
+including the final merged shell and Mere SDK `7edfe3b09`. The
 research owner now joins exact saved captures and current-session retained-clip
 members. `research::Target` preserves persisted Answers v2 capture payloads and
 adds a distinct clip target containing session, graph, node, retained manifest
@@ -994,3 +994,10 @@ cold processes and unchanged selected-only export. Its receipt binds 59 focused
 software passes and 24 reviewed captures. The short-word citation/model limit
 and later shared-shell integration are recorded in the receiver plan; neither
 changes passage authority or the automatic quote threshold.
+
+The final `a048adc` integration cut preserves concurrent shell/navigation and
+shared Apparatus-core pins. Its separate native receiving/cold packet passes
+both selected producer bodies with twenty reviewed captures, compatible index
+reuse and exact local citations/export. Native/libtest builds and all 43 focused
+Turnstone cases pass on Rust 1.99.1. The receiver plan links both frozen cuts
+and their source/evidence proofs; the short-word/model boundary stays explicit.

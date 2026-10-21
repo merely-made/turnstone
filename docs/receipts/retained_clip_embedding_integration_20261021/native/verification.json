@@ -1,0 +1,236 @@
+{
+  "result": "pass",
+  "process_ids": [
+    99447,
+    99366,
+    99622,
+    99616,
+    244,
+    99995,
+    663,
+    616
+  ],
+  "lanes": {
+    "knot": {
+      "selected_text": "The Pelican observatory's access word is café.",
+      "source": {
+        "kind": "fleece",
+        "owner": "turnstone/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/research/v1",
+        "source": "mere://retained-text/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/738fdb11-66e7-47e4-90b4-a016a38aea25/d99b43e8-28d2-4392-9c73-5910b999ad53/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+        "node": "d99b43e8-28d2-4392-9c73-5910b999ad53"
+      },
+      "version": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+      "original_anchors": [
+        {
+          "source": "file:///Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+          "representation": "669d3a92df8bcc1c5d4d4f98392cbc7ba84f183096a9f2cb884c8bb2389ac45d",
+          "units": "utf8-bytes",
+          "selector": {
+            "byte_span": {
+              "end": 63,
+              "start": 16
+            },
+            "document_address": "file:///Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+            "exact_quote": "The Pelican observatory's access word is café.",
+            "source_hash": "669d3a92df8bcc1c5d4d4f98392cbc7ba84f183096a9f2cb884c8bb2389ac45d"
+          },
+          "evidence": null
+        }
+      ],
+      "warm": {
+        "envelope": "blake3:773c9cbc0fcd44e66d8f15a6c6772e04cc1ba3d2954cfeef18f9835e9aa0a283",
+        "index": "blake3:508163df0024f94054b6a04299346136774b22abf8a13bf1b9d73ac4fd78163d",
+        "cache": "built",
+        "vector_bytes": 1536,
+        "persisted_bytes": 6409,
+        "lexical_weight": 1,
+        "vector_weight": 1,
+        "rrf_k": 60
+      },
+      "cold": {
+        "envelope": "blake3:773c9cbc0fcd44e66d8f15a6c6772e04cc1ba3d2954cfeef18f9835e9aa0a283",
+        "index": "blake3:508163df0024f94054b6a04299346136774b22abf8a13bf1b9d73ac4fd78163d",
+        "cache": "reopened",
+        "vector_bytes": 2048,
+        "persisted_bytes": 6409,
+        "lexical_weight": 1,
+        "vector_weight": 1,
+        "rrf_k": 60
+      },
+      "historical_evidence_unchanged": true,
+      "native_documents_equal": true,
+      "only_selected_body_in_corpus": true,
+      "cold_selected_export_equal": true,
+      "private_store_scan": {
+        "clip": {
+          "bytes": 7256,
+          "clear_text_hits": 0
+        },
+        "journal": {
+          "bytes": 4210688,
+          "clear_text_hits": 0
+        }
+      },
+      "captures": [
+        {
+          "path": "knot/warm/01_retained_body.png",
+          "sha256": "f1792e404a767b9631bdc778218bdbf526cc00f09d4cbb1c70de5b04baecbfdf"
+        },
+        {
+          "path": "knot/warm/02_explicit_scope.png",
+          "sha256": "902a29987dc5f07aa4b2d92d95f9b76f6b1b6c3f3704759464f168f80368ae4c"
+        },
+        {
+          "path": "knot/warm/02b_ask_submitted.png",
+          "sha256": "0cb78f5f2f6b21f6c3efce9d10b0b9f6acc3f81b9c8751758e752d7aed7ac696"
+        },
+        {
+          "path": "knot/warm/03_embedding_answer.png",
+          "sha256": "ae1701305a3b989d836bc8fa666953609ced2dab8781d6c718f4c4ba68890a1c"
+        },
+        {
+          "path": "knot/warm/04_exact_clip_citation.png",
+          "sha256": "34891df2943f47d6ad98126ef193201bf9b8eca46e892101528a97c092415120"
+        },
+        {
+          "path": "knot/cold/05_source_and_package_absent.png",
+          "sha256": "e530e93b52b82dfe7abbd1c3dd4740d400d48639ac51b9a5405899f30c7a1089"
+        },
+        {
+          "path": "knot/cold/06_historical_answer.png",
+          "sha256": "e570ec2a6a0539ef236ba07d7717e987e222ba973cb88c1f3d2601097e3ba3a5"
+        },
+        {
+          "path": "knot/cold/07_historical_citation.png",
+          "sha256": "34891df2943f47d6ad98126ef193201bf9b8eca46e892101528a97c092415120"
+        },
+        {
+          "path": "knot/cold/08_new_cold_embedding_answer.png",
+          "sha256": "1706daf37da5686a88f2caf000e5811162d40312ab5398497dc94601e30b8069"
+        },
+        {
+          "path": "knot/cold/09_new_cold_citation.png",
+          "sha256": "d9c70790671eaae49e334b6f2a4550aa67e800bc7c67bf9c11de8ad7844602fb"
+        }
+      ]
+    },
+    "redshank": {
+      "selected_text": "Saved from the embedded listener: café → harbor.\nKeep this timed note.",
+      "source": {
+        "kind": "fleece",
+        "owner": "turnstone/be0e3fdd-d49a-4310-8309-de42dd60d343/research/v1",
+        "source": "mere://retained-text/be0e3fdd-d49a-4310-8309-de42dd60d343/94c96387-07ea-450e-9677-a6b6a31d3c6b/0af70aba-3769-4af0-9291-b9c1bb86e094/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+        "node": "0af70aba-3769-4af0-9291-b9c1bb86e094"
+      },
+      "version": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+      "original_anchors": [
+        {
+          "source": "file:///Users/markik/Code/output/redshank-text-retention-20261020/runtime/origin-recording.wav",
+          "representation": null,
+          "units": "milliseconds",
+          "selector": {
+            "end_offset_ms": 4500,
+            "item_id": "embedded-recording",
+            "offset_ms": 1250,
+            "pressed_offset_ms": 1400,
+            "representation": {
+              "byte_length": 1344044,
+              "complete_digest": "blake3:c4f4dd0407d49e0f5c9d82dc95bdfcbcabf6f0cdf82e69072556aa68c484008c",
+              "etag": null,
+              "final_url": null,
+              "last_modified": null,
+              "media_type": null,
+              "requested_url": null,
+              "retrieved_at_ms": null
+            }
+          },
+          "evidence": {
+            "body": {
+              "kind": "text",
+              "plain_text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+            },
+            "historical_author": null,
+            "source_revision": null
+          }
+        }
+      ],
+      "warm": {
+        "envelope": "blake3:a36e0c14ba05e9265df6bfd559b56421f7026f2ea209004922f881ce555a20a8",
+        "index": "blake3:fc1fb26f1bb5c3cc971c983dd0913f5c840f3b5dbbda2580c97ec1259fcc4155",
+        "cache": "built",
+        "vector_bytes": 1536,
+        "persisted_bytes": 6409,
+        "lexical_weight": 1,
+        "vector_weight": 1,
+        "rrf_k": 60
+      },
+      "cold": {
+        "envelope": "blake3:a36e0c14ba05e9265df6bfd559b56421f7026f2ea209004922f881ce555a20a8",
+        "index": "blake3:fc1fb26f1bb5c3cc971c983dd0913f5c840f3b5dbbda2580c97ec1259fcc4155",
+        "cache": "reopened",
+        "vector_bytes": 2048,
+        "persisted_bytes": 6409,
+        "lexical_weight": 1,
+        "vector_weight": 1,
+        "rrf_k": 60
+      },
+      "historical_evidence_unchanged": true,
+      "native_documents_equal": true,
+      "only_selected_body_in_corpus": true,
+      "cold_selected_export_equal": true,
+      "private_store_scan": {
+        "clip": {
+          "bytes": 7215,
+          "clear_text_hits": 0
+        },
+        "journal": {
+          "bytes": 4210688,
+          "clear_text_hits": 0
+        }
+      },
+      "captures": [
+        {
+          "path": "redshank/warm/01_retained_body.png",
+          "sha256": "f7fd0335edf98369444d9340952e3f3d4d1b68a14c8049df043f627af0c18560"
+        },
+        {
+          "path": "redshank/warm/02_explicit_scope.png",
+          "sha256": "4507fb0e7e844ede72f3b4b1e3c0337cc9c519c29b63db1b1e1cf5f1bdbbc0b1"
+        },
+        {
+          "path": "redshank/warm/02b_ask_submitted.png",
+          "sha256": "8b0e1426f48c50e15d415bc2eda9fb8deeee8d5f09a12dc0b1eea07ab7fb4b6b"
+        },
+        {
+          "path": "redshank/warm/03_embedding_answer.png",
+          "sha256": "709376df1803ed718fa0c1f93a50e579f20f3e1057df992b4dfeedcca05e0339"
+        },
+        {
+          "path": "redshank/warm/04_exact_clip_citation.png",
+          "sha256": "1e67a7cd60a7e909ffbf9dfb5df4dd4a82f67815c61d914bf232182d3e6b1153"
+        },
+        {
+          "path": "redshank/cold/05_source_and_package_absent.png",
+          "sha256": "d997b4564d587dc9254458b8d7124a274e5926bef4cf834884bf0fdd13278bf4"
+        },
+        {
+          "path": "redshank/cold/06_historical_answer.png",
+          "sha256": "94a5c55044049de69b8601a20fe4ebe4581881da06063aafa49c88196e9de2f6"
+        },
+        {
+          "path": "redshank/cold/07_historical_citation.png",
+          "sha256": "1e67a7cd60a7e909ffbf9dfb5df4dd4a82f67815c61d914bf232182d3e6b1153"
+        },
+        {
+          "path": "redshank/cold/08_new_cold_embedding_answer.png",
+          "sha256": "0f05d64ffb498ccf9d65465e79dbeeca023a0a3ae37aaf16d940fd7eb2561af7"
+        },
+        {
+          "path": "redshank/cold/09_new_cold_citation.png",
+          "sha256": "1e67a7cd60a7e909ffbf9dfb5df4dd4a82f67815c61d914bf232182d3e6b1153"
+        }
+      ]
+    }
+  },
+  "scope": "macOS native receiver imports of previously qualified embedded producer packages; real MiniLM fused recall, GPU generation and separate product/resident cold processes"
+}

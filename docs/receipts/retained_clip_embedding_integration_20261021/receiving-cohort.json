@@ -1,0 +1,25 @@
+{
+  "integration_commit": "a048adcc36eef8597ed913940d83103b9eae1633",
+  "previous_qualified_commit": "8ebf9197cedfe1afb18f064e0ba2e37665921540",
+  "resident_sdk": "7edfe3b097f38ee621f6352953c3b1be08339504",
+  "resident_fixture_commit": "c6540a4b7229808843ed66f0507fbbbc149b358a",
+  "context_change_commit": "22c8c5e3c4bf3869bc56f5d44373d204f11458f7",
+  "cargo_lock_sha256": "e5a5cee50c65f7dfceb39f1f10b3692567c7c50c6f968471b6b2c575970feb01",
+  "package_name_version_set_unchanged": false,
+  "removed_sources": [
+    "git+https://github.com/merely-made/mere.git?branch=main#eb1244ccfa644348fcd4c5cc8bd5ccf72315ba11"
+  ],
+  "added_sources": [
+    "git+https://github.com/merely-made/armillary.git?rev=75643df1f178757bb7b6386913af1a39353f3069#75643df1f178757bb7b6386913af1a39353f3069",
+    "git+https://github.com/merely-made/mere.git?branch=main#7edfe3b097f38ee621f6352953c3b1be08339504"
+  ],
+  "scope": "Preserve current main shared shell and subsequent shared Apparatus-core SDK pin; rerun final receiving checks on merged source.",
+  "intermediate_shell_merge": "b3fd69bef931f309a5b9b2b65f1560ad30ead4f9",
+  "added_package_versions": [
+    [
+      "apparatus-core",
+      "0.1.0"
+    ]
+  ],
+  "removed_package_versions": []
+}

@@ -1,0 +1,43 @@
+{
+  "resolved_packages": 1280,
+  "foreign_worktree_manifest_paths": [],
+  "packages": [
+    {
+      "name": "apparatus-core",
+      "id": "git+https://github.com/merely-made/armillary.git?rev=75643df1f178757bb7b6386913af1a39353f3069#apparatus-core@0.1.0",
+      "source": "git+https://github.com/merely-made/armillary.git?rev=75643df1f178757bb7b6386913af1a39353f3069#75643df1f178757bb7b6386913af1a39353f3069",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/armillary-e301d2b0038cb879/75643df/crates/apparatus-core/Cargo.toml"
+    },
+    {
+      "name": "distillery",
+      "id": "git+https://github.com/merely-made/mere.git?branch=main#distillery@0.0.1",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7edfe3b097f38ee621f6352953c3b1be08339504",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7edfe3b/ports/distillery/Cargo.toml"
+    },
+    {
+      "name": "eidetic",
+      "id": "git+https://github.com/merely-made/eidetic.git?rev=34105d63ec17826e0a58a5b461b65150357dd000#eidetic@0.0.2",
+      "source": "git+https://github.com/merely-made/eidetic.git?rev=34105d63ec17826e0a58a5b461b65150357dd000#34105d63ec17826e0a58a5b461b65150357dd000",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/34105d6/crates/eidetic-core/Cargo.toml"
+    },
+    {
+      "name": "esp",
+      "id": "git+https://github.com/merely-made/esp.git?rev=6d371901435b68e3fb4099a97789222d15f87cf0#esp@0.1.0",
+      "source": "git+https://github.com/merely-made/esp.git?rev=6d371901435b68e3fb4099a97789222d15f87cf0#6d371901435b68e3fb4099a97789222d15f87cf0",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/esp-45bbaf8e1db2afe3/6d37190/crates/esp/Cargo.toml"
+    },
+    {
+      "name": "fleece",
+      "id": "git+https://github.com/merely-made/genet.git?branch=main#fleece@0.5.0",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#6ef3cd37a785a395670d3b472fb3573665497f29",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/6ef3cd3/components/fleece/Cargo.toml"
+    },
+    {
+      "name": "mere-document-lanes",
+      "id": "git+https://github.com/merely-made/mere.git?branch=main#mere-document-lanes@0.1.0",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#7edfe3b097f38ee621f6352953c3b1be08339504",
+      "manifest_path": "/Users/markik/.cargo/git/checkouts/mere-9d8e871c24d9ba76/7edfe3b/crates/system/document-lanes/Cargo.toml"
+    }
+  ],
+  "locked_offline_metadata": "pass"
+}
