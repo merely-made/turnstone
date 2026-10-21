@@ -540,6 +540,12 @@ pub enum Action {
     /// Workbench pane if absent, opens the tile in platen's model, and spawns
     /// the node's content if it has none.
     OpenInWorkbench,
+    /// Primary reading and graph views keep the same document identity.
+    SetWorkspaceMap(bool),
+    ReadGraphMember(uuid::Uuid),
+    /// Hide retains the pane in an inactive stack; show restores its split.
+    ToggleToolPane(PaneKindId),
+    SetChromeLayout(crate::chrome_layout::ChromeLayout),
     /// Tear a tile OUT of the workbench — the tab drag released outside the
     /// pane. The tile leaves platen's tiling and becomes a pinned
     /// `PaneContent::Tile` pane in a lens window: the tear-out trichotomy's
@@ -786,6 +792,8 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Return pane to primary", Action::ReturnActivePaneToPrimary),
         ("Fork from node", Action::ForkFocusedNode),
         ("Open node in Workbench", Action::OpenInWorkbench),
+        ("Read document", Action::SetWorkspaceMap(false)),
+        ("Show document in map", Action::SetWorkspaceMap(true)),
         ("Close workbench tile", Action::CloseWorkbenchTile),
         shared(Action::DeleteFocusedNode),
         ("Empty recycle bin", Action::EmptyRecycleBin),
@@ -1003,6 +1011,7 @@ pub enum Effect {
     },
     /// Persist the session through the persistence port.
     SaveSession,
+    SaveChromeLayout(crate::chrome_layout::ChromeLayout),
     /// Put `text` on the system clipboard. The clipboard itself stays behind
     /// the shell; neither the app nor the place worker holds one.
     CopyText(String),

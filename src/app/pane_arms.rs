@@ -23,10 +23,142 @@ impl App {
     /// Named navigation must reveal its destination, including from a maximized
     /// reader. Focus still belongs to the destination's graph or pane surface.
     pub(super) fn reveal_pane(&mut self, pane: PaneId) {
+        if let Some(space) = self.space_of(pane)
+            && self.ensure_shared_space(space).is_ok()
+            && let Some(layout) = self.space_mut(space)
+        {
+            let _ = layout.apply_workspace(
+                &workbench::TileEvent::Activated(workbench::TileId(pane.0)).into(),
+            );
+        }
         self.active_pane = Some(pane);
         if self.maximized.is_some() {
             self.maximized = Some(pane);
         }
+    }
+
+    fn primary_graph_for_navigation(&self, member: Option<Uuid>) -> PaneId {
+        let graph = member.and_then(|node| self.graph_runtimes.graph_containing_member(node));
+        self.frisket
+            .iter_leaves()
+            .find_map(|(pane, content, id)| {
+                (matches!(content, PaneContent::Orrery) && graph.is_none_or(|graph| graph == id))
+                    .then_some(pane)
+            })
+            .unwrap_or_else(|| self.default_graph_pane())
+    }
+
+    pub(super) fn set_workspace_map(&mut self, map: bool) -> Vec<Effect> {
+        let member = if let Some(pane) = self.focused_graph_pane() {
+            self.graph_pane_focused_member(pane)
+        } else {
+            self.browser_command_target().map(|(member, _)| member)
+        };
+        let pane = self.primary_graph_for_navigation(member);
+        self.reveal_pane(pane);
+        if let Some(member) = member {
+            self.graph_pane_select_member(pane, member);
+        }
+        self.focus = crate::surface::FocusTarget::Graph(pane);
+        if map {
+            let mut effects = self.update(Action::FitView);
+            effects.extend([Effect::SaveSession, Effect::Redraw]);
+            effects
+        } else if member.is_some() {
+            let mut effects = self.open_in_workbench();
+            if let Some(member) = member {
+                effects.extend(self.update(Action::WorkbenchActivate(member)));
+            }
+            effects
+        } else {
+            vec![Effect::Redraw]
+        }
+    }
+
+    pub(super) fn read_graph_member(&mut self, member: Uuid) -> Vec<Effect> {
+        if self
+            .graph_runtimes
+            .graph_containing_member(member)
+            .is_none()
+        {
+            return vec![Effect::Redraw];
+        }
+        let pane = self.primary_graph_for_navigation(Some(member));
+        self.reveal_pane(pane);
+        self.graph_pane_select_member(pane, member);
+        self.focus = crate::surface::FocusTarget::Graph(pane);
+        let mut effects = self.open_in_workbench();
+        effects.extend(self.update(Action::WorkbenchActivate(member)));
+        effects
+    }
+
+    pub(super) fn toggle_tool_pane(&mut self, kind: PaneKindId) -> Vec<Effect> {
+        // Main views have a dedicated switch; tool toggling never closes them.
+        if matches!(kind.as_str(), kind::GRAPH | kind::WORKBENCH) {
+            return vec![Effect::Redraw];
+        }
+        let existing = self
+            .frisket
+            .iter_leaves()
+            .find_map(|(pane, content, _)| (content.kind_id() == kind).then_some(pane));
+        let map = self.map_navigation_active();
+        let main = self
+            .frisket
+            .iter_leaves()
+            .find_map(|(pane, content, _)| {
+                (if map {
+                    matches!(content, PaneContent::Orrery)
+                } else {
+                    matches!(content, PaneContent::Workbench)
+                })
+                .then_some(pane)
+            })
+            .unwrap_or_else(|| self.default_graph_pane());
+        let visible = existing.is_some_and(|pane| {
+            self.frisket
+                .outer_workspace()
+                .ok()
+                .is_some_and(|frame| frame.active_ids().contains(&workbench::TileId(pane.0)))
+        });
+        let Some(pane) = existing else {
+            self.reveal_pane(main);
+            return self.summon_pane(kind);
+        };
+        let Some(frame) = self.frisket.workspace_mut() else {
+            return vec![Effect::Redraw];
+        };
+        let target = if visible {
+            let Some(path) = crate::panes::workspace_bridge::path_for(
+                frame.workspace.tiled(),
+                workbench::TileId(main.0),
+            ) else {
+                return vec![Effect::Redraw];
+            };
+            let index =
+                match crate::panes::workspace_bridge::tree_at(frame.workspace.tiled(), &path) {
+                    Some(workbench::TileTree::Stack(stack)) => stack.tabs.len(),
+                    _ => 0,
+                };
+            workbench::DropTarget::Stack {
+                stack: crate::panes::workspace_bridge::path_indices(&path),
+                index,
+            }
+        } else {
+            workbench::DropTarget::Edge {
+                tile: workbench::TileId(main.0),
+                edge: workbench::Edge::Right,
+            }
+        };
+        let _ = frame.apply(
+            &workbench::TileEvent::Dragged {
+                tile: workbench::TileId(pane.0),
+                to: target,
+            }
+            .into(),
+        );
+        self.reveal_pane(if visible { main } else { pane });
+        self.index_pane_spaces();
+        vec![Effect::SaveSession, Effect::Redraw]
     }
 
     pub(super) fn summon_pane(&mut self, kind: PaneKindId) -> Vec<Effect> {
@@ -269,7 +401,8 @@ impl App {
                 pane
             },
         };
-        self.active_pane = Some(workbench_pane);
+        self.reveal_pane(workbench_pane);
+        self.focus = crate::surface::FocusTarget::Pane(workbench_pane);
         self.publish_member_context(workbench_pane, Some(member));
         // A tile wants live content; spawn it unless it already has
         // some (live or in flight). Failure surfaces as ever.

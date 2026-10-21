@@ -364,6 +364,22 @@ impl Shell {
     }
 
     pub(super) fn on_key_in_window(&mut self, slot: usize, size: (u32, u32), key: &WinitKey) {
+        if slot == 0 {
+            let menu_key=match key {
+                WinitKey::Named(WinitNamedKey::Escape)=>Some("escape"),
+                WinitKey::Named(WinitNamedKey::Enter)=>Some("enter"),
+                WinitKey::Named(WinitNamedKey::ArrowUp)=>Some("up"),
+                WinitKey::Named(WinitNamedKey::ArrowDown)=>Some("down"),
+                WinitKey::Named(WinitNamedKey::ArrowLeft)=>Some("left"),
+                WinitKey::Named(WinitNamedKey::ArrowRight)=>Some("right"),
+                _=>None,
+            };
+            if let Some(intents)=menu_key.and_then(|key|self.chrome.menu_key(key)) {
+                for intent in intents { super::input::dispatch_primary_chrome_press(self,Some(intent)); }
+                self.request_redraw();
+                return;
+            }
+        }
         if let Some(decision) = self.app.user_agent_decision.active() {
             let request = decision.request();
             let action = match decision {

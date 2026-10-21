@@ -30,6 +30,7 @@ pub struct OuterFrame {
     window_root: NodeId,
     workspace_root: NodeId,
     workspace_area: Option<Rect>,
+    main_view_switch: bool,
     scrolls: Vec<(u64, u32, u32)>,
     pub(crate) body_focus: Option<NodeId>,
     pub(crate) controls: FrameControls,
@@ -79,6 +80,7 @@ impl OuterFrame {
             window_root: root,
             workspace_root,
             workspace_area: None,
+            main_view_switch: true,
             scrolls: Vec::new(),
             body_focus: None,
             controls,
@@ -94,6 +96,12 @@ impl OuterFrame {
     }
 }
 impl OuterFrame {
+    pub(crate) fn set_main_view_switch(&mut self, visible: bool) {
+        if self.main_view_switch != visible {
+            self.main_view_switch = visible;
+            self.controls.invalidate();
+        }
+    }
     pub(crate) fn set_workspace_area(&mut self, area: Rect) {
         if self.workspace_area != Some(area) {
             self.workspace_area = Some(area);
@@ -161,6 +169,54 @@ impl OuterFrame {
         }
         let current = current.map(|id| TileId(id.0));
         self.controls.sync(session, workspace.clone(), current);
+        // Read/Map owns the primary view selection. Its canonical shared
+        // stack does not need a second row of frame tabs above document tabs.
+        {
+            use layout_dom_api::LayoutDomMut;
+            let mut dom = self.controls.dom.borrow_mut();
+            for node in nodes_at(&dom, self.controls.root()) {
+                if !attr(&dom, node, "class")
+                    .is_some_and(|s| s.split_whitespace().any(|c| c == "frisket-tabbar"))
+                {
+                    continue;
+                }
+                let hidden = attr(&dom, node, "data-stack")
+                    .and_then(|path| {
+                        let path = cambium::decode_pane_path(&path);
+                        let TileTree::Stack(stack) = tree_at(workspace.tiled(), &path.0)? else {
+                            return None;
+                        };
+                        let main = |tile: &workbench::Tile| {
+                            frame.panes.get(&tile.id.0).is_some_and(|(content, _)| {
+                                matches!(
+                                    content,
+                                    crate::panes::PaneContent::Orrery
+                                        | crate::panes::PaneContent::Workbench
+                                )
+                            })
+                        };
+                        let pair = stack.tabs.iter().any(|t| {
+                            frame.panes.get(&t.id.0).is_some_and(|(c, _)| {
+                                matches!(c, crate::panes::PaneContent::Orrery)
+                            })
+                        }) && stack.tabs.iter().any(|t| {
+                            frame.panes.get(&t.id.0).is_some_and(|(c, _)| {
+                                matches!(c, crate::panes::PaneContent::Workbench)
+                            })
+                        });
+                        Some(pair && stack.tabs.get(stack.active).is_some_and(main))
+                    })
+                    .unwrap_or(false);
+                let value = if hidden && self.main_view_switch {
+                    "true"
+                } else {
+                    "false"
+                };
+                if attr(&dom, node, "data-main-view-header").as_deref() != Some(value) {
+                    dom.set_attribute(node, cambium::attr_qual("data-main-view-header"), value);
+                }
+            }
+        }
         self.workspace = workspace;
         self.current = current;
         self.size = size;
@@ -172,7 +228,13 @@ impl OuterFrame {
         }
         let dom = self.controls.dom.borrow();
         let mut out = Vec::new();
+        let active = frame.active_tiled_ids();
         for (id, _, node) in body_slots(&dom, self.controls.root()) {
+            // Retained inactive bodies may still have cached fragments. Only
+            // the workspace's active tabs own native content placements.
+            if !active.contains(&id) || maximize.is_some_and(|pane| pane.0 != id.0) {
+                continue;
+            }
             if self.workspace.floating().iter().any(|f| f.tile.id == id) {
                 continue;
             }
@@ -745,6 +807,54 @@ mod native_aperture_tests {
                 .selector_point(&taproot::Selector::class("frisket-content"))
                 .expect("body slot is not frame furniture"),
             None
+        );
+    }
+
+    #[test]
+    fn read_map_stack_has_no_redundant_header_but_lens_keeps_its_controls() {
+        let mut app = crate::app::App::test_stub();
+        app.update(crate::action::Action::OpenAddress(
+            "https://example.test/a".into(),
+        ));
+        app.update(crate::action::Action::SetWorkspaceMap(false));
+        let mut frame = OuterFrame::default();
+        frame
+            .prepare(
+                &app.frisket,
+                app.active_pane,
+                None,
+                (900, 600),
+                &app.shell_chrome_config().appearance,
+                app.session_id.as_uuid().as_u128(),
+            )
+            .unwrap();
+        assert_eq!(frame.header_height(), 0.0);
+        assert!(
+            frame
+                .selector_point(&taproot::Selector::class("frisket-tab"))
+                .unwrap()
+                .is_none()
+        );
+        app.update(crate::action::Action::SetWorkspaceMap(true));
+        let bodies = frame.prepare(&app.frisket, app.active_pane, None,
+            (900, 600), &app.shell_chrome_config().appearance,
+            app.session_id.as_uuid().as_u128()).unwrap();
+        assert_eq!(bodies.len(), 1, "retained reader has no Map aperture");
+        assert_eq!(bodies[0].0, app.default_graph_pane());
+        frame.set_main_view_switch(false);
+        frame
+            .prepare(
+                &app.frisket,
+                app.active_pane,
+                None,
+                (900, 600),
+                &app.shell_chrome_config().appearance,
+                app.session_id.as_uuid().as_u128(),
+            )
+            .unwrap();
+        assert!(
+            frame.header_height() > 0.0,
+            "a lens without Read/Map retains frame tabs"
         );
     }
     #[test]

@@ -60,7 +60,8 @@ pub(crate) fn stylesheet(
         .frisket-tabbar {{ background:var(--tabard-color-surface); height:auto; flex-basis:auto; min-height:{:.2}px; padding:{:.2}px {:.2}px 0; }}\n\
         .frisket-tab {{ color:var(--tabard-color-text); background:var(--tabard-color-surface-2); padding:{:.2}px {:.2}px; font-size:{:.2}px; line-height:1.2; }}\n\
         .frisket-tab.active {{ color:var(--tabard-color-text-header); background:var(--tabard-color-bg); }}\n\
-        .frisket-close {{ color:var(--tabard-color-text-dim); font-size:{:.2}px; width:{:.2}px; flex-basis:{:.2}px; min-height:{:.2}px; height:auto; padding:{:.2}px 0; }}\n\
+        .frisket-tabbar[data-main-view-header=true] {{ display:none; }}\n\
+        .frisket-close {{ box-sizing:border-box; line-height:1.2; color:var(--tabard-color-text-dim); font-size:{:.2}px; width:{:.2}px; flex-basis:{:.2}px; min-height:{:.2}px; height:auto; padding:{:.2}px 0; }}\n\
         .frisket-divider {{ flex-basis:1px; background:var(--tabard-color-surface-2); border:0; box-sizing:border-box; }}\n\
         .frisket-divider[aria-orientation=vertical] {{ border-left-width:1px; }}\n\
         .frisket-divider[aria-orientation=horizontal] {{ border-top-width:1px; }}\n\

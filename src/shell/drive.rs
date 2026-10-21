@@ -557,6 +557,7 @@ impl taproot::Automatable for Shell {
 
     fn selector_target(&self, selector: &taproot::Selector) -> taproot::SelectorTarget {
         match selector.surface.as_deref() {
+            Some("chrome") => self.chrome.selector_point(selector).map_or(taproot::SelectorTarget::Miss,|point|taproot::SelectorTarget::Hit(taproot::Hit{surface:"chrome",point})),
             None => self.retained_pane_selector_target(selector),
             Some("frame") => {
                 let mut frames = self.outer_frames.borrow_mut();
