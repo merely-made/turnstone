@@ -1,0 +1,17 @@
+RESULT ok
+captured 01_A_saved
+captured 02_B_saved
+captured 03_read_origin_and_resident_absent
+captured 04_resident_absent
+captured 05_explicit_retained_scope
+captured 06_embedding_answer
+captured 07_exact_retained_citation
+Embedding warm retained-source flow complete
+presentation frames=669 captures=7 blank=0
+capture /Users/markik/Code/output/turnstone-embedding-headed-20261020/raw-02/seed/01_A_saved.png digest=92776eec931ec55d blank=false
+capture /Users/markik/Code/output/turnstone-embedding-headed-20261020/raw-02/seed/02_B_saved.png digest=fb254b891d9b3120 blank=false
+capture /Users/markik/Code/output/turnstone-embedding-headed-20261020/raw-02/seed/03_read_origin_and_resident_absent.png digest=5d3aa12d78419deb blank=false
+capture /Users/markik/Code/output/turnstone-embedding-headed-20261020/raw-02/seed/04_resident_absent.png digest=750154a5a723094f blank=false
+capture /Users/markik/Code/output/turnstone-embedding-headed-20261020/raw-02/seed/05_explicit_retained_scope.png digest=f48bb66823b9f00e blank=false
+capture /Users/markik/Code/output/turnstone-embedding-headed-20261020/raw-02/seed/06_embedding_answer.png digest=379e3ecd18e5a08e blank=false
+capture /Users/markik/Code/output/turnstone-embedding-headed-20261020/raw-02/seed/07_exact_retained_citation.png digest=437fa84c9d2fbed4 blank=false

@@ -1,0 +1,64 @@
+{
+  "passed": true,
+  "reviewed_captures": [
+    {
+      "path": "seed/01_A_saved.png",
+      "sha256": "5974a619ee4457361817cb9897ba566d7989650019cafdedb4e58fd5741f12f6"
+    },
+    {
+      "path": "seed/02_B_saved.png",
+      "sha256": "69b9bd467b53c786576e39200c3bf16391e7174356ab8e376d3b731b1addf7e9"
+    },
+    {
+      "path": "seed/03_read_origin_and_resident_absent.png",
+      "sha256": "87b01985c82acc23f902c8174bececc3f67e4c64fdb0f4f828220c8547999d3a"
+    },
+    {
+      "path": "seed/04_resident_absent.png",
+      "sha256": "5e5c4b9b5972498594eb7022ea247fb7dbb889cbb9273c29b816d2dc4a38d73c"
+    },
+    {
+      "path": "seed/05_explicit_retained_scope.png",
+      "sha256": "12ffcececf37819c2fe252f2f16d2f9067e722fe19aa14024a55fe8127d7ffac"
+    },
+    {
+      "path": "seed/06_embedding_answer.png",
+      "sha256": "2a3336329d62bbb34ff33ebcdd95c42c041934bf41208e134aa1fa2662b70ab7"
+    },
+    {
+      "path": "seed/07_exact_retained_citation.png",
+      "sha256": "7b0706268d8abafdb129bf071236c6bea7b871166205c5d534ce3664b6364255"
+    },
+    {
+      "path": "reopen/08_cold_reader_before_resident.png",
+      "sha256": "be764a4778e7231883e098562d7941d251f7ccf5c4f4cd9cb9d84a21f3fd1ce9"
+    },
+    {
+      "path": "reopen/09_cold_scope_resident_absent.png",
+      "sha256": "a633b077d453371639c6641dbcd9cff9295798f706b75f922bf14ca21307dba5"
+    },
+    {
+      "path": "reopen/10_historical_answer_restored.png",
+      "sha256": "a86b6293decee3da7c2c2bd12aee614d6a312be08d4d5d83a3797fd8ebf7a213"
+    },
+    {
+      "path": "reopen/11_cold_historical_citation.png",
+      "sha256": "7b0706268d8abafdb129bf071236c6bea7b871166205c5d534ce3664b6364255"
+    },
+    {
+      "path": "reopen/12_new_ask_using_reopened_projection.png",
+      "sha256": "e672bcd3e5584e7c7fa9acdd78649c71984e4843b39e2a0438d11269399f0274"
+    },
+    {
+      "path": "reopen/13_new_cold_ask_exact_citation.png",
+      "sha256": "7b0706268d8abafdb129bf071236c6bea7b871166205c5d534ce3664b6364255"
+    }
+  ],
+  "method": "Reviewed original native captures through RGB JPEG contact sheets; original PNGs retained unchanged.",
+  "findings": [
+    "Saved-state controls, two explicit source choices, answer text and exact citation controls are readable.",
+    "Both warm and cold full-width citation readers display the exact Unicode source body and quote.",
+    "The initial cold multi-pane view is narrow and its full reader body extends below the visible viewport; later full-width citation captures show it completely.",
+    "These captures qualify saved-source/Answers interaction, not independent live-page rendering or broad responsive-layout acceptance."
+  ]
+}

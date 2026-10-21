@@ -927,3 +927,42 @@ done-conditions story.
   Model markers and host exact-quotation annotations remain distinct. This
   qualifies the native pane and app connection; the installed Djinn binary
   and a physical second-device run retain their separate gates.
+
+
+### Embedding recall headed continuation (2026-10-20)
+
+**Status:** qualified on macOS. The extracted Eidetic envelope and resident I10 gate
+are qualified in Mere; Turnstone receives published Mere `125df8df6`
+while retaining the tested Eidetic `34105d63` and ESP `6d371901` sources.
+
+The bounded consumer gate uses ordinary saved HTML captures, explicit Answers
+source selection, real MiniLM retrieval and the existing trained answer model.
+Done when the headed answer opens its exact retained source with the origin
+absent, both product and resident exit, an independent pair reopens the same
+private projection and historical evidence, and a new ask uses that matching
+projection. The canonical envelope/ranking policy remains in Eidetic P4 and
+Mere I10; Turnstone owns the product interaction and cold source reopening.
+Fixtures and receiving receipts live in `docs/receipts/embedding_recall_20261020/`.
+
+The receiving receipt is
+[qualification.json](../docs/receipts/embedding_recall_20261020/qualification.json).
+Two independent native Turnstone processes and two real GPU resident processes
+pass the complete flow with 13 reviewed captures. The origin exits before the
+first ask and remains absent. A fresh cold ask uses the same private envelope
+and index, exact source version and Unicode selector; the historical sealed
+question, source, output and checkpoint evidence remains unchanged. Both chosen
+source references and keep/capture facets survive; pane state copies no source
+body. The 384-dimensional projection uses 3 KiB of vector capacity when built,
+4 KiB on reopen and 11,784 persisted bytes, within the 8 MiB owner ceiling.
+
+Seven focused client cases pass (one live-resident helper ignored), both existing
+resident route baselines pass, and the final headed helper passes both process
+phases. The first complete UI run exposed a fixture marker overwritten after
+publisher disconnect; the corrected write-once live observation passes a fresh
+full rerun. The artifact verifier independently derives ModelLibrary's canonical
+admitted configuration digest, distinct from the original pretty JSON file's
+digest. Weights and tokenizer retain their original consumed bytes. The gate
+covers two saved HTML captures and the existing Answers surface on one Mac;
+physical assistive activation, broader responsive layouts, authored-note/voice
+recall and second-device acceptance remain separate. The existing fixed
+lexical/vector/fused benchmark retains its original source receipt.

@@ -1,0 +1,132 @@
+{
+  "passed": true,
+  "product_pids": [
+    59440,
+    60282
+  ],
+  "resident_pids": [
+    59735,
+    60541
+  ],
+  "origin_requests_unchanged": true,
+  "historical_sealed_evidence_unchanged": true,
+  "exact_source_selectors_preserved": true,
+  "keep_capture_refs_and_chosen_scope_preserved": true,
+  "workspace_contains_no_source_body": true,
+  "matching_private_projection_reopened": true,
+  "fresh_cold_ask": true,
+  "embedding": {
+    "warm": {
+      "envelope": "blake3:b5a2bb267862a101b937a06c5756574040c9d7e19dd39d593e3e02f0fdd5ae10",
+      "index": "blake3:f50858301c814fe4941eaa5a39dca5b2748a01fd698059e86f934613bec15752",
+      "cache": "built",
+      "vector_bytes": 3072,
+      "persisted_bytes": 11784,
+      "lexical_weight": 1,
+      "vector_weight": 1,
+      "rrf_k": 60
+    },
+    "cold": {
+      "envelope": "blake3:b5a2bb267862a101b937a06c5756574040c9d7e19dd39d593e3e02f0fdd5ae10",
+      "index": "blake3:f50858301c814fe4941eaa5a39dca5b2748a01fd698059e86f934613bec15752",
+      "cache": "reopened",
+      "vector_bytes": 4096,
+      "persisted_bytes": 11784,
+      "lexical_weight": 1,
+      "vector_weight": 1,
+      "rrf_k": 60
+    },
+    "space": {
+      "dimensions": 384,
+      "document_prefix": "",
+      "metric": "cosine",
+      "normalization": "l2-f32",
+      "pooling": "attention-mask-mean",
+      "preprocessing": {
+        "artifacts": {},
+        "name": "esp.bert-tokenizer",
+        "parameters": {
+          "max_sequence_length": "512",
+          "pad_token_id": "0",
+          "padding": "batch-longest/right"
+        },
+        "revision": "v1"
+      },
+      "producer": {
+        "artifacts": {
+          "config.json": "blake3:5cc3d398a528ce285a778ade0f2c1c95a31d3dcd9b7bd6dca8e85e1fbb5c9e90",
+          "model.safetensors": "blake3:8087e9bf97c265f8435ed268733ecf3791825ad24850fd5d84d89e32ee3a589a",
+          "tokenizer.json": "blake3:82483bb4f0bdb81779f295ecc5a93285d2156834e994a2169f9800e4c8f250c1"
+        },
+        "name": "esp.bert-f32",
+        "parameters": {},
+        "revision": "v1"
+      },
+      "query_prefix": "",
+      "tokenizer": {
+        "artifacts": {
+          "tokenizer.json": "blake3:82483bb4f0bdb81779f295ecc5a93285d2156834e994a2169f9800e4c8f250c1"
+        },
+        "name": "huggingface.tokenizers-0.20.4",
+        "parameters": {},
+        "revision": "v1"
+      }
+    }
+  },
+  "source_quote": "The Pelican observatory's access word is café.",
+  "captures": [
+    {
+      "path": "seed/01_A_saved.png",
+      "sha256": "5974a619ee4457361817cb9897ba566d7989650019cafdedb4e58fd5741f12f6"
+    },
+    {
+      "path": "seed/02_B_saved.png",
+      "sha256": "69b9bd467b53c786576e39200c3bf16391e7174356ab8e376d3b731b1addf7e9"
+    },
+    {
+      "path": "seed/03_read_origin_and_resident_absent.png",
+      "sha256": "87b01985c82acc23f902c8174bececc3f67e4c64fdb0f4f828220c8547999d3a"
+    },
+    {
+      "path": "seed/04_resident_absent.png",
+      "sha256": "5e5c4b9b5972498594eb7022ea247fb7dbb889cbb9273c29b816d2dc4a38d73c"
+    },
+    {
+      "path": "seed/05_explicit_retained_scope.png",
+      "sha256": "12ffcececf37819c2fe252f2f16d2f9067e722fe19aa14024a55fe8127d7ffac"
+    },
+    {
+      "path": "seed/06_embedding_answer.png",
+      "sha256": "2a3336329d62bbb34ff33ebcdd95c42c041934bf41208e134aa1fa2662b70ab7"
+    },
+    {
+      "path": "seed/07_exact_retained_citation.png",
+      "sha256": "7b0706268d8abafdb129bf071236c6bea7b871166205c5d534ce3664b6364255"
+    },
+    {
+      "path": "reopen/08_cold_reader_before_resident.png",
+      "sha256": "be764a4778e7231883e098562d7941d251f7ccf5c4f4cd9cb9d84a21f3fd1ce9"
+    },
+    {
+      "path": "reopen/09_cold_scope_resident_absent.png",
+      "sha256": "a633b077d453371639c6641dbcd9cff9295798f706b75f922bf14ca21307dba5"
+    },
+    {
+      "path": "reopen/10_historical_answer_restored.png",
+      "sha256": "a86b6293decee3da7c2c2bd12aee614d6a312be08d4d5d83a3797fd8ebf7a213"
+    },
+    {
+      "path": "reopen/11_cold_historical_citation.png",
+      "sha256": "7b0706268d8abafdb129bf071236c6bea7b871166205c5d534ce3664b6364255"
+    },
+    {
+      "path": "reopen/12_new_ask_using_reopened_projection.png",
+      "sha256": "e672bcd3e5584e7c7fa9acdd78649c71984e4843b39e2a0438d11269399f0274"
+    },
+    {
+      "path": "reopen/13_new_cold_ask_exact_citation.png",
+      "sha256": "7b0706268d8abafdb129bf071236c6bea7b871166205c5d534ce3664b6364255"
+    }
+  ],
+  "scope": "macOS headed native retained-source flow; real CPU MiniLM retrieval and GPU SmolLM2 generation; no second-device or broader benchmark claim"
+}

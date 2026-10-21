@@ -1,0 +1,71 @@
+# Real retained captures and fused recall after origin shutdown.
+settle 5
+key escape
+act New session
+settle 5
+act Rename session
+type Embedding Recall
+key enter
+settle 5
+open ${ER_ORIGIN}/A
+settle 8
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+capture 01_A_saved
+record-source-captures 01_A_saved
+open ${ER_ORIGIN}/B
+settle 8
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+capture 02_B_saved
+record-source-captures 02_B_saved
+act Save session
+touch ${ER_CONTROL}/stop-origin
+wait-file 600 ${ER_CONTROL}/origin-stopped
+act Search saved sources
+type café
+wait-saved-sources 600
+assert suggestions == 1
+key enter
+wait-saved-reader 600
+assert snap saved-reader-state == Ready
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+capture 03_read_origin_and_resident_absent
+record-saved-sources 03_read_origin_and_resident_absent
+act Ask saved sources
+settle 30
+act Maximize pane
+settle 5
+assert text Answers needs the inference resident.
+capture 04_resident_absent
+touch ${ER_CONTROL}/start-resident-0
+wait-file 18000 ${ER_CONTROL}/resident-started-0
+settle 100
+assert text Connected to resident inference.
+click surface:contributed role:button Choose source: Source A · saved version 1
+settle 5
+click surface:contributed role:button Choose source: Source B · saved version 1
+settle 5
+assert text 2 saved sources chosen
+capture 05_explicit_retained_scope
+click surface:contributed role:textbox Question
+insert Repeat the retained sentence about the Pelican observatory exactly.
+click surface:contributed role:button Ask
+wait-file 18000 ${ER_RESIDENT}/finished.json
+settle 20
+assert text café
+assert text Source 1:
+capture 06_embedding_answer
+click surface:contributed role:button Source 1:
+settle 8
+wait-saved-reader 600
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+assert snap saved-reader-quote == The Pelican observatory's access word is café.
+capture 07_exact_retained_citation
+record-saved-sources 07_exact_retained_citation
+act Save session
+log Embedding warm retained-source flow complete
