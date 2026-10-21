@@ -33,6 +33,7 @@ pub const WB_SEAM: f32 = crate::pane::DIVIDER_WIDTH;
 /// `ui::TABLIST_HEIGHT` of `rect`; [`CellPlacement::body`] is what remains.
 #[derive(Clone, Debug, PartialEq)]
 pub struct CellPlacement {
+    pub tab_edge: crate::chrome_layout::TabEdge,
     /// The stack's members in tab order.
     pub members: Vec<Uuid>,
     /// Index of the active (visible) tab.
@@ -54,13 +55,56 @@ impl CellPlacement {
 
     /// The cell's body rect (below the tab bar), pane-local.
     pub fn body(&self) -> Rect {
-        let bar = crate::ui::TABLIST_HEIGHT.min(self.rect.h);
-        Rect::new(
-            self.rect.x,
-            self.rect.y + bar,
-            self.rect.w,
-            (self.rect.h - bar).max(0.0),
-        )
+        use crate::chrome_layout::TabEdge;
+        let tabs = self.tab_rect();
+        match self.tab_edge {
+            TabEdge::Top => Rect::new(
+                self.rect.x,
+                self.rect.y + tabs.h,
+                self.rect.w,
+                (self.rect.h - tabs.h).max(0.0),
+            ),
+            TabEdge::Bottom => Rect::new(
+                self.rect.x,
+                self.rect.y,
+                self.rect.w,
+                (self.rect.h - tabs.h).max(0.0),
+            ),
+            TabEdge::Left => Rect::new(
+                self.rect.x + tabs.w,
+                self.rect.y,
+                (self.rect.w - tabs.w).max(0.0),
+                self.rect.h,
+            ),
+            TabEdge::Right => Rect::new(
+                self.rect.x,
+                self.rect.y,
+                (self.rect.w - tabs.w).max(0.0),
+                self.rect.h,
+            ),
+        }
+    }
+
+    pub fn tab_rect(&self) -> Rect {
+        use crate::chrome_layout::TabEdge;
+        let height = crate::ui::TABLIST_HEIGHT.min(self.rect.h);
+        let width = 140.0_f32.min(self.rect.w * 0.35);
+        match self.tab_edge {
+            TabEdge::Top => Rect::new(self.rect.x, self.rect.y, self.rect.w, height),
+            TabEdge::Bottom => Rect::new(
+                self.rect.x,
+                self.rect.y + self.rect.h - height,
+                self.rect.w,
+                height,
+            ),
+            TabEdge::Left => Rect::new(self.rect.x, self.rect.y, width, self.rect.h),
+            TabEdge::Right => Rect::new(
+                self.rect.x + self.rect.w - width,
+                self.rect.y,
+                width,
+                self.rect.h,
+            ),
+        }
     }
 }
 
@@ -110,9 +154,20 @@ impl WorkbenchTiling {
 /// Walk `geom` into placed cells within `area` (pane-local coordinates).
 /// `None` (an empty workbench) yields an empty tiling.
 pub fn place_workbench(geom: Option<&TreeGeometry>, area: Rect) -> WorkbenchTiling {
+    place_workbench_at(geom, area, crate::chrome_layout::TabEdge::Top)
+}
+
+pub fn place_workbench_at(
+    geom: Option<&TreeGeometry>,
+    area: Rect,
+    edge: crate::chrome_layout::TabEdge,
+) -> WorkbenchTiling {
     let mut out = WorkbenchTiling::default();
     if let Some(geom) = geom {
         walk(geom, area, &mut Vec::new(), &mut out);
+    }
+    for cell in &mut out.cells {
+        cell.tab_edge = edge;
     }
     out
 }
@@ -120,6 +175,7 @@ pub fn place_workbench(geom: Option<&TreeGeometry>, area: Rect) -> WorkbenchTili
 fn walk(node: &TreeGeometry, area: Rect, path: &mut Vec<usize>, out: &mut WorkbenchTiling) {
     match node {
         TreeGeometry::Stack { members, active } => out.cells.push(CellPlacement {
+            tab_edge: Default::default(),
             members: members.clone(),
             active: *active,
             rect: area,
@@ -204,7 +260,7 @@ pub fn wb_drop_action(
     let same_cell = cell.members.contains(&dragged);
     let body = cell.body();
     let stack = || (!same_cell).then_some(Action::WorkbenchStackOnto { dragged, target });
-    if ly < body.y {
+    if !body.contains(lx, ly) {
         return stack();
     }
     const EDGE: f32 = 0.25;
@@ -285,6 +341,30 @@ mod tests {
     fn an_empty_workbench_places_nothing() {
         let t = place_workbench(None, area());
         assert!(t.cells.is_empty() && t.dividers.is_empty());
+    }
+
+    #[test]
+    fn every_tab_edge_partitions_the_cell_without_covering_document_content() {
+        use crate::chrome_layout::TabEdge;
+        let mut wb = Workbench::new();
+        wb.ensure_tiled();
+        wb.open_tile(Uuid::new_v4());
+        for edge in [TabEdge::Top, TabEdge::Bottom, TabEdge::Left, TabEdge::Right] {
+            let tiling = place_workbench_at(
+                geom_of(&wb).as_ref(),
+                Rect::new(20.0, 30.0, 410.0, 260.0),
+                edge,
+            );
+            let cell = &tiling.cells[0];
+            let body = cell.body();
+            let tabs = cell.tab_rect();
+            assert!((body.w * body.h + tabs.w * tabs.h - cell.rect.w * cell.rect.h).abs() < 0.01);
+            assert!(!body.contains(tabs.x + tabs.w / 2.0, tabs.y + tabs.h / 2.0));
+            assert!(
+                cell.rect
+                    .contains(body.x + body.w / 2.0, body.y + body.h / 2.0)
+            );
+        }
     }
 
     #[test]
@@ -412,6 +492,7 @@ mod tests {
         use crate::action::{Action, WbAxis};
         let (d, t) = (Uuid::new_v4(), Uuid::new_v4());
         let other_cell = CellPlacement {
+            tab_edge: Default::default(),
             members: vec![t],
             active: 0,
             rect: Rect::new(100.0, 50.0, 400.0, 430.0),
@@ -455,6 +536,7 @@ mod tests {
         // The OWN cell (a stack holding the dragged tab): edges split OUT,
         // the centre and tab bar are a click.
         let own_cell = CellPlacement {
+            tab_edge: Default::default(),
             members: vec![d, t],
             active: 1,
             rect: other_cell.rect,

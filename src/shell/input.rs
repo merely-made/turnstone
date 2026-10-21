@@ -216,6 +216,13 @@ pub(super) fn dispatch_primary_chrome_press(
         crate::chrome_view::ChromeIntent::Reload => Action::Reload,
         crate::chrome_view::ChromeIntent::Stop => Action::Stop,
         crate::chrome_view::ChromeIntent::KeepNode(member) => Action::KeepNode { member },
+        crate::chrome_view::ChromeIntent::Address => Action::OmnibarOpen { command: false },
+        crate::chrome_view::ChromeIntent::WorkspaceMap(map) => Action::SetWorkspaceMap(map),
+        crate::chrome_view::ChromeIntent::Tool(kind) => Action::ToggleToolPane(crate::panes::PaneKindId::new(kind)),
+        crate::chrome_view::ChromeIntent::ReadMember(member) => Action::ReadGraphMember(member),
+        crate::chrome_view::ChromeIntent::Layout(layout) => Action::SetChromeLayout(layout),
+        crate::chrome_view::ChromeIntent::AllPanes => Action::OmnibarOpen { command: true },
+        crate::chrome_view::ChromeIntent::MenuChanged => { host.pointer_redraw(); return true; },
         crate::chrome_view::ChromeIntent::FindPrevious => {
             Action::StepDocumentFind(crate::action::DocumentFindDirection::Previous)
         },
@@ -412,8 +419,8 @@ fn workbench_resize_target(
         };
         if !owned { return None; }
         let geom = app.workbench_for_pane(pane)?.to_arrangement().1;
-        let tiling = crate::workbench_tiling::place_workbench(geom.as_ref(),
-            Rect::new(0.0, 0.0, surface.rect.w, surface.rect.h));
+        let tiling = crate::workbench_tiling::place_workbench_at(geom.as_ref(),
+            Rect::new(0.0, 0.0, surface.rect.w, surface.rect.h),app.shell_chrome_config().layout.document_tabs);
         let divider = tiling.divider_at(x - surface.rect.x, y - surface.rect.y)?.clone();
         Some((pane, divider, (surface.rect.x, surface.rect.y)))
     })

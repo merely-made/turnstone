@@ -677,6 +677,23 @@ impl App {
         fx
     }
 
+    /// Address-field navigation follows the current main view. Other graph
+    /// commands keep their independent selection and never retarget a reader.
+    fn open_omnibar_address(&mut self, url: String, reading: bool) -> Vec<Effect> {
+        let start = self.events.len();
+        let mut effects = self.update(Action::OpenAddress(url.clone()));
+        let admitted = self.events[start..].iter().any(|event| {
+            matches!(event, AppEvent::AddressOpened(address) if address == &url)
+        });
+        if reading && admitted {
+            let pane = self.focused_graph_pane().unwrap_or_else(|| self.default_graph_pane());
+            if let Some(member) = self.graph_pane_focused_member(pane) {
+                effects.extend(self.read_graph_member(member));
+            }
+        }
+        effects
+    }
+
     pub(super) fn commit_omnibar(&mut self) -> Vec<Effect> {
         if let crate::ui::OmnibarMode::MicronForm(prompt) = self.omnibar.mode.clone() {
             return self.commit_micron_form(prompt);
@@ -745,6 +762,9 @@ impl App {
         ) {
             return self.show_all_commands();
         }
+        let reading = self.active_pane.is_some_and(|pane| {
+            self.pane_content(pane) == Some(&PaneContent::Workbench)
+        });
         // Commit always ends with the omnibar closed, so chrome hands
         // focus back to the canvas. (A committed OpenAddress may later
         // spawn content; routing focus onto it is slice B.)
@@ -770,14 +790,19 @@ impl App {
                     target,
                     EntryPrivacy::Ordinary,
                 );
-                self.graph_runtimes.select_by_url(&url);
+                let pane = self.focused_graph_pane().unwrap_or_else(|| self.default_graph_pane());
+                self.with_graph_pane(pane, |canvas| canvas.select_by_url(&url));
+                let mut effects = vec![Effect::Redraw];
+                if reading && let Some(member) = self.graph_pane_focused_member(pane) {
+                    effects.extend(self.read_graph_member(member));
+                }
                 self.shell.complete(
                     entry,
                     ShellOutcome::Completed {
                         summary: format!("selected {url}"),
                     },
                 );
-                vec![Effect::Redraw]
+                effects
             },
             Some(Suggestion::Go { url }) => {
                 let target = self.fallback_shell_context();
@@ -789,7 +814,7 @@ impl App {
                 );
                 self.omnibar = OmnibarState::default();
                 return {
-                    let mut fx = self.update(Action::OpenAddress(url));
+                    let mut fx = self.open_omnibar_address(url, reading);
                     self.shell.complete(
                         entry,
                         ShellOutcome::Completed {
@@ -814,7 +839,7 @@ impl App {
                 );
                 self.omnibar = OmnibarState::default();
                 return {
-                    let mut fx = self.update(Action::OpenAddress(url));
+                    let mut fx = self.open_omnibar_address(url, reading);
                     self.shell.complete(
                         entry,
                         ShellOutcome::Completed {

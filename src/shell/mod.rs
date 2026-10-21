@@ -1428,6 +1428,14 @@ pub struct Shell {
 impl Shell {
     pub fn new(proxy: EventLoopProxy<()>, address: Option<String>) -> Self {
         let (mut app, boot_effects) = App::boot(address.as_deref());
+        match crate::chrome_layout::ChromeLayout::load(&app.data_root) {
+            Ok(layout) => {
+                let mut chrome = app.shell_chrome_config().clone();
+                chrome.layout = layout;
+                app.set_shell_chrome_config(chrome);
+            },
+            Err(error) => tracing::warn!(%error, "chrome placement could not be loaded"),
+        }
         let initial_provider = match ApplicationSettingsProvider::load(&app.data_root) {
             Ok(provider) => provider,
             Err(error) => {
@@ -3576,7 +3584,7 @@ fn primary_content_plan_with_rects(
             let geom = app
                 .workbench_for_pane(*pane)
                 .and_then(|workbench| workbench.to_arrangement().1);
-            crate::workbench_tiling::place_workbench(geom.as_ref(), *rect)
+            crate::workbench_tiling::place_workbench_at(geom.as_ref(), *rect, app.shell_chrome_config().layout.document_tabs)
                 .cells
                 .iter()
                 .filter_map(|c| {
@@ -3615,7 +3623,7 @@ fn primary_content_plan_with_rects(
                     })
                 })
                 .any(|(_, geom)| {
-                    crate::workbench_tiling::place_workbench(Some(&geom), area)
+                    crate::workbench_tiling::place_workbench_at(Some(&geom), area, app.shell_chrome_config().layout.document_tabs)
                         .cells
                         .iter()
                         .any(|c| c.active_member() == Some(*id))
@@ -3632,7 +3640,7 @@ fn primary_content_plan_with_rects(
     let focused_graph = app
         .focused_graph_pane()
         .or_else(|| graph_rects.first().map(|(pane, _)| *pane));
-    let content = focused_graph.and_then(|pane| {
+    let content = focused_graph.filter(|_| !app.map_navigation_active()).and_then(|pane| {
         let cr = graph_rects
             .iter()
             .find(|(candidate, _)| *candidate == pane)
@@ -3664,7 +3672,7 @@ fn primary_content_plan_with_rects(
         let geom = app
             .workbench_for_pane(*pane)
             .and_then(|workbench| workbench.to_arrangement().1);
-        for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), *rect).cells {
+        for cell in crate::workbench_tiling::place_workbench_at(geom.as_ref(), *rect, app.shell_chrome_config().layout.document_tabs).cells {
             if let Some(node) = cell.active_member()
                 && contents.contains_key(&node)
             {
@@ -3716,7 +3724,7 @@ fn primary_content_plan_with_rects(
             let geom = app
                 .workbench_for_pane(id)
                 .and_then(|w| w.to_arrangement().1);
-            for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), rect).cells {
+            for cell in crate::workbench_tiling::place_workbench_at(geom.as_ref(), rect, app.shell_chrome_config().layout.document_tabs).cells {
                 if let Some(node) = cell.active_member().filter(|n| contents.contains_key(n)) {
                     let body = cell.body();
                     appearance_roles.push((

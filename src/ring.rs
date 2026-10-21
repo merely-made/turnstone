@@ -137,6 +137,10 @@ pub fn ring_of(action: &Action) -> Ring {
         | TogglePaneSection { .. }
         | MovePaneSection { .. }
         | OpenInWorkbench
+        | SetWorkspaceMap(_)
+        | ReadGraphMember(_)
+        | ToggleToolPane(_)
+        | SetChromeLayout(_)
         | TearOutTile { .. }
         | WorkbenchActivate(_)
         | CloseWorkbenchTile

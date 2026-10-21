@@ -3697,6 +3697,57 @@ fn workbench_initial_reader_shares_orrery_stack_and_survives_restart() {
 }
 
 #[test]
+fn toolbar_read_map_round_trip_preserves_member_identity_and_reveals_selection() {
+    let mut app=App::test_stub();
+    app.update(Action::OpenAddress("https://example.test/first".into()));
+    let first=app.graph_runtimes.focused_member().unwrap();
+    app.update(Action::SetWorkspaceMap(false));
+    let reader=app.active_pane.unwrap();
+    assert_eq!(app.browser_command_target().unwrap().0,first);
+    app.update(Action::OpenAddress("https://example.test/second".into()));
+    let second=app.graph_runtimes.focused_member().unwrap();
+    app.update(Action::WorkbenchActivate(first));
+    app.update(Action::SetWorkspaceMap(true));
+    let map=app.active_pane.unwrap();
+    assert_ne!(reader,map);
+    assert_eq!(app.graph_pane_focused_member(map),Some(first));
+    app.graph_pane_select_member(map,second);
+    app.update(Action::SetWorkspaceMap(false));
+    assert_eq!(app.active_pane,Some(reader));
+    assert_eq!(app.browser_command_target().unwrap().0,second);
+    assert_eq!(app.graph_runtimes.graph().nodes().count(),2);
+    app.update(Action::ReadGraphMember(first));
+    assert_eq!(app.browser_command_target().unwrap().0,first);
+    assert_eq!(app.graph_runtimes.graph().nodes().count(),2);
+}
+
+#[test]
+fn toolbar_tool_toggle_retains_identity_state_and_restores_the_same_split() {
+    let mut app=App::test_stub();
+    app.update(Action::OpenAddress("https://example.test/reading".into()));
+    app.update(Action::SetWorkspaceMap(false));
+    let reader=app.active_pane.unwrap();
+    let toggle=Action::ToggleToolPane(crate::panes::PaneKindId::new(crate::panes::kind::INSPECTOR));
+    app.update(toggle.clone());
+    let inspector=app.active_pane.unwrap();
+    assert_ne!(reader,inspector);
+    assert_eq!(app.frisket.outer_workspace().unwrap().active_ids().len(),2);
+    app.update(toggle.clone());
+    assert_eq!(app.active_pane,Some(reader));
+    assert!(app.frisket.iter_leaves().any(|(id,_,_)|id==inspector),"hiding retains the pane");
+    assert_eq!(app.frisket.outer_workspace().unwrap().active_ids(),vec![workbench::TileId(reader.0)]);
+    app.update(toggle);
+    assert_eq!(app.active_pane,Some(inspector));
+    assert_eq!(app.frisket.outer_workspace().unwrap().active_ids().len(),2);
+    app.update(Action::ToggleToolPane(crate::panes::PaneKindId::new(crate::panes::kind::INSPECTOR)));
+    app.update(Action::SetWorkspaceMap(true));
+    let map=app.active_pane.unwrap();
+    app.update(Action::ToggleToolPane(crate::panes::PaneKindId::new(crate::panes::kind::INSPECTOR)));
+    assert!(app.map_navigation_active(),"showing a tool preserves Map");
+    assert!(app.frisket.outer_workspace().unwrap().active_ids().contains(&workbench::TileId(map.0)));
+}
+
+#[test]
 fn workbench_open_preserves_an_existing_custom_split() {
     let mut app = App::test_stub();
     let graph = app.default_graph_pane();
@@ -6239,4 +6290,50 @@ fn place_contact_refresh_is_local_scoped_and_rechecks_the_request_session() {
     assert!(matches!(&effects[..], [Effect::ReconnectPlace {
         session, generation: 5, binding: actual, contact: Some(actual_card),
     }] if *session == app.session_id && actual == &binding && **actual_card == card));
+}
+
+#[test]
+fn toolbar_address_navigation_reads_without_changing_graph_command_semantics() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.test/first".into()));
+    let first = app.graph_runtimes.focused_member().unwrap();
+    app.update(Action::SetWorkspaceMap(false));
+    app.update(Action::OpenAddress("https://example.test/independent".into()));
+    assert_eq!(app.browser_command_target().unwrap().0, first);
+    app.update(Action::OmnibarOpen { command: false });
+    app.omnibar.text = "https://example.test/typed".into();
+    app.omnibar.suggestions.clear();
+    app.update(Action::OmnibarCommit);
+    let target = app.browser_command_target().unwrap();
+    assert_ne!(target.0, first);
+    assert_eq!(target.1, "https://example.test/typed");
+    assert!(!app.map_navigation_active());
+}
+
+#[test]
+fn toolbar_repeated_map_returns_keep_a_real_graph_scene() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.test/a".into()));
+    let first = app.graph_runtimes.focused_member().unwrap();
+    let pane = app.default_graph_pane();
+    app.with_graph_pane(pane, |canvas| canvas.set_graph_grammar(true));
+    app.graph_pane_frame(pane, 1024, 521).unwrap();
+    app.update(Action::SetWorkspaceMap(false));
+    app.content.note_live(first, None);
+    // Changing the graph selection retains the previously read member. That
+    // decoration used to make the native translator refuse the whole scene.
+    app.update(Action::OpenAddress("https://example.test/b".into()));
+    for _ in 0..3 {
+        app.update(Action::SetWorkspaceMap(true));
+        assert!(!crate::observe::snapshot(&app).surfaces.iter().any(|kind| kind == "content"));
+        for _ in 0..5 {
+            let (scene, _) = app.graph_pane_frame(pane, 1024, 521).unwrap();
+            let canvas = app.graph_runtimes.canvas(app.graph_for_pane(pane).unwrap()).unwrap();
+            assert_eq!(canvas.last_translation_error(), None);
+            assert!(!scene.ops.is_empty());
+        }
+        app.update(Action::SetWorkspaceMap(false));
+        app.update(Action::ToggleToolPane(crate::panes::PaneKindId::new(crate::panes::kind::INSPECTOR)));
+        app.update(Action::ToggleToolPane(crate::panes::PaneKindId::new(crate::panes::kind::INSPECTOR)));
+    }
 }

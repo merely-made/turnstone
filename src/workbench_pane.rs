@@ -33,13 +33,16 @@ use uuid::Uuid;
 use crate::app::App;
 use crate::content::NodeContent;
 use crate::surface::Rect;
-use crate::workbench_tiling::{WorkbenchTiling, place_workbench};
+use crate::workbench_tiling::{WorkbenchTiling, place_workbench_at};
 
 /// One cell as the view holds it: the walked placement's members and rect,
 /// the tab labels, the strip state (selection mirrors the model's active
 /// tab at sync; a click moves it and the shell lowers the diff), and the
 /// body hint.
 struct CellView {
+    tabs: Rect,
+    body: Rect,
+    vertical: bool,
     appearance_role: Option<u64>,
     members: Vec<Uuid>,
     rect: Rect,
@@ -72,7 +75,7 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
             },
             move |state: &mut WorkbenchState| &mut state.cells[i].strip,
         );
-        let body_h = (cell.rect.h - crate::ui::TABLIST_HEIGHT).max(0.0);
+        let body_h = cell.body.h;
         let body = el::<_, WorkbenchState, ()>("div", cell.hint.clone())
             .attr("class", "wb-body")
             .attr(
@@ -95,7 +98,37 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
                 "width: {}px; height: {}px; overflow: hidden;",
                 cell.rect.w, cell.rect.h
             ),
-            (strip, body),
+            arrangement(
+                cell.rect.w,
+                cell.rect.h,
+                vec![
+                    Box::new(placed_with(
+                        Placement::new(cell.tabs.x - cell.rect.x, cell.tabs.y - cell.rect.y),
+                        format!(
+                            "width:{}px;height:{}px;overflow:hidden;",
+                            cell.tabs.w, cell.tabs.h
+                        ),
+                        el::<_, WorkbenchState, ()>("div", strip)
+                            .attr(
+                                "class",
+                                if cell.vertical {
+                                    "wb-tabs-vertical"
+                                } else {
+                                    "wb-tabs-horizontal"
+                                },
+                            )
+                            .attr("style", "width:100%;height:100%;"),
+                    )) as WbView,
+                    Box::new(placed_with(
+                        Placement::new(cell.body.x - cell.rect.x, cell.body.y - cell.rect.y),
+                        format!(
+                            "width:{}px;height:{}px;overflow:hidden;",
+                            cell.body.w, cell.body.h
+                        ),
+                        body,
+                    )) as WbView,
+                ],
+            ),
         )));
     }
     Box::new(
@@ -224,7 +257,11 @@ impl WorkbenchPane {
             .workbench_for_pane(pane_id)
             .map(|workbench| workbench.to_arrangement().1)
             .unwrap_or(None);
-        self.tiling = place_workbench(geom.as_ref(), Rect::new(0.0, 0.0, pane_w, pane_h));
+        self.tiling = place_workbench_at(
+            geom.as_ref(),
+            Rect::new(0.0, 0.0, pane_w, pane_h),
+            app.shell_chrome_config().layout.document_tabs,
+        );
         let graph = app
             .graph_for_pane(pane_id)
             .and_then(|graph| app.graph_runtimes.canvas(graph));
@@ -265,6 +302,12 @@ impl WorkbenchPane {
                     None => String::new(),
                 };
                 CellView {
+                    tabs: c.tab_rect(),
+                    body: c.body(),
+                    vertical: matches!(
+                        c.tab_edge,
+                        crate::chrome_layout::TabEdge::Left | crate::chrome_layout::TabEdge::Right
+                    ),
                     appearance_role: c.active_member().map(|node| {
                         crate::surface::appearance::workbench_appearance_role(pane_id, node)
                     }),
@@ -329,7 +372,8 @@ impl WorkbenchPane {
             .iter()
             .flat_map(|c| c.members.iter().copied())
             .collect();
-        let tabs = dom.all_with_class(dom.document(), "tab");
+        let root = self.mount.as_ref().map_or_else(|| dom.document(), cambium::RetainedMount::node);
+        let tabs = dom.all_with_class(root, "tab");
         for (i, &tab) in tabs.iter().enumerate() {
             if let Some((tx, ty, tw, th)) = self.layout.visible_rect(&dom, tab)
                 && x >= tx
@@ -355,7 +399,8 @@ impl WorkbenchPane {
         if !self.layout.has_current_snapshot(&dom) {
             return Err("retained Workbench snapshot is unavailable or stale");
         }
-        let tabs = dom.all_with_class(dom.document(), "tab");
+        let root = self.mount.as_ref().map_or_else(|| dom.document(), cambium::RetainedMount::node);
+        let tabs = dom.all_with_class(root, "tab");
         let mut point = None;
         for node in self.layout.matching_nodes(&dom, selector) {
             if !tabs.contains(&node) {
@@ -442,6 +487,46 @@ mod tests {
     }
 
     #[test]
+    fn all_document_tab_edges_keep_painted_hits_and_native_apertures_aligned() {
+        use crate::chrome_layout::TabEdge;
+        let (mut app, a, b) = app_with_two_tiles();
+        app.update(Action::WorkbenchStackOnto {
+            dragged: b,
+            target: a,
+        });
+        for edge in [TabEdge::Top, TabEdge::Bottom, TabEdge::Left, TabEdge::Right] {
+            let mut config = app.shell_chrome_config().clone();
+            config.layout.document_tabs = edge;
+            app.set_shell_chrome_config(config);
+            let pane = pane_over(&app, 800.0, 600.0);
+            let cell = &pane.tiling().cells[0];
+            let dom = pane.dom.borrow();
+            let node = dom.all_with_class(dom.document(), "wb-body")[0];
+            let (x, y, w, h) = pane.layout.visible_rect(&dom, node).unwrap();
+            let expected = cell.body();
+            for (actual, want) in [x, y, w, h]
+                .into_iter()
+                .zip([expected.x, expected.y, expected.w, expected.h])
+            {
+                assert!((actual - want).abs() < 0.1, "{edge:?}: {actual} != {want}");
+            }
+            drop(dom);
+            for (name, member) in [("alpha", a), ("beta", b)] {
+                let point = pane
+                    .selector_point(
+                        &taproot::Selector::class("tab")
+                            .containing(name)
+                            .on_surface("workbench"),
+                    )
+                    .unwrap()
+                    .unwrap();
+                assert!(cell.tab_rect().contains(point.0, point.1));
+                assert_eq!(pane.tab_at(point.0, point.1, 800, 600), Some(member));
+            }
+        }
+    }
+
+    #[test]
     fn long_page_titles_cannot_claim_the_siblings_tab() {
         let (mut app, a, b) = app_with_two_tiles();
         for (member, name) in [(a, "Scry A"), (b, "Scry B")] {
@@ -505,7 +590,11 @@ mod tests {
         pane.sync(&app, app.default_graph_pane(), 800.0, 600.0);
         let selector = taproot::Selector::class("tab").containing("alpha");
         let rect = [0.0, 0.0, 800.0, 600.0];
-        assert_eq!(pane.resolve(&selector, rect), None, "no painted snapshot yet");
+        assert_eq!(
+            pane.resolve(&selector, rect),
+            None,
+            "no painted snapshot yet"
+        );
         pane.scene(800, 600);
         assert!(pane.resolve(&selector, rect).is_some());
 

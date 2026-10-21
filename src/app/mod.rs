@@ -436,6 +436,16 @@ impl App {
         self.shell.chrome()
     }
 
+    /// Map is navigation over graph members. An inactive retained Workbench
+    /// keeps its live producers, without compositing a reader over the map.
+    pub(crate) fn map_navigation_active(&self) -> bool {
+        let has_reader=self.frisket.iter_leaves().any(|(_,content,_)| matches!(content,PaneContent::Workbench));
+        if !has_reader { return false; }
+        let visible=self.frisket.outer_workspace().ok().map(|frame|frame.active_ids()).unwrap_or_default();
+        let reader_visible=visible.iter().any(|id|self.pane_content(PaneId(id.0))==Some(&PaneContent::Workbench));
+        !reader_visible || self.active_pane.is_some_and(|pane|self.pane_content(pane)==Some(&PaneContent::Orrery))
+    }
+
     /// Apply a value-facing chrome configuration. The Settings pane/provider
     /// may call this through its live sink; it never reaches into a renderer.
     pub fn set_shell_chrome_config(&mut self, chrome: ShellChromeConfig) {
@@ -1404,6 +1414,15 @@ impl App {
             // persists it (SaveSession writes frame.json), so the arrangement
             // survives a restart. Maximize is view state, not persisted.
             Action::SummonPane(kind) => self.summon_pane(kind),
+            Action::SetWorkspaceMap(map) => self.set_workspace_map(map),
+            Action::ReadGraphMember(member) => self.read_graph_member(member),
+            Action::ToggleToolPane(kind) => self.toggle_tool_pane(kind),
+            Action::SetChromeLayout(layout) => {
+                let mut chrome = self.shell_chrome_config().clone();
+                chrome.layout = layout;
+                self.set_shell_chrome_config(chrome);
+                vec![Effect::SaveChromeLayout(layout), Effect::Redraw]
+            },
             Action::ChooseKnotDocumentFile { read_only } => {
                 vec![Effect::ChooseKnotDocumentFile { read_only }]
             }
