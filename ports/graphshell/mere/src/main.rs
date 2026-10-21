@@ -9,6 +9,7 @@
 use cambium::{AnyView, GenetCtx, GenetElement, el};
 use cambium_genet_winit_host::{AppCtx, HostOptions, Init, inert_hooks, run};
 use chirograph::PortableCardV1;
+mod browser;
 mod command;
 mod connection;
 mod coop;
