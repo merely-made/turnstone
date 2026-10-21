@@ -44,6 +44,8 @@ pub(super) struct PhysicsPanel {
     pub(super) depth: SelectState,
     /// Group pull's channel (any kind source; F37).
     pub(super) groups: SelectState,
+    /// Role overrides' group channel, independent of Group pull (F49).
+    pub(super) role_groups: SelectState,
     /// Index 0 is custom; profile `i` is at `i + 1`.
     pub(super) profile: SelectState,
     /// One per `CANVAS_PHYSICS_OVERLAYS` entry, in catalog order.
@@ -104,6 +106,7 @@ impl PhysicsPanel {
             mass: SelectState::new(0).with_label("Mass"),
             depth: SelectState::new(0).with_label("Depth"),
             groups: SelectState::new(0).with_label("Groups"),
+            role_groups: SelectState::new(0).with_label("Role groups"),
             profile: SelectState::new(0).with_label("Profile"),
             overlays: vec![false; CANVAS_PHYSICS_OVERLAYS.len()],
             layout_id: layout_id.to_string(),
@@ -122,12 +125,12 @@ impl PhysicsPanel {
     /// custom because its first flat law does not describe the full profile.
     pub(super) fn sync(&mut self, canvas: &Canvas) {
         let live = PhysicsChoice::live(canvas);
-        self.role.selected = index_of(Role::ALL, canvas.arrangement_roles().default);
         self.law.selected = index_of(PhysicsLaw::ALL, live.law);
         self.kind.selected = index_of(PhysicsKindSource::ALL, live.kind);
         self.mass.selected = index_of(PhysicsMassSource::ALL, live.mass);
         self.depth.selected = index_of(PhysicsDepthSource::ALL, live.depth);
         self.groups.selected = index_of(PhysicsKindSource::ALL, live.groups);
+        self.sync_role_target(canvas);
         for (checked, overlay) in self.overlays.iter_mut().zip(PhysicsOverlay::ALL) {
             *checked = live.overlays.contains(&overlay);
         }
@@ -145,6 +148,12 @@ impl PhysicsPanel {
             self.profile.selected = 0;
         }
         self.sync_mix(spec.as_ref().map(|spec| &spec.root));
+    }
+
+    /// Sync role controls from the live, canonical target and resolved Canvas.
+    fn sync_role_target(&mut self, canvas: &Canvas) {
+        self.role.selected = index_of(Role::ALL, canvas.arrangement_roles().default);
+        self.role_groups.selected = index_of(PhysicsKindSource::ALL, canvas.role_group_source());
     }
 
     /// Read the authored root when it is the exact two-law form this editor
@@ -265,9 +274,34 @@ impl TreePage {
     /// says otherwise (F22, F48).
     fn apply_role(&mut self) {
         let role = self.physics.role();
-        self.shared.canvas.borrow_mut().set_arrangement_role(role);
-        self.physics.status = format!("Role set to {}", role.id());
-        self.shared.dirty.set(true);
+        let mut canvas = self.shared.canvas.borrow_mut();
+        match physics_controls::apply_role(&mut canvas, role) {
+            Ok(status) => {
+                self.physics.status = status;
+                self.physics.sync_role_target(&canvas);
+                self.shared.dirty.set(true);
+            },
+            Err(error) => self.physics.status = format!("Role change refused · {error}"),
+        }
+    }
+
+    /// Set the channel used to read role overrides. Group pull remains an
+    /// independent physics source.
+    fn apply_role_groups(&mut self) {
+        let source = PhysicsKindSource::ALL[self
+            .physics
+            .role_groups
+            .selected
+            .min(PhysicsKindSource::ALL.len() - 1)];
+        let mut canvas = self.shared.canvas.borrow_mut();
+        match physics_controls::apply_role_group_source(&mut canvas, source) {
+            Ok(status) => {
+                self.physics.status = status;
+                self.physics.sync_role_target(&canvas);
+                self.shared.dirty.set(true);
+            },
+            Err(error) => self.physics.status = format!("Role groups change refused · {error}"),
+        }
     }
 
     fn apply_physics(&mut self) {
@@ -587,6 +621,21 @@ pub(super) fn section(page: &TreePage) -> Child {
         picker("Groups", labels(CANVAS_PHYSICS_KIND_SOURCES), |page| {
             &mut page.physics.groups
         }),
+        picker("Role groups", labels(CANVAS_PHYSICS_KIND_SOURCES), |page| {
+            &mut page.physics.role_groups
+        }),
+        Box::new(
+            el(
+                "p",
+                "Role groups chooses which groups role overrides use. Groups supplies Group pull.",
+            )
+            .attr("class", "tools-note"),
+        ),
+        physics_action(
+            "Apply role groups",
+            "apply-role-groups",
+            TreePage::apply_role_groups,
+        ),
         picker("Mass", labels(CANVAS_PHYSICS_MASS_SOURCES), |page| {
             &mut page.physics.mass
         }),

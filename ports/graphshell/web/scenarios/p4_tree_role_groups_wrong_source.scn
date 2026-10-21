@@ -1,0 +1,12 @@
+# Deliberate negative: change the live source from Site to Cluster, then assert Site.
+# The last source assertion is intentionally false and is the only expected failure.
+click role:button Inspector
+settle 2
+assert snap role-group-source == site
+assert snap panel-role-group-source == site
+click role:combobox Role groups
+click role:option By cluster
+click role:button Apply role groups
+settle 2
+assert snap panel-role-group-source == cluster
+assert snap role-group-source == site
