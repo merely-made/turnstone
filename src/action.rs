@@ -272,6 +272,8 @@ pub enum Action {
     DismissRetained,
     GrowTiles,
     ShrinkTiles,
+    /// Toggle the owning Map's categorical ground; leaves graph data and arrangement intact.
+    ToggleTerritory,
     /// Native view curation; never changes graph truth or source positions.
     FoldSelection,
     ExpandFold,
@@ -735,6 +737,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Dismiss retained", Action::DismissRetained),
         ("Grow tiles", Action::GrowTiles),
         ("Shrink tiles", Action::ShrinkTiles),
+        ("Territory", Action::ToggleTerritory),
         shared(Action::FitView),
         shared(Action::FoldSelection),
         shared(Action::ExpandFold),

@@ -64,6 +64,7 @@ pub enum ArrangeIntent {
     DismissRetained,
     GrowTiles,
     ShrinkTiles,
+    ToggleTerritory,
     SetLaw(String),
     SetOverlay {
         id: String,
@@ -91,6 +92,7 @@ impl ArrangeIntent {
             Self::DismissRetained => Some(Action::DismissRetained),
             Self::GrowTiles => Some(Action::GrowTiles),
             Self::ShrinkTiles => Some(Action::ShrinkTiles),
+            Self::ToggleTerritory => Some(Action::ToggleTerritory),
             ArrangeIntent::SetLayout(id) if id == FREE_LAYOUT_ID => {
                 Some(Action::SetLayoutStrategy(None))
             },
@@ -380,6 +382,7 @@ fn arrange_view(state: &ArrangeState) -> ArrangeView {
                             scene_button("Dismiss retained", ArrangeIntent::DismissRetained),
                             scene_button("Grow tiles", ArrangeIntent::GrowTiles),
                             scene_button("Shrink tiles", ArrangeIntent::ShrinkTiles),
+                            scene_button("Territory", ArrangeIntent::ToggleTerritory),
                         ],
                     ),
                 ),

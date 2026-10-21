@@ -1218,7 +1218,7 @@ impl App {
             | Action::RedoFold) => self.edit_graph_folds(action),
             action @ (Action::ResetToSeed | Action::SetSeed | Action::RestoreRecipeSeed
                 | Action::ToggleForegroundPin | Action::DismissRetained
-                | Action::GrowTiles | Action::ShrinkTiles) => self.edit_graph_scene(action),
+                | Action::GrowTiles | Action::ShrinkTiles | Action::ToggleTerritory) => self.edit_graph_scene(action),
             Action::ReseedLayout => self.reseed_layout(),
             Action::SetLayoutStrategy(id) => self.set_layout_strategy(id),
             action @ (Action::SetPhysicsLaw(_) | Action::SetPhysicsOverlay(_, _)

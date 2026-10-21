@@ -66,6 +66,7 @@ pub enum ChromeIntent {
     RevealMember(uuid::Uuid),
     Layout(crate::chrome_layout::ChromeLayout),
     AllPanes,
+    Territory,
     MenuChanged,
     FindPrevious,
     FindNext,
@@ -178,6 +179,7 @@ struct ChromeState {
     documents_start: usize,
     layout: crate::chrome_layout::ChromeLayout,
     map_active: bool,
+    territory: bool,
     tools: Vec<(&'static str, String, bool)>,
     connections: Vec<(uuid::Uuid, String)>,
     documents: Vec<(uuid::Uuid, String, bool)>,
@@ -245,9 +247,10 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
             0.0
         };
         let available = win.w - leading;
-        let tiny = available < 300.0 * state.zoom;
-        let compact = available < 540.0 * state.zoom;
-        let wide = available > 700.0 * state.zoom;
+        let density = cambium::ShellDensity::for_width(available, state.zoom);
+        let tiny = density == cambium::ShellDensity::Tiny;
+        let compact = density.is_compact();
+        let wide = density == cambium::ShellDensity::Wide;
         let height = if merged {
             title_height
         } else {
@@ -279,6 +282,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                 }),
             ));
         }
+        let leading_controls = std::mem::take(&mut controls);
         let status = state
             .focused_url
             .clone()
@@ -304,6 +308,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                 |_state: &mut ChromeState, _: PointerClick| ChromeIntent::Address,
             )));
         }
+        let location = controls.pop().expect("address slot");
         if !compact {
             controls.push(browser_control(
                 if state.focused_kept { "Kept" } else { "Keep" },
@@ -314,22 +319,16 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                     .map(ChromeIntent::KeepNode),
             ));
         }
-        if tiny && available >= 230.0 * state.zoom {
-            controls.push(browser_button(
-                if state.map_active { "Read" } else { "Map" },
-                Some(ChromeIntent::WorkspaceMap(!state.map_active)),
+        if !tiny || available >= 230.0 * state.zoom {
+            controls.push(cambium::shell_projection_switch(
+                state.map_active,
+                tiny,
+                |_: &mut ChromeState, map| ChromeIntent::WorkspaceMap(map),
             ));
-        } else if !tiny {
-            for (label, map) in [("Map", true), ("Read", false)] {
-                controls.push(selected_button(
-                    label,
-                    ChromeIntent::WorkspaceMap(map),
-                    state.map_active == map,
-                ));
-            }
         }
         if !compact {
             controls.push(menu_button(
+                state,
                 format!("Documents {}", state.documents.len()),
                 "Documents in this map",
                 ChromeMenu::Documents,
@@ -337,6 +336,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
         }
         if wide {
             controls.push(menu_button(
+                state,
                 format!("Related {}", state.connections.len()),
                 "Document connections",
                 ChromeMenu::Connections,
@@ -353,11 +353,8 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
             }
         }
         controls.push(menu_button(
-            if tiny {
-                "⋯".into()
-            } else {
-                "Panes".into()
-            },
+            state,
+            if tiny { "⋯".into() } else { "Panes".into() },
             "Panes",
             ChromeMenu::Panes,
         ));
@@ -367,7 +364,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
             } else {
                 6.0
             };
-        children.push(Box::new(el::<_, ChromeState, ChromeIntent>("div", controls)
+        children.push(Box::new(el::<_, ChromeState, ChromeIntent>("div", cambium::shell_toolbar("Document graph navigation", leading_controls, location, controls))
             .attr("class", if state.fetching { "browser-strip browser-loading" } else { "browser-strip" })
             .attr("style", format!("transform:translate({left_padding}px,{navigation_top}px);width:{}px;height:{height}px;padding-left:0px;--app-region:{};",(win.w-left_padding).max(0.0), if merged { "drag" } else { "no-drag" }))));
 
@@ -402,12 +399,15 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                     for (kind, label, visible) in &state.tools {
                         rows.push(selected_button(label, ChromeIntent::Tool(kind), *visible));
                     }
+                    rows.push(selected_button("Territory", ChromeIntent::Territory, state.territory));
                     rows.push(menu_button(
+                        state,
                         "Document connections…".into(),
                         "Document connections",
                         ChromeMenu::Connections,
                     ));
                     rows.push(menu_button(
+                        state,
                         "Documents in this map…".into(),
                         "Documents in this map",
                         ChromeMenu::Documents,
@@ -469,7 +469,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                         rows.push(Box::new(on_click(
                             el::<_, ChromeState, ChromeIntent>("button", "Previous documents")
                                 .attr("aria-label", "Previous documents")
-                                .attr("class", "browser-button"),
+                                .attr("class", "shell-control"),
                             |state: &mut ChromeState, _: PointerClick| {
                                 state.documents_start = state.documents_start.saturating_sub(8);
                                 state.menu_selected = 0;
@@ -477,7 +477,9 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                             },
                         )));
                     }
-                    for (member, label, arranged) in state.documents.iter().skip(state.documents_start).take(8) {
+                    for (member, label, arranged) in
+                        state.documents.iter().skip(state.documents_start).take(8)
+                    {
                         rows.push(selected_button(
                             format!("{label}{}", if *arranged { " · in Read" } else { "" }),
                             ChromeIntent::ReadMember(*member),
@@ -491,7 +493,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                         rows.push(Box::new(on_click(
                             el::<_, ChromeState, ChromeIntent>("button", "More documents")
                                 .attr("aria-label", "More documents")
-                                .attr("class", "browser-button"),
+                                .attr("class", "shell-control"),
                             |state: &mut ChromeState, _: PointerClick| {
                                 state.documents_start += 8;
                                 state.menu_selected = 0;
@@ -538,23 +540,22 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                     ) as ChromeView
                 })
                 .collect::<Vec<_>>();
+            let popup = cambium::shell_popup(
+                match menu {
+                    ChromeMenu::Panes => "Panes and layout",
+                    ChromeMenu::Connections => "Document connections",
+                    ChromeMenu::Documents => "Documents in this map",
+                },
+                rows,
+            );
             children.push(Box::new(
-                el::<_, ChromeState, ChromeIntent>("div", rows)
+                el::<_, ChromeState, ChromeIntent>("div", popup)
                     .attr(
                         "class",
                         if menu == ChromeMenu::Panes {
                             "chrome-menu chrome-panes-menu"
                         } else {
                             "chrome-menu"
-                        },
-                    )
-                    .attr("role", "group")
-                    .attr(
-                        "aria-label",
-                        match menu {
-                            ChromeMenu::Panes => "Panes and layout",
-                            ChromeMenu::Connections => "Document connections",
-                            ChromeMenu::Documents => "Documents in this map",
                         },
                     )
                     .attr(
@@ -970,7 +971,7 @@ fn window_title_bar(state: &ChromeState, win: &WindowChrome, slot: usize) -> Chr
 }
 
 pub(crate) fn titlebar_height(zoom: f32, insets: cambium_rootstock::TitlebarInsets) -> f32 {
-    (24.0 + 16.0 * zoom).max(insets.height)
+    cambium::ShellMetrics::toolbar_height(zoom).max(insets.height)
 }
 
 fn browser_button(label: impl Into<String>, intent: Option<ChromeIntent>) -> ChromeView {
@@ -983,47 +984,38 @@ fn browser_control(
     name: &str,
     intent: Option<ChromeIntent>,
 ) -> ChromeView {
-    let base = el::<_, ChromeState, ChromeIntent>("button", label.into())
-        .attr("aria-label", name)
-        .attr(
-            "aria-disabled",
-            if intent.is_none() { "true" } else { "false" },
-        )
-        .attr(
-            "class",
-            if intent.is_some() {
-                "browser-button"
-            } else {
-                "browser-button-disabled"
-            },
-        );
-    if let Some(intent) = intent {
-        Box::new(on_click(
-            base,
-            move |_state: &mut ChromeState, _click: PointerClick| intent,
-        ))
-    } else {
-        Box::new(base)
-    }
+    cambium::shell_control(
+        label,
+        name,
+        cambium::ShellControl {
+            disabled: intent.is_none(),
+            ..Default::default()
+        },
+        move |_: &mut ChromeState, _: PointerClick| intent,
+    )
 }
 
 fn selected_button(label: impl Into<String>, intent: ChromeIntent, selected: bool) -> ChromeView {
     let label = label.into();
-    Box::new(on_click(
-        el::<_, ChromeState, ChromeIntent>("button", label.clone())
-            .attr("aria-label", label)
-            .attr("class", "browser-button")
-            .attr("aria-pressed", if selected { "true" } else { "false" }),
+    cambium::shell_control(
+        label.clone(),
+        label,
+        cambium::ShellControl {
+            pressed: Some(selected),
+            ..Default::default()
+        },
         move |_: &mut ChromeState, _: PointerClick| intent,
-    ))
+    )
 }
 
-fn menu_button(label: String, name: &str, menu: ChromeMenu) -> ChromeView {
-    Box::new(on_click(
-        el::<_, ChromeState, ChromeIntent>("button", label)
-            .attr("class", "browser-button")
-            .attr("aria-label", name)
-            .attr("aria-haspopup", "true"),
+fn menu_button(state: &ChromeState, label: String, name: &str, menu: ChromeMenu) -> ChromeView {
+    cambium::shell_control(
+        label,
+        name,
+        cambium::ShellControl {
+            expanded: Some(state.menu == Some(menu)),
+            ..Default::default()
+        },
         move |state: &mut ChromeState, _: PointerClick| {
             state.menu = if state.menu == Some(menu) {
                 None
@@ -1034,13 +1026,13 @@ fn menu_button(label: String, name: &str, menu: ChromeMenu) -> ChromeView {
             state.documents_start = 0;
             ChromeIntent::MenuChanged
         },
-    ))
+    )
 }
 
 /// Shared reserved rows for the retained workspace and the chrome overlay.
 /// The control line and its padding grow with the UI zoom.
 pub(crate) fn navigation_height(zoom: f32) -> f32 {
-    24.0 + 16.0 * zoom
+    cambium::ShellMetrics::toolbar_height(zoom)
 }
 fn status_height(zoom: f32) -> f32 {
     12.0 + 10.0 * zoom
@@ -1188,6 +1180,7 @@ impl ChromeSurfaces {
             documents_start: 0,
             layout: Default::default(),
             map_active: false,
+            territory: false,
             tools: Vec::new(),
             connections: Vec::new(),
             documents: Vec::new(),
@@ -1369,17 +1362,31 @@ impl ChromeSurfaces {
             .and_then(|member| app.graph_runtimes.graph_containing_member(member))
             .or_else(|| app.active_pane.and_then(|pane| app.graph_for_pane(pane)))
             .unwrap_or_else(|| app.graph_runtimes.active_graph());
-        let arranged = app.frisket.iter_leaves()
+        let arranged = app
+            .frisket
+            .iter_leaves()
             .filter(|(_, _, graph)| *graph == navigation_graph)
             .filter_map(|(pane, _, _)| app.workbench_for_pane(pane))
             .flat_map(|workbench| workbench.open_members())
             .collect::<std::collections::HashSet<_>>();
-        let mut documents = app.graph_runtimes.canvas(navigation_graph)
-            .into_iter().flat_map(|canvas| canvas.graph().nodes().map(|(_, node)| {
-                (node.id, if node.title.trim().is_empty() || node.title == node.url() {
-                    node.url().to_string()
-                } else { node.title.clone() }, arranged.contains(&node.id))
-            })).collect::<Vec<_>>();
+        let mut documents = app
+            .graph_runtimes
+            .canvas(navigation_graph)
+            .into_iter()
+            .flat_map(|canvas| {
+                canvas.graph().nodes().map(|(_, node)| {
+                    (
+                        node.id,
+                        if node.title.trim().is_empty() || node.title == node.url() {
+                            node.url().to_string()
+                        } else {
+                            node.title.clone()
+                        },
+                        arranged.contains(&node.id),
+                    )
+                })
+            })
+            .collect::<Vec<_>>();
         documents.sort_by(|a, b| a.1.cmp(&b.1).then(a.0.cmp(&b.0)));
         if let Some(member) = focused
             && let Some(canvas) = app
@@ -1391,9 +1398,13 @@ impl ChromeSurfaces {
             // Semantic document links live in the resource graph. Project them
             // onto their displayed members alongside surface relationships.
             for (_, relation) in canvas.graph().projected_relations() {
-                let other = if relation.from == key { relation.to }
-                    else if relation.to == key { relation.from }
-                    else { continue };
+                let other = if relation.from == key {
+                    relation.to
+                } else if relation.to == key {
+                    relation.from
+                } else {
+                    continue;
+                };
                 if let Some(node) = canvas.graph().get_node(other) {
                     if node.id != member && !connections.iter().any(|(id, _)| *id == node.id) {
                         connections.push((node.id, canvas.graph().node_display_label(other)));
@@ -1494,6 +1505,7 @@ impl ChromeSurfaces {
             state.connections = connections.clone();
             state.documents = documents.clone();
             state.map_active = map_active;
+            state.territory = app.graph_runtimes.canvas(navigation_graph).is_some_and(|canvas| canvas.territory_field());
             for &(slot, w, h) in sizes {
                 while state.windows.len() <= slot {
                     state.windows.push(WindowChrome::default());
@@ -1651,7 +1663,7 @@ impl ChromeSurfaces {
             let root = self.runner.window_root(self.projections[0])?;
             let menu = dom.all_with_class(root, "chrome-menu").into_iter().next()?;
             let sheet = crate::ui::chrome_sheet(&self.appearance);
-            dom.all_with_class(menu, "browser-button")
+            dom.all_with_class(menu, "shell-control")
                 .into_iter()
                 .filter_map(|node| {
                     crate::ui::subtree_node_rect(&dom, root, node, &sheet, w, h)
@@ -1688,7 +1700,7 @@ pub(crate) mod tests {
         let dom = chrome.dom.borrow();
         let root = chrome.runner.window_root(chrome.projections[0]).unwrap();
         let node = dom
-            .all_with_class(root, "browser-button")
+            .all_with_class(root, "shell-control")
             .into_iter()
             .chain(dom.all_with_class(root, "browser-status"))
             .find(|node| {
@@ -1744,6 +1756,22 @@ pub(crate) mod tests {
     }
 
     #[test]
+    fn panes_territory_toggle_projects_the_current_maps_state() {
+        let mut app = browser_history_app(true);
+        app.update(Action::SetWorkspaceMap(false));
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0,1024.0,600.0)]);
+        assert!(!chrome.runner.state().territory);
+        let (x,y) = toolbar_point(&chrome,"Panes",1024,600);
+        chrome.click(0,x,y,1024,600);
+        let (x,y) = toolbar_point(&chrome,"Territory",1024,600);
+        assert_eq!(chrome.click(0,x,y,1024,600),vec![ChromeIntent::Territory]);
+        app.update(Action::ToggleTerritory);
+        chrome.sync(&app,&[(0,1024.0,600.0)]);
+        assert!(chrome.runner.state().territory);
+    }
+
+    #[test]
     fn panes_menu_dispatches_real_tools_and_keyboard_uses_the_same_retained_buttons() {
         let mut app = App::test_stub();
         app.update(Action::OpenAddress("https://example.test/a".into()));
@@ -1782,9 +1810,16 @@ pub(crate) mod tests {
             })
             .unwrap();
         assert_eq!(app.graph_pane_focused_member(pane), Some(b));
-        assert!(app.graph_runtimes.graph().projected_relations().next().is_some(), "fixture has a held relationship");
+        assert!(
+            app.graph_runtimes
+                .graph()
+                .projected_relations()
+                .next()
+                .is_some(),
+            "fixture has a held relationship"
+        );
         app.update(Action::SetWorkspaceMap(false));
-        assert_eq!(app.browser_command_target().map(|(id,_)|id), Some(b));
+        assert_eq!(app.browser_command_target().map(|(id, _)| id), Some(b));
         let mut chrome = ChromeSurfaces::new();
         chrome.sync(&app, &[(0, 1024.0, 600.0)]);
         assert!(
@@ -1878,7 +1913,10 @@ pub(crate) mod tests {
             chrome.click(0, x, y, 1024, 600);
         }
         let (x, y) = toolbar_point(&chrome, &last.1, 1024, 600);
-        assert!(x < 1024.0 && y < 600.0, "later members remain within the menu viewport");
+        assert!(
+            x < 1024.0 && y < 600.0,
+            "later members remain within the menu viewport"
+        );
         let (x, y) = toolbar_point(&chrome, "Previous documents", 1024, 600);
         chrome.click(0, x, y, 1024, 600);
         let earlier = chrome.runner.state().documents[8].clone();
@@ -2190,7 +2228,7 @@ pub(crate) mod tests {
                 .window_root(chrome.projections[0])
                 .expect("the primary window-root exists");
             let sheet = crate::ui::chrome_sheet(&chrome.appearance);
-            dom.all_with_class(dom.document(), "browser-button")
+            dom.all_with_class(dom.document(), "shell-control")
                 .into_iter()
                 .filter(|button| {
                     let html = dom.outer_html(*button);
@@ -2306,7 +2344,7 @@ pub(crate) mod tests {
             1
         );
         let find = dom.all_with_class(dom.document(), "document-find")[0];
-        let enabled = dom.all_with_class(find, "browser-button").len();
+        let enabled = dom.all_with_class(find, "shell-control").len();
         let disabled = dom.all_with_class(find, "browser-button-disabled").len();
         assert_eq!(enabled + disabled, 3, "find owns previous, next, and close");
     }
@@ -2448,8 +2486,15 @@ pub(crate) mod tests {
         assert!(!browser_button_intents(&mut chrome).contains(&ChromeIntent::KeepNode(member)));
         let dom = chrome.dom.borrow();
         assert_eq!(
-            dom.all_with_class(dom.document(), "browser-button-disabled")
-                .len(),
+            dom.all_with_class(dom.document(), "shell-control")
+                .into_iter()
+                .filter(|&node| {
+                    dom.attribute(node, &"".into(), &"aria-label".into())
+                        .is_some_and(|value| value.to_string() == "Keep document")
+                        && dom.attribute(node, &"".into(), &"aria-disabled".into())
+                            .is_some_and(|value| value.to_string() == "true")
+                })
+                .count(),
             1,
             "the one-way control remains visible as disabled Kept state"
         );
@@ -2793,19 +2838,29 @@ pub(crate) mod tests {
         chrome.scene(0, 1024, 600);
         let selector = taproot::Selector::role("button").with_attr("aria-label", "Panes");
         let (x, y) = chrome.selector_point(&selector).unwrap();
-        assert_eq!(chrome.click(0, x, y, 1024, 600), vec![ChromeIntent::MenuChanged]);
+        assert_eq!(
+            chrome.click(0, x, y, 1024, 600),
+            vec![ChromeIntent::MenuChanged]
+        );
         assert_eq!(chrome.runner.state().menu, Some(ChromeMenu::Panes));
-        assert!(chrome.selector_point(&selector).is_none(),
-            "a menu transition must be painted before resolving another click");
+        assert!(
+            chrome.selector_point(&selector).is_none(),
+            "a menu transition must be painted before resolving another click"
+        );
         let mut consumed = Vec::new();
         chrome.dom.borrow_mut().drain_mutations(&mut consumed);
         assert!(!consumed.is_empty());
-        assert!(chrome.selector_point(&selector).is_none(),
-            "consuming the mutation batch does not make old fragments current");
+        assert!(
+            chrome.selector_point(&selector).is_none(),
+            "consuming the mutation batch does not make old fragments current"
+        );
         chrome.scene(0, 1024, 600);
         let (x, y) = chrome.selector_point(&selector).unwrap();
         assert_eq!(chrome.layout_rebuilds(0), 2);
-        assert_eq!(chrome.click(0, x, y, 1024, 600), vec![ChromeIntent::MenuChanged]);
+        assert_eq!(
+            chrome.click(0, x, y, 1024, 600),
+            vec![ChromeIntent::MenuChanged]
+        );
         assert_eq!(chrome.runner.state().menu, None);
     }
 

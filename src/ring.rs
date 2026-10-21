@@ -162,6 +162,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | DismissRetained
         | GrowTiles
         | ShrinkTiles
+        | ToggleTerritory
         | ReseedLayout
         | FoldSelection
         | ExpandFold

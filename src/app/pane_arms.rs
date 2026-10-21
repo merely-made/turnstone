@@ -37,7 +37,7 @@ impl App {
         }
     }
 
-    fn primary_graph_for_navigation(&self, member: Option<Uuid>) -> Option<PaneId> {
+    pub(crate) fn primary_graph_for_navigation(&self, member: Option<Uuid>) -> Option<PaneId> {
         let graph = member
             .and_then(|node| self.graph_runtimes.graph_containing_member(node))
             .or_else(|| self.active_pane.and_then(|pane| self.graph_for_pane(pane)))
