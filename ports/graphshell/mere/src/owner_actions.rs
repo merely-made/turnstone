@@ -40,7 +40,11 @@ fn command(
 
 impl App {
     pub(super) fn open_owner_action(&mut self, intent: &str) {
-        if self.pending || self.coop.as_ref().is_some_and(|panel| panel.guest) {
+        if self.coop.as_ref().is_some_and(|panel| panel.guest) {
+            return;
+        }
+        if self.pending {
+            self.refuse("The resident is busy. Try that action again when it finishes.".into());
             return;
         }
         let Some(key) = self.selected.clone() else {
@@ -56,6 +60,11 @@ impl App {
         else {
             return;
         };
+        if let Some(previous) = self.persistent_refusal.take()
+            && self.model.notice.as_ref() == Some(&previous)
+        {
+            self.model.notice = None;
+        }
         self.owner_record = Some(key);
         let bounded = self.owner_form.open_action(
             target.session.clone(),
@@ -69,7 +78,11 @@ impl App {
     }
 
     pub(super) fn submit_owner_action(&mut self) {
-        if self.pending || self.coop.as_ref().is_some_and(|panel| panel.guest) {
+        if self.coop.as_ref().is_some_and(|panel| panel.guest) {
+            return;
+        }
+        if self.pending {
+            self.refuse("The resident is busy. Try that action again when it finishes.".into());
             return;
         }
         let result = (|| {
@@ -100,21 +113,26 @@ impl App {
                 .cards
                 .get(key)
                 .ok_or("The record is no longer disclosed.")?;
-            Ok(WorkerRequest::Owner {
-                key: key.clone(),
-                target: target.clone(),
-                action: draft.action().clone(),
-                command: command(card, draft)?,
-            })
+            Ok((
+                command(card, draft)?,
+                OwnerActionTarget {
+                    key: key.clone(),
+                    target: target.clone(),
+                    action: draft.action().clone(),
+                },
+            ))
         })();
         match result {
-            Ok(request) => {
-                if self.sender.send(request).is_ok() {
-                    self.pending = true;
+            Ok((invocation, target)) => {
+                if self.send_command(invocation, Some(target)) {
                     self.owner_waiting = true;
                     self.owner_form.status = "Requesting action from owner…".into();
                 } else {
-                    self.owner_form.status = "The resident worker stopped.".into();
+                    self.owner_form.status = self
+                        .model
+                        .notice
+                        .clone()
+                        .unwrap_or_else(|| "Owner actions unavailable.".into());
                 }
             },
             Err(reason) => self.owner_form.status = reason,

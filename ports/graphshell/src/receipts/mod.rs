@@ -36,7 +36,8 @@ pub mod manifest;
 pub use card::{CARD_FACETS, is_receipt, receipt_card};
 pub use ingest::{IngestedReceipt, ingest_directory, ingest_manifest};
 pub use intake::{
-    InboxEntry, PendingReceipt, captures_in, inbox_dir, mark_applied, pending, write_to_inbox,
+    ClaimedReceipt, InboxEntry, PendingReceipt, captures_in, claim_pending, inbox_dir, pending,
+    write_to_inbox,
 };
 pub use manifest::{
     ADDRESS_PREFIX, FACET_ARTIFACTS, FACET_RUN, ManifestArtifact, ReceiptError, ReceiptManifest,
