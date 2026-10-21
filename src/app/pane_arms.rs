@@ -37,15 +37,29 @@ impl App {
         }
     }
 
-    fn primary_graph_for_navigation(&self, member: Option<Uuid>) -> PaneId {
-        let graph = member.and_then(|node| self.graph_runtimes.graph_containing_member(node));
-        self.frisket
+    fn primary_graph_for_navigation(&self, member: Option<Uuid>) -> Option<PaneId> {
+        let graph = member
+            .and_then(|node| self.graph_runtimes.graph_containing_member(node))
+            .or_else(|| self.active_pane.and_then(|pane| self.graph_for_pane(pane)))
+            .unwrap_or_else(|| self.graph_runtimes.active_graph());
+        let source = self.active_pane.and_then(|pane| self.forme_for_pane(pane));
+        let candidates = self
+            .frisket
             .iter_leaves()
-            .find_map(|(pane, content, id)| {
-                (matches!(content, PaneContent::Orrery) && graph.is_none_or(|graph| graph == id))
-                    .then_some(pane)
-            })
-            .unwrap_or_else(|| self.default_graph_pane())
+            .chain(
+                self.lenses
+                    .iter()
+                    .flatten()
+                    .flat_map(|space| space.iter_leaves()),
+            )
+            .filter(|(_, content, id)| matches!(content, PaneContent::Orrery) && *id == graph)
+            .map(|(pane, _, _)| pane)
+            .collect::<Vec<_>>();
+        candidates
+            .iter()
+            .copied()
+            .find(|pane| self.forme_for_pane(*pane) == source)
+            .or_else(|| candidates.first().copied())
     }
 
     pub(super) fn set_workspace_map(&mut self, map: bool) -> Vec<Effect> {
@@ -54,22 +68,30 @@ impl App {
         } else {
             self.browser_command_target().map(|(member, _)| member)
         };
-        let pane = self.primary_graph_for_navigation(member);
+        let Some(pane) = self.primary_graph_for_navigation(member) else {
+            return vec![Effect::Redraw];
+        };
         self.reveal_pane(pane);
         if let Some(member) = member {
             self.graph_pane_select_member(pane, member);
         }
         self.focus = crate::surface::FocusTarget::Graph(pane);
         if map {
-            let mut effects = self.update(Action::FitView);
-            effects.extend([Effect::SaveSession, Effect::Redraw]);
-            effects
+            // Keep a useful framing and its zoom. A newly read member can be
+            // outside that view; reveal it without fitting the entire graph.
+            self.with_graph_pane(pane, |canvas| {
+                let view = canvas.viewport();
+                if canvas.focused_screen_position().is_some_and(|(x, y)| {
+                    x < 24.0 || y < 24.0
+                        || x > view.view.0 as f32 - 24.0
+                        || y > view.view.1 as f32 - 24.0
+                }) {
+                    canvas.center_on_selected();
+                }
+            });
+            vec![Effect::SaveSession, Effect::Redraw]
         } else if member.is_some() {
-            let mut effects = self.open_in_workbench();
-            if let Some(member) = member {
-                effects.extend(self.update(Action::WorkbenchActivate(member)));
-            }
-            effects
+            self.read_graph_member(member.unwrap())
         } else {
             vec![Effect::Redraw]
         }
@@ -83,7 +105,43 @@ impl App {
         {
             return vec![Effect::Redraw];
         }
-        let pane = self.primary_graph_for_navigation(Some(member));
+        let Some(pane) = self.primary_graph_for_navigation(Some(member)) else {
+            return vec![Effect::Redraw];
+        };
+        // Read arranges members of the map. Visiting another member uses the
+        // current reading stack; an existing member keeps its arranged cell.
+        let reading = self
+            .frisket
+            .iter_leaves()
+            .chain(
+                self.lenses
+                    .iter()
+                    .flatten()
+                    .flat_map(|space| space.iter_leaves()),
+            )
+            .find_map(|(id, content, _)| {
+                (matches!(content, PaneContent::Workbench)
+                    && self.forme_for_pane(id) == self.forme_for_pane(pane))
+                .then_some(id)
+            });
+        let target = reading
+            .and_then(|id| {
+                self.pane_context.resolve_context(
+                    id,
+                    &crate::panes::ContextBinding::Own,
+                    crate::panes::SourceSelector::Graph,
+                )
+            })
+            .and_then(|context| context.member)
+            .or_else(|| self.workbench_for_pane(pane).and_then(|workbench| {
+                workbench.slot_views().find_map(|slot| slot.members.get(slot.active).copied())
+            }));
+        if let Some(workbench) = self.workbench_for_pane_mut(pane)
+            && !workbench.has_tile(member)
+            && let Some(target) = target
+        {
+            workbench.open_in_slot_of(member, target);
+        }
         self.reveal_pane(pane);
         self.graph_pane_select_member(pane, member);
         self.focus = crate::surface::FocusTarget::Graph(pane);
@@ -92,6 +150,23 @@ impl App {
         effects
     }
 
+    pub(super) fn reveal_graph_member(&mut self, member: Uuid) -> Vec<Effect> {
+        if self
+            .graph_runtimes
+            .graph_containing_member(member)
+            .is_none()
+        {
+            return vec![Effect::Redraw];
+        }
+        let Some(pane) = self.primary_graph_for_navigation(Some(member)) else {
+            return vec![Effect::Redraw];
+        };
+        self.reveal_pane(pane);
+        self.graph_pane_select_member(pane, member);
+        self.with_graph_pane(pane, |canvas| canvas.center_on_selected());
+        self.focus = crate::surface::FocusTarget::Graph(pane);
+        vec![Effect::SaveSession, Effect::Redraw]
+    }
     pub(super) fn toggle_tool_pane(&mut self, kind: PaneKindId) -> Vec<Effect> {
         // Main views have a dedicated switch; tool toggling never closes them.
         if matches!(kind.as_str(), kind::GRAPH | kind::WORKBENCH) {

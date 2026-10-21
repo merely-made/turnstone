@@ -139,6 +139,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | OpenInWorkbench
         | SetWorkspaceMap(_)
         | ReadGraphMember(_)
+        | RevealGraphMember(_)
         | ToggleToolPane(_)
         | SetChromeLayout(_)
         | TearOutTile { .. }

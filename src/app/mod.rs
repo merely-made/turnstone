@@ -1416,6 +1416,7 @@ impl App {
             Action::SummonPane(kind) => self.summon_pane(kind),
             Action::SetWorkspaceMap(map) => self.set_workspace_map(map),
             Action::ReadGraphMember(member) => self.read_graph_member(member),
+            Action::RevealGraphMember(member) => self.reveal_graph_member(member),
             Action::ToggleToolPane(kind) => self.toggle_tool_pane(kind),
             Action::SetChromeLayout(layout) => {
                 let mut chrome = self.shell_chrome_config().clone();

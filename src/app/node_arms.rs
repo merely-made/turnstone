@@ -95,9 +95,8 @@ impl App {
     }
 
     pub(crate) fn focused_can_back(&self) -> bool {
-        self.graph_runtimes
-            .focused_member()
-            .is_some_and(|node| self.member_can_back(node))
+        self.browser_command_target()
+            .is_some_and(|(node, _)| self.member_can_back(node))
     }
 
     pub(crate) fn member_can_back(&self, node: Uuid) -> bool {
@@ -108,9 +107,8 @@ impl App {
     }
 
     pub(crate) fn focused_can_forward(&self) -> bool {
-        self.graph_runtimes
-            .focused_member()
-            .is_some_and(|node| self.member_can_forward(node))
+        self.browser_command_target()
+            .is_some_and(|(node, _)| self.member_can_forward(node))
     }
 
     pub(crate) fn member_can_forward(&self, node: Uuid) -> bool {
@@ -572,7 +570,7 @@ impl App {
     }
 
     pub(super) fn stop_focused(&mut self) -> Vec<Effect> {
-        let Some(node) = self.graph_runtimes.focused_member() else {
+        let Some((node, _)) = self.browser_command_target() else {
             return vec![Effect::Redraw];
         };
         self.link_preview = None;
@@ -1723,7 +1721,7 @@ impl App {
     }
 
     fn navigate_focused_lineage(&mut self, back: bool) -> Vec<Effect> {
-        let Some(node) = self.graph_runtimes.focused_member() else {
+        let Some((node, _)) = self.browser_command_target() else {
             return vec![Effect::Redraw];
         };
         if self.node_uses_web_surface(node) {
