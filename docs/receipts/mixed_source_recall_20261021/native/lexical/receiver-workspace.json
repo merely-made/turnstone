@@ -1,0 +1,213 @@
+{
+  "version": 2,
+  "layout": {
+    "id": "content",
+    "label": "content",
+    "root": {
+      "Workspace": {
+        "workspace": {
+          "tiled": {
+            "Split": {
+              "axis": "Row",
+              "children": [
+                {
+                  "fraction": 0.5,
+                  "tree": {
+                    "Stack": {
+                      "tabs": [
+                        {
+                          "id": 0,
+                          "title": "Orrery",
+                          "content": {
+                            "Open": {
+                              "kind": "turnstone.pane",
+                              "id": "0"
+                            }
+                          },
+                          "accent": null
+                        }
+                      ],
+                      "active": 0
+                    }
+                  }
+                },
+                {
+                  "fraction": 0.5,
+                  "tree": {
+                    "Split": {
+                      "axis": "Row",
+                      "children": [
+                        {
+                          "fraction": 0.5,
+                          "tree": {
+                            "Stack": {
+                              "tabs": [
+                                {
+                                  "id": 1,
+                                  "title": "inspector",
+                                  "content": {
+                                    "Open": {
+                                      "kind": "turnstone.pane",
+                                      "id": "1"
+                                    }
+                                  },
+                                  "accent": null
+                                }
+                              ],
+                              "active": 0
+                            }
+                          }
+                        },
+                        {
+                          "fraction": 0.5,
+                          "tree": {
+                            "Split": {
+                              "axis": "Row",
+                              "children": [
+                                {
+                                  "fraction": 0.5,
+                                  "tree": {
+                                    "Stack": {
+                                      "tabs": [
+                                        {
+                                          "id": 2,
+                                          "title": "workbench",
+                                          "content": {
+                                            "Open": {
+                                              "kind": "turnstone.pane",
+                                              "id": "2"
+                                            }
+                                          },
+                                          "accent": null
+                                        }
+                                      ],
+                                      "active": 0
+                                    }
+                                  }
+                                },
+                                {
+                                  "fraction": 0.5,
+                                  "tree": {
+                                    "Stack": {
+                                      "tabs": [
+                                        {
+                                          "id": 3,
+                                          "title": "turnstone.answers",
+                                          "content": {
+                                            "Open": {
+                                              "kind": "turnstone.pane",
+                                              "id": "3"
+                                            }
+                                          },
+                                          "accent": null
+                                        }
+                                      ],
+                                      "active": 0
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "floating": []
+        },
+        "panes": {
+          "0": [
+            "Orrery",
+            "af02a5f3-ac16-48f0-a843-b5e0f7f348c1"
+          ],
+          "1": [
+            "Inspector",
+            "af02a5f3-ac16-48f0-a843-b5e0f7f348c1"
+          ],
+          "2": [
+            "Workbench",
+            "af02a5f3-ac16-48f0-a843-b5e0f7f348c1"
+          ],
+          "3": [
+            {
+              "Registered": "turnstone.answers"
+            },
+            "00000000-0000-0000-0000-000000000000"
+          ]
+        },
+        "descriptors": {
+          "3": {
+            "config": {
+              "payload": null,
+              "schema": "turnstone.answers.config",
+              "version": 1
+            },
+            "context": "Own",
+            "id": 3,
+            "kind": "turnstone.answers",
+            "source": {
+              "Fixed": {
+                "External": {
+                  "payload": {
+                    "payload": {
+                      "chosen": [
+                        {
+                          "key": {
+                            "annotation_manifest": "blake3:fb6652ad4b6ee99a8595321e438159a33fadbf607c87c9dddd4c726f63e7c2bc",
+                            "graph": "af02a5f3-ac16-48f0-a843-b5e0f7f348c1",
+                            "node": "fc67b5d2-323a-46d7-9d2a-0b387c924696",
+                            "session": "929c85e8-da3d-4ee3-8ac7-942ebdda0f49"
+                          },
+                          "selector": null,
+                          "text_hash": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399"
+                        },
+                        {
+                          "key": {
+                            "annotation_manifest": "blake3:c579f4fa064074cba0a88e72c337d8514f1ce0a317eef14f95ec2579d112e3bd",
+                            "graph": "af02a5f3-ac16-48f0-a843-b5e0f7f348c1",
+                            "node": "c92bf1a7-836d-4ffa-8f9a-5d88a4f11af2",
+                            "session": "929c85e8-da3d-4ee3-8ac7-942ebdda0f49"
+                          },
+                          "selector": null,
+                          "text_hash": "blake3:5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944"
+                        },
+                        {
+                          "clip": {
+                            "graph": "af02a5f3-ac16-48f0-a843-b5e0f7f348c1",
+                            "manifest": "blake3:48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+                            "node": "e6c14de4-c2d2-4d17-9be4-faf5004f3b19",
+                            "session": "929c85e8-da3d-4ee3-8ac7-942ebdda0f49"
+                          },
+                          "selector": null,
+                          "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275"
+                        },
+                        {
+                          "clip": {
+                            "graph": "af02a5f3-ac16-48f0-a843-b5e0f7f348c1",
+                            "manifest": "blake3:45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0",
+                            "node": "1a9a5142-6e10-448a-a179-ea72b94f8cac",
+                            "session": "929c85e8-da3d-4ee3-8ac7-942ebdda0f49"
+                          },
+                          "selector": null,
+                          "text_hash": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96"
+                        }
+                      ],
+                      "session": "929c85e8-da3d-4ee3-8ac7-942ebdda0f49",
+                      "view": "14f53163-e2d8-4ef2-9744-e07ef970de17"
+                    },
+                    "version": 2
+                  },
+                  "schema": "turnstone.answers.v1"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

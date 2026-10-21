@@ -1,0 +1,34 @@
+[
+  {
+    "phase": 0,
+    "resident_pid": 43732,
+    "product_pids": [
+      43886
+    ],
+    "clean_shutdown": true,
+    "endpoint_unreachable": true,
+    "origin_refused": true,
+    "transfer_absent": false,
+    "producer_paths_absent": [
+      "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+      "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+      "/Users/markik/Code/output/redshank-text-retention-20261020/runtime/origin-recording.wav"
+    ]
+  },
+  {
+    "phase": 1,
+    "resident_pid": 45918,
+    "product_pids": [
+      45967
+    ],
+    "clean_shutdown": true,
+    "endpoint_unreachable": true,
+    "origin_refused": true,
+    "transfer_absent": true,
+    "producer_paths_absent": [
+      "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+      "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+      "/Users/markik/Code/output/redshank-text-retention-20261020/runtime/origin-recording.wav"
+    ]
+  }
+]

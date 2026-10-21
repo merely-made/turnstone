@@ -1,0 +1,11 @@
+{
+  "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+  "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: x86_64-apple-darwin\nrelease: 1.99.1\nLLVM version: 23.1.1\n",
+  "jobs": 4,
+  "dev_debug": 0,
+  "test_debug": 0,
+  "locked": true,
+  "offline": true,
+  "resident_build": "cargo +1.99.1 test -p djinn --features inference-gpu,inference-embedding --test inference_route --no-run -j 4 --locked --offline; explicit cached target/build directories",
+  "scope": "New mixed resident fixture and focused supplier checks. Turnstone product executable is reused only after its SHA256 and all 215 source/Cargo input hashes match the preceding compiled product baseline."
+}
