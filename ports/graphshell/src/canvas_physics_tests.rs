@@ -402,3 +402,230 @@ fn authored_mix_survives_the_canonical_v4_scene_facet_and_reopen() {
     );
     assert_eq!(subject.graph().node_count(), app.host.graph().node_count());
 }
+
+#[test]
+fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
+    use crate::local_scene::{capture_scene, restore_scene};
+    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+    use crate::product::SAVED_SCENE_FACET;
+    use mere::canvas::Role;
+    use mere::canvas::dynamics_spec::GroupRoles;
+    use mere::canvas::physics_controls;
+    use std::collections::BTreeMap;
+
+    let persona = SelectedPersonaRef {
+        persona: FIXTURE_PERSONA_ADDRESS.into(),
+        profile: "profile:graphshell-tree".into(),
+    };
+    let mut app =
+        crate::app::GraphshellApp::fixture(muniment::MemoryBackend::new(), persona).unwrap();
+    let mut subject = p2_fixture_canvas();
+    apply_mix(
+        &mut subject,
+        &TwoLawMix {
+            first: PhysicsLaw::Springs,
+            second: PhysicsLaw::Charge,
+            first_share: 0.1,
+            second_share: 0.3,
+        },
+    )
+    .unwrap();
+
+    let keys: Vec<_> = subject.graph().nodes().map(|(key, _)| key).collect();
+    let mut same_site = None;
+    'outer: for (i, &a) in keys.iter().enumerate() {
+        let Some(site) = subject.role_group_of(a) else {
+            continue;
+        };
+        for &b in keys.iter().skip(i + 1) {
+            if subject.role_group_of(b).as_deref() == Some(site.as_str()) {
+                same_site = Some((site, a, b));
+                break 'outer;
+            }
+        }
+    }
+    let (site, group_member, item_member) = same_site.expect("fixture has a multi-node site");
+    let item_id = subject.graph().get_node(item_member).unwrap().id;
+    let mut spec = subject.dynamics_spec().unwrap();
+    let target = spec.target.as_mut().expect("dynamics spec target");
+    target.default_role = Role::Seeded;
+    target.groups = Some(GroupRoles {
+        channel: "groups.site".into(),
+        roles: BTreeMap::from([(site, Role::Anchored)]),
+    });
+    target.items = BTreeMap::from([(item_id.to_string(), Role::Pinned)]);
+    subject.set_dynamics_spec(&spec).unwrap();
+
+    assert_eq!(subject.arrangement_role_of(group_member), Role::Anchored);
+    assert_eq!(subject.arrangement_role_of(item_member), Role::Pinned);
+    let authored_root = spec.root.clone();
+    let authored_channels = spec.channels.clone();
+    physics_controls::apply_role_group_source(&mut subject, PhysicsKindSource::Cluster).unwrap();
+    assert_eq!(subject.role_group_source(), PhysicsKindSource::Cluster);
+    assert_eq!(subject.arrangement_role_of(group_member), Role::Seeded);
+    assert_eq!(subject.arrangement_role_of(item_member), Role::Pinned);
+    physics_controls::apply_role_group_source(&mut subject, PhysicsKindSource::Site).unwrap();
+    assert_eq!(subject.role_group_source(), PhysicsKindSource::Site);
+    assert_eq!(subject.arrangement_role_of(group_member), Role::Anchored);
+    assert_eq!(subject.arrangement_role_of(item_member), Role::Pinned);
+    physics_controls::apply_role(&mut subject, Role::Anchored).unwrap();
+    let after_default = subject.dynamics_spec().unwrap();
+    assert_eq!(after_default.root, authored_root);
+    assert_eq!(after_default.channels, authored_channels);
+    assert_eq!(after_default.seed, spec.seed);
+    assert_eq!(after_default.realization, spec.realization);
+    assert_eq!(after_default.bars, spec.bars);
+    assert_eq!(
+        after_default.target.as_ref().unwrap().arrangement,
+        spec.target.as_ref().unwrap().arrangement
+    );
+    assert_eq!(
+        after_default.target.as_ref().unwrap().anchored_pull,
+        spec.target.as_ref().unwrap().anchored_pull
+    );
+    assert_eq!(
+        after_default
+            .target
+            .as_ref()
+            .unwrap()
+            .groups
+            .as_ref()
+            .unwrap()
+            .roles,
+        spec.target.as_ref().unwrap().groups.as_ref().unwrap().roles
+    );
+    assert_eq!(
+        after_default.target.as_ref().unwrap().items,
+        spec.target.as_ref().unwrap().items
+    );
+    assert_eq!(
+        after_default.target.as_ref().unwrap().default_role,
+        Role::Anchored
+    );
+    assert_eq!(subject.arrangement_role_of(group_member), Role::Anchored);
+    assert_eq!(subject.arrangement_role_of(item_member), Role::Pinned);
+
+    physics_controls::apply_role_group_source(&mut subject, PhysicsKindSource::Cluster).unwrap();
+    physics_controls::apply_role_group_source(&mut subject, PhysicsKindSource::Site).unwrap();
+    let after_role_source = subject.dynamics_spec().unwrap();
+    assert_eq!(after_role_source.root, authored_root);
+    assert_eq!(after_role_source.channels, authored_channels);
+    assert_eq!(after_role_source.seed, spec.seed);
+    assert_eq!(after_role_source.realization, spec.realization);
+    assert_eq!(after_role_source.bars, spec.bars);
+    assert_eq!(
+        after_role_source
+            .target
+            .as_ref()
+            .unwrap()
+            .groups
+            .as_ref()
+            .unwrap()
+            .roles,
+        spec.target.as_ref().unwrap().groups.as_ref().unwrap().roles
+    );
+    assert_eq!(
+        after_role_source.target.as_ref().unwrap().items,
+        spec.target.as_ref().unwrap().items
+    );
+
+    let final_spec = subject.dynamics_spec().unwrap();
+    assert_eq!(final_spec.root, authored_root);
+    assert_eq!(final_spec.channels, authored_channels);
+    let root_value = serde_json::to_value(&final_spec.root).unwrap();
+    assert_eq!(root_value["parts"][0]["weight"], 0.1);
+    assert_eq!(root_value["parts"][1]["weight"], 0.3);
+    let saved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
+    let saved_spec = saved.dynamics_spec().unwrap();
+    assert_eq!(
+        saved_spec.target.as_ref().unwrap().arrangement,
+        "phyllotaxis.default"
+    );
+    const ADDRESS: &str = "mere://scene/g4b2-role-target";
+    app.host.save_product_scene(ADDRESS, &saved).unwrap();
+    let facet = app
+        .host
+        .facet_value(ADDRESS, SAVED_SCENE_FACET)
+        .unwrap()
+        .clone();
+    assert_eq!(
+        facet["dynamics"],
+        serde_json::to_value(&saved_spec).unwrap()
+    );
+    assert_eq!(
+        facet["dynamics"]["target"]["groups"]["channel"],
+        "groups.site"
+    );
+    assert_eq!(
+        facet["dynamics"]["target"]["groups"]["roles"]
+            .as_object()
+            .unwrap()
+            .len(),
+        1
+    );
+    assert_eq!(
+        facet["dynamics"]["target"]["items"]
+            .as_object()
+            .unwrap()
+            .len(),
+        1
+    );
+
+    let reopened = app.host.product_scene(ADDRESS).unwrap();
+    apply_role(&mut subject, Role::Seeded).unwrap();
+    restore_scene(&mut subject, app.host.graph(), &reopened, TREE_CANVAS).unwrap();
+    assert_eq!(subject.dynamics_spec().unwrap(), saved_spec);
+    assert_eq!(subject.arrangement_role_of(group_member), Role::Anchored);
+    assert_eq!(subject.arrangement_role_of(item_member), Role::Pinned);
+    let resaved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
+    app.host.save_product_scene(ADDRESS, &resaved).unwrap();
+    let resaved_facet = app.host.facet_value(ADDRESS, SAVED_SCENE_FACET).unwrap();
+    assert_eq!(resaved_facet["dynamics"], facet["dynamics"]);
+
+    // A malformed typed spec is rejected atomically; the UI picker itself
+    // only constructs catalog variants and cannot emit this wrong family.
+    let before_bad = subject.dynamics_spec().unwrap();
+    let before_bad_geometry = subject.cartography_geometry();
+    let mut unknown = before_bad.clone();
+    unknown
+        .target
+        .as_mut()
+        .unwrap()
+        .groups
+        .as_mut()
+        .unwrap()
+        .channel = "groups.unknown".into();
+    let unknown_error = subject.set_dynamics_spec(&unknown).unwrap_err();
+    assert!(matches!(
+        unknown_error,
+        mere::canvas::dynamics_spec::BindError::Unbound { ref place, ref reason }
+            if place == "target.groups.channel" && reason.contains("groups.unknown")
+    ));
+    assert_eq!(subject.dynamics_spec().unwrap(), before_bad);
+    assert_eq!(subject.cartography_geometry(), before_bad_geometry);
+    assert_eq!(
+        app.host.facet_value(ADDRESS, SAVED_SCENE_FACET).unwrap()["dynamics"],
+        facet["dynamics"]
+    );
+
+    let mut wrong_family = before_bad.clone();
+    wrong_family
+        .target
+        .as_mut()
+        .unwrap()
+        .groups
+        .as_mut()
+        .unwrap()
+        .channel = "kind.site".into();
+    let wrong_family_error = subject.set_dynamics_spec(&wrong_family).unwrap_err();
+    // Seiche rejects a wrong family before Canvas resolves the channel id.
+    let refusal = wrong_family_error.to_string();
+    assert!(refusal.contains("target.groups"), "{refusal}");
+    assert!(refusal.contains("kind.site"), "{refusal}");
+    assert_eq!(subject.dynamics_spec().unwrap(), before_bad);
+    assert_eq!(subject.cartography_geometry(), before_bad_geometry);
+    assert_eq!(
+        app.host.facet_value(ADDRESS, SAVED_SCENE_FACET).unwrap()["dynamics"],
+        facet["dynamics"]
+    );
+}
