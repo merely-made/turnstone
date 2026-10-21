@@ -137,6 +137,11 @@ pub fn ring_of(action: &Action) -> Ring {
         | TogglePaneSection { .. }
         | MovePaneSection { .. }
         | OpenInWorkbench
+        | SetWorkspaceMap(_)
+        | ReadGraphMember(_)
+        | RevealGraphMember(_)
+        | ToggleToolPane(_)
+        | SetChromeLayout(_)
         | TearOutTile { .. }
         | WorkbenchActivate(_)
         | CloseWorkbenchTile
@@ -157,6 +162,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | DismissRetained
         | GrowTiles
         | ShrinkTiles
+        | ToggleTerritory
         | ReseedLayout
         | FoldSelection
         | ExpandFold

@@ -293,6 +293,13 @@ fn omnibar_rows(app: &App) -> Vec<(String, Node, Option<A11yRoute>)> {
 fn project_chrome(app: &App) -> UxTree {
     let mut nodes = Vec::new();
     let mut children = Vec::new();
+    for (path,label,_) in toolbar_actions(app) {
+        let id=node_id_for_path(&path);
+        let mut node=Node::new(Role::Button);
+        node.set_label(label);
+        node.add_action(accesskit::Action::Click);
+        nodes.push((id,node)); children.push(id);
+    }
     if app.omnibar.open {
         let id = node_id_for_path("turnstone/chrome/omnibar");
         let mut n = Node::new(if app.omnibar.sensitive() {
@@ -454,6 +461,25 @@ fn project_chrome(app: &App) -> UxTree {
     }
 }
 
+/// The same semantic view and tool verbs remain available to assistive input
+/// without depending on whether the responsive toolbar currently has room.
+fn toolbar_actions(app: &App) -> Vec<(String,String,crate::action::Action)> {
+    use crate::action::Action;
+    if !app.shell_chrome_config().projects_shellbar() { return Vec::new(); }
+    let mut actions=vec![
+        ("turnstone/chrome/read".into(),"Read document".into(),Action::SetWorkspaceMap(false)),
+        ("turnstone/chrome/map".into(),"Reveal document in map".into(),Action::SetWorkspaceMap(true)),
+    ];
+    for (_,kind) in crate::panes::pane_palette_entries() {
+        if matches!(kind.as_str(),crate::panes::kind::GRAPH | crate::panes::kind::WORKBENCH) { continue; }
+        if let Some(definition)=crate::panes::pane_definition(kind.as_str()) {
+            actions.push((format!("turnstone/chrome/panes/{}",definition.id),
+                format!("Toggle {} pane",definition.display_name),Action::ToggleToolPane(kind)));
+        }
+    }
+    actions
+}
+
 /// One live document's subtree, from the mirrored structural outline. The
 /// root announces as a document and DECLARES the partial capability; outline
 /// entries become flat children with mapped roles (depth is structural
@@ -569,6 +595,9 @@ pub(crate) fn project_app_with_routes_and_contributions(
     });
 
     let mut routes = A11yRoutes::new();
+    for (path,_,action) in toolbar_actions(app) {
+        routes.insert(node_id_for_path(&path),A11yRoute::Action(action));
+    }
     routes.insert(
         node_id_for_path("turnstone/chrome/omnibar"),
         A11yRoute::OpenOmnibar,

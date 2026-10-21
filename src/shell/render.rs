@@ -907,6 +907,10 @@ impl Shell {
                         .app
                         .graph_pane_frame(pane, rw, rh)
                         .unwrap_or_else(|| (Scene::default(), false));
+                    if scene.ops.is_empty() {
+                        let error = self.app.graph_for_pane(pane).and_then(|graph| self.app.graph_runtimes.canvas(graph)).and_then(|canvas|canvas.last_translation_error());
+                        tracing::warn!(?pane, ?error, "graph producer returned an empty scene");
+                    }
                     self.save_ready_graph_scene(pane);
                     needs_redraw |= animating;
                     needs_redraw |= self.app.resolve_pending_images() > 0;

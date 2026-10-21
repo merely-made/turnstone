@@ -126,7 +126,7 @@ impl Shell {
         }
         // A modal card or palette retains the application's existing outside
         // press/dismissal policy instead of starting a window gesture.
-        if self.app.omnibar.open || self.app.user_agent_decision.is_open() {
+        if self.app.omnibar.open || self.app.user_agent_decision.is_open() || self.chrome.has_menu() {
             return false;
         }
         if *button == MouseButton::Right {

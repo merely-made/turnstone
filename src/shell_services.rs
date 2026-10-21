@@ -236,6 +236,7 @@ impl Default for TranscriptRetention {
 /// The chrome choices that can vary without becoming pane topology.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ShellChromeConfig {
+    pub layout: crate::chrome_layout::ChromeLayout,
     pub omnibar: OmnibarConfig,
     pub shellbar: ShellbarConfig,
     /// Theme and UI scale consumed by the running host presentation.
@@ -250,6 +251,7 @@ pub struct ShellChromeConfig {
 impl Default for ShellChromeConfig {
     fn default() -> Self {
         Self {
+            layout: Default::default(),
             omnibar: OmnibarConfig::default(),
             shellbar: ShellbarConfig::default(),
             appearance: AppearanceConfig::default(),

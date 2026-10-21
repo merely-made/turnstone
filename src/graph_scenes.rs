@@ -62,6 +62,7 @@ pub struct Facts {
     pub foreground_pins: usize,
     pub retained: usize,
     pub grammar: bool,
+    pub territory: bool,
 }
 
 pub fn facts(canvas: &Canvas) -> Facts {
@@ -78,5 +79,6 @@ pub fn facts(canvas: &Canvas) -> Facts {
             .members_with_attention(scenograph::attention::Attention::Retained)
             .len(),
         grammar: canvas.graph_grammar(),
+        territory: canvas.territory_field(),
     }
 }
