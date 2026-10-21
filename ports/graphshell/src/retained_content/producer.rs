@@ -11,8 +11,8 @@ use cambium_rootstock::{
     TextureProducer,
 };
 use inker::{
-    DocumentA11yAction, DocumentA11yActionRequest, DocumentA11yNodeId, SessionButtonState,
-    SessionModifiers, SessionPointerButton,
+    DocumentA11yAction, DocumentA11yActionRequest, SessionButtonState, SessionModifiers,
+    SessionPointerButton,
 };
 
 /// A retained Pelt document painted on the embedding host's own device/core.
@@ -21,8 +21,6 @@ pub struct ContentProducer {
     raster_key: u64,
     texture: Option<wgpu::Texture>,
     generation: u64,
-    keys: BTreeMap<(u64, u64, u64), u64>,
-    actions: BTreeMap<u64, (pelt_core::PeltSessionIdentity, u64, DocumentA11yNodeId)>,
 }
 impl ContentProducer {
     /// Keys fit the host's 62-bit producer namespace and browser integer range.
@@ -42,8 +40,6 @@ impl ContentProducer {
             raster_key,
             texture: None,
             generation: 0,
-            keys: BTreeMap::new(),
-            actions: BTreeMap::new(),
         }
     }
     pub fn same_source(&self, slot: &Rc<RefCell<ContentSlot>>) -> bool {
@@ -113,10 +109,8 @@ impl TextureProducer for ContentProducer {
     }
     fn suspend(&mut self) {
         self.texture = None;
-        self.actions.clear();
     }
-    fn semantics(&mut self) -> Option<ProducerSemantics> {
-        self.actions.clear();
+    fn semantics(&self) -> Option<ProducerSemantics> {
         let slot = self.slot.borrow();
         if !slot.visible {
             return None;
@@ -126,21 +120,11 @@ impl TextureProducer for ContentProducer {
         let mut children = vec![];
         if let Some(projection) = controller.accessibility_projection() {
             for node in projection.nodes() {
-                let key = *self
-                    .keys
-                    .entry((identity.instance_id, identity.generation, node.id.get()))
-                    .or_insert_with(|| {
-                        static NEXT: std::sync::atomic::AtomicU64 =
-                            std::sync::atomic::AtomicU64::new(1);
-                        NEXT.fetch_update(
-                            std::sync::atomic::Ordering::Relaxed,
-                            std::sync::atomic::Ordering::Relaxed,
-                            |n| n.checked_add(1),
-                        )
-                        .expect("content action keys exhausted")
-                    });
-                self.actions
-                    .insert(key, (identity, projection.revision(), node.id));
+                let key = *slot.semantic_keys.get(&(
+                    identity.instance_id,
+                    identity.generation,
+                    node.id.get(),
+                ))?;
                 let actions = node
                     .actions
                     .iter()
@@ -194,19 +178,31 @@ impl TextureProducer for ContentProducer {
         })
     }
     fn act(&mut self, key: u64, action: &str) -> bool {
-        let Some(&(identity, revision, target)) = self.actions.get(&key) else {
-            return false;
-        };
         let Some((action, observed_revision)) = action.split_once('/') else {
             return false;
         };
-        if observed_revision.parse::<u64>().ok() != Some(revision) {
+        let Ok(revision) = observed_revision.parse::<u64>() else {
             return false;
-        }
+        };
         let mut slot = self.slot.borrow_mut();
-        if !slot.visible || slot.session_identity() != Some(identity) {
+        if !slot.visible {
             return false;
         }
+        let Some(identity) = slot.session_identity() else {
+            return false;
+        };
+        let Some(target_id) =
+            slot.semantic_keys
+                .iter()
+                .find_map(|(&(instance, generation, node), &value)| {
+                    (value == key
+                        && instance == identity.instance_id
+                        && generation == identity.generation)
+                        .then_some(node)
+                })
+        else {
+            return false;
+        };
         let Some(controller) = slot.content.document_mut() else {
             return false;
         };
@@ -216,6 +212,14 @@ impl TextureProducer for ContentProducer {
         if projection.revision() != revision {
             return false;
         }
+        let Some(target) = projection
+            .nodes()
+            .iter()
+            .find(|node| node.id.get() == target_id)
+            .map(|node| node.id)
+        else {
+            return false;
+        };
         let advertised = projection.node(target).map(|n| &n.actions);
         if action == "focus" && advertised.is_some_and(|a| a.contains(&DocumentA11yAction::Focus)) {
             let done = controller.dispatch_accessibility_action(&DocumentA11yActionRequest {

@@ -545,9 +545,41 @@ impl TreeLane {
             .with_field("physics-depth-source", choice.depth.id())
             .with_field("panel-law", page.physics.choice().law.id())
             .with_field("panel-group-source", page.physics.choice().groups.id())
+            .with_field(
+                "panel-role-group-source",
+                mere::canvas::PhysicsKindSource::ALL[page
+                    .physics
+                    .role_groups
+                    .selected
+                    .min(mere::canvas::PhysicsKindSource::ALL.len() - 1)]
+                .id(),
+            )
             .with_field("panel-overlays", page.physics.ticked())
             .with_field("panel-profile", page.physics.profile_id())
             .with_field("panel-status", page.physics.status.clone())
+            .with_field("panel-mix-first-share", page.physics.mix_first_share.text())
+            .with_field(
+                "panel-mix-second-share",
+                page.physics.mix_second_share.text(),
+            )
+            .with_field(
+                "physics-root-spec",
+                canvas
+                    .dynamics_spec()
+                    .ok()
+                    .and_then(|spec| serde_json::to_value(&spec.root).ok())
+                    .map(|value| value.to_string())
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "physics-live-spec",
+                canvas
+                    .dynamics_spec()
+                    .ok()
+                    .and_then(|spec| serde_json::to_value(spec).ok())
+                    .map(|value| value.to_string())
+                    .unwrap_or_default(),
+            )
             .with_field("checked-overlays", checked)
             .with_field("disabled-overlays", disabled)
             .with_field("canvas-nodes", canvas.graph().node_count().to_string())
@@ -1010,6 +1042,16 @@ impl Product for TreeLane {
             // and how many settles Settled has recorded.
             .with_field("arrangement-role", canvas.arrangement_roles().default.id())
             .with_field("panel-role", page.physics.role().id())
+            .with_field("role-group-source", canvas.role_group_source().id())
+            .with_field("effective-roles", {
+                let mut roles: Vec<_> = canvas
+                    .graph()
+                    .nodes()
+                    .map(|(key, node)| (node.id.to_string(), canvas.arrangement_role_of(key).id()))
+                    .collect();
+                roles.sort();
+                serde_json::to_string(&roles).unwrap_or_default()
+            })
             .with_field("settles", canvas.settle_count().to_string())
             .with_field("anchored-home", canvas.anchored_home_count().to_string())
             .with_field("physics-energy", canvas.physics_energy().to_string())
@@ -1387,6 +1429,32 @@ impl Product for TreeLane {
                 .with_field("action-count", product.action_count().to_string())
                 .with_field("filter-count", product.filter_count().to_string())
                 .with_field("saved-scene-facet", product.saved_scene_facet())
+                .with_field(
+                    "saved-scene-root-spec",
+                    product
+                        .saved_dynamics_value()
+                        .and_then(|value| value.get("root").cloned())
+                        .map(|value| value.to_string())
+                        .unwrap_or_default(),
+                )
+                .with_field(
+                    "saved-scene-spec",
+                    product
+                        .saved_dynamics_value()
+                        .map(|value| value.to_string())
+                        .unwrap_or_default(),
+                )
+                .with_field(
+                    "saved-scene-matches-live",
+                    {
+                        let live = canvas
+                            .dynamics_spec()
+                            .ok()
+                            .and_then(|spec| serde_json::to_value(spec).ok());
+                        live.is_some() && live == product.saved_dynamics_value()
+                    }
+                    .to_string(),
+                )
                 .with_field("export-bytes", product.export_bytes().to_string())
                 .with_field("imported-nodes", product.imported_nodes().to_string())
                 .with_field(

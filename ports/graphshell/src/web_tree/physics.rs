@@ -9,9 +9,12 @@
 //! Cambium controls hold the form; Apply reads them into the typed inputs of
 //! `mere::canvas::physics_controls`, which the old page's form also calls.
 use super::*;
-use cambium::{SelectState, button, checkbox, disclosure, lens, select};
+use cambium::{
+    SelectState, TextInput, button, checkbox, disclosure, lens, select, text_field_typed,
+};
+use mere::canvas::dynamics_spec::Node;
 use mere::canvas::physics_controls::{
-    self, ArrangementTransition, CUSTOM_PROFILE, LawStart, arrangement_choices,
+    self, ArrangementTransition, CUSTOM_PROFILE, LawStart, TwoLawMix, arrangement_choices,
 };
 use mere::canvas::{
     CANVAS_PHYSICS_DEPTH_SOURCES, CANVAS_PHYSICS_KIND_SOURCES, CANVAS_PHYSICS_LAWS,
@@ -28,11 +31,21 @@ pub(super) struct PhysicsPanel {
     /// The recipe's role for the arrangement's positions (F48).
     pub(super) role: SelectState,
     pub(super) law: SelectState,
+    /// The two explicit law choices for the bounded mix editor.
+    pub(super) mix_first: SelectState,
+    pub(super) mix_second: SelectState,
+    /// Text fields preserve authored f64 shares on reopen. Apply still checks
+    /// that each share can be represented by the runtime's f32 weight.
+    pub(super) mix_first_share: TextInput,
+    pub(super) mix_second_share: TextInput,
+    pub(super) mix_note: String,
     pub(super) kind: SelectState,
     pub(super) mass: SelectState,
     pub(super) depth: SelectState,
     /// Group pull's channel (any kind source; F37).
     pub(super) groups: SelectState,
+    /// Role overrides' group channel, independent of Group pull (F49).
+    pub(super) role_groups: SelectState,
     /// Index 0 is custom; profile `i` is at `i + 1`.
     pub(super) profile: SelectState,
     /// One per `CANVAS_PHYSICS_OVERLAYS` entry, in catalog order.
@@ -57,6 +70,23 @@ fn labels(catalog: &[(&'static str, &'static str)]) -> Vec<&'static str> {
     catalog.iter().map(|(_, label)| *label).collect()
 }
 
+/// A plain law preset the bounded editor can faithfully expose. Per-part
+/// overlays, terms and rungs need richer controls and must not be hidden.
+fn mix_part(node: &Node) -> Option<(PhysicsLaw, f64)> {
+    match node {
+        Node::Preset {
+            id,
+            weight,
+            terms,
+            rung,
+            overlays,
+        } if terms.is_empty() && rung.is_none() && overlays.is_empty() => {
+            Some((PhysicsLaw::parse(id)?, *weight))
+        },
+        _ => None,
+    }
+}
+
 impl PhysicsPanel {
     pub(super) fn new(canvas: &Canvas, layout_id: &str) -> Self {
         let mut panel = Self {
@@ -67,10 +97,16 @@ impl PhysicsPanel {
             .with_label("Arrangement"),
             role: SelectState::new(0).with_label("Role"),
             law: SelectState::new(0).with_label("Physics law"),
+            mix_first: SelectState::new(0).with_label("First law"),
+            mix_second: SelectState::new(1).with_label("Second law"),
+            mix_first_share: TextInput::new("1"),
+            mix_second_share: TextInput::new("1"),
+            mix_note: String::new(),
             kind: SelectState::new(0).with_label("Kinds"),
             mass: SelectState::new(0).with_label("Mass"),
             depth: SelectState::new(0).with_label("Depth"),
             groups: SelectState::new(0).with_label("Groups"),
+            role_groups: SelectState::new(0).with_label("Role groups"),
             profile: SelectState::new(0).with_label("Profile"),
             overlays: vec![false; CANVAS_PHYSICS_OVERLAYS.len()],
             layout_id: layout_id.to_string(),
@@ -85,16 +121,16 @@ impl PhysicsPanel {
         panel
     }
 
-    /// Set every physics control to the canvas's live choice, and the profile
-    /// to the one naming the pair, or custom.
+    /// Set every physics control to the canvas's live choice. A mix root is
+    /// custom because its first flat law does not describe the full profile.
     pub(super) fn sync(&mut self, canvas: &Canvas) {
         let live = PhysicsChoice::live(canvas);
-        self.role.selected = index_of(Role::ALL, canvas.arrangement_roles().default);
         self.law.selected = index_of(PhysicsLaw::ALL, live.law);
         self.kind.selected = index_of(PhysicsKindSource::ALL, live.kind);
         self.mass.selected = index_of(PhysicsMassSource::ALL, live.mass);
         self.depth.selected = index_of(PhysicsDepthSource::ALL, live.depth);
         self.groups.selected = index_of(PhysicsKindSource::ALL, live.groups);
+        self.sync_role_target(canvas);
         for (checked, overlay) in self.overlays.iter_mut().zip(PhysicsOverlay::ALL) {
             *checked = live.overlays.contains(&overlay);
         }
@@ -102,6 +138,60 @@ impl PhysicsPanel {
             .profile_id()
             .and_then(|id| CANVAS_PHYSICS_PROFILES.iter().position(|p| p.id == id))
             .map_or(0, |index| index + 1);
+        let spec = canvas.dynamics_spec().ok();
+        if spec
+            .as_ref()
+            .is_some_and(|spec| matches!(&spec.root, Node::Mix { .. }))
+        {
+            // A mixed root cannot be named by a profile inferred from its
+            // first law's flat view.
+            self.profile.selected = 0;
+        }
+        self.sync_mix(spec.as_ref().map(|spec| &spec.root));
+    }
+
+    /// Sync role controls from the live, canonical target and resolved Canvas.
+    fn sync_role_target(&mut self, canvas: &Canvas) {
+        self.role.selected = index_of(Role::ALL, canvas.arrangement_roles().default);
+        self.role_groups.selected = index_of(PhysicsKindSource::ALL, canvas.role_group_source());
+    }
+
+    /// Read the authored root when it is the exact two-law form this editor
+    /// can represent. A flat live choice is not presented as the whole mix.
+    fn sync_mix(&mut self, root: Option<&Node>) {
+        let Some(root) = root else {
+            self.mix_note = "The authored dynamics record could not be read".into();
+            return;
+        };
+        let Node::Mix { parts, weight, .. } = root else {
+            self.mix_note = "No authored two-law mix".into();
+            return;
+        };
+        if *weight != 1.0 {
+            self.mix_note =
+                "Unsupported authored mix shape (root weight) · editor values are not readback"
+                    .into();
+            return;
+        }
+        if parts.len() != 2 {
+            self.mix_note =
+                "Unsupported authored mix shape (part count) · editor values are not readback"
+                    .into();
+            return;
+        }
+        let (Some((first, first_share)), Some((second, second_share))) =
+            (mix_part(&parts[0]), mix_part(&parts[1]))
+        else {
+            self.mix_note =
+                "Unsupported authored mix shape (part data) · editor values are not readback"
+                    .into();
+            return;
+        };
+        self.mix_first.selected = index_of(PhysicsLaw::ALL, first);
+        self.mix_second.selected = index_of(PhysicsLaw::ALL, second);
+        self.mix_first_share = TextInput::new(first_share.to_string());
+        self.mix_second_share = TextInput::new(second_share.to_string());
+        self.mix_note.clear();
     }
 
     /// The recipe role the role control holds.
@@ -184,9 +274,34 @@ impl TreePage {
     /// says otherwise (F22, F48).
     fn apply_role(&mut self) {
         let role = self.physics.role();
-        self.shared.canvas.borrow_mut().set_arrangement_role(role);
-        self.physics.status = format!("Role set to {}", role.id());
-        self.shared.dirty.set(true);
+        let mut canvas = self.shared.canvas.borrow_mut();
+        match physics_controls::apply_role(&mut canvas, role) {
+            Ok(status) => {
+                self.physics.status = status;
+                self.physics.sync_role_target(&canvas);
+                self.shared.dirty.set(true);
+            },
+            Err(error) => self.physics.status = format!("Role change refused · {error}"),
+        }
+    }
+
+    /// Set the channel used to read role overrides. Group pull remains an
+    /// independent physics source.
+    fn apply_role_groups(&mut self) {
+        let source = PhysicsKindSource::ALL[self
+            .physics
+            .role_groups
+            .selected
+            .min(PhysicsKindSource::ALL.len() - 1)];
+        let mut canvas = self.shared.canvas.borrow_mut();
+        match physics_controls::apply_role_group_source(&mut canvas, source) {
+            Ok(status) => {
+                self.physics.status = status;
+                self.physics.sync_role_target(&canvas);
+                self.shared.dirty.set(true);
+            },
+            Err(error) => self.physics.status = format!("Role groups change refused · {error}"),
+        }
     }
 
     fn apply_physics(&mut self) {
@@ -196,6 +311,67 @@ impl TreePage {
         self.physics.status = physics_controls::apply_physics(&mut canvas, &choice);
         self.physics.sync(&canvas);
         self.shared.dirty.set(true);
+    }
+
+    /// Apply only the editor's explicit two-law mix form.
+    fn apply_mix(&mut self) {
+        let parsed = self
+            .physics
+            .mix_first_share
+            .text()
+            .parse::<f64>()
+            .and_then(|first_share| {
+                self.physics
+                    .mix_second_share
+                    .text()
+                    .parse::<f64>()
+                    .map(|second_share| (first_share, second_share))
+            });
+        let Ok((first_share, second_share)) = parsed else {
+            self.physics.status = "Mix shares must be numbers".into();
+            return;
+        };
+        let mix = TwoLawMix {
+            first: PhysicsLaw::ALL[self
+                .physics
+                .mix_first
+                .selected
+                .min(PhysicsLaw::ALL.len() - 1)],
+            second: PhysicsLaw::ALL[self
+                .physics
+                .mix_second
+                .selected
+                .min(PhysicsLaw::ALL.len() - 1)],
+            first_share,
+            second_share,
+        };
+        let mut canvas = self.shared.canvas.borrow_mut();
+        let law_start = LawStart::of(&canvas);
+        match physics_controls::apply_mix(&mut canvas, &mix) {
+            Ok(status) => {
+                self.physics.law_start = Some(law_start);
+                self.physics.status = status;
+                self.physics.sync(&canvas);
+                self.shared.dirty.set(true);
+            },
+            Err(error) => self.physics.status = format!("Mix refused · {error}"),
+        }
+    }
+
+    /// Explicitly replace any authored composition with the picked single law.
+    fn use_single_law(&mut self) {
+        let choice = self.physics.choice();
+        let mut canvas = self.shared.canvas.borrow_mut();
+        let law_start = LawStart::of(&canvas);
+        match physics_controls::apply_single_law(&mut canvas, &choice) {
+            Ok(status) => {
+                self.physics.law_start = Some(law_start);
+                self.physics.status = status;
+                self.physics.sync(&canvas);
+                self.shared.dirty.set(true);
+            },
+            Err(error) => self.physics.status = format!("Single law refused · {error}"),
+        }
     }
 
     /// The picked speed, applied when chosen (ruled 2026-10-04, "Speed select").
@@ -276,8 +452,61 @@ fn picker(
     ))
 }
 
+/// A tagged law selector for the mix editor's stable browser/test hooks.
+fn mix_law_picker(
+    caption: &'static str,
+    role: &'static str,
+    state: fn(&mut TreePage) -> &mut SelectState,
+) -> Child {
+    let options = labels(CANVAS_PHYSICS_LAWS);
+    Box::new(
+        el(
+            "label",
+            (
+                el("span", caption).attr("class", "tools-caption"),
+                lens(move |s: &mut SelectState| select(s, &options), state),
+            ),
+        )
+        .attr("data-physics-law-role", role),
+    )
+}
+
+/// An arbitrary-precision share editor. Parsing and validity checks happen at
+/// Apply time, where a refusal leaves the live canvas untouched.
+fn mix_share_field(
+    caption: &'static str,
+    role: &'static str,
+    state: fn(&mut TreePage) -> &mut TextInput,
+) -> Child {
+    Box::new(
+        el(
+            "label",
+            (
+                el("span", caption).attr("class", "tools-caption"),
+                lens(
+                    move |input: &mut TextInput| {
+                        text_field_typed(input).attr("aria-label", caption)
+                    },
+                    state,
+                ),
+            ),
+        )
+        .attr("data-physics-share-role", role),
+    )
+}
+
 fn apply(label: &'static str, action: fn(&mut TreePage)) -> Child {
     Box::new(button(label, move |page: &mut TreePage, _| action(page)))
+}
+
+fn physics_action(label: &'static str, id: &'static str, action: fn(&mut TreePage)) -> Child {
+    Box::new(
+        el(
+            "div",
+            button(label, move |page: &mut TreePage, _| action(page)),
+        )
+        .attr("data-physics-action", id),
+    )
 }
 
 /// The overlay checkboxes, each greyed and inert while the picked law
@@ -392,6 +621,21 @@ pub(super) fn section(page: &TreePage) -> Child {
         picker("Groups", labels(CANVAS_PHYSICS_KIND_SOURCES), |page| {
             &mut page.physics.groups
         }),
+        picker("Role groups", labels(CANVAS_PHYSICS_KIND_SOURCES), |page| {
+            &mut page.physics.role_groups
+        }),
+        Box::new(
+            el(
+                "p",
+                "Role groups chooses which groups role overrides use. Groups supplies Group pull.",
+            )
+            .attr("class", "tools-note"),
+        ),
+        physics_action(
+            "Apply role groups",
+            "apply-role-groups",
+            TreePage::apply_role_groups,
+        ),
         picker("Mass", labels(CANVAS_PHYSICS_MASS_SOURCES), |page| {
             &mut page.physics.mass
         }),
@@ -399,6 +643,34 @@ pub(super) fn section(page: &TreePage) -> Child {
             &mut page.physics.depth
         }),
         apply("Apply physics", TreePage::apply_physics),
+        Box::new(
+            el(
+                "div",
+                (
+                    el("h3", "Two-law mix"),
+                    mix_law_picker("First law", "first", |page| &mut page.physics.mix_first),
+                    mix_share_field("First share", "first", |page| {
+                        &mut page.physics.mix_first_share
+                    }),
+                    mix_law_picker("Second law", "second", |page| &mut page.physics.mix_second),
+                    mix_share_field("Second share", "second", |page| {
+                        &mut page.physics.mix_second_share
+                    }),
+                    el(
+                        "p",
+                        "Shares set each law’s contribution; they do not need to add to one.",
+                    )
+                    .attr("class", "tools-note"),
+                    physics_action("Apply mix", "apply-mix", TreePage::apply_mix),
+                    physics_action("Use single law", "use-single-law", TreePage::use_single_law),
+                    el("p", page.physics.mix_note.clone())
+                        .attr("class", "tools-note")
+                        .attr("role", "status")
+                        .attr("aria-label", "Authored mix status"),
+                ),
+            )
+            .attr("data-physics-composition-editor", "two-law-mix"),
+        ),
         picker(
             "Speed",
             crate::web_speed::PRESETS

@@ -111,7 +111,7 @@ fn actual_genet_link_becomes_a_host_request_without_loading_the_destination() {
 }
 
 #[test]
-fn producer_actions_keep_semantic_identity_and_reject_retired_sources() {
+fn readonly_tests_producer_actions_keep_owner_identity_and_reject_retired_sources() {
     let mut host = ContentHost::default();
     let access = Uuid::new_v4();
     let source = HeldContent {
@@ -125,8 +125,18 @@ fn producer_actions_keep_semantic_identity_and_reject_retired_sources() {
     let slot = host.open(access, source).unwrap();
     host.show_only(&[access]);
     slot.borrow_mut().frame(400., 200., 1.).unwrap();
-    let mut producer = ContentProducer::new(slot, 91);
+    let mut producer = ContentProducer::new(slot.clone(), 91);
+    let owner = slot.borrow();
+    let keys = owner.semantic_keys.clone();
     let first = producer.semantics().unwrap();
+    assert_eq!(owner.semantic_keys, keys);
+    drop(owner);
+    slot.borrow_mut().frame(400., 200., 1.1).unwrap();
+    assert_eq!(
+        slot.borrow().semantic_keys,
+        keys,
+        "ordinary frames preserve live keys"
+    );
     let target = first
         .children
         .iter()
@@ -140,7 +150,18 @@ fn producer_actions_keep_semantic_identity_and_reject_retired_sources() {
     let second = producer.semantics().unwrap();
     assert!(second.children.iter().any(|n| n.key == target.0));
     assert!(!producer.act(target.0, "activate/999999"));
-    assert!(producer.act(target.0, &target.1));
+    let recreated = ContentProducer::new(slot.clone(), 92);
+    let recreated_description = recreated.semantics().unwrap();
+    assert!(
+        recreated_description
+            .children
+            .iter()
+            .any(|node| node.key == target.0)
+    );
+    assert_eq!(slot.borrow().semantic_keys, keys);
+    // Activation resolves against the owner without a priming semantic read.
+    let mut unobserved = ContentProducer::new(slot.clone(), 93);
+    assert!(unobserved.act(target.0, &target.1));
     let effects = host.get(access).unwrap().borrow_mut().take_effects();
     assert!(effects.iter().any(|effect| {
         effect
