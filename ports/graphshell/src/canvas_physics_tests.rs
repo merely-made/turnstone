@@ -357,3 +357,48 @@ fn orbit_stays_bound_and_orbiting_on_the_p2_fixture_for_two_minutes() {
 fn orbit_stays_bound_and_orbiting_on_the_p2_fixture_at_no_damping() {
     orbit_on_the_p2_fixture(120, Some(0.0));
 }
+
+#[test]
+fn authored_mix_survives_the_canonical_v4_scene_facet_and_reopen() {
+    use crate::local_scene::{capture_scene, restore_scene};
+    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+    use crate::product::SAVED_SCENE_FACET;
+
+    let persona = SelectedPersonaRef {
+        persona: FIXTURE_PERSONA_ADDRESS.into(),
+        profile: "profile:graphshell-tree".into(),
+    };
+    let mut app =
+        crate::app::GraphshellApp::fixture(muniment::MemoryBackend::new(), persona).unwrap();
+    let mut subject = p2_fixture_canvas();
+    apply_mix(
+        &mut subject,
+        &TwoLawMix {
+            first: PhysicsLaw::Springs,
+            second: PhysicsLaw::Charge,
+            first_share: 0.25,
+            second_share: 0.75,
+        },
+    )
+    .unwrap();
+    let saved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
+    const ADDRESS: &str = "mere://scene/g4b2-mix";
+    app.host.save_product_scene(ADDRESS, &saved).unwrap();
+    let facet = app.host.facet_value(ADDRESS, SAVED_SCENE_FACET).unwrap();
+    assert_eq!(&facet["dynamics"], saved.dynamics.value());
+    assert_eq!(facet["dynamics"]["root"]["node"], "mix");
+    assert_eq!(facet["dynamics"]["root"]["parts"][1]["weight"], 0.75);
+    let choice = PhysicsChoice::live(&subject);
+    apply_single_law(&mut subject, &choice).unwrap();
+    assert!(matches!(
+        subject.dynamics_spec().unwrap().root,
+        mere::canvas::dynamics_spec::Node::Preset { .. }
+    ));
+    let reopened = app.host.product_scene(ADDRESS).unwrap();
+    restore_scene(&mut subject, app.host.graph(), &reopened, TREE_CANVAS).unwrap();
+    assert_eq!(
+        subject.dynamics_spec().unwrap(),
+        saved.dynamics_spec().unwrap()
+    );
+    assert_eq!(subject.graph().node_count(), app.host.graph().node_count());
+}

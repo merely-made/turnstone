@@ -1,0 +1,6 @@
+# Expected failure: prove that the new action and live snapshot are observed.
+assert snap ready == true
+click role:button Inspector
+click role:button Apply mix
+settle 2
+assert snap physics-composition == none
