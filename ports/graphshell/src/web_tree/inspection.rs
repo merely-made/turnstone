@@ -10,7 +10,7 @@ use cambium::{DetailRow, DetailSection, button, detail_panel};
 use graphshell::access_inspection::{AccessInspection, AccessSummary};
 
 pub(super) fn read(page: &TreePage) -> Result<AccessInspection, String> {
-    let member = page.inspected_access.ok_or("Choose an access to inspect")?;
+    let member = super::source_binding::member(page).ok_or("Choose an access to inspect")?;
     page.product
         .as_ref()
         .ok_or("Access inspection requires the local graph")?
@@ -21,11 +21,11 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
     let snapshot = snapshot
         .with_field(
             "inspector-open",
-            page.inspected_access.is_some().to_string(),
+            (page.tools_open && super::source_binding::member(page).is_some()).to_string(),
         )
         .with_field(
             "inspector-member",
-            page.inspected_access
+            super::source_binding::member(page)
                 .map(|id| id.to_string())
                 .unwrap_or_default(),
         );
@@ -79,7 +79,7 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
             .with_field("inspector-coverage-count", "0")
             .with_field(
                 "inspector-error",
-                if page.inspected_access.is_some() {
+                if super::source_binding::member(page).is_some() {
                     error
                 } else {
                     String::new()
@@ -93,7 +93,7 @@ pub(super) fn open_button(page: &TreePage) -> Child {
     Box::new(
         button("Inspect selected access", |page: &mut TreePage, _| {
             if let Some(member) = page.product.as_ref().and_then(|product| product.selected) {
-                page.inspected_access = Some(member);
+                super::source_binding::pin(page, member);
                 page.tools_open = true;
             }
         })
@@ -113,18 +113,18 @@ fn access_rows(access: &AccessSummary) -> Vec<DetailRow> {
 }
 
 pub(super) fn section(page: &TreePage) -> Child {
-    if page.inspected_access.is_none() {
+    if super::source_binding::member(page).is_none() {
         return Box::new(el("div", ()));
     }
     let mut children: Vec<Child> = vec![
         Box::new(el("h2", "Access inspector")),
         Box::new(button("Explain this access dynamics", |page: &mut TreePage, _| {
-            if let Some(member) = page.inspected_access { dynamics_inspection::choose(page, mere::canvas::DynamicsTarget::Access { member }); }
+            if let Some(member) = super::source_binding::member(page) { dynamics_inspection::choose(page, mere::canvas::DynamicsTarget::Access { member }); }
         })),
         Box::new(button(
             "Close access inspection",
             |page: &mut TreePage, _| {
-                page.inspected_access = None;
+                super::source_binding::close(page);
             },
         )),
     ];
@@ -202,7 +202,7 @@ pub(super) fn section(page: &TreePage) -> Child {
                                             button(
                                                 format!("Inspect access: {label}"),
                                                 move |page: &mut TreePage, _| {
-                                                    page.inspected_access = Some(member);
+                                                    super::source_binding::pin(page, member);
                                                 },
                                             )
                                             .attr("data-inspect-access", member.to_string()),

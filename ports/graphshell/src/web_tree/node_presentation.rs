@@ -69,7 +69,7 @@ pub(super) fn refresh(page: &TreePage) -> Option<Input> {
         let mut view = ViewInputs {
             selected: Some(selected.contains(&member)),
             position_pinned: Some(canvas.arrangement_role_of(key) == Role::Pinned),
-            inspected: page.inspected_access == Some(member),
+            inspected: super::source_binding::member(page) == Some(member),
             screen_size: canvas.node_presentation_screen_size(member),
             ..Default::default()
         };
@@ -199,7 +199,7 @@ pub(super) fn section(page: &TreePage) -> Child {
             children.push(Box::new(button(
                 "Inspect selected source attributes",
                 move |page: &mut TreePage, _| {
-                    page.inspected_access = Some(member);
+                    super::source_binding::pin(page, member);
                     page.tools_open = true;
                 },
             )));

@@ -56,6 +56,8 @@ pub mod forme_session;
 #[cfg(feature = "web")]
 pub mod forme_workspace;
 #[cfg(feature = "web")]
+pub mod pane_source;
+#[cfg(feature = "web")]
 pub mod frame_budget;
 #[cfg(feature = "web")]
 pub mod handlers;

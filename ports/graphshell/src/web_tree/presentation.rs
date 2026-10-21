@@ -271,7 +271,7 @@ fn bound(page: &TreePage, occurrence: &Occurrence) -> Result<BoundContext, Strin
                 .ok_or("Access is absent from this view")?;
             view.selected = Some(canvas.selected_members().contains(member));
             view.position_pinned = Some(canvas.arrangement_role_of(key) == Role::Pinned);
-            view.inspected = page.inspected_access == Some(*member);
+            view.inspected = super::source_binding::member(page) == Some(*member);
             view.screen_size = canvas.node_presentation_screen_size(*member);
             view.set_attention(
                 canvas.member_attention(*member),
@@ -751,7 +751,7 @@ pub(super) fn section(page: &TreePage) -> Child {
                     })
                 })));
             }
-            if let Some(member) = page.inspected_access {
+            if let Some(member) = super::source_binding::member(page) {
                 children.push(Box::new(button(
                     "Use inspected access",
                     move |page: &mut TreePage, _| choose(page, Occurrence::Access { member }),

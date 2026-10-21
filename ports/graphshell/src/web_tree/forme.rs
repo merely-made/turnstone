@@ -345,7 +345,7 @@ fn changed(page: &mut TreePage) {
     }
     page.shared.dirty.set(true);
 }
-fn edit(
+pub(super) fn edit(
     page: &mut TreePage,
     key: Option<String>,
     auto_open: bool,
@@ -426,6 +426,14 @@ pub(super) fn open_retained(page: &mut TreePage, member: Uuid) {
     if let Some(pane) = &mut page.forme {
         pane.workbench = true;
     }
+}
+
+pub(super) fn bind_inspector(page: &mut TreePage, source: graphshell::pane_source::InspectorSource) {
+    if let Some(pane) = &mut page.forme {
+        if pane.saving { return; }
+        pane.save(SaveKind::InspectorSource(source));
+    }
+    page.shared.dirty.set(true);
 }
 fn arrange(page: &mut TreePage, axis: Option<SplitAxis>) {
     edit(page, None, false, |workspace, _| {

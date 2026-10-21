@@ -116,6 +116,9 @@ impl SavedProduct {
     pub(super) fn saved_file(&self) -> Option<serde_json::Value> {
         match self.never {}
     }
+    pub(super) fn saved_dynamics_value(&self) -> Option<serde_json::Value> {
+        match self.never {}
+    }
 
     pub(super) fn select(&mut self, _selected: Option<Uuid>) {
         match self.never {}

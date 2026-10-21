@@ -986,6 +986,10 @@ impl Product for TreeLane {
         #[cfg(feature = "product")]
         let snapshot = inspection::fields(page, snapshot);
         #[cfg(feature = "product")]
+        let snapshot = source_binding::fields(page, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = navigation::fields(page, snapshot);
+        #[cfg(feature = "product")]
         let snapshot = link_inspection::fields(page, snapshot);
         #[cfg(feature = "product")]
         let snapshot = super::promoted_links::fields(page, snapshot);

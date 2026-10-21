@@ -1,0 +1,11 @@
+# A fresh process/profile reopen preserves the workspace rule and exact access.
+assert snap source == saved graph
+click role:button Fit graph
+settle 20
+click role:button Inspector
+assert snap pane-source-mode == Pinned
+assert snap inspector-address == file:///Graphshell/reference-notes.md
+assert snap forme-accesses == 1
+click role:button Read
+settle 20
+capture graphshell_reopened_binding

@@ -32,6 +32,10 @@ pub struct FormeWorkspace {
     pub bounds: [f32; 4],
     pub locked: bool,
     pub visible: bool,
+    #[serde(default)]
+    pub inspector_source: crate::pane_source::InspectorSource,
+    #[serde(default)]
+    pub focused_reading: Option<Uuid>,
     tile_ids: BTreeMap<Uuid, u64>,
 }
 
@@ -44,6 +48,8 @@ impl FormeWorkspace {
             bounds: [-240., -150., 240., 150.],
             locked: true,
             visible: true,
+            inspector_source: Default::default(),
+            focused_reading: None,
             tile_ids: BTreeMap::new(),
         }
     }
@@ -85,6 +91,7 @@ impl FormeWorkspace {
             layout.open_tile(member);
         }
         self.keep_layout(&layout);
+        self.focused_reading = Some(member);
         Ok(())
     }
     pub fn tile_tree(&self, graph: &Graph) -> Option<TileTree> {
@@ -155,10 +162,15 @@ impl FormeWorkspace {
                 .filter(|m| graph.get_node_by_id(*m).is_some())
                 .ok_or("the access is no longer present")
         };
+        let focused = match &event {
+            TileEvent::Activated(tile) => Some(admitted(*tile)?),
+            _ => self.focused_reading,
+        };
         let mut layout = self.layout();
         match event {
             TileEvent::Activated(tile) => {
-                layout.activate(admitted(tile)?);
+                let member = admitted(tile)?;
+                layout.activate(member);
             },
             TileEvent::Closed(tile) => {
                 layout.close_tile(admitted(tile)?);
@@ -223,6 +235,7 @@ impl FormeWorkspace {
             },
         }
         let mut candidate = self.clone();
+        candidate.focused_reading = focused;
         candidate.keep_layout(&layout);
         candidate.validate(self.document.graph_id)?;
         *self = candidate;

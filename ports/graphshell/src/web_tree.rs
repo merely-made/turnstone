@@ -456,8 +456,6 @@ pub(crate) struct TreePage {
     #[cfg(feature = "product")]
     forme_error: Option<String>,
     #[cfg(feature = "product")]
-    inspected_access: Option<uuid::Uuid>,
-    #[cfg(feature = "product")]
     inspected_link: Option<graphshell::link_inspection::LinkTarget>,
     #[cfg(feature = "product")]
     link_history_open: bool,
@@ -901,10 +899,12 @@ fn view(page: &TreePage) -> Child {
             ),
             |page: &mut TreePage, event| {
                 #[cfg(feature = "product")]
-                if page.instrument.panes_open
+                if (page.instrument.panes_open || page.instrument.navigation.open || page.instrument.binding_open)
                     && matches!(event.key, cambium::Key::Named(cambium::NamedKey::Escape))
                 {
                     page.instrument.panes_open = false;
+                    page.instrument.navigation.open = false;
+                    page.instrument.binding_open = false;
                     page.shared.dirty.set(true);
                     event.prevent_default();
                     event.stop_propagation();
@@ -960,6 +960,10 @@ fn tools_region(page: &TreePage) -> Child {
     if let Some(header) = instrument::inspector_header(page) {
         children.push(header);
     }
+    #[cfg(feature = "product")]
+    children.extend(source_binding::view(page));
+    #[cfg(feature = "product")]
+    children.push(inspection::section(page));
     if let Some(product) = &page.product {
         children.push(Box::new(
             el("p", format!("Storage: {}", product.storage))
@@ -982,8 +986,6 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(product::history_section(page));
     #[cfg(feature = "product")]
     children.push(dynamics_inspection::section(page));
-    #[cfg(feature = "product")]
-    children.push(inspection::section(page));
     #[cfg(feature = "product")]
     children.push(link_inspection::section(page));
     #[cfg(feature = "product")]
@@ -1592,7 +1594,6 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 #[cfg(feature = "product")]
                 forme_error,
                 #[cfg(feature = "product")]
-                inspected_access: None,
                 #[cfg(feature = "product")]
                 inspected_link: None,
                 #[cfg(feature = "product")]
@@ -2287,6 +2288,10 @@ mod host_boundary;
 mod inspection;
 #[cfg(feature = "product")]
 mod instrument;
+#[cfg(feature = "product")]
+mod source_binding;
+#[cfg(feature = "product")]
+mod navigation;
 mod lane;
 #[cfg(feature = "product")]
 mod link_inspection;

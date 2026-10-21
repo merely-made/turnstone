@@ -20,6 +20,8 @@ pub(super) struct State {
     pub graph_controls: bool,
     pub document_controls: bool,
     pub document_rail: bool,
+    pub binding_open: bool,
+    pub navigation: super::navigation::State,
 }
 
 pub(super) const SHEET: &str = r#"
@@ -31,6 +33,10 @@ pub(super) const SHEET: &str = r#"
 .tree-instrument .workspace-app-identity h1 { display:inline; }
 .tree-instrument .workspace-shell-header { position:relative; flex:0 0 auto; z-index:25; }
 .tree-instrument .workspace-panes { position:absolute; top:100%; right:8px; z-index:25; width:220px; }
+.tree-instrument .workspace-related { position:absolute; top:100%; right:8px; z-index:25; width:360px; max-width:90%; max-height:70vh; overflow-y:auto; }
+.tree-instrument .workspace-related-heading { margin:0; font-weight:500; }
+.tree-instrument .tree-tools > .cambium-source-binding { margin-bottom:12px; }
+.tree-instrument .workspace-related .shell-navigation-detail { overflow-wrap:anywhere; }
 .tree-instrument .cambium-shell-toolbar { padding:0; }
 .tree-instrument { --shell-background:var(--workspace-surface, #17232b); --shell-foreground:var(--workspace-ink, #dce3e8); --shell-rule:var(--workspace-rule, #637581); --shell-selection:var(--workspace-rule, #263640); }
 .tree-instrument .workspace-app-context { margin:2px 0 0; font-size:12px; color:var(--workspace-muted); }
@@ -70,13 +76,17 @@ pub(super) fn app_header(page: &TreePage) -> Option<Child> {
     let narrow = density.is_compact();
     let mut trailing: Vec<Child> = Vec::new();
     if navigation_active {
+        trailing.push(super::navigation::control(page));
         trailing.push(control(
             "Panes",
             ShellControl {
                 expanded: Some(page.instrument.panes_open),
                 ..Default::default()
             },
-            |page| page.instrument.panes_open = !page.instrument.panes_open,
+            |page| {
+                page.instrument.panes_open = !page.instrument.panes_open;
+                page.instrument.navigation.open = false;
+            },
         ));
     }
     let toolbar = shell_toolbar(
@@ -165,12 +175,13 @@ pub(super) fn app_header(page: &TreePage) -> Option<Child> {
         ) as Child
     });
     Some(Box::new(cambium::on_key(
-        el("div", (bar, popup)).attr("class", "workspace-shell-header"),
+        el("div", (bar, popup, super::navigation::popup(page))).attr("class", "workspace-shell-header"),
         |page: &mut TreePage, key: cambium::KeyEvent| {
             if matches!(key.key, cambium::Key::Named(cambium::NamedKey::Escape))
-                && page.instrument.panes_open
+                && (page.instrument.panes_open || page.instrument.navigation.open)
             {
                 page.instrument.panes_open = false;
+                page.instrument.navigation.open = false;
                 key.stop_propagation();
                 key.prevent_default();
             }
@@ -194,12 +205,13 @@ pub(super) fn document_controls(page: &TreePage) -> bool {
 }
 
 pub(super) fn dismiss(page: &TreePage) -> Option<Child> {
-    (enabled(page) && !super::blocks_active(page) && page.instrument.panes_open).then(|| {
+    (enabled(page) && !super::blocks_active(page) && (page.instrument.panes_open || page.instrument.navigation.open)).then(|| {
         Box::new(cambium::on_click(el("div", ())
             .attr("aria-hidden", "true")
             .attr("style", format!("position:absolute;top:0px;left:0px;width:{}px;height:{}px;z-index:24;background:transparent;", page.size.0, page.size.1)),
             |page: &mut TreePage, click: cambium::PointerClick| {
                 page.instrument.panes_open = false;
+                page.instrument.navigation.open = false;
                 page.shared.dirty.set(true);
                 click.stop_propagation();
             })) as Child
@@ -215,7 +227,7 @@ pub(super) fn inspector_header(page: &TreePage) -> Option<Child> {
         "Inspector",
         "Selection, scene and presentation",
         WorkspacePaneStatus {
-            selected: product.selected.is_some(),
+            selected: super::source_binding::member(page).is_some(),
             loading: product.saving,
             ..Default::default()
         },

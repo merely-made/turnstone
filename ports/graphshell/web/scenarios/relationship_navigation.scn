@@ -1,0 +1,86 @@
+# Isolated local fixture: navigation projects the graph; bindings belong to the workspace.
+assert snap source == saved graph
+click role:button Panes
+click role:button Graph controls
+click role:button Restore arrangement
+settle 30
+click role:button Panes
+click role:button Graph controls
+click role:button Fit graph
+settle 20
+remember initial
+click-node https://example.test/i2p-port
+click role:button Read
+wait 120
+click role:button Inspector
+assert snap pane-source-mode == Following active view
+assert snap inspector-address == https://example.test/i2p-port
+click role:button Document connections
+settle 5
+capture graphshell_relationships
+click role:button Cites · file:///Graphshell/reference-notes.md:
+wait 120
+assert snap inspector-address == file:///Graphshell/reference-notes.md
+assert snap forme-accesses == 2
+same initial node-count
+click role:button Pane source:
+click role:button Pin this document
+wait 120
+assert snap pane-source-mode == Pinned
+click role:button Map
+click-node https://example.test/i2p-port
+assert snap inspector-address == file:///Graphshell/reference-notes.md
+capture graphshell_pinned_map
+click role:button Pane source:
+click role:button Follow Read
+wait 120
+assert snap pane-source-mode == Following Read
+assert snap inspector-address == file:///Graphshell/reference-notes.md
+click role:button Pane source:
+click role:button Follow Map
+wait 120
+assert snap inspector-address == https://example.test/i2p-port
+click role:button Pane source:
+click role:button Follow active view
+wait 120
+click role:button Read
+assert snap inspector-address == file:///Graphshell/reference-notes.md
+click role:button Pane source:
+click role:button Follow Read
+wait 120
+click role:button Close Reference notes
+wait 120
+assert snap pane-source-mode == Following Read
+assert snap pane-source-available == false
+click role:button Map
+click-node file:///Graphshell/reference-notes.md
+click role:button Pane source:
+click role:button Follow Map
+wait 120
+click role:button Pane source:
+click role:button Pin this document
+wait 120
+reveal role:button Find and filter
+click role:button Find and filter
+reveal role:textbox Search
+click role:textbox Search
+input-text https://retained.example/notes
+click role:button Apply filter
+click role:button Fit graph
+settle 20
+click-node https://retained.example/notes
+assert snap detail-address == https://retained.example/notes
+reveal role:button Clear filter
+click role:button Clear filter
+click role:button Find and filter
+reveal role:button Pane source:
+click role:button Panes
+click role:button Read selected
+wait 120
+click role:button Close I2P port notes
+wait 120
+assert snap pane-source-mode == Pinned
+assert snap inspector-address == file:///Graphshell/reference-notes.md
+assert snap forme-accesses == 1
+capture graphshell_bound_reading
+same initial node-count

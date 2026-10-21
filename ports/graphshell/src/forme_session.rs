@@ -125,6 +125,7 @@ pub enum SaveKind {
     Apply,
     Undo,
     Redo,
+    InspectorSource(crate::pane_source::InspectorSource),
     Visibility,
 }
 /// Prepared writes never change committed state until the store acknowledges
@@ -425,12 +426,15 @@ impl FormeSession {
                 state.restore(&mut next.workspace);
             },
             SaveKind::Visibility => next.workspace.visible = !next.workspace.visible,
+            SaveKind::InspectorSource(source) => next.workspace.inspector_source = source,
         }
         next.workspace.locked = true;
-        if next.workspace.document.created_at_ms == 0 {
-            next.workspace.document.created_at_ms = now_ms;
+        if !matches!(kind, SaveKind::InspectorSource(_)) {
+            if next.workspace.document.created_at_ms == 0 {
+                next.workspace.document.created_at_ms = now_ms;
+            }
+            next.workspace.document.updated_at_ms = now_ms;
         }
-        next.workspace.document.updated_at_ms = now_ms;
         next.validate(next.workspace.document.graph_id)?;
         self.busy = true;
         let token = Uuid::new_v4();
@@ -450,12 +454,18 @@ impl FormeSession {
         self.pending = None;
         self.busy = false;
         result?;
-        if proposal.kind == SaveKind::Visibility {
-            if let Some(draft) = &mut self.draft {
-                draft.workspace.visible = proposal.next.workspace.visible;
-            }
-        } else {
-            self.draft = None;
+        match proposal.kind {
+            SaveKind::Visibility => {
+                if let Some(draft) = &mut self.draft {
+                    draft.workspace.visible = proposal.next.workspace.visible;
+                }
+            },
+            SaveKind::InspectorSource(source) => {
+                if let Some(draft) = &mut self.draft {
+                    draft.workspace.inspector_source = source;
+                }
+            },
+            _ => self.draft = None,
         }
         self.saved = proposal.next;
         Ok(())
@@ -628,6 +638,43 @@ mod tests {
         workspace.open(members[0], &graph).unwrap();
         workspace.open(members[1], &graph).unwrap();
         (graph, FormeSession::new(workspace), members)
+    }
+
+    #[test]
+    fn inspector_binding_saves_without_committing_or_discarding_the_layout_draft() {
+        pollster::block_on(async {
+            use crate::pane_source::InspectorSource;
+            let (graph, mut session, [a, _, c]) = fixture();
+            let backend = MemoryBackend::new();
+            let owner = session.committed().document.graph_id;
+            let document = serde_json::to_value(&session.committed().document).unwrap();
+            session.committed().save(backend.clone()).await.unwrap();
+            session.unlock().unwrap();
+            session.edit(None, 1, |w| w.open(c, &graph)).unwrap();
+            save(&mut session, backend.clone(), SaveKind::InspectorSource(InspectorSource::Pinned(a))).await;
+            assert!(session.editing());
+            assert!(session.view().members().contains(&c));
+            assert!(!session.committed().members().contains(&c));
+            assert_eq!(serde_json::to_value(&session.committed().document).unwrap(), document);
+            assert_eq!(session.view().inspector_source, InspectorSource::Pinned(a));
+            session.discard().unwrap();
+            let cold = FormeSession::load(backend.clone(), owner, &graph).await.unwrap();
+            assert_eq!(cold.view().inspector_source, InspectorSource::Pinned(a));
+            assert!(!cold.view().members().contains(&c));
+            assert_eq!(cold.view().focused_reading, session.committed().focused_reading);
+            let other = FormeSession::load(backend, Uuid::from_u128(99), &graph).await.unwrap();
+            assert_eq!(other.view().inspector_source, InspectorSource::Active);
+            assert!(other.view().focused_reading.is_none());
+        });
+    }
+
+    #[test]
+    fn failed_source_binding_write_keeps_the_acknowledged_rule() {
+        use crate::pane_source::InspectorSource;
+        let (_, mut session, [a, _, _]) = fixture();
+        let proposal = session.prepare_save(SaveKind::InspectorSource(InspectorSource::Pinned(a)), 1).unwrap();
+        assert!(session.finish_save(proposal, Err("offline".into())).is_err());
+        assert_eq!(session.committed().inspector_source, InspectorSource::Active);
     }
     async fn save(session: &mut FormeSession, backend: MemoryBackend, kind: SaveKind) {
         let proposal = session.prepare_save(kind, 1000).unwrap();
