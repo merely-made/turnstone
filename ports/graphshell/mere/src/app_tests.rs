@@ -6,7 +6,7 @@
 
 use super::*;
 
-fn app() -> (
+pub(super) fn app() -> (
     App,
     mpsc::Sender<Result<Reading, String>>,
     mpsc::Receiver<MereViewRequest>,

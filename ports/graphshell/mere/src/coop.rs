@@ -107,6 +107,25 @@ impl Panel {
         changed
     }
 }
+fn revoke(app: &mut App, chosen: pandect::SessionId) {
+    // A background reading must not discard an explicit request to end access.
+    // Both identities still have to name the graph displayed by this control.
+    if app.attached_session() != Some(chosen) {
+        return;
+    }
+    let Some(panel) = app.coop.as_mut() else {
+        return;
+    };
+    if panel
+        .update
+        .data
+        .as_ref()
+        .is_some_and(|data| data.graph == chosen)
+    {
+        panel.send(Command::Revoke(chosen));
+    }
+}
+
 fn field(i: usize, label: &'static str) -> Child {
     Box::new(el(
         "label",
@@ -202,11 +221,7 @@ pub(super) fn view(app: &App) -> Child {
             }
             children.push(Box::new(
                 button("End guest access", move |app: &mut App, _| {
-                    if app.attached_session() != Some(chosen) || app.pending {
-                        return;
-                    }
-                    let p = app.coop.as_mut().unwrap();
-                    p.send(Command::Revoke(p.update.data.as_ref().unwrap().graph));
+                    revoke(app, chosen)
                 })
                 .attr("id", "coop-revoke"),
             ));
@@ -597,6 +612,74 @@ pub(super) fn guest_reading(data: &Data) -> (MereViewModel, HashMap<String, Port
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn owner_control() -> (App, mpsc::Receiver<(u64, Command)>, pandect::SessionId) {
+        let (mut app, _, _) = crate::app_tests::app();
+        let graph = pandect::SessionId(uuid::Uuid::from_u128(7));
+        app.model.sessions.push(mere_view::SessionEntry {
+            id: graph,
+            name: "Chosen graph".into(),
+            detail: None,
+            attached: true,
+            trashed: false,
+            steps: vec![],
+        });
+        let (tx, commands) = mpsc::channel();
+        let (_, rx) = mpsc::channel();
+        app.coop = Some(Panel {
+            tx,
+            rx,
+            pending: 0,
+            guest: false,
+            inputs: vec![],
+            update: Update {
+                acknowledged: 0,
+                status: "Ready".into(),
+                connection: vec![],
+                data: Some(Data {
+                    graph,
+                    owner: "owner".into(),
+                    guest: Some("guest".into()),
+                    access: "editor".into(),
+                    epoch: scenotime::SceneEpoch(1),
+                    revision: scenotime::Revision(0),
+                    nodes: vec![],
+                    relations: vec![],
+                    authors: vec![],
+                }),
+            },
+        });
+        (app, commands, graph)
+    }
+
+    #[test]
+    fn ending_guest_access_is_not_lost_during_an_ordinary_read() {
+        let (mut app, commands, graph) = owner_control();
+        app.pending = true;
+        revoke(&mut app, graph);
+        assert!(matches!(commands.try_recv(), Ok((1, Command::Revoke(id))) if id == graph));
+        assert_eq!(app.coop.as_ref().unwrap().update.status, "Working…");
+    }
+
+    #[test]
+    fn an_old_revoke_control_cannot_target_another_graph() {
+        let (mut app, commands, graph) = owner_control();
+        app.pending = true;
+        app.model.sessions[0].id = pandect::SessionId(uuid::Uuid::from_u128(8));
+        revoke(&mut app, graph);
+        assert!(commands.try_recv().is_err());
+        app.model.sessions[0].id = graph;
+        app.coop
+            .as_mut()
+            .unwrap()
+            .update
+            .data
+            .as_mut()
+            .unwrap()
+            .graph = pandect::SessionId(uuid::Uuid::from_u128(9));
+        revoke(&mut app, graph);
+        assert!(commands.try_recv().is_err());
+    }
+
     #[test]
     fn an_old_background_reading_cannot_acknowledge_a_new_save() {
         let (tx, commands) = mpsc::channel();
