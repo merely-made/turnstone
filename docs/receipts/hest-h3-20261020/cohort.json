@@ -1,0 +1,43 @@
+{
+  "packages": {
+    "hest": [
+      {
+        "name": "hest",
+        "version": "0.2.0",
+        "source": "git+https://github.com/merely-made/mere.git?branch=main#9ef5e3026997dce50760ae445da9eedd38a325ac"
+      }
+    ],
+    "cambium": [
+      {
+        "name": "cambium",
+        "version": "0.5.0",
+        "source": "git+https://github.com/merely-made/mere.git?branch=main#9ef5e3026997dce50760ae445da9eedd38a325ac"
+      }
+    ],
+    "command-menu": [],
+    "netrender": [
+      {
+        "name": "netrender",
+        "version": "0.1.2",
+        "source": "git+https://github.com/merely-made/netrender.git?branch=main#ec15eb269855c798467c93a6d10031100fdfdf65"
+      }
+    ],
+    "murm-wire": [
+      {
+        "name": "murm-wire",
+        "version": "0.1.0",
+        "source": "git+https://github.com/merely-made/murm.git?branch=main#e2f19a3f3b42012951c4a820f9a53cb90d9bacd6"
+      }
+    ],
+    "genet-scripted-dom": [
+      {
+        "name": "genet-scripted-dom",
+        "version": "0.1.2",
+        "source": "git+https://github.com/merely-made/genet.git?branch=main#6ef3cd37a785a395670d3b472fb3573665497f29"
+      }
+    ]
+  },
+  "foreign_path_packages": [],
+  "metadata_sha256": "1ce5e3fe787c36edc4577b83b94cc2822bdd0c36bb32637ab6befba0bd8a63e4",
+  "lock_sha256": "78a8293d46cb001d63f615d2b00f164a8cae17a9e2988e98aa1968d9462f6e67"
+}
