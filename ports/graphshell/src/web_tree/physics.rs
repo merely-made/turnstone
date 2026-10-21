@@ -12,9 +12,11 @@ use super::*;
 use cambium::{
     SelectState, TextInput, button, checkbox, disclosure, lens, select, text_field_typed,
 };
+use mere::canvas::channels::Channel;
 use mere::canvas::dynamics_spec::Node;
 use mere::canvas::physics_controls::{
-    self, ArrangementTransition, CUSTOM_PROFILE, LawStart, TwoLawMix, arrangement_choices,
+    self, ArrangementTransition, CUSTOM_PROFILE, LawStart, TwoLawGrouping, TwoLawMix,
+    arrangement_choices,
 };
 use mere::canvas::{
     CANVAS_PHYSICS_DEPTH_SOURCES, CANVAS_PHYSICS_KIND_SOURCES, CANVAS_PHYSICS_LAWS,
@@ -39,6 +41,13 @@ pub(super) struct PhysicsPanel {
     pub(super) mix_first_share: TextInput,
     pub(super) mix_second_share: TextInput,
     pub(super) mix_note: String,
+    /// The grouped root's partition channel, separate from Group pull and
+    /// the role target's grouping channel.
+    pub(super) group_partition: SelectState,
+    pub(super) group_outer: SelectState,
+    pub(super) group_inner: SelectState,
+    pub(super) group_outer_share: TextInput,
+    pub(super) group_note: String,
     pub(super) kind: SelectState,
     pub(super) mass: SelectState,
     pub(super) depth: SelectState,
@@ -102,6 +111,15 @@ impl PhysicsPanel {
             mix_first_share: TextInput::new("1"),
             mix_second_share: TextInput::new("1"),
             mix_note: String::new(),
+            group_partition: SelectState::new(0).with_label("Grouping partition"),
+            group_outer: SelectState::new(index_of(PhysicsLaw::ALL, PhysicsLaw::Charge))
+                .with_label("Outer law"),
+            group_inner: SelectState::new(index_of(PhysicsLaw::ALL, PhysicsLaw::Springs))
+                .with_label("Inner law"),
+            group_outer_share: TextInput::new(
+                mere::canvas::composition::CHARGE_BETWEEN_WEIGHT.to_string(),
+            ),
+            group_note: String::new(),
             kind: SelectState::new(0).with_label("Kinds"),
             mass: SelectState::new(0).with_label("Mass"),
             depth: SelectState::new(0).with_label("Depth"),
@@ -141,13 +159,14 @@ impl PhysicsPanel {
         let spec = canvas.dynamics_spec().ok();
         if spec
             .as_ref()
-            .is_some_and(|spec| matches!(&spec.root, Node::Mix { .. }))
+            .is_some_and(|spec| matches!(&spec.root, Node::Mix { .. } | Node::Grouped { .. }))
         {
-            // A mixed root cannot be named by a profile inferred from its
+            // A composed root cannot be named by a profile inferred from its
             // first law's flat view.
             self.profile.selected = 0;
         }
         self.sync_mix(spec.as_ref().map(|spec| &spec.root));
+        self.sync_grouping(spec.as_ref().map(|spec| &spec.root));
     }
 
     /// Sync role controls from the live, canonical target and resolved Canvas.
@@ -192,6 +211,60 @@ impl PhysicsPanel {
         self.mix_first_share = TextInput::new(first_share.to_string());
         self.mix_second_share = TextInput::new(second_share.to_string());
         self.mix_note.clear();
+    }
+
+    /// Read the authored root only when it is the exact plain grouped form
+    /// this editor can represent. The outer share remains authored f64 text.
+    fn sync_grouping(&mut self, root: Option<&Node>) {
+        let Some(root) = root else {
+            self.group_note = "The authored dynamics record could not be read".into();
+            return;
+        };
+        let Node::Grouped {
+            partition,
+            outer,
+            inner,
+            weight,
+            ..
+        } = root
+        else {
+            self.group_note = "No authored grouping".into();
+            return;
+        };
+        if *weight != 1.0 {
+            self.group_note =
+                "Unsupported authored grouping shape (root weight) · editor values are not readback"
+                    .into();
+            return;
+        }
+        let Some(source) = Channel::parse(partition).and_then(|channel| match channel {
+            Channel::Groups(source) => Some(source),
+            _ => None,
+        }) else {
+            self.group_note =
+                "Unsupported authored grouping shape (partition) · editor values are not readback"
+                    .into();
+            return;
+        };
+        let (Some((outer_law, outer_share)), Some((inner_law, inner_share))) =
+            (mix_part(outer), mix_part(inner))
+        else {
+            self.group_note =
+                "Unsupported authored grouping shape (law data) · editor values are not readback"
+                    .into();
+            return;
+        };
+        if inner_share != 1.0 {
+            self.group_note =
+                "Unsupported authored grouping shape (inner weight) · editor values are not readback"
+                    .into();
+            return;
+        }
+        self.group_partition.selected = index_of(PhysicsKindSource::ALL, source);
+        self.group_outer.selected = index_of(PhysicsLaw::ALL, outer_law);
+        self.group_inner.selected = index_of(PhysicsLaw::ALL, inner_law);
+        self.group_outer_share = TextInput::new(outer_share.to_string());
+        self.group_note.clear();
     }
 
     /// The recipe role the role control holds.
@@ -355,6 +428,44 @@ impl TreePage {
                 self.shared.dirty.set(true);
             },
             Err(error) => self.physics.status = format!("Mix refused · {error}"),
+        }
+    }
+
+    /// Apply one bounded grouped composition. Its partition source is
+    /// independent of Group pull and role-target sources.
+    fn apply_grouping(&mut self) {
+        let Ok(outer_share) = self.physics.group_outer_share.text().parse::<f64>() else {
+            self.physics.status = "Grouping outer share must be a number".into();
+            return;
+        };
+        let grouping = TwoLawGrouping {
+            partition: PhysicsKindSource::ALL[self
+                .physics
+                .group_partition
+                .selected
+                .min(PhysicsKindSource::ALL.len() - 1)],
+            outer: PhysicsLaw::ALL[self
+                .physics
+                .group_outer
+                .selected
+                .min(PhysicsLaw::ALL.len() - 1)],
+            inner: PhysicsLaw::ALL[self
+                .physics
+                .group_inner
+                .selected
+                .min(PhysicsLaw::ALL.len() - 1)],
+            outer_share,
+        };
+        let mut canvas = self.shared.canvas.borrow_mut();
+        let law_start = LawStart::of(&canvas);
+        match physics_controls::apply_grouping(&mut canvas, &grouping) {
+            Ok(status) => {
+                self.physics.law_start = Some(law_start);
+                self.physics.status = status;
+                self.physics.sync(&canvas);
+                self.shared.dirty.set(true);
+            },
+            Err(error) => self.physics.status = format!("Grouping refused · {error}"),
         }
     }
 
@@ -670,6 +781,37 @@ pub(super) fn section(page: &TreePage) -> Child {
                 ),
             )
             .attr("data-physics-composition-editor", "two-law-mix"),
+        ),
+        Box::new(
+            el(
+                "div",
+                (
+                    el("h3", "Grouped composition"),
+                    picker("Grouping partition", labels(CANVAS_PHYSICS_KIND_SOURCES), |page| {
+                        &mut page.physics.group_partition
+                    }),
+                    mix_law_picker("Outer law", "group-outer", |page| {
+                        &mut page.physics.group_outer
+                    }),
+                    mix_share_field("Outer share", "group-outer", |page| {
+                        &mut page.physics.group_outer_share
+                    }),
+                    mix_law_picker("Inner law", "group-inner", |page| {
+                        &mut page.physics.group_inner
+                    }),
+                    el(
+                        "p",
+                        "The outer law's repulsion acts between groups; the inner law acts within each group. The outer share scales that repulsion and is not normalized.",
+                    )
+                    .attr("class", "tools-note"),
+                    physics_action("Apply grouping", "apply-grouping", TreePage::apply_grouping),
+                    el("p", page.physics.group_note.clone())
+                        .attr("class", "tools-note")
+                        .attr("role", "status")
+                        .attr("aria-label", "Authored grouping status"),
+                ),
+            )
+            .attr("data-physics-composition-editor", "grouped"),
         ),
         picker(
             "Speed",

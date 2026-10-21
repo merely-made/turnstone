@@ -404,6 +404,195 @@ fn authored_mix_survives_the_canonical_v4_scene_facet_and_reopen() {
 }
 
 #[test]
+fn authored_grouping_preserves_the_v4_record_and_reopens_exactly() {
+    use crate::local_scene::{capture_scene, restore_scene};
+    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+    use crate::product::SAVED_SCENE_FACET;
+    use mere::canvas::Role;
+    use mere::canvas::dynamics_spec::{Bar, GroupRoles, Observable, Realization, Target};
+    use mere::canvas::{Channel, PhysicsOverlay};
+    use std::collections::BTreeMap;
+
+    let persona = SelectedPersonaRef {
+        persona: FIXTURE_PERSONA_ADDRESS.into(),
+        profile: "profile:graphshell-tree".into(),
+    };
+    let mut app =
+        crate::app::GraphshellApp::fixture(muniment::MemoryBackend::new(), persona).unwrap();
+    let mut subject = p2_fixture_canvas();
+
+    // Make every surrounding v4 field observable, including both role-map
+    // scopes, so the grouped action's root replacement cannot hide a loss.
+    let keys: Vec<_> = subject.graph().nodes().map(|(key, _)| key).collect();
+    let mut same_site = None;
+    'outer: for (i, &a) in keys.iter().enumerate() {
+        let Some(site) = subject.role_group_of(a) else {
+            continue;
+        };
+        for &b in keys.iter().skip(i + 1) {
+            if subject.role_group_of(b).as_deref() == Some(site.as_str()) {
+                same_site = Some((site, a, b));
+                break 'outer;
+            }
+        }
+    }
+    let (site, group_member, item_member) = same_site.expect("fixture has a multi-node site");
+    let item_id = subject.graph().get_node(item_member).unwrap().id;
+    let mut original = subject.dynamics_spec().unwrap();
+    original.seed = 104_375_397_257_316;
+    original.bars = vec![Bar {
+        observable: Observable::Overlaps,
+        at_least: None,
+        at_most: Some(4.0),
+    }];
+    original.realization = Realization::Integrate { damping: Some(0.7) };
+    original.channels.insert("kind".into(), "kind.site".into());
+    original
+        .root
+        .overlays_mut()
+        .push(mere::canvas::dynamics_spec::Node::preset(
+            PhysicsOverlay::GravityLocus.id(),
+        ));
+    original.target = Some(Target {
+        arrangement: "grid.default".into(),
+        anchored_pull: 0.3,
+        default_role: Role::Seeded,
+        groups: Some(GroupRoles {
+            channel: Channel::Groups(PhysicsKindSource::Site).id(),
+            roles: BTreeMap::from([(site, Role::Anchored)]),
+        }),
+        items: BTreeMap::from([(item_id.to_string(), Role::Pinned)]),
+    });
+    subject.set_dynamics_spec(&original).unwrap();
+
+    apply_grouping(
+        &mut subject,
+        &TwoLawGrouping {
+            partition: PhysicsKindSource::Cluster,
+            outer: PhysicsLaw::Charge,
+            inner: PhysicsLaw::Springs,
+            outer_share: 0.1,
+        },
+    )
+    .unwrap();
+    let grouped = subject.dynamics_spec().unwrap();
+    let authored_root = grouped.root.clone();
+    let mere::canvas::dynamics_spec::Node::Grouped {
+        partition,
+        outer,
+        inner,
+        weight,
+        overlays,
+    } = &grouped.root
+    else {
+        panic!("typed action writes a grouped root")
+    };
+    assert_eq!(partition, &Channel::Groups(PhysicsKindSource::Cluster).id());
+    assert_eq!(*weight, 1.0);
+    assert_eq!(
+        outer.weight(),
+        0.1,
+        "authored outer share remains exact f64"
+    );
+    assert_eq!(inner.weight(), 1.0);
+    assert_eq!(overlays, original.root.overlays());
+    assert_eq!(grouped.seed, original.seed);
+    assert_eq!(grouped.bars, original.bars);
+    assert_eq!(grouped.realization, original.realization);
+    assert_eq!(grouped.channels, original.channels);
+    assert_eq!(grouped.target, original.target);
+
+    // The partition, the Group pull source, and role-target source are three
+    // independent choices. Editing Group pull retains the authored root and
+    // both role maps while writing its own channel.
+    let mut choice = PhysicsChoice::live(&subject);
+    choice.groups = PhysicsKindSource::Component;
+    apply_physics(&mut subject, &choice);
+    let sourced = subject.dynamics_spec().unwrap();
+    assert_eq!(sourced.root, authored_root);
+    assert_eq!(sourced.channels["groups"], "groups.component");
+    assert_eq!(
+        sourced
+            .target
+            .as_ref()
+            .unwrap()
+            .groups
+            .as_ref()
+            .unwrap()
+            .channel,
+        Channel::Groups(PhysicsKindSource::Site).id()
+    );
+    assert_eq!(
+        sourced
+            .target
+            .as_ref()
+            .unwrap()
+            .groups
+            .as_ref()
+            .unwrap()
+            .roles,
+        grouped
+            .target
+            .as_ref()
+            .unwrap()
+            .groups
+            .as_ref()
+            .unwrap()
+            .roles
+    );
+    assert_eq!(
+        sourced.target.as_ref().unwrap().items,
+        grouped.target.as_ref().unwrap().items
+    );
+    assert_eq!(subject.arrangement_role_of(group_member), Role::Anchored);
+    assert_eq!(subject.arrangement_role_of(item_member), Role::Pinned);
+
+    let saved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
+    let saved_spec = saved.dynamics_spec().unwrap();
+    const ADDRESS: &str = "mere://scene/g4b2-grouping";
+    app.host.save_product_scene(ADDRESS, &saved).unwrap();
+    // Clone the canonical facet before the later write replaces its stored
+    // value, so the byte-for-byte dynamics comparison has a stable witness.
+    let facet = app
+        .host
+        .facet_value(ADDRESS, SAVED_SCENE_FACET)
+        .unwrap()
+        .clone();
+    assert_eq!(
+        facet["dynamics"],
+        serde_json::to_value(&saved_spec).unwrap()
+    );
+    assert_eq!(facet["dynamics"]["root"]["node"], "grouped");
+    assert_eq!(facet["dynamics"]["root"]["partition"], "groups.cluster");
+    assert_eq!(facet["dynamics"]["root"]["outer"]["weight"], 0.1);
+    assert_eq!(facet["dynamics"]["channels"]["groups"], "groups.component");
+    assert_eq!(
+        facet["dynamics"]["target"]["groups"]["channel"],
+        "groups.site"
+    );
+
+    let reopened = app.host.product_scene(ADDRESS).unwrap();
+    let choice = PhysicsChoice::live(&subject);
+    apply_single_law(&mut subject, &choice).unwrap();
+    assert!(matches!(
+        subject.dynamics_spec().unwrap().root,
+        mere::canvas::dynamics_spec::Node::Preset { .. }
+    ));
+    restore_scene(&mut subject, app.host.graph(), &reopened, TREE_CANVAS).unwrap();
+    assert_eq!(subject.dynamics_spec().unwrap(), saved_spec);
+    assert_eq!(subject.dynamics_spec().unwrap().root, authored_root);
+    assert_eq!(subject.arrangement_role_of(group_member), Role::Anchored);
+    assert_eq!(subject.arrangement_role_of(item_member), Role::Pinned);
+
+    let resaved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
+    app.host.save_product_scene(ADDRESS, &resaved).unwrap();
+    assert_eq!(
+        app.host.facet_value(ADDRESS, SAVED_SCENE_FACET).unwrap()["dynamics"],
+        facet["dynamics"]
+    );
+}
+
+#[test]
 fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
     use crate::local_scene::{capture_scene, restore_scene};
     use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
