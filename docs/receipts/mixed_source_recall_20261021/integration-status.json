@@ -1,0 +1,65 @@
+{
+  "native_result": "pass on raw and public subsets",
+  "native_turnstone_source": "a048adcc36eef8597ed913940d83103b9eae1633",
+  "native_mere_sdk": "7edfe3b097f38ee621f6352953c3b1be08339504",
+  "native_resident_source": "4528e64201c9c21549f9f85945f2e1bceb6a7883",
+  "mere_publication_merge": "32c30306c0ffb1cd4ef61bda97405b13662f5900",
+  "turnstone_publication_merge": "1a0a111468f346a74affa932c81daec1e6d9e391",
+  "supplier_core_files_unchanged": {
+    "ports/djinn/tests/inference_route.rs": "4bca9ca4f871d2a4829859d51a3b0201bc0aa746735a94da2e03a07a9556853b",
+    "ports/djinn/tests/common/mod.rs": "6b938c8fff40e86f0458c8ee1f698ca145ce4054208313baf3851ac3ccf02793",
+    "ports/djinn/tests/common/inference_door.rs": "f6da5850861bca5a56c228330b4580f5cfa1a537c21cf72b48175ae0db56c452",
+    "ports/distillery/src/inference.rs": "96dbe5297e335f11e96fda45e3474d769490ef4ee2c03ac00a38f34794438d36",
+    "ports/distillery/src/inference/recall.rs": "c12b109a36c0f7e0316f9de2bf27d71af158d48dd6e507239488953d0ff10f63",
+    "ports/distillery/src/inference/recall_embedding.rs": "f3f85dacf5ce555b4c91915c8395ce56e54a579e65b655082004e7c1b8006013"
+  },
+  "consumer_recall_files_unchanged": [
+    "src/inference_surface.rs",
+    "src/inference_service.rs",
+    "src/research.rs",
+    "src/retained_clip.rs",
+    "src/saved_sources.rs",
+    "src/app/contributed_pane_arms.rs",
+    "src/app/saved_source_arms.rs",
+    "src/shell/retained_clips.rs",
+    "src/shell/saved_sources.rs"
+  ],
+  "native_repeated_on_later_turnstone_main": false,
+  "boundary": "Concurrent main-line changes and newer Turnstone pins are preserved. The native evidence remains attached to its immutable compiled cut; post-merge software gates are recorded separately.",
+  "post_merge_software": {
+    "result": "pass",
+    "cases": 19,
+    "checks": {
+      "mixed-integration-publication-tests.log": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0,
+        "sha256": "97bfd7458c1caa67425ae8b6a95c6cb438a2258270fa20151e4b38a313543e05",
+        "log": "integration/mixed-integration-publication-tests.log.gz"
+      },
+      "mixed-integration-recall-tests.log": {
+        "passed": 14,
+        "failed": 0,
+        "ignored": 0,
+        "sha256": "38a9d31a4b6f512c05bdb720d55ad9d93337c549d82ddbc8212ce66c9da8d395",
+        "log": "integration/mixed-integration-recall-tests.log.gz"
+      },
+      "mixed-integration-lexical-route.log": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "sha256": "9b4d6259e403f7194aa83fd72c2583d0948c23c8519f709bd5e415e8aaa00bf9",
+        "log": "integration/mixed-integration-lexical-route.log.gz"
+      },
+      "mixed-integration-library-route.log": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "sha256": "0114aa9391685f03b9a152150a4b3897fd9203bd1d005d7c3fcbb38410ce6496",
+        "log": "integration/mixed-integration-library-route.log.gz"
+      }
+    },
+    "scope": "Focused supplier gates on Mere 32c30306; build only for the GPU-enabled resident fixture, no additional headed launch.",
+    "resident_binary_sha256": "c8055ad439a1091fc78f6ba332275321a622e767b7f02506b495f2691c8afffd"
+  }
+}

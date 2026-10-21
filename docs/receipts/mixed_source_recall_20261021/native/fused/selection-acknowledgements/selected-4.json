@@ -1,0 +1,49 @@
+{
+  "condition": "native selection committed by the app; exact expected text hashes",
+  "source": {
+    "chosen": [
+      {
+        "key": {
+          "annotation_manifest": "blake3:d07382ab5ad338a70c7906d178c62ef7df1f7a282cf5b033ec63c00acfd0fe30",
+          "graph": "9618def4-1c81-4ba5-89ca-92237bff6d42",
+          "node": "82027e41-2846-4be8-80dc-cdf1335982a2",
+          "session": "554330a8-8092-4662-96f0-90b741389ac3"
+        },
+        "selector": null,
+        "text_hash": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399"
+      },
+      {
+        "key": {
+          "annotation_manifest": "blake3:e13afb25afafbcedc48b91b6a644c35e83379fa362fcf60dd146f1e856113818",
+          "graph": "9618def4-1c81-4ba5-89ca-92237bff6d42",
+          "node": "b5bd49a4-06b0-4af0-b037-7fa415b51198",
+          "session": "554330a8-8092-4662-96f0-90b741389ac3"
+        },
+        "selector": null,
+        "text_hash": "blake3:5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944"
+      },
+      {
+        "clip": {
+          "graph": "9618def4-1c81-4ba5-89ca-92237bff6d42",
+          "manifest": "blake3:48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+          "node": "adcc5450-8ed1-4e6b-8f00-03d32ba6c5bc",
+          "session": "554330a8-8092-4662-96f0-90b741389ac3"
+        },
+        "selector": null,
+        "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275"
+      },
+      {
+        "clip": {
+          "graph": "9618def4-1c81-4ba5-89ca-92237bff6d42",
+          "manifest": "blake3:45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0",
+          "node": "b9f8482d-bcfe-416b-86bd-95de9e294e56",
+          "session": "554330a8-8092-4662-96f0-90b741389ac3"
+        },
+        "selector": null,
+        "text_hash": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96"
+      }
+    ],
+    "session": "554330a8-8092-4662-96f0-90b741389ac3",
+    "view": "f4313ca7-3df7-495c-a112-bb52520bc79e"
+  }
+}

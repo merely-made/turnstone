@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "scope_members": 4,
+  "max_passages": 3,
+  "corpus": {
+    "capture": {
+      "title": "Mixed Capture A",
+      "path": "/A",
+      "text": "The Juniper archive's recovery phrase is violet lantern."
+    },
+    "control": {
+      "title": "Mixed Capture B",
+      "path": "/B",
+      "text": "The amber harbor shipping log records a cobalt parcel."
+    },
+    "knot": {
+      "title": "Knot selection",
+      "package": "knot.mereclip",
+      "text": "The Pelican observatory's access word is café."
+    },
+    "note": {
+      "title": "Redshank note",
+      "package": "redshank.mereclip",
+      "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+    }
+  },
+  "asks": [
+    {
+      "id": "capture",
+      "question": "Repeat the retained sentence about the Juniper archive exactly.",
+      "relevant": [
+        "capture"
+      ]
+    },
+    {
+      "id": "knot",
+      "question": "Repeat the retained sentence about the Pelican observatory exactly.",
+      "relevant": [
+        "knot"
+      ]
+    },
+    {
+      "id": "note",
+      "question": "Repeat both lines of the retained note about the embedded listener exactly, preserving the line break.",
+      "relevant": [
+        "note"
+      ]
+    }
+  ],
+  "rankings": [
+    {
+      "id": "capture",
+      "question": "Repeat the retained sentence about the Juniper archive exactly.",
+      "relevant": [
+        "capture"
+      ]
+    },
+    {
+      "id": "knot",
+      "question": "Repeat the retained sentence about the Pelican observatory exactly.",
+      "relevant": [
+        "knot"
+      ]
+    },
+    {
+      "id": "note",
+      "question": "Repeat both lines of the retained note about the embedded listener exactly, preserving the line break.",
+      "relevant": [
+        "note"
+      ]
+    },
+    {
+      "id": "capture-paraphrase",
+      "question": "Which retained document describes recovering entry to a collection?",
+      "relevant": [
+        "capture"
+      ]
+    },
+    {
+      "id": "knot-paraphrase",
+      "question": "What secret word lets someone enter the telescope facility?",
+      "relevant": [
+        "knot"
+      ]
+    },
+    {
+      "id": "note-paraphrase",
+      "question": "What reminder was preserved while listening to audio?",
+      "relevant": [
+        "note"
+      ]
+    },
+    {
+      "id": "control",
+      "question": "Which saved source records the cobalt parcel in the amber harbor shipping log?",
+      "relevant": [
+        "control"
+      ]
+    },
+    {
+      "id": "combined",
+      "question": "Find the Juniper archive sentence, the Pelican observatory sentence, and the embedded listener note.",
+      "relevant": [
+        "capture",
+        "knot",
+        "note"
+      ]
+    }
+  ],
+  "judgment_policy": "Frozen before measuring; lexical and fused relevance measured against these labels. No blanket improvement assertion."
+}

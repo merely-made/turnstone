@@ -102,7 +102,9 @@ set.
   real fused recall, local citations and source-absent cold export on its recorded
   receiving cut. A companion packet also qualifies the final shared shell and
   shared Apparatus-core SDK `7edfe3b09`; the four-scalar citation/model limit
-  remains explicit.
+  remains explicit. The mixed-source continuation records a four-member scope, 52 native warm/cold
+  captures and lexical-versus-fused measurements, with generated-reference and
+  exact runtime-cut limits explicit.
 - [q-pc lane handoff, 2026-10-14](2026-10-14_qpc_lane_handoff.md): the lane's
   resume point on q-pc (Mac), with Windows gates on o-pc. Main is the only live line after the ThinkPad
   branch/worktree reconciliation; lists pins, the lens-label fix, ordered open

@@ -367,3 +367,31 @@ independent verifier passes raw/public evidence, product/scenario hashes,
 source identity, compatible reuse, historical evidence and selected-only export.
 The [final integration packet](../docs/receipts/retained_clip_embedding_integration_20261021/README.md)
 records compiled-source Git-blob proofs; earlier receipts remain unchanged.
+
+## Mixed-source recall qualification, 2026-10-21
+
+**Status:** bounded retention/retrieval/citation-routing and cold-reopen gates
+passed on the recorded runtime cut. One explicit four-source scope contains two
+saved HTML captures, a retained Knot selection and a Redshank text note. Twelve
+resident asks, six historical reopen paths and eighteen native target-citation
+activations preserve exact source identity, Unicode ranges and local documents;
+four independent warm/cold phases produce 52 presented nonblank captures.
+Source origins and transfer files are absent before cold reopen. Selected package
+contents, payload bytes and original anchors survive onward export unchanged.
+
+The [mixed-source packet](../docs/receipts/mixed_source_recall_20261021/README.md)
+records actual live published-index rankings, independently reconstructed passage
+IDs and reciprocal-rank fusion. On eight frozen questions, lexical MRR/top-1/
+recall@3 are 0.875; vector and fused are 1.0. The recovered paraphrase asks about a
+reminder preserved while listening to audio. All rankings and the four-source
+384-dimensional projection retain their identities on cold reopen. This bounded
+fixture is not a general quality benchmark or a combined generated-answer gate.
+
+**Quality boundary:** SmolLM2 repeats the Redshank note and adds other-source
+references. Exact citation identities and model-marker validity do not certify
+semantic support. The accepted fused UI recipe waits for each native source
+selection to be persisted; rapid-click behavior is not signed off. Excluded
+attempts and immutable per-mode recipes are retained. The native cut is Turnstone
+`a048adcc36` / Mere SDK `7edfe3b09`; later concurrent main-line source/pins are not
+represented as freshly headed-qualified by this packet. Earlier receipts remain
+frozen.

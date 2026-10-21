@@ -1,0 +1,34 @@
+RESULT ok
+captured 01_cold_local_capture
+captured 02_cold_scope
+captured capture_historical_answer
+captured capture_historical_citation
+captured capture_answer
+captured capture_citation
+captured knot_historical_answer
+captured knot_historical_citation
+captured knot_answer
+captured knot_citation
+captured note_historical_answer
+captured note_historical_citation
+captured note_answer
+captured note_citation
+captured knot_cold_export
+captured note_cold_export
+presentation frames=725 captures=16 blank=0
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/01_cold_local_capture.png digest=cdba026a9be6d436 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/02_cold_scope.png digest=eea3d8344412bb6f blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/capture_historical_answer.png digest=eea3d8344412bb6f blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/capture_historical_citation.png digest=34544646c4baca33 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/capture_answer.png digest=c2f61657c4cd06bc blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/capture_citation.png digest=34544646c4baca33 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/knot_historical_answer.png digest=dab226dcc970e9f8 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/knot_historical_citation.png digest=43012b11fc5a7185 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/knot_answer.png digest=0c5640aff16e7a97 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/knot_citation.png digest=bea31ba609a3482b blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/note_historical_answer.png digest=fb256fd84e3ecf8d blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/note_historical_citation.png digest=7d5243ffe95a4d90 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/note_answer.png digest=f2a05910aa2e116d blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/note_citation.png digest=7d5243ffe95a4d90 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/knot_cold_export.png digest=bea31ba609a3482b blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/cold/note_cold_export.png digest=7d5243ffe95a4d90 blank=false
