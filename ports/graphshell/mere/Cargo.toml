@@ -26,6 +26,7 @@ cambium-genet-winit-host.workspace = true
 cambium-rootstock = { workspace = true, features = ["image-decode"] }
 chirograph.workspace = true
 graphshell-client.workspace = true
+hest.workspace = true
 # The app side of the first-party door: `AppBrokerClient`.
 graphshell-endpoint = { workspace = true, features = ["door"] }
 # The route panel that fills the mere view (stack lift plan L14).
@@ -40,6 +41,8 @@ taproot.workspace = true
 tokio = { version = "1", features = ["io-std", "io-util", "macros", "net", "rt-multi-thread", "sync", "time"] }
 
 [dev-dependencies]
+genet-scripted-dom.workspace = true
+layout_dom_api.workspace = true
 mere = { path = "../../../crates/mere", default-features = false, features = ["graph", "canvas"] }
 serde_json.workspace = true
 tempfile = "3"

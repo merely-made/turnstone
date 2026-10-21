@@ -290,6 +290,83 @@ fn valid_explicit_session_material_supplies_saved_view_and_read_only_state() {
 }
 
 #[test]
+fn selected_record_offers_use_owner_item_after_the_hidden_session_item() {
+    let (mut transport, _) = fixture(false, true);
+    let action = graphshell::handlers::HandlerOffer {
+        id: "fixture".into(),
+        label: "Open with fixture".into(),
+        explanation: "Configured by the owner".into(),
+        address_kinds: vec![],
+    }
+    .advertised_action();
+    for response in &mut transport.responses {
+        if let Ok(CarrierResponseBody::Snapshot(snapshot)) = response
+            && snapshot.session.0 == wire::MERE_GRAPH
+        {
+            let key = snapshot
+                .presentation
+                .bindings
+                .iter()
+                .find(|binding| binding.instance == InstanceId(1))
+                .unwrap()
+                .key
+                .clone();
+            snapshot.presentation.offers.get_mut(&key).unwrap()[0]
+                .semantics
+                .actions
+                .push(action.clone());
+        }
+    }
+    let profile = CapabilityProfile::new([PresentationCapability::PortableCard]);
+    let mut connection = Connection::from_opened(transport, opened(), profile).unwrap();
+    let reading = run(connection.read()).unwrap();
+    let (target, offered) = reading.owner_offers[RECORD].clone();
+    assert_eq!(target.target, InstanceId(1));
+    assert_eq!(offered, vec![action.clone()]);
+    assert_eq!(reading.owner_offers.len(), 1);
+    let command = action.command_invocation(
+        serde_json::to_vec(&graphshell::handlers::OpenAddressV1 {
+            address: ADDRESS.into(),
+            handler: "fixture".into(),
+        })
+        .unwrap(),
+    );
+    connection
+        .transport
+        .responses
+        .push_back(Ok(CarrierResponseBody::Intent(IntentResult::Rejected {
+            reason: "owner refused this request".into(),
+        })));
+    let (refresh, _) = fixture(false, true);
+    connection.transport.responses.extend(refresh.responses);
+    connection.take_owner_command(RECORD.into(), target.clone(), action, command);
+    let reading = run(connection.read()).unwrap();
+    assert!(
+        reading
+            .model
+            .notice
+            .unwrap()
+            .contains("owner refused this request")
+    );
+    let request = connection
+        .transport
+        .requests
+        .iter()
+        .find_map(|request| match request {
+            CarrierRequestBody::Intent(request)
+                if request.intent == "graphshell.address.open/fixture" =>
+            {
+                Some(request)
+            },
+            _ => None,
+        })
+        .unwrap();
+    assert_eq!(request.target, InstanceId(1));
+    assert_eq!(request.observed_epoch, target.observed_epoch);
+    assert_eq!(request.observed_revision, target.observed_revision);
+}
+
+#[test]
 fn read_only_activation_uses_shared_inspection_without_a_carrier_intent() {
     let (transport, _) = fixture(true, true);
     let profile = CapabilityProfile::new([PresentationCapability::PortableCard]);

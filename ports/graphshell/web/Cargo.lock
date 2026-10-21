@@ -3540,6 +3540,7 @@ name = "graphshell-client"
 version = "0.0.2"
 dependencies = [
  "chirograph",
+ "hest",
  "sceno",
  "scenotime",
  "serde",
@@ -5495,6 +5496,7 @@ version = "0.1.0"
 dependencies = [
  "chirograph",
  "graphshell-client",
+ "hest",
  "mere-cartography",
  "mere-kernel",
  "mere-view",

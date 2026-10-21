@@ -111,6 +111,16 @@ impl<T: RouteTransport> Connection<T> {
         // native window paints its graph through MereView itself.
         let mut model = self.panel.model().clone();
         model.hide_graph = false;
+        let selected = self.panel.focus_key();
+        let owner_offers = selected
+            .iter()
+            .filter_map(|key| {
+                self.panel
+                    .record_actions(key)
+                    .ok()
+                    .map(|offers| (key.clone(), offers))
+            })
+            .collect();
         Ok(Reading {
             model,
             cards: self.panel.records().clone(),
@@ -118,15 +128,31 @@ impl<T: RouteTransport> Connection<T> {
                 .panel
                 .primary()
                 .map_or(0, |primary| primary.scene.epoch.0),
-            selected: self.panel.focus_key(),
+            selected,
             saved_focus,
             read_only: self.panel.read_only(),
             view_saved: self.panel.view_saved(),
+            owner_offers,
         })
     }
 
     pub(super) fn take(&mut self, request: MereViewRequest) {
         if let Err(reason) = self.panel.request(request) {
+            self.panel.show_notice(reason);
+        }
+    }
+
+    pub(super) fn take_owner_command(
+        &mut self,
+        key: String,
+        target: graphshell_client::ActionDraftTarget,
+        action: chirograph::AdvertisedAction,
+        command: hest::Invocation,
+    ) {
+        if let Err(reason) = self
+            .panel
+            .invoke_record_command(key, target, action, command)
+        {
             self.panel.show_notice(reason);
         }
     }

@@ -13,6 +13,7 @@
 pub mod coop;
 #[cfg(feature = "editable-blocks")]
 pub mod block_editing;
+pub mod bound_actions;
 
 #[cfg(feature = "moot-resources")]
 pub mod moot_resources;

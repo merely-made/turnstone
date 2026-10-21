@@ -11,6 +11,7 @@ use cambium_genet_winit_host::{AppCtx, HostOptions, Init, inert_hooks, run};
 use chirograph::PortableCardV1;
 mod connection;
 mod coop;
+mod owner_actions;
 use connection::Connection;
 #[cfg(test)]
 mod app_tests;
@@ -22,7 +23,8 @@ use sprigging::ColorF;
 use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::mpsc};
 use taproot::ProbeSnapshot;
 const LEAF: u64 = 0x6d65_7265;
-const CSS: &str = ".coop-panel{height:245px;overflow:auto;padding:8px;border-top:1px solid #6d7783}.coop-panel h2,.coop-panel p{margin:3px;overflow-wrap:anywhere}.coop-panel label{display:flex;align-items:center;gap:8px;margin:4px}.coop-input{display:block;width:460px;min-height:28px;padding:4px;border:1px solid #6d7783;background:#22262c;white-space:pre;overflow:hidden}.coop-input:focus{border-color:#8cb4de} :root{background:#16191d;color:#e8e6e1;font-family:sans-serif;font-size:14px} main{display:flex;flex-direction:column;height:100%} h1{font-size:18px;margin:8px} button{padding:4px;margin:2px;background:#22262c;color:#e8e6e1;border:1px solid #6d7783} .mere-view-session,.mere-view-archive{padding:6px;border-bottom:1px solid #353a42} .mere-view-archive-steps{gap:3px} .mere-view-session-state{font-size:12px;color:#abb4bd} .mere-view-session[data-attached=true]{color:#8cb4de} button[aria-pressed=true]{border-color:#8cb4de} .mere-record{height:180px;overflow:auto;padding:8px;border-top:1px solid #6d7783} .mere-record p{margin:3px;overflow-wrap:anywhere} .mere-view-notice{color:#f0b35a}";
+const CSS: &str = ".coop-panel{height:245px;overflow:auto;padding:8px;border-top:1px solid #6d7783}.coop-panel h2,.coop-panel p{margin:3px;overflow-wrap:anywhere}.coop-panel label{display:flex;align-items:center;gap:8px;margin:4px}.coop-input{display:block;width:460px;min-height:28px;padding:4px;border:1px solid #6d7783;background:#22262c;white-space:pre;overflow:hidden}.coop-input:focus{border-color:#8cb4de} :root{background:#16191d;color:#e8e6e1;font-family:sans-serif;font-size:14px} main{display:flex;flex-direction:column;height:100%} h1{font-size:18px;margin:8px} button{padding:4px;margin:2px;background:#22262c;color:#e8e6e1;border:1px solid #6d7783} .mere-view-session,.mere-view-archive{padding:6px;border-bottom:1px solid #353a42} .mere-view-archive-steps{gap:3px} .mere-view-session-state{font-size:12px;color:#abb4bd} .mere-view-session[data-attached=true]{color:#8cb4de} button[aria-pressed=true]{border-color:#8cb4de} .mere-record{height:180px;overflow:auto;padding:8px;border-top:1px solid #6d7783} .mere-record p{margin:3px;overflow-wrap:anywhere} .mere-view-notice{color:#f0b35a}.mere-owner-actions{display:flex;flex-wrap:wrap;align-items:center;gap:4px}.mere-owner-actions fieldset{display:flex;flex-wrap:wrap;gap:4px;padding:4px}.mere-owner-actions [role=status]{flex-basis:100%}";
+#[derive(Debug)]
 struct Reading {
     model: MereViewModel,
     cards: HashMap<String, PortableCardV1>,
@@ -31,6 +33,17 @@ struct Reading {
     read_only: bool,
     selected: Option<String>,
     view_saved: bool,
+    owner_offers: owner_actions::OwnerOffers,
+}
+#[derive(Clone, Debug)]
+enum WorkerRequest {
+    View(MereViewRequest),
+    Owner {
+        key: String,
+        target: graphshell_client::ActionDraftTarget,
+        action: chirograph::AdvertisedAction,
+        command: hest::Invocation,
+    },
 }
 struct PendingActivation {
     epoch: u64,
@@ -44,7 +57,7 @@ struct App {
     size: (u32, u32),
     selected: Option<String>,
     cards: HashMap<String, PortableCardV1>,
-    sender: mpsc::Sender<MereViewRequest>,
+    sender: mpsc::Sender<WorkerRequest>,
     receiver: mpsc::Receiver<Result<Reading, String>>,
     pending: bool,
     queued_activation: Option<PendingActivation>,
@@ -53,6 +66,10 @@ struct App {
     saved_focus: Option<String>,
     view_saved: bool,
     read_only: bool,
+    owner_offers: owner_actions::OwnerOffers,
+    owner_form: graphshell_client::ActionForm,
+    owner_record: Option<String>,
+    owner_waiting: bool,
 }
 type Child = Box<dyn AnyView<App, (), GenetCtx, GenetElement>>;
 type Logic = fn(&App) -> Child;
@@ -93,7 +110,7 @@ impl App {
             return;
         }
         self.pending = true;
-        if self.sender.send(request).is_err() {
+        if self.sender.send(WorkerRequest::View(request)).is_err() {
             self.pending = false;
             self.model.notice = Some("The resident worker stopped.".into());
         }
@@ -107,6 +124,7 @@ impl App {
                 let (model, cards) = coop::guest_reading(data);
                 self.model = model;
                 self.cards = cards;
+                self.owner_offers.clear();
                 self.graph_epoch = data.epoch.0;
                 self.read_only = data.access != "editor";
                 if self
@@ -125,6 +143,7 @@ impl App {
                     ..Default::default()
                 };
                 self.cards.clear();
+                self.owner_offers.clear();
                 self.selected = None;
                 self.graph_epoch = 0;
             }
@@ -135,6 +154,15 @@ impl App {
             self.pending = false;
             match answer {
                 Ok(reading) => {
+                    if self.owner_waiting {
+                        self.owner_form.status = reading
+                            .model
+                            .notice
+                            .clone()
+                            .unwrap_or_else(|| "Owner refreshed.".into());
+                        self.owner_waiting = false;
+                    }
+                    self.owner_offers = reading.owner_offers;
                     self.view_saved = reading.view_saved;
                     self.read_only = reading.read_only;
                     self.saved_focus = reading.saved_focus;
@@ -157,6 +185,9 @@ impl App {
                     }
                 },
                 Err(reason) => {
+                    self.owner_offers.clear();
+                    self.owner_waiting = false;
+                    self.owner_form.status = reason.clone();
                     self.queued_activation = None;
                     self.saved_focus = None;
                     self.view_saved = false;
@@ -247,9 +278,12 @@ fn root(app: &App) -> Child {
                 |app: &mut App, request| app.request(request),
             ),
             coop::view(app),
-            el("section", (el("h2", title), values))
-                .attr("class", "mere-record")
-                .attr("aria-label", "Selected record"),
+            el(
+                "section",
+                (el("h2", title), values, owner_actions::view(app)),
+            )
+            .attr("class", "mere-record")
+            .attr("aria-label", "Selected record"),
             el(
                 "p",
                 if app.view_saved {
@@ -586,6 +620,10 @@ fn main() {
                 graph_epoch: 0,
                 saved_focus: None,
                 view_saved: false,
+                owner_offers: Default::default(),
+                owner_form: Default::default(),
+                owner_record: None,
+                owner_waiting: false,
                 read_only: false,
             };
             Init {
@@ -610,7 +648,7 @@ fn spawn_worker(
     domain: String,
     wake: cambium_rootstock::HostWake,
 ) -> (
-    mpsc::Sender<MereViewRequest>,
+    mpsc::Sender<WorkerRequest>,
     mpsc::Receiver<Result<Reading, String>>,
 ) {
     let (sender, requests) = mpsc::channel();
@@ -672,7 +710,15 @@ fn spawn_worker(
                 let answer = match &mut connection {
                     Ok(connection) => tokio::time::timeout(deadline, async {
                         if let Some(request) = request {
-                            connection.take(request);
+                            match request {
+                                WorkerRequest::View(request) => connection.take(request),
+                                WorkerRequest::Owner {
+                                    key,
+                                    target,
+                                    action,
+                                    command,
+                                } => connection.take_owner_command(key, target, action, command),
+                            }
                         }
                         connection.read().await
                     })
