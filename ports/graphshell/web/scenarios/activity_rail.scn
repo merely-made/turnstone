@@ -32,6 +32,13 @@ click role:button Inspector
 click role:button Reading tabs
 settle 10
 remember tiled
+click role:button I2P port notes
+wait 120
+same tiled forme
+same tiled node-count
+click role:button Reference notes
+wait 120
+same tiled forme
 capture activity_rail_tiled_read
 click role:button Fit graph
 settle 10
