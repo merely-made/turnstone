@@ -1,0 +1,6 @@
+{
+  "result": "pass",
+  "source_and_transfer_absent_before_cold": true,
+  "export_equal_original": true,
+  "address": "mere://clip/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773"
+}

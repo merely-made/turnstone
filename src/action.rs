@@ -475,7 +475,7 @@ pub enum Action {
     SetAnswerSelection {
         generation: uuid::Uuid,
         expected: crate::inference_surface::AnswerSourceV2,
-        chosen: Vec<crate::saved_sources::Target>,
+        chosen: Vec<crate::research::Target>,
     },
     /// Ask the platform shell to choose a local Knot document. The resulting
     /// path becomes a contributed source only after the user chooses it.

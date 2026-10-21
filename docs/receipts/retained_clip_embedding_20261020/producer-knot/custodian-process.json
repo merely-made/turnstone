@@ -1,0 +1,7 @@
+{
+  "pid": 87596,
+  "endpoint": "/tmp/kp-2fc0da73db8b4466bcdc8dc917a92c3a.sock",
+  "binary_sha256": "6bf666645db1f0139f074a4da6ba0768a43f00650b6851248524ffe336d3ffce",
+  "fixture": "retained_custody_receipt_host",
+  "source": "Mere eb1244ccf custody_payload.rs, current GPU/embedding test cohort; synthetic wallet only"
+}

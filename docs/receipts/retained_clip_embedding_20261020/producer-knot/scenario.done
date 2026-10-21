@@ -1,0 +1,10 @@
+RESULT ok
+captured 01_knot_source
+captured 02_knot_selection
+captured 03_retained_selection
+captured 04_selected_export
+presentation frames=129 captures=4 blank=0
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/native-05/01_knot_source.png digest=c24508418a9d9adb blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/native-05/02_knot_selection.png digest=3edaedabdd87eaa3 blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/native-05/03_retained_selection.png digest=0bd7249070a62021 blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/native-05/04_selected_export.png digest=391f624d4b87c76d blank=false

@@ -966,3 +966,31 @@ covers two saved HTML captures and the existing Answers surface on one Mac;
 physical assistive activation, broader responsive layouts, authored-note/voice
 recall and second-device acceptance remain separate. The existing fixed
 lexical/vector/fused benchmark retains its original source receipt.
+
+### Retained selection/note Answers admission, 2026-10-20
+
+**Status:** implementation and bounded native qualification complete on the
+recorded receiving cut; current-main integration follows separately. The
+research owner now joins exact saved captures and current-session retained-clip
+members. `research::Target` preserves persisted Answers v2 capture payloads and
+adds a distinct clip target containing session, graph, node, retained manifest
+and text hash. It rejects ambiguous mixed forms.
+
+The new `mere://retained-text/...` recall identity binds the receiving member
+and selected body version. It resolves through the receiver's existing sealed
+Fleece reader with its custody identity and `NoFetcher`; voice bodies have no
+text projection. Original byte/time anchors remain in the retained record,
+while recall passage selectors count Unicode scalars in the selected body.
+Citation activation rechecks current admission and reveals the exact owning
+Workbench member from Answers, including a maximized Answers pane. Producer
+addresses are provenance and are never resolution fallbacks.
+
+The receiver plan owns the new native packet and its source-absent cold gates.
+Earlier capture-only and embedded producer receipts remain frozen.
+
+The October 21 receiving verdict passes both selected producer bodies through
+real fused recall, exact local source activation, independent source-absent
+cold processes and unchanged selected-only export. Its receipt binds 59 focused
+software passes and 24 reviewed captures. The short-word citation/model limit
+and later shared-shell integration are recorded in the receiver plan; neither
+changes passage authority or the automatic quote threshold.

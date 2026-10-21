@@ -1,0 +1,12 @@
+RESULT ok
+captured 05_source_and_package_absent
+captured 06_historical_answer
+captured 07_historical_citation
+captured 08_new_cold_embedding_answer
+captured 09_new_cold_citation
+presentation frames=471 captures=5 blank=0
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-08/knot/cold/05_source_and_package_absent.png digest=c4f8429c58259ac4 blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-08/knot/cold/06_historical_answer.png digest=e3c2af5062993658 blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-08/knot/cold/07_historical_citation.png digest=a20dbf7d01aa40fd blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-08/knot/cold/08_new_cold_embedding_answer.png digest=5203fa56715327d6 blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-08/knot/cold/09_new_cold_citation.png digest=a20dbf7d01aa40fd blank=false

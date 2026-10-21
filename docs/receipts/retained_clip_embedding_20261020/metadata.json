@@ -1,0 +1,21 @@
+{
+  "packages": 1279,
+  "foreign_worktree_manifests": [],
+  "foundation_sources": {
+    "eidetic": [
+      "git+https://github.com/merely-made/eidetic.git?rev=34105d63ec17826e0a58a5b461b65150357dd000#34105d63ec17826e0a58a5b461b65150357dd000"
+    ],
+    "esp": [
+      "git+https://github.com/merely-made/esp.git?rev=6d371901435b68e3fb4099a97789222d15f87cf0#6d371901435b68e3fb4099a97789222d15f87cf0"
+    ],
+    "distillery": [
+      "git+https://github.com/merely-made/mere.git?branch=main#eb1244ccfa644348fcd4c5cc8bd5ccf72315ba11"
+    ],
+    "mere-fleece": [
+      "git+https://github.com/merely-made/mere.git?branch=main#eb1244ccfa644348fcd4c5cc8bd5ccf72315ba11"
+    ],
+    "mere-document-lanes": [
+      "git+https://github.com/merely-made/mere.git?branch=main#eb1244ccfa644348fcd4c5cc8bd5ccf72315ba11"
+    ]
+  }
+}

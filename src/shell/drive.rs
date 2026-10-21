@@ -2458,6 +2458,14 @@ impl Shell {
                         "rendered_document": rendered_document,
                     }));
                 }
+                let mut retained_readers = Vec::new();
+                let mut members: Vec<_> = self.app.content.live_nodes().filter(|node| self.app.content.facts(*node).is_some_and(|f| f.engine == crate::retained_clip::ENGINE_ID)).collect();
+                members.sort();
+                for node in members {
+                    if let Some(session) = self.content_sessions.session_mut(&node).and_then(|session| session.as_any().downcast_mut::<mere_document_lanes::SmolwebDocumentSession>()) {
+                        retained_readers.push(serde_json::json!({ "node": node, "engine": crate::retained_clip::ENGINE_ID, "rendered_document": session.document_mut().document().clone() }));
+                    }
+                }
                 let value = serde_json::json!({
                     "session": self.app.session_id,
                     "generation": self.app.source_capture_generation,
@@ -2465,6 +2473,8 @@ impl Shell {
                     "admissions": self.app.saved_source_admissions(),
                     "entries": self.app.saved_sources.entries,
                     "readers": readers,
+                    "retained_admissions": self.app.research_clip_admissions(),
+                    "retained_readers": retained_readers,
                 });
                 let body = serde_json::to_string_pretty(&value).map_err(|error| {
                     format!("record-saved-sources '{name}': could not serialize: {error}")

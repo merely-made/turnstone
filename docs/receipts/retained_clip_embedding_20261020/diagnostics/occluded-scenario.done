@@ -1,0 +1,9 @@
+RESULT fail
+captured 01_retained_body
+captured 02_explicit_scope
+captured 02b_ask_submitted
+FAIL: no successful window presentation for ten seconds
+presentation frames=338 captures=3 blank=0
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-06/knot/warm/01_retained_body.png digest=184515139508c3bc blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-06/knot/warm/02_explicit_scope.png digest=d8e0fb30c5af26da blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-06/knot/warm/02b_ask_submitted.png digest=63b7af8fcff3da93 blank=false
