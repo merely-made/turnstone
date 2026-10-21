@@ -1,0 +1,10 @@
+{
+  "tests/ipc_consumer.rs": "395a33eff0b6a63d6c9a21180764b5d0dd4a7a06da1a0f3179f3c1f880e9feb2",
+  "src/controller_adapter.rs": "1dd09b3a019e736604cf1ede3ca16297bf8d10a1741c4547d8fb97d01ab5098c",
+  "src/http_range.rs": "85039fa223206f8f61daf8ceb3d9c30023266c11149ef10ce2246efa7e5a07f6",
+  "src/backend.rs": "434d4071eabd22629fc5c57c6963f566b1cd568a6dee67b194821733b6cafba8",
+  "src/alignment.rs": "9901e975e16c92f1433a2768bb878418c38f3fa51ed0c39b772c46f10d79bfd8",
+  "src/lib.rs": "32741674ba0322bdf7feb75b1f5877d18fdf7e12a0c96f6dfdc0a3d276ee9d6e",
+  "src/worker.rs": "12148fa07e11e6bd990f4ff1cddb14e9cd9ca9a691b7f10d2c8b4afb94018140",
+  "src/output.rs": "9ab867c3884cb32610e42f4b02e0596b39536d45f1560aff955e4e69744fdb69"
+}

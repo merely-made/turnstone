@@ -1,0 +1,72 @@
+{
+  "mere": {
+    "base_commit": "d5c26e08687cbd44f88e91048a55746a40506b8e",
+    "directory": "/Users/markik/Code/repos/mere",
+    "sha256": {
+      "Cargo.lock": "e54c88f8b86c956f3f498e7ac3535d0debd1c12401885598be45273feb128bf4",
+      "crates/graphshell/graphshell-endpoint/Cargo.toml": "f9ec3c895f84cad316f146549dbdff995f65e7b80a0fc4feb0fae085c750181e",
+      "crates/graphshell/graphshell-endpoint/src/door/custody.rs": "58d8974087295b260cec04f3fc075b79ffae4ef50ed71c2bd32a392e64860145",
+      "crates/graphshell/graphshell-endpoint/src/door/custody_client.rs": "1ee33e172644eda2290c9d60a581294bca21ffb7946ed0316380458d8dcd6924",
+      "crates/graphshell/graphshell-endpoint/src/door/custody_identity.rs": "5e92cf3fffaa76b75f8fb5d594d01d4bd08c43461aa80126583c1bbba9062fff",
+      "crates/graphshell/graphshell-endpoint/src/door/custody_payload.rs": "b2dd9be0d55af6273fc71d4afc809771e7d90eb6452127e78480a95bffa0fff2",
+      "crates/graphshell/graphshell-endpoint/src/door/mod.rs": "22e266ef9a5eb2da2ae2500b53efb4c745e139316cbc614b425f57a35c9b3012",
+      "crates/system/pandect/src/codicil_seal.rs": "74b3cdaa22e9097aadb12ca827aa79d1bb009c5595a472988728cd90fa107214",
+      "ports/djinn/castellan/Cargo.toml": "fd5ddae0469f67c1d27daf824af2b599c2cb720488dd20140c1fb720fd0149be",
+      "ports/djinn/castellan/src/authority.rs": "2055425bbc217fa15b31d4964b7481dbd085994b786ba6b45a8e970b2454695e",
+      "ports/djinn/castellan/src/custody/wallet.rs": "c3801eb026ee74e70ef6d530f9ac43688dea4f633e9f384493868fcf02e24517",
+      "ports/djinn/castellan/src/custody/wallet/sealer.rs": "152c8a610e79d90843076a183267ff06d779fd8b61db089c3b029533f65cb0f7",
+      "ports/djinn/src/bin/djinn.rs": "d2c11f6f27c63b17a63d88523d9d1f4db89b0a5ac2fa2e0910d00b5d972fecb1",
+      "ports/djinn/src/custody.rs": "f046de7c621b8a1915e4e6cee63b4fcb3d6b0a598b2547c54457cbf0df821bef",
+      "ports/djinn/src/custody/payload.rs": "40d21ff21b1bf61357df74d585a8cd27a7a9aa97f7790130f9882b8173c12c0a",
+      "ports/djinn/src/keeper.rs": "3b61759b24938f87c8ee23154afc9ff998ee8527a8905efc07c973519316d398",
+      "ports/djinn/src/settings.rs": "ea7929003b61c2bb452d2afabb882dde2591ae6c058a482c52478f824f08c687",
+      "ports/djinn/tests/custody_payload.rs": "56807261db601f795d16bcee1a572ee639a8df0d8e7e6bbb9cacb27924f9bc02"
+    }
+  },
+  "eidetic": {
+    "base_commit": "543f5ff38f87a09afc04dbc59f57c2dfbc6a9943",
+    "directory": "/Users/markik/Code/repos/eidetic",
+    "sha256": {}
+  },
+  "turnstone": {
+    "base_commit": "9c8420d5cf79848a693d67775cc1438540670e38",
+    "directory": "/Users/markik/Code/worktrees/turnstone-eidetic-retention",
+    "sha256": {
+      "Cargo.lock": "54e5145d9cfd046d1498f97d59d1e004a1b4dcd32a0800f248f05de359206c05",
+      "Cargo.toml": "fa24caab51b86509e59da4dc4f74ecfda5012ddf0e1059307e970d798ca6c7c0",
+      "src/action.rs": "1b14c2551d3561478076b86ad8e5bb0e40e5f347c280771cc4d95e6dd12cfdaa",
+      "src/app/mod.rs": "7c1dfc49bbe828936554cc9c7f0e5e4fbbec5d29eff247f4f043b56925592820",
+      "src/app/palette.rs": "98b1a6428d9bf78b1c4b257a1a983ef0541f7b77e11f490a6cca8bb35101ebb4",
+      "src/identity.rs": "ce39583fa28061133d69a01ca1312a7cf94d1f77f256bd70399e20eedee2e852",
+      "src/knot_authoring.rs": "82e1844171dda9502750a8f11ad29e703814804002130d4c5cfdde1453302ddf",
+      "src/lib.rs": "5760664f57d38cd8fcbb055077e0d5439a9133c3d2edd466b34af75b1fdb3d69",
+      "src/observe.rs": "dd577b795ff18f3502c379600f7d85de6fe6616ca1ef8ee3ba0e00f69ea6d35e",
+      "src/producer_retention.rs": "e95a6812e023353b515bba3101a3756b691a4863bee21a5b2652bd6b81660f58",
+      "src/redshank_host.rs": "60aaff3481843ac7beac216a006032104630159d685cb212cae134cf9094fa79",
+      "src/retained_clip.rs": "2e61689bb1a94d9f22348c4fd49a86e8ea3d2e3b8b95088998d537c8b142f049",
+      "src/retained_clip/custody_tests.rs": "d1ecfa6ca5b62008da318cdbfb80edbfecd7f415ab3cca6fbaaee15709e1d802",
+      "src/retained_clip/tests.rs": "0ddbac59f2f45732f87a0558e2573cb923e03a49b608e1eef4368b4d1f79f40a",
+      "src/ring.rs": "14d8fbd8b79e8111383f825f250819bfaba281996f24ab442e678a61877dafa4",
+      "src/shell/effects.rs": "97ae1b5b494a22b0a0916c91fe6326008438c0d2874c307c07d4409db81a4d59",
+      "src/shell/retained_clips.rs": "57d46c7d838d75866922530dcd394e79d145b300f0dc0f4ebb41c3d406b763dd"
+    }
+  },
+  "woodshed": {
+    "base_commit": "565837a44b54204ecfcc8f20543c41132d7b0736",
+    "directory": "/Users/markik/Code/worktrees/woodshed-eidetic-retention",
+    "sha256": {
+      "ports/redshank/Cargo.lock": "65553591e32039b0f26e07220954695e3952f376a88c82e4d277121ac5b0a6cf",
+      "ports/redshank/desktop/Cargo.toml": "3ad17a0a40b857de119cdd8f840cb035ace36e508df86a8fe32d0f76b540fd94",
+      "ports/redshank/desktop/src/main.rs": "03e4bcf529f71c6ef73525c485691ea5b4301e1f28e7f5bea2dd32b934dba569",
+      "ports/redshank/desktop/src/selected_clip.rs": "c34d24c6fd9c68ed35783546d5f1f54c9afe1a9696d3dfe8f8fbb79f2df809e8",
+      "ports/redshank/desktop/src/voice.rs": "45d926b6b1adc2183498cc800157c0f5b3335979feb53ddfcc5960d3b333469e",
+      "ports/redshank/playback/src/backend.rs": "434d4071eabd22629fc5c57c6963f566b1cd568a6dee67b194821733b6cafba8",
+      "ports/redshank/playback/src/lib.rs": "32741674ba0322bdf7feb75b1f5877d18fdf7e12a0c96f6dfdc0a3d276ee9d6e",
+      "ports/redshank/playback/src/worker.rs": "12148fa07e11e6bd990f4ff1cddb14e9cd9ca9a691b7f10d2c8b4afb94018140",
+      "ports/redshank/surfaces/src/lib.rs": "347841b80de8db6f1c99311d290b685ae80f4fdf63876dfc6b4db4299c837109",
+      "ports/redshank/surfaces/src/tabs/notes.rs": "b43ae84c60f8b7cb7cc3b05f6ebf0d203c2ec118a93cf845f86e6bdfd196f85a",
+      "ports/redshank/surfaces/src/tabs/rows.rs": "da4fa465b3987538cc48a1aa5b55a9a20c5291975f7361880e6d9f865ba0438f",
+      "ports/redshank/web/src/lib.rs": "5b07d094325e57b75b701b79643e25ec069e65c879ec1fefe7c1c669435f5f64"
+    }
+  }
+}

@@ -254,6 +254,7 @@ pub fn ring_of(action: &Action) -> Ring {
         // carry a narrower, independently verifiable source grant.
         | ChooseKnotDocumentFile { .. }
         | ChooseClipPackageFile
+        | RetainProducerSelection { .. }
         | ImportClipPackage(_)
         | ChooseClipExportFile
         | ExportClipPackage { .. }
