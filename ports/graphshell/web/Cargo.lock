@@ -230,6 +230,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "apparatus-core"
+version = "0.1.0"
+source = "git+https://github.com/merely-made/armillary.git?rev=75643df1f178757bb7b6386913af1a39353f3069#75643df1f178757bb7b6386913af1a39353f3069"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "approx"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5360,7 +5368,7 @@ dependencies = [
 name = "mere-apparatus"
 version = "0.0.1"
 dependencies = [
- "serde",
+ "apparatus-core",
 ]
 
 [[package]]
