@@ -1,0 +1,1716 @@
+{
+  "result": "pass",
+  "compiled_inputs": {
+    "utc": "2026-10-21T17:25:56.226343+00:00",
+    "turnstone_base": "262a4e53e8c900ae14bd290e466f44d055b3c1f2",
+    "supplier_base": "c7667fa7aa76d0e827769afe876d169cf4c7ab01",
+    "source_sha256": {
+      "Cargo.lock": "e5a5cee50c65f7dfceb39f1f10b3692567c7c50c6f968471b6b2c575970feb01",
+      "Cargo.toml": "0b0a4097babf42ae2ccf912cc536055de24a249e73460f6af7dc66b66c19c28b",
+      "src/a11y.rs": "f51366345e2d0763980e6a30d890857417903d8183e1e499a9db3d1a5e0433bf",
+      "src/action.rs": "309cfe2ce7239581808e688dd2a449fd185853f164dfafef1a67aa5311654e9b",
+      "src/action/command_metadata.rs": "2046a0931886ffb3c5c40ca4190e75ef4c92bf910effff17b553fd7b12256d13",
+      "src/app/command_invocation.rs": "34eb974e2bca393eb57b507e028b0d437b430a5cf08279cf111db7601a3b8d4e",
+      "src/app/contributed_pane_arms.rs": "2112bea049f3b6ad90ac5ac0216f1b77a1057cf766703bd551f262230dcfe29b",
+      "src/app/denizen_arms.rs": "964ba0d5eb888cabf4fee1fa275f886fbf9bab4c17df2610c8488664d51338b2",
+      "src/app/document_find_arms.rs": "49372d78ec25d9072113a6e0d20062e1ea340534dd393ac091e2d2522546280a",
+      "src/app/feed_arms.rs": "1dab90c387ef13f647779fda83cd592663307a38e6dc00fe3402efcc02491062",
+      "src/app/fixtures.rs": "8cc4d08303f61bf293a12a45275465e2a7bf790ead945edcba551208d6a3bc7c",
+      "src/app/fold_arms.rs": "14ec74a827eef90168eec1f86365a73fbcc15f49c058c5609be38d23dca35aab",
+      "src/app/journal_origin.rs": "8fa32aafac403858a36b1a334eb72fe3933ba6415e932a370af39ee854e77a1a",
+      "src/app/journal_origin_tests.rs": "dcf28c8769c14fda4efa2a39402ee2c52addf7687f7d0cfef3507546be91f3d5",
+      "src/app/mod.rs": "8263457777aa01b3af1e29c4c03f8425fe9a3ae7de9aadf07effd9125808f094",
+      "src/app/node_arms.rs": "4b1d565cf502b9748fcac807cd577771c10d5c61d477599349b2ac46332e2b40",
+      "src/app/omnibar_arms.rs": "0193fd1c17242f0df0ed123b213e4c593d6ddf38de261d28adb83bbc199b5960",
+      "src/app/outer_workspace_arms.rs": "7665fad3760768f929c2e0540bc3b8991b634ed89691912d6b24d45594e22bfd",
+      "src/app/palette.rs": "338eebb6fa969b96692dc8724896bf5e45c58297358202a3a5568ac2c37cbe94",
+      "src/app/pane_arms.rs": "46039066eb4f241d3501ea3123b19752db069bf9159e900142850ff486773499",
+      "src/app/r1_source_keep_tests.rs": "908c0a33a2d3e265b9ad9b1e9cc5bf7786cbeff6826e1b1e5f883ebee03a625f",
+      "src/app/r2_saved_source_tests.rs": "8651a7fbbbef8eddf29809a9dfa3c7d01a42bdcd1fb380c41ec89bfa674dfbf7",
+      "src/app/redshank_arms.rs": "3806417f7dbc98e372745702a622a88d8f5b458a9add89a2e23d40562922b6ee",
+      "src/app/research_note_arms.rs": "5878412466bc06324ac65e1dd91d33d2121a2330795718011e1387d149caa56e",
+      "src/app/resident_admission_tests.rs": "0f35e189f1466feff7ff5c9a2260b24f08afdf4a3e8b74f099d89895b6dc95dc",
+      "src/app/resident_run_tests.rs": "bd03c8e28baa4e819e05fd530a2d0a4dc5f98f4d4d3cf0a5d20e16ddc4cf2675",
+      "src/app/runtime_pool.rs": "d44976af4414fef25b83d3786bde82b0d9fdcb6f9a824a336999c8c8cdee8239",
+      "src/app/saved_source_arms.rs": "f5f27c4c006165d582b2d11d2f447e05afcc1426c00f5c479d5dc7888390100f",
+      "src/app/scene_arms.rs": "f2a898c0093cf8ba0b84a1c059e2593e86e51cae7e228cced4fc98d24d870977",
+      "src/app/scene_tests.rs": "00249e0fb7b38b6b418ee4cec4b20ef05535b26ec42166f5b74bff46e195f6f0",
+      "src/app/session_lifecycle.rs": "82a6524440eedb3e038b51ca391122106ff90f79dafb914dd3fb762f679fe42d",
+      "src/app/session_persistence_tests.rs": "b8632662c6d17095a8434b983bc7970f479e760b56900f2347a167b1b0ecbeab",
+      "src/app/source_capture_arms.rs": "c4a93665b0e007db986bb94a9e4fcc84345b0fe0a34599ae5dd72402523abb46",
+      "src/app/source_capture_persistence_tests.rs": "d3809f499494818235f3ad954bb8e68d598c87ec50082128792369a9636a0b7e",
+      "src/app/surface_control_tests.rs": "d04009f8874b31413e7834dc653d45a9be29888a035cdb92124f11d2877ba3b0",
+      "src/app/tests.rs": "f6be2489e117231b1e4dbcd16781ee58d32bde6ee83ab10eda6dc3917639174e",
+      "src/app/updates.rs": "517d1b4a220be151f528d0b5dc2e3f4b657ca9511023b5b32b5d893433078c43",
+      "src/app/user_agent_decision_arms.rs": "a69fa8d35341eefbcc1cf34abe90c3a3576471eb1eb56cec4b91ec1c19131dec",
+      "src/app/workspace_stations.rs": "8409e261707a2c3f4cee0558bc5a7ae5b6ba8878497510bf290d4048d85ea9c2",
+      "src/appearance.rs": "d4f17e87cb80ce05da7dd8a935f905e48b0a241165eea47311a439cf7ea8e474",
+      "src/arrange_pane.rs": "dc48d2c293ddec91374973769d6b07bf9ca78309705c41ebd3a20fc5c4a15951",
+      "src/behaviors.rs": "1c5b324c790b194ae9829ba9e947feaa0fdbcfc9e33b17ffe1452aa7bc2314bb",
+      "src/bin/g3_receipt.rs": "50e11f4a7ab08f7cd53593e1cbd14be96bf051a74bddefb2b8e6b5e54ab5499a",
+      "src/bin/graphshell_endpoint.rs": "457918d5db593f4ed16c97055c1bfdf8d88347635f271ef9b98219271d9197d7",
+      "src/browse.rs": "531a61c8fc6871e0f8d8e39652a63eb2c8db95307d81d0096861d9fec1c4258c",
+      "src/cambium_pane.rs": "0082010226c8faec3716e8decca78b4f84e742ece7cfcdb58c37f8a6731e8a88",
+      "src/chrome_layout.rs": "e8a7ebb3626908f9eeda7fc0855e1b02ba4922be67ac1a506fd04d71c6ce949e",
+      "src/chrome_view.rs": "3b7283d155c81c080c97552f5a76c05ba8d0e61417f6ad1c38558a3a04f0f136",
+      "src/component.rs": "0af447a54979831a65762100d83d6a7c3fa0c7e675ed251c38522fd8a1134629",
+      "src/content.rs": "d7c18ddd37bcd9b2da610a089fa373fd3fce4524d3a70cb476fc95ce7298714d",
+      "src/content_classes.rs": "bc2c364d2e339f2b07ac1babe809bb11e9f7f837736e7ec527da6c3b4ed076d2",
+      "src/content_tags.rs": "9862f6a79e34051b66326763cd5ee4df685d7529c6594b04dbadc1af70fb3177",
+      "src/contributed_a11y.rs": "e1360610dba4649b52308b2af8c85ab14a4a5837c64f8af4d54e9c91375a6dbb",
+      "src/contributed_surface.rs": "c20ce60042cf9f051998d83ffe243bbaace62ef4c1f1d8e0cac8cc8717978b49",
+      "src/contributed_surface/tests.rs": "37b1aa1bac8cc538c7cc8cb21e27c967df47632cb61f9863fd059667f8a781ab",
+      "src/cookie_custody.rs": "47d9ee7d99388949ea896ebd95db88d520eea9ac7166f2a0ac01fa85a9545ca5",
+      "src/denizen.rs": "ece405c1ec5126efa62984b142070360b2d2f34d6fad39f7b1192c0bc1f16c50",
+      "src/device_receipts_pane.rs": "a8e8fe72288601e7175c0adef30021fc3b20231eb8bc375fcc76c605acc71540",
+      "src/device_receipts_service.rs": "9bf2cc3996e49cd0cf8e6154760680f12914a7e1135cffcef194621371c179b3",
+      "src/diagnostic_observations.rs": "c1acfd55c9372195ef7af8da18c37b7f803e668e52716748a05d4881423350db",
+      "src/distillery_installed_surface.rs": "fedc1f4843c4b083e4ee62b93d8b189f38aff9a9348936f197e5ba7107c328fc",
+      "src/document_find.rs": "4121533e4465546588db9e72feea5d3c6ec1429691bc7ca870c15dd0bfd178ca",
+      "src/document_pump.rs": "d9617a2b281e31074e2cc37ea8ceb72ba34810b2ebd8444c912e029a014e98db",
+      "src/download.rs": "aadca32ac245560191453cc4d4a91e2450fb767f223ea5989dc7a16c2d57e2a3",
+      "src/feed.rs": "361e84b016d509b4bf790388d604a8e437d719eab862b9e6fa04404aaaeefe1c",
+      "src/foreign_a11y.rs": "92cb113dfbdf458a0ecd7b86ef79d0ae581fb4c0fb3a5f8b4128ed4bd93ea485",
+      "src/frame_a11y.rs": "96171246a46a09af9bff414a22c77fb6ce5f9c20024249b3b2538642a567c32a",
+      "src/frame_controls.rs": "f19241b99a2d0fad2408070293cf9cc8d8dfd55244bbdefdb3862a102652c822",
+      "src/frame_style.rs": "8f9a5f533b2ebdca7887fe52b51307761975ebff0a9e01a24599d3fa0bd6691e",
+      "src/frame_timing.rs": "1fc6aee1deafdef4cdf2a4409b015f01226d5bc7b41e3acc7b2322726b523111",
+      "src/frozen_projection_pane.rs": "a6c892244709a33e9d3f418117494593a6123e579b6e3948181e702fae6cfa55",
+      "src/gemini_identity.rs": "96b7a5307e2cb756bc5d89454774a727e56143ccc5797b7e8ca7f6726847192e",
+      "src/gemini_trust.rs": "6a6bbefcd2b6430fc74e099bc9e8600e165c2f19acd468e9e9cf69623a1b3ffd",
+      "src/graph_folds.rs": "dc417b7b072c0d82df7b23de52c8d41a0a8f9c760328eb0db2a8cb401635fcdc",
+      "src/graph_scenes.rs": "4f3f672972cfb7d3f86e175f57b83a77c4445ff57bf808f5f3f2ef5edea75fe0",
+      "src/graph_scenes_tests.rs": "8794dd56cf71366e2c8596d91c43d54e82bc63bcc728e25689b4fb1a79ebb67f",
+      "src/host_journal.rs": "7fb9880903afff4b2b267a708ea277259c88e46139a0a08f92a280ec2f187758",
+      "src/identity.rs": "ce39583fa28061133d69a01ca1312a7cf94d1f77f256bd70399e20eedee2e852",
+      "src/inference_service.rs": "702e0c658817b7d545acefa7183b126c06994143647ab9f069ef2a6362d9d41a",
+      "src/inference_surface.rs": "329ff674fb817c86fa499fdf4f3a22909e1e161eaf66fa9ed0dea6fce40ae320",
+      "src/inline_pane.rs": "b41cac9c1f0453b21c69171bf55c9b38050745552a35d401afa15527b012d80a",
+      "src/inspector_controls.rs": "a6d324cad63077cef183e036135b2efb96b2c1ab601a625baf75b4db534824d9",
+      "src/inspector_pane.rs": "7fa40ef07c9837cd57dcd070ae84d2bdaddfe20d5d8beae199155bfaaa4e14fa",
+      "src/inspector_pane/tests.rs": "47f844a69e9a5259f21968b5353d2e3cec8e38d01b951ca90d5edc76a82b0ec6",
+      "src/inspector_view.rs": "217dd48b9af4ba3fc8443c75a742631f3a6379002d3d9778c68524776633267c",
+      "src/knot_authoring.rs": "86195e509831b3552ef9720aa6ccfbabb80451a1f57b230d9ced5072c35f6f01",
+      "src/knot_document_surface.rs": "8bc099df5e963886cb528743bfae3d381eca7f97de2f19f5fc964c45dfc11979",
+      "src/knot_saved_citations.rs": "46aa93bdf4490260e398aac40dad9ad6612413fabfc122378e8399a4ba7ae58f",
+      "src/launch.rs": "61a2bb1877dba70ce9452229770e94599211500e9504b6938ed7c730add00d6c",
+      "src/lib.rs": "b7aacffac15d3edb4ea88a764e8a243d102f53b3dea1b1c61f4e81dc791bd7bb",
+      "src/main.rs": "a4c17c65b35e5202ef6aff53c7562b227a091ae8216efd27dcd99b01e65a0028",
+      "src/nomadnet.rs": "92b237b3f3f15bb3001c3a0bcacfd8b7e24461cef37944c14fbb0da1be53c5e0",
+      "src/observe.rs": "387bd09e21d3dee7e0a454f2f24fb48ad962ff47b50fb6daad5e113bf7637924",
+      "src/offline.rs": "26dd0ab7840a63686542776647ea37c157c52b8578ce7870db150f35bb2f7201",
+      "src/outer_frame.rs": "854e2cef9194eaf58dd1bfa3b81c486373274f001c57665577dd827bb966d50f",
+      "src/overmap.rs": "4b24e08e29118114b2c7182289c8073da302e463406819d626634759447cb550",
+      "src/pane.rs": "6f67ec72b6fa45522998e60e2e3c8ba4f57b5d159ca8fbee21cdaf545cf68e6a",
+      "src/panes/blueprint.rs": "625c86aa3945236553ed165be5b3a16e76342beee06a6d50bdb8ed1b4f216351",
+      "src/panes/blueprint/context.rs": "442c9a0a15b13ca2ac2af760f6080fca14817f38774c486272a65cc2b9e6e54b",
+      "src/panes/blueprint/layout.rs": "14a1920da72a2f5f95022aaa619e711b0930d021ba1110b14b8c71ed6144cb1b",
+      "src/panes/blueprint/presentation.rs": "b53edca9d629aa7975e4c1f873f7a64903f8496b5312b996a4b4a09efe97a69b",
+      "src/panes/blueprint_tests.rs": "31247fa44926a858e25ff9860a94a0f123337b55e9bb273e5dbf28de1b6ba2e1",
+      "src/panes/layout.rs": "aa0146fac628873746ef7a7f092fa93bfcddd2aae651335dcfa9b386af52ecb7",
+      "src/panes/legacy_bridge.rs": "1fcfb34652189bdd73bedde8e10de91336c98976586eb12ed0cf1c2dea4814f1",
+      "src/panes/mod.rs": "731767cda5d2e2a712a94bf011fbce8f71ad4546dde1ebfd5a5509819cf6b093",
+      "src/panes/projection.rs": "bb46c1e13b8f080d0b1cc96afdeafa1ee9fb6b1ecd8366ca338f76f097717263",
+      "src/panes/registry.rs": "40730929c5ca49683b443aec251b3d4957f48d59e2de5d455f50c62e77761b09",
+      "src/panes/saved_content.rs": "d04344731cb35a6f4c464ec8f4df4e8b6b253922d7ca04c4f23c8dc7fb877eae",
+      "src/panes/store.rs": "7e617bfb21c1d60f5d839aab20a4d3fdfff3a7d8b7aae7d821db8108982d5120",
+      "src/panes/tearout.rs": "2382ff7e8e416baa439f75786819bafa403127f22b8d89f881b68ac84ebe3f96",
+      "src/panes/tests.rs": "fdace8f0cbea5ba07bd8dad498bf1f5282a442dc0daf9fa716d96ba76e07e252",
+      "src/panes/workspace.rs": "ac7a46b492180a43dae3441dcb5f3cf430bbf888aac1558231d3da5a3b047b34",
+      "src/panes/workspace_blueprint.rs": "6fae697372cd137789dd14986f07ef0c5e9e0d5723e592c853991f620cf96c13",
+      "src/panes/workspace_bridge.rs": "5a84a886e608483ff547eb1448a8af295bdb0dbf56a62363974ad36988be4b8f",
+      "src/panes/workspace_store.rs": "27e21c7d8ac666f7600d6d397339bc13b14f3d51360328bacc0c4f7d88944f0f",
+      "src/place.rs": "ae9cad0c52c967426ecf510f9d17bc89e2bef68a01cc54d5cd1fc8da98bde85e",
+      "src/place/captured_collection.rs": "d54dc76b9546d05d71e2f410f9f18184bff06aa800504594b4749bb767fd7497",
+      "src/place/contract.rs": "fbd4a52d3cb366b386b8e4ccf40a43491ce6a967e39f1e634350dda6ba9ab692",
+      "src/place/invite.rs": "b8171c11c75b1b4a2be7ef5be566d4300bf454fd05617129ee44f9de687bdb3b",
+      "src/place/lanes.rs": "b7ded86d722f415d1748ee9fcb6ec7e010b33aebe23f2efc037181095d14bd87",
+      "src/place/projection.rs": "aa2b171b5156de5287c7ca894709f5d9ec866f2c685b68ac79f9b4e783e1a30e",
+      "src/place/projection_host.rs": "3100952a23e397f4e57dba5f549ee43ba3d8f66201bf71e19b16d7826e23c834",
+      "src/place/rendezvous.rs": "bd74275217fba7676925ccdb5224490a8c7aead2a57871f24bee8b1c2916dc5e",
+      "src/place/worker.rs": "cacda59213f647bbb6b0cc03f14dbd38cdf43c240a9974fd603e6cc16cd408e8",
+      "src/producer_retention.rs": "e95a6812e023353b515bba3101a3756b691a4863bee21a5b2652bd6b81660f58",
+      "src/publish_pane.rs": "7b8bde9b21a02ddbe4db29e3409af1095492cae40d5aaec26e394ad99d68e354",
+      "src/publish_service.rs": "9f268a514200fe30fde987673c32ee1704e55044eab850b52850287a7eb356d2",
+      "src/recycle.rs": "9cd204b69d301b0475f9b2edaedf3b7380209e8df81d792b17cd51de8cc787d1",
+      "src/redshank_episode_surface.rs": "0ecb3013c51d60f9a49df0e66dbe1c19054f782c02a243f5f543792f2ee8445f",
+      "src/redshank_host.rs": "94372b5fafa2b384ff7fd11223dc43a0a7cb38e11871caa9fea30d5a0d4521d9",
+      "src/remote_projection.rs": "989853ed6a4e3b89d85df4d427de1f3307b29efcc8be842d7b884128e7eb0931",
+      "src/research.rs": "ed15e3438782cba3649462b58afe4de38865556ded9d22db74ab84e4897c5939",
+      "src/resident_admission.rs": "6d5b4db171606e2c11faa2c547adb8efe10ae0f806bc0e75ff2babfce0293fbe",
+      "src/resident_runs.rs": "abde523e1e681ffa5b87b9b5edb4d11a8613fe8e4b72c9c8e06b92c44ac54186",
+      "src/resident_runs_tests.rs": "4c9f37fb4f5977f0f0f7d4386e5f54e1303b4b32d96f6bff1e5066678c6656dc",
+      "src/retained_clip.rs": "2e61689bb1a94d9f22348c4fd49a86e8ea3d2e3b8b95088998d537c8b142f049",
+      "src/retained_clip/custody_tests.rs": "d1ecfa6ca5b62008da318cdbfb80edbfecd7f415ab3cca6fbaaee15709e1d802",
+      "src/retained_clip/tests.rs": "0ddbac59f2f45732f87a0558e2573cb923e03a49b608e1eef4368b4d1f79f40a",
+      "src/ring.rs": "8b8678ece76be612ef05669bad7185bc09ae02aff5377126091fea8b82ce4897",
+      "src/roster_view.rs": "8930ddb25993bfbc021b3648044a7b0cbd9f6d71dca684d5b3caaf7a0a5d4322",
+      "src/saved_sources.rs": "ccb466a78b6f354e2ba96e5c3d08b86272d03cd216010139e37d0b91a390416a",
+      "src/scenario.rs": "b07e7a82d0cd9864acb49c023de4d072e89e3382110d91ad608d4ba14093b2c7",
+      "src/script.rs": "b1feae02bcecb83342465879a42af1e5ac0f60a0e013e219598e8a12746824de",
+      "src/sections.rs": "6471e4c5c9260c4156b706347138dd9301f4230bc8c780f0357fbbd738f17e32",
+      "src/session.rs": "87bf45a62db1f464655b132374cdfcb46691438f0cd2b94e94e0fb7b587c9387",
+      "src/session_persistence.rs": "81dfa01678ce8455722511fd29efb404943753840ffde90628116cc135aa6e0c",
+      "src/settings_pane.rs": "3edbd6a9abc90e842c4f29fd3e3322f5dfeec200d3d454e02bfcb4d1e3b9898d",
+      "src/settings_provider.rs": "95dad06f772c5179de89d84c13875f17cd909b021c0264d2e2c00105b038d052",
+      "src/share_reader_pane.rs": "3a47b802006383c08c4e70617a3153f63de5ec9ffa30ad1394225878c84b652f",
+      "src/share_reader_service.rs": "a6d40cb3d6150d4fd62afac018339edf39e3d86d0be7ce87d1c92d85344cc3ca",
+      "src/shell/a11y_bridge.rs": "49c2e946362b3fddb6c3672810b24b437096ec6cde1133b1e650d8738c14eace",
+      "src/shell/appearance_editor.rs": "ed89baee0389515a1f50f09c4afe28c8794fc1f21a4d26ffc25958d9bcc68733",
+      "src/shell/appearance_receipt.rs": "8a0888db3a57cc75057dde11e9dc310cab215682c4f036fd91835d9a4d66dd3a",
+      "src/shell/content_pool.rs": "86bbdece3ca98b62283349a67d387e4fd0fb4a446d54f8611b2e0710200bba56",
+      "src/shell/contributed_automation.rs": "8ddaa657d90093aec6ea178b4eae69df4ad5862c57d1407375a44cd3022e7100",
+      "src/shell/contributed_window_a11y_tests.rs": "90a61c1d2bcc95c5175ba362f31d04072ddec8bb7cabe465121ffc3e10573520",
+      "src/shell/controller_input.rs": "27d9a5288db11554cf482c1f2ec4f14ddc7548feb95bc372ad9080cea77c870b",
+      "src/shell/document_a11y.rs": "dc71236eaa99d098dfea8d04bb6dbcd4d644963fed51fd701ba7a8426fdc4b22",
+      "src/shell/drive.rs": "a8bf710cdc302018fa53c6003f0e292049049f3b49b40b95e6013f1fe656a59f",
+      "src/shell/effects.rs": "25f7004761524bb5a7a46e34bc46add61a4b55e94d2122169c804cf9c09c0f37",
+      "src/shell/events.rs": "0a5c7471839d95c9b9659e366be4d0029fab7b6e51f6974b9a541f160be952f9",
+      "src/shell/foreign_a11y.rs": "43fe234dc9ddb5778882a94b7f7b1891a0bc446c24af398dad4f626eb6b665ae",
+      "src/shell/frame_keys.rs": "07241bc88d32188f716b4317c652654bbd31c8b04ce2efc5b795bf131600ffcb",
+      "src/shell/gestures.rs": "258e1ff279fbeabfc738eb6f34ebb5a6f4e79e00f62be5db2c346d5377e34b59",
+      "src/shell/input.rs": "3e82b4b48b43a971d1357d1f19b337e7514f2ff9434ee03766eea2cf6dfa1201",
+      "src/shell/keys.rs": "06e9dd7082d8102cec8dfe91ff8a77273e4c83d8a68a35fb653b1af16fa51430",
+      "src/shell/lens.rs": "9731505f078eb39cbe73613c41b9ae5c97f4c2b8f016fd9cac60cbd4e5743877",
+      "src/shell/lens_tests.rs": "ef4050b96d1640fe6d9f0787bc40e359030f210df213c045c28d5d1231a0195c",
+      "src/shell/local_micron_source_tests.rs": "10b2e0e18a90f97891252b2544273c7dcf3b8fd1f58ffd2a9a87b9f174f73bd5",
+      "src/shell/mod.rs": "81434c8fc3b322a791ffdd7a8c087129158aa6ea4bc46f43e74c87635bd80187",
+      "src/shell/native_composition.rs": "0773ea5dcfd7afdf5a75bf60dfa783eee7561bf0a531d8d8e84aea611878c2ad",
+      "src/shell/nomadnet_fetch.rs": "df3e2482e962056ded8dd6562d76aafbbb8a5ea1136df91a8df0bca5cef9e8d3",
+      "src/shell/outer_workspace.rs": "29bab7014862220c446dd82b61a308582cb17e74b50daaa8fbf75de3446ea2b4",
+      "src/shell/page_capture.rs": "01933f620edbb5375f5d715f3faeb1f0da0a9afdee8041a40664eba6a81bdff5",
+      "src/shell/reader_observe.rs": "284edfd76d23741b74fd036e1e25584879301a510332750b2ef34868688e131c",
+      "src/shell/render.rs": "ac56d0d2f62fe3074e33e9ff01fa2921a263e88858374ebf9ff07c54b6e5ad38",
+      "src/shell/renderers.rs": "dcfa491498dd65be85580a4a2d7152fddb6613489778eb41e584596dfdea6e76",
+      "src/shell/research_notes.rs": "603962317a8ba6f330959a404b18deaadd85f6e34e4735c25eea9f299216915d",
+      "src/shell/retained_clips.rs": "57d46c7d838d75866922530dcd394e79d145b300f0dc0f4ebb41c3d406b763dd",
+      "src/shell/saved_sources.rs": "aaaa829c72f2ff166ef25ca027c9160a9c8e3701b0f0c3ba1210dd5d2dbad775",
+      "src/shell/scry.rs": "4f228ad19ee05ff93f99eba26d33942c9f87a72ad237d1097b1f2ed0fa51858b",
+      "src/shell/servo.rs": "e877308945a43087ebb7ade43b47bb31ebf2e81197c60f1d198937f50a473b9b",
+      "src/shell/surface_frames.rs": "e0e7971c1d2a42ad6aa4fe16dba593a1525f995cb56c80d6789696e650811a76",
+      "src/shell/surface_poll.rs": "16735409747fcbf6da2dae6483a476c26039326c19540ee4725c41b3c12022c9",
+      "src/shell/titlebar.rs": "91ac60b77af502016cbe9eb32f0fb583b5f0790ed237ba315571063e5c076220",
+      "src/shell/weld.rs": "9a6d4b642c75f828e7f4a1c3474be08008bc5d8a30a47b7103e2d9aeadef9968",
+      "src/shell/window_a11y.rs": "e9ca9e7fc986e3e02b3043c71a011031798123b5ba227ae6be548cf3c02c7afd",
+      "src/shell/window_input.rs": "3bbd6466c1fb016b8f7735b944e58f5df12997a1eedc5550042564aa0dc57ac3",
+      "src/shell/window_input_tests.rs": "7892b4170227f41313b5cfb5150687fea011586cf51247027be2a264b3eb3f40",
+      "src/shell_services.rs": "4e418626abfb8346561af9fb701d5773d9161d19cc107700bc57191bdff890c0",
+      "src/sky_receipt.rs": "12d7553dcebeb2dad9dde3eea9a85d04e1f0214cc5e4b31ecd754202ccefe402",
+      "src/sky_surface.rs": "dcb7010b64e9f5b1cf8f786291c80fdb6931107f99e3979ddcd709ab91031621",
+      "src/sky_surface/tests.rs": "3917c876f78ce4d4a0d702199444336c95f8c1e8751ed35c580e1ccfbdce748f",
+      "src/sky_surface/view.rs": "eaa4d72398d9735eea0f8b5c94a86eff2ea39f886fce55814c75f91fc982e212",
+      "src/sky_timeline.rs": "d7e62692df6bbac72ee241e349bbba5c1355cbbb5518a712cba2c58e2831c5e1",
+      "src/source_capture.rs": "b7ba91b7f6cf17e2bc498f313deb5ded559f70f6e82e195d3f15ebbd2d82b9fb",
+      "src/surface.rs": "6be28f9f2254b4aa9d8e993f7e67b6002c7bdb9399b2119deb3385eff9616808",
+      "src/surface/appearance.rs": "c811ed1f4e9a75b741e809c98edd41289e7ffcf020b570def1f27592afb8032a",
+      "src/surface_controls.rs": "c626b16c68463ecc7a9d11394dfdad4d50b8b0dc7cd86e9bae2e51688b11a43f",
+      "src/swatch_pane/mod.rs": "35cb6c7cee2a20392ad097cb8e214f8518bf4cc0c9af0f857a2902ea42417857",
+      "src/swatch_pane/presets.rs": "fcc99d0679bf01e017738ad69eeadb87576db6151beb5f5622c6ee2a2d3a6b8e",
+      "src/trail_memory.rs": "1585e68dc1d2172eadc756c1bd454494af9c03c9cecbae9c8c1698ecebf71dfe",
+      "src/trail_memory/saved_sources.rs": "4e4409e7fdb050140f9b5fe87d45f68c2aba3cb538897a852c718e7e254d7740",
+      "src/trail_memory/source_capture_receipts.rs": "196758effc96a554a5b8d8b11fce44e772e5bfb8e7b9e315b4e36d139d34110e",
+      "src/trail_memory/source_capture_tests.rs": "93239e6fb272cd5693a2eb2d4613dfd8b7a7a6ea617479799b2991178f3bf8d2",
+      "src/trail_memory_evaluation.rs": "8a1142ed15ed8d76502041094ba178311af86d17479f936b058551348e5bbe04",
+      "src/trail_pane.rs": "d1fcefcf7c641d3db27412334105750fc8868eff9da6b5c64cf50841c2f46936",
+      "src/trail_view.rs": "2389e2d9dc53349d6ba1c955d85add66a3b95e2e64c28f2feaf54a9f2f357625",
+      "src/transcript_pane.rs": "8a700f7575875315f59372833e26befc6d765a22bca35bbf6d5aa0840bfc1fec",
+      "src/ui.rs": "81fd576b7558929d3a91aff9c6beed710006d6235576e725e23f668615bfabf7",
+      "src/user_agent_decision.rs": "6d06165371346407b471682bca69995e828dbb2971e57b1bb8236bffda912172",
+      "src/web_policy.rs": "a3edf34284f29042f733457eab3cfd9c79eb712d5519abe39986ab8e4668cbb5",
+      "src/window_projection.rs": "db81f9cf04a2cbd3e0dee27bd4856ca6d5a24d87d67f4009e8f9f279f4b76a23",
+      "src/workbench_pane.rs": "3975f01d19edbec3561c6fcc223fad1320a1b82778addc838fe35a241d5d3c27",
+      "src/workbench_tiling.rs": "59dfaff32e497d68b473090d6db3c84067c8d4e85e8f6038abc37ba3f3270c5c"
+    },
+    "supplier_source_sha256": {
+      "Cargo.toml": "84269c170169ff37be0cb803cc8728da93983b98340556620c47c12a7f9173ed",
+      "Cargo.lock": "dbc1222819b409e98f9823b665e112cdbc496aef0c5f3c250837f9cf43ab9508",
+      "ports/djinn/tests/inference_route.rs": "4bca9ca4f871d2a4829859d51a3b0201bc0aa746735a94da2e03a07a9556853b",
+      "ports/djinn/tests/common/mod.rs": "6b938c8fff40e86f0458c8ee1f698ca145ce4054208313baf3851ac3ccf02793",
+      "ports/djinn/tests/common/inference_door.rs": "f6da5850861bca5a56c228330b4580f5cfa1a537c21cf72b48175ae0db56c452",
+      "ports/distillery/src/inference.rs": "96dbe5297e335f11e96fda45e3474d769490ef4ee2c03ac00a38f34794438d36",
+      "ports/distillery/src/inference/recall.rs": "c12b109a36c0f7e0316f9de2bf27d71af158d48dd6e507239488953d0ff10f63",
+      "ports/distillery/src/inference/recall_embedding.rs": "f3f85dacf5ce555b4c91915c8395ce56e54a579e65b655082004e7c1b8006013"
+    },
+    "binary_sha256": "0985f26f33553e1b8954d40d2b78e1f7f722f662b204dd88e44d8d13590d2131",
+    "resident_sha256": "234b684fd9dadfab0ec9a80fac1c6b8a1007bdfd22d9bf5f74312066bc6dbf94",
+    "generation_model": {
+      "model_id": "HuggingFaceTB/SmolLM2-360M-Instruct",
+      "revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+      "artifacts": [
+        [
+          "config.json",
+          846,
+          "224f72354f10d617a359cc82ad15a3c96e866b9b2ffadb81997eeea9e88e22ee"
+        ],
+        [
+          "tokenizer.json",
+          2104556,
+          "9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c"
+        ],
+        [
+          "tokenizer_config.json",
+          3764,
+          "4ec77d44f62efeb38d7e044a1db318f6a939438425312dfa333b8382dbad98df"
+        ],
+        [
+          "model.safetensors",
+          723674912,
+          "e6bffe7435d7ddc10fd3b9a9efd429dafbacb1cb17015fb5562664e7532bf86e"
+        ]
+      ]
+    },
+    "embedding_model": {
+      "repository": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "artifacts": {
+        "config.json": {
+          "bytes": 612,
+          "sha256": "953f9c0d463486b10a6871cc2fd59f223b2c70184f49815e7efbcab5d8908b41"
+        },
+        "tokenizer.json": {
+          "bytes": 466247,
+          "sha256": "be50c3628f2bf5bb5e3a7f17b1f74611b2561a3a27eeab05e5aa30f411572037"
+        },
+        "model.safetensors": {
+          "bytes": 90868376,
+          "sha256": "53aa51172d142c89d9012cce15ae4d6cc0ca6895895114379cacb4fab128d9db"
+        }
+      }
+    },
+    "os": "ProductName:\t\tmacOS\nProductVersion:\t\t15.8.1\nBuildVersion:\t\t24H32\n",
+    "frozen_sha256": {
+      "inference_route": "234b684fd9dadfab0ec9a80fac1c6b8a1007bdfd22d9bf5f74312066bc6dbf94",
+      "redshank.mereclip": "fa046f22a24a4aed93a6b3500008b3beac5f1395efb4feeff3bc74883423a69e",
+      "knot.mereclip": "34939ee4b6346295181961581bbaa628201eedda98567f7fde409e546628c8ef",
+      "fixture_server.py": "ebb42aa6a04fff2866c3a5c8c3128be7a4bf9b3dfe117ecc02a41c2c9b14119f",
+      "product-baseline.json": "ee3e44c5e790d10970bfc796f22287a79d1d61b8f188c65d9ef97d6d9fa4befd",
+      "questions.json": "8f5f45dafb892c61236bea01428b5782164450087a2c0fb444d0594076135cd2",
+      "run_macos_scenario.py": "c1a6cb530152f3c8accc3dec41a6e7ab0dfb32a10079778ac900c1306f28c69d",
+      "run_native.py": "1bcd5e78696474574a232c983ddbc4aa4605e9bde0b772c2701c24fb8ec73f3a",
+      "cases.json": "70daa7c024c0fa91bdb18774c876cc41ab62c93641c97ed520c161b25600eb58",
+      "cold.scn": "f2c345b662c01e6f038243744150b139aa0598d169b1bda4b23bd57d5306b8b1",
+      "warm.scn": "bfa57a8914d8b06b668ad1415599e88c10ef02bff8664ee77013b9c925c03ccd",
+      "turnstone": "0985f26f33553e1b8954d40d2b78e1f7f722f662b204dd88e44d8d13590d2131"
+    },
+    "cohorts": {
+      "lexical": {
+        "run": "/Users/markik/Code/output/mixed-source-recall-20261021/raw-06",
+        "recipe": "lexical/recipe",
+        "inputs": "lexical/inputs.json"
+      },
+      "fused": {
+        "run": "/Users/markik/Code/output/mixed-source-recall-20261021/raw-07",
+        "recipe": "fused/recipe",
+        "inputs": "fused/inputs.json"
+      }
+    }
+  },
+  "software_checks": {
+    "mixed-publication-tests.log": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "log": "mixed-publication-tests.log.gz"
+    },
+    "mixed-recall-tests.log": {
+      "passed": 14,
+      "failed": 0,
+      "ignored": 0,
+      "log": "mixed-recall-tests.log.gz"
+    },
+    "mixed-lexical-route.log": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "log": "mixed-lexical-route.log.gz"
+    },
+    "mixed-library-route.log": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "log": "mixed-library-route.log.gz"
+    }
+  },
+  "native": {
+    "result": "pass",
+    "process_ids": [
+      29280,
+      29259,
+      29420,
+      29416,
+      43886,
+      43732,
+      45967,
+      45918
+    ],
+    "modes": {
+      "lexical": {
+        "scope": [
+          {
+            "kind": "fleece",
+            "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+            "source": "mere://saved-source/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/fc67b5d2-323a-46d7-9d2a-0b387c924696/fb6652ad4b6ee99a8595321e438159a33fadbf607c87c9dddd4c726f63e7c2bc/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+            "node": "fc67b5d2-323a-46d7-9d2a-0b387c924696"
+          },
+          {
+            "kind": "fleece",
+            "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+            "source": "mere://saved-source/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/c92bf1a7-836d-4ffa-8f9a-5d88a4f11af2/c579f4fa064074cba0a88e72c337d8514f1ce0a317eef14f95ec2579d112e3bd/5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944",
+            "node": "c92bf1a7-836d-4ffa-8f9a-5d88a4f11af2"
+          },
+          {
+            "kind": "fleece",
+            "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+            "source": "mere://retained-text/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/e6c14de4-c2d2-4d17-9be4-faf5004f3b19/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+            "node": "e6c14de4-c2d2-4d17-9be4-faf5004f3b19"
+          },
+          {
+            "kind": "fleece",
+            "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+            "source": "mere://retained-text/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/1a9a5142-6e10-448a-a179-ea72b94f8cac/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+            "node": "1a9a5142-6e10-448a-a179-ea72b94f8cac"
+          }
+        ],
+        "source_by_label": {
+          "capture": {
+            "kind": "fleece",
+            "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+            "source": "mere://saved-source/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/fc67b5d2-323a-46d7-9d2a-0b387c924696/fb6652ad4b6ee99a8595321e438159a33fadbf607c87c9dddd4c726f63e7c2bc/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+            "node": "fc67b5d2-323a-46d7-9d2a-0b387c924696"
+          },
+          "control": {
+            "kind": "fleece",
+            "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+            "source": "mere://saved-source/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/c92bf1a7-836d-4ffa-8f9a-5d88a4f11af2/c579f4fa064074cba0a88e72c337d8514f1ce0a317eef14f95ec2579d112e3bd/5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944",
+            "node": "c92bf1a7-836d-4ffa-8f9a-5d88a4f11af2"
+          },
+          "knot": {
+            "kind": "fleece",
+            "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+            "source": "mere://retained-text/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/e6c14de4-c2d2-4d17-9be4-faf5004f3b19/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+            "node": "e6c14de4-c2d2-4d17-9be4-faf5004f3b19"
+          },
+          "note": {
+            "kind": "fleece",
+            "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+            "source": "mere://retained-text/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/1a9a5142-6e10-448a-a179-ea72b94f8cac/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+            "node": "1a9a5142-6e10-448a-a179-ea72b94f8cac"
+          }
+        },
+        "passage_ids": {
+          "capture": "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4",
+          "control": "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8",
+          "knot": "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71",
+          "note": "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e"
+        },
+        "cases": 3,
+        "answer_diagnostics": {
+          "capture": {
+            "warm": {
+              "target_text_occurrences": 1,
+              "citation_bases": [
+                "verbatim_passage"
+              ],
+              "non_target_citation_sources": [],
+              "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+            },
+            "cold": {
+              "target_text_occurrences": 1,
+              "citation_bases": [
+                "verbatim_passage"
+              ],
+              "non_target_citation_sources": [],
+              "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+            }
+          },
+          "knot": {
+            "warm": {
+              "target_text_occurrences": 1,
+              "citation_bases": [
+                "verbatim_passage"
+              ],
+              "non_target_citation_sources": [],
+              "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+            },
+            "cold": {
+              "target_text_occurrences": 1,
+              "citation_bases": [
+                "verbatim_passage"
+              ],
+              "non_target_citation_sources": [],
+              "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+            }
+          },
+          "note": {
+            "warm": {
+              "target_text_occurrences": 2,
+              "citation_bases": [
+                "model_marker",
+                "model_marker",
+                "verbatim_passage"
+              ],
+              "non_target_citation_sources": [
+                "knot",
+                "control"
+              ],
+              "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+            },
+            "cold": {
+              "target_text_occurrences": 2,
+              "citation_bases": [
+                "model_marker",
+                "model_marker",
+                "verbatim_passage"
+              ],
+              "non_target_citation_sources": [
+                "knot",
+                "control"
+              ],
+              "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+            }
+          }
+        },
+        "historical_evidence_unchanged": true,
+        "exact_local_readers_equal": true,
+        "rankings_equal_after_cold": true,
+        "captures": [
+          {
+            "path": "lexical/warm/01_capture_A.png",
+            "sha256": "cbc16d88174d32ecf0790f394594557de3e178a516c30acce7acc45a55dc3894"
+          },
+          {
+            "path": "lexical/warm/02_capture_B.png",
+            "sha256": "2b9df6da93ff580f238d891b1c1780e955c999ba0d0a0395020b1d1f40a61ac2"
+          },
+          {
+            "path": "lexical/warm/03_mixed_sources.png",
+            "sha256": "26a6499ef23ec7cb2a6f9e639dca394c2a09c96f0d3484cf95a1c7efcd977617"
+          },
+          {
+            "path": "lexical/warm/04_explicit_scope.png",
+            "sha256": "1dcbe98d1bfd391902a3bebecd5388475f7d9b21e86144c6a72952fc506408a5"
+          },
+          {
+            "path": "lexical/warm/capture_answer.png",
+            "sha256": "d914aa64c1623ce56e7837aabc1f0b462c98941b4d14836358ef3095596405e8"
+          },
+          {
+            "path": "lexical/warm/capture_citation.png",
+            "sha256": "78767b4d3712a0e8cea70d90c8ea7de7ea82bef4d32b8914fe7cd61d66355f06"
+          },
+          {
+            "path": "lexical/warm/knot_answer.png",
+            "sha256": "44e7417add9fedf2a4f265bd390555f2c3f41f6eb78cf9c9ec4e3d5b6a5846ea"
+          },
+          {
+            "path": "lexical/warm/knot_citation.png",
+            "sha256": "2685ce843b6a804ccb994a6bed6087b69cea027db3dce51471f3429900543293"
+          },
+          {
+            "path": "lexical/warm/note_answer.png",
+            "sha256": "2d38ecade5981c06c38ac03bd01e99d6f6186043ec53d0ec4a674d97f2abd076"
+          },
+          {
+            "path": "lexical/warm/note_citation.png",
+            "sha256": "aac7dab3e0a0ce377c24e226ef2646583fb590e051d1823d0bb171c290a1131a"
+          },
+          {
+            "path": "lexical/cold/01_cold_local_capture.png",
+            "sha256": "49d8db0d8fc910fd998fcf21c56228f28f4ef0e4198b50e8f49bfb0d6e8738b8"
+          },
+          {
+            "path": "lexical/cold/02_cold_scope.png",
+            "sha256": "7177ab6901b2d9350f91052cf6edaee4ce422d3ffb4ab747ad788829262489d3"
+          },
+          {
+            "path": "lexical/cold/capture_answer.png",
+            "sha256": "43a4c5d7d2db3f35d04871f72ee98aea89d578cbed60da7fe32523fc57903e47"
+          },
+          {
+            "path": "lexical/cold/capture_citation.png",
+            "sha256": "a4493735f29f817cc00f7ca8a8ac3da0d5367e0dc08156cbd07ab55c59f88c98"
+          },
+          {
+            "path": "lexical/cold/capture_historical_answer.png",
+            "sha256": "ff1225db6680c7e59cb6034d496656060825af6bdea50ad41e74af3fa7c8160c"
+          },
+          {
+            "path": "lexical/cold/capture_historical_citation.png",
+            "sha256": "538d66f096960202f3712fa76002522a35f9d55c41c2e0bca404425761b1f853"
+          },
+          {
+            "path": "lexical/cold/knot_answer.png",
+            "sha256": "18ea2c3815bd0c591dab847e68d385279e2a27d5075f75e12c41c84ba4878dad"
+          },
+          {
+            "path": "lexical/cold/knot_citation.png",
+            "sha256": "bfb6e1dd657a315497ade3fea2d8112883c984a33b2bd6ad7925c6b2e141b5fa"
+          },
+          {
+            "path": "lexical/cold/knot_cold_export.png",
+            "sha256": "bfb6e1dd657a315497ade3fea2d8112883c984a33b2bd6ad7925c6b2e141b5fa"
+          },
+          {
+            "path": "lexical/cold/knot_historical_answer.png",
+            "sha256": "3996430832339d1292633463f0429c013b91e1130ead97575466749114e39f31"
+          },
+          {
+            "path": "lexical/cold/knot_historical_citation.png",
+            "sha256": "bfb6e1dd657a315497ade3fea2d8112883c984a33b2bd6ad7925c6b2e141b5fa"
+          },
+          {
+            "path": "lexical/cold/note_answer.png",
+            "sha256": "6b3b6d20eb73e3fab4abc11d0f775827cd411d511aabb3d65baff7035fbbbb39"
+          },
+          {
+            "path": "lexical/cold/note_citation.png",
+            "sha256": "06fb5a184a7fb2933186e3a9c2b86eb98055f27580cae2f3a97ff72f28c42fb7"
+          },
+          {
+            "path": "lexical/cold/note_cold_export.png",
+            "sha256": "06fb5a184a7fb2933186e3a9c2b86eb98055f27580cae2f3a97ff72f28c42fb7"
+          },
+          {
+            "path": "lexical/cold/note_historical_answer.png",
+            "sha256": "4673043a4b30671aebbb07ba4e2ef9a1c2395a342c68acce8bb48ef5d2ce2f41"
+          },
+          {
+            "path": "lexical/cold/note_historical_citation.png",
+            "sha256": "06fb5a184a7fb2933186e3a9c2b86eb98055f27580cae2f3a97ff72f28c42fb7"
+          }
+        ]
+      },
+      "fused": {
+        "scope": [
+          {
+            "kind": "fleece",
+            "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+            "source": "mere://saved-source/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/82027e41-2846-4be8-80dc-cdf1335982a2/d07382ab5ad338a70c7906d178c62ef7df1f7a282cf5b033ec63c00acfd0fe30/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+            "node": "82027e41-2846-4be8-80dc-cdf1335982a2"
+          },
+          {
+            "kind": "fleece",
+            "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+            "source": "mere://saved-source/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/b5bd49a4-06b0-4af0-b037-7fa415b51198/e13afb25afafbcedc48b91b6a644c35e83379fa362fcf60dd146f1e856113818/5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944",
+            "node": "b5bd49a4-06b0-4af0-b037-7fa415b51198"
+          },
+          {
+            "kind": "fleece",
+            "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+            "source": "mere://retained-text/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/adcc5450-8ed1-4e6b-8f00-03d32ba6c5bc/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+            "node": "adcc5450-8ed1-4e6b-8f00-03d32ba6c5bc"
+          },
+          {
+            "kind": "fleece",
+            "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+            "source": "mere://retained-text/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/b9f8482d-bcfe-416b-86bd-95de9e294e56/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+            "node": "b9f8482d-bcfe-416b-86bd-95de9e294e56"
+          }
+        ],
+        "source_by_label": {
+          "capture": {
+            "kind": "fleece",
+            "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+            "source": "mere://saved-source/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/82027e41-2846-4be8-80dc-cdf1335982a2/d07382ab5ad338a70c7906d178c62ef7df1f7a282cf5b033ec63c00acfd0fe30/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+            "node": "82027e41-2846-4be8-80dc-cdf1335982a2"
+          },
+          "control": {
+            "kind": "fleece",
+            "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+            "source": "mere://saved-source/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/b5bd49a4-06b0-4af0-b037-7fa415b51198/e13afb25afafbcedc48b91b6a644c35e83379fa362fcf60dd146f1e856113818/5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944",
+            "node": "b5bd49a4-06b0-4af0-b037-7fa415b51198"
+          },
+          "knot": {
+            "kind": "fleece",
+            "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+            "source": "mere://retained-text/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/adcc5450-8ed1-4e6b-8f00-03d32ba6c5bc/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+            "node": "adcc5450-8ed1-4e6b-8f00-03d32ba6c5bc"
+          },
+          "note": {
+            "kind": "fleece",
+            "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+            "source": "mere://retained-text/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/b9f8482d-bcfe-416b-86bd-95de9e294e56/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+            "node": "b9f8482d-bcfe-416b-86bd-95de9e294e56"
+          }
+        },
+        "passage_ids": {
+          "capture": "blake3:b16c09f2adfb1a0c4d9021bb3ec11d05758b031e767754403298c9430dc84ddc",
+          "control": "blake3:638fdf8ac323b6e3454d35d42c085e943f165abdd903bda5c108bffab7a74513",
+          "knot": "blake3:9c339c284861a1ce6312b097d53089daae07be3a5f177f1d536cf3fd23daa535",
+          "note": "blake3:de880141e3243906e36c84933480bcf6ec9acdd1f373c3f21cb71123d9f9c85e"
+        },
+        "cases": 3,
+        "answer_diagnostics": {
+          "capture": {
+            "warm": {
+              "target_text_occurrences": 1,
+              "citation_bases": [
+                "verbatim_passage"
+              ],
+              "non_target_citation_sources": [],
+              "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+            },
+            "cold": {
+              "target_text_occurrences": 1,
+              "citation_bases": [
+                "verbatim_passage"
+              ],
+              "non_target_citation_sources": [],
+              "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+            }
+          },
+          "knot": {
+            "warm": {
+              "target_text_occurrences": 1,
+              "citation_bases": [
+                "verbatim_passage"
+              ],
+              "non_target_citation_sources": [],
+              "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+            },
+            "cold": {
+              "target_text_occurrences": 1,
+              "citation_bases": [
+                "verbatim_passage"
+              ],
+              "non_target_citation_sources": [],
+              "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+            }
+          },
+          "note": {
+            "warm": {
+              "target_text_occurrences": 2,
+              "citation_bases": [
+                "model_marker",
+                "model_marker",
+                "model_marker"
+              ],
+              "non_target_citation_sources": [
+                "control",
+                "knot"
+              ],
+              "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+            },
+            "cold": {
+              "target_text_occurrences": 2,
+              "citation_bases": [
+                "model_marker",
+                "model_marker",
+                "model_marker"
+              ],
+              "non_target_citation_sources": [
+                "control",
+                "knot"
+              ],
+              "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+            }
+          }
+        },
+        "historical_evidence_unchanged": true,
+        "exact_local_readers_equal": true,
+        "rankings_equal_after_cold": true,
+        "captures": [
+          {
+            "path": "fused/warm/01_capture_A.png",
+            "sha256": "0a3906641ba150b088bbda64d29d0c860ff099a32aba9252adda077da97182d7"
+          },
+          {
+            "path": "fused/warm/02_capture_B.png",
+            "sha256": "1c933d1dc0617276b693a220ef468d9485e4f6c5242e195df6f5e16564d7497b"
+          },
+          {
+            "path": "fused/warm/03_mixed_sources.png",
+            "sha256": "26a6499ef23ec7cb2a6f9e639dca394c2a09c96f0d3484cf95a1c7efcd977617"
+          },
+          {
+            "path": "fused/warm/04_explicit_scope.png",
+            "sha256": "390fefd4371ba19e6f6827518a00132d7465a14cb436dd29e487d49e81f83550"
+          },
+          {
+            "path": "fused/warm/capture_answer.png",
+            "sha256": "1241e41036d35073f96bb294fca1e8cf78cb9473b9c7f9ddbce51760d1a9e70d"
+          },
+          {
+            "path": "fused/warm/capture_citation.png",
+            "sha256": "751a785418b3a51876c114702047f447b826d70e592a85c7bb804db0c53f7ae5"
+          },
+          {
+            "path": "fused/warm/knot_answer.png",
+            "sha256": "578c0e7bd9939f6b7005086372c432f18c63ac75595dedd49ea8108ee070f449"
+          },
+          {
+            "path": "fused/warm/knot_citation.png",
+            "sha256": "cc8e902ec9dc3bae21754d9ca6e13a5452e3246efab2070a2c9c474a9bd8d9f1"
+          },
+          {
+            "path": "fused/warm/note_answer.png",
+            "sha256": "c428c5c3a0c0204111a798a4f9ea5635945112708cfbddbc55ddd0f4365afc8b"
+          },
+          {
+            "path": "fused/warm/note_citation.png",
+            "sha256": "d3b47b22a12532a37552da031f964309c1f84ed492a452333a4c544e6703b5ae"
+          },
+          {
+            "path": "fused/cold/01_cold_local_capture.png",
+            "sha256": "6ce5175905ba49143f0805cf5756d23d9766e36236daf1871d8ad0265dfb5344"
+          },
+          {
+            "path": "fused/cold/02_cold_scope.png",
+            "sha256": "fd7e52ec10346d326a904f8b689f875def03f0ff3507d160c684484e6b593c24"
+          },
+          {
+            "path": "fused/cold/capture_answer.png",
+            "sha256": "0525fc3300782891b076e15de538f84e0888b6e2d463b8f05d0868b4ed75b32c"
+          },
+          {
+            "path": "fused/cold/capture_citation.png",
+            "sha256": "5123fa3ff1c9e0c94bc79ab1d7c0e419182376f46bf85cc2cd66e1bd0f6b89b0"
+          },
+          {
+            "path": "fused/cold/capture_historical_answer.png",
+            "sha256": "fd7e52ec10346d326a904f8b689f875def03f0ff3507d160c684484e6b593c24"
+          },
+          {
+            "path": "fused/cold/capture_historical_citation.png",
+            "sha256": "5123fa3ff1c9e0c94bc79ab1d7c0e419182376f46bf85cc2cd66e1bd0f6b89b0"
+          },
+          {
+            "path": "fused/cold/knot_answer.png",
+            "sha256": "874f17629e41158fcb69379f2860fb58a0b52273230f685f40298c07a39d9d4a"
+          },
+          {
+            "path": "fused/cold/knot_citation.png",
+            "sha256": "ccb5ee62b73e61f380cd488d9498161d39ca9152f19822882bda456e8c4c206a"
+          },
+          {
+            "path": "fused/cold/knot_cold_export.png",
+            "sha256": "ccb5ee62b73e61f380cd488d9498161d39ca9152f19822882bda456e8c4c206a"
+          },
+          {
+            "path": "fused/cold/knot_historical_answer.png",
+            "sha256": "75df829383aa30836566bb01ac2598224ee944797e75bf5769f368a518b6d622"
+          },
+          {
+            "path": "fused/cold/knot_historical_citation.png",
+            "sha256": "59a33d0bb408745380c9859b767d1dcd792936d82d27d8ef8674a04835d3cf70"
+          },
+          {
+            "path": "fused/cold/note_answer.png",
+            "sha256": "99a33977fc1229e789cf4ed40529558003bb72a6cf9824c0a3898690673b3e11"
+          },
+          {
+            "path": "fused/cold/note_citation.png",
+            "sha256": "e2e95afa082b2d152c053d9b242b4f2cdefabda2a73f804d93d168b14be79c7a"
+          },
+          {
+            "path": "fused/cold/note_cold_export.png",
+            "sha256": "e2e95afa082b2d152c053d9b242b4f2cdefabda2a73f804d93d168b14be79c7a"
+          },
+          {
+            "path": "fused/cold/note_historical_answer.png",
+            "sha256": "9b448678e7b73fd2926af3e105567c4f896c0ed08a1bd780c621b890dceb30d0"
+          },
+          {
+            "path": "fused/cold/note_historical_citation.png",
+            "sha256": "e2e95afa082b2d152c053d9b242b4f2cdefabda2a73f804d93d168b14be79c7a"
+          }
+        ]
+      }
+    },
+    "ranking_cases": {
+      "lexical": {
+        "capture": {
+          "question": "Repeat the retained sentence about the Juniper archive exactly.",
+          "relevant": [
+            "capture"
+          ],
+          "rankings": {
+            "lexical": [
+              "capture",
+              "knot",
+              "note",
+              "control"
+            ],
+            "vector": [],
+            "fused": [
+              "capture",
+              "knot",
+              "note",
+              "control"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "vector": {
+              "reciprocal_rank": 0.0,
+              "top1": 0,
+              "recall_at_3": 0.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        },
+        "knot": {
+          "question": "Repeat the retained sentence about the Pelican observatory exactly.",
+          "relevant": [
+            "knot"
+          ],
+          "rankings": {
+            "lexical": [
+              "knot",
+              "note",
+              "control",
+              "capture"
+            ],
+            "vector": [],
+            "fused": [
+              "knot",
+              "note",
+              "control",
+              "capture"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "vector": {
+              "reciprocal_rank": 0.0,
+              "top1": 0,
+              "recall_at_3": 0.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        },
+        "note": {
+          "question": "Repeat both lines of the retained note about the embedded listener exactly, preserving the line break.",
+          "relevant": [
+            "note"
+          ],
+          "rankings": {
+            "lexical": [
+              "note",
+              "knot",
+              "control",
+              "capture"
+            ],
+            "vector": [],
+            "fused": [
+              "note",
+              "knot",
+              "control",
+              "capture"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "vector": {
+              "reciprocal_rank": 0.0,
+              "top1": 0,
+              "recall_at_3": 0.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        },
+        "capture-paraphrase": {
+          "question": "Which retained document describes recovering entry to a collection?",
+          "relevant": [
+            "capture"
+          ],
+          "rankings": {
+            "lexical": [
+              "capture",
+              "control",
+              "note",
+              "knot"
+            ],
+            "vector": [],
+            "fused": [
+              "capture",
+              "control",
+              "note",
+              "knot"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "vector": {
+              "reciprocal_rank": 0.0,
+              "top1": 0,
+              "recall_at_3": 0.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        },
+        "knot-paraphrase": {
+          "question": "What secret word lets someone enter the telescope facility?",
+          "relevant": [
+            "knot"
+          ],
+          "rankings": {
+            "lexical": [
+              "knot",
+              "control",
+              "capture",
+              "note"
+            ],
+            "vector": [],
+            "fused": [
+              "knot",
+              "control",
+              "capture",
+              "note"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "vector": {
+              "reciprocal_rank": 0.0,
+              "top1": 0,
+              "recall_at_3": 0.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        },
+        "note-paraphrase": {
+          "question": "What reminder was preserved while listening to audio?",
+          "relevant": [
+            "note"
+          ],
+          "rankings": {
+            "lexical": [],
+            "vector": [],
+            "fused": []
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 0.0,
+              "top1": 0,
+              "recall_at_3": 0.0
+            },
+            "vector": {
+              "reciprocal_rank": 0.0,
+              "top1": 0,
+              "recall_at_3": 0.0
+            },
+            "fused": {
+              "reciprocal_rank": 0.0,
+              "top1": 0,
+              "recall_at_3": 0.0
+            }
+          }
+        },
+        "control": {
+          "question": "Which saved source records the cobalt parcel in the amber harbor shipping log?",
+          "relevant": [
+            "control"
+          ],
+          "rankings": {
+            "lexical": [
+              "control",
+              "note",
+              "capture",
+              "knot"
+            ],
+            "vector": [],
+            "fused": [
+              "control",
+              "note",
+              "capture",
+              "knot"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "vector": {
+              "reciprocal_rank": 0.0,
+              "top1": 0,
+              "recall_at_3": 0.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        },
+        "combined": {
+          "question": "Find the Juniper archive sentence, the Pelican observatory sentence, and the embedded listener note.",
+          "relevant": [
+            "capture",
+            "knot",
+            "note"
+          ],
+          "rankings": {
+            "lexical": [
+              "note",
+              "knot",
+              "capture",
+              "control"
+            ],
+            "vector": [],
+            "fused": [
+              "note",
+              "knot",
+              "capture",
+              "control"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "vector": {
+              "reciprocal_rank": 0.0,
+              "top1": 0,
+              "recall_at_3": 0.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        }
+      },
+      "fused": {
+        "capture": {
+          "question": "Repeat the retained sentence about the Juniper archive exactly.",
+          "relevant": [
+            "capture"
+          ],
+          "rankings": {
+            "lexical": [
+              "capture",
+              "knot",
+              "note",
+              "control"
+            ],
+            "vector": [
+              "capture",
+              "control",
+              "note",
+              "knot"
+            ],
+            "fused": [
+              "capture",
+              "control",
+              "knot",
+              "note"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "vector": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        },
+        "knot": {
+          "question": "Repeat the retained sentence about the Pelican observatory exactly.",
+          "relevant": [
+            "knot"
+          ],
+          "rankings": {
+            "lexical": [
+              "knot",
+              "note",
+              "capture",
+              "control"
+            ],
+            "vector": [
+              "knot",
+              "capture",
+              "note",
+              "control"
+            ],
+            "fused": [
+              "knot",
+              "capture",
+              "note",
+              "control"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "vector": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        },
+        "note": {
+          "question": "Repeat both lines of the retained note about the embedded listener exactly, preserving the line break.",
+          "relevant": [
+            "note"
+          ],
+          "rankings": {
+            "lexical": [
+              "note",
+              "knot",
+              "capture",
+              "control"
+            ],
+            "vector": [
+              "note",
+              "control",
+              "capture",
+              "knot"
+            ],
+            "fused": [
+              "note",
+              "control",
+              "knot",
+              "capture"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "vector": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        },
+        "capture-paraphrase": {
+          "question": "Which retained document describes recovering entry to a collection?",
+          "relevant": [
+            "capture"
+          ],
+          "rankings": {
+            "lexical": [
+              "capture",
+              "control",
+              "knot",
+              "note"
+            ],
+            "vector": [
+              "capture",
+              "control",
+              "note",
+              "knot"
+            ],
+            "fused": [
+              "capture",
+              "control",
+              "knot",
+              "note"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "vector": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        },
+        "knot-paraphrase": {
+          "question": "What secret word lets someone enter the telescope facility?",
+          "relevant": [
+            "knot"
+          ],
+          "rankings": {
+            "lexical": [
+              "knot",
+              "capture",
+              "control",
+              "note"
+            ],
+            "vector": [
+              "knot",
+              "capture",
+              "note",
+              "control"
+            ],
+            "fused": [
+              "knot",
+              "capture",
+              "control",
+              "note"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "vector": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        },
+        "note-paraphrase": {
+          "question": "What reminder was preserved while listening to audio?",
+          "relevant": [
+            "note"
+          ],
+          "rankings": {
+            "lexical": [],
+            "vector": [
+              "note",
+              "control",
+              "knot",
+              "capture"
+            ],
+            "fused": [
+              "note",
+              "control",
+              "knot",
+              "capture"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 0.0,
+              "top1": 0,
+              "recall_at_3": 0.0
+            },
+            "vector": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        },
+        "control": {
+          "question": "Which saved source records the cobalt parcel in the amber harbor shipping log?",
+          "relevant": [
+            "control"
+          ],
+          "rankings": {
+            "lexical": [
+              "control",
+              "note",
+              "capture",
+              "knot"
+            ],
+            "vector": [
+              "control",
+              "capture",
+              "note",
+              "knot"
+            ],
+            "fused": [
+              "control",
+              "capture",
+              "note",
+              "knot"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "vector": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        },
+        "combined": {
+          "question": "Find the Juniper archive sentence, the Pelican observatory sentence, and the embedded listener note.",
+          "relevant": [
+            "capture",
+            "knot",
+            "note"
+          ],
+          "rankings": {
+            "lexical": [
+              "note",
+              "knot",
+              "capture",
+              "control"
+            ],
+            "vector": [
+              "capture",
+              "knot",
+              "note",
+              "control"
+            ],
+            "fused": [
+              "capture",
+              "note",
+              "knot",
+              "control"
+            ]
+          },
+          "metrics": {
+            "lexical": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "vector": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            },
+            "fused": {
+              "reciprocal_rank": 1.0,
+              "top1": 1,
+              "recall_at_3": 1.0
+            }
+          }
+        }
+      }
+    },
+    "mean_metrics": {
+      "lexical": {
+        "lexical": {
+          "reciprocal_rank": 0.875,
+          "top1": 0.875,
+          "recall_at_3": 0.875
+        },
+        "vector": {
+          "reciprocal_rank": 0.0,
+          "top1": 0.0,
+          "recall_at_3": 0.0
+        },
+        "fused": {
+          "reciprocal_rank": 0.875,
+          "top1": 0.875,
+          "recall_at_3": 0.875
+        }
+      },
+      "fused": {
+        "lexical": {
+          "reciprocal_rank": 0.875,
+          "top1": 0.875,
+          "recall_at_3": 0.875
+        },
+        "vector": {
+          "reciprocal_rank": 1.0,
+          "top1": 1.0,
+          "recall_at_3": 1.0
+        },
+        "fused": {
+          "reciprocal_rank": 1.0,
+          "top1": 1.0,
+          "recall_at_3": 1.0
+        }
+      }
+    },
+    "generation_semantic_quality": "Not certified. Inspect answer_diagnostics: model-authored references can identify a supplied passage without semantically supporting the adjacent answer. Repeated note text and additional source markers are retained, not filtered.",
+    "scope": "Bounded native four-source publication, three provenance-specific asks, exact target citation activation, eight frozen ranking questions; real CPU MiniLM and GPU SmolLM2. Combined query measures retrieval, not a combined generated answer."
+  },
+  "public_evidence_sha256": {
+    "native/completion.json": "f6cf1c8c86467c842a0abc0aa161ac84b5fa22c403a2327745352c35ae5af62b",
+    "native/fused/cold/01_cold_local_capture.png": "6ce5175905ba49143f0805cf5756d23d9766e36236daf1871d8ad0265dfb5344",
+    "native/fused/cold/01_cold_local_capture.saved-sources.json": "802b0ea4e6691d9e55cb9eeab46880e9684a5899aa6d9717b483876a9fd121f9",
+    "native/fused/cold/02_cold_scope.png": "fd7e52ec10346d326a904f8b689f875def03f0ff3507d160c684484e6b593c24",
+    "native/fused/cold/capture_answer.png": "0525fc3300782891b076e15de538f84e0888b6e2d463b8f05d0868b4ed75b32c",
+    "native/fused/cold/capture_citation.png": "5123fa3ff1c9e0c94bc79ab1d7c0e419182376f46bf85cc2cd66e1bd0f6b89b0",
+    "native/fused/cold/capture_citation.saved-sources.json": "802b0ea4e6691d9e55cb9eeab46880e9684a5899aa6d9717b483876a9fd121f9",
+    "native/fused/cold/capture_historical_answer.png": "fd7e52ec10346d326a904f8b689f875def03f0ff3507d160c684484e6b593c24",
+    "native/fused/cold/capture_historical_citation.png": "5123fa3ff1c9e0c94bc79ab1d7c0e419182376f46bf85cc2cd66e1bd0f6b89b0",
+    "native/fused/cold/capture_historical_citation.saved-sources.json": "802b0ea4e6691d9e55cb9eeab46880e9684a5899aa6d9717b483876a9fd121f9",
+    "native/fused/cold/knot_answer.png": "874f17629e41158fcb69379f2860fb58a0b52273230f685f40298c07a39d9d4a",
+    "native/fused/cold/knot_citation.png": "ccb5ee62b73e61f380cd488d9498161d39ca9152f19822882bda456e8c4c206a",
+    "native/fused/cold/knot_citation.saved-sources.json": "802b0ea4e6691d9e55cb9eeab46880e9684a5899aa6d9717b483876a9fd121f9",
+    "native/fused/cold/knot_cold_export.png": "ccb5ee62b73e61f380cd488d9498161d39ca9152f19822882bda456e8c4c206a",
+    "native/fused/cold/knot_historical_answer.png": "75df829383aa30836566bb01ac2598224ee944797e75bf5769f368a518b6d622",
+    "native/fused/cold/knot_historical_citation.png": "59a33d0bb408745380c9859b767d1dcd792936d82d27d8ef8674a04835d3cf70",
+    "native/fused/cold/knot_historical_citation.saved-sources.json": "802b0ea4e6691d9e55cb9eeab46880e9684a5899aa6d9717b483876a9fd121f9",
+    "native/fused/cold/launch.json": "36a0027d24b62ab4a43d647f10fd04f68c8547689d39e4533019570c525e88a4",
+    "native/fused/cold/launcher.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native/fused/cold/native.log.gz": "cacbe5747564be3ed9a1b3f4f4602c2aa4cbf18522f91e64443432659864e579",
+    "native/fused/cold/note_answer.png": "99a33977fc1229e789cf4ed40529558003bb72a6cf9824c0a3898690673b3e11",
+    "native/fused/cold/note_citation.png": "e2e95afa082b2d152c053d9b242b4f2cdefabda2a73f804d93d168b14be79c7a",
+    "native/fused/cold/note_citation.saved-sources.json": "802b0ea4e6691d9e55cb9eeab46880e9684a5899aa6d9717b483876a9fd121f9",
+    "native/fused/cold/note_cold_export.png": "e2e95afa082b2d152c053d9b242b4f2cdefabda2a73f804d93d168b14be79c7a",
+    "native/fused/cold/note_historical_answer.png": "9b448678e7b73fd2926af3e105567c4f896c0ed08a1bd780c621b890dceb30d0",
+    "native/fused/cold/note_historical_citation.png": "e2e95afa082b2d152c053d9b242b4f2cdefabda2a73f804d93d168b14be79c7a",
+    "native/fused/cold/note_historical_citation.saved-sources.json": "802b0ea4e6691d9e55cb9eeab46880e9684a5899aa6d9717b483876a9fd121f9",
+    "native/fused/cold/process.json": "1f276667bcf62036c8ccc6932882b063a0fceca1f5a2a9d890e4056163805b86",
+    "native/fused/cold/scenario.done": "d459fa0142317f60018f272c1611c49ec80d667b96bf9b3691621a50f0af63a5",
+    "native/fused/completion.json": "6abfae43692c96fc150c95bdb10b51d33e0d7540192949cb4764019f4e10e1cd",
+    "native/fused/inputs.json": "0034fae808c981b5b9c4d74ebe64ec920ed155b99ce7ac6e4d677224532bdaef",
+    "native/fused/knot-cold-export.mereclip": "34939ee4b6346295181961581bbaa628201eedda98567f7fde409e546628c8ef",
+    "native/fused/note-cold-export.mereclip": "3f8f68184611afd8d6fab481d0f1006a4f80ec819ea1338eeed618d8fcb365d7",
+    "native/fused/origin-ready.json": "b09639db05996b5f492fbde7d387751601dd3e543cd941c4f27244aa255f58e5",
+    "native/fused/origin-stop.json": "5436375f823914ab504589e11e0788ea5a53ec01fd9b9c960ad52c4e644cb6b3",
+    "native/fused/phases.json": "28776ccb61a74b2a46244106a728b79ddb0877a20a63987c3d0a601edbc14456",
+    "native/fused/private-store-scan.json": "82b762b22bf7b23f9dee07ce0b8eb182f112142b892791ac58f120ced1488df3",
+    "native/fused/receiver-workspace.json": "d74b421c3c352f0aaa9fa5050b27a25aa46c1c68d1359b0aba0b8fd0f9a6060f",
+    "native/fused/recipe/cases.json": "70daa7c024c0fa91bdb18774c876cc41ab62c93641c97ed520c161b25600eb58",
+    "native/fused/recipe/cold.scn": "f2c345b662c01e6f038243744150b139aa0598d169b1bda4b23bd57d5306b8b1",
+    "native/fused/recipe/fixture_server.py": "ebb42aa6a04fff2866c3a5c8c3128be7a4bf9b3dfe117ecc02a41c2c9b14119f",
+    "native/fused/recipe/knot.mereclip": "34939ee4b6346295181961581bbaa628201eedda98567f7fde409e546628c8ef",
+    "native/fused/recipe/product-baseline.json": "ee3e44c5e790d10970bfc796f22287a79d1d61b8f188c65d9ef97d6d9fa4befd",
+    "native/fused/recipe/questions.json": "8f5f45dafb892c61236bea01428b5782164450087a2c0fb444d0594076135cd2",
+    "native/fused/recipe/redshank.mereclip": "fa046f22a24a4aed93a6b3500008b3beac5f1395efb4feeff3bc74883423a69e",
+    "native/fused/recipe/run_macos_scenario.py": "c1a6cb530152f3c8accc3dec41a6e7ab0dfb32a10079778ac900c1306f28c69d",
+    "native/fused/recipe/run_native.py": "1bcd5e78696474574a232c983ddbc4aa4605e9bde0b772c2701c24fb8ec73f3a",
+    "native/fused/recipe/warm.scn": "bfa57a8914d8b06b668ad1415599e88c10ef02bff8664ee77013b9c925c03ccd",
+    "native/fused/requests-at-stop.json": "12e284531d64bb0e01303577e4e6d49ce38d995971a27fe3f0e61ea7f0f58b0b",
+    "native/fused/requests-final.json": "12e284531d64bb0e01303577e4e6d49ce38d995971a27fe3f0e61ea7f0f58b0b",
+    "native/fused/resident/embedding-cold-ask.json": "11a70cf65947ec65d6d87198fc4ac369b83c0cb7aa667366255786e61c9c2a0e",
+    "native/fused/resident/embedding-model.json": "0ed25d73cf0f1bbf0081036e4e0ea2381571b5d3cd2af4fcb1040c46166bf9f1",
+    "native/fused/resident/finished.json": "35b88c3541b79e8b460b9e3f42175cd5d3d3f7da03bda789747797074c9bc99a",
+    "native/fused/resident/history-1-capture.json": "35b88c3541b79e8b460b9e3f42175cd5d3d3f7da03bda789747797074c9bc99a",
+    "native/fused/resident/history-1-knot.json": "774d583e1540c9223684fe9e0be063d6a1cbfb8c76311bb018b742c2146fd065",
+    "native/fused/resident/history-1-note.json": "eaa8adf3b63c9fa5e83448dde68f2379411f9792caf6125f37013cbea89f4e7a",
+    "native/fused/resident/live-runs-0.json": "60d4a716af300025d506a6be61bc9e282d5c13ff1602f30b434af65bfc354891",
+    "native/fused/resident/live-runs-1.json": "5084db5cfaee11b6aaaf1e25568cc0298cc7959e9e5f2f504f251972359efaa0",
+    "native/fused/resident/mixed-0-capture.json": "35b88c3541b79e8b460b9e3f42175cd5d3d3f7da03bda789747797074c9bc99a",
+    "native/fused/resident/mixed-0-knot.json": "774d583e1540c9223684fe9e0be063d6a1cbfb8c76311bb018b742c2146fd065",
+    "native/fused/resident/mixed-0-note.json": "eaa8adf3b63c9fa5e83448dde68f2379411f9792caf6125f37013cbea89f4e7a",
+    "native/fused/resident/mixed-1-capture.json": "11a70cf65947ec65d6d87198fc4ac369b83c0cb7aa667366255786e61c9c2a0e",
+    "native/fused/resident/mixed-1-knot.json": "8881f524554792f0ff4bf19646dae42607bcd1ca0b4785a26dce04ed962198f8",
+    "native/fused/resident/mixed-1-note.json": "a820c735a533d5b67b99eb518b23c239d1fea0b784826a0eca08622bb35d0577",
+    "native/fused/resident/mixed-rankings-0.json": "38ad75458e6efa297d16da1e7e9a9e25c39ffe226a24557fd9adcecc97adcada",
+    "native/fused/resident/mixed-rankings-1.json": "38ad75458e6efa297d16da1e7e9a9e25c39ffe226a24557fd9adcecc97adcada",
+    "native/fused/resident/model-row.json": "d92ec47e522614e6772aabb49dd0667a55e650b7c4b345c8b8c0a6009dcd623c",
+    "native/fused/resident/process-0.json": "a7d2c8979dbbbb34e35e4afa73daa5fe8a0383d1004ac794958841d886d0acf0",
+    "native/fused/resident/process-1.json": "42557f6d0811db0fd1794c59d0945d32523e2a08913828c6a8ff6f7668941886",
+    "native/fused/resident/ready-0.json": "e5d743319d685456ab1e6c6f2ca543bc56210bade2a52d606d9e4a01a67dd162",
+    "native/fused/resident/ready-1.json": "569310d09cd38cb2064e5c388ecc578dd49eaab71d006e3bd8b51e0173b55f2b",
+    "native/fused/resident/reopened.json": "a820c735a533d5b67b99eb518b23c239d1fea0b784826a0eca08622bb35d0577",
+    "native/fused/resident/resident-receipt.json": "f583bc8081234d9c9d9d7c93db0a14d9c2728c51721a7177b6cf02703e5a8ab6",
+    "native/fused/resident/second-started.json": "03494afd4248c42f5fa1237bf2eeebe751ab8d9c977d55405fcb17469dbd91f8",
+    "native/fused/resident/snapshot-0.json": "689a12eb621c52256db60d29782ad2a57181e2aa2386ea454e6b3ed3d925516a",
+    "native/fused/resident/snapshot-1.json": "b1ec07c8ac3a07c5ccfe93352f8b4bcb834fafe2a4d1e298dcc59c9ce1110f38",
+    "native/fused/resident/streaming.json": "c2e5307c11b77cdedd536f16b6d9fd4481671ea2b04bddc16e3df6d016b8a327",
+    "native/fused/resident-0.log.gz": "48f9a5ebe3ab304598236edf94ba707fac25f4b1dfc51c87ea357b36f041a022",
+    "native/fused/resident-1.log.gz": "7f97235b6d3a62f55ce729c0b284bd7f602bad3f0fd4255011152daf73878e41",
+    "native/fused/selection-acknowledgements/selected-1.json": "458661dccf5543800a2f3be3d8283fa23f3e56c637c104e40394fc033a10aba6",
+    "native/fused/selection-acknowledgements/selected-2.json": "91e8205ba785e31c04006031efbea2010b1bedc2b254c35ed72a989a33d54de5",
+    "native/fused/selection-acknowledgements/selected-3.json": "b32e6c98f6f043314ad9316697e0506767244005a14bfd2e875377e967d81026",
+    "native/fused/selection-acknowledgements/selected-4.json": "db3af014fe3d993217881e8e83b1718adcf0bb7ba27ffdd227149dc25e3db967",
+    "native/fused/warm/01_capture_A.png": "0a3906641ba150b088bbda64d29d0c860ff099a32aba9252adda077da97182d7",
+    "native/fused/warm/01_capture_A.source-captures.json": "daa6d7b45b1f88714784f32f60fd87474c569cdfb812f0706d753a55a51f74a7",
+    "native/fused/warm/02_capture_B.png": "1c933d1dc0617276b693a220ef468d9485e4f6c5242e195df6f5e16564d7497b",
+    "native/fused/warm/02_capture_B.source-captures.json": "00f60969a385cfe584d22d400794dea27da76985aa396fac03e2253503f236cd",
+    "native/fused/warm/03_mixed_sources.png": "26a6499ef23ec7cb2a6f9e639dca394c2a09c96f0d3484cf95a1c7efcd977617",
+    "native/fused/warm/03_mixed_sources.saved-sources.json": "a918b9a1e4f913bdd658d5fbb47d80e9b8e9f164c8abf7baaa9440176055d66b",
+    "native/fused/warm/04_explicit_scope.png": "390fefd4371ba19e6f6827518a00132d7465a14cb436dd29e487d49e81f83550",
+    "native/fused/warm/capture_answer.png": "1241e41036d35073f96bb294fca1e8cf78cb9473b9c7f9ddbce51760d1a9e70d",
+    "native/fused/warm/capture_citation.png": "751a785418b3a51876c114702047f447b826d70e592a85c7bb804db0c53f7ae5",
+    "native/fused/warm/capture_citation.saved-sources.json": "41095d9b22d553216669bba60bfb98c935dae10c793e9fc716f67788becae521",
+    "native/fused/warm/knot_answer.png": "578c0e7bd9939f6b7005086372c432f18c63ac75595dedd49ea8108ee070f449",
+    "native/fused/warm/knot_citation.png": "cc8e902ec9dc3bae21754d9ca6e13a5452e3246efab2070a2c9c474a9bd8d9f1",
+    "native/fused/warm/knot_citation.saved-sources.json": "41095d9b22d553216669bba60bfb98c935dae10c793e9fc716f67788becae521",
+    "native/fused/warm/launch.json": "efda4be39bea02b8f396bdc7b399d77aaec4e97e38690beac8a9e17e7ec12b5b",
+    "native/fused/warm/launcher.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native/fused/warm/native.log.gz": "f83e605174739ed5c0321fe1507993c6709025dcc7bc5ec3578c8ec57be1b201",
+    "native/fused/warm/note_answer.png": "c428c5c3a0c0204111a798a4f9ea5635945112708cfbddbc55ddd0f4365afc8b",
+    "native/fused/warm/note_citation.png": "d3b47b22a12532a37552da031f964309c1f84ed492a452333a4c544e6703b5ae",
+    "native/fused/warm/note_citation.saved-sources.json": "41095d9b22d553216669bba60bfb98c935dae10c793e9fc716f67788becae521",
+    "native/fused/warm/process.json": "1b54c6e46cd77da834f6072e980e735e81e815753f4fc3f6fdb65cccd84d3b67",
+    "native/fused/warm/scenario.done": "c2805c2af09822dcf2559e7f27e1c96e644892a3ed62823adc40db1bef6b95f4",
+    "native/inputs.json": "0b10db527d711e31db66e3388daaf04573ef56251f5fff861e2458be9a3b95ea",
+    "native/lexical/cold/01_cold_local_capture.png": "49d8db0d8fc910fd998fcf21c56228f28f4ef0e4198b50e8f49bfb0d6e8738b8",
+    "native/lexical/cold/01_cold_local_capture.saved-sources.json": "2650682f3b942bb660f85eef652e789d70d2591c6c1f6b98ee41063936536d40",
+    "native/lexical/cold/02_cold_scope.png": "7177ab6901b2d9350f91052cf6edaee4ce422d3ffb4ab747ad788829262489d3",
+    "native/lexical/cold/capture_answer.png": "43a4c5d7d2db3f35d04871f72ee98aea89d578cbed60da7fe32523fc57903e47",
+    "native/lexical/cold/capture_citation.png": "a4493735f29f817cc00f7ca8a8ac3da0d5367e0dc08156cbd07ab55c59f88c98",
+    "native/lexical/cold/capture_citation.saved-sources.json": "2650682f3b942bb660f85eef652e789d70d2591c6c1f6b98ee41063936536d40",
+    "native/lexical/cold/capture_historical_answer.png": "ff1225db6680c7e59cb6034d496656060825af6bdea50ad41e74af3fa7c8160c",
+    "native/lexical/cold/capture_historical_citation.png": "538d66f096960202f3712fa76002522a35f9d55c41c2e0bca404425761b1f853",
+    "native/lexical/cold/capture_historical_citation.saved-sources.json": "2650682f3b942bb660f85eef652e789d70d2591c6c1f6b98ee41063936536d40",
+    "native/lexical/cold/knot_answer.png": "18ea2c3815bd0c591dab847e68d385279e2a27d5075f75e12c41c84ba4878dad",
+    "native/lexical/cold/knot_citation.png": "bfb6e1dd657a315497ade3fea2d8112883c984a33b2bd6ad7925c6b2e141b5fa",
+    "native/lexical/cold/knot_citation.saved-sources.json": "2650682f3b942bb660f85eef652e789d70d2591c6c1f6b98ee41063936536d40",
+    "native/lexical/cold/knot_cold_export.png": "bfb6e1dd657a315497ade3fea2d8112883c984a33b2bd6ad7925c6b2e141b5fa",
+    "native/lexical/cold/knot_historical_answer.png": "3996430832339d1292633463f0429c013b91e1130ead97575466749114e39f31",
+    "native/lexical/cold/knot_historical_citation.png": "bfb6e1dd657a315497ade3fea2d8112883c984a33b2bd6ad7925c6b2e141b5fa",
+    "native/lexical/cold/knot_historical_citation.saved-sources.json": "2650682f3b942bb660f85eef652e789d70d2591c6c1f6b98ee41063936536d40",
+    "native/lexical/cold/launch.json": "ca19009c8c66d077787d09aa05be9ea34c2cd1305548f5beab69228650d7ce89",
+    "native/lexical/cold/launcher.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native/lexical/cold/native.log.gz": "5605df41e24503ba79c4f86407cb2d141aa7a6811cae1bdec3d364d3caef537a",
+    "native/lexical/cold/note_answer.png": "6b3b6d20eb73e3fab4abc11d0f775827cd411d511aabb3d65baff7035fbbbb39",
+    "native/lexical/cold/note_citation.png": "06fb5a184a7fb2933186e3a9c2b86eb98055f27580cae2f3a97ff72f28c42fb7",
+    "native/lexical/cold/note_citation.saved-sources.json": "2650682f3b942bb660f85eef652e789d70d2591c6c1f6b98ee41063936536d40",
+    "native/lexical/cold/note_cold_export.png": "06fb5a184a7fb2933186e3a9c2b86eb98055f27580cae2f3a97ff72f28c42fb7",
+    "native/lexical/cold/note_historical_answer.png": "4673043a4b30671aebbb07ba4e2ef9a1c2395a342c68acce8bb48ef5d2ce2f41",
+    "native/lexical/cold/note_historical_citation.png": "06fb5a184a7fb2933186e3a9c2b86eb98055f27580cae2f3a97ff72f28c42fb7",
+    "native/lexical/cold/note_historical_citation.saved-sources.json": "2650682f3b942bb660f85eef652e789d70d2591c6c1f6b98ee41063936536d40",
+    "native/lexical/cold/process.json": "c403a5916396a90da27029ff49eed2a04640eb21bd231f93d092948a774971a6",
+    "native/lexical/cold/scenario.done": "a90c7722a48679065f3d3a84d4116cfd7a047acac1a72d4af5f73b418f00796e",
+    "native/lexical/completion.json": "6abfae43692c96fc150c95bdb10b51d33e0d7540192949cb4764019f4e10e1cd",
+    "native/lexical/inputs.json": "81b5ef8492b01d4e49fc9497386fb6244cd5657fafa728c845349fc794c2bb34",
+    "native/lexical/knot-cold-export.mereclip": "34939ee4b6346295181961581bbaa628201eedda98567f7fde409e546628c8ef",
+    "native/lexical/note-cold-export.mereclip": "3f8f68184611afd8d6fab481d0f1006a4f80ec819ea1338eeed618d8fcb365d7",
+    "native/lexical/origin-ready.json": "416c2079446a2793dcf87a85638b705cc3223ab47c1a9c0cef36e447670531bb",
+    "native/lexical/origin-stop.json": "b98de042c04e9b5fbdcf6b96159416416f11918cfe7f3a1cc15f7b6cecae0a26",
+    "native/lexical/phases.json": "8495c0dbe6ed128d9928a42880373340a13eb212be225dd930b02b314721a651",
+    "native/lexical/private-store-scan.json": "5af3d1ac57244c0840910606eeee9aca986b99e784368928f32f58350ef90852",
+    "native/lexical/receiver-workspace.json": "c9dc8ac97f39ee79d3da5ac1e46be83fb2286c43fde6c5810a4e8e6b36a26822",
+    "native/lexical/recipe/cases.json": "70daa7c024c0fa91bdb18774c876cc41ab62c93641c97ed520c161b25600eb58",
+    "native/lexical/recipe/cold.scn": "f2c345b662c01e6f038243744150b139aa0598d169b1bda4b23bd57d5306b8b1",
+    "native/lexical/recipe/fixture_server.py": "ebb42aa6a04fff2866c3a5c8c3128be7a4bf9b3dfe117ecc02a41c2c9b14119f",
+    "native/lexical/recipe/knot.mereclip": "34939ee4b6346295181961581bbaa628201eedda98567f7fde409e546628c8ef",
+    "native/lexical/recipe/product-baseline.json": "ee3e44c5e790d10970bfc796f22287a79d1d61b8f188c65d9ef97d6d9fa4befd",
+    "native/lexical/recipe/questions.json": "8f5f45dafb892c61236bea01428b5782164450087a2c0fb444d0594076135cd2",
+    "native/lexical/recipe/redshank.mereclip": "fa046f22a24a4aed93a6b3500008b3beac5f1395efb4feeff3bc74883423a69e",
+    "native/lexical/recipe/run_macos_scenario.py": "c1a6cb530152f3c8accc3dec41a6e7ab0dfb32a10079778ac900c1306f28c69d",
+    "native/lexical/recipe/run_native.py": "9f54aba715aefe3be745fdfc0c6ec2b6a4a18b53a67427927e53c35609850575",
+    "native/lexical/recipe/warm.scn": "b176c2208b2756ebd5a46cf6976601ac068a9df914ba12e73ed9e9f09e1dfc47",
+    "native/lexical/requests-at-stop.json": "12e284531d64bb0e01303577e4e6d49ce38d995971a27fe3f0e61ea7f0f58b0b",
+    "native/lexical/requests-final.json": "12e284531d64bb0e01303577e4e6d49ce38d995971a27fe3f0e61ea7f0f58b0b",
+    "native/lexical/resident/finished.json": "bdea58cac4d400b3fa026311b60d678d412ef5f99dad0fa3def54d8919e55728",
+    "native/lexical/resident/history-1-capture.json": "bdea58cac4d400b3fa026311b60d678d412ef5f99dad0fa3def54d8919e55728",
+    "native/lexical/resident/history-1-knot.json": "a129e1f074e1ab2175de3331f627cd0e95809bcab10b285c525d2ed5503f4068",
+    "native/lexical/resident/history-1-note.json": "97e08b9faf01a63a6f41af96d3d9875861f18b8cba7e17e5dcd34f0e0a382a66",
+    "native/lexical/resident/live-runs-0.json": "fc04a001935e0553b55514a58bda1b4a0e56ef33c456bcb00c4c15e136dcdd28",
+    "native/lexical/resident/live-runs-1.json": "457c1735ee0e74236ca4bdffcc83531b6db241638429a338113c7b48b40d56c9",
+    "native/lexical/resident/mixed-0-capture.json": "bdea58cac4d400b3fa026311b60d678d412ef5f99dad0fa3def54d8919e55728",
+    "native/lexical/resident/mixed-0-knot.json": "a129e1f074e1ab2175de3331f627cd0e95809bcab10b285c525d2ed5503f4068",
+    "native/lexical/resident/mixed-0-note.json": "97e08b9faf01a63a6f41af96d3d9875861f18b8cba7e17e5dcd34f0e0a382a66",
+    "native/lexical/resident/mixed-1-capture.json": "e73d596a6061e86637f6b55e6dccccbde4e6e8a53bd8b735cb1e10d63d908d7e",
+    "native/lexical/resident/mixed-1-knot.json": "3a47f09c0da68ddeceb4aca6cee0dddd02db400dcdfe1b5f788701b97a4bdf0d",
+    "native/lexical/resident/mixed-1-note.json": "95f2485868277643060a78d44198ce87a27dc3b831189905c92f54501e5cad04",
+    "native/lexical/resident/mixed-rankings-0.json": "9749eb91e740785473352b89774ce4c90e856fddf12fd94b752f0c79259451ac",
+    "native/lexical/resident/mixed-rankings-1.json": "9749eb91e740785473352b89774ce4c90e856fddf12fd94b752f0c79259451ac",
+    "native/lexical/resident/model-row.json": "d92ec47e522614e6772aabb49dd0667a55e650b7c4b345c8b8c0a6009dcd623c",
+    "native/lexical/resident/process-0.json": "2fee98016e20525745a4bd48cb440f10dd627c9719e9cf2539ee03a38b442ac8",
+    "native/lexical/resident/process-1.json": "1b9580fb9321a674923445080675bbfde10883fe1226b03adc95c33700931475",
+    "native/lexical/resident/ready-0.json": "e5d743319d685456ab1e6c6f2ca543bc56210bade2a52d606d9e4a01a67dd162",
+    "native/lexical/resident/ready-1.json": "c4ada807f1d7531499815a3ec99f822d8858aaa152426445bd008ff0d53422cb",
+    "native/lexical/resident/reopened.json": "95f2485868277643060a78d44198ce87a27dc3b831189905c92f54501e5cad04",
+    "native/lexical/resident/resident-receipt.json": "9083bcd0b2f067f81fe9f9293a09d1c40f27b4b8aea6568341b016ca2ba689c0",
+    "native/lexical/resident/second-started.json": "03494afd4248c42f5fa1237bf2eeebe751ab8d9c977d55405fcb17469dbd91f8",
+    "native/lexical/resident/snapshot-0.json": "139ce0c09d5d176758cbef20b3878325385e6d387d094eb6abf09fd0bca282b2",
+    "native/lexical/resident/snapshot-1.json": "bb0e2a131b0ce636a0034d0a4fdac134fa164cb4d8905dea113e504ffc9a4302",
+    "native/lexical/resident/streaming.json": "4e82dc8abdf6402aaa53987c2150ddb8493c0de7f9c210e5b86180734e77e7db",
+    "native/lexical/resident-0.log.gz": "5680e4c5d9b2725c1d2b1a558c4d1a20d4ff7f50aa97517f7ad7eb7e582be721",
+    "native/lexical/resident-1.log.gz": "3a49644908c78def8c617e2a246112b7df33a4f5782a6395431ad030a67b14f9",
+    "native/lexical/warm/01_capture_A.png": "cbc16d88174d32ecf0790f394594557de3e178a516c30acce7acc45a55dc3894",
+    "native/lexical/warm/01_capture_A.source-captures.json": "90d852b20b206eddfde4ef54f4e7d546701656140835088b61c715df26754043",
+    "native/lexical/warm/02_capture_B.png": "2b9df6da93ff580f238d891b1c1780e955c999ba0d0a0395020b1d1f40a61ac2",
+    "native/lexical/warm/02_capture_B.source-captures.json": "6ca38635288af4ffee7ffaeadd73cd407029d1acf14a43bf9c81942bd9cc4448",
+    "native/lexical/warm/03_mixed_sources.png": "26a6499ef23ec7cb2a6f9e639dca394c2a09c96f0d3484cf95a1c7efcd977617",
+    "native/lexical/warm/03_mixed_sources.saved-sources.json": "5145c40d4e330182a19e0d4be9a43b7a5592ead81792b70d5dc61a14c773bf4c",
+    "native/lexical/warm/04_explicit_scope.png": "1dcbe98d1bfd391902a3bebecd5388475f7d9b21e86144c6a72952fc506408a5",
+    "native/lexical/warm/capture_answer.png": "d914aa64c1623ce56e7837aabc1f0b462c98941b4d14836358ef3095596405e8",
+    "native/lexical/warm/capture_citation.png": "78767b4d3712a0e8cea70d90c8ea7de7ea82bef4d32b8914fe7cd61d66355f06",
+    "native/lexical/warm/capture_citation.saved-sources.json": "a58a6d39fad41ee1560427e6d2d318c13c8313383bcfbf49e509199c4616d1c8",
+    "native/lexical/warm/knot_answer.png": "44e7417add9fedf2a4f265bd390555f2c3f41f6eb78cf9c9ec4e3d5b6a5846ea",
+    "native/lexical/warm/knot_citation.png": "2685ce843b6a804ccb994a6bed6087b69cea027db3dce51471f3429900543293",
+    "native/lexical/warm/knot_citation.saved-sources.json": "a58a6d39fad41ee1560427e6d2d318c13c8313383bcfbf49e509199c4616d1c8",
+    "native/lexical/warm/launch.json": "8a0da2ea3fefa2d2ae4804f0a0b6f033eee85180af7176efc4b49a68c1f525e6",
+    "native/lexical/warm/launcher.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native/lexical/warm/native.log.gz": "e83e846323c16acc0c7a499b47717cd599675eee0bf8938b7a879b911beef638",
+    "native/lexical/warm/note_answer.png": "2d38ecade5981c06c38ac03bd01e99d6f6186043ec53d0ec4a674d97f2abd076",
+    "native/lexical/warm/note_citation.png": "aac7dab3e0a0ce377c24e226ef2646583fb590e051d1823d0bb171c290a1131a",
+    "native/lexical/warm/note_citation.saved-sources.json": "a58a6d39fad41ee1560427e6d2d318c13c8313383bcfbf49e509199c4616d1c8",
+    "native/lexical/warm/process.json": "707508f3528306088dc103345f8f14beaf2d34adfb359959ae1d688e88dbe563",
+    "native/lexical/warm/scenario.done": "c75ebe313c4298db716a3cde18e9f949efb8a799c2bd9d28115105735e2fa544",
+    "native/verification.json": "ecd6ff3b97f11c6136bd1f0b469b236bb9436c6a9ea9ded91d2d177ffda16aa7"
+  },
+  "private_material_excluded": [
+    "wallets",
+    "profiles and encrypted databases",
+    "model weights",
+    "keys",
+    "sockets",
+    "executables"
+  ],
+  "scope": "Bounded macOS native mixed-source recall, lexical and real MiniLM fused modes, three provenance-specific generation asks and eight frozen ranking questions; independent product/resident cold pairs; previously qualified selected producer packages."
+}

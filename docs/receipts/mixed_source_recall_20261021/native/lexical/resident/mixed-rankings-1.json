@@ -1,0 +1,165 @@
+{
+  "boundary": "actual live published binding; same scoped current-version/provider path as generation",
+  "config": {
+    "chunk_chars": 512,
+    "max_context_chars": 12000,
+    "max_corpus_chars": 1000000,
+    "max_passages": 3,
+    "min_quote_chars": 32
+  },
+  "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+  "rows": [
+    {
+      "fused": [
+        "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4",
+        "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71",
+        "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e",
+        "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8"
+      ],
+      "id": "capture",
+      "lexical": [
+        "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4",
+        "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71",
+        "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e",
+        "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8"
+      ],
+      "question": "Repeat the retained sentence about the Juniper archive exactly.",
+      "vector": []
+    },
+    {
+      "fused": [
+        "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71",
+        "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e",
+        "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8",
+        "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4"
+      ],
+      "id": "knot",
+      "lexical": [
+        "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71",
+        "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e",
+        "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8",
+        "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4"
+      ],
+      "question": "Repeat the retained sentence about the Pelican observatory exactly.",
+      "vector": []
+    },
+    {
+      "fused": [
+        "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e",
+        "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71",
+        "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8",
+        "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4"
+      ],
+      "id": "note",
+      "lexical": [
+        "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e",
+        "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71",
+        "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8",
+        "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4"
+      ],
+      "question": "Repeat both lines of the retained note about the embedded listener exactly, preserving the line break.",
+      "vector": []
+    },
+    {
+      "fused": [
+        "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4",
+        "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8",
+        "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e",
+        "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71"
+      ],
+      "id": "capture-paraphrase",
+      "lexical": [
+        "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4",
+        "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8",
+        "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e",
+        "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71"
+      ],
+      "question": "Which retained document describes recovering entry to a collection?",
+      "vector": []
+    },
+    {
+      "fused": [
+        "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71",
+        "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8",
+        "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4",
+        "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e"
+      ],
+      "id": "knot-paraphrase",
+      "lexical": [
+        "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71",
+        "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8",
+        "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4",
+        "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e"
+      ],
+      "question": "What secret word lets someone enter the telescope facility?",
+      "vector": []
+    },
+    {
+      "fused": [],
+      "id": "note-paraphrase",
+      "lexical": [],
+      "question": "What reminder was preserved while listening to audio?",
+      "vector": []
+    },
+    {
+      "fused": [
+        "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8",
+        "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e",
+        "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4",
+        "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71"
+      ],
+      "id": "control",
+      "lexical": [
+        "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8",
+        "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e",
+        "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4",
+        "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71"
+      ],
+      "question": "Which saved source records the cobalt parcel in the amber harbor shipping log?",
+      "vector": []
+    },
+    {
+      "fused": [
+        "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e",
+        "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71",
+        "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4",
+        "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8"
+      ],
+      "id": "combined",
+      "lexical": [
+        "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e",
+        "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71",
+        "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4",
+        "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8"
+      ],
+      "question": "Find the Juniper archive sentence, the Pelican observatory sentence, and the embedded listener note.",
+      "vector": []
+    }
+  ],
+  "scope": [
+    {
+      "kind": "fleece",
+      "node": "fc67b5d2-323a-46d7-9d2a-0b387c924696",
+      "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+      "source": "mere://saved-source/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/fc67b5d2-323a-46d7-9d2a-0b387c924696/fb6652ad4b6ee99a8595321e438159a33fadbf607c87c9dddd4c726f63e7c2bc/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399"
+    },
+    {
+      "kind": "fleece",
+      "node": "c92bf1a7-836d-4ffa-8f9a-5d88a4f11af2",
+      "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+      "source": "mere://saved-source/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/c92bf1a7-836d-4ffa-8f9a-5d88a4f11af2/c579f4fa064074cba0a88e72c337d8514f1ce0a317eef14f95ec2579d112e3bd/5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944"
+    },
+    {
+      "kind": "fleece",
+      "node": "e6c14de4-c2d2-4d17-9be4-faf5004f3b19",
+      "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+      "source": "mere://retained-text/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/e6c14de4-c2d2-4d17-9be4-faf5004f3b19/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275"
+    },
+    {
+      "kind": "fleece",
+      "node": "1a9a5142-6e10-448a-a179-ea72b94f8cac",
+      "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+      "source": "mere://retained-text/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/1a9a5142-6e10-448a-a179-ea72b94f8cac/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96"
+    }
+  ]
+}
