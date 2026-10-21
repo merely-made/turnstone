@@ -42,19 +42,20 @@ access clears the guest view and survives a cold reopen. The
 [ordinary-view co-op receipt](docs/receipts/coop_graph_view_20261020/README.md)
 records contact/invitation commands, scope, qualification and limits. This
 integration covers native resident graphs; browser IndexedDB is not migrated.
-The [two-machine receipt](docs/receipts/coop_two_machines_20261020/README.md)
-qualifies an Intel Mac owner and M4 Mac guest over observed direct LAN paths,
-including scope, saved attribution, revocation and both custodians restarting.
-The [Mac-to-ThinkPad receipt](docs/receipts/coop_mac_thinkpad_20261020/README.md)
-qualifies the same workflow with a Fedora GNOME Wayland guest on the physical
-ThinkPad and its native Radeon Vulkan driver, including a full cold reopen.
-The [relay receipt](docs/receipts/coop_relay_20261020/README.md) qualifies that
-workflow with the guest's UDP path disabled and an observed relay carrying the
-connection. To select relays, add `"coop_relay_urls": ["https://relay.example/"]`
-to the owner's existing Djinn profile settings and restart Djinn. The empty or
-absent list keeps co-op LAN-only; no public relay is chosen by default. An
-unreachable configured relay fails contact creation instead of silently issuing
-a LAN-only contact. Reachability does not change invitation or graph authority.
+Current qualification uses the [shared native harness](../../support/graphshell-coop/README.md).
+The receipts retain the exact evidence for each boundary:
+
+| Boundary | Receipt |
+| --- | --- |
+| Intel Mac owner and M4 Mac guest, direct LAN and cold reopen | [Mac-to-Mac](docs/receipts/coop_two_machines_20261020/README.md) |
+| Mac owner and physical Fedora ThinkPad guest, Radeon/Wayland and cold reopen | [Mac-to-ThinkPad](docs/receipts/coop_mac_thinkpad_20261020/README.md) |
+| Forced relay carriage, scope, attribution, revocation and cold reopen | [Relay](docs/receipts/coop_relay_20261020/README.md) |
+| Relay loss during save, explicit reconnect/retry, revocation and cold reopen | [Recovery](docs/receipts/coop_recovery_20261021/README.md) |
+
+To select relays, add `"coop_relay_urls": ["https://relay.example/"]` to the
+owner's existing Djinn profile settings and restart Djinn. An empty or absent
+list keeps co-op LAN-only. An unreachable configured relay fails contact
+creation. Reachability does not change invitation or graph authority.
 
 ## Modules
 
