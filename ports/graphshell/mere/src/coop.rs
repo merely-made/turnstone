@@ -655,6 +655,7 @@ mod tests {
     fn ending_guest_access_is_not_lost_during_an_ordinary_read() {
         let (mut app, commands, graph) = owner_control();
         app.pending = true;
+        app.pending_generation = Some(1);
         revoke(&mut app, graph);
         assert!(matches!(commands.try_recv(), Ok((1, Command::Revoke(id))) if id == graph));
         assert_eq!(app.coop.as_ref().unwrap().update.status, "Working…");
@@ -664,6 +665,7 @@ mod tests {
     fn an_old_revoke_control_cannot_target_another_graph() {
         let (mut app, commands, graph) = owner_control();
         app.pending = true;
+        app.pending_generation = Some(1);
         app.model.sessions[0].id = pandect::SessionId(uuid::Uuid::from_u128(8));
         revoke(&mut app, graph);
         assert!(commands.try_recv().is_err());

@@ -9,11 +9,14 @@
 use cambium::{AnyView, GenetCtx, GenetElement, el};
 use cambium_genet_winit_host::{AppCtx, HostOptions, Init, inert_hooks, run};
 use chirograph::PortableCardV1;
+mod command;
 mod connection;
 mod coop;
 use connection::Connection;
 #[cfg(test)]
 mod app_tests;
+use cambium::{Invocation, Outcome};
+use command::{decode_invocation, invocation_for};
 use mere_view::{
     HostAction, MereView, MereViewModel, MereViewRequest, MereViewState, StatusNote, ViewStatus,
 };
@@ -23,6 +26,7 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::mpsc};
 use taproot::ProbeSnapshot;
 const LEAF: u64 = 0x6d65_7265;
 const CSS: &str = ".coop-panel{height:245px;overflow:auto;padding:8px;border-top:1px solid #6d7783}.coop-panel h2,.coop-panel p{margin:3px;overflow-wrap:anywhere}.coop-panel label{display:flex;align-items:center;gap:8px;margin:4px}.coop-input{display:block;width:460px;min-height:28px;padding:4px;border:1px solid #6d7783;background:#22262c;white-space:pre;overflow:hidden}.coop-input:focus{border-color:#8cb4de} :root{background:#16191d;color:#e8e6e1;font-family:sans-serif;font-size:14px} main{display:flex;flex-direction:column;height:100%} h1{font-size:18px;margin:8px} button{padding:4px;margin:2px;background:#22262c;color:#e8e6e1;border:1px solid #6d7783} .mere-view-session,.mere-view-archive{padding:6px;border-bottom:1px solid #353a42} .mere-view-archive-steps{gap:3px} .mere-view-session-state{font-size:12px;color:#abb4bd} .mere-view-session[data-attached=true]{color:#8cb4de} button[aria-pressed=true]{border-color:#8cb4de} .mere-record{height:180px;overflow:auto;padding:8px;border-top:1px solid #6d7783} .mere-record p{margin:3px;overflow-wrap:anywhere} .mere-view-notice{color:#f0b35a}";
+
 struct Reading {
     model: MereViewModel,
     cards: HashMap<String, PortableCardV1>,
@@ -44,20 +48,38 @@ struct App {
     size: (u32, u32),
     selected: Option<String>,
     cards: HashMap<String, PortableCardV1>,
-    sender: mpsc::Sender<MereViewRequest>,
-    receiver: mpsc::Receiver<Result<Reading, String>>,
+    sender: mpsc::Sender<WorkerCommand>,
+    receiver: mpsc::Receiver<WorkerReply>,
     pending: bool,
+    pending_generation: Option<u64>,
+    next_request_generation: u64,
     queued_activation: Option<PendingActivation>,
     events: Vec<String>,
     graph_epoch: u64,
     saved_focus: Option<String>,
     view_saved: bool,
     read_only: bool,
+    persistent_refusal: Option<String>,
+}
+struct WorkerReply {
+    generation: Option<u64>,
+    outcome: Option<Outcome>,
+    reading: Option<Result<Reading, String>>,
+}
+struct WorkerCommand {
+    generation: u64,
+    invocation: Invocation,
 }
 type Child = Box<dyn AnyView<App, (), GenetCtx, GenetElement>>;
 type Logic = fn(&App) -> Child;
 impl App {
     fn request(&mut self, request: MereViewRequest) {
+        self.request_with_notice_policy(request, true);
+    }
+    fn request_automatically(&mut self, request: MereViewRequest) {
+        self.request_with_notice_policy(request, false);
+    }
+    fn request_with_notice_policy(&mut self, request: MereViewRequest, clear_refusal: bool) {
         if self.coop.as_ref().is_some_and(|panel| panel.guest) {
             match request {
                 MereViewRequest::Activate(key) if self.cards.contains_key(&key) => {
@@ -73,6 +95,13 @@ impl App {
                 _ => {},
             }
             return;
+        }
+        if clear_refusal {
+            if let Some(previous) = self.persistent_refusal.take()
+                && self.model.notice.as_ref() == Some(&previous)
+            {
+                self.model.notice = None;
+            }
         }
         if let MereViewRequest::Activate(key) = &request {
             if self.cards.contains_key(key) {
@@ -90,13 +119,45 @@ impl App {
             }
         }
         if self.pending {
+            self.refuse("The resident is busy. Try that action again when it finishes.".into());
             return;
         }
         self.pending = true;
-        if self.sender.send(request).is_err() {
+        let invocation = match invocation_for(&request) {
+            Ok(invocation) => invocation,
+            Err(reason) => {
+                self.pending = false;
+                self.refuse(reason);
+                return;
+            },
+        };
+        let generation = self.next_request_generation;
+        let Some(next_generation) = generation.checked_add(1) else {
             self.pending = false;
+            self.refuse("The native request sequence is exhausted.".into());
+            return;
+        };
+        self.next_request_generation = next_generation;
+        if self
+            .sender
+            .send(WorkerCommand {
+                generation,
+                invocation,
+            })
+            .is_err()
+        {
+            self.pending = false;
+            self.pending_generation = None;
             self.model.notice = Some("The resident worker stopped.".into());
+        } else {
+            self.pending_generation = Some(generation);
         }
+    }
+    fn refuse(&mut self, reason: String) {
+        self.model.notice = Some(reason.clone());
+        self.persistent_refusal = Some(reason);
+        self.events.push("request refused".into());
+        self.relayout();
     }
     fn drain(&mut self) {
         if let Some(panel) = self.coop.as_mut()
@@ -129,69 +190,83 @@ impl App {
                 self.graph_epoch = 0;
             }
             self.pending = false;
+            self.pending_generation = None;
             self.relayout();
         }
-        while let Ok(answer) = self.receiver.try_recv() {
-            self.pending = false;
-            match answer {
-                Ok(reading) => {
-                    self.view_saved = reading.view_saved;
-                    self.read_only = reading.read_only;
-                    self.saved_focus = reading.saved_focus;
-                    self.selected = reading.selected;
-                    self.model = reading.model;
-                    self.cards = reading.cards;
-                    self.graph_epoch = reading.graph_epoch;
-                    self.events.push("resident refreshed".into());
-                    let attached = self.attached_session();
-                    if let Some(panel) = self.coop.as_mut()
-                        && let Some(data) = &panel.update.data
-                    {
-                        if Some(data.graph) == attached && panel.update.status != "Working…" {
-                            panel.send(coop::Command::Read(data.graph));
-                        } else if Some(data.graph) != attached {
-                            panel.update.data = None;
-                            panel.update.status =
-                                "Choose this graph explicitly before sharing it.".into();
-                        }
-                    }
-                },
-                Err(reason) => {
-                    self.queued_activation = None;
-                    self.saved_focus = None;
-                    self.view_saved = false;
-                    self.read_only = false;
-                    self.graph_epoch = 0;
-                    self.model.layout.clear();
-                    self.model.layouts.clear();
-                    self.model.actions.clear();
-                    self.model.notice = None;
-                    self.cards.clear();
-                    self.selected = None;
-                    self.model.graph = Default::default();
-                    self.model.sessions.clear();
-                    self.model.can_mint = false;
-                    self.model.archive = None;
-                    self.model.status = ViewStatus::Unavailable(StatusNote {
-                        message: reason,
-                        action: Some(HostAction::new("refresh", "Retry")),
-                    });
-                    self.events.push("resident unavailable".into());
-                },
+        while let Ok(reply) = self.receiver.try_recv() {
+            let settles_pending =
+                self.pending_generation.is_some() && reply.generation == self.pending_generation;
+            if settles_pending {
+                self.pending = false;
+                self.pending_generation = None;
+            }
+            if let Some(Err(reason)) = &reply.reading {
+                let reason = reason.clone();
+                self.apply_worker_failure(reason);
+            } else if let Some(Ok(reading)) = reply.reading {
+                self.apply_reading(reading);
+            } else if let Some(Outcome::Refused { reason }) = reply.outcome {
+                self.refuse(reason);
+            }
+            if let Some(reason) = &self.persistent_refusal {
+                self.model.notice = Some(reason.clone());
             }
             // Keep a click responsive while the worker finishes its current
             // operation, then let the shared controller handle the latest one.
             // A different session epoch cannot inherit that pending selection.
-            if let Some(activation) = self.queued_activation.take() {
+            if settles_pending && let Some(activation) = self.queued_activation.take() {
                 if activation.epoch == self.graph_epoch
                     && activation.session == self.attached_session()
                     && self.cards.contains_key(&activation.key)
                 {
-                    self.request(MereViewRequest::Activate(activation.key));
+                    self.request_automatically(MereViewRequest::Activate(activation.key));
                 }
             }
             self.relayout();
         }
+    }
+    fn apply_reading(&mut self, reading: Reading) {
+        self.view_saved = reading.view_saved;
+        self.read_only = reading.read_only;
+        self.saved_focus = reading.saved_focus;
+        self.selected = reading.selected;
+        self.model = reading.model;
+        self.cards = reading.cards;
+        self.graph_epoch = reading.graph_epoch;
+        self.events.push("resident refreshed".into());
+        let attached = self.attached_session();
+        if let Some(panel) = self.coop.as_mut()
+            && let Some(data) = &panel.update.data
+        {
+            if Some(data.graph) == attached && panel.update.status != "Working…" {
+                panel.send(coop::Command::Read(data.graph));
+            } else if Some(data.graph) != attached {
+                panel.update.data = None;
+                panel.update.status = "Choose this graph explicitly before sharing it.".into();
+            }
+        }
+    }
+    fn apply_worker_failure(&mut self, reason: String) {
+        self.queued_activation = None;
+        self.saved_focus = None;
+        self.view_saved = false;
+        self.read_only = false;
+        self.graph_epoch = 0;
+        self.model.layout.clear();
+        self.model.layouts.clear();
+        self.model.actions.clear();
+        self.model.notice = None;
+        self.cards.clear();
+        self.selected = None;
+        self.model.graph = Default::default();
+        self.model.sessions.clear();
+        self.model.can_mint = false;
+        self.model.archive = None;
+        self.model.status = ViewStatus::Unavailable(StatusNote {
+            message: reason,
+            action: Some(HostAction::new("refresh", "Retry")),
+        });
+        self.events.push("resident unavailable".into());
     }
     fn attached_session(&self) -> Option<pandect::SessionId> {
         self.model
@@ -587,6 +662,9 @@ fn main() {
                 saved_focus: None,
                 view_saved: false,
                 read_only: false,
+                persistent_refusal: None,
+                pending_generation: Some(0),
+                next_request_generation: 1,
             };
             Init {
                 state: app,
@@ -609,11 +687,8 @@ fn main() {
 fn spawn_worker(
     domain: String,
     wake: cambium_rootstock::HostWake,
-) -> (
-    mpsc::Sender<MereViewRequest>,
-    mpsc::Receiver<Result<Reading, String>>,
-) {
-    let (sender, requests) = mpsc::channel();
+) -> (mpsc::Sender<WorkerCommand>, mpsc::Receiver<WorkerReply>) {
+    let (sender, requests) = mpsc::channel::<WorkerCommand>();
     let (answers, receiver) = mpsc::channel();
     std::thread::spawn(move || {
         let runtime = tokio::runtime::Builder::new_current_thread()
@@ -634,13 +709,29 @@ fn spawn_worker(
             if let Err(reason) = &first {
                 connection = Err(reason.clone());
             }
-            if answers.send(first).is_err() {
+            if answers.send(reply(Some(0), first)).is_err() {
                 return;
             }
             wake.wake();
             loop {
                 let request = match requests.recv_timeout(std::time::Duration::from_millis(250)) {
-                    Ok(request) => Some(request),
+                    Ok(command) => match decode_invocation(&command.invocation) {
+                        Ok(request) => Some((request, command.generation)),
+                        Err(outcome) => {
+                            if answers
+                                .send(WorkerReply {
+                                    generation: Some(command.generation),
+                                    outcome: Some(outcome),
+                                    reading: None,
+                                })
+                                .is_err()
+                            {
+                                break;
+                            }
+                            wake.wake();
+                            continue;
+                        },
+                    },
                     Err(mpsc::RecvTimeoutError::Disconnected) => break,
                     Err(mpsc::RecvTimeoutError::Timeout) => None,
                 };
@@ -657,7 +748,7 @@ fn spawn_worker(
                         Ok(true) => {},
                         Err(reason) => {
                             connection = Err(reason.clone());
-                            if answers.send(Err(reason)).is_err() {
+                            if answers.send(reply(None, Err(reason))).is_err() {
                                 break;
                             }
                             wake.wake();
@@ -669,9 +760,10 @@ fn spawn_worker(
                         .await
                         .unwrap_or_else(|_| Err("The resident connection timed out.".into()));
                 }
+                let reply_generation = request.as_ref().map(|(_, generation)| *generation);
                 let answer = match &mut connection {
                     Ok(connection) => tokio::time::timeout(deadline, async {
-                        if let Some(request) = request {
+                        if let Some((request, _)) = request {
                             connection.take(request);
                         }
                         connection.read().await
@@ -683,7 +775,7 @@ fn spawn_worker(
                 if let Err(reason) = &answer {
                     connection = Err(reason.clone());
                 }
-                if answers.send(answer).is_err() {
+                if answers.send(reply(reply_generation, answer)).is_err() {
                     break;
                 }
                 wake.wake();
@@ -691,4 +783,14 @@ fn spawn_worker(
         });
     });
     (sender, receiver)
+}
+
+fn reply(generation: Option<u64>, reading: Result<Reading, String>) -> WorkerReply {
+    // A reading proves neither successful enactment nor refusal. In particular,
+    // transport failure can follow remote enactment; its outcome is unknown.
+    WorkerReply {
+        generation,
+        outcome: None,
+        reading: Some(reading),
+    }
 }
