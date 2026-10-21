@@ -67,6 +67,15 @@ set.
 
 ## Current implementation plans and product direction
 
+- [Compare: selection sources, selection commands and shared scenes](2026-10-21_compare_selection_and_shared_scenes_plan.md):
+  proposed next slice. A snapshot, live or frozen selection source in `curation`;
+  Compare, Show connections, Read in sequence and Search within selection; the
+  Graphshell scene format lifted to `pandect` and extended for comparisons.
+  Phases 0–2 can start; phase 4 waits on four open questions.
+- [Relationship navigation and visible pane bindings](2026-10-21_relationship_navigation_and_pane_bindings.md):
+  landed `57be5ab`. Related disclosure; Inspector and Roster show and change
+  their source binding (Follow active pane, follow a publisher, Pin).
+
 - [Hest command invocation and Cambium 0.5 adoption](2026-10-06_unusual_protocols_browser_plan.md#hest-h3-command-invocation-2026-10-20): canonical H3 keyboard/reducer receiving qualified on Mere `9ef5e3026` and embedded Knot `ebf10c741`; 1107 full-library passes, all-targets and portable metadata checks pass. Deferred dispatch remains pending; Git delivery is authorized and crate publication remains held.
 
 - Resident answer card: source-owner publication, exact-version citations and

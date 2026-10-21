@@ -171,6 +171,8 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::OpenInWorkbench
         | Action::SetWorkspaceMap(..)
         | Action::ReadGraphMember(..)
+        | Action::NavigateRelationship(..)
+        | Action::SetPaneBinding(..)
         | Action::RevealGraphMember(..)
         | Action::ToggleToolPane(..)
         | Action::SetChromeLayout(..)

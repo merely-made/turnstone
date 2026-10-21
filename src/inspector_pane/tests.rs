@@ -773,3 +773,26 @@ fn engine_inventory_valid_selection_recovers_failed_pin_but_keeps_at_rest_closed
     );
     assert!(app.content.get(member).is_none());
 }
+
+#[test]
+fn source_binding_disclosure_is_hit_testable_at_narrow_width_and_emits_exact_pin() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.test/a-long-document-address".into()));
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(crate::panes::kind::INSPECTOR)));
+    let owner = app.frisket.iter_leaves().find(|(_,content,_)| matches!(content, crate::panes::PaneContent::Inspector)).unwrap().0;
+    let mut pane = InspectorPane::new();
+    pane.sync(&app, owner, 251.0, 600.0, None, None, "unconfigured");
+    let _ = pane.scene(251,600);
+    let (x,y) = pane.selector_point(&taproot::Selector::role("button").containing("Pane source:")).unwrap().unwrap();
+    assert!(x >= 0.0 && x < 251.0 && y >= 0.0 && y < 100.0);
+    assert!(pane.click(x,y,251,600).is_empty());
+    let _ = pane.scene(251,600);
+    let (x,y) = pane.selector_point(&taproot::Selector::role("button").containing("Pin this document")).unwrap().unwrap();
+    let intents = pane.click(x,y,251,600);
+    let [InspectorIntent::Binding(intent)] = intents.as_slice() else { panic!("exactly the source choice must dispatch"); };
+    assert_eq!(intent.pane,owner);
+    assert!(matches!(intent.choice, crate::pane_binding::BindingChoice::Pin { member: Some(_), .. }));
+    app.update(Action::SetPaneBinding(*intent));
+    pane.sync(&app, owner,251.0,600.0,None,None,"unconfigured");
+    assert_eq!(app.pane_binding_snapshot(owner).unwrap().mode,"Pinned");
+}

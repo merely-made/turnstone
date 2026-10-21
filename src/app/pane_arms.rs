@@ -42,6 +42,12 @@ impl App {
             .and_then(|node| self.graph_runtimes.graph_containing_member(node))
             .or_else(|| self.active_pane.and_then(|pane| self.graph_for_pane(pane)))
             .unwrap_or_else(|| self.graph_runtimes.active_graph());
+        self.graph_pane_for_navigation(graph)
+    }
+
+    /// An explicit graph source must survive navigation even when another
+    /// loaded graph has members with the same identities.
+    pub(crate) fn graph_pane_for_navigation(&self, graph: GraphId) -> Option<PaneId> {
         let source = self.active_pane.and_then(|pane| self.forme_for_pane(pane));
         let candidates = self
             .frisket
@@ -98,14 +104,17 @@ impl App {
     }
 
     pub(super) fn read_graph_member(&mut self, member: Uuid) -> Vec<Effect> {
-        if self
-            .graph_runtimes
-            .graph_containing_member(member)
-            .is_none()
-        {
+        let Some(graph) = self.graph_runtimes.graph_containing_member(member) else {
+            return vec![Effect::Redraw];
+        };
+        self.read_member_in_graph(graph, member)
+    }
+
+    pub(crate) fn read_member_in_graph(&mut self, graph: GraphId, member: Uuid) -> Vec<Effect> {
+        if !self.graph_runtimes.canvas(graph).is_some_and(|canvas| canvas.graph().get_node_by_id(member).is_some()) {
             return vec![Effect::Redraw];
         }
-        let Some(pane) = self.primary_graph_for_navigation(Some(member)) else {
+        let Some(pane) = self.graph_pane_for_navigation(graph) else {
             return vec![Effect::Redraw];
         };
         // Read arranges members of the map. Visiting another member uses the
@@ -548,6 +557,7 @@ impl App {
                 self.maximized = None;
             }
             self.active_pane = None;
+            self.index_pane_spaces();
             self.events.push(AppEvent::PaneClosed);
             vec![Effect::SaveSession, Effect::Redraw]
         } else {

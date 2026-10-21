@@ -36,7 +36,7 @@ impl App {
         }
         Ok(())
     }
-    pub(super) fn ensure_shared_space(&mut self, space: SpaceRef) -> Result<(), String> {
+    pub(crate) fn ensure_shared_space(&mut self, space: SpaceRef) -> Result<(), String> {
         let layout = self.space(space).ok_or("Pane window is closed")?;
         let mut frame = layout.outer_workspace()?.into_owned();
         if self.blueprint_space(space).is_none() && matches!(layout.root, PaneNode::Workspace(_)) {

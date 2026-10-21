@@ -2297,7 +2297,8 @@ impl Shell {
                     self.app.roster_tab = grid.selected_tab().0;
                     for action in actions {
                         match action {
-                            crate::cambium_pane::RosterAction::Navigate(url) => {
+                            crate::cambium_pane::RosterAction::Binding(intent) => { out.push(Action::SetPaneBinding(intent)); },
+                                        crate::cambium_pane::RosterAction::Navigate(url) => {
                                 out.push(Action::OpenAddress(url))
                             },
                         }
@@ -2399,6 +2400,7 @@ impl Shell {
                         crate::inspector_pane::InspectorIntent::ClipToKnot { offer } => {
                             self.clip_document_to_knot(offer)
                         },
+                        crate::inspector_pane::InspectorIntent::Binding(intent) => out.push(Action::SetPaneBinding(intent)),
                         crate::inspector_pane::InspectorIntent::NewResearchNote => out.push(Action::NewResearchNote),
                         crate::inspector_pane::InspectorIntent::OpenResearchNote => out.push(Action::OpenResearchNote),
                         crate::inspector_pane::InspectorIntent::ChooseResearchNote { choice } => out.push(Action::ChooseResearchNote { choice }),
