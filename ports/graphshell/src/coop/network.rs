@@ -29,15 +29,48 @@ pub fn identity() -> Result<Arc<CustodyIdentity>, String> {
         .map_err(|e| format!("identity pending: {e}"))
 }
 pub async fn bind(identity: &dyn IdentityProvider) -> Result<Arc<P2pandaTransport>, String> {
+    bind_with_relays(identity, &[]).await
+}
+
+/// Bind with relays explicitly selected by the holder. Reachability never
+/// changes graph admission, and no public relay is selected implicitly.
+pub async fn bind_with_relays(
+    identity: &dyn IdentityProvider,
+    relays: &[transport::p2panda_transport::RelayUrl],
+) -> Result<Arc<P2pandaTransport>, String> {
     let key = identity
         .derived_keypair(TRANSPORT_SALT)
         .map_err(|e| e.to_string())?;
-    P2pandaTransport::builder_for(&key)
-        .alpns(vec![projection_alpn()])
+    let mut builder = P2pandaTransport::builder_for(&key).alpns(vec![projection_alpn()]);
+    for relay in relays {
+        builder = builder.relay_url(relay.clone());
+    }
+    let transport = builder
         .bind()
         .await
         .map(Arc::new)
-        .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())?;
+    if !relays.is_empty() {
+        // The contact is kept for this activity's lifetime. Do not freeze a
+        // LAN-only ticket while its explicitly configured relay is connecting.
+        let ready = tokio::time::timeout(Duration::from_secs(15), async {
+            loop {
+                let address = transport.endpoint_addr().await.map_err(|e| e.to_string())?;
+                if address.relay_urls().any(|url| relays.contains(url)) {
+                    return Ok::<_, String>(());
+                }
+                tokio::time::sleep(Duration::from_millis(100)).await;
+            }
+        })
+        .await
+        .map_err(|_| "configured co-op relay did not become reachable".to_string())
+        .and_then(|result| result);
+        if let Err(error) = ready {
+            let _ = transport.close().await;
+            return Err(error);
+        }
+    }
+    Ok(transport)
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -366,6 +399,19 @@ impl Guest {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn an_unreachable_configured_relay_cannot_produce_a_lan_only_contact() {
+        let identity = personae::InMemoryProvider::from_seed([0x71; 32]);
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap();
+        // A bound, non-serving listener keeps the test's port from being
+        // reused by an actual relay while exercising readiness failure.
+        let relay = format!("http://{address}/").parse().unwrap();
+        let result = bind_with_relays(&identity, &[relay]).await;
+        assert!(matches!(result, Err(error) if error.contains("configured co-op relay")));
+        drop(listener);
+    }
     #[test]
     fn real_carrier_binds_the_guest_scope_and_revocation() {
         let runtime = tokio::runtime::Runtime::new().unwrap();
