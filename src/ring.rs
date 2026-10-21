@@ -139,6 +139,8 @@ pub fn ring_of(action: &Action) -> Ring {
         | OpenInWorkbench
         | SetWorkspaceMap(_)
         | ReadGraphMember(_)
+        | NavigateRelationship(_)
+        | SetPaneBinding(_)
         | RevealGraphMember(_)
         | ToggleToolPane(_)
         | SetChromeLayout(_)

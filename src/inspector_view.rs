@@ -58,9 +58,11 @@ pub fn inspector_sections_for_pane(app: &App, pane: crate::panes::PaneId) -> Vec
 
 /// The member this Inspector follows, shared by readouts and editable controls.
 pub(crate) fn inspector_member(app: &App, pane: crate::panes::PaneId) -> Option<uuid::Uuid> {
-    app.follower_context(pane)
-        .and_then(|context| context.member)
-        .or_else(|| app.graph_pane_focused_member(pane))
+    if app.has_pane_binding(pane) {
+        app.pane_bound_context(pane).and_then(|context| context.member)
+    } else {
+        app.follower_context(pane).and_then(|context| context.member).or_else(|| app.graph_pane_focused_member(pane))
+    }
 }
 
 fn inspector_sections_for_context(
@@ -81,7 +83,7 @@ fn inspector_sections_for_context(
             ("Node id".to_string(), node.id.to_string()),
             ("Addresses".to_string(), node.addresses.len().to_string()),
             (
-                "Pinned".to_string(),
+                "Map position pinned".to_string(),
                 yes_no(
                     graph
                         .and_then(|graph| graph.node_is_pinned(key))
@@ -545,7 +547,7 @@ mod tests {
         let has = |s: &str| lines.iter().any(|l| l.contains(s));
         assert!(has("URL: https://example.com/page"), "{lines:?}");
         assert!(has(&format!("Node id: {node}")));
-        assert!(has("Pinned: no"));
+        assert!(has("Map position pinned: no"));
         assert!(has("Content state: live"));
         assert!(has("Engine: genet.web"));
         assert!(has("Document title: The Page"));
