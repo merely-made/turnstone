@@ -9,7 +9,8 @@ use super::*;
 use cambium::{Slot, button, frisket_with};
 use graphshell::{
     forme_session::{
-        DropEffect, FormeLoadGate, FormeLoadTicket, FormeSession, FormeWriteFence, PreparedSave, SaveKind,
+        DropEffect, FormeLoadGate, FormeLoadTicket, FormeSession, FormeWriteFence, PreparedSave,
+        SaveKind,
     },
     forme_workspace::FormeWorkspace,
 };
@@ -384,7 +385,7 @@ fn edit(
     }
     changed(page);
 }
-fn open_selected(page: &mut TreePage) {
+pub(super) fn open_selected(page: &mut TreePage) {
     let selected = page.shared.canvas.borrow().selected_members();
     if selected.is_empty() {
         if let Some(pane) = &mut page.forme {
@@ -401,6 +402,22 @@ fn open_selected(page: &mut TreePage) {
     if let Some(pane) = &mut page.forme {
         pane.workbench = true;
     }
+}
+/// Switch projections of the same graph and saved Forme arrangement. Only a
+/// first Read with an empty arrangement admits the already-selected members.
+pub(super) fn show_projection(page: &mut TreePage, map: bool) {
+    if !map
+        && !page.shared.canvas.borrow().selected_members().is_empty()
+        && page
+            .forme
+            .as_ref()
+            .is_some_and(|pane| pane.model().members().is_empty())
+    {
+        open_selected(page);
+    } else if let Some(pane) = &mut page.forme {
+        pane.workbench = !map;
+    }
+    page.shared.dirty.set(true);
 }
 pub(super) fn open_retained(page: &mut TreePage, member: Uuid) {
     edit(page, None, true, |workspace, graph| {
@@ -482,11 +499,21 @@ fn preview(page: &mut TreePage, target: Uuid, edge: workbench::Edge) {
     let Some((_, owner)) = page.product.as_ref().and_then(|p| p.forme_source()) else {
         return;
     };
-    let Some(pane) = &mut page.forme else { return; };
-    if pane.saving || !pane.session.editing() { return; }
-    let Some(moving) = pane.moving else { return; };
+    let Some(pane) = &mut page.forme else {
+        return;
+    };
+    if pane.saving || !pane.session.editing() {
+        return;
+    }
+    let Some(moving) = pane.moving else {
+        return;
+    };
     let result = pane.session.install_edge_preview(
-        owner, moving, target, edge, &mut page.shared.canvas.borrow_mut(),
+        owner,
+        moving,
+        target,
+        edge,
+        &mut page.shared.canvas.borrow_mut(),
     );
     match result {
         Ok(candidate) => {
@@ -499,7 +526,9 @@ fn preview(page: &mut TreePage, target: Uuid, edge: workbench::Edge) {
             pane.candidate = Some(candidate);
             pane.status = "Preview ready · Apply move or cancel".into();
         },
-        Err(error) => { pane.status = error; },
+        Err(error) => {
+            pane.status = error;
+        },
     }
     page.shared.dirty.set(true);
 }
@@ -1095,7 +1124,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
     Some(match tree {
         None => Box::new(el(
             "p",
-            "Select nodes in the Mere and open them in the workbench",
+            "No arranged documents. Select a document in Map, then choose Panes and Read selected.",
         )),
         Some(tree) => {
             let moving = pane.moving;
@@ -1105,7 +1134,10 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
             let mut query_appearances = std::collections::BTreeMap::new();
             let mut appearances = std::collections::BTreeMap::new();
             for member in super::reading::active_members(&tree) {
-                if let Some(snapshot) = super::query_view::appearance(page, member) { query_appearances.insert(member, snapshot); continue; }
+                if let Some(snapshot) = super::query_view::appearance(page, member) {
+                    query_appearances.insert(member, snapshot);
+                    continue;
+                }
                 if let Some((_, node)) = graph.get_node_by_id(member) {
                     let address = node.url().to_string();
                     let appearance = if matches!(
@@ -1162,16 +1194,17 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 let member = node.id;
                 let title = node.title.clone();
                 let address = node.url().to_string();
-                let mut controls: Vec<Child> = vec![
-                    Box::new(button("Show in Mere", move |p: &mut TreePage, _| {
+                let mut controls: Vec<Child> = vec![Box::new(
+                    button("Show in Mere", move |p: &mut TreePage, _| {
                         p.shared.canvas.borrow_mut().select_member(member);
                         if let Some(f) = &mut p.forme {
                             f.workbench = false;
                         }
                         selection_changed(p);
                         p.shared.dirty.set(true);
-                    }).attr("aria-description", address.clone())),
-                ];
+                    })
+                    .attr("aria-description", address.clone()),
+                )];
                 let mut tags: Vec<_> = graph
                     .node_content_tags(key)
                     .unwrap_or_default()
@@ -1181,7 +1214,9 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 if !tags.is_empty() {
                     controls.push(Box::new(el("p", tags.join(" · "))));
                 }
-                if let Some(snapshot) = query_appearances.get(&member) { controls.push(super::query_view::render(snapshot.clone())); }
+                if let Some(snapshot) = query_appearances.get(&member) {
+                    controls.push(super::query_view::render(snapshot.clone()));
+                }
                 if let Some(appearance) = appearances.get(&member) {
                     controls.push(super::reading::render(appearance.clone()));
                 }
@@ -1219,11 +1254,14 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 }
                 Slot::View(Box::new(
                     el("article", controls)
-                        .attr("class", if appearances.contains_key(&member) {
-                            "reading-pane retained-reading-pane"
-                        } else {
-                            "reading-pane"
-                        })
+                        .attr(
+                            "class",
+                            if appearances.contains_key(&member) {
+                                "reading-pane retained-reading-pane"
+                            } else {
+                                "reading-pane"
+                            },
+                        )
                         .attr("aria-label", format!("Reading access {title}"))
                         .attr("data-forme-access", member.to_string())
                         .attr("data-forme-address", node.url().to_string()),
@@ -1239,7 +1277,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                         }
                     },
                 )
-                .attr("class", "forme-workbench"),
+                .attr("class", "forme-workbench cambium-document-rail"),
             )
         },
     })

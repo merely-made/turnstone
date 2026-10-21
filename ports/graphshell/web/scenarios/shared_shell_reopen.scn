@@ -1,0 +1,19 @@
+# Cold reopen after shared_shell.scn at the same isolated fixture origin.
+assert snap storage-reopened == true
+assert snap shell-projection == Map
+assert snap shell-inspector-open == false
+assert snap shell-graph-controls == false
+assert snap shell-document-controls == false
+assert snap forme-accesses == 1
+remember reopened
+click role:button Read
+assert snap shell-projection == Read
+assert snap forme-accesses == 1
+same reopened forme
+same reopened node-count
+capture shared_shell_reopened_read
+click role:button Map
+assert snap shell-projection == Map
+same reopened forme
+same reopened forme-accesses
+capture shared_shell_reopened_map

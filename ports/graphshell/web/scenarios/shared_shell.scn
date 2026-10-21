@@ -1,0 +1,72 @@
+# Isolated local fixture origin/profile. Both projections retain the same graph.
+assert snap source == saved graph
+assert snap shell-projection == Map
+assert snap shell-inspector-open == false
+assert snap shell-graph-controls == false
+assert snap shell-document-controls == false
+assert snap forme-accesses == 0
+capture shared_shell_map
+click role:button Panes
+assert snap shell-panes-open == true
+capture shared_shell_panes
+key Escape
+assert snap shell-panes-open == false
+click role:button Panes
+click .tree-canvas
+assert snap shell-panes-open == false
+click role:button Panes
+click role:button Graph controls
+assert snap shell-panes-open == false
+assert snap shell-graph-controls == true
+click role:button Restore arrangement
+settle 3
+click-node https://example.test/i2p-port
+settle 1
+click role:button Panes
+click role:button Read selected
+wait 120
+assert snap shell-projection == Read
+assert snap forme-accesses == 1
+assert snap forme-saving == false
+remember reading
+capture shared_shell_read
+click role:button Map
+assert snap shell-projection == Map
+same reading forme
+same reading forme-accesses
+same reading node-count
+click role:button Panes
+click role:button Inspector
+assert snap shell-inspector-open == true
+assert snap shell-panes-open == false
+capture shared_shell_inspector
+click role:button Panes
+click role:button Inspector
+assert snap shell-inspector-open == false
+assert snap shell-panes-open == false
+click role:button Panes
+click role:button Graph controls
+assert snap shell-graph-controls == false
+click role:button Read
+assert snap shell-projection == Read
+same reading forme
+same reading forme-accesses
+same reading node-count
+capture shared_shell_compact_read
+# The editor owns its own toolbar while open; returning restores shell controls.
+click role:button Map
+click role:button Panes
+click role:button Graph controls
+click role:button Editable document
+assert snap blocks-open == true
+reveal .blocks-close
+click .blocks-close
+assert snap blocks-open == false
+assert snap shell-projection == Map
+click role:button Panes
+click role:button Graph controls
+assert snap shell-graph-controls == false
+click role:button Read
+assert snap shell-projection == Read
+same reading forme
+same reading forme-accesses
