@@ -1,0 +1,185 @@
+[
+  {
+    "name": "hest",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "--lib",
+      "hest_"
+    ],
+    "environment": {
+      "TMPDIR": "/tmp",
+      "CARGO_BUILD_JOBS": "4"
+    },
+    "exit_code": 0,
+    "elapsed_seconds": 24.01,
+    "log": "turnstone-hest.log.gz",
+    "raw_log_sha256": "2ecd9ed90ff4c442497cc5d035bf5515c052c71ebe9c58c3b8f3be2c788c4cb9",
+    "suites": [
+      {
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0
+      }
+    ],
+    "stored_log_sha256": "bcb5eb7082a9c08a2b1771c365b32130d255c4eb57892428d8ff628dde4cf651",
+    "compression": "gzip"
+  },
+  {
+    "name": "menu",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "--lib",
+      "command_menu"
+    ],
+    "environment": {
+      "TMPDIR": "/tmp",
+      "CARGO_BUILD_JOBS": "4"
+    },
+    "exit_code": 0,
+    "elapsed_seconds": 5.92,
+    "log": "turnstone-menu.log.gz",
+    "raw_log_sha256": "df65272a820545b639cd7f5c509b34a75110368972eb9bafbe0b3057342d1cbe",
+    "suites": [
+      {
+        "passed": 14,
+        "failed": 0,
+        "ignored": 0
+      }
+    ],
+    "stored_log_sha256": "7c30c2029c1201dbfcb88eaf5b16dbb21cdf31af7beddfd8098a7b431462fdfc",
+    "compression": "gzip"
+  },
+  {
+    "name": "inspector",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "--lib",
+      "inspector_pane::tests::"
+    ],
+    "environment": {
+      "TMPDIR": "/tmp",
+      "CARGO_BUILD_JOBS": "4"
+    },
+    "exit_code": 0,
+    "elapsed_seconds": 4.88,
+    "log": "turnstone-inspector.log.gz",
+    "raw_log_sha256": "39cc827e3f53aad1fdb8e85e6193cf9e5c1b62c5fa1777af26ca93cd2f3b0461",
+    "suites": [
+      {
+        "passed": 15,
+        "failed": 0,
+        "ignored": 0
+      }
+    ],
+    "stored_log_sha256": "4570932663e01d7dadc70e609b6e583d2d97e8028ce125f6f5d279c9b7c97abd",
+    "compression": "gzip"
+  },
+  {
+    "name": "authoring",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "--lib",
+      "knot_authoring::tests::"
+    ],
+    "environment": {
+      "TMPDIR": "/tmp",
+      "CARGO_BUILD_JOBS": "4"
+    },
+    "exit_code": 0,
+    "elapsed_seconds": 4.08,
+    "log": "turnstone-authoring.log.gz",
+    "raw_log_sha256": "74b49dc0d357b6cdab7fd01f4cc68c59800c6a8f0843db2b0f79702f24ef2aab",
+    "suites": [
+      {
+        "passed": 23,
+        "failed": 0,
+        "ignored": 5
+      }
+    ],
+    "stored_log_sha256": "874c09a77dcbaf419755d4eb9b4093998f9e577af0b550a85684b5b0a1bb7c97",
+    "compression": "gzip"
+  },
+  {
+    "name": "library",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "--lib",
+      "--",
+      "--test-threads=1"
+    ],
+    "environment": {
+      "TMPDIR": "/tmp",
+      "CARGO_BUILD_JOBS": "4"
+    },
+    "exit_code": 0,
+    "elapsed_seconds": 649.96,
+    "log": "turnstone-library.log.gz",
+    "raw_log_sha256": "723f6594f5e19d4515caa6c582970979dc24abb12ef74cfd33898629f1d71d56",
+    "suites": [
+      {
+        "passed": 1107,
+        "failed": 0,
+        "ignored": 15
+      }
+    ],
+    "stored_log_sha256": "85b6a8f2b4422bff962edd6dbe4a0271cf25916feb436fe43ca6c43a5bff4fec",
+    "compression": "gzip"
+  },
+  {
+    "name": "all-targets",
+    "command": [
+      "cargo",
+      "check",
+      "--workspace",
+      "--all-targets",
+      "--locked",
+      "--offline"
+    ],
+    "environment": {
+      "TMPDIR": "/tmp",
+      "CARGO_BUILD_JOBS": "4"
+    },
+    "exit_code": 0,
+    "elapsed_seconds": 24.19,
+    "log": "turnstone-all-targets.log.gz",
+    "raw_log_sha256": "60cda9b7fe2ff1c573e1d9a2d915b1fab3528dfaefad0ea860b70257185e6f46",
+    "suites": [],
+    "stored_log_sha256": "f3acef63457ae5539797be1f09ce3dece48aaa57fceeed5ed98db8565ef17f91",
+    "compression": "gzip"
+  },
+  {
+    "name": "portable-metadata",
+    "command": [
+      "/Users/markik/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "scripts/cargo_mode.py",
+      "verify",
+      "--metadata-only"
+    ],
+    "environment": {
+      "TMPDIR": "/tmp",
+      "CARGO_BUILD_JOBS": "4"
+    },
+    "exit_code": 0,
+    "elapsed_seconds": 4.7,
+    "log": "turnstone-portable-metadata.log.gz",
+    "raw_log_sha256": "566ad811611716f00bb0741093bc8268ffb205a937079aa26f8e000bdeb28549",
+    "suites": [],
+    "stored_log_sha256": "ab53827de9422ab92750c6a24be98b9cf7f3c6e73000fa92eb4b12f7fc8e2cf7",
+    "compression": "gzip"
+  }
+]

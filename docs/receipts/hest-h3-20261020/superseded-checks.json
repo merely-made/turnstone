@@ -1,0 +1,51 @@
+[
+  {
+    "name": "library",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "--lib",
+      "--",
+      "--test-threads=1"
+    ],
+    "environment": {
+      "TMPDIR": "/tmp",
+      "CARGO_BUILD_JOBS": "4"
+    },
+    "exit_code": 101,
+    "elapsed_seconds": 690.93,
+    "log": "first-full-run--turnstone-library.log.gz",
+    "raw_log_sha256": "5e4e010c409c581393ca5e4dc9fc7ce07cf9a0e4399ce78305bb59d2778fe07d",
+    "suites": [],
+    "admitted": false,
+    "reason": "An existing session-marker fixture relied on wall-clock ordering; only the test fixture was changed to explicit timestamps.",
+    "stored_log_sha256": "cfb1a3f01ac301df41ffc656c05a7eca70b5499f8d0bcb73855a9cf3954a543e",
+    "compression": "gzip"
+  },
+  {
+    "name": "hest",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "--lib",
+      "hest_"
+    ],
+    "environment": {
+      "TMPDIR": "/tmp",
+      "CARGO_BUILD_JOBS": "4"
+    },
+    "exit_code": 101,
+    "elapsed_seconds": 128.95,
+    "log": "turnstone-initial-hest.log.gz",
+    "raw_log_sha256": "bd6aa0b37ff142aaa5d7e181e3d6792ad2bdc7a2aba9145bdb19a5693fb6a6ec",
+    "suites": [],
+    "admitted": false,
+    "reason": "The test dispatched a deferred NewSession effect without applying a new session; the fixture was corrected to change actual host state.",
+    "stored_log_sha256": "64762a65341225d5a7bcc79047d2fbc7886bee493fa721f9340cc32a28140663",
+    "compression": "gzip"
+  }
+]

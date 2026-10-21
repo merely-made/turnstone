@@ -2170,3 +2170,8 @@ its wall-clock-dependent ordering; production session code is unchanged.
 Incoming NetRender `ec15eb26`, Genet `6ef3cd37` and Murm `e2f19a3f` remain
 pinned, with 1,604 unrelated package blocks preserved exactly. Git delivery is
 authorized; crate publication and native GUI/human AT acceptance remain separate.
+
+[H3 receiving qualification](../docs/receipts/hest-h3-20261020/qualification.json)
+retains the final source and lock, owned compressed command logs, and superseded
+failed attempts. The passing full rerun is retained separately from the first
+run that found the timestamp fixture problem.
