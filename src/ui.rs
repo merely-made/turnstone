@@ -1107,10 +1107,10 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
     );
     let controls = format!(
         ".turnstone-stone-hidden {{ display:none; }}
-        .browser-strip {{ background-color:transparent; border:0; border-radius:0; gap:3px; padding-top:4px; padding-bottom:4px; padding-right:10px; }}
-        .browser-button,.browser-button-disabled {{ --app-region:no-drag; box-sizing:border-box; background:transparent; border:0; border-radius:4px; font-size:{:.2}px; padding:5px 6px; }}
+        .browser-strip {{ background-color:transparent; border:0; border-radius:0; gap:2px; padding-top:3px; padding-bottom:3px; padding-right:6px; }}
+        .browser-button,.browser-button-disabled {{ --app-region:no-drag; box-sizing:border-box; background:transparent; border:0; border-radius:4px; font-size:{:.2}px; padding:4px 5px; }}
         .browser-button[aria-pressed=true] {{ background-color:{}; color:{}; }}
-        .browser-status {{ --app-region:no-drag; text-align:left; flex:1 1 0; min-width:0; border:1px solid {}; border-radius:5px; background-color:{}; color:{}; padding:6px 9px; }}
+        .browser-status {{ --app-region:no-drag; text-align:left; flex:1 1 0; min-width:0; border:1px solid {}; border-radius:5px; background-color:{}; color:{}; padding:4px 7px; overflow:hidden; white-space:nowrap; }}
         .chrome-menu-dismiss {{ --app-region:no-drag; background:transparent; }}
         .chrome-menu {{ --app-region:no-drag; display:flex; flex-direction:column; box-sizing:border-box; padding:8px; gap:0; background-color:{}; color:{}; border:1px solid {}; border-radius:6px; }}
         .chrome-menu-entry {{ width:100%; }}
@@ -2690,6 +2690,8 @@ pub struct RetainedSubtreeLayout {
     sheet: String,
     dirty: bool,
     rebuilds: u32,
+    /// DOM revision represented by the painted fragments, even after a drain.
+    mutation_cursor: u64,
 }
 
 impl Default for RetainedSubtreeLayout {
@@ -2700,7 +2702,8 @@ impl Default for RetainedSubtreeLayout {
 
 impl RetainedSubtreeLayout {
     pub(crate) fn selector_point(&self,dom:&ScriptedDom,root:DomNodeId,selector:&taproot::Selector)->Option<(f32,f32)> {
-        if self.dirty { return None; }
+        let (base, pending) = dom.pending_mutations();
+        if self.dirty || self.mutation_cursor != base + pending.len() as u64 { return None; }
         let snapshot=self.snapshot.as_ref()?;
         let scoped=cambium_rootstock::WindowDom::new(dom,root);
         let nodes=if matches!(selector.matcher,taproot::Match::Class(_)) {
@@ -2726,6 +2729,7 @@ impl RetainedSubtreeLayout {
             sheet: String::new(),
             dirty: true,
             rebuilds: 0,
+            mutation_cursor: 0,
         }
     }
 
@@ -2745,9 +2749,12 @@ impl RetainedSubtreeLayout {
     }
 
     fn ensure(&mut self, dom: &ScriptedDom, root: DomNodeId, sheet: &str, w: u32, h: u32) {
+        let (base, pending) = dom.pending_mutations();
+        let revision = base + pending.len() as u64;
         let resized = self.size != (w, h);
         let resheeted = self.sheet != sheet;
-        if self.snapshot.is_some() && !self.dirty && !resized && !resheeted {
+        if self.snapshot.is_some() && !self.dirty && !resized && !resheeted
+            && self.mutation_cursor == revision {
             return;
         }
         self.rebuilds = self.rebuilds.saturating_add(1);
@@ -2769,6 +2776,7 @@ impl RetainedSubtreeLayout {
         self.size = (w, h);
         self.sheet = sheet.to_string();
         self.dirty = false;
+        self.mutation_cursor = revision;
     }
 
     /// This root's scene, cascading only when something actually changed.
@@ -2951,8 +2959,8 @@ pub const CAMBIUM_SHEET: &str = "\
     .grid-cell { color: rgb(200, 208, 224); padding: 5px 10px; \
                  white-space: nowrap; overflow: hidden; } \
     .grid-row-selected .grid-cell { color: rgb(28, 22, 10); } \
-    .pane { background-color: rgb(22, 27, 40); } \n    .tablist { display: flex; height: 26px; background-color: rgb(18, 22, 33); } \
-    .tab { color: rgb(150, 160, 180); font-size: 12px; padding: 6px 12px; \
+    .pane { background-color: rgb(22, 27, 40); } \n    .tablist { display: flex; height: 24px; background-color: rgb(18, 22, 33); } \
+    .tab { color: rgb(150, 160, 180); font-size: 12px; padding: 4px 9px; \
            white-space: nowrap; } \
     .wb-tabs-vertical .tablist { flex-direction: column; width: 100%; height: 100%; } \
     .wb-tabs-vertical .tab { flex-shrink: 0; overflow: hidden; width: 100%; min-width: 0; box-sizing: border-box; } \
@@ -2993,7 +3001,7 @@ pub const SEAM_CLEAR: wgpu::Color = wgpu::Color {
 /// host must also state its height: the Roster subtracts it from the grid's
 /// viewport and adds it to a row's y. `tablist_height_matches_the_sheet` holds
 /// this to what the sheet actually lays out.
-pub const TABLIST_HEIGHT: f32 = 26.0;
+pub const TABLIST_HEIGHT: f32 = 24.0;
 
 fn qual(local: &str) -> QualName {
     QualName::new(None, Namespace::from(""), LocalName::from(local))

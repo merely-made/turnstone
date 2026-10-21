@@ -6337,3 +6337,94 @@ fn toolbar_repeated_map_returns_keep_a_real_graph_scene() {
         app.update(Action::ToggleToolPane(crate::panes::PaneKindId::new(crate::panes::kind::INSPECTOR)));
     }
 }
+
+#[test]
+fn graph_navigation_switch_keeps_map_camera_and_reading_selection() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.test/first".into()));
+    let first = app.graph_runtimes.focused_member().unwrap();
+    let map = app.default_graph_pane();
+    app.with_graph_pane(map, |canvas| {
+        canvas.frame(900, 600);
+        canvas.center_on_selected();
+        let mut view = canvas.viewport();
+        view.offset.0 += 100.0;
+        view.offset.1 += 80.0;
+        canvas.set_viewport(view);
+    });
+    let camera = app
+        .with_graph_pane(map, |canvas| canvas.viewport())
+        .unwrap();
+    app.update(Action::ReadGraphMember(first));
+    app.update(Action::OpenAddress("https://example.test/second".into()));
+    let second = app.graph_runtimes.focused_member().unwrap();
+    app.update(Action::WorkbenchActivate(first));
+    app.update(Action::SetWorkspaceMap(true));
+    assert_eq!(app.graph_pane_focused_member(map), Some(first));
+    assert_eq!(app.browser_command_target().unwrap().0, first);
+    assert_eq!(
+        app.with_graph_pane(map, |canvas| canvas.viewport()),
+        Some(camera)
+    );
+    app.graph_pane_select_member(map, second);
+    app.update(Action::SetWorkspaceMap(false));
+    assert_eq!(app.browser_command_target().unwrap().0, second);
+    assert_eq!(app.graph_runtimes.graph().nodes().count(), 2);
+    app.with_graph_pane(map, |canvas| {
+        let mut view = canvas.viewport();
+        view.offset = (-9000.0, -9000.0);
+        view.zoom = 0.7;
+        canvas.set_viewport(view);
+    });
+    app.update(Action::SetWorkspaceMap(true));
+    app.with_graph_pane(map, |canvas| {
+        let view = canvas.viewport();
+        assert_eq!(view.zoom, 0.7, "offscreen reveal keeps the chosen zoom");
+        let (x, y) = canvas.focused_screen_position().unwrap();
+        assert!(x >= 24.0 && x <= view.view.0 as f32 - 24.0);
+        assert!(y >= 24.0 && y <= view.view.1 as f32 - 24.0);
+    });
+}
+
+#[test]
+fn graph_navigation_read_adds_a_tab_and_keeps_existing_arrangements() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.test/first".into()));
+    let first = app.graph_runtimes.focused_member().unwrap();
+    app.update(Action::ReadGraphMember(first));
+    let reader = app.active_pane.unwrap();
+    let map = app.default_graph_pane();
+    let second = app
+        .with_graph_pane(map, |canvas| {
+            canvas.open_member_as_new_node(Some(first), "https://example.test/second")
+        })
+        .unwrap();
+    let graph_before = serde_json::to_value(app.graph_runtimes.graph().to_snapshot()).unwrap();
+    app.pane_context = Default::default();
+    app.update(Action::ReadGraphMember(second));
+    let wb = app.workbench_for_pane(reader).unwrap();
+    assert_eq!(wb.tile_count(), 2);
+    assert_eq!(
+        wb.slot_count(),
+        1,
+        "following a member uses the reading stack"
+    );
+    assert_eq!(app.browser_command_target().unwrap().0, second);
+    app.update(Action::WorkbenchSplitOut {
+        dragged: second,
+        axis: crate::action::WbAxis::Row,
+        after: true,
+    });
+    assert_eq!(app.workbench_for_pane(reader).unwrap().slot_count(), 2);
+    app.update(Action::ReadGraphMember(first));
+    assert_eq!(app.workbench_for_pane(reader).unwrap().slot_count(), 2);
+    app.update(Action::RevealGraphMember(second));
+    assert_eq!(app.active_pane, Some(map));
+    assert_eq!(app.graph_pane_focused_member(map), Some(second));
+    assert_eq!(app.workbench_for_pane(reader).unwrap().slot_count(), 2);
+    assert_eq!(
+        serde_json::to_value(app.graph_runtimes.graph().to_snapshot()).unwrap(),
+        graph_before,
+        "reading and revealing project existing graph data"
+    );
+}

@@ -314,7 +314,7 @@ impl WorkbenchPane {
                     members: c.members.clone(),
                     rect: c.rect,
                     labels,
-                    strip: TabStrip::new(c.active).with_label("Workbench cell"),
+                    strip: TabStrip::new(c.active).with_label("Reading documents"),
                     synced_active: c.active,
                     hint,
                 }

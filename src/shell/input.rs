@@ -220,6 +220,7 @@ pub(super) fn dispatch_primary_chrome_press(
         crate::chrome_view::ChromeIntent::WorkspaceMap(map) => Action::SetWorkspaceMap(map),
         crate::chrome_view::ChromeIntent::Tool(kind) => Action::ToggleToolPane(crate::panes::PaneKindId::new(kind)),
         crate::chrome_view::ChromeIntent::ReadMember(member) => Action::ReadGraphMember(member),
+        crate::chrome_view::ChromeIntent::RevealMember(member) => Action::RevealGraphMember(member),
         crate::chrome_view::ChromeIntent::Layout(layout) => Action::SetChromeLayout(layout),
         crate::chrome_view::ChromeIntent::AllPanes => Action::OmnibarOpen { command: true },
         crate::chrome_view::ChromeIntent::MenuChanged => { host.pointer_redraw(); return true; },
