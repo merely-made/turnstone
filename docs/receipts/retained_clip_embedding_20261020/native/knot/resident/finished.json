@@ -1,0 +1,82 @@
+{
+  "run": "turnstone/0bfd3f86-2430-4da7-b6b9-d1aebeca11d1/research/v1/42a3c7f3-83fb-41a5-93d8-44158d8d411c",
+  "question": "Repeat the retained sentence about the Pelican observatory exactly.",
+  "state": "finished",
+  "text": "The Pelican observatory's access word is café.",
+  "error": null,
+  "session": {
+    "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+    "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+  },
+  "tokens": 10,
+  "continuations": [
+    {
+      "device": "device:c086017bcf3a31caf9efff981bbb68d4",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "embedding": {
+      "envelope": "blake3:75cb488231af472288873091e1d763f3291fab33d5fc39e1f9c0d3f734b6ba68",
+      "index": "blake3:3ae82c8f1ab15a5dd05d006bc0f30e9b2ad4912dc4579f0070eb7cfa57ad1a47",
+      "cache": "built",
+      "vector_bytes": 1536,
+      "persisted_bytes": 6409,
+      "lexical_weight": 1,
+      "vector_weight": 1,
+      "rrf_k": 60
+    },
+    "owner": "turnstone/0bfd3f86-2430-4da7-b6b9-d1aebeca11d1/research/v1",
+    "scope": [
+      {
+        "kind": "fleece",
+        "owner": "turnstone/0bfd3f86-2430-4da7-b6b9-d1aebeca11d1/research/v1",
+        "source": "mere://retained-text/0bfd3f86-2430-4da7-b6b9-d1aebeca11d1/25bb61a8-693a-4d04-bd0c-22eabe7193e3/1f8c5db5-a142-4ab7-a6e4-bb98fcadbeb3/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+        "node": "1f8c5db5-a142-4ab7-a6e4-bb98fcadbeb3"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 1,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "fleece",
+            "owner": "turnstone/0bfd3f86-2430-4da7-b6b9-d1aebeca11d1/research/v1",
+            "source": "mere://retained-text/0bfd3f86-2430-4da7-b6b9-d1aebeca11d1/25bb61a8-693a-4d04-bd0c-22eabe7193e3/1f8c5db5-a142-4ab7-a6e4-bb98fcadbeb3/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+            "node": "1f8c5db5-a142-4ab7-a6e4-bb98fcadbeb3"
+          },
+          "version": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "selector": {
+            "start": 0,
+            "end": 46
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Pelican observatory's access word is café."
+        }
+      }
+    ],
+    "stale": [],
+    "citations": [
+      {
+        "handle": 1,
+        "passage": "blake3:3f97bf37f2ce0c6285405f2ee26f224aafa615e6c72c004c910ec8909d13b879",
+        "basis": "verbatim_passage",
+        "answer_selector": {
+          "start": 0,
+          "end": 46
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "previous_turnstone": "c43c9e38b72be0486bb0532efdc594c73c89ded9",
+  "resident_sdk": "eb1244ccfa644348fcd4c5cc8bd5ccf72315ba11",
+  "context_change_commit": "22c8c5e3c4bf3869bc56f5d44373d204f11458f7",
+  "cargo_lock_sha256": "d1f52e1d177edec435032a2f9206dabf37bdccec10ec136ddc71c71d5261f44e",
+  "package_name_version_set_unchanged": true,
+  "package_count": 1670,
+  "removed_sources": [
+    "git+https://github.com/merely-made/mere.git?branch=main#125df8df614ba503307cdacdba6150781bcea908"
+  ],
+  "added_sources": [
+    "git+https://github.com/merely-made/mere.git?branch=main#eb1244ccfa644348fcd4c5cc8bd5ccf72315ba11"
+  ],
+  "scope": "Mere SDK source refresh; fixed independent Eidetic/ESP and producer pins retained; native and software evidence must use these final inputs."
+}

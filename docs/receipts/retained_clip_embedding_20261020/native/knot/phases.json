@@ -1,0 +1,30 @@
+[
+  {
+    "phase": 0,
+    "resident_pid": 91787,
+    "product_pids": [
+      91859
+    ],
+    "clean_shutdown": true,
+    "endpoint_unreachable": true,
+    "transfer_absent": false,
+    "producer_paths_absent": [
+      "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+      "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot"
+    ]
+  },
+  {
+    "phase": 1,
+    "resident_pid": 91981,
+    "product_pids": [
+      91989
+    ],
+    "clean_shutdown": true,
+    "endpoint_unreachable": true,
+    "transfer_absent": true,
+    "producer_paths_absent": [
+      "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+      "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot"
+    ]
+  }
+]

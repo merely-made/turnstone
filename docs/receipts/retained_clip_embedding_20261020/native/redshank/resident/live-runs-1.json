@@ -1,0 +1,177 @@
+{
+  "schema": "distillery.inference-runs/v1",
+  "model": "HuggingFaceTB/SmolLM2-360M-Instruct",
+  "session": {
+    "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+    "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+  },
+  "load_error": null,
+  "runs": [
+    {
+      "run": "turnstone/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/research/v1/aed0250f-9b4a-4bb2-81bc-4121b0f68e5f",
+      "question": "Repeat both lines of the retained note about the embedded listener exactly, preserving the line break.",
+      "state": "finished",
+      "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note.",
+      "error": null,
+      "session": {
+        "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+        "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+      },
+      "tokens": 17,
+      "continuations": [
+        {
+          "device": "device:5e039748593ffa3fb8558d1a247c2aac",
+          "at_token": 0,
+          "reason": "ask",
+          "first_differing_token": null,
+          "compared_token_ids_hash": null
+        }
+      ],
+      "recall": {
+        "embedding": {
+          "envelope": "blake3:9ddca3acde362d0b6b19a7e7a66c4522334cb55d9ed08d956666b9c9d1eae9c8",
+          "index": "blake3:3665c5369dc5f83a2207ef19cadaafa5183999366cefb11ffe307dfbd437e7c4",
+          "cache": "built",
+          "vector_bytes": 1536,
+          "persisted_bytes": 6409,
+          "lexical_weight": 1,
+          "vector_weight": 1,
+          "rrf_k": 60
+        },
+        "owner": "turnstone/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/research/v1",
+        "scope": [
+          {
+            "kind": "fleece",
+            "owner": "turnstone/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/research/v1",
+            "source": "mere://retained-text/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/1b07644d-6c15-49d2-a110-d6ce5e7f7876/59ad1bc6-0ba6-41e8-b788-1e699b090ead/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+            "node": "59ad1bc6-0ba6-41e8-b788-1e699b090ead"
+          }
+        ],
+        "config": {
+          "chunk_chars": 512,
+          "max_passages": 1,
+          "min_quote_chars": 32,
+          "max_context_chars": 12000,
+          "max_corpus_chars": 1000000
+        },
+        "passages": [
+          {
+            "handle": 1,
+            "passage": {
+              "source": {
+                "kind": "fleece",
+                "owner": "turnstone/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/research/v1",
+                "source": "mere://retained-text/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/1b07644d-6c15-49d2-a110-d6ce5e7f7876/59ad1bc6-0ba6-41e8-b788-1e699b090ead/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+                "node": "59ad1bc6-0ba6-41e8-b788-1e699b090ead"
+              },
+              "version": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+              "text_hash": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+              "selector": {
+                "start": 0,
+                "end": 70
+              },
+              "chunker": "mere.unicode-chunks/v1/512",
+              "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+            }
+          }
+        ],
+        "stale": [
+          {
+            "source": {
+              "kind": "fleece",
+              "owner": "turnstone/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/research/v1",
+              "source": "mere://retained-text/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/1b07644d-6c15-49d2-a110-d6ce5e7f7876/59ad1bc6-0ba6-41e8-b788-1e699b090ead/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+              "node": "59ad1bc6-0ba6-41e8-b788-1e699b090ead"
+            },
+            "indexed_version": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+            "current_version": null,
+            "error": "source owner is unavailable"
+          }
+        ]
+      }
+    },
+    {
+      "run": "turnstone/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/research/v1/08b3dc7d-6b76-45af-8883-70df7d3f48a1",
+      "question": "Repeat both lines of the retained note about the embedded listener exactly, preserving the line break.",
+      "state": "finished",
+      "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note.",
+      "error": null,
+      "session": {
+        "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+        "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+      },
+      "tokens": 17,
+      "continuations": [
+        {
+          "device": "device:5e039748593ffa3fb8558d1a247c2aac",
+          "at_token": 0,
+          "reason": "ask",
+          "first_differing_token": null,
+          "compared_token_ids_hash": null
+        }
+      ],
+      "recall": {
+        "embedding": {
+          "envelope": "blake3:9ddca3acde362d0b6b19a7e7a66c4522334cb55d9ed08d956666b9c9d1eae9c8",
+          "index": "blake3:3665c5369dc5f83a2207ef19cadaafa5183999366cefb11ffe307dfbd437e7c4",
+          "cache": "reopened",
+          "vector_bytes": 2048,
+          "persisted_bytes": 6409,
+          "lexical_weight": 1,
+          "vector_weight": 1,
+          "rrf_k": 60
+        },
+        "owner": "turnstone/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/research/v1",
+        "scope": [
+          {
+            "kind": "fleece",
+            "owner": "turnstone/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/research/v1",
+            "source": "mere://retained-text/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/1b07644d-6c15-49d2-a110-d6ce5e7f7876/59ad1bc6-0ba6-41e8-b788-1e699b090ead/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+            "node": "59ad1bc6-0ba6-41e8-b788-1e699b090ead"
+          }
+        ],
+        "config": {
+          "chunk_chars": 512,
+          "max_passages": 1,
+          "min_quote_chars": 32,
+          "max_context_chars": 12000,
+          "max_corpus_chars": 1000000
+        },
+        "passages": [
+          {
+            "handle": 1,
+            "passage": {
+              "source": {
+                "kind": "fleece",
+                "owner": "turnstone/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/research/v1",
+                "source": "mere://retained-text/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/1b07644d-6c15-49d2-a110-d6ce5e7f7876/59ad1bc6-0ba6-41e8-b788-1e699b090ead/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+                "node": "59ad1bc6-0ba6-41e8-b788-1e699b090ead"
+              },
+              "version": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+              "text_hash": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+              "selector": {
+                "start": 0,
+                "end": 70
+              },
+              "chunker": "mere.unicode-chunks/v1/512",
+              "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+            }
+          }
+        ],
+        "stale": [
+          {
+            "source": {
+              "kind": "fleece",
+              "owner": "turnstone/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/research/v1",
+              "source": "mere://retained-text/0b0f598a-3db2-4fd2-8dd2-35ff0f630197/1b07644d-6c15-49d2-a110-d6ce5e7f7876/59ad1bc6-0ba6-41e8-b788-1e699b090ead/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+              "node": "59ad1bc6-0ba6-41e8-b788-1e699b090ead"
+            },
+            "indexed_version": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+            "current_version": null,
+            "error": "source owner is unavailable"
+          }
+        ]
+      }
+    }
+  ]
+}
