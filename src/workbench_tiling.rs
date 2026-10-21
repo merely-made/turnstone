@@ -88,7 +88,7 @@ impl CellPlacement {
     pub fn tab_rect(&self) -> Rect {
         use crate::chrome_layout::TabEdge;
         let height = crate::ui::TABLIST_HEIGHT.min(self.rect.h);
-        let width = 120.0_f32.min(self.rect.w * 0.30);
+        let width = cambium::ShellMetrics::DOCUMENT_RAIL_MAX_WIDTH.min(self.rect.w * 0.30);
         match self.tab_edge {
             TabEdge::Top => Rect::new(self.rect.x, self.rect.y, self.rect.w, height),
             TabEdge::Bottom => Rect::new(

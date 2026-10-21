@@ -782,6 +782,7 @@ impl taproot::Automatable for Shell {
             .with_field("scene-foreground-pins", snap.graph_scene.foreground_pins.to_string())
             .with_field("scene-retained", snap.graph_scene.retained.to_string())
             .with_field("scene-grammar", snap.graph_scene.grammar.to_string())
+            .with_field("scene-territory", snap.graph_scene.territory.to_string())
             .with_field("focus", snap.focus)
             .with_field("saved-sources-status", self.app.saved_sources.status.clone())
             .with_field("saved-reader-state", saved_reader_state)

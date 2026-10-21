@@ -35,6 +35,12 @@ use crate::content::NodeContent;
 use crate::surface::Rect;
 use crate::workbench_tiling::{WorkbenchTiling, place_workbench_at};
 
+fn workbench_sheet() -> &'static str {
+    static SHEET: std::sync::LazyLock<String> = std::sync::LazyLock::new(||
+        format!("{}\n{}", crate::ui::CAMBIUM_SHEET, cambium::SHELL_CSS));
+    &SHEET
+}
+
 /// One cell as the view holds it: the walked placement's members and rect,
 /// the tab labels, the strip state (selection mirrors the model's active
 /// tab at sync; a click moves it and the shell lowers the diff), and the
@@ -136,7 +142,7 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
             "div",
             arrangement(state.viewport_w, state.viewport_h, children),
         )
-        .attr("class", "pane"),
+        .attr("class", "pane cambium-document-rail"),
     )
 }
 
@@ -341,7 +347,7 @@ impl WorkbenchPane {
     pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
         self.layout.scene_scrolled(
             &mut self.dom.borrow_mut(),
-            crate::ui::CAMBIUM_SHEET,
+            workbench_sheet(),
             w,
             h,
             &mut self.scroll,
@@ -428,7 +434,7 @@ impl WorkbenchPane {
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) -> Vec<WbActivate> {
         let hit = self.layout.hit_test_scrolled(
             &mut self.dom.borrow_mut(),
-            crate::ui::CAMBIUM_SHEET,
+            workbench_sheet(),
             w,
             h,
             x,
