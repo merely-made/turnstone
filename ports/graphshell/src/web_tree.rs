@@ -407,7 +407,7 @@ impl TextureProducer for CanvasProducer {
     /// by its title and placed where it is painted. Otherwise it is the
     /// graph's items on screen, each a group whose drag and pin are buttons
     /// (dynamics grammar plan, F62, F65 to F67).
-    fn semantics(&mut self) -> Option<cambium_rootstock::ProducerSemantics> {
+    fn semantics(&self) -> Option<cambium_rootstock::ProducerSemantics> {
         if !self.shared.remote_shown.get() {
             return Some(graphshell::canvas_reader::describe_canvas(
                 &self.shared.canvas.borrow(),

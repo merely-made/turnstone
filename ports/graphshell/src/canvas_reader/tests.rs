@@ -55,7 +55,7 @@ impl TextureProducer for Reader {
     fn render(&mut self, _: &ProducerContext<'_>) -> Option<ProducedTexture> {
         None
     }
-    fn semantics(&mut self) -> Option<ProducerSemantics> {
+    fn semantics(&self) -> Option<ProducerSemantics> {
         Some(describe_canvas(&self.canvas.borrow(), self.plant))
     }
     fn act(&mut self, key: u64, id: &str) -> bool {

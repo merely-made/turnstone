@@ -21,7 +21,7 @@ use pelt_core::{
 };
 use std::{
     cell::{Cell, RefCell},
-    collections::BTreeMap,
+    collections::{BTreeMap, BTreeSet},
     rc::Rc,
 };
 use uuid::Uuid;
@@ -226,6 +226,9 @@ pub struct ContentSlot {
     pub(crate) effects: Vec<PeltHostEffect>,
     pub(crate) visible: bool,
     glyph_runs: usize,
+    // Allocated by the content owner after an admitted layout/frame, never by
+    // semantic reads. Keys retain session identity across producer recreation.
+    semantic_keys: BTreeMap<(u64, u64, u64), u64>,
 }
 impl ContentSlot {
     pub fn glyph_runs(&self) -> usize {
@@ -306,6 +309,7 @@ impl ContentSlot {
             1.,
         )? {
             PeltLayer::Document(scene) => {
+                self.refresh_semantic_keys();
                 self.glyph_runs = scene
                     .ops
                     .iter()
@@ -314,6 +318,41 @@ impl ContentSlot {
                 Ok(scene)
             },
             _ => Err("This content needs the host's external surface compositor".into()),
+        }
+    }
+
+    fn refresh_semantic_keys(&mut self) {
+        let Some(controller) = self.content.document() else {
+            return;
+        };
+        let identity = controller.session_identity();
+        let Some(projection) = controller.accessibility_projection() else {
+            return;
+        };
+        let live_nodes: BTreeSet<_> = projection
+            .nodes()
+            .iter()
+            .map(|node| node.id.get())
+            .collect();
+        self.semantic_keys
+            .retain(|&(instance, generation, node), _| {
+                instance == identity.instance_id
+                    && generation == identity.generation
+                    && live_nodes.contains(&node)
+            });
+        for node in live_nodes {
+            self.semantic_keys
+                .entry((identity.instance_id, identity.generation, node))
+                .or_insert_with(|| {
+                    static NEXT: std::sync::atomic::AtomicU64 =
+                        std::sync::atomic::AtomicU64::new(1);
+                    NEXT.fetch_update(
+                        std::sync::atomic::Ordering::Relaxed,
+                        std::sync::atomic::Ordering::Relaxed,
+                        |n| n.checked_add(1),
+                    )
+                    .expect("content action keys exhausted")
+                });
         }
     }
 }
@@ -443,6 +482,7 @@ impl ContentHost {
             effects: Vec::new(),
             visible: false,
             glyph_runs: 0,
+            semantic_keys: BTreeMap::new(),
         }));
         if let Some(old) = self.slots.insert(access, slot.clone()) {
             old.borrow_mut().visible = false;
