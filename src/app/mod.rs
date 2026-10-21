@@ -688,6 +688,7 @@ impl App {
     /// Roster and Inspector follow this explicit context rather than the graph
     /// runtime pool's legacy cursor.
     pub fn follower_context(&self, pane: PaneId) -> Option<PaneContext> {
+        if self.has_pane_binding(pane) { return self.pane_bound_context(pane); }
         self.pane_context.resolve_context(
             pane,
             &crate::panes::ContextBinding::FocusedInOwnSpace,
@@ -764,6 +765,7 @@ impl App {
                 })
             }))
             .collect();
+        self.pane_context.retain_panes(&panes.iter().map(|(pane, _)| *pane).collect());
         for (pane, space) in panes {
             self.pane_context.place(pane, space);
         }
@@ -797,6 +799,7 @@ impl App {
         let graph = self.graph_for_pane(pane)?;
         let mut transition = self.graph_runtimes.get_mut(graph)?.scene_transition.take();
         let restored = std::mem::take(&mut self.graph_runtimes.get_mut(graph)?.scene_restore_pending);
+        let fit = self.graph_views.take_fit(pane);
         static CLOCK: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
         let host_ms = CLOCK.get_or_init(std::time::Instant::now).elapsed().as_secs_f64() * 1000.0;
         let result = self.with_graph_pane(pane, |canvas| {
@@ -809,6 +812,10 @@ impl App {
             }
             let id = canvas.layout_strategy().unwrap_or("free").to_owned();
             mere::canvas::physics_controls::advance_arrangement(canvas, &mut transition, &id, host_ms);
+            if fit {
+                canvas.resize(width, height);
+                canvas.fit_to_content();
+            }
             let (scene, redraw) = canvas.frame(width, height);
             (scene, redraw || transition.is_some() || canvas.has_stop_return())
         });
@@ -1096,7 +1103,7 @@ impl App {
     }
 
     /// Mutable [`Self::space`].
-    fn space_mut(&mut self, space: SpaceRef) -> Option<&mut FrisketLayout> {
+    pub(crate) fn space_mut(&mut self, space: SpaceRef) -> Option<&mut FrisketLayout> {
         match space {
             SpaceRef::Primary => Some(&mut self.frisket),
             SpaceRef::Lens(i) => self.lenses.get_mut(i).and_then(Option::as_mut),
@@ -1247,6 +1254,7 @@ impl App {
             Action::FitView => {
                 if let Some(pane) = self.graph_command_pane() {
                     self.with_graph_pane(pane, |canvas| canvas.fit_to_content());
+                    self.graph_views.request_fit(pane);
                 }
                 vec![Effect::Redraw]
             }
@@ -1416,6 +1424,8 @@ impl App {
             Action::SummonPane(kind) => self.summon_pane(kind),
             Action::SetWorkspaceMap(map) => self.set_workspace_map(map),
             Action::ReadGraphMember(member) => self.read_graph_member(member),
+            Action::NavigateRelationship(target) => self.navigate_relationship(target),
+            Action::SetPaneBinding(intent) => self.apply_pane_binding(intent),
             Action::RevealGraphMember(member) => self.reveal_graph_member(member),
             Action::ToggleToolPane(kind) => self.toggle_tool_pane(kind),
             Action::SetChromeLayout(layout) => {

@@ -6428,3 +6428,30 @@ fn graph_navigation_read_adds_a_tab_and_keeps_existing_arrangements() {
         "reading and revealing project existing graph data"
     );
 }
+
+#[test]
+fn graph_navigation_fit_after_read_uses_the_new_pane_aperture() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.test/first".into()));
+    let first = app.graph_runtimes.focused_member().unwrap();
+    let pane = app.default_graph_pane();
+    app.with_graph_pane(pane, |canvas| {
+        canvas.open_member_as_new_node(Some(first), "https://example.test/second");
+        canvas.set_physics_paused(true);
+        canvas.set_layout_strategy(None);
+    });
+    app.graph_pane_frame(pane, 1024, 521).unwrap();
+    app.update(Action::SetWorkspaceMap(false));
+    app.update(Action::SetWorkspaceMap(true));
+    app.update(Action::FitView);
+    app.graph_pane_frame(pane, 638, 521).unwrap();
+    app.with_graph_pane(pane, |canvas| {
+        assert_eq!(canvas.viewport().view, (638, 521));
+        let actual = canvas.viewport();
+        canvas.fit_to_content();
+        let expected = canvas.viewport();
+        assert_eq!(actual.offset, expected.offset);
+        assert_eq!(actual.zoom, expected.zoom);
+    });
+    assert!(!app.graph_views.take_fit(pane), "one explicit fit is consumed by one frame");
+}

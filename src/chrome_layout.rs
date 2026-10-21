@@ -19,6 +19,14 @@ pub enum TabEdge {
 mod tests {
     use super::*;
     #[test]
+    fn existing_layout_files_keep_toolbar_navigation() {
+        let layout: ChromeLayout = serde_json::from_str(r#"{"toolbar_bottom":true,"document_tabs":"left"}"#).unwrap();
+        assert!(!layout.activity_rail);
+        assert!(layout.toolbar_bottom);
+        assert_eq!(layout.document_tabs, TabEdge::Left);
+    }
+
+    #[test]
     fn placement_choices_survive_a_cold_load() {
         let root = tempfile::tempdir().unwrap();
         assert_eq!(
@@ -28,6 +36,8 @@ mod tests {
         for document_tabs in [TabEdge::Top, TabEdge::Bottom, TabEdge::Left, TabEdge::Right] {
             let layout = ChromeLayout {
                 toolbar_bottom: true,
+                activity_rail: true,
+                document_rail: true,
                 document_tabs,
             };
             layout.save(root.path()).unwrap();
@@ -40,6 +50,10 @@ mod tests {
 #[serde(default)]
 pub struct ChromeLayout {
     pub toolbar_bottom: bool,
+    /// Optional activity navigation; the browser toolbar is the default.
+    pub activity_rail: bool,
+    /// Show the grouped reading-tab navigator beside the activity buttons.
+    pub document_rail: bool,
     pub document_tabs: TabEdge,
 }
 

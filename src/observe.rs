@@ -1180,12 +1180,13 @@ pub fn snapshot(app: &App) -> Snapshot {
                     .collect()
             })
             .unwrap_or_default(),
-        inspector_rows: app
-            .frisket
-            .iter_leaves()
-            .any(|(_, c, _)| matches!(c, crate::panes::PaneContent::Inspector))
-            .then(|| crate::inspector_view::inspector_lines(app))
-            .unwrap_or_default(),
+        inspector_rows: app.frisket.iter_leaves()
+            .filter(|(_, content, _)| matches!(content, crate::panes::PaneContent::Inspector))
+            .flat_map(|(pane, _, _)| {
+                let mut lines = app.pane_binding_snapshot(pane).map(|binding| vec![format!("Pane source: {}: {}", binding.mode, binding.source)]).unwrap_or_default();
+                lines.extend(crate::inspector_view::inspector_sections_for_pane(app, pane).into_iter().flat_map(|section| section.rows).map(|(key,value)| format!("{key}: {value}")));
+                lines
+            }).collect(),
         arrange_rows: app
             .frisket
             .iter_leaves()

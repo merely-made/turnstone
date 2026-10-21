@@ -220,8 +220,14 @@ pub(super) fn dispatch_primary_chrome_press(
         crate::chrome_view::ChromeIntent::WorkspaceMap(map) => Action::SetWorkspaceMap(map),
         crate::chrome_view::ChromeIntent::Tool(kind) => Action::ToggleToolPane(crate::panes::PaneKindId::new(kind)),
         crate::chrome_view::ChromeIntent::ReadMember(member) => Action::ReadGraphMember(member),
+        crate::chrome_view::ChromeIntent::NavigateRelationship(target) => Action::NavigateRelationship(target),
         crate::chrome_view::ChromeIntent::RevealMember(member) => Action::RevealGraphMember(member),
         crate::chrome_view::ChromeIntent::Layout(layout) => Action::SetChromeLayout(layout),
+        crate::chrome_view::ChromeIntent::FitGraph => {
+            dispatch_primary_action_press(host, Action::SetWorkspaceMap(true));
+            dispatch_primary_action_press(host, Action::FitView);
+            return true;
+        },
         crate::chrome_view::ChromeIntent::Territory => Action::ToggleTerritory,
         crate::chrome_view::ChromeIntent::AllPanes => Action::OmnibarOpen { command: true },
         crate::chrome_view::ChromeIntent::MenuChanged => { host.pointer_redraw(); return true; },
@@ -793,6 +799,7 @@ impl Shell {
                                 };
                                 for action in actions {
                                     match action {
+                                        crate::cambium_pane::RosterAction::Binding(intent) => { self.act(Action::SetPaneBinding(intent)); },
                                         crate::cambium_pane::RosterAction::Navigate(url) => {
                                             self.act(Action::OpenAddress(url))
                                         },
@@ -854,7 +861,8 @@ impl Shell {
                                         crate::inspector_pane::InspectorIntent::ClipToKnot { offer } => {
                                             self.clip_document_to_knot(offer)
                                         },
-                                        crate::inspector_pane::InspectorIntent::NewResearchNote => self.act(Action::NewResearchNote),
+                                        crate::inspector_pane::InspectorIntent::Binding(intent) => self.act(Action::SetPaneBinding(intent)),
+                        crate::inspector_pane::InspectorIntent::NewResearchNote => self.act(Action::NewResearchNote),
                                         crate::inspector_pane::InspectorIntent::OpenResearchNote => self.act(Action::OpenResearchNote),
                                         crate::inspector_pane::InspectorIntent::ChooseResearchNote { choice } => self.act(Action::ChooseResearchNote { choice }),
                                         crate::inspector_pane::InspectorIntent::CaptureSourceDocument { target } => self.act(Action::CaptureSourceDocument { target }),
