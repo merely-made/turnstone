@@ -1487,6 +1487,7 @@ mod node_arms;
 
 mod omnibar_arms;
 mod palette;
+mod command_invocation;
 mod pane_arms;
 mod outer_workspace_arms;
 mod workspace_stations;

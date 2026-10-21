@@ -1219,10 +1219,14 @@ mod tests {
         let a = SessionId::new();
         let b = SessionId::new();
         let mut ma = GraphSessionManifest::new(a, crate::panes::GraphId::nil());
-        // `b` is newer (created after), so the fallback picks it.
-        std::thread::sleep(std::time::Duration::from_millis(10));
-        let mb = GraphSessionManifest::new(b, crate::panes::GraphId::nil());
-        ma.touch();
+        let mut mb = GraphSessionManifest::new(b, crate::panes::GraphId::nil());
+        // Creation and later mutation are explicit fixture facts. Immediate
+        // wall-clock calls can tie, making HashMap iteration decide this test.
+        let at = |seconds| std::time::UNIX_EPOCH + std::time::Duration::from_secs(seconds);
+        ma.created_at = at(1);
+        mb.created_at = at(2);
+        mb.updated_at = at(2);
+        ma.updated_at = at(3);
         store.insert(ma);
         store.insert(mb);
 

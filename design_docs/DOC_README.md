@@ -67,7 +67,7 @@ set.
 
 ## Current implementation plans and product direction
 
-- [Hest declarations and Cambium 0.5 adoption](2026-10-06_unusual_protocols_browser_plan.md#hest-declarations-and-cambium-05-adoption-2026-10-20): canonical source and Git-backed receiving qualified locally on Mere `0151950f8` and embedded Knot `65a6632`; 14 palette/sidecar cases, 1103 full-library passes, all-target checking and metadata verification. Push/publication and native GUI acceptance remain held.
+- [Hest command invocation and Cambium 0.5 adoption](2026-10-06_unusual_protocols_browser_plan.md#hest-h3-command-invocation-2026-10-20): canonical H3 keyboard/reducer receiving qualified on Mere `9ef5e3026` and embedded Knot `ebf10c741`; 1107 full-library passes, all-targets and portable metadata checks pass. Deferred dispatch remains pending; Git delivery is authorized and crate publication remains held.
 
 - Resident answer card: source-owner publication, exact-version citations and
   headed I5 acceptance are tracked in

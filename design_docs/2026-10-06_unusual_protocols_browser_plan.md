@@ -2130,3 +2130,43 @@ authoring cases (5 existing ignores), plus all-targets and portable metadata.
 The complete merged library passes 1103 with 15 existing ignores
 and zero failures. Focused cases overlap that full-suite count. The updated
 receiving receipt distinguishes this merged cohort from the first pass.
+
+
+### Hest H3 command invocation (2026-10-20)
+
+Mark authorized H3, local commits and Git pushes. Crate publication remains
+held. The canonical receiver follows the additive Hest 0.2 API through Cambium
+0.5. Static commands keep their existing shared catalogue id or host-owned
+registered id. An invocation carries the command's declared effect and a
+versioned opaque host observation of session, pane, graph and selection.
+Turnstone validates that observation and the current declaration before the
+existing reducer runs. Text editing and contextual producer actions retain
+their dedicated typed paths.
+
+The actual canvas key route forms and receives this invocation. Its receiving
+receipt drives the existing isometric key binding into the reducer and checks
+the resulting model change and terminal outcome. Physics/isometric view
+changes can establish synchronous `Done`. Save effects and other deferred
+operations produce no terminal success from dispatch alone. Malformed
+contracts and stale observations must leave enactment untouched. Chirograph's
+`Accepted` remains admission/dispatch, with no inferred completion.
+
+Full receiving, all-targets and portable source-mode checks qualify the final
+source and lock cohort; the Mere Hest plan owns the common contract and
+cross-host evidence. Native GUI and assistive-technology acceptance remain
+separate from these software receipts.
+
+Canonical common-contract owner:
+`mere/design_docs/cambium_docs/implementation_strategy/2026-10-20_hest_command_architecture_plan.md`.
+
+
+H3 receiving is qualified on Mere `9ef5e3026` and embedded Knot `ebf10c741`:
+the full default library passes 1107 tests with 15 existing ignores. Focused
+receipts pass 4 H3, 14 menu/sidecar, 15 Inspector and 23 embedded-Knot cases
+(5 existing ignores); these overlap the full-library result. Workspace
+all-targets and portable metadata checks pass. The existing session-marker
+fixture now uses explicit timestamp ordering after the first full run exposed
+its wall-clock-dependent ordering; production session code is unchanged.
+Incoming NetRender `ec15eb26`, Genet `6ef3cd37` and Murm `e2f19a3f` remain
+pinned, with 1,604 unrelated package blocks preserved exactly. Git delivery is
+authorized; crate publication and native GUI/human AT acceptance remain separate.

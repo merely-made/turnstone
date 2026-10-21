@@ -514,43 +514,54 @@ impl Shell {
                 _ => None,
             }
         } else {
-            match key {
-                WinitKey::Named(WinitNamedKey::Space) => Some(Action::ReseedLayout),
-                // Delete forgets the focused node (recoverable from the Trail's
-                // Removed section).
-                WinitKey::Named(WinitNamedKey::Delete) => Some(Action::DeleteFocusedNode),
-                // The browser nav chords (the r3-owed row).
-                WinitKey::Named(WinitNamedKey::ArrowLeft) if self.alt => Some(Action::NavBack),
-                WinitKey::Named(WinitNamedKey::ArrowRight) if self.alt => Some(Action::NavForward),
-                WinitKey::Character(s) if self.ctrl => match s.as_str() {
-                    // The summon chords: Ctrl+L address flavor, Ctrl+K command
-                    // flavor (pre-seeded `>`).
-                    "l" => Some(Action::OmnibarOpen { command: false }),
-                    "k" => Some(Action::OmnibarOpen { command: true }),
-                    "r" => Some(Action::Reload),
-                    _ => None,
-                },
-                WinitKey::Character(s) => match s.as_str() {
-                    // Plain-key summons beside the Ctrl chords: `/` (the
-                    // quick-switcher convention) and `>` straight into the
-                    // actions lane. Chord-free, so synthesized-input drivers
-                    // can't lose the modifier race either.
-                    "/" => Some(Action::OmnibarOpen { command: false }),
-                    ">" => Some(Action::OmnibarOpen { command: true }),
-                    "i" => Some(Action::ToggleIsometric),
-                    "q" => Some(Action::OrbitBy(-0.15)),
-                    "e" => Some(Action::OrbitBy(0.15)),
-                    "[" => Some(Action::TiltBy(-0.05)),
-                    "]" => Some(Action::TiltBy(0.05)),
-                    "h" => Some(Action::ToggleHeightByDegree),
-                    _ => None,
-                },
-                _ => None,
-            }
+            canvas_shortcut_action(key, self.ctrl, self.alt)
         };
         if let Some(action) = action {
-            self.act(action);
+            // Editable omnibar input keeps its direct typed path. Building a
+            // command observation is only for the durable shortcut lane.
+            if self.app.omnibar.open {
+                self.act(action);
+            } else {
+                let _ = self.act_command(action);
+            }
         }
+    }
+}
+
+/// The canvas command bindings used after focus-specific key routing.
+fn canvas_shortcut_action(key: &WinitKey, ctrl: bool, alt: bool) -> Option<Action> {
+    match key {
+        WinitKey::Named(WinitNamedKey::Space) => Some(Action::ReseedLayout),
+        // Delete forgets the focused node (recoverable from the Trail's
+        // Removed section).
+        WinitKey::Named(WinitNamedKey::Delete) => Some(Action::DeleteFocusedNode),
+        // The browser nav chords (the r3-owed row).
+        WinitKey::Named(WinitNamedKey::ArrowLeft) if alt => Some(Action::NavBack),
+        WinitKey::Named(WinitNamedKey::ArrowRight) if alt => Some(Action::NavForward),
+        WinitKey::Character(s) if ctrl => match s.as_str() {
+            // The summon chords: Ctrl+L address flavor, Ctrl+K command
+            // flavor (pre-seeded `>`).
+            "l" => Some(Action::OmnibarOpen { command: false }),
+            "k" => Some(Action::OmnibarOpen { command: true }),
+            "r" => Some(Action::Reload),
+            _ => None,
+        },
+        WinitKey::Character(s) => match s.as_str() {
+            // Plain-key summons beside the Ctrl chords: `/` (the
+            // quick-switcher convention) and `>` straight into the
+            // actions lane. Chord-free, so synthesized-input drivers
+            // can't lose the modifier race either.
+            "/" => Some(Action::OmnibarOpen { command: false }),
+            ">" => Some(Action::OmnibarOpen { command: true }),
+            "i" => Some(Action::ToggleIsometric),
+            "q" => Some(Action::OrbitBy(-0.15)),
+            "e" => Some(Action::OrbitBy(0.15)),
+            "[" => Some(Action::TiltBy(-0.05)),
+            "]" => Some(Action::TiltBy(0.05)),
+            "h" => Some(Action::ToggleHeightByDegree),
+            _ => None,
+        },
+        _ => None,
     }
 }
 
@@ -588,6 +599,20 @@ fn windows_virtual_key(key: &WinitKey) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn hest_keyboard_command_reaches_the_reducer_and_reports_model_completion() {
+        let mut app = crate::app::App::test_stub();
+        let action =
+            canvas_shortcut_action(&WinitKey::Character("i".into()), false, false).unwrap();
+        let invocation = app.command_invocation(&action).unwrap();
+        assert_eq!(invocation.id, "Toggle isometric view");
+        let before = app.graph_runtimes.is_isometric();
+        let (effects, outcome) = app.invoke_command(&invocation);
+        assert_eq!(effects, vec![crate::action::Effect::Redraw]);
+        assert_eq!(app.graph_runtimes.is_isometric(), !before);
+        assert_eq!(outcome, Some(cambium::Outcome::Done));
+    }
 
     /// The content scroll-key mapping: the page-scroll keys map, Space pages
     /// (down, or up with Shift — the browser convention), and a non-scroll key

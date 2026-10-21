@@ -56,7 +56,7 @@ impl CommandCatalog {
         self.ids.get(label).map(String::as_str)
     }
 
-    fn action(&self, id: &str) -> Option<&Action> {
+    pub(super) fn action(&self, id: &str) -> Option<&Action> {
         self.actions.get(id)
     }
 }
