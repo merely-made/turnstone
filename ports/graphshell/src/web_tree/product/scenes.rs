@@ -37,6 +37,16 @@ impl Default for SceneControls {
     }
 }
 impl SavedProduct {
+    /// Diagnostic readback of the actual canonical v4 facet, not form state.
+    pub(in crate::web_tree) fn saved_dynamics_value(&self) -> Option<serde_json::Value> {
+        self.app
+            .as_ref()?
+            .host
+            .facet_value(ADDRESS, graphshell::product::SAVED_SCENE_FACET)?
+            .get("dynamics")
+            .cloned()
+    }
+
     pub(in crate::web_tree) fn saved_scene_facet(&self) -> &'static str {
         use graphshell::product::{SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3};
         [
@@ -220,14 +230,18 @@ fn action_button(label: &'static str, action: &'static str) -> Child {
             None
         };
         if let Some(product) = &mut page.product {
-            if let Err(error) = product.scene_action_observed(
+            match product.scene_action_observed(
                 &mut page.shared.canvas.borrow_mut(),
                 &page.physics.layout_id,
                 page.size,
                 action,
                 waypoint,
             ) {
-                product.status = error;
+                Ok(()) if action == "reopen" => {
+                    page.physics.status = "Saved scene physics restored".into();
+                },
+                Err(error) => product.status = error,
+                _ => {},
             }
         }
         let canvas = page.shared.canvas.borrow();

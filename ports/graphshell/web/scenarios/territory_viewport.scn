@@ -1,0 +1,21 @@
+assert snap source == saved graph
+assert snap territory == true
+remember ground
+capture territory_full_map
+click role:button Panes
+click role:button Graph controls
+click role:button Territory
+assert snap territory == false
+click role:button Panes
+click role:button Graph controls
+capture territory_off
+click role:button Panes
+click role:button Graph controls
+click role:button Territory
+assert snap territory == true
+click role:button Pan right
+wait 120
+click role:button Panes
+click role:button Graph controls
+same ground node-count
+capture territory_panned_map

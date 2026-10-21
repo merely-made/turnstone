@@ -41,6 +41,9 @@ impl CanvasProducer {
             canvas.resize(size.0, size.1);
             shared.size.set(size);
         }
+        if shared.fit_pending.replace(false) {
+            canvas.fit_to_content();
+        }
         // The step budget is a share of the display's period, read from the
         // frames' intervals (ruled 2026-10-04, "Infer the period").
         let frame_ms = frame

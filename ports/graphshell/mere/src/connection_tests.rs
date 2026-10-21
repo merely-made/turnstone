@@ -290,6 +290,83 @@ fn valid_explicit_session_material_supplies_saved_view_and_read_only_state() {
 }
 
 #[test]
+fn selected_record_offers_use_owner_item_after_the_hidden_session_item() {
+    let (mut transport, _) = fixture(false, true);
+    let action = graphshell::handlers::HandlerOffer {
+        id: "fixture".into(),
+        label: "Open with fixture".into(),
+        explanation: "Configured by the owner".into(),
+        address_kinds: vec![],
+    }
+    .advertised_action();
+    for response in &mut transport.responses {
+        if let Ok(CarrierResponseBody::Snapshot(snapshot)) = response
+            && snapshot.session.0 == wire::MERE_GRAPH
+        {
+            let key = snapshot
+                .presentation
+                .bindings
+                .iter()
+                .find(|binding| binding.instance == InstanceId(1))
+                .unwrap()
+                .key
+                .clone();
+            snapshot.presentation.offers.get_mut(&key).unwrap()[0]
+                .semantics
+                .actions
+                .push(action.clone());
+        }
+    }
+    let profile = CapabilityProfile::new([PresentationCapability::PortableCard]);
+    let mut connection = Connection::from_opened(transport, opened(), profile).unwrap();
+    let reading = run(connection.read()).unwrap();
+    let (target, offered) = reading.owner_offers[RECORD].clone();
+    assert_eq!(target.target, InstanceId(1));
+    assert_eq!(offered, vec![action.clone()]);
+    assert_eq!(reading.owner_offers.len(), 1);
+    let command = action.command_invocation(
+        serde_json::to_vec(&graphshell::handlers::OpenAddressV1 {
+            address: ADDRESS.into(),
+            handler: "fixture".into(),
+        })
+        .unwrap(),
+    );
+    connection
+        .transport
+        .responses
+        .push_back(Ok(CarrierResponseBody::Intent(IntentResult::Rejected {
+            reason: "owner refused this request".into(),
+        })));
+    let (refresh, _) = fixture(false, true);
+    connection.transport.responses.extend(refresh.responses);
+    connection.take_owner_command(RECORD.into(), target.clone(), action, command);
+    let reading = run(connection.read()).unwrap();
+    assert!(
+        reading
+            .model
+            .notice
+            .unwrap()
+            .contains("owner refused this request")
+    );
+    let request = connection
+        .transport
+        .requests
+        .iter()
+        .find_map(|request| match request {
+            CarrierRequestBody::Intent(request)
+                if request.intent == "graphshell.address.open/fixture" =>
+            {
+                Some(request)
+            },
+            _ => None,
+        })
+        .unwrap();
+    assert_eq!(request.target, InstanceId(1));
+    assert_eq!(request.observed_epoch, target.observed_epoch);
+    assert_eq!(request.observed_revision, target.observed_revision);
+}
+
+#[test]
 fn read_only_activation_uses_shared_inspection_without_a_carrier_intent() {
     let (transport, _) = fixture(true, true);
     let profile = CapabilityProfile::new([PresentationCapability::PortableCard]);
@@ -467,5 +544,167 @@ fn writable_activation_and_layout_save_through_shared_view_intent() {
     assert_eq!(
         saved_views[1].state.strategy.as_deref(),
         Some("phyllotaxis.default")
+    );
+}
+
+#[derive(Default)]
+struct TestBrowser {
+    opened: Vec<String>,
+    fail: bool,
+}
+impl super::Browser for TestBrowser {
+    async fn open(&mut self, address: &str) -> Result<(), String> {
+        self.opened.push(address.into());
+        if self.fail {
+            Err("system browser refused the handoff".into())
+        } else {
+            Ok(())
+        }
+    }
+}
+
+fn browser_connection() -> (
+    Connection<FixtureTransport, TestBrowser>,
+    chirograph::AdvertisedAction,
+) {
+    let (mut transport, _) = fixture(false, true);
+    let action = graphshell::handlers::web_browser_handler().advertised_action();
+    for response in &mut transport.responses {
+        if let Ok(CarrierResponseBody::Snapshot(snapshot)) = response
+            && snapshot.session.0 == wire::MERE_GRAPH
+        {
+            let key = snapshot
+                .presentation
+                .bindings
+                .iter()
+                .find(|b| b.instance == InstanceId(1))
+                .unwrap()
+                .key
+                .clone();
+            snapshot.presentation.offers.get_mut(&key).unwrap()[0]
+                .semantics
+                .actions
+                .push(action.clone());
+        }
+    }
+    (
+        Connection::from_opened_with_browser(
+            transport,
+            opened(),
+            CapabilityProfile::new([PresentationCapability::PortableCard]),
+            TestBrowser::default(),
+        )
+        .unwrap(),
+        action,
+    )
+}
+
+#[test]
+fn only_exact_owner_acceptance_dispatches_the_browser_once() {
+    for result in [
+        Ok(CarrierResponseBody::Intent(IntentResult::Accepted)),
+        Ok(CarrierResponseBody::Intent(IntentResult::Rejected {
+            reason: "not allowed".into(),
+        })),
+        Ok(CarrierResponseBody::Intent(IntentResult::Stale {
+            current_epoch: SceneEpoch(2),
+            current_revision: Revision(8),
+        })),
+        Err("reply lost after dispatch; outcome unknown".into()),
+    ] {
+        let accepted = matches!(
+            &result,
+            Ok(CarrierResponseBody::Intent(IntentResult::Accepted))
+        );
+        let (mut connection, action) = browser_connection();
+        let reading = run(connection.read()).unwrap();
+        let (target, _) = reading.owner_offers[RECORD].clone();
+        connection.transport.responses.push_back(result);
+        let (refresh, _) = fixture(false, true);
+        connection.transport.responses.extend(refresh.responses);
+        let command = action.command_invocation(
+            serde_json::to_vec(&graphshell::handlers::OpenAddressV1 {
+                address: ADDRESS.into(),
+                handler: graphshell::handlers::SYSTEM_DEFAULT_HANDLER.into(),
+            })
+            .unwrap(),
+        );
+        connection.take_owner_command(RECORD.into(), target, action, command);
+        let _reading = run(connection.read());
+        assert_eq!(
+            connection.browser.opened,
+            if accepted {
+                vec![ADDRESS.to_string()]
+            } else {
+                vec![]
+            }
+        );
+        // A later read neither retries a handoff nor turns an unknown outcome into acceptance.
+        let _ = run(connection.read());
+        assert_eq!(connection.browser.opened.len(), usize::from(accepted));
+    }
+}
+
+#[test]
+fn browser_failure_is_reported_separately_from_owner_acceptance() {
+    let (mut connection, action) = browser_connection();
+    connection.browser.fail = true;
+    let reading = run(connection.read()).unwrap();
+    let (target, _) = reading.owner_offers[RECORD].clone();
+    connection
+        .transport
+        .responses
+        .push_back(Ok(CarrierResponseBody::Intent(IntentResult::Accepted)));
+    let (refresh, _) = fixture(false, true);
+    connection.transport.responses.extend(refresh.responses);
+    let command = action.command_invocation(
+        serde_json::to_vec(&graphshell::handlers::OpenAddressV1 {
+            address: ADDRESS.into(),
+            handler: graphshell::handlers::SYSTEM_DEFAULT_HANDLER.into(),
+        })
+        .unwrap(),
+    );
+    connection.take_owner_command(RECORD.into(), target, action, command);
+    let reading = run(connection.read()).unwrap();
+    assert_eq!(
+        reading.model.notice.as_deref(),
+        Some("Owner accepted · system browser refused the handoff")
+    );
+    assert_eq!(connection.browser.opened.len(), 1);
+}
+
+#[test]
+fn a_reading_cannot_authorize_browser_dispatch_and_non_web_urls_are_refused() {
+    let (mut connection, action) = browser_connection();
+    let reading = run(connection.read()).unwrap();
+    let (target, _) = reading.owner_offers[RECORD].clone();
+    connection
+        .panel
+        .show_notice("Request accepted by the owner.".into());
+    run(connection.read()).unwrap();
+    assert!(connection.browser.opened.is_empty());
+    for address in [
+        "file:///tmp/example",
+        "javascript:alert(1)",
+        "--help",
+        "https://",
+    ] {
+        let command = action.command_invocation(
+            serde_json::to_vec(&graphshell::handlers::OpenAddressV1 {
+                address: address.into(),
+                handler: graphshell::handlers::SYSTEM_DEFAULT_HANDLER.into(),
+            })
+            .unwrap(),
+        );
+        connection.take_owner_command(RECORD.into(), target.clone(), action.clone(), command);
+        run(connection.read()).unwrap();
+        assert!(connection.browser.opened.is_empty());
+    }
+    assert!(
+        !connection
+            .transport
+            .requests
+            .iter()
+            .any(|r| matches!(r, CarrierRequestBody::Intent(_)))
     );
 }

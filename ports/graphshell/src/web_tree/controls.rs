@@ -449,36 +449,5 @@ pub(super) fn physics_config() -> Result<mere::canvas::ElapsedStepConfig, String
 }
 
 pub(super) fn named_command(id: &str) -> Option<CanvasCommand> {
-    match id {
-        "view:zoom_in" => Some(CanvasCommand::Zoom { delta: ZOOM_STEP }),
-        "view:zoom_out" => Some(CanvasCommand::Zoom { delta: -ZOOM_STEP }),
-        "view:fit" => Some(CanvasCommand::Fit),
-        "pan-left" => Some(CanvasCommand::Pan {
-            dx: -PAN_STEP,
-            dy: 0.0,
-        }),
-        "pan-right" => Some(CanvasCommand::Pan {
-            dx: PAN_STEP,
-            dy: 0.0,
-        }),
-        "pan-up" => Some(CanvasCommand::Pan {
-            dx: 0.0,
-            dy: -PAN_STEP,
-        }),
-        "pan-down" => Some(CanvasCommand::Pan {
-            dx: 0.0,
-            dy: PAN_STEP,
-        }),
-        "physics:toggle" => Some(CanvasCommand::TogglePhysics),
-        "reset-to-seed" => Some(CanvasCommand::ResetToSeed),
-        "set-seed" => Some(CanvasCommand::SetSeed),
-        "restore-recipe-seed" => Some(CanvasCommand::RestoreRecipeSeed),
-        "foreground-pin" => Some(CanvasCommand::ToggleForegroundPin),
-        "dismiss-retained" => Some(CanvasCommand::DismissRetained),
-        "tile-grow" => Some(CanvasCommand::GrowTiles),
-        "tile-shrink" => Some(CanvasCommand::ShrinkTiles),
-        "territory-field" => Some(CanvasCommand::ToggleTerritory),
-        "suggestions" => Some(CanvasCommand::ToggleSuggestions),
-        _ => None,
-    }
+    graphshell::viewer_commands::scenario_canvas_command(id)
 }

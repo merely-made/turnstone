@@ -19,9 +19,8 @@ use woodshedding::rehearsal::{
 
 pub const SOURCE: &str = "woodshed";
 
-/// Keep the original JSON tree alongside the typed source. Applying a group
-/// patches one owner field, retaining source fields this host does not know.
-fn source(attrs: &BTreeMap<String, String>) -> Result<(Value, Set), String> {
+/// Read the carrier without requiring metadata used by other commands.
+fn raw_source(attrs: &BTreeMap<String, String>) -> Result<Value, String> {
     let json = attrs
         .get(SOURCE)
         .ok_or("This progression has no structured Woodshed source")?;
@@ -33,6 +32,16 @@ fn source(attrs: &BTreeMap<String, String>) -> Result<(Value, Set), String> {
     if raw.get("version").and_then(Value::as_u64) != Some(1) {
         return Err("Unsupported Woodshed source version; source preserved".into());
     }
+    if !raw.get("set").is_some_and(Value::is_object) {
+        return Err("Woodshed source needs its owning Set".into());
+    }
+    Ok(raw)
+}
+
+/// Keep the original JSON tree alongside the typed source. Applying a group
+/// patches one owner field, retaining source fields this host does not know.
+fn source(attrs: &BTreeMap<String, String>) -> Result<(Value, Set), String> {
+    let raw = raw_source(attrs)?;
     let set: Set = serde_json::from_value(
         raw.get("set")
             .cloned()
@@ -70,14 +79,19 @@ fn source(attrs: &BTreeMap<String, String>) -> Result<(Value, Set), String> {
     }
     Ok((raw, set))
 }
-/// Read the saved musical authority. Readings never derive or author notation.
+/// Read the saved musical authority independently of Card/arrangement metadata.
+/// Readings never derive or author notation.
 pub fn music(
     attrs: &BTreeMap<String, String>,
 ) -> Result<Option<woodshedding::notation::Score>, String> {
-    let (_, set) = source(attrs)?;
-    set.music
-        .as_ref()
-        .map(|document| document.score())
+    let raw = raw_source(attrs)?;
+    raw.pointer("/set/music")
+        .filter(|value| !value.is_null())
+        .map(|value| {
+            serde_json::from_value::<woodshedding::notation::MusicDocument>(value.clone())
+                .map_err(|e| format!("Invalid saved MusicXML document: {e}"))?
+                .score()
+        })
         .transpose()
 }
 
@@ -91,8 +105,8 @@ pub fn write_music(
     if set.music.is_some() {
         return Err("This Set already has MusicXML; its saved notation was preserved".into());
     }
-    if !(20..=400).contains(&bpm) {
-        return Err("Notation tempo must be a whole number from 20 to 400 BPM".into());
+    if !(1..=400).contains(&bpm) {
+        return Err("Notation tempo must be a whole number from 1 to 400 BPM".into());
     }
     let saved = set
         .progression_arrangement
@@ -549,6 +563,24 @@ mod tests {
     }
 
     #[test]
+    fn write_notation_accepts_full_written_tempo_range() {
+        let a = attrs();
+        let before = a.clone();
+        for bpm in [1, 19, 20, 400] {
+            let written = write_music(&a, bpm).unwrap();
+            assert_eq!(music(&written).unwrap().unwrap().tempo, bpm);
+        }
+        for bpm in [0, 401, u16::MAX] {
+            assert!(
+                write_music(&a, bpm)
+                    .unwrap_err()
+                    .contains("whole number from 1 to 400 BPM")
+            );
+        }
+        assert_eq!(a, before);
+    }
+
+    #[test]
     fn unsupported_material_or_corrupt_music_refuses_without_replacing_source() {
         let a = attrs();
         let mut raw: Value = serde_json::from_str(&a[SOURCE]).unwrap();
@@ -563,6 +595,27 @@ mod tests {
         assert!(music(&bad).is_err());
         assert!(write_music(&bad, 96).is_err());
         assert!(write_music(&a, 0).is_err());
+    }
+
+    #[test]
+    fn saved_music_reading_does_not_require_legacy_card_or_arrangement_metadata() {
+        use woodshedding::notation::{MusicDocument, Score};
+        let score = Score::rhythm_example();
+        let raw = serde_json::json!({
+            "version": 1,
+            "set": {
+                "music": MusicDocument::from_score(&score).unwrap(),
+                "cards": "unrecognized historical Card metadata",
+                "progression_arrangement": {"version": 999},
+                "future": {"keep": true}
+            }
+        });
+        let attrs = BTreeMap::from([(SOURCE.into(), raw.to_string())]);
+        let before = attrs.clone();
+        assert_eq!(music(&attrs).unwrap(), Some(score));
+        assert!(rows(&attrs).is_err());
+        assert!(write_music(&attrs, 96).is_err());
+        assert_eq!(attrs, before);
     }
 
     #[test]

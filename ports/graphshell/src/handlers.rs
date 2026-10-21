@@ -12,6 +12,17 @@ use serde::{Deserialize, Serialize};
 
 pub const OPEN_ADDRESS_INTENT: &str = "graphshell.address.open";
 pub const OPEN_ADDRESS_SCHEMA: &str = "graphshell.address.open/v1";
+pub const SYSTEM_DEFAULT_HANDLER: &str = "system.default";
+
+/// A web-only offer. The receiving native host owns browser dispatch.
+pub fn web_browser_handler() -> HandlerOffer {
+    HandlerOffer {
+        id: SYSTEM_DEFAULT_HANDLER.into(),
+        label: "Open in browser".into(),
+        explanation: "Open this web address in this device’s default browser after the owner accepts the request.".into(),
+        address_kinds: vec![AddressKind::Http],
+    }
+}
 
 /// The typed payload accepted by Graphshell's local open intent.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

@@ -184,7 +184,7 @@ impl Pane {
         } else {
             ("rhyme:scheme", "Apply rhyme scheme…")
         };
-        set.register(Command::new(id, label, "block"));
+        set.register(Command::new(id, label, "block", cambium::EffectClass::DomainTruth));
         let reason = self.proposals().map(|_| ()).err();
         set.set_disabled(id, reason);
         set
@@ -304,7 +304,7 @@ impl Pane {
             .text()
             .trim()
             .parse::<u16>()
-            .map_err(|_| "Enter a whole-number notation tempo from 20 to 400 BPM")?;
+            .map_err(|_| "Enter a whole-number notation tempo from 1 to 400 BPM")?;
         let attributes = bars::write_music(&div.attributes, bpm)?;
         let preview = Preview::new(self.document.editor.source(), div, Vec::new())?;
         self.document.apply(&preview, attributes)?;

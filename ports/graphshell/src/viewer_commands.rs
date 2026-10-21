@@ -5,7 +5,11 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! The retained viewer's supported commands, independent of a browser/store.
-use command_menu::{Command, CommandSet, catalogue::ids};
+use hest::{
+    EffectClass,
+    catalogue::{self, ids},
+    menu::{Command, CommandSet},
+};
 
 use mere::canvas::{controls::CanvasCommand, gestures::WheelMode};
 
@@ -69,6 +73,16 @@ pub fn action(id: &str, hosted: bool) -> Option<Action> {
     })
 }
 
+/// The established `act <id>` canvas subset. Its fit resumes layout following;
+/// the hosted menu instead uses `FitVisible`. Preserve that scenario contract.
+pub fn scenario_canvas_command(id: &str) -> Option<CanvasCommand> {
+    match action(id, false)? {
+        Action::Canvas(CanvasCommand::FitSelection | CanvasCommand::RestoreArrangement) => None,
+        Action::Canvas(command) => Some(command),
+        _ => None,
+    }
+}
+
 pub fn commands(available: Availability) -> CommandSet {
     let mut set = CommandSet::new().with_defaults([
         ids::VIEW_FIT,
@@ -118,7 +132,11 @@ pub fn commands(available: Availability) -> CommandSet {
         ("wheel-pan", "Wheel: pan graph", "preferences"),
         ("wheel-page", "Wheel: scroll page", "preferences"),
     ] {
-        set.register(Command::new(id, label, category));
+        let mut command = catalogue::command(id)
+            .unwrap_or_else(|| Command::new(id, label, category, EffectClass::Curation));
+        command.label = label.into();
+        command.category = category.into();
+        set.register(command);
         if available.locked && matches!(action(id, available.hosted), Some(Action::Canvas(_))) {
             set.set_disabled(id, Some("Finish the pending graph operation first".into()));
         }
@@ -128,6 +146,7 @@ pub fn commands(available: Availability) -> CommandSet {
             "view-history",
             if open { "Hide history" } else { "Show history" },
             "canvas",
+            EffectClass::Curation,
         ));
     }
     if !available.selection && !available.locked {
@@ -142,7 +161,7 @@ pub fn commands(available: Availability) -> CommandSet {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use command_menu::{CommandChoices, MenuSession};
+    use hest::menu::{CommandChoices, MenuSession};
 
     #[test]
     fn browsing_pages_cover_commands_and_follow_keyboard_selection() {
@@ -197,6 +216,13 @@ mod tests {
             Some(Action::Canvas(CanvasCommand::RestoreArrangement))
         );
         assert!(action("save-scene", true).is_none());
+        assert_eq!(
+            scenario_canvas_command(ids::VIEW_FIT),
+            Some(CanvasCommand::Fit)
+        );
+        assert!(scenario_canvas_command("fit-selection").is_none());
+        assert!(scenario_canvas_command("restore-arrangement").is_none());
+        assert!(scenario_canvas_command("graph-tools").is_none());
     }
 
     #[test]

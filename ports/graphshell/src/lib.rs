@@ -9,8 +9,11 @@
 //! G1 adds a native semantic view over the portable client state. Networking,
 //! product models, and source authority remain injected at the edge.
 
+#[cfg(all(feature = "coop", not(target_arch = "wasm32")))]
+pub mod coop;
 #[cfg(feature = "editable-blocks")]
 pub mod block_editing;
+pub mod bound_actions;
 
 #[cfg(feature = "moot-resources")]
 pub mod moot_resources;
@@ -38,6 +41,8 @@ pub mod canvas_reader;
 pub mod capsule_applet;
 #[cfg(feature = "web")]
 pub mod capture;
+#[cfg(feature = "web")]
+pub mod command_invocation;
 #[cfg(all(test, feature = "web"))]
 mod capture_resources;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]

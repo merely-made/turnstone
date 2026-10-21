@@ -273,13 +273,14 @@ where
 
         self.details.clear();
         for (instance, resource) in requests {
-            let Ok(response) = self.endpoint.resource(ResourceRequest {
+            let request = ResourceRequest {
                 session: self.session.clone(),
                 resource,
-            }) else {
+            };
+            let Ok(response) = self.endpoint.resource(request.clone()) else {
                 continue;
             };
-            if !response.has_valid_address() {
+            if !response.matches_request(&request) {
                 continue;
             }
             let Ok(card) = serde_json::from_slice::<PortableCardV1>(&response.bytes) else {
@@ -299,7 +300,74 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chirograph::ResourceResponse;
     use graphshell_host::live_endpoint::LiveEndpoint;
+
+    #[derive(Clone, Copy)]
+    enum ResourceReplyFault {
+        WrongSession,
+        WrongResource,
+    }
+
+    struct FaultyResourceEndpoint {
+        inner: distillery::ChronicleEndpoint,
+        fault: ResourceReplyFault,
+    }
+
+    impl ProjectionCatalog for FaultyResourceEndpoint {
+        fn describe(&self) -> EndpointDescriptor {
+            self.inner.describe()
+        }
+    }
+
+    impl ProjectionSource for FaultyResourceEndpoint {
+        type Error = distillery::ChronicleEndpointError;
+
+        fn snapshot(
+            &mut self,
+            request: ProjectionRequest,
+        ) -> Result<chirograph::ProjectionSnapshot, Self::Error> {
+            self.inner.snapshot(request)
+        }
+    }
+
+    impl PresentationSource for FaultyResourceEndpoint {
+        type Error = distillery::ChronicleEndpointError;
+
+        fn resource(&mut self, request: ResourceRequest) -> Result<ResourceResponse, Self::Error> {
+            let mut response = self.inner.resource(request.clone())?;
+            match self.fault {
+                ResourceReplyFault::WrongSession => {
+                    response.session = ProjectionSession("another-session".into());
+                },
+                ResourceReplyFault::WrongResource => {
+                    let bytes = serde_json::to_vec(&PortableCardV1 {
+                        title: "Forged card".into(),
+                        values: vec![chirograph::CardValueV1 {
+                            label: "Private detail".into(),
+                            value: "forged detail".into(),
+                        }],
+                        badges: vec![],
+                        media: vec![],
+                    })
+                    .expect("forged fixture card serializes");
+                    response = ResourceResponse::new(request.session, bytes);
+                },
+            }
+            Ok(response)
+        }
+    }
+
+    impl ResumableProjectionSource for FaultyResourceEndpoint {
+        type Error = distillery::ChronicleEndpointError;
+
+        fn resume(
+            &mut self,
+            request: chirograph::ResumeRequest,
+        ) -> Result<ResumeReply, Self::Error> {
+            self.inner.resume(request)
+        }
+    }
 
     fn distillery_board() -> mesh::JobBoard {
         #[derive(Deserialize)]
@@ -445,6 +513,39 @@ mod tests {
             .frozen_html("Distillery Chronicle")
             .expect("resumed frozen table");
         assert!(resumed_html.contains("Observation tick: 3"));
+    }
+
+    #[test]
+    fn chronicle_details_require_the_exact_resource_request() {
+        let session = ProjectionSession("admitted:chronicle-details".into());
+        let mut valid = ChronicleMount::discover(distillery_endpoint(session.clone(), 41, 11))
+            .expect("one offer");
+        valid.mount().expect("Chronicle snapshot");
+        let valid_html = valid
+            .frozen_html("Distillery Chronicle")
+            .expect("frozen table");
+        assert!(!valid.details.is_empty());
+        assert!(valid_html.contains("Observation tick: 2"));
+
+        for fault in [
+            ResourceReplyFault::WrongSession,
+            ResourceReplyFault::WrongResource,
+        ] {
+            let endpoint = FaultyResourceEndpoint {
+                inner: distillery_endpoint(session.clone(), 41, 11),
+                fault,
+            };
+            let mut mount = ChronicleMount::discover(endpoint).expect("one offer");
+            mount.mount().expect("Chronicle snapshot");
+            let html = mount
+                .frozen_html("Distillery Chronicle")
+                .expect("frozen table");
+            assert!(mount.details.is_empty());
+            assert!(
+                !html.contains("forged detail"),
+                "a validly addressed but mismatched resource must not attach details"
+            );
+        }
     }
 
     #[cfg(all(feature = "native", not(target_arch = "wasm32")))]

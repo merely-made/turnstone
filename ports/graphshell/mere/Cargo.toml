@@ -8,20 +8,26 @@ repository.workspace = true
 description = "Native Graphshell mere viewer over the admitted resident route."
 publish = false
 
-# Its own package so the viewer builds from the stack crates it uses alone:
-# a binary in `graphshell` always got the Graphshell library and every
-# feature turned on for it, whose features then reached shared crates.
+# Keep the native view's feature selection independent of Graphshell's
+# document-host defaults. Co-op reuses its admitted protocol/client and the
+# ordinary view continues to read the resident-owned graph through the door.
 [[bin]]
 name = "graphshell_mere"
 path = "src/main.rs"
 
 [dependencies]
+graphshell = { path = "..", default-features = false, features = ["coop"] }
+serde_json.workspace = true
+url = "2"
+uuid.workspace = true
+serde = { version = "1", features = ["derive"] }
 cambium.workspace = true
 cambium-genet-winit-host.workspace = true
 # `HostWake`; image decoding as the viewer had it inside Graphshell.
 cambium-rootstock = { workspace = true, features = ["image-decode"] }
 chirograph.workspace = true
 graphshell-client.workspace = true
+hest.workspace = true
 # The app side of the first-party door: `AppBrokerClient`.
 graphshell-endpoint = { workspace = true, features = ["door"] }
 # The route panel that fills the mere view (stack lift plan L14).
@@ -33,9 +39,11 @@ sceno.workspace = true
 scenotime.workspace = true
 sprigging.workspace = true
 taproot.workspace = true
-tokio = { version = "1", features = ["io-std", "io-util", "macros", "net", "rt-multi-thread", "sync", "time"] }
+tokio = { version = "1", features = ["io-std", "io-util", "macros", "net", "rt-multi-thread", "sync", "time", "process"] }
 
 [dev-dependencies]
+genet-scripted-dom.workspace = true
+layout_dom_api.workspace = true
 mere = { path = "../../../crates/mere", default-features = false, features = ["graph", "canvas"] }
 serde_json.workspace = true
 tempfile = "3"
