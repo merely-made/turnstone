@@ -1,0 +1,112 @@
+{
+  "source_base": "0f9f13c0cad2aacc2416f2735987cf7cf6d12d7e",
+  "supplier_sources": {
+    "mere": "7edfe3b097f38ee621f6352953c3b1be08339504",
+    "apparatus-core": "75643df1f178757bb7b6386913af1a39353f3069"
+  },
+  "lock_sha256": "e5a5cee50c65f7dfceb39f1f10b3692567c7c50c6f968471b6b2c575970feb01",
+  "production_source_changes": [],
+  "receiving": {
+    "command": [
+      "cargo",
+      "+1.99.1",
+      "--config",
+      "build.build-dir=\"/Users/markik/Code/repos/turnstone/target/build\"",
+      "test",
+      "--locked",
+      "--offline",
+      "--target-dir",
+      "/Users/markik/Code/repos/turnstone/target",
+      "-j2",
+      "--lib",
+      "diagnostic",
+      "--",
+      "--test-threads=1"
+    ],
+    "cwd": "/Users/markik/Code/worktrees/turnstone-apparatus-consumer-20261021",
+    "revision": "0f9f13c0cad2aacc2416f2735987cf7cf6d12d7e",
+    "started": "2026-10-21T04:38:33.089358+00:00",
+    "status_before": " M Cargo.lock\n",
+    "process_started": true,
+    "exit_code": 0,
+    "finished": "2026-10-21T04:39:46.451550+00:00",
+    "log_sha256": "5df5cd35cd511b14320990d4daab79e8bd8cbfed82e680d49b24bd392362cdb1",
+    "suites": [
+      {
+        "result": "ok",
+        "passed": 16,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 1124
+      }
+    ]
+  },
+  "metadata": {
+    "command": [
+      "cargo",
+      "+1.99.1",
+      "metadata",
+      "--locked",
+      "--offline",
+      "--format-version",
+      "1",
+      "--filter-platform",
+      "aarch64-apple-darwin"
+    ],
+    "exit_code": 0,
+    "metadata_sha256": "e419238114136819c8ef04a26e48e5696b470b4b5df0a11ca4986084b301d315",
+    "shared_sources": [
+      {
+        "id": "git+https://github.com/merely-made/armillary.git?rev=75643df1f178757bb7b6386913af1a39353f3069#apparatus-core@0.1.0",
+        "name": "apparatus-core",
+        "source": "git+https://github.com/merely-made/armillary.git?rev=75643df1f178757bb7b6386913af1a39353f3069#75643df1f178757bb7b6386913af1a39353f3069"
+      },
+      {
+        "id": "git+https://github.com/merely-made/mere.git?branch=main#mere-apparatus@0.0.1",
+        "name": "mere-apparatus",
+        "source": "git+https://github.com/merely-made/mere.git?branch=main#7edfe3b097f38ee621f6352953c3b1be08339504"
+      }
+    ],
+    "outside_local_overrides": []
+  },
+  "lock_scope": {
+    "base": "0f9f13c0cad2aacc2416f2735987cf7cf6d12d7e",
+    "unrelated_package_identities_compared": 1608,
+    "unrelated_package_versions_or_sources_changed": [],
+    "windows_dependency_rebindings": {
+      "packages": [
+        "anstyle-query",
+        "anstyle-wincon",
+        "arboard",
+        "bevy_platform",
+        "dirs-sys",
+        "errno",
+        "nu-ansi-term",
+        "os_pipe",
+        "quinn-udp",
+        "rustix",
+        "rustls-platform-verifier",
+        "socket2",
+        "stacker",
+        "tempfile",
+        "uds_windows",
+        "winapi-util"
+      ],
+      "from": "windows-sys0.60.2",
+      "to": "windows-sys0.61.2",
+      "origin": "Cargo-generated binding choices; both versions already existed in the baseline lock"
+    },
+    "expected_new_package": "apparatus-core0.1.0 at75643df1f178757bb7b6386913af1a39353f3069",
+    "mere_sdk": "branch-main package family advances fromd574d4b5 to7edfe3b0; immutable mere-source-edit70deef2 retains its independent contract",
+    "no_manual_lock_edits": true
+  },
+  "source_sha256": {
+    "Cargo.toml": "0b0a4097babf42ae2ccf912cc536055de24a249e73460f6af7dc66b66c19c28b",
+    "src/diagnostic_observations.rs": "c1acfd55c9372195ef7af8da18c37b7f803e668e52716748a05d4881423350db",
+    "src/swatch_pane/mod.rs": "35cb6c7cee2a20392ad097cb8e214f8518bf4cc0c9af0f857a2902ea42417857",
+    "src/a11y.rs": "f51366345e2d0763980e6a30d890857417903d8183e1e499a9db3d1a5e0433bf",
+    "src/sections.rs": "6471e4c5c9260c4156b706347138dd9301f4230bc8c780f0357fbbd738f17e32"
+  },
+  "qualification_boundary": "Sixteen focused default-feature CPU diagnostics/projection tests on macOS. 1124 unrelated tests were filtered; no full-suite, Windows, headed/native UI, human AT or hardware qualification. Existing product source and dependency declarations are unchanged."
+}
