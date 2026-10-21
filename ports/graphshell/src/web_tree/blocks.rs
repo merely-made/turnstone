@@ -184,7 +184,7 @@ impl Pane {
         } else {
             ("rhyme:scheme", "Apply rhyme scheme…")
         };
-        set.register(Command::new(id, label, "block"));
+        set.register(Command::new(id, label, "block", cambium::EffectClass::DomainTruth));
         let reason = self.proposals().map(|_| ()).err();
         set.set_disabled(id, reason);
         set
