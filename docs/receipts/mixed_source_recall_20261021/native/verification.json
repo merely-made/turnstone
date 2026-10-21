@@ -1,0 +1,1168 @@
+{
+  "result": "pass",
+  "process_ids": [
+    29280,
+    29259,
+    29420,
+    29416,
+    43886,
+    43732,
+    45967,
+    45918
+  ],
+  "modes": {
+    "lexical": {
+      "scope": [
+        {
+          "kind": "fleece",
+          "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+          "source": "mere://saved-source/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/fc67b5d2-323a-46d7-9d2a-0b387c924696/fb6652ad4b6ee99a8595321e438159a33fadbf607c87c9dddd4c726f63e7c2bc/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+          "node": "fc67b5d2-323a-46d7-9d2a-0b387c924696"
+        },
+        {
+          "kind": "fleece",
+          "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+          "source": "mere://saved-source/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/c92bf1a7-836d-4ffa-8f9a-5d88a4f11af2/c579f4fa064074cba0a88e72c337d8514f1ce0a317eef14f95ec2579d112e3bd/5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944",
+          "node": "c92bf1a7-836d-4ffa-8f9a-5d88a4f11af2"
+        },
+        {
+          "kind": "fleece",
+          "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+          "source": "mere://retained-text/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/e6c14de4-c2d2-4d17-9be4-faf5004f3b19/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "node": "e6c14de4-c2d2-4d17-9be4-faf5004f3b19"
+        },
+        {
+          "kind": "fleece",
+          "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+          "source": "mere://retained-text/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/1a9a5142-6e10-448a-a179-ea72b94f8cac/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+          "node": "1a9a5142-6e10-448a-a179-ea72b94f8cac"
+        }
+      ],
+      "source_by_label": {
+        "capture": {
+          "kind": "fleece",
+          "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+          "source": "mere://saved-source/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/fc67b5d2-323a-46d7-9d2a-0b387c924696/fb6652ad4b6ee99a8595321e438159a33fadbf607c87c9dddd4c726f63e7c2bc/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+          "node": "fc67b5d2-323a-46d7-9d2a-0b387c924696"
+        },
+        "control": {
+          "kind": "fleece",
+          "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+          "source": "mere://saved-source/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/c92bf1a7-836d-4ffa-8f9a-5d88a4f11af2/c579f4fa064074cba0a88e72c337d8514f1ce0a317eef14f95ec2579d112e3bd/5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944",
+          "node": "c92bf1a7-836d-4ffa-8f9a-5d88a4f11af2"
+        },
+        "knot": {
+          "kind": "fleece",
+          "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+          "source": "mere://retained-text/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/e6c14de4-c2d2-4d17-9be4-faf5004f3b19/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "node": "e6c14de4-c2d2-4d17-9be4-faf5004f3b19"
+        },
+        "note": {
+          "kind": "fleece",
+          "owner": "turnstone/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/research/v1",
+          "source": "mere://retained-text/929c85e8-da3d-4ee3-8ac7-942ebdda0f49/af02a5f3-ac16-48f0-a843-b5e0f7f348c1/1a9a5142-6e10-448a-a179-ea72b94f8cac/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+          "node": "1a9a5142-6e10-448a-a179-ea72b94f8cac"
+        }
+      },
+      "passage_ids": {
+        "capture": "blake3:7dc58857ec8cd6a74881e5671fbf6ef63ac1d01963b70530b1e4ac3bd5ac5dd4",
+        "control": "blake3:3eceaaa6658f84da1e34e77acfb593f2c683ffa8f71aea56dd2f1b589d473eb8",
+        "knot": "blake3:bc069f6feb5dc60081fa104912886e9cbfecadaf2d83221c7fce7c614be8fe71",
+        "note": "blake3:a13e1c70ab27e1b96cbeef2de2f045b624222ac62bf439f139dca1d20bfcc85e"
+      },
+      "cases": 3,
+      "answer_diagnostics": {
+        "capture": {
+          "warm": {
+            "target_text_occurrences": 1,
+            "citation_bases": [
+              "verbatim_passage"
+            ],
+            "non_target_citation_sources": [],
+            "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+          },
+          "cold": {
+            "target_text_occurrences": 1,
+            "citation_bases": [
+              "verbatim_passage"
+            ],
+            "non_target_citation_sources": [],
+            "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+          }
+        },
+        "knot": {
+          "warm": {
+            "target_text_occurrences": 1,
+            "citation_bases": [
+              "verbatim_passage"
+            ],
+            "non_target_citation_sources": [],
+            "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+          },
+          "cold": {
+            "target_text_occurrences": 1,
+            "citation_bases": [
+              "verbatim_passage"
+            ],
+            "non_target_citation_sources": [],
+            "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+          }
+        },
+        "note": {
+          "warm": {
+            "target_text_occurrences": 2,
+            "citation_bases": [
+              "model_marker",
+              "model_marker",
+              "verbatim_passage"
+            ],
+            "non_target_citation_sources": [
+              "knot",
+              "control"
+            ],
+            "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+          },
+          "cold": {
+            "target_text_occurrences": 2,
+            "citation_bases": [
+              "model_marker",
+              "model_marker",
+              "verbatim_passage"
+            ],
+            "non_target_citation_sources": [
+              "knot",
+              "control"
+            ],
+            "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+          }
+        }
+      },
+      "historical_evidence_unchanged": true,
+      "exact_local_readers_equal": true,
+      "rankings_equal_after_cold": true,
+      "captures": [
+        {
+          "path": "lexical/warm/01_capture_A.png",
+          "sha256": "cbc16d88174d32ecf0790f394594557de3e178a516c30acce7acc45a55dc3894"
+        },
+        {
+          "path": "lexical/warm/02_capture_B.png",
+          "sha256": "2b9df6da93ff580f238d891b1c1780e955c999ba0d0a0395020b1d1f40a61ac2"
+        },
+        {
+          "path": "lexical/warm/03_mixed_sources.png",
+          "sha256": "26a6499ef23ec7cb2a6f9e639dca394c2a09c96f0d3484cf95a1c7efcd977617"
+        },
+        {
+          "path": "lexical/warm/04_explicit_scope.png",
+          "sha256": "1dcbe98d1bfd391902a3bebecd5388475f7d9b21e86144c6a72952fc506408a5"
+        },
+        {
+          "path": "lexical/warm/capture_answer.png",
+          "sha256": "d914aa64c1623ce56e7837aabc1f0b462c98941b4d14836358ef3095596405e8"
+        },
+        {
+          "path": "lexical/warm/capture_citation.png",
+          "sha256": "78767b4d3712a0e8cea70d90c8ea7de7ea82bef4d32b8914fe7cd61d66355f06"
+        },
+        {
+          "path": "lexical/warm/knot_answer.png",
+          "sha256": "44e7417add9fedf2a4f265bd390555f2c3f41f6eb78cf9c9ec4e3d5b6a5846ea"
+        },
+        {
+          "path": "lexical/warm/knot_citation.png",
+          "sha256": "2685ce843b6a804ccb994a6bed6087b69cea027db3dce51471f3429900543293"
+        },
+        {
+          "path": "lexical/warm/note_answer.png",
+          "sha256": "2d38ecade5981c06c38ac03bd01e99d6f6186043ec53d0ec4a674d97f2abd076"
+        },
+        {
+          "path": "lexical/warm/note_citation.png",
+          "sha256": "aac7dab3e0a0ce377c24e226ef2646583fb590e051d1823d0bb171c290a1131a"
+        },
+        {
+          "path": "lexical/cold/01_cold_local_capture.png",
+          "sha256": "49d8db0d8fc910fd998fcf21c56228f28f4ef0e4198b50e8f49bfb0d6e8738b8"
+        },
+        {
+          "path": "lexical/cold/02_cold_scope.png",
+          "sha256": "7177ab6901b2d9350f91052cf6edaee4ce422d3ffb4ab747ad788829262489d3"
+        },
+        {
+          "path": "lexical/cold/capture_answer.png",
+          "sha256": "43a4c5d7d2db3f35d04871f72ee98aea89d578cbed60da7fe32523fc57903e47"
+        },
+        {
+          "path": "lexical/cold/capture_citation.png",
+          "sha256": "a4493735f29f817cc00f7ca8a8ac3da0d5367e0dc08156cbd07ab55c59f88c98"
+        },
+        {
+          "path": "lexical/cold/capture_historical_answer.png",
+          "sha256": "ff1225db6680c7e59cb6034d496656060825af6bdea50ad41e74af3fa7c8160c"
+        },
+        {
+          "path": "lexical/cold/capture_historical_citation.png",
+          "sha256": "538d66f096960202f3712fa76002522a35f9d55c41c2e0bca404425761b1f853"
+        },
+        {
+          "path": "lexical/cold/knot_answer.png",
+          "sha256": "18ea2c3815bd0c591dab847e68d385279e2a27d5075f75e12c41c84ba4878dad"
+        },
+        {
+          "path": "lexical/cold/knot_citation.png",
+          "sha256": "bfb6e1dd657a315497ade3fea2d8112883c984a33b2bd6ad7925c6b2e141b5fa"
+        },
+        {
+          "path": "lexical/cold/knot_cold_export.png",
+          "sha256": "bfb6e1dd657a315497ade3fea2d8112883c984a33b2bd6ad7925c6b2e141b5fa"
+        },
+        {
+          "path": "lexical/cold/knot_historical_answer.png",
+          "sha256": "3996430832339d1292633463f0429c013b91e1130ead97575466749114e39f31"
+        },
+        {
+          "path": "lexical/cold/knot_historical_citation.png",
+          "sha256": "bfb6e1dd657a315497ade3fea2d8112883c984a33b2bd6ad7925c6b2e141b5fa"
+        },
+        {
+          "path": "lexical/cold/note_answer.png",
+          "sha256": "6b3b6d20eb73e3fab4abc11d0f775827cd411d511aabb3d65baff7035fbbbb39"
+        },
+        {
+          "path": "lexical/cold/note_citation.png",
+          "sha256": "06fb5a184a7fb2933186e3a9c2b86eb98055f27580cae2f3a97ff72f28c42fb7"
+        },
+        {
+          "path": "lexical/cold/note_cold_export.png",
+          "sha256": "06fb5a184a7fb2933186e3a9c2b86eb98055f27580cae2f3a97ff72f28c42fb7"
+        },
+        {
+          "path": "lexical/cold/note_historical_answer.png",
+          "sha256": "4673043a4b30671aebbb07ba4e2ef9a1c2395a342c68acce8bb48ef5d2ce2f41"
+        },
+        {
+          "path": "lexical/cold/note_historical_citation.png",
+          "sha256": "06fb5a184a7fb2933186e3a9c2b86eb98055f27580cae2f3a97ff72f28c42fb7"
+        }
+      ]
+    },
+    "fused": {
+      "scope": [
+        {
+          "kind": "fleece",
+          "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+          "source": "mere://saved-source/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/82027e41-2846-4be8-80dc-cdf1335982a2/d07382ab5ad338a70c7906d178c62ef7df1f7a282cf5b033ec63c00acfd0fe30/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+          "node": "82027e41-2846-4be8-80dc-cdf1335982a2"
+        },
+        {
+          "kind": "fleece",
+          "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+          "source": "mere://saved-source/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/b5bd49a4-06b0-4af0-b037-7fa415b51198/e13afb25afafbcedc48b91b6a644c35e83379fa362fcf60dd146f1e856113818/5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944",
+          "node": "b5bd49a4-06b0-4af0-b037-7fa415b51198"
+        },
+        {
+          "kind": "fleece",
+          "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+          "source": "mere://retained-text/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/adcc5450-8ed1-4e6b-8f00-03d32ba6c5bc/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "node": "adcc5450-8ed1-4e6b-8f00-03d32ba6c5bc"
+        },
+        {
+          "kind": "fleece",
+          "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+          "source": "mere://retained-text/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/b9f8482d-bcfe-416b-86bd-95de9e294e56/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+          "node": "b9f8482d-bcfe-416b-86bd-95de9e294e56"
+        }
+      ],
+      "source_by_label": {
+        "capture": {
+          "kind": "fleece",
+          "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+          "source": "mere://saved-source/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/82027e41-2846-4be8-80dc-cdf1335982a2/d07382ab5ad338a70c7906d178c62ef7df1f7a282cf5b033ec63c00acfd0fe30/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+          "node": "82027e41-2846-4be8-80dc-cdf1335982a2"
+        },
+        "control": {
+          "kind": "fleece",
+          "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+          "source": "mere://saved-source/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/b5bd49a4-06b0-4af0-b037-7fa415b51198/e13afb25afafbcedc48b91b6a644c35e83379fa362fcf60dd146f1e856113818/5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944",
+          "node": "b5bd49a4-06b0-4af0-b037-7fa415b51198"
+        },
+        "knot": {
+          "kind": "fleece",
+          "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+          "source": "mere://retained-text/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/adcc5450-8ed1-4e6b-8f00-03d32ba6c5bc/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "node": "adcc5450-8ed1-4e6b-8f00-03d32ba6c5bc"
+        },
+        "note": {
+          "kind": "fleece",
+          "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+          "source": "mere://retained-text/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/b9f8482d-bcfe-416b-86bd-95de9e294e56/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+          "node": "b9f8482d-bcfe-416b-86bd-95de9e294e56"
+        }
+      },
+      "passage_ids": {
+        "capture": "blake3:b16c09f2adfb1a0c4d9021bb3ec11d05758b031e767754403298c9430dc84ddc",
+        "control": "blake3:638fdf8ac323b6e3454d35d42c085e943f165abdd903bda5c108bffab7a74513",
+        "knot": "blake3:9c339c284861a1ce6312b097d53089daae07be3a5f177f1d536cf3fd23daa535",
+        "note": "blake3:de880141e3243906e36c84933480bcf6ec9acdd1f373c3f21cb71123d9f9c85e"
+      },
+      "cases": 3,
+      "answer_diagnostics": {
+        "capture": {
+          "warm": {
+            "target_text_occurrences": 1,
+            "citation_bases": [
+              "verbatim_passage"
+            ],
+            "non_target_citation_sources": [],
+            "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+          },
+          "cold": {
+            "target_text_occurrences": 1,
+            "citation_bases": [
+              "verbatim_passage"
+            ],
+            "non_target_citation_sources": [],
+            "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+          }
+        },
+        "knot": {
+          "warm": {
+            "target_text_occurrences": 1,
+            "citation_bases": [
+              "verbatim_passage"
+            ],
+            "non_target_citation_sources": [],
+            "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+          },
+          "cold": {
+            "target_text_occurrences": 1,
+            "citation_bases": [
+              "verbatim_passage"
+            ],
+            "non_target_citation_sources": [],
+            "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+          }
+        },
+        "note": {
+          "warm": {
+            "target_text_occurrences": 2,
+            "citation_bases": [
+              "model_marker",
+              "model_marker",
+              "model_marker"
+            ],
+            "non_target_citation_sources": [
+              "control",
+              "knot"
+            ],
+            "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+          },
+          "cold": {
+            "target_text_occurrences": 2,
+            "citation_bases": [
+              "model_marker",
+              "model_marker",
+              "model_marker"
+            ],
+            "non_target_citation_sources": [
+              "control",
+              "knot"
+            ],
+            "boundary": "Identity and range validation does not certify that every model-authored reference is semantically relevant."
+          }
+        }
+      },
+      "historical_evidence_unchanged": true,
+      "exact_local_readers_equal": true,
+      "rankings_equal_after_cold": true,
+      "captures": [
+        {
+          "path": "fused/warm/01_capture_A.png",
+          "sha256": "0a3906641ba150b088bbda64d29d0c860ff099a32aba9252adda077da97182d7"
+        },
+        {
+          "path": "fused/warm/02_capture_B.png",
+          "sha256": "1c933d1dc0617276b693a220ef468d9485e4f6c5242e195df6f5e16564d7497b"
+        },
+        {
+          "path": "fused/warm/03_mixed_sources.png",
+          "sha256": "26a6499ef23ec7cb2a6f9e639dca394c2a09c96f0d3484cf95a1c7efcd977617"
+        },
+        {
+          "path": "fused/warm/04_explicit_scope.png",
+          "sha256": "390fefd4371ba19e6f6827518a00132d7465a14cb436dd29e487d49e81f83550"
+        },
+        {
+          "path": "fused/warm/capture_answer.png",
+          "sha256": "1241e41036d35073f96bb294fca1e8cf78cb9473b9c7f9ddbce51760d1a9e70d"
+        },
+        {
+          "path": "fused/warm/capture_citation.png",
+          "sha256": "751a785418b3a51876c114702047f447b826d70e592a85c7bb804db0c53f7ae5"
+        },
+        {
+          "path": "fused/warm/knot_answer.png",
+          "sha256": "578c0e7bd9939f6b7005086372c432f18c63ac75595dedd49ea8108ee070f449"
+        },
+        {
+          "path": "fused/warm/knot_citation.png",
+          "sha256": "cc8e902ec9dc3bae21754d9ca6e13a5452e3246efab2070a2c9c474a9bd8d9f1"
+        },
+        {
+          "path": "fused/warm/note_answer.png",
+          "sha256": "c428c5c3a0c0204111a798a4f9ea5635945112708cfbddbc55ddd0f4365afc8b"
+        },
+        {
+          "path": "fused/warm/note_citation.png",
+          "sha256": "d3b47b22a12532a37552da031f964309c1f84ed492a452333a4c544e6703b5ae"
+        },
+        {
+          "path": "fused/cold/01_cold_local_capture.png",
+          "sha256": "6ce5175905ba49143f0805cf5756d23d9766e36236daf1871d8ad0265dfb5344"
+        },
+        {
+          "path": "fused/cold/02_cold_scope.png",
+          "sha256": "fd7e52ec10346d326a904f8b689f875def03f0ff3507d160c684484e6b593c24"
+        },
+        {
+          "path": "fused/cold/capture_answer.png",
+          "sha256": "0525fc3300782891b076e15de538f84e0888b6e2d463b8f05d0868b4ed75b32c"
+        },
+        {
+          "path": "fused/cold/capture_citation.png",
+          "sha256": "5123fa3ff1c9e0c94bc79ab1d7c0e419182376f46bf85cc2cd66e1bd0f6b89b0"
+        },
+        {
+          "path": "fused/cold/capture_historical_answer.png",
+          "sha256": "fd7e52ec10346d326a904f8b689f875def03f0ff3507d160c684484e6b593c24"
+        },
+        {
+          "path": "fused/cold/capture_historical_citation.png",
+          "sha256": "5123fa3ff1c9e0c94bc79ab1d7c0e419182376f46bf85cc2cd66e1bd0f6b89b0"
+        },
+        {
+          "path": "fused/cold/knot_answer.png",
+          "sha256": "874f17629e41158fcb69379f2860fb58a0b52273230f685f40298c07a39d9d4a"
+        },
+        {
+          "path": "fused/cold/knot_citation.png",
+          "sha256": "ccb5ee62b73e61f380cd488d9498161d39ca9152f19822882bda456e8c4c206a"
+        },
+        {
+          "path": "fused/cold/knot_cold_export.png",
+          "sha256": "ccb5ee62b73e61f380cd488d9498161d39ca9152f19822882bda456e8c4c206a"
+        },
+        {
+          "path": "fused/cold/knot_historical_answer.png",
+          "sha256": "75df829383aa30836566bb01ac2598224ee944797e75bf5769f368a518b6d622"
+        },
+        {
+          "path": "fused/cold/knot_historical_citation.png",
+          "sha256": "59a33d0bb408745380c9859b767d1dcd792936d82d27d8ef8674a04835d3cf70"
+        },
+        {
+          "path": "fused/cold/note_answer.png",
+          "sha256": "99a33977fc1229e789cf4ed40529558003bb72a6cf9824c0a3898690673b3e11"
+        },
+        {
+          "path": "fused/cold/note_citation.png",
+          "sha256": "e2e95afa082b2d152c053d9b242b4f2cdefabda2a73f804d93d168b14be79c7a"
+        },
+        {
+          "path": "fused/cold/note_cold_export.png",
+          "sha256": "e2e95afa082b2d152c053d9b242b4f2cdefabda2a73f804d93d168b14be79c7a"
+        },
+        {
+          "path": "fused/cold/note_historical_answer.png",
+          "sha256": "9b448678e7b73fd2926af3e105567c4f896c0ed08a1bd780c621b890dceb30d0"
+        },
+        {
+          "path": "fused/cold/note_historical_citation.png",
+          "sha256": "e2e95afa082b2d152c053d9b242b4f2cdefabda2a73f804d93d168b14be79c7a"
+        }
+      ]
+    }
+  },
+  "ranking_cases": {
+    "lexical": {
+      "capture": {
+        "question": "Repeat the retained sentence about the Juniper archive exactly.",
+        "relevant": [
+          "capture"
+        ],
+        "rankings": {
+          "lexical": [
+            "capture",
+            "knot",
+            "note",
+            "control"
+          ],
+          "vector": [],
+          "fused": [
+            "capture",
+            "knot",
+            "note",
+            "control"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "vector": {
+            "reciprocal_rank": 0.0,
+            "top1": 0,
+            "recall_at_3": 0.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      },
+      "knot": {
+        "question": "Repeat the retained sentence about the Pelican observatory exactly.",
+        "relevant": [
+          "knot"
+        ],
+        "rankings": {
+          "lexical": [
+            "knot",
+            "note",
+            "control",
+            "capture"
+          ],
+          "vector": [],
+          "fused": [
+            "knot",
+            "note",
+            "control",
+            "capture"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "vector": {
+            "reciprocal_rank": 0.0,
+            "top1": 0,
+            "recall_at_3": 0.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      },
+      "note": {
+        "question": "Repeat both lines of the retained note about the embedded listener exactly, preserving the line break.",
+        "relevant": [
+          "note"
+        ],
+        "rankings": {
+          "lexical": [
+            "note",
+            "knot",
+            "control",
+            "capture"
+          ],
+          "vector": [],
+          "fused": [
+            "note",
+            "knot",
+            "control",
+            "capture"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "vector": {
+            "reciprocal_rank": 0.0,
+            "top1": 0,
+            "recall_at_3": 0.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      },
+      "capture-paraphrase": {
+        "question": "Which retained document describes recovering entry to a collection?",
+        "relevant": [
+          "capture"
+        ],
+        "rankings": {
+          "lexical": [
+            "capture",
+            "control",
+            "note",
+            "knot"
+          ],
+          "vector": [],
+          "fused": [
+            "capture",
+            "control",
+            "note",
+            "knot"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "vector": {
+            "reciprocal_rank": 0.0,
+            "top1": 0,
+            "recall_at_3": 0.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      },
+      "knot-paraphrase": {
+        "question": "What secret word lets someone enter the telescope facility?",
+        "relevant": [
+          "knot"
+        ],
+        "rankings": {
+          "lexical": [
+            "knot",
+            "control",
+            "capture",
+            "note"
+          ],
+          "vector": [],
+          "fused": [
+            "knot",
+            "control",
+            "capture",
+            "note"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "vector": {
+            "reciprocal_rank": 0.0,
+            "top1": 0,
+            "recall_at_3": 0.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      },
+      "note-paraphrase": {
+        "question": "What reminder was preserved while listening to audio?",
+        "relevant": [
+          "note"
+        ],
+        "rankings": {
+          "lexical": [],
+          "vector": [],
+          "fused": []
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 0.0,
+            "top1": 0,
+            "recall_at_3": 0.0
+          },
+          "vector": {
+            "reciprocal_rank": 0.0,
+            "top1": 0,
+            "recall_at_3": 0.0
+          },
+          "fused": {
+            "reciprocal_rank": 0.0,
+            "top1": 0,
+            "recall_at_3": 0.0
+          }
+        }
+      },
+      "control": {
+        "question": "Which saved source records the cobalt parcel in the amber harbor shipping log?",
+        "relevant": [
+          "control"
+        ],
+        "rankings": {
+          "lexical": [
+            "control",
+            "note",
+            "capture",
+            "knot"
+          ],
+          "vector": [],
+          "fused": [
+            "control",
+            "note",
+            "capture",
+            "knot"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "vector": {
+            "reciprocal_rank": 0.0,
+            "top1": 0,
+            "recall_at_3": 0.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      },
+      "combined": {
+        "question": "Find the Juniper archive sentence, the Pelican observatory sentence, and the embedded listener note.",
+        "relevant": [
+          "capture",
+          "knot",
+          "note"
+        ],
+        "rankings": {
+          "lexical": [
+            "note",
+            "knot",
+            "capture",
+            "control"
+          ],
+          "vector": [],
+          "fused": [
+            "note",
+            "knot",
+            "capture",
+            "control"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "vector": {
+            "reciprocal_rank": 0.0,
+            "top1": 0,
+            "recall_at_3": 0.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      }
+    },
+    "fused": {
+      "capture": {
+        "question": "Repeat the retained sentence about the Juniper archive exactly.",
+        "relevant": [
+          "capture"
+        ],
+        "rankings": {
+          "lexical": [
+            "capture",
+            "knot",
+            "note",
+            "control"
+          ],
+          "vector": [
+            "capture",
+            "control",
+            "note",
+            "knot"
+          ],
+          "fused": [
+            "capture",
+            "control",
+            "knot",
+            "note"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "vector": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      },
+      "knot": {
+        "question": "Repeat the retained sentence about the Pelican observatory exactly.",
+        "relevant": [
+          "knot"
+        ],
+        "rankings": {
+          "lexical": [
+            "knot",
+            "note",
+            "capture",
+            "control"
+          ],
+          "vector": [
+            "knot",
+            "capture",
+            "note",
+            "control"
+          ],
+          "fused": [
+            "knot",
+            "capture",
+            "note",
+            "control"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "vector": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      },
+      "note": {
+        "question": "Repeat both lines of the retained note about the embedded listener exactly, preserving the line break.",
+        "relevant": [
+          "note"
+        ],
+        "rankings": {
+          "lexical": [
+            "note",
+            "knot",
+            "capture",
+            "control"
+          ],
+          "vector": [
+            "note",
+            "control",
+            "capture",
+            "knot"
+          ],
+          "fused": [
+            "note",
+            "control",
+            "knot",
+            "capture"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "vector": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      },
+      "capture-paraphrase": {
+        "question": "Which retained document describes recovering entry to a collection?",
+        "relevant": [
+          "capture"
+        ],
+        "rankings": {
+          "lexical": [
+            "capture",
+            "control",
+            "knot",
+            "note"
+          ],
+          "vector": [
+            "capture",
+            "control",
+            "note",
+            "knot"
+          ],
+          "fused": [
+            "capture",
+            "control",
+            "knot",
+            "note"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "vector": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      },
+      "knot-paraphrase": {
+        "question": "What secret word lets someone enter the telescope facility?",
+        "relevant": [
+          "knot"
+        ],
+        "rankings": {
+          "lexical": [
+            "knot",
+            "capture",
+            "control",
+            "note"
+          ],
+          "vector": [
+            "knot",
+            "capture",
+            "note",
+            "control"
+          ],
+          "fused": [
+            "knot",
+            "capture",
+            "control",
+            "note"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "vector": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      },
+      "note-paraphrase": {
+        "question": "What reminder was preserved while listening to audio?",
+        "relevant": [
+          "note"
+        ],
+        "rankings": {
+          "lexical": [],
+          "vector": [
+            "note",
+            "control",
+            "knot",
+            "capture"
+          ],
+          "fused": [
+            "note",
+            "control",
+            "knot",
+            "capture"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 0.0,
+            "top1": 0,
+            "recall_at_3": 0.0
+          },
+          "vector": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      },
+      "control": {
+        "question": "Which saved source records the cobalt parcel in the amber harbor shipping log?",
+        "relevant": [
+          "control"
+        ],
+        "rankings": {
+          "lexical": [
+            "control",
+            "note",
+            "capture",
+            "knot"
+          ],
+          "vector": [
+            "control",
+            "capture",
+            "note",
+            "knot"
+          ],
+          "fused": [
+            "control",
+            "capture",
+            "note",
+            "knot"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "vector": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      },
+      "combined": {
+        "question": "Find the Juniper archive sentence, the Pelican observatory sentence, and the embedded listener note.",
+        "relevant": [
+          "capture",
+          "knot",
+          "note"
+        ],
+        "rankings": {
+          "lexical": [
+            "note",
+            "knot",
+            "capture",
+            "control"
+          ],
+          "vector": [
+            "capture",
+            "knot",
+            "note",
+            "control"
+          ],
+          "fused": [
+            "capture",
+            "note",
+            "knot",
+            "control"
+          ]
+        },
+        "metrics": {
+          "lexical": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "vector": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          },
+          "fused": {
+            "reciprocal_rank": 1.0,
+            "top1": 1,
+            "recall_at_3": 1.0
+          }
+        }
+      }
+    }
+  },
+  "mean_metrics": {
+    "lexical": {
+      "lexical": {
+        "reciprocal_rank": 0.875,
+        "top1": 0.875,
+        "recall_at_3": 0.875
+      },
+      "vector": {
+        "reciprocal_rank": 0.0,
+        "top1": 0.0,
+        "recall_at_3": 0.0
+      },
+      "fused": {
+        "reciprocal_rank": 0.875,
+        "top1": 0.875,
+        "recall_at_3": 0.875
+      }
+    },
+    "fused": {
+      "lexical": {
+        "reciprocal_rank": 0.875,
+        "top1": 0.875,
+        "recall_at_3": 0.875
+      },
+      "vector": {
+        "reciprocal_rank": 1.0,
+        "top1": 1.0,
+        "recall_at_3": 1.0
+      },
+      "fused": {
+        "reciprocal_rank": 1.0,
+        "top1": 1.0,
+        "recall_at_3": 1.0
+      }
+    }
+  },
+  "generation_semantic_quality": "Not certified. Inspect answer_diagnostics: model-authored references can identify a supplied passage without semantically supporting the adjacent answer. Repeated note text and additional source markers are retained, not filtered.",
+  "scope": "Bounded native four-source publication, three provenance-specific asks, exact target citation activation, eight frozen ranking questions; real CPU MiniLM and GPU SmolLM2. Combined query measures retrieval, not a combined generated answer."
+}

@@ -1,0 +1,156 @@
+{
+  "run": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1/6caa3294-d09c-4a3d-aaf6-57f3ddde3d6c",
+  "question": "Repeat both lines of the retained note about the embedded listener exactly, preserving the line break.",
+  "state": "running",
+  "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note.\n\n[1]\nSaved from the embedded listener: café → harbor.\nKeep this timed note.\n\n[2]\nThe amber harbor shipping log records a cobalt parcel.\n\n[3]\nThe Pelican observatory's access word is café.",
+  "error": null,
+  "session": {
+    "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+    "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+  },
+  "tokens": 72,
+  "continuations": [
+    {
+      "device": "device:505c3772d220df436ef985dd52005293",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "embedding": {
+      "envelope": "blake3:f4f9d78b16aee09d73385a22b1b40b80b38bfa120589e6db8c6f66029a4522b0",
+      "index": "blake3:a9ef41e67267da464eee7a1cf605e54d4c4eb9c23e97169c001255add55a56dd",
+      "cache": "reopened",
+      "vector_bytes": 8192,
+      "persisted_bytes": 22503,
+      "lexical_weight": 1,
+      "vector_weight": 1,
+      "rrf_k": 60
+    },
+    "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+    "scope": [
+      {
+        "kind": "fleece",
+        "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+        "source": "mere://saved-source/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/82027e41-2846-4be8-80dc-cdf1335982a2/d07382ab5ad338a70c7906d178c62ef7df1f7a282cf5b033ec63c00acfd0fe30/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+        "node": "82027e41-2846-4be8-80dc-cdf1335982a2"
+      },
+      {
+        "kind": "fleece",
+        "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+        "source": "mere://saved-source/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/b5bd49a4-06b0-4af0-b037-7fa415b51198/e13afb25afafbcedc48b91b6a644c35e83379fa362fcf60dd146f1e856113818/5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944",
+        "node": "b5bd49a4-06b0-4af0-b037-7fa415b51198"
+      },
+      {
+        "kind": "fleece",
+        "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+        "source": "mere://retained-text/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/adcc5450-8ed1-4e6b-8f00-03d32ba6c5bc/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+        "node": "adcc5450-8ed1-4e6b-8f00-03d32ba6c5bc"
+      },
+      {
+        "kind": "fleece",
+        "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+        "source": "mere://retained-text/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/b9f8482d-bcfe-416b-86bd-95de9e294e56/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+        "node": "b9f8482d-bcfe-416b-86bd-95de9e294e56"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 3,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "fleece",
+            "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+            "source": "mere://retained-text/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/b9f8482d-bcfe-416b-86bd-95de9e294e56/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+            "node": "b9f8482d-bcfe-416b-86bd-95de9e294e56"
+          },
+          "version": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+          "text_hash": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+          "selector": {
+            "start": 0,
+            "end": 70
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+        }
+      },
+      {
+        "handle": 2,
+        "passage": {
+          "source": {
+            "kind": "fleece",
+            "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+            "source": "mere://saved-source/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/b5bd49a4-06b0-4af0-b037-7fa415b51198/e13afb25afafbcedc48b91b6a644c35e83379fa362fcf60dd146f1e856113818/5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944",
+            "node": "b5bd49a4-06b0-4af0-b037-7fa415b51198"
+          },
+          "version": "blake3:5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944",
+          "text_hash": "blake3:5672a854653d94bc3e8de1ab6946539150f58b0c67ba9d7b294bf44a6b5c7944",
+          "selector": {
+            "start": 0,
+            "end": 54
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The amber harbor shipping log records a cobalt parcel."
+        }
+      },
+      {
+        "handle": 3,
+        "passage": {
+          "source": {
+            "kind": "fleece",
+            "owner": "turnstone/554330a8-8092-4662-96f0-90b741389ac3/research/v1",
+            "source": "mere://retained-text/554330a8-8092-4662-96f0-90b741389ac3/9618def4-1c81-4ba5-89ca-92237bff6d42/adcc5450-8ed1-4e6b-8f00-03d32ba6c5bc/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+            "node": "adcc5450-8ed1-4e6b-8f00-03d32ba6c5bc"
+          },
+          "version": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "selector": {
+            "start": 0,
+            "end": 46
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Pelican observatory's access word is café."
+        }
+      }
+    ],
+    "stale": [],
+    "citations": [
+      {
+        "handle": 1,
+        "passage": "blake3:de880141e3243906e36c84933480bcf6ec9acdd1f373c3f21cb71123d9f9c85e",
+        "basis": "model_marker",
+        "answer_selector": {
+          "start": 72,
+          "end": 75
+        }
+      },
+      {
+        "handle": 2,
+        "passage": "blake3:638fdf8ac323b6e3454d35d42c085e943f165abdd903bda5c108bffab7a74513",
+        "basis": "model_marker",
+        "answer_selector": {
+          "start": 148,
+          "end": 151
+        }
+      },
+      {
+        "handle": 3,
+        "passage": "blake3:9c339c284861a1ce6312b097d53089daae07be3a5f177f1d536cf3fd23daa535",
+        "basis": "model_marker",
+        "answer_selector": {
+          "start": 208,
+          "end": 211
+        }
+      }
+    ]
+  }
+}

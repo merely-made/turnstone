@@ -1,0 +1,8 @@
+{
+  "result": "pass",
+  "turnstone_compiled_source_commit": "a048adcc36eef8597ed913940d83103b9eae1633",
+  "turnstone_source_files_checked": 215,
+  "resident_compiled_source_commit": "4528e64201c9c21549f9f85945f2e1bceb6a7883",
+  "supplier_inputs_checked": 8,
+  "all_source_hashes_match_git_blobs": true
+}

@@ -1,0 +1,22 @@
+RESULT ok
+captured 01_capture_A
+captured 02_capture_B
+captured 03_mixed_sources
+captured 04_explicit_scope
+captured capture_answer
+captured capture_citation
+captured knot_answer
+captured knot_citation
+captured note_answer
+captured note_citation
+presentation frames=717 captures=10 blank=0
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/warm/01_capture_A.png digest=8e2333b37f818317 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/warm/02_capture_B.png digest=4773d1cd881cea2c blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/warm/03_mixed_sources.png digest=0ce6e48bfb769fe6 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/warm/04_explicit_scope.png digest=7f71443ffc2fb7ed blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/warm/capture_answer.png digest=b4b28bfb1e36990f blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/warm/capture_citation.png digest=d148331befbe1087 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/warm/knot_answer.png digest=5d9b4c9415a560d6 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/warm/knot_citation.png digest=5d0c1889d8ce2c43 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/warm/note_answer.png digest=62ceaf65da466dac blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-07/fused/warm/note_citation.png digest=cd52bf375c7b0c59 blank=false

@@ -1,0 +1,55 @@
+{
+  "excluded_attempt": "raw-01",
+  "boundary": "Not an accepted qualification. Interrupted before any mixed answer was submitted.",
+  "cause": "The origin-stop driver acknowledgement used touch(), producing a zero-byte file. Turnstone wait-file correctly requires a nonempty file, so this was a harness handshake error.",
+  "repair": "Write a nonempty origin-stop acknowledgement after owned process exit and TCP refusal; use bounded presented frames and a contributed connection assertion.",
+  "cleanup": "The attempt driver, resident and exact LaunchServices app PIDs exited before raw-02 was started. No other app processes were stopped.",
+  "accepted_attempt": {
+    "lexical": "raw-06/lexical passed",
+    "fused": "raw-07/fused passed",
+    "independent_verification": "passed on accepted raw cohorts and public subset"
+  },
+  "additional_excluded_attempt": {
+    "attempt": "raw-02",
+    "cause": "The legacy wait-row verb reads inspector/trail rows, not contributed Answers content; its synchronous wait also prevented native presentation.",
+    "repair": "Return to ordinary presented-frame settling, bounded to ten frames before the existing contributed-surface connected assertion. No guard relaxed.",
+    "result": "Failed before any mixed answer; app and resident exited."
+  },
+  "preflight_restart": {
+    "attempt": "raw-03",
+    "cause": "Source inspection found Past asks labels truncate questions at 70 Unicode scalars. The note question is longer.",
+    "repair": "Use the identical UI label prefix for the Reopen selector; keep the actual generation and ranking questions unchanged.",
+    "boundary": "Restart before any mixed ask; no measured ranking judgments changed."
+  },
+  "visual_repeat": {
+    "attempt": "raw-04",
+    "lexical_result": "Warm/cold pair passed; 26 nonblank presented captures, all historical rows equal, fresh asks cited correct target identities, source-absent exports equal original packages.",
+    "visual_limit": "Named pane navigation transfers an existing maximization. Repeated Maximize actions toggled some Answers views out of maximization; some saved-capture activations focused the graph until Workbench was explicitly revealed.",
+    "repair": "Keep maximization across named navigation, explicitly reveal each activated citation in Workbench, and request 1200 by 900 through the supported native resize verb.",
+    "restart_boundary": "Stopped the exact driver after lexical completion; only its newly starting fused helper was cleaned by its ownership-checked finally block.",
+    "model_quality": "The stock generator repeated the note and added markers for other supplied passages. This is retained as a quality limitation, separate from identity/range/cold verification."
+  },
+  "focus_preflight": {
+    "attempt": "raw-05",
+    "result": "Rejected after first capture answer; no accepted full lane.",
+    "cause": "The saved-reader wait observes graph/document keyboard focus. Revealing Workbench changes focus to the pane, so placing this legacy wait after the reveal reports None.",
+    "repair": "Validate exact saved-reader readiness/text/range before revealing Workbench; then capture and inspect the live native document after reveal. Reduce guessed settling; preserve every source, scope, range and presentation assertion."
+  },
+  "frozen_suite_sha256": {
+    "raw-01": "70daa7c024c0fa91bdb18774c876cc41ab62c93641c97ed520c161b25600eb58",
+    "raw-02": "70daa7c024c0fa91bdb18774c876cc41ab62c93641c97ed520c161b25600eb58",
+    "raw-03": "70daa7c024c0fa91bdb18774c876cc41ab62c93641c97ed520c161b25600eb58",
+    "raw-04": "70daa7c024c0fa91bdb18774c876cc41ab62c93641c97ed520c161b25600eb58",
+    "raw-05": "70daa7c024c0fa91bdb18774c876cc41ab62c93641c97ed520c161b25600eb58",
+    "raw-06": "70daa7c024c0fa91bdb18774c876cc41ab62c93641c97ed520c161b25600eb58",
+    "raw-07": "70daa7c024c0fa91bdb18774c876cc41ab62c93641c97ed520c161b25600eb58"
+  },
+  "judgments": "Identical corpus, questions and relevance judgments across every attempt; only orchestration and UI selectors changed.",
+  "fused_scope_diagnostic": {
+    "attempt": "raw-06/fused",
+    "observed": "Answers visibly showed three chosen sources, with Capture A still unselected. The resident received those same three identities and generated from them.",
+    "rejection": "The qualification fixture asserted the required four-source scope and rejected this run. This was not an owner-scope escape; no four-source acceptance is claimed for it.",
+    "repair": "Wait after each native Choose source click for the app-persisted exact prefix of the four expected text hashes; assert each displayed selected count before proceeding. No direct profile mutations or source-body injection.",
+    "cause_boundary": "The first click was not acknowledged in this fast sequence; the exact reason is not established. Rapid-click behavior is not qualified by this packet."
+  }
+}
