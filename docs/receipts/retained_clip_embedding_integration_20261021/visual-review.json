@@ -1,0 +1,27 @@
+{
+  "result": "pass",
+  "reviewed_captures": 20,
+  "notes": "Reviewed every final merged-shell warm/cold native capture. Selected-only readers, explicit one-source Answers scope, exact Unicode answers/citations, historical reopen and new cold source activation are visible; Redshank retains its recording-unavailable notice. Fresh producer captures are reviewed in the frozen preceding packet.",
+  "captures": {
+    "native/knot/cold/05_source_and_package_absent.png": "e530e93b52b82dfe7abbd1c3dd4740d400d48639ac51b9a5405899f30c7a1089",
+    "native/knot/cold/06_historical_answer.png": "e570ec2a6a0539ef236ba07d7717e987e222ba973cb88c1f3d2601097e3ba3a5",
+    "native/knot/cold/07_historical_citation.png": "34891df2943f47d6ad98126ef193201bf9b8eca46e892101528a97c092415120",
+    "native/knot/cold/08_new_cold_embedding_answer.png": "1706daf37da5686a88f2caf000e5811162d40312ab5398497dc94601e30b8069",
+    "native/knot/cold/09_new_cold_citation.png": "d9c70790671eaae49e334b6f2a4550aa67e800bc7c67bf9c11de8ad7844602fb",
+    "native/knot/warm/01_retained_body.png": "f1792e404a767b9631bdc778218bdbf526cc00f09d4cbb1c70de5b04baecbfdf",
+    "native/knot/warm/02_explicit_scope.png": "902a29987dc5f07aa4b2d92d95f9b76f6b1b6c3f3704759464f168f80368ae4c",
+    "native/knot/warm/02b_ask_submitted.png": "0cb78f5f2f6b21f6c3efce9d10b0b9f6acc3f81b9c8751758e752d7aed7ac696",
+    "native/knot/warm/03_embedding_answer.png": "ae1701305a3b989d836bc8fa666953609ced2dab8781d6c718f4c4ba68890a1c",
+    "native/knot/warm/04_exact_clip_citation.png": "34891df2943f47d6ad98126ef193201bf9b8eca46e892101528a97c092415120",
+    "native/redshank/cold/05_source_and_package_absent.png": "d997b4564d587dc9254458b8d7124a274e5926bef4cf834884bf0fdd13278bf4",
+    "native/redshank/cold/06_historical_answer.png": "94a5c55044049de69b8601a20fe4ebe4581881da06063aafa49c88196e9de2f6",
+    "native/redshank/cold/07_historical_citation.png": "1e67a7cd60a7e909ffbf9dfb5df4dd4a82f67815c61d914bf232182d3e6b1153",
+    "native/redshank/cold/08_new_cold_embedding_answer.png": "0f05d64ffb498ccf9d65465e79dbeeca023a0a3ae37aaf16d940fd7eb2561af7",
+    "native/redshank/cold/09_new_cold_citation.png": "1e67a7cd60a7e909ffbf9dfb5df4dd4a82f67815c61d914bf232182d3e6b1153",
+    "native/redshank/warm/01_retained_body.png": "f7fd0335edf98369444d9340952e3f3d4d1b68a14c8049df043f627af0c18560",
+    "native/redshank/warm/02_explicit_scope.png": "4507fb0e7e844ede72f3b4b1e3c0337cc9c519c29b63db1b1e1cf5f1bdbbc0b1",
+    "native/redshank/warm/02b_ask_submitted.png": "8b0e1426f48c50e15d415bc2eda9fb8deeee8d5f09a12dc0b1eea07ab7fb4b6b",
+    "native/redshank/warm/03_embedding_answer.png": "709376df1803ed718fa0c1f93a50e579f20f3e1057df992b4dfeedcca05e0339",
+    "native/redshank/warm/04_exact_clip_citation.png": "1e67a7cd60a7e909ffbf9dfb5df4dd4a82f67815c61d914bf232182d3e6b1153"
+  }
+}

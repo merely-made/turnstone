@@ -1,0 +1,71 @@
+{
+  "run": "turnstone/fd62b514-8bb1-4ab2-ab1c-ad8112ce98a6/research/v1/5ecbe725-b611-492a-b2c4-af1edc84242e",
+  "question": "Repeat the retained text exactly and cite its source using the numeric marker.",
+  "state": "finished",
+  "text": "Passage: Café\n\nSource: Hugging Face",
+  "error": null,
+  "session": {
+    "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+    "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+  },
+  "tokens": 12,
+  "continuations": [
+    {
+      "device": "device:f12aff71dfbe6a07bd5d820bd712f95e",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "embedding": {
+      "envelope": "blake3:4ab06a04a674e4302db3c8df935bb07c375c5fd34ba5cad079aefd627f40c100",
+      "index": "blake3:1abb1b1d042012a519f9ec9cd5a2f0c8284d0d54e03e1c9fc31c8757a2bc8b82",
+      "cache": "built",
+      "vector_bytes": 1536,
+      "persisted_bytes": 6424,
+      "lexical_weight": 1,
+      "vector_weight": 1,
+      "rrf_k": 60
+    },
+    "owner": "turnstone/fd62b514-8bb1-4ab2-ab1c-ad8112ce98a6/research/v1",
+    "scope": [
+      {
+        "kind": "fleece",
+        "owner": "turnstone/fd62b514-8bb1-4ab2-ab1c-ad8112ce98a6/research/v1",
+        "source": "mere://retained-text/fd62b514-8bb1-4ab2-ab1c-ad8112ce98a6/c879fdd0-be39-4f64-98df-0c36a444f85c/f8413fa0-d9d6-42a3-9cbc-194758e09733/d87011314dd76d6a442499c617217d7fbe31f2040b82ebd3f5799a1774c99088/e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+        "node": "f8413fa0-d9d6-42a3-9cbc-194758e09733"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 1,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "fleece",
+            "owner": "turnstone/fd62b514-8bb1-4ab2-ab1c-ad8112ce98a6/research/v1",
+            "source": "mere://retained-text/fd62b514-8bb1-4ab2-ab1c-ad8112ce98a6/c879fdd0-be39-4f64-98df-0c36a444f85c/f8413fa0-d9d6-42a3-9cbc-194758e09733/d87011314dd76d6a442499c617217d7fbe31f2040b82ebd3f5799a1774c99088/e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+            "node": "f8413fa0-d9d6-42a3-9cbc-194758e09733"
+          },
+          "version": "blake3:e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+          "text_hash": "blake3:e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+          "selector": {
+            "start": 0,
+            "end": 4
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "café"
+        }
+      }
+    ],
+    "stale": []
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "software_result": "pass",
+  "native_repeat": "pass",
+  "turnstone_integration_commit": "a048adcc36eef8597ed913940d83103b9eae1633",
+  "binary_sha256": "0985f26f33553e1b8954d40d2b78e1f7f722f662b204dd88e44d8d13590d2131",
+  "turnstone_checks": {
+    "research-teststests": {
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0,
+      "log_sha256": "020d8e25638bf5df1bd1ec4c7d6d8767d564719e01f080892bdf851afa2b5e0c"
+    },
+    "inference_tests": {
+      "passed": 7,
+      "failed": 0,
+      "ignored": 1,
+      "log_sha256": "4e9b715b70b4f576172a8c347f44fabf151751da19c3a881c6f369e3d37c948e"
+    },
+    "saved_sources-tests": {
+      "passed": 10,
+      "failed": 0,
+      "ignored": 0,
+      "log_sha256": "98af006cc2d079e9f080753f8313d282bddcc20fe9b539d5d7694d8b3da41b3d"
+    },
+    "retained_clip-tests": {
+      "passed": 14,
+      "failed": 0,
+      "ignored": 1,
+      "log_sha256": "ee2bd93ee8715695e585dbb88f773d0c477819f2821abdc2ef6adecd1b5873d2"
+    },
+    "app-contributed_pane_arms-tests": {
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0,
+      "log_sha256": "95726a605cbb4cb92990802089d09b06420111597f56b533267924bdbe3f8d1c"
+    }
+  },
+  "supplier_cases_previously_passed": 16,
+  "supplier_context_equality": "context-equality.json",
+  "first_native_qualification": "../retained_clip_embedding_20261020/qualification.json",
+  "resident_sha256": "492c61fc542b3e9df932a5ab101a29c15ee8ec3fda92622ec1295d5f40181c94",
+  "supplier_source_base": "0a620f464fd7e6dfafd5d8aa086fe0e923f1b39e",
+  "independent_verification": "pass on raw and public subset",
+  "visual_review": "20 captures reviewed"
+}

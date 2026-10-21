@@ -313,3 +313,57 @@ capability.
   explicit destination. OS save-dialog automation, personal vault/migration,
   renewed microphone/audio qualification, broader formats and the whole P6
   program remain separate gates. Earlier qualification packets remain frozen.
+
+## Retained text Answers continuation, 2026-10-20
+
+**Status:** qualified on the recorded receiving cut and the final merged
+shared-shell/SDK cut. Extend the current explicit Answers scope to live
+session members naming sealed retained text clips. Preserve capture choices,
+clip/capture identity, text hashes and Unicode citation ranges; admit only the
+selected text body and keep producer backing/recordings outside the corpus.
+
+**Done when:** the native receiver imports previously qualified embedded Knot
+and Redshank selected packages, asks through real MiniLM fused recall and opens
+exact local citations, then fresh product/resident processes repeat a new ask
+using the sealed compatible index with producer inputs and transfer files absent.
+The public receipt belongs under `docs/receipts/retained_clip_embedding_20261020/`;
+typed owner/identity refusals and existing capture regressions remain focused gates.
+
+**Probe finding:** the first headed short-selection ask retrieved the correct
+`café` body and scope, but SmolLM2 repeated the much longer source identity JSON
+that preceded it in the resident context. A concrete word question showed the
+same prefix. Mere's recall formatter is being corrected to supply numbered
+passage text to generation and retain full identity/version/selector authority
+in the sealed evidence record. The accepted continuation must use the corrected
+resident; both diagnostic native runs remain outside the passing receipt.
+
+**Receiving gate, 2026-10-21:** both one-source native lanes pass, using real
+MiniLM fused retrieval and GPU SmolLM2 generation. The fresh embedded Knot
+selection contains 47 UTF-8 bytes/46 scalars at original bytes 16–63; the
+previously qualified Redshank note contains 73 bytes/70 scalars. Source paths
+are absent before receiving, the fresh Knot producer profiles are removed,
+and transfer packages are removed before separate product/resident cold pairs.
+Both historical and new cold citations open the exact local reader; compatible
+index/envelope identities and sealed old evidence survive; selected-only cold
+exports equal the inputs. Twenty receiver and four producer captures were
+reviewed. The [packet](../docs/receipts/retained_clip_embedding_20261020/README.md)
+records 43 Turnstone, 14 recall/embedding and two resident route passes.
+
+The source metadata echo is repaired in Mere `22c8c5e3c` and SDK `eb1244ccf`.
+The four-scalar `café` answer can be correct without a model marker, leaving
+it below the unchanged 32-character automatic quote threshold. Short-word
+citation attempts remain diagnostic failures; the sentence fixture qualifies
+normal exact quotation without weakening admission. Concurrent Turnstone
+shared-shell and shared Apparatus-core pin changes are preserved and qualified
+as a distinct integration cut; each packet remains bound to its compiled hashes.
+
+**Final integration, 2026-10-21:** source cut `a048adc` receives Mere SDK
+`7edfe3b09`, preserves the shared shell/navigation and shared Apparatus-core
+consumer delivery, and passes the same four native warm/cold phases. Native
+and libtest builds pass on Rust 1.99.1; all 43 Turnstone focused cases pass
+again. The resident recall file is byte-identical across the fix, both SDK
+cuts and the frozen GPU fixture. Twenty final captures were reviewed and the
+independent verifier passes raw/public evidence, product/scenario hashes,
+source identity, compatible reuse, historical evidence and selected-only export.
+The [final integration packet](../docs/receipts/retained_clip_embedding_integration_20261021/README.md)
+records compiled-source Git-blob proofs; earlier receipts remain unchanged.

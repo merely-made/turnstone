@@ -1,0 +1,50 @@
+{
+  "research-teststests": {
+    "passed": 5,
+    "failed": 0,
+    "ignored": 0,
+    "log": "clip-sdk-research-teststests.log.gz"
+  },
+  "inference_tests": {
+    "passed": 7,
+    "failed": 0,
+    "ignored": 1,
+    "log": "clip-sdk-inference_tests.log.gz"
+  },
+  "saved_sources-tests": {
+    "passed": 10,
+    "failed": 0,
+    "ignored": 0,
+    "log": "clip-sdk-saved_sources-tests.log.gz"
+  },
+  "retained_clip-tests": {
+    "passed": 14,
+    "failed": 0,
+    "ignored": 1,
+    "log": "clip-sdk-retained_clip-tests.log.gz"
+  },
+  "app-contributed_pane_arms-tests": {
+    "passed": 7,
+    "failed": 0,
+    "ignored": 0,
+    "log": "clip-sdk-app-contributed_pane_arms-tests.log.gz"
+  },
+  "clip-context-tests-passed.log": {
+    "passed": 14,
+    "failed": 0,
+    "ignored": 0,
+    "log": "clip-context-tests-passed.log.gz"
+  },
+  "clip-sdk-lexical-route.log": {
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "log": "clip-sdk-lexical-route.log.gz"
+  },
+  "clip-sdk-library-route.log": {
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "log": "clip-sdk-library-route.log.gz"
+  }
+}

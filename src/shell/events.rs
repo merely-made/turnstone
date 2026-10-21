@@ -574,7 +574,10 @@ impl Shell {
                 crate::research::Intent::Selection { context, expected, chosen } => self.app.update(crate::action::Action::SetAnswerSelection { generation: context.generation, expected, chosen }),
                 crate::research::Intent::Citation { context, target } => {
                     if context.session != self.app.session_id || context.generation != self.app.source_capture_generation { continue; }
-                    self.app.update(crate::action::Action::OpenSavedSource(target))
+                    match target {
+                        crate::research::Target::Capture(target) => self.app.update(crate::action::Action::OpenSavedSource(target)),
+                        crate::research::Target::Clip(target) => self.app.open_research_clip(target),
+                    }
                 },
             };
             self.run_effects(effects);
