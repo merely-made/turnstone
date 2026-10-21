@@ -112,13 +112,32 @@ the Map, and the marquee stays. Selecting never navigates.
 
 ### Selection commands
 
-All four are ordinary `Action`s: a variant, an explicit `command_metadata` row
-(effect class, not destructive), a ring entry (Panes), a dispatch arm, and a
-palette row offered only when the selection qualifies. Each carries the
-selection id and the members it was offered for, and refuses when they no
-longer match (the `SetAnswerSelection` pattern), so Hest's observation gains the
-selection. Shared verb ids go in Cambium's catalogue (`selection.compare`, …) so
-Graphshell can adopt the same ones (SE49).
+All four are ordinary `Action`s declared through Hest, following the
+the Hest command architecture
+(`mere/design_docs/cambium_docs/implementation_strategy/2026-10-20_hest_command_architecture_plan.md`):
+a variant, an explicit `command_metadata` row, a ring entry (Panes), a dispatch
+arm, and a palette row offered only when the selection qualifies.
+
+- **Declaration.** Effect class per Hest's taxonomy (Mark's ruling 2,
+  2026-10-20): Compare, Show connections, Read in sequence and Search within
+  selection are `Curation`, since they change what is shown and how, not graph
+  truth. Keep this selection (freezing) and Save scene write graph resources
+  and are `DomainTruth`. None is `destructive`; saving over an existing scene
+  of the same name is, and is offered separately.
+- **Invocation.** A Hest `Invocation` whose arguments carry the selection id and
+  the ordered members it was offered for, under a new schema id rather than a
+  loosened `turnstone.command/v1` (which denies unknown fields). The outcome is
+  Hest's: `Stale` when the selection no longer matches (the
+  `SetAnswerSelection` pattern), `Refused` with a reason (fewer than two
+  members, a member live in another surface), and `Done` only once the new
+  arrangement is observed, as Graphshell's receiver requires.
+- **Ids.** Turnstone owns these ids for now. They join `hest::catalogue` as
+  shared verbs only under the admission rule (ruling 1): a second host offers
+  the verb, or ux-events reasons about it. Graphshell offering Compare over a
+  shared scene (phase 4) is the natural second host.
+- **Automation.** Mesquite's `Product::invoke` and Rhai command collection
+  invoke by Hest id, so the walkthrough scenario drives Compare and Save scene
+  by id as well as through the chrome.
 
 - **Compare** (2 to 4 members). Opens the members side by side in a Read
   Workbench bound to a stored forme document (`FormeRef::Stored`): one tile
