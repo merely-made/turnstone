@@ -1,0 +1,206 @@
+{
+  "schema": "turnstone.headed-embedding-recall/v1",
+  "date": "2026-10-20",
+  "passed": true,
+  "turnstone_base": "49e7928d84dca82311a2c681f3de7066e0e6d320",
+  "sdk": "125df8df614ba503307cdacdba6150781bcea908",
+  "eidetic": "34105d63ec17826e0a58a5b461b65150357dd000",
+  "esp": "6d371901435b68e3fb4099a97789222d15f87cf0",
+  "checks": {
+    "native_turnstone_build": "passed",
+    "native_gpu_embedding_resident_build": "passed",
+    "focused_inference_client_tests": {
+      "passed": 7,
+      "ignored": 1
+    },
+    "existing_resident_routes": {
+      "passed": 2
+    },
+    "headed_app_processes": 2,
+    "headed_resident_processes": 2,
+    "native_captures_reviewed": 13,
+    "independent_verification": "native/verification.json"
+  },
+  "embedding": {
+    "warm": {
+      "envelope": "blake3:b5a2bb267862a101b937a06c5756574040c9d7e19dd39d593e3e02f0fdd5ae10",
+      "index": "blake3:f50858301c814fe4941eaa5a39dca5b2748a01fd698059e86f934613bec15752",
+      "cache": "built",
+      "vector_bytes": 3072,
+      "persisted_bytes": 11784,
+      "lexical_weight": 1,
+      "vector_weight": 1,
+      "rrf_k": 60
+    },
+    "cold": {
+      "envelope": "blake3:b5a2bb267862a101b937a06c5756574040c9d7e19dd39d593e3e02f0fdd5ae10",
+      "index": "blake3:f50858301c814fe4941eaa5a39dca5b2748a01fd698059e86f934613bec15752",
+      "cache": "reopened",
+      "vector_bytes": 4096,
+      "persisted_bytes": 11784,
+      "lexical_weight": 1,
+      "vector_weight": 1,
+      "rrf_k": 60
+    },
+    "space": {
+      "dimensions": 384,
+      "document_prefix": "",
+      "metric": "cosine",
+      "normalization": "l2-f32",
+      "pooling": "attention-mask-mean",
+      "preprocessing": {
+        "artifacts": {},
+        "name": "esp.bert-tokenizer",
+        "parameters": {
+          "max_sequence_length": "512",
+          "pad_token_id": "0",
+          "padding": "batch-longest/right"
+        },
+        "revision": "v1"
+      },
+      "producer": {
+        "artifacts": {
+          "config.json": "blake3:5cc3d398a528ce285a778ade0f2c1c95a31d3dcd9b7bd6dca8e85e1fbb5c9e90",
+          "model.safetensors": "blake3:8087e9bf97c265f8435ed268733ecf3791825ad24850fd5d84d89e32ee3a589a",
+          "tokenizer.json": "blake3:82483bb4f0bdb81779f295ecc5a93285d2156834e994a2169f9800e4c8f250c1"
+        },
+        "name": "esp.bert-f32",
+        "parameters": {},
+        "revision": "v1"
+      },
+      "query_prefix": "",
+      "tokenizer": {
+        "artifacts": {
+          "tokenizer.json": "blake3:82483bb4f0bdb81779f295ecc5a93285d2156834e994a2169f9800e4c8f250c1"
+        },
+        "name": "huggingface.tokenizers-0.20.4",
+        "parameters": {},
+        "revision": "v1"
+      }
+    }
+  },
+  "processes": {
+    "products": [
+      59440,
+      60282
+    ],
+    "residents": [
+      59735,
+      60541
+    ]
+  },
+  "proofs": [
+    "origin exits before the first ask and remains absent through cold reopen",
+    "exact saved HTML source is read before either resident startup",
+    "kept capture references and both explicit source choices survive product restart",
+    "historical answer, model identity and sealed source/prompt evidence remain unchanged",
+    "fresh cold ask reuses the same private envelope/index and exact passage/citation",
+    "configuration, tokenizer and weight identities match admitted consumed artifacts",
+    "bounded private journal scan finds none of the checked plaintext markers"
+  ],
+  "inputs": "native/inputs.json",
+  "lock_scope": "receiving-cohort.json",
+  "superseded_attempt": "superseded-run.json",
+  "fixture_correction": "Terminal cold-ask observation is written once while citations are admitted, before the publishing app disconnects. Runtime behavior and Turnstone binary are unchanged.",
+  "model_admission": "ModelLibrary accepts parsed JSON and resolves canonical configuration bytes. The envelope binds these consumed bytes; raw source and admitted BLAKE3 digests are recorded separately.",
+  "limits": [
+    "macOS native scenario interactions on one computer; no new physical keyboard/assistive-technology or second-device gate",
+    "two saved HTML captures through the existing retained-source/Answers flow; no new authored-note/voice recall scope",
+    "real CPU MiniLM retrieval and real GPU SmolLM2-360M-Instruct generation; this quote task does not establish general answer quality",
+    "no new ranking benchmark: the fixed lexical/vector/fused comparison remains in Mere resident I10 receipt"
+  ],
+  "reproduce": "run_native.py and verify_native.py; local digest-pinned model assets and final binary paths supplied explicitly",
+  "artifact_manifest": {
+    "README.md": "6f4c0ad345b67bb542e251dd98983022a2509c270cdddd9d1778ae773ad25ce8",
+    "model-artifacts.json": "84bb15348c0d76489c7b452a6c036a36cb5e78be33b710a6446251b7f3d6f7d0",
+    "native/completion.json": "cb1a8fe8f161f827b97d9f7ecfa7091a56d442cdefb44cec7ccc0fb25156513a",
+    "native/embedding-artifact-blake3.json": "4ad4b5b51dae041e6d0f06ab50fdb29c9f0c24295890c4abbbafd919c54228a7",
+    "native/inputs.json": "2195d5ef965a7d171d71942fb4c0c34e6032b262ecfc21e6b868ef210ad858ed",
+    "native/origin-ready.json": "8d66720fe66abac2e32cd483bca41690ff36c88a6d6a9c6ad167eb277fe20e2a",
+    "native/origin-stop.json": "76a6a200c03f86778095c461a8288ae67050c8416009f5795587c6defc93b079",
+    "native/private-journal-scan.json": "6857b0c033f5650ad37b5d96b7d001b7dbcb205df11f2acf77b7e0022b5bcf03",
+    "native/profile/sessions/9e32bca9-6dde-412f-98b8-5b86cb4b1db5/facets.json": "6efffb5bf60dcaf9ef30363f8215506ca5886ac14e4100277322adada6b7fdf9",
+    "native/profile/sessions/9e32bca9-6dde-412f-98b8-5b86cb4b1db5/graph.json": "91f720d7045e3540d822d03ec8e0d4f8af185c6ae4274d7d5be7a46dcab962d3",
+    "native/profile/sessions/9e32bca9-6dde-412f-98b8-5b86cb4b1db5/workspace.json": "2ef7e23bee860e48544f41f7e29874b8dea502f5f8d9ad875362bda023a92df7",
+    "native/reopen/08_cold_reader_before_resident.png": "be764a4778e7231883e098562d7941d251f7ccf5c4f4cd9cb9d84a21f3fd1ce9",
+    "native/reopen/08_cold_reader_before_resident.saved-sources.json": "25ea5d54352b369ce634f8dbcc085fa0b27db5c5e3029bc3ae203c34a9809f7b",
+    "native/reopen/09_cold_scope_resident_absent.png": "a633b077d453371639c6641dbcd9cff9295798f706b75f922bf14ca21307dba5",
+    "native/reopen/10_historical_answer_restored.png": "a86b6293decee3da7c2c2bd12aee614d6a312be08d4d5d83a3797fd8ebf7a213",
+    "native/reopen/11_cold_historical_citation.png": "7b0706268d8abafdb129bf071236c6bea7b871166205c5d534ce3664b6364255",
+    "native/reopen/11_cold_historical_citation.saved-sources.json": "25ea5d54352b369ce634f8dbcc085fa0b27db5c5e3029bc3ae203c34a9809f7b",
+    "native/reopen/12_new_ask_using_reopened_projection.png": "e672bcd3e5584e7c7fa9acdd78649c71984e4843b39e2a0438d11269399f0274",
+    "native/reopen/13_new_cold_ask_exact_citation.png": "7b0706268d8abafdb129bf071236c6bea7b871166205c5d534ce3664b6364255",
+    "native/reopen/13_new_cold_ask_exact_citation.saved-sources.json": "25ea5d54352b369ce634f8dbcc085fa0b27db5c5e3029bc3ae203c34a9809f7b",
+    "native/reopen/diagnostics.json": "b30b4de2e43433a76136a195589f19e3b7130b6c98f035028c4ae335278ceae2",
+    "native/reopen/launch.json": "60e7e929b4bb98fa88d1ecbfc70a01d94ebdc2361fe148fb345b09c17fba043c",
+    "native/reopen/launcher.log.gz": "b0b9d21567d232e3632585f485a0119d212c442ca57cf4a35bd7a870f18d577d",
+    "native/reopen/native.log.gz": "77850ec6a4d7097f6fa57ce7fe9d6bd8e70ccbc7b4155a2e9adc855197dc7024",
+    "native/reopen/process.json": "63442b411b2e189b037c3f6b4bf2bab49b35fdf1baf5a5903cfa5613dc243f1b",
+    "native/reopen/scenario.done": "a68fd8a1a671e64a82c34b5ef1d22ee6d2c6dc09181538ad8bd1180761bc7607",
+    "native/reopen-command.json": "d0fa592fd34a75033adffd569ae28c176aeadcc865e9d2f44e3230c1328965f7",
+    "native/requests-at-stop.json": "8828f638f305f3d68412c6db9125d7386f7d2ddb2ac141fc8b9f744c00473048",
+    "native/requests-final.json": "8828f638f305f3d68412c6db9125d7386f7d2ddb2ac141fc8b9f744c00473048",
+    "native/resident/embedding-cold-ask.json": "d49222bdc2054d1320f055889a59cf2748678a87f1c56c59117e0937fc722983",
+    "native/resident/embedding-model.json": "0ed25d73cf0f1bbf0081036e4e0ea2381571b5d3cd2af4fcb1040c46166bf9f1",
+    "native/resident/finished.json": "466a06fc5bf249bdaf256d7d542302881431fb126cbca4f50c744fa1a993f408",
+    "native/resident/model-row.json": "d92ec47e522614e6772aabb49dd0667a55e650b7c4b345c8b8c0a6009dcd623c",
+    "native/resident/process-0.json": "69fd07c80e29fa8853113613c9cbfeba948fa55894432bcf21b37ab126fff9b5",
+    "native/resident/process-1.json": "f298c1217bb7e9195fb8785fc2bdc8c36cf9046e85c4d130bee05de48e53db8d",
+    "native/resident/ready-0.json": "e5d743319d685456ab1e6c6f2ca543bc56210bade2a52d606d9e4a01a67dd162",
+    "native/resident/ready-1.json": "7d3ce0130e54e2d1b3f4ad60b2f3d8854d2250c6c0fc662074ebf281f93a592a",
+    "native/resident/reopened.json": "d49222bdc2054d1320f055889a59cf2748678a87f1c56c59117e0937fc722983",
+    "native/resident/resident-receipt.json": "c641706570dcd64e32dabce11c6e68b1668e602d5cd533ded02a842804dd5a8b",
+    "native/resident/second-started.json": "03494afd4248c42f5fa1237bf2eeebe751ab8d9c977d55405fcb17469dbd91f8",
+    "native/resident/snapshot-0.json": "a17159e152b0404f7226d8270136447a0c952aaa7711f8a3cf38c5006a901aaa",
+    "native/resident/snapshot-1.json": "58a7bd652ea266f5b2045498a3fc29b19ff91fd51cd539b907bc494a7d0c15ad",
+    "native/resident/streaming.json": "12e2862e904e7536e4e21a1d80a8446bda1f8827639b9eb9db3057831eca7d55",
+    "native/resident-0.log.gz": "10435ec87880744d3ace0a43c197cd3e3b2d7755cf61f2f0cb58d62690495ef4",
+    "native/resident-1.log.gz": "542e005cfa7a3c060d69e2bc0709326a5329cfe614df72489ca62fd7e6b1e180",
+    "native/resident-start-0.json": "e5fba0e08af993d920ca20cb473702a3860eaa98155988dfd144a87c3ca913a7",
+    "native/resident-start-1.json": "985bb2a566f4c4a15945acd7f4e943663176f79b6d2e756710aa2411e57fa544",
+    "native/resident-stop-0.json": "14f79f74229b898192992a53f9b6642580a82d4d35193153cc4b2fb2ea81dac0",
+    "native/resident-stop-1.json": "a043e80dc4b4544d6bdb15910a89d6dcaf7555e7ffb7447107563936932dc9e4",
+    "native/runs.json": "97707c4962bc1244e3d77c430f39bd73b3e742d50867e8b4c92e65e0481cf0c0",
+    "native/seed/01_A_saved.png": "5974a619ee4457361817cb9897ba566d7989650019cafdedb4e58fd5741f12f6",
+    "native/seed/01_A_saved.source-captures.json": "21c4f13de17d5c6535e87bbb07caf774ebdd7792fc71ecf19aa816cde72c212c",
+    "native/seed/02_B_saved.png": "69b9bd467b53c786576e39200c3bf16391e7174356ab8e376d3b731b1addf7e9",
+    "native/seed/02_B_saved.source-captures.json": "10b74a559ff57c749e29aa59c9db0825f976d7668423c52af15a0a7e6fa74109",
+    "native/seed/03_read_origin_and_resident_absent.png": "87b01985c82acc23f902c8174bececc3f67e4c64fdb0f4f828220c8547999d3a",
+    "native/seed/03_read_origin_and_resident_absent.saved-sources.json": "d18112ea674ef2a69f5ef49b9509af8fb5d9841295de343ec14d3525f307f014",
+    "native/seed/04_resident_absent.png": "5e5c4b9b5972498594eb7022ea247fb7dbb889cbb9273c29b816d2dc4a38d73c",
+    "native/seed/05_explicit_retained_scope.png": "12ffcececf37819c2fe252f2f16d2f9067e722fe19aa14024a55fe8127d7ffac",
+    "native/seed/06_embedding_answer.png": "2a3336329d62bbb34ff33ebcdd95c42c041934bf41208e134aa1fa2662b70ab7",
+    "native/seed/07_exact_retained_citation.png": "7b0706268d8abafdb129bf071236c6bea7b871166205c5d534ce3664b6364255",
+    "native/seed/07_exact_retained_citation.saved-sources.json": "8e58fc38a223702d84d7e50c595b52dbefc81b34b955b6462bea14df8f77c112",
+    "native/seed/diagnostics.json": "cd2c56425c84ea561d59cfb17a416f3bde8da8433d33017ab91510bb6ce5a0af",
+    "native/seed/launch.json": "198dc3fa1de6b284d3d073b75c2dbfe8f01f62bdcc0f1bd5551fc46891dd3da0",
+    "native/seed/launcher.log.gz": "b0b9d21567d232e3632585f485a0119d212c442ca57cf4a35bd7a870f18d577d",
+    "native/seed/native.log.gz": "c359a9610a192515dc92f2f7cfa2bd3bb78dbb6f9c8a5711b2772227d4e698ab",
+    "native/seed/process.json": "3d09a38a093f1999d2b0cca416fcb86d34ad71d7f3aa797b84497faa97c766da",
+    "native/seed/scenario.done": "e1f43d3bfc74deaaf50bf2d54983dc4689bd920729894baef88dea2fc8885600",
+    "native/seed-command.json": "2698568b65accfc779d722c379f94432b40732e77a75db3471dc51839079a6b5",
+    "native/verification.json": "f62dd9a33e6b544005a24761d74a7581d4d3e1840ca0d7b4d94dbc27b8bc9a6b",
+    "receiving-cohort.json": "f6de5917511d4ab4c6d5f1f72b1e38b8434e5ffa8d82562af33e5e855e23910f",
+    "reopen.scn": "aef605da6c3b6562c8df1c97407a6ba629619c244ac12ec8e77c57dffe498ff7",
+    "resident-final-build.log.gz": "f6186c7db6f709d1b5d633887e4898e2a6445d2d8b163cfa779bb78c8bcf7569",
+    "resident-library-baseline.log.gz": "a78c3b9ddc9baa84c3d3df03af409a2bee16c8ad2fc41d8f8aa1bc071868a2bd",
+    "resident-stub-baseline.log.gz": "0e3396277a5442b1633a19fb79ec4647e0e8726587dc3872cd4a09d993981653",
+    "review/06_embedding_answer.jpg": "9f19e2c204b00f9ab4b689ef0294d1f15c8e249b2c28ece2a0770c3be7d6fa9d",
+    "review/12_new_ask_using_reopened_projection.jpg": "4441be4973ffd62ed7525c8fa99c2b3dab336c302785dcf12d51707026b91b98",
+    "review/review-1.jpg": "300834e50504314b9bdd733f1a405709ef28dafaff6aeab393c4b76f11fbf222",
+    "review/review-2.jpg": "16b028c91727d5cbb928b1b68270552cefb418c87aa067edd6e21f794c4be284",
+    "review/review-3.jpg": "385e7ae2a591748f26824b82cd2b5818c49b5d5aeb9868a9483a44c5550398f8",
+    "review/review-4.jpg": "b1cbf482246c8de8985b0f95725373ddd4bd82efcc75d26017966bfe7ca7fd0d",
+    "run_macos_scenario.py": "c1a6cb530152f3c8accc3dec41a6e7ab0dfb32a10079778ac900c1306f28c69d",
+    "run_native.py": "71b6ed00adb0698131879aeacda3dcf03a79fabe2a0378bb06c61e2915b28122",
+    "seed.scn": "421010439e91bd30b2d23b504193a0e67bed4143160b96ee5c744603f37ce61c",
+    "superseded-run.json": "74e0c6c349e075532c0cdee203bd35205d1e3bae022ef2506d8eb0aa09b12fc3",
+    "turnstone-build.log.gz": "1dbdbaf64fab10bc12e0e40acdc5a6febf3ec2be481a5172f9d5fc37935b23ac",
+    "turnstone-inference-tests.log.gz": "0b218ccaad4c816e881f5549a7c1198d0c95c545379b55cd5c20b0e2d79a22d3",
+    "verify_native.py": "e7024c8e3cfa59e29d3b2274c5aef7205f1090d65cf6e76f163aed9ae180e6d4",
+    "visual-review.json": "86830a3caa04c26a00566c1d437483525085e38754fbeaca8bb1e738d412f479"
+  },
+  "published_fixture_commit": "80c938abc7d3b68e8f3ca49259ee4bf20601e01c",
+  "tested_fixture_change_commit": "601d7430d",
+  "fixture_delivery_scope": "The identical test fixture is published after reconciling concurrent main. Compiled runtime/source basis remains the exact SDK and input hashes in native/inputs.json."
+}

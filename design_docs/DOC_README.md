@@ -73,7 +73,11 @@ set.
   headed I5 acceptance are tracked in
   `mere/design_docs/mere_docs/implementation_strategy/2026-10-15_resident_inference_and_recall_plan.md`.
   Native I5 is qualified with the pinned GPU model and an offline-origin
-  restart. Turnstone's client integration is recorded in the
+  restart. The October 20 embedding continuation is qualified on macOS:
+  current SDK intake, real MiniLM fused recall through headed retained sources,
+  and an independent cold product/resident pair with a new ask. Its
+  [receipt](../docs/receipts/embedding_recall_20261020/qualification.json)
+  preserves the exact envelope/index, source/citation and private-journal evidence. Turnstone's client integration is recorded in the
   [architecture plan](2026-07-10_turnstone_architecture_plan.md).
 
 - [Retained clip receiver](2026-10-11_retained_clip_receiver_plan.md): Fleece

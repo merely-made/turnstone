@@ -1,0 +1,10 @@
+{
+  "result": "pass",
+  "both_processes_exit_before_cold": true,
+  "origin_requests_unchanged_after_stop": true,
+  "resident_pids": [
+    59735,
+    60541
+  ],
+  "new_cold_ask_used_reopened_projection": true
+}
