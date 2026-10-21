@@ -1,0 +1,40 @@
+settle 12
+key escape
+assert snap network-offline == true
+act New session
+settle 5
+import-clip ${RC_PACKAGE}
+settle 20
+act Open node in Workbench
+settle 10
+assert content-live
+assert snap browser-current ~ ${RC_ADDRESS}
+capture 01_retained_body
+record-saved-sources 01_retained_body
+act Ask saved sources
+settle 100
+act Maximize pane
+settle 5
+assert text Connected to resident inference.
+click surface:contributed role:button Choose source: ${RC_TITLE}
+settle 5
+assert text 1 saved sources chosen
+capture 02_explicit_scope
+click surface:contributed role:textbox Question
+insert ${RC_QUESTION}
+click surface:contributed role:button Ask
+settle 20
+capture 02b_ask_submitted
+wait-file 18000 ${RC_RESIDENT}/finished.json
+settle 20
+assert text café
+assert text Source 1:
+capture 03_embedding_answer
+click surface:contributed role:button Source 1:
+settle 15
+assert content-live
+assert snap browser-current ~ ${RC_ADDRESS}
+capture 04_exact_clip_citation
+record-saved-sources 04_exact_clip_citation
+assert snap offline-acquisition-attempts == 0
+act Save session

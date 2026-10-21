@@ -1,0 +1,13 @@
+RESULT fail
+captured 01_retained_body
+captured 02_explicit_scope
+captured 02b_ask_submitted
+FAIL: assert text 'Source 1:': not on any surface
+captured 03_embedding_answer
+captured 04_exact_clip_citation
+presentation frames=441 captures=5 blank=0
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-07/knot/warm/01_retained_body.png digest=184515139508c3bc blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-07/knot/warm/02_explicit_scope.png digest=7fd456575180ab51 blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-07/knot/warm/02b_ask_submitted.png digest=052bc7fbfdb656a9 blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-07/knot/warm/03_embedding_answer.png digest=8787650a6a39b5eb blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-07/knot/warm/04_exact_clip_citation.png digest=8787650a6a39b5eb blank=false

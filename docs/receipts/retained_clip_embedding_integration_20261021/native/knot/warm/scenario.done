@@ -1,0 +1,12 @@
+RESULT ok
+captured 01_retained_body
+captured 02_explicit_scope
+captured 02b_ask_submitted
+captured 03_embedding_answer
+captured 04_exact_clip_citation
+presentation frames=446 captures=5 blank=0
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-10/knot/warm/01_retained_body.png digest=9523251a41d91d75 blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-10/knot/warm/02_explicit_scope.png digest=66b51c8df46ede07 blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-10/knot/warm/02b_ask_submitted.png digest=8a34a658964579e0 blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-10/knot/warm/03_embedding_answer.png digest=b3c4de34b91c55d4 blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-10/knot/warm/04_exact_clip_citation.png digest=deb82ec3ee3b0b1a blank=false

@@ -1,0 +1,97 @@
+{
+  "admissions": [],
+  "entries": [],
+  "generation": "2fbb9008-a03c-49b1-8c1c-9d6020d6d076",
+  "readers": [],
+  "retained_admissions": [
+    {
+      "graph": "1b07644d-6c15-49d2-a110-d6ce5e7f7876",
+      "manifest": "blake3:45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0",
+      "node": "59ad1bc6-0ba6-41e8-b788-1e699b090ead",
+      "session": "0b0f598a-3db2-4fd2-8dd2-35ff0f630197"
+    }
+  ],
+  "retained_readers": [
+    {
+      "engine": "fleece.retained-clip",
+      "node": "59ad1bc6-0ba6-41e8-b788-1e699b090ead",
+      "rendered_document": {
+        "address": "mere://clip/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0",
+        "blocks": [
+          {
+            "Heading": {
+              "level": 1,
+              "spans": [
+                {
+                  "Text": "Redshank note"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+                }
+              ]
+            }
+          },
+          {
+            "Badge": {
+              "text": "Source recording unavailable in this clip"
+            }
+          },
+          {
+            "MetadataRow": {
+              "label": "Source anchor (milliseconds)",
+              "value": "file:///Users/markik/Code/output/redshank-text-retention-20261020/runtime/origin-recording.wav"
+            }
+          },
+          {
+            "MetadataRow": {
+              "label": "Original note position",
+              "value": "1.250 seconds"
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Link": {
+                    "predicate": null,
+                    "spans": [
+                      {
+                        "Text": "Export selected clip"
+                      }
+                    ],
+                    "title": null,
+                    "url": "mere://clip/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/export"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "content_type": "application/vnd.mere.clip+json",
+        "diagnostics": [],
+        "lang": null,
+        "navigation": {
+          "anchors": [],
+          "block_count": 0,
+          "folds": []
+        },
+        "provenance": {
+          "canonical_uri": "mere://clip/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0",
+          "fetched_at": null,
+          "source_kind": "fleece.retained-clip",
+          "source_label": null
+        },
+        "title": "Redshank note",
+        "trust": "Unknown"
+      }
+    }
+  ],
+  "session": "0b0f598a-3db2-4fd2-8dd2-35ff0f630197",
+  "status": ""
+}

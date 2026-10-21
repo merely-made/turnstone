@@ -1,0 +1,177 @@
+{
+  "schema": "distillery.inference-runs/v1",
+  "model": "HuggingFaceTB/SmolLM2-360M-Instruct",
+  "session": {
+    "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+    "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+  },
+  "load_error": null,
+  "runs": [
+    {
+      "run": "turnstone/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/research/v1/3425eb7c-db3f-4fee-bf94-4e73042f92dc",
+      "question": "Repeat the retained sentence about the Pelican observatory exactly.",
+      "state": "finished",
+      "text": "The Pelican observatory's access word is café.",
+      "error": null,
+      "session": {
+        "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+        "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+      },
+      "tokens": 10,
+      "continuations": [
+        {
+          "device": "device:dde283cadd99b66f8f62e1f30ce42649",
+          "at_token": 0,
+          "reason": "ask",
+          "first_differing_token": null,
+          "compared_token_ids_hash": null
+        }
+      ],
+      "recall": {
+        "embedding": {
+          "envelope": "blake3:773c9cbc0fcd44e66d8f15a6c6772e04cc1ba3d2954cfeef18f9835e9aa0a283",
+          "index": "blake3:508163df0024f94054b6a04299346136774b22abf8a13bf1b9d73ac4fd78163d",
+          "cache": "built",
+          "vector_bytes": 1536,
+          "persisted_bytes": 6409,
+          "lexical_weight": 1,
+          "vector_weight": 1,
+          "rrf_k": 60
+        },
+        "owner": "turnstone/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/research/v1",
+        "scope": [
+          {
+            "kind": "fleece",
+            "owner": "turnstone/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/research/v1",
+            "source": "mere://retained-text/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/738fdb11-66e7-47e4-90b4-a016a38aea25/d99b43e8-28d2-4392-9c73-5910b999ad53/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+            "node": "d99b43e8-28d2-4392-9c73-5910b999ad53"
+          }
+        ],
+        "config": {
+          "chunk_chars": 512,
+          "max_passages": 1,
+          "min_quote_chars": 32,
+          "max_context_chars": 12000,
+          "max_corpus_chars": 1000000
+        },
+        "passages": [
+          {
+            "handle": 1,
+            "passage": {
+              "source": {
+                "kind": "fleece",
+                "owner": "turnstone/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/research/v1",
+                "source": "mere://retained-text/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/738fdb11-66e7-47e4-90b4-a016a38aea25/d99b43e8-28d2-4392-9c73-5910b999ad53/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+                "node": "d99b43e8-28d2-4392-9c73-5910b999ad53"
+              },
+              "version": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+              "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+              "selector": {
+                "start": 0,
+                "end": 46
+              },
+              "chunker": "mere.unicode-chunks/v1/512",
+              "text": "The Pelican observatory's access word is café."
+            }
+          }
+        ],
+        "stale": [
+          {
+            "source": {
+              "kind": "fleece",
+              "owner": "turnstone/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/research/v1",
+              "source": "mere://retained-text/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/738fdb11-66e7-47e4-90b4-a016a38aea25/d99b43e8-28d2-4392-9c73-5910b999ad53/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+              "node": "d99b43e8-28d2-4392-9c73-5910b999ad53"
+            },
+            "indexed_version": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+            "current_version": null,
+            "error": "source owner is unavailable"
+          }
+        ]
+      }
+    },
+    {
+      "run": "turnstone/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/research/v1/2e6e8398-c1ca-4493-9f79-9b692ae7cd87",
+      "question": "Repeat the retained sentence about the Pelican observatory exactly.",
+      "state": "finished",
+      "text": "The Pelican observatory's access word is café.",
+      "error": null,
+      "session": {
+        "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+        "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+      },
+      "tokens": 10,
+      "continuations": [
+        {
+          "device": "device:dde283cadd99b66f8f62e1f30ce42649",
+          "at_token": 0,
+          "reason": "ask",
+          "first_differing_token": null,
+          "compared_token_ids_hash": null
+        }
+      ],
+      "recall": {
+        "embedding": {
+          "envelope": "blake3:773c9cbc0fcd44e66d8f15a6c6772e04cc1ba3d2954cfeef18f9835e9aa0a283",
+          "index": "blake3:508163df0024f94054b6a04299346136774b22abf8a13bf1b9d73ac4fd78163d",
+          "cache": "reopened",
+          "vector_bytes": 2048,
+          "persisted_bytes": 6409,
+          "lexical_weight": 1,
+          "vector_weight": 1,
+          "rrf_k": 60
+        },
+        "owner": "turnstone/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/research/v1",
+        "scope": [
+          {
+            "kind": "fleece",
+            "owner": "turnstone/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/research/v1",
+            "source": "mere://retained-text/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/738fdb11-66e7-47e4-90b4-a016a38aea25/d99b43e8-28d2-4392-9c73-5910b999ad53/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+            "node": "d99b43e8-28d2-4392-9c73-5910b999ad53"
+          }
+        ],
+        "config": {
+          "chunk_chars": 512,
+          "max_passages": 1,
+          "min_quote_chars": 32,
+          "max_context_chars": 12000,
+          "max_corpus_chars": 1000000
+        },
+        "passages": [
+          {
+            "handle": 1,
+            "passage": {
+              "source": {
+                "kind": "fleece",
+                "owner": "turnstone/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/research/v1",
+                "source": "mere://retained-text/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/738fdb11-66e7-47e4-90b4-a016a38aea25/d99b43e8-28d2-4392-9c73-5910b999ad53/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+                "node": "d99b43e8-28d2-4392-9c73-5910b999ad53"
+              },
+              "version": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+              "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+              "selector": {
+                "start": 0,
+                "end": 46
+              },
+              "chunker": "mere.unicode-chunks/v1/512",
+              "text": "The Pelican observatory's access word is café."
+            }
+          }
+        ],
+        "stale": [
+          {
+            "source": {
+              "kind": "fleece",
+              "owner": "turnstone/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/research/v1",
+              "source": "mere://retained-text/f98f5d6e-e795-4390-a59c-aab89f6d7cf7/738fdb11-66e7-47e4-90b4-a016a38aea25/d99b43e8-28d2-4392-9c73-5910b999ad53/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+              "node": "d99b43e8-28d2-4392-9c73-5910b999ad53"
+            },
+            "indexed_version": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+            "current_version": null,
+            "error": "source owner is unavailable"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -35,7 +35,7 @@ pub const SOURCE_SCHEMA: &str = "turnstone.answers.v1";
 pub struct AnswerSourceV2 {
     pub session: uuid::Uuid,
     pub view: uuid::Uuid,
-    pub chosen: Vec<crate::saved_sources::Target>,
+    pub chosen: Vec<crate::research::Target>,
 }
 pub fn answer_source(session: uuid::Uuid) -> PaneSource {
     answer_source_value(AnswerSourceV2 {
@@ -342,7 +342,7 @@ fn answer_view(state: &AnswerState) -> AnswerView {
             choices.push(button(
                 format!(
                     "Remove unavailable source: {}",
-                    chosen.key.annotation_manifest
+                    chosen.identity()
                 ),
                 move |state, _| {
                     let chosen = state
@@ -675,6 +675,7 @@ mod tests {
             session: crate::panes::SessionId::new(),
             generation: uuid::Uuid::new_v4(),
             admissions: Vec::new(),
+            clips: Vec::new(),
         };
         bridge.project(context.clone());
         let provider = AnswerProvider::new(Arc::new(NoIo), Arc::new(|| {}), bridge);

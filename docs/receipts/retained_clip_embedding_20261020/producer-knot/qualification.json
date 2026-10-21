@@ -1,0 +1,64 @@
+{
+  "result": "pass",
+  "body": "The Pelican observatory's access word is café.",
+  "body_scalars": 46,
+  "body_utf8_bytes": 47,
+  "selector": {
+    "byte_span": {
+      "end": 63,
+      "start": 16
+    },
+    "document_address": "file:///Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+    "exact_quote": "The Pelican observatory's access word is café.",
+    "source_hash": "669d3a92df8bcc1c5d4d4f98392cbc7ba84f183096a9f2cb884c8bb2389ac45d"
+  },
+  "unchanged_source_sha256": "88ffff9b4a5c842ad7bb99d6ab2afaca0efffb06407b8fe21479dec67ccacf16",
+  "source_and_producer_profiles_removed_before_receiving": true,
+  "removed_profiles": [
+    {
+      "path": "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/profile",
+      "files": 28
+    },
+    {
+      "path": "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/profile-02",
+      "files": 27
+    },
+    {
+      "path": "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/profile-03",
+      "files": 32
+    },
+    {
+      "path": "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/profile-04",
+      "files": 27
+    },
+    {
+      "path": "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/profile-05",
+      "files": 32
+    }
+  ],
+  "removed_source": "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+  "selected_package_sha256": "34939ee4b6346295181961581bbaa628201eedda98567f7fde409e546628c8ef",
+  "binary_sha256": "e811d5790507a774f2b6f72fb322f19d8e3508c595d6a615da5269546764a6f3",
+  "visual_review": {
+    "reviewed": true,
+    "captures": [
+      {
+        "path": "01_knot_source.png",
+        "sha256": "45f333ab07026ed9c0e164754b45119955fcb0794519f10a41e3c2c1a0f3260e"
+      },
+      {
+        "path": "02_knot_selection.png",
+        "sha256": "7525dfcbfe1cdfcadbbaf2dc3c769d5acfe7d3f25adb2eb04c8c494db27d95c8"
+      },
+      {
+        "path": "03_retained_selection.png",
+        "sha256": "3ea16a66f30de72de920c98191851f3b81f8760631afeba07234e4131391308f"
+      },
+      {
+        "path": "04_selected_export.png",
+        "sha256": "b4cdf1b1e77911d44c8a1ed71755e181273a7e65edc515f363cd72a8602bad7c"
+      }
+    ]
+  },
+  "scope": "Fresh embedded Knot primary mouse selection, retained through normal command and selected-only export. Earlier partial drag and ineffective keyboard trials are diagnostic only."
+}
