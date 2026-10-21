@@ -73,6 +73,16 @@ pub fn action(id: &str, hosted: bool) -> Option<Action> {
     })
 }
 
+/// The established `act <id>` canvas subset. Its fit resumes layout following;
+/// the hosted menu instead uses `FitVisible`. Preserve that scenario contract.
+pub fn scenario_canvas_command(id: &str) -> Option<CanvasCommand> {
+    match action(id, false)? {
+        Action::Canvas(CanvasCommand::FitSelection | CanvasCommand::RestoreArrangement) => None,
+        Action::Canvas(command) => Some(command),
+        _ => None,
+    }
+}
+
 pub fn commands(available: Availability) -> CommandSet {
     let mut set = CommandSet::new().with_defaults([
         ids::VIEW_FIT,
@@ -206,6 +216,13 @@ mod tests {
             Some(Action::Canvas(CanvasCommand::RestoreArrangement))
         );
         assert!(action("save-scene", true).is_none());
+        assert_eq!(
+            scenario_canvas_command(ids::VIEW_FIT),
+            Some(CanvasCommand::Fit)
+        );
+        assert!(scenario_canvas_command("fit-selection").is_none());
+        assert!(scenario_canvas_command("restore-arrangement").is_none());
+        assert!(scenario_canvas_command("graph-tools").is_none());
     }
 
     #[test]

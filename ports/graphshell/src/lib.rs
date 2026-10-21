@@ -41,6 +41,8 @@ pub mod canvas_reader;
 pub mod capsule_applet;
 #[cfg(feature = "web")]
 pub mod capture;
+#[cfg(feature = "web")]
+pub mod command_invocation;
 #[cfg(all(test, feature = "web"))]
 mod capture_resources;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]

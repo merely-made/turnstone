@@ -331,6 +331,8 @@ path = "src/bin/receipt_ingest.rs"
 # of which arrive with personal-sync.
 required-features = ["personal-sync"]
 [dev-dependencies]
+# The real Rhai request batch is received by the same viewer adapter as Mesquite.
+script-rhai = { workspace = true }
 # Tests and examples bind throwaway identities (vault lock plan, ruling 96).
 transport = { workspace = true, features = ["test-identity"] }
 # The native accessibility receipt (dynamics grammar plan, F67): the canvas's

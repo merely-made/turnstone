@@ -2082,6 +2082,37 @@ impl Product for TreeLane {
         handled
     }
 
+    fn invoke(
+        &mut self,
+        ctx: &mut mesquite::Ctx<'_, Self>,
+        invocation: &cambium::Invocation,
+    ) -> Option<cambium::Outcome> {
+        let mut outcome = cambium::Outcome::Stale;
+        ctx.runner.update(|page| {
+            if page.resident_mere_shown() || page.shared.remote_shown.get() {
+                outcome = cambium::Outcome::Refused {
+                    reason: "Viewer commands require the local canvas.".into(),
+                };
+                return;
+            }
+            let declarations = commands::catalog(page);
+            outcome = graphshell::command_invocation::invoke(
+                &mut page.shared.canvas.borrow_mut(),
+                page.size,
+                &declarations,
+                invocation,
+            );
+            if outcome == cambium::Outcome::Done {
+                page.shared.dirty.set(true);
+                page.shared
+                    .events
+                    .borrow_mut()
+                    .push(format!("command {}", invocation.id));
+            }
+        });
+        Some(outcome)
+    }
+
     /// Events emitted by the same command owners as the visible controls.
     fn drain_events(&mut self, _ctx: &mut mesquite::Ctx<'_, Self>) -> Vec<String> {
         let mut events = std::mem::take(&mut *self.shared.events.borrow_mut());
