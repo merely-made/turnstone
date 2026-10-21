@@ -48,6 +48,13 @@ including scope, saved attribution, revocation and both custodians restarting.
 The [Mac-to-ThinkPad receipt](docs/receipts/coop_mac_thinkpad_20261020/README.md)
 qualifies the same workflow with a Fedora GNOME Wayland guest on the physical
 ThinkPad and its native Radeon Vulkan driver, including a full cold reopen.
+The [relay receipt](docs/receipts/coop_relay_20261020/README.md) qualifies that
+workflow with the guest's UDP path disabled and an observed relay carrying the
+connection. To select relays, add `"coop_relay_urls": ["https://relay.example/"]`
+to the owner's existing Djinn profile settings and restart Djinn. The empty or
+absent list keeps co-op LAN-only; no public relay is chosen by default. An
+unreachable configured relay fails contact creation instead of silently issuing
+a LAN-only contact. Reachability does not change invitation or graph authority.
 
 ## Modules
 

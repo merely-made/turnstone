@@ -178,9 +178,10 @@ const SHEET: &str = "\
 fn tree_stylesheet(appearance: &str) -> String {
     #[cfg(feature = "product")]
     let workspace_sheet = format!(
-        "{}\n{}\n{}",
+        "{}\n{}\n{}\n{}",
         cambium::TITLE_BAR_CSS,
         cambium::INSTRUMENT_CSS,
+        cambium::SHELL_CSS,
         instrument::SHEET
     );
     #[cfg(not(feature = "product"))]
@@ -525,6 +526,8 @@ pub(crate) struct TreePage {
     remote_link_seen: bool,
     /// Whether the collapsed Graph tools region is open over the canvas.
     tools_open: bool,
+    #[cfg(feature = "product")]
+    instrument: instrument::State,
     /// The tree's logical size, followed from the host each frame. Genet sizes
     /// a custom leaf's cross axis from its intrinsic size and does not stretch
     /// an absolutely placed box between its insets, so the view is told its
@@ -752,10 +755,17 @@ fn view(page: &TreePage) -> Child {
     let showing_workbench = workbench.is_some();
     let inline_product_controls = showing_workbench || !instrument_class(page).is_empty();
     #[cfg(feature = "product")]
+    let (graph_controls, document_controls) = (
+        instrument::graph_controls(page),
+        instrument::document_controls(page),
+    );
+    #[cfg(not(feature = "product"))]
+    let (graph_controls, document_controls) = (true, true);
+    #[cfg(feature = "product")]
     let scene_header = if document_active {
         blocks::toolbar(page)
     } else {
-        instrument::scene_header(page, showing_workbench)
+        None
     };
     #[cfg(not(feature = "product"))]
     let scene_header: Option<Child> = None;
@@ -773,6 +783,10 @@ fn view(page: &TreePage) -> Child {
         .flatten();
     #[cfg(not(feature = "product"))]
     let drop_feedback: Option<Child> = None;
+    #[cfg(feature = "product")]
+    let panes_dismiss = instrument::dismiss(page);
+    #[cfg(not(feature = "product"))]
+    let panes_dismiss: Option<Child> = None;
     Box::new(
         on_key(
             el(
@@ -803,19 +817,20 @@ fn view(page: &TreePage) -> Child {
                         .then(|| page.presenter.is_none().then(|| grouping::controls(page)))
                         .flatten()
                         .flatten(),
-                    (!document_active).then(|| {
+                    (!document_active && graph_controls).then(|| {
                         if page.presenter.is_some() {
                             presenter::toolbar(page)
                         } else {
                             controls::toolbar(page)
                         }
                     }),
-                    (!document_active).then(|| forme_toolbar(page)),
-                    (!document_active && inline_product_controls).then(|| product::controls(page)),
+                    (!document_active && document_controls).then(|| forme_toolbar(page)),
+                    (!document_active && inline_product_controls && document_controls)
+                        .then(|| product::controls(page)),
                     el(
                         "div",
                         (
-                            (!document_active && !inline_product_controls)
+                            (!document_active && !inline_product_controls && document_controls)
                                 .then(|| product::controls(page)),
                             (!document_active).then(|| product::projection_editor(page)),
                             (!document_active).then(|| product::menu(page)),
@@ -853,6 +868,7 @@ fn view(page: &TreePage) -> Child {
                             "tree-body"
                         },
                     ),
+                    panes_dismiss,
                     commands::view(page),
                 ),
             )
@@ -880,6 +896,16 @@ fn view(page: &TreePage) -> Child {
                 format!("position:relative;width:{width}px;height:{height}px;"),
             ),
             |page: &mut TreePage, event| {
+                #[cfg(feature = "product")]
+                if page.instrument.panes_open
+                    && matches!(event.key, cambium::Key::Named(cambium::NamedKey::Escape))
+                {
+                    page.instrument.panes_open = false;
+                    page.shared.dirty.set(true);
+                    event.prevent_default();
+                    event.stop_propagation();
+                    return;
+                }
                 if !blocks_active(page) {
                     commands::shortcut(page, &event);
                 }
@@ -913,6 +939,10 @@ fn blocks_active(page: &TreePage) -> bool {
 
 /// Whether the Graph tools region docks beside the canvas at this width.
 fn tools_docked(page: &TreePage) -> bool {
+    #[cfg(feature = "product")]
+    if instrument::enabled(page) && !page.tools_open {
+        return false;
+    }
     page.presenter.is_none() && page.size.0 >= TOOLS_DOCK_MIN_WIDTH
 }
 
@@ -1609,6 +1639,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 history: hosted_history,
                 physics,
                 tools_open: false,
+                #[cfg(feature = "product")]
+                instrument: instrument::State::default(),
                 session: remote::Session::Local,
                 sections: remote::Sections::default(),
                 draft: remote::DraftControls::default(),
