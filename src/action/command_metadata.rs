@@ -127,6 +127,7 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::SetPhysicsMassSource(..)
         | Action::SetPhysicsDepthSource(..)
         | Action::ApplyPhysicsProfile(..)
+        | Action::ToggleTerritory
         | Action::ToggleIsometric
         | Action::OrbitBy(..)
         | Action::TiltBy(..)
@@ -168,6 +169,11 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::TogglePaneSection { .. }
         | Action::MovePaneSection { .. }
         | Action::OpenInWorkbench
+        | Action::SetWorkspaceMap(..)
+        | Action::ReadGraphMember(..)
+        | Action::RevealGraphMember(..)
+        | Action::ToggleToolPane(..)
+        | Action::SetChromeLayout(..)
         | Action::TearOutTile { .. }
         | Action::SwitchSession(..)
         | Action::BeginRenameSession
