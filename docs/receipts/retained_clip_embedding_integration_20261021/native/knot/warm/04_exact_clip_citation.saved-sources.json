@@ -1,0 +1,92 @@
+{
+  "admissions": [],
+  "entries": [],
+  "generation": "406bb4ff-8be1-4621-8626-3b03fcb99e3b",
+  "readers": [],
+  "retained_admissions": [
+    {
+      "graph": "738fdb11-66e7-47e4-90b4-a016a38aea25",
+      "manifest": "blake3:48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+      "node": "d99b43e8-28d2-4392-9c73-5910b999ad53",
+      "session": "f98f5d6e-e795-4390-a59c-aab89f6d7cf7"
+    }
+  ],
+  "retained_readers": [
+    {
+      "engine": "fleece.retained-clip",
+      "node": "d99b43e8-28d2-4392-9c73-5910b999ad53",
+      "rendered_document": {
+        "address": "mere://clip/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+        "blocks": [
+          {
+            "Heading": {
+              "level": 1,
+              "spans": [
+                {
+                  "Text": "Knot selection"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "The Pelican observatory's access word is café."
+                }
+              ]
+            }
+          },
+          {
+            "MetadataRow": {
+              "label": "Source anchor (utf8-bytes)",
+              "value": "file:///Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot"
+            }
+          },
+          {
+            "MetadataRow": {
+              "label": "Original selection",
+              "value": "The Pelican observatory's access word is café."
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Link": {
+                    "predicate": null,
+                    "spans": [
+                      {
+                        "Text": "Export selected clip"
+                      }
+                    ],
+                    "title": null,
+                    "url": "mere://clip/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/export"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "content_type": "application/vnd.mere.clip+json",
+        "diagnostics": [],
+        "lang": null,
+        "navigation": {
+          "anchors": [],
+          "block_count": 0,
+          "folds": []
+        },
+        "provenance": {
+          "canonical_uri": "mere://clip/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+          "fetched_at": null,
+          "source_kind": "fleece.retained-clip",
+          "source_label": null
+        },
+        "title": "Knot selection",
+        "trust": "Unknown"
+      }
+    }
+  ],
+  "session": "f98f5d6e-e795-4390-a59c-aab89f6d7cf7",
+  "status": ""
+}

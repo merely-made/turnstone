@@ -316,8 +316,8 @@ capability.
 
 ## Retained text Answers continuation, 2026-10-20
 
-**Status:** qualified on the recorded receiving cut; current-main integration
-checks follow separately. Extend the current explicit Answers scope to live
+**Status:** qualified on the recorded receiving cut and the final merged
+shared-shell/SDK cut. Extend the current explicit Answers scope to live
 session members naming sealed retained text clips. Preserve capture choices,
 clip/capture identity, text hashes and Unicode citation ranges; admit only the
 selected text body and keep producer backing/recordings outside the corpus.
@@ -354,5 +354,16 @@ The four-scalar `café` answer can be correct without a model marker, leaving
 it below the unchanged 32-character automatic quote threshold. Short-word
 citation attempts remain diagnostic failures; the sentence fixture qualifies
 normal exact quotation without weakening admission. Concurrent Turnstone
-shared-shell changes will be preserved and checked as a distinct integration
-cut; this packet remains bound to its compiled source hashes.
+shared-shell and shared Apparatus-core pin changes are preserved and qualified
+as a distinct integration cut; each packet remains bound to its compiled hashes.
+
+**Final integration, 2026-10-21:** source cut `a048adc` receives Mere SDK
+`7edfe3b09`, preserves the shared shell/navigation and shared Apparatus-core
+consumer delivery, and passes the same four native warm/cold phases. Native
+and libtest builds pass on Rust 1.99.1; all 43 Turnstone focused cases pass
+again. The resident recall file is byte-identical across the fix, both SDK
+cuts and the frozen GPU fixture. Twenty final captures were reviewed and the
+independent verifier passes raw/public evidence, product/scenario hashes,
+source identity, compatible reuse, historical evidence and selected-only export.
+The [final integration packet](../docs/receipts/retained_clip_embedding_integration_20261021/README.md)
+records compiled-source Git-blob proofs; earlier receipts remain unchanged.

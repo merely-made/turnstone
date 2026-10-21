@@ -1,0 +1,48 @@
+settle 15
+key escape
+assert snap network-offline == true
+open ${RC_ADDRESS}
+settle 15
+act Open node in Workbench
+settle 10
+assert content-live
+capture 05_source_and_package_absent
+record-saved-sources 05_source_and_package_absent
+act Ask saved sources
+settle 100
+act Maximize pane
+settle 5
+assert text Connected to resident inference.
+assert text 1 saved sources chosen
+click surface:contributed role:button Reopen: ${RC_QUESTION}
+settle 5
+assert text café
+assert text Source 1:
+capture 06_historical_answer
+click surface:contributed role:button Source 1:
+settle 15
+assert content-live
+assert snap browser-current ~ ${RC_ADDRESS}
+capture 07_historical_citation
+record-saved-sources 07_historical_citation
+act Ask saved sources
+settle 40
+click surface:contributed role:textbox Question
+insert ${RC_QUESTION}
+click surface:contributed role:button Ask
+wait-file 18000 ${RC_RESIDENT}/embedding-cold-ask.json
+settle 20
+assert text café
+assert text Source 1:
+capture 08_new_cold_embedding_answer
+click surface:contributed role:button Source 1:
+settle 15
+assert content-live
+assert snap browser-current ~ ${RC_ADDRESS}
+capture 09_new_cold_citation
+record-saved-sources 09_new_cold_citation
+export-clip ${RC_EXPORT}
+wait-file 100 ${RC_EXPORT}
+assert event clip-package-exported
+assert snap offline-acquisition-attempts == 0
+act Save session
