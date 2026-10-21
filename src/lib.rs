@@ -18,6 +18,7 @@ pub mod behaviors;
 mod browse;
 mod cambium_pane;
 mod chrome_view;
+pub mod chrome_layout;
 #[cfg(feature = "wasm")]
 mod component;
 mod content;

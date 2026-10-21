@@ -73,6 +73,7 @@ pub(super) fn frame_body_geometry(
     }
     let layout = app.space(space)?;
     let mut frame = crate::outer_frame::OuterFrame::default();
+    frame.set_main_view_switch(space==SpaceRef::Primary);
     frame.set_workspace_area(crate::chrome_view::workspace_area_for_window(
         app.shell_chrome_config(),
         match space { SpaceRef::Primary => 0, SpaceRef::Lens(ordinal) => ordinal + 1 },
@@ -403,6 +404,7 @@ impl Shell {
         let frame = frames
             .entry(slot)
             .or_insert_with(|| crate::outer_frame::OuterFrame::new(self.renderers.dom.clone()));
+        frame.set_main_view_switch(slot==0);
         frame.set_workspace_area(crate::chrome_view::workspace_area_for_window(
             self.app.shell_chrome_config(),
             slot,
