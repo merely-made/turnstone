@@ -96,6 +96,7 @@ pub struct RedshankHost {
     model: RedshankModel,
     store: Option<JsonDirectoryStore>,
     runtime: Option<PlaybackRuntime>,
+    retained_voice: Arc<std::sync::Mutex<Option<(String, Vec<u8>)>>>,
     /// The shell's fetch handle, kept so a reopened session starts its runtime
     /// over the same stores. None only for a host that never had one.
     fetch: Option<Arc<dyn Fetch>>,
@@ -123,6 +124,7 @@ impl Default for RedshankHost {
             model: RedshankModel::default(),
             store: None,
             runtime: None,
+            retained_voice: Arc::default(),
             fetch: None,
             output: Output::Silent,
             token: 0,
@@ -146,17 +148,48 @@ impl RedshankHost {
     }
     /// Play a host-resolved retained voice body on the existing output runtime.
     /// This uses no microphone and leaves the recording target/model unchanged.
-    pub fn play_retained_voice(&mut self, id: &str, path: &Path) -> Result<(), String> {
-        if !path.is_file() { return Err("Retained voice-note audio is missing".into()); }
-        if !self.send(PlaybackCommand::StartPreview { id: format!("clip:{id}"), source: MediaSource::Local { path: path.to_string_lossy().into_owned() } }) {
+    pub fn play_retained_voice_bytes(&mut self, id: &str, bytes: Vec<u8>) -> Result<(), String> {
+        if bytes.is_empty() || bytes.len() > redshank_playback::MAX_HOST_BLOB_BYTES {
+            return Err("Retained voice-note audio exceeds its budget".into());
+        }
+        let id = format!("clip:{id}");
+        *self
+            .retained_voice
+            .lock()
+            .map_err(|_| "Retained voice buffer unavailable")? = Some((id.clone(), bytes));
+        if !self.send(PlaybackCommand::StartPreview {
+            id: id.clone(),
+            source: MediaSource::HostBlob { id },
+        }) {
+            self.retained_voice
+                .lock()
+                .map_err(|_| "Retained voice buffer unavailable")?
+                .take();
             return Err("No audio output in this session".into());
         }
         Ok(())
     }
 
     pub fn stop_retained_voice(&mut self, id: &str) -> Result<(), String> {
-        if self.snapshot().preview.as_ref().is_some_and(|p| p.id == format!("clip:{id}")) {
-            if !self.send(PlaybackCommand::StopPreview) { return Err("The audio runtime is unavailable".into()); }
+        let expected = format!("clip:{id}");
+        {
+            let mut pending = self
+                .retained_voice
+                .lock()
+                .map_err(|_| "Retained voice buffer unavailable")?;
+            if pending.as_ref().is_some_and(|(id, _)| id == &expected) {
+                pending.take();
+            }
+        }
+        if self
+            .snapshot()
+            .preview
+            .as_ref()
+            .is_some_and(|p| p.id == expected)
+        {
+            if !self.send(PlaybackCommand::StopPreview) {
+                return Err("The audio runtime is unavailable".into());
+            }
         }
         Ok(())
     }
@@ -172,11 +205,19 @@ impl RedshankHost {
     /// Configure playback without opening a session store or runtime. Refused
     /// sessions keep this configuration so the next successful reopen recovers.
     pub(crate) fn detached(output: Output, fetch: Arc<dyn Fetch>) -> Self {
-        Self { output, fetch: Some(fetch), ..Self::default() }
+        Self {
+            output,
+            fetch: Some(fetch),
+            ..Self::default()
+        }
     }
 
     pub(crate) fn suspended(&self) -> Self {
-        Self { output: self.output, fetch: self.fetch.clone(), ..Self::default() }
+        Self {
+            output: self.output,
+            fetch: self.fetch.clone(),
+            ..Self::default()
+        }
     }
 
     /// Reopen under another session directory with this host's output and
@@ -207,15 +248,30 @@ impl RedshankHost {
             .filter_map(|tail| tail.parse::<u64>().ok())
             .max()
             .map_or(0, |highest| highest + 1);
+        let retained_voice: Arc<std::sync::Mutex<Option<(String, Vec<u8>)>>> = Arc::default();
+        let held = retained_voice.clone();
+        let blobs: redshank_playback::HostBlobReader = Arc::new(move |id| {
+            let mut held = held
+                .lock()
+                .map_err(|_| "Retained voice buffer unavailable")?;
+            if held.as_ref().is_none_or(|(expected, _)| expected != id) {
+                return Err("Retained voice body is not admitted".into());
+            }
+            Ok(held.take().expect("checked").1)
+        });
         Self {
             model,
             store: Some(store),
             runtime: match (&fetch, output) {
-                (Some(fetch), Output::Device) => Some(PlaybackRuntime::start_with(fetch.clone())),
+                (Some(fetch), Output::Device) => Some(PlaybackRuntime::start_with_blobs(
+                    fetch.clone(),
+                    Some(blobs),
+                )),
                 _ => None,
             },
             fetch,
             output,
+            retained_voice,
             next_note,
             ..Self::default()
         }
@@ -982,6 +1038,16 @@ fn format_tag(item: &LibraryItem) -> String {
 mod tests {
     use super::*;
 
+    #[test]
+    fn retained_voice_stop_cannot_discard_a_different_pending_preview() {
+        let mut host = RedshankHost::default();
+        *host.retained_voice.lock().unwrap() = Some(("clip:new".into(), vec![1, 2, 3]));
+        host.stop_retained_voice("old").unwrap();
+        assert!(host.retained_voice.lock().unwrap().is_some());
+        host.stop_retained_voice("new").unwrap();
+        assert!(host.retained_voice.lock().unwrap().is_none());
+    }
+
     fn receipt(byte: char) -> RepresentationReceipt {
         RepresentationReceipt {
             byte_length: Some(1_000),
@@ -1371,5 +1437,4 @@ mod tests {
         assert!(Arc::ptr_eq(&reopened.fetch().unwrap(), &handle));
         assert!(reopened.runtime().is_none());
     }
-
 }

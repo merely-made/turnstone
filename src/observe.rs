@@ -851,6 +851,9 @@ pub struct KnotDocumentFacts {
     /// Blake3 hex over the derived source text the surface currently holds.
     /// Absent for a refusal: there is no surface, so there is no text.
     pub derived_digest: Option<String>,
+    /// Exact source/selection witness for an explicit retained-content action.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub retained_selection: Option<crate::producer_retention::KnotSelection>,
 }
 
 /// The place facts, when this session holds an opened place.

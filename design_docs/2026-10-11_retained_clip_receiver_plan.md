@@ -1,14 +1,28 @@
 # Retained clips in the receiving Turnstone host
 
-**Status (2026-10-11):** landed and qualified for the bounded native receiver.
+**Status (2026-10-19):** the original bounded native receiver and onward copy
+are landed and qualified at their recorded source cuts. Producer-to-retention
+integration and its custody connection are implemented locally, with focused
+native checks and an isolated wallet-backed process receipt. Renewed headed
+qualification remains open. The independent Eidetic repository owns the shared plan.
 Committed-source import, package-unavailable restart, local WAV playback and
 missing-content refusal pass in the real Windows host. This is Turnstone's
 first consumer of the draft Fleece selected-content profile.
 
 The shared contract and CP1 to CP4 rulings live in
-`mere/design_docs/eidetic_docs/implementation_strategy/2026-10-11_eidetic_development_plan.md`.
+`eidetic/design_docs/eidetic_docs/implementation_strategy/2026-10-11_eidetic_development_plan.md`.
 This plan owns Turnstone's receiving behavior and evidence. It does not freeze
 the profile or close that plan's whole Knot/Redshank host gate.
+
+The shared plan's **Native producer-to-retention continuation, 2026-10-19**
+records the accepted sequence and custody prerequisite once. The host joins
+real owner-selected material through its existing Fleece retention and graph
+admission path. The authored research-note workflow already qualified in
+`docs/receipts/research_notes_20261018/README.md` remains the exact-citation and
+authoring baseline; it does not establish portable note export or private clip
+custody. The 2026-10-19 supplier cutover changes dependency sources and does not
+renew the older native receipts. No unsealed fallback is a substitute for the
+planned private-backing custody connection.
 
 ## Phases and done-conditions
 
@@ -94,10 +108,11 @@ excerpts, signed tag assertions and accepted suggestions, and reviewed owner
 edits on reconnect retain their own gates. Peer delivery remains separate from
 this local selected-package copy.
 
-The first store is explicitly unsealed. Identity and destination admission are
-checked, but this slice does not supply an epoch sealer or qualify encrypted
-custody, retention/deletion policy or rights revocation. Those remain P6 work
-under the shared plan, alongside the existing custody owners.
+The October 11–12 store and its frozen receipts are explicitly unsealed. The
+October 19 continuation requires the custodian's bound epoch sealer for private
+production reads and writes. Legacy unsealed objects need an explicit migration;
+passing a sealer does not make their stored bytes private. Retention/deletion
+policy and rights revocation remain P6 work alongside the existing custody owners.
 
 **Done when:** each later capability has its own supported format, authority,
 failure behavior and consumer evidence before it changes the advertised host
@@ -154,3 +169,31 @@ capability.
   facts survive, and the reopened Play link reaches Ended 500 ms. The
   [onward receipt](../docs/receipts/2026-10-11_retained_clip_receiver/onward/README.md)
   preserves code, fixture, output and gate evidence. No dependency changed.
+
+- **2026-10-19, custody and first native producer slice implemented locally.**
+  Djinn performs bounded seal/unseal with explicit profile/wallet binding,
+  application-purpose associated data, current lock/root checks and historical
+  epoch reads. Keys stay in custody. Production clip reads, imports, native
+  retention and onward exports require a sealer; legacy unsealed records or
+  parts require explicit migration. No personal profile was migrated here.
+  Saved Knot selections retain full available backing privately, while captured
+  host-only actions recheck the source, selection and receiving admission.
+  Shareable embedded Redshank text notes retain directly; the standalone owner
+  exports selected voice bodies from its own hash-verified blob namespace.
+  The host supplies retained voice bytes to the existing decoder in memory,
+  without creating the old plaintext WAV cache.
+  Focused native checks pass: endpoint 43, wallet sealer 6, actual custody IPC
+  and existing route 3, Turnstone retained-name regressions 54 (one process
+  helper ignored in that sweep), captured producer actions 2, Redshank owner
+  export 2, playback 32 (seven external/device fixtures ignored), and surfaces
+  103. The saved editor selection and stale-preview stop controls are included.
+  A separate synthetic receipt runs the real owner voice exporter, removes its
+  source blob, imports through custody, removes transfer packages, restarts both
+  custodian and receiver processes, and reopens selected Knot and voice content
+  with preserved selectors. The [machine receipt](../docs/receipts/2026-10-19_retained_custody/qualification.json)
+  records source hashes, compiled artifact hashes, counts and exact scope.
+  The receiving check uses explicit local `graphshell-endpoint` and
+  `redshank-playback` supplier snapshots; its qualification lock is saved with
+  the receipt, while the product lock keeps canonical remote sources. Supplier
+  publication/pin refresh and renewed headed custody/playback acceptance remain
+  separate. Historical native packets retain their original source identities.

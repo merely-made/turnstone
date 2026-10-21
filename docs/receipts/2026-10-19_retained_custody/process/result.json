@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "custodian_pids": [
+    87911,
+    87932
+  ],
+  "receiver_pids": [
+    87914,
+    87936
+  ],
+  "producer_package_sha256": "5a827b54732c76cbe8e630b423f43fd68670e7c44f56f5998f4d7289d59265cc",
+  "source_voice_removed_before_import": true,
+  "packages_removed_before_reopen": true,
+  "scope": "Synthetic wallet-backed native IPC and process/store reopen; no headed or physical audio claim",
+  "binaries_sha256": {
+    "custodian": "6f5a514947b3a84d8bd9eacfd00d3a066133ac19e78ef45232c7f358605b95ab",
+    "receiver": "cdc3b7a96f397b2dfc0bb682b7b9419a9925edca043a09bfac55063770b8b46d",
+    "producer": "10932851114cc1b4ba999a4af2fd1558db721c50f76737dd6c304b361da9d734"
+  }
+}

@@ -130,6 +130,7 @@ notochord = { git = "https://github.com/merely-made/dramatis.git", branch = "mai
 # The NetRender rows below match Genet's published immutable revision so the
 # host and Canvas share one renderer identity. Repin the lock, then re-test.
 knot = { package = "knot-editor", git = "https://github.com/merely-made/knot-editor.git", branch = "main" }
+knot-composition = { git = "https://github.com/merely-made/knot-editor.git", branch = "main" }
 # The reusable one-document product surface. This stays separate from the
 # broad Knot port graph used by publishing and endpoint composition above.
 knot-document = { git = "https://github.com/merely-made/knot-editor.git", branch = "main" }
