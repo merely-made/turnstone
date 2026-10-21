@@ -48,7 +48,7 @@ pub(super) enum Request {
     Selection,
 }
 
-fn catalog(page: &TreePage) -> CommandSet {
+pub(super) fn catalog(page: &TreePage) -> CommandSet {
     let canvas = page.shared.canvas.borrow();
     let locked = page.shared.selection_locked.get() || page.shared.remote_shown.get();
     let mut set = viewer_commands::commands(Availability {
