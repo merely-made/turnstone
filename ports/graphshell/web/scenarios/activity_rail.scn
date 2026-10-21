@@ -1,5 +1,11 @@
 # Activity controls are projections of the current graph and Forme.
 assert snap shell-projection == Map
+click role:button Panes
+click role:button Graph controls
+click role:button Restore arrangement
+settle 30
+click role:button Panes
+click role:button Graph controls
 click role:button Fit graph
 settle 10
 capture activity_rail_map
