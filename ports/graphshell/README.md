@@ -45,6 +45,9 @@ integration covers native resident graphs; browser IndexedDB is not migrated.
 The [two-machine receipt](docs/receipts/coop_two_machines_20261020/README.md)
 qualifies an Intel Mac owner and M4 Mac guest over observed direct LAN paths,
 including scope, saved attribution, revocation and both custodians restarting.
+The [Mac-to-ThinkPad receipt](docs/receipts/coop_mac_thinkpad_20261020/README.md)
+qualifies the same workflow with a Fedora GNOME Wayland guest on the physical
+ThinkPad and its native Radeon Vulkan driver, including a full cold reopen.
 
 ## Modules
 

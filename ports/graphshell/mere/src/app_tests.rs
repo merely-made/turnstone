@@ -7,7 +7,7 @@
 use super::*;
 use mere_view::ArchiveRequest;
 
-fn app() -> (
+pub(super) fn app() -> (
     App,
     mpsc::Sender<WorkerReply>,
     mpsc::Receiver<WorkerCommand>,
