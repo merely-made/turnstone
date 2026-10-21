@@ -1959,6 +1959,16 @@ impl Shell {
     /// the window's IME enablement to controlled chrome fields on transitions
     /// (a platform call, so it lives here, not in `update`).
     fn act(&mut self, action: Action) {
+        let _ = self.act_with_command(action, None);
+    }
+
+    /// Keyboard commands use the same declaration and reducer as the palette.
+    fn act_command(&mut self, action: Action) -> Option<cambium::Outcome> {
+        let invocation = self.app.command_invocation(&action);
+        self.act_with_command(action, invocation)
+    }
+
+    fn act_with_command(&mut self, action: Action, invocation: Option<cambium::Invocation>) -> Option<cambium::Outcome> {
         let accepted_text = self.accepts_controlled_text();
         let closing = match &action {
             Action::CloseActivePane => self.app.active_pane,
@@ -1968,7 +1978,10 @@ impl Shell {
             } => Some(crate::panes::PaneId(id.0)),
             _ => None,
         };
-        let effects = self.app.update(action);
+        let (effects, outcome) = match invocation {
+            Some(invocation) => self.app.invoke_command(&invocation),
+            None => (self.app.update(action), None),
+        };
         if let Some(pane) = closing
             && self.app.space_of(pane).is_none()
         {
@@ -1981,6 +1994,7 @@ impl Shell {
             window.set_ime_allowed(accepts_text);
         }
         self.run_effects(effects);
+        outcome
     }
 
     fn accepts_controlled_text(&self) -> bool {

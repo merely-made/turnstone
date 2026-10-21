@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-20",
+  "purpose": "Carry the NetRender borrowed Classic lowering ownership cut through the retained downstream paths.",
+  "base": "1d131854bedecc2528fbc9b4cf5d08928fcae5dd",
+  "lock_sha256": "9318a4bd3d8b4a580a400c557476c4b6cff147e0da96b409932e318f8e9cbd4b",
+  "sources": {
+    "netrender.git": [
+      "git+https://github.com/merely-made/netrender.git?branch=main#ec15eb269855c798467c93a6d10031100fdfdf65"
+    ],
+    "genet.git": [
+      "git+https://github.com/merely-made/genet.git?branch=main#6ef3cd37a785a395670d3b472fb3573665497f29"
+    ],
+    "mere.git": [
+      "git+https://github.com/merely-made/mere.git?branch=main#d4756e0fb6a759746e97d71b3e9a8eb8c2d0e9cf",
+      "git+https://github.com/merely-made/mere.git?rev=70deef2c8cf3d3410ae35b496a9396514070b24f#70deef2c8cf3d3410ae35b496a9396514070b24f"
+    ],
+    "knot-editor.git": [
+      "git+https://github.com/merely-made/knot-editor.git?branch=main#80bb3189b1f6107176e1d9dc4565333a4b7780e3"
+    ],
+    "eidetic.git": [
+      "git+https://github.com/merely-made/eidetic.git?rev=34105d63ec17826e0a58a5b461b65150357dd000#34105d63ec17826e0a58a5b461b65150357dd000"
+    ],
+    "esp.git": [
+      "git+https://github.com/merely-made/esp.git?rev=6d371901435b68e3fb4099a97789222d15f87cf0#6d371901435b68e3fb4099a97789222d15f87cf0"
+    ],
+    "gemot.git": [
+      "git+https://github.com/merely-made/gemot.git?rev=4342aed4bd101e68b1e71d24e010190d81765201#4342aed4bd101e68b1e71d24e010190d81765201"
+    ],
+    "murm.git": [
+      "git+https://github.com/merely-made/murm.git?branch=main#e2f19a3f3b42012951c4a820f9a53cb90d9bacd6"
+    ]
+  },
+  "resources": {
+    "serialization": "/home/markik/Code/testing/machine-heavy.lock",
+    "memory_max": "3G",
+    "swap_max": 0,
+    "cpu_quota": "150%",
+    "build_jobs": 1,
+    "test_threads": 1,
+    "nice": 10,
+    "gate_timeout_seconds": 600
+  },
+  "checks": [
+    {
+      "label": "turnstone-retained-final",
+      "raw_log": "/home/markik/Code/testing/audits/borrowed-lowering-20261020/turnstone-retained-final.log",
+      "sha256": "a01ff13261c0dc2af5a5356fd156589810866cdd6792d4ea09727dd6bf62b7b2",
+      "command": "timeout --signal=TERM --kill-after=10s 600s cargo test --offline --locked -j1 --lib -- --test-threads=1 inspector_pane::tests:: knot_authoring::tests:: retained_layout_tests renderers::tests:: chrome_view::tests:: a11y inference_service::",
+      "results": [
+        "test result: ok. 130 passed; 0 failed; 6 ignored; 0 measured; 981 filtered out; finished in 17.54s"
+      ],
+      "max_rss_kib": 3496364,
+      "swaps": 0,
+      "exit_code": 0
+    }
+  ],
+  "qualification_boundary": "Focused Linux tests. GPU checks use headless targets; no new native-window, Windows, or browser runtime qualification.",
+  "notes": [
+    "130 focused tests passed; six existing integration ignores are retained: five Knot endpoint receipts and one isolated resident route probe. Full Turnstone suite was not run.",
+    "Pulled current upstream first and adopted NetRender ec15eb269, Mere d4756e0fb and Knot 80bb318. Exact Eidetic/Gemot/ESP declarations follow the current upstream Mere/Knot receiving cohort; Murm is unified at their e2f19a3f revision.",
+    "The first compile exposed the upstream RecallEvidence optional embedding field missing from a lexical-only test fixture. Added embedding: None and included inference_service tests in the final gate; production code is unchanged.",
+    "Unrelated registry lock edges and the immutable mere-source-edit contract are preserved. No local source patches substitute for the published suppliers.",
+    "Cargo scans an intentionally malformed Servo tidy fixture during resolution and prints a diagnostic; successful commands exit 0. The optional Servo feature was not qualified.",
+    "All raw failed and successful attempts, resource scope snapshots and ignored standalone lock snapshots are retained under /home/markik/Code/testing/audits/borrowed-lowering-20261020."
+  ],
+  "published_suppliers": {
+    "netrender": "ec15eb269855c798467c93a6d10031100fdfdf65",
+    "mere": "d4756e0fb6a759746e97d71b3e9a8eb8c2d0e9cf",
+    "knot": "80bb3189b1f6107176e1d9dc4565333a4b7780e3"
+  }
+}
