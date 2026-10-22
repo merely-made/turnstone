@@ -13,7 +13,7 @@
 //! change's mark, and a "Changes" list tells every change, removed items
 //! included, for a reader.
 use super::*;
-use cambium::{PointerPhase, button};
+use cambium::{RangeScrubber, RangeScrubberEvent, button, range_scrubber};
 use graphshell::host_dataset_view::{GroupedHostDataset, HostDatasetView};
 use graphshell::host_history_view::{
     Change, HistoryView, ViewedChanges, change_mark, change_word, checkpoint_text, history_view,
@@ -215,49 +215,22 @@ impl TreePage {
     }
 }
 
-/// The checkpoint slider: arrows and Page keys step, Home and End go to the
-/// ends, and a press or drag picks the checkpoint under the pointer.
+/// The checkpoint slider: Cambium's range scrubber over the 1-based checkpoint
+/// number, so arrows and Page keys step, Home and End go to the ends, and a
+/// press or drag picks the checkpoint under the pointer.
 fn slider(hosted: &HostedHistory, browsing: bool) -> Child {
     let count = hosted.len();
-    let last = count.saturating_sub(1).max(1);
-    let percent = hosted.index as f32 / last as f32 * 100.0;
-    let thumb = el("div", ())
-        .attr("class", "history-thumb")
-        .attr("style", format!("left:{percent:.2}%;"));
-    let track = el("div", (el("div", ()).attr("class", "history-track"), thumb))
-        .attr("class", "history-slider")
-        .attr("role", "slider")
-        .attr("aria-label", "Checkpoint")
-        .attr("aria-valuemin", "1")
-        .attr("aria-valuemax", count.to_string())
-        .attr("aria-valuenow", (hosted.index + 1).to_string())
-        .attr("aria-valuetext", hosted.caption(browsing))
-        .attr("tabindex", "0");
-    let pointer = on_pointer(
-        track,
-        move |page: &mut TreePage, event: cambium::PointerEvent| {
-            if matches!(event.phase, PointerPhase::Down | PointerPhase::Move) && event.size.0 > 0.0
-            {
-                let fraction = (event.local.0 / event.size.0).clamp(0.0, 1.0);
-                page.show_checkpoint((fraction * last as f32).round() as usize);
-            }
+    let props = RangeScrubber::new(1.0, count as f64, (hosted.index + 1) as f64)
+        .with_steps(1.0, 5.0)
+        .with_label("Checkpoint")
+        .with_value_text(hosted.caption(browsing));
+    Box::new(range_scrubber(
+        props,
+        |page: &mut TreePage, event: RangeScrubberEvent| {
+            let (RangeScrubberEvent::Preview(value) | RangeScrubberEvent::Commit(value)) = event;
+            page.show_checkpoint(value as usize - 1);
         },
-    );
-    Box::new(on_key(pointer, move |page: &mut TreePage, event| {
-        let step = match &event.key {
-            Key::Named(NamedKey::ArrowLeft | NamedKey::ArrowDown) => Some(-1),
-            Key::Named(NamedKey::ArrowRight | NamedKey::ArrowUp) => Some(1),
-            Key::Named(NamedKey::PageDown) => Some(-5),
-            Key::Named(NamedKey::PageUp) => Some(5),
-            Key::Named(NamedKey::Home) => Some(isize::MIN / 2),
-            Key::Named(NamedKey::End) => Some(isize::MAX / 2),
-            _ => None,
-        };
-        if let Some(step) = step {
-            page.step_checkpoint(step);
-            event.prevent_default();
-        }
-    }))
+    ))
 }
 
 /// The history region: the checkpoint control, its text value, the change
@@ -292,26 +265,20 @@ pub(super) fn region(page: &TreePage) -> Option<Child> {
         .attr("class", "history-control"),
     )];
     children.push(Box::new(
-        el("p", hosted.caption(presenter::browsing(page)))
-            .attr("class", "history-value")
-            .attr("role", "status"),
+        status_note("history-value", hosted.caption(presenter::browsing(page))),
     ));
     if presenter::browsing(page) {
         let shown = page.presenter.as_ref()?.checkpoint_source_open;
         children.push(Box::new(
-            button(
-                if shown {
+            disclosure_trigger(if shown {
                     "Hide checkpoint source"
                 } else {
                     "Show checkpoint source"
-                },
-                |page: &mut TreePage, _| {
+                }, shown, |page: &mut TreePage| {
                     if let Some(pane) = &mut page.presenter {
                         pane.checkpoint_source_open = !pane.checkpoint_source_open;
                     }
-                },
-            )
-            .attr("aria-expanded", shown.to_string()),
+                }),
         ));
         if shown {
             children.push(Box::new(

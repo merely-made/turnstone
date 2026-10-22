@@ -113,11 +113,7 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
         .collect();
     if resident {
         buttons.push(Box::new(
-            el(
-                "p",
-                "Resident graph · use the Mere panel to choose a layout or read a record",
-            )
-            .attr("role", "status"),
+            status_note("", "Resident graph · use the Mere panel to choose a layout or read a record"),
         ));
     } else {
         buttons.push(Box::new(
@@ -204,13 +200,9 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
     // Collapsed, the Graph tools region opens over the canvas from here.
     if !tools_docked(page) {
         buttons.push(Box::new(
-            button("Graph tools", |page: &mut TreePage, _| {
+            disclosure_trigger("Graph tools", page.tools_open, |page: &mut TreePage| {
                 page.tools_open = !page.tools_open;
-            })
-            .attr(
-                "aria-expanded",
-                if page.tools_open { "true" } else { "false" },
-            ),
+            }),
         ));
     }
     Box::new(

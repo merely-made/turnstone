@@ -83,15 +83,11 @@ pub(super) fn popup(page: &TreePage) -> Option<Child> {
     )];
     if all.is_empty() {
         children.push(Box::new(
-            el(
-                "p",
-                if same {
+            status_note("", if same {
                     "No relationships recorded for this document"
                 } else {
                     "The current document changed. Reopen Related to browse its connections."
-                },
-            )
-            .attr("role", "status"),
+                }),
         ));
     }
     for row in all.into_iter().skip(index * PAGE_SIZE).take(PAGE_SIZE) {

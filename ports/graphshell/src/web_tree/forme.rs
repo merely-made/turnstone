@@ -938,15 +938,11 @@ pub(super) fn section(page: &TreePage) -> Child {
         )));
         if pane.session.editing() {
             children.push(Box::new(
-                el(
-                    "p",
-                    if pane.session.dirty() {
+                status_note("", if pane.session.dirty() {
                         "Pending Forme changes"
                     } else {
                         "Forme draft matches saved arrangement"
-                    },
-                )
-                .attr("role", "status"),
+                    }),
             ));
             children.push(Box::new(button(
                 "Discard changes",
@@ -1067,7 +1063,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         )));
         if !pane.status.is_empty() {
             children.push(Box::new(
-                el("p", pane.status.clone()).attr("role", "status"),
+                status_note("", pane.status.clone()),
             ));
         }
         let forme_controls = children.split_off(forme_start);

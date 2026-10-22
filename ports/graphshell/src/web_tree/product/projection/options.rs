@@ -167,10 +167,7 @@ pub(super) fn rows(p: &ProjectionControls) -> Vec<Child> {
                     Box::new(el("span", row.spec.label.clone())) as Child,
                     control,
                     Box::new(
-                        el("p", refusal.unwrap_or_default())
-                            .attr("aria-live", "polite")
-                            .attr("role", "status")
-                            .attr("aria-label", format!("{} refusal", row.spec.label)),
+                        status_note_labelled("", format!("{} refusal", row.spec.label), refusal.unwrap_or_default()).attr("aria-live", "polite"),
                     ),
                 ],
             )) as Child

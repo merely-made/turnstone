@@ -185,12 +185,11 @@ pub(in crate::web_tree) fn section(page: &TreePage) -> Child {
         return Box::new(el("div", ()));
     };
     let mut children: Vec<Child> = vec![Box::new(
-        button("Scenes and transfers", |page: &mut TreePage, _| {
+        disclosure_trigger("Scenes and transfers", product.scenes.open, |page: &mut TreePage| {
             if let Some(product) = &mut page.product {
                 product.scenes.open = !product.scenes.open;
             }
-        })
-        .attr("aria-expanded", product.scenes.open.to_string()),
+        }),
     )];
     if product.scenes.open {
         for (label, action) in [("Save scene", "save"), ("Reopen scene", "reopen")] {

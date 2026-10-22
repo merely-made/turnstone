@@ -24,7 +24,8 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, GenetCtx, GenetElement, Key, NamedKey, custom_leaf, el, on_key, on_pointer,
+    AnyView, GenetCtx, GenetElement, Key, NamedKey, custom_leaf, disclosure_trigger, el, on_key,
+    on_pointer, status_note, status_note_labelled,
 };
 use cambium_genet_web_host::{MountLifetime, WebCapture, WebWindow, mount_with_lifetime};
 use cambium_rootstock::{
@@ -158,6 +159,9 @@ const SHEET: &str = "\
     .tree-product [data-cambium-text-value] { display:block;width:280px;min-height:1.2em;height:26px;color:var(--tabard-color-text, #dce3e8);background:var(--tabard-color-surface-2, #263640);border:1px solid var(--tabard-color-border-strong, #637581); } \
     .tree-tools [data-cambium-text-value], .tree-projection [data-cambium-text-value], .tree-command-menu [data-cambium-text-value] { display:block;box-sizing:border-box;width:100%;min-height:1.2em;height:26px;color:var(--tabard-color-text, #dce3e8);background:var(--tabard-color-surface-2, #263640);border:1px solid var(--tabard-color-border-strong, #637581); } \
     .tree-product button { background:var(--tabard-color-surface-2, #263640);color:var(--tabard-color-text, #dce3e8);padding:5px 10px;border:1px solid var(--tabard-color-border-strong, #637581); } \
+    .tree-product .tablist { display:flex; flex-wrap:wrap; gap:4px; margin:4px 0; } \
+    .tree-product .tab { cursor:pointer; background:var(--tabard-color-surface-2, #263640);color:var(--tabard-color-text, #dce3e8);padding:5px 10px;border:1px solid var(--tabard-color-border-strong, #637581); } \
+    .tree-product .tab.selected { background:var(--tabard-color-tertiary, #2d5a63); color:var(--tabard-color-on-tertiary, #dce3e8); border-color:var(--tabard-color-primary, #79a9be); } \
     .tree-relations { margin:0 12px 6px; font-size:12px; } \
     .tree-relations h2 { font-size:13px; margin:0 0 2px; } \
     .tree-relations ul { margin:0; padding:0 0 0 16px; max-height:96px; overflow-y:auto; } \
@@ -167,9 +171,6 @@ const SHEET: &str = "\
     .history-control { display:flex; flex-direction:row; align-items:center; gap:8px; } \
     .history-control button { background:var(--tabard-color-surface-2, #263640); color:var(--tabard-color-text, #dce3e8); padding:3px 10px; border:1px solid var(--tabard-color-border-strong, #637581); } \
     .history-control button[aria-disabled=true] { opacity:.45; } \
-    .history-slider { position:relative; width:240px; height:18px; } \
-    .history-track { position:absolute; left:0; right:0; top:8px; height:2px; background:var(--tabard-color-border-strong, #637581); } \
-    .history-thumb { position:absolute; top:2px; width:10px; height:14px; margin-left:-5px; background:var(--tabard-color-primary, #79a9be); } \
     .history-value { margin:4px 0 0; overflow-wrap:anywhere; } \
     .history-summary { margin:2px 0; color:var(--tabard-color-text, #f0dfb8); } \
     .history-changes { margin:0; padding:0 0 0 16px; overflow-y:auto; }";
@@ -803,9 +804,7 @@ fn view(page: &TreePage) -> Child {
                     }),
                     (!document_active).then(|| {
                         Box::new(
-                            el("p", page.status())
-                                .attr("class", "tree-status")
-                                .attr("role", "status"),
+                            status_note("tree-status", page.status()),
                         ) as Child
                     }),
                     (!document_active).then(|| history::region(page)),
@@ -966,9 +965,7 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(inspection::section(page));
     if let Some(product) = &page.product {
         children.push(Box::new(
-            el("p", format!("Storage: {}", product.storage))
-                .attr("class", "tools-storage")
-                .attr("role", "status"),
+            status_note("tools-storage", format!("Storage: {}", product.storage)),
         ));
     }
     #[cfg(feature = "remote")]

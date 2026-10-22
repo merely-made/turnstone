@@ -67,16 +67,13 @@ pub(super) fn view(page: &TreePage) -> Option<Child> {
     let model = page.shared.appearance.borrow().controls()?;
     let control = &page.appearance_controls;
     let mut children: Vec<Child> = vec![Box::new(
-        button("Appearance", |page: &mut TreePage, _| {
+        disclosure_trigger("Appearance", control.open, |page: &mut TreePage| {
             page.appearance_controls.open = !page.appearance_controls.open;
-        })
-        .attr("aria-expanded", control.open.to_string()),
+        }),
     )];
     // Status remains visible when the disclosure is closed, including a reopened preference.
     children.push(Box::new(
-        el("p", model.status)
-            .attr("role", "status")
-            .attr("aria-label", "Appearance status"),
+        status_note_labelled("", "Appearance status", model.status),
     ));
     if control.open {
         let themes: Vec<String> = control

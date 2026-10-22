@@ -598,9 +598,7 @@ pub(super) fn section(page: &TreePage) -> Child {
             .attr("aria-label", "Session"),
         ),
         Box::new(
-            el("p", active_line(page))
-                .attr("class", "tools-active")
-                .attr("role", "status"),
+            status_note("tools-active", active_line(page)),
         ),
     ];
     // The board steps at the viewer's own dial (ruled 2026-10-04, "The
@@ -666,16 +664,11 @@ pub(super) fn section(page: &TreePage) -> Child {
         ));
     }
     children.push(Box::new(
-        el(
-            "p",
-            if remote.reservoir.is_some() {
+        status_note("tools-status", if remote.reservoir.is_some() {
                 remote.status().to_owned()
             } else {
                 remote.form().status.clone()
-            },
-        )
-        .attr("class", "tools-status")
-        .attr("role", "status"),
+            }),
     ));
     drop(remote);
     Box::new(
