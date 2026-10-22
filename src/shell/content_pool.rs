@@ -26,6 +26,7 @@ pub(super) struct HostPlacement {
     pub scale_factor: f32,
     /// Reading type is authored in logical pixels, while this plan is physical.
     pub reading_scale: f32,
+    pub reading_preferences: tabard::ReadingPreferences,
 }
 
 impl HostPlacement {
@@ -59,6 +60,7 @@ impl HostPlacement {
             window,
             focused,
             scale_factor: 1.0,
+            reading_preferences: Default::default(),
             reading_scale: if native_scale.is_finite() {
                 (native_scale as f32).clamp(0.5, 4.0)
             } else {
@@ -171,47 +173,31 @@ impl NodeDocuments {
                 continue;
             };
             let mut key = ContentKey::Node(node);
-            if let Some(controller) = canonical.document()
-                && let Some(reader) = controller
-                    .session()
-                    .as_any_ref()
-                    .downcast_ref::<mere_document_lanes::ReaderDocumentSession>()
-            {
-                key = ContentKey::Reader {
-                    node,
-                    appearance: host.surface.id,
-                };
-                let source = reader.source_document();
-                let current = self
-                    .pool
-                    .content(&key)
-                    .and_then(PeltContent::document)
-                    .and_then(|controller| {
-                        controller
-                            .session()
-                            .as_any_ref()
-                            .downcast_ref::<mere_document_lanes::ReaderDocumentSession>()
-                    })
-                    .is_some_and(|retained| Arc::ptr_eq(&source, &retained.source_document()));
-                if !current {
-                    let mut session = reader.new_appearance((1, 1));
-                    session.set_fonts(vec![READING_SYMBOL_FONT.to_vec()]);
-                    session.set_font_family("serif, sans-serif, \"Noto Sans Math\"");
-                    let config = pelt_core::PeltControllerConfig::from_request(
-                        controller.engine_id(),
-                        controller.request().clone(),
-                    )
-                    .with_host_history();
-                    let route = canonical.route().clone();
-                    let controller = pelt_core::PeltController::from_session_shared(
-                        engines.clone(),
-                        surface_engines.clone(),
-                        config,
-                        super::ShellClock(epoch),
-                        Box::new(session),
-                    );
-                    self.pool
-                        .insert(key, PeltContent::from_controller(controller, route));
+            if let Some(controller) = canonical.document() {
+                let reader = controller.session().as_any_ref().downcast_ref::<mere_document_lanes::ReaderDocumentSession>();
+                let portable = controller.session().as_any_ref().downcast_ref::<mere_document_lanes::SmolwebDocumentSession>();
+                let source = reader.map(|reader|reader.source_document())
+                    .or_else(||portable.map(|doc|doc.document().source_document()));
+                if let Some(source) = source {
+                    key = ContentKey::Reader { node, appearance:host.surface.id };
+                    let current = self.pool.content(&key).and_then(PeltContent::document).is_some_and(|retained| {
+                        let session=retained.session().as_any_ref();
+                        let retained_source = session.downcast_ref::<mere_document_lanes::ReaderDocumentSession>().map(|r|r.source_document())
+                            .or_else(|| session.downcast_ref::<mere_document_lanes::SmolwebDocumentSession>().map(|d|d.document().source_document()));
+                        retained_source.is_some_and(|retained|Arc::ptr_eq(&source,&retained))
+                    });
+                    if !current {
+                        let session: Box<dyn inker::DocumentSession<Scene>> = if let Some(reader)=reader {
+                            let mut appearance=reader.new_appearance((1,1));
+                            appearance.set_fonts(vec![READING_SYMBOL_FONT.to_vec()]);
+                            appearance.set_font_family("serif, sans-serif, \"Noto Sans Math\"");
+                            Box::new(appearance)
+                        } else { Box::new(portable.unwrap().new_appearance((1,1))) };
+                        let config = pelt_core::PeltControllerConfig::from_request(controller.engine_id(),controller.request().clone()).with_host_history();
+                        let route=canonical.route().clone();
+                        let controller=pelt_core::PeltController::from_session_shared(engines.clone(),surface_engines.clone(),config,super::ShellClock(epoch),session);
+                        self.pool.insert(key,PeltContent::from_controller(controller,route));
+                    }
                 }
             }
             if let Some(controller) = self.pool.content_mut(&key).and_then(PeltContent::document_mut) {
@@ -220,10 +206,12 @@ impl NodeDocuments {
                     .downcast_mut::<mere_document_lanes::ReaderDocumentSession>()
                 {
                     reader.set_display_scale(host.reading_scale);
+                    let _ = reader.set_reading_preferences(host.reading_preferences);
                 } else if let Some(document) = session.as_any()
                     .downcast_mut::<mere_document_lanes::SmolwebDocumentSession>()
                 {
                     document.document_mut().set_display_scale(host.reading_scale);
+                    let _ = document.document_mut().set_reading_preferences(host.reading_preferences);
                 }
             }
             let r = host.surface.rect;
@@ -927,6 +915,7 @@ mod tests {
                     focused: true,
                     scale_factor: 1.,
                     reading_scale: 2.,
+                    reading_preferences: Default::default(),
                 },
                 HostPlacement {
                     surface: Surface {
@@ -938,6 +927,7 @@ mod tests {
                     focused: false,
                     scale_factor: 1.,
                     reading_scale: 1.,
+                    reading_preferences: tabard::ReadingPreferences {text_size:20,column_em:32},
                 },
             ]
         };
@@ -970,6 +960,8 @@ mod tests {
         assert_eq!(reader(&contents, &first).viewport(), (640, 400));
         assert_eq!(reader(&contents, &first).display_scale(), 2.0);
         assert_eq!(reader(&contents, &second).display_scale(), 1.0);
+        assert_eq!(reader(&contents, &first).reading_preferences(),Default::default());
+        assert_eq!(reader(&contents, &second).reading_preferences(),tabard::ReadingPreferences{text_size:20,column_em:32});
         assert_eq!(reader(&contents, &second).viewport(), (640, 300));
         let first_projection = contents
             .pool

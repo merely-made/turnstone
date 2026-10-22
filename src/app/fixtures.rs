@@ -75,6 +75,7 @@ impl App {
             forme_runtimes: super::FormeRuntimePool::default(),
             pane_context: crate::panes::ContextIndex::default(),
             omnibar: OmnibarState::default(),
+            reading: Default::default(),
             command_choices: cambium::CommandChoices::default(),
             document_find: crate::document_find::DocumentFindState::default(),
             user_agent_decision: crate::user_agent_decision::UserAgentDecisionState::default(),

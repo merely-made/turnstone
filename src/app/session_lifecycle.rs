@@ -93,6 +93,7 @@ impl App {
             forme_runtimes: super::FormeRuntimePool::default(),
             pane_context: crate::panes::ContextIndex::default(),
             omnibar: OmnibarState::default(),
+            reading: Default::default(),
             command_choices: cambium::CommandChoices::default(),
             document_find: crate::document_find::DocumentFindState::default(),
             user_agent_decision: crate::user_agent_decision::UserAgentDecisionState::default(),
@@ -1180,6 +1181,7 @@ impl App {
         // the surface default. Set through the runtimes directly: the app-level
         // arm clears the score for a non-Spiral strategy, which is right for a
         // fresh choice and wrong for a restore of the pair.
+        self.reading = crate::reading_view::ReadingState::load(&sdir);
         let view_intent = session::load_view_intent(&sdir);
         let physics_paused = view_intent.as_ref().and_then(|intent| intent.physics_paused);
         self.command_choices = view_intent

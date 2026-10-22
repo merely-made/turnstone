@@ -1125,7 +1125,7 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         role_color(appearance,"text-dim",palette.border),role_color(appearance,"bg",palette.surface),role_color(appearance,"text",palette.body_text),
         role_color(appearance,"surface",palette.raised),role_color(appearance,"text",palette.body_text),role_color(appearance,"text-dim",palette.border),22.0+6.0*zoom,38.0+6.0*zoom,
     );
-    themed_sheet(appearance, format!("{sheet}\n{}\n{controls}", cambium::SHELL_CSS))
+    cambium::stylesheet_at_display_scale(&themed_sheet(appearance, format!("{sheet}\n{}\n{controls}", cambium::SHELL_CSS)), appearance.display_scale)
 }
 
 /// The Settings pane's live Cambium sheet. Other pane kinds retain their
@@ -1168,7 +1168,7 @@ pub(crate) fn cambium_sheet(appearance: &crate::shell_services::AppearanceConfig
         role_color(appearance, "primary", palette.accent),
         role_color(appearance, "text-dim", palette.border),
     );
-    themed_sheet(appearance, format!("{sheet}\n{}", cambium::SHELL_CSS))
+    cambium::stylesheet_at_display_scale(&themed_sheet(appearance, format!("{sheet}\n{}", cambium::SHELL_CSS)), appearance.display_scale)
 }
 
 /// Where the omnibar caret roughly sits on screen, as `(position, size)` in

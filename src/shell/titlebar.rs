@@ -44,10 +44,12 @@ impl Shell {
             window.scale_factor() as f32,
         );
         let mut chrome = self.app.shell_chrome_config().clone();
-        if chrome.titlebar_insets.get(&slot) == Some(&insets) {
+        let scale = (window.scale_factor() as f32).clamp(0.5, 4.0);
+        if chrome.titlebar_insets.get(&slot) == Some(&insets) && chrome.native_scales.get(&slot) == Some(&scale) {
             return;
         }
         chrome.titlebar_insets.insert(slot, insets);
+        chrome.native_scales.insert(slot, scale);
         self.app.set_shell_chrome_config(chrome);
         window.request_redraw();
     }
@@ -86,6 +88,7 @@ impl Shell {
         if slot != 0 && matches!(event, WindowEvent::CloseRequested) {
             let mut chrome = self.app.shell_chrome_config().clone();
             chrome.titlebar_insets.remove(&slot);
+            chrome.native_scales.remove(&slot);
             self.app.set_shell_chrome_config(chrome);
         }
         let WindowEvent::MouseInput {

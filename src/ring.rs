@@ -187,6 +187,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | ToggleSizeByRecency
         | ToggleNodeContent
         | SearchCapturedPages
+        | Reading(_)
         | OpenDocumentFind
         | CloseDocumentFind
         | InsertDocumentFind(_)

@@ -59,10 +59,17 @@ struct CellView {
     /// The body hint ("content off", "failed: ..."), empty when live content
     /// composites over the body.
     hint: String,
+    toolbar: Rect,
+    target: Option<crate::reading_view::ReadTarget>,
+    preferences: tabard::ReadingPreferences,
+    text_controls: bool,
+    find_enabled: bool,
+    find: crate::reading_view::FindUi,
 }
 
 struct WorkbenchState {
     cells: Vec<CellView>,
+    read_actions: Vec<crate::action::Action>,
     viewport_w: f32,
     viewport_h: f32,
 }
@@ -126,6 +133,11 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
                             .attr("style", "width:100%;height:100%;"),
                     )) as WbView,
                     Box::new(placed_with(
+                        Placement::new(cell.toolbar.x - cell.rect.x, cell.toolbar.y - cell.rect.y),
+                        format!("width:{}px;height:{}px;overflow:hidden;",cell.toolbar.w,cell.toolbar.h),
+                        reading_toolbar(state, i),
+                    )) as WbView,
+                    Box::new(placed_with(
                         Placement::new(cell.body.x - cell.rect.x, cell.body.y - cell.rect.y),
                         format!(
                             "width:{}px;height:{}px;overflow:hidden;",
@@ -146,6 +158,39 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
     )
 }
 
+fn reading_toolbar(state: &WorkbenchState, index: usize) -> WbView {
+    let cell = &state.cells[index];
+    let Some(target) = cell.target else { return Box::new(el("div", ())); };
+    let query = cambium::request_focus(cambium::on_key(
+        el("div", cambium::caret_field_children::<WorkbenchState, ()>(&cell.find.input, &[]))
+            .attr("role", "textbox").attr("aria-label", "Find text in reading")
+            .attr("class", "read-query").attr("data-cambium-text-value", cell.find.input.text())
+            .attr("style", cambium::SINGLE_LINE_FIELD_STYLE),
+        move |state: &mut WorkbenchState, event: cambium::KeyEvent| {
+            use cambium::{Key, NamedKey, ReadCommand};
+            let action = match event.key {
+                Key::Named(NamedKey::Enter) => crate::reading_view::ReadAction::Command(target,
+                    if event.mods.shift {ReadCommand::Previous} else {ReadCommand::Next}),
+                Key::Named(NamedKey::Escape) => crate::reading_view::ReadAction::Command(target, ReadCommand::CloseFind),
+                _ => {
+                    state.cells[index].find.input.apply_key(&event, cambium::TextFieldMode::SingleLine);
+                    crate::reading_view::ReadAction::Query(target, state.cells[index].find.input.clone())
+                },
+            };
+            state.read_actions.push(crate::action::Action::Reading(action));
+            event.prevent_default(); event.stop_propagation();
+        },
+    ), cell.find.open);
+    let field: WbView = Box::new(el("div", (
+        query,
+        el("span", cell.find.status.clone()).attr("class", "read-result").attr("role", "status").attr("aria-live", "polite"),
+    )).attr("class", "read-find-input"));
+    cambium::read_toolbar(cell.preferences.text_size, cell.preferences.column_em, cell.text_controls, cell.find.open && cell.find_enabled, cell.find_enabled.then_some(field),
+        move |state: &mut WorkbenchState, command| {
+            state.read_actions.push(crate::action::Action::Reading(crate::reading_view::ReadAction::Command(target,command)));
+        })
+}
+
 /// An activation the pane reports back after a click: make this member's tab
 /// the active one (the shell lowers `Action::WorkbenchActivate`).
 pub struct WbActivate(pub Uuid);
@@ -163,6 +208,7 @@ pub struct WorkbenchPane {
     /// The last synced walk, pane-local — the shell's input routing asks it
     /// for cells and divider bands (the same walk the frame drew).
     tiling: WorkbenchTiling,
+    sheet: String,
     // Drop the runner and its widget resources before final mount custody.
     mount: Option<cambium::RetainedMount>,
 }
@@ -179,6 +225,7 @@ impl WorkbenchPane {
             .unwrap_or_else(|| Rc::new(RefCell::new(ScriptedDom::new())));
         let state = WorkbenchState {
             cells: Vec::new(),
+            read_actions: Vec::new(),
             viewport_w: 0.0,
             viewport_h: 0.0,
         };
@@ -199,6 +246,7 @@ impl WorkbenchPane {
                 mount.as_ref().map(cambium::RetainedMount::node),
             ),
             tiling: WorkbenchTiling::default(),
+            sheet: workbench_sheet().into(),
         }
     }
 
@@ -232,6 +280,11 @@ impl WorkbenchPane {
             .map(WbActivate)
             .collect()
     }
+    pub(crate) fn take_read_actions(&mut self) -> Vec<crate::action::Action> {
+        let mut actions = Vec::new();
+        self.runner.update(|state| actions = std::mem::take(&mut state.read_actions));
+        actions
+    }
     pub(crate) fn blur_inline(&mut self) {
         self.runner.set_focus(None);
     }
@@ -263,11 +316,8 @@ impl WorkbenchPane {
             .workbench_for_pane(pane_id)
             .map(|workbench| workbench.to_arrangement().1)
             .unwrap_or(None);
-        self.tiling = place_workbench_at(
-            geom.as_ref(),
-            Rect::new(0.0, 0.0, pane_w, pane_h),
-            app.shell_chrome_config().layout.document_tabs,
-        );
+        self.sheet = cambium::stylesheet_at_display_scale(workbench_sheet(), app.shell_chrome_config().pane_scale(app,pane_id));
+        self.tiling = crate::workbench_tiling::place_reading_workbench(app, pane_id, geom.as_ref(), Rect::new(0.0, 0.0, pane_w, pane_h));
         let graph = app
             .graph_for_pane(pane_id)
             .and_then(|graph| app.graph_runtimes.canvas(graph));
@@ -308,6 +358,12 @@ impl WorkbenchPane {
                     None => String::new(),
                 };
                 CellView {
+                    toolbar: c.toolbar_rect(),
+                    target: c.active_member().map(|member| crate::reading_view::ReadTarget { pane:pane_id, member }),
+                    find_enabled: c.active_member().is_some_and(|member|app.content.facts(member).is_some_and(|facts|facts.capabilities.find_in_page.is_available())),
+                    text_controls: c.active_member().is_some_and(|member|app.has_reading_controls(crate::reading_view::ReadTarget{pane:pane_id,member})),
+                    preferences: c.active_member().map(|member|app.reading.preferences(crate::reading_view::ReadTarget{pane:pane_id,member})).unwrap_or_default(),
+                    find: c.active_member().and_then(|member|app.reading.find.get(&crate::reading_view::ReadTarget{pane:pane_id,member})).cloned().unwrap_or_default(),
                     tabs: c.tab_rect(),
                     body: c.body(),
                     vertical: matches!(
@@ -347,7 +403,7 @@ impl WorkbenchPane {
     pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
         self.layout.scene_scrolled(
             &mut self.dom.borrow_mut(),
-            workbench_sheet(),
+            &self.sheet,
             w,
             h,
             &mut self.scroll,
@@ -409,9 +465,7 @@ impl WorkbenchPane {
         let tabs = dom.all_with_class(root, "tab");
         let mut point = None;
         for node in self.layout.matching_nodes(&dom, selector) {
-            if !tabs.contains(&node) {
-                continue;
-            }
+
             let Some((x, y, width, height)) = self.layout.visible_rect(&dom, node) else {
                 continue;
             };
@@ -423,7 +477,7 @@ impl WorkbenchPane {
             }
             // The floating toolbar can cover a tab's centre; use the visible
             // top strip, then let the shell verify the actual surface hit.
-            point = Some((x + width / 2.0, y + height / 8.0));
+            point = Some((x + width / 2.0, y + if tabs.contains(&node) { height / 8.0 } else { height / 2.0 }));
         }
         Ok(point)
     }
@@ -434,7 +488,7 @@ impl WorkbenchPane {
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) -> Vec<WbActivate> {
         let hit = self.layout.hit_test_scrolled(
             &mut self.dom.borrow_mut(),
-            workbench_sheet(),
+            &self.sheet,
             w,
             h,
             x,
@@ -490,6 +544,30 @@ mod tests {
         let b = app.graph_runtimes.focused_member().unwrap();
         app.update(Action::OpenInWorkbench);
         (app, a, b)
+    }
+
+    #[test]
+    fn native_read_toolbar_routes_controls_outside_its_document_hole() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("mere://reading".into()));
+        app.update(Action::OpenInWorkbench);
+        let member=app.graph_runtimes.focused_member().unwrap();
+        app.apply_update(crate::action::Update::ContentSpawned{node:member,facts:Some(crate::content::ContentFacts{engine:"genet.reader".into(),lane:crate::content::ContentLane::Document,structure:None,lineage:None,capabilities:Default::default()})});
+        let pane_id=app.frisket.iter_leaves().find(|(_,content,_)|matches!(content,crate::panes::PaneContent::Workbench)).unwrap().0;
+        let mut chrome=app.shell_chrome_config().clone(); chrome.native_scales.insert(0,2.0); app.set_shell_chrome_config(chrome);
+        let mut pane=WorkbenchPane::new(); pane.sync(&app,pane_id,1200.,800.);pane.scene(1200,800);
+        let selector=taproot::Selector::role("button").on_surface("workbench").containing("Larger reading text");
+        let point=pane.selector_point(&selector).unwrap().unwrap();
+        let cell=&pane.tiling().cells[0];
+        assert!(cell.toolbar_rect().contains(point.0,point.1));
+        assert!(!cell.body().contains(point.0,point.1));
+        let target=cell.active_member().map(|member|crate::reading_view::ReadTarget{pane:pane_id,member}).unwrap();
+        pane.click(point.0,point.1,1200,800);
+        let actions=pane.take_read_actions();
+        assert_eq!(actions.len(),1);
+        for action in actions { app.update(action); }
+        assert_eq!(app.reading.preferences(target).text_size,20);
+        assert_eq!(app.shell_chrome_config().appearance.ui_zoom,1.1,"native density is not a persisted zoom edit");
     }
 
     #[test]

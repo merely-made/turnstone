@@ -157,7 +157,8 @@ impl OuterFrame {
                 &appearance.interface_font_properties,
                 appearance.zoom(),
             );
-            self.sheet = format!("{}\n{}", crate::ui::cambium_sheet(appearance), self.sheet);
+            self.sheet = format!("{}\n{}\n.frisket-divider{{flex-basis:1px;}}", crate::ui::cambium_sheet(appearance),
+                cambium::stylesheet_at_display_scale(&self.sheet, appearance.display_scale));
             self.appearance = appearance.clone();
         }
         let frame = layout.outer_workspace()?;
@@ -204,7 +205,7 @@ impl OuterFrame {
                                 matches!(c, crate::panes::PaneContent::Workbench)
                             })
                         });
-                        Some(pair && stack.tabs.get(stack.active).is_some_and(main))
+                        Some((pair || stack.tabs.len()==1) && stack.tabs.get(stack.active).is_some_and(main))
                     })
                     .unwrap_or(false);
                 let value = if hidden && self.main_view_switch {
@@ -784,7 +785,13 @@ mod native_aperture_tests {
 
     #[test]
     fn frame_selector_rejects_body_slots_and_uses_header_hit() {
-        let app = crate::app::App::test_stub();
+        let mut app = crate::app::App::test_stub();
+        app.frisket.root = crate::panes::PaneNode::Leaf {
+            pane_id: PaneId(90),
+            content: crate::panes::PaneContent::Roster,
+            graph_id: crate::panes::GraphId::nil(),
+        };
+        app.active_pane = Some(PaneId(90));
         let mut frame = OuterFrame::default();
         frame
             .prepare(
@@ -835,6 +842,8 @@ mod native_aperture_tests {
                 .unwrap()
                 .is_none()
         );
+        frame.prepare(&app.frisket,app.active_pane,app.active_pane,(900,600),&app.shell_chrome_config().appearance,app.session_id.as_uuid().as_u128()).unwrap();
+        assert_eq!(frame.header_height(),0.0,"maximizing Read keeps the shared toolbar as its header");
         app.update(crate::action::Action::SetWorkspaceMap(true));
         let bodies = frame.prepare(&app.frisket, app.active_pane, None,
             (900, 600), &app.shell_chrome_config().appearance,

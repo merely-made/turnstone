@@ -1246,6 +1246,7 @@ fn review_overlap_native_reader_appearances_wheel_mutates_only_top_view() {
                 focused: false,
                 scale_factor: 1.,
                 reading_scale: 1.,
+                    reading_preferences: Default::default(),
             })
             .collect(),
         engines,

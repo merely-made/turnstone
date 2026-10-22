@@ -1924,6 +1924,24 @@ impl Shell {
                         self.run_effects(effects);
                     }
                 }
+                Effect::SaveReadingPreferences => {
+                    if let Err(error) = self.app.reading.save(&self.app.session_dir()) { tracing::warn!(%error, "reading preferences were not saved"); }
+                },
+                Effect::ReadFind { target, query, step, close } => {
+                    let keys: Vec<_> = self.content_sessions.pool.keys().copied().filter(|key| {
+                        matches!(key, super::content_pool::ContentKey::Reader { node, appearance }
+                            if *node == target.member && (0..=self.app.lenses.len() as u64).any(|window| target.appearance(window) == *appearance)
+                                && self.content_sessions.pool.placement(appearance).is_some_and(|placement|placement.visible && placement.content == *key))
+                    }).collect();
+                    let result = keys.first().and_then(|key| self.content_sessions.pool.content_mut(key)).and_then(pelt_core::PeltContent::document_mut).map(|controller| {
+                        let session = controller.session_mut();
+                        if close { session.clear_document_find().map(|_| inker::DocumentFindState::empty(inker::DocumentFindQuery::new(&query))) }
+                        else if let Some(direction) = step { session.document_find_step(direction) }
+                        else { session.document_find(&inker::DocumentFindQuery::new(&query)) }
+                    }).unwrap_or_else(|| Err(inker::SessionError::Unsupported("This reading projection has no retained session".into()))).map_err(|error|error.to_string());
+                    let effects=self.app.apply_update(crate::action::Update::ReadingFindChanged{target,query,result});
+                    self.run_effects(effects);
+                },
                 Effect::FindContent {
                     node,
                     request,

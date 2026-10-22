@@ -119,6 +119,7 @@ pub enum PlaceArtifactKind {
 /// automation adapters) produces these; [`crate::app::update`] consumes them.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Action {
+    Reading(crate::reading_view::ReadAction),
     /// Edit authored themes in the shared native workshop.
     OpenThemeWorkshop,
     /// Open an address: mint/select its node in the graph and fetch it.
@@ -938,6 +939,8 @@ pub enum ContentControl {
 /// itself never blocks and never touches a platform API.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Effect {
+    SaveReadingPreferences,
+    ReadFind { target: crate::reading_view::ReadTarget, query: String, step: Option<inker::DocumentFindDirection>, close:bool },
     /// Persist curation for the resolved graph runtime and its session.
     SaveGraphFolds { graph: crate::panes::GraphId },
     /// Open/focus the host-owned workshop on the existing render core.
@@ -1297,6 +1300,7 @@ impl std::fmt::Debug for MicronSubmission {
 /// state through [`crate::app::apply_update`]. App-owned types only; port
 /// adapters convert.
 pub enum Update {
+    ReadingFindChanged { target: crate::reading_view::ReadTarget, query: String, result: Result<inker::DocumentFindState,String> },
     SavedSourcesLoaded {
         generation: uuid::Uuid,
         request: uuid::Uuid,
