@@ -27,7 +27,7 @@ pub(super) struct State {
 pub(super) const SHEET: &str = r#"
 .tree-instrument { --workspace-font-interface:IBM Plex Sans,sans-serif; --workspace-font-reading:Newsreader,serif; }
 .tree-instrument .cambium-title-bar h1 { margin:0; font-size:14px; font-weight:500; }
-.tree-instrument .cambium-title-bar { --titlebar-min-height:40px; --titlebar-gap:6px; padding-top:0; padding-bottom:0; border-bottom:1px solid var(--workspace-rule); flex-wrap:nowrap; position:relative; }
+.tree-instrument .cambium-title-bar { --titlebar-min-height:36px; --titlebar-gap:6px; padding-top:0; padding-bottom:0; border-bottom:1px solid var(--workspace-rule); flex-wrap:nowrap; position:relative; }
 .tree-instrument .title-bar-title { flex:1 1 auto; min-width:0; }
 .tree-instrument .workspace-app-identity { font-size:12px; white-space:nowrap; overflow:hidden; }
 .tree-instrument .workspace-app-identity h1 { display:inline; }
@@ -35,7 +35,7 @@ pub(super) const SHEET: &str = r#"
 .tree-instrument .workspace-panes { position:absolute; top:100%; right:8px; z-index:25; width:220px; }
 .tree-instrument .workspace-related { position:absolute; top:100%; right:8px; z-index:25; width:360px; max-width:90%; max-height:70vh; overflow-y:auto; }
 .tree-instrument .workspace-related-heading { margin:0; font-weight:500; }
-.tree-instrument .tree-tools > .cambium-source-binding { margin-bottom:12px; }
+.tree-instrument .tree-tools > .cambium-source-binding { margin-bottom:8px; }
 .tree-instrument .workspace-related .shell-navigation-detail { overflow-wrap:anywhere; }
 .tree-instrument .cambium-shell-toolbar { padding:0; }
 .tree-instrument { --shell-background:var(--workspace-surface, #17232b); --shell-foreground:var(--workspace-ink, #dce3e8); --shell-rule:var(--workspace-rule, #637581); --shell-selection:var(--workspace-rule, #263640); }
@@ -49,13 +49,13 @@ pub(super) const SHEET: &str = r#"
 .tree-instrument .tree-body > .cambium-activity-rail, .tree-instrument .tree-body > .cambium-shell-documents { height:auto; align-self:stretch; }
 .tree-instrument .tree-body { border-top:1px solid var(--workspace-rule); }
 .tree-instrument .tree-tools { padding:0 10px 10px; border-left:1px solid var(--workspace-rule); }
-.tree-instrument .tree-tools > .workspace-pane-header { padding-left:0; padding-right:0; margin-bottom:10px; }
+.tree-instrument .tree-tools > .workspace-pane-header { padding-left:0; padding-right:0; margin-bottom:8px; }
 .tree-instrument .tree-graph > .workspace-pane-header { margin:0; }
 .tree-instrument .tree-tools .detail-section-title { font-weight:500; }
 .tree-instrument .tree-tools .detail-key { font-size:12px; color:var(--workspace-muted); }
-.tree-instrument .tree-tools .detail-value { margin-bottom:10px; }
+.tree-instrument .tree-tools .detail-value { margin-bottom:8px; }
 .tree-instrument .tools-section + .tools-section { padding-top:10px; }
-.tree-instrument .reading-pane { font-family:var(--tabard-font-reading, var(--workspace-font-reading)),var(--workspace-font-reading); font-size:var(--tabard-font-reading-size, 16px); line-height:var(--tabard-font-reading-line-height, 1.6); }
+.tree-instrument .reading-pane { font-family:var(--tabard-font-reading, var(--workspace-font-reading)),var(--workspace-font-reading); font-size:var(--tabard-font-reading-size, 18px); line-height:var(--tabard-font-reading-line-height, 1.6); }
 .tree-instrument .reading-pane button { font-family:var(--tabard-font-interface, var(--workspace-font-interface)),var(--workspace-font-interface); font-size:var(--tabard-font-interface-size, 13px); }
 .tree-instrument .tree-product, .tree-instrument .tree-detail { border-radius:0; }
 "#;
