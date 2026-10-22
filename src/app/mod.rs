@@ -115,20 +115,14 @@ fn migrate_retired_viewer_overrides(
     migrated
 }
 
-/// The at-rest "where am I" caption: the focused node's display label (and
-/// host, when it adds information), or `None` with nothing focused.
+/// The at-rest "where am I" caption: the focused node's display caption (its
+/// label, plus its host when that adds information), or `None` with nothing
+/// focused.
 pub fn focused_caption(canvas: &mere::canvas::Canvas) -> Option<String> {
     let url = canvas.focused_url()?.to_string();
     let graph = canvas.graph();
-    let (key, node) = graph.get_node_by_url(&url)?;
-    let label = graph.node_display_label(key);
-    let host = url::Url::parse(node.url())
-        .ok()
-        .and_then(|parsed| parsed.host_str().map(str::to_owned));
-    match host.as_deref() {
-        Some(host) if !label.contains(host) => Some(format!("{label}  \u{00b7}  {host}")),
-        _ => Some(label),
-    }
+    let (key, _) = graph.get_node_by_url(&url)?;
+    Some(graph.node_display_caption(key))
 }
 
 /// The content controlled by the navigation row can differ from the graph's
@@ -139,7 +133,7 @@ pub(crate) fn navigation_caption(app: &App) -> Option<String> {
         let canvas = app.graph_runtimes.canvas(graph)?;
         let graph = canvas.graph();
         let (key, _) = graph.nodes().find(|(_, node)| node.id == member)?;
-        Some(graph.node_display_label(key))
+        Some(graph.node_display_caption(key))
     });
     label.or_else(|| focused_caption(&app.graph_runtimes))
 }
