@@ -163,13 +163,19 @@ async fn fetch_bytes(url: &str) -> Result<Vec<u8>, String> {
 impl Default for Reading {
     fn default() -> Self {
         Self {
-            host: ContentHost::with_native_presentation(
+            host: ContentHost::with_native_font_roles(
                 vec![
                     include_bytes!("../../web/Newsreader-Regular.ttf").to_vec(),
                     include_bytes!("../../web/IBMPlexSans-Regular.ttf").to_vec(),
                     include_bytes!("../../web/IBMPlexMono-Regular.ttf").to_vec(),
+                    include_bytes!("../../web/NotoSansMath-Regular.ttf").to_vec(),
                 ],
-                Some("Newsreader".into()),
+                vec!["Newsreader".into(), "IBM Plex Sans".into(), "Noto Sans Math".into()],
+                vec![
+                    ("serif".into(), include_bytes!("../../web/Newsreader-Regular.ttf").to_vec()),
+                    ("sans-serif".into(), include_bytes!("../../web/IBMPlexSans-Regular.ttf").to_vec()),
+                    ("monospace".into(), include_bytes!("../../web/IBMPlexMono-Regular.ttf").to_vec()),
+                ],
             ),
             bindings: Default::default(),
             registered: Default::default(),
@@ -848,7 +854,7 @@ pub(super) fn appearance(shared: &Rc<Shared>, member: Uuid, source: HeldContent)
         .statuses
         .get(&member)
         .cloned()
-        .unwrap_or_else(|| "Viewing held content through Pelt".into());
+        .unwrap_or_default();
     Appearance::Ready { key, slot, status }
 }
 pub(super) fn render(appearance: Appearance) -> Child {
@@ -858,8 +864,8 @@ pub(super) fn render(appearance: Appearance) -> Child {
             let leaf =
                 graphshell::retained_content::filling_content_view::<TreePage, ()>(key, slot);
             Box::new(
-                el("div", (leaf, el("p", status).attr("role", "status")))
-                    .attr("class", "pelt-reading"),
+                el("div", (leaf, (!status.is_empty()).then(|| el("p", status).attr("role", "status").attr("class", "shell-reading-status"))))
+                    .attr("class", "pelt-reading cambium-reading-surface cambium-reading-copy"),
             )
         },
     }

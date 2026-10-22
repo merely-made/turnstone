@@ -1203,7 +1203,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 let title = node.title.clone();
                 let address = node.url().to_string();
                 let mut controls: Vec<Child> = vec![Box::new(
-                    button("Show in Mere", move |p: &mut TreePage, _| {
+                    button("Show on Map", move |p: &mut TreePage, _| {
                         p.shared.canvas.borrow_mut().select_member(member);
                         if let Some(f) = &mut p.forme {
                             f.workbench = false;
@@ -1211,7 +1211,8 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                         selection_changed(p);
                         p.shared.dirty.set(true);
                     })
-                    .attr("aria-description", address.clone()),
+                    .attr("aria-description", address.clone())
+                    .attr("class", "shell-control reading-map-control"),
                 )];
                 let mut tags: Vec<_> = graph
                     .node_content_tags(key)
@@ -1220,7 +1221,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                     .collect();
                 tags.sort();
                 if !tags.is_empty() {
-                    controls.push(Box::new(el("p", tags.join(" · "))));
+                    controls.push(Box::new(el("p", tags.join(" · ")).attr("class", "shell-reading-status")));
                 }
                 if let Some(snapshot) = query_appearances.get(&member) {
                     controls.push(super::query_view::render(snapshot.clone()));
@@ -1291,12 +1292,12 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
     })
 }
 pub(super) const SHEET: &str = " .forme-workbench { width:100%;height:100%;min-height:0; } \
-    .forme-workbench .frisket-content { background:inherit; } .reading-pane { padding:16px;color:inherit;height:100%;box-sizing:border-box;min-height:0;overflow:auto; } \
+    .forme-workbench .frisket-content { background:inherit; } .reading-pane { padding:8px;color:inherit;height:100%;box-sizing:border-box;min-height:0;overflow:auto; } \
     .retained-reading-pane { display:flex;flex-direction:column;overflow:hidden; } \
     .retained-reading-pane > button, .retained-reading-pane > p { flex-shrink:0; } \
     .pelt-reading { display:flex;flex-direction:column;flex-grow:1;flex-shrink:1;flex-basis:0px;min-height:0; } \
     .pelt-reading > p { flex-shrink:0; } \
-    .reading-pane button { padding:5px 10px;border:1px solid currentColor; } \
+    .reading-pane button { padding:4px 8px;min-height:28px;border:1px solid currentColor; } .reading-map-control { align-self:flex-start;margin-bottom:6px; } \
     .reading-address { overflow-wrap:anywhere; } .reading-body { white-space:pre-wrap;overflow-wrap:anywhere; } ";
 
 /// Activate an already arranged member without changing its tile or split.
