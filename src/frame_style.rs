@@ -32,6 +32,7 @@ pub(crate) fn interface_font_properties(
 
 pub(crate) fn stylesheet(
     presentation: Option<&ThemePresentation>,
+    mode: &tabard::theme::registry::Mode,
     typography: &Typography,
     interface_font_properties: &str,
     zoom: f32,
@@ -41,18 +42,11 @@ pub(crate) fn stylesheet(
     } else {
         1.0
     };
-    let fallback = tabard::resolve_theme_choice(
-        &tabard::theme::registry::ThemeRegistry::default(),
-        &tabard::theme::choice::ThemeChoice::default(),
-    )
-    .expect("valid Tabard default");
-    let palette = match presentation {
-        Some(ThemePresentation::Derived(palette)) => palette,
-        _ => match &fallback.presentation {
-            ThemePresentation::Derived(palette) => palette,
-            _ => unreachable!("built-in default is derived"),
-        },
-    };
+    let palette = tabard::presentation_palette(
+        presentation.unwrap_or(&ThemePresentation::AuthoredStylesheet(Vec::new())),
+        mode,
+        tabard::theme::registry::THEME_ID_DEFAULT,
+    );
     // Automatic header height accommodates authored family/size/leading.
     // UI zoom scales host defaults; explicit authored sizes retain CSS authority.
     let mut sheet = format!(
