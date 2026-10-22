@@ -66,7 +66,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         children.push(Box::new(el("p", format!("Exact target {}", json(&target)))));
         match &pane.report {
             Some(Err(error)) => {
-                children.push(Box::new(el("p", error.clone()).attr("role", "status")))
+                children.push(Box::new(status_note("", error.clone())))
             },
             Some(Ok(report)) => {
                 if let Some(count) = report.pair_controller_edges {

@@ -567,18 +567,14 @@ pub(super) fn section(page: &TreePage) -> Child {
         return Box::new(el("div", ()));
     }
     let mut children: Vec<Child> = vec![Box::new(
-        button(
-            if pane.open {
+        disclosure_trigger(if pane.open {
                 "Close rule editor"
             } else {
                 "Presentation rules"
-            },
-            |page: &mut TreePage, _| {
+            }, pane.open, |page: &mut TreePage| {
                 page.presentation.open = !page.presentation.open;
                 page.tools_open = true;
-            },
-        )
-        .attr("aria-expanded", pane.open.to_string()),
+            }),
     )];
     if !pane.open {
         return Box::new(el("section", children).attr("class", "tools-section"));
@@ -586,7 +582,7 @@ pub(super) fn section(page: &TreePage) -> Child {
     children.push(Box::new(el("h2", "Presentation rules")));
     children.push(Box::new(el("p", "Target → condition → effect. Exact occurrence previews disclose their inputs. Saved rules can control Forme subdivisions in this view.")));
     children.push(Box::new(
-        el("p", pane.status.clone()).attr("role", "status"),
+        status_note("", pane.status.clone()),
     ));
     if let Some(session) = &pane.session {
         children.push(Box::new(el(

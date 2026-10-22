@@ -48,14 +48,14 @@ pub fn action(id: &str, hosted: bool) -> Option<Action> {
         }),
         "fit-selection" => Action::Canvas(CanvasCommand::FitSelection),
         "restore-arrangement" => Action::Canvas(CanvasCommand::RestoreArrangement),
-        "reset-to-seed" => Action::Canvas(CanvasCommand::ResetToSeed),
-        "set-seed" => Action::Canvas(CanvasCommand::SetSeed),
-        "restore-recipe-seed" => Action::Canvas(CanvasCommand::RestoreRecipeSeed),
-        "foreground-pin" => Action::Canvas(CanvasCommand::ToggleForegroundPin),
-        "dismiss-retained" => Action::Canvas(CanvasCommand::DismissRetained),
-        "tile-grow" => Action::Canvas(CanvasCommand::GrowTiles),
-        "tile-shrink" => Action::Canvas(CanvasCommand::ShrinkTiles),
-        "territory-field" => Action::Canvas(CanvasCommand::ToggleTerritory),
+        ids::ARRANGEMENT_RESET_TO_SEED => Action::Canvas(CanvasCommand::ResetToSeed),
+        ids::ARRANGEMENT_SET_SEED => Action::Canvas(CanvasCommand::SetSeed),
+        ids::ARRANGEMENT_RESTORE_RECIPE_SEED => Action::Canvas(CanvasCommand::RestoreRecipeSeed),
+        ids::NODE_FOREGROUND_PIN => Action::Canvas(CanvasCommand::ToggleForegroundPin),
+        ids::ARRANGEMENT_DISMISS_RETAINED => Action::Canvas(CanvasCommand::DismissRetained),
+        ids::TILE_GROW => Action::Canvas(CanvasCommand::GrowTiles),
+        ids::TILE_SHRINK => Action::Canvas(CanvasCommand::ShrinkTiles),
+        ids::VIEW_TERRITORY => Action::Canvas(CanvasCommand::ToggleTerritory),
         "suggestions" => Action::Canvas(CanvasCommand::ToggleSuggestions),
         ids::PHYSICS_TOGGLE => Action::Canvas(CanvasCommand::TogglePhysics),
         ids::VIEW_ZOOM_IN => Action::Canvas(CanvasCommand::Zoom { delta: 40.0 }),
@@ -95,38 +95,91 @@ pub fn commands(available: Availability) -> CommandSet {
         (
             ids::VIEW_FIT,
             if available.hosted {
-                "Fit visible graph"
+                CanvasCommand::FitVisible
             } else {
-                "Fit graph"
-            },
+                CanvasCommand::Fit
+            }
+            .label(),
             "canvas",
         ),
-        ("fit-selection", "Fit selection", "node"),
-        ("restore-arrangement", "Restore arrangement", "canvas"),
-        ("reset-to-seed", "Reset", "canvas"),
-        ("set-seed", "Set seed", "canvas"),
-        ("restore-recipe-seed", "Restore recipe seed", "canvas"),
-        ("foreground-pin", "Foreground pin", "node"),
-        ("dismiss-retained", "Dismiss retained", "canvas"),
-        ("tile-grow", "Grow tile", "node"),
-        ("tile-shrink", "Shrink tile", "node"),
-        ("territory-field", "Territory field", "canvas"),
-        ("suggestions", "Suggestions", "preferences"),
+        ("fit-selection", CanvasCommand::FitSelection.label(), "node"),
+        (
+            "restore-arrangement",
+            CanvasCommand::RestoreArrangement.label(),
+            "canvas",
+        ),
+        (
+            ids::ARRANGEMENT_RESET_TO_SEED,
+            CanvasCommand::ResetToSeed.label(),
+            "canvas",
+        ),
+        (
+            ids::ARRANGEMENT_SET_SEED,
+            CanvasCommand::SetSeed.label(),
+            "canvas",
+        ),
+        (
+            ids::ARRANGEMENT_RESTORE_RECIPE_SEED,
+            CanvasCommand::RestoreRecipeSeed.label(),
+            "canvas",
+        ),
+        (
+            ids::NODE_FOREGROUND_PIN,
+            CanvasCommand::ToggleForegroundPin.label(),
+            "node",
+        ),
+        (
+            ids::ARRANGEMENT_DISMISS_RETAINED,
+            CanvasCommand::DismissRetained.label(),
+            "canvas",
+        ),
+        (ids::TILE_GROW, CanvasCommand::GrowTiles.label(), "node"),
+        (ids::TILE_SHRINK, CanvasCommand::ShrinkTiles.label(), "node"),
+        (
+            ids::VIEW_TERRITORY,
+            CanvasCommand::ToggleTerritory.label(),
+            "canvas",
+        ),
+        (
+            "suggestions",
+            CanvasCommand::ToggleSuggestions.label(),
+            "preferences",
+        ),
         (
             ids::PHYSICS_TOGGLE,
-            if available.paused {
-                "Play physics"
-            } else {
-                "Pause physics"
-            },
+            CanvasCommand::SetPhysicsPaused(!available.paused).label(),
             "canvas",
         ),
-        (ids::VIEW_ZOOM_IN, "Zoom in", "canvas"),
-        (ids::VIEW_ZOOM_OUT, "Zoom out", "canvas"),
-        ("pan-left", "Pan left", "canvas"),
-        ("pan-right", "Pan right", "canvas"),
-        ("pan-up", "Pan up", "canvas"),
-        ("pan-down", "Pan down", "canvas"),
+        (
+            ids::VIEW_ZOOM_IN,
+            CanvasCommand::Zoom { delta: 1.0 }.label(),
+            "canvas",
+        ),
+        (
+            ids::VIEW_ZOOM_OUT,
+            CanvasCommand::Zoom { delta: -1.0 }.label(),
+            "canvas",
+        ),
+        (
+            "pan-left",
+            CanvasCommand::Pan { dx: -1.0, dy: 0.0 }.label(),
+            "canvas",
+        ),
+        (
+            "pan-right",
+            CanvasCommand::Pan { dx: 1.0, dy: 0.0 }.label(),
+            "canvas",
+        ),
+        (
+            "pan-up",
+            CanvasCommand::Pan { dx: 0.0, dy: -1.0 }.label(),
+            "canvas",
+        ),
+        (
+            "pan-down",
+            CanvasCommand::Pan { dx: 0.0, dy: 1.0 }.label(),
+            "canvas",
+        ),
         ("graph-tools", "Graph tools", "canvas"),
         ("wheel-zoom", "Wheel: zoom graph", "preferences"),
         ("wheel-pan", "Wheel: pan graph", "preferences"),
@@ -151,9 +204,9 @@ pub fn commands(available: Availability) -> CommandSet {
     }
     if !available.selection && !available.locked {
         set.set_disabled("fit-selection", Some("Select a visible node first".into()));
-        set.set_disabled("foreground-pin", Some("Select a node first".into()));
-        set.set_disabled("tile-grow", Some("Select a tile first".into()));
-        set.set_disabled("tile-shrink", Some("Select a tile first".into()));
+        set.set_disabled(ids::NODE_FOREGROUND_PIN, Some("Select a node first".into()));
+        set.set_disabled(ids::TILE_GROW, Some("Select a tile first".into()));
+        set.set_disabled(ids::TILE_SHRINK, Some("Select a tile first".into()));
     }
     set
 }
@@ -162,6 +215,34 @@ pub fn commands(available: Availability) -> CommandSet {
 mod tests {
     use super::*;
     use hest::menu::{CommandChoices, MenuSession};
+
+    #[test]
+    fn shared_canvas_verbs_are_labelled_by_the_canvas_and_the_catalogue_alike() {
+        for (id, verb) in [
+            (ids::ARRANGEMENT_RESET_TO_SEED, CanvasCommand::ResetToSeed),
+            (ids::ARRANGEMENT_SET_SEED, CanvasCommand::SetSeed),
+            (
+                ids::ARRANGEMENT_RESTORE_RECIPE_SEED,
+                CanvasCommand::RestoreRecipeSeed,
+            ),
+            (
+                ids::ARRANGEMENT_DISMISS_RETAINED,
+                CanvasCommand::DismissRetained,
+            ),
+            (ids::NODE_FOREGROUND_PIN, CanvasCommand::ToggleForegroundPin),
+            (ids::TILE_GROW, CanvasCommand::GrowTiles),
+            (ids::TILE_SHRINK, CanvasCommand::ShrinkTiles),
+            (ids::VIEW_TERRITORY, CanvasCommand::ToggleTerritory),
+        ] {
+            assert_eq!(catalogue::label(id), Some(verb.label()), "{id}");
+            assert_eq!(action(id, false), Some(Action::Canvas(verb)), "{id}");
+            let set = commands(Availability::default());
+            assert_eq!(
+                set.get(id).map(|command| command.label.as_str()),
+                Some(verb.label())
+            );
+        }
+    }
 
     #[test]
     fn browsing_pages_cover_commands_and_follow_keyboard_selection() {

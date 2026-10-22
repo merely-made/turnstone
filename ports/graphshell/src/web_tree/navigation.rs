@@ -3,17 +3,18 @@
 
 //! A disclosure over the current document's canonical graph relationships.
 use super::*;
-use cambium::{ShellControl, shell_control, shell_navigation_item};
-use mere::navigation::{RelationshipRow, RelationshipTarget, relationships};
+use cambium::{ShellControl, shell_control, shell_navigation_item, shell_paged_list};
+use mere::navigation::{
+    NO_RELATIONSHIPS, RELATIONSHIPS_NOUN, RELATIONSHIPS_PAGE_SIZE, RelationshipRow,
+    RelationshipTarget, relationship_detail, relationships,
+};
 use uuid::Uuid;
-
-const PAGE_SIZE: usize = 6;
 
 #[derive(Default)]
 pub(super) struct State {
     pub open: bool,
     source: Option<(Uuid, Uuid)>,
-    page: usize,
+    start: usize,
 }
 
 fn rows(page: &TreePage) -> Vec<RelationshipRow> {
@@ -35,7 +36,7 @@ pub(super) fn control(page: &TreePage) -> Child {
         |page: &mut TreePage, _| {
             page.instrument.navigation.open = !page.instrument.navigation.open;
             page.instrument.navigation.source = super::source_binding::active(page);
-            page.instrument.navigation.page = 0;
+            page.instrument.navigation.start = 0;
             page.instrument.panes_open = false;
             page.shared.dirty.set(true);
         },
@@ -72,62 +73,37 @@ pub(super) fn popup(page: &TreePage) -> Option<Child> {
     }
     let same = page.instrument.navigation.source == super::source_binding::active(page);
     let all = if same { rows(page) } else { Vec::new() };
-    let count = all.len();
-    let index = page
-        .instrument
-        .navigation
-        .page
-        .min(count.saturating_sub(1) / PAGE_SIZE);
     let mut children: Vec<Child> = vec![Box::new(
         el("p", "Document connections").attr("class", "workspace-related-heading"),
     )];
-    if all.is_empty() {
+    if same {
+        children.extend(shell_paged_list(
+            RELATIONSHIPS_NOUN,
+            NO_RELATIONSHIPS,
+            &all,
+            page.instrument.navigation.start,
+            RELATIONSHIPS_PAGE_SIZE,
+            |row| {
+                let target = row.target;
+                shell_navigation_item(
+                    row.title.clone(),
+                    relationship_detail(row),
+                    ShellControl::default(),
+                    move |page: &mut TreePage, _| activate(page, target),
+                )
+            },
+            |page: &mut TreePage, start| {
+                page.instrument.navigation.start = start;
+                page.shared.dirty.set(true);
+            },
+        ));
+    } else {
         children.push(Box::new(
-            el(
-                "p",
-                if same {
-                    "No relationships recorded for this document"
-                } else {
-                    "The current document changed. Reopen Related to browse its connections."
-                },
-            )
-            .attr("role", "status"),
-        ));
-    }
-    for row in all.into_iter().skip(index * PAGE_SIZE).take(PAGE_SIZE) {
-        children.push(shell_navigation_item(
-            row.title,
-            format!("{} · {}", row.relationship, row.address),
-            ShellControl::default(),
-            move |page: &mut TreePage, _| activate(page, row.target),
-        ));
-    }
-    if count > PAGE_SIZE {
-        children.push(Box::new(el(
-            "p",
-            format!(
-                "{}–{} of {count}",
-                index * PAGE_SIZE + 1,
-                ((index + 1) * PAGE_SIZE).min(count)
+            status_note(
+                "",
+                "The current document changed. Reopen Related to browse its connections.",
             ),
-        )));
-        for (label, delta, disabled) in [
-            ("Previous connections", -1, index == 0),
-            ("More connections", 1, (index + 1) * PAGE_SIZE >= count),
-        ] {
-            children.push(shell_control(
-                label,
-                label,
-                ShellControl {
-                    disabled,
-                    ..Default::default()
-                },
-                move |page: &mut TreePage, _| {
-                    page.instrument.navigation.page = index.saturating_add_signed(delta);
-                    page.shared.dirty.set(true);
-                },
-            ));
-        }
+        ));
     }
     Some(Box::new(
         el(

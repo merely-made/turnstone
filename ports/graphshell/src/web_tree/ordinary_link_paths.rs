@@ -338,7 +338,7 @@ pub(super) fn section(page: &TreePage) -> Child {
 
     children.push(Box::new(el("h4", "Active graph vector fields")));
     match graph_vector_fields(page) {
-        Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
+        Err(error) => children.push(Box::new(status_note("", error))),
         Ok(fields) if fields.is_empty() => children.push(Box::new(el(
             "p",
             "No vector fields are held in this graph. Choose a labeled temporary local field above.",
@@ -398,9 +398,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         )));
     }
     children.push(Box::new(
-        el("p", status(&report))
-            .attr("role", "status")
-            .attr("data-link-path-status", ""),
+        status_note("", status(&report)).attr("data-link-path-status", ""),
     ));
     children.push(Box::new(el(
         "p",

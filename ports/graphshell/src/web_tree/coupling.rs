@@ -294,7 +294,7 @@ pub(super) fn section(page: &TreePage) -> Child {
     }
     if !pane.status.is_empty() {
         children.push(Box::new(
-            el("p", pane.status.clone()).attr("role", "status"),
+            status_note("", pane.status.clone()),
         ));
     }
     Box::new(el("div", children).attr("class", "tree-coupling"))
