@@ -127,6 +127,7 @@ pub enum SaveKind {
     Redo,
     InspectorSource(crate::pane_source::InspectorSource),
     Visibility,
+    Reading(Uuid, tabard::ReadingPreferences),
 }
 /// Prepared writes never change committed state until the store acknowledges
 /// them. The session is frozen while its proposal is in flight.
@@ -425,6 +426,11 @@ impl FormeSession {
                 to.push(current);
                 state.restore(&mut next.workspace);
             },
+            SaveKind::Reading(access, value) => {
+                value.validate()?;
+                if next.workspace.tile_for_member(access).is_none() { return Err("Reading projection is no longer present".into()); }
+                next.workspace.reading_preferences.insert(access, value);
+            },
             SaveKind::Visibility => next.workspace.visible = !next.workspace.visible,
             SaveKind::InspectorSource(source) => next.workspace.inspector_source = source,
         }
@@ -455,6 +461,9 @@ impl FormeSession {
         self.busy = false;
         result?;
         match proposal.kind {
+            SaveKind::Reading(access, value) => {
+                if let Some(draft) = &mut self.draft { draft.workspace.reading_preferences.insert(access, value); }
+            },
             SaveKind::Visibility => {
                 if let Some(draft) = &mut self.draft {
                     draft.workspace.visible = proposal.next.workspace.visible;
@@ -665,6 +674,32 @@ mod tests {
             let other = FormeSession::load(backend, Uuid::from_u128(99), &graph).await.unwrap();
             assert_eq!(other.view().inspector_source, InspectorSource::Active);
             assert!(other.view().focused_reading.is_none());
+        });
+    }
+
+    #[test]
+    fn reading_choices_persist_without_layout_history_and_preserve_open_drafts() {
+        pollster::block_on(async {
+            let (graph,mut session,[a,b,c])=fixture();
+            let owner=session.view().document.graph_id;
+            let backend=MemoryBackend::default();
+            let mut preferences=tabard::ReadingPreferences::default(); preferences.step_text(true); preferences.step_column(false);
+            session.unlock().unwrap();
+            session.edit(None,1,|workspace|workspace.open(c,&graph)).unwrap();
+            let layout=LayoutState::capture(session.view());
+            save(&mut session,backend.clone(),SaveKind::Reading(a,preferences)).await;
+            assert!(session.editing()); assert_eq!(LayoutState::capture(session.view()),layout);
+            assert_eq!(session.view().reading_preferences.get(&a),Some(&preferences));
+            session.discard().unwrap();
+            let cold=FormeSession::load(backend.clone(),owner,&graph).await.unwrap();
+            assert_eq!(cold.view().reading_preferences.get(&a),Some(&preferences));
+            assert!(!cold.view().reading_preferences.contains_key(&b));
+            assert!(!cold.can_undo(),"reading preference writes are not layout gestures");
+            let original=serde_json::to_value(session.committed()).unwrap();
+            preferences.step_text(true);
+            let proposal=session.prepare_save(SaveKind::Reading(a,preferences),2).unwrap();
+            assert!(session.finish_save(proposal,Err("offline".into())).is_err());
+            assert_eq!(serde_json::to_value(session.committed()).unwrap(),original);
         });
     }
 

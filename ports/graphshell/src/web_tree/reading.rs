@@ -282,6 +282,12 @@ pub(super) fn prepare(page: &TreePage) {
         reading.persona = persona;
     }
     reading.prepare(tree.as_ref(), &retained);
+    if let Some(pane) = &page.forme {
+        for (member, binding) in &reading.bindings {
+            let preferences = pane.model().reading_preferences.get(member).copied().unwrap_or_default();
+            let _ = binding.slot.borrow_mut().reading_preferences(preferences);
+        }
+    }
     reading.clips.retain(|id, (address, _)| {
         graph
             .get_node_by_id(*id)
@@ -865,8 +871,104 @@ pub(super) fn render(appearance: Appearance) -> Child {
                 graphshell::retained_content::filling_content_view::<TreePage, ()>(key, slot);
             Box::new(
                 el("div", (leaf, (!status.is_empty()).then(|| el("p", status).attr("role", "status").attr("class", "shell-reading-status"))))
-                    .attr("class", "pelt-reading cambium-reading-surface cambium-reading-copy"),
+                    .attr("class", "pelt-reading cambium-reading-surface"),
             )
         },
     }
+}
+
+#[derive(Clone, Default)]
+pub(super) struct ReadUi {
+    pub(super) open: bool,
+    input: cambium::TextInput,
+    pub(super) status: String,
+}
+#[derive(Clone)]
+pub(super) struct ToolbarSnapshot { preferences: tabard::ReadingPreferences, ui: ReadUi, text_controls: bool, find_enabled: bool }
+pub(super) fn toolbar_snapshot(page: &TreePage, member: Uuid) -> ToolbarSnapshot {
+    let pane = page.forme.as_ref().expect("reading workspace");
+    ToolbarSnapshot {
+        find_enabled: page.shared.reading.borrow().bindings.get(&member).is_some_and(|binding|binding.slot.borrow().has_document_find()),
+        text_controls: page.shared.reading.borrow().bindings.get(&member).is_some_and(|binding|binding.slot.borrow().has_reading_controls()),
+        preferences: pane.model().reading_preferences.get(&member).copied().unwrap_or_default(),
+        ui: pane.reading_ui.get(&member).cloned().unwrap_or_default(),
+    }
+}
+fn find(page: &mut TreePage, member: Uuid, step: Option<graphshell::retained_content::ReadFindDirection>) {
+    let Some(pane) = &mut page.forme else { return; };
+    let ui = pane.reading_ui.entry(member).or_default();
+    let reading = page.shared.reading.borrow();
+    let Some(binding) = reading.bindings.get(&member) else { return; };
+    let result = binding.slot.borrow_mut().find(ui.input.text(), step);
+    ui.status = match result {
+        Ok(state) if state.query.text.is_empty() => "Type to find".into(),
+        Ok(state) if state.count == 0 => "No matches".into(),
+        Ok(state) => format!("{} of {}", state.current.map_or(0, |i| i + 1), state.count),
+        Err(error) => error,
+    };
+    page.shared.dirty.set(true);
+}
+pub(super) fn read_command(page: &mut TreePage, member: Uuid, command: cambium::ReadCommand) {
+    use cambium::ReadCommand as C;
+    let Some(pane) = &mut page.forme else { return; };
+    let mut value = pane.model().reading_preferences.get(&member).copied().unwrap_or_default();
+    match command {
+        C::Smaller => value.step_text(false), C::Larger => value.step_text(true),
+        C::Narrower => value.step_column(false), C::Wider => value.step_column(true),
+        C::Reset => value = Default::default(),
+        C::Find => {
+            pane.reading_ui.entry(member).or_default().open = true;
+            find(page, member, None); return;
+        },
+        C::CloseFind => {
+            pane.reading_ui.entry(member).or_default().open = false;
+            if let Some(binding) = page.shared.reading.borrow().bindings.get(&member) { binding.slot.borrow_mut().clear_find(); }
+            page.shared.dirty.set(true); return;
+        },
+        C::Previous | C::Next => {
+            find(page, member, Some(if command == C::Next { graphshell::retained_content::ReadFindDirection::Next } else { graphshell::retained_content::ReadFindDirection::Previous })); return;
+        },
+    }
+    // Uses the same acknowledged workspace store without unlocking or replacing
+    // a layout draft or creating a graph edit/history entry.
+    pane.save(graphshell::forme_session::SaveKind::Reading(member, value));
+    page.shared.dirty.set(true);
+}
+pub(super) fn toolbar(member: Uuid, snapshot: ToolbarSnapshot) -> Child {
+    let ui = snapshot.ui;
+    let query = cambium::request_focus(cambium::on_key(
+        el("div", cambium::caret_field_children::<TreePage, ()>(&ui.input, &[]))
+            .attr("class", "read-query").attr("role", "textbox")
+            .attr("data-cambium-text-value", ui.input.text())
+            .attr("aria-label", "Find text in reading")
+            .attr("style", cambium::SINGLE_LINE_FIELD_STYLE),
+        move |page: &mut TreePage, event: cambium::KeyEvent| {
+            if matches!(event.key, cambium::Key::Named(cambium::NamedKey::Escape)) {
+                read_command(page, member, cambium::ReadCommand::CloseFind);
+            } else if matches!(event.key, cambium::Key::Named(cambium::NamedKey::Enter)) {
+                read_command(page, member, if event.mods.shift { cambium::ReadCommand::Previous } else { cambium::ReadCommand::Next });
+            } else {
+                let mut changed = false;
+                if let Some(pane) = &mut page.forme {
+                    let input=&mut pane.reading_ui.entry(member).or_default().input;
+                    let before=input.text().to_owned();
+                    input.apply_key(&event, cambium::TextFieldMode::SingleLine);
+                    changed=before != input.text();
+                }
+                if changed { find(page, member, None); }
+                page.shared.dirty.set(true);
+            }
+            event.prevent_default(); event.stop_propagation();
+        },
+    ), ui.open);
+    let status = el("span", ui.status).attr("class", "read-result").attr("role", "status").attr("aria-live", "polite");
+    let field: Child = Box::new(el("div", (query, status)).attr("class", "read-find-input"));
+    let toolbar = cambium::read_toolbar(snapshot.preferences.text_size, snapshot.preferences.column_em, snapshot.text_controls, ui.open && snapshot.find_enabled, snapshot.find_enabled.then_some(field),
+        move |page: &mut TreePage, command| read_command(page, member, command));
+    Box::new(cambium::on_key(el("div", toolbar), move |page: &mut TreePage, event| {
+        if (event.mods.ctrl || event.mods.meta) && matches!(&event.key, cambium::Key::Character(key) if key.eq_ignore_ascii_case("f")) {
+            read_command(page, member, cambium::ReadCommand::Find);
+            event.prevent_default(); event.stop_propagation();
+        }
+    }))
 }

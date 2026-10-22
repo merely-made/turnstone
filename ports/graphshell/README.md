@@ -352,6 +352,12 @@ Closing a view does not erase the supplying Mere's bytes. Link effects are
 resolved through existing retained graph addresses; other destinations report
 that their content is unavailable. `.mereclip` intake uses Fleece validation
 before admitting the bytes and creating the graph reference.
+The shared Cambium Read toolbar adjusts text size and column measure using
+Tabard reading intent. Those choices persist per access in the Forme workspace,
+including while a layout draft is open, and do not enter layout undo or graph
+history. Find uses the retained session's measured text, highlights and reveals
+matches, wraps next/previous, and closes with Escape; search state is temporary.
+
 
 The browser adapter reads the selected Mere's IndexedDB backend, plays verified
 WAV bytes with host audio controls, and exposes positive `clip-max-parts`,

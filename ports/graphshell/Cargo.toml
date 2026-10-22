@@ -133,7 +133,6 @@ web = [
     # Cambium anyway, so the viewer pays nothing for it.
     "dep:cambium",
     "dep:hest",
-    "dep:tabard",
     "dep:async-trait",
     # The canvas's producer semantics for a screen reader (`canvas_reader`;
     # dynamics grammar plan, F67).
@@ -220,7 +219,7 @@ serde = { version = "1", features = ["derive"], optional = true }
 chatelaine = { workspace = true, optional = true }
 serde_json.workspace = true
 workbench.workspace = true
-tabard = { workspace = true, optional = true }
+tabard = { workspace = true }
 # The projection editor's undo (Scenograph editor plan, E2 and SE10).
 backstep.workspace = true
 sha2 = { workspace = true, optional = true }

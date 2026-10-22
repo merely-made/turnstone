@@ -231,6 +231,36 @@ pub struct ContentSlot {
     semantic_keys: BTreeMap<(u64, u64, u64), u64>,
 }
 impl ContentSlot {
+    pub fn has_document_find(&self) -> bool {
+        self.content.document().is_some_and(|controller| matches!(controller.session().document_capabilities().find_in_page,
+            inker::DocumentCapabilityStatus::Supported | inker::DocumentCapabilityStatus::Partial{..}))
+    }
+    pub fn has_reading_controls(&self) -> bool {
+        self.content.document().is_some_and(|controller| {
+            let session=controller.session().as_any_ref();
+            session.is::<mere_document_lanes::ReaderDocumentSession>() || session.is::<mere_document_lanes::SmolwebDocumentSession>()
+        })
+    }
+    pub fn reading_preferences(&mut self, value: tabard::ReadingPreferences) -> Result<bool, String> {
+        let session = self.content.document_mut().ok_or("No retained document")?.session_mut().as_any();
+        let changed = if let Some(reader) = session.downcast_mut::<mere_document_lanes::ReaderDocumentSession>() {
+            reader.set_reading_preferences(value)?
+        } else if let Some(doc) = session.downcast_mut::<mere_document_lanes::SmolwebDocumentSession>() {
+            doc.document_mut().set_reading_preferences(value)?
+        } else { return Err("This engine does not expose reading typography".into()); };
+        if changed { self.revision = self.revision.wrapping_add(1); }
+        Ok(changed)
+    }
+    pub fn find(&mut self, query: &str, step: Option<inker::DocumentFindDirection>) -> Result<inker::DocumentFindState, String> {
+        let session = self.content.document_mut().ok_or("No retained document")?.session_mut();
+        let result = match step { Some(direction) => session.document_find_step(direction), None => session.document_find(&inker::DocumentFindQuery::new(query)) };
+        self.revision = self.revision.wrapping_add(1);
+        result.map_err(|e| e.to_string())
+    }
+    pub fn clear_find(&mut self) {
+        if let Some(controller) = self.content.document_mut() { let _ = controller.session_mut().clear_document_find(); }
+        self.revision = self.revision.wrapping_add(1);
+    }
     pub fn glyph_runs(&self) -> usize {
         self.glyph_runs
     }
@@ -546,3 +576,5 @@ fn lane_dictionaries(
 
 #[cfg(test)]
 mod tests;
+
+pub use inker::DocumentFindDirection as ReadFindDirection;

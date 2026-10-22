@@ -32,6 +32,7 @@ pub(super) struct Pane {
     feedback: Option<(DropEffect, [f32; 4])>,
     drag: Option<(Uuid, (f32, f32), bool)>,
     cancelled_drag: bool,
+    pub(super) reading_ui: std::collections::BTreeMap<Uuid, super::reading::ReadUi>,
 }
 impl Pane {
     pub(super) async fn open(product: &product::SavedProduct) -> Result<Self, String> {
@@ -54,6 +55,7 @@ impl Pane {
             feedback: None,
             drag: None,
             cancelled_drag: false,
+            reading_ui: Default::default(),
         }
     }
     pub(super) fn projected_model(&self) -> &FormeWorkspace {
@@ -72,7 +74,7 @@ impl Pane {
         let region = self.current().project_region(owner, canvas.graph())?;
         canvas.set_forme_region(region)
     }
-    fn save(&mut self, kind: SaveKind) {
+    pub(super) fn save(&mut self, kind: SaveKind) {
         if self.saving {
             return;
         }
@@ -626,6 +628,15 @@ pub(super) fn shortcut(page: &mut TreePage, event: &cambium::KeyEvent) -> bool {
     {
         finish_preview(page, false);
         return true;
+    }
+    if let Some(member) = page.forme.as_ref().filter(|pane|pane.workbench).and_then(|pane|pane.model().focused_reading) {
+        let find_open = page.forme.as_ref().and_then(|pane|pane.reading_ui.get(&member)).is_some_and(|ui|ui.open);
+        if matches!(event.key, Key::Named(NamedKey::Escape)) && find_open {
+            super::reading::read_command(page,member,cambium::ReadCommand::CloseFind); return true;
+        }
+        if (event.mods.ctrl || event.mods.meta) && !event.mods.alt && matches!(&event.key, Key::Character(key) if key.eq_ignore_ascii_case("f")) {
+            super::reading::read_command(page,member,cambium::ReadCommand::Find); return true;
+        }
     }
     if (event.mods.ctrl || event.mods.meta)
         && !event.mods.alt
@@ -1188,6 +1199,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 }
             }
             super::reading::prepare(page);
+            let reading_toolbars: std::collections::BTreeMap<_, _> = appearances.keys().map(|member| (*member, super::reading::toolbar_snapshot(page, *member))).collect();
             let reading = move |tile: &Tile| -> Slot<TreePage, ()> {
                 let ContentSource::Open { id, .. } = &tile.content else {
                     return Slot::Hole;
@@ -1227,6 +1239,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                     controls.push(super::query_view::render(snapshot.clone()));
                 }
                 if let Some(appearance) = appearances.get(&member) {
+                    controls.push(super::reading::toolbar(member, reading_toolbars[&member].clone()));
                     controls.push(super::reading::render(appearance.clone()));
                 }
                 if !locked {

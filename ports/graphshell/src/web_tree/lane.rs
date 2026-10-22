@@ -2423,6 +2423,9 @@ fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> Pr
     snapshot
         .with_field("forme", pane.current().document.id.as_uuid().to_string())
         .with_field("forme-accesses", pane.current().members().len().to_string())
+        .with_field("reading-text-size", pane.current().focused_reading.map(|id|pane.current().reading_preferences.get(&id).copied().unwrap_or_default().text_size.to_string()).unwrap_or_default())
+        .with_field("reading-column-em", pane.current().focused_reading.map(|id|pane.current().reading_preferences.get(&id).copied().unwrap_or_default().column_em.to_string()).unwrap_or_default())
+        .with_field("reading-find", pane.current().focused_reading.and_then(|id|pane.reading_ui.get(&id)).filter(|ui|ui.open).map_or("closed",|ui|ui.status.as_str()))
         .with_field(
             "forme-cells",
             region.map_or(0, |r| r.cells.len()).to_string(),
