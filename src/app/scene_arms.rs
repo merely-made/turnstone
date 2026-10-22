@@ -62,23 +62,15 @@ impl App {
             .ok_or_else(|| std::io::Error::other("scene has no saved session"))?;
         let directory = crate::session::session_dir(&self.data_root, session);
         runtime.persistence.placement_for(&directory)?;
-        let geometry = runtime.canvas.cartography_geometry();
-        let container = Some(*graph.as_uuid());
-        let facets = runtime.canvas.facets_mut();
-        pandect::write_arrangement_positions(facets, geometry.iter());
-        crate::graph_scenes::write(facets, container, &geometry);
-        pandect::save_node_facets(&directory, facets)?;
-        let canvas = &runtime.canvas;
-        let physics = mere::canvas::PhysicsChoice::live(canvas);
-        let mut intent = crate::session::load_view_intent(&directory).unwrap_or_default();
-        intent.layout_strategy = canvas.layout_strategy().map(str::to_owned);
-        intent.physics_paused = Some(canvas.physics_paused());
-        intent.physics_law = Some(physics.law.id().into());
-        intent.physics_overlays = physics.overlays.iter().map(|o| o.id().into()).collect();
-        intent.physics_kind_source = Some(physics.kind.id().into());
-        intent.physics_mass_source = Some(physics.mass.id().into());
-        intent.physics_depth_source = Some(physics.depth.id().into());
-        crate::session::try_save_view_intent(&directory, &intent)
+        crate::scene_state::stage_scene(&mut runtime.canvas, *graph.as_uuid(), &runtime.view);
+        pandect::save_node_facets(&directory, runtime.canvas.facets_mut())?;
+        crate::scene_state::save_view(
+            &directory,
+            &runtime.canvas,
+            &self.command_choices,
+            &runtime.view,
+        )
+        .map_err(std::io::Error::other)
     }
 
     pub(super) fn edit_graph_physics(&mut self, action: Action) -> Vec<Effect> {
