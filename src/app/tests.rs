@@ -142,12 +142,20 @@ fn session_restore_applies_law_before_overlays_and_records_refusal() {
     app.data_root = dir.path().to_path_buf();
     let session_id = app.session_id;
     let session_dir = session::session_dir(dir.path(), session_id);
-    let mut intent = session::ViewIntentV1 {
-        physics_law: Some(mere::canvas::PhysicsLaw::Density.id().to_string()),
-        physics_overlays: vec![mere::canvas::PhysicsOverlay::GridSnap.id().to_string()],
-        ..Default::default()
+    // The flat view intent this host wrote before the saved scene.
+    let write_intent = |law: mere::canvas::PhysicsLaw| {
+        std::fs::create_dir_all(&session_dir).unwrap();
+        std::fs::write(
+            session::view_intent_path(&session_dir),
+            serde_json::json!({
+                "physics_law": law.id(),
+                "physics_overlays": [mere::canvas::PhysicsOverlay::GridSnap.id()],
+            })
+            .to_string(),
+        )
+        .unwrap();
     };
-    session::save_view_intent(&session_dir, &intent);
+    write_intent(mere::canvas::PhysicsLaw::Density);
     app.adopt_session(session_id);
     assert_eq!(
         app.graph_runtimes.physics_law(),
@@ -164,8 +172,7 @@ fn session_restore_applies_law_before_overlays_and_records_refusal() {
             .any(|event| matches!(event, AppEvent::PhysicsRefused(_)))
     );
 
-    intent.physics_law = Some(mere::canvas::PhysicsLaw::Springs.id().to_string());
-    session::save_view_intent(&session_dir, &intent);
+    write_intent(mere::canvas::PhysicsLaw::Springs);
     app.adopt_session(session_id);
     assert_eq!(
         app.graph_runtimes.physics_overlays(),
@@ -1124,10 +1131,12 @@ fn adopt_session_restores_the_saved_canvas_layout_from_facets() {
         (size - 96.0).abs() < 0.001,
         "the size override rode the facets too, got {size}"
     );
-    assert!(
-        (app.physics_damping - 5.5).abs() < 0.001,
-        "the scene.physics_damping facet restored, got {}",
-        app.physics_damping
+    let mere::canvas::dynamics_spec::Realization::Integrate { damping } =
+        app.graph_runtimes.dynamics_spec().unwrap().realization;
+    assert_eq!(
+        damping,
+        Some(f64::from(5.5_f32)),
+        "the earlier scene.physics_damping facet carried into the scene"
     );
     let _ = std::fs::remove_dir_all(&app.data_root);
 }
@@ -2226,7 +2235,7 @@ fn fork_session_snapshots_the_component_with_its_facets() {
     };
     // Donor character: live content on `a` (so web.content refreshes true
     // from live truth) and a scene damping.
-    app.physics_damping = 4.75;
+    app.graph_runtimes.set_physics_damping(4.75);
     app.apply_update(Update::ContentSpawned {
         node: a_id,
         facts: None,
@@ -2271,19 +2280,28 @@ fn fork_session_snapshots_the_component_with_its_facets() {
         .map(|(_, n)| n.id)
         .expect("the seed's copy");
     assert_ne!(fork_a, a_id, "a fork copy is a new entity");
+    let scene = crate::scene_state::read_scene(&fork_facets, *fork_manifest.root_graph_id.as_uuid())
+        .expect("the donor scene rode the carry")
+        .expect("and reads");
     assert!(
-        !pandect::read_arrangement_positions(&fork_facets).is_empty(),
-        "the donor layout rode the carry"
+        scene.cartography.members().contains(&fork_a),
+        "the donor layout rode the carry under the remapped ids"
+    );
+    assert!(
+        !scene.cartography.members().contains(&a_id),
+        "and no donor id came with it"
     );
     let web = pandect::read_web_states(&fork_facets);
     assert!(
         web.get(fork_a).is_some_and(|s| s.content_on),
         "web.content carried onto the remapped id"
     );
-    let scene = pandect::read_scene_facets(&fork_facets, *fork_manifest.root_graph_id.as_uuid());
-    assert!(
-        (scene.physics_damping - 4.75).abs() < 0.001,
-        "scene.* carried donor-container -> fork-container"
+    let damping = mere::canvas::saved_scene::scene_spec(&scene).unwrap().realization;
+    let mere::canvas::dynamics_spec::Realization::Integrate { damping } = damping;
+    assert_eq!(
+        damping,
+        Some(f64::from(4.75_f32)),
+        "the scene carried donor-container -> fork-container"
     );
     let _ = std::fs::remove_dir_all(&app.data_root);
 }

@@ -90,10 +90,10 @@ mod scenario;
 mod script;
 mod sections;
 mod session;
-mod graph_folds;
 pub mod graph_scenes;
+mod scene_state;
 #[cfg(test)]
-mod graph_scenes_tests;
+mod scene_state_tests;
 mod session_persistence;
 mod settings_pane;
 pub mod settings_provider;

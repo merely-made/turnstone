@@ -53,17 +53,18 @@ Each phase below names the steps it makes pass.
   one undirected unit-weight path and has no callers. The canvas can emphasise
   only through the graph grammar (selected, foreground-pinned, hovered); there
   is no API to emphasise an arbitrary member or link set.
-- **The shared scene is Graphshell's.** `SavedSceneV3` on facet
-  `graphshell.saved-scene/v4`, on a `mere://scene/<name>` node
-  (`ports/graphshell/src/product.rs:67, :329`): name, `selected: Vec<Uuid>`,
-  dynamics, camera, default handler and cartography (seed, regions, Mosaic). It
-  describes one canvas: no panes, no reading arrangement. It is port code, and
-  Turnstone deliberately does not depend on `graphshell`, so it cannot read or
-  write it today.
-- **Turnstone's "scene" is something else.** `src/graph_scenes.rs` writes one
-  Map's arrangement as pandect `arrangement.*` facets on the graph's container
-  node; window and pane layout live in `workspace.json`; A8 "Named blueprints"
-  is the unbuilt home for saved layouts.
+- **The shared scene is in `pandect`.** `SavedSceneV3` on facet
+  `graphshell.saved-scene/v4` (`pandect::saved_scene`): name, `selected:
+  Vec<Uuid>`, dynamics, camera, default handler and cartography (seed, regions,
+  Mosaic). It describes one canvas: no panes, no reading arrangement.
+  `Canvas::capture_scene` and `Canvas::restore_scene` (pictograph) are its one
+  capture and restore; Graphshell saves it on a `mere://scene/<name>` node.
+- **Turnstone holds its working scene the same way.** The Map is saved as that
+  scene on the graph's container node in `facets.json`, with folds and the
+  command menu in a `pandect::ViewIntent` (`src/scene_state.rs`). Saved, named
+  scene nodes are the part still missing there; window and pane layout live in
+  `workspace.json`; A8 "Named blueprints" is the unbuilt home for saved
+  layouts.
 
 Rulings this plan keeps (quoted from the documents named):
 
@@ -224,9 +225,26 @@ These are proposals, not rulings.
    stands (its `anchors` serve as both seed and roster), or a Turnstone-only
    `SourceRef::External` schema like the answers source.
 3. **What "scene" means in Turnstone.** Recommended: a scene is a saved, named
-   scene node, as in Graphshell; the per-graph state `graph_scenes.rs` writes
-   is the Map's arrangement. Alternative: keep the current meaning and call
-   saved ones something else.
+   scene node, as in Graphshell; the working scene on the container node is the
+   Map's current state in the same format. Alternative: keep the current
+   meaning and call saved ones something else.
 4. **Compare's panes.** Recommended: one Read Workbench split per comparison,
    bound to its stored forme document. Alternative: one Tile pane per member,
    placed beside the active pane.
+
+## History
+
+- 2026-10-22 — P0 landed with the scene-state lane. `pandect` now holds the
+  scene envelope (`SavedSceneV3`, the version 2 reader shape, `SavedDynamics`,
+  the facet constants), the cartography geometry it carries (moved from
+  pictograph's canvas, which now depends on `pandect`; `ArrangementRegion` and
+  `ArrangementMosaic` became `SavedRegion` and `SavedMosaic`) and
+  `write_saved_scene`. Pictograph holds capture, restore, validation, the
+  version 2/3 conversion and the member remap codicils and forks use.
+  Graphshell consumes them directly. Turnstone's `ViewIntentV1`,
+  `graph_scenes.rs` persistence and `folds.json` are gone: a session written
+  in those shapes is read once and rewritten on its next save. A scene whose
+  spec a build refuses stays on the container node unwritten until a build
+  that reads it saves over it. The personal-sync facet-name check refuses any
+  name containing "seed", so an `arrangement.seed`-style facet cannot sync; the
+  scene facet carries its seed inside the value and is unaffected.

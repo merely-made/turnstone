@@ -38,7 +38,7 @@ pub struct GraphRuntime {
     pub(crate) scene_transition: Option<mere::canvas::physics_controls::ArrangementTransition>,
     /// What the last composing physics control came to, for the Arrange pane.
     pub(crate) physics_status: Option<String>,
-    pub(crate) folds: crate::graph_folds::FoldSidecar,
+    pub(crate) view: crate::scene_state::ViewState,
     origin: Option<crate::host_journal::RuntimeOrigin>,
     pub(crate) persistence: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile>,
 }
@@ -57,7 +57,7 @@ impl GraphRuntime {
             physics_status: None,
             scene_save_pending: false,
             scene_restore_pending: false,
-            folds: Default::default(),
+            view: Default::default(),
             origin: None,
             persistence: crate::session_persistence::SessionPersistence::Unbound,
         }

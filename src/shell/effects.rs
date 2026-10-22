@@ -2339,7 +2339,12 @@ impl Shell {
             tracing::warn!(%error, "fold view persistence has no session authority");
             return;
         }
-        if let Err(error) = runtime.folds.save(&dir, runtime.canvas.fold_records()) {
+        if let Err(error) = crate::scene_state::save_view(
+            &dir,
+            &runtime.canvas,
+            &self.app.command_choices,
+            &runtime.view,
+        ) {
             tracing::warn!(%error, "fold view persistence refused or failed");
         }
     }
@@ -2402,37 +2407,6 @@ impl Shell {
             session::save_projection_score(&sdir, score);
         }
         self.save_graph_folds(self.app.graph_runtimes.active_graph());
-        // The score records what the solver produced; this records what the
-        // viewer chose, which the score cannot be read backward to recover.
-        session::save_view_intent(
-            &sdir,
-            &session::ViewIntentV1 {
-                layout_strategy: self
-                    .app
-                    .graph_runtimes
-                    .layout_strategy()
-                    .map(str::to_string),
-                physics_law: Some(self.app.graph_runtimes.physics_law().id().to_string()),
-                physics_paused: Some(self.app.graph_runtimes.physics_paused()),
-                physics_overlays: self
-                    .app
-                    .graph_runtimes
-                    .physics_overlays()
-                    .iter()
-                    .map(|overlay| overlay.id().to_string())
-                    .collect(),
-                physics_kind_source: Some(
-                    self.app.graph_runtimes.physics_kind_source().id().to_string(),
-                ),
-                physics_mass_source: Some(
-                    self.app.graph_runtimes.physics_mass_source().id().to_string(),
-                ),
-                physics_depth_source: Some(
-                    self.app.graph_runtimes.physics_depth_source().id().to_string(),
-                ),
-                command_menu: self.app.command_choices.clone(),
-            },
-        );
         // Stamp a derived display name the first time the session has content
         // to name it after (unset -> "Example Domain"), then bump recency so
         // the switcher orders by last-used. Derive before the mutable borrow.
