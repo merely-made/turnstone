@@ -14,7 +14,7 @@ use tabard::theme::{
     choice::ThemeChoice,
     registry::{Mode, THEME_ID_DEFAULT, ThemeRegistry},
 };
-use tabard::{ResolvedThemeChoice, ThemePresentation};
+use tabard::ResolvedThemeChoice;
 
 pub(crate) struct ThemeCatalog {
     pub path: PathBuf,
@@ -147,21 +147,4 @@ fn interface_preferences(fonts: &tabard::FontPreferences) -> tabard::FontPrefere
             .map(|(&role, families)| (role, families.clone()))
             .collect(),
     )
-}
-
-/// Supply shared variables, then exact authored rules. Arbitrary CSS remains
-/// CSS in Genet's existing cascade; seed colors do not reinterpret it.
-pub(crate) fn presentation_css(presentation: &ThemePresentation) -> String {
-    match presentation {
-        ThemePresentation::Derived(palette) => palette.css_custom_properties(),
-        ThemePresentation::AuthoredStylesheet(rules) => {
-            let fallback =
-                tabard::resolve_theme_choice(&ThemeRegistry::default(), &ThemeChoice::default())
-                    .expect("valid Tabard built-in");
-            let ThemePresentation::Derived(palette) = fallback.presentation else {
-                unreachable!()
-            };
-            format!("{}\n{}", palette.css_custom_properties(), rules.join("\n"))
-        },
-    }
 }

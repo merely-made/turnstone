@@ -1027,9 +1027,11 @@ fn role_color(
 
 fn themed_sheet(appearance: &crate::shell_services::AppearanceConfig, sheet: String) -> String {
     match &appearance.theme_presentation {
-        Some(presentation) => format!(
-            "{sheet}\n{}",
-            crate::appearance::presentation_css(presentation)
+        Some(presentation) => tabard::presentation_stylesheet(
+            presentation,
+            &appearance.theme_mode.tabard(),
+            tabard::theme::registry::THEME_ID_DEFAULT,
+            &sheet,
         ),
         None => sheet,
     }
@@ -1115,7 +1117,7 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         .chrome-menu {{ --app-region:no-drag; display:flex; flex-direction:column; box-sizing:border-box; padding:8px; gap:0; background-color:{}; color:{}; border:1px solid {}; border-radius:6px; }}
         .chrome-menu-entry {{ width:100%; }}
         .chrome-menu-entry[data-menu-focus=true] {{ outline:1px solid currentColor; outline-offset:-1px; }}
-        .chrome-menu .shell-control {{ text-align:left; width:100%; height:{:.2}px; overflow:hidden; white-space:nowrap; flex-shrink:0; }}
+        .chrome-menu .shell-control, .chrome-menu .shell-paged-range {{ text-align:left; width:100%; height:{:.2}px; overflow:hidden; white-space:nowrap; flex-shrink:0; }}
         .chrome-relations-menu .shell-navigation-item {{ height:auto; min-height:{:.2}px; }}
         .chrome-menu .shell-popup {{ padding:0; border:0; background:transparent; max-height:none; }}
         .chrome-panes-menu .shell-popup {{ flex-direction:row; flex-wrap:wrap; }}
@@ -3035,7 +3037,8 @@ mod tests {
         let cambium = cambium_sheet(&appearance);
 
         assert!(chrome.contains("--tabard-color-primary"));
-        assert!(chrome.contains(&crate::appearance::presentation_css(&resolved.presentation)));
+        let tabard::ThemePresentation::Derived(palette) = &resolved.presentation else { unreachable!() };
+        assert!(chrome.contains(&palette.css_custom_properties()));
         assert!(chrome.contains("24.00px"), "16px chrome input at 1.5x");
         assert!(cambium.contains("rgb(248, 249, 252)"));
         assert!(cambium.contains("19.50px"), "13px settings text at 1.5x");

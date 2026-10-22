@@ -897,6 +897,7 @@ impl Shell {
             // lands in `pane_scenes`, so a chrome regression cannot hide
             // behind pane cost or the reverse.
             let scene_started = std::time::Instant::now();
+            let mut scale = 1.0_f32;
             let (scene, clear) = match surface.kind {
                 crate::surface::SurfaceKind::Graph(pane) => {
                     // A graph surface is addressed by its pane. The app swaps
@@ -914,7 +915,8 @@ impl Shell {
                     self.save_ready_graph_scene(pane);
                     needs_redraw |= animating;
                     needs_redraw |= self.app.resolve_pending_images() > 0;
-                    (scene, wgpu::Color::WHITE)
+                    scale = self.app.pane_layout_scale(pane);
+                    (scene, crate::map_theme::clear_color(self.app.map_theme()))
                 },
                 crate::surface::SurfaceKind::Content(node) => {
                     let mut surface_frame = None;
@@ -1032,6 +1034,7 @@ impl Shell {
                 } else {
                     (rw, rh)
                 },
+                scale,
                 scene,
                 clear,
             }));
@@ -1077,7 +1080,7 @@ impl Shell {
                                 scene.dims.0,
                                 scene.dims.1,
                                 ColorLoad::Clear(scene.clear),
-                                1.0,
+                                scene.scale,
                             )
                             .map_err(|failure| (scene.id, failure))?;
                         let raster = texture.clone();
