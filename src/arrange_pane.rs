@@ -881,6 +881,48 @@ mod tests {
     }
 
     #[test]
+    fn composing_intents_lower_and_reach_the_canvas() {
+        let mut app = App::test_stub();
+        let mix = TwoLawMix {
+            first: PhysicsLaw::Charge,
+            second: PhysicsLaw::Springs,
+            first_share: 0.5,
+            second_share: 2.0,
+        };
+        for intent in [
+            ArrangeIntent::SetRole("pinned".into()),
+            ArrangeIntent::SetSpeed("5".into()),
+            ArrangeIntent::ApplyMix(mix),
+        ] {
+            app.update(intent.into_action().expect("a known id lowers"));
+        }
+        let canvas = &app.graph_runtimes;
+        assert_eq!(canvas.arrangement_roles().default, Role::Pinned);
+        assert_eq!(SPEED_PRESETS[speed_preset(canvas)].0, "5");
+        assert_eq!(read_two_law_mix(canvas), Ok(Some(mix)));
+        let rows = arrange_rows(&app);
+        for expected in ["Role: Pinned", "Speed: 5x", "Mix: Charge 0.5 + Springs 2"] {
+            assert!(rows.iter().any(|row| row.starts_with(expected)), "{expected}: {rows:?}");
+        }
+        assert!(rows.iter().any(|row| row.starts_with("Physics status: Physics mix set")));
+        app.update(ArrangeIntent::UseSingleLaw.into_action().unwrap());
+        assert_eq!(read_two_law_mix(&app.graph_runtimes), Ok(None));
+        assert_eq!(ArrangeIntent::SetRole("boss".into()).into_action(), None);
+        assert_eq!(ArrangeIntent::SetSpeed("3".into()).into_action(), None);
+    }
+
+    #[test]
+    fn canvas_verbs_share_one_label_with_the_catalogue_and_the_palette() {
+        for verb in VERBS {
+            let action = Action::from_canvas_verb(verb).expect("the pane offers what the shell has");
+            assert_eq!(action.canvas_verb(), Some(verb));
+            let id = crate::action::shared_command_id(&action).expect("a shared id");
+            assert_eq!(cambium::catalogue::label(id), Some(verb.label()), "{id}");
+            assert_eq!(ArrangeIntent::Verb(verb).into_action(), Some(action));
+        }
+    }
+
+    #[test]
     fn the_rows_read_the_canvas_back() {
         let mut app = App::test_stub();
         app.update(Action::SetPhysicsLaw("orbit.gravity"));
