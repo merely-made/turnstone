@@ -422,6 +422,7 @@ fn app_adoption_reopens_saved_mosaic_seed_regions_and_pause_before_the_next_layo
         .unwrap();
     assert!(!expected.regions().is_empty());
     assert!(expected.mosaic().is_some());
+    source.with_graph_pane(pane, |canvas| canvas.set_physics_paused(true));
     source.refresh_facets();
     let session_dir = source.session_dir();
     std::fs::create_dir_all(&session_dir).unwrap();
@@ -432,14 +433,6 @@ fn app_adoption_reopens_saved_mosaic_seed_regions_and_pause_before_the_next_layo
     )
     .unwrap();
     crate::session::save_node_facets(&session_dir, source.graph_runtimes.facets());
-    crate::session::save_view_intent(
-        &session_dir,
-        &crate::session::ViewIntentV1 {
-            layout_strategy: Some("mosaic.default".into()),
-            physics_paused: Some(true),
-            ..Default::default()
-        },
-    );
     let mut reopened = App::test_stub_at(dir.path().to_path_buf());
     reopened
         .sessions
@@ -647,15 +640,23 @@ fn graph_scene_persistence_writes_the_explicit_owner_and_preserves_the_active_se
         b"graph truth remains byte identical"
     );
     let facets = pandect::load_node_facets(&owner_dir).unwrap().unwrap();
-    let seed = pandect::read_arrangement_seed(&facets)
+    let scene = crate::scene_state::read_scene(&facets, *owner.as_uuid())
+        .expect("the scene is saved on the container")
+        .expect("and reads");
+    let seed = scene
+        .cartography
+        .seed()
         .unwrap()
-        .into_iter()
+        .iter()
+        .copied()
         .collect::<std::collections::BTreeMap<_, _>>();
     assert_eq!(seed, expected_seed.into_iter().collect());
-    assert!(!pandect::read_arrangement_regions(&facets, *owner.as_uuid()).is_empty());
-    let intent = crate::session::load_view_intent(&owner_dir).unwrap();
-    assert_eq!(intent.layout_strategy.as_deref(), Some("mosaic.default"));
-    assert_eq!(intent.physics_paused, Some(true));
+    assert!(!scene.cartography.regions().is_empty());
+    assert_eq!(
+        mere::canvas::saved_scene::scene_arrangement(&scene).unwrap(),
+        "mosaic.default"
+    );
+    assert!(scene.physics_paused);
 }
 
 #[test]

@@ -280,11 +280,6 @@ pub struct App {
     /// override, compat mode, content-on), persisted at `browser_nodes.json`.
     /// The graph stays correct without it (the sidecar's charter).
     pub browser: pandect::browser_node_state::BrowserNodeStates,
-    /// Linear damping for the layout physics (the "inertia" setting). Held here
-    /// — the canvas is the sink, the host the durable owner — and persisted as
-    /// the `scene.physics_damping` container facet (it left the app-wide
-    /// settings store, being scene-scoped, not app-scoped).
-    pub physics_damping: f32,
     /// Latest typed refusal for one graph's physics controls, not persisted.
     physics_refusal: Option<(GraphId, mere::canvas::OverlayRefusal)>,
     /// A maximized pane takes the whole pane area (a host view state; frisket
@@ -501,9 +496,8 @@ impl App {
     }
 
     /// The current session's container id — the root graph's uuid, the key the
-    /// `scene.*` facets hang on (the graph is the container node in the one-node
-    /// model). `None` if the manifest is somehow absent (scene facets are then
-    /// skipped, not fatal).
+    /// saved scene hangs on (the graph is the container node in the one-node
+    /// model). `None` if the manifest is somehow absent.
     pub fn container_id(&self) -> Option<uuid::Uuid> {
         self.sessions
             .get(self.session_id)
@@ -569,33 +563,19 @@ impl App {
         false
     }
 
-    /// Write the LIVE state into the facet store: the canvas arrangement as
-    /// the `arrangement.*` family (positions are not graph truth, so the graph
-    /// alone loses the layout; sizes / sprites / hulls / materials / faces
-    /// ride the same store), the browser map as `web.*`, and the scene's own
-    /// settings as `scene.*` on the container id. Other namespaces are
-    /// untouched. Shared by the shell's save path and the fork's facet-carry
-    /// (both need the store to reflect the moment, not the last save).
+    /// Write the LIVE state into the facet store: the active graph's scene as
+    /// its saved scene on the container node (positions are not graph truth,
+    /// so the graph alone loses the layout; the scene carries it with the
+    /// physics, camera and selection) and the browser map as `web.*`. Other
+    /// namespaces are untouched. Shared by the shell's save path and the
+    /// fork's facet-carry (both need the store to reflect the moment, not
+    /// the last save).
     pub fn refresh_facets(&mut self) {
-        let geometry = self.graph_runtimes.cartography_geometry();
-        let container = self.container_id();
-        let facets = self.graph_runtimes.facets_mut();
-        pandect::write_web_states(facets, &self.browser);
-        pandect::write_arrangement_positions(facets, geometry.iter());
-        pandect::write_arrangement_sizes(facets, geometry.size_iter());
-        pandect::write_arrangement_sprites(facets, geometry.sprite_iter());
-        pandect::write_arrangement_sprite_hulls(facets, geometry.sprite_hull_iter());
-        pandect::write_arrangement_materials(facets, geometry.material_iter());
-        pandect::write_arrangement_faces(facets, geometry.face_iter());
-        crate::graph_scenes::write(facets, container, &geometry);
-        if let Some(container) = container {
-            let scene = pandect::SceneFacets {
-                size_by_degree: geometry.size_by_degree(),
-                size_by_importance: geometry.size_by_importance(),
-                importance_metric: geometry.importance_metric().to_string(),
-                physics_damping: self.physics_damping,
-            };
-            pandect::write_scene_facets(facets, container, &scene);
+        pandect::write_web_states(self.graph_runtimes.facets_mut(), &self.browser);
+        let graph = self.graph_runtimes.active_graph();
+        let container = self.container_id().unwrap_or(*graph.as_uuid());
+        if let Some(runtime) = self.graph_runtimes.get_mut(graph) {
+            crate::scene_state::stage_scene(&mut runtime.canvas, container, &runtime.view);
         }
     }
 
