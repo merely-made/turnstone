@@ -637,23 +637,19 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
     }
 
     if win.primary && state.find_open {
-        let input = el::<_, ChromeState, ChromeIntent>(
-            "div",
-            caret_field_children::<ChromeState, ChromeIntent>(&state.find_input, &[]),
-        )
-        .attr("class", "document-find-input")
-        .attr("role", "searchbox")
-        .attr("aria-label", "Find in document");
-        let status = el::<_, ChromeState, ChromeIntent>("div", state.find_status.clone())
-            .attr("class", "document-find-status")
-            .attr("role", "status");
-        let find_children = vec![
-            Box::new(input) as ChromeView,
-            Box::new(status) as ChromeView,
-            browser_button("Previous", Some(ChromeIntent::FindPrevious)),
-            browser_button("Next", Some(ChromeIntent::FindNext)),
-            browser_button("Close", Some(ChromeIntent::FindClose)),
-        ];
+        // Keys reach the field through the shell's find routing, so the
+        // chrome mounts the shared field without its own key handler.
+        let find_children = vec![cambium::find_row(
+            cambium::find_field_display::<ChromeState, ChromeIntent>(
+                &state.find_input,
+                &state.find_status,
+            ),
+            std::rc::Rc::new(|_: &mut ChromeState, command| match command {
+                cambium::ReadCommand::Previous => Some(ChromeIntent::FindPrevious),
+                cambium::ReadCommand::Next => Some(ChromeIntent::FindNext),
+                _ => Some(ChromeIntent::FindClose),
+            }),
+        )];
         let left = ((win.w - 620.0) / 2.0).max(8.0);
         children.push(Box::new(
             el::<_, ChromeState, ChromeIntent>("div", find_children)
@@ -2505,12 +2501,12 @@ pub(crate) mod tests {
         let dom = chrome.dom.borrow();
         assert_eq!(dom.all_with_class(dom.document(), "document-find").len(), 1);
         assert_eq!(
-            dom.all_with_class(dom.document(), "document-find-input")
+            dom.all_with_class(dom.document(), "read-query")
                 .len(),
             1
         );
         assert_eq!(
-            dom.all_with_class(dom.document(), "document-find-status")
+            dom.all_with_class(dom.document(), "read-result")
                 .len(),
             1
         );

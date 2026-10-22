@@ -22,25 +22,13 @@ pub struct DocumentFindState {
 impl DocumentFindState {
     pub fn status(&self) -> String {
         if let Some(error) = &self.error {
-            return format!("Find failed: {error}");
-        }
-        if self.query.is_empty() {
-            return "Type to find".into();
+            return cambium::find_failed(error);
         }
         let count = self.model.count;
-        if count == 0 {
-            return if self.pending || !self.model.complete {
-                "Searching".into()
-            } else {
-                "0 matches".into()
-            };
-        }
-        let Some(current) = self.model.current else {
-            return format!("{count} matches");
-        };
-        let ordinal = current + 1;
-        let mut status = format!("{ordinal} of {count}");
-        if let Some(item) = self.model.matches.get(current) {
+        let searching = self.pending || !self.model.complete;
+        let mut status =
+            cambium::find_status(self.query.is_empty(), searching, count, self.model.current);
+        if let Some(item) = self.model.current.and_then(|i| self.model.matches.get(i)) {
             if let Some(role) = &item.role {
                 status.push_str(" · ");
                 status.push_str(role);
