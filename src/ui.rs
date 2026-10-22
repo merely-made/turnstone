@@ -933,10 +933,10 @@ pub(crate) const CHROME_SHEET: &str = "\
                      box-sizing: border-box; color: rgb(216, 222, 234); \
                      background-color: rgb(20, 25, 38); border: 1px solid rgb(70, 82, 110); \
                      border-radius: 9px; padding: 5px 7px; } \
-    .document-find-input { color: rgb(238, 242, 250); font-size: 13px; padding: 4px 7px; \
+    .document-find .read-query { color: rgb(238, 242, 250); font-size: 13px; padding: 4px 7px; \
                            width: 220px; background-color: rgb(15, 19, 30); border-radius: 6px; \
                            white-space: nowrap; overflow: hidden; } \
-    .document-find-status { color: rgb(170, 178, 195); font-size: 12px; padding: 4px 7px; \
+    .document-find .read-result { color: rgb(170, 178, 195); font-size: 12px; padding: 4px 7px; \
                              width: 170px; white-space: nowrap; overflow: hidden; } \
     .decision-card { position: absolute; display: flex; flex-direction: column; gap: 7px; \
                      box-sizing: border-box; color: rgb(216, 222, 234); \
@@ -1062,8 +1062,8 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         .browser-strip, .link-preview, .document-find, .decision-card {{ color: {}; background-color: {}; border-color: {}; }} \
         .browser-loading {{ border-bottom-color: {}; }} \
         .browser-button {{ color: {}; background-color: {}; border-color: {}; font-size: {:.2}px; }} \
-        .browser-button-disabled, .browser-status, .link-preview, .document-find-status, .decision-status, .decision-error {{ font-size: {:.2}px; }} \
-        .document-find-input, .decision-input {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
+        .browser-button-disabled, .browser-status, .link-preview, .document-find .read-result, .decision-status, .decision-error {{ font-size: {:.2}px; }} \
+        .document-find .read-query, .decision-input {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
         .decision-prompt {{ color: {}; font-size: {:.2}px; }} \
         .decision-input-active {{ border-color: {}; }}",
         cambium::TITLE_BAR_CSS,

@@ -67,6 +67,20 @@ struct OpenedContentController {
     source: Option<Update>,
 }
 
+/// A retained response keeps its native media type when the live document is
+/// replaced, just as it does when the initial controller is prepared.
+fn replace_fetched_smolweb_body(
+    session: &mut mere_document_lanes::SmolwebDocumentSession,
+    url: &str,
+    document: &crate::content::FetchedDocument,
+) {
+    let mut input = inker::EngineInput::new(url, document.body.clone());
+    if let Some(content_type) = &document.content_type {
+        input = input.with_content_type(content_type.clone());
+    }
+    session.replace_input(&input);
+}
+
 fn content_spawn_is_current(app: &crate::app::App, node: uuid::Uuid, url: &str) -> bool {
     app.graph_runtimes
         .graph_containing_member(node)
@@ -166,6 +180,14 @@ fn open_prepared_content_controller(
 #[cfg(test)]
 #[path = "local_micron_source_tests.rs"]
 mod local_micron_source_tests;
+
+#[cfg(test)]
+#[path = "nomadnet_receiving_tests.rs"]
+mod nomadnet_receiving_tests;
+
+#[cfg(test)]
+#[path = "smolweb_receiving_tests.rs"]
+mod smolweb_receiving_tests;
 
 #[cfg(test)]
 mod content_spawn_dispatch_tests {
@@ -1724,7 +1746,7 @@ impl Shell {
                         tracing::debug!(%node, %url, "live engine does not support incremental body replacement");
                         continue;
                     };
-                    smolweb.replace_body(&url, &document.body);
+                    replace_fetched_smolweb_body(smolweb, &url, &document);
                     let facts = crate::content::ContentFacts {
                         engine,
                         lane: crate::content::ContentLane::Document,
