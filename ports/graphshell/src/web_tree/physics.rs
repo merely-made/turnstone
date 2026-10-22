@@ -16,7 +16,7 @@ use mere::canvas::channels::Channel;
 use mere::canvas::dynamics_spec::Node;
 use mere::canvas::physics_controls::{
     self, ArrangementTransition, CUSTOM_PROFILE, LawStart, StageDraft, TwoLawGrouping, TwoLawMix,
-    TwoStageSchedule, arrangement_choices,
+    SPEED_PRESETS, TwoStageSchedule, arrangement_choices,
 };
 use mere::canvas::{
     CANVAS_PHYSICS_DEPTH_SOURCES, CANVAS_PHYSICS_KIND_SOURCES, CANVAS_PHYSICS_LAWS,
@@ -92,23 +92,6 @@ fn labels(catalog: &[(&'static str, &'static str)]) -> Vec<&'static str> {
     catalog.iter().map(|(_, label)| *label).collect()
 }
 
-/// A plain law preset the bounded editor can faithfully expose. Per-part
-/// overlays, terms and rungs need richer controls and must not be hidden.
-fn mix_part(node: &Node) -> Option<(PhysicsLaw, f64)> {
-    match node {
-        Node::Preset {
-            id,
-            weight,
-            terms,
-            rung,
-            overlays,
-        } if terms.is_empty() && rung.is_none() && overlays.is_empty() => {
-            Some((PhysicsLaw::parse(id)?, *weight))
-        },
-        _ => None,
-    }
-}
-
 impl PhysicsPanel {
     pub(super) fn new(canvas: &Canvas, layout_id: &str) -> Self {
         let mut panel = Self {
@@ -154,8 +137,8 @@ impl PhysicsPanel {
             status: String::new(),
             transition: None,
             law_start: None,
-            speed: SelectState::new(crate::web_speed::preset_of(canvas)).with_label("Speed"),
-            applied_speed: crate::web_speed::preset_of(canvas),
+            speed: SelectState::new(physics_controls::speed_preset(canvas)).with_label("Speed"),
+            applied_speed: physics_controls::speed_preset(canvas),
             speed_note: None,
         };
         panel.sync(canvas);
@@ -190,8 +173,8 @@ impl PhysicsPanel {
             // inferred from the live law or first stage.
             self.profile.selected = 0;
         }
-        self.sync_mix(spec.as_ref().map(|spec| &spec.root));
-        self.sync_grouping(spec.as_ref().map(|spec| &spec.root));
+        self.sync_mix(canvas);
+        self.sync_grouping(canvas);
         self.sync_schedule(canvas);
     }
 
@@ -203,94 +186,43 @@ impl PhysicsPanel {
 
     /// Read the authored root when it is the exact two-law form this editor
     /// can represent. A flat live choice is not presented as the whole mix.
-    fn sync_mix(&mut self, root: Option<&Node>) {
-        let Some(root) = root else {
-            self.mix_note = "The authored dynamics record could not be read".into();
-            return;
-        };
-        let Node::Mix { parts, weight, .. } = root else {
-            self.mix_note = "No authored two-law mix".into();
-            return;
-        };
-        if *weight != 1.0 {
-            self.mix_note =
-                "Unsupported authored mix shape (root weight) · editor values are not readback"
-                    .into();
-            return;
+    fn sync_mix(&mut self, canvas: &Canvas) {
+        match physics_controls::read_two_law_mix(canvas) {
+            Ok(Some(mix)) => {
+                self.mix_first.selected = index_of(PhysicsLaw::ALL, mix.first);
+                self.mix_second.selected = index_of(PhysicsLaw::ALL, mix.second);
+                self.mix_first_share = TextInput::new(mix.first_share.to_string());
+                self.mix_second_share = TextInput::new(mix.second_share.to_string());
+                self.mix_note.clear();
+            },
+            Ok(None) => self.mix_note = "No authored two-law mix".into(),
+            Err(reason) => {
+                self.mix_note = format!(
+                    "Unsupported authored mix shape · {reason} · editor values are not readback"
+                );
+            },
         }
-        if parts.len() != 2 {
-            self.mix_note =
-                "Unsupported authored mix shape (part count) · editor values are not readback"
-                    .into();
-            return;
-        }
-        let (Some((first, first_share)), Some((second, second_share))) =
-            (mix_part(&parts[0]), mix_part(&parts[1]))
-        else {
-            self.mix_note =
-                "Unsupported authored mix shape (part data) · editor values are not readback"
-                    .into();
-            return;
-        };
-        self.mix_first.selected = index_of(PhysicsLaw::ALL, first);
-        self.mix_second.selected = index_of(PhysicsLaw::ALL, second);
-        self.mix_first_share = TextInput::new(first_share.to_string());
-        self.mix_second_share = TextInput::new(second_share.to_string());
-        self.mix_note.clear();
     }
 
     /// Read the authored root only when it is the exact plain grouped form
     /// this editor can represent. The outer share remains authored f64 text.
-    fn sync_grouping(&mut self, root: Option<&Node>) {
-        let Some(root) = root else {
-            self.group_note = "The authored dynamics record could not be read".into();
-            return;
-        };
-        let Node::Grouped {
-            partition,
-            outer,
-            inner,
-            weight,
-            ..
-        } = root
-        else {
-            self.group_note = "No authored grouping".into();
-            return;
-        };
-        if *weight != 1.0 {
-            self.group_note =
-                "Unsupported authored grouping shape (root weight) · editor values are not readback"
-                    .into();
-            return;
+    fn sync_grouping(&mut self, canvas: &Canvas) {
+        match physics_controls::read_two_law_grouping(canvas) {
+            Ok(Some(grouping)) => {
+                self.group_partition.selected =
+                    index_of(PhysicsKindSource::ALL, grouping.partition);
+                self.group_outer.selected = index_of(PhysicsLaw::ALL, grouping.outer);
+                self.group_inner.selected = index_of(PhysicsLaw::ALL, grouping.inner);
+                self.group_outer_share = TextInput::new(grouping.outer_share.to_string());
+                self.group_note.clear();
+            },
+            Ok(None) => self.group_note = "No authored grouping".into(),
+            Err(reason) => {
+                self.group_note = format!(
+                    "Unsupported authored grouping shape · {reason} · editor values are not readback"
+                );
+            },
         }
-        let Some(source) = Channel::parse(partition).and_then(|channel| match channel {
-            Channel::Groups(source) => Some(source),
-            _ => None,
-        }) else {
-            self.group_note =
-                "Unsupported authored grouping shape (partition) · editor values are not readback"
-                    .into();
-            return;
-        };
-        let (Some((outer_law, outer_share)), Some((inner_law, inner_share))) =
-            (mix_part(outer), mix_part(inner))
-        else {
-            self.group_note =
-                "Unsupported authored grouping shape (law data) · editor values are not readback"
-                    .into();
-            return;
-        };
-        if inner_share != 1.0 {
-            self.group_note =
-                "Unsupported authored grouping shape (inner weight) · editor values are not readback"
-                    .into();
-            return;
-        }
-        self.group_partition.selected = index_of(PhysicsKindSource::ALL, source);
-        self.group_outer.selected = index_of(PhysicsLaw::ALL, outer_law);
-        self.group_inner.selected = index_of(PhysicsLaw::ALL, inner_law);
-        self.group_outer_share = TextInput::new(outer_share.to_string());
-        self.group_note.clear();
     }
 
     /// Read only the exact shape represented by the bounded two-stage form.
@@ -647,9 +579,10 @@ impl TreePage {
 
     /// The picked speed, applied when chosen (ruled 2026-10-04, "Speed select").
     pub(super) fn apply_speed(&mut self) {
-        let index = self.physics.speed.selected;
+        let index = self.physics.speed.selected.min(SPEED_PRESETS.len() - 1);
         let mut canvas = self.shared.canvas.borrow_mut();
-        self.physics.status = crate::web_speed::choose(&mut canvas, index);
+        self.physics.status = physics_controls::apply_speed(&mut canvas, SPEED_PRESETS[index].0)
+            .unwrap_or_else(|error| format!("Speed refused · {error}"));
         self.physics.applied_speed = index;
         self.shared.dirty.set(true);
     }
@@ -1152,7 +1085,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         ),
         picker(
             "Speed",
-            crate::web_speed::PRESETS
+            SPEED_PRESETS
                 .iter()
                 .map(|(_, label)| *label)
                 .collect(),

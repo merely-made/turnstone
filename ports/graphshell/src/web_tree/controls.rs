@@ -15,64 +15,50 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
     let has_selection = !page.shared.canvas.borrow().selected_members().is_empty();
     let hosted = matches!(page.dataset, HostedDataset::Loaded(_));
     let commands = [
-        (
-            "Pan left",
-            CanvasCommand::Pan {
-                dx: -PAN_STEP,
-                dy: 0.0,
-            },
-        ),
-        (
-            "Pan right",
-            CanvasCommand::Pan {
-                dx: PAN_STEP,
-                dy: 0.0,
-            },
-        ),
-        (
-            "Pan up",
-            CanvasCommand::Pan {
-                dx: 0.0,
-                dy: -PAN_STEP,
-            },
-        ),
-        (
-            "Pan down",
-            CanvasCommand::Pan {
-                dx: 0.0,
-                dy: PAN_STEP,
-            },
-        ),
-        ("Zoom in", CanvasCommand::Zoom { delta: ZOOM_STEP }),
-        ("Zoom out", CanvasCommand::Zoom { delta: -ZOOM_STEP }),
-        if hosted {
-            ("Fit visible graph", CanvasCommand::FitVisible)
-        } else {
-            ("Fit graph", CanvasCommand::Fit)
+        CanvasCommand::Pan {
+            dx: -PAN_STEP,
+            dy: 0.0,
         },
-        ("Fit selection", CanvasCommand::FitSelection),
-        ("Restore arrangement", CanvasCommand::RestoreArrangement),
-        ("Reset", CanvasCommand::ResetToSeed),
-        ("Set seed", CanvasCommand::SetSeed),
-        ("Foreground pin", CanvasCommand::ToggleForegroundPin),
-        ("Dismiss retained", CanvasCommand::DismissRetained),
-        ("Grow tile", CanvasCommand::GrowTiles),
-        ("Shrink tile", CanvasCommand::ShrinkTiles),
-        ("Territory", CanvasCommand::ToggleTerritory),
-        ("Suggestions", CanvasCommand::ToggleSuggestions),
-        (
-            if paused {
-                "Play physics"
-            } else {
-                "Pause physics"
-            },
-            CanvasCommand::TogglePhysics,
-        ),
+        CanvasCommand::Pan {
+            dx: PAN_STEP,
+            dy: 0.0,
+        },
+        CanvasCommand::Pan {
+            dx: 0.0,
+            dy: -PAN_STEP,
+        },
+        CanvasCommand::Pan {
+            dx: 0.0,
+            dy: PAN_STEP,
+        },
+        CanvasCommand::Zoom { delta: ZOOM_STEP },
+        CanvasCommand::Zoom { delta: -ZOOM_STEP },
+        if hosted {
+            CanvasCommand::FitVisible
+        } else {
+            CanvasCommand::Fit
+        },
+        CanvasCommand::FitSelection,
+        CanvasCommand::RestoreArrangement,
+        CanvasCommand::ResetToSeed,
+        CanvasCommand::SetSeed,
+        CanvasCommand::ToggleForegroundPin,
+        CanvasCommand::DismissRetained,
+        CanvasCommand::GrowTiles,
+        CanvasCommand::ShrinkTiles,
+        CanvasCommand::ToggleTerritory,
+        CanvasCommand::ToggleSuggestions,
+        CanvasCommand::TogglePhysics,
     ];
     let mut buttons: Vec<Child> = commands
         .into_iter()
         .filter(|_| !resident)
-        .map(|(label, command)| {
+        .map(|command| {
+            let label = if command == CanvasCommand::TogglePhysics {
+                CanvasCommand::SetPhysicsPaused(!paused).label()
+            } else {
+                command.label()
+            };
             let enabled = match command {
                 CanvasCommand::FitSelection => can_fit_selection,
                 CanvasCommand::ToggleForegroundPin
