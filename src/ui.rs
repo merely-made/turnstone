@@ -1115,7 +1115,7 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         .chrome-menu {{ --app-region:no-drag; display:flex; flex-direction:column; box-sizing:border-box; padding:8px; gap:0; background-color:{}; color:{}; border:1px solid {}; border-radius:6px; }}
         .chrome-menu-entry {{ width:100%; }}
         .chrome-menu-entry[data-menu-focus=true] {{ outline:1px solid currentColor; outline-offset:-1px; }}
-        .chrome-menu .shell-control {{ text-align:left; width:100%; height:{:.2}px; overflow:hidden; white-space:nowrap; flex-shrink:0; }}
+        .chrome-menu .shell-control, .chrome-menu .shell-paged-range {{ text-align:left; width:100%; height:{:.2}px; overflow:hidden; white-space:nowrap; flex-shrink:0; }}
         .chrome-relations-menu .shell-navigation-item {{ height:auto; min-height:{:.2}px; }}
         .chrome-menu .shell-popup {{ padding:0; border:0; background:transparent; max-height:none; }}
         .chrome-panes-menu .shell-popup {{ flex-direction:row; flex-wrap:wrap; }}
