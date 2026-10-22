@@ -129,7 +129,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         )),
     ];
     match read(page) {
-        Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
+        Err(error) => children.push(Box::new(status_note("", error))),
         Ok(inspected) => {
             children.push(Box::new(detail_panel(&[DetailSection::new(
                 "This access",
@@ -218,7 +218,7 @@ pub(super) fn section(page: &TreePage) -> Child {
                         Some(id) => format!("The recorded Resource {id} is not held here"),
                         None => "No Resource association is recorded for this access".to_owned(),
                     };
-                    children.push(Box::new(el("p", message).attr("role", "status")));
+                    children.push(Box::new(status_note("", message)));
                 },
             }
             if !inspected.coverage.limits.is_empty() {

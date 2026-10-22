@@ -235,24 +235,25 @@ impl Session {
         }
     }
     pub fn apply_canvas(&self, canvas: &mut mere::canvas::Canvas) {
-        if self.colors.len() >= 2 {
-            canvas.set_palette(self.colors[0], self.colors[1]);
-        }
+        use mere::canvas::{CanvasRoles, CanvasTheme, palette::ThemeColor};
         if self.colors.len() == PAINT.len() {
-            let bytes =
-                |index: usize| self.colors[index].map(|channel| (channel * 255.0).round() as u8);
-            canvas.set_derived_face_palette(self.appearance.canvas_face_palette([
-                bytes(4),
-                bytes(5),
-                bytes(6),
-                bytes(8),
-                bytes(9),
-                bytes(2),
-            ]));
-            canvas.set_category_colors((CATEGORY_START..PAINT.len()).map(|index| {
-                let [r, g, b, _] = bytes(index);
-                [r, g, b]
+            let role = |index: usize| {
+                let [r, g, b, a] = self.colors[index].map(|channel| (channel * 255.0).round() as u8);
+                ThemeColor::rgba(r, g, b, a)
+            };
+            canvas.apply_theme(&CanvasTheme::from_roles(&CanvasRoles {
+                ground: role(0),
+                edge: role(1),
+                text: role(2),
+                primary: role(4),
+                secondary: role(5),
+                tertiary: role(6),
+                success: role(8),
+                danger: role(9),
+                categories: std::array::from_fn(|slot| role(CATEGORY_START + slot)),
             }));
+        } else if self.colors.len() >= 2 {
+            canvas.set_palette(self.colors[0], self.colors[1]);
         }
     }
     /// Embedded instances observe only inherited shared roles, never storage.

@@ -165,7 +165,7 @@ pub(super) fn section(page: &TreePage) -> Child {
     }
     let mut children: Vec<Child> = vec![Box::new(el("h2", "Live node presentation"))];
     if let Some(error) = &pane.error {
-        children.push(Box::new(el("p", error.clone()).attr("role", "status")));
+        children.push(Box::new(status_note("", error.clone())));
     }
     if pane.running {
         children.push(Box::new(el(

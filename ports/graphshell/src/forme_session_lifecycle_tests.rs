@@ -121,15 +121,13 @@ fn owner_lifecycle_actual_codicil_new_app_owner_has_empty_model_and_preserves_ol
         let old_bytes = backend.get(&slot(old_owner)).await.unwrap().unwrap();
         let mut canvas = Canvas::with_graph(app.host.graph().clone());
         let mut invalid_scene =
-            crate::local_scene::capture_scene(&canvas, mere::canvas::physics_controls::FREE_ARRANGEMENT, "")
+            canvas.capture_scene("Graphshell working scene", mere::canvas::physics_controls::FREE_ARRANGEMENT, "")
                 .unwrap();
         invalid_scene.camera_zoom = f32::NAN;
         let bytes = codicil(&app, member);
         app.host.replace_with_product_codicil(&bytes).unwrap();
         assert!(
-            crate::local_scene::restore_scene(
-                &mut canvas,
-                app.host.graph(),
+            canvas.restore_scene(app.host.graph(),
                 &invalid_scene,
                 (900, 600)
             )
@@ -494,9 +492,9 @@ fn owner_lifecycle_real_scene_restore_reprojects_same_owner_and_failed_restore_p
         .unwrap();
     let before = canvas.forme_region().unwrap().clone();
     let scene =
-        crate::local_scene::capture_scene(&canvas, mere::canvas::physics_controls::FREE_ARRANGEMENT, "")
+        canvas.capture_scene("Graphshell working scene", mere::canvas::physics_controls::FREE_ARRANGEMENT, "")
             .unwrap();
-    crate::local_scene::restore_scene(&mut canvas, app.host.graph(), &scene, (900, 600)).unwrap();
+    canvas.restore_scene(app.host.graph(), &scene, (900, 600)).unwrap();
     assert!(
         canvas.forme_region().is_none(),
         "real accepted scene restoration resets physical region"
@@ -513,7 +511,7 @@ fn owner_lifecycle_real_scene_restore_reprojects_same_owner_and_failed_restore_p
     let mut invalid = scene;
     invalid.camera_zoom = f32::NAN;
     assert!(
-        crate::local_scene::restore_scene(&mut canvas, app.host.graph(), &invalid, (900, 600))
+        canvas.restore_scene(app.host.graph(), &invalid, (900, 600))
             .is_err()
     );
     assert_eq!(
@@ -667,7 +665,7 @@ fn owner_lifecycle_actual_open_rejects_invalid_camera_before_owner_or_canvas_cha
         let region = canvas.forme_region().unwrap().clone();
         let graph = serde_json::to_value(canvas.graph().to_snapshot_at(0)).unwrap();
         let mut scene =
-            crate::local_scene::capture_scene(&canvas, mere::canvas::physics_controls::FREE_ARRANGEMENT, "")
+            canvas.capture_scene("Graphshell working scene", mere::canvas::physics_controls::FREE_ARRANGEMENT, "")
                 .unwrap();
         scene.camera_zoom = -1.0;
         let mut record: serde_json::Value = serde_json::from_slice(&codicil(&app, member)).unwrap();
@@ -750,7 +748,7 @@ fn owner_lifecycle_postaccepted_view_error_cannot_leave_previous_canvas_graph() 
         )
         .unwrap();
     let mut invalid =
-        crate::local_scene::capture_scene(&canvas, mere::canvas::physics_controls::FREE_ARRANGEMENT, "")
+        canvas.capture_scene("Graphshell working scene", mere::canvas::physics_controls::FREE_ARRANGEMENT, "")
             .unwrap();
     invalid.camera_zoom = -1.0;
     let bytes = codicil(&app, member);

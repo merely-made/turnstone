@@ -490,13 +490,11 @@ impl Pane {
 pub(super) fn control(page: &TreePage) -> Child {
     let open = page.backdrop.borrow().open;
     Box::new(
-        button(
-            if open {
+        disclosure_trigger(if open {
                 "Close portable scene"
             } else {
                 "Portable scenes"
-            },
-            |page: &mut TreePage, _| {
+            }, open, |page: &mut TreePage| {
                 let mut pane = page.backdrop.borrow_mut();
                 if pane.surface.is_none() {
                     pane.sample(0);
@@ -512,9 +510,7 @@ pub(super) fn control(page: &TreePage) -> Child {
                         }
                     }
                 }
-            },
-        )
-        .attr("aria-expanded", open.to_string()),
+            }),
     )
 }
 fn export_recipe(json: &str) -> Result<String, String> {
@@ -721,9 +717,7 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
                         .map(|g| g.intent.after)
                         .unwrap_or(target.span);
                     stages.push(Box::new(
-                        el(
-                            "p",
-                            format!(
+                        status_note("backdrop-span-status", format!(
                                 "{key} · start {} / length {} ticks{}",
                                 span.start,
                                 span.length,
@@ -732,10 +726,7 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
                                 } else {
                                     ""
                                 }
-                            ),
-                        )
-                        .attr("class", "backdrop-span-status")
-                        .attr("role", "status"),
+                            )),
                     ));
                     let mut edits: Vec<Child> = vec![];
                     for (edit, label) in [

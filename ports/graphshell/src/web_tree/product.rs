@@ -1441,7 +1441,7 @@ fn intake_controls(page: &TreePage) -> Child {
     use cambium::{FileFilter, button, el, lens, open_file, text_field_typed};
     let product = page.product.as_ref().expect("local intake");
     let mut children: Vec<Child> = vec![Box::new(
-        button("Add an object", |page: &mut TreePage, _| {
+        disclosure_trigger("Add an object", product.intake_open, |page: &mut TreePage| {
             if let Some(product) = &mut page.product
                 && !product.saving
                 && !product.file_requested
@@ -1452,11 +1452,7 @@ fn intake_controls(page: &TreePage) -> Child {
                     product.detail_open = false;
                 }
             }
-        })
-        .attr(
-            "aria-expanded",
-            if product.intake_open { "true" } else { "false" },
-        ),
+        }),
     )];
     if product.intake_open {
         let mut fields: Vec<Child> = Vec::new();
@@ -1544,14 +1540,12 @@ pub(super) fn controls(page: &TreePage) -> Child {
     let mut children: Vec<Child> = Vec::new();
     if product.inspection_fixture {
         children.push(Box::new(
-            el("p", "Field inspection fixture · separate browser store").attr("role", "status"),
+            status_note("", "Field inspection fixture · separate browser store"),
         ));
     }
     if !product.status.is_empty() {
         children.push(Box::new(
-            el("p", product.status.clone())
-                .attr("role", "status")
-                .attr("aria-label", "Graph status"),
+            status_note_labelled("", "Graph status", product.status.clone()),
         ));
     }
     if product.operation_pending && !product.saving {

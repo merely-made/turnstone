@@ -67,12 +67,11 @@ pub(in crate::web_tree) fn section(page: &TreePage) -> Child {
         return Box::new(el("div", ()));
     };
     let mut children: Vec<Child> = vec![Box::new(
-        button("Find and filter", |page: &mut TreePage, _| {
+        disclosure_trigger("Find and filter", product.find.open, |page: &mut TreePage| {
             if let Some(product) = &mut page.product {
                 product.find.open = !product.find.open;
             }
-        })
-        .attr("aria-expanded", product.find.open.to_string()),
+        }),
     )];
     if product.find.open {
         children.push(Box::new(lens(

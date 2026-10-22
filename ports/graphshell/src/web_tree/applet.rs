@@ -443,9 +443,7 @@ pub(super) fn view(page: &TreePage) -> Child {
             ),
         )),
         Box::new(
-            el("p", pane.status.clone())
-                .attr("role", "status")
-                .attr("id", "gs-applet-status"),
+            status_note("", pane.status.clone()).attr("id", "gs-applet-status"),
         ),
     ];
     if !pane.running {

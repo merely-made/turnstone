@@ -360,9 +360,8 @@ fn orbit_stays_bound_and_orbiting_on_the_p2_fixture_at_no_damping() {
 
 #[test]
 fn authored_mix_survives_the_canonical_v4_scene_facet_and_reopen() {
-    use crate::local_scene::{capture_scene, restore_scene};
-    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
-    use crate::product::SAVED_SCENE_FACET;
+        use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+    use pandect::SAVED_SCENE_FACET;
 
     let persona = SelectedPersonaRef {
         persona: FIXTURE_PERSONA_ADDRESS.into(),
@@ -381,7 +380,7 @@ fn authored_mix_survives_the_canonical_v4_scene_facet_and_reopen() {
         },
     )
     .unwrap();
-    let saved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
+    let saved = subject.capture_scene("Graphshell working scene", "phyllotaxis.default", "page").unwrap();
     const ADDRESS: &str = "mere://scene/g4b2-mix";
     app.host.save_product_scene(ADDRESS, &saved).unwrap();
     let facet = app.host.facet_value(ADDRESS, SAVED_SCENE_FACET).unwrap();
@@ -395,19 +394,18 @@ fn authored_mix_survives_the_canonical_v4_scene_facet_and_reopen() {
         mere::canvas::dynamics_spec::Node::Preset { .. }
     ));
     let reopened = app.host.product_scene(ADDRESS).unwrap();
-    restore_scene(&mut subject, app.host.graph(), &reopened, TREE_CANVAS).unwrap();
+    subject.restore_scene(app.host.graph(), &reopened, TREE_CANVAS).unwrap();
     assert_eq!(
         subject.dynamics_spec().unwrap(),
-        saved.dynamics_spec().unwrap()
+        mere::canvas::saved_scene::scene_spec(&saved).unwrap()
     );
     assert_eq!(subject.graph().node_count(), app.host.graph().node_count());
 }
 
 #[test]
 fn authored_grouping_preserves_the_v4_record_and_reopens_exactly() {
-    use crate::local_scene::{capture_scene, restore_scene};
-    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
-    use crate::product::SAVED_SCENE_FACET;
+        use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+    use pandect::SAVED_SCENE_FACET;
     use mere::canvas::Role;
     use mere::canvas::dynamics_spec::{Bar, GroupRoles, Observable, Realization, Target};
     use mere::canvas::{Channel, PhysicsOverlay};
@@ -547,8 +545,8 @@ fn authored_grouping_preserves_the_v4_record_and_reopens_exactly() {
     assert_eq!(subject.arrangement_role_of(group_member), Role::Anchored);
     assert_eq!(subject.arrangement_role_of(item_member), Role::Pinned);
 
-    let saved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
-    let saved_spec = saved.dynamics_spec().unwrap();
+    let saved = subject.capture_scene("Graphshell working scene", "phyllotaxis.default", "page").unwrap();
+    let saved_spec = mere::canvas::saved_scene::scene_spec(&saved).unwrap();
     const ADDRESS: &str = "mere://scene/g4b2-grouping";
     app.host.save_product_scene(ADDRESS, &saved).unwrap();
     // Clone the canonical facet before the later write replaces its stored
@@ -578,13 +576,13 @@ fn authored_grouping_preserves_the_v4_record_and_reopens_exactly() {
         subject.dynamics_spec().unwrap().root,
         mere::canvas::dynamics_spec::Node::Preset { .. }
     ));
-    restore_scene(&mut subject, app.host.graph(), &reopened, TREE_CANVAS).unwrap();
+    subject.restore_scene(app.host.graph(), &reopened, TREE_CANVAS).unwrap();
     assert_eq!(subject.dynamics_spec().unwrap(), saved_spec);
     assert_eq!(subject.dynamics_spec().unwrap().root, authored_root);
     assert_eq!(subject.arrangement_role_of(group_member), Role::Anchored);
     assert_eq!(subject.arrangement_role_of(item_member), Role::Pinned);
 
-    let resaved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
+    let resaved = subject.capture_scene("Graphshell working scene", "phyllotaxis.default", "page").unwrap();
     app.host.save_product_scene(ADDRESS, &resaved).unwrap();
     assert_eq!(
         app.host.facet_value(ADDRESS, SAVED_SCENE_FACET).unwrap()["dynamics"],
@@ -679,7 +677,7 @@ fn numeric_spec(
 fn codicil_with_scene<B: muniment::Backend + Clone>(
     host: &crate::mere_host::MereHost<B>,
     member: uuid::Uuid,
-    scene: &crate::product::SavedSceneV3,
+    scene: &pandect::SavedSceneV3,
 ) -> Vec<u8> {
     use crate::product::{ExportRequest, TransferScope};
 
@@ -696,9 +694,10 @@ fn codicil_with_scene<B: muniment::Backend + Clone>(
 
 #[test]
 fn v4_codicil_refuses_f64_values_that_do_not_survive_canvas_binding_atomically() {
-    use crate::local_scene::{capture_scene, open_codicil};
+    use crate::local_scene::open_codicil;
     use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
-    use crate::product::{SAVED_SCENE_FACET, SavedDynamics};
+    use mere::canvas::saved_scene;
+    use pandect::SAVED_SCENE_FACET;
 
     let fields = [
         NarrowedNumber::MixPart,
@@ -725,15 +724,15 @@ fn v4_codicil_refuses_f64_values_that_do_not_survive_canvas_binding_atomically()
     const ADDRESS: &str = "mere://scene/numeric-guard";
     for field in fields {
         for value in [1.0e300, 1.0e-300] {
-            let mut scene = capture_scene(&canvas, "phyllotaxis.default", "page").unwrap();
+            let mut scene = canvas.capture_scene("Graphshell working scene", "phyllotaxis.default", "page").unwrap();
             app.host.save_product_scene(ADDRESS, &scene).unwrap();
             let saved_facet = app
                 .host
                 .facet_value(ADDRESS, SAVED_SCENE_FACET)
                 .unwrap()
                 .clone();
-            let spec = numeric_spec(scene.dynamics_spec().unwrap(), field, value);
-            scene.dynamics = SavedDynamics::from_spec(&spec);
+            let spec = numeric_spec(mere::canvas::saved_scene::scene_spec(&scene).unwrap(), field, value);
+            scene.dynamics = mere::canvas::saved_scene::saved_dynamics(&spec);
             let session = app.host.graph_session().id().0;
             let graph = serde_json::to_value(app.host.graph().to_snapshot_at(0)).unwrap();
             let record = canvas.dynamics_spec().unwrap();
@@ -770,9 +769,9 @@ fn v4_codicil_refuses_f64_values_that_do_not_survive_canvas_binding_atomically()
 
 #[test]
 fn v4_scene_save_reopen_preserves_zero_subnormal_and_exact_decimal_f64_values() {
-    use crate::local_scene::{capture_scene, restore_scene};
-    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
-    use crate::product::{SAVED_SCENE_FACET, SavedDynamics};
+        use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+    use mere::canvas::saved_scene;
+    use pandect::SAVED_SCENE_FACET;
 
     let persona = SelectedPersonaRef {
         persona: FIXTURE_PERSONA_ADDRESS.into(),
@@ -793,11 +792,11 @@ fn v4_scene_save_reopen_preserves_zero_subnormal_and_exact_decimal_f64_values() 
     let values = [0.0, f64::from(f32::from_bits(1)), 0.1];
     for field in fields {
         for value in values {
-            let baseline = capture_scene(&canvas, "phyllotaxis.default", "page").unwrap();
-            let spec = numeric_spec(baseline.dynamics_spec().unwrap(), field, value);
+            let baseline = canvas.capture_scene("Graphshell working scene", "phyllotaxis.default", "page").unwrap();
+            let spec = numeric_spec(mere::canvas::saved_scene::scene_spec(&baseline).unwrap(), field, value);
             let expected = spec.clone();
             let mut scene = baseline;
-            scene.dynamics = SavedDynamics::from_spec(&spec);
+            scene.dynamics = mere::canvas::saved_scene::saved_dynamics(&spec);
             app.host.save_product_scene(ADDRESS, &scene).unwrap();
 
             let facet = app
@@ -812,11 +811,11 @@ fn v4_scene_save_reopen_preserves_zero_subnormal_and_exact_decimal_f64_values() 
             );
             let reopened = app.host.product_scene(ADDRESS).unwrap();
             assert_eq!(
-                reopened.dynamics_spec().unwrap(),
+                mere::canvas::saved_scene::scene_spec(&reopened).unwrap(),
                 expected,
                 "{field:?} {value}"
             );
-            restore_scene(&mut canvas, app.host.graph(), &reopened, TREE_CANVAS).unwrap();
+            canvas.restore_scene(app.host.graph(), &reopened, TREE_CANVAS).unwrap();
             assert_eq!(
                 canvas.dynamics_spec().unwrap(),
                 expected,
@@ -828,9 +827,8 @@ fn v4_scene_save_reopen_preserves_zero_subnormal_and_exact_decimal_f64_values() 
 
 #[test]
 fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
-    use crate::local_scene::{capture_scene, restore_scene};
-    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
-    use crate::product::SAVED_SCENE_FACET;
+        use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+    use pandect::SAVED_SCENE_FACET;
     use mere::canvas::Role;
     use mere::canvas::dynamics_spec::GroupRoles;
     use mere::canvas::physics_controls;
@@ -958,8 +956,8 @@ fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
     let root_value = serde_json::to_value(&final_spec.root).unwrap();
     assert_eq!(root_value["parts"][0]["weight"], 0.1);
     assert_eq!(root_value["parts"][1]["weight"], 0.3);
-    let saved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
-    let saved_spec = saved.dynamics_spec().unwrap();
+    let saved = subject.capture_scene("Graphshell working scene", "phyllotaxis.default", "page").unwrap();
+    let saved_spec = mere::canvas::saved_scene::scene_spec(&saved).unwrap();
     assert_eq!(
         saved_spec.target.as_ref().unwrap().arrangement,
         "phyllotaxis.default"
@@ -996,11 +994,11 @@ fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
 
     let reopened = app.host.product_scene(ADDRESS).unwrap();
     apply_role(&mut subject, Role::Seeded).unwrap();
-    restore_scene(&mut subject, app.host.graph(), &reopened, TREE_CANVAS).unwrap();
+    subject.restore_scene(app.host.graph(), &reopened, TREE_CANVAS).unwrap();
     assert_eq!(subject.dynamics_spec().unwrap(), saved_spec);
     assert_eq!(subject.arrangement_role_of(group_member), Role::Anchored);
     assert_eq!(subject.arrangement_role_of(item_member), Role::Pinned);
-    let resaved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
+    let resaved = subject.capture_scene("Graphshell working scene", "phyllotaxis.default", "page").unwrap();
     app.host.save_product_scene(ADDRESS, &resaved).unwrap();
     let resaved_facet = app.host.facet_value(ADDRESS, SAVED_SCENE_FACET).unwrap();
     assert_eq!(resaved_facet["dynamics"], facet["dynamics"]);
@@ -1055,9 +1053,8 @@ fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
 
 #[test]
 fn authored_two_stage_schedule_survives_v4_reopen_capture_progress_and_refusal() {
-    use crate::local_scene::{capture_scene, restore_scene};
-    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
-    use crate::product::SAVED_SCENE_FACET;
+        use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+    use pandect::SAVED_SCENE_FACET;
     use mere::canvas::dynamics_spec::{GroupRoles, Node, Target};
     use mere::canvas::physics_controls::{
         StageDraft, TwoStageSchedule, apply_two_stage_schedule, read_two_stage_schedule,
@@ -1160,8 +1157,8 @@ fn authored_two_stage_schedule_survives_v4_reopen_capture_progress_and_refusal()
     assert_eq!(subject.physics_schedule_stage(), Some(1));
     assert!(subject.physics_paused());
 
-    let saved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
-    let saved_spec = saved.dynamics_spec().unwrap();
+    let saved = subject.capture_scene("Graphshell working scene", "phyllotaxis.default", "page").unwrap();
+    let saved_spec = mere::canvas::saved_scene::scene_spec(&saved).unwrap();
     let Node::Schedule { stages, .. } = &saved_spec.root else {
         panic!("saved v4 scene keeps the authored schedule recipe")
     };
@@ -1202,14 +1199,14 @@ fn authored_two_stage_schedule_survives_v4_reopen_capture_progress_and_refusal()
     apply_single_law(&mut subject, &choice).unwrap();
     assert_eq!(subject.physics_schedule_stage(), None);
     let reopened = app.host.product_scene(ADDRESS).unwrap();
-    restore_scene(&mut subject, app.host.graph(), &reopened, TREE_CANVAS).unwrap();
+    subject.restore_scene(app.host.graph(), &reopened, TREE_CANVAS).unwrap();
     assert_eq!(subject.dynamics_spec().unwrap(), saved_spec);
     assert_eq!(subject.physics_schedule_stage(), Some(0));
     assert!(subject.physics_paused());
     assert_eq!(read_two_stage_schedule(&subject).unwrap(), Some(schedule));
     assert_eq!(subject.graph().node_count(), app.host.graph().node_count());
 
-    let resaved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
+    let resaved = subject.capture_scene("Graphshell working scene", "phyllotaxis.default", "page").unwrap();
     app.host.save_product_scene(ADDRESS, &resaved).unwrap();
     assert_eq!(
         app.host.facet_value(ADDRESS, SAVED_SCENE_FACET).unwrap()["dynamics"],

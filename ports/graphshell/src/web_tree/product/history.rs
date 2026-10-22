@@ -144,20 +144,15 @@ pub(in crate::web_tree) fn section(page: &TreePage) -> Child {
         return Box::new(el("div", ()));
     };
     let mut children: Vec<Child> = vec![Box::new(
-        button("History", |page: &mut TreePage, _| {
+        disclosure_trigger("History", product.history.open, |page: &mut TreePage| {
             if let Some(product) = &mut page.product {
                 product.history.open = !product.history.open;
             }
-        })
-        .attr("aria-expanded", product.history.open.to_string()),
+        }),
     )];
     if product.history.open {
         children.push(Box::new(
-            el(
-                "p",
-                format!("{} history records", product.history.summary.records.len()),
-            )
-            .attr("role", "status"),
+            status_note("", format!("{} history records", product.history.summary.records.len())),
         ));
         for (index, label) in LABELS.into_iter().enumerate() {
             children.push(Box::new(el(

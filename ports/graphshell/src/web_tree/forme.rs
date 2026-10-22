@@ -32,7 +32,7 @@ pub(super) struct Pane {
     feedback: Option<(DropEffect, [f32; 4])>,
     drag: Option<(Uuid, (f32, f32), bool)>,
     cancelled_drag: bool,
-    pub(super) reading_ui: std::collections::BTreeMap<Uuid, super::reading::ReadUi>,
+    pub(super) reading_ui: std::collections::BTreeMap<Uuid, cambium::ReadFind>,
 }
 impl Pane {
     pub(super) async fn open(product: &product::SavedProduct) -> Result<Self, String> {
@@ -938,15 +938,11 @@ pub(super) fn section(page: &TreePage) -> Child {
         )));
         if pane.session.editing() {
             children.push(Box::new(
-                el(
-                    "p",
-                    if pane.session.dirty() {
+                status_note("", if pane.session.dirty() {
                         "Pending Forme changes"
                     } else {
                         "Forme draft matches saved arrangement"
-                    },
-                )
-                .attr("role", "status"),
+                    }),
             ));
             children.push(Box::new(button(
                 "Discard changes",
@@ -1067,7 +1063,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         )));
         if !pane.status.is_empty() {
             children.push(Box::new(
-                el("p", pane.status.clone()).attr("role", "status"),
+                status_note("", pane.status.clone()),
             ));
         }
         let forme_controls = children.split_off(forme_start);

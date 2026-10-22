@@ -602,9 +602,7 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
             ),
         )),
         Box::new(
-            el("p", pane.status.clone())
-                .attr("role", "status")
-                .attr("class", "blocks-status"),
+            status_note("blocks-status", pane.status.clone()),
         ),
         Box::new(el(
             "label",
@@ -976,11 +974,7 @@ fn notation_readings(page: &TreePage) -> Child {
             ));
         },
         Err(error) => children.push(Box::new(
-            el(
-                "p",
-                format!("Notation unavailable: {error}. Source retained."),
-            )
-            .attr("role", "status"),
+            status_note("", format!("Notation unavailable: {error}. Source retained.")),
         )),
         Ok(Some(score)) if pane.notation.is_some() => {
             let (ink, accent) = notation_colors(page);
@@ -1055,7 +1049,7 @@ fn notation_readings(page: &TreePage) -> Child {
                         .measures
                         .get(pane.notation_selection().0)
                         .and_then(|m| m.events.get(pane.notation_selection().1));
-                    children.push(Box::new(el("p", selection.map_or_else(|| "Select an event to carry attention across Chart, Tab and Score.".into(), |e|format!("Selected bar {}, event {} · {}{}", pane.notation_selected.0+1,pane.notation_selected.1+1,e.value.label(),if e.rest {" rest"} else {""}))).attr("role","status").attr("class","blocks-notation-selection")));
+                    children.push(Box::new(status_note("blocks-notation-selection", selection.map_or_else(|| "Select an event to carry attention across Chart, Tab and Score.".into(), |e|format!("Selected bar {}, event {} · {}{}", pane.notation_selected.0+1,pane.notation_selected.1+1,e.value.label(),if e.rest {" rest"} else {""})))));
                 },
                 Err(error) => children.push(Box::new(el("p", error))),
             }

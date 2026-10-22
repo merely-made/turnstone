@@ -316,7 +316,7 @@ mod tests {
         FIXTURE_SCENE_ADDRESS, FIXTURE_WEB_ADDRESS, UNKNOWN_FIXTURE_FACET, fixture_handlers,
     };
     use crate::product::{
-        PINNED_PROJECTION_FACET, PinnedProjectionAuthorityV1, PinnedProjectionCardV1, SavedSceneV2,
+        PINNED_PROJECTION_FACET, PinnedProjectionAuthorityV1, PinnedProjectionCardV1,
     };
 
     const SAVED_AT_SECS: u64 = 1_700_000_000;
@@ -541,7 +541,7 @@ mod tests {
 
     #[tokio::test]
     async fn h4_exportable_identity_cards_and_access_survive_scene_reopen_as_projections() {
-        use mere::canvas::CartographyGeometry;
+        use pandect::CartographyGeometry;
 
         let fixture: IdentityCardsFixture =
             serde_json::from_str(include_str!("../tests/fixtures/identity_cards.json"))
@@ -614,7 +614,7 @@ mod tests {
         selected_ids.push(access);
         // Written as a version-3 scene and converted, so the save is a
         // version-4 scene (dynamics grammar plan, F142).
-        let scene = SavedSceneV2 {
+        let scene = pandect::SavedSceneV2 {
             name: "Identity and access".to_string(),
             selected: selected_ids.clone(),
             layout_strategy: Some("grid.default".to_string()),
@@ -639,8 +639,8 @@ mod tests {
                     .map(|(index, id)| (*id, (index as f32 * 30.0, 0.0))),
             ),
         }
-        .into_v3()
-        .expect("the flat scene converts");
+        ;
+        let scene = mere::canvas::saved_scene::scene_from_v2(scene).expect("the flat scene converts");
         app.host
             .save_product_scene("mere://scene/h4-identity-access", &scene)
             .expect("save mixed scene");

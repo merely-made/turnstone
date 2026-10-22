@@ -311,7 +311,7 @@ pub(super) fn access_links(page: &TreePage, member: Uuid) -> Child {
         .ok_or_else(|| "Link inspection requires the local graph".to_owned())
         .and_then(|product| product.linked_accesses(member))
     {
-        Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
+        Err(error) => children.push(Box::new(status_note("", error))),
         Ok(accesses) if accesses.is_empty() => {
             children.push(Box::new(el("p", "No links to held accesses")))
         },
@@ -612,7 +612,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         }
     }
     match opened_reading(page) {
-        Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
+        Err(error) => children.push(Box::new(status_note("", error))),
         Ok(reading) => {
             let layout = opened_layout(page, &reading);
             let history = page.link_history_open;
@@ -693,7 +693,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         },
     }
     if let Some(error) = &page.opened_link_error {
-        children.push(Box::new(el("p", error.clone()).attr("role", "status")));
+        children.push(Box::new(status_note("", error.clone())));
     }
     if page.inspected_statement.is_some() {
         children.push(Box::new(el("h3", "Exact assertion")));
@@ -705,7 +705,7 @@ pub(super) fn section(page: &TreePage) -> Child {
             },
         )));
         match exact(page) {
-            Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
+            Err(error) => children.push(Box::new(status_note("", error))),
             Ok(inspected) => {
                 children.push(Box::new(detail_panel(&[
                     DetailSection::new("Assertion owner", owner_rows(&inspected.owner)),

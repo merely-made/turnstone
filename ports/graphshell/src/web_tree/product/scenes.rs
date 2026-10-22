@@ -4,8 +4,8 @@
 //! Saved scenes and transfers use the same MereHost facets and codicil operations.
 use super::*;
 use cambium::{button, checkbox, el, lens, select, textarea_typed};
-use graphshell::local_scene::{capture_scene, restore_scene};
-use graphshell::product::{ExportRequest, SavedSceneV3, TransferScope};
+use graphshell::product::{ExportRequest, TransferScope};
+use pandect::{SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3, SavedSceneV3};
 const ADDRESS: &str = "mere://scene/graphshell-h3";
 const SCOPES: [(TransferScope, &str); 4] = [
     (TransferScope::SelectedSubgraph, "Selected subgraph"),
@@ -42,13 +42,12 @@ impl SavedProduct {
         self.app
             .as_ref()?
             .host
-            .facet_value(ADDRESS, graphshell::product::SAVED_SCENE_FACET)?
+            .facet_value(ADDRESS, SAVED_SCENE_FACET)?
             .get("dynamics")
             .cloned()
     }
 
     pub(in crate::web_tree) fn saved_scene_facet(&self) -> &'static str {
-        use graphshell::product::{SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3};
         [
             (SAVED_SCENE_FACET, "v4"),
             (SAVED_SCENE_FACET_V3, "v3"),
@@ -95,12 +94,12 @@ impl SavedProduct {
         let app = self.app.as_mut().ok_or("Local graph is busy")?;
         match action {
             "save" => {
-                let scene = capture_scene(canvas, layout, handler)?;
+                let scene = canvas.capture_scene("Graphshell working scene", layout, handler)?;
                 app.host
                     .save_product_scene(ADDRESS, &scene)
                     .map_err(|e| e.to_string())?;
                 self.forme_reconcile_session = Some(app.host.graph_session().id().0);
-                restore_scene(canvas, app.host.graph(), &scene, viewport)?;
+                canvas.restore_scene(app.host.graph(), &scene, viewport)?;
                 self.scenes.saved = Some(scene);
                 self.operation_success = Some("Scene saved".into());
                 self.persist_operation();
@@ -108,7 +107,7 @@ impl SavedProduct {
             "reopen" => {
                 let scene = app.host.product_scene(ADDRESS).map_err(|e| e.to_string())?;
                 self.forme_reconcile_session = Some(app.host.graph_session().id().0);
-                restore_scene(canvas, app.host.graph(), &scene, viewport)?;
+                canvas.restore_scene(app.host.graph(), &scene, viewport)?;
                 self.scenes.saved = Some(scene);
                 let handler = self
                     .scenes
@@ -185,12 +184,11 @@ pub(in crate::web_tree) fn section(page: &TreePage) -> Child {
         return Box::new(el("div", ()));
     };
     let mut children: Vec<Child> = vec![Box::new(
-        button("Scenes and transfers", |page: &mut TreePage, _| {
+        disclosure_trigger("Scenes and transfers", product.scenes.open, |page: &mut TreePage| {
             if let Some(product) = &mut page.product {
                 product.scenes.open = !product.scenes.open;
             }
-        })
-        .attr("aria-expanded", product.scenes.open.to_string()),
+        }),
     )];
     if product.scenes.open {
         for (label, action) in [("Save scene", "save"), ("Reopen scene", "reopen")] {
@@ -248,7 +246,7 @@ fn action_button(label: &'static str, action: &'static str) -> Child {
         page.physics.sync(&canvas);
         if let Some(product) = &page.product {
             if let Some(scene) = &product.scenes.saved {
-                if let Ok(layout) = scene.arrangement() {
+                if let Ok(layout) = mere::canvas::saved_scene::scene_arrangement(scene) {
                     page.physics.arrangement.selected =
                         mere::canvas::physics_controls::arrangement_choices()
                             .position(|(id, _)| id == layout)

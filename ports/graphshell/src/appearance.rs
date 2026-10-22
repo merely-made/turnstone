@@ -125,27 +125,6 @@ impl Appearance {
         self.resolved.theme.typography.css_property_declarations()
     }
 
-    /// Reuse the shared face-palette mapping with the six browser-computed
-    /// roles that mapping actually consumes. Other palette fields are unused;
-    /// this does not purport to derive an arbitrary stylesheet from seeds.
-    pub fn canvas_face_palette(&self, colors: [[u8; 4]; 6]) -> mere::canvas::DerivedFacePalette {
-        let fallback = resolve_theme_choice(&ThemeRegistry::default(), &default_choice())
-            .expect("built-in fallback");
-        let ThemePresentation::Derived(base) = fallback.presentation else {
-            unreachable!("built-in has no authored sheets")
-        };
-        let mut palette = base.palette;
-        let color = |value: [u8; 4]| {
-            mere::canvas::palette::ThemeColor::rgba(value[0], value[1], value[2], value[3])
-        };
-        palette.primary = color(colors[0]);
-        palette.secondary = color(colors[1]);
-        palette.tertiary = color(colors[2]);
-        palette.success = color(colors[3]);
-        palette.danger = color(colors[4]);
-        palette.text = color(colors[5]);
-        mere::canvas::DerivedFacePalette::from_palette(&palette)
-    }
     pub fn themes(&self) -> Vec<(String, String)> {
         self.registry
             .list()
@@ -224,32 +203,12 @@ impl Appearance {
     /// rules are appended last and remain authoritative. Those defaults are
     /// the shared built-in, never a claimed derivation of arbitrary CSS.
     pub fn stylesheet(&self) -> String {
-        let (defaults, authored) = match &self.resolved.presentation {
-            ThemePresentation::Derived(palette) => (palette.css_custom_properties(), String::new()),
-            ThemePresentation::AuthoredStylesheet(rules) => {
-                let mode = self
-                    .resolved
-                    .resolved
-                    .theme_mode
-                    .as_ref()
-                    .expect("resolved mode");
-                let fallback_mode = if matches!(mode, Mode::Custom(_)) {
-                    Mode::Dark
-                } else {
-                    mode.clone()
-                };
-                let fallback = resolve_theme_choice(
-                    &ThemeRegistry::default(),
-                    &ThemeChoice::new(default_choice().theme_id, Some(fallback_mode)),
-                )
-                .expect("built-in fallback");
-                let ThemePresentation::Derived(palette) = fallback.presentation else {
-                    unreachable!("built-in has no authored sheets")
-                };
-                (palette.css_custom_properties(), rules.join("\n"))
-            },
-        };
-        format!("{defaults}\n{ROLE_STYLESHEET}\n{authored}")
+        tabard::presentation_stylesheet(
+            &self.resolved.presentation,
+            self.resolved.resolved.theme_mode.as_ref().expect("resolved mode"),
+            default_choice().theme_id.as_str(),
+            ROLE_STYLESHEET,
+        )
     }
 }
 
@@ -400,24 +359,6 @@ mod tests {
                 .unwrap()
                 .choice(),
             &choice
-        );
-    }
-
-    #[test]
-    fn browser_roles_retheme_faces_with_shared_mapping_and_alpha() {
-        let roles = [
-            [11, 22, 33, 200],
-            [44, 55, 66, 255],
-            [77, 88, 99, 255],
-            [100, 120, 140, 255],
-            [160, 180, 200, 255],
-            [235, 245, 255, 255],
-        ];
-        let colors = Appearance::default().canvas_face_palette(roles).colors();
-        assert_eq!(&colors[..5], &roles[..5]);
-        assert_ne!(
-            colors[5], colors[0],
-            "the shared companion mapping remains active"
         );
     }
 

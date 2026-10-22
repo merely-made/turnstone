@@ -10,7 +10,7 @@ use std::collections::{BTreeMap, BTreeSet, HashSet};
 
 use chartulary::AcceptAll;
 use chirograph::{PortableCardV1, Sha256NamedInformation};
-use mere::canvas::CartographyGeometry;
+use mere::canvas::saved_scene::{self, SceneReadError};
 use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
 use mere::kernel::graph::capture::{CapturedDelta, replay_captured_deltas_onto};
@@ -25,6 +25,10 @@ use mere::kernel::persistence::GraphSnapshot;
 use mere::kernel::types::NodeProperty;
 use muniment::Backend;
 use pandect::graph_placement::{PlacementProfile, materialize_snapshot};
+use pandect::{
+    CartographyGeometry, DEFAULT_ARRANGEMENT, SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2,
+    SAVED_SCENE_FACET_V3, SavedDynamics, SavedRolesV1, SavedSceneV2, SavedSceneV3, StoredScene,
+};
 use sceno::SourceRef;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -62,18 +66,6 @@ pub fn projection_address(definition_id: &str) -> String {
 
 pub const LOCAL_FILE_FACET: &str = "graphshell.local-file/v1";
 pub const CONTENT_FACET: &str = "graphshell.content/v1";
-/// Where a scene is saved: [`SavedSceneV3`], the dynamics spec its only
-/// physics and arrangement record (dynamics grammar plan, F142, F151).
-pub const SAVED_SCENE_FACET: &str = "graphshell.saved-scene/v4";
-/// Where a scene was saved with flat physics fields and roles (G7, F44).
-/// Read only, as [`SavedSceneV2`], and converted (F142).
-pub const SAVED_SCENE_FACET_V3: &str = "graphshell.saved-scene/v3";
-/// Where a scene was saved before the arrangement roles. Read only: its
-/// anchor pull is read as the roles it acted as ([`SavedSceneV2::roles`]),
-/// and converted as a version-3 scene is.
-pub const SAVED_SCENE_FACET_V2: &str = "graphshell.saved-scene/v2";
-/// The arrangement a scene that names none opens on.
-pub const DEFAULT_ARRANGEMENT: &str = "phyllotaxis.default";
 pub const PINNED_PROJECTION_FACET: &str = "graphshell.pinned-projection/v1";
 /// Where the projection editor saves a definition and its selected
 /// occurrence, on a node at [`projection_address`] (Scenograph editor plan,
@@ -224,351 +216,6 @@ pub struct LocalFileMetadata {
     pub media_type: String,
     pub byte_len: u64,
     pub last_modified_ms: u64,
-}
-
-/// A saved scene as written under [`SAVED_SCENE_FACET_V3`] and
-/// [`SAVED_SCENE_FACET_V2`]: read only since G4b1, and converted to a
-/// [`SavedSceneV3`] ([`Self::into_v3`], F142). Version 2 (dynamics grammar
-/// plan, G7, F44) added the arrangement's roles, and `arrangement_pull`
-/// became the anchored role's stiffness; a version-1 scene, saved under
-/// [`SAVED_SCENE_FACET_V2`], reads into this type with no roles and is read
-/// as it behaved.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct SavedSceneV2 {
-    pub name: String,
-    pub selected: Vec<Uuid>,
-    pub layout_strategy: Option<String>,
-    pub physics_paused: bool,
-    pub physics_damping: f32,
-    /// The physics law id (`mere::canvas::PhysicsLaw::id`); Springs when absent,
-    /// so a scene saved before the catalog reads as it always did.
-    #[serde(default = "default_physics_law")]
-    pub physics_law: String,
-    /// The overlay ids composed onto the law, in run order.
-    #[serde(default)]
-    pub physics_overlays: Vec<String>,
-    /// Where the Kinds law reads a node's kind from (`site`, `cluster`, `degree`).
-    #[serde(default = "default_physics_kind_source")]
-    pub physics_kind_source: String,
-    /// Where Group pull reads its groups from (any kind source); site when
-    /// absent, so a scene saved before the channel reads as it did. (Dynamics
-    /// grammar plan, G2, F37.)
-    #[serde(default = "default_physics_group_source")]
-    pub physics_group_source: String,
-    /// Where Orbit's masses and the hub overlays' weights come from (`degree`, `pagerank`).
-    #[serde(default = "default_physics_mass_source")]
-    pub physics_mass_source: String,
-    /// Where the Depth overlay reads depth from (`roots`, `layers`, `focus`).
-    #[serde(default = "default_physics_depth_source")]
-    pub physics_depth_source: String,
-    /// The anchored role's return stiffness. A scene saved before G7 stored
-    /// its anchor pull here, and with no `arrangement_roles` that pull is read
-    /// as the roles it acted as (see [`SavedSceneV2::roles`]).
-    #[serde(default = "default_anchor_stiffness")]
-    pub arrangement_pull: f32,
-    /// The arrangement's roles: recipe default, site groups, items by member
-    /// (dynamics grammar plan, G7). Absent in a scene saved before G7.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub arrangement_roles: Option<SavedRolesV1>,
-    /// The scene's dynamics spec (dynamics grammar plan, G4a): absent from
-    /// every scene saved before it and written by nothing before G4b1 (F100).
-    /// It rides opaque and is read when the scene opens, where a refused spec
-    /// fails that open alone (F97, F114); converted, it wins over the flat
-    /// fields, which fill only what it lacks (F153).
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub dynamics: Option<SavedDynamics>,
-    pub camera_offset: (f32, f32),
-    pub camera_zoom: f32,
-    pub default_handler: String,
-    pub cartography: CartographyGeometry,
-}
-
-/// An arrangement's roles as a scene saves them, by role id
-/// (`seeded`, `anchored`, `pinned`; `mere::canvas::Role::id`).
-#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct SavedRolesV1 {
-    pub default: String,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    pub groups: BTreeMap<String, String>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    pub items: BTreeMap<Uuid, String>,
-}
-
-/// A scene's dynamics spec as it rides: an opaque value, so whatever carries
-/// the scene (the facet, a codicil, a personal graph record) reads it whole
-/// and the spec is read only when the scene opens (F114). Read through
-/// seiche's path-tracking reader, so a refusal names where it sits (F113).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(transparent)]
-pub struct SavedDynamics(serde_json::Value);
-
-impl SavedDynamics {
-    pub fn from_spec(spec: &mere::canvas::dynamics_spec::DynamicsSpec) -> Self {
-        Self(serde_json::to_value(spec).expect("a dynamics spec always serializes"))
-    }
-
-    /// The spec as written, unread.
-    pub fn value(&self) -> &serde_json::Value {
-        &self.0
-    }
-
-    /// The spec, or where and why it is refused while read.
-    pub fn spec(&self) -> Result<mere::canvas::dynamics_spec::DynamicsSpec, String> {
-        mere::canvas::dynamics_spec::read(&self.0)
-            .map_err(|error| format!("dynamics spec: {error}"))
-    }
-}
-
-/// A saved scene, version 4 of the facet ([`SAVED_SCENE_FACET`]; dynamics
-/// grammar plan, F142, F151): the dynamics spec is its only physics and
-/// arrangement record, the law, overlays, sources, seed, damping, the
-/// arrangement and its roles all inside it. What stays beside it is view
-/// state: the selection, the camera, whether physics plays (F152), the
-/// handler and the representations.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct SavedSceneV3 {
-    pub name: String,
-    pub selected: Vec<Uuid>,
-    /// Whether physics is paused when the scene opens: view state, as the
-    /// camera is (F152).
-    pub physics_paused: bool,
-    /// The record (F142), opaque until the scene opens (F114).
-    pub dynamics: SavedDynamics,
-    pub camera_offset: (f32, f32),
-    pub camera_zoom: f32,
-    pub default_handler: String,
-    pub cartography: CartographyGeometry,
-}
-
-impl SavedSceneV3 {
-    /// The scene's spec, read, derived and bound over the canvas's catalog
-    /// (graph-free); a refusal names the id and where it sits (F97, F113,
-    /// F149).
-    pub fn dynamics_spec(&self) -> Result<mere::canvas::dynamics_spec::DynamicsSpec, String> {
-        let spec = self.dynamics.spec()?;
-        mere::canvas::dynamics_spec::bind(&spec)
-            .map_err(|error| format!("dynamics spec: {error}"))?;
-        Ok(spec)
-    }
-
-    /// Whether the scene's spec reads, derives and binds.
-    pub fn check_dynamics(&self) -> Result<(), String> {
-        self.dynamics_spec().map(|_| ())
-    }
-
-    /// The arrangement the scene's target names, or [`DEFAULT_ARRANGEMENT`].
-    pub fn arrangement(&self) -> Result<String, String> {
-        Ok(self
-            .dynamics_spec()?
-            .target
-            .map(|target| target.arrangement)
-            .filter(|id| !id.is_empty())
-            .unwrap_or_else(|| DEFAULT_ARRANGEMENT.to_string()))
-    }
-}
-
-impl SavedSceneV2 {
-    /// The scene as a version-4 scene (F142). A spec it carries wins, and
-    /// the flat fields fill only what it lacks: the target when it has none,
-    /// the damping when its realization leaves it unset (F153). Without a
-    /// spec the flat fields become one, an unknown law, overlay or source id
-    /// failing with the id (F143, F154), and an unknown role id as before.
-    pub fn into_v3(self) -> Result<SavedSceneV3, String> {
-        use mere::canvas::dynamics_spec::Realization;
-        let mut spec = match &self.dynamics {
-            Some(dynamics) => dynamics.spec()?,
-            None => self.flat_choice()?.into_spec(),
-        };
-        if spec.target.is_none() {
-            spec.target = Some(self.flat_target()?);
-        }
-        let Realization::Integrate { damping } = &mut spec.realization;
-        if damping.is_none() {
-            *damping = Some(f64::from(self.physics_damping));
-        }
-        Ok(SavedSceneV3 {
-            name: self.name,
-            selected: self.selected,
-            physics_paused: self.physics_paused,
-            dynamics: SavedDynamics::from_spec(&spec),
-            camera_offset: self.camera_offset,
-            camera_zoom: self.camera_zoom,
-            default_handler: self.default_handler,
-            cartography: self.cartography,
-        })
-    }
-
-    /// The flat physics fields as a choice; an unknown id fails with it.
-    fn flat_choice(&self) -> Result<mere::canvas::PhysicsChoice, String> {
-        use mere::canvas::{
-            PhysicsDepthSource, PhysicsKindSource, PhysicsLaw, PhysicsMassSource, PhysicsOverlay,
-        };
-        let kind = |id: &str, what: &str| {
-            PhysicsKindSource::parse(id).ok_or_else(|| format!("unknown {what} source {id}"))
-        };
-        let mut overlays: Vec<PhysicsOverlay> = Vec::new();
-        for id in &self.physics_overlays {
-            let overlay =
-                PhysicsOverlay::parse(id).ok_or_else(|| format!("unknown physics overlay {id}"))?;
-            if !overlays.contains(&overlay) {
-                overlays.push(overlay);
-            }
-        }
-        Ok(mere::canvas::PhysicsChoice {
-            law: PhysicsLaw::parse(&self.physics_law)
-                .ok_or_else(|| format!("unknown physics law {}", self.physics_law))?,
-            overlays,
-            kind: kind(&self.physics_kind_source, "kind")?,
-            groups: kind(&self.physics_group_source, "group")?,
-            mass: PhysicsMassSource::parse(&self.physics_mass_source)
-                .ok_or_else(|| format!("unknown mass source {}", self.physics_mass_source))?,
-            depth: PhysicsDepthSource::parse(&self.physics_depth_source)
-                .ok_or_else(|| format!("unknown depth source {}", self.physics_depth_source))?,
-        })
-    }
-
-    /// The flat arrangement fields as the spec's target: the layout, the
-    /// anchored stiffness and the roles, read as [`Self::roles`] reads them;
-    /// group roles keyed by site, the only group source before G4b1.
-    fn flat_target(&self) -> Result<mere::canvas::dynamics_spec::Target, String> {
-        let (roles, stiffness) = self.roles()?;
-        Ok(mere::canvas::dynamics_spec::Target {
-            arrangement: self
-                .layout_strategy
-                .clone()
-                .unwrap_or_else(|| DEFAULT_ARRANGEMENT.to_string()),
-            anchored_pull: f64::from(stiffness),
-            default_role: roles.default,
-            groups: (!roles.groups.is_empty()).then(|| mere::canvas::dynamics_spec::GroupRoles {
-                channel: "groups.site".to_string(),
-                roles: roles.groups,
-            }),
-            items: roles
-                .items
-                .into_iter()
-                .map(|(member, role)| (member.to_string(), role))
-                .collect(),
-        })
-    }
-
-    /// The roles this scene opens with, and the anchored stiffness. A scene
-    /// saved before G7 has only its pull: the canvas anchored every item at
-    /// that pull while playing, so a positive pull reads as anchored at it and
-    /// zero as seeded, and the scene behaves as it did. An unknown role id
-    /// fails rather than falling back.
-    pub fn roles(&self) -> Result<(SavedRoles, f32), String> {
-        let parse = |id: &str| {
-            mere::canvas::Role::parse(id).ok_or_else(|| format!("unknown arrangement role {id}"))
-        };
-        let Some(saved) = &self.arrangement_roles else {
-            return Ok(if self.arrangement_pull > 0.0 {
-                (
-                    SavedRoles::uniform(mere::canvas::Role::Anchored),
-                    self.arrangement_pull,
-                )
-            } else {
-                (
-                    SavedRoles::uniform(mere::canvas::Role::Seeded),
-                    default_anchor_stiffness(),
-                )
-            });
-        };
-        let mut roles = SavedRoles::uniform(parse(&saved.default)?);
-        for (group, id) in &saved.groups {
-            roles.groups.insert(group.clone(), parse(id)?);
-        }
-        for (member, id) in &saved.items {
-            roles.items.insert(*member, parse(id)?);
-        }
-        Ok((roles, self.arrangement_pull))
-    }
-}
-
-/// [`SavedRolesV1`] parsed: items by member, since node keys are a canvas's
-/// own.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct SavedRoles {
-    pub default: mere::canvas::Role,
-    pub groups: BTreeMap<String, mere::canvas::Role>,
-    pub items: BTreeMap<Uuid, mere::canvas::Role>,
-}
-
-impl SavedRoles {
-    pub fn uniform(role: mere::canvas::Role) -> Self {
-        Self {
-            default: role,
-            groups: BTreeMap::new(),
-            items: BTreeMap::new(),
-        }
-    }
-
-    /// The canvas's table, items rebound from members to `graph`'s keys; a
-    /// member the graph lacks is dropped.
-    pub fn table(&self, graph: &mere::kernel::graph::Graph) -> mere::canvas::RoleTable {
-        mere::canvas::RoleTable {
-            default: self.default,
-            groups: self.groups.clone(),
-            items: self
-                .items
-                .iter()
-                .filter_map(|(member, role)| Some((graph.get_node_key_by_id(*member)?, *role)))
-                .collect(),
-        }
-    }
-
-    /// A canvas's table, items by member.
-    pub fn from_table(table: &mere::canvas::RoleTable, graph: &mere::kernel::graph::Graph) -> Self {
-        Self {
-            default: table.default,
-            groups: table.groups.clone(),
-            items: table
-                .items
-                .iter()
-                .filter_map(|(key, role)| Some((graph.get_node(*key)?.id, *role)))
-                .collect(),
-        }
-    }
-
-    /// The saved form, by role id.
-    pub fn saved(&self) -> SavedRolesV1 {
-        SavedRolesV1 {
-            default: self.default.id().to_string(),
-            groups: self
-                .groups
-                .iter()
-                .map(|(group, role)| (group.clone(), role.id().to_string()))
-                .collect(),
-            items: self
-                .items
-                .iter()
-                .map(|(member, role)| (*member, role.id().to_string()))
-                .collect(),
-        }
-    }
-}
-
-fn default_anchor_stiffness() -> f32 {
-    mere::canvas::DEFAULT_ANCHOR_STIFFNESS
-}
-
-fn default_physics_law() -> String {
-    mere::canvas::PhysicsLaw::Springs.id().to_string()
-}
-
-fn default_physics_kind_source() -> String {
-    mere::canvas::PhysicsKindSource::Site.id().to_string()
-}
-
-fn default_physics_group_source() -> String {
-    mere::canvas::PhysicsKindSource::Site.id().to_string()
-}
-
-fn default_physics_mass_source() -> String {
-    mere::canvas::PhysicsMassSource::Degree.id().to_string()
-}
-
-fn default_physics_depth_source() -> String {
-    mere::canvas::PhysicsDepthSource::Roots.id().to_string()
 }
 
 /// User-selected public card copied from a mounted endpoint into local graph
@@ -987,21 +634,12 @@ impl<B: Backend> MereHost<B> {
     /// version-2 one, converted (F142). A scene whose spec is refused, or
     /// whose conversion meets an unknown id, does not open (F97, F143, F154).
     pub fn product_scene(&self, address: &str) -> Result<SavedSceneV3, ProductError> {
-        let scene = if let Some(value) = self.facet_value(address, SAVED_SCENE_FACET) {
-            serde_json::from_value::<SavedSceneV3>(value.clone())
-                .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?
-        } else {
-            let value = self
-                .facet_value(address, SAVED_SCENE_FACET_V3)
-                .or_else(|| self.facet_value(address, SAVED_SCENE_FACET_V2))
-                .ok_or_else(|| ProductError::UnknownAddress(address.to_string()))?;
-            serde_json::from_value::<SavedSceneV2>(value.clone())
-                .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?
-                .into_v3()
-                .map_err(ProductError::InvalidScene)?
-        };
-        scene.check_dynamics().map_err(ProductError::InvalidScene)?;
-        Ok(scene)
+        let stored = StoredScene::find(|facet| self.facet_value(address, facet))
+            .ok_or_else(|| ProductError::UnknownAddress(address.to_string()))?;
+        saved_scene::read_scene(stored).map_err(|error| match error {
+            SceneReadError::Malformed(error) => ProductError::InvalidCodicil(error),
+            SceneReadError::Refused(error) => ProductError::InvalidScene(error),
+        })
     }
 
     pub fn export_product_codicil(&self, request: ExportRequest) -> Result<Vec<u8>, ProductError> {
@@ -1015,7 +653,7 @@ impl<B: Backend> MereHost<B> {
             &members,
             request.include_local_file_locations,
         );
-        let scene = request.scene.map(|scene| filter_scene(scene, &members));
+        let scene = request.scene.map(|scene| saved_scene::filter_scene(scene, &members));
         serde_json::to_vec_pretty(&ProfiledProductCodicil {
             placement: self.snapshot_placement(),
             product: ProductCodicilV3 {
@@ -1068,7 +706,7 @@ impl<B: Backend + Clone> MereHost<B> {
         let input = decode_profiled_codicil(bytes)?;
         let codicil = input.product;
         if let Some(scene) = &codicil.scene {
-            crate::local_scene::validate_scene(scene).map_err(ProductError::InvalidScene)?;
+            saved_scene::validate_scene(scene).map_err(ProductError::InvalidScene)?;
         }
         let receipt = ImportReceipt {
             nodes: codicil.graph.nodes.len(),
@@ -1416,25 +1054,6 @@ fn filtered_facets(
     facets
 }
 
-/// The scene an export carries: its selection, representations and target
-/// items narrowed to the exported members (F159). A spec this reader
-/// refuses rides on unchanged, to be refused where the scene opens (F114).
-fn filter_scene(mut scene: SavedSceneV3, members: &HashSet<Uuid>) -> SavedSceneV3 {
-    scene.selected.retain(|id| members.contains(id));
-    if let Ok(mut spec) = scene.dynamics.spec() {
-        if let Some(target) = spec.target.as_mut() {
-            target
-                .items
-                .retain(|id, _| Uuid::parse_str(id).is_ok_and(|member| members.contains(&member)));
-        }
-        scene.dynamics = SavedDynamics::from_spec(&spec);
-    }
-    scene
-        .cartography
-        .retain_members(|id| members.contains(id));
-    scene
-}
-
 pub(crate) fn decode_codicil(bytes: &[u8]) -> Result<ProductCodicilV3, ProductError> {
     Ok(decode_profiled_codicil(bytes)?.product)
 }
@@ -1462,7 +1081,7 @@ pub(crate) fn decode_profiled_codicil(
             facets: old.facets,
             scene: old
                 .scene
-                .map(SavedSceneV2::into_v3)
+                .map(saved_scene::scene_from_v2)
                 .transpose()
                 .map_err(ProductError::InvalidScene)?,
         }
@@ -1500,7 +1119,31 @@ mod tests {
     use scenotime::ProjectionClock;
 
     use super::*;
+    use mere::canvas::dynamics_spec::DynamicsSpec;
+    use mere::canvas::saved_scene::SavedRoles;
     use crate::access::AccessContext;
+
+    /// The scene reads the canvas owns, as these tests call them.
+    trait SceneReads {
+        fn dynamics_spec(&self) -> Result<DynamicsSpec, String>;
+    }
+    impl SceneReads for SavedSceneV3 {
+        fn dynamics_spec(&self) -> Result<DynamicsSpec, String> {
+            saved_scene::scene_spec(self)
+        }
+    }
+    trait OlderSceneReads {
+        fn into_v3(self) -> Result<SavedSceneV3, String>;
+        fn roles(&self) -> Result<(SavedRoles, f32), String>;
+    }
+    impl OlderSceneReads for SavedSceneV2 {
+        fn into_v3(self) -> Result<SavedSceneV3, String> {
+            saved_scene::scene_from_v2(self)
+        }
+        fn roles(&self) -> Result<(SavedRoles, f32), String> {
+            saved_scene::v2_roles(self)
+        }
+    }
     use crate::mere_host::{
         FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_GRANT_ADDRESS, FIXTURE_PERSONA_ADDRESS,
         FIXTURE_RECEIPT_ADDRESS, FIXTURE_WEB_ADDRESS, GRAPHSHELL, SelectedPersonaRef,
@@ -3264,7 +2907,7 @@ mod tests {
                 name: "Spec scene".to_string(),
                 selected: Vec::new(),
                 physics_paused: true,
-                dynamics: SavedDynamics::from_spec(spec),
+                dynamics: saved_scene::saved_dynamics(spec),
                 camera_offset: (0.0, 0.0),
                 camera_zoom: 1.0,
                 default_handler: "system.default".to_string(),
@@ -3910,7 +3553,7 @@ mod tests {
                 let nesting = json_nesting(&bytes);
                 println!("depth {depth}: codicil JSON nesting {nesting} (serde_json limit 128)");
                 let codicil = decode_codicil(&bytes).expect("parsed within serde_json's limit");
-                assert_eq!(codicil.scene.unwrap().dynamics.spec(), Ok(spec.clone()));
+                assert_eq!(saved_scene::read_dynamics(&codicil.scene.unwrap().dynamics), Ok(spec.clone()));
                 let refusal = mere::canvas::dynamics_spec::derive(&spec)
                     .unwrap_err()
                     .to_string();

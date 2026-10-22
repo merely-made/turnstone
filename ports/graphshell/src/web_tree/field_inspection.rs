@@ -207,7 +207,7 @@ fn coupling_rows(inspected: &CouplingInspection) -> Vec<DetailRow> {
 fn roster(page: &TreePage, canvas: &Canvas) -> Child {
     let mut children: Vec<Child> = vec![Box::new(el("h3", "Held fields"))];
     match graph(page) {
-        Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
+        Err(error) => children.push(Box::new(status_note("", error))),
         Ok(graph) => {
             let fields = model::field_roster(graph);
             if fields.is_empty() {
@@ -287,7 +287,7 @@ fn discovery(page: &TreePage, canvas: &Canvas) -> Child {
         )));
     }
     if page.field_inspector.picking {
-        children.push(Box::new(el("p", "Click the graph to list regions at that point. Escape in the graph cancels the pick.").attr("role", "status")));
+        children.push(Box::new(status_note("", "Click the graph to list regions at that point. Escape in the graph cancels the pick.")));
     }
     if let Some(pane) = &page.forme {
         if !pane.current().members().is_empty() {
@@ -309,7 +309,7 @@ fn discovery(page: &TreePage, canvas: &Canvas) -> Child {
             format!("World point: {}, {}", point[0], point[1]),
         )));
         match candidates(page, canvas) {
-            Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
+            Err(error) => children.push(Box::new(status_note("", error))),
             Ok(candidates) if candidates.is_empty() => children.push(Box::new(el(
                 "p",
                 "No visible rectangular regions at this point",
@@ -339,7 +339,7 @@ fn discovery(page: &TreePage, canvas: &Canvas) -> Child {
 fn numen_detail(page: &TreePage, id: FieldId, canvas: &Canvas) -> Child {
     let mut children: Vec<Child> = Vec::new();
     match graph(page).and_then(|graph| model::inspect_field(graph, id)) {
-        Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
+        Err(error) => children.push(Box::new(status_note("", error))),
         Ok(inspected) => {
             children.push(Box::new(detail_panel(&[DetailSection::new(
                 "Held field",
@@ -388,7 +388,7 @@ fn numen_detail(page: &TreePage, id: FieldId, canvas: &Canvas) -> Child {
 
 fn forme_detail(page: &TreePage, id: uuid::Uuid) -> Child {
     match forme(page, id) {
-        Err(error) => Box::new(el("p", error).attr("role", "status")),
+        Err(error) => Box::new(status_note("", error)),
         Ok(inspected) => {
             let pane = page.forme.as_ref().expect("resolved Forme");
             let state = if pane.saving {
@@ -455,7 +455,7 @@ pub(super) fn section(page: &TreePage) -> Child {
             },
         )));
         match graph(page).and_then(|graph| model::inspect_coupling(graph, id)) {
-            Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
+            Err(error) => children.push(Box::new(status_note("", error))),
             Ok(inspected) => {
                 children.push(Box::new(detail_panel(&[DetailSection::new(
                     "Exact coupling",

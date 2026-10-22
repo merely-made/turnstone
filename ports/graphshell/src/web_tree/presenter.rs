@@ -25,7 +25,7 @@ pub(super) const SHEET: &str = "\
 .tree-presenter-panel button[aria-pressed=true] { background:#2d5a63; border-color:#79a9be; } \
 .tree-presenter-panel .presenter-evidence { font-size:12px; color:#9fb0bb; } \
 .tree-presenter .history-control { flex-wrap:wrap; } \
-.tree-presenter .history-slider { max-width:100%; } \
+.tree-presenter .range-scrubber { max-width:100%; } \
 .tree-presenter-stacked { flex-direction:column; } \
 .tree-presenter-stacked .tree-graph { min-height:240px; } \
 .tree-presenter-stacked .tree-presenter-panel { width:100%; height:240px; border-left:0; border-top:1px solid #2c3b44; }";
@@ -195,10 +195,9 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
                         .apply(&mut *page.shared.canvas.borrow_mut(), page.shared.size.get());
                     page.shared.dirty.set(true);
                 }),
-                button("Graph tools", |page: &mut TreePage, _| {
+                disclosure_trigger("Graph tools", page.tools_open, |page: &mut TreePage| {
                     page.tools_open = !page.tools_open
-                })
-                .attr("aria-expanded", page.tools_open.to_string()),
+                }),
             ),
         )
         .attr("class", "tree-controls"),
@@ -214,48 +213,36 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
     let mut rows: Vec<Child> = vec![
         Box::new(el("h2", "Project inspector")),
         Box::new(
-            el(
-                "p",
-                format!(
+            status_note("", format!(
                     "{} selected · {} visible / {} disclosed",
                     p.selected.len(),
                     p.visible.len(),
                     p.envelope.dataset.occurrences.len()
-                ),
-            )
-            .attr("role", "status"),
+                )),
         ),
         Box::new(
-            button(
-                if pane.roster_open {
+            disclosure_trigger(if pane.roster_open {
                     "Hide project list"
                 } else {
                     "Choose projects"
-                },
-                |page: &mut TreePage, _| {
+                }, pane.roster_open, |page: &mut TreePage| {
                     if let Some(pane) = &mut page.presenter {
                         pane.roster_open = !pane.roster_open;
                     }
-                },
-            )
-            .attr("aria-expanded", pane.roster_open.to_string()),
+                }),
         ),
     ];
     if page.grouping.is_some() {
         disclosure_rows.push(Box::new(
-            button(
-                if pane.folds_open {
+            disclosure_trigger(if pane.folds_open {
                     "Hide Fold controls"
                 } else {
                     "Show Fold controls"
-                },
-                |page: &mut TreePage, _| {
+                }, pane.folds_open, |page: &mut TreePage| {
                     if let Some(pane) = &mut page.presenter {
                         pane.folds_open = !pane.folds_open;
                     }
-                },
-            )
-            .attr("aria-expanded", pane.folds_open.to_string()),
+                }),
         ));
         if pane.folds_open {
             if let Some(controls) = grouping::controls(page) {
@@ -345,7 +332,7 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
         rows.append(&mut selection_rows);
     }
     if !p.notice.is_empty() {
-        rows.push(Box::new(el("p", p.notice.clone()).attr("role", "status")));
+        rows.push(Box::new(status_note("", p.notice.clone())));
     }
     if let Some(id) = p.inspected.as_deref().filter(|id| p.details_visible(id)) {
         rows.push(Box::new(el("h3", p.label(id).to_owned())));
@@ -424,19 +411,15 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
             )));
         }
         rows.push(Box::new(
-            button(
-                if pane.evidence_open {
+            disclosure_trigger(if pane.evidence_open {
                     "Hide source details"
                 } else {
                     "Show source details"
-                },
-                |page: &mut TreePage, _| {
+                }, pane.evidence_open, |page: &mut TreePage| {
                     if let Some(pane) = &mut page.presenter {
                         pane.evidence_open = !pane.evidence_open;
                     }
-                },
-            )
-            .attr("aria-expanded", pane.evidence_open.to_string()),
+                }),
         ));
         if pane.evidence_open {
             let source = &p.envelope.dataset.source;
@@ -499,19 +482,15 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
     }
     if pane.options.browsing && !p.selected.is_empty() {
         rows.push(Box::new(
-            button(
-                if pane.selection_open {
+            disclosure_trigger(if pane.selection_open {
                     "Hide selection controls"
                 } else {
                     "Manage selection"
-                },
-                |page: &mut TreePage, _| {
+                }, pane.selection_open, |page: &mut TreePage| {
                     if let Some(pane) = &mut page.presenter {
                         pane.selection_open = !pane.selection_open;
                     }
-                },
-            )
-            .attr("aria-expanded", pane.selection_open.to_string()),
+                }),
         ));
         if pane.selection_open {
             rows.extend(selection_rows);
