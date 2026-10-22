@@ -6,12 +6,16 @@
 
 //! The Arrange pane: the graph's arrangement and its physics, as controls.
 //!
-//! The native counterpart of the web host's Find-and-arrange section: one
+//! The native counterpart of the web host's arrangement-and-physics section,
+//! which calls the same `mere::canvas::physics_controls` actions and labels
+//! its canvas verbs with `CanvasCommand::label`: one
 //! choice row for the arrangement (the canvas's analytic strategies, or
 //! Free — physics alone), one for the physics **law**, a toggle per
 //! **overlay**, a choice for each attribute **source** (what Kinds reads a
 //! kind from, what Orbit and the hub overlays weigh by, what Depth reads
-//! depth from), and a choice for the named **profile**. Every row is a
+//! depth from), and a choice for the named **profile**. The composing
+//! sections (role, two-law mix, grouping, two-stage schedule, speed) live in
+//! `compose`. Every row is a
 //! shared `cambium::setting_row` over a spec built from the canvas
 //! catalogs, so the plain names live in one place and a catalog change
 //! reaches this pane without an edit here.
@@ -20,8 +24,11 @@
 //! lowers to the same [`Action`] the command palette's `Physics:` /
 //! `Overlay:` / `Profile:` rows fire — the pane and the palette are two
 //! doors onto one spine, which is what lets a self-drive receipt act by
-//! label and read the pane's rows back. The pane holds no truth of its own:
-//! [`ArrangePane::sync`] mirrors the active canvas each frame.
+//! label and read the pane's rows back. The pane holds no truth of its own
+//! beyond the composing forms' unapplied drafts: [`ArrangePane::sync`]
+//! mirrors the active canvas each frame.
+
+mod compose;
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -32,11 +39,16 @@ use cambium::{
 };
 use genet_scripted_dom::ScriptedDom;
 use layout_dom_api::LayoutDom;
+use mere::canvas::controls::CanvasCommand;
+use mere::canvas::physics_controls::{
+    SPEED_PRESETS, TwoLawGrouping, TwoLawMix, TwoStageSchedule, read_two_law_grouping,
+    read_two_law_mix, read_two_stage_schedule, speed_preset,
+};
 use mere::canvas::{
     CANVAS_LAYOUT_STRATEGIES, CANVAS_PHYSICS_DEPTH_SOURCES, CANVAS_PHYSICS_KIND_SOURCES,
     CANVAS_PHYSICS_LAWS, CANVAS_PHYSICS_MASS_SOURCES, CANVAS_PHYSICS_OVERLAYS,
     CANVAS_PHYSICS_PROFILES, PhysicsDepthSource, PhysicsKindSource, PhysicsLaw, PhysicsMassSource,
-    PhysicsOverlay,
+    PhysicsOverlay, Role,
 };
 use mere_surface_api::settings::{
     SettingControl, SettingMovement, SettingMutability, SettingOption, SettingScope,
@@ -51,20 +63,33 @@ pub const FREE_LAYOUT_ID: &str = "free";
 /// The profile choice's value when no profile names the live pair.
 const CUSTOM_PROFILE_ID: &str = "custom";
 
+/// The canvas verbs the pane offers as buttons, in the order it shows them.
+const VERBS: [CanvasCommand; 8] = [
+    CanvasCommand::ResetToSeed,
+    CanvasCommand::SetSeed,
+    CanvasCommand::RestoreRecipeSeed,
+    CanvasCommand::ToggleForegroundPin,
+    CanvasCommand::DismissRetained,
+    CanvasCommand::GrowTiles,
+    CanvasCommand::ShrinkTiles,
+    CanvasCommand::ToggleTerritory,
+];
+
 /// What an Arrange interaction produces. Ids, never labels: the shell lowers
 /// each to an [`Action`] through [`ArrangeIntent::into_action`].
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ArrangeIntent {
     /// An arrangement id from the canvas catalog, or [`FREE_LAYOUT_ID`].
     SetLayout(String),
-    ResetToSeed,
-    SetSeed,
-    RestoreRecipeSeed,
-    ToggleForegroundPin,
-    DismissRetained,
-    GrowTiles,
-    ShrinkTiles,
-    ToggleTerritory,
+    /// One of [`VERBS`].
+    Verb(CanvasCommand),
+    SetRole(String),
+    SetRoleGroups(String),
+    SetSpeed(String),
+    ApplyMix(TwoLawMix),
+    ApplyGrouping(TwoLawGrouping),
+    ApplySchedule(TwoStageSchedule),
+    UseSingleLaw,
     SetLaw(String),
     SetOverlay {
         id: String,
@@ -85,14 +110,18 @@ impl ArrangeIntent {
     /// not know (a stale row, a typo in a script).
     pub fn into_action(self) -> Option<Action> {
         match self {
-            Self::ResetToSeed => Some(Action::ResetToSeed),
-            Self::SetSeed => Some(Action::SetSeed),
-            Self::RestoreRecipeSeed => Some(Action::RestoreRecipeSeed),
-            Self::ToggleForegroundPin => Some(Action::ToggleForegroundPin),
-            Self::DismissRetained => Some(Action::DismissRetained),
-            Self::GrowTiles => Some(Action::GrowTiles),
-            Self::ShrinkTiles => Some(Action::ShrinkTiles),
-            Self::ToggleTerritory => Some(Action::ToggleTerritory),
+            Self::Verb(verb) => Action::from_canvas_verb(verb),
+            Self::SetRole(id) => Role::parse(&id).map(|role| Action::SetPhysicsRole(role.id())),
+            Self::SetRoleGroups(id) => PhysicsKindSource::parse(&id)
+                .map(|source| Action::SetPhysicsRoleGroups(source.id())),
+            Self::SetSpeed(id) => SPEED_PRESETS
+                .iter()
+                .find(|(known, _)| *known == id)
+                .map(|(known, _)| Action::SetPhysicsSpeed(known)),
+            Self::ApplyMix(mix) => Some(Action::ApplyPhysicsMix(mix)),
+            Self::ApplyGrouping(grouping) => Some(Action::ApplyPhysicsGrouping(grouping)),
+            Self::ApplySchedule(schedule) => Some(Action::ApplyPhysicsSchedule(schedule)),
+            Self::UseSingleLaw => Some(Action::UseSingleLaw),
             ArrangeIntent::SetLayout(id) if id == FREE_LAYOUT_ID => {
                 Some(Action::SetLayoutStrategy(None))
             },
@@ -119,8 +148,16 @@ impl ArrangeIntent {
     }
 }
 
+/// What the canvas authored for the composing forms, as the readers answer.
+#[derive(Clone, Debug, PartialEq)]
+struct Authored {
+    mix: Result<Option<TwoLawMix>, String>,
+    grouping: Result<Option<TwoLawGrouping>, String>,
+    schedule: Result<Option<TwoStageSchedule>, String>,
+}
+
 /// The mirrored canvas choice, refreshed by [`ArrangePane::sync`].
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 struct Choice {
     layout: String,
     law: String,
@@ -129,6 +166,11 @@ struct Choice {
     mass: String,
     depth: String,
     profile: String,
+    role: String,
+    role_groups: String,
+    speed: String,
+    authored: Authored,
+    status: Option<String>,
     refusal: Option<String>,
     saved_seed: bool,
     regions: usize,
@@ -166,6 +208,17 @@ impl Choice {
                 .profile_id()
                 .unwrap_or(CUSTOM_PROFILE_ID)
                 .to_string(),
+            role: canvas.arrangement_roles().default.id().to_string(),
+            role_groups: canvas.role_group_source().id().to_string(),
+            speed: SPEED_PRESETS[speed_preset(canvas)].0.to_string(),
+            authored: Authored {
+                mix: read_two_law_mix(canvas),
+                grouping: read_two_law_grouping(canvas),
+                schedule: read_two_stage_schedule(canvas),
+            },
+            status: graph
+                .and_then(|graph| app.graph_runtimes.get(graph))
+                .and_then(|runtime| runtime.physics_status.clone()),
             saved_seed: canvas.has_saved_seed(),
             regions: canvas.strategy_regions().len(),
             refusal: app.physics_refusal().map(ToString::to_string),
@@ -223,15 +276,27 @@ pub fn arrange_rows(app: &App) -> Vec<String> {
             label(CANVAS_PHYSICS_DEPTH_SOURCES, &choice.depth)
         ),
         format!("Profile: {profile}"),
+        format!("Role: {}", label_of_role(&choice.role)),
+        format!("Role groups: {}", label(CANVAS_PHYSICS_KIND_SOURCES, &choice.role_groups)),
+        format!("Speed: {}", SPEED_PRESETS.iter().find(|(id, _)| *id == choice.speed).map_or("1x", |(_, label)| label)),
     ];
+    rows.extend(compose::authored_rows(&choice.authored));
+    if let Some(status) = choice.status {
+        rows.push(format!("Physics status: {status}"));
+    }
     if let Some(refusal) = choice.refusal {
         rows.push(format!("Physics refused: {refusal}"));
     }
     rows
 }
 
+fn label_of_role(id: &str) -> &'static str {
+    Role::parse(id).map_or("Seeded", Role::label)
+}
+
 struct ArrangeState {
     choice: Choice,
+    drafts: compose::Drafts,
     viewport_w: f32,
     viewport_h: f32,
 }
@@ -319,10 +384,18 @@ fn section(title: &str) -> ArrangeView {
     )
 }
 
-fn scene_button(label: &'static str, intent: ArrangeIntent) -> ArrangeView {
+fn scene_button(verb: CanvasCommand) -> ArrangeView {
+    apply_button(verb.label(), move |_| ArrangeIntent::Verb(verb))
+}
+
+/// A button whose press turns the pane's state into an intent.
+fn apply_button(
+    label: &'static str,
+    intent: impl Fn(&ArrangeState) -> ArrangeIntent + 'static,
+) -> ArrangeView {
     Box::new(
-        button(label, move |_: &mut ArrangeState, _: PointerClick| {
-            Some(intent.clone())
+        button(label, move |state: &mut ArrangeState, _: PointerClick| {
+            Some(intent(state))
         })
         .attr("class", "setting-apply"),
     )
@@ -374,16 +447,7 @@ fn arrange_view(state: &ArrangeState) -> ArrangeView {
                             ),
                         )
                         .attr("role", "status"),
-                        vec![
-                            scene_button("Reset to seed", ArrangeIntent::ResetToSeed),
-                            scene_button("Set seed", ArrangeIntent::SetSeed),
-                            scene_button("Restore recipe seed", ArrangeIntent::RestoreRecipeSeed),
-                            scene_button("Foreground pin", ArrangeIntent::ToggleForegroundPin),
-                            scene_button("Dismiss retained", ArrangeIntent::DismissRetained),
-                            scene_button("Grow tiles", ArrangeIntent::GrowTiles),
-                            scene_button("Shrink tiles", ArrangeIntent::ShrinkTiles),
-                            scene_button("Territory", ArrangeIntent::ToggleTerritory),
-                        ],
+                        VERBS.into_iter().map(scene_button).collect::<Vec<_>>(),
                     ),
                 ),
                 section("Physics"),
@@ -431,6 +495,14 @@ fn arrange_view(state: &ArrangeState) -> ArrangeView {
                     &choice.depth,
                     ArrangeIntent::SetDepthSource,
                 ),
+                compose::views(state),
+                el::<_, ArrangeState, ArrangeIntent>(
+                    "div",
+                    choice.status.clone().unwrap_or_default(),
+                )
+                .attr("role", "status")
+                .attr("aria-live", "polite")
+                .attr("aria-label", "Physics status"),
             ),
         )
         .attr("class", "pane")
@@ -504,10 +576,20 @@ impl ArrangePane {
                 mass: PhysicsMassSource::Degree.id().to_string(),
                 depth: PhysicsDepthSource::Roots.id().to_string(),
                 profile: CUSTOM_PROFILE_ID.to_string(),
+                role: Role::Seeded.id().to_string(),
+                role_groups: PhysicsKindSource::Site.id().to_string(),
+                speed: SPEED_PRESETS[mere::canvas::physics_controls::DEFAULT_SPEED_PRESET].0.to_string(),
+                authored: Authored {
+                    mix: Ok(None),
+                    grouping: Ok(None),
+                    schedule: Ok(None),
+                },
+                status: None,
                 refusal: None,
                 saved_seed: false,
                 regions: 0,
             },
+            drafts: compose::Drafts::default(),
             viewport_w: 0.0,
             viewport_h: 0.0,
         };
@@ -596,6 +678,9 @@ impl ArrangePane {
 
     fn sync_choice(&mut self, choice: Choice, pane_w: f32, pane_h: f32) {
         self.runner.update(|state| {
+            if state.choice.authored != choice.authored {
+                state.drafts.follow(&choice.authored);
+            }
             state.choice = choice;
             state.viewport_w = pane_w;
             state.viewport_h = pane_h;

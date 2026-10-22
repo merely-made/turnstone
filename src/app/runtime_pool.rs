@@ -36,6 +36,8 @@ pub struct GraphRuntime {
     pub(crate) scene_save_pending: bool,
     pub(crate) scene_restore_pending: bool,
     pub(crate) scene_transition: Option<mere::canvas::physics_controls::ArrangementTransition>,
+    /// What the last composing physics control came to, for the Arrange pane.
+    pub(crate) physics_status: Option<String>,
     pub(crate) folds: crate::graph_folds::FoldSidecar,
     origin: Option<crate::host_journal::RuntimeOrigin>,
     pub(crate) persistence: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile>,
@@ -52,6 +54,7 @@ impl GraphRuntime {
             session,
             canvas,
             scene_transition: None,
+            physics_status: None,
             scene_save_pending: false,
             scene_restore_pending: false,
             folds: Default::default(),
@@ -359,21 +362,11 @@ impl GraphRuntimePool {
     }
 
     pub(crate) fn edit_canvas_physics(canvas: &mut Canvas, edit: impl FnOnce(&mut PhysicsChoice)) -> Result<(), OverlayRefusal> {
-        let running = PhysicsChoice::live(canvas);
-        let mut choice = running.clone();
-        edit(&mut choice);
-        let (choice, refusal) = choice.admitted();
-        let applied = canvas.dynamics_spec().and_then(|mut spec| {
-            choice.write_into(&mut spec, &running);
-            canvas
-                .set_dynamics_spec(&spec)
-                .map(|_| ())
-                .map_err(|error| error.to_string())
-        });
-        if let Err(error) = applied {
+        let write = mere::canvas::physics_controls::edit_physics(canvas, edit);
+        if let Some(error) = write.error {
             tracing::warn!(%error, "the canvas refused the physics change");
         }
-        refusal.map_or(Ok(()), Err)
+        write.refusal.map_or(Ok(()), Err)
     }
 
     pub fn set_physics_law(&mut self, law: PhysicsLaw) -> Result<(), OverlayRefusal> {

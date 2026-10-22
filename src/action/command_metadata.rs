@@ -127,6 +127,13 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::SetPhysicsMassSource(..)
         | Action::SetPhysicsDepthSource(..)
         | Action::ApplyPhysicsProfile(..)
+        | Action::SetPhysicsRole(..)
+        | Action::SetPhysicsRoleGroups(..)
+        | Action::ApplyPhysicsMix(..)
+        | Action::ApplyPhysicsGrouping(..)
+        | Action::ApplyPhysicsSchedule(..)
+        | Action::UseSingleLaw
+        | Action::SetPhysicsSpeed(..)
         | Action::ToggleTerritory
         | Action::ToggleIsometric
         | Action::OrbitBy(..)

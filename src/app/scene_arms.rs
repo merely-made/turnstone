@@ -152,9 +152,13 @@ impl App {
         let Some(pane) = pane else {
             return vec![];
         };
-        if matches!(action, Action::ToggleTerritory) {
+        let Some(command) = action.canvas_verb() else {
+            return vec![];
+        };
+        if command == CanvasCommand::ToggleTerritory {
             self.with_graph_pane(pane, |canvas| {
-                canvas.set_territory_field(!canvas.territory_field());
+                let viewport = canvas.view_size();
+                command.apply(canvas, viewport);
             });
             return vec![Effect::Redraw];
         }
@@ -176,18 +180,9 @@ impl App {
                 canvas.take_stop_return();
             });
         }
-        let command = match action {
-            Action::ResetToSeed => CanvasCommand::ResetToSeed,
-            Action::SetSeed => CanvasCommand::SetSeed,
-            Action::RestoreRecipeSeed => CanvasCommand::RestoreRecipeSeed,
-            Action::ToggleForegroundPin => CanvasCommand::ToggleForegroundPin,
-            Action::DismissRetained => CanvasCommand::DismissRetained,
-            Action::GrowTiles => CanvasCommand::GrowTiles,
-            Action::ShrinkTiles => CanvasCommand::ShrinkTiles,
-            _ => return vec![],
-        };
         self.with_graph_pane(pane, |canvas| {
-            command.apply(canvas, (1, 1));
+            let viewport = canvas.view_size();
+            command.apply(canvas, viewport);
         });
         if durable {
             self.mark_graph_scene_changed(pane);
