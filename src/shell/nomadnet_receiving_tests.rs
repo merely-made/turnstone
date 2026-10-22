@@ -13,6 +13,7 @@ use retinue::identity::PrivateIdentity;
 use retinue::nomadnet::StaticNode;
 use std::net::SocketAddr;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use uuid::Uuid;
@@ -187,7 +188,7 @@ async fn receive(
     let page =
         fetch_page_on_interface(parse_address(address).unwrap(), tcp, PAGE_TIMEOUT, PAGE_CAP)
             .await
-            .expect("native page fetch completes");
+            .unwrap_or_else(|error| panic!("native page fetch {address} failed: {error}"));
     assert_eq!(
         page.bytes, expected,
         "the binary response envelope preserves exact source bytes"
@@ -229,6 +230,7 @@ struct NativeFixture {
     tcp: SocketAddr,
     destination: String,
     seen: Arc<Mutex<Vec<retinue::hash::AddressHash>>>,
+    completed: Arc<AtomicUsize>,
     stop: Option<tokio::sync::oneshot::Sender<()>>,
     worker: Option<tokio::task::JoinHandle<()>>,
 }
@@ -251,9 +253,11 @@ impl NativeFixture {
         let destination = node.destination(endpoint.identity()).to_string();
         let node = Arc::new(node);
         let seen = Arc::new(Mutex::new(Vec::new()));
+        let completed = Arc::new(AtomicUsize::new(0));
         let (stop, mut stopped) = tokio::sync::oneshot::channel();
         let server = Arc::clone(&endpoint);
         let recorded = Arc::clone(&seen);
+        let responses = Arc::clone(&completed);
         let worker = tokio::spawn(async move {
             let mut sessions = tokio::task::JoinSet::new();
             loop {
@@ -263,14 +267,15 @@ impl NativeFixture {
                         let mut accepted = accepted.unwrap();
                         let node = Arc::clone(&node);
                         let recorded = Arc::clone(&recorded);
+                        let responses = Arc::clone(&responses);
                         sessions.spawn(async move {
                             let received = tokio::time::timeout(PAGE_TIMEOUT, accepted.session.receive_request()).await.unwrap().unwrap();
                             assert!(received.request.data.is_empty(), "ordinary reading sends no submission data");
                             recorded.lock().unwrap().push(received.request.path_hash);
-                            // Receiving exact bytes below is the client gate. The client
-                            // may close after reading; that does not qualify sender-side
-                            // Resource completion or change production transport policy.
-                            let _ = node.respond_to_request(&mut accepted.session, received).await;
+                            node.respond_to_request(&mut accepted.session, received)
+                                .await
+                                .expect("the client drains the Resource proof before closing");
+                            responses.fetch_add(1, Ordering::SeqCst);
                         });
                     },
                     joined = sessions.join_next(), if !sessions.is_empty() => {
@@ -278,14 +283,8 @@ impl NativeFixture {
                     },
                 }
             }
-            sessions.abort_all();
             while let Some(joined) = sessions.join_next().await {
-                if let Err(error) = joined {
-                    assert!(
-                        error.is_cancelled(),
-                        "native fixture task panicked: {error}"
-                    );
-                }
+                joined.expect("every admitted response completes before fixture shutdown");
             }
         });
         Self {
@@ -293,6 +292,7 @@ impl NativeFixture {
             tcp,
             destination,
             seen,
+            completed,
             stop: Some(stop),
             worker: Some(worker),
         }
@@ -300,10 +300,20 @@ impl NativeFixture {
 
     async fn finish(mut self) {
         self.stop.take().unwrap().send(()).unwrap();
-        tokio::time::timeout(Duration::from_secs(5), self.worker.take().unwrap())
-            .await
-            .unwrap()
-            .unwrap();
+        let mut worker = self.worker.take().unwrap();
+        match tokio::time::timeout(Duration::from_secs(5), &mut worker).await {
+            Ok(joined) => joined.unwrap(),
+            Err(_) => {
+                worker.abort();
+                let _ = worker.await;
+                panic!("native fixture responses did not complete before shutdown");
+            }
+        }
+        assert_eq!(
+            self.completed.load(Ordering::SeqCst),
+            self.seen.lock().unwrap().len(),
+            "all admitted native responses completed, including Resource proofs"
+        );
         self.endpoint.close();
     }
 }
