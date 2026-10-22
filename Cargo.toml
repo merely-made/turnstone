@@ -362,7 +362,7 @@ windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 # source copies, so a clean checkout does not require sibling paths.
 [patch.crates-io]
 # Promoted sources shared with immutable older Mere suppliers.
-esp = { git = "https://github.com/merely-made/esp.git", rev = "960d4d830f0a20254a5862683e4612aa49fd0ef3" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "b9f050b2947822aa0e5908a9aaedfc47a4f23930" }
 # Canonical promoted families; keep registry and Git consumers type-identical.
 armillary = { git = "https://github.com/merely-made/armillary.git", rev = "92d5b15cf39aaac40a3f2d863ffee69c9be11bfc" }
 chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "44f0664748238d7a96603925a0268caf60e091aa" }
@@ -474,7 +474,7 @@ chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "44f066
 commons-spine = { git = "https://github.com/merely-made/gemot.git", rev = "f27cb1aa5c79f0a178bd7cd99f468cbcc66892a2" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "44f0664748238d7a96603925a0268caf60e091aa" }
 errand = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
-esp = { git = "https://github.com/merely-made/esp.git", rev = "960d4d830f0a20254a5862683e4612aa49fd0ef3" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "b9f050b2947822aa0e5908a9aaedfc47a4f23930" }
 gemot = { git = "https://github.com/merely-made/gemot.git", rev = "f27cb1aa5c79f0a178bd7cd99f468cbcc66892a2" }
 luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "44f0664748238d7a96603925a0268caf60e091aa" }
 mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "44f0664748238d7a96603925a0268caf60e091aa" }
@@ -506,7 +506,7 @@ chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "44f066
 commons-spine = { git = "https://github.com/merely-made/gemot.git", rev = "f27cb1aa5c79f0a178bd7cd99f468cbcc66892a2" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "44f0664748238d7a96603925a0268caf60e091aa" }
 errand = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
-esp = { git = "https://github.com/merely-made/esp.git", rev = "960d4d830f0a20254a5862683e4612aa49fd0ef3" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "b9f050b2947822aa0e5908a9aaedfc47a4f23930" }
 gemot = { git = "https://github.com/merely-made/gemot.git", rev = "f27cb1aa5c79f0a178bd7cd99f468cbcc66892a2" }
 luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "44f0664748238d7a96603925a0268caf60e091aa" }
 mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "44f0664748238d7a96603925a0268caf60e091aa" }
