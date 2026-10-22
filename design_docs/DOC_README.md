@@ -33,6 +33,9 @@ set.
 - Keep authority boundaries sharp: Turnstone owns product actions and policy,
   Mere owns reusable graph/projection primitives, and Genet engines own
   document behavior. Promote a shared contract when a real consumer forces it.
+- Name the actual document format in user-facing choices (Djot, Markdown,
+  Gemtext, and so on); use document when no format has been selected. Preserve
+  provider, route, schema, action and compatibility-format identities.
 - Use one action catalog and one observable state spine. UI, automation, and
   accessibility should consume the same named actions and facts.
 - Apply graph camera edits through the owning pane's `with_graph_pane` boundary.
@@ -64,17 +67,44 @@ set.
 
 ## Current implementation plans and product direction
 
+- [Compare: selection sources, selection commands and shared scenes](2026-10-21_compare_selection_and_shared_scenes_plan.md):
+  proposed next slice. A snapshot, live or frozen selection source in `curation`;
+  Compare, Show connections, Read in sequence and Search within selection; the
+  Graphshell scene format lifted to `pandect` and extended for comparisons.
+  Phases 0–2 can start; phase 4 waits on four open questions.
+- [Relationship navigation and visible pane bindings](2026-10-21_relationship_navigation_and_pane_bindings.md):
+  landed `57be5ab`. Related disclosure; Inspector and Roster show and change
+  their source binding (Follow active pane, follow a publisher, Pin).
+
+- [Hest command invocation and Cambium 0.5 adoption](2026-10-06_unusual_protocols_browser_plan.md#hest-h3-command-invocation-2026-10-20): canonical H3 keyboard/reducer receiving qualified on Mere `9ef5e3026` and embedded Knot `ebf10c741`; 1107 full-library passes, all-targets and portable metadata checks pass. Deferred dispatch remains pending; Git delivery is authorized and crate publication remains held.
+
 - Resident answer card: source-owner publication, exact-version citations and
   headed I5 acceptance are tracked in
   `mere/design_docs/mere_docs/implementation_strategy/2026-10-15_resident_inference_and_recall_plan.md`.
   Native I5 is qualified with the pinned GPU model and an offline-origin
-  restart. Turnstone's client integration is recorded in the
+  restart. The October 20 embedding continuation is qualified on macOS:
+  current SDK intake, real MiniLM fused recall through headed retained sources,
+  and an independent cold product/resident pair with a new ask. Its
+  [receipt](../docs/receipts/embedding_recall_20261020/qualification.json)
+  preserves the exact envelope/index, source/citation and private-journal evidence. Turnstone's client integration is recorded in the
   [architecture plan](2026-07-10_turnstone_architecture_plan.md).
 
 - [Retained clip receiver](2026-10-11_retained_clip_receiver_plan.md): Fleece
   selected-package admission, local Inker reading and Redshank voice-body
-  playback in the receiving mere; automated/native restart and selected onward
-  export into a second mere qualify text/WAV, with browser/structured/custody gates retained.
+  playback in the receiving mere; published suppliers and bounded headed sealed
+  Knot/voice receive, cold playback and onward export are qualified locally.
+  Embedded Knot primary-mouse selection, immediate retention and cold export
+  are qualified in the October 20 continuation. A separate October 20 receipt
+  qualifies embedded Redshank selected text-note retention, source-absent cold
+  reopen and onward export through an independent receiver. Personal
+  vault/migration, broader editor input and format gates remain. The October 21
+  continuation qualifies both retained text bodies in explicit Answers scope,
+  real fused recall, local citations and source-absent cold export on its recorded
+  receiving cut. A companion packet also qualifies the final shared shell and
+  shared Apparatus-core SDK `7edfe3b09`; the four-scalar citation/model limit
+  remains explicit. The mixed-source continuation records a four-member scope, 52 native warm/cold
+  captures and lexical-versus-fused measurements, with generated-reference and
+  exact runtime-cut limits explicit.
 - [q-pc lane handoff, 2026-10-14](2026-10-14_qpc_lane_handoff.md): the lane's
   resume point on q-pc (Mac), with Windows gates on o-pc. Main is the only live line after the ThinkPad
   branch/worktree reconciliation; lists pins, the lens-label fix, ordered open
@@ -120,7 +150,11 @@ set.
   explicitly scoped capture-backed Answers and cold-reopen acceptance. Authored
   Knot notes now join this workflow: the [October 18 receipt](../docs/receipts/research_notes_20261018/README.md)
   qualifies ordinary note creation/choice, exact source citations and a cold
-  origin-gone return. Deliberate attachment sharing remains next. R0 save
+  origin-gone return. The October 19 named-recipient assessment records the
+  missing source-owner publication handoff and durable withdrawal decision;
+  deliberate attachment sharing remains unqualified. The
+  [format/local-note receipt](../docs/receipts/document_formats_20261019/README.md)
+  records the bounded naming and exact-citation regression checks. R0 save
   acknowledgement/recovery is implemented from fetched `b7e1529`, adopting
   published Mere `00e444286`:
   940 bounded regression tests pass, including 50 capture and 16 scene controls;
@@ -175,7 +209,7 @@ set.
 - [Turnstone engine adoption](2026-08-03_turnstone_engine_adoption_plan.md): selectable engine routing and unavailable-engine behavior.
 - [Reticulum browsing](2026-08-03_reticulum_browsing_plan.md): native NomadNet page routing and Micron preview implemented; current shared presentation, typed interaction and independent carrier acceptance scopes.
 - [User-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md): browser obligations assigned to graph-native Turnstone homes; B0 and scoped Windows Scry/Weld controls retain their [supplier receipt](../docs/receipts/browser_supplier_integration_20261006/README.md). U14's older publication is historical; the [U9 coordinated family](../docs/receipts/browser_family_20261007/README.md) is now published with passing Windows/Linux S0 source checks. Default Servo pixel failures, foreign accessibility and library/application release gates remain separate.
-- [Turnstone place port](2026-07-28_turnstone_place_port_plan.md): shared-place product composition and two-peer acceptance path.
+- [Turnstone place port](2026-07-28_turnstone_place_port_plan.md): shared-place product composition and two-peer acceptance path. Historical T5b/T5c Windows receipts retain their scope. The [current macOS baseline](../docs/receipts/place_sharing_20261019/README.md) qualifies create/invite/join, chosen address and chat sharing, reader refusal, and origin-gone cold return with explicit contact renewal. Current document projection, research attachments, automatic discovery/WAN and named-recipient publication remain separate.
 - [Peer-web reframe](2026-07-28_turnstone_peer_web_reframe.md): current product direction for local-first personal and shared places.
 - [Turnstone architecture](2026-07-10_turnstone_architecture_plan.md): structural obviation ladder and current Mere/Turnstone boundaries.
 - [Turnstone rung 5 panes](2026-07-14_turnstone_rung5_panes_plan.md): pane, surface-composition, focus, workbench, and window foundations; October 10 application appearance adoption uses shared Tabard definitions and native workshop bindings; current-origin native13 macOS production acceptance passed four serialized processes, 521 presentations and nineteen inspected captures, including repaired 34 CSS px Theme name/seed fields; final 32 Turnstone / 74 family targeted CPU checks and exact Save/Apply/restart evidence in the [receipt ledger](../docs/receipts/tabard_adoption_20261010/README.md). Reader/browser rollout gates remain separate.
@@ -191,7 +225,9 @@ set.
   as an episode tile, enclosure routing, one app-owned audio and model
   authority, and the item/progress/note graph projection. Landed; the fetch
   path closed 2026-09-22 through Mere's fetch handle and the pins are
-  aligned; the microphone and a headed receipt remain open.
+  aligned. Embedded selected text-note retention has an October 20 headed
+  source-absent cold/export receipt using a typed owner-model fixture; full
+  owner authoring/menu, embedded audio and microphone gates remain separate.
 - [Turnstone surfaces in Cambium](2026-07-15_turnstone_surfaces_in_cambium.md): mapping from product surfaces to Cambium components or non-Cambium lanes.
 - [Turnstone founding](2026-07-08_turnstone_founding.md): naming, role swap, and original sequencing, with later authority corrections called out in the document.
 - [Meerkat harvest](2026-07-18_meerkat_harvest.md): port, note, or leave audit made before retiring the donor application.

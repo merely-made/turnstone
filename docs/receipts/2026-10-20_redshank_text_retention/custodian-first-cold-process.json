@@ -1,0 +1,9 @@
+{
+  "pid": 57766,
+  "binary": "/Users/markik/Code/output/redshank-text-retention-20261020/custodian-host",
+  "binary_sha256": "6f5a514947b3a84d8bd9eacfd00d3a066133ac19e78ef45232c7f358605b95ab",
+  "synthetic_wallet_root": "/Users/markik/Code/output/redshank-text-retention-20261020/runtime/custodian",
+  "endpoint": "/Users/markik/Code/output/redshank-text-retention-20261020/runtime/custody.sock",
+  "previous_pid": 54012,
+  "same_persisted_fixture_wallet": true
+}

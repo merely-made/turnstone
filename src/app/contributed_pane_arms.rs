@@ -141,11 +141,11 @@ mod tests {
     fn knot_file_choices_are_palette_actions_lowered_to_shell_effects() {
         let rows = crate::action::palette_actions();
         assert!(rows.iter().any(|(label, action)| {
-            label == "Open Knot document"
+            label == "Open document"
                 && matches!(action, Action::ChooseKnotDocumentFile { read_only: false })
         }));
         assert!(rows.iter().any(|(label, action)| {
-            label == "Open Knot document read-only"
+            label == "Open document read-only"
                 && matches!(action, Action::ChooseKnotDocumentFile { read_only: true })
         }));
 
@@ -262,18 +262,58 @@ impl App {
         }
         effects
     }
+    pub(crate) fn research_clip_admissions(&self) -> Vec<crate::research::ClipAdmission> {
+        if self.session_load_refused() { return Vec::new(); }
+        let mut clips = Vec::new();
+        for runtime in self.graph_runtimes.iter().filter(|r| r.session == Some(self.session_id)) {
+            if runtime.persistence.placement_for(&self.session_dir()).is_err() { continue; }
+            for (_, node) in runtime.canvas.graph().nodes() {
+                if let Ok(Some(crate::retained_clip::ClipRequest::Read(manifest))) = crate::retained_clip::request(node.url()) {
+                    clips.push(crate::research::ClipAdmission { session: self.session_id, graph: runtime.graph, node: node.id, manifest });
+                }
+            }
+        }
+        clips.sort_by_key(|c| (c.graph.as_uuid().to_owned(), c.node));
+        clips
+    }
+    fn research_target_admitted(&self, target: &crate::research::Target) -> bool {
+        target.selector().is_none() && match target {
+            crate::research::Target::Capture(t) => self.saved_source_admitted(&t.key),
+            crate::research::Target::Clip(t) => self.research_clip_admissions().contains(&t.clip),
+        }
+    }
+    pub(crate) fn open_research_clip(&mut self, target: crate::research::ClipTarget) -> Vec<Effect> {
+        if !self.research_clip_admissions().contains(&target.clip) {
+            return self.saved_source_refusal("The cited retained clip was withdrawn from this session.".into());
+        }
+        if let Err(error) = self.clip_destination() { return self.saved_source_refusal(error); }
+        let pane = self.frisket.iter_leaves().chain(self.lenses.iter().flatten().flat_map(|layout| layout.iter_leaves()))
+            .find(|(_, content, graph)| matches!(content, crate::panes::PaneContent::Orrery) && *graph == target.clip.graph).map(|(pane, _, _)| pane);
+        let Some(pane) = pane else { return self.saved_source_refusal("The cited retained clip has no open owning graph.".into()); };
+        self.reveal_pane(pane);
+        self.focus = crate::surface::FocusTarget::Graph(pane);
+        self.graph_pane_select_member(pane, target.clip.node);
+        let effects = self.open_in_workbench();
+        if let Some(pane) = self.active_pane {
+            self.reveal_pane(pane);
+            self.focus = crate::surface::FocusTarget::Pane(pane);
+        }
+        effects
+    }
     pub(crate) fn sync_research_context(&self) {
+        self.research.access(self.identity.clone().map(|sealer| crate::research::ClipAccess { root: self.data_root.clone(), sealer }));
         self.research.project(crate::research::Context {
             session: self.session_id,
             generation: self.source_capture_generation,
             admissions: self.saved_source_admissions(),
+            clips: self.research_clip_admissions(),
         });
     }
     pub(crate) fn set_answer_selection(
         &mut self,
         generation: uuid::Uuid,
         expected: crate::inference_surface::AnswerSourceV2,
-        mut chosen: Vec<crate::saved_sources::Target>,
+        mut chosen: Vec<crate::research::Target>,
     ) -> Vec<Effect> {
         if generation != self.source_capture_generation
             || expected.session != *self.session_id.as_uuid()
@@ -282,7 +322,7 @@ impl App {
                 // them. Only additions need current admission; every ask still
                 // validates the entire selected scope against exact content.
                 !expected.chosen.contains(target)
-                    && (target.selector.is_some() || !self.saved_source_admitted(&target.key))
+                    && !self.research_target_admitted(target)
             })
         {
             return self.saved_source_refusal(
@@ -377,11 +417,11 @@ mod research_view_tests {
         let chosen: Vec<_> = app
             .saved_source_admissions()
             .into_iter()
-            .map(|admission| crate::saved_sources::Target {
+            .map(|admission| crate::research::Target::Capture(crate::saved_sources::Target {
                 key: admission.key,
                 text_hash: eidetic::Hash::of(b"saved text").to_string(),
                 selector: None,
-            })
+            }))
             .collect();
         assert_eq!(chosen.len(), 2);
         app.update(Action::OpenAnswers);
@@ -396,7 +436,7 @@ mod research_view_tests {
         let both = source(&app, pane);
         for target in &chosen {
             app.graph_runtimes.facets_mut().remove(
-                &target.key.node,
+                &target.node(),
                 &chartulary::FacetId::new(crate::source_capture::SOURCE_CAPTURE_REFERENCES_FACET),
             );
         }
@@ -454,14 +494,14 @@ mod research_view_tests {
             expected,
             chosen,
         };
-        let effects = app.update(select(initial.clone(), vec![target.clone()]));
+        let effects = app.update(select(initial.clone(), vec![target.clone().into()]));
         assert!(
             effects
                 .iter()
                 .any(|effect| matches!(effect, Effect::SaveSession))
         );
         let chosen = source(&app, pane);
-        assert_eq!(chosen.chosen, vec![target.clone()]);
+        assert_eq!(chosen.chosen, vec![target.clone().into()]);
         // frame.json's ordinary serialized pane authority carries identities only.
         let serialized = serde_json::to_vec(&app.frisket).unwrap();
         let reopened: crate::panes::FrisketLayout = serde_json::from_slice(&serialized).unwrap();
@@ -489,7 +529,7 @@ mod research_view_tests {
         assert_eq!(source(&app, pane), chosen);
         let mut foreign = target;
         foreign.key.session = crate::panes::SessionId::new();
-        app.update(select(chosen.clone(), vec![foreign]));
+        app.update(select(chosen.clone(), vec![foreign.into()]));
         assert_eq!(source(&app, pane), chosen);
         app.update(select(chosen, vec![]));
         assert!(

@@ -1,0 +1,7 @@
+{"at_ms":1792464746115,"event":"started","installed":false,"pid":6247,"schema":"djinn.resident-events/v1","version":"0.0.2"}
+{"at_ms":1792464746116,"creating":false,"event":"waiting-for-unlock","pid":6247,"schema":"djinn.resident-events/v1"}
+{"at_ms":1792464746595,"event":"unlocked-at-start","pid":6247,"schema":"djinn.resident-events/v1"}
+{"agent":"/private/tmp/tspl-3nm_nem0/joiner/agent.sock","app":"/private/tmp/tspl-3nm_nem0/joiner/app.sock","at_ms":1792464746642,"browser":"/private/tmp/tspl-3nm_nem0/joiner/browser.sock","event":"listening","pid":6247,"schema":"djinn.resident-events/v1","ticket":null}
+{"at_ms":1792464746642,"event":"ready","pid":6247,"schema":"djinn.resident-events/v1"}
+{"at_ms":1792464797768,"event":"stopping","pid":6247,"reason":"stop intent","schema":"djinn.resident-events/v1"}
+{"at_ms":1792464797829,"event":"stopped","ok":true,"pid":6247,"reason":"stop intent","schema":"djinn.resident-events/v1"}

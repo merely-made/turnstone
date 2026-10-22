@@ -1079,9 +1079,10 @@ mod tests {
         );
     }
 
-    // Both selected Windows and Unix adapters use AccessKit consumer 0.39.1.
-    // Keep their named acceptance cases on that same canonical consumer and
-    // resolve global nodes through the admitted subtree and locate_node.
+    // Exercise this host's recursive expansion against the consumer the
+    // platform adapters run. AccessKit 0.25 gives Windows, Unix and macOS one
+    // consumer (0.39); the tests still resolve global nodes through the
+    // admitted subtree and locate_node, as the older Windows consumer required.
     macro_rules! platform_recursive_consumer {
         ($module:ident, $consumer:ident) => {
             mod $module {
@@ -1253,8 +1254,7 @@ mod tests {
         };
     }
 
-    platform_recursive_consumer!(windows_consumer, accesskit_consumer);
-    platform_recursive_consumer!(unix_consumer, accesskit_consumer);
+    platform_recursive_consumer!(platform_consumer, accesskit_consumer);
 
     #[test]
     fn idle_delta_reaches_consumer_without_a_pixel_frame() {

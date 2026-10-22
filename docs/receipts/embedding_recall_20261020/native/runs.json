@@ -1,0 +1,34 @@
+[
+  {
+    "phase": 0,
+    "launcher_pid": 59431,
+    "exit_code": 0,
+    "process": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 226.054,
+      "binary_sha256": "5c85d7fad47b4e22bc7cb61f9bb8e9697ec8a0a7b4b5167e87004f7a5718a2f4",
+      "scenario_sha256": "421010439e91bd30b2d23b504193a0e67bed4143160b96ee5c744603f37ce61c",
+      "receipt": "scenario.done",
+      "captures": 7
+    }
+  },
+  {
+    "phase": 1,
+    "launcher_pid": 60279,
+    "exit_code": 0,
+    "process": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 188.253,
+      "binary_sha256": "5c85d7fad47b4e22bc7cb61f9bb8e9697ec8a0a7b4b5167e87004f7a5718a2f4",
+      "scenario_sha256": "aef605da6c3b6562c8df1c97407a6ba629619c244ac12ec8e77c57dffe498ff7",
+      "receipt": "scenario.done",
+      "captures": 6
+    }
+  }
+]

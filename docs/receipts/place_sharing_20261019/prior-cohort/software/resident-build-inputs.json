@@ -1,0 +1,37 @@
+{
+  "source_commit": "500bc78a7fa9e0b9abe8f35d189c465f93d3ccab",
+  "cargo_lock_sha256": "d1ee5b5d9bb1f959f6b6d65587fddd3624c2f663909be228f84c5d6b34927fe7",
+  "binary_sha256": "8d6f396236e72a421fb01aafd07e2e07f011228433818284d475022718c5fa90",
+  "build_command": "rustup run 1.99.1 cargo build --locked --offline --manifest-path <mere-500bc78>/ports/djinn/Cargo.toml --bin djinn --features passphrase-fd -j2",
+  "passphrase_handoff": "owner-supported receipt feature reads standard input once; no passphrase environment or fixture identity fallback",
+  "selected_dependencies": [
+    {
+      "name": "dramatis",
+      "version": "0.0.3",
+      "source": "git+https://github.com/merely-made/dramatis.git?branch=main#cf562f47f33ab0b6ad0db1c5ac3123775769979e"
+    },
+    {
+      "name": "gemot",
+      "version": "0.1.1"
+    },
+    {
+      "name": "graphshell-endpoint",
+      "version": "0.0.2"
+    },
+    {
+      "name": "knot-editor",
+      "version": "0.0.3",
+      "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#88eeb9750f2e9a15a2ff9dfe797bb5c1e15d7fd8"
+    },
+    {
+      "name": "mere-transport",
+      "version": "0.0.2",
+      "source": "git+https://github.com/merely-made/murm.git?branch=main#7c2432ab16723daeb8119f21014a66f0a8121ff8"
+    },
+    {
+      "name": "personae",
+      "version": "0.3.0",
+      "source": "git+https://github.com/merely-made/dramatis.git?branch=main#cf562f47f33ab0b6ad0db1c5ac3123775769979e"
+    }
+  ]
+}

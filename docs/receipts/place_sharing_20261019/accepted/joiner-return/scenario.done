@@ -1,0 +1,6 @@
+RESULT ok
+captured 08_joiner_cold_retained
+captured 10_joiner_final
+presentation frames=298 captures=2 blank=0
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-10/joiner-return/08_joiner_cold_retained.png digest=fcf43c0f4a135304 blank=false
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-10/joiner-return/10_joiner_final.png digest=27d59a00cb5c07a9 blank=false

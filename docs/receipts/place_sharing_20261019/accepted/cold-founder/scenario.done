@@ -1,0 +1,6 @@
+RESULT ok
+captured 13_founder_cold_retained
+captured 14_founder_cold_converged
+presentation frames=256 captures=2 blank=0
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-10/cold-founder/13_founder_cold_retained.png digest=ad41291602085bcd blank=false
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-10/cold-founder/14_founder_cold_converged.png digest=7cf04dae98a57228 blank=false

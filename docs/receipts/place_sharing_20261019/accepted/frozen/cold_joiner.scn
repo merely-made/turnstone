@@ -1,0 +1,42 @@
+resize 540 380
+settle 8
+key escape
+wait-status 600 Retained history: 1 shared nodes, 5 messages
+wait-status 60 no local sync lanes opened
+record-place 15_joiner_cold_retained
+act Place status
+settle 3
+capture 15_joiner_cold_retained
+key escape
+wait-file 1200 ${CONTROL}/cold-founder.listening
+act Refresh place contact
+settle 3
+type ${EXCHANGE}/foreign.place-card.json
+key enter
+settle 3
+assert event place-refused
+wait-status 60 no local sync lanes opened
+record-place 15a_foreign_contact_refused
+act Place status
+settle 3
+capture 15a_foreign_contact_refused
+key escape
+act Refresh place contact
+settle 3
+type ${EXCHANGE}/cold.place-card.json
+key enter
+wait-status 1200 Local rendezvous
+touch ${CONTROL}/cold-joiner.listening
+wait-status 2400 Retained history: 1 shared nodes, 6 messages
+act Send place message
+settle 3
+type joiner after resident restart
+key enter
+wait-status 1200 Retained history: 1 shared nodes, 7 messages
+act Save session
+settle 8
+act Place status
+settle 3
+record-place 16_joiner_cold_converged
+capture 16_joiner_cold_converged
+touch ${CONTROL}/cold-joiner.saved

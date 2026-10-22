@@ -28,6 +28,9 @@
 //!   types at the boundary. The universal vocabulary must not depend on one
 //!   port implementation.
 
+mod command_metadata;
+pub(crate) use command_metadata::command_metadata;
+
 use crate::panes::{PaneKindId, PaneSource};
 
 /// A short-lived secret whose debug representation never contains the value.
@@ -98,6 +101,8 @@ pub struct DocumentFindModel {
 pub enum PlaceArtifactKind {
     /// A place card, read to offer a pre-key against its Moot.
     Card,
+    /// A local contact refresh, bound to the session that asked for it.
+    Contact { session: crate::panes::SessionId, generation: u64 },
     /// A published pre-key offer, read to author an invitation for it. The
     /// access it will admit at rides along: the prompt that asked for the
     /// path is what decided it, not the file.
@@ -114,6 +119,7 @@ pub enum PlaceArtifactKind {
 /// automation adapters) produces these; [`crate::app::update`] consumes them.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Action {
+    Reading(crate::reading_view::ReadAction),
     /// Edit authored themes in the shared native workshop.
     OpenThemeWorkshop,
     /// Open an address: mint/select its node in the graph and fetch it.
@@ -270,6 +276,8 @@ pub enum Action {
     DismissRetained,
     GrowTiles,
     ShrinkTiles,
+    /// Toggle the owning Map's categorical ground; leaves graph data and arrangement intact.
+    ToggleTerritory,
     /// Native view curation; never changes graph truth or source positions.
     FoldSelection,
     ExpandFold,
@@ -331,6 +339,14 @@ pub enum Action {
     /// Carries no authority and no key material.
     ExportPlaceCard {
         path: String,
+    },
+    /// Refresh only contact hints from a card for the already joined place.
+    BeginRefreshPlaceContact,
+    RefreshPlaceContact { path: String },
+    ReconnectPlaceWithCard {
+        session: crate::panes::SessionId,
+        generation: u64,
+        card: Box<crate::place::PlaceCardV1>,
     },
     /// Prompt for the card path a pre-key is offered against.
     BeginOfferPlacePrekey,
@@ -462,7 +478,7 @@ pub enum Action {
     SetAnswerSelection {
         generation: uuid::Uuid,
         expected: crate::inference_surface::AnswerSourceV2,
-        chosen: Vec<crate::saved_sources::Target>,
+        chosen: Vec<crate::research::Target>,
     },
     /// Ask the platform shell to choose a local Knot document. The resulting
     /// path becomes a contributed source only after the user chooses it.
@@ -471,6 +487,10 @@ pub enum Action {
     },
     /// Explicit file selection for retained content in the current mere.
     ChooseClipPackageFile,
+    RetainProducerSelection {
+        choice: crate::app::research_note_arms::NoteChoice,
+        selection: crate::producer_retention::ProducerSelection,
+    },
     ImportClipPackage(std::path::PathBuf),
     ChooseClipExportFile,
     ExportClipPackage {
@@ -526,6 +546,16 @@ pub enum Action {
     /// Workbench pane if absent, opens the tile in platen's model, and spawns
     /// the node's content if it has none.
     OpenInWorkbench,
+    /// Primary reading and graph views keep the same document identity.
+    SetWorkspaceMap(bool),
+    ReadGraphMember(uuid::Uuid),
+    NavigateRelationship(crate::relationship_navigation::RelationshipTarget),
+    SetPaneBinding(crate::pane_binding::BindingIntent),
+    /// Reveal an existing graph member without changing its reading arrangement.
+    RevealGraphMember(uuid::Uuid),
+    /// Hide retains the pane in an inactive stack; show restores its split.
+    ToggleToolPane(PaneKindId),
+    SetChromeLayout(crate::chrome_layout::ChromeLayout),
     /// Tear a tile OUT of the workbench — the tab drag released outside the
     /// pane. The tile leaves platen's tiling and becomes a pinned
     /// `PaneContent::Tile` pane in a lens window: the tear-out trichotomy's
@@ -713,6 +743,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Dismiss retained", Action::DismissRetained),
         ("Grow tiles", Action::GrowTiles),
         ("Shrink tiles", Action::ShrinkTiles),
+        ("Territory", Action::ToggleTerritory),
         shared(Action::FitView),
         shared(Action::FoldSelection),
         shared(Action::ExpandFold),
@@ -734,11 +765,11 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Import clip package", Action::ChooseClipPackageFile),
         shared(Action::SaveSession),
         (
-            "Open Knot document",
+            "Open document",
             Action::ChooseKnotDocumentFile { read_only: false },
         ),
         (
-            "Open Knot document read-only",
+            "Open document read-only",
             Action::ChooseKnotDocumentFile { read_only: true },
         ),
         ("Search saved sources", Action::SearchSavedSources),
@@ -772,6 +803,8 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Return pane to primary", Action::ReturnActivePaneToPrimary),
         ("Fork from node", Action::ForkFocusedNode),
         ("Open node in Workbench", Action::OpenInWorkbench),
+        ("Read document", Action::SetWorkspaceMap(false)),
+        ("Show document in map", Action::SetWorkspaceMap(true)),
         ("Close workbench tile", Action::CloseWorkbenchTile),
         shared(Action::DeleteFocusedNode),
         ("Empty recycle bin", Action::EmptyRecycleBin),
@@ -906,6 +939,8 @@ pub enum ContentControl {
 /// itself never blocks and never touches a platform API.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Effect {
+    SaveReadingPreferences,
+    ReadFind { target: crate::reading_view::ReadTarget, query: String, step: Option<inker::DocumentFindDirection>, close:bool },
     /// Persist curation for the resolved graph runtime and its session.
     SaveGraphFolds { graph: crate::panes::GraphId },
     /// Open/focus the host-owned workshop on the existing render core.
@@ -989,6 +1024,7 @@ pub enum Effect {
     },
     /// Persist the session through the persistence port.
     SaveSession,
+    SaveChromeLayout(crate::chrome_layout::ChromeLayout),
     /// Put `text` on the system clipboard. The clipboard itself stays behind
     /// the shell; neither the app nor the place worker holds one.
     CopyText(String),
@@ -1000,6 +1036,10 @@ pub enum Effect {
     CreateResearchNote { generation: uuid::Uuid },
     ChooseResearchNote { choice: crate::app::research_note_arms::NoteChoice },
     ChooseClipPackageFile,
+    RetainProducerSelection {
+        choice: crate::app::research_note_arms::NoteChoice,
+        selection: crate::producer_retention::ProducerSelection,
+    },
     ImportClipPackage(std::path::PathBuf),
     ChooseClipExportFile {
         clip: eidetic::ManifestId,
@@ -1080,6 +1120,7 @@ pub enum Effect {
         session: crate::panes::SessionId,
         generation: u64,
         binding: crate::place::PlaceBindingV1,
+        contact: Option<Box<crate::place::PlaceCardV1>>,
     },
     /// Clear a local left mark. Fired alongside `ReconnectPlace` by
     /// `rejoin_place`, never on its own.
@@ -1259,6 +1300,7 @@ impl std::fmt::Debug for MicronSubmission {
 /// state through [`crate::app::apply_update`]. App-owned types only; port
 /// adapters convert.
 pub enum Update {
+    ReadingFindChanged { target: crate::reading_view::ReadTarget, query: String, result: Result<inker::DocumentFindState,String> },
     SavedSourcesLoaded {
         generation: uuid::Uuid,
         request: uuid::Uuid,

@@ -1,0 +1,17 @@
+settle 20
+key escape
+assert snap network-offline == true
+assert snap peer-services == 0
+import-clip /Users/markik/Code/output/eidetic-headed-20261019/runtime/incoming/owner-voice.mereclip
+settle 30
+assert content-live
+act Open node in Workbench
+settle 20
+assert snap browser-current ~ mere://clip/36dd5c80c16f76c7c0a231c9d59eec30afa3a5de0dafbc4cb33d8eed415df9dd
+capture 01_owner_voice_received
+export-clip /Users/markik/Code/output/eidetic-headed-20261019/runtime/onward-voice.mereclip
+wait-file 30 /Users/markik/Code/output/eidetic-headed-20261019/runtime/onward-voice.mereclip
+assert event clip-package-exported
+assert snap offline-acquisition-attempts == 0
+capture 02_owner_voice_reexported
+act Save session

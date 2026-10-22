@@ -11,6 +11,7 @@
 
 pub mod a11y;
 pub mod action;
+pub mod reading_view;
 pub mod app;
 mod appearance;
 mod arrange_pane;
@@ -18,6 +19,7 @@ pub mod behaviors;
 mod browse;
 mod cambium_pane;
 mod chrome_view;
+pub mod chrome_layout;
 #[cfg(feature = "wasm")]
 mod component;
 mod content;
@@ -63,6 +65,8 @@ mod offline;
 pub mod observe;
 mod overmap;
 mod pane;
+pub mod pane_binding;
+pub mod relationship_navigation;
 /// Turnstone's own pane model (was the `frisket` crate; folded in 2026-07-25).
 pub mod panes;
 pub mod place;
@@ -70,6 +74,7 @@ mod publish_pane;
 mod publish_service;
 mod recycle;
 pub mod retained_clip;
+pub mod producer_retention;
 pub mod redshank_episode_surface;
 pub mod redshank_host;
 pub mod remote_projection;

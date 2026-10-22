@@ -1,0 +1,12 @@
+RESULT ok
+captured 05_source_and_package_absent
+captured 06_historical_answer
+captured 07_historical_citation
+captured 08_new_cold_embedding_answer
+captured 09_new_cold_citation
+presentation frames=461 captures=5 blank=0
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-10/redshank/cold/05_source_and_package_absent.png digest=18518ec9ce185b6a blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-10/redshank/cold/06_historical_answer.png digest=14ebcec2a5be55df blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-10/redshank/cold/07_historical_citation.png digest=611efc43cd124e5b blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-10/redshank/cold/08_new_cold_embedding_answer.png digest=c7f32d096866f8a8 blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-10/redshank/cold/09_new_cold_citation.png digest=611efc43cd124e5b blank=false

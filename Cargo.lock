@@ -463,7 +463,7 @@ dependencies = [
  "objc2-foundation 0.3.2",
  "parking_lot",
  "percent-encoding",
- "windows-sys 0.60.2",
+ "windows-sys 0.52.0",
  "wl-clipboard-rs",
  "x11rb",
 ]
@@ -483,7 +483,7 @@ dependencies = [
  "objc2-foundation 0.3.2",
  "parking_lot",
  "percent-encoding",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
  "x11rb",
 ]
 
@@ -892,7 +892,7 @@ checksum = "1254ebf6529f3763c491acfb5ab6e960809e3c75a38584cc664f8c5667fb7107"
 [[package]]
 name = "audio-primitives"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#0a0d67d06d356fcfb79cfc8710b260d7ca593656"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#62dde4c0c85fcca87e949ef9ab8b1950a4d528c0"
 
 [[package]]
 name = "audioadapter"
@@ -1772,7 +1772,7 @@ dependencies = [
  "cap-primitives",
  "cap-std",
  "io-lifetimes",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1801,7 +1801,7 @@ dependencies = [
  "maybe-owned",
  "rustix 1.1.5",
  "rustix-linux-procfs",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
  "winx",
 ]
 
@@ -3875,7 +3875,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -4421,7 +4421,7 @@ checksum = "94e7099f6313ecacbe1256e8ff9d617b75d1bcb16a6fddef94866d225a01a14a"
 dependencies = [
  "io-lifetimes",
  "rustix 1.1.5",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -6030,18 +6030,6 @@ source = "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c76470
 
 [[package]]
 name = "icu_collections"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db2fa452206ebee18c4b5c2274dbf1de17008e874b4dc4f0aea9d01ca79e4526"
-dependencies = [
- "displaydoc",
- "yoke 0.7.5",
- "zerofrom 0.1.8",
- "zerovec 0.10.4",
-]
-
-[[package]]
-name = "icu_collections"
 version = "2.1.1"
 source = "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
 dependencies = [
@@ -6257,18 +6245,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "decf2a22ec8fa68f1a0c1129a3f8583f8f8bc24e8b9ccbe98ead99f62a4dc3a8"
 
 [[package]]
-name = "icu_locid"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13acbb8371917fc971be86fc8057c41a64b521c184808a698c02acc242dbf637"
-dependencies = [
- "displaydoc",
- "litemap 0.7.5",
- "tinystr 0.7.6",
- "writeable 0.5.5",
-]
-
-[[package]]
 name = "icu_normalizer"
 version = "2.1.1"
 source = "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
@@ -6383,23 +6359,6 @@ checksum = "e590f038c1464a96894fd6d10127e90a8be4509f56ff7ecef851b15cee0b7caa"
 
 [[package]]
 name = "icu_provider"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ed421c8a8ef78d3e2dbc98a973be2f3770cb42b606e3ab18d6237c4dfde68d9"
-dependencies = [
- "displaydoc",
- "icu_locid",
- "icu_provider_macros",
- "stable_deref_trait",
- "tinystr 0.7.6",
- "writeable 0.5.5",
- "yoke 0.7.5",
- "zerofrom 0.1.8",
- "zerovec 0.10.4",
-]
-
-[[package]]
-name = "icu_provider"
 version = "2.1.1"
 source = "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
 dependencies = [
@@ -6441,33 +6400,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "icu_provider_macros"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ec89e9337638ecdc08744df490b221a7399bf8d164eb52a665454e60e075ad6"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.119",
-]
-
-[[package]]
-name = "icu_segmenter"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a717725612346ffc2d7b42c94b820db6908048f39434504cb130e8b46256b0de"
-dependencies = [
- "core_maths",
- "displaydoc",
- "icu_collections 1.5.0",
- "icu_locid",
- "icu_provider 1.5.0",
- "icu_segmenter_data 1.5.1",
- "utf8_iter",
- "zerovec 0.10.4",
-]
-
-[[package]]
 name = "icu_segmenter"
 version = "2.1.2"
 source = "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
@@ -6498,12 +6430,6 @@ dependencies = [
  "utf8_iter",
  "zerovec 0.11.8",
 ]
-
-[[package]]
-name = "icu_segmenter_data"
-version = "1.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1e52775179941363cc594e49ce99284d13d6948928d8e72c755f55e98caa1eb"
 
 [[package]]
 name = "icu_segmenter_data"
@@ -6820,7 +6746,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2285ddfe3054097ef4b2fe909ef8c3bcd1ea52a8f0d274416caebeef39f04a65"
 dependencies = [
  "io-lifetimes",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -7508,7 +7434,7 @@ checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 [[package]]
 name = "knot-capture"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#98d5212bfe2f773ba9375e4f1a74b47b5aecdb6b"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#f44259964cd0b6ff27c21ab368ea7830fc11e0fe"
 dependencies = [
  "knot-file-catalog",
 ]
@@ -7516,7 +7442,7 @@ dependencies = [
 [[package]]
 name = "knot-composition"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#98d5212bfe2f773ba9375e4f1a74b47b5aecdb6b"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#f44259964cd0b6ff27c21ab368ea7830fc11e0fe"
 dependencies = [
  "blake3",
  "knot-capture",
@@ -7536,7 +7462,7 @@ dependencies = [
 [[package]]
 name = "knot-document"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#98d5212bfe2f773ba9375e4f1a74b47b5aecdb6b"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#f44259964cd0b6ff27c21ab368ea7830fc11e0fe"
 dependencies = [
  "cambium",
  "illume",
@@ -7553,7 +7479,7 @@ dependencies = [
 [[package]]
 name = "knot-editor"
 version = "0.0.3"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#98d5212bfe2f773ba9375e4f1a74b47b5aecdb6b"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#f44259964cd0b6ff27c21ab368ea7830fc11e0fe"
 dependencies = [
  "base64 0.22.1",
  "blake3",
@@ -7622,7 +7548,7 @@ dependencies = [
 [[package]]
 name = "knot-file-catalog"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#98d5212bfe2f773ba9375e4f1a74b47b5aecdb6b"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#f44259964cd0b6ff27c21ab368ea7830fc11e0fe"
 dependencies = [
  "muniment",
  "pollster 0.4.0",
@@ -7898,12 +7824,6 @@ name = "linux-raw-sys"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53"
-
-[[package]]
-name = "litemap"
-version = "0.7.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23fb14cb19457329c82206317a5663005a4d404783dc74f4252769b0d5f42856"
 
 [[package]]
 name = "litemap"
@@ -10540,7 +10460,7 @@ dependencies = [
  "oxiri",
  "oxrdf",
  "ryu-js",
- "thiserror 2.0.20",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -10552,7 +10472,7 @@ dependencies = [
  "oxilangtag",
  "oxiri",
  "rand 0.9.5",
- "thiserror 2.0.20",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -10565,7 +10485,7 @@ dependencies = [
  "oxilangtag",
  "oxiri",
  "oxrdf",
- "thiserror 2.0.20",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -11860,7 +11780,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -12285,7 +12205,7 @@ dependencies = [
 [[package]]
 name = "redshank-model"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#0a0d67d06d356fcfb79cfc8710b260d7ca593656"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#62dde4c0c85fcca87e949ef9ab8b1950a4d528c0"
 dependencies = [
  "serde",
  "serde_json",
@@ -12295,7 +12215,7 @@ dependencies = [
 [[package]]
 name = "redshank-playback"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#0a0d67d06d356fcfb79cfc8710b260d7ca593656"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#62dde4c0c85fcca87e949ef9ab8b1950a4d528c0"
 dependencies = [
  "anyhow",
  "audio-primitives",
@@ -12311,7 +12231,7 @@ dependencies = [
 [[package]]
 name = "redshank-storage"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#0a0d67d06d356fcfb79cfc8710b260d7ca593656"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#62dde4c0c85fcca87e949ef9ab8b1950a4d528c0"
 dependencies = [
  "redshank-model",
  "serde_json",
@@ -12320,7 +12240,7 @@ dependencies = [
 [[package]]
 name = "redshank-surfaces"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#0a0d67d06d356fcfb79cfc8710b260d7ca593656"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#62dde4c0c85fcca87e949ef9ab8b1950a4d528c0"
 dependencies = [
  "cambium",
  "genet-scripted-dom",
@@ -12784,7 +12704,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.4.15",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -12797,7 +12717,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.12.1",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -12866,7 +12786,7 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -15420,7 +15340,7 @@ dependencies = [
  "derive_more",
  "encoding_rs",
  "euclid",
- "icu_segmenter 1.5.0",
+ "icu_segmenter 2.3.0",
  "indexmap 2.14.2",
  "itertools 0.14.0",
  "itoa",
@@ -15972,10 +15892,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.4.3",
+ "getrandom 0.3.4",
  "once_cell",
  "rustix 1.1.5",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -16108,7 +16028,7 @@ dependencies = [
 [[package]]
 name = "timed-text"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#0a0d67d06d356fcfb79cfc8710b260d7ca593656"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#62dde4c0c85fcca87e949ef9ab8b1950a4d528c0"
 
 [[package]]
 name = "tinct"
@@ -16176,15 +16096,6 @@ dependencies = [
  "arrayref",
  "bytemuck",
  "strict-num",
-]
-
-[[package]]
-name = "tinystr"
-version = "0.7.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9117f5d4db391c1cf6927e7bea3db74b9a1c1add8f7eda9ffd5364f40f57b82f"
-dependencies = [
- "displaydoc",
 ]
 
 [[package]]
@@ -16680,6 +16591,7 @@ dependencies = [
  "inker",
  "insigne",
  "jiff",
+ "knot-composition",
  "knot-document",
  "knot-editor",
  "knot-editor-host",
@@ -18385,7 +18297,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -18917,7 +18829,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f3fd376f71958b862e7afb20cfe5a22830e1963462f3a17f49d82a6c1d1f42d"
 dependencies = [
  "bitflags 2.13.2",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -19056,12 +18968,6 @@ checksum = "d1890f4022759daae28ed4fe62859b1236caebfc61ede2f63ed4e695f3f6d936"
 dependencies = [
  "smallvec",
 ]
-
-[[package]]
-name = "writeable"
-version = "0.5.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e9df38ee2d2c3c5948ea468a8406ff0db0b29ae1ffde1bcf20ef305bcc95c51"
 
 [[package]]
 name = "writeable"
@@ -19314,18 +19220,6 @@ dependencies = [
 
 [[package]]
 name = "yoke"
-version = "0.7.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "120e6aef9aa629e3d4f52dc8cc43a015c7724194c97dfaf45180d2daf2b77f40"
-dependencies = [
- "serde",
- "stable_deref_trait",
- "yoke-derive 0.7.5",
- "zerofrom 0.1.8",
-]
-
-[[package]]
-name = "yoke"
 version = "0.8.1"
 source = "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
 dependencies = [
@@ -19343,18 +19237,6 @@ dependencies = [
  "stable_deref_trait",
  "yoke-derive 0.8.3",
  "zerofrom 0.1.8",
-]
-
-[[package]]
-name = "yoke-derive"
-version = "0.7.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2380878cad4ac9aac1e2435f3eb4020e8374b5f13c296cb75b4620ff8e229154"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.119",
- "synstructure 0.13.2",
 ]
 
 [[package]]
@@ -19612,17 +19494,6 @@ dependencies = [
 
 [[package]]
 name = "zerovec"
-version = "0.10.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa2b893d79df23bfb12d5461018d408ea19dfafe76c2c7ef6d4eba614f8ff079"
-dependencies = [
- "yoke 0.7.5",
- "zerofrom 0.1.8",
- "zerovec-derive 0.10.4",
-]
-
-[[package]]
-name = "zerovec"
 version = "0.11.5"
 source = "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
 dependencies = [
@@ -19642,17 +19513,6 @@ dependencies = [
  "yoke 0.8.3",
  "zerofrom 0.1.8",
  "zerovec-derive 0.11.6",
-]
-
-[[package]]
-name = "zerovec-derive"
-version = "0.10.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e3c6377872d72510393f688a555d7097b0f741995c7a00f0407f786dd486b2d"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.119",
 ]
 
 [[package]]
@@ -19798,73 +19658,3 @@ dependencies = [
  "syn 3.0.6",
  "winnow 1.0.4",
 ]
-
-[[patch.unused]]
-name = "hagiograph"
-version = "0.0.1"
-source = "git+https://github.com/merely-made/eidetic.git?rev=34105d63ec17826e0a58a5b461b65150357dd000#34105d63ec17826e0a58a5b461b65150357dd000"
-
-[[patch.unused]]
-name = "moothold"
-version = "0.1.0"
-source = "git+https://github.com/merely-made/gemot.git?rev=4342aed4bd101e68b1e71d24e010190d81765201#4342aed4bd101e68b1e71d24e010190d81765201"
-
-[[patch.unused]]
-name = "hagiograph"
-version = "0.0.1"
-source = "git+https://github.com/merely-made/eidetic.git?rev=34105d63ec17826e0a58a5b461b65150357dd000#34105d63ec17826e0a58a5b461b65150357dd000"
-
-[[patch.unused]]
-name = "moothold"
-version = "0.1.0"
-source = "git+https://github.com/merely-made/gemot.git?rev=4342aed4bd101e68b1e71d24e010190d81765201#4342aed4bd101e68b1e71d24e010190d81765201"
-
-[[patch.unused]]
-name = "burn-remote"
-version = "0.22.0"
-source = "git+https://github.com/merely-made/mere.git?branch=main#af5c3ba85a19fe3eddbabc283b6fab7572fc1cf3"
-
-[[patch.unused]]
-name = "cubecl-runtime"
-version = "0.11.0"
-source = "git+https://github.com/merely-made/mere.git?branch=main#af5c3ba85a19fe3eddbabc283b6fab7572fc1cf3"
-
-[[patch.unused]]
-name = "dict-protocol"
-version = "0.1.0"
-source = "git+https://github.com/merely-made/errand.git?rev=3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab#3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab"
-
-[[patch.unused]]
-name = "fsp-protocol"
-version = "0.1.0"
-source = "git+https://github.com/merely-made/errand.git?rev=3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab#3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab"
-
-[[patch.unused]]
-name = "hagiograph"
-version = "0.0.1"
-source = "git+https://github.com/merely-made/eidetic.git?rev=34105d63ec17826e0a58a5b461b65150357dd000#34105d63ec17826e0a58a5b461b65150357dd000"
-
-[[patch.unused]]
-name = "kepler-protocol"
-version = "0.1.0"
-source = "git+https://github.com/merely-made/errand.git?rev=3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab#3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab"
-
-[[patch.unused]]
-name = "moothold"
-version = "0.1.0"
-source = "git+https://github.com/merely-made/gemot.git?rev=4342aed4bd101e68b1e71d24e010190d81765201#4342aed4bd101e68b1e71d24e010190d81765201"
-
-[[patch.unused]]
-name = "p2panda-stream"
-version = "0.7.1"
-source = "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bcb9f2a9d798b1c25b2ec2f47c0416bd65"
-
-[[patch.unused]]
-name = "scorpion-protocol"
-version = "0.1.0"
-source = "git+https://github.com/merely-made/errand.git?rev=3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab#3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab"
-
-[[patch.unused]]
-name = "text-protocol"
-version = "0.1.0"
-source = "git+https://github.com/merely-made/errand.git?rev=3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab#3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab"

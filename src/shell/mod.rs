@@ -44,6 +44,7 @@ mod lens;
 use lens::LensWindow;
 mod frame_keys;
 mod input;
+mod titlebar;
 mod native_composition;
 mod outer_workspace;
 pub(crate) mod window_input;
@@ -1211,7 +1212,7 @@ pub struct Shell {
     /// Exact action copied from the common catalog for scenario stale-source
     /// controls; delivery still lowers through the ordinary shell action path.
     scenario_queued_action: Option<Action>,
-    pending_scenario_file: Option<drive::PendingFileWait>,
+    pending_scenario_wait: Option<drive::PendingScenarioWait>,
     held_contributed_click: Option<contributed_automation::HeldClick>,
     contributed_click_request: u64,
     /// A bounded copy of semantic events after their ordinary consumers have
@@ -1375,6 +1376,7 @@ pub struct Shell {
     outer_frames: std::cell::RefCell<HashMap<usize, crate::outer_frame::OuterFrame>>,
     outer_capture: Option<outer_workspace::OuterCapture>,
     outer_focus: Option<frame_keys::HeaderFocus>,
+    titlebar_clicks: HashMap<usize, cambium_genet_winit_host::ClickCadence>,
     /// Runtime product surface factories. Concrete product state never enters
     /// the shell; admission yields the erased sessions retained above.
     surface_providers: crate::contributed_surface::SurfaceProviderRegistry,
@@ -1426,6 +1428,14 @@ pub struct Shell {
 impl Shell {
     pub fn new(proxy: EventLoopProxy<()>, address: Option<String>) -> Self {
         let (mut app, boot_effects) = App::boot(address.as_deref());
+        match crate::chrome_layout::ChromeLayout::load(&app.data_root) {
+            Ok(layout) => {
+                let mut chrome = app.shell_chrome_config().clone();
+                chrome.layout = layout;
+                app.set_shell_chrome_config(chrome);
+            },
+            Err(error) => tracing::warn!(%error, "chrome placement could not be loaded"),
+        }
         let initial_provider = match ApplicationSettingsProvider::load(&app.data_root) {
             Ok(provider) => provider,
             Err(error) => {
@@ -1694,7 +1704,7 @@ impl Shell {
             meta: false,
             shared_scenario: shared_scenario_from_env(),
             scenario_queued_action: None,
-            pending_scenario_file: None,
+            pending_scenario_wait: None,
             held_contributed_click: None,
             contributed_click_request: 0,
             observed_events: VecDeque::with_capacity(128),
@@ -1769,6 +1779,7 @@ impl Shell {
             outer_frames: Default::default(),
             outer_capture: None,
             outer_focus: None,
+            titlebar_clicks: HashMap::new(),
             surface_providers,
             redshank_docks,
             hovered_pane: None,
@@ -1956,6 +1967,16 @@ impl Shell {
     /// the window's IME enablement to controlled chrome fields on transitions
     /// (a platform call, so it lives here, not in `update`).
     fn act(&mut self, action: Action) {
+        let _ = self.act_with_command(action, None);
+    }
+
+    /// Keyboard commands use the same declaration and reducer as the palette.
+    fn act_command(&mut self, action: Action) -> Option<cambium::Outcome> {
+        let invocation = self.app.command_invocation(&action);
+        self.act_with_command(action, invocation)
+    }
+
+    fn act_with_command(&mut self, action: Action, invocation: Option<cambium::Invocation>) -> Option<cambium::Outcome> {
         let accepted_text = self.accepts_controlled_text();
         let closing = match &action {
             Action::CloseActivePane => self.app.active_pane,
@@ -1965,7 +1986,10 @@ impl Shell {
             } => Some(crate::panes::PaneId(id.0)),
             _ => None,
         };
-        let effects = self.app.update(action);
+        let (effects, outcome) = match invocation {
+            Some(invocation) => self.app.invoke_command(&invocation),
+            None => (self.app.update(action), None),
+        };
         if let Some(pane) = closing
             && self.app.space_of(pane).is_none()
         {
@@ -1978,6 +2002,7 @@ impl Shell {
             window.set_ime_allowed(accepts_text);
         }
         self.run_effects(effects);
+        outcome
     }
 
     fn accepts_controlled_text(&self) -> bool {
@@ -2089,7 +2114,9 @@ impl Shell {
         // Surface plans and native pointer positions are physical pixels.
         // A factor of one prevents applying native DPI a second time.
         let placement = |surface: crate::surface::Surface, window, active, native_scale| {
-            HostPlacement::for_focus(surface, window, active, focus, native_scale)
+            let mut host = HostPlacement::for_focus(surface, window, active, focus, native_scale);
+            host.reading_preferences = self.app.reading.for_surface(surface, window);
+            host
         };
         let mut placements: Vec<_> = self
             .surface_plan()
@@ -2272,7 +2299,8 @@ impl Shell {
                     self.app.roster_tab = grid.selected_tab().0;
                     for action in actions {
                         match action {
-                            crate::cambium_pane::RosterAction::Navigate(url) => {
+                            crate::cambium_pane::RosterAction::Binding(intent) => { out.push(Action::SetPaneBinding(intent)); },
+                                        crate::cambium_pane::RosterAction::Navigate(url) => {
                                 out.push(Action::OpenAddress(url))
                             },
                         }
@@ -2331,6 +2359,7 @@ impl Shell {
                             .into_iter()
                             .map(|event| Action::WorkbenchActivate(event.0)),
                     );
+                    out.extend(pane.take_read_actions());
                 }
             },
             PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::SETTINGS => {
@@ -2374,6 +2403,7 @@ impl Shell {
                         crate::inspector_pane::InspectorIntent::ClipToKnot { offer } => {
                             self.clip_document_to_knot(offer)
                         },
+                        crate::inspector_pane::InspectorIntent::Binding(intent) => out.push(Action::SetPaneBinding(intent)),
                         crate::inspector_pane::InspectorIntent::NewResearchNote => out.push(Action::NewResearchNote),
                         crate::inspector_pane::InspectorIntent::OpenResearchNote => out.push(Action::OpenResearchNote),
                         crate::inspector_pane::InspectorIntent::ChooseResearchNote { choice } => out.push(Action::ChooseResearchNote { choice }),
@@ -2963,15 +2993,15 @@ impl Shell {
             self.request_redraw();
             return;
         }
-        if let Some(wait) = self.pending_scenario_file.as_mut() {
-            match wait.poll() {
-                Ok(true) => self.pending_scenario_file = None,
+        if let Some(wait) = self.pending_scenario_wait.as_mut() {
+            match wait.poll(&self.app.place.status_lines()) {
+                Ok(true) => self.pending_scenario_wait = None,
                 Ok(false) => {
                     self.request_redraw();
                     return;
                 },
                 Err(error) => {
-                    self.pending_scenario_file = None;
+                    self.pending_scenario_wait = None;
                     if let Some(shared) = self.shared_scenario.take() {
                         let mut outcome = shared.finish();
                         outcome.ok = false;
@@ -3025,6 +3055,29 @@ impl Shell {
 mod tests {
 
     use super::*;
+
+    #[test]
+    fn reserved_workspace_keeps_frame_and_chrome_at_full_window_size() {
+        let app = App::test_stub();
+        let window = Rect::full(1024, 600);
+        let area = crate::chrome_view::workspace_area(app.shell_chrome_config(), true, 1024, 600);
+        let plan = primary_content_plan(&app, &NodeDocuments::default(), 1024, 600);
+        for kind in [SurfaceKind::Frame, SurfaceKind::Chrome] {
+            assert_eq!(
+                plan.iter().find(|surface| surface.kind == kind).unwrap().rect,
+                window,
+            );
+        }
+        for surface in &plan {
+            if matches!(
+                surface.kind,
+                SurfaceKind::Graph(_) | SurfaceKind::Pane(_) | SurfaceKind::Content(_)
+            ) {
+                assert!(surface.rect.y >= area.y);
+                assert!(surface.rect.y + surface.rect.h <= area.y + area.h + 0.1);
+            }
+        }
+    }
 
     #[test]
     fn hidden_livery_animation_reaches_quiescence_without_redraw() {
@@ -3460,6 +3513,9 @@ fn primary_content_plan_with_rects(
     frame_floats: &[(crate::panes::PaneId, Rect, Rect)],
 ) -> Vec<crate::surface::Surface> {
     let area = Rect::full(width.max(1), height.max(1));
+    let workspace_area = crate::chrome_view::workspace_area(
+        app.shell_chrome_config(), true, width.max(1), height.max(1),
+    );
     // A5 promotes a space to its `SpaceBlueprint` only when it enters the
     // float layer. Its placements then drive this exact compositor path;
     // legacy Frisket still supplies the payload and retained renderer
@@ -3470,7 +3526,7 @@ fn primary_content_plan_with_rects(
         Vec<(crate::panes::PaneId, Rect)>,
     ) = match app.blueprint_space(crate::action::SpaceRef::Primary) {
         Some(blueprint) => {
-            let placements = crate::panes::place_space(blueprint, area, app.maximized);
+            let placements = crate::panes::place_space(blueprint, workspace_area, app.maximized);
             (
                 placements
                     .panes
@@ -3547,7 +3603,7 @@ fn primary_content_plan_with_rects(
             let geom = app
                 .workbench_for_pane(*pane)
                 .and_then(|workbench| workbench.to_arrangement().1);
-            crate::workbench_tiling::place_workbench(geom.as_ref(), *rect)
+            crate::workbench_tiling::place_reading_workbench(app, *pane, geom.as_ref(), *rect)
                 .cells
                 .iter()
                 .filter_map(|c| {
@@ -3586,7 +3642,7 @@ fn primary_content_plan_with_rects(
                     })
                 })
                 .any(|(_, geom)| {
-                    crate::workbench_tiling::place_workbench(Some(&geom), area)
+                    crate::workbench_tiling::place_workbench_at(Some(&geom), area, app.shell_chrome_config().layout.document_tabs)
                         .cells
                         .iter()
                         .any(|c| c.active_member() == Some(*id))
@@ -3603,7 +3659,7 @@ fn primary_content_plan_with_rects(
     let focused_graph = app
         .focused_graph_pane()
         .or_else(|| graph_rects.first().map(|(pane, _)| *pane));
-    let content = focused_graph.and_then(|pane| {
+    let content = focused_graph.filter(|_| !app.map_navigation_active()).and_then(|pane| {
         let cr = graph_rects
             .iter()
             .find(|(candidate, _)| *candidate == pane)
@@ -3619,15 +3675,8 @@ fn primary_content_plan_with_rects(
             })
             .map(|node| (node, crate::surface::content_rect(cr)))
     });
-    let caption = focused_graph
-        .and_then(|pane| app.graph_for_pane(pane))
-        .and_then(|graph| app.graph_runtimes.canvas(graph))
-        .and_then(crate::app::focused_caption);
-    let chrome = (app.user_agent_decision.is_open()
-        || app.document_find.open
-        || app.shell_chrome_config().projects_shellbar() && caption.is_some()
-        || app.omnibar.open && app.shell_chrome_config().projects_omnibar())
-    .then_some(area);
+    // The application title row remains visible when browser chrome is hidden.
+    let chrome = Some(area);
     let mut surfaces = crate::surface::assemble(&base, &tiles, content, None);
     let mut appearance_roles: Vec<(uuid::Uuid, u64, Rect)> = pane_rects
         .iter()
@@ -3642,7 +3691,7 @@ fn primary_content_plan_with_rects(
         let geom = app
             .workbench_for_pane(*pane)
             .and_then(|workbench| workbench.to_arrangement().1);
-        for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), *rect).cells {
+        for cell in crate::workbench_tiling::place_reading_workbench(app, *pane, geom.as_ref(), *rect).cells {
             if let Some(node) = cell.active_member()
                 && contents.contains_key(&node)
             {
@@ -3694,7 +3743,7 @@ fn primary_content_plan_with_rects(
             let geom = app
                 .workbench_for_pane(id)
                 .and_then(|w| w.to_arrangement().1);
-            for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), rect).cells {
+            for cell in crate::workbench_tiling::place_reading_workbench(app, id, geom.as_ref(), rect).cells {
                 if let Some(node) = cell.active_member().filter(|n| contents.contains_key(n)) {
                     let body = cell.body();
                     appearance_roles.push((

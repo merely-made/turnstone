@@ -1,0 +1,24 @@
+{
+  "schema": "hest-h3-receiver/v1",
+  "date": "2026-10-20",
+  "receiver": "turnstone",
+  "tested_source_commit": "07c1a38a3fc9b1f761190d09ee89941e6ea694dd",
+  "supplier": "9ef5e3026997dce50760ae445da9eedd38a325ac",
+  "checks": "checks.json",
+  "source": "tested-source.json",
+  "cohort": "cohort.json",
+  "lock_scope": "lock-scope.json",
+  "native_gui_or_window_manager_acceptance": false,
+  "crate_publication": false,
+  "common_owner": "mere/design_docs/cambium_docs/implementation_strategy/2026-10-20_hest_command_architecture_plan.md",
+  "host_exercise": "The actual canvas isometric key binding forms an invocation, reaches the existing reducer and reports Done only after observing its synchronous model change.",
+  "passed": 1107,
+  "existing_ignored": 15,
+  "focused_checks_overlap_full_library": true,
+  "superseded_attempts": "superseded-checks.json",
+  "test_fixture_correction": {
+    "path": "src/session.rs",
+    "production_code_unchanged": true,
+    "ordering": "Explicit creation and update times replace immediate wall-clock calls."
+  }
+}

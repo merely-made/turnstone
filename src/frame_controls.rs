@@ -285,6 +285,11 @@ impl FrameControls {
         nodes(&dom, self.root())
             .into_iter()
             .filter_map(|n| {
+                let mut ancestor=Some(n);
+                while let Some(at)=ancestor {
+                    if attr(&dom,at,"data-main-view-header").as_deref()==Some("true") { return None; }
+                    ancestor=dom.parent(at);
+                }
                 let control = self.control_at(n)?;
                 if matches!(control, Control::Body { .. }) {
                     return None;

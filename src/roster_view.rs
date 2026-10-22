@@ -116,11 +116,11 @@ pub fn roster_grid_rows_for_pane(app: &App, pane: crate::panes::PaneId) -> Vec<R
     let context = app.follower_context(pane);
     let graph_id = context
         .and_then(|context| context.graph)
-        .or_else(|| app.graph_for_pane(pane));
+        .or_else(|| (!app.has_pane_binding(pane)).then(|| app.graph_for_pane(pane)).flatten());
     let graph = graph_id.and_then(|graph| app.graph_runtimes.canvas(graph));
     let focused = context
         .and_then(|context| context.member)
-        .or_else(|| app.graph_pane_focused_member(pane));
+        .or_else(|| (!app.has_pane_binding(pane)).then(|| app.graph_pane_focused_member(pane)).flatten());
     roster_grid_rows_for_context(app, graph, focused)
 }
 

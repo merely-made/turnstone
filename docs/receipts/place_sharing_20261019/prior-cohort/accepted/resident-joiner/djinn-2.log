@@ -1,0 +1,13 @@
+2026-10-20T02:52:26.595641Z  INFO djinn: Personae storage open storage=passphrase-encrypted vault at /private/tmp/tspl-3nm_nem0/joiner/vault/vault.json
+2026-10-20T02:52:26.598839Z  INFO djinn::lock_triggers::host: lock triggers settings=LockSettings { session_lock: true, suspend: true, idle: true, idle_minutes: 15 }
+2026-10-20T02:52:26.641419Z  WARN djinn: resident reservoir unavailable reason=no persona wallet exists under /private/tmp/tspl-3nm_nem0/joiner/mere yet; pair this device first, or name a persona
+2026-10-20T02:52:26.641890Z  INFO djinn: SSH agent listening endpoint="/private/tmp/tspl-3nm_nem0/joiner/agent.sock"
+2026-10-20T02:52:26.642008Z  INFO djinn::personal_sync: owner settings path=/private/tmp/tspl-3nm_nem0/joiner/local/graphshell/settings/joiner.json configured=false
+2026-10-20T02:52:47.222176Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:52:47.397772Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:52:47.558067Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:52:48.702964Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:52:49.000206Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:53:05.146544Z  INFO djinn::custody: released derived keys app=turnstone keys=1 source=Persona
+2026-10-20T02:53:17.768689Z  INFO djinn: stop requested on the control route
+2026-10-20T02:53:17.769270Z  INFO djinn: resident tasks cancelled and joined tasks=3

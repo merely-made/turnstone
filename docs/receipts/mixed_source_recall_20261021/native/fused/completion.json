@@ -1,0 +1,9 @@
+{
+  "result": "pass",
+  "addresses": {
+    "knot": "mere://clip/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+    "note": "mere://clip/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0"
+  },
+  "origin_and_transfer_absent_before_cold": true,
+  "exports_equal": true
+}

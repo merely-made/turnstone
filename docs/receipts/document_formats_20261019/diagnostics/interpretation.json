@@ -1,0 +1,12 @@
+{
+  "unactivated_create": "Text input was refused without native focus; retained as failed evidence.",
+  "activation_probe": "Explicit LaunchServices activation admitted native input and actual Djot save.",
+  "fullscreen_seed": {
+    "reported_action": "User fullscreened the Turnstone test window.",
+    "observed": "Surface acquisition reported Occluded; the scenario wrote failure after ten seconds without successful presentation and exited.",
+    "receipt": "fullscreen-seed-scenario.done",
+    "crash_report_check": "No new Turnstone/product crash report was present in the user DiagnosticReports directory checked after the event.",
+    "limits": "This does not qualify ordinary application fullscreen behavior or prove the absence of all native failures."
+  },
+  "missed_activation_create": "The post-render activation window elapsed without a request; first-note input succeeded but second-note input was refused. The launcher now activates the exact owned bundle once its native log shows startup, with a larger bounded wait. No focus admission is bypassed."
+}

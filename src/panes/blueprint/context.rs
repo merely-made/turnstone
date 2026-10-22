@@ -32,6 +32,20 @@ impl ContextIndex {
         self.admission = uuid::Uuid::new_v4();
     }
 
+    /// Remove closed publishers so an explicit follower cannot resolve a stale
+    /// context and a focused follower cannot resurrect a closed pane.
+    pub(crate) fn retain_panes(&mut self, live: &std::collections::HashSet<PaneId>) {
+        let before = self.space_of.len();
+        self.space_of.retain(|pane, _| live.contains(pane));
+        self.published.retain(|pane, _| live.contains(pane));
+        for history in self.focus_history.values_mut() {
+            history.retain(|pane| live.contains(pane));
+        }
+        if self.space_of.len() != before {
+            self.invalidate();
+        }
+    }
+
     pub fn set_application(&mut self, context: PaneContext) {
         if self.application != context {
             self.invalidate();

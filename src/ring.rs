@@ -137,6 +137,13 @@ pub fn ring_of(action: &Action) -> Ring {
         | TogglePaneSection { .. }
         | MovePaneSection { .. }
         | OpenInWorkbench
+        | SetWorkspaceMap(_)
+        | ReadGraphMember(_)
+        | NavigateRelationship(_)
+        | SetPaneBinding(_)
+        | RevealGraphMember(_)
+        | ToggleToolPane(_)
+        | SetChromeLayout(_)
         | TearOutTile { .. }
         | WorkbenchActivate(_)
         | CloseWorkbenchTile
@@ -157,6 +164,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | DismissRetained
         | GrowTiles
         | ShrinkTiles
+        | ToggleTerritory
         | ReseedLayout
         | FoldSelection
         | ExpandFold
@@ -179,6 +187,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | ToggleSizeByRecency
         | ToggleNodeContent
         | SearchCapturedPages
+        | Reading(_)
         | OpenDocumentFind
         | CloseDocumentFind
         | InsertDocumentFind(_)
@@ -254,6 +263,7 @@ pub fn ring_of(action: &Action) -> Ring {
         // carry a narrower, independently verifiable source grant.
         | ChooseKnotDocumentFile { .. }
         | ChooseClipPackageFile
+        | RetainProducerSelection { .. }
         | ImportClipPackage(_)
         | ChooseClipExportFile
         | ExportClipPackage { .. }
@@ -299,6 +309,9 @@ pub fn ring_of(action: &Action) -> Ring {
         | FoundPlace { .. }
         | BeginExportPlaceCard
         | ExportPlaceCard { .. }
+        | BeginRefreshPlaceContact
+        | RefreshPlaceContact { .. }
+        | ReconnectPlaceWithCard { .. }
         | BeginOfferPlacePrekey
         | OfferPlacePrekey { .. }
         | OfferPlacePrekeyForCard { .. }

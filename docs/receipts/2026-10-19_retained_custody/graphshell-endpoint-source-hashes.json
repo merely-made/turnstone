@@ -1,0 +1,22 @@
+{
+  "src/local.rs": "114debfe18277883d7960a360f61521c9802f2377f7eaa07a5581caa88c1b07c",
+  "src/lib.rs": "384ea43dbd3ca37ba5d74ddd0a9a97e25326d8336a0842141f4622a771cfb942",
+  "src/stdio.rs": "c6bbe6e9a2f133093ddec362acb0669eef4dfa9bb6ee57477adeb544dc9bb168",
+  "src/network.rs": "b70e46df83b06732571a249237d4b416141a6729538b88e8a6eecacfd1e503df",
+  "src/door/resident_mere_proxy.rs": "a9c845f82bc730cb85e63eb12777fd9ba05be06fe8c7d2e63d9ef218a1da77f7",
+  "src/door/route.rs": "529e268918d0f90886af10352fc5a4d106cf552844cecde344a1b0ad99156855",
+  "src/door/profile.rs": "bbddd787ef60ff5a2a936876e41118c8f74f9ada8128f7ae4e8010a5010e032b",
+  "src/door/tasks.rs": "4052668ff776607fb7e9184f9d585f270790575aba19489a72b82d52e8780166",
+  "src/door/custody_client.rs": "1ee33e172644eda2290c9d60a581294bca21ffb7946ed0316380458d8dcd6924",
+  "src/door/identity.rs": "2a9b5a1e2c9784829290169a7d92eddca1c717b8c9a042db02e36c604ab3b787",
+  "src/door/mod.rs": "22e266ef9a5eb2da2ae2500b53efb4c745e139316cbc614b425f57a35c9b3012",
+  "src/door/custody_identity.rs": "5e92cf3fffaa76b75f8fb5d594d01d4bd08c43461aa80126583c1bbba9062fff",
+  "src/door/custody.rs": "58d8974087295b260cec04f3fc075b79ffae4ef50ed71c2bd32a392e64860145",
+  "src/door/app_admission.rs": "c2061b06bade4e8caf195a4ac270fb5ffd8a3c030eb46f37ca6a1ef1b247991a",
+  "src/door/frame.rs": "0faf8219964dbf7f47f910ad48a6bd36a894b3145735ae93e5ffc5aac8b89e66",
+  "src/door/local_endpoint.rs": "f1fa2065af53f24bf4a19625a8553c6ee90c7c74f1f2a49eb30f9db50375a3d8",
+  "src/door/quarantine.rs": "65f85e8edb11c5ac563f664bfcc4c1ab41191580901b430062d76e03229d62c1",
+  "src/door/wire.rs": "4ccefa6d3d3bb6ee06abf47cc463344699d478578e4278f9e08c2c6ff078c9c1",
+  "src/door/app_client.rs": "f949d6b13a3ef283879432186922f3fdfafbab54e16d49b6f495dcabe83cfc31",
+  "src/door/custody_payload.rs": "b2dd9be0d55af6273fc71d4afc809771e7d90eb6452127e78480a95bffa0fff2"
+}

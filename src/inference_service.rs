@@ -79,7 +79,7 @@ enum Command {
     Ask {
         run: String,
         question: String,
-        chosen: Vec<crate::saved_sources::Target>,
+        chosen: Vec<crate::research::Target>,
     },
     Control {
         run: String,
@@ -144,7 +144,7 @@ impl InferenceService {
     pub fn ask(
         &self,
         question: String,
-        chosen: Vec<crate::saved_sources::Target>,
+        chosen: Vec<crate::research::Target>,
     ) -> Result<String, String> {
         if question.trim().is_empty() {
             return Err("Enter a question.".into());
@@ -411,7 +411,7 @@ fn publication(owner: &str, sources: Vec<RetainedSourceText>) -> Result<Vec<u8>,
     for source in &sources {
         let target = crate::research::target(&source.source, &source.version)?;
         if source.source.owner.as_deref() != Some(owner)
-            || target.text_hash != eidetic::Hash::of(source.text.as_bytes()).to_string()
+            || target.text_hash() != eidetic::Hash::of(source.text.as_bytes()).to_string()
         {
             return Err("Saved-source publication failed identity or text validation.".into());
         }
@@ -597,10 +597,10 @@ mod tests {
             tokens: 1,
             continuations: vec![],
             recall: Some(RecallEvidence {
-                embedding: None,
                 owner: Some("turnstone/session".into()),
                 scope: vec![],
                 config: Default::default(),
+                embedding: None,
                 passages: vec![SuppliedPassage { handle: 1, passage }],
                 stale: vec![],
                 citations: vec![citation],
@@ -666,7 +666,7 @@ mod tests {
             selector: None,
         };
         RetainedSourceText {
-            source: crate::research::source_id(&target).unwrap(),
+            source: crate::research::source_id(&target.clone().into()).unwrap(),
             version: target.text_hash,
             title: Some("A1".into()),
             text: text.into(),

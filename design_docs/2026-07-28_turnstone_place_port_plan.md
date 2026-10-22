@@ -1297,3 +1297,44 @@ content sessions so a hub's bell or loss is visible to it.
 - Do not claim shared-graph confidentiality before that lane is encrypted.
 - Do not begin calls, co-browsing presence, Outrider service publication, or a
   second carrier before the headed place receipt.
+
+
+### Current-stack macOS place baseline, 2026-10-19
+
+The [current-stack receipt](../docs/receipts/place_sharing_20261019/README.md)
+records six successful headed native phases using three isolated,
+custody-backed profiles. A founder creates a place, admits a writer and a
+reader, exchanges messages, and shares one chosen HTTP address. The
+writer returns in a fresh process and catches up on absent authoring. The
+reader receives the share but cannot publish its own private address. Exited
+profile caches and canonical projection digests establish the exact scope.
+
+All applications and all three Djinn residents then stop, and the origin is
+confirmed unavailable. Two new resident/native pairs reopen the same encrypted
+vaults and first show the retained one-node/five-message fold without opening
+lanes. The founder exports its current card. The writer refuses a foreign-place
+card, then uses **Refresh place contact** to reconnect to the current endpoint.
+Both reach seven messages with the same shared-graph digest. Fifteen captures
+were inspected; test inputs, the actual app/resident dependency cuts and the
+committed-archive verification procedure are in the receipt.
+
+The run closed two product gaps and a native driver gap. Graph/chat-only
+invitations and removals no longer require an unrelated document signer;
+when a document host is offered, its grant is prepared before membership is
+changed. Full cold return needs an explicit current-contact path when saved
+ports are stale and multicast discovery is unavailable. That path rechecks the
+exact retained binding and membership, parses the endpoint tickets, then saves
+only bounded contact metadata; it neither replays admission nor changes a
+grant. Status/file waits now use the same normal rendered-frame pump, keeping
+the presentation watchdog active while another process starts.
+
+This qualifies the address and chat baseline on the recorded locked
+macOS stack, including deliberate contact renewal. Automatic discovery,
+cross-machine/WAN reachability, offline HTTP body replay, current document
+projection/editing and research-source/note attachment transfer remain separate.
+The historical T5c document projection receipt above is not requalified by this
+run. Named-recipient document publishing retains its separate source-owner gate.
+The place repair widens no projection-signer release policy or shared wire
+schema. The concurrent retained-custody intake `01658c7` advanced the supplier
+cohort during this work; the final receipt repeats qualification on the merged
+current source and preserves the earlier passed cohort separately.

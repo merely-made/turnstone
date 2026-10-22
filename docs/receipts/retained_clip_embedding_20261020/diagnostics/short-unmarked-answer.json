@@ -1,0 +1,71 @@
+{
+  "run": "turnstone/40309e40-58e3-46e2-8781-2d07c02531e8/research/v1/e5ae4739-9a07-4582-b133-fa44c1e153f3",
+  "question": "Repeat the retained text exactly.",
+  "state": "finished",
+  "text": "café",
+  "error": null,
+  "session": {
+    "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+    "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+  },
+  "tokens": 3,
+  "continuations": [
+    {
+      "device": "device:560e1a77ea361d6b03ba0bdedb9a0b55",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "embedding": {
+      "envelope": "blake3:1bd0c57428db8d1cf18de88c589976ca7c6d352532c899d216705cc5e186aefb",
+      "index": "blake3:3cfd0fafaa7bf562b26fa2e7e4980ddfceccbf62164af9076bc95b6a07e45a4f",
+      "cache": "built",
+      "vector_bytes": 1536,
+      "persisted_bytes": 6424,
+      "lexical_weight": 1,
+      "vector_weight": 1,
+      "rrf_k": 60
+    },
+    "owner": "turnstone/40309e40-58e3-46e2-8781-2d07c02531e8/research/v1",
+    "scope": [
+      {
+        "kind": "fleece",
+        "owner": "turnstone/40309e40-58e3-46e2-8781-2d07c02531e8/research/v1",
+        "source": "mere://retained-text/40309e40-58e3-46e2-8781-2d07c02531e8/0636c83f-0113-400b-a498-f015fa7e8a7b/17a3ff79-5eae-4fd8-a5ea-1b7e25ad6d92/d87011314dd76d6a442499c617217d7fbe31f2040b82ebd3f5799a1774c99088/e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+        "node": "17a3ff79-5eae-4fd8-a5ea-1b7e25ad6d92"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 1,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "fleece",
+            "owner": "turnstone/40309e40-58e3-46e2-8781-2d07c02531e8/research/v1",
+            "source": "mere://retained-text/40309e40-58e3-46e2-8781-2d07c02531e8/0636c83f-0113-400b-a498-f015fa7e8a7b/17a3ff79-5eae-4fd8-a5ea-1b7e25ad6d92/d87011314dd76d6a442499c617217d7fbe31f2040b82ebd3f5799a1774c99088/e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+            "node": "17a3ff79-5eae-4fd8-a5ea-1b7e25ad6d92"
+          },
+          "version": "blake3:e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+          "text_hash": "blake3:e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+          "selector": {
+            "start": 0,
+            "end": 4
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "café"
+        }
+      }
+    ],
+    "stale": []
+  }
+}

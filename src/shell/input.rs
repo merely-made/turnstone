@@ -216,6 +216,21 @@ pub(super) fn dispatch_primary_chrome_press(
         crate::chrome_view::ChromeIntent::Reload => Action::Reload,
         crate::chrome_view::ChromeIntent::Stop => Action::Stop,
         crate::chrome_view::ChromeIntent::KeepNode(member) => Action::KeepNode { member },
+        crate::chrome_view::ChromeIntent::Address => Action::OmnibarOpen { command: false },
+        crate::chrome_view::ChromeIntent::WorkspaceMap(map) => Action::SetWorkspaceMap(map),
+        crate::chrome_view::ChromeIntent::Tool(kind) => Action::ToggleToolPane(crate::panes::PaneKindId::new(kind)),
+        crate::chrome_view::ChromeIntent::ReadMember(member) => Action::ReadGraphMember(member),
+        crate::chrome_view::ChromeIntent::NavigateRelationship(target) => Action::NavigateRelationship(target),
+        crate::chrome_view::ChromeIntent::RevealMember(member) => Action::RevealGraphMember(member),
+        crate::chrome_view::ChromeIntent::Layout(layout) => Action::SetChromeLayout(layout),
+        crate::chrome_view::ChromeIntent::FitGraph => {
+            dispatch_primary_action_press(host, Action::SetWorkspaceMap(true));
+            dispatch_primary_action_press(host, Action::FitView);
+            return true;
+        },
+        crate::chrome_view::ChromeIntent::Territory => Action::ToggleTerritory,
+        crate::chrome_view::ChromeIntent::AllPanes => Action::OmnibarOpen { command: true },
+        crate::chrome_view::ChromeIntent::MenuChanged => { host.pointer_redraw(); return true; },
         crate::chrome_view::ChromeIntent::FindPrevious => {
             Action::StepDocumentFind(crate::action::DocumentFindDirection::Previous)
         },
@@ -386,6 +401,37 @@ pub(super) fn dispatch_primary_release(
         return std::ops::ControlFlow::Break(());
     }
     std::ops::ControlFlow::Continue(captured)
+}
+
+/// Admit a Workbench seam before document dispatch, including the invisible
+/// part of its grab band. Match appearance custody so another pane or float
+/// covering the same coordinates keeps its input.
+fn workbench_resize_target(
+    app: &crate::app::App,
+    plan: &[crate::surface::Surface],
+    hit: Option<crate::surface::HitResult>,
+    x: f32,
+    y: f32,
+) -> Option<(crate::panes::PaneId, crate::workbench_tiling::WbDivider, (f32, f32))> {
+    use crate::surface::{SurfaceId, SurfaceKind};
+    let hit = hit?;
+    plan.iter().rev().find_map(|surface| {
+        let SurfaceKind::Pane(pane) = surface.kind else { return None };
+        if !matches!(app.pane_content(pane), Some(crate::panes::PaneContent::Workbench))
+            || !surface.rect.contains(x, y) { return None; }
+        let owned = match hit.kind {
+            SurfaceKind::Pane(id) => id == pane,
+            SurfaceKind::Content(node) => hit.id == SurfaceId::content_appearance(node,
+                crate::surface::appearance::workbench_appearance_role(pane, node)),
+            _ => false,
+        };
+        if !owned { return None; }
+        let geom = app.workbench_for_pane(pane)?.to_arrangement().1;
+        let tiling = crate::workbench_tiling::place_workbench_at(geom.as_ref(),
+            Rect::new(0.0, 0.0, surface.rect.w, surface.rect.h),app.shell_chrome_config().layout.document_tabs);
+        let divider = tiling.divider_at(x - surface.rect.x, y - surface.rect.y)?.clone();
+        Some((pane, divider, (surface.rect.x, surface.rect.y)))
+    })
 }
 
 impl PrimaryPointerHost for Shell {
@@ -634,6 +680,17 @@ impl Shell {
         if dispatch_primary_context_press(self, button, hit) {
             return;
         }
+        if button == MouseButton::Left
+            && self.pointer_capture.is_none()
+            && super::window_input::captured_mouse(&self.content_sessions.pool).is_none()
+            && let Some((pane, divider, origin)) = workbench_resize_target(&self.app, &plan, hit, x, y)
+        {
+            self.app.active_pane = Some(pane);
+            self.pointer_capture = Some(crate::surface::SurfaceKind::Pane(pane));
+            self.wb_divider_drag = Some((divider, origin));
+            self.request_redraw();
+            return;
+        }
         if let Some(hit) = dispatch_primary_press(self, hit, x, y, button) {
             match hit.kind {
                 // Content is fully dispatched by the shared native caller.
@@ -742,6 +799,7 @@ impl Shell {
                                 };
                                 for action in actions {
                                     match action {
+                                        crate::cambium_pane::RosterAction::Binding(intent) => { self.act(Action::SetPaneBinding(intent)); },
                                         crate::cambium_pane::RosterAction::Navigate(url) => {
                                             self.act(Action::OpenAddress(url))
                                         },
@@ -803,7 +861,8 @@ impl Shell {
                                         crate::inspector_pane::InspectorIntent::ClipToKnot { offer } => {
                                             self.clip_document_to_knot(offer)
                                         },
-                                        crate::inspector_pane::InspectorIntent::NewResearchNote => self.act(Action::NewResearchNote),
+                                        crate::inspector_pane::InspectorIntent::Binding(intent) => self.act(Action::SetPaneBinding(intent)),
+                        crate::inspector_pane::InspectorIntent::NewResearchNote => self.act(Action::NewResearchNote),
                                         crate::inspector_pane::InspectorIntent::OpenResearchNote => self.act(Action::OpenResearchNote),
                                         crate::inspector_pane::InspectorIntent::ChooseResearchNote { choice } => self.act(Action::ChooseResearchNote { choice }),
                                         crate::inspector_pane::InspectorIntent::CaptureSourceDocument { target } => self.act(Action::CaptureSourceDocument { target }),
@@ -986,6 +1045,15 @@ impl Shell {
                                         self.app.focus = crate::surface::FocusTarget::Pane(id);
                                         self.app.publish_member_context(id, Some(member));
                                         self.wb_tab_drag = Some((id, member));
+                                    } else {
+                                        // Controls are ordinary pane input. Only tabs
+                                        // and dividers enter the tiling gesture path.
+                                        let member=pane.tiling().cell_at(lx,ly).and_then(|cell|cell.active_member());
+                                        self.app.focus=crate::surface::FocusTarget::Pane(id);
+                                        self.app.active_pane=Some(id);
+                                        self.app.publish_member_context(id,member);
+                                        let actions=self.pane_click_actions(id,&PaneContent::Workbench,(lx,ly),(rw,rh));
+                                        for action in actions { self.act(action); }
                                     }
                                 }
                             },
@@ -1659,6 +1727,31 @@ impl Shell {
 #[cfg(test)]
 mod cursor_tests {
     use super::*;
+
+    #[test]
+    fn workbench_resize_band_precedes_its_document_but_respects_other_appearances() {
+        use crate::surface::{Surface, SurfaceId, SurfaceKind};
+        let mut app = crate::app::App::test_stub();
+        app.update(Action::OpenAddress("https://example.com/left".into()));
+        app.update(Action::OpenInWorkbench);
+        app.update(Action::OpenAddress("https://example.com/right".into()));
+        let node = app.graph_runtimes.focused_member().unwrap();
+        app.update(Action::OpenInWorkbench);
+        let pane = app.active_pane.unwrap();
+        let plan = vec![Surface { id: SurfaceId::pane(pane), kind: SurfaceKind::Pane(pane),
+            rect: Rect::new(20.0, 40.0, 800.0, 600.0) }];
+        let hit = crate::surface::HitResult {
+            id: SurfaceId::content_appearance(node,
+                crate::surface::appearance::workbench_appearance_role(pane, node)),
+            kind: SurfaceKind::Content(node), local: (3.0, 100.0),
+        };
+        assert!(workbench_resize_target(&app, &plan, Some(hit), 424.0, 200.0).is_some(),
+            "four pixels into the document still grabs the seam");
+        let covered = crate::surface::HitResult { id: SurfaceId::content_appearance(node, 99), ..hit };
+        assert!(workbench_resize_target(&app, &plan, Some(covered), 424.0, 200.0).is_none(),
+            "another appearance covering the seam keeps its input");
+        assert!(workbench_resize_target(&app, &plan, Some(hit), 430.0, 200.0).is_none());
+    }
 
     #[test]
     fn web_cursor_shapes_map_to_host_cursor_icons() {

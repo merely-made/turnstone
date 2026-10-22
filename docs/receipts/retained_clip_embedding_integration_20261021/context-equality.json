@@ -1,0 +1,12 @@
+{
+  "source": "ports/distillery/src/inference/recall.rs",
+  "sha256_by_commit": {
+    "22c8c5e3c4bf3869bc56f5d44373d204f11458f7": "c12b109a36c0f7e0316f9de2bf27d71af158d48dd6e507239488953d0ff10f63",
+    "eb1244ccfa644348fcd4c5cc8bd5ccf72315ba11": "c12b109a36c0f7e0316f9de2bf27d71af158d48dd6e507239488953d0ff10f63",
+    "c6540a4b7229808843ed66f0507fbbbc149b358a": "c12b109a36c0f7e0316f9de2bf27d71af158d48dd6e507239488953d0ff10f63",
+    "d574d4b508401b2c6c963ef6cec44ef9d1364e8d": "c12b109a36c0f7e0316f9de2bf27d71af158d48dd6e507239488953d0ff10f63",
+    "7edfe3b097f38ee621f6352953c3b1be08339504": "c12b109a36c0f7e0316f9de2bf27d71af158d48dd6e507239488953d0ff10f63"
+  },
+  "equal": true,
+  "scope": "Full resident recall implementation including context formatter and evidence/citation rules is byte-identical across fix, first SDK, synthetic resident fixture and integrated SDK cuts."
+}

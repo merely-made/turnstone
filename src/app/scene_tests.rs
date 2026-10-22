@@ -14,6 +14,53 @@ const URLS: [&str; 4] = [
     "https://sources.example/chords",
 ];
 
+#[test]
+fn territory_from_read_targets_its_map_and_preserves_source_and_positions() {
+    let (mut app, pane, members) = fixture();
+    let owner = app.graph_for_pane(pane).unwrap();
+    app.update(Action::ReadGraphMember(members[0]));
+    let other = GraphId::from_uuid(uuid::Uuid::new_v4());
+    app.graph_runtimes
+        .activate_or_insert(other, None, Canvas::new());
+    let before = serde_json::to_value(
+        app.graph_runtimes
+            .canvas(owner)
+            .unwrap()
+            .graph()
+            .to_snapshot_at(0),
+    )
+    .unwrap();
+    let positions = app
+        .graph_runtimes
+        .canvas(owner)
+        .unwrap()
+        .cartography_geometry();
+    let effects = app.update(Action::ToggleTerritory);
+    assert!(app.graph_runtimes.canvas(owner).unwrap().territory_field());
+    assert!(!app.graph_runtimes.canvas(other).unwrap().territory_field());
+    assert!(effects.iter().all(|e| matches!(e, Effect::Redraw)));
+    assert_eq!(
+        before,
+        serde_json::to_value(
+            app.graph_runtimes
+                .canvas(owner)
+                .unwrap()
+                .graph()
+                .to_snapshot_at(0)
+        )
+        .unwrap()
+    );
+    assert_eq!(
+        positions,
+        app.graph_runtimes
+            .canvas(owner)
+            .unwrap()
+            .cartography_geometry()
+    );
+    app.update(Action::ToggleTerritory);
+    assert!(!app.graph_runtimes.canvas(owner).unwrap().territory_field());
+}
+
 fn fixture() -> (App, PaneId, Vec<uuid::Uuid>) {
     let mut app = App::test_stub();
     let pane = app.default_graph_pane();

@@ -1,0 +1,7 @@
+{
+  "path": "/Users/markik/Code/output/redshank-text-retention-20261020/focused-tests",
+  "sha256": "6f1092fd35aee19c4cba0481ecc25ace44c91c57ca67019674ce1d89f322d124",
+  "fixture_helper": "redshank_host::tests::embedded_text_retention_process_fixture",
+  "ordinary_host_tests": 12,
+  "marker": "redshank-text-retention-20261020"
+}

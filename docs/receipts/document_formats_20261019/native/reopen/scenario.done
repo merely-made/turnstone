@@ -1,0 +1,10 @@
+RESULT ok
+captured 12_cold_authored_note
+captured 13_cold_exact_A1
+captured 14_cold_A2_is_distinct
+captured 15_cold_old_A1_after_A2
+presentation frames=119 captures=4 blank=0
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated/reopen/12_cold_authored_note.png digest=876246e4f5d82848 blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated/reopen/13_cold_exact_A1.png digest=9effc9e2983bb94f blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated/reopen/14_cold_A2_is_distinct.png digest=55f709490e0fd0a3 blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated/reopen/15_cold_old_A1_after_A2.png digest=52221990ebe2c6cf blank=false

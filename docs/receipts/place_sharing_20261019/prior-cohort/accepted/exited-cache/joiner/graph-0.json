@@ -1,0 +1,100 @@
+{
+  "nodes": [
+    {
+      "node_id": "5484f0df-b6da-4bcd-bf25-dde6a7b05bbc",
+      "address": {
+        "Http": "http://127.0.0.1:55586/shared.html"
+      },
+      "url": "http://127.0.0.1:55586/shared.html",
+      "cached_host": null,
+      "title": "Shared place address",
+      "tags": [],
+      "tag_presentation": {
+        "ordered_tags": [],
+        "icon_overrides": {}
+      },
+      "import_provenance": [],
+      "is_pinned": false,
+      "session_state": {
+        "scroll_x": null,
+        "scroll_y": null,
+        "form_draft": null,
+        "last_visited_ms": null
+      },
+      "mime_hint": "text/html",
+      "classifications": [],
+      "frame_layout_hints": [],
+      "frame_split_offer_suppressed": false,
+      "properties": [],
+      "derivations": [],
+      "body": null,
+      "last_session_visited": 0,
+      "nested": null
+    }
+  ],
+  "edges": [],
+  "import_records": [],
+  "timestamp_secs": 1792464789,
+  "fields": [],
+  "couplings": [],
+  "navigation": {
+    "snapshot": {
+      "entries": [
+        {
+          "key": "http://127.0.0.1:55586/shared.html",
+          "payload": "http://127.0.0.1:55586/shared.html",
+          "first_seen_at_ms": 1792464662335,
+          "last_seen_at_ms": 1792464662335,
+          "visit_count": 1,
+          "privacy": "LocalOnly"
+        }
+      ],
+      "visits": [
+        {
+          "entry": 0,
+          "parent": null,
+          "children": [],
+          "created_at_ms": 1792464662335,
+          "context": null,
+          "inbound": null,
+          "bindings": [
+            {
+              "owner": 0,
+              "forward_child": null,
+              "last_accessed_at_ms": 1792464662335
+            }
+          ]
+        }
+      ],
+      "owners": [
+        {
+          "identity": {
+            "Node": "5484f0df-b6da-4bcd-bf25-dde6a7b05bbc"
+          },
+          "origin": 0,
+          "current": 0,
+          "creator": null,
+          "pending_origin_parent": null,
+          "owned_visits": [
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "resources": [
+    {
+      "canonical_iri": "http://127.0.0.1:55586/shared.html",
+      "facets": []
+    }
+  ],
+  "resource_edges": [],
+  "shown_resources": [
+    {
+      "surface_id": "5484f0df-b6da-4bcd-bf25-dde6a7b05bbc",
+      "resource_id": "2fb292c2-82ab-5703-be4c-bbf8e19b042f"
+    }
+  ],
+  "assertion_schema": 1,
+  "placement": "recorded-strata-v1"
+}

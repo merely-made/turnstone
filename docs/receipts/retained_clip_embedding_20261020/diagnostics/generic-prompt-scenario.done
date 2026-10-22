@@ -1,0 +1,11 @@
+RESULT fail
+captured 01_retained_body
+captured 02_explicit_scope
+FAIL: assert text 'café': not on any surface
+captured 03_embedding_answer
+captured 04_exact_clip_citation
+presentation frames=1198 captures=4 blank=0
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-01/knot/warm/01_retained_body.png digest=184515139508c3bc blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-01/knot/warm/02_explicit_scope.png digest=27bae3d41b89ad35 blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-01/knot/warm/03_embedding_answer.png digest=54b178b5a67f4123 blank=false
+capture /Users/markik/Code/output/turnstone-retained-embedding-20261020/raw-01/knot/warm/04_exact_clip_citation.png digest=38e93bd4847eaa5d blank=false

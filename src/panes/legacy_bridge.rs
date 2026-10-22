@@ -85,7 +85,7 @@ fn project_workspace(
                 .filter_map(|tile| {
                     let (content, graph) = frame.panes.get(&tile.id.0)?;
                     let id = PaneId(tile.id.0);
-                    panes.push(project_spec(id, content, *graph));
+                    panes.push(frame.descriptors.get(&id.0).and_then(|v| serde_json::from_value(v.clone()).ok()).unwrap_or_else(|| project_spec(id, content, *graph)));
                     Some(LayoutNode::Pane(id))
                 })
                 .collect();

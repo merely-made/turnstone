@@ -1,0 +1,3 @@
+RESULT fail
+FAIL: no successful window presentation for ten seconds
+presentation frames=125 captures=0 blank=0

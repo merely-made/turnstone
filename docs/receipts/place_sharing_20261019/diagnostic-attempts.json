@@ -1,0 +1,501 @@
+[
+  {
+    "attempt": 1,
+    "result": "failed diagnostic",
+    "raw_output": "/Users/markik/Code/output/turnstone-place-sharing-20261019-native-01",
+    "reason": "Harness startup refused: receipt agent endpoint was accidentally inherited as standard SSH_AUTH_SOCK. Fixed harness by removing standard agent variables; production guard preserved.",
+    "binary_sha256": "4dfba0f2968e69d3eecb2ce1ddc59ec8c5b88be0d4c9efc85dba8550e26f93b0",
+    "djinn_sha256": "8d6f396236e72a421fb01aafd07e2e07f011228433818284d475022718c5fa90",
+    "phases": {},
+    "controller_tail": "Traceback (most recent call last):\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 235, in <module>\n    main()\n    ~~~~^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 186, in main\n    status = resident.start()\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/resident.py\", line 63, in start\n    assert self.process.poll() is None, f'{self.name} resident exited: {self.process.returncode}'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: founder resident exited: 1\n"
+  },
+  {
+    "attempt": 2,
+    "result": "failed diagnostic",
+    "raw_output": "/Users/markik/Code/output/turnstone-place-sharing-20261019-native-02",
+    "reason": "Writer invitation did not arrive; later diagnostic run exposed unnecessary projection signer requirement.",
+    "binary_sha256": "4dfba0f2968e69d3eecb2ce1ddc59ec8c5b88be0d4c9efc85dba8550e26f93b0",
+    "djinn_sha256": "8d6f396236e72a421fb01aafd07e2e07f011228433818284d475022718c5fa90",
+    "phases": {
+      "founder": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              98389
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": false,
+          "elapsed_seconds": 77.731,
+          "binary_sha256": "4dfba0f2968e69d3eecb2ce1ddc59ec8c5b88be0d4c9efc85dba8550e26f93b0",
+          "scenario_sha256": "e92e0d808a5ab3fa7e7b091d71faeadfb4b398fe1bdb8433729a17549798e177",
+          "receipt": "scenario.done",
+          "captures": 1
+        },
+        "receipt": "RESULT fail\ncaptured 01_founder_listening\nwait-file '/tmp/tspl-qsotok1z/exchange/writer.place-card.json.prekey.json.invite.json': still missing or empty\npresentation frames=1013 captures=1 blank=0\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-02/founder/01_founder_listening.png digest=c10322908b360489 blank=false\n"
+      },
+      "joiner": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              98528
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": false,
+          "elapsed_seconds": 52.423,
+          "binary_sha256": "4dfba0f2968e69d3eecb2ce1ddc59ec8c5b88be0d4c9efc85dba8550e26f93b0",
+          "scenario_sha256": "dc470bb7a66eafe52726144a4975a3a98d71f8e45dedf8672d4cfe689c9b0a19",
+          "receipt": null,
+          "captures": 0
+        },
+        "receipt": null
+      }
+    },
+    "controller_tail": "Traceback (most recent call last):\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 235, in <module>\n    main()\n    ~~~~^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 191, in main\n    exited(joiner)\n    ~~~~~~^^^^^^^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 181, in exited\n    wait(lambda: run.process.poll() is not None, str(run.directory))\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 168, in wait\n    run.check()\n    ~~~~~~~~~^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 63, in check\n    assert self.process.returncode == 0, str(self.directory) + ' launcher failed'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: /Users/markik/Code/output/turnstone-place-sharing-20261019-native-02/founder launcher failed\n"
+  },
+  {
+    "attempt": 3,
+    "result": "failed diagnostic",
+    "raw_output": "/Users/markik/Code/output/turnstone-place-sharing-20261019-native-03",
+    "reason": "Invitation form committed; no artifact arrived. Later diagnostic run identified custody signer refusal.",
+    "binary_sha256": "4dfba0f2968e69d3eecb2ce1ddc59ec8c5b88be0d4c9efc85dba8550e26f93b0",
+    "djinn_sha256": "8d6f396236e72a421fb01aafd07e2e07f011228433818284d475022718c5fa90",
+    "phases": {
+      "founder": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              99249
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": false,
+          "elapsed_seconds": 77.977,
+          "binary_sha256": "4dfba0f2968e69d3eecb2ce1ddc59ec8c5b88be0d4c9efc85dba8550e26f93b0",
+          "scenario_sha256": "fd9152404ba04059777e77da983778191381ecbb8574a05f10450b416ec62a74",
+          "receipt": "scenario.done",
+          "captures": 2
+        },
+        "receipt": "RESULT fail\ncaptured 01_founder_listening\ncaptured invitation_attempt\nwait-file '/tmp/tspl-53p3qvua/exchange/writer.place-card.json.prekey.json.invite.json': still missing or empty\npresentation frames=1018 captures=2 blank=0\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-03/founder/01_founder_listening.png digest=778af2b649cd4db8 blank=false\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-03/founder/invitation_attempt.png digest=80d8e05d934b1f59 blank=false\n"
+      },
+      "joiner": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              99306
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": false,
+          "elapsed_seconds": 53.142,
+          "binary_sha256": "4dfba0f2968e69d3eecb2ce1ddc59ec8c5b88be0d4c9efc85dba8550e26f93b0",
+          "scenario_sha256": "dc470bb7a66eafe52726144a4975a3a98d71f8e45dedf8672d4cfe689c9b0a19",
+          "receipt": null,
+          "captures": 0
+        },
+        "receipt": null
+      }
+    },
+    "controller_tail": "Traceback (most recent call last):\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 235, in <module>\n    main()\n    ~~~~^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 191, in main\n    exited(joiner)\n    ~~~~~~^^^^^^^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 181, in exited\n    wait(lambda: run.process.poll() is not None, str(run.directory))\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 168, in wait\n    run.check()\n    ~~~~~~~~~^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 63, in check\n    assert self.process.returncode == 0, str(self.directory) + ' launcher failed'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: /Users/markik/Code/output/turnstone-place-sharing-20261019-native-03/founder launcher failed\n"
+  },
+  {
+    "attempt": 4,
+    "result": "failed diagnostic",
+    "raw_output": "/Users/markik/Code/output/turnstone-place-sharing-20261019-native-04",
+    "reason": "Deliberate event-dump assertion exposed the actual projection signer refusal. Not an acceptance run.",
+    "binary_sha256": "4dfba0f2968e69d3eecb2ce1ddc59ec8c5b88be0d4c9efc85dba8550e26f93b0",
+    "djinn_sha256": "8d6f396236e72a421fb01aafd07e2e07f011228433818284d475022718c5fa90",
+    "phases": {
+      "founder": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              552
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": false,
+          "elapsed_seconds": 76.179,
+          "binary_sha256": "4dfba0f2968e69d3eecb2ce1ddc59ec8c5b88be0d4c9efc85dba8550e26f93b0",
+          "scenario_sha256": "aed55d99595c3530cc5cd868ac3a548551e9d5e16d2b0c80e6e88607be236a84",
+          "receipt": "scenario.done",
+          "captures": 2
+        },
+        "receipt": "RESULT fail\ncaptured 01_founder_listening\ncaptured invitation_attempt\nFAIL: assert event 'diagnostic-invitation-event-dump': not in the stream (last: [\"place-refused authoring an invitation: issue projection grant: identity provider could not derive delegation signer\", \"omnibar-opened\", \"omnibar-opened\", \"omnibar-closed\", \"omnibar-opened\", \"omnibar-opened\"])\nwait-file '/tmp/tspl-ifax_a3y/exchange/writer.place-card.json.prekey.json.invite.json': still missing or empty\npresentation frames=1014 captures=2 blank=0\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-04/founder/01_founder_listening.png digest=c10322908b360489 blank=false\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-04/founder/invitation_attempt.png digest=80d8e05d934b1f59 blank=false\n"
+      },
+      "joiner": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              634
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": false,
+          "elapsed_seconds": 51.818,
+          "binary_sha256": "4dfba0f2968e69d3eecb2ce1ddc59ec8c5b88be0d4c9efc85dba8550e26f93b0",
+          "scenario_sha256": "dc470bb7a66eafe52726144a4975a3a98d71f8e45dedf8672d4cfe689c9b0a19",
+          "receipt": null,
+          "captures": 0
+        },
+        "receipt": null
+      }
+    },
+    "controller_tail": "Traceback (most recent call last):\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 235, in <module>\n    main()\n    ~~~~^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 191, in main\n    exited(joiner)\n    ~~~~~~^^^^^^^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 181, in exited\n    wait(lambda: run.process.poll() is not None, str(run.directory))\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 168, in wait\n    run.check()\n    ~~~~~~~~~^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 63, in check\n    assert self.process.returncode == 0, str(self.directory) + ' launcher failed'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: /Users/markik/Code/output/turnstone-place-sharing-20261019-native-04/founder launcher failed\n"
+  },
+  {
+    "attempt": 5,
+    "result": "failed diagnostic",
+    "raw_output": "/Users/markik/Code/output/turnstone-place-sharing-20261019-native-05",
+    "reason": "Harness JSONL readiness reader raced an incomplete final line; fixed to parse newline-complete records only.",
+    "binary_sha256": "c05dd0ab25da89331bdc859afbb4eade3d34f2db1fa513ff091a9ea92f081bd9",
+    "djinn_sha256": "8d6f396236e72a421fb01aafd07e2e07f011228433818284d475022718c5fa90",
+    "phases": {},
+    "controller_tail": "Traceback (most recent call last):\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 235, in <module>\n    main()\n    ~~~~^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 186, in main\n    status = resident.start()\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/resident.py\", line 64, in start\n    if events.exists() and any(json.loads(line).get('event') == 'ready' for line in events.read_text().splitlines()):\n                           ^^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/resident.py\", line 64, in <genexpr>\n    if events.exists() and any(json.loads(line).get('event') == 'ready' for line in events.read_text().splitlines()):\n                               ~~~~~~~~~~^^^^^^\n  File \"/usr/local/Cellar/python@3.15/3.15.0/Frameworks/Python.framework/Versions/3.15/lib/python3.15/json/__init__.py\", line 371, in loads\n    return _default_decoder.decode(s)\n           ~~~~~~~~~~~~~~~~~~~~~~~^^^\n  File \"/usr/local/Cellar/python@3.15/3.15.0/Frameworks/Python.framework/Versions/3.15/lib/python3.15/json/decoder.py\", line 358, in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/Cellar/python@3.15/3.15.0/Frameworks/Python.framework/Versions/3.15/lib/python3.15/json/decoder.py\", line 376, in raw_decode\n    raise JSONDecodeError(\"Expecting value\", s, err.value) from None\njson.decoder.JSONDecodeError: Expecting value: line 1 column 54 (char 53)\n"
+  },
+  {
+    "attempt": 6,
+    "result": "failed diagnostic",
+    "raw_output": "/Users/markik/Code/output/turnstone-place-sharing-20261019-native-06",
+    "reason": "Create/invite/join/address/message legs succeeded. Returning app never logged startup; sampled at dyld_start. Founder wait expired. Harness now reuses each owned app bundle and waits for startup activation throughout its deadline.",
+    "binary_sha256": "c05dd0ab25da89331bdc859afbb4eade3d34f2db1fa513ff091a9ea92f081bd9",
+    "djinn_sha256": "8d6f396236e72a421fb01aafd07e2e07f011228433818284d475022718c5fa90",
+    "phases": {
+      "founder": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              2646
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": false,
+          "elapsed_seconds": 438.538,
+          "binary_sha256": "c05dd0ab25da89331bdc859afbb4eade3d34f2db1fa513ff091a9ea92f081bd9",
+          "scenario_sha256": "fd9152404ba04059777e77da983778191381ecbb8574a05f10450b416ec62a74",
+          "receipt": "scenario.done",
+          "captures": 3
+        },
+        "receipt": "RESULT fail\ncaptured 01_founder_listening\ncaptured invitation_attempt\ncaptured 02_founder_selected_address\nwait-file '/Users/markik/Code/output/turnstone-place-sharing-20261019-native-06/control/joiner.returned': still missing or empty\npresentation frames=2930 captures=3 blank=0\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-06/founder/01_founder_listening.png digest=c10322908b360489 blank=false\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-06/founder/invitation_attempt.png digest=80d8e05d934b1f59 blank=false\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-06/founder/02_founder_selected_address.png digest=ade59e8ec4ffda09 blank=false\n"
+      },
+      "joiner": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              2710
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": true,
+          "elapsed_seconds": 50.035,
+          "binary_sha256": "c05dd0ab25da89331bdc859afbb4eade3d34f2db1fa513ff091a9ea92f081bd9",
+          "scenario_sha256": "dc470bb7a66eafe52726144a4975a3a98d71f8e45dedf8672d4cfe689c9b0a19",
+          "receipt": "scenario.done",
+          "captures": 2
+        },
+        "receipt": "RESULT ok\ncaptured 06_joiner_shared_address\ncaptured 07_joiner_before_stop\npresentation frames=127 captures=2 blank=0\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-06/joiner/06_joiner_shared_address.png digest=550dd5d787bbc73b blank=false\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-06/joiner/07_joiner_before_stop.png digest=a77f006af50a2bca blank=false\n"
+      },
+      "joiner-return": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": false
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": false,
+          "elapsed_seconds": 361.475,
+          "binary_sha256": "c05dd0ab25da89331bdc859afbb4eade3d34f2db1fa513ff091a9ea92f081bd9",
+          "scenario_sha256": "b61dbb35125b68726d184da081087da8c5ae2e8bba2024beb18d1e0a50817401",
+          "receipt": null,
+          "captures": 0
+        },
+        "receipt": null
+      }
+    },
+    "controller_tail": "Traceback (most recent call last):\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 235, in <module>\n    main()\n    ~~~~^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 194, in main\n    wait(lambda: (exchange / 'reader.place-card.json').exists(), 'reader card')\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 168, in wait\n    run.check()\n    ~~~~~~~~~^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 63, in check\n    assert self.process.returncode == 0, str(self.directory) + ' launcher failed'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: /Users/markik/Code/output/turnstone-place-sharing-20261019-native-06/founder launcher failed\n"
+  },
+  {
+    "attempt": 7,
+    "result": "failed diagnostic",
+    "raw_output": "/Users/markik/Code/output/turnstone-place-sharing-20261019-native-07",
+    "reason": "Writer cold return/catch-up and reader refusal succeeded, but synchronous wait-status starved the returning writer native presentation loop for about 40 seconds. Fixed by sharing the existing normal-frame pending wait mechanism with file waits, preserving the native watchdog.",
+    "binary_sha256": "163964c77ae79bccee60ab289fe62ac8cad9525a3ab7273b5277a287e9551229",
+    "djinn_sha256": "8d6f396236e72a421fb01aafd07e2e07f011228433818284d475022718c5fa90",
+    "phases": {
+      "reader": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              3956
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": false,
+          "elapsed_seconds": 39.171,
+          "binary_sha256": "163964c77ae79bccee60ab289fe62ac8cad9525a3ab7273b5277a287e9551229",
+          "scenario_sha256": "e151b2c11bf1d8d09a70a4fa33e347f181dd4cd2e9e1246d303aba482ae7257c",
+          "receipt": null,
+          "captures": 1
+        },
+        "receipt": null
+      },
+      "founder": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              3715
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": false,
+          "elapsed_seconds": 141.063,
+          "binary_sha256": "163964c77ae79bccee60ab289fe62ac8cad9525a3ab7273b5277a287e9551229",
+          "scenario_sha256": "fd9152404ba04059777e77da983778191381ecbb8574a05f10450b416ec62a74",
+          "receipt": null,
+          "captures": 3
+        },
+        "receipt": null
+      },
+      "joiner": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              3812
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": true,
+          "elapsed_seconds": 51.202,
+          "binary_sha256": "163964c77ae79bccee60ab289fe62ac8cad9525a3ab7273b5277a287e9551229",
+          "scenario_sha256": "dc470bb7a66eafe52726144a4975a3a98d71f8e45dedf8672d4cfe689c9b0a19",
+          "receipt": "scenario.done",
+          "captures": 2
+        },
+        "receipt": "RESULT ok\ncaptured 06_joiner_shared_address\ncaptured 07_joiner_before_stop\npresentation frames=124 captures=2 blank=0\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-07/joiner/06_joiner_shared_address.png digest=adb08d64498badad blank=false\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-07/joiner/07_joiner_before_stop.png digest=a0c22365ff9b095e blank=false\n"
+      },
+      "joiner-return": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              3908
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": false,
+          "elapsed_seconds": 60.118,
+          "binary_sha256": "163964c77ae79bccee60ab289fe62ac8cad9525a3ab7273b5277a287e9551229",
+          "scenario_sha256": "b61dbb35125b68726d184da081087da8c5ae2e8bba2024beb18d1e0a50817401",
+          "receipt": "scenario.done",
+          "captures": 1
+        },
+        "receipt": "RESULT fail\ncaptured 08_joiner_cold_retained\nFAIL: no successful window presentation for ten seconds\npresentation frames=36 captures=1 blank=0\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-07/joiner-return/08_joiner_cold_retained.png digest=3412d8496b342486 blank=false\n"
+      }
+    },
+    "controller_tail": "Traceback (most recent call last):\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 236, in <module>\n    main()\n    ~~~~^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 197, in main\n    exited(returning)\n    ~~~~~~^^^^^^^^^^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 182, in exited\n    wait(lambda: run.process.poll() is not None, str(run.directory))\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 169, in wait\n    run.check()\n    ~~~~~~~~~^^\n  File \"/Users/markik/Code/repos/turnstone/docs/receipts/place_sharing_20261019/run_native.py\", line 64, in check\n    assert self.process.returncode == 0, str(self.directory) + ' launcher failed'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: /Users/markik/Code/output/turnstone-place-sharing-20261019-native-07/joiner-return launcher failed\n"
+  },
+  {
+    "attempt": 8,
+    "result": "failed cold reconnect diagnostic",
+    "raw_output": "/Users/markik/Code/output/turnstone-place-sharing-20261019-native-08",
+    "reason": "Four initial phases passed. All apps and residents then stopped, origin was refused, and two new resident/native pairs retained one shared node and five messages with no lanes. Both reopened transports listened on fresh ports, but stale saved contacts and unavailable multicast discovery did not reconnect. Added an explicit same-place contact-card refresh through the ordinary reconnect owner path.",
+    "binary_sha256": "a57a7a60144102af490e8e9010b4d7d5ae45af1515fff3fe066291bc27060a9e",
+    "djinn_sha256": "8d6f396236e72a421fb01aafd07e2e07f011228433818284d475022718c5fa90",
+    "phases": {
+      "reader": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              4658
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": true,
+          "elapsed_seconds": 42.942,
+          "binary_sha256": "a57a7a60144102af490e8e9010b4d7d5ae45af1515fff3fe066291bc27060a9e",
+          "scenario_sha256": "e151b2c11bf1d8d09a70a4fa33e347f181dd4cd2e9e1246d303aba482ae7257c",
+          "receipt": "scenario.done",
+          "captures": 2
+        },
+        "receipt": "RESULT ok\ncaptured 11_reader_refused\ncaptured 12_reader_final\npresentation frames=203 captures=2 blank=0\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-08/reader/11_reader_refused.png digest=4306a48e7c5e2b4e blank=false\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-08/reader/12_reader_final.png digest=436878dabb99f62a blank=false\n"
+      },
+      "founder": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              4538
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": true,
+          "elapsed_seconds": 153.155,
+          "binary_sha256": "a57a7a60144102af490e8e9010b4d7d5ae45af1515fff3fe066291bc27060a9e",
+          "scenario_sha256": "fd9152404ba04059777e77da983778191381ecbb8574a05f10450b416ec62a74",
+          "receipt": "scenario.done",
+          "captures": 4
+        },
+        "receipt": "RESULT ok\ncaptured 01_founder_listening\ncaptured invitation_attempt\ncaptured 02_founder_selected_address\ncaptured 05_founder_final\npresentation frames=1085 captures=4 blank=0\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-08/founder/01_founder_listening.png digest=c10322908b360489 blank=false\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-08/founder/invitation_attempt.png digest=80d8e05d934b1f59 blank=false\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-08/founder/02_founder_selected_address.png digest=13d6d319d76ec9c9 blank=false\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-08/founder/05_founder_final.png digest=260f51933200a28c blank=false\n"
+      },
+      "cold-joiner": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              4841
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": false,
+          "elapsed_seconds": 195.404,
+          "binary_sha256": "a57a7a60144102af490e8e9010b4d7d5ae45af1515fff3fe066291bc27060a9e",
+          "scenario_sha256": "83560dcdf00c8a707f02ec7a2c56cf92df2af05784f9bb80456269eced4502d5",
+          "receipt": null,
+          "captures": 1
+        },
+        "receipt": null
+      },
+      "joiner": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              4570
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": true,
+          "elapsed_seconds": 51.864,
+          "binary_sha256": "a57a7a60144102af490e8e9010b4d7d5ae45af1515fff3fe066291bc27060a9e",
+          "scenario_sha256": "dc470bb7a66eafe52726144a4975a3a98d71f8e45dedf8672d4cfe689c9b0a19",
+          "receipt": "scenario.done",
+          "captures": 2
+        },
+        "receipt": "RESULT ok\ncaptured 06_joiner_shared_address\ncaptured 07_joiner_before_stop\npresentation frames=348 captures=2 blank=0\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-08/joiner/06_joiner_shared_address.png digest=a8a15b6227577fac blank=false\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-08/joiner/07_joiner_before_stop.png digest=51ae37c9c45338f2 blank=false\n"
+      },
+      "cold-founder": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              4793
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": false,
+          "elapsed_seconds": 211.098,
+          "binary_sha256": "a57a7a60144102af490e8e9010b4d7d5ae45af1515fff3fe066291bc27060a9e",
+          "scenario_sha256": "3d4df630c0815ddbc33351ef7614d40cf727a8cd9459b5f317c517e933d32b27",
+          "receipt": null,
+          "captures": 1
+        },
+        "receipt": null
+      },
+      "joiner-return": {
+        "process": {
+          "launch_method": "LaunchServices temporary application bundle",
+          "activation": {
+            "method": "LaunchServices activation of the owned temporary bundle",
+            "requested": true,
+            "exit_code": 0,
+            "owned_native_pids": [
+              4635
+            ]
+          },
+          "launcher_exit": 0,
+          "timeout": false,
+          "success": true,
+          "elapsed_seconds": 67.27,
+          "binary_sha256": "a57a7a60144102af490e8e9010b4d7d5ae45af1515fff3fe066291bc27060a9e",
+          "scenario_sha256": "b61dbb35125b68726d184da081087da8c5ae2e8bba2024beb18d1e0a50817401",
+          "receipt": "scenario.done",
+          "captures": 2
+        },
+        "receipt": "RESULT ok\ncaptured 08_joiner_cold_retained\ncaptured 10_joiner_final\npresentation frames=296 captures=2 blank=0\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-08/joiner-return/08_joiner_cold_retained.png digest=ad6dcba40e32f571 blank=false\ncapture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-08/joiner-return/10_joiner_final.png digest=846c1240d4f17513 blank=false\n"
+      }
+    }
+  }
+]

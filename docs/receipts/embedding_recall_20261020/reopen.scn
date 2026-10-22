@@ -1,0 +1,57 @@
+# Fresh app; origin and first resident have exited before launch.
+settle 15
+key escape
+assert snap network-offline == true
+act Search saved sources
+type café
+wait-saved-sources 600
+assert suggestions == 1
+key enter
+wait-saved-reader 600
+assert snap saved-reader-state == Ready
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+capture 08_cold_reader_before_resident
+record-saved-sources 08_cold_reader_before_resident
+act Ask saved sources
+settle 30
+act Maximize pane
+settle 5
+assert text Answers needs the inference resident.
+assert text 2 saved sources chosen
+capture 09_cold_scope_resident_absent
+touch ${ER_CONTROL}/start-resident-1
+wait-file 18000 ${ER_CONTROL}/resident-started-1
+settle 100
+assert text Connected to resident inference.
+click surface:contributed role:button Reopen: Repeat the retained sentence about the Pelican observatory
+settle 5
+assert text café
+assert text Source 1:
+capture 10_historical_answer_restored
+click surface:contributed role:button Source 1:
+settle 8
+wait-saved-reader 600
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+assert snap saved-reader-quote == The Pelican observatory's access word is café.
+capture 11_cold_historical_citation
+record-saved-sources 11_cold_historical_citation
+act Ask saved sources
+settle 30
+assert text 2 saved sources chosen
+click surface:contributed role:textbox Question
+insert Repeat the retained sentence about the Pelican observatory exactly.
+click surface:contributed role:button Ask
+wait-file 18000 ${ER_RESIDENT}/embedding-cold-ask.json
+settle 20
+assert text café
+assert text Source 1:
+capture 12_new_ask_using_reopened_projection
+click surface:contributed role:button Source 1:
+settle 8
+wait-saved-reader 600
+assert snap saved-reader-text == The Pelican observatory's access word is café.
+assert snap saved-reader-quote == The Pelican observatory's access word is café.
+capture 13_new_cold_ask_exact_citation
+record-saved-sources 13_new_cold_ask_exact_citation
+act Save session
+log Embedding cold source read, history and new ask complete

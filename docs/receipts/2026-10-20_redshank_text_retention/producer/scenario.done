@@ -1,0 +1,10 @@
+RESULT ok
+captured 00_private_note_refused
+captured 01_shareable_note_selected
+captured 02_retained_text
+captured 03_selected_text_exported
+presentation frames=109 captures=4 blank=0
+capture /Users/markik/Code/output/redshank-text-retention-20261020/producer/00_private_note_refused.png digest=11a38f341e27eb53 blank=false
+capture /Users/markik/Code/output/redshank-text-retention-20261020/producer/01_shareable_note_selected.png digest=48428aeca74824b7 blank=false
+capture /Users/markik/Code/output/redshank-text-retention-20261020/producer/02_retained_text.png digest=001e3848aa68d39a blank=false
+capture /Users/markik/Code/output/redshank-text-retention-20261020/producer/03_selected_text_exported.png digest=fc0a596ac825db97 blank=false

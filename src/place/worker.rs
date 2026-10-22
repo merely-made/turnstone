@@ -189,6 +189,8 @@ pub enum PlaceWorkerCommand {
         generation: u64,
         directory: PathBuf,
         binding: PlaceBindingV1,
+        /// Optional explicit contact-only refresh for this same retained place.
+        contact: Option<Box<crate::place::PlaceCardV1>>,
     },
     /// Found a new place in this session's directory and open it live,
     /// listen-only. Nothing is dialed: the founder has invited nobody yet.
@@ -318,6 +320,13 @@ pub(crate) struct OpenPlace {
 }
 
 impl OpenPlace {
+    fn offers_projection(&self) -> bool {
+        self.lanes
+            .as_ref()
+            .and_then(|lanes| lanes.projection_snapshot())
+            .is_some()
+    }
+
     /// Drain the group-key lane, then re-admit what the old key handle could
     /// not read. Every drain goes through here: a rotation that arrives with
     /// the content sealed to it is the race this closes.
@@ -1042,6 +1051,7 @@ pub fn found_place(
 /// Returns what it authored so the caller can publish it. Storing is what
 /// makes an admission survive; publishing is what makes it arrive at a peer
 /// that is already connected.
+/// Projection authority is included only for a separately offered host.
 fn admit_member(
     moot: &MootFile,
     binding: &PlaceBindingV1,
@@ -1050,12 +1060,31 @@ fn admit_member(
     access: crate::place::PlaceInviteAccess,
     now_ms: u64,
     expires_at_ms: Option<u64>,
+    projection_offered: bool,
 ) -> Result<AdmittedOps, String> {
     use crate::place::PlaceInviteAccess;
     let moot_id = binding.moot.0;
     let snapshot = pollster::block_on(moot.snapshot())
         .map_err(|error| format!("materialize Gemot: {error}"))?;
-    let mut authored = AdmittedOps::default();
+    // A place may offer graph/chat without a document projection host. Do not
+    // require that unrelated authority to admit a writer. When offered,
+    // prepare its grant before changing membership or delegation, so refusal
+    // cannot leave an admission partially authored.
+    let projection = if projection_offered && matches!(access, PlaceInviteAccess::Writer) {
+        Some(crate::place::projection_host::issue_projection_grant(
+            identity,
+            moot_id,
+            joiner_root,
+            now_ms,
+            expires_at_ms,
+        )?)
+    } else {
+        None
+    };
+    let mut authored = AdmittedOps {
+        projection,
+        ..AdmittedOps::default()
+    };
     if !snapshot
         .membership
         .members
@@ -1092,17 +1121,6 @@ fn admit_member(
             ))
             .map_err(|error| format!("delegate the Commons domains: {error}"))?,
         );
-        // A separate grant, in a separate domain, under the same root
-        // authority. It admits the holder to this host's projection door and
-        // is authority over nothing in Commons or Gemot. Same window as the
-        // delegation, which is what lets revocation recompute its id.
-        authored.projection = Some(crate::place::projection_host::issue_projection_grant(
-            identity,
-            moot_id,
-            joiner_root,
-            now_ms,
-            expires_at_ms,
-        )?);
     }
     Ok(authored)
 }
@@ -1624,18 +1642,35 @@ fn revoke_member(
     if !members.iter().any(|entry| entry.member == member) {
         return Err("that root is not a member of this place".to_string());
     }
-    let rekeyed = rekey_without(open, identity, member)?;
     let rules = &snapshot.governance.rules;
     let delegations = pollster::block_on(open.moot.delegations())
         .map_err(|error| format!("materialize Gemot delegations: {error}"))?;
     let key = founder_signing_key(identity, moot_id)?;
     let mut revoked = Vec::new();
-    let mut withdrawn = Vec::new();
-    for grant in delegations
+    let grants: Vec<_> = delegations
         .projections(moot_id, rules, at_ms)
         .into_iter()
         .filter(|grant| grant.issuer == local && grant.subject == member && !grant.directly_revoked)
-    {
+        .collect();
+    let withdrawn = if open.offers_projection() {
+        grants
+            .iter()
+            .map(|grant| {
+                crate::place::projection_host::projection_grant_revocation(
+                    identity,
+                    moot_id,
+                    member,
+                    grant.not_before_ms,
+                    grant.expires_at_ms,
+                    at_ms,
+                )
+            })
+            .collect::<Result<Vec<_>, _>>()?
+    } else {
+        Vec::new()
+    };
+    let rekeyed = rekey_without(open, identity, member)?;
+    for grant in grants {
         let scope = CapabilityScope {
             domain: MOOT_DELEGATION_DOMAIN.into(),
             resource: moot_id.to_vec(),
@@ -1661,14 +1696,6 @@ fn revoke_member(
             )
             .map_err(|error| format!("revoke the Commons delegation: {error}"))?,
         );
-        withdrawn.push(crate::place::projection_host::projection_grant_revocation(
-            identity,
-            moot_id,
-            member,
-            grant.not_before_ms,
-            grant.expires_at_ms,
-            at_ms,
-        )?);
     }
     let removal = pollster::block_on(
         open.moot
@@ -2428,6 +2455,7 @@ fn spawn_place_worker_with(
                                             access,
                                             now_ms,
                                             expires_at_ms,
+                                            open.offers_projection(),
                                         )
                                     })
                                     .and_then(|authored| {
@@ -2477,6 +2505,7 @@ fn spawn_place_worker_with(
                         });
                     },
                     PlaceWorkerCommand::Reconnect {
+                        contact,
                         session,
                         generation,
                         directory,
@@ -2533,11 +2562,12 @@ fn spawn_place_worker_with(
                                         .into(),
                                 );
                                     }
-                                    let tickets = crate::place::rendezvous::load_rendezvous(
-                                        &directory,
-                                        &binding,
-                                        settings.authority_clock.now_ms(),
-                                    )?;
+                                    let tickets = match &contact {
+                                        Some(card) => crate::place::rendezvous::card_tickets(&binding, card)?,
+                                        None => crate::place::rendezvous::load_rendezvous(
+                                            &directory, &binding, settings.authority_clock.now_ms(),
+                                        )?,
+                                    };
                                     opened.lanes = Some(crate::place::lanes::join_live(
                                         &opened,
                                         &binding,
@@ -2546,6 +2576,13 @@ fn spawn_place_worker_with(
                                         settings.projection_setup(&binding, identity.as_ref()),
                                         Some((out.clone(), session, generation)),
                                     )?);
+                                    // A card carries contact metadata, never admission. Persist
+                                    // only after retained membership and transport parsing pass.
+                                    if let Some(card) = &contact {
+                                        crate::place::rendezvous::save_card_rendezvous(
+                                            &directory, &binding, card, settings.authority_clock.now_ms(),
+                                        )?;
+                                    }
                                     place_snapshot(&opened, binding.moot.0, &settings)
                                         .map(|snapshot| (opened, snapshot))
                                 });
@@ -3624,6 +3661,7 @@ pub(crate) mod tests {
             Writer,
             now_ms,
             None,
+            true,
         )
         .unwrap();
         // Idempotent: inviting the same root twice must not double the fold.
@@ -3635,6 +3673,7 @@ pub(crate) mod tests {
             Writer,
             now_ms,
             None,
+            true,
         )
         .unwrap()
         .projection;
@@ -3673,6 +3712,110 @@ pub(crate) mod tests {
         assert_eq!(guest_snapshot.graph_digest, snapshot.graph_digest);
         drop(guest_open);
         let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn graph_only_admission_and_revocation_need_no_projection_signer() {
+        struct NoProjectionKeys(InMemoryProvider);
+        impl IdentityProvider for NoProjectionKeys {
+            fn master_public_key(&self) -> identity::Ed25519PublicKey {
+                self.0.master_public_key()
+            }
+            fn derive_keypair(
+                &self,
+                salt: &[u8],
+            ) -> Result<identity::Ed25519Keypair, identity::IdentityError> {
+                let prefix = insigne::delegation::delegation_signing_prefix(
+                    graphshell_host::admission::GRAPHSHELL_DOMAIN,
+                );
+                if salt.starts_with(&prefix) {
+                    return Err(identity::IdentityError::Backend(
+                        "projection signing is not offered".into(),
+                    ));
+                }
+                self.0.derive_keypair(salt)
+            }
+            fn attest_derived_key(
+                &self,
+                salt: &[u8],
+            ) -> Result<insigne::DerivedKeyAttestation, identity::IdentityError> {
+                self.derive_keypair(salt)?;
+                self.0.attest_derived_key(salt)
+            }
+        }
+        let root = tempfile::tempdir().unwrap();
+        let host = root.path().join("host");
+        let guest = root.path().join("guest");
+        std::fs::create_dir_all(&host).unwrap();
+        std::fs::create_dir_all(&guest).unwrap();
+        let host_identity = NoProjectionKeys(InMemoryProvider::from_seed([0xe1; 32]));
+        let guest_identity = RootIdentity::from_seed([0xe2; 32]);
+        let settings = PlaceWorkerSettings::default();
+        let binding = found_place(&host, &host_identity, "Graph only", &settings).unwrap();
+        let now_ms = settings.authority_clock.now_ms();
+        let guest_root = guest_identity.master_public_key().to_bytes();
+        let prekey = prepare_group_identity(&guest, &guest_identity, binding.moot.0).unwrap();
+        let (mut open, _) = open_cached_place(&host, &binding, &host_identity, &settings).unwrap();
+
+        let refused = admit_member(
+            &open.moot,
+            &binding,
+            &host_identity,
+            guest_root,
+            Writer,
+            now_ms,
+            None,
+            true,
+        )
+        .err()
+        .expect("an offered projection still needs its signing authority");
+        assert!(refused.contains("issue projection grant"), "{refused}");
+        assert_eq!(
+            pollster::block_on(open.moot.snapshot())
+                .unwrap()
+                .membership
+                .members
+                .len(),
+            1,
+            "projection refusal must precede membership mutation"
+        );
+
+        let authored = admit_member(
+            &open.moot,
+            &binding,
+            &host_identity,
+            guest_root,
+            Writer,
+            now_ms,
+            None,
+            false,
+        )
+        .unwrap();
+        assert!(authored.projection.is_none());
+        let (invite, _) = author_invitation_with(
+            &open.moot,
+            &mut open.group,
+            &host,
+            &binding,
+            &host_identity,
+            &prekey,
+            now_ms + 60_000,
+            Vec::new(),
+            authored.projection,
+        )
+        .unwrap();
+        assert!(invite.projection_grant.is_none());
+        let admitted = admit_invitation(&guest, &invite, &guest_identity, &settings).unwrap();
+        assert_eq!(admitted.moot.members, 2);
+        let (guest_open, snapshot) =
+            open_cached_place(&guest, &binding, &guest_identity, &settings).unwrap();
+        assert!(snapshot.permissions.as_ref().unwrap().graph_write);
+        assert!(snapshot.permissions.as_ref().unwrap().message_write);
+        drop(guest_open);
+
+        revoke_member(&mut open, &host_identity, guest_root, now_ms + 1).unwrap();
+        let snapshot = pollster::block_on(open.moot.snapshot()).unwrap();
+        assert_eq!(snapshot.membership.members.len(), 1);
     }
 
     /// A reader's invitation: membership without delegation.
@@ -3732,6 +3875,7 @@ pub(crate) mod tests {
             Reader,
             now_ms,
             None,
+            true,
         )
         .unwrap();
         // Idempotent for a reader too: no second membership fact, no
@@ -3744,6 +3888,7 @@ pub(crate) mod tests {
             Reader,
             now_ms,
             None,
+            true,
         )
         .unwrap()
         .projection;
@@ -3858,6 +4003,7 @@ pub(crate) mod tests {
             Writer,
             AUTHORITY_AT_MS,
             expires,
+            true,
         )
         .unwrap()
         .projection
@@ -3874,6 +4020,7 @@ pub(crate) mod tests {
             Reader,
             AUTHORITY_AT_MS,
             None,
+            true,
         )
         .unwrap();
         // The group half of each admission. Gemot membership alone leaves the
@@ -4263,6 +4410,7 @@ pub(crate) mod tests {
         let session = SessionId::new();
         let (worker, updates) = spawn_place_worker(Arc::new(|| {}), identity.clone(), settings());
         worker.command(PlaceWorkerCommand::Reconnect {
+            contact: None,
             session,
             generation: 1,
             directory: directory.clone(),
@@ -4322,6 +4470,7 @@ pub(crate) mod tests {
         };
 
         worker.command(PlaceWorkerCommand::Reconnect {
+            contact: None,
             session,
             generation: 2,
             directory,
@@ -4383,6 +4532,7 @@ pub(crate) mod tests {
 
         let stale_session = SessionId::new();
         worker.command(PlaceWorkerCommand::Reconnect {
+            contact: None,
             session: stale_session,
             generation: 1,
             directory: stale_directory,
@@ -4449,6 +4599,7 @@ pub(crate) mod tests {
             .unwrap();
 
         worker.command(PlaceWorkerCommand::Reconnect {
+            contact: None,
             session,
             generation: 1,
             directory,

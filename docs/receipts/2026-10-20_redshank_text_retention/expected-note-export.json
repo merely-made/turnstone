@@ -1,0 +1,29 @@
+{
+  "annotation": {
+    "body": {
+      "kind": "text",
+      "plain_text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+    },
+    "created_at_ms": 7,
+    "id": "embedded-text-selected",
+    "privacy": "shareable",
+    "target": {
+      "end_offset_ms": 4500,
+      "item_id": "embedded-recording",
+      "offset_ms": 1250,
+      "pressed_offset_ms": 1400,
+      "representation": {
+        "byte_length": 1344044,
+        "complete_digest": "blake3:c4f4dd0407d49e0f5c9d82dc95bdfcbcabf6f0cdf82e69072556aa68c484008c",
+        "etag": null,
+        "final_url": null,
+        "last_modified": null,
+        "media_type": null,
+        "requested_url": null,
+        "retrieved_at_ms": null
+      }
+    }
+  },
+  "schema": "redshank.selected-note/v1",
+  "source": "file:///Users/markik/Code/output/redshank-text-retention-20261020/runtime/origin-recording.wav"
+}

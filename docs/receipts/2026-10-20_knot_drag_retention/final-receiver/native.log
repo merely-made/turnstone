@@ -1,0 +1,8 @@
+2026-10-20T04:39:19.615184Z  INFO turnstone::launch: turnstone starting
+2026-10-20T04:39:19.783065Z  INFO turnstone::identity: profile identity (djinn) protection=Ephemeral (held by djinn)
+2026-10-20T04:39:20.157339Z  INFO turnstone::app::session_lifecycle: no session graph; starting on the sample graph
+2026-10-20T04:39:22.281542Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-20T04:39:29.117153Z  INFO turnstone::shell::effects: content session live node=6a5ac865-2231-455f-85f6-09b9eae0bc87 url=mere://clip/d87011314dd76d6a442499c617217d7fbe31f2040b82ebd3f5799a1774c99088 engine=fleece.retained-clip
+2026-10-20T04:39:36.600805Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=2 chrome=true nodes=13
+2026-10-20T04:39:37.613452Z  INFO turnstone::shell::effects: content session live node=05204dcd-e350-410d-9245-43b5d6e99c17 url=mere://clip/36dd5c80c16f76c7c0a231c9d59eec30afa3a5de0dafbc4cb33d8eed415df9dd engine=fleece.retained-clip
+2026-10-20T04:39:59.812641Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=2 chrome=true nodes=14

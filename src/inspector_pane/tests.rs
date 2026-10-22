@@ -34,7 +34,7 @@ fn synced_sections_reach_the_dom() {
         .filter_map(|c| dom.text(c).map(str::to_string))
         .collect();
     assert!(text.contains("https://example.test/"));
-    assert!(text.contains("Knot clip: ready"));
+    assert!(text.contains("Passage: ready"));
 }
 
 #[test]
@@ -127,7 +127,7 @@ fn picking_a_viewer_reports_the_intent_and_mirrors_back() {
             })
             .expect("the livery option is drawn");
         let (rx, ry, rw, rh) =
-            crate::ui::node_rect(&dom, radio, crate::ui::CAMBIUM_SHEET, 400, 600).unwrap();
+            crate::ui::node_rect(&dom, radio, crate::ui::cambium_shell_sheet(), 400, 600).unwrap();
         (rx + rw / 2.0, ry + rh / 2.0)
     };
     let intents = pane.click(x, y, 400, 600);
@@ -616,6 +616,20 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
             .expect("the registered System webview row is probe-visible")
             .point
         };
+        // The document controls above Viewer can wrap below this narrow
+        // viewport. Scroll the actual retained row into view before probing
+        // its visible point, as the shell does for a user scrolling the pane.
+        let (row_x, row_y, row_w, row_h) = {
+            let dom = pane.dom_ref();
+            let rows = pane.layout.matching_nodes(&dom, &selector);
+            assert_eq!(rows.len(), 1, "the registered viewer has one retained row");
+            pane.layout.painted_rect(&dom, rows[0]).unwrap()
+        };
+        pane.scroll_by(
+            (row_x + row_w - 251.0).max(0.0),
+            (row_y + row_h - 570.0).max(0.0),
+        );
+        let _ = pane.scene(251, 570);
         let (x, y) = pane
             .selector_point(&selector)
             .unwrap()
@@ -649,6 +663,8 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
         // A short pane clips the row until a real scroll paints it in view.
         // Scenario geometry must follow that scroll, rather than the DOM's
         // unchanged estimated coordinates.
+        let (scroll_x, scroll_y) = pane.scroll.offset();
+        pane.scroll_by(-scroll_x, -scroll_y);
         pane.sync(&app, inspector, 251.0, 100.0, None, None, "unconfigured");
         let _ = pane.scene(251, 100);
         assert_eq!(pane.selector_point(&selector), Ok(None));
@@ -756,4 +772,27 @@ fn engine_inventory_valid_selection_recovers_failed_pin_but_keeps_at_rest_closed
             .any(|effect| matches!(effect, crate::action::Effect::SpawnContent { .. }))
     );
     assert!(app.content.get(member).is_none());
+}
+
+#[test]
+fn source_binding_disclosure_is_hit_testable_at_narrow_width_and_emits_exact_pin() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.test/a-long-document-address".into()));
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(crate::panes::kind::INSPECTOR)));
+    let owner = app.frisket.iter_leaves().find(|(_,content,_)| matches!(content, crate::panes::PaneContent::Inspector)).unwrap().0;
+    let mut pane = InspectorPane::new();
+    pane.sync(&app, owner, 251.0, 600.0, None, None, "unconfigured");
+    let _ = pane.scene(251,600);
+    let (x,y) = pane.selector_point(&taproot::Selector::role("button").containing("Pane source:")).unwrap().unwrap();
+    assert!(x >= 0.0 && x < 251.0 && y >= 0.0 && y < 100.0);
+    assert!(pane.click(x,y,251,600).is_empty());
+    let _ = pane.scene(251,600);
+    let (x,y) = pane.selector_point(&taproot::Selector::role("button").containing("Pin this document")).unwrap().unwrap();
+    let intents = pane.click(x,y,251,600);
+    let [InspectorIntent::Binding(intent)] = intents.as_slice() else { panic!("exactly the source choice must dispatch"); };
+    assert_eq!(intent.pane,owner);
+    assert!(matches!(intent.choice, crate::pane_binding::BindingChoice::Pin { member: Some(_), .. }));
+    app.update(Action::SetPaneBinding(*intent));
+    pane.sync(&app, owner,251.0,600.0,None,None,"unconfigured");
+    assert_eq!(app.pane_binding_snapshot(owner).unwrap().mode,"Pinned");
 }

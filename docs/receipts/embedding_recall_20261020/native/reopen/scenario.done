@@ -1,0 +1,15 @@
+RESULT ok
+captured 08_cold_reader_before_resident
+captured 09_cold_scope_resident_absent
+captured 10_historical_answer_restored
+captured 11_cold_historical_citation
+captured 12_new_ask_using_reopened_projection
+captured 13_new_cold_ask_exact_citation
+Embedding cold source read, history and new ask complete
+presentation frames=456 captures=6 blank=0
+capture /Users/markik/Code/output/turnstone-embedding-headed-20261020/raw-02/reopen/08_cold_reader_before_resident.png digest=84d9b4065cf2d23c blank=false
+capture /Users/markik/Code/output/turnstone-embedding-headed-20261020/raw-02/reopen/09_cold_scope_resident_absent.png digest=ab61ec2c22e2303d blank=false
+capture /Users/markik/Code/output/turnstone-embedding-headed-20261020/raw-02/reopen/10_historical_answer_restored.png digest=224e6bf6450c2fcb blank=false
+capture /Users/markik/Code/output/turnstone-embedding-headed-20261020/raw-02/reopen/11_cold_historical_citation.png digest=437fa84c9d2fbed4 blank=false
+capture /Users/markik/Code/output/turnstone-embedding-headed-20261020/raw-02/reopen/12_new_ask_using_reopened_projection.png digest=bda1bdbd1e07637f blank=false
+capture /Users/markik/Code/output/turnstone-embedding-headed-20261020/raw-02/reopen/13_new_cold_ask_exact_citation.png digest=437fa84c9d2fbed4 blank=false
