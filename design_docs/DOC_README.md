@@ -132,14 +132,14 @@ set.
   from PWA/extension capabilities; native SC/session/S8 ownership and stage
   order remain unchanged. The October 22 receiving continuation commits typed
   Scroll MIME replacement, shared explicit-Submit guard adoption and real native
-  Micron controller tests. Coherent SDK adoption and 10 receiving/local-source
-  tests pass. The first governed Djinn probe exposed discarded native close
-  packets; graceful cleanup and stricter sender-completion checks now pass the
-  focused tests and live governed-host retry. Exact native bytes, the 128 KiB
-  Resource, retained controller and native link navigation are qualified by the
-  fixed consumer executable. Client limits and headed/physical evidence retain
-  their separate gates; incidental upstream HTTP policy uptake is recorded
-  independently.
+  Micron controller tests. Its final port preserves current upstream `8eebb5a3`
+  reading/navigation/command behavior and changes only receiving files plus 62
+  Mere source pins. All 70 focused tests and the governed Djinn process probe
+  pass on the integrated executable, covering exact native bytes, the 128 KiB
+  Resource, retained controller and native link navigation. Old isolated SDK
+  adoption and failed process receipts remain historical evidence. Client limits
+  and headed/physical evidence retain their separate gates; HTTP policy is
+  unchanged relative to the current upstream base.
 - [Page lifecycle](2026-09-06_page_lifecycle_plan.md): one page across
   visiting, keeping, capturing, annotating, collecting, sharing, revision
   and deletion; rulings L1-L7 join the surfaces, capture and recycle bin
