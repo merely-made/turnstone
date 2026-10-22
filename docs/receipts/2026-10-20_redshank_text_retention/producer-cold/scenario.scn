@@ -1,0 +1,19 @@
+settle 12
+key escape
+assert snap network-offline == true
+assert snap peer-services == 0
+assert snap producer-retention == Unavailable
+open mere://clip/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0
+settle 20
+act Open node in Workbench
+settle 10
+assert content-live
+click-at 610 193
+assert snap actions ~ Export retained clip
+capture 01_source_absent_cold_text
+export-clip /Users/markik/Code/output/redshank-text-retention-20261020/runtime/onward-text.mereclip
+wait-file 20 /Users/markik/Code/output/redshank-text-retention-20261020/runtime/onward-text.mereclip
+assert event clip-package-exported
+assert snap offline-acquisition-attempts == 0
+capture 02_source_absent_onward_export
+act Save session

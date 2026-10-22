@@ -1,0 +1,94 @@
+{
+  "schema": "distillery.inference-runs/v1",
+  "model": "HuggingFaceTB/SmolLM2-360M-Instruct",
+  "session": {
+    "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+    "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+  },
+  "load_error": null,
+  "runs": [
+    {
+      "run": "turnstone/36322adc-fbfc-4245-9e05-d8cf38bc407b/research/v1/3dd837cc-6f94-4618-ac51-245efe3a85b4",
+      "question": "Copy the French word in passage [1] exactly, preserving its lowercase spelling. End with [1].",
+      "state": "running",
+      "text": "",
+      "error": null,
+      "session": {
+        "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+        "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+      },
+      "tokens": 0,
+      "continuations": [
+        {
+          "device": "device:9265a95d2841dbe17a39fe2bda6b5f40",
+          "at_token": 0,
+          "reason": "ask",
+          "first_differing_token": null,
+          "compared_token_ids_hash": null
+        }
+      ],
+      "recall": {
+        "embedding": {
+          "envelope": "blake3:a1c3efefde4d48faec233584463cfed5d278f752a90b8b38b4f9d4f611682234",
+          "index": "blake3:aaef116a8ace9a233ce296810c75b8714095f06e2c1b2f2352fa812a26b9adb9",
+          "cache": "built",
+          "vector_bytes": 1536,
+          "persisted_bytes": 6424,
+          "lexical_weight": 1,
+          "vector_weight": 1,
+          "rrf_k": 60
+        },
+        "owner": "turnstone/36322adc-fbfc-4245-9e05-d8cf38bc407b/research/v1",
+        "scope": [
+          {
+            "kind": "fleece",
+            "owner": "turnstone/36322adc-fbfc-4245-9e05-d8cf38bc407b/research/v1",
+            "source": "mere://retained-text/36322adc-fbfc-4245-9e05-d8cf38bc407b/a83051c7-cc01-4e1f-890a-e2490afcfc39/03576cfd-0a43-4359-aa5e-e5b535a535d8/d87011314dd76d6a442499c617217d7fbe31f2040b82ebd3f5799a1774c99088/e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+            "node": "03576cfd-0a43-4359-aa5e-e5b535a535d8"
+          }
+        ],
+        "config": {
+          "chunk_chars": 512,
+          "max_passages": 1,
+          "min_quote_chars": 32,
+          "max_context_chars": 12000,
+          "max_corpus_chars": 1000000
+        },
+        "passages": [
+          {
+            "handle": 1,
+            "passage": {
+              "source": {
+                "kind": "fleece",
+                "owner": "turnstone/36322adc-fbfc-4245-9e05-d8cf38bc407b/research/v1",
+                "source": "mere://retained-text/36322adc-fbfc-4245-9e05-d8cf38bc407b/a83051c7-cc01-4e1f-890a-e2490afcfc39/03576cfd-0a43-4359-aa5e-e5b535a535d8/d87011314dd76d6a442499c617217d7fbe31f2040b82ebd3f5799a1774c99088/e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+                "node": "03576cfd-0a43-4359-aa5e-e5b535a535d8"
+              },
+              "version": "blake3:e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+              "text_hash": "blake3:e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+              "selector": {
+                "start": 0,
+                "end": 4
+              },
+              "chunker": "mere.unicode-chunks/v1/512",
+              "text": "café"
+            }
+          }
+        ],
+        "stale": [
+          {
+            "source": {
+              "kind": "fleece",
+              "owner": "turnstone/36322adc-fbfc-4245-9e05-d8cf38bc407b/research/v1",
+              "source": "mere://retained-text/36322adc-fbfc-4245-9e05-d8cf38bc407b/a83051c7-cc01-4e1f-890a-e2490afcfc39/03576cfd-0a43-4359-aa5e-e5b535a535d8/d87011314dd76d6a442499c617217d7fbe31f2040b82ebd3f5799a1774c99088/e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+              "node": "03576cfd-0a43-4359-aa5e-e5b535a535d8"
+            },
+            "indexed_version": "blake3:e4e52b2a0ab9d8584bf4b913af316d96865f92f305b17a0d50b6677bd9ec71c0",
+            "current_version": null,
+            "error": "source owner is unavailable"
+          }
+        ]
+      }
+    }
+  ]
+}

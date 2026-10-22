@@ -27,7 +27,7 @@ pub(crate) fn import(
         if content.kind_id() != spec.kind {
             return Err("Legacy pane kind disagrees with payload".into());
         }
-        if matches!(content, PaneContent::Registered(_)) {
+        {
             frame.descriptors.insert(
                 spec.id.0,
                 serde_json::to_value(spec).map_err(|e| e.to_string())?,

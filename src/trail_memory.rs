@@ -2043,7 +2043,7 @@ mod inference_owner_tests {
         receive.recv_timeout(Duration::from_secs(2)).unwrap();
         assert!(owner.snapshot(&namespace).is_err());
         match std::sync::Arc::try_unwrap(owner.0) {
-            Ok(actor) => actor.join().expect("trail actor completes cleanly"),
+            Ok(actor) => actor.join().unwrap(),
             Err(_) => panic!("unexpected actor borrower"),
         }
     }
@@ -2082,7 +2082,7 @@ fn emit_capture_recovery(
     }
 }
 
-/// Capture-specific owner. It never delegates to the PageText compatibility resolver.
+/// Exact capture/clip owner. It never delegates to the PageText compatibility resolver.
 pub(crate) struct CaptureInferenceOwner {
     pub trail: std::sync::Arc<ActorHandle<TrailCommand>>,
     pub bridge: crate::research::Bridge,
@@ -2106,16 +2106,16 @@ impl crate::inference_service::RetainedSourceOwner for CaptureInferenceOwner {
         let entries = receive
             .recv_timeout(Duration::from_secs(2))
             .map_err(|_| "The saved-source owner did not answer.")??;
-        self.bridge.loaded(&context, &entries)?;
+
         let mut sources = Vec::new();
-        for entry in entries {
-            if let Some(content) = entry.content {
+        for entry in &entries {
+            if let Some(content) = &entry.content {
                 let target = crate::saved_sources::Target {
-                    key: entry.admission.key,
+                    key: entry.admission.key.clone(),
                     text_hash: content.text_hash.clone(),
                     selector: None,
                 };
-                let source = crate::research::source_id(&target)?;
+                let source = crate::research::source_id(&target.into())?;
                 if !sources
                     .iter()
                     .any(|entry: &eidetic::models::recall::RetainedSourceText| {
@@ -2124,13 +2124,26 @@ impl crate::inference_service::RetainedSourceOwner for CaptureInferenceOwner {
                 {
                     sources.push(eidetic::models::recall::RetainedSourceText {
                         source,
-                        version: content.text_hash,
-                        title: Some(content.title),
-                        text: content.text,
+                        version: content.text_hash.clone(),
+                        title: Some(content.title.clone()),
+                        text: content.text.clone(),
                     });
                 }
             }
         }
+        let mut clips = Vec::new();
+        for admission in &context.clips {
+            match self.bridge.clip_text(&context, admission) {
+                Ok((title, text)) => {
+                    let text_hash = eidetic::Hash::of(text.as_bytes()).to_string();
+                    let target = crate::research::Target::Clip(crate::research::ClipTarget { clip: admission.clone(), text_hash: text_hash.clone(), selector: None });
+                    sources.push(eidetic::models::recall::RetainedSourceText { source: crate::research::source_id(&target)?, version: text_hash, title: Some(title.clone()), text });
+                    clips.push(crate::research::Choice { target: Some(target), label: format!("{title} · retained text · {}", admission.manifest.0.to_hex().chars().take(12).collect::<String>()), error: None });
+                }
+                Err(error) => clips.push(crate::research::Choice { target: None, label: format!("Retained clip {}", admission.manifest), error: Some(error) }),
+            }
+        }
+        self.bridge.loaded(&context, &entries, clips)?;
         Ok(sources)
     }
     fn resolve(
@@ -2143,6 +2156,14 @@ impl crate::inference_service::RetainedSourceOwner for CaptureInferenceOwner {
         if source.owner.as_deref() != Some(crate::research::namespace(context.session).as_str()) {
             return Err("The citation belongs to another saved-source owner.".into());
         }
+        let target = match target {
+            crate::research::Target::Clip(target) => {
+                let (_, text) = self.bridge.clip_text(&context, &target.clip)?;
+                if target.text_hash != eidetic::Hash::of(text.as_bytes()).to_string() { return Err("The retained clip text version changed.".into()); }
+                return Ok(text);
+            }
+            crate::research::Target::Capture(target) => target,
+        };
         let (reply, receive) = std::sync::mpsc::sync_channel(1);
         if !self.trail.command(TrailCommand::ResearchSource {
             context: context.clone(),
@@ -2173,20 +2194,17 @@ impl crate::inference_service::RetainedSourceOwner for CaptureInferenceOwner {
         }
         let mut target =
             crate::research::target(&opened.retained.source, &opened.retained.version)?;
-        if target.text_hash != eidetic::Hash::of(opened.retained.text.as_bytes()).to_string()
+        if target.text_hash() != eidetic::Hash::of(opened.retained.text.as_bytes()).to_string()
             || opened.selector.start >= opened.selector.end
             || opened.selector.end > opened.retained.text.chars().count()
         {
             return Err("The cited source text or Unicode range is invalid.".into());
         }
-        target.selector = Some(crate::saved_sources::Selector {
+        target.set_selector(crate::saved_sources::Selector {
             start: opened.selector.start,
             end: opened.selector.end,
         });
-        if !context
-            .admissions
-            .iter()
-            .any(|admission| admission.key == target.key && admission.error.is_none())
+        if !crate::research::admitted(&context, &target)
         {
             return Err("The cited saved source was withdrawn from this session.".into());
         }
@@ -2336,6 +2354,7 @@ mod research_owner_tests {
         let context = crate::research::Context {
             session,
             generation,
+            clips: vec![],
             admissions: vec![
                 admitted(a1.annotation_manifest.clone()),
                 admitted(a2.annotation_manifest.clone()),
@@ -2393,8 +2412,8 @@ mod research_owner_tests {
                 target,
             } => {
                 assert_eq!(actual, &context);
-                assert_eq!(target.key, a1_target.key);
-                assert!(target.selector.is_some());
+                assert_eq!(target.node(), a1_target.node());
+                assert!(target.selector().is_some());
             }
             _ => panic!("expected exact citation intent"),
         }
@@ -2409,17 +2428,18 @@ mod research_owner_tests {
         let mut false_source = source_a1.source.clone();
         false_source.owner = Some("foreign".into());
         assert!(owner.resolve(&false_source, &source_a1.version).is_err());
+        let crate::research::Target::Capture(a1_capture) = a1_target.clone() else { unreachable!() };
         let unadmitted = Target {
             key: Key {
                 annotation_manifest: orphan.annotation_manifest,
-                ..a1_target.key.clone()
+                ..a1_capture.key.clone()
             },
-            ..a1_target.clone()
+            ..a1_capture.clone()
         };
         assert!(
             owner
                 .resolve(
-                    &crate::research::source_id(&unadmitted).unwrap(),
+                    &crate::research::source_id(&unadmitted.clone().into()).unwrap(),
                     &unadmitted.text_hash
                 )
                 .is_err()
@@ -2452,7 +2472,7 @@ mod research_owner_tests {
             .ok()
             .unwrap()
             .join()
-            .expect("trail actor completes cleanly");
+            .unwrap();
         let mut reopened = FjallStore::open(&directory).unwrap();
         assert!(
             saved_sources::load(&mut reopened, &[admitted(a1.annotation_manifest)])[0]

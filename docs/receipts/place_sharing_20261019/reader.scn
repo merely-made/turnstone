@@ -1,0 +1,34 @@
+resize 480 340
+settle 8
+key escape
+act New session
+settle 3
+wait-file 1200 ${EXCHANGE}/reader.place-card.json
+act Offer place pre-key
+settle 3
+type ${EXCHANGE}/reader.place-card.json
+key enter
+wait-file 1200 ${EXCHANGE}/reader.place-card.json.prekey.json.invite.json
+act Join place
+settle 3
+type ${EXCHANGE}/reader.place-card.json.prekey.json.invite.json
+key enter
+wait-status 1200 Local rendezvous
+wait-status 1200 Shared graph permission: not effective
+wait-status 1200 Retained history: 1 shared nodes, 4 messages
+open ${ORIGIN}/reader-private.html
+settle 8
+act Share focused node
+settle 8
+assert event place-refused
+wait-status 600 Retained history: 1 shared nodes, 4 messages
+act Place status
+settle 3
+record-place 11_reader_refused
+capture 11_reader_refused
+touch ${CONTROL}/reader.refused
+wait-status 2400 Retained history: 1 shared nodes, 5 messages
+act Save session
+settle 8
+record-place 12_reader_final
+capture 12_reader_final

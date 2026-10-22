@@ -1,0 +1,14 @@
+RESULT fail
+captured 01_new_note
+captured 02_authored_note
+captured 02b_format_choice
+FAIL: insert: no focused text editor
+FAIL: assert text 'Other note stays independent.': not on any surface
+captured 03_other_note
+captured 03b_publication_authority_unavailable
+presentation frames=257 captures=5 blank=0
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-wrapped/create/01_new_note.png digest=2b2fb2a87bfe4b1b blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-wrapped/create/02_authored_note.png digest=b6e0457e8f3a5dce blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-wrapped/create/02b_format_choice.png digest=93c9abffcfd158de blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-wrapped/create/03_other_note.png digest=1b6f6c3173b25b9a blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-wrapped/create/03b_publication_authority_unavailable.png digest=652dcefc93729004 blank=false

@@ -1,0 +1,6 @@
+RESULT ok
+captured 01_cold_knot_exported
+captured 02_cold_voice_exported_and_played
+presentation frames=140 captures=2 blank=0
+capture /Users/markik/Code/output/eidetic-headed-20261019/second-receiver-cold/01_cold_knot_exported.png digest=31fb17d7887f86a6 blank=false
+capture /Users/markik/Code/output/eidetic-headed-20261019/second-receiver-cold/02_cold_voice_exported_and_played.png digest=25098e8351033b05 blank=false

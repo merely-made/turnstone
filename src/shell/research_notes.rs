@@ -45,7 +45,7 @@ impl Shell {
                 .knot_notes_root
                 .as_ref()
                 .ok_or("This Knot endpoint does not offer local note creation.")?;
-            let path = root.join(format!("research-{}.knot", uuid::Uuid::new_v4()));
+            let path = root.join(format!("research-{}.djot", uuid::Uuid::new_v4()));
             let mut note =
                 knot_document::KnotDocumentSession::scratch("research:new", "# Research note\n\n");
             note.apply(knot_document::KnotDocumentIntentV1::SaveAs(path.clone()))

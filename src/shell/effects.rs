@@ -988,6 +988,11 @@ impl Shell {
                     }
                 },
                 Effect::SaveSession => self.save_session(),
+                Effect::SaveChromeLayout(layout) => {
+                    if let Err(error) = layout.save(&self.app.data_root) {
+                        tracing::warn!(%error, "chrome placement could not be saved");
+                    }
+                },
                 Effect::SaveGraphFolds { graph } => self.save_graph_folds(graph),
                 Effect::CopyText(text) => {
                     use genet_clipboard::TextClipboard as _;
@@ -1006,7 +1011,7 @@ impl Shell {
                 Effect::ChooseKnotDocumentFile { read_only } => {
                     if let Some(path) = rfd::FileDialog::new()
                         .add_filter(
-                            "Knot, Djot, Scroll, Gemtext, or Micron",
+                            "Djot, Scrolltext, Gemtext, Micron, or legacy .knot",
                             &["knot", "djot", "scroll", "gmi", "gemini", "mu", "micron"],
                         )
                         .pick_file()
@@ -1024,6 +1029,7 @@ impl Shell {
                         });
                     }
                 }
+                Effect::RetainProducerSelection { choice, selection } => self.retain_producer_selection(choice, selection),
                 Effect::ChooseClipPackageFile => {
                     if let Some(path) = rfd::FileDialog::new().add_filter("Selected clip package", &["json", "mereclip"]).pick_file() {
                         self.act(Action::ImportClipPackage(path));
@@ -1031,7 +1037,7 @@ impl Shell {
                 }
                 Effect::ImportClipPackage(path) => {
                     let admitted = self.app.clip_destination().and_then(|root| {
-                        crate::retained_clip::import(&root, &path, crate::retained_clip::limits()?, crate::denizen::now_ms())
+                        crate::retained_clip::import_sealed(&root, &path, crate::retained_clip::limits()?, crate::denizen::now_ms(), self.app.clip_sealer()?)
                     });
                     match admitted {
                         Ok(id) => {
@@ -1045,9 +1051,9 @@ impl Shell {
                     use crate::retained_clip::ClipRequest;
                     let result = self.app.clip_destination().and_then(|root| match control {
                         ClipRequest::Play(id) => {
-                            let clip = crate::retained_clip::read(&root, id, crate::retained_clip::limits()?)?;
-                            let path = clip.playback_path(&root)?;
-                            self.app.redshank.play_retained_voice(&id.0.to_hex(), &path)
+                            let clip = crate::retained_clip::read_sealed(&root, id, crate::retained_clip::limits()?, self.app.clip_sealer()?)?;
+                            let crate::retained_clip::ClipBody::Voice(bytes) = clip.body else { return Err("This clip has no voice body".into()); };
+                            self.app.redshank.play_retained_voice_bytes(&id.0.to_hex(), bytes)
                         },
                         ClipRequest::Stop(id) => self.app.redshank.stop_retained_voice(&id.0.to_hex()),
                         ClipRequest::Read(_) | ClipRequest::Export(_) => Err("Unsupported retained clip control".into()),
@@ -1058,7 +1064,7 @@ impl Shell {
                 }
                 Effect::ChooseClipExportFile { clip } => {
                     let available = self.app.clip_destination().and_then(|root| {
-                        crate::retained_clip::read(&root, clip, crate::retained_clip::limits()?).map(|_| ())
+                        crate::retained_clip::read_sealed(&root, clip, crate::retained_clip::limits()?, self.app.clip_sealer()?).map(|_| ())
                     });
                     if let Err(error) = available {
                         self.app.note_retained_clip_refusal(error);
@@ -1075,7 +1081,7 @@ impl Shell {
                 }
                 Effect::ExportClipPackage { clip, path, replace } => {
                     let result = self.app.clip_destination().and_then(|root| {
-                        crate::retained_clip::export(&root, clip, &path, crate::retained_clip::limits()?, replace)
+                        crate::retained_clip::export_sealed(&root, clip, &path, crate::retained_clip::limits()?, replace, self.app.clip_sealer()?)
                     });
                     match result {
                         Ok(()) => self.app.note_clip_package_exported(clip, &path),
@@ -1195,6 +1201,7 @@ impl Shell {
                     session,
                     generation,
                     binding,
+                    contact,
                 } => {
                     if self.app.session_id != session
                         || self.app.place.generation() != Some(generation)
@@ -1206,6 +1213,7 @@ impl Shell {
                         generation,
                         directory: session::session_dir(&self.app.data_root, session),
                         binding,
+                        contact,
                     });
                 }
                 Effect::ClearPlaceLeftMark { session } => {
@@ -1480,10 +1488,11 @@ impl Shell {
                         match crate::retained_clip::request(&url) {
                             Ok(Some(crate::retained_clip::ClipRequest::Read(id))) => {
                                 let resolved = self.app.clip_destination().and_then(|root| {
-                                    crate::retained_clip::read(
+                                    crate::retained_clip::read_sealed(
                                         &root,
                                         id,
                                         crate::retained_clip::limits()?,
+                                        self.app.clip_sealer()?,
                                     )
                                 });
                                 match resolved {
@@ -1937,6 +1946,24 @@ impl Shell {
                         self.run_effects(effects);
                     }
                 }
+                Effect::SaveReadingPreferences => {
+                    if let Err(error) = self.app.reading.save(&self.app.session_dir()) { tracing::warn!(%error, "reading preferences were not saved"); }
+                },
+                Effect::ReadFind { target, query, step, close } => {
+                    let keys: Vec<_> = self.content_sessions.pool.keys().copied().filter(|key| {
+                        matches!(key, super::content_pool::ContentKey::Reader { node, appearance }
+                            if *node == target.member && (0..=self.app.lenses.len() as u64).any(|window| target.appearance(window) == *appearance)
+                                && self.content_sessions.pool.placement(appearance).is_some_and(|placement|placement.visible && placement.content == *key))
+                    }).collect();
+                    let result = keys.first().and_then(|key| self.content_sessions.pool.content_mut(key)).and_then(pelt_core::PeltContent::document_mut).map(|controller| {
+                        let session = controller.session_mut();
+                        if close { session.clear_document_find().map(|_| inker::DocumentFindState::empty(inker::DocumentFindQuery::new(&query))) }
+                        else if let Some(direction) = step { session.document_find_step(direction) }
+                        else { session.document_find(&inker::DocumentFindQuery::new(&query)) }
+                    }).unwrap_or_else(|| Err(inker::SessionError::Unsupported("This reading projection has no retained session".into()))).map_err(|error|error.to_string());
+                    let effects=self.app.apply_update(crate::action::Update::ReadingFindChanged{target,query,result});
+                    self.run_effects(effects);
+                },
                 Effect::FindContent {
                     node,
                     request,
@@ -2182,6 +2209,7 @@ impl Shell {
                     .map(|(root, _)| crate::place::hex32(&root)),
                 status: "refused".into(),
                 derived_digest: None,
+                retained_selection: None,
             });
     }
 
@@ -2245,6 +2273,7 @@ impl Shell {
                     holder: knot.holder(),
                     status: knot.hold_status().to_string(),
                     derived_digest: Some(knot.derived_digest()),
+                    retained_selection: knot.retained_selection(),
                 })
             })
             .collect();
@@ -2457,6 +2486,12 @@ fn read_place_artifact(
                 card: Box::new(card),
                 out: format!("{path}.prekey.json"),
             })
+        }
+        PlaceArtifactKind::Contact { session, generation } => {
+            let card: crate::place::PlaceCardV1 = serde_json::from_slice(&bytes)
+                .map_err(|error| format!("{path} is not a place card: {error}"))?;
+            card.validate()?;
+            Ok(Action::ReconnectPlaceWithCard { session, generation, card: Box::new(card) })
         }
         PlaceArtifactKind::Prekey {
             access,

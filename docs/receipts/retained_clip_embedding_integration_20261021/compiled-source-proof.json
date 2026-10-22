@@ -1,0 +1,12 @@
+{
+  "result": "pass",
+  "turnstone_compiled_source_commit": "a048adcc36eef8597ed913940d83103b9eae1633",
+  "turnstone_source_files_checked": 215,
+  "all_turnstone_source_hashes_match_git_blobs": true,
+  "resident_fixture_compile_cut": "c6540a4b7229808843ed66f0507fbbbc149b358a",
+  "supplier_documentation_cut": "0a620f464fd7e6dfafd5d8aa086fe0e923f1b39e",
+  "supplier_inputs_checked": 6,
+  "all_supplier_inputs_match_both_git_cuts": true,
+  "public_native_evidence_files_checked": 100,
+  "all_public_native_hashes_match": true
+}

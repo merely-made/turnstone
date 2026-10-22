@@ -1,0 +1,27 @@
+settle 12
+key escape
+assert snap network-offline == true
+open file:///Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot
+settle 25
+act Open node in Workbench
+settle 12
+assert content-live
+capture 01_knot_source
+drag 21 253 680 253
+settle 8
+assert snap actions ~ Retain selected Knot text
+capture 02_knot_selection
+act Retain selected Knot text
+settle 25
+act Open node in Workbench
+settle 12
+assert content-live
+capture 03_retained_selection
+click-at 850 193
+settle 3
+export-clip /Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/selected.mereclip
+wait-file 100 /Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/selected.mereclip
+assert event clip-package-exported
+assert snap offline-acquisition-attempts == 0
+capture 04_selected_export
+act Save session

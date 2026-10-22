@@ -1,0 +1,17 @@
+2026-10-20T04:38:00.323461Z  INFO turnstone::launch: turnstone starting
+2026-10-20T04:38:00.523650Z  INFO turnstone::identity: profile identity (djinn) protection=Ephemeral (held by djinn)
+2026-10-20T04:38:01.257654Z  INFO turnstone::app::session_lifecycle: no session graph; starting on the sample graph
+2026-10-20T04:38:04.154733Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-20T04:38:16.590707Z  INFO turnstone::shell::effects: content session live node=95c0c876-1474-4b09-bca2-54787604cae4 url=file:///Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/final-producer/notes/selected.djot engine=knot.authoring
+2026-10-20T04:38:16.591393Z DEBUG turnstone::knot_pointer: cancel pointer had_drag=false capture=None
+2026-10-20T04:38:20.239161Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=2 chrome=true nodes=13
+2026-10-20T04:38:20.557095Z DEBUG turnstone::knot_pointer: cancel pointer had_drag=false capture=None
+2026-10-20T04:38:20.560027Z DEBUG turnstone::knot_pointer: pointer down x=23.0 y=85.0 node=NodeId(9895604650002) drag=Some(NodeId(9895604650002)) selection=CaretSelection { anchor: CaretPosition { byte: 16, affinity: Downstream }, focus: CaretPosition { byte: 16, affinity: Downstream } }
+2026-10-20T04:38:20.585434Z DEBUG turnstone::knot_pointer: pointer move x=53.0 y=85.0 changed=true drag=Some(NodeId(9895604650002)) selection=CaretSelection { anchor: CaretPosition { byte: 16, affinity: Downstream }, focus: CaretPosition { byte: 21, affinity: Downstream } }
+2026-10-20T04:38:20.611058Z DEBUG turnstone::knot_pointer: pointer move x=83.0 y=85.0 changed=false drag=Some(NodeId(9895604650002)) selection=CaretSelection { anchor: CaretPosition { byte: 16, affinity: Downstream }, focus: CaretPosition { byte: 21, affinity: Downstream } }
+2026-10-20T04:38:20.614887Z DEBUG turnstone::knot_pointer: pointer move x=83.0 y=85.0 changed=false drag=Some(NodeId(9895604650002)) selection=CaretSelection { anchor: CaretPosition { byte: 16, affinity: Downstream }, focus: CaretPosition { byte: 21, affinity: Downstream } }
+2026-10-20T04:38:22.718568Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=2 chrome=true nodes=13
+2026-10-20T04:38:23.859766Z  INFO turnstone::shell::effects: content session live node=1f89767c-f7d1-4dd3-8197-d2eb069559ed url=mere://clip/420a12ea751e1dad7a5046ef7b32380c82abd1b673f7ec378f4f5034d06f12cd engine=fleece.retained-clip
+2026-10-20T04:38:34.817834Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=2 chrome=true nodes=14
+2026-10-20T04:38:35.169269Z DEBUG turnstone::knot_pointer: cancel pointer had_drag=false capture=None
+2026-10-20T04:38:38.349869Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=2 chrome=true nodes=14

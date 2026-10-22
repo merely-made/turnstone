@@ -1,0 +1,50 @@
+{
+  "asks": [
+    {
+      "id": "capture",
+      "question": "Repeat the retained sentence about the Juniper archive exactly."
+    },
+    {
+      "id": "knot",
+      "question": "Repeat the retained sentence about the Pelican observatory exactly."
+    },
+    {
+      "id": "note",
+      "question": "Repeat both lines of the retained note about the embedded listener exactly, preserving the line break."
+    }
+  ],
+  "rankings": [
+    {
+      "id": "capture",
+      "question": "Repeat the retained sentence about the Juniper archive exactly."
+    },
+    {
+      "id": "knot",
+      "question": "Repeat the retained sentence about the Pelican observatory exactly."
+    },
+    {
+      "id": "note",
+      "question": "Repeat both lines of the retained note about the embedded listener exactly, preserving the line break."
+    },
+    {
+      "id": "capture-paraphrase",
+      "question": "Which retained document describes recovering entry to a collection?"
+    },
+    {
+      "id": "knot-paraphrase",
+      "question": "What secret word lets someone enter the telescope facility?"
+    },
+    {
+      "id": "note-paraphrase",
+      "question": "What reminder was preserved while listening to audio?"
+    },
+    {
+      "id": "control",
+      "question": "Which saved source records the cobalt parcel in the amber harbor shipping log?"
+    },
+    {
+      "id": "combined",
+      "question": "Find the Juniper archive sentence, the Pelican observatory sentence, and the embedded listener note."
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "partial_drag": {
+    "process": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": true,
+      "elapsed_seconds": 44.856,
+      "binary_sha256": "e811d5790507a774f2b6f72fb322f19d8e3508c595d6a615da5269546764a6f3",
+      "scenario_sha256": "aca29dea3990c4b232a49cd4349ec916f556786adbdd04c3b95ec7a1a2e6b13f",
+      "receipt": "scenario.done",
+      "captures": 4
+    },
+    "selected_text": "The Pelican observato",
+    "anchors": [
+      {
+        "source": "file:///Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+        "representation": "669d3a92df8bcc1c5d4d4f98392cbc7ba84f183096a9f2cb884c8bb2389ac45d",
+        "units": "utf8-bytes",
+        "selector": {
+          "byte_span": {
+            "end": 37,
+            "start": 16
+          },
+          "document_address": "file:///Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+          "exact_quote": "The Pelican observato",
+          "source_hash": "669d3a92df8bcc1c5d4d4f98392cbc7ba84f183096a9f2cb884c8bb2389ac45d"
+        },
+        "evidence": null
+      }
+    ],
+    "accepted_as_final_input": false
+  },
+  "keyboard_selection": {
+    "process": {
+      "launch_method": "LaunchServices temporary application bundle",
+      "launcher_exit": 0,
+      "timeout": false,
+      "success": false,
+      "elapsed_seconds": 63.083,
+      "binary_sha256": "e811d5790507a774f2b6f72fb322f19d8e3508c595d6a615da5269546764a6f3",
+      "scenario_sha256": "edaa794d1dcd143d7633fd242e2ccf9beb57108c45b398248b462e7956aca7be",
+      "receipt": "scenario.done",
+      "captures": 3
+    },
+    "accepted_as_final_input": false
+  },
+  "final_producer": "../producer-knot/qualification.json"
+}

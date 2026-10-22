@@ -1,0 +1,16 @@
+resize 600 420
+settle 8
+key escape
+act New session
+settle 3
+act Found place
+settle 3
+type Current-stack place preflight
+key enter
+wait-status 600 Local rendezvous
+act Place status
+settle 5
+record-place founded
+capture founded
+act Save session
+settle 5

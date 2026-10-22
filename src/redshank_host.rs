@@ -96,6 +96,7 @@ pub struct RedshankHost {
     model: RedshankModel,
     store: Option<JsonDirectoryStore>,
     runtime: Option<PlaybackRuntime>,
+    retained_voice: Arc<std::sync::Mutex<Option<(String, Vec<u8>)>>>,
     /// The shell's fetch handle, kept so a reopened session starts its runtime
     /// over the same stores. None only for a host that never had one.
     fetch: Option<Arc<dyn Fetch>>,
@@ -123,6 +124,7 @@ impl Default for RedshankHost {
             model: RedshankModel::default(),
             store: None,
             runtime: None,
+            retained_voice: Arc::default(),
             fetch: None,
             output: Output::Silent,
             token: 0,
@@ -146,17 +148,48 @@ impl RedshankHost {
     }
     /// Play a host-resolved retained voice body on the existing output runtime.
     /// This uses no microphone and leaves the recording target/model unchanged.
-    pub fn play_retained_voice(&mut self, id: &str, path: &Path) -> Result<(), String> {
-        if !path.is_file() { return Err("Retained voice-note audio is missing".into()); }
-        if !self.send(PlaybackCommand::StartPreview { id: format!("clip:{id}"), source: MediaSource::Local { path: path.to_string_lossy().into_owned() } }) {
+    pub fn play_retained_voice_bytes(&mut self, id: &str, bytes: Vec<u8>) -> Result<(), String> {
+        if bytes.is_empty() || bytes.len() > redshank_playback::MAX_HOST_BLOB_BYTES {
+            return Err("Retained voice-note audio exceeds its budget".into());
+        }
+        let id = format!("clip:{id}");
+        *self
+            .retained_voice
+            .lock()
+            .map_err(|_| "Retained voice buffer unavailable")? = Some((id.clone(), bytes));
+        if !self.send(PlaybackCommand::StartPreview {
+            id: id.clone(),
+            source: MediaSource::HostBlob { id },
+        }) {
+            self.retained_voice
+                .lock()
+                .map_err(|_| "Retained voice buffer unavailable")?
+                .take();
             return Err("No audio output in this session".into());
         }
         Ok(())
     }
 
     pub fn stop_retained_voice(&mut self, id: &str) -> Result<(), String> {
-        if self.snapshot().preview.as_ref().is_some_and(|p| p.id == format!("clip:{id}")) {
-            if !self.send(PlaybackCommand::StopPreview) { return Err("The audio runtime is unavailable".into()); }
+        let expected = format!("clip:{id}");
+        {
+            let mut pending = self
+                .retained_voice
+                .lock()
+                .map_err(|_| "Retained voice buffer unavailable")?;
+            if pending.as_ref().is_some_and(|(id, _)| id == &expected) {
+                pending.take();
+            }
+        }
+        if self
+            .snapshot()
+            .preview
+            .as_ref()
+            .is_some_and(|p| p.id == expected)
+        {
+            if !self.send(PlaybackCommand::StopPreview) {
+                return Err("The audio runtime is unavailable".into());
+            }
         }
         Ok(())
     }
@@ -172,11 +205,19 @@ impl RedshankHost {
     /// Configure playback without opening a session store or runtime. Refused
     /// sessions keep this configuration so the next successful reopen recovers.
     pub(crate) fn detached(output: Output, fetch: Arc<dyn Fetch>) -> Self {
-        Self { output, fetch: Some(fetch), ..Self::default() }
+        Self {
+            output,
+            fetch: Some(fetch),
+            ..Self::default()
+        }
     }
 
     pub(crate) fn suspended(&self) -> Self {
-        Self { output: self.output, fetch: self.fetch.clone(), ..Self::default() }
+        Self {
+            output: self.output,
+            fetch: self.fetch.clone(),
+            ..Self::default()
+        }
     }
 
     /// Reopen under another session directory with this host's output and
@@ -207,15 +248,30 @@ impl RedshankHost {
             .filter_map(|tail| tail.parse::<u64>().ok())
             .max()
             .map_or(0, |highest| highest + 1);
+        let retained_voice: Arc<std::sync::Mutex<Option<(String, Vec<u8>)>>> = Arc::default();
+        let held = retained_voice.clone();
+        let blobs: redshank_playback::HostBlobReader = Arc::new(move |id| {
+            let mut held = held
+                .lock()
+                .map_err(|_| "Retained voice buffer unavailable")?;
+            if held.as_ref().is_none_or(|(expected, _)| expected != id) {
+                return Err("Retained voice body is not admitted".into());
+            }
+            Ok(held.take().expect("checked").1)
+        });
         Self {
             model,
             store: Some(store),
             runtime: match (&fetch, output) {
-                (Some(fetch), Output::Device) => Some(PlaybackRuntime::start_with(fetch.clone())),
+                (Some(fetch), Output::Device) => Some(PlaybackRuntime::start_with_blobs(
+                    fetch.clone(),
+                    Some(blobs),
+                )),
                 _ => None,
             },
             fetch,
             output,
+            retained_voice,
             next_note,
             ..Self::default()
         }
@@ -592,6 +648,23 @@ impl RedshankHost {
                     Ok(()) => HostOutcome::changed(),
                     Err(error) => {
                         HostOutcome::notice(format!("Could not edit that note: {error:?}"))
+                    },
+                }
+            },
+            CompactCommand::SetNotePrivacy { id, privacy } => {
+                let Some(note) = self.model.annotations.get(&id) else {
+                    return HostOutcome::notice("That note is no longer available");
+                };
+                if note.target.item_id != *item {
+                    return HostOutcome::notice("That note belongs to another episode");
+                }
+                if note.privacy == privacy {
+                    return HostOutcome::default();
+                }
+                match self.model.set_annotation_privacy(&id, privacy) {
+                    Ok(()) => HostOutcome::changed(),
+                    Err(error) => {
+                        HostOutcome::notice(format!("Could not change note privacy: {error:?}"))
                     },
                 }
             },
@@ -982,6 +1055,16 @@ fn format_tag(item: &LibraryItem) -> String {
 mod tests {
     use super::*;
 
+    #[test]
+    fn retained_voice_stop_cannot_discard_a_different_pending_preview() {
+        let mut host = RedshankHost::default();
+        *host.retained_voice.lock().unwrap() = Some(("clip:new".into(), vec![1, 2, 3]));
+        host.stop_retained_voice("old").unwrap();
+        assert!(host.retained_voice.lock().unwrap().is_some());
+        host.stop_retained_voice("new").unwrap();
+        assert!(host.retained_voice.lock().unwrap().is_none());
+    }
+
     fn receipt(byte: char) -> RepresentationReceipt {
         RepresentationReceipt {
             byte_length: Some(1_000),
@@ -1042,6 +1125,182 @@ mod tests {
             ..Default::default()
         };
         (host, snapshot, id)
+    }
+
+    #[test]
+    fn embedded_note_privacy_is_scoped_persisted_and_rechecked_for_export() {
+        use redshank_model::NotePrivacy;
+        let root = tempfile::tempdir().unwrap();
+        let (mut host, _, id) = note_host();
+        let item = ItemId("episode".into());
+        host.store = Some(JsonDirectoryStore::new(RedshankHost::model_root(
+            root.path(),
+        )));
+        let original = host.annotation(&id).unwrap().clone();
+        assert!(host.model.export_selected_note(&id).is_err());
+        let rejected = host.command(
+            &ItemId("foreign".into()),
+            CompactCommand::SetNotePrivacy {
+                id: id.clone(),
+                privacy: NotePrivacy::Shareable,
+            },
+            1,
+        );
+        assert!(rejected.notice.is_some() && !rejected.model_changed);
+        assert_eq!(host.annotation(&id), Some(&original));
+        let changed = host.command(
+            &item,
+            CompactCommand::SetNotePrivacy {
+                id: id.clone(),
+                privacy: NotePrivacy::Shareable,
+            },
+            2,
+        );
+        assert!(changed.model_changed && changed.notice.is_none());
+        let shareable = host.annotation(&id).unwrap();
+        assert_eq!(shareable.target, original.target);
+        assert_eq!(shareable.body, original.body);
+        assert!(host.model.export_selected_note(&id).is_ok());
+        host.save();
+        let mut reopened = RedshankHost::open_with(root.path(), Output::Silent, None);
+        assert_eq!(
+            reopened.annotation(&id).unwrap().privacy,
+            NotePrivacy::Shareable
+        );
+        assert!(
+            reopened
+                .command(
+                    &item,
+                    CompactCommand::SetNotePrivacy {
+                        id: id.clone(),
+                        privacy: NotePrivacy::Private
+                    },
+                    3
+                )
+                .model_changed
+        );
+        assert!(reopened.model.export_selected_note(&id).is_err());
+        assert!(
+            reopened
+                .command(
+                    &item,
+                    CompactCommand::SetNotePrivacy {
+                        id: AnnotationId("missing".into()),
+                        privacy: NotePrivacy::Shareable
+                    },
+                    4
+                )
+                .notice
+                .is_some()
+        );
+    }
+
+    #[test]
+    #[ignore = "explicit marked embedded Redshank text-note process fixture"]
+    fn embedded_text_retention_process_fixture() {
+        use redshank_model::{NotePrivacy, TimedTarget};
+        let root =
+            PathBuf::from(std::env::var_os("REDSHANK_TEXT_FIXTURE_ROOT").expect("fixture root"));
+        assert_eq!(
+            std::fs::read_to_string(root.join("fixture-marker")).unwrap(),
+            "redshank-text-retention-20261020\n"
+        );
+        let profile = root.join("producer");
+        let session = std::fs::read_to_string(profile.join("current_session")).unwrap();
+        let session: uuid::Uuid = session.trim().parse().unwrap();
+        let session_dir = profile.join("sessions").join(session.to_string());
+        let mut host = RedshankHost::open_with(&session_dir, Output::Silent, None);
+        assert!(host.model.annotations.is_empty() && host.model.library.is_empty());
+        let source = root.join("origin-recording.wav");
+        let bytes = std::fs::read(&source).unwrap();
+        let item = ItemId("embedded-recording".into());
+        host.model
+            .add_item(LibraryItem::DirectAudio {
+                id: item.clone(),
+                title: "Embedded text-note fixture".into(),
+                source: MediaSource::Local {
+                    path: source.to_string_lossy().into_owned(),
+                },
+            })
+            .unwrap();
+        for (id, text, shareable, offset) in [
+            (
+                "embedded-text-selected",
+                "Saved from the embedded listener: café → harbor.\nKeep this timed note.",
+                true,
+                1250,
+            ),
+            (
+                "embedded-text-private",
+                "PRIVATE CONTROL: do not retain this note",
+                false,
+                7000,
+            ),
+            (
+                "embedded-text-other",
+                "UNSELECTED CONTROL: another shareable note",
+                true,
+                9000,
+            ),
+        ] {
+            let id = AnnotationId(id.into());
+            host.model
+                .add_annotation(Annotation {
+                    id: id.clone(),
+                    target: TimedTarget {
+                        item_id: item.clone(),
+                        offset_ms: offset,
+                        end_offset_ms: Some(offset + 3250),
+                        pressed_offset_ms: Some(offset + 150),
+                        fingerprint: None,
+                        representation: RepresentationReceipt {
+                            byte_length: Some(bytes.len() as u64),
+                            complete_digest: Some(format!(
+                                "blake3:{}",
+                                blake3::hash(&bytes).to_hex()
+                            )),
+                            ..Default::default()
+                        },
+                    },
+                    body: NoteBody::Text {
+                        plain_text: text.into(),
+                    },
+                    created_at_ms: 7,
+                    privacy: NotePrivacy::Private,
+                })
+                .unwrap();
+            if shareable {
+                assert!(
+                    host.command(
+                        &item,
+                        CompactCommand::SetNotePrivacy {
+                            id,
+                            privacy: NotePrivacy::Shareable
+                        },
+                        8
+                    )
+                    .model_changed
+                );
+            }
+        }
+        host.save();
+        std::fs::write(
+            root.join("expected-note-export.json"),
+            serde_json::to_vec_pretty(
+                &host
+                    .model
+                    .export_selected_note(&AnnotationId("embedded-text-selected".into()))
+                    .unwrap(),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        std::fs::write(root.join("source-session"), session.to_string()).unwrap();
+        std::fs::write(
+            root.join("seed-model.json"),
+            serde_json::to_vec_pretty(&host.model).unwrap(),
+        )
+        .unwrap();
     }
 
     fn request(
@@ -1371,5 +1630,4 @@ mod tests {
         assert!(Arc::ptr_eq(&reopened.fetch().unwrap(), &handle));
         assert!(reopened.runtime().is_none());
     }
-
 }

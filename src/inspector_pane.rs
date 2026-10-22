@@ -30,6 +30,7 @@ use crate::inspector_view::{InspectorSection, inspector_member, inspector_sectio
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum InspectorIntent {
+    Binding(crate::pane_binding::BindingIntent),
     ClipToKnot {
         offer: uuid::Uuid,
     },
@@ -50,6 +51,7 @@ pub enum InspectorIntent {
 impl cambium::Action for InspectorIntent {}
 
 struct InspectorState {
+    binding: crate::pane_binding::BindingViewState,
     sections: Vec<InspectorSection>,
     member: Option<uuid::Uuid>,
     radio: RadioGroup,
@@ -197,7 +199,7 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
     };
     let clip_status = el::<_, InspectorState, InspectorIntent>(
         "div",
-        format!("Knot clip: {}", state.clip_status),
+        format!("Passage: {}", state.clip_status),
     )
     .attr("class", "detail-value");
     let offered_clip = state.clip_offer;
@@ -288,6 +290,7 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
         el::<_, InspectorState, InspectorIntent>(
             "div",
             (
+                crate::pane_binding::binding_view(&state.binding, |s: &mut InspectorState| &mut s.binding, InspectorIntent::Binding),
                 el::<_, InspectorState, InspectorIntent>("div", "Document controls")
                     .attr("class", "list-section-title"),
                 el::<_, InspectorState, InspectorIntent>(
@@ -317,7 +320,10 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
                         {
                             let choice = state.note_choice.clone();
                             button(
-                                "Use this Knot document as research note",
+                                choice
+                                    .as_ref()
+                                    .map(|choice| choice.use_label())
+                                    .unwrap_or_else(|| "Use this document as research note".into()),
                                 move |_: &mut InspectorState, _| {
                                     choice.clone().map(|choice| {
                                         InspectorIntent::ChooseResearchNote { choice }
@@ -347,7 +353,7 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
                 detail_panel(&sections),
             ),
         )
-        .attr("class", "pane")
+        .attr("class", "pane cambium-shell-panel")
         .attr(
             "style",
             format!(
@@ -388,6 +394,7 @@ impl InspectorPane {
             .map(cambium::RetainedMount::dom)
             .unwrap_or_else(|| Rc::new(RefCell::new(ScriptedDom::new())));
         let state = InspectorState {
+            binding: Default::default(),
             sections: Vec::new(),
             member: None,
             radio: RadioGroup::new(0).with_label("Viewer"),
@@ -448,6 +455,10 @@ impl InspectorPane {
         self.layout.selector_point(&self.dom.borrow(), selector)
     }
     pub(crate) fn key_inline(&mut self, event: cambium::KeyEvent) -> Vec<InspectorIntent> {
+        if matches!(event.key, cambium::Key::Named(cambium::NamedKey::Escape)) && self.runner.state().binding.expanded {
+            self.runner.update(|state| state.binding.expanded = false);
+            return Vec::new();
+        }
         let previous = self.runner.state().radio.selected;
         let mut intents = self.runner.dispatch_key(event);
         let state = self.runner.state();
@@ -524,6 +535,7 @@ impl InspectorPane {
             .map(|reason| format!("; Save source unavailable: {reason}"))
             .unwrap_or_default();
         self.runner.update(|state| {
+            state.binding.sync(app, pane_id);
             state.member = member;
             state.radio.selected = synced_viewer;
             state.radio.focus_request = None;
@@ -549,7 +561,7 @@ impl InspectorPane {
     pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
         self.layout.scene_scrolled(
             &mut self.dom.borrow_mut(),
-            crate::ui::CAMBIUM_SHEET,
+            crate::ui::cambium_shell_sheet(),
             w,
             h,
             &mut self.scroll,
@@ -605,7 +617,7 @@ impl InspectorPane {
         let previous_viewer = self.runner.state().radio.selected;
         let hit = self.layout.hit_test_scrolled(
             &mut self.dom.borrow_mut(),
-            crate::ui::CAMBIUM_SHEET,
+            crate::ui::cambium_shell_sheet(),
             w,
             h,
             x,

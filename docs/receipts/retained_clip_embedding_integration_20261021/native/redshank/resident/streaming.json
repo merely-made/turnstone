@@ -1,0 +1,82 @@
+{
+  "run": "turnstone/be0e3fdd-d49a-4310-8309-de42dd60d343/research/v1/dda5caa9-05b9-4255-9959-d10902a0dcac",
+  "question": "Repeat both lines of the retained note about the embedded listener exactly, preserving the line break.",
+  "state": "running",
+  "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note.",
+  "error": null,
+  "session": {
+    "session_id": "blake3:e98a2d6d857bbeea8f431367885d4a5ddee51d3751f69e9ade6943c19314f925",
+    "prompt_template_hash": "blake3:4f8d6369eededd7a3e772e383a5dec5adcc081f337d98839eae61aee4273059f"
+  },
+  "tokens": 17,
+  "continuations": [
+    {
+      "device": "device:0a8e447674a9f61e2632b2340f20b085",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "embedding": {
+      "envelope": "blake3:a36e0c14ba05e9265df6bfd559b56421f7026f2ea209004922f881ce555a20a8",
+      "index": "blake3:fc1fb26f1bb5c3cc971c983dd0913f5c840f3b5dbbda2580c97ec1259fcc4155",
+      "cache": "reopened",
+      "vector_bytes": 2048,
+      "persisted_bytes": 6409,
+      "lexical_weight": 1,
+      "vector_weight": 1,
+      "rrf_k": 60
+    },
+    "owner": "turnstone/be0e3fdd-d49a-4310-8309-de42dd60d343/research/v1",
+    "scope": [
+      {
+        "kind": "fleece",
+        "owner": "turnstone/be0e3fdd-d49a-4310-8309-de42dd60d343/research/v1",
+        "source": "mere://retained-text/be0e3fdd-d49a-4310-8309-de42dd60d343/94c96387-07ea-450e-9677-a6b6a31d3c6b/0af70aba-3769-4af0-9291-b9c1bb86e094/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+        "node": "0af70aba-3769-4af0-9291-b9c1bb86e094"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 1,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "fleece",
+            "owner": "turnstone/be0e3fdd-d49a-4310-8309-de42dd60d343/research/v1",
+            "source": "mere://retained-text/be0e3fdd-d49a-4310-8309-de42dd60d343/94c96387-07ea-450e-9677-a6b6a31d3c6b/0af70aba-3769-4af0-9291-b9c1bb86e094/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+            "node": "0af70aba-3769-4af0-9291-b9c1bb86e094"
+          },
+          "version": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+          "text_hash": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+          "selector": {
+            "start": 0,
+            "end": 70
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+        }
+      }
+    ],
+    "stale": [],
+    "citations": [
+      {
+        "handle": 1,
+        "passage": "blake3:734386be30e07ca90841abfc99985c397dcdf1222f732b250d09a3f9abd9cf87",
+        "basis": "verbatim_passage",
+        "answer_selector": {
+          "start": 0,
+          "end": 70
+        }
+      }
+    ]
+  }
+}

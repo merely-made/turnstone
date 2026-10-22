@@ -413,7 +413,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
     ),
     pane!(
         kind::SHARED_KNOT,
-        "Shared Knot",
+        "Shared document",
         PaneSourceShape::fixed(&[FixedSourceKind::External(source_schema::SHARE_TICKET)]),
         PaneMultiplicity::Many,
         capabilities(false, false, NONE),
@@ -422,7 +422,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::SharedKnot,
         Some(PanePaletteEntry {
             order: 100,
-            label: "Open Shared Knot pane"
+            label: "Open Shared document pane"
         }),
         Some(|| PaneContent::Registered(PaneKindId::new(kind::SHARED_KNOT)))
     ),

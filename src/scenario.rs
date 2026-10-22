@@ -31,6 +31,7 @@
 //! type <text>               # Action::OmnibarChar per char
 //! insert <text>             # IME commit into the focused omnibar or Knot editor
 //! key enter|escape|tab|backspace|delete|up|down|left|right|home|end|ctrl+s
+//! key ctrl+a|shift+right    # native editor selection through the same key seam
 //! act <palette label>       # commit a palette_actions() entry by label
 //! select-graph-member <url>|none # Canvas multi-selection in the owner pane
 //! activate-graph-fold <index> # press/release a real native fold badge
@@ -85,8 +86,8 @@
 //!                            # frame for up to <frames> frames; passes the
 //!                            # moment it matches, fails with `assert row`'s
 //!                            # diagnostics if the budget runs out
-//! wait-status <frames> <substr> # like wait-row, over the place status lines
-//!                            # (`crate::observe::snapshot(..).place_status`)
+//! wait-status <frames> <substr> # over the place status lines, without blocking
+//!                            # native frames or cross-process event delivery
 //! wait-file <frames> <path>  # like wait-row, satisfied once <path> exists
 //!                            # and is non-empty, without blocking rendered frames
 //!                            # (cross-process sequencing
@@ -355,6 +356,8 @@ pub enum EditKey {
     Down,
     Left,
     Right,
+    ShiftRight,
+    SelectAll,
     Home,
     End,
     PageDown,
@@ -451,6 +454,8 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 "down" => Step::Key(EditKey::Down),
                 "left" => Step::Key(EditKey::Left),
                 "right" => Step::Key(EditKey::Right),
+                "shift+right" => Step::Key(EditKey::ShiftRight),
+                "ctrl+a" => Step::Key(EditKey::SelectAll),
                 "home" => Step::Key(EditKey::Home),
                 "end" => Step::Key(EditKey::End),
                 "pagedown" => Step::Key(EditKey::PageDown),
@@ -461,7 +466,7 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 "ctrl+d" => Step::Key(EditKey::KeepCommand),
                 _ => {
                     return err(
-                        "key wants enter|escape|tab|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space|ctrl+s|ctrl+f|ctrl+d",
+                        "key wants enter|escape|tab|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space|shift+right|ctrl+a|ctrl+s|ctrl+f|ctrl+d",
                     );
                 }
             },

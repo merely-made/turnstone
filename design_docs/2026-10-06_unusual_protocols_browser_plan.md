@@ -2197,3 +2197,106 @@ final receipt records that stderr separately from compiler errors.
   - [Reticulum browsing](2026-08-03_reticulum_browsing_plan.md)
   - [page capture](2026-08-28_page_capture_plan.md)
   - [pane registry](2026-08-08_pane_registry_and_graph_panes_plan.md)
+
+
+### Hest declarations and Cambium 0.5 adoption (2026-10-20)
+
+**Status:** canonical source adoption and locked receiving checks passed
+locally. Push and publication remain deferred by Mark's direction. The shared design
+and version rulings live in
+`mere/design_docs/cambium_docs/implementation_strategy/2026-10-20_hest_command_architecture_plan.md`.
+
+**Findings:** Turnstone starts at fetched `0dd9b1b`. Its actual palette now
+registers the qualified Hest effect/destructive declarations through Cambium,
+with an exhaustive host-owned match over the 164 `Action` variants in
+`src/action/command_metadata.rs`. Delete node, empty recycle bin and close
+session carry the destructive flag. This does not alter reducer, ring or
+confirmation policy. Existing choices retain their JSON fields and defaults.
+
+**Receiving gate:** lock the canonical Mere Git URL/branch to the local supplier
+commit containing Cambium 0.5.0 and Hest 0.2.0; run the actual palette tests,
+stored-choice compatibility, all-target workspace checking and the library
+suite. Preserve unrelated dependencies and local edits. Since the supplier is
+unpublished, seed its Git object locally for checks; the receiving lock gains
+no path override. Fresh remote resolution waits for later supplier delivery.
+
+**Progress:** applied the previously qualified source changes to canonical
+`src/action.rs` and `src/app/palette.rs`, added the declarations module, and
+required Cambium 0.5.0. Source, dependency and receiving receipts will identify
+the exact local supplier commit and the tested tree.
+
+**Qualification:** canonical Turnstone selects Cambium 0.5.0 and Hest 0.2.0
+from local Mere `0151950f8`, and embedded Knot `65a6632`; no source path override
+is present. All 14 command-menu/sidecar cases pass. The full default library
+suite passes 1103 with 15 ignored and zero failures,
+run serially with `TMPDIR=/tmp`; the 14 focused cases are included in that
+full-suite count. Workspace all-target checking and portable metadata
+verification pass. The [receiving receipt](../docs/receipts/hest-cambium-adoption-20261020/qualification.json)
+records the source hashes, exact commands and logs in the shared owner packet.
+
+Only two existing Rust files changed, plus the new declaration module;
+242 existing Rust files and 1,604 unrelated lock package blocks remain
+byte-identical. The immutable source-edit revision exception is preserved.
+Standalone Knot's compatibility export passes 53 default cases with the old
+Cambium 0.4 cohort and 66 engine cases with 0.5, with one existing ignore in
+each run; its desktop workspace and lock were not repinned.
+
+The Git objects were fetched locally from the canonical supplier checkouts.
+Fresh remote-only resolution waits for authorized delivery of Knot, Mere and
+then this consumer commit. Native GUI, restart and human AT acceptance remain
+separate. H3/H4 were not implemented by this adoption.
+
+**Final reconciliation:** published Turnstone `1d13185` arrived during the
+first qualification. Merge `8e3e5cb` preserves its retained-renderer and
+painted-geometry fixture updates, while retaining the local Cambium 0.5/Hest
+0.2 supplier pins. NetRender is coherently `54d864c2`; Genet remains `6ef3cd37`.
+Fresh merged-tree checks pass 14 command-menu/sidecar, 15 Inspector and 23 Knot
+authoring cases (5 existing ignores), plus all-targets and portable metadata.
+The complete merged library passes 1103 with 15 existing ignores
+and zero failures. Focused cases overlap that full-suite count. The updated
+receiving receipt distinguishes this merged cohort from the first pass.
+
+
+### Hest H3 command invocation (2026-10-20)
+
+Mark authorized H3, local commits and Git pushes. Crate publication remains
+held. The canonical receiver follows the additive Hest 0.2 API through Cambium
+0.5. Static commands keep their existing shared catalogue id or host-owned
+registered id. An invocation carries the command's declared effect and a
+versioned opaque host observation of session, pane, graph and selection.
+Turnstone validates that observation and the current declaration before the
+existing reducer runs. Text editing and contextual producer actions retain
+their dedicated typed paths.
+
+The actual canvas key route forms and receives this invocation. Its receiving
+receipt drives the existing isometric key binding into the reducer and checks
+the resulting model change and terminal outcome. Physics/isometric view
+changes can establish synchronous `Done`. Save effects and other deferred
+operations produce no terminal success from dispatch alone. Malformed
+contracts and stale observations must leave enactment untouched. Chirograph's
+`Accepted` remains admission/dispatch, with no inferred completion.
+
+Full receiving, all-targets and portable source-mode checks qualify the final
+source and lock cohort; the Mere Hest plan owns the common contract and
+cross-host evidence. Native GUI and assistive-technology acceptance remain
+separate from these software receipts.
+
+Canonical common-contract owner:
+`mere/design_docs/cambium_docs/implementation_strategy/2026-10-20_hest_command_architecture_plan.md`.
+
+
+H3 receiving is qualified on Mere `9ef5e3026` and embedded Knot `ebf10c741`:
+the full default library passes 1107 tests with 15 existing ignores. Focused
+receipts pass 4 H3, 14 menu/sidecar, 15 Inspector and 23 embedded-Knot cases
+(5 existing ignores); these overlap the full-library result. Workspace
+all-targets and portable metadata checks pass. The existing session-marker
+fixture now uses explicit timestamp ordering after the first full run exposed
+its wall-clock-dependent ordering; production session code is unchanged.
+Incoming NetRender `ec15eb26`, Genet `6ef3cd37` and Murm `e2f19a3f` remain
+pinned, with 1,604 unrelated package blocks preserved exactly. Git delivery is
+authorized; crate publication and native GUI/human AT acceptance remain separate.
+
+[H3 receiving qualification](../docs/receipts/hest-h3-20261020/qualification.json)
+retains the final source and lock, owned compressed command logs, and superseded
+failed attempts. The passing full rerun is retained separately from the first
+run that found the timestamp fixture problem.

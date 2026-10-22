@@ -43,6 +43,7 @@ const ROSTER_TABS: [&str; 4] = ["Nodes", "Links", "Graphlets", "Fields"];
 /// size — the height the grid virtualizes against, and both dimensions for the
 /// pane's own backdrop.
 struct RosterState {
+    binding: crate::pane_binding::BindingViewState,
     tabs: TabStrip,
     rows: Vec<RosterGridRow>,
     viewport_w: f32,
@@ -54,6 +55,7 @@ struct RosterState {
 /// spine as a keypress.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum RosterAction {
+    Binding(crate::pane_binding::BindingIntent),
     Navigate(String),
 }
 
@@ -108,7 +110,7 @@ fn roster_pane(state: &RosterState) -> RosterView {
     // shows through. Geometry inline, per the sheet contract; the colour is the
     // host sheet's `.pane`, the same one the hand-DOM panes wear.
     Box::new(
-        el::<_, RosterState, RosterAction>("div", (strip, body))
+        el::<_, RosterState, RosterAction>("div", (crate::pane_binding::binding_view(&state.binding, |s: &mut RosterState| &mut s.binding, RosterAction::Binding), strip, body))
             .attr("class", "pane")
             .attr(
                 "style",
@@ -206,6 +208,7 @@ impl RosterGrid {
             .map(cambium::RetainedMount::dom)
             .unwrap_or_else(|| Rc::new(RefCell::new(ScriptedDom::new())));
         let state = RosterState {
+            binding: Default::default(),
             tabs: TabStrip::new(0).with_label("Roster"),
             rows: Vec::new(),
             viewport_w: 0.0,
@@ -250,6 +253,10 @@ impl RosterGrid {
         self.layout.selector_point(&self.dom.borrow(), selector)
     }
     pub(crate) fn key_inline(&mut self, event: cambium::KeyEvent) -> Vec<RosterAction> {
+        if matches!(event.key, cambium::Key::Named(cambium::NamedKey::Escape)) && self.runner.state().binding.expanded {
+            self.runner.update(|state| state.binding.expanded = false);
+            return Vec::new();
+        }
         self.runner.dispatch_key(event)
     }
     pub(crate) fn blur_inline(&mut self) {
@@ -281,6 +288,7 @@ impl RosterGrid {
     pub fn sync(&mut self, app: &App, pane_id: crate::panes::PaneId, pane_w: f32, pane_h: f32) {
         let rows = roster_grid_rows_for_pane(app, pane_id);
         self.runner.update(|state| {
+            state.binding.sync(app, pane_id);
             state.rows = rows;
             state.viewport_w = pane_w;
             state.viewport_h = pane_h;
@@ -317,7 +325,7 @@ impl RosterGrid {
     pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
         self.layout.scene_scrolled(
             &mut self.dom.borrow_mut(),
-            crate::ui::CAMBIUM_SHEET,
+            crate::ui::cambium_shell_sheet(),
             w,
             h,
             &mut self.scroll,
@@ -340,7 +348,7 @@ impl RosterGrid {
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) -> Vec<RosterAction> {
         let hit = self.layout.hit_test_scrolled(
             &mut self.dom.borrow_mut(),
-            crate::ui::CAMBIUM_SHEET,
+            crate::ui::cambium_shell_sheet(),
             w,
             h,
             x,
@@ -405,7 +413,7 @@ mod tests {
             window,
         ))));
         grid.bind_inline(&layout);
-        let sheet = format!("{} {}", crate::ui::CAMBIUM_SHEET, cambium::FRISKET_CSS);
+        let sheet = format!("{} {}", crate::ui::cambium_shell_sheet(), cambium::FRISKET_CSS);
         let scene = layout
             .borrow_mut()
             .scene(&mut dom.borrow_mut(), &sheet, 512, 480);
@@ -523,7 +531,7 @@ mod tests {
         assert!(
             crate::ui::hit_test(
                 &d,
-                crate::ui::CAMBIUM_SHEET,
+                crate::ui::cambium_shell_sheet(),
                 512,
                 600,
                 20.0,
@@ -628,7 +636,7 @@ mod tests {
         // edge is still a tab, and one just below it is not.
         let inside = crate::ui::hit_test(
             &d,
-            crate::ui::CAMBIUM_SHEET,
+            crate::ui::cambium_shell_sheet(),
             512,
             600,
             20.0,
@@ -636,7 +644,7 @@ mod tests {
         );
         let below = crate::ui::hit_test(
             &d,
-            crate::ui::CAMBIUM_SHEET,
+            crate::ui::cambium_shell_sheet(),
             512,
             600,
             20.0,

@@ -1,0 +1,30 @@
+settle 12
+key escape
+assert snap network-offline == true
+assert snap peer-services == 0
+open mere://redshank/note/embedded-text-private
+settle 5
+assert snap producer-retention == Unavailable
+capture 00_private_note_refused
+open mere://redshank/note/embedded-text-selected
+settle 5
+assert snap producer-retention == Retain selected Redshank note
+capture 01_shareable_note_selected
+act Retain selected Redshank note
+settle 25
+act Open node in Workbench
+settle 12
+assert content-live
+capture 02_retained_text
+click-at 610 193
+settle 3
+assert snap actions ~ Export retained clip
+export-clip /Users/markik/Code/output/redshank-text-retention-20261020/runtime/selected-text.mereclip
+wait-file 20 /Users/markik/Code/output/redshank-text-retention-20261020/runtime/selected-text.mereclip
+assert event clip-package-exported
+assert snap offline-acquisition-attempts == 0
+capture 03_selected_text_exported
+act Save session
+act New session
+settle 12
+act Save session

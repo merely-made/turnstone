@@ -1,0 +1,126 @@
+{
+  "contract": {
+    "grant": {
+      "expired_at_ms": null,
+      "expires_at_ms": null
+    },
+    "membership": {
+      "access": "manage",
+      "members": 3
+    },
+    "now_ms": 1792465884981,
+    "reading": "continues",
+    "reason": null,
+    "revocation": null,
+    "verdict": "joined",
+    "version": 1
+  },
+  "knot_documents": [],
+  "place": {
+    "chat": "d61377f9f59a647ec3b8a11d8635cee5315c08fcab2a9c70cca3170c203b03b3",
+    "chat_digest": "681f36e554d25270ac4b1dbc89ede7d1a099d1bfc9839eee8bea63fc3fc3907f",
+    "chat_messages": 5,
+    "default_channel": "general",
+    "evicted_records": 0,
+    "graph_digest": "af7ad7cebf772df42835271a6eb0cd53ad60eb38a7718d205934e53f8625932e",
+    "graph_nodes": 1,
+    "group_frames_pending": 0,
+    "group_frames_refused": 0,
+    "lanes": [
+      {
+        "name": "gemot/constitution/v1",
+        "ops_received": 0,
+        "sync_rounds": 6,
+        "syncing": false
+      },
+      {
+        "name": "gemot/delegation/v1",
+        "ops_received": 0,
+        "sync_rounds": 6,
+        "syncing": false
+      },
+      {
+        "name": "gemot/membership/v1",
+        "ops_received": 0,
+        "sync_rounds": 6,
+        "syncing": false
+      },
+      {
+        "name": "gemot/records/v1",
+        "ops_received": 0,
+        "sync_rounds": 6,
+        "syncing": false
+      },
+      {
+        "name": "gemot/standing/v1",
+        "ops_received": 0,
+        "sync_rounds": 6,
+        "syncing": false
+      },
+      {
+        "name": "gemot/tulpa/v1",
+        "ops_received": 0,
+        "sync_rounds": 6,
+        "syncing": false
+      },
+      {
+        "name": "gemot/flora/v1",
+        "ops_received": 0,
+        "sync_rounds": 6,
+        "syncing": false
+      },
+      {
+        "name": "commons/graph/encrypted/v1",
+        "ops_received": 0,
+        "sync_rounds": 6,
+        "syncing": false
+      },
+      {
+        "name": "commons/chat/v1",
+        "ops_received": 2,
+        "sync_rounds": 6,
+        "syncing": false
+      },
+      {
+        "name": "stickleback/group-key/v1",
+        "ops_received": 0,
+        "sync_rounds": 6,
+        "syncing": false
+      }
+    ],
+    "local_rendezvous": [
+      "endpointabpptq323xbps7p5zsqmqlbx2epeltpgm44rk7b5xttnhmyarv3k2bibab7qaaabv3gagaiaycuairfozqbqcaiaaaaaaaaaaaaaaaaaaaaaaaabvdsqgaibeybwafc5aetnggd2nzqo56urc2uokaybaetagyauluasnu4v75rexni4rpk2rzid"
+    ],
+    "members": 3,
+    "moot": "0681833da1cf94c47e2507996b4d6dbe015967cf2fc165eb03ec036bff01fa4e",
+    "parked_records": 0,
+    "personae_root": "c904e7da429422a872e74bd95e48ebcf532671fbb2e83396abdacbfc0e8cb622",
+    "readmitted_records": 0,
+    "root": "14107f588be708fdfaa90e6892b1f3311fecb72cba26ccb3751d8ebe9c306680"
+  },
+  "status": [
+    "Last refresh: local sync lanes opened; peer reachability unknown",
+    "Retained history: 1 shared nodes, 5 messages",
+    "Group key frames: 0 pending; 0 refused",
+    "Awaiting keys: 0 parked; 0 re-admitted; 0 evicted",
+    "Message permission: effective locally at last refresh",
+    "Shared graph permission: effective locally at last refresh",
+    "Writing: permissions are checked again for each action",
+    "Delivery: these sync observations do not confirm message delivery",
+    "Listening for peers: none dialed",
+    "Local rendezvous: endpointabpp…rpk2rzid",
+    "Projection: not serving (no Knot vault)",
+    "Constitution: idle; 6 rounds; 0 accepted ops",
+    "Delegation: idle; 6 rounds; 0 accepted ops",
+    "Membership: idle; 6 rounds; 0 accepted ops",
+    "Records: idle; 6 rounds; 0 accepted ops",
+    "Standing: idle; 6 rounds; 0 accepted ops",
+    "Tulpa: idle; 6 rounds; 0 accepted ops",
+    "Flora: idle; 6 rounds; 0 accepted ops",
+    "Shared graph: idle; 6 rounds; 0 accepted ops",
+    "Chat: idle; 6 rounds; 2 accepted ops",
+    "Group keys: idle; 6 rounds; 0 accepted ops",
+    "Reconnect: use Refresh place contact if saved hints are stale",
+    "Leave: detach this session and retain its history"
+  ]
+}

@@ -50,6 +50,8 @@ pub(super) struct ReaderAppearanceObservation {
     pub(super) rect: Rect,
     pub(super) viewport: (u32, u32),
     pub(super) scroll_y: f32,
+    pub(super) display_scale: f32,
+    pub(super) reading_preferences: tabard::ReadingPreferences,
     /// A deterministic group number for source-document identity within this
     /// one observation. It is assigned after sorting by surface id, so receipts
     /// can prove sharing without serializing process-local Arc addresses.
@@ -75,6 +77,8 @@ impl Shell {
                         surface.rect,
                         reader.viewport(),
                         reader.scroll_y(),
+                        reader.display_scale(),
+                        reader.reading_preferences(),
                         reader.source_document(),
                     )
                 })
@@ -84,7 +88,7 @@ impl Shell {
 
         let mut sources = Vec::new();
         raw.into_iter()
-            .map(|(id, role, rect, viewport, scroll_y, source)| {
+            .map(|(id, role, rect, viewport, scroll_y, display_scale, reading_preferences, source)| {
                 let source_group = sources
                     .iter()
                     .position(|known| Arc::ptr_eq(known, &source))
@@ -98,6 +102,8 @@ impl Shell {
                     rect,
                     viewport,
                     scroll_y,
+                    display_scale,
+                    reading_preferences,
                     source_group,
                 }
             })
@@ -172,7 +178,7 @@ impl Shell {
             .iter()
             .map(|appearance| {
                 format!(
-                    "id={:#018x} role={} source={} rect={:.0},{:.0} {:.0}x{:.0} viewport={}x{} scroll={}",
+                    "id={:#018x} role={} source={} rect={:.0},{:.0} {:.0}x{:.0} viewport={}x{} scroll={} display_scale={} text_size={} column_em={}",
                     appearance.id.0,
                     appearance.role.label(),
                     appearance.source_group,
@@ -183,6 +189,9 @@ impl Shell {
                     appearance.viewport.0,
                     appearance.viewport.1,
                     appearance.scroll_y,
+                    appearance.display_scale,
+                    appearance.reading_preferences.text_size,
+                    appearance.reading_preferences.column_em,
                 )
             })
             .collect::<Vec<_>>()

@@ -64,3 +64,107 @@ impl Shell {
         }
     }
 }
+
+impl Shell {
+    pub(super) fn retain_producer_selection(
+        &mut self,
+        choice: crate::app::research_note_arms::NoteChoice,
+        selection: crate::producer_retention::ProducerSelection,
+    ) {
+        let result = (|| {
+            if self.app.note_choice(choice.member).as_ref() != Some(&choice)
+                || self.app.browser_command_target().map(|(member, _)| member)
+                    != Some(choice.member)
+            {
+                return Err("The displayed source or retention destination changed".into());
+            }
+            let root = self.app.clip_destination()?;
+            let policy = crate::retained_clip::limits()?;
+            let (export, backing, voice, capture_id) = match &selection {
+                crate::producer_retention::ProducerSelection::Knot(expected) => {
+                    let session = self
+                        .content_sessions
+                        .session_mut(&choice.member)
+                        .and_then(|session| {
+                            session
+                                .as_any()
+                                .downcast_mut::<crate::knot_authoring::KnotDocumentSession>()
+                        })
+                        .ok_or("The selected Knot editor is no longer open")?;
+                    if session.address() != choice.address {
+                        return Err("The selected Knot document changed".into());
+                    }
+                    let (export, backing) = session.selected_retained_export(expected)?;
+                    let id = export
+                        .get("id")
+                        .and_then(|id| id.as_str())
+                        .ok_or("Knot export has no native identity")?
+                        .to_owned();
+                    (export, Some(backing), None, id)
+                },
+                crate::producer_retention::ProducerSelection::Redshank { id, digest } => {
+                    let model = self.app.redshank.model();
+                    let note = model
+                        .annotations
+                        .get(id)
+                        .ok_or("The selected Redshank note is no longer available")?;
+                    if crate::producer_retention::note_digest(note)? != *digest
+                        || choice.address != format!("mere://redshank/note/{}", id.0)
+                    {
+                        return Err("The selected Redshank note changed".into());
+                    }
+                    let export = model
+                        .export_selected_note(id)
+                        .map_err(|e| format!("Redshank export refused: {e:?}"))?;
+                    if matches!(note.body, redshank_model::NoteBody::Audio { .. }) {
+                        return Err("This voice note needs body bytes from its source owner before retention".into());
+                    }
+                    (export, None, None, format!("redshank:{digest}"))
+                },
+            };
+            let context = fleece::portable_clip::CaptureContext {
+                source: eidetic::clip_profile::ClipSourceV1 {
+                    owner: None,
+                    entity: choice.address.clone(),
+                    revision: None,
+                },
+                capture_id,
+                provenance: eidetic::ProvenanceRecord::self_imported(
+                    "explicit owner-selected content",
+                ),
+                trust: eidetic::TrustEnvelope::self_asserted(),
+                captured_at: eidetic::Timestamp(crate::denizen::now_ms()),
+            };
+            let source = match &selection {
+                crate::producer_retention::ProducerSelection::Knot(_) => {
+                    crate::retained_clip::NativeClip::Knot {
+                        export: &export,
+                        backing: backing.as_deref().ok_or("Knot source backing missing")?,
+                    }
+                },
+                crate::producer_retention::ProducerSelection::Redshank { .. } => {
+                    crate::retained_clip::NativeClip::Redshank {
+                        export: &export,
+                        voice_body: voice,
+                    }
+                },
+            };
+            crate::retained_clip::retain_native(
+                &root,
+                source,
+                &context,
+                policy,
+                self.app.clip_sealer()?,
+            )
+        })();
+        match result {
+            Ok(id) => {
+                self.act(crate::action::Action::OpenAddress(
+                    crate::retained_clip::address(id),
+                ));
+                self.run_effects(vec![crate::action::Effect::SaveSession]);
+            },
+            Err(error) => self.app.note_retained_clip_refusal(error),
+        }
+    }
+}

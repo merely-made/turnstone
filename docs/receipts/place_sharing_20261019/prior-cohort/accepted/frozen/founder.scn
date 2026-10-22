@@ -1,0 +1,82 @@
+resize 600 420
+settle 8
+key escape
+act New session
+settle 3
+act Found place
+settle 3
+type Current-stack place
+key enter
+wait-status 600 Local rendezvous
+act Place status
+settle 3
+capture 01_founder_listening
+record-place 01_founder_listening
+key escape
+act Export place card
+settle 3
+type ${EXCHANGE}/writer.place-card.json
+key enter
+wait-file 600 ${EXCHANGE}/writer.place-card.json.prekey.json
+act Invite to place
+settle 3
+type ${EXCHANGE}/writer.place-card.json.prekey.json
+key enter
+settle 8
+record-place invitation_attempt
+capture invitation_attempt
+assert omnibar closed
+wait-file 600 ${EXCHANGE}/writer.place-card.json.prekey.json.invite.json
+act Send place message
+settle 3
+type hello from founder
+key enter
+wait-status 1200 Retained history: 0 shared nodes, 2 messages
+open ${ORIGIN}/founder-private.html
+settle 5
+open ${ORIGIN}/shared.html
+settle 8
+act Toggle live content
+settle 15
+assert content-live
+act Open node in Workbench
+settle 8
+assert surface content
+capture 02_founder_selected_address
+act Share focused node
+wait-status 600 Retained history: 1 shared nodes, 2 messages
+act Save session
+settle 5
+record-place 03_founder_shared
+wait-file 2400 ${CONTROL}/joiner.stopped
+act Send place message
+settle 3
+type while you were away
+key enter
+wait-status 600 Retained history: 1 shared nodes, 3 messages
+record-place 04_absent_authored
+wait-file 2400 ${CONTROL}/joiner.returned
+wait-status 1200 Retained history: 1 shared nodes, 4 messages
+act Export place card
+settle 3
+type ${EXCHANGE}/reader.place-card.json
+key enter
+wait-file 1200 ${EXCHANGE}/reader.place-card.json.prekey.json
+act Invite to place as reader
+settle 3
+type ${EXCHANGE}/reader.place-card.json.prekey.json
+key enter
+wait-file 600 ${EXCHANGE}/reader.place-card.json.prekey.json.invite.json
+wait-file 2400 ${CONTROL}/reader.refused
+act Send place message
+settle 3
+type after the reader joined
+key enter
+wait-status 1200 Retained history: 1 shared nodes, 5 messages
+wait-file 2400 ${CONTROL}/guests.stopped
+act Save session
+settle 8
+act Place status
+settle 5
+record-place 05_founder_final
+capture 05_founder_final

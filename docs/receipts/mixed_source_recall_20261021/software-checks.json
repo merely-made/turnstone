@@ -1,0 +1,26 @@
+{
+  "mixed-publication-tests.log": {
+    "passed": 3,
+    "failed": 0,
+    "ignored": 0,
+    "log": "mixed-publication-tests.log.gz"
+  },
+  "mixed-recall-tests.log": {
+    "passed": 14,
+    "failed": 0,
+    "ignored": 0,
+    "log": "mixed-recall-tests.log.gz"
+  },
+  "mixed-lexical-route.log": {
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "log": "mixed-lexical-route.log.gz"
+  },
+  "mixed-library-route.log": {
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "log": "mixed-library-route.log.gz"
+  }
+}

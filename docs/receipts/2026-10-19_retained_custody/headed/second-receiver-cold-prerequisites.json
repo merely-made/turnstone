@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "owner_voice_blob_absent": true,
+  "knot_source_file_absent": true,
+  "all_transfer_package_files_absent": true,
+  "all_producer_and_receiver_apps_stopped_before_cold_launch": true
+}

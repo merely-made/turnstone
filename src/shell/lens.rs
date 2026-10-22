@@ -172,7 +172,7 @@ impl Shell {
                 continue;
             };
             let shared_core = primary.shared_core();
-            let attributes = Window::default_attributes()
+            let attributes = super::titlebar::window_attributes()
                 .with_title("Turnstone — lens")
                 .with_visible(false)
                 .with_inner_size(PhysicalSize::new(800u32, 600u32));
@@ -181,6 +181,7 @@ impl Shell {
                 continue;
             };
             let window = Arc::new(window);
+            self.publish_titlebar_insets(ordinal + 1, &window);
             let size = window.inner_size();
             match SurfaceHost::from_shared_core(
                 window.clone(),
@@ -432,11 +433,15 @@ impl Shell {
                 clear,
             }));
         }
-        // The lens's chrome (its window-root in the shared chrome forest):
-        // the caption chip, composited on top when there is one to show.
-        if crate::app::focused_caption(&self.app.graph_runtimes).is_some() {
+        // Each lens keeps its title and context rows in its own window root,
+        // including the empty-selection state and its native caption insets.
+        {
             let slot = ordinal + 1;
             self.chrome.ensure_slot(slot);
+            self.chrome.sync(&self.app, &[
+                (0, self.width as f32, self.height as f32),
+                (slot, lw as f32, lh as f32),
+            ]);
             let scene = self.chrome.scene(slot, lw, lh);
             scenes.push(PlannedLayer::Scene(PlannedScene {
                 id: crate::surface::SurfaceId::CHROME.0,
@@ -1156,13 +1161,16 @@ fn lens_content_plan_with_rects(
         return Vec::new();
     };
     let area = Rect::full(w.max(1), h.max(1));
+    let workspace_area = crate::chrome_view::workspace_area_for_window(
+        app.shell_chrome_config(), ordinal + 1, w.max(1), h.max(1),
+    );
     let (pane_rects, divider_rects, float_rects): (
         Vec<(crate::panes::PaneId, Rect)>,
         Vec<(u32, Rect)>,
         Vec<(crate::panes::PaneId, Rect)>,
     ) = match app.blueprint_space(crate::action::SpaceRef::Lens(ordinal)) {
         Some(blueprint) => {
-            let placements = crate::panes::place_space(blueprint, area, None);
+            let placements = crate::panes::place_space(blueprint, workspace_area, None);
             (
                 placements
                     .panes
@@ -1238,7 +1246,7 @@ fn lens_content_plan_with_rects(
             let geom = app
                 .workbench_for_pane(pane)
                 .and_then(|workbench| workbench.to_arrangement().1);
-            crate::workbench_tiling::place_workbench(geom.as_ref(), rect)
+            crate::workbench_tiling::place_reading_workbench(app, pane, geom.as_ref(), rect)
                 .cells
                 .iter()
                 .filter_map(|c| {
@@ -1254,7 +1262,7 @@ fn lens_content_plan_with_rects(
         let geom = app
             .workbench_for_pane(pane)
             .and_then(|workbench| workbench.to_arrangement().1);
-        for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), rect).cells {
+        for cell in crate::workbench_tiling::place_reading_workbench(app, pane, geom.as_ref(), rect).cells {
             if let Some(node) = cell.active_member()
                 && contents.contains_key(&node)
             {
@@ -1312,7 +1320,7 @@ fn lens_content_plan_with_rects(
             let geom = app
                 .workbench_for_pane(id)
                 .and_then(|w| w.to_arrangement().1);
-            for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), rect).cells {
+            for cell in crate::workbench_tiling::place_reading_workbench(app, id, geom.as_ref(), rect).cells {
                 if let Some(node) = cell.active_member().filter(|n| contents.contains_key(n)) {
                     let body = cell.body();
                     appearance_roles.push((

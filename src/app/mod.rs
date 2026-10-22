@@ -130,6 +130,19 @@ pub fn focused_caption(canvas: &mere::canvas::Canvas) -> Option<String> {
     }
 }
 
+/// The content controlled by the navigation row can differ from the graph's
+/// selection when a Workbench tab owns the browser commands.
+pub(crate) fn navigation_caption(app: &App) -> Option<String> {
+    let label = app.browser_command_target().and_then(|(member, _)| {
+        let graph = app.graph_runtimes.graph_containing_member(member)?;
+        let canvas = app.graph_runtimes.canvas(graph)?;
+        let graph = canvas.graph();
+        let (key, _) = graph.nodes().find(|(_, node)| node.id == member)?;
+        Some(graph.node_display_label(key))
+    });
+    label.or_else(|| focused_caption(&app.graph_runtimes))
+}
+
 /// A composable pane's name for its palette rows ("Gloss", "Overmap"): the
 /// pane's own tag, title-cased. Derived rather than tabled, so a pane that
 /// gains a composition names itself.
@@ -173,6 +186,7 @@ pub struct App {
     /// The person's command menu: kept, dropped and recent commands, read
     /// through Cambium's command set (Scenograph editor plan SE28 to SE32).
     /// Saved in the session's view sidecar, never in graph truth.
+    pub reading: crate::reading_view::ReadingState,
     pub(crate) command_choices: cambium::CommandChoices,
     /// Find in the captured active document. This is separate from the
     /// omnibar's graph recall and command lanes.
@@ -423,6 +437,16 @@ impl App {
         self.shell.chrome()
     }
 
+    /// Map is navigation over graph members. An inactive retained Workbench
+    /// keeps its live producers, without compositing a reader over the map.
+    pub(crate) fn map_navigation_active(&self) -> bool {
+        let has_reader=self.frisket.iter_leaves().any(|(_,content,_)| matches!(content,PaneContent::Workbench));
+        if !has_reader { return false; }
+        let visible=self.frisket.outer_workspace().ok().map(|frame|frame.active_ids()).unwrap_or_default();
+        let reader_visible=visible.iter().any(|id|self.pane_content(PaneId(id.0))==Some(&PaneContent::Workbench));
+        !reader_visible || self.active_pane.is_some_and(|pane|self.pane_content(pane)==Some(&PaneContent::Orrery))
+    }
+
     /// Apply a value-facing chrome configuration. The Settings pane/provider
     /// may call this through its live sink; it never reaches into a renderer.
     pub fn set_shell_chrome_config(&mut self, chrome: ShellChromeConfig) {
@@ -665,6 +689,7 @@ impl App {
     /// Roster and Inspector follow this explicit context rather than the graph
     /// runtime pool's legacy cursor.
     pub fn follower_context(&self, pane: PaneId) -> Option<PaneContext> {
+        if self.has_pane_binding(pane) { return self.pane_bound_context(pane); }
         self.pane_context.resolve_context(
             pane,
             &crate::panes::ContextBinding::FocusedInOwnSpace,
@@ -741,6 +766,7 @@ impl App {
                 })
             }))
             .collect();
+        self.pane_context.retain_panes(&panes.iter().map(|(pane, _)| *pane).collect());
         for (pane, space) in panes {
             self.pane_context.place(pane, space);
         }
@@ -774,6 +800,7 @@ impl App {
         let graph = self.graph_for_pane(pane)?;
         let mut transition = self.graph_runtimes.get_mut(graph)?.scene_transition.take();
         let restored = std::mem::take(&mut self.graph_runtimes.get_mut(graph)?.scene_restore_pending);
+        let fit = self.graph_views.take_fit(pane);
         static CLOCK: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
         let host_ms = CLOCK.get_or_init(std::time::Instant::now).elapsed().as_secs_f64() * 1000.0;
         let result = self.with_graph_pane(pane, |canvas| {
@@ -786,6 +813,10 @@ impl App {
             }
             let id = canvas.layout_strategy().unwrap_or("free").to_owned();
             mere::canvas::physics_controls::advance_arrangement(canvas, &mut transition, &id, host_ms);
+            if fit {
+                canvas.resize(width, height);
+                canvas.fit_to_content();
+            }
             let (scene, redraw) = canvas.frame(width, height);
             (scene, redraw || transition.is_some() || canvas.has_stop_return())
         });
@@ -1073,7 +1104,7 @@ impl App {
     }
 
     /// Mutable [`Self::space`].
-    fn space_mut(&mut self, space: SpaceRef) -> Option<&mut FrisketLayout> {
+    pub(crate) fn space_mut(&mut self, space: SpaceRef) -> Option<&mut FrisketLayout> {
         match space {
             SpaceRef::Primary => Some(&mut self.frisket),
             SpaceRef::Lens(i) => self.lenses.get_mut(i).and_then(Option::as_mut),
@@ -1136,8 +1167,10 @@ impl App {
 
     fn dispatch(&mut self, action: Action) -> Vec<Effect> {
         match action {
+            Action::Reading(action) => self.read_action(action),
             Action::OpenThemeWorkshop => vec![Effect::OpenThemeWorkshop],
             Action::OpenAddress(url) => self.open_address(url),
+            Action::RetainProducerSelection { choice, selection } => self.retain_producer_selection(choice, selection),
             Action::ChooseClipPackageFile => vec![Effect::ChooseClipPackageFile],
             Action::ImportClipPackage(path) => vec![Effect::ImportClipPackage(path)],
             Action::ChooseClipExportFile => self.choose_retained_clip_export(),
@@ -1194,7 +1227,7 @@ impl App {
             | Action::RedoFold) => self.edit_graph_folds(action),
             action @ (Action::ResetToSeed | Action::SetSeed | Action::RestoreRecipeSeed
                 | Action::ToggleForegroundPin | Action::DismissRetained
-                | Action::GrowTiles | Action::ShrinkTiles) => self.edit_graph_scene(action),
+                | Action::GrowTiles | Action::ShrinkTiles | Action::ToggleTerritory) => self.edit_graph_scene(action),
             Action::ReseedLayout => self.reseed_layout(),
             Action::SetLayoutStrategy(id) => self.set_layout_strategy(id),
             action @ (Action::SetPhysicsLaw(_) | Action::SetPhysicsOverlay(_, _)
@@ -1223,6 +1256,7 @@ impl App {
             Action::FitView => {
                 if let Some(pane) = self.graph_command_pane() {
                     self.with_graph_pane(pane, |canvas| canvas.fit_to_content());
+                    self.graph_views.request_fit(pane);
                 }
                 vec![Effect::Redraw]
             }
@@ -1234,6 +1268,15 @@ impl App {
                 self.begin_place_prompt(crate::ui::PlacePrompt::ExportCard)
             }
             Action::ExportPlaceCard { path } => self.export_place_card(path),
+            Action::BeginRefreshPlaceContact => self.begin_place_prompt(crate::ui::PlacePrompt::RefreshContact),
+            Action::RefreshPlaceContact { path } => self.refresh_place_contact(path),
+            Action::ReconnectPlaceWithCard { session, generation, card } => {
+                if session != self.session_id || self.place.generation() != Some(generation) {
+                    Vec::new()
+                } else {
+                    self.reconnect_place_with_contact(Some(card))
+                }
+            }
             Action::BeginOfferPlacePrekey => {
                 self.begin_place_prompt(crate::ui::PlacePrompt::OfferPrekey)
             }
@@ -1381,6 +1424,18 @@ impl App {
             // persists it (SaveSession writes frame.json), so the arrangement
             // survives a restart. Maximize is view state, not persisted.
             Action::SummonPane(kind) => self.summon_pane(kind),
+            Action::SetWorkspaceMap(map) => self.set_workspace_map(map),
+            Action::ReadGraphMember(member) => self.read_graph_member(member),
+            Action::NavigateRelationship(target) => self.navigate_relationship(target),
+            Action::SetPaneBinding(intent) => self.apply_pane_binding(intent),
+            Action::RevealGraphMember(member) => self.reveal_graph_member(member),
+            Action::ToggleToolPane(kind) => self.toggle_tool_pane(kind),
+            Action::SetChromeLayout(layout) => {
+                let mut chrome = self.shell_chrome_config().clone();
+                chrome.layout = layout;
+                self.set_shell_chrome_config(chrome);
+                vec![Effect::SaveChromeLayout(layout), Effect::Redraw]
+            },
             Action::ChooseKnotDocumentFile { read_only } => {
                 vec![Effect::ChooseKnotDocumentFile { read_only }]
             }
@@ -1464,6 +1519,7 @@ mod node_arms;
 
 mod omnibar_arms;
 mod palette;
+mod command_invocation;
 mod pane_arms;
 mod outer_workspace_arms;
 mod workspace_stations;

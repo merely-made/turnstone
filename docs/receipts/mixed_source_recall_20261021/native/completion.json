@@ -1,0 +1,8 @@
+{
+  "result": "pass",
+  "modes": [
+    "lexical",
+    "fused"
+  ],
+  "boundary": "Both independent warm/cold pairs completed. Identical product, resident, supplier source and frozen corpus; per-mode executed UI recipes retained."
+}

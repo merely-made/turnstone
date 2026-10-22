@@ -1,0 +1,142 @@
+resize 1200 900
+settle 5
+key escape
+assert snap network-offline == true
+act Search saved sources
+type violet
+wait-saved-sources 600
+assert suggestions == 1
+key enter
+wait-saved-reader 600
+assert snap saved-reader-text == ${MR_CAPTURE_TEXT}
+act Open node in Workbench
+settle 5
+act Maximize pane
+settle 5
+capture 01_cold_local_capture
+record-saved-sources 01_cold_local_capture
+act Ask saved sources
+settle 5
+assert text Connected to resident inference.
+assert text 4 saved sources chosen
+capture 02_cold_scope
+wait-file 18000 ${MR_RESIDENT}/history-1-capture.json
+click surface:contributed role:button Reopen: ${MR_CAPTURE_REOPEN}
+settle 5
+assert text Source 1:
+capture capture_historical_answer
+click surface:contributed role:button Source 1:
+settle 5
+wait-saved-reader 600
+assert snap saved-reader-text == ${MR_CAPTURE_TEXT}
+assert snap saved-reader-quote == ${MR_CAPTURE_TEXT}
+act Open node in Workbench
+settle 5
+capture capture_historical_citation
+record-saved-sources capture_historical_citation
+act Ask saved sources
+settle 5
+assert text 4 saved sources chosen
+click surface:contributed role:textbox Question
+insert ${MR_CAPTURE_QUESTION}
+click surface:contributed role:button Ask
+wait-file 18000 ${MR_RESIDENT}/mixed-1-capture.json
+settle 5
+assert text Source 1:
+capture capture_answer
+click surface:contributed role:button Source 1:
+settle 5
+wait-saved-reader 600
+assert snap saved-reader-text == ${MR_CAPTURE_TEXT}
+assert snap saved-reader-quote == ${MR_CAPTURE_TEXT}
+act Open node in Workbench
+settle 5
+capture capture_citation
+record-saved-sources capture_citation
+act Ask saved sources
+settle 5
+wait-file 18000 ${MR_RESIDENT}/history-1-knot.json
+click surface:contributed role:button Reopen: ${MR_KNOT_REOPEN}
+settle 5
+assert text Source 1:
+capture knot_historical_answer
+click surface:contributed role:button Source 1:
+settle 5
+act Open node in Workbench
+settle 5
+assert content-live
+assert snap browser-current ~ ${MR_KNOT_ADDRESS}
+capture knot_historical_citation
+record-saved-sources knot_historical_citation
+act Ask saved sources
+settle 5
+assert text 4 saved sources chosen
+click surface:contributed role:textbox Question
+insert ${MR_KNOT_QUESTION}
+click surface:contributed role:button Ask
+wait-file 18000 ${MR_RESIDENT}/mixed-1-knot.json
+settle 5
+assert text Source 1:
+capture knot_answer
+click surface:contributed role:button Source 1:
+settle 5
+act Open node in Workbench
+settle 5
+assert content-live
+assert snap browser-current ~ ${MR_KNOT_ADDRESS}
+capture knot_citation
+record-saved-sources knot_citation
+act Ask saved sources
+settle 5
+wait-file 18000 ${MR_RESIDENT}/history-1-note.json
+click surface:contributed role:button Reopen: ${MR_NOTE_REOPEN}
+settle 5
+assert text Source 1:
+capture note_historical_answer
+click surface:contributed role:button Source 1:
+settle 5
+act Open node in Workbench
+settle 5
+assert content-live
+assert snap browser-current ~ ${MR_NOTE_ADDRESS}
+capture note_historical_citation
+record-saved-sources note_historical_citation
+act Ask saved sources
+settle 5
+assert text 4 saved sources chosen
+click surface:contributed role:textbox Question
+insert ${MR_NOTE_QUESTION}
+click surface:contributed role:button Ask
+wait-file 18000 ${MR_RESIDENT}/mixed-1-note.json
+settle 5
+assert text Source 1:
+capture note_answer
+click surface:contributed role:button Source 1:
+settle 5
+act Open node in Workbench
+settle 5
+assert content-live
+assert snap browser-current ~ ${MR_NOTE_ADDRESS}
+capture note_citation
+record-saved-sources note_citation
+wait-file 18000 ${MR_RESIDENT}/mixed-rankings-1.json
+open ${MR_KNOT_ADDRESS}
+settle 5
+act Open node in Workbench
+settle 5
+assert content-live
+export-clip ${MR_KNOT_EXPORT}
+wait-file 100 ${MR_KNOT_EXPORT}
+assert event clip-package-exported
+capture knot_cold_export
+open ${MR_NOTE_ADDRESS}
+settle 5
+act Open node in Workbench
+settle 5
+assert content-live
+export-clip ${MR_NOTE_EXPORT}
+wait-file 100 ${MR_NOTE_EXPORT}
+assert event clip-package-exported
+capture note_cold_export
+assert snap offline-acquisition-attempts == 0
+act Save session

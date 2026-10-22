@@ -33,13 +33,22 @@ use uuid::Uuid;
 use crate::app::App;
 use crate::content::NodeContent;
 use crate::surface::Rect;
-use crate::workbench_tiling::{WorkbenchTiling, place_workbench};
+use crate::workbench_tiling::{WorkbenchTiling, place_workbench_at};
+
+fn workbench_sheet() -> &'static str {
+    static SHEET: std::sync::LazyLock<String> = std::sync::LazyLock::new(||
+        format!("{}\n{}", crate::ui::CAMBIUM_SHEET, cambium::SHELL_CSS));
+    &SHEET
+}
 
 /// One cell as the view holds it: the walked placement's members and rect,
 /// the tab labels, the strip state (selection mirrors the model's active
 /// tab at sync; a click moves it and the shell lowers the diff), and the
 /// body hint.
 struct CellView {
+    tabs: Rect,
+    body: Rect,
+    vertical: bool,
     appearance_role: Option<u64>,
     members: Vec<Uuid>,
     rect: Rect,
@@ -50,10 +59,17 @@ struct CellView {
     /// The body hint ("content off", "failed: ..."), empty when live content
     /// composites over the body.
     hint: String,
+    toolbar: Rect,
+    target: Option<crate::reading_view::ReadTarget>,
+    preferences: tabard::ReadingPreferences,
+    text_controls: bool,
+    find_enabled: bool,
+    find: crate::reading_view::FindUi,
 }
 
 struct WorkbenchState {
     cells: Vec<CellView>,
+    read_actions: Vec<crate::action::Action>,
     viewport_w: f32,
     viewport_h: f32,
 }
@@ -72,7 +88,7 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
             },
             move |state: &mut WorkbenchState| &mut state.cells[i].strip,
         );
-        let body_h = (cell.rect.h - crate::ui::TABLIST_HEIGHT).max(0.0);
+        let body_h = cell.body.h;
         let body = el::<_, WorkbenchState, ()>("div", cell.hint.clone())
             .attr("class", "wb-body")
             .attr(
@@ -95,7 +111,42 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
                 "width: {}px; height: {}px; overflow: hidden;",
                 cell.rect.w, cell.rect.h
             ),
-            (strip, body),
+            arrangement(
+                cell.rect.w,
+                cell.rect.h,
+                vec![
+                    Box::new(placed_with(
+                        Placement::new(cell.tabs.x - cell.rect.x, cell.tabs.y - cell.rect.y),
+                        format!(
+                            "width:{}px;height:{}px;overflow:hidden;",
+                            cell.tabs.w, cell.tabs.h
+                        ),
+                        el::<_, WorkbenchState, ()>("div", strip)
+                            .attr(
+                                "class",
+                                if cell.vertical {
+                                    "wb-tabs-vertical"
+                                } else {
+                                    "wb-tabs-horizontal"
+                                },
+                            )
+                            .attr("style", "width:100%;height:100%;"),
+                    )) as WbView,
+                    Box::new(placed_with(
+                        Placement::new(cell.toolbar.x - cell.rect.x, cell.toolbar.y - cell.rect.y),
+                        format!("width:{}px;height:{}px;overflow:hidden;",cell.toolbar.w,cell.toolbar.h),
+                        reading_toolbar(state, i),
+                    )) as WbView,
+                    Box::new(placed_with(
+                        Placement::new(cell.body.x - cell.rect.x, cell.body.y - cell.rect.y),
+                        format!(
+                            "width:{}px;height:{}px;overflow:hidden;",
+                            cell.body.w, cell.body.h
+                        ),
+                        body,
+                    )) as WbView,
+                ],
+            ),
         )));
     }
     Box::new(
@@ -103,8 +154,41 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
             "div",
             arrangement(state.viewport_w, state.viewport_h, children),
         )
-        .attr("class", "pane"),
+        .attr("class", "pane cambium-document-rail"),
     )
+}
+
+fn reading_toolbar(state: &WorkbenchState, index: usize) -> WbView {
+    let cell = &state.cells[index];
+    let Some(target) = cell.target else { return Box::new(el("div", ())); };
+    let query = cambium::request_focus(cambium::on_key(
+        el("div", cambium::caret_field_children::<WorkbenchState, ()>(&cell.find.input, &[]))
+            .attr("role", "textbox").attr("aria-label", "Find text in reading")
+            .attr("class", "read-query").attr("data-cambium-text-value", cell.find.input.text())
+            .attr("style", cambium::SINGLE_LINE_FIELD_STYLE),
+        move |state: &mut WorkbenchState, event: cambium::KeyEvent| {
+            use cambium::{Key, NamedKey, ReadCommand};
+            let action = match event.key {
+                Key::Named(NamedKey::Enter) => crate::reading_view::ReadAction::Command(target,
+                    if event.mods.shift {ReadCommand::Previous} else {ReadCommand::Next}),
+                Key::Named(NamedKey::Escape) => crate::reading_view::ReadAction::Command(target, ReadCommand::CloseFind),
+                _ => {
+                    state.cells[index].find.input.apply_key(&event, cambium::TextFieldMode::SingleLine);
+                    crate::reading_view::ReadAction::Query(target, state.cells[index].find.input.clone())
+                },
+            };
+            state.read_actions.push(crate::action::Action::Reading(action));
+            event.prevent_default(); event.stop_propagation();
+        },
+    ), cell.find.open);
+    let field: WbView = Box::new(el("div", (
+        query,
+        el("span", cell.find.status.clone()).attr("class", "read-result").attr("role", "status").attr("aria-live", "polite"),
+    )).attr("class", "read-find-input"));
+    cambium::read_toolbar(cell.preferences.text_size, cell.preferences.column_em, cell.text_controls, cell.find.open && cell.find_enabled, cell.find_enabled.then_some(field),
+        move |state: &mut WorkbenchState, command| {
+            state.read_actions.push(crate::action::Action::Reading(crate::reading_view::ReadAction::Command(target,command)));
+        })
 }
 
 /// An activation the pane reports back after a click: make this member's tab
@@ -124,6 +208,7 @@ pub struct WorkbenchPane {
     /// The last synced walk, pane-local — the shell's input routing asks it
     /// for cells and divider bands (the same walk the frame drew).
     tiling: WorkbenchTiling,
+    sheet: String,
     // Drop the runner and its widget resources before final mount custody.
     mount: Option<cambium::RetainedMount>,
 }
@@ -140,6 +225,7 @@ impl WorkbenchPane {
             .unwrap_or_else(|| Rc::new(RefCell::new(ScriptedDom::new())));
         let state = WorkbenchState {
             cells: Vec::new(),
+            read_actions: Vec::new(),
             viewport_w: 0.0,
             viewport_h: 0.0,
         };
@@ -160,6 +246,7 @@ impl WorkbenchPane {
                 mount.as_ref().map(cambium::RetainedMount::node),
             ),
             tiling: WorkbenchTiling::default(),
+            sheet: workbench_sheet().into(),
         }
     }
 
@@ -193,6 +280,11 @@ impl WorkbenchPane {
             .map(WbActivate)
             .collect()
     }
+    pub(crate) fn take_read_actions(&mut self) -> Vec<crate::action::Action> {
+        let mut actions = Vec::new();
+        self.runner.update(|state| actions = std::mem::take(&mut state.read_actions));
+        actions
+    }
     pub(crate) fn blur_inline(&mut self) {
         self.runner.set_focus(None);
     }
@@ -224,7 +316,8 @@ impl WorkbenchPane {
             .workbench_for_pane(pane_id)
             .map(|workbench| workbench.to_arrangement().1)
             .unwrap_or(None);
-        self.tiling = place_workbench(geom.as_ref(), Rect::new(0.0, 0.0, pane_w, pane_h));
+        self.sheet = cambium::stylesheet_at_display_scale(workbench_sheet(), app.shell_chrome_config().pane_scale(app,pane_id));
+        self.tiling = crate::workbench_tiling::place_reading_workbench(app, pane_id, geom.as_ref(), Rect::new(0.0, 0.0, pane_w, pane_h));
         let graph = app
             .graph_for_pane(pane_id)
             .and_then(|graph| app.graph_runtimes.canvas(graph));
@@ -265,13 +358,25 @@ impl WorkbenchPane {
                     None => String::new(),
                 };
                 CellView {
+                    toolbar: c.toolbar_rect(),
+                    target: c.active_member().map(|member| crate::reading_view::ReadTarget { pane:pane_id, member }),
+                    find_enabled: c.active_member().is_some_and(|member|app.content.facts(member).is_some_and(|facts|facts.capabilities.find_in_page.is_available())),
+                    text_controls: c.active_member().is_some_and(|member|app.has_reading_controls(crate::reading_view::ReadTarget{pane:pane_id,member})),
+                    preferences: c.active_member().map(|member|app.reading.preferences(crate::reading_view::ReadTarget{pane:pane_id,member})).unwrap_or_default(),
+                    find: c.active_member().and_then(|member|app.reading.find.get(&crate::reading_view::ReadTarget{pane:pane_id,member})).cloned().unwrap_or_default(),
+                    tabs: c.tab_rect(),
+                    body: c.body(),
+                    vertical: matches!(
+                        c.tab_edge,
+                        crate::chrome_layout::TabEdge::Left | crate::chrome_layout::TabEdge::Right
+                    ),
                     appearance_role: c.active_member().map(|node| {
                         crate::surface::appearance::workbench_appearance_role(pane_id, node)
                     }),
                     members: c.members.clone(),
                     rect: c.rect,
                     labels,
-                    strip: TabStrip::new(c.active).with_label("Workbench cell"),
+                    strip: TabStrip::new(c.active).with_label("Reading documents"),
                     synced_active: c.active,
                     hint,
                 }
@@ -298,7 +403,7 @@ impl WorkbenchPane {
     pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
         self.layout.scene_scrolled(
             &mut self.dom.borrow_mut(),
-            crate::ui::CAMBIUM_SHEET,
+            &self.sheet,
             w,
             h,
             &mut self.scroll,
@@ -329,7 +434,8 @@ impl WorkbenchPane {
             .iter()
             .flat_map(|c| c.members.iter().copied())
             .collect();
-        let tabs = dom.all_with_class(dom.document(), "tab");
+        let root = self.mount.as_ref().map_or_else(|| dom.document(), cambium::RetainedMount::node);
+        let tabs = dom.all_with_class(root, "tab");
         for (i, &tab) in tabs.iter().enumerate() {
             if let Some((tx, ty, tw, th)) = self.layout.visible_rect(&dom, tab)
                 && x >= tx
@@ -355,12 +461,11 @@ impl WorkbenchPane {
         if !self.layout.has_current_snapshot(&dom) {
             return Err("retained Workbench snapshot is unavailable or stale");
         }
-        let tabs = dom.all_with_class(dom.document(), "tab");
+        let root = self.mount.as_ref().map_or_else(|| dom.document(), cambium::RetainedMount::node);
+        let tabs = dom.all_with_class(root, "tab");
         let mut point = None;
         for node in self.layout.matching_nodes(&dom, selector) {
-            if !tabs.contains(&node) {
-                continue;
-            }
+
             let Some((x, y, width, height)) = self.layout.visible_rect(&dom, node) else {
                 continue;
             };
@@ -372,7 +477,7 @@ impl WorkbenchPane {
             }
             // The floating toolbar can cover a tab's centre; use the visible
             // top strip, then let the shell verify the actual surface hit.
-            point = Some((x + width / 2.0, y + height / 8.0));
+            point = Some((x + width / 2.0, y + if tabs.contains(&node) { height / 8.0 } else { height / 2.0 }));
         }
         Ok(point)
     }
@@ -383,7 +488,7 @@ impl WorkbenchPane {
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) -> Vec<WbActivate> {
         let hit = self.layout.hit_test_scrolled(
             &mut self.dom.borrow_mut(),
-            crate::ui::CAMBIUM_SHEET,
+            &self.sheet,
             w,
             h,
             x,
@@ -439,6 +544,70 @@ mod tests {
         let b = app.graph_runtimes.focused_member().unwrap();
         app.update(Action::OpenInWorkbench);
         (app, a, b)
+    }
+
+    #[test]
+    fn native_read_toolbar_routes_controls_outside_its_document_hole() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("mere://reading".into()));
+        app.update(Action::OpenInWorkbench);
+        let member=app.graph_runtimes.focused_member().unwrap();
+        app.apply_update(crate::action::Update::ContentSpawned{node:member,facts:Some(crate::content::ContentFacts{engine:"genet.reader".into(),lane:crate::content::ContentLane::Document,structure:None,lineage:None,capabilities:Default::default()})});
+        let pane_id=app.frisket.iter_leaves().find(|(_,content,_)|matches!(content,crate::panes::PaneContent::Workbench)).unwrap().0;
+        let mut chrome=app.shell_chrome_config().clone(); chrome.native_scales.insert(0,2.0); app.set_shell_chrome_config(chrome);
+        let mut pane=WorkbenchPane::new(); pane.sync(&app,pane_id,1200.,800.);pane.scene(1200,800);
+        let selector=taproot::Selector::role("button").on_surface("workbench").containing("Larger reading text");
+        let point=pane.selector_point(&selector).unwrap().unwrap();
+        let cell=&pane.tiling().cells[0];
+        assert!(cell.toolbar_rect().contains(point.0,point.1));
+        assert!(!cell.body().contains(point.0,point.1));
+        let target=cell.active_member().map(|member|crate::reading_view::ReadTarget{pane:pane_id,member}).unwrap();
+        pane.click(point.0,point.1,1200,800);
+        let actions=pane.take_read_actions();
+        assert_eq!(actions.len(),1);
+        for action in actions { app.update(action); }
+        assert_eq!(app.reading.preferences(target).text_size,20);
+        assert_eq!(app.shell_chrome_config().appearance.ui_zoom,1.1,"native density is not a persisted zoom edit");
+    }
+
+    #[test]
+    fn all_document_tab_edges_keep_painted_hits_and_native_apertures_aligned() {
+        use crate::chrome_layout::TabEdge;
+        let (mut app, a, b) = app_with_two_tiles();
+        app.update(Action::WorkbenchStackOnto {
+            dragged: b,
+            target: a,
+        });
+        for edge in [TabEdge::Top, TabEdge::Bottom, TabEdge::Left, TabEdge::Right] {
+            let mut config = app.shell_chrome_config().clone();
+            config.layout.document_tabs = edge;
+            app.set_shell_chrome_config(config);
+            let pane = pane_over(&app, 800.0, 600.0);
+            let cell = &pane.tiling().cells[0];
+            let dom = pane.dom.borrow();
+            let node = dom.all_with_class(dom.document(), "wb-body")[0];
+            let (x, y, w, h) = pane.layout.visible_rect(&dom, node).unwrap();
+            let expected = cell.body();
+            for (actual, want) in [x, y, w, h]
+                .into_iter()
+                .zip([expected.x, expected.y, expected.w, expected.h])
+            {
+                assert!((actual - want).abs() < 0.1, "{edge:?}: {actual} != {want}");
+            }
+            drop(dom);
+            for (name, member) in [("alpha", a), ("beta", b)] {
+                let point = pane
+                    .selector_point(
+                        &taproot::Selector::class("tab")
+                            .containing(name)
+                            .on_surface("workbench"),
+                    )
+                    .unwrap()
+                    .unwrap();
+                assert!(cell.tab_rect().contains(point.0, point.1));
+                assert_eq!(pane.tab_at(point.0, point.1, 800, 600), Some(member));
+            }
+        }
     }
 
     #[test]
@@ -505,7 +674,11 @@ mod tests {
         pane.sync(&app, app.default_graph_pane(), 800.0, 600.0);
         let selector = taproot::Selector::class("tab").containing("alpha");
         let rect = [0.0, 0.0, 800.0, 600.0];
-        assert_eq!(pane.resolve(&selector, rect), None, "no painted snapshot yet");
+        assert_eq!(
+            pane.resolve(&selector, rect),
+            None,
+            "no painted snapshot yet"
+        );
         pane.scene(800, 600);
         assert!(pane.resolve(&selector, rect).is_some());
 

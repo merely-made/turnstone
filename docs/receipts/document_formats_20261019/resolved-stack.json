@@ -1,0 +1,182 @@
+{
+  "metadata_command": "rustup run 1.99.1 cargo metadata --locked --offline --format-version 1",
+  "sources": {
+    "git+https://github.com/merely-made/armillary.git?rev=6827559937f07f78a6a830dfbfcaa54210dd093c#6827559937f07f78a6a830dfbfcaa54210dd093c": [
+      "armillary"
+    ],
+    "git+https://github.com/merely-made/dramatis.git?branch=main#cf562f47f33ab0b6ad0db1c5ac3123775769979e": [
+      "chatelaine",
+      "dramatis",
+      "gaz",
+      "insigne",
+      "notochord",
+      "personae"
+    ],
+    "git+https://github.com/merely-made/eidetic.git?rev=de6b1dce75dd6725d72c79b829e4878c7903a381#de6b1dce75dd6725d72c79b829e4878c7903a381": [
+      "chartulary",
+      "eidetic",
+      "luggage",
+      "mere-proofs",
+      "muniment",
+      "servitor",
+      "stickleback"
+    ],
+    "git+https://github.com/merely-made/errand.git?rev=dce1f08546b8475e42a5a01ca1ea18794c6e9b97#dce1f08546b8475e42a5a01ca1ea18794c6e9b97": [
+      "errand",
+      "finger-protocol",
+      "gemini-protocol",
+      "gopher-protocol",
+      "guppy-protocol",
+      "misfin",
+      "nex-protocol",
+      "scroll-protocol",
+      "spartan-protocol"
+    ],
+    "git+https://github.com/merely-made/esp.git?rev=a2561b0b9766a4ad4d9924c02194bb414667b9ef#a2561b0b9766a4ad4d9924c02194bb414667b9ef": [
+      "esp"
+    ],
+    "git+https://github.com/merely-made/gemot.git?rev=6a5023a9ca478ebcc342dd9b7c9e418ccacfc6b5#6a5023a9ca478ebcc342dd9b7c9e418ccacfc6b5": [
+      "commons-spine",
+      "gemot",
+      "mien",
+      "mooting"
+    ],
+    "git+https://github.com/merely-made/genet.git?branch=main#7114f91ce928937ac0891d7db816655706843204": [
+      "browsing-context-api",
+      "buckram",
+      "cadency",
+      "document-session-api",
+      "engine-observables-api",
+      "fleece",
+      "genet-clipboard",
+      "genet-css-flow",
+      "genet-document-resources",
+      "genet-documents",
+      "genet-fontique",
+      "genet-host-api",
+      "genet-livery",
+      "genet-paint-types",
+      "genet-parley",
+      "genet-render",
+      "genet-render-host",
+      "genet-scripted-dom",
+      "genet-static-dom",
+      "genet-taffy",
+      "genet-text",
+      "genet-winit-host",
+      "ipc-channel",
+      "layout-dom-api",
+      "livery",
+      "netfetcher",
+      "regress",
+      "script-engine-api",
+      "servo-media-player",
+      "servo-media-streams",
+      "servo-media-traits",
+      "taproot"
+    ],
+    "git+https://github.com/merely-made/knot-editor.git?branch=main#2a7231ac9c1948eb350ca37ef2c6fcc0c74c48c0": [
+      "knot-capture",
+      "knot-composition",
+      "knot-document",
+      "knot-editor",
+      "knot-file-catalog"
+    ],
+    "git+https://github.com/merely-made/mere.git?branch=main#500bc78a7fa9e0b9abe8f35d189c465f93d3ccab": [
+      "backstep",
+      "cambium",
+      "cambium-genet-winit-host",
+      "cambium-rootstock",
+      "cambium-winit",
+      "cambium-winit-a11y",
+      "chirograph",
+      "command-menu",
+      "distillery",
+      "document-canvas",
+      "eidetic-search",
+      "graphshell-client",
+      "graphshell-endpoint",
+      "graphshell-host",
+      "illume",
+      "incipit",
+      "inker",
+      "knot-editor-host",
+      "mere",
+      "mere-alembic",
+      "mere-apparatus",
+      "mere-athanor",
+      "mere-cartography",
+      "mere-chrome",
+      "mere-comms",
+      "mere-curation",
+      "mere-document-lanes",
+      "mere-fetch",
+      "mere-fleece",
+      "mere-forme",
+      "mere-kernel",
+      "mere-linked-data",
+      "mere-mesh",
+      "mere-moot",
+      "mere-page-load",
+      "mere-surface-api",
+      "meristem",
+      "mesquite",
+      "mora-cmudict",
+      "nematic",
+      "numen",
+      "pandect",
+      "pelt-core",
+      "pictograph",
+      "platen",
+      "reference-data",
+      "sceno",
+      "scenograph",
+      "scenomise",
+      "scenotime",
+      "script-rhai",
+      "seiche",
+      "sprigging",
+      "tabard",
+      "tabard-workshop",
+      "tinct",
+      "uxtree",
+      "weld-engine",
+      "workbench"
+    ],
+    "git+https://github.com/merely-made/mere.git?rev=70deef2c8cf3d3410ae35b496a9396514070b24f#70deef2c8cf3d3410ae35b496a9396514070b24f": [
+      "mere-source-edit"
+    ],
+    "git+https://github.com/merely-made/murm.git?branch=main#7c2432ab16723daeb8119f21014a66f0a8121ff8": [
+      "mere-transport",
+      "mere-webrtc-carrier",
+      "murm-wire",
+      "retinue"
+    ],
+    "git+https://github.com/merely-made/netrender.git?rev=c5efc94f876e93caba20807709189c5f9589492b#c5efc94f876e93caba20807709189c5f9589492b": [
+      "netrender",
+      "netrender_device",
+      "paint_list_api",
+      "paint_list_render"
+    ],
+    "git+https://github.com/merely-made/turquet.git?rev=bc3c454f755d0bfd70ab48bd9556a1cda2213d41#bc3c454f755d0bfd70ab48bd9556a1cda2213d41": [
+      "turquet"
+    ],
+    "git+https://github.com/merely-made/wgpu-graft.git?rev=bb48281bd4a88a726a009e0518706881b74b7604#bb48281bd4a88a726a009e0518706881b74b7604": [
+      "grafting",
+      "grafting-frame"
+    ],
+    "git+https://github.com/merely-made/woodshed.git?branch=main#0a0d67d06d356fcfb79cfc8710b260d7ca593656": [
+      "audio-primitives",
+      "redshank-model",
+      "redshank-playback",
+      "redshank-storage",
+      "redshank-surfaces",
+      "timed-text"
+    ]
+  },
+  "local_packages": [
+    "turnstone",
+    "turnstone-sandbox-bootstrap-win"
+  ],
+  "intake": "Only the five Knot family source rows advanced; unrelated stack pins and the existing source-edit exception were preserved."
+}

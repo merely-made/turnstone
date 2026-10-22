@@ -1,0 +1,6 @@
+
+running 2 tests
+test producer_retention::tests::native_selection_refuses_changed_source_and_split_unicode_without_guessing ... ok
+test producer_retention::tests::a_retention_action_cannot_follow_a_replaced_or_foreign_member ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1106 filtered out; finished in 0.34s

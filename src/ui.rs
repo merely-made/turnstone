@@ -375,6 +375,7 @@ pub struct GeminiTrustPrompt {
 pub enum PlacePrompt {
     FoundPlace,
     ExportCard,
+    RefreshContact,
     OfferPrekey,
     Invite,
     /// The same question as `Invite`, answered with a reader's admission.
@@ -389,6 +390,7 @@ impl PlacePrompt {
         match self {
             Self::FoundPlace => "Enter a place name and press Enter to found it",
             Self::ExportCard => "Enter a path and press Enter to write the place card",
+            Self::RefreshContact => "Enter a current card path to refresh this place contact and reconnect",
             Self::OfferPrekey => "Enter a card path and press Enter to offer a pre-key",
             Self::Invite => "Enter a pre-key path, optionally \" for 10m\" (s|m|h|d), then Enter",
             Self::InviteReader => "Enter a pre-key path and press Enter to invite a reader",
@@ -912,20 +914,20 @@ pub(crate) const CHROME_SHEET: &str = "\
                       padding: 5px 8px; white-space: nowrap; } \
     .whereami { position: absolute; color: rgb(170, 178, 195); \
                 background-color: rgb(20, 25, 38); font-size: 12px; \
-                padding: 3px 10px; border-radius: 10px; \
-                border: 1px solid rgb(52, 62, 86); white-space: nowrap; } \
+                box-sizing: border-box; padding: 7px 12px; border-radius: 0; overflow: hidden; \
+                border: 0; white-space: nowrap; } \
     .browser-strip { position: absolute; display: flex; align-items: center; \
                       gap: 5px; box-sizing: border-box; color: rgb(216, 222, 234); \
                       background-color: rgb(20, 25, 38); border: 1px solid rgb(52, 62, 86); \
-                      border-radius: 9px; padding: 5px 7px; } \
+                      border-radius: 0; padding: 5px 12px; overflow: hidden; } \
     .browser-loading { border-bottom: 2px solid rgb(206, 84, 47); } \
-    .browser-button, .browser-button-disabled { font-size: 12px; padding: 4px 8px; \
+    .browser-button, .browser-button-disabled { flex-shrink: 0; font-size: 12px; padding: 4px 8px; \
                       border-radius: 6px; white-space: nowrap; } \
     .browser-button { color: rgb(238, 242, 250); background-color: rgb(36, 44, 62); \
                       border: 1px solid rgb(70, 82, 110); } \
     .browser-button-disabled { color: rgb(104, 112, 130); background-color: rgb(25, 30, 43); \
                       border: 1px solid rgb(45, 53, 71); } \
-    .browser-status { color: rgb(170, 178, 195); font-size: 12px; padding: 4px 7px; \
+    .browser-status { flex: 1 1 0; min-width: 0; color: rgb(170, 178, 195); font-size: 12px; padding: 4px 7px; \
                       white-space: nowrap; overflow: hidden; } \
     .document-find { position: absolute; display: flex; align-items: center; gap: 5px; \
                      box-sizing: border-box; color: rgb(216, 222, 234); \
@@ -1040,7 +1042,14 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
     let palette = presentation_palette(appearance);
     let zoom = appearance.zoom();
     let sheet = format!(
-        "{CHROME_SHEET} \
+        "{} {CHROME_SHEET} \
+        .turnstone-title-frame {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
+        .cambium-title-bar {{ height:100%; overflow:hidden; }} \
+        .turnstone-title-identity {{ display:flex; align-items:center; gap:10px; min-width:0; overflow:hidden; white-space:nowrap; }} \
+        .turnstone-title-name {{ font-weight:600; }} \
+        .turnstone-title-context {{ color:{}; font-size:{:.2}px; }} \
+        .turnstone-stone {{ display:block; position:relative; box-sizing:border-box; width:22px; height:18px; border:2px solid {}; border-radius:7px 5px 8px 4px; transform:rotate(-16deg); }} \
+        .turnstone-stone-vein {{ display:block; position:absolute; left:3px; top:6px; width:12px; height:2px; background-color:{}; }} \
         .omni {{ background-color: {}; border-color: {}; }} \
         .omni-input {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
         .omni-input .field-preedit {{ color: {}; }} \
@@ -1055,6 +1064,14 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         .document-find-input, .decision-input {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
         .decision-prompt {{ color: {}; font-size: {:.2}px; }} \
         .decision-input-active {{ border-color: {}; }}",
+        cambium::TITLE_BAR_CSS,
+        role_color(appearance, "text-header", palette.text),
+        role_color(appearance, "surface", palette.raised),
+        13.0 * zoom,
+        role_color(appearance, "text-dim", palette.muted),
+        11.0 * zoom,
+        role_color(appearance, "primary", palette.accent),
+        role_color(appearance, "text-dim", palette.muted),
         role_color(appearance, "bg", palette.surface),
         role_color(appearance, "text-dim", palette.border),
         role_color(appearance, "text-header", palette.text),
@@ -1088,7 +1105,27 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         14.0 * zoom,
         role_color(appearance, "primary", palette.accent),
     );
-    themed_sheet(appearance, sheet)
+    let controls = format!(
+        ".turnstone-stone-hidden {{ display:none; }}
+        .browser-strip {{ background-color:transparent; border:0; border-radius:0; gap:2px; padding:0; }}
+        .shell-control, .browser-status {{ color:inherit; font-size:{:.2}px; }}
+        .shell-control[aria-pressed=true] {{ background-color:{}; color:{}; }}
+        .browser-status {{ --app-region:no-drag; text-align:left; flex:1 1 0; min-width:0; border:1px solid {}; border-radius:5px; background-color:{}; color:{}; padding:4px 7px; overflow:hidden; white-space:nowrap; }}
+        .chrome-menu-dismiss {{ --app-region:no-drag; background:transparent; }}
+        .chrome-menu {{ --app-region:no-drag; display:flex; flex-direction:column; box-sizing:border-box; padding:8px; gap:0; background-color:{}; color:{}; border:1px solid {}; border-radius:6px; }}
+        .chrome-menu-entry {{ width:100%; }}
+        .chrome-menu-entry[data-menu-focus=true] {{ outline:1px solid currentColor; outline-offset:-1px; }}
+        .chrome-menu .shell-control {{ text-align:left; width:100%; height:{:.2}px; overflow:hidden; white-space:nowrap; flex-shrink:0; }}
+        .chrome-relations-menu .shell-navigation-item {{ height:auto; min-height:{:.2}px; }}
+        .chrome-menu .shell-popup {{ padding:0; border:0; background:transparent; max-height:none; }}
+        .chrome-panes-menu .shell-popup {{ flex-direction:row; flex-wrap:wrap; }}
+        .chrome-panes-menu .chrome-menu-entry {{ width:50%; flex-basis:50%; }}",
+        cambium::ShellMetrics::INTERFACE_FONT_SIZE*zoom,
+        role_color(appearance,"surface-2",palette.field),role_color(appearance,"text-header",palette.text),
+        role_color(appearance,"text-dim",palette.border),role_color(appearance,"bg",palette.surface),role_color(appearance,"text",palette.body_text),
+        role_color(appearance,"surface",palette.raised),role_color(appearance,"text",palette.body_text),role_color(appearance,"text-dim",palette.border),22.0+6.0*zoom,38.0+6.0*zoom,
+    );
+    cambium::stylesheet_at_display_scale(&themed_sheet(appearance, format!("{sheet}\n{}\n{controls}", cambium::SHELL_CSS)), appearance.display_scale)
 }
 
 /// The Settings pane's live Cambium sheet. Other pane kinds retain their
@@ -1131,7 +1168,7 @@ pub(crate) fn cambium_sheet(appearance: &crate::shell_services::AppearanceConfig
         role_color(appearance, "primary", palette.accent),
         role_color(appearance, "text-dim", palette.border),
     );
-    themed_sheet(appearance, sheet)
+    cambium::stylesheet_at_display_scale(&themed_sheet(appearance, format!("{sheet}\n{}", cambium::SHELL_CSS)), appearance.display_scale)
 }
 
 /// Where the omnibar caret roughly sits on screen, as `(position, size)` in
@@ -2030,6 +2067,50 @@ impl RetainedLayout {
         )
     }
 
+    /// Resolve a painted text point to a byte in this control's descendants.
+    /// Keep the retained shaping, transforms, and scroll offsets used by paint.
+    pub(crate) fn text_caret_at(
+        &mut self,
+        dom: &mut ScriptedDom,
+        node: DomNodeId,
+        x: f32,
+        y: f32,
+    ) -> Option<cambium::CaretPosition> {
+        if let Some((layout, owner)) = self.inline_target() {
+            let mut layout = layout.borrow_mut();
+            let (ox, oy, _, _) = layout.painted_rect(dom, owner)?;
+            return layout.text_caret_at(dom, node, x + ox, y + oy);
+        }
+        self.snapshot.as_ref()?;
+        // Selection and caret projection can replace styled text nodes between
+        // moves in one native event batch. Resolve against their current shape.
+        let sheet = self.sheet.clone();
+        self.ensure(dom, &sheet, self.size.0, self.size.1);
+        let snapshot = self.snapshot.as_ref()?;
+        let translated = accumulated_translation(dom, snapshot, node);
+        let scroll = ancestor_scroll(dom, node, &self.element_scroll);
+        let own_scroll = self.element_scroll.get(&node).copied().unwrap_or_default();
+        let (text_node, offset) = snapshot.fragments.text_position_at_point(
+            x - translated.0 + scroll.0 + own_scroll.0 + self.viewport_scroll.0,
+            y - translated.1 + scroll.1 + own_scroll.1 + self.viewport_scroll.1,
+        )?;
+        let (mut before, mut found) = (0, false);
+        walk_dom(dom, node, &mut |descendant| {
+            if found {
+                return;
+            }
+            if descendant == text_node {
+                found = true;
+            } else if let Some(text) = dom.text(descendant) {
+                before += text.len();
+            }
+        });
+        found.then_some(cambium::CaretPosition {
+            byte: before + offset,
+            affinity: cambium::CaretAffinity::Downstream,
+        })
+    }
+
     /// Request the nearest viewport movement; the next paint clamps it and
     /// supplies a new visible rectangle. Ancestor clips remain authoritative:
     /// moving the viewport cannot make a hidden nested target clickable.
@@ -2611,6 +2692,8 @@ pub struct RetainedSubtreeLayout {
     sheet: String,
     dirty: bool,
     rebuilds: u32,
+    /// DOM revision represented by the painted fragments, even after a drain.
+    mutation_cursor: u64,
 }
 
 impl Default for RetainedSubtreeLayout {
@@ -2620,6 +2703,27 @@ impl Default for RetainedSubtreeLayout {
 }
 
 impl RetainedSubtreeLayout {
+    pub(crate) fn selector_point(&self,dom:&ScriptedDom,root:DomNodeId,selector:&taproot::Selector)->Option<(f32,f32)> {
+        let (base, pending) = dom.pending_mutations();
+        if self.dirty || self.mutation_cursor != base + pending.len() as u64 { return None; }
+        let snapshot=self.snapshot.as_ref()?;
+        let scoped=cambium_rootstock::WindowDom::new(dom,root);
+        let nodes=if matches!(selector.matcher,taproot::Match::Class(_)) {
+            taproot::matching_classes(dom,selector)
+        } else {
+            let projection=genet_render::document_a11y_projection(&scoped,&snapshot.fragments,None,0);
+            taproot::matching_prefer_exact_with_projection(dom,selector,&projection)
+        };
+        let view=SubtreeView::new(dom,root);
+        let mut point=None;
+        for node in nodes.into_iter().filter(|node| scoped.contains(*node)) {
+            let Some((x,y,w,h))=snapshot_visible_rect(&view,snapshot,node,&HashMap::new(),(0.0,0.0),self.size) else {continue};
+            if w<=0.0 || h<=0.0 {continue;}
+            if point.is_some() {return None;}
+            point=Some((x+w/2.0,y+h/2.0));
+        }
+        point
+    }
     pub fn new() -> Self {
         Self {
             snapshot: None,
@@ -2627,6 +2731,7 @@ impl RetainedSubtreeLayout {
             sheet: String::new(),
             dirty: true,
             rebuilds: 0,
+            mutation_cursor: 0,
         }
     }
 
@@ -2646,9 +2751,12 @@ impl RetainedSubtreeLayout {
     }
 
     fn ensure(&mut self, dom: &ScriptedDom, root: DomNodeId, sheet: &str, w: u32, h: u32) {
+        let (base, pending) = dom.pending_mutations();
+        let revision = base + pending.len() as u64;
         let resized = self.size != (w, h);
         let resheeted = self.sheet != sheet;
-        if self.snapshot.is_some() && !self.dirty && !resized && !resheeted {
+        if self.snapshot.is_some() && !self.dirty && !resized && !resheeted
+            && self.mutation_cursor == revision {
             return;
         }
         self.rebuilds = self.rebuilds.saturating_add(1);
@@ -2670,6 +2778,7 @@ impl RetainedSubtreeLayout {
         self.size = (w, h);
         self.sheet = sheet.to_string();
         self.dirty = false;
+        self.mutation_cursor = revision;
     }
 
     /// This root's scene, cascading only when something actually changed.
@@ -2721,6 +2830,28 @@ impl RetainedSubtreeLayout {
             (w, h),
         )
     }
+    pub(crate) fn app_region_at(
+        &mut self,
+        dom: &ScriptedDom,
+        root: DomNodeId,
+        sheet: &str,
+        w: u32,
+        h: u32,
+        x: f32,
+        y: f32,
+    ) -> cambium_rootstock::AppRegion {
+        let Some(node) = self.hit_test(dom, root, sheet, w, h, x, y) else {
+            return Default::default();
+        };
+        let Some(snapshot) = self.snapshot.as_ref() else {
+            return Default::default();
+        };
+        let value = snapshot.styles.computed_style(node, "app-region").or_else(|| {
+            snapshot.styles.custom_properties(node)?.get("--app-region").cloned()
+        });
+        value.as_deref().map(cambium_rootstock::AppRegion::parse).unwrap_or_default()
+    }
+
 }
 
 pub(crate) fn subtree_node_rect(
@@ -2830,9 +2961,11 @@ pub const CAMBIUM_SHEET: &str = "\
     .grid-cell { color: rgb(200, 208, 224); padding: 5px 10px; \
                  white-space: nowrap; overflow: hidden; } \
     .grid-row-selected .grid-cell { color: rgb(28, 22, 10); } \
-    .pane { background-color: rgb(22, 27, 40); } \n    .tablist { display: flex; height: 30px; background-color: rgb(18, 22, 33); } \
-    .tab { color: rgb(150, 160, 180); font-size: 12px; padding: 8px 14px; \
+    .pane { background-color: rgb(22, 27, 40); } \n    .tablist { display: flex; height: 26px; background-color: rgb(18, 22, 33); } \
+    .tab { color: rgb(150, 160, 180); font-size: 12px; padding: 4px 9px; \
            white-space: nowrap; } \
+    .wb-tabs-vertical .tablist { flex-direction: column; width: 100%; height: 100%; } \
+    .wb-tabs-vertical .tab { flex-shrink: 0; overflow: hidden; width: 100%; min-width: 0; box-sizing: border-box; } \
     .tab.selected { color: rgb(232, 150, 40); \
                     background-color: rgb(22, 27, 40); } \
     .pane-empty { color: rgb(120, 130, 150); font-size: 12px; padding: 12px; } \
@@ -2870,7 +3003,7 @@ pub const SEAM_CLEAR: wgpu::Color = wgpu::Color {
 /// host must also state its height: the Roster subtracts it from the grid's
 /// viewport and adds it to a row's y. `tablist_height_matches_the_sheet` holds
 /// this to what the sheet actually lays out.
-pub const TABLIST_HEIGHT: f32 = 30.0;
+pub const TABLIST_HEIGHT: f32 = cambium::ShellMetrics::DOCUMENT_ROW_HEIGHT;
 
 fn qual(local: &str) -> QualName {
     QualName::new(None, Namespace::from(""), LocalName::from(local))
@@ -3542,4 +3675,10 @@ mod contributed_projection_tests {
             "a superseded DOM label cannot retarget the click"
         );
     }
+}
+
+/// Baseline pane sheet for retained standalone probes as well as live shared controls.
+pub(crate) fn cambium_shell_sheet() -> &'static str {
+    static SHEET: std::sync::LazyLock<String> = std::sync::LazyLock::new(|| format!("{CAMBIUM_SHEET}\n{}", cambium::SHELL_CSS));
+    &SHEET
 }

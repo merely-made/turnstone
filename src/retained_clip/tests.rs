@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-use inker::{SessionEngine, Block};
+use inker::{Block, SessionEngine};
 use serde_json::json;
 
 fn policy() -> ClipLimits {

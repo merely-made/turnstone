@@ -1,0 +1,25 @@
+{
+  "review": "All fourteen actual final-run captures inspected after the native processes exited.",
+  "captures": {
+    "native/create/01_new_note.png": "Product-created .djot note, live editor and saved status.",
+    "native/create/02_authored_note.png": "Authored A1 commentary is visible in editor and preview; saved status.",
+    "native/create/02b_format_choice.png": "Inspector presents Use this Djot document as research note and Passage wording.",
+    "native/create/03_other_note.png": "Independent second note shows its own saved commentary; existing white graph region remains.",
+    "native/create/03b_publication_authority_unavailable.png": "Private document publishing heading and fully wrapped missing-owner-authority refusal are visible; existing route/ticket clipping remains.",
+    "native/seed/06_saved_passage.png": "Original Source A saved version and café passage are visible with a deliberate clip target.",
+    "native/seed/07_clip_saved.png": "Inspector acknowledges Passage: clip saved for the chosen note.",
+    "native/seed/08_note_and_citation.png": "Chosen note retains commentary and offers Read saved passage 1: Source A; raw provenance/outline overflow matches the prior receipt.",
+    "native/seed/09_follow_exact_citation.png": "Citation opens original Source A café text after origin shutdown.",
+    "native/seed/11_old_A1_after_A2.png": "After replacement capture, citation still displays original saved version 4df4e93bfb46 and café.",
+    "native/reopen/12_cold_authored_note.png": "Cold app retains commentary and citation control; pre-existing raw provenance display remains.",
+    "native/reopen/13_cold_exact_A1.png": "Offline cold citation displays original capture timestamp, version and café passage.",
+    "native/reopen/14_cold_A2_is_distinct.png": "Newer saved version 482586643054 and violet passage are distinct.",
+    "native/reopen/15_cold_old_A1_after_A2.png": "Returning again to citation displays original version 4df4e93bfb46 and café, not replacement."
+  },
+  "residuals": [
+    "Raw citation provenance and narrow preview/outline overflow were also visible in the immutable October 18 08_note_and_citation capture.",
+    "White graph region in the second-note view also appears in the prior receipt.",
+    "Some existing route, ticket and Inspector lines remain clipped at narrow pane widths; the changed publication refusal wraps."
+  ],
+  "scope": "Format wording and existing local note/citation behavior; no overall visual-polish or sharing claim."
+}

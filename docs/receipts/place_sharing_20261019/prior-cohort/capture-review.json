@@ -1,0 +1,81 @@
+{
+  "review": "All fifteen original captures inspected individually after native processes exited.",
+  "result": "pass within the declared address/title and chat scope",
+  "captures": [
+    {
+      "path": "accepted/founder/01_founder_listening.png",
+      "sha256": "9c89f64a0f46ba692ea151fdfa18e2e77458578bf0c515cbb5e452ab859cad6f",
+      "observation": "Empty place; zero shared nodes/messages, effective local permissions, listen-only with no peer dialed. Status avoids a delivery/reachability claim."
+    },
+    {
+      "path": "accepted/founder/invitation_attempt.png",
+      "sha256": "e9f3ace621c4a493a62e9bcd3b4a9fcac8878ccfa0072b5ea163185f71e68134",
+      "observation": "Invitation prompt has closed over the empty graph. This capture alone is not an admission acknowledgement; the later artifact, member records and peer convergence supply it."
+    },
+    {
+      "path": "accepted/founder/02_founder_selected_address.png",
+      "sha256": "40c4df71a6d807f539d2ca3d3db5eb888370d4b86484a9bd4d6ece449bc70158",
+      "observation": "Chosen shared HTTP address/title and rendered fictional page are visible in the Workbench."
+    },
+    {
+      "path": "accepted/founder/05_founder_final.png",
+      "sha256": "1a1638b3f9bb80c8619d6f52e380f35b118d22f2db0d322799dfcd2ca58087e1",
+      "observation": "Founder shows one shared node and five messages with local write permissions; fictional page remains visible before origin shutdown."
+    },
+    {
+      "path": "accepted/joiner/06_joiner_shared_address.png",
+      "sha256": "1727fd61da86fc646f81692c190dbdfbc3605a8c55777e1e6d4741254ae8594f",
+      "observation": "Writer sees the same selected HTTP address, title and rendered fictional page; graph does not gain a duplicate on opening it."
+    },
+    {
+      "path": "accepted/joiner/07_joiner_before_stop.png",
+      "sha256": "152a14f979de8bc4ec8d853ade6ea4acbc0122a301651e0c2bb719bacc882539",
+      "observation": "Writer shows one shared node and two messages with live local lanes before normal exit."
+    },
+    {
+      "path": "accepted/joiner-return/08_joiner_cold_retained.png",
+      "sha256": "64a410579be1675df97d1704ed60c93045b63f47f562b79006e7bbf08e242cd6",
+      "observation": "Fresh writer process shows one shared node and two retained messages, explicitly no local lanes, and current contact-refresh guidance."
+    },
+    {
+      "path": "accepted/joiner-return/10_joiner_final.png",
+      "sha256": "d9d81c791e2d99bed72b52321fdab8c5b14abb2f52a4e7bac6d88ae2c8050c51",
+      "observation": "Returned writer has one shared node and five messages after live catch-up; local rendezvous is elided in status."
+    },
+    {
+      "path": "accepted/reader/11_reader_refused.png",
+      "sha256": "675afaaf2561d2ec7d5967d8481aef685a5a30157c7b53d44081a6c916147d64",
+      "observation": "Reader focuses its private sentinel; shared history remains one node/four messages and both write permissions are visibly not effective. The exact refused action is proven by event assertion and log."
+    },
+    {
+      "path": "accepted/reader/12_reader_final.png",
+      "sha256": "b6eb6f9d919966ace5112a178cd8cdf03fd7f08ff79103222513d6fabbd6afb4",
+      "observation": "Reader advances to five messages while both write permissions remain ineffective and shared-node count remains one."
+    },
+    {
+      "path": "accepted/cold-founder/13_founder_cold_retained.png",
+      "sha256": "aeb2d1e84ac95592c31511ebea3c68a4a732c55785b6d20107f53c54cbf89295",
+      "observation": "After origin and resident shutdown, founder shows the retained shared title and one node/five messages with no lanes. HTTP body is absent; this is not offline body-replay evidence."
+    },
+    {
+      "path": "accepted/cold-founder/14_founder_cold_converged.png",
+      "sha256": "b0a98e280678a5485c5d9bd56955833fe0336c271ac74bd3ae9a07eaade01989",
+      "observation": "Restarted founder shows one shared node and seven messages after deliberate current-contact renewal and new exchange."
+    },
+    {
+      "path": "accepted/cold-joiner/15_joiner_cold_retained.png",
+      "sha256": "c936db958d3921622022da0877538b8b54149cb3c4f611a3bfe16d532b4818a8",
+      "observation": "Restarted writer shows the shared title and retained one node/five messages before opening lanes, with origin gone."
+    },
+    {
+      "path": "accepted/cold-joiner/15a_foreign_contact_refused.png",
+      "sha256": "c936db958d3921622022da0877538b8b54149cb3c4f611a3bfe16d532b4818a8",
+      "observation": "Wrong-place contact attempt leaves the same retained five-message/no-lanes view. The refusal reason is in the log/event receipt rather than a painted banner."
+    },
+    {
+      "path": "accepted/cold-joiner/16_joiner_cold_converged.png",
+      "sha256": "35f2d3fbfe179300bbfc90ceb7634beb976dc55eb03c3fe0365930211ba40578",
+      "observation": "Writer shows one shared node/seven messages and a fresh local rendezvous after current-card refresh; the unavailable HTTP body is not claimed as retained content."
+    }
+  ]
+}

@@ -68,9 +68,9 @@ fn project_app_capturing(
 ) -> UxTree {
     let chrome = project_chrome(app);
     // Live documents, in graph order (deterministic), each from its mirrored
-    // structural outline. They stitch under the CANVAS leaf: content insets
-    // and workbench tiles alike render over graph truth, and a document
-    // without a structural read is announced without children (honest).
+    // structural outline. The visible canvas carries them when present;
+    // a full-width Workbench carries them while Orrery is an inactive tab.
+    // A document without a structural read is announced without children.
     let docs: Vec<UxTree> = app
         .graph_runtimes
         .graph()
@@ -79,10 +79,20 @@ fn project_app_capturing(
         .map(|(_, n)| project_live_document(app, n.id, n.url()))
         .collect();
     let mut docs = Some(docs);
+    let visible_canvas = app.frisket.outer_workspace().ok().is_some_and(|frame| {
+        frame.active_ids().iter().any(|id| matches!(app.pane_content(crate::panes::PaneId(id.0)),
+            Some(PaneContent::Orrery)))
+    });
     let panes = crate::panes::project_frisket_with(&app.frisket, |content, id| match content {
-        PaneContent::Workbench => app
-            .workbench_for_pane(id)
-            .map(mere::platen::project_tile_layout),
+        PaneContent::Workbench => app.workbench_for_pane(id).map(|workbench| {
+            let layout = mere::platen::project_tile_layout(workbench);
+            if visible_canvas { return layout; }
+            let mut children = vec![layout];
+            children.extend(docs.take().unwrap_or_default());
+            let mut root = Node::new(Role::Group);
+            root.set_label("Workbench documents");
+            stitch(&format!("turnstone/workbench/{}/documents", id.0), root, children)
+        }),
         PaneContent::Orrery => {
             if orrery_pane.is_none() {
                 *orrery_pane = Some(id);
@@ -283,6 +293,13 @@ fn omnibar_rows(app: &App) -> Vec<(String, Node, Option<A11yRoute>)> {
 fn project_chrome(app: &App) -> UxTree {
     let mut nodes = Vec::new();
     let mut children = Vec::new();
+    for (path,label,_) in toolbar_actions(app) {
+        let id=node_id_for_path(&path);
+        let mut node=Node::new(Role::Button);
+        node.set_label(label);
+        node.add_action(accesskit::Action::Click);
+        nodes.push((id,node)); children.push(id);
+    }
     if app.omnibar.open {
         let id = node_id_for_path("turnstone/chrome/omnibar");
         let mut n = Node::new(if app.omnibar.sensitive() {
@@ -425,7 +442,7 @@ fn project_chrome(app: &App) -> UxTree {
         children.push(id);
     }
     if app.shell_chrome_config().projects_shellbar()
-        && let Some(caption) = crate::app::focused_caption(&app.graph_runtimes)
+        && let Some(caption) = crate::app::navigation_caption(app)
     {
         let id = node_id_for_path("turnstone/chrome/caption");
         let mut n = Node::new(Role::Label);
@@ -442,6 +459,25 @@ fn project_chrome(app: &App) -> UxTree {
         root: root_id,
         nodes,
     }
+}
+
+/// The same semantic view and tool verbs remain available to assistive input
+/// without depending on whether the responsive toolbar currently has room.
+fn toolbar_actions(app: &App) -> Vec<(String,String,crate::action::Action)> {
+    use crate::action::Action;
+    if !app.shell_chrome_config().projects_shellbar() { return Vec::new(); }
+    let mut actions=vec![
+        ("turnstone/chrome/read".into(),"Read document".into(),Action::SetWorkspaceMap(false)),
+        ("turnstone/chrome/map".into(),"Reveal document in map".into(),Action::SetWorkspaceMap(true)),
+    ];
+    for (_,kind) in crate::panes::pane_palette_entries() {
+        if matches!(kind.as_str(),crate::panes::kind::GRAPH | crate::panes::kind::WORKBENCH) { continue; }
+        if let Some(definition)=crate::panes::pane_definition(kind.as_str()) {
+            actions.push((format!("turnstone/chrome/panes/{}",definition.id),
+                format!("Toggle {} pane",definition.display_name),Action::ToggleToolPane(kind)));
+        }
+    }
+    actions
 }
 
 /// One live document's subtree, from the mirrored structural outline. The
@@ -559,6 +595,9 @@ pub(crate) fn project_app_with_routes_and_contributions(
     });
 
     let mut routes = A11yRoutes::new();
+    for (path,_,action) in toolbar_actions(app) {
+        routes.insert(node_id_for_path(&path),A11yRoute::Action(action));
+    }
     routes.insert(
         node_id_for_path("turnstone/chrome/omnibar"),
         A11yRoute::OpenOmnibar,
@@ -933,7 +972,7 @@ mod tests {
         assert!(has("document: Example Domain"), "{lines:?}");
         assert!(has("heading: Example Domain"));
         assert!(has("link: More information..."));
-        assert!(has("graph canvas, 1 nodes"));
+        assert!(!has("graph canvas, 1 nodes"), "inactive Orrery is not a visible canvas");
         let doc = project_app(&app)
             .nodes
             .into_iter()

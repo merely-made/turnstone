@@ -1,0 +1,20 @@
+
+running 16 tests
+test retained_clip::custody_tests::custody_process_roundtrip_fixture ... ignored
+test retained_clip::custody_tests::unavailable_custody_and_stale_backing_refuse_before_creating_storage ... ok
+test retained_clip::tests::internal_play_controls_are_host_only_and_refuse_paths_or_foreign_shapes ... ok
+test retained_clip::tests::custody_and_session_refusals_cannot_create_clip_storage ... ok
+test retained_clip::tests::missing_unsupported_or_oversized_material_creates_no_receiver_store ... ok
+test retained_clip::tests::export_freezes_the_workbench_clip_and_requires_host_custody ... ok
+test retained_clip::tests::clip_opens_target_the_new_reference_while_workbench_has_another_member ... ok
+test shell::effects::local_micron_source_tests::retained_clip_spawn_uses_held_document_through_standard_pelt_controller ... ok
+test retained_clip::custody_tests::native_redshank_export_keeps_body_and_timed_target_distinct ... ok
+test retained_clip::tests::voice_bytes_are_local_and_recording_stays_unavailable ... ok
+test retained_clip::tests::native_export_renders_through_real_session_after_receiver_reopen ... ok
+test retained_clip::tests::onward_export_omits_private_backing_and_unselected_material ... ok
+test retained_clip::custody_tests::legacy_unsealed_content_requires_migration_for_private_reads_and_exports ... ok
+test retained_clip::tests::onward_copy_keeps_selected_identity_source_facts_and_distinct_tag_owners ... ok
+test retained_clip::custody_tests::native_knot_custody_reopens_and_onward_copy_excludes_private_backing ... ok
+test retained_clip::tests::export_refuses_missing_over_budget_and_existing_targets_without_replacement ... ok
+
+test result: ok. 15 passed; 0 failed; 1 ignored; 0 measured; 1090 filtered out; finished in 4.80s

@@ -1,5 +1,27 @@
 # Redshank episode surface: Turnstone as the port's second host
 
+## Embedded text-note retention, 2026-10-20
+
+The [receiver continuation](2026-10-11_retained_clip_receiver_plan.md) now
+qualifies embedded Redshank selected text-note retention through four shipping
+macOS phases and eight reviewed captures. The private control has no retention
+offer. The selected shareable note survives removal of the original session,
+owner model, recording and transfer package, custodian/app restart, onward
+receive in an independent profile, removal of that transfer and a second cold
+export. Text, source facts and native timing remain equal to the selected
+original; acquisition attempts remain zero. The
+[text-note receipt](../docs/receipts/2026-10-20_redshank_text_retention/README.md)
+records the exact source/binary, privacy scan and 36 focused passing cases.
+
+`SetNotePrivacy` now reaches the owner model, rejects another episode's note,
+and returns the normal changed outcome for persistence. Its focused regression
+checks saved shareability and export revocation. Existing notes are supplied by
+an explicit marked typed owner-model fixture. The compact player/capture embed
+does not expose the full owner's note/privacy menu, so this is a retention
+receipt, not headed note authoring or menu qualification. The broader embedded
+audio, microphone, physical and short-tile warning gates below remain separate.
+Supplier pins are unchanged.
+
 ## Retained voice bodies, 2026-10-11
 
 The [retained clip receiver](2026-10-11_retained_clip_receiver_plan.md) uses the

@@ -1,0 +1,31 @@
+{
+  "result": "pass",
+  "reviewed_captures": 24,
+  "notes": "Reviewed four fresh embedded Knot producer captures and twenty native receiving/cold captures. Exact selected bodies, explicit Answers choices, verbatim answers/citations, local reader activation and recording-unavailable note visible.",
+  "captures": {
+    "native/knot/cold/05_source_and_package_absent.png": "9c75808490baf1cb179c6b37e3068e7cd7fe951acf974da600bf2febdeed6238",
+    "native/knot/cold/06_historical_answer.png": "cb76507042fb7c61a85ee909b3e2681c1436c9e05abd11705583d84efbe06a3c",
+    "native/knot/cold/07_historical_citation.png": "e684a1ef48c3aa75c635bae77d3a2914acebee5bc2240f7e3a1c52bc85a0d923",
+    "native/knot/cold/08_new_cold_embedding_answer.png": "4a8df38d4a0b647f366fe34872039b71fbd6768f59b1c7255156e7f61aab327e",
+    "native/knot/cold/09_new_cold_citation.png": "e684a1ef48c3aa75c635bae77d3a2914acebee5bc2240f7e3a1c52bc85a0d923",
+    "native/knot/warm/01_retained_body.png": "4c2604bf1d0d7360a198197eff0944816a80b7bc83bf35c14db9faf48ef11cc1",
+    "native/knot/warm/02_explicit_scope.png": "9b07330798f94d7eba4498a3405ddab0a1be35604bf3397f49d5db1120c471ed",
+    "native/knot/warm/02b_ask_submitted.png": "31248c642f2b7480851278ee0c39ddb2177713a7b541aab0dc2d3c53b299534e",
+    "native/knot/warm/03_embedding_answer.png": "8322ccb44f175134a329f9aefcb8c4d6aa1a785b39c3bc07389a25bde1831b6b",
+    "native/knot/warm/04_exact_clip_citation.png": "e684a1ef48c3aa75c635bae77d3a2914acebee5bc2240f7e3a1c52bc85a0d923",
+    "native/redshank/cold/05_source_and_package_absent.png": "f93c9bccecbd716d70f833eb095dddf2f60da3ff60c89a23ccacbf832b4f7233",
+    "native/redshank/cold/06_historical_answer.png": "919796c05104875b7a88b913310a630cf26c999451faa2c68620f68bf6b08cfa",
+    "native/redshank/cold/07_historical_citation.png": "21346c60e6bbeaf5a5193b6678d2c79835b57b4a5a24c12bae95b908f6cb97eb",
+    "native/redshank/cold/08_new_cold_embedding_answer.png": "74e9dd63645a81941b378df098b00456165b3c587dad74e83445eb5ff1b61bf8",
+    "native/redshank/cold/09_new_cold_citation.png": "21346c60e6bbeaf5a5193b6678d2c79835b57b4a5a24c12bae95b908f6cb97eb",
+    "native/redshank/warm/01_retained_body.png": "0fca68d4579cc1ba0197fdb89701f14480cea15401896b55d948bafdea5c0ae7",
+    "native/redshank/warm/02_explicit_scope.png": "7cec5607a0cb2a2b209910f681bdb56227c914f47cc19518c8e08e6528519c7a",
+    "native/redshank/warm/02b_ask_submitted.png": "52c9e18c19d0159fe00878555a057c884560383ac472aa0adfae5b7f6c788f27",
+    "native/redshank/warm/03_embedding_answer.png": "87cb8079148dea9fadb0bcee9f1ab2cc4b736b08ce0f54bfb89460d4972eac0f",
+    "native/redshank/warm/04_exact_clip_citation.png": "c26d781e5f97ba2fd9a6948819b295e6b971d0d50f64333f5c5556eb6fb4dc44",
+    "producer-knot/01_knot_source.png": "45f333ab07026ed9c0e164754b45119955fcb0794519f10a41e3c2c1a0f3260e",
+    "producer-knot/02_knot_selection.png": "7525dfcbfe1cdfcadbbaf2dc3c769d5acfe7d3f25adb2eb04c8c494db27d95c8",
+    "producer-knot/03_retained_selection.png": "3ea16a66f30de72de920c98191851f3b81f8760631afeba07234e4131391308f",
+    "producer-knot/04_selected_export.png": "b4cdf1b1e77911d44c8a1ed71755e181273a7e65edc515f363cd72a8602bad7c"
+  }
+}

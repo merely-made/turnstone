@@ -1,0 +1,128 @@
+{
+  "version": 2,
+  "layout": {
+    "id": "content",
+    "label": "content",
+    "root": {
+      "Workspace": {
+        "workspace": {
+          "tiled": {
+            "Split": {
+              "axis": "Row",
+              "children": [
+                {
+                  "fraction": 0.5,
+                  "tree": {
+                    "Stack": {
+                      "tabs": [
+                        {
+                          "id": 0,
+                          "title": "Orrery",
+                          "content": {
+                            "Open": {
+                              "kind": "turnstone.pane",
+                              "id": "0"
+                            }
+                          },
+                          "accent": null
+                        },
+                        {
+                          "id": 1,
+                          "title": "workbench",
+                          "content": {
+                            "Open": {
+                              "kind": "turnstone.pane",
+                              "id": "1"
+                            }
+                          },
+                          "accent": null
+                        }
+                      ],
+                      "active": 1
+                    }
+                  }
+                },
+                {
+                  "fraction": 0.5,
+                  "tree": {
+                    "Stack": {
+                      "tabs": [
+                        {
+                          "id": 2,
+                          "title": "turnstone.answers",
+                          "content": {
+                            "Open": {
+                              "kind": "turnstone.pane",
+                              "id": "2"
+                            }
+                          },
+                          "accent": null
+                        }
+                      ],
+                      "active": 0
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "floating": []
+        },
+        "panes": {
+          "0": [
+            "Orrery",
+            "25bb61a8-693a-4d04-bd0c-22eabe7193e3"
+          ],
+          "1": [
+            "Workbench",
+            "25bb61a8-693a-4d04-bd0c-22eabe7193e3"
+          ],
+          "2": [
+            {
+              "Registered": "turnstone.answers"
+            },
+            "00000000-0000-0000-0000-000000000000"
+          ]
+        },
+        "descriptors": {
+          "2": {
+            "config": {
+              "payload": null,
+              "schema": "turnstone.answers.config",
+              "version": 1
+            },
+            "context": "Own",
+            "id": 2,
+            "kind": "turnstone.answers",
+            "source": {
+              "Fixed": {
+                "External": {
+                  "payload": {
+                    "payload": {
+                      "chosen": [
+                        {
+                          "clip": {
+                            "graph": "25bb61a8-693a-4d04-bd0c-22eabe7193e3",
+                            "manifest": "blake3:48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+                            "node": "1f8c5db5-a142-4ab7-a6e4-bb98fcadbeb3",
+                            "session": "0bfd3f86-2430-4da7-b6b9-d1aebeca11d1"
+                          },
+                          "selector": null,
+                          "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275"
+                        }
+                      ],
+                      "session": "0bfd3f86-2430-4da7-b6b9-d1aebeca11d1",
+                      "view": "ebadf3d3-401d-4bc1-9e00-1a077d33c8e0"
+                    },
+                    "version": 2
+                  },
+                  "schema": "turnstone.answers.v1"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

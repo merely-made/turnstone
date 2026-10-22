@@ -1,0 +1,6 @@
+RESULT ok
+captured 06_joiner_shared_address
+captured 07_joiner_before_stop
+presentation frames=360 captures=2 blank=0
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-09/joiner/06_joiner_shared_address.png digest=73bb8569b2d43634 blank=false
+capture /Users/markik/Code/output/turnstone-place-sharing-20261019-native-09/joiner/07_joiner_before_stop.png digest=29ff82eb480703f5 blank=false

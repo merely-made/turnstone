@@ -16,6 +16,12 @@ content.
 
 Be disclaimed: I use AI to develop this entire stack, as a tool, carefully, and with review.
 
+Read projections use the shared Cambium toolbar for text size, column width,
+and Find. Text and measure choices persist per pane and reading access;
+search text, match position and display density are temporary. Native chrome
+resolves logical sizes for each window's display, independently of the reading
+surface and the saved UI zoom.
+
 ## Build and run
 
 Windows native builds need the MSVC C++ build tools, Windows SDK, CMake and

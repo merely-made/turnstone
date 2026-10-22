@@ -1,0 +1,50 @@
+{
+  "contract": {
+    "grant": {
+      "expired_at_ms": null,
+      "expires_at_ms": null
+    },
+    "membership": {
+      "access": "write",
+      "members": 3
+    },
+    "now_ms": 1792465922875,
+    "reading": "continues",
+    "reason": null,
+    "revocation": null,
+    "verdict": "joined",
+    "version": 1
+  },
+  "knot_documents": [],
+  "place": {
+    "chat": "d61377f9f59a647ec3b8a11d8635cee5315c08fcab2a9c70cca3170c203b03b3",
+    "chat_digest": "681f36e554d25270ac4b1dbc89ede7d1a099d1bfc9839eee8bea63fc3fc3907f",
+    "chat_messages": 5,
+    "default_channel": "general",
+    "evicted_records": 0,
+    "graph_digest": "af7ad7cebf772df42835271a6eb0cd53ad60eb38a7718d205934e53f8625932e",
+    "graph_nodes": 1,
+    "group_frames_pending": 0,
+    "group_frames_refused": 0,
+    "lanes": [],
+    "local_rendezvous": [],
+    "members": 3,
+    "moot": "0681833da1cf94c47e2507996b4d6dbe015967cf2fc165eb03ec036bff01fa4e",
+    "parked_records": 0,
+    "personae_root": "662ede25d5463a4e6436b0f3ae523f784450b033f1e5f7ab49df694b3b085ce2",
+    "readmitted_records": 0,
+    "root": "14107f588be708fdfaa90e6892b1f3311fecb72cba26ccb3751d8ebe9c306680"
+  },
+  "status": [
+    "Last refresh: retained data only; no local sync lanes opened",
+    "Retained history: 1 shared nodes, 5 messages",
+    "Group key frames: 0 pending; 0 refused",
+    "Awaiting keys: 0 parked; 0 re-admitted; 0 evicted",
+    "Message permission: effective locally at last refresh",
+    "Shared graph permission: effective locally at last refresh",
+    "Writing: permissions are checked again for each action",
+    "Delivery: these sync observations do not confirm message delivery",
+    "Reconnect: use Refresh place contact if saved hints are stale",
+    "Leave: detach this session and retain its history"
+  ]
+}

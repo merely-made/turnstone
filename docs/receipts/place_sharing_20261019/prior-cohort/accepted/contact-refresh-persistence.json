@@ -1,0 +1,10 @@
+{
+  "result": "pass",
+  "retained_binding_unchanged": true,
+  "persisted_current_contact": true,
+  "different_from_initial_contact": true,
+  "no_admission_or_authority_fields": true,
+  "descriptor_sha256": "8de9240c9cc2749a8c3544c45d140bbfde24f647102038049ec7e1fe40331183",
+  "current_card_sha256": "7904c2913ca6e6ca87fb4060f66fd4c954b31da00243288c7ba25152a43a7cea",
+  "not_after_ms": 1792465385211
+}

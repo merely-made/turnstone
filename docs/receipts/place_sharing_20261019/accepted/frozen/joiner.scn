@@ -1,0 +1,39 @@
+resize 540 380
+settle 8
+key escape
+act New session
+settle 3
+wait-file 1200 ${EXCHANGE}/writer.place-card.json
+act Offer place pre-key
+settle 3
+type ${EXCHANGE}/writer.place-card.json
+key enter
+wait-file 1200 ${EXCHANGE}/writer.place-card.json.prekey.json.invite.json
+act Join place
+settle 3
+type ${EXCHANGE}/writer.place-card.json.prekey.json.invite.json
+key enter
+wait-status 1200 Local rendezvous
+wait-status 1200 Retained history: 0 shared nodes, 1 messages
+act Send place message
+settle 3
+type hello from joiner
+key enter
+wait-status 1200 Retained history: 1 shared nodes, 2 messages
+assert nodes == 1
+open ${ORIGIN}/shared.html
+settle 8
+assert nodes == 1
+act Toggle live content
+settle 15
+assert content-live
+act Open node in Workbench
+settle 8
+assert surface content
+capture 06_joiner_shared_address
+act Save session
+settle 8
+act Place status
+settle 5
+record-place 07_joiner_before_stop
+capture 07_joiner_before_stop

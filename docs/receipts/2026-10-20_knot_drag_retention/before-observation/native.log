@@ -1,0 +1,13 @@
+2026-10-20T04:32:31.099870Z  INFO turnstone::launch: turnstone starting
+2026-10-20T04:32:31.242281Z  INFO turnstone::identity: profile identity (djinn) protection=Ephemeral (held by djinn)
+2026-10-20T04:32:31.639490Z  INFO turnstone::app::session_lifecycle: no session graph; starting on the sample graph
+2026-10-20T04:32:33.822406Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-20T04:32:44.735692Z  INFO turnstone::shell::effects: content session live node=ebc461d1-3d38-4a8a-a041-3a0c0e33395f url=file:///Users/markik/Code/output/eidetic-knot-drag-20261020/runtime/before-observation/notes/selected.djot engine=knot.authoring
+2026-10-20T04:32:44.736064Z DEBUG turnstone::knot_pointer: cancel pointer had_drag=false capture=None
+2026-10-20T04:32:48.425155Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=2 chrome=true nodes=13
+2026-10-20T04:32:48.730114Z DEBUG turnstone::knot_pointer: cancel pointer had_drag=false capture=None
+2026-10-20T04:32:48.732065Z DEBUG turnstone::knot_pointer: pointer down x=23.0 y=85.0 node=NodeId(9895604650002) drag=Some(NodeId(9895604650002)) selection=CaretSelection { anchor: CaretPosition { byte: 16, affinity: Downstream }, focus: CaretPosition { byte: 16, affinity: Downstream } }
+2026-10-20T04:32:48.756556Z DEBUG turnstone::knot_pointer: pointer move x=53.0 y=85.0 changed=true drag=Some(NodeId(9895604650002)) selection=CaretSelection { anchor: CaretPosition { byte: 16, affinity: Downstream }, focus: CaretPosition { byte: 21, affinity: Downstream } }
+2026-10-20T04:32:48.779929Z DEBUG turnstone::knot_pointer: pointer move x=83.0 y=85.0 changed=false drag=Some(NodeId(9895604650002)) selection=CaretSelection { anchor: CaretPosition { byte: 16, affinity: Downstream }, focus: CaretPosition { byte: 21, affinity: Downstream } }
+2026-10-20T04:32:48.783478Z DEBUG turnstone::knot_pointer: pointer move x=83.0 y=85.0 changed=false drag=Some(NodeId(9895604650002)) selection=CaretSelection { anchor: CaretPosition { byte: 16, affinity: Downstream }, focus: CaretPosition { byte: 21, affinity: Downstream } }
+2026-10-20T04:32:50.849317Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=2 chrome=true nodes=13

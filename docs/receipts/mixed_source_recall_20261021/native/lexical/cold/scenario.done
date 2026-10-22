@@ -1,0 +1,34 @@
+RESULT ok
+captured 01_cold_local_capture
+captured 02_cold_scope
+captured capture_historical_answer
+captured capture_historical_citation
+captured capture_answer
+captured capture_citation
+captured knot_historical_answer
+captured knot_historical_citation
+captured knot_answer
+captured knot_citation
+captured note_historical_answer
+captured note_historical_citation
+captured note_answer
+captured note_citation
+captured knot_cold_export
+captured note_cold_export
+presentation frames=599 captures=16 blank=0
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/01_cold_local_capture.png digest=4fe68ba23e4189f0 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/02_cold_scope.png digest=a5a4a02541cef64a blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/capture_historical_answer.png digest=d204432264c02092 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/capture_historical_citation.png digest=1d879457ba346805 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/capture_answer.png digest=8133d6c5caf9ee48 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/capture_citation.png digest=08e24fb1e456014a blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/knot_historical_answer.png digest=38c45455c9b71200 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/knot_historical_citation.png digest=851cacaca1c542f3 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/knot_answer.png digest=5b0d5182c5e48a31 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/knot_citation.png digest=851cacaca1c542f3 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/note_historical_answer.png digest=bf2c5c3ec924baee blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/note_historical_citation.png digest=38e757f42ff72c50 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/note_answer.png digest=9d5f066feff9185a blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/note_citation.png digest=38e757f42ff72c50 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/knot_cold_export.png digest=851cacaca1c542f3 blank=false
+capture /Users/markik/Code/output/mixed-source-recall-20261021/raw-06/lexical/cold/note_cold_export.png digest=38e757f42ff72c50 blank=false

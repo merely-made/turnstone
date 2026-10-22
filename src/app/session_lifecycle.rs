@@ -93,6 +93,7 @@ impl App {
             forme_runtimes: super::FormeRuntimePool::default(),
             pane_context: crate::panes::ContextIndex::default(),
             omnibar: OmnibarState::default(),
+            reading: Default::default(),
             command_choices: cambium::CommandChoices::default(),
             document_find: crate::document_find::DocumentFindState::default(),
             user_agent_decision: crate::user_agent_decision::UserAgentDecisionState::default(),
@@ -538,7 +539,9 @@ impl App {
 
     /// Refuse one place gesture out loud, changing nothing.
     pub(crate) fn refuse_place(&mut self, reason: impl Into<String>) -> Vec<Effect> {
-        self.events.push(AppEvent::PlaceRefused(reason.into()));
+        let reason = reason.into();
+        tracing::warn!(%reason, "place gesture refused");
+        self.events.push(AppEvent::PlaceRefused(reason));
         vec![Effect::Redraw]
     }
 
@@ -571,6 +574,7 @@ impl App {
                 return self.refuse_place("leave this place before joining or founding another");
             }
             PlacePrompt::ExportCard
+            | PlacePrompt::RefreshContact
             | PlacePrompt::Invite
             | PlacePrompt::InviteReader
             | PlacePrompt::SendMessage
@@ -645,6 +649,16 @@ impl App {
             Ok(bytes) => vec![Effect::WritePlaceArtifact { path, bytes }],
             Err(error) => self.refuse_place(format!("encode place card: {error}")),
         }
+    }
+
+    pub(crate) fn refresh_place_contact(&mut self, path: String) -> Vec<Effect> {
+        let Some(generation) = self.place.generation().filter(|_| self.place.binding().is_some()) else {
+            return self.refuse_place("join a place before refreshing its contact");
+        };
+        vec![Effect::ReadPlaceArtifact {
+            path,
+            kind: crate::action::PlaceArtifactKind::Contact { session: self.session_id, generation },
+        }]
     }
 
     /// Read a card, so a pre-key can be offered against the Moot it names.
@@ -772,6 +786,13 @@ impl App {
 
     /// Reopen admitted state and dial its saved contact hints on an explicit gesture.
     pub fn reconnect_place(&mut self) -> Vec<Effect> {
+        self.reconnect_place_with_contact(None)
+    }
+
+    pub(crate) fn reconnect_place_with_contact(
+        &mut self,
+        contact: Option<Box<crate::place::PlaceCardV1>>,
+    ) -> Vec<Effect> {
         // `binding()` reads `Left` as not joined, so a left session cannot
         // reconnect around its own mark; `rejoin_place` is its route back.
         let Some(binding) = self.place.binding().cloned() else {
@@ -780,13 +801,18 @@ impl App {
             ));
             return vec![Effect::Redraw];
         };
+        if let Some(card) = &contact {
+            if let Err(error) = crate::place::rendezvous::card_tickets(&binding, card) {
+                return self.refuse_place(error);
+            }
+        }
         self.next_place_generation = self.next_place_generation.wrapping_add(1);
         let generation = self.next_place_generation;
         self.place = crate::place::PlaceState::Opening {
             binding: binding.clone(),
             generation,
         };
-        vec![Effect::ReconnectPlace { session: self.session_id, generation, binding }]
+        vec![Effect::ReconnectPlace { session: self.session_id, generation, binding, contact }]
     }
 
     /// Reconnect a locally left place: clear its left mark, then dial saved
@@ -805,7 +831,7 @@ impl App {
         self.place = crate::place::PlaceState::Opening { binding: binding.clone(), generation };
         vec![
             Effect::ClearPlaceLeftMark { session: self.session_id },
-            Effect::ReconnectPlace { session: self.session_id, generation, binding },
+            Effect::ReconnectPlace { session: self.session_id, generation, binding, contact: None },
         ]
     }
 
@@ -1155,6 +1181,7 @@ impl App {
         // the surface default. Set through the runtimes directly: the app-level
         // arm clears the score for a non-Spiral strategy, which is right for a
         // fresh choice and wrong for a restore of the pair.
+        self.reading = crate::reading_view::ReadingState::load(&sdir);
         let view_intent = session::load_view_intent(&sdir);
         let physics_paused = view_intent.as_ref().and_then(|intent| intent.physics_paused);
         self.command_choices = view_intent

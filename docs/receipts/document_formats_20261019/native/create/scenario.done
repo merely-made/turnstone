@@ -1,0 +1,12 @@
+RESULT ok
+captured 01_new_note
+captured 02_authored_note
+captured 02b_format_choice
+captured 03_other_note
+captured 03b_publication_authority_unavailable
+presentation frames=257 captures=5 blank=0
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated/create/01_new_note.png digest=67ae7c1dc5a2e1f2 blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated/create/02_authored_note.png digest=786010fb5ed533ed blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated/create/02b_format_choice.png digest=3d727ee58fc06f3d blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated/create/03_other_note.png digest=77a466a8b8954b14 blank=false
+capture /Users/markik/Code/output/turnstone-document-formats-20261019-native-startup-activated/create/03b_publication_authority_unavailable.png digest=ae8f470d43169633 blank=false

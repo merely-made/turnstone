@@ -1,0 +1,103 @@
+resize 1200 900
+settle 5
+key escape
+act New session
+settle 5
+open ${MR_ORIGIN}/A
+settle 5
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+capture 01_capture_A
+record-source-captures 01_capture_A
+open ${MR_ORIGIN}/B
+settle 5
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+capture 02_capture_B
+record-source-captures 02_capture_B
+import-clip ${MR_KNOT}
+settle 5
+import-clip ${MR_NOTE}
+settle 5
+act Open node in Workbench
+settle 5
+act Maximize pane
+settle 5
+assert content-live
+capture 03_mixed_sources
+record-saved-sources 03_mixed_sources
+act Save session
+touch ${MR_CONTROL}/stop-origin
+wait-file 600 ${MR_CONTROL}/origin-stopped
+act Ask saved sources
+settle 5
+assert text Connected to resident inference.
+click surface:contributed role:button Choose source: Mixed Capture A
+settle 5
+click surface:contributed role:button Choose source: Mixed Capture B
+settle 5
+click surface:contributed role:button Choose source: Knot selection
+settle 5
+click surface:contributed role:button Choose source: Redshank note
+settle 5
+assert text 4 saved sources chosen
+capture 04_explicit_scope
+assert text 4 saved sources chosen
+click surface:contributed role:textbox Question
+insert ${MR_CAPTURE_QUESTION}
+click surface:contributed role:button Ask
+wait-file 18000 ${MR_RESIDENT}/mixed-0-capture.json
+settle 5
+assert text Source 1:
+capture capture_answer
+click surface:contributed role:button Source 1:
+settle 5
+wait-saved-reader 600
+assert snap saved-reader-text == ${MR_CAPTURE_TEXT}
+assert snap saved-reader-quote == ${MR_CAPTURE_TEXT}
+act Open node in Workbench
+settle 5
+capture capture_citation
+record-saved-sources capture_citation
+act Ask saved sources
+settle 5
+assert text 4 saved sources chosen
+click surface:contributed role:textbox Question
+insert ${MR_KNOT_QUESTION}
+click surface:contributed role:button Ask
+wait-file 18000 ${MR_RESIDENT}/mixed-0-knot.json
+settle 5
+assert text Source 1:
+capture knot_answer
+click surface:contributed role:button Source 1:
+settle 5
+act Open node in Workbench
+settle 5
+assert content-live
+assert snap browser-current ~ ${MR_KNOT_ADDRESS}
+capture knot_citation
+record-saved-sources knot_citation
+act Ask saved sources
+settle 5
+assert text 4 saved sources chosen
+click surface:contributed role:textbox Question
+insert ${MR_NOTE_QUESTION}
+click surface:contributed role:button Ask
+wait-file 18000 ${MR_RESIDENT}/mixed-0-note.json
+settle 5
+assert text Source 1:
+capture note_answer
+click surface:contributed role:button Source 1:
+settle 5
+act Open node in Workbench
+settle 5
+assert content-live
+assert snap browser-current ~ ${MR_NOTE_ADDRESS}
+capture note_citation
+record-saved-sources note_citation
+wait-file 18000 ${MR_RESIDENT}/mixed-rankings-0.json
+act Save session

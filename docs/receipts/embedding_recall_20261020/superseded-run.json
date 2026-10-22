@@ -1,0 +1,8 @@
+{
+  "run": "raw-01",
+  "headed_scenarios": "both passed, 13 captures",
+  "resident_cold_assertion": "failed because the live cold-ask marker was overwritten after publisher disconnection",
+  "fix": "write the terminal cold-ask marker once, only while current citations are admitted",
+  "production_runtime_changed": false,
+  "same_index_cold_reuse_observed": true
+}

@@ -1,14 +1,34 @@
 # Retained clips in the receiving Turnstone host
 
-**Status (2026-10-11):** landed and qualified for the bounded native receiver.
-Committed-source import, package-unavailable restart, local WAV playback and
-missing-content refusal pass in the real Windows host. This is Turnstone's
+**Status (2026-10-20):** the original bounded native receiver and onward copy
+are landed and qualified at their recorded source cuts. Producer-to-retention
+integration and its custody connection now have published suppliers, refreshed
+Git pins, focused checks and bounded headed macOS acceptance with a synthetic
+wallet-backed custodian. The Turnstone implementation, pins and renewed receipt
+are recorded together in this repository. The embedded Knot primary-pointer
+selection, immediate retention command and source-absent cold export continuation
+are also qualified in the October 20 Knot receipt. Embedded Redshank text-note
+retention, source-absent cold reopen and onward export are qualified in the
+separate October 20 text-note receipt below. The independent Eidetic repository
+owns the shared plan. Earlier committed-source import,
+package-unavailable restart, local WAV playback and missing-content refusal
+passed in the real Windows host at its recorded source cut. This is Turnstone's
 first consumer of the draft Fleece selected-content profile.
 
 The shared contract and CP1 to CP4 rulings live in
-`mere/design_docs/eidetic_docs/implementation_strategy/2026-10-11_eidetic_development_plan.md`.
+`eidetic/design_docs/eidetic_docs/implementation_strategy/2026-10-11_eidetic_development_plan.md`.
 This plan owns Turnstone's receiving behavior and evidence. It does not freeze
 the profile or close that plan's whole Knot/Redshank host gate.
+
+The shared plan's **Native producer-to-retention continuation, 2026-10-19**
+records the accepted sequence and custody prerequisite once. The host joins
+real owner-selected material through its existing Fleece retention and graph
+admission path. The authored research-note workflow already qualified in
+`docs/receipts/research_notes_20261018/README.md` remains the exact-citation and
+authoring baseline; it does not establish portable note export or private clip
+custody. The 2026-10-19 supplier cutover changes dependency sources and does not
+renew the older native receipts. No unsealed fallback is a substitute for the
+required private-backing custody connection.
 
 ## Phases and done-conditions
 
@@ -43,9 +63,9 @@ byte or millisecond selectors remain in the retained record; the view shows
 their units and supported fields without interpreting unfamiliar selectors.
 Source tags whose asserter is absent are displayed as **author unknown**.
 
-Voice-body bytes enter a verified, rebuildable WAV decoder cache whose filename
-comes from their content hash. Playback uses Redshank's existing preview
-command and the host's one Firewheel/CPAL output runtime. It does not change the
+Verified voice-body bytes enter Redshank's existing decoder through a host-owned
+memory reader. This creates no plaintext WAV cache. Playback uses the existing
+preview command and the host's one Firewheel/CPAL output runtime. It does not change the
 annotation's recording target. The visible view has Play/Stop links and live
 preview status. A missing source recording is labelled unavailable independently
 of the retained voice body's playback. No microphone adapter is involved.
@@ -94,10 +114,11 @@ excerpts, signed tag assertions and accepted suggestions, and reviewed owner
 edits on reconnect retain their own gates. Peer delivery remains separate from
 this local selected-package copy.
 
-The first store is explicitly unsealed. Identity and destination admission are
-checked, but this slice does not supply an epoch sealer or qualify encrypted
-custody, retention/deletion policy or rights revocation. Those remain P6 work
-under the shared plan, alongside the existing custody owners.
+The October 11–12 store and its frozen receipts are explicitly unsealed. The
+October 19 continuation requires the custodian's bound epoch sealer for private
+production reads and writes. Legacy unsealed objects need an explicit migration;
+passing a sealer does not make their stored bytes private. Retention/deletion
+policy and rights revocation remain P6 work alongside the existing custody owners.
 
 **Done when:** each later capability has its own supported format, authority,
 failure behavior and consumer evidence before it changes the advertised host
@@ -154,3 +175,223 @@ capability.
   facts survive, and the reopened Play link reaches Ended 500 ms. The
   [onward receipt](../docs/receipts/2026-10-11_retained_clip_receiver/onward/README.md)
   preserves code, fixture, output and gate evidence. No dependency changed.
+
+- **2026-10-19, custody and first native producer slice implemented locally.**
+  Djinn performs bounded seal/unseal with explicit profile/wallet binding,
+  application-purpose associated data, current lock/root checks and historical
+  epoch reads. Keys stay in custody. Production clip reads, imports, native
+  retention and onward exports require a sealer; legacy unsealed records or
+  parts require explicit migration. No personal profile was migrated here.
+  Saved Knot selections retain full available backing privately, while captured
+  host-only actions recheck the source, selection and receiving admission.
+  Shareable embedded Redshank text notes retain directly; the standalone owner
+  exports selected voice bodies from its own hash-verified blob namespace.
+  The host supplies retained voice bytes to the existing decoder in memory,
+  without creating the old plaintext WAV cache.
+  Focused native checks pass: endpoint 43, wallet sealer 6, actual custody IPC
+  and existing route 3, Turnstone retained-name regressions 54 (one process
+  helper ignored in that sweep), captured producer actions 2, Redshank owner
+  export 2, playback 32 (seven external/device fixtures ignored), and surfaces
+  103. The saved editor selection and stale-preview stop controls are included.
+  A separate synthetic receipt runs the real owner voice exporter, removes its
+  source blob, imports through custody, removes transfer packages, restarts both
+  custodian and receiver processes, and reopens selected Knot and voice content
+  with preserved selectors. The [machine receipt](../docs/receipts/2026-10-19_retained_custody/qualification.json)
+  records source hashes, compiled artifact hashes, counts and exact scope.
+  The receiving check uses explicit local `graphshell-endpoint` and
+  `redshank-playback` supplier snapshots; its qualification lock is saved with
+  the receipt, while the product lock keeps canonical remote sources. Supplier
+  publication/pin refresh and renewed headed custody/playback acceptance remain
+  separate. Historical native packets retain their original source identities.
+
+- **2026-10-19, published suppliers and headed sealed continuation.** Mere's
+  custody change `e122a071` is consumed through published `48fd338`; Knot's
+  immutable-family alignment is `6e721d3`, and Woodshed's selected-body exporter
+  plus bounded note-menu repair is consumed through `62dde4c`. Turnstone's final
+  lock keeps Genet `83114ac2`, the revision in published Mere's own lock, and
+  resolves without local supplier overrides. The final shipping build and 15
+  focused clip checks pass (one explicit process helper ignored), along with
+  four selector/action cases. A broader intermediate integration sweep passed
+  56 cases; its separate lock is preserved rather than attributed to the final
+  graph.
+  Standalone Redshank's visible private/shareable menu and owner WAV export
+  pass in its owning receipt at
+  `woodshed/docs/receipts/2026-10-19_selected_note_export/qualification.json`.
+  The embedded saved document's normal keyboard path selects exactly `café`
+  at UTF-8 bytes 16–21, retains full backing privately, and exports only those
+  five selected bytes. A second isolated receiving store opens that selected
+  text and the owner's 100 ms voice body with source applications stopped.
+  The final cold run occurs after the document, voice blob and all transfer
+  package files are removed; it plays the held voice body to `Ended 100 ms`
+  and produces new packages equal to the selected originals, with zero
+  acquisition attempts. The voice retains its 1250–4500 ms target and 1400 ms
+  pressed offset. The synthetic custodian is also restarted during acceptance.
+  All three retained stores lack the clear full source/WAV bytes, and no WAV
+  cache file is created. The [headed machine receipt](../docs/receipts/2026-10-19_retained_custody/headed/qualification.json)
+  records five native consumer phases and twelve reviewed captures, source and
+  binary hashes, both tested lock graphs, selected-package equality and scope.
+  The first failed owner-menu attempt remains in Woodshed's packet; unsupported
+  keyboard syntax, missing drag forwarding and the wrong focused export member
+  are preserved as separate consumer attempts. The runner now forwards Ctrl+A
+  and Shift+Right through the same native key seam, and the accepted export
+  explicitly focuses the held clip before freezing its target.
+  Keyboard selection is qualified; embedded document drag selection forwarding
+  remains open. The explicit scenario destination exercises the normal export
+  Action/effect without automating the OS save dialog. Personal vault setup and
+  migration, microphone/acoustic qualification, renewed headed embedded
+  Redshank text-note retention, browser/structured formats and the whole P6
+  program retain separate gates. Runtime keys and profiles are excluded from
+  the packet. Consumer publication remains separate from the completed supplier
+  pushes; the frozen earlier receipts are unchanged.
+
+- **2026-10-19, consumer publication.** The qualified custody/producer
+  implementation, tested supplier pins and frozen qualification packets are
+  published together on Turnstone main. The source hashes and final lock match
+  the accepted native build; publication adds no runtime change or new
+  qualification claim. The keyboard/drag, personal-vault, destination-dialog
+  and broader format limits above remain explicit.
+
+- **2026-10-20, embedded Knot primary-pointer continuation qualified.**
+  The document adapter now forwards press, captured move, release, cancel and
+  focus loss, using retained shaped caret positions and UTF-8 offsets. Selection
+  is visibly highlighted, including overlapping syntax runs. Caret queries
+  refresh layout when selection projection replaces text nodes between moves
+  in one input batch. A toolbar press cannot start an editor text drag.
+  The initial headed diagnostic selected bytes 16–21 internally but left the
+  contextual command stale: Knot facts were refreshed only by background event
+  drains. Handled controller input now updates those facts synchronously.
+  The separate negative diagnostic is preserved with the receipt.
+
+  The final shipping build and 99 focused checks pass: Knot authoring 23,
+  retained clip 15, producer retention 2 and native input 59. Five configured
+  external endpoint checks and the explicit custody process helper remain
+  ignored in the ordinary sweep. Three native phases and eight reviewed
+  captures qualify a continuous mouse drag selecting exactly `café`, immediate
+  private retention and selected-only export, source-absent independent receive,
+  then custodian/receiver restart and cold re-export with both transfer inputs
+  removed. The cold packages equal the selected originals; the reused owner
+  voice fixture reaches Ended 100 ms, preserves its native selector, and makes
+  zero acquisition attempts. Neither fixture store contains the complete clear
+  backing/WAV body, and neither profile creates a WAV cache.
+  The [machine receipt](../docs/receipts/2026-10-20_knot_drag_retention/qualification.json)
+  binds these outcomes to the exact source files and one shipping executable.
+  Supplier pins are unchanged. This closes the bounded primary-mouse drag gate;
+  OS save-dialog automation, personal vault/migration, touch/bidi/autoscroll,
+  renewed owner recording/export and the broader format/native program retain
+  their separate gates. The October 19 receipts remain frozen.
+
+- **2026-10-20, embedded Redshank text-note retention qualified.**
+  Four shipping macOS phases and eight reviewed captures cover a private-note
+  negative control, shareable selected-note retention, sealed local reading,
+  export, source-absent cold reopen, and onward import into an independent
+  receiver followed by another cold re-export. Before the first cold launch,
+  the original source session and its Redshank model, source recording and
+  initial transfer are removed; before the second cold launch the onward
+  transfer is also removed. Custodian and app restart at both boundaries.
+  The final package object equals the selected original, including exact
+  Unicode text, clip/capture identity and native 1250–4500 ms target with
+  pressed offset 1400 ms and representation digest/length. Both control notes
+  and recording bytes are absent from the single text payload. The held view
+  explicitly reports the source recording unavailable. Acquisition attempts
+  remain zero; neither fixture retained store exposes the complete clear note
+  body/control markers, and neither profile has a WAV cache or owner-model
+  generation after source removal.
+
+  The host now handles the previously ignored `SetNotePrivacy`, scoped to the
+  addressed episode. Its regression covers persistence, unchanged body/target
+  and private export revocation. The native build and 36 focused cases pass
+  (host 12, retained clip 15, producer selection 2, app 2, surface 5); two process
+  helpers remain ignored in ordinary checks and the marked owner-model fixture
+  helper is explicitly executed once. The
+  [receipt](../docs/receipts/2026-10-20_redshank_text_retention/README.md) binds
+  the source hashes and one executable. Supplier pins are unchanged.
+
+  Notes are seeded through the real typed embedded owner model/store, with
+  shareability applied through the host command. This is headed selected-note
+  retention, not headed authoring or the full owner's privacy menu: that menu
+  is absent from the compact embed. Export uses the normal action with an
+  explicit destination. OS save-dialog automation, personal vault/migration,
+  renewed microphone/audio qualification, broader formats and the whole P6
+  program remain separate gates. Earlier qualification packets remain frozen.
+
+## Retained text Answers continuation, 2026-10-20
+
+**Status:** qualified on the recorded receiving cut and the final merged
+shared-shell/SDK cut. Extend the current explicit Answers scope to live
+session members naming sealed retained text clips. Preserve capture choices,
+clip/capture identity, text hashes and Unicode citation ranges; admit only the
+selected text body and keep producer backing/recordings outside the corpus.
+
+**Done when:** the native receiver imports previously qualified embedded Knot
+and Redshank selected packages, asks through real MiniLM fused recall and opens
+exact local citations, then fresh product/resident processes repeat a new ask
+using the sealed compatible index with producer inputs and transfer files absent.
+The public receipt belongs under `docs/receipts/retained_clip_embedding_20261020/`;
+typed owner/identity refusals and existing capture regressions remain focused gates.
+
+**Probe finding:** the first headed short-selection ask retrieved the correct
+`café` body and scope, but SmolLM2 repeated the much longer source identity JSON
+that preceded it in the resident context. A concrete word question showed the
+same prefix. Mere's recall formatter is being corrected to supply numbered
+passage text to generation and retain full identity/version/selector authority
+in the sealed evidence record. The accepted continuation must use the corrected
+resident; both diagnostic native runs remain outside the passing receipt.
+
+**Receiving gate, 2026-10-21:** both one-source native lanes pass, using real
+MiniLM fused retrieval and GPU SmolLM2 generation. The fresh embedded Knot
+selection contains 47 UTF-8 bytes/46 scalars at original bytes 16–63; the
+previously qualified Redshank note contains 73 bytes/70 scalars. Source paths
+are absent before receiving, the fresh Knot producer profiles are removed,
+and transfer packages are removed before separate product/resident cold pairs.
+Both historical and new cold citations open the exact local reader; compatible
+index/envelope identities and sealed old evidence survive; selected-only cold
+exports equal the inputs. Twenty receiver and four producer captures were
+reviewed. The [packet](../docs/receipts/retained_clip_embedding_20261020/README.md)
+records 43 Turnstone, 14 recall/embedding and two resident route passes.
+
+The source metadata echo is repaired in Mere `22c8c5e3c` and SDK `eb1244ccf`.
+The four-scalar `café` answer can be correct without a model marker, leaving
+it below the unchanged 32-character automatic quote threshold. Short-word
+citation attempts remain diagnostic failures; the sentence fixture qualifies
+normal exact quotation without weakening admission. Concurrent Turnstone
+shared-shell and shared Apparatus-core pin changes are preserved and qualified
+as a distinct integration cut; each packet remains bound to its compiled hashes.
+
+**Final integration, 2026-10-21:** source cut `a048adc` receives Mere SDK
+`7edfe3b09`, preserves the shared shell/navigation and shared Apparatus-core
+consumer delivery, and passes the same four native warm/cold phases. Native
+and libtest builds pass on Rust 1.99.1; all 43 Turnstone focused cases pass
+again. The resident recall file is byte-identical across the fix, both SDK
+cuts and the frozen GPU fixture. Twenty final captures were reviewed and the
+independent verifier passes raw/public evidence, product/scenario hashes,
+source identity, compatible reuse, historical evidence and selected-only export.
+The [final integration packet](../docs/receipts/retained_clip_embedding_integration_20261021/README.md)
+records compiled-source Git-blob proofs; earlier receipts remain unchanged.
+
+## Mixed-source recall qualification, 2026-10-21
+
+**Status:** bounded retention/retrieval/citation-routing and cold-reopen gates
+passed on the recorded runtime cut. One explicit four-source scope contains two
+saved HTML captures, a retained Knot selection and a Redshank text note. Twelve
+resident asks, six historical reopen paths and eighteen native target-citation
+activations preserve exact source identity, Unicode ranges and local documents;
+four independent warm/cold phases produce 52 presented nonblank captures.
+Source origins and transfer files are absent before cold reopen. Selected package
+contents, payload bytes and original anchors survive onward export unchanged.
+
+The [mixed-source packet](../docs/receipts/mixed_source_recall_20261021/README.md)
+records actual live published-index rankings, independently reconstructed passage
+IDs and reciprocal-rank fusion. On eight frozen questions, lexical MRR/top-1/
+recall@3 are 0.875; vector and fused are 1.0. The recovered paraphrase asks about a
+reminder preserved while listening to audio. All rankings and the four-source
+384-dimensional projection retain their identities on cold reopen. This bounded
+fixture is not a general quality benchmark or a combined generated-answer gate.
+
+**Quality boundary:** SmolLM2 repeats the Redshank note and adds other-source
+references. Exact citation identities and model-marker validity do not certify
+semantic support. The accepted fused UI recipe waits for each native source
+selection to be persisted; rapid-click behavior is not signed off. Excluded
+attempts and immutable per-mode recipes are retained. The native cut is Turnstone
+`a048adcc36` / Mere SDK `7edfe3b09`; later concurrent main-line source/pins are not
+represented as freshly headed-qualified by this packet. Earlier receipts remain
+frozen.

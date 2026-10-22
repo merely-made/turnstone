@@ -1,0 +1,123 @@
+{
+  "result": "pass",
+  "local_date": "2026-10-19",
+  "scope": "Same-host native place admission, selected address sharing, retained reopening and live catch-up",
+  "source_integration_commit": "9570cc697f6e7cceb4bb285be64f17cc7136d197",
+  "upstream_intake": "01658c739dd1f566b0317578ff5c94efa74720fe",
+  "place_repair_commit": "07d0111",
+  "compiled_source_files": 415,
+  "native_binary_sha256": "0ed6bb43174b45db34f7772375a709118e5243d1cdacb8e1f9917e61403df47e",
+  "resident_binary_sha256": "17b40152b95e9029ff36802a022fbb077de47c65f9a79196a23b96cb99300990",
+  "resident_source_commit": "48fd33851ed0e9386ea06b511acb0a3b5f33bc04",
+  "native": {
+    "result": "pass",
+    "commit": null,
+    "place_ids": {
+      "moot": "0681833da1cf94c47e2507996b4d6dbe015967cf2fc165eb03ec036bff01fa4e",
+      "root": "14107f588be708fdfaa90e6892b1f3311fecb72cba26ccb3751d8ebe9c306680",
+      "chat": "d61377f9f59a647ec3b8a11d8635cee5315c08fcab2a9c70cca3170c203b03b3",
+      "default_channel": "general"
+    },
+    "personae_roots": {
+      "founder": "c904e7da429422a872e74bd95e48ebcf532671fbb2e83396abdacbfc0e8cb622",
+      "joiner": "662ede25d5463a4e6436b0f3ae523f784450b033f1e5f7ab49df694b3b085ce2",
+      "reader": "6758a361096effaaeaf0fbc9d473a013fa51f4f8699b5d1d996dca473dd9ed12"
+    },
+    "initial_messages": 2,
+    "absent_messages": 3,
+    "converged_messages": 5,
+    "cold_retained_messages": 5,
+    "cold_reconnected_messages": 7,
+    "shared_graph_digest": "af7ad7cebf772df42835271a6eb0cd53ad60eb38a7718d205934e53f8625932e",
+    "chat_digest_before_cold": "681f36e554d25270ac4b1dbc89ede7d1a099d1bfc9839eee8bea63fc3fc3907f",
+    "chat_digest_after_cold": "d2ab89ffab2ba3da4cf306dbc6347ef40add1904a4d88a860c8093312b7eb587",
+    "exited_cache_address_scope": {
+      "founder": [
+        "http://127.0.0.1:55961/founder-private.html",
+        "http://127.0.0.1:55961/shared.html"
+      ],
+      "joiner": [
+        "http://127.0.0.1:55961/shared.html"
+      ],
+      "reader": [
+        "http://127.0.0.1:55961/reader-private.html",
+        "http://127.0.0.1:55961/shared.html"
+      ]
+    },
+    "origin_gone_before_cold_reopen": true,
+    "explicit_current_contact_refresh": true,
+    "foreign_contact_refused_without_scope_change": true,
+    "independent_resident_restarts": true,
+    "reader_write_refused": true,
+    "native_processes": 6,
+    "native_pids": [
+      7897,
+      7956,
+      8028,
+      8050,
+      8196,
+      8298
+    ],
+    "presented_frames": 2372,
+    "nonblank_captures": 15,
+    "scope": "Same-host native place admission, selected address sharing, retained reopening and live catch-up"
+  },
+  "software": {
+    "place": {
+      "passed": 76,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 732.08,
+      "log": "place-tests.log.gz"
+    },
+    "app_place": {
+      "passed": 12,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 12.04,
+      "log": "app-place-tests.log.gz"
+    },
+    "frame_wait": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 0.0,
+      "log": "frame-wait-tests.log.gz"
+    },
+    "ring": {
+      "passed": 27,
+      "failed": 0,
+      "ignored": 5,
+      "seconds": 0.58,
+      "log": "ring-tests.log.gz"
+    },
+    "retained_clip": {
+      "passed": 14,
+      "failed": 0,
+      "ignored": 1,
+      "seconds": 16.53,
+      "log": "retained-tests.log.gz"
+    }
+  },
+  "full_workspace_suite_run": false,
+  "captures_reviewed": 15,
+  "current_resident_processes": 5,
+  "custody": "Real isolated passphrase-encrypted Djinn vaults using the owner-supported receipt stdin feature; production Turnstone identity binding, not local fixture identities.",
+  "evidence": {
+    "native": "accepted/verification.json",
+    "captures": "capture-review.json",
+    "source_inputs": "accepted/inputs.json",
+    "stack": "resolved-stack.json",
+    "software": "software/results.json",
+    "prior_cohort": "prior-cohort/qualification.json",
+    "failed_diagnostics": "diagnostic-attempts.json"
+  },
+  "publication_gate": "verify_archive.py must validate the final committed source and public artifact hashes before push",
+  "not_qualified": [
+    "Automatic multicast discovery or cross-machine/WAN reachability",
+    "Independent title or HTTP body transfer/offline HTTP body replay",
+    "Current document projection/editing or research-note/saved-source attachment sharing",
+    "Named-recipient document publishing or withdrawal of a delivered copy",
+    "Installed custody/OS unlock, physical keyboard/IME/OS assistive activation or physical power-loss recovery"
+  ]
+}

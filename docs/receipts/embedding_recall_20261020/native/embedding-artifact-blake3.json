@@ -1,0 +1,13 @@
+{
+  "loaded_artifacts": {
+    "config.json": "blake3:5cc3d398a528ce285a778ade0f2c1c95a31d3dcd9b7bd6dca8e85e1fbb5c9e90",
+    "tokenizer.json": "blake3:82483bb4f0bdb81779f295ecc5a93285d2156834e994a2169f9800e4c8f250c1",
+    "model.safetensors": "blake3:8087e9bf97c265f8435ed268733ecf3791825ad24850fd5d84d89e32ee3a589a"
+  },
+  "raw_source_artifacts": {
+    "config.json": "blake3:02ba870d29dc00b373fe71bd273baca30586d6577def4130456e756c7b286890",
+    "tokenizer.json": "blake3:82483bb4f0bdb81779f295ecc5a93285d2156834e994a2169f9800e4c8f250c1",
+    "model.safetensors": "blake3:8087e9bf97c265f8435ed268733ecf3791825ad24850fd5d84d89e32ee3a589a"
+  },
+  "config_admission": "ModelLibrary accepts parsed JSON configuration, persists its canonical serde_json Value encoding and resolves those bytes for ESP. Weights and tokenizer retain their source bytes. The envelope binds the admitted bytes actually consumed."
+}
