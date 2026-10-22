@@ -3,7 +3,7 @@
 
 //! The projection editor and its two views share one typed draft and occurrence selection.
 use super::*;
-use cambium::{button, el, lens, text_field_typed};
+use cambium::{TabBar, TabBarNames, TabItem, button, disclosure_trigger, el, lens, tab_bar_view, text_field_typed};
 use graphshell::local_projection::{compile_editor, draft_from_definition, snapshot_editor};
 use graphshell::projection_compile::initial_projection_draft;
 use graphshell::projection_compile::{
@@ -720,12 +720,11 @@ pub(in crate::web_tree) fn section(page: &TreePage) -> Child {
         return Box::new(el("div", ()));
     };
     let mut children: Vec<Child> = vec![Box::new(
-        button("Projection editor", |page: &mut TreePage, _| {
+        disclosure_trigger("Projection editor", product.projection.open, |page: &mut TreePage| {
             if let Some(product) = &mut page.product {
                 product.projection.open = !product.projection.open;
             }
-        })
-        .attr("aria-expanded", product.projection.open.to_string()),
+        }),
     )];
     if product.projection.open {
         children.push(action_button("Load practice set", "load"));
@@ -760,34 +759,35 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
     let mut children: Vec<Child> = vec![
         Box::new(el("h2", "Projection editor")),
         Box::new(
-            el("p", p.status.clone())
-                .attr("role", "status")
-                .attr("aria-label", "Projection status"),
+            status_note_labelled("", "Projection status", p.status.clone()),
         ),
     ];
-    let tabs: Vec<Child> = ProjectionPanel::ALL
-        .into_iter()
-        .map(|panel| {
-            Box::new(
-                button(panel.label(), move |page: &mut TreePage, _| {
-                    if let Some(product) = &mut page.product {
-                        product
-                            .projection
-                            .editor
-                            .reduce(EditorAction::SelectPanel(panel), js_sys::Date::now() as u64);
-                    }
-                })
-                .attr("role", "tab")
-                .attr("data-projection-panel", panel.label().to_lowercase())
-                .attr("aria-selected", (p.editor.panel() == panel).to_string()),
-            ) as Child
-        })
+    let panels = ProjectionPanel::ALL;
+    let items: Vec<TabItem> = panels
+        .iter()
+        .map(|panel| TabItem::new(panel.label()).with_key(panel.label().to_lowercase()))
         .collect();
-    children.push(Box::new(
-        el("div", tabs)
-            .attr("role", "tablist")
-            .attr("aria-label", "Projection panels"),
-    ));
+    let selected = panels
+        .iter()
+        .position(|panel| *panel == p.editor.panel())
+        .unwrap_or(0);
+    children.push(Box::new(tab_bar_view::<TreePage, (), (), _, fn(&mut TreePage, usize) -> ()>(
+        TabBar::new(&items, selected)
+            .with_label("Projection panels")
+            .with_names(TabBarNames {
+                key_alias: Some("data-projection-panel"),
+                ..TabBarNames::default()
+            }),
+        move |page: &mut TreePage, index: usize| {
+            if let (Some(product), Some(panel)) = (&mut page.product, panels.get(index)) {
+                product
+                    .projection
+                    .editor
+                    .reduce(EditorAction::SelectPanel(*panel), js_sys::Date::now() as u64);
+            }
+        },
+        None,
+    )));
     for (index, (field, label, panel)) in FIELDS.iter().enumerate() {
         if *panel != p.editor.panel() {
             continue;
@@ -825,28 +825,18 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
         ));
     }
     children.push(Box::new(
-        el(
-            "p",
-            format!(
+        status_note_labelled("", "Projection preview", format!(
                 "{} · {}",
                 p.editor.draft().appearance.title,
                 p.editor.draft().arrangement.kind
-            ),
-        )
-        .attr("role", "status")
-        .attr("aria-label", "Projection preview"),
+            )),
     ));
     children.push(Box::new(
-        el(
-            "p",
-            if p.editor.is_dirty() {
+        status_note_labelled("", "Projection saved state", if p.editor.is_dirty() {
                 "Unsaved changes"
             } else {
                 "No unsaved changes"
-            },
-        )
-        .attr("role", "status")
-        .attr("aria-label", "Projection saved state"),
+            }),
     ));
     for (label, action) in [
         ("Undo projection", "undo"),

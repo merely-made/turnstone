@@ -99,11 +99,10 @@ pub(super) fn popup(page: &TreePage) -> Option<Child> {
         ));
     } else {
         children.push(Box::new(
-            el(
-                "p",
+            status_note(
+                "",
                 "The current document changed. Reopen Related to browse its connections.",
-            )
-            .attr("role", "status"),
+            ),
         ));
     }
     Some(Box::new(

@@ -10,7 +10,7 @@
 //! `mere::canvas::physics_controls`, which the old page's form also calls.
 use super::*;
 use cambium::{
-    SelectState, TextInput, button, checkbox, disclosure, lens, select, text_field_typed,
+    SelectState, TextInput, button, checkbox, checkbox_disabled, disclosure, lens, select, text_field_typed,
 };
 use mere::canvas::channels::Channel;
 use mere::canvas::dynamics_spec::Node;
@@ -866,14 +866,10 @@ fn overlay_group(page: &TreePage) -> Child {
                         el(
                             "label",
                             (
-                                el("span", "[ ]")
-                                    .attr("role", "checkbox")
+                                checkbox_disabled(false)
                                     .attr("data-overlay", overlay.id())
                                     .attr("aria-label", *label)
-                                    .attr("aria-checked", "false")
-                                    .attr("aria-disabled", "true")
-                                    .attr("aria-describedby", "tools-overlay-note")
-                                    .attr("class", "checkbox disabled"),
+                                    .attr("aria-describedby", "tools-overlay-note"),
                                 el("span", *label),
                             ),
                         )
@@ -885,11 +881,7 @@ fn overlay_group(page: &TreePage) -> Child {
         .collect();
     if let Some(reason) = reason {
         boxes.push(Box::new(
-            el("p", reason)
-                .attr("id", "tools-overlay-note")
-                .attr("role", "status")
-                .attr("aria-label", "Overlay availability")
-                .attr("class", "tools-note"),
+            status_note_labelled("tools-note", "Overlay availability", reason).attr("id", "tools-overlay-note"),
         ));
     }
     let group = el("div", boxes)
@@ -910,10 +902,7 @@ fn overlay_group(page: &TreePage) -> Child {
 fn speed_note(page: &TreePage) -> Child {
     match &page.physics.speed_note {
         Some(note) => Box::new(
-            el("p", note.clone())
-                .attr("class", "tools-note")
-                .attr("role", "status")
-                .attr("aria-label", "Speed status"),
+            status_note_labelled("tools-note", "Speed status", note.clone()),
         ),
         None => Box::new(el("span", "").attr("hidden", "")),
     }
@@ -989,10 +978,7 @@ pub(super) fn section(page: &TreePage) -> Child {
                     .attr("class", "tools-note"),
                     physics_action("Apply mix", "apply-mix", TreePage::apply_mix),
                     physics_action("Use single law", "use-single-law", TreePage::use_single_law),
-                    el("p", page.physics.mix_note.clone())
-                        .attr("class", "tools-note")
-                        .attr("role", "status")
-                        .attr("aria-label", "Authored mix status"),
+                    status_note_labelled("tools-note", "Authored mix status", page.physics.mix_note.clone()),
                 ),
             )
             .attr("data-physics-composition-editor", "two-law-mix"),
@@ -1020,10 +1006,7 @@ pub(super) fn section(page: &TreePage) -> Child {
                     )
                     .attr("class", "tools-note"),
                     physics_action("Apply grouping", "apply-grouping", TreePage::apply_grouping),
-                    el("p", page.physics.group_note.clone())
-                        .attr("class", "tools-note")
-                        .attr("role", "status")
-                        .attr("aria-label", "Authored grouping status"),
+                    status_note_labelled("tools-note", "Authored grouping status", page.physics.group_note.clone()),
                 ),
             )
             .attr("data-physics-composition-editor", "grouped"),
@@ -1075,10 +1058,7 @@ pub(super) fn section(page: &TreePage) -> Child {
                         "apply-schedule",
                         TreePage::apply_schedule,
                     ),
-                    el("p", page.physics.schedule_note.clone())
-                        .attr("class", "tools-note")
-                        .attr("role", "status")
-                        .attr("aria-label", "Authored schedule status"),
+                    status_note_labelled("tools-note", "Authored schedule status", page.physics.schedule_note.clone()),
                 ),
             )
             .attr("data-physics-composition-editor", "two-stage-schedule"),
@@ -1095,10 +1075,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         picker("Profile", profiles, |page| &mut page.physics.profile),
         apply("Apply profile", TreePage::apply_profile),
         Box::new(
-            el("p", page.physics.status.clone())
-                .attr("aria-label", "Physics status")
-                .attr("class", "tools-status")
-                .attr("role", "status"),
+            status_note_labelled("tools-status", "Physics status", page.physics.status.clone()),
         ),
     ];
     Box::new(

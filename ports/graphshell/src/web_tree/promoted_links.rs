@@ -451,14 +451,12 @@ pub(super) fn section(page: &TreePage) -> Child {
                     )));
                 }
             },
-            Err(error) => children.push(Box::new(el("p", error).attr("role", "status"))),
+            Err(error) => children.push(Box::new(status_note("", error))),
         }
     }
     if !page.promoted_links.status.is_empty() {
         children.push(Box::new(
-            el("p", page.promoted_links.status.clone())
-                .attr("role", "status")
-                .attr("data-promoted-link-status", "true"),
+            status_note("", page.promoted_links.status.clone()).attr("data-promoted-link-status", "true"),
         ));
     }
     Box::new(

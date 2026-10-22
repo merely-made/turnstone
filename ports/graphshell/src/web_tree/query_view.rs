@@ -425,7 +425,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         ));
     }
     children.push(Box::new(
-        el("p", pane.status.clone()).attr("role", "status"),
+        status_note("", pane.status.clone()),
     ));
     Box::new(
         el("section", children)
