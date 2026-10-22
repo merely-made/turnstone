@@ -1027,9 +1027,11 @@ fn role_color(
 
 fn themed_sheet(appearance: &crate::shell_services::AppearanceConfig, sheet: String) -> String {
     match &appearance.theme_presentation {
-        Some(presentation) => format!(
-            "{sheet}\n{}",
-            crate::appearance::presentation_css(presentation)
+        Some(presentation) => tabard::presentation_stylesheet(
+            presentation,
+            &appearance.theme_mode.tabard(),
+            tabard::theme::registry::THEME_ID_DEFAULT,
+            &sheet,
         ),
         None => sheet,
     }
@@ -3035,7 +3037,8 @@ mod tests {
         let cambium = cambium_sheet(&appearance);
 
         assert!(chrome.contains("--tabard-color-primary"));
-        assert!(chrome.contains(&crate::appearance::presentation_css(&resolved.presentation)));
+        let tabard::ThemePresentation::Derived(palette) = &resolved.presentation else { unreachable!() };
+        assert!(chrome.contains(&palette.css_custom_properties()));
         assert!(chrome.contains("24.00px"), "16px chrome input at 1.5x");
         assert!(cambium.contains("rgb(248, 249, 252)"));
         assert!(cambium.contains("19.50px"), "13px settings text at 1.5x");
