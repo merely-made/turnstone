@@ -37,7 +37,7 @@ presentation-webgl2 = ["cambium-genet-web-host/webgl"]
 without-classic-vello = ["genet-render-host/without-classic-vello"]
 # What a page saves: IndexedDB, saved scenes, the tree's product mode,
 # `web_product` and `web_practice`.
-product = ["muniment/indexeddb", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "graphshell/query-views", "graphshell/editable-blocks", "mere/query", "dep:mere-document-lanes", "dep:fleece", "dep:woodshed-notation"]
+product = ["muniment/indexeddb", "dep:pandect", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "graphshell/query-views", "graphshell/editable-blocks", "mere/query", "dep:mere-document-lanes", "dep:fleece", "dep:woodshed-notation"]
 applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.
@@ -54,6 +54,8 @@ woodshed-notation = { git = "https://github.com/merely-made/woodshed.git", rev =
 mere-view = { path="../../../crates/cambium/mere-view", optional=true }
 # The shared mere panel over the remote board's admitted route (stack lift plan L14).
 mere-overmap = { path = "../../../crates/cambium/mere-overmap", optional = true }
+# The saved-scene shapes the scene page reads (`pandect::saved_scene`).
+pandect = { path = "../../../crates/system/pandect", optional = true }
 mere-document-lanes = { path = "../../../crates/system/document-lanes", features = ["retained-clips"], optional = true }
 fleece = { package = "mere-fleece", path = "../../../crates/fleece", features = ["portable-clip", "page-links"], optional = true }
 eidetic = { default-features = false, git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }

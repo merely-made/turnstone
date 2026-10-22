@@ -40,7 +40,8 @@ use uuid::Uuid;
 mod assertions;
 
 use crate::access::{ACCESS_HISTORY_FACET, AccessHistory, AccessRecord};
-use crate::product::{SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3, SavedSceneV2};
+use mere::canvas::saved_scene;
+use pandect::{SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3, SavedSceneV2};
 
 pub const PERSONAL_GRAPH_LOG: u64 = 0;
 pub const PERSONAL_GRAPH_LIMITS: CausalLimits = CausalLimits {
@@ -1833,7 +1834,7 @@ fn relation_key(assertion: &EdgeAssertion) -> String {
 mod tests {
     use super::*;
     use crate::access::{AccessAction, AccessTransition};
-    use mere::canvas::CartographyGeometry;
+    use pandect::CartographyGeometry;
     use mere::kernel::graph::{
         ArrangementSubKind, ContainmentSubKind, EdgeFamily, ImportedSubKind, ProvenanceSubKind,
         RelationKind, SemanticSubKind,
@@ -3840,7 +3841,7 @@ mod tests {
                         physics_depth_source: "roots".into(),
                         arrangement_pull: 0.4,
                         arrangement_roles: None,
-                        dynamics: Some(crate::product::SavedDynamics::from_spec(&spec)),
+                        dynamics: Some(saved_scene::saved_dynamics(&spec)),
                         camera_offset: (0.0, 0.0),
                         camera_zoom: 1.0,
                         default_handler: "graphshell.inspect".into(),
@@ -3868,10 +3869,8 @@ mod tests {
                 "byte for byte, deterministic"
             );
             assert_eq!(
-                scene
-                    .clone()
-                    .into_v3()
-                    .and_then(|scene| scene.check_dynamics())
+                saved_scene::scene_from_v2(scene.clone())
+                    .and_then(|scene| saved_scene::scene_spec(&scene).map(|_| ()))
                     .is_err_and(|e| e.contains("33 deep")),
                 depth == 33
             );
@@ -3953,7 +3952,7 @@ mod tests {
     /// it opens.
     #[test]
     fn a_version_4_scene_travels_as_an_opaque_facet() {
-        use crate::product::SAVED_SCENE_FACET;
+        use pandect::SAVED_SCENE_FACET;
         assert!(validate_facet_name(SAVED_SCENE_FACET).is_ok());
         for reserved in [SAVED_SCENE_FACET_V3, SAVED_SCENE_FACET_V2] {
             assert_eq!(

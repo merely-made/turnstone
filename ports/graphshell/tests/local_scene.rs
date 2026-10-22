@@ -3,7 +3,6 @@
 #![cfg(feature = "web")]
 
 use graphshell::app::GraphshellApp;
-use graphshell::local_scene::{capture_scene, restore_scene};
 use graphshell::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
 use mere::canvas::{CameraView, Canvas, Face, Role};
 use muniment::MemoryBackend;
@@ -37,9 +36,9 @@ fn retained_scene_restores_camera_roles_representation_and_selection() {
         zoom: 1.75,
     });
     canvas.set_physics_paused(true);
-    let saved = capture_scene(&canvas, "grid.default", "graphshell.inspect").unwrap();
+    let saved = canvas.capture_scene("Graphshell working scene", "grid.default", "graphshell.inspect").unwrap();
     let mut restored = Canvas::with_graph(owner.clone());
-    restore_scene(&mut restored, owner, &saved, (900, 600)).unwrap();
+    restored.restore_scene(owner, &saved, (900, 600)).unwrap();
     assert_eq!(restored.camera(), canvas.camera());
     assert_eq!(restored.selected_members(), [member]);
     assert_eq!(restored.member_role(member), Some(Role::Pinned));
@@ -74,9 +73,9 @@ fn malformed_scene_refuses_before_replacing_the_canvas() {
     let owner = app.host.graph();
     let mut canvas = Canvas::with_graph(owner.clone());
     let camera = canvas.camera();
-    let mut saved = capture_scene(&canvas, "grid.default", "graphshell.inspect").unwrap();
+    let mut saved = canvas.capture_scene("Graphshell working scene", "grid.default", "graphshell.inspect").unwrap();
     saved.camera_zoom = f32::NAN;
-    assert!(restore_scene(&mut canvas, owner, &saved, (900, 600)).is_err());
+    assert!(canvas.restore_scene(owner, &saved, (900, 600)).is_err());
     assert_eq!(canvas.camera(), camera);
     assert_eq!(canvas.graph().revision(), owner.revision());
 }
