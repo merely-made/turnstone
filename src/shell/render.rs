@@ -927,6 +927,14 @@ impl Shell {
                         None => None,
                     };
                     if let Some(scene) = document_frame {
+                        if let Some(path) = &self.pending_capture
+                            && std::env::var("TURNSTONE_A4_DIAGNOSTICS").is_ok_and(|value| value == "1")
+                        {
+                            let path = path.with_extension(format!("content-{}.scene.json", surface.id.0));
+                            if let Err(error) = std::fs::write(&path, scene.snapshot_json()) {
+                                tracing::warn!(?path, %error, "could not record content scene");
+                            }
+                        }
                         (scene, wgpu::Color::WHITE)
                     } else {
                         #[cfg(all(
