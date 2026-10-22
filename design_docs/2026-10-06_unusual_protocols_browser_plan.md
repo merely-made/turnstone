@@ -2,9 +2,10 @@
 
 **Date:** 2026-10-06
 **Status (2026-10-22): in progress.** The native receiving continuation below is
-committed through `cab743c1` with coherent SDK adoption, passing focused native
-tests and a passing governed-host process probe. The first live attempt exposed
-native request cleanup; the graceful drain repair is qualified by the retry.
+qualified on current upstream `8eebb5a3` plus receiving source/lock `a622c960`:
+70 focused native tests and the governed-host process probe pass. The earlier
+`9c842`/`cab743c1` checkpoint remains historical evidence, separate from this
+current-upstream port.
 The earlier resource-family handoff and shared controller pumping are qualified
 at Turnstone `25f85bd`. SC5/S8 live document accessibility, Graphshell's five
 public mounts and SC6 retained content retain their existing continuations and
@@ -2093,85 +2094,85 @@ including redirects in the shared fetcher. The product control checks ordinary
 fetching and registered body-less session loading without contacting its local
 listener. Explicit Submit remains its existing operation.
 
-At Turnstone `dddbc94e9`, the final portable libtest build passes with Mere
-`af5c3ba85` and Genet `7d1d89dbe`. The [final build
-receipt](../docs/receipts/native_browser_receiving_20261022/product-final-build.json)
-records unchanged source hashes, lock SHA256 `b250339e…` and executable SHA256
-`f55952dd…`. The [focused product
-receipt](../docs/receipts/native_browser_receiving_20261022/product-focused-tests.json)
-records 3 new receiving tests and 7 existing local Micron tests passing. The
-first governed-host probe against that exact executable failed during native link
-setup. Its [failed process
-receipt](../../knot-editor/support/receipts/smolweb-browser-receiving/process.json)
-preserves both executable hashes. The local fixture did not qualify remote
-session retirement. Dropping a completed native Resource session queues its
-proof and encrypted link close, but immediately dropping the endpoint aborts
-the interface writer. Retinue does not retire an active inbound session merely
-because its TCP interface ends, so the old fixture connection and the browser's
-index connection could exhaust the unchanged two-session host allowance before
-the next page's link setup.
+Final qualification uses current upstream `8eebb5a3`, retaining its 41 commits
+after the initially cached `9c842` baseline, including projection-owned Read
+controls, navigation and command metadata. Only the four receiving files were
+ported as `934494bf` and `1e5c7f47`; source and lock are committed at `a622c960`.
+The manifest is unchanged. The [integrated SDK
+receipt](../docs/receipts/native_browser_receiving_20261022/integrated-sdk.json)
+records only 62 Mere source identifiers changing in the lock from `a483…` to
+published `af5c3ba85`; versions, registry entries, dependency tables and other
+supplier pins remain those of current upstream. The old checkpoint's SDK
+compatibility commit `6e5da6dc` was not applied to this port.
 
-Turnstone `cab743c1` now drains the completed page endpoint before returning its
-result, following the existing explicit-Submit lifecycle. This stays inside the
-existing outer request deadline. The local regression asserts successful server
-responses and completed/admitted counts, and joins response tasks before fixture
-shutdown. Knot `3596dce3` also drains its original client using the existing
-1000 ms shutdown grace before handing the live host to the browser. Neither
-change enlarges admission limits or timeouts. The [graceful build
-receipt](../docs/receipts/native_browser_receiving_20261022/product-graceful-build.json)
-records executable SHA256 `fa47564f…`; all 69 focused tests pass again on that
-artifact in the [graceful focused
-receipt](../docs/receipts/native_browser_receiving_20261022/product-graceful-tests.json).
-The [live governed-host
-retry](../../knot-editor/support/receipts/smolweb-browser-receiving/process-graceful.json)
-passes against unchanged host executable SHA256 `d2ee5884…`, receiving host
-source `1f660dcb`. It carries the exact 57-byte Unicode/CRLF index and 131072-byte
-Resource body through Turnstone's request correlation, reducer, standard
+The [integrated build
+receipt](../docs/receipts/native_browser_receiving_20261022/product-integrated-build.json)
+records unchanged source hashes, lock SHA256 `521d344e…`, zero compiler errors
+and executable SHA256 `4ef1b302…`. The [integrated focused
+receipt](../docs/receipts/native_browser_receiving_20261022/product-integrated-tests.json)
+records 70 passing tests across 15 filters: 3 receiving, 7 existing local
+Micron, and 60 current accessibility, command, reading, navigation and owner
+regressions. Current upstream has one platform-consumer accessibility test
+module and a separate command-menu metadata test; the older count of 69 is not
+reused. Reading preferences survive cold load, invalid preferences remain
+recoverable, toolbar address navigation retains its semantics, and offered
+commands retain upstream effect/destructive declarations. The external-host
+fixture and one unrelated inference fixture remain ignored in this ordinary
+run. `surface_a11y` has no current tests and is recorded as absent.
+
+The live current-upstream proof is
+`knot-editor/support/receipts/smolweb-browser-receiving/process-integrated.json`.
+It passes on the exact `4ef1b302…` consumer executable against unchanged host
+SHA256 `d2ee5884…`, host source `1f660dcb`. Exact 57-byte Unicode/CRLF index and
+131072-byte Resource bodies reach request correlation, the reducer, standard
 `nematic.micron` engine, retained controller/frame and qualified same-node link.
-The host's first shutdown reports all three admitted sessions joined with none
-cancelled, covering the fixture handoff and both browser reads. The later
-one-link authority replacement/revocation/restoration/withdrawal proof and
-stalled-session cancelled/joined shutdown also remain green. This is a native
-controller process probe using a libtest executable; installed application,
-window/GPU/headed, independent readers, actor dispatch/concurrency and physical
-radio qualification remain separate.
+All three initial host sessions join without cancellation, covering the fixture
+handoff and both browser reads. The later one-link authority replacement,
+revocation, restoration and withdrawal proof, submission-map refusal and stalled
+session cancelled/joined shutdown also pass. This native process probe uses a
+libtest executable. Installed application, window/GPU/headed, independent
+readers, actor dispatch/concurrency and physical radio remain separate gates.
 
-Micron allocation limits, deadlines, defaults and native dependencies are
-unchanged. Existing shared smolweb caps, deadlines, redirect count and Scroll
-line guard are also unchanged; buffered Scroll body limits remain open. The
-broader SDK cohort brings Genet's upstream HTTP referrer origin reduction above
-4096 characters, optional `upgrade-insecure-requests` handling (default false),
-mixed-content flag and optional WebSocket dependency 0.29 to 0.30. Those are
-incidental cohort uptake, separate from this receiving implementation. Browser
-receiving does not close the existing SC/session/S8, headed, physical
-assistive-technology or full-family release gates.
+The first live attempt exposed a receiving lifecycle bug: dropping a completed
+Resource session queues proofs and encrypted link close, while immediately
+dropping its endpoint aborts the interface writer. TCP EOF alone does not retire
+the active inbound session, so old connections could occupy the unchanged
+two-session host allowance and block the next link setup. The page helper now
+drains its endpoint before returning, following the existing explicit-Submit
+lifecycle inside the same outer deadline. Its local regression requires server
+response success, equal completed/admitted counts and joined response tasks.
+Knot `3596dce3` drains its original client with its existing 1000 ms shutdown
+grace before handing the host to the browser. No admission or deadline increase
+is used.
 
-The initial October 22 portable libtest build selected Mere `af5c3ba85` and
-Genet `7d1d89dbe` with its lock unchanged. It failed with 242 compile errors,
-dominated by the product's Accesskit 0.24.1 types meeting Accesskit 0.25.1 and
-the shared neutral accessibility wrappers. Other reported adoption edges include
-the new `MenuBar` document role and `Actor::join` returning a result. The
-[compact failed build receipt](../docs/receipts/native_browser_receiving_20261022/product-build-failed-20261022T203202Z.json)
-retains source hashes and diagnostics. The [complete diagnostic
-census](../docs/receipts/native_browser_receiving_20261022/product-error-census.json)
-and its [corrected grouping
-summary](../docs/receipts/native_browser_receiving_20261022/product-error-census-summary.json)
-remain historical failed-adoption evidence.
+Against current upstream `8eebb5a3`, Micron and shared smolweb allocation caps,
+deadlines, defaults, redirect count, Scroll line guard and native dependencies
+are unchanged. The source-only SDK selection introduces no HTTP security or
+referrer policy, package-version or registry changes relative to that current
+base. Buffered Scroll body limits remain open. Existing SC/session/S8,
+headed/physical assistive-technology and full-family release gates remain.
 
-The bounded SDK compatibility commit `6e5da6dc` aligns direct Accesskit and its
-consumer with the published family. `Node` to `NodeRef` changes affect test
-callbacks; `MenuBar` receives an explicit document-role mapping. Three actor
-cleanup joins now assert their result. Test fixtures drop the retired
-`Semantic::decay_progress` field and supply `RecallEvidence::embedding: None`
-where no embedding provenance existed. The command constructor adopts semantic
-effect/destructive metadata while preserving execution authority and shared
-catalogue declarations; closing a stored session is classified as destructive
-domain truth. These compatibility changes pass 59 focused tests separately from
-the 10 receiving/local-source tests. The requested `surface_a11y` filter has no
-current tests and is recorded as absent, rather than a passing gate. One unrelated
-inference fixture remains ignored. A Servo tidy dependency fixture emits
-`invalid type: boolean true, expected a map` during successful compilation; the
-final receipt records that stderr separately from compiler errors.
+The earlier isolated checkpoint remains reproducible historical evidence.
+Starting from stale `9c842`, SDK adoption first failed with 242 compiler errors,
+mostly Accesskit 0.24.1 versus 0.25.1. The [failed build
+receipt](../docs/receipts/native_browser_receiving_20261022/product-build-failed-20261022T203202Z.json),
+[diagnostic census](../docs/receipts/native_browser_receiving_20261022/product-error-census.json)
+and [corrected grouping](../docs/receipts/native_browser_receiving_20261022/product-error-census-summary.json)
+are preserved. That checkpoint's `6e5da6dc` aligned Accesskit, test `NodeRef`
+callbacks, the `MenuBar` role, three join-result assertions, retired Semantic and
+optional embedding fixtures, and command semantic metadata. Its `dddbc94e9`
+build and 69-test receipts preceded the failed live process proof at
+`knot-editor/support/receipts/smolweb-browser-receiving/process.json`.
+The graceful fix at `cab743c1` then passed its [build](../docs/receipts/native_browser_receiving_20261022/product-graceful-build.json),
+[69 focused tests](../docs/receipts/native_browser_receiving_20261022/product-graceful-tests.json)
+and `knot-editor/support/receipts/smolweb-browser-receiving/process-graceful.json`.
+Those old receipts do not qualify current upstream; the integrated receipts
+above do. The old `500bc78a7` to `af5c3ba85` SDK comparison included HTTP referrer
+origin reduction, optional insecure-request upgrade/mixed-content handling and
+an optional WebSocket 0.29 to 0.30 dependency change. That caveat applies only to
+the old checkpoint comparison, not this source-only current-upstream port. A
+Servo tidy fixture's nonfatal `invalid type: boolean true, expected a map` stderr
+is recorded separately from compiler errors in each successful build receipt.
 
 ## Cross-references
 
