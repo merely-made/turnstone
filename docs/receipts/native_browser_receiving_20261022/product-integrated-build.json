@@ -1,0 +1,47 @@
+{
+  "schema": "turnstone-native-browser-receiving-integrated-build-v1",
+  "recorded_at_utc": "2026-10-22T21:00:50.6050730Z",
+  "receiving_source_commit": "a622c96070932cbbb74bfb37289040eae9d32a4d",
+  "checkout_head_before": "a622c96070932cbbb74bfb37289040eae9d32a4d",
+  "checkout_head_after": "a622c96070932cbbb74bfb37289040eae9d32a4d",
+  "upstream_basis": "8eebb5a375cc56a619b61acfcf2fcf4b88b094f5",
+  "receiving_only_commits": [
+    "934494bf",
+    "1e5c7f47"
+  ],
+  "old_sdk_compatibility_cherry_picked": false,
+  "command": "cargo test --lib --no-default-features --no-run --locked --offline --message-format=json",
+  "exit_code": 0,
+  "elapsed_seconds": 162.286,
+  "source_sha256_before": {
+    "Cargo.toml": "b89a0673e0151a2174c57235a16d5913e27a2938adb8734f4b7aa7475c29b613",
+    "Cargo.lock": "521d344e4a60b068c8d8b6a00ea3b3891b100463e38afdbbf7815dc7883e41a5",
+    "src/nomadnet.rs": "ee5335aad01358742dd8ba2f4f97acf2469c788e67b388c66295247afb836f26",
+    "src/shell/effects.rs": "75c2e98b11ee02ccb68dde187c95888b2bf5c4342ad2670e8c5534743c0f16d6",
+    "src/shell/nomadnet_receiving_tests.rs": "80b08f894db3d2638af0f3328ada0e62f4cbefb153311f68ebf02fb15c5b5791",
+    "src/shell/smolweb_receiving_tests.rs": "36fd7aa91e5b29669d843b6180ea26fe18a5fbb2f9c07bc63cd87d15492282e3"
+  },
+  "source_sha256_after": {
+    "Cargo.toml": "b89a0673e0151a2174c57235a16d5913e27a2938adb8734f4b7aa7475c29b613",
+    "Cargo.lock": "521d344e4a60b068c8d8b6a00ea3b3891b100463e38afdbbf7815dc7883e41a5",
+    "src/nomadnet.rs": "ee5335aad01358742dd8ba2f4f97acf2469c788e67b388c66295247afb836f26",
+    "src/shell/effects.rs": "75c2e98b11ee02ccb68dde187c95888b2bf5c4342ad2670e8c5534743c0f16d6",
+    "src/shell/nomadnet_receiving_tests.rs": "80b08f894db3d2638af0f3328ada0e62f4cbefb153311f68ebf02fb15c5b5791",
+    "src/shell/smolweb_receiving_tests.rs": "36fd7aa91e5b29669d843b6180ea26fe18a5fbb2f9c07bc63cd87d15492282e3"
+  },
+  "source_paths_changed_during_build": [],
+  "test_artifacts": [
+    {
+      "path": "C:\\t\\cargo-targets\\turnstone\\build\\debug\\deps\\turnstone-8dd5b365f4434541.exe",
+      "sha256": "4ef1b302235202607cbc466e7a2019d331fb4a583eccc07614e4befcd1f61757"
+    }
+  ],
+  "compiler_error_count": 0,
+  "compiler_errors": [],
+  "dependency_fixture_stderr": [
+    "error: invalid type: boolean `true`, expected a map"
+  ],
+  "dependency_fixture_stderr_fatal": false,
+  "source_basis": "current origin/main plus receiving-only port and Mere af5 source pin",
+  "limits_or_deadlines_changed": false
+}
