@@ -32,7 +32,7 @@ impl App {
             let dir = crate::session::session_dir(&self.data_root, session);
             runtime.persistence.placement_for(&dir).is_ok()
         });
-        if runtime.folds.read_only || !writable {
+        if runtime.view.read_only || !writable {
             self.note(crate::observe::AppEvent::InteractionMissed {
                 what: "graph-fold",
                 target: "saved fold sidecar or session write authority refused; preserved intact"
@@ -43,7 +43,7 @@ impl App {
         let changed = self
             .with_graph_pane(pane, |canvas| match action {
                 Action::FoldSelection => canvas
-                    .fold_selected(crate::graph_folds::scope(graph))
+                    .fold_selected(crate::scene_state::scope(graph))
                     .is_some(),
                 Action::ExpandFold => canvas.expand_selected_fold(),
                 Action::ExpandAllFolds => {
@@ -123,7 +123,7 @@ mod tests {
     fn unsupported_saved_state_refuses_edit_and_reports_it() {
         let mut app = fixture();
         let graph = app.graph_runtimes.active_graph();
-        app.graph_runtimes.get_mut(graph).unwrap().folds.read_only = true;
+        app.graph_runtimes.get_mut(graph).unwrap().view.read_only = true;
         assert!(app.update(Action::FoldSelection).is_empty());
         assert!(app.graph_runtimes.fold_records().is_empty());
         assert!(app.take_events().iter().any(|e| matches!(
@@ -209,16 +209,16 @@ mod tests {
         let session_dir = app.session_dir();
         std::fs::create_dir_all(&session_dir).unwrap();
         crate::session::save_session_graph(&session_dir, app.graph_runtimes.graph());
-        crate::session::save_view_intent(
-            &session_dir,
-            &crate::session::ViewIntentV1 {
-                physics_paused: Some(true),
-                ..Default::default()
-            },
-        );
+        app.graph_runtimes.set_physics_paused(true);
+        app.refresh_facets();
+        crate::session::save_node_facets(&session_dir, app.graph_runtimes.facets());
+        app.graph_runtimes.set_physics_paused(false);
         app.adopt_session(id);
         assert!(app.graph_runtimes.physics_paused());
-        let intent = crate::session::load_view_intent(&session_dir).unwrap();
-        assert_eq!(intent.physics_paused, Some(true));
+        let facets = crate::session::load_node_facets(&session_dir).unwrap();
+        let scene = crate::scene_state::read_scene(&facets, *app.container_id().as_ref().unwrap())
+            .unwrap()
+            .unwrap();
+        assert!(scene.physics_paused);
     }
 }

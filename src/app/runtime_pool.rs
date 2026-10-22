@@ -36,7 +36,7 @@ pub struct GraphRuntime {
     pub(crate) scene_save_pending: bool,
     pub(crate) scene_restore_pending: bool,
     pub(crate) scene_transition: Option<mere::canvas::physics_controls::ArrangementTransition>,
-    pub(crate) folds: crate::graph_folds::FoldSidecar,
+    pub(crate) view: crate::scene_state::ViewState,
     origin: Option<crate::host_journal::RuntimeOrigin>,
     pub(crate) persistence: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile>,
 }
@@ -54,7 +54,7 @@ impl GraphRuntime {
             scene_transition: None,
             scene_save_pending: false,
             scene_restore_pending: false,
-            folds: Default::default(),
+            view: Default::default(),
             origin: None,
             persistence: crate::session_persistence::SessionPersistence::Unbound,
         }

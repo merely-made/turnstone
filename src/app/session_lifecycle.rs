@@ -126,7 +126,6 @@ impl App {
             history: chrome::nav::History::new(String::new()),
             active_pane: None,
             browser: pandect::browser_node_state::BrowserNodeStates::new(),
-            physics_damping: pandect::DEFAULT_PHYSICS_DAMPING,
             physics_refusal: None,
             maximized: None,
             window_count: 1,
@@ -344,13 +343,13 @@ impl App {
             &mut fork_facets,
             &copy.id_remap,
         );
-        if let Some(donor_container) = self.container_id() {
-            pandect::copy_scene_facets(
-                self.graph_runtimes.facets(),
-                &mut fork_facets,
-                donor_container,
-                *fork_graph_id.as_uuid(),
-            );
+        if let Some(Ok(scene)) = self
+            .container_id()
+            .and_then(|donor| crate::scene_state::read_scene(self.graph_runtimes.facets(), donor))
+        {
+            let ids = copy.id_remap.iter().copied().collect();
+            let carried = mere::canvas::saved_scene::remap_scene(&scene, &ids);
+            pandect::write_saved_scene(&mut fork_facets, *fork_graph_id.as_uuid(), &carried);
         }
         let derivation_facet =
             chartulary::FacetId::new(mere::kernel::graph::node_facets::PROVENANCE_DERIVATIONS);
@@ -1167,12 +1166,6 @@ impl App {
         self.redshank = self.redshank.reopen(&sdir);
         self.redshank_members.clear();
         self.reconcile_redshank_fields();
-        {
-            let graph = self.graph_runtimes.active_graph();
-            let runtime = self.graph_runtimes.get_mut(graph).expect("active graph");
-            runtime.folds =
-                crate::graph_folds::FoldSidecar::restore(&sdir, graph, &mut runtime.canvas);
-        }
         if let Some(score) = session::load_projection_score(&sdir) {
             self.graph_runtimes.restore_projection_score(score);
         }
@@ -1182,57 +1175,14 @@ impl App {
         // arm clears the score for a non-Spiral strategy, which is right for a
         // fresh choice and wrong for a restore of the pair.
         self.reading = crate::reading_view::ReadingState::load(&sdir);
-        let view_intent = session::load_view_intent(&sdir);
-        let physics_paused = view_intent.as_ref().and_then(|intent| intent.physics_paused);
-        self.command_choices = view_intent
-            .as_ref()
-            .map(|intent| intent.command_menu.clone())
-            .unwrap_or_default();
-        if let Some(intent) = view_intent {
-            self.graph_runtimes
-                .set_layout_strategy(intent.layout_strategy);
-            // The physics choice rides the same sidecar: sources first, so
-            // the law's build reads them, then the law, then its overlays.
-            // An unknown id (a newer catalog) falls back to the default
-            // rather than failing the open. (Physics catalog — P2.)
-            if let Some(source) = intent
-                .physics_kind_source
-                .as_deref()
-                .and_then(mere::canvas::PhysicsKindSource::parse)
-            {
-                self.graph_runtimes.set_physics_kind_source(source);
-            }
-            if let Some(source) = intent
-                .physics_mass_source
-                .as_deref()
-                .and_then(mere::canvas::PhysicsMassSource::parse)
-            {
-                self.graph_runtimes.set_physics_mass_source(source);
-            }
-            if let Some(source) = intent
-                .physics_depth_source
-                .as_deref()
-                .and_then(mere::canvas::PhysicsDepthSource::parse)
-            {
-                self.graph_runtimes.set_physics_depth_source(source);
-            }
-            if let Some(law) = intent
-                .physics_law
-                .as_deref()
-                .and_then(mere::canvas::PhysicsLaw::parse)
-            {
-                let result = self.graph_runtimes.set_physics_law(law);
-                self.record_physics_result(result);
-            }
-            let result = self.graph_runtimes.set_physics_overlays(
-                intent
-                    .physics_overlays
-                    .iter()
-                    .filter_map(|id| mere::canvas::PhysicsOverlay::parse(id))
-                    .collect(),
-            );
-            self.record_physics_result(result);
-        }
+        // The folds and the command menu ride the view intent; the scene
+        // itself is restored below, once the facets are reconciled.
+        let mut opened_view = {
+            let graph = self.graph_runtimes.active_graph();
+            let runtime = self.graph_runtimes.get_mut(graph).expect("active graph");
+            crate::scene_state::open_view(&sdir, graph, &mut runtime.canvas)
+        };
+        self.command_choices = opened_view.commands.clone();
         // Preview imagery lives out of the graph now. The first paint queues
         // only visible cache misses; the shell resolves those after the frame,
         // so adoption does not decode the entire session into memory.
@@ -1288,9 +1238,18 @@ impl App {
             Ok(_) => {}
             Err(error) => tracing::warn!(%error, "content-class reconciliation failed"),
         }
-        let positions = pandect::read_arrangement_positions(self.graph_runtimes.facets());
-        let has_saved_positions = !positions.is_empty();
-        self.graph_runtimes.seed_cartography(positions);
+        let container = self.container_id();
+        let restored =
+            crate::scene_state::restore_scene(&mut self.graph_runtimes, container, &mut opened_view);
+        for result in restored.refusals {
+            self.record_physics_result(result);
+        }
+        let has_saved_positions = restored.positions;
+        let physics_paused = restored.paused;
+        {
+            let graph = self.graph_runtimes.active_graph();
+            self.graph_runtimes.get_mut(graph).expect("active graph").view = opened_view.state;
+        }
         // The participant runtime derives from the binding facets (agency) + the
         // graph's `Node.nested` pointers (structure) + the nested logs.
         self.pending_install = None;
@@ -1321,35 +1280,6 @@ impl App {
                 pandect::write_denizen_binding(self.graph_runtimes.facets_mut(), member, &binding);
             }
         }
-        // The scene's own view settings ride the `scene.*` container facets:
-        // the sizing mode + metric and the physics damping re-open as saved.
-        let scene = self
-            .container_id()
-            .map(|c| pandect::read_scene_facets(self.graph_runtimes.facets(), c))
-            .unwrap_or_default();
-        self.physics_damping = scene.physics_damping;
-        self.graph_runtimes
-            .set_physics_damping(scene.physics_damping);
-        self.graph_runtimes
-            .apply_cartography_importance_metric(&scene.importance_metric);
-        let sizes = pandect::read_arrangement_sizes(self.graph_runtimes.facets());
-        self.graph_runtimes.apply_cartography_sizing(
-            sizes,
-            scene.size_by_degree,
-            scene.size_by_importance,
-        );
-        let sprites = pandect::read_arrangement_sprites(self.graph_runtimes.facets());
-        self.graph_runtimes
-            .apply_cartography_sprites(sprites.iter().map(|(id, uri)| (*id, uri.as_str())));
-        let hulls = pandect::read_arrangement_sprite_hulls(self.graph_runtimes.facets());
-        self.graph_runtimes.apply_cartography_sprite_hulls(hulls);
-        let materials = pandect::read_arrangement_materials(self.graph_runtimes.facets());
-        self.graph_runtimes.apply_cartography_materials(materials);
-        let faces = pandect::read_arrangement_faces(self.graph_runtimes.facets());
-        self.graph_runtimes
-            .apply_cartography_faces(faces.iter().map(|(id, code)| (*id, code.as_str())));
-        let container = self.container_id();
-        crate::graph_scenes::restore(&mut self.graph_runtimes, container);
         // Session-scoped view state resets.
         self.omnibar = OmnibarState::default();
         self.document_find = crate::document_find::DocumentFindState::default();
