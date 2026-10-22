@@ -227,7 +227,7 @@ mod tests {
 
     #[test]
     fn native_graft_composes_nested_transforms_and_keeps_dom_focus() {
-        use accesskit_consumer::{Node as ConsumerNode, Tree as ConsumerTree, TreeChangeHandler};
+        use accesskit_consumer::{NodeRef as ConsumerNode, Tree as ConsumerTree, TreeChangeHandler};
         struct Changes;
         impl TreeChangeHandler for Changes {
             fn node_added(&mut self, _: &ConsumerNode<'_>) {}

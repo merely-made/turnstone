@@ -597,6 +597,7 @@ mod tests {
             tokens: 1,
             continuations: vec![],
             recall: Some(RecallEvidence {
+                embedding: None,
                 owner: Some("turnstone/session".into()),
                 scope: vec![],
                 config: Default::default(),
