@@ -9,7 +9,7 @@ use mere::kernel::graph::{RelationKind, SemanticSubKind};
 
 pub type RelationshipTarget = mere::navigation::RelationshipTarget<GraphId>;
 pub type RelationshipRow = mere::navigation::RelationshipRow<GraphId>;
-pub use mere::navigation::{document_label, relationships};
+pub use mere::navigation::relationships;
 
 impl App {
     pub(crate) fn navigate_relationship(&mut self, target: RelationshipTarget) -> Vec<Effect> {

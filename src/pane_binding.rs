@@ -182,10 +182,7 @@ impl App {
             let Some((key, _)) = canvas.graph().get_node_by_id(member) else {
                 return ("Document unavailable".into(), false);
             };
-            (
-                crate::relationship_navigation::document_label(canvas.graph(), key),
-                true,
-            )
+            (canvas.graph().node_display_label(key), true)
         } else {
             (
                 context
