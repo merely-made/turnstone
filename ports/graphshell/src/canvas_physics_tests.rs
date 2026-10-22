@@ -1052,3 +1052,167 @@ fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
         facet["dynamics"]
     );
 }
+
+#[test]
+fn authored_two_stage_schedule_survives_v4_reopen_capture_progress_and_refusal() {
+    use crate::local_scene::{capture_scene, restore_scene};
+    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+    use crate::product::SAVED_SCENE_FACET;
+    use mere::canvas::dynamics_spec::{GroupRoles, Node, Target};
+    use mere::canvas::physics_controls::{
+        StageDraft, TwoStageSchedule, apply_two_stage_schedule, read_two_stage_schedule,
+    };
+    use mere::canvas::{Channel, PhysicsOverlay, Role, StageStop};
+    use std::collections::BTreeMap;
+
+    let persona = SelectedPersonaRef {
+        persona: FIXTURE_PERSONA_ADDRESS.into(),
+        profile: "profile:graphshell-tree".into(),
+    };
+    let mut app =
+        crate::app::GraphshellApp::fixture(muniment::MemoryBackend::new(), persona).unwrap();
+    let mut subject = p2_fixture_canvas();
+
+    // Retain nonempty group and item target maps around the schedule root.
+    let keys: Vec<_> = subject.graph().nodes().map(|(key, _)| key).collect();
+    let mut same_site = None;
+    'outer: for (i, &a) in keys.iter().enumerate() {
+        let Some(site) = subject.role_group_of(a) else {
+            continue;
+        };
+        for &b in keys.iter().skip(i + 1) {
+            if subject.role_group_of(b).as_deref() == Some(site.as_str()) {
+                same_site = Some((site, a, b));
+                break 'outer;
+            }
+        }
+    }
+    let (site, _group_member, item_member) = same_site.expect("fixture has a multi-node site");
+    let capture_member = keys
+        .iter()
+        .copied()
+        .find(|key| subject.role_group_of(*key).as_deref() != Some(site.as_str()))
+        .expect("fixture has a node outside the selected site");
+    let item_id = subject.graph().get_node(item_member).unwrap().id;
+    let mut original = subject.dynamics_spec().unwrap();
+    original.target = Some(Target {
+        arrangement: "free".into(),
+        anchored_pull: 0.4,
+        default_role: Role::Seeded,
+        groups: Some(GroupRoles {
+            channel: Channel::Groups(PhysicsKindSource::Site).id(),
+            roles: BTreeMap::from([(site.clone(), Role::Anchored)]),
+        }),
+        items: BTreeMap::from([(item_id.to_string(), Role::Pinned)]),
+    });
+    subject.set_dynamics_spec(&original).unwrap();
+    assert_eq!(subject.arrangement_role_of(capture_member), Role::Seeded);
+
+    let schedule = TwoStageSchedule {
+        first: StageDraft {
+            law: PhysicsLaw::Springs,
+            stop: StageStop::Frames(1),
+            capture: Some(Role::Anchored),
+        },
+        second: StageDraft {
+            law: PhysicsLaw::Charge,
+            stop: StageStop::Frames(10_000),
+            capture: None,
+        },
+        overlays: vec![PhysicsOverlay::GravityLocus],
+    };
+    apply_two_stage_schedule(&mut subject, &schedule).unwrap();
+    assert_eq!(subject.physics_schedule_stage(), Some(0));
+    assert!(!subject.physics_paused());
+    let _ = subject.frame(800, 600);
+    assert_eq!(subject.physics_schedule_stage(), Some(1));
+    assert_eq!(subject.arrangement_role_of(capture_member), Role::Anchored);
+    assert_eq!(
+        subject.captured_positions().unwrap().len(),
+        subject.graph().node_count()
+    );
+
+    // A rejected shared overlay cannot replace the live schedule or its state.
+    subject.set_physics_paused(true);
+    let before_spec = subject.dynamics_spec().unwrap();
+    let before_positions = subject.cartography_geometry();
+    let mut refused = schedule.clone();
+    refused.second.law = PhysicsLaw::Density;
+    refused.overlays = vec![PhysicsOverlay::DomainCluster];
+    let error = apply_two_stage_schedule(&mut subject, &refused).unwrap_err();
+    assert!(
+        error.contains("Density") || error.contains("overlay"),
+        "{error}"
+    );
+    assert_eq!(subject.dynamics_spec().unwrap(), before_spec);
+    assert_eq!(subject.cartography_geometry(), before_positions);
+    assert_eq!(subject.physics_schedule_stage(), Some(1));
+    assert!(subject.physics_paused());
+
+    // Source and role edits keep the paused stage and progress. The group/item
+    // role maps survive alongside the default role edit.
+    let mut choice = PhysicsChoice::live(&subject);
+    choice.kind = PhysicsKindSource::Degree;
+    apply_physics(&mut subject, &choice);
+    assert_eq!(subject.physics_schedule_stage(), Some(1));
+    assert!(subject.physics_paused());
+    apply_role(&mut subject, Role::Pinned).unwrap();
+    assert_eq!(subject.physics_schedule_stage(), Some(1));
+    assert!(subject.physics_paused());
+
+    let saved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
+    let saved_spec = saved.dynamics_spec().unwrap();
+    let Node::Schedule { stages, .. } = &saved_spec.root else {
+        panic!("saved v4 scene keeps the authored schedule recipe")
+    };
+    assert_eq!(stages.len(), 2);
+    assert_eq!(stages[0].capture, Some(Role::Anchored));
+    assert_eq!(stages[1].capture, None);
+    let target = saved_spec.target.as_ref().unwrap();
+    assert_eq!(target.default_role, Role::Pinned);
+    assert_eq!(target.groups.as_ref().unwrap().roles[&site], Role::Anchored);
+    assert_eq!(target.items[&item_id.to_string()], Role::Pinned);
+    const ADDRESS: &str = "mere://scene/g4b3-schedule";
+    app.host.save_product_scene(ADDRESS, &saved).unwrap();
+    let facet = app
+        .host
+        .facet_value(ADDRESS, SAVED_SCENE_FACET)
+        .unwrap()
+        .clone();
+    assert_eq!(
+        facet["dynamics"],
+        serde_json::to_value(&saved_spec).unwrap()
+    );
+    assert_eq!(facet["dynamics"]["root"]["node"], "schedule");
+    assert_eq!(
+        facet["dynamics"]["root"]["stages"]
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
+    assert_eq!(
+        read_two_stage_schedule(&subject).unwrap(),
+        Some(schedule.clone())
+    );
+
+    // Clearing the recipe is explicit; reopening the saved scene restores the
+    // canonical two-stage root at stage zero, paused as saved.
+    let choice = PhysicsChoice::live(&subject);
+    apply_single_law(&mut subject, &choice).unwrap();
+    assert_eq!(subject.physics_schedule_stage(), None);
+    let reopened = app.host.product_scene(ADDRESS).unwrap();
+    restore_scene(&mut subject, app.host.graph(), &reopened, TREE_CANVAS).unwrap();
+    assert_eq!(subject.dynamics_spec().unwrap(), saved_spec);
+    assert_eq!(subject.physics_schedule_stage(), Some(0));
+    assert!(subject.physics_paused());
+    assert_eq!(read_two_stage_schedule(&subject).unwrap(), Some(schedule));
+    assert_eq!(subject.graph().node_count(), app.host.graph().node_count());
+
+    let resaved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
+    app.host.save_product_scene(ADDRESS, &resaved).unwrap();
+    assert_eq!(
+        app.host.facet_value(ADDRESS, SAVED_SCENE_FACET).unwrap()["dynamics"],
+        facet["dynamics"]
+    );
+}
