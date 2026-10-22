@@ -80,6 +80,7 @@ enum Command {
         run: String,
         question: String,
         chosen: Vec<crate::research::Target>,
+        answer_format: wire::recall::AnswerFormat,
     },
     Control {
         run: String,
@@ -88,6 +89,7 @@ enum Command {
     Source {
         run: String,
         handle: u32,
+        claim_link: Option<(usize, usize)>,
     },
     Refresh,
 }
@@ -146,6 +148,21 @@ impl InferenceService {
         question: String,
         chosen: Vec<crate::research::Target>,
     ) -> Result<String, String> {
+        self.ask_format(question, chosen, wire::recall::AnswerFormat::Prose)
+    }
+    pub fn ask_with_evidence(
+        &self,
+        question: String,
+        chosen: Vec<crate::research::Target>,
+    ) -> Result<String, String> {
+        self.ask_format(question, chosen, wire::recall::AnswerFormat::ClaimSupportV1)
+    }
+    fn ask_format(
+        &self,
+        question: String,
+        chosen: Vec<crate::research::Target>,
+        answer_format: wire::recall::AnswerFormat,
+    ) -> Result<String, String> {
         if question.trim().is_empty() {
             return Err("Enter a question.".into());
         }
@@ -157,6 +174,7 @@ impl InferenceService {
             run: run.clone(),
             question,
             chosen,
+            answer_format,
         })?;
         Ok(run)
     }
@@ -164,6 +182,23 @@ impl InferenceService {
         self.send(Command::Control { run, control })
     }
     pub fn source(&self, run: String, handle: u32) -> Result<(), String> {
+        self.source_request(run, handle, None)
+    }
+    pub fn claim_source(
+        &self,
+        run: String,
+        handle: u32,
+        claim: usize,
+        link: usize,
+    ) -> Result<(), String> {
+        self.source_request(run, handle, Some((claim, link)))
+    }
+    fn source_request(
+        &self,
+        run: String,
+        handle: u32,
+        claim_link: Option<(usize, usize)>,
+    ) -> Result<(), String> {
         if !run.starts_with(&format!("{}/", self.owner)) {
             return Err("The citation belongs to another browsing session.".into());
         }
@@ -174,7 +209,11 @@ impl InferenceService {
             snapshot.source = None;
             snapshot.revision += 1;
         }
-        self.send(Command::Source { run, handle })
+        self.send(Command::Source {
+            run,
+            handle,
+            claim_link,
+        })
     }
     pub fn refresh(&self) -> Result<(), String> {
         self.send(Command::Refresh)
@@ -303,11 +342,17 @@ fn worker(
                 let mut next = previous.clone();
                 if let Some(command) = command {
                     match command {
-                        Command::Ask { run, question, .. } => {
+                        Command::Ask {
+                            run,
+                            question,
+                            answer_format,
+                            ..
+                        } => {
                             intent(
                                 connection,
                                 ASK_PUBLISHED_INTENT,
                                 serde_json::to_vec(&PublishedAskRequestV1 {
+                                    answer_format,
                                     owner: owner.clone(),
                                     ask: wire::AskRequestV1 { run, question },
                                     scope: ask_scope.ok_or(
@@ -332,7 +377,11 @@ fn worker(
                             )
                             .await?;
                         },
-                        Command::Source { run, handle } => {
+                        Command::Source {
+                            run,
+                            handle,
+                            claim_link,
+                        } => {
                             // Refresh first so an old click cannot reopen a withdrawn citation.
                             next.runs = read_runs(connection)
                                 .await?
@@ -340,8 +389,17 @@ fn worker(
                                 .into_iter()
                                 .filter(|r| r.run.starts_with(&format!("{owner}/")))
                                 .collect();
-                            let opened =
-                                resolve_source(sources.as_ref(), &next.runs, &run, handle)?;
+                            let opened = match claim_link {
+                                Some((claim, link)) => resolve_claim_source(
+                                    sources.as_ref(),
+                                    &next.runs,
+                                    &run,
+                                    handle,
+                                    claim,
+                                    link,
+                                )?,
+                                None => resolve_source(sources.as_ref(), &next.runs, &run, handle)?,
+                            };
                             sources.open_source(&opened, generation)?;
                             // The intent is semantic work even if an identical
                             // source snapshot would not advance its revision.
@@ -541,6 +599,69 @@ fn resolve_source(
     })
 }
 
+fn resolve_claim_source(
+    owner: &dyn RetainedSourceOwner,
+    runs: &[RunV1],
+    run: &str,
+    handle: u32,
+    claim: usize,
+    link: usize,
+) -> Result<OpenSource, String> {
+    let mut opened = resolve_source(owner, runs, run, handle)?;
+    let evidence = runs
+        .iter()
+        .find(|r| r.run == run)
+        .and_then(|r| r.recall.as_ref())
+        .ok_or("The retained answer is unavailable.")?;
+    let support = evidence
+        .support
+        .as_ref()
+        .ok_or("Claim support is unavailable.")?;
+    // The resident supplies the projection, but the receiving host checks its
+    // immutable raw-output and passage binding before using any narrower range.
+    if support.raw_output
+        != eidetic::ManifestId::of_blob(runs.iter().find(|r| r.run == run).unwrap().text.as_bytes())
+        || support.error.is_some()
+    {
+        return Err("Claim support does not match the retained answer.".into());
+    }
+    let link = support
+        .claims
+        .get(claim)
+        .and_then(|c| c.evidence.get(link))
+        .ok_or("That claim link is unavailable.")?;
+    let passage = evidence
+        .passages
+        .iter()
+        .find(|p| p.handle == handle)
+        .ok_or("The supplied passage is unavailable.")?;
+    let selector = link
+        .selector
+        .as_ref()
+        .ok_or("The claim has no checked quotation.")?;
+    if link.handle != handle
+        || link.passage != Some(passage.passage.id())
+        || link.error.is_some()
+        || selector.start < opened.selector.start
+        || selector.end > opened.selector.end
+        || selector.start >= selector.end
+    {
+        return Err("The claim quotation does not name its supplied passage range.".into());
+    }
+    let quote: String = opened
+        .retained
+        .text
+        .chars()
+        .skip(selector.start)
+        .take(selector.end - selector.start)
+        .collect();
+    if quote != link.quote {
+        return Err("The retained claim quotation no longer matches its source.".into());
+    }
+    opened.selector = selector.clone();
+    Ok(opened)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -597,6 +718,8 @@ mod tests {
             tokens: 1,
             continuations: vec![],
             recall: Some(RecallEvidence {
+                answer_format: Default::default(),
+                support: None,
                 owner: Some("turnstone/session".into()),
                 scope: vec![],
                 config: Default::default(),
@@ -608,6 +731,42 @@ mod tests {
             }),
         };
         (Source { text }, vec![run])
+    }
+    #[test]
+    fn claim_inspection_rechecks_the_exact_subrange_and_raw_answer_binding() {
+        let (owner, mut runs) = fixture();
+        let raw = r#"{"claims":[{"status":"supported","text":"An amberstone version","evidence":[{"handle":1,"quote":"source version: amberstone."}]}]}"#;
+        runs[0].text = raw.into();
+        let r = runs[0].recall.as_mut().unwrap();
+        r.support = Some(eidetic::models::answer::AnswerSupport::assess(
+            raw,
+            &[(1, &r.passages[0].passage)],
+        ));
+        let opened = resolve_claim_source(&owner, &runs, "retained", 1, 0, 0).unwrap();
+        assert!(opened.selector.start > 0);
+        assert_eq!(
+            opened
+                .retained
+                .text
+                .chars()
+                .skip(opened.selector.start)
+                .take(opened.selector.end - opened.selector.start)
+                .collect::<String>(),
+            "source version: amberstone."
+        );
+        runs[0]
+            .recall
+            .as_mut()
+            .unwrap()
+            .support
+            .as_mut()
+            .unwrap()
+            .claims[0]
+            .evidence[0]
+            .quote = "different quotation".into();
+        assert!(resolve_claim_source(&owner, &runs, "retained", 1, 0, 0).is_err());
+        runs[0].text.push_str("changed output");
+        assert!(resolve_claim_source(&owner, &runs, "retained", 1, 0, 0).is_err());
     }
     #[test]
     fn citation_open_reads_the_exact_source_version_and_checks_its_passage_identity() {
@@ -742,7 +901,7 @@ mod tests {
             let wrong_owner = "turnstone/r3-wrong-owner/research/v1";
             let publish = PublishCorpusRequestV1 { owner: wrong_owner.into(), sources: vec![source.clone()] };
             let publication_error = intent(&mut connection, PUBLISH_CORPUS_INTENT, serde_json::to_vec(&publish).unwrap()).await.unwrap_err();
-            let ask = PublishedAskRequestV1 { owner: wrong_owner.into(), ask: wire::AskRequestV1 { run: format!("{wrong_owner}/probe"), question: "This wrong-owner ask must never generate.".into() }, scope: vec![source.source.clone()] };
+            let ask = PublishedAskRequestV1 { answer_format: Default::default(), owner: wrong_owner.into(), ask: wire::AskRequestV1 { run: format!("{wrong_owner}/probe"), question: "This wrong-owner ask must never generate.".into() }, scope: vec![source.source.clone()] };
             let ask_error = intent(&mut connection, ASK_PUBLISHED_INTENT, serde_json::to_vec(&ask).unwrap()).await.unwrap_err();
             connection.client.close().await.unwrap();
             std::fs::write(output, serde_json::to_vec_pretty(&serde_json::json!({ "actual_admitted_route": true, "source_kind": "fleece", "wrong_owner_publication_refused": true, "wrong_owner_ask_refused": true, "publication_error": publication_error, "ask_error": ask_error })).unwrap()).unwrap();

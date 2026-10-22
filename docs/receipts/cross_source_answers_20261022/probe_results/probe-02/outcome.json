@@ -1,0 +1,5 @@
+{
+  "result": "rejected",
+  "reason": "Stronger final request still ignored structured format and repeatedly emitted numbered source text; stopped after preserving streamed output.",
+  "scope": "provider-only probe; never counted as headed acceptance"
+}

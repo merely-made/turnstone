@@ -1,0 +1,178 @@
+{
+  "run": "cross",
+  "question": "What are the Juniper archive recovery phrase, the Pelican observatory access word, and the saved listener reminder? Give one claim for each, in that order.",
+  "state": "finished",
+  "text": "{\"claims\":[\n  {\"status\":\"supported\",\"text\":\"The Juniper archive's recovery phrase is violet lantern.\",\"evidence\":[{\"handle\":1,\"quote\":\"copy at least 16 characters EXACTLY from the corresponding numbered passage\"}]},\n  {\"status\":\"supported\",\"text\":\"The Pelican observatory's access word is café.\",\"evidence\":[{\"handle\":2,\"quote\":\"copy at least 16 characters EXACTLY from the corresponding numbered passage\"}]},\n  {\"status\":\"supported\",\"text\":\"Saved from the embedded listener: café → harbor.\",\"evidence\":[{\"handle\":3,\"quote\":\"copy at least 16 characters EXACTLY from the corresponding numbered passage\"}]}\n]}",
+  "error": null,
+  "session": {
+    "session_id": "blake3:007991f58cff7b9342900eca1961b6fe48968f64cbcad10c192b32ecf578dcf9",
+    "prompt_template_hash": "blake3:9c222535ed31aadd676fc2f1beb16d0dd0402c76a9ee1398bc0c200c825103da"
+  },
+  "tokens": 139,
+  "continuations": [
+    {
+      "device": "device:fdb6957ef771d0b73e3814b275017b17",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "answer_format": "claim_support_v1",
+    "support": {
+      "method": "eidetic.claim-support/v1",
+      "raw_output": "blake3:b8a4d0f0541477f6a49502940d2688c3f0cc26e23fc298a626dc5dc53fd3e864",
+      "semantic_review": "unreviewed",
+      "claims": [
+        {
+          "status": "supported",
+          "text": "The Juniper archive's recovery phrase is violet lantern.",
+          "evidence": [
+            {
+              "handle": 1,
+              "quote": "copy at least 16 characters EXACTLY from the corresponding numbered passage",
+              "passage": "blake3:a4ac01cc6c9b0fff5c0dc8afd985ab155857e61d730784fb56f3083342be8261",
+              "selector": null,
+              "error": "Quotation does not occur verbatim in the supplied passage."
+            }
+          ],
+          "issues": [
+            "Quotation does not occur verbatim in the supplied passage.",
+            "Supported claim has no checked quotation."
+          ]
+        },
+        {
+          "status": "supported",
+          "text": "The Pelican observatory's access word is café.",
+          "evidence": [
+            {
+              "handle": 2,
+              "quote": "copy at least 16 characters EXACTLY from the corresponding numbered passage",
+              "passage": "blake3:7f7fd88311cca2599edf78ec82187c001c59c89640919c3739ba76b295488782",
+              "selector": null,
+              "error": "Quotation does not occur verbatim in the supplied passage."
+            }
+          ],
+          "issues": [
+            "Quotation does not occur verbatim in the supplied passage.",
+            "Supported claim has no checked quotation."
+          ]
+        },
+        {
+          "status": "supported",
+          "text": "Saved from the embedded listener: café → harbor.",
+          "evidence": [
+            {
+              "handle": 3,
+              "quote": "copy at least 16 characters EXACTLY from the corresponding numbered passage",
+              "passage": "blake3:e56155542a0eb4a902ac2e897a95fb0052c835347d6e2eb937fc6ae1240de18e",
+              "selector": null,
+              "error": "Quotation does not occur verbatim in the supplied passage."
+            }
+          ],
+          "issues": [
+            "Quotation does not occur verbatim in the supplied passage.",
+            "Supported claim has no checked quotation."
+          ]
+        }
+      ],
+      "error": null
+    },
+    "scope": [
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/capture"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/knot"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/note"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 4,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/knot"
+          },
+          "version": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "selector": {
+            "start": 0,
+            "end": 46
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Pelican observatory's access word is café."
+        }
+      },
+      {
+        "handle": 2,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/capture"
+          },
+          "version": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+          "text_hash": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+          "selector": {
+            "start": 0,
+            "end": 56
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Juniper archive's recovery phrase is violet lantern."
+        }
+      },
+      {
+        "handle": 3,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/note"
+          },
+          "version": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+          "text_hash": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+          "selector": {
+            "start": 0,
+            "end": 70
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+        }
+      }
+    ],
+    "stale": [],
+    "citations": [
+      {
+        "handle": 1,
+        "passage": "blake3:a4ac01cc6c9b0fff5c0dc8afd985ab155857e61d730784fb56f3083342be8261",
+        "basis": "verbatim_passage",
+        "answer_selector": {
+          "start": 248,
+          "end": 294
+        }
+      },
+      {
+        "handle": 2,
+        "passage": "blake3:7f7fd88311cca2599edf78ec82187c001c59c89640919c3739ba76b295488782",
+        "basis": "verbatim_passage",
+        "answer_selector": {
+          "start": 44,
+          "end": 100
+        }
+      }
+    ]
+  }
+}

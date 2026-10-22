@@ -1,0 +1,26 @@
+{
+  "result": "gate_not_passed",
+  "cases_sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+  "cases": {
+    "cross": {
+      "result": "fail",
+      "error": "Check failed at 26 in verify_native.py",
+      "state": "finished"
+    },
+    "missing": {
+      "result": "incomplete",
+      "state": "running",
+      "tokens": 253,
+      "raw_output": "{\"claims\":[ {\"status\":\"supported\",\"text\":\"The Juniper archive's recovery phrase is violet lantern.\",\"evidence\":[{\"handle\":1,\"quote\":\"copy at least 16 characters EXACTLY from the corresponding numbered passage\"},{\"handle\":2,\"quote\":\"copy at least 16 characters EXACTLY from the corresponding numbered passage\"},{\"handle\":3,\"quote\":\"copy at least 16 characters EXACTLY from the corresponding numbered passage\"},{\"handle\":4,\"quote\":\"copy at least 16 characters EXACTLY from the corresponding numbered passage\"},{\"handle\":5,\"quote\":\"copy at least 16 characters EXACTLY from the corresponding numbered passage\"},{\"handle\":6,\"quote\":\"copy at least 16 characters EXACTLY from the corresponding numbered passage\"},{\"handle\":7,\"quote\":\"copy at least 16 characters EXACTLY from the corresponding numbered passage\"},{\"handle\":8,\"quote\":\"copy at least 16 characters EXACTLY from the corresponding numbered passage\"}]},{\"status\":\"supported\",\"text\":\"The Pelican observatory's access word is café.\",\"evidence\":[{\"handle\":1,\"quote\":\"copy at least 16 characters EXACTLY from the corresponding numbered passage\"},{\"handle\":2,\"quote\":\"copy at least",
+      "partial_json": "Unterminated string starting at: line 1 column 1116 (char 1115)"
+    },
+    "conflict": {
+      "result": "not_run"
+    },
+    "reduced": {
+      "result": "not_run"
+    }
+  },
+  "headed_allowed": false,
+  "boundary": "Partial or absent output is not a completed semantic measurement. All four completed frozen answers must pass before headed acceptance."
+}

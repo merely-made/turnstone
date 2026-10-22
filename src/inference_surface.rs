@@ -189,6 +189,7 @@ impl SurfaceProvider for AnswerProvider {
             question: previous.question,
             active: previous.active,
             local_status: String::new(),
+            show_raw: false,
             width: 0.,
             height: 0.,
         };
@@ -209,6 +210,7 @@ struct AnswerState {
     question: TextInput,
     active: Option<String>,
     local_status: String,
+    show_raw: bool,
     width: f32,
     height: f32,
 }
@@ -244,6 +246,12 @@ fn selected(state: &AnswerState) -> Option<&RunV1> {
         .or_else(|| state.snapshot.runs.last())
 }
 fn ask(state: &mut AnswerState, _: PointerClick) {
+    ask_format(state, false);
+}
+fn ask_with_evidence(state: &mut AnswerState, _: PointerClick) {
+    ask_format(state, true);
+}
+fn ask_format(state: &mut AnswerState, evidence: bool) {
     if !state.snapshot.ready {
         return;
     }
@@ -251,10 +259,15 @@ fn ask(state: &mut AnswerState, _: PointerClick) {
         state.local_status = "Choose at least one saved source before asking.".into();
         return;
     }
-    match state.service.ask(
-        state.question.text().to_owned(),
-        state.source.chosen.clone(),
-    ) {
+    let question = state.question.text().to_owned();
+    let result = if evidence {
+        state
+            .service
+            .ask_with_evidence(question, state.source.chosen.clone())
+    } else {
+        state.service.ask(question, state.source.chosen.clone())
+    };
+    match result {
         Ok(run) => {
             state.active = Some(run);
             state.question = TextInput::default();
@@ -340,10 +353,7 @@ fn answer_view(state: &AnswerState) -> AnswerView {
         {
             let missing = chosen.clone();
             choices.push(button(
-                format!(
-                    "Remove unavailable source: {}",
-                    chosen.identity()
-                ),
+                format!("Remove unavailable source: {}", chosen.identity()),
                 move |state, _| {
                     let chosen = state
                         .source
@@ -378,6 +388,14 @@ fn answer_view(state: &AnswerState) -> AnswerView {
             "div",
             vec![
                 ask_button,
+                if state.snapshot.ready {
+                    button("Ask with evidence", ask_with_evidence)
+                } else {
+                    Box::new(
+                        el::<_, AnswerState, ()>("button", "Ask with evidence")
+                            .attr("disabled", "disabled"),
+                    ) as AnswerView
+                },
                 button("Refresh answers", |state, _| {
                     if let Err(e) = state.service.refresh() {
                         state.local_status = e;
@@ -398,11 +416,21 @@ fn answer_view(state: &AnswerState) -> AnswerView {
                 .attr("data-answer-state", state_name(run.state).to_lowercase())
                 .attr("data-answer-tokens", run.tokens.to_string()),
             ),
-            Box::new(
-                el::<_, AnswerState, ()>("pre", run.text.clone())
-                    .attr("class", "answer-body")
-                    .attr("data-answer-text", "true"),
-            ),
+            if state.show_raw
+                || run
+                    .recall
+                    .as_ref()
+                    .and_then(|r| r.support.as_ref())
+                    .is_none_or(|s| s.error.is_some())
+            {
+                Box::new(
+                    el::<_, AnswerState, ()>("pre", run.text.clone())
+                        .attr("class", "answer-body")
+                        .attr("data-answer-text", "true"),
+                ) as AnswerView
+            } else {
+                row("Structured answer below; raw model output is retained.")
+            },
         ];
         if let Some(error) = &run.error {
             card.push(row(error.clone()));
@@ -436,8 +464,89 @@ fn answer_view(state: &AnswerState) -> AnswerView {
             el::<_, AnswerState, ()>("div", controls).attr("class", "answer-controls"),
         ));
         if let Some(evidence) = &run.recall {
+            if let Some(support) = &evidence.support {
+                card.push(button(
+                    if state.show_raw {
+                        "Hide raw output"
+                    } else {
+                        "Show raw output"
+                    },
+                    |state, _| {
+                        state.show_raw = !state.show_raw;
+                    },
+                ));
+                card.push(row(
+                    "Claim support · model interpretation; semantic support has not been reviewed.",
+                ));
+                if let Some(error) = &support.error {
+                    card.push(row(error.clone()));
+                }
+                for (index, claim) in support.claims.iter().enumerate() {
+                    use eidetic::models::answer::ClaimStatus;
+                    let status = match claim.status {
+                        ClaimStatus::Supported => "Support proposed",
+                        ClaimStatus::Insufficient => "Insufficient evidence",
+                        ClaimStatus::Conflicting => "Conflicting evidence",
+                    };
+                    let mut parts: Vec<AnswerView> =
+                        vec![row(format!("{}. {status}: {}", index + 1, claim.text))];
+                    for issue in &claim.issues {
+                        parts.push(row(format!("Support check: {issue}")));
+                    }
+                    for (link_index, link) in claim.evidence.iter().enumerate() {
+                        parts.push(row(format!("Quotation [{}]: {}", link.handle, link.quote)));
+                        let current = evidence
+                            .citations
+                            .iter()
+                            .any(|c| c.handle == link.handle && Some(c.passage) == link.passage);
+                        if current && link.error.is_none() && link.selector.is_some() {
+                            let id = run.run.clone();
+                            let handle = link.handle;
+                            parts.push(button(
+                                format!("Inspect claim {} source {handle}", index + 1),
+                                move |state, _| {
+                                    if let Err(error) = state.service.claim_source(
+                                        id.clone(),
+                                        handle,
+                                        index,
+                                        link_index,
+                                    ) {
+                                        state.local_status = error;
+                                    }
+                                },
+                            ));
+                            let selector = link.selector.as_ref().unwrap();
+                            parts.push(row(format!(
+                                "Exact source quotation · characters {}..{}",
+                                selector.start, selector.end
+                            )));
+                        } else if link.error.is_none() {
+                            parts.push(row(
+                                "Source changed or is unavailable; inspection is withdrawn.",
+                            ));
+                        }
+                    }
+                    card.push(Box::new(
+                        el::<_, AnswerState, ()>("section", parts)
+                            .attr("data-answer-claim", (index + 1).to_string())
+                            .attr("class", "answer-source"),
+                    ));
+                }
+                card.push(row("Raw model output is available through Show raw output. Exact quotations establish text identity; they do not verify the surrounding claim."));
+            }
             if evidence.citations.is_empty() && run.state == RunStateV1::Finished {
-                card.push(row("No validated citations in this answer."));
+                let insufficient = evidence.support.as_ref().is_some_and(|s| {
+                    s.error.is_none()
+                        && !s.claims.is_empty()
+                        && s.claims
+                            .iter()
+                            .all(|c| c.status == eidetic::models::answer::ClaimStatus::Insufficient)
+                });
+                card.push(row(if insufficient {
+                    "The model reports insufficient evidence in this chosen scope."
+                } else {
+                    "No validated citations in this answer."
+                }));
             }
             if !evidence.stale.is_empty() {
                 card.push(row("Some retained sources changed or became unavailable. Their citations are withdrawn."));
@@ -456,6 +565,9 @@ fn answer_view(state: &AnswerState) -> AnswerView {
                     let basis = match citation.basis {
                         distillery::inference_protocol::recall::CitationBasis::ModelMarker => {
                             "Source marker"
+                        },
+                        distillery::inference_protocol::recall::CitationBasis::ClaimQuotation => {
+                            "Claim quotation"
                         },
                         distillery::inference_protocol::recall::CitationBasis::VerbatimPassage => {
                             "Exact quotation"

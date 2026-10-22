@@ -1,0 +1,5 @@
+{
+  "result": "rejected",
+  "reason": "Candidate-object prompt still produced malformed JSON and mixed the second claim with note evidence; stopped after preserving streamed output.",
+  "scope": "provider-only; never headed acceptance"
+}

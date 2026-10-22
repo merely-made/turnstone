@@ -1,0 +1,24 @@
+{
+  "result": "gate_not_passed",
+  "cases_sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+  "cases": {
+    "cross": {
+      "result": "incomplete",
+      "state": "running",
+      "tokens": 273,
+      "raw_output": "[1] The Pelican observatory's access word is café.\n\n[2] The Juniper archive's recovery phrase is violet lantern.\n\n[3] Saved from the embedded listener: café → harbor.\n\n[4] The Juniper archive recovery phrase is violet lantern.\n\n[5] Saved from the embedded listener: café → harbor.\n\n[6] The Juniper archive recovery phrase is violet lantern.\n\n[7] Saved from the embedded listener: café → harbor.\n\n[8] The Juniper archive recovery phrase is violet lantern.\n\n[9] Saved from the embedded listener: café → harbor.\n\n[10] The Juniper archive recovery phrase is violet lantern.\n\n[11] Saved from the embedded listener: café → harbor.\n\n[12] The Juniper archive recovery phrase is violet lantern.\n\n[13] Saved from the embedded listener: café → harbor.\n\n[14] The Juniper archive recovery phrase is violet lantern.\n\n[15] Saved from the embedded listener: café → harbor.\n\n[16] The Juniper archive recovery phrase is violet lantern.\n\n[17] Saved from the embedded listener: café → harbor.\n\n[",
+      "partial_json": "Extra data: line 1 column 5 (char 4)"
+    },
+    "missing": {
+      "result": "not_run"
+    },
+    "conflict": {
+      "result": "not_run"
+    },
+    "reduced": {
+      "result": "not_run"
+    }
+  },
+  "headed_allowed": false,
+  "boundary": "Partial or absent output is not a completed semantic measurement. All four completed frozen answers must pass before headed acceptance."
+}

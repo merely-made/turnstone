@@ -1,0 +1,28 @@
+{
+  "result": "gate_not_passed",
+  "cases_sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+  "cases": {
+    "cross": {
+      "result": "fail",
+      "error": "Check failed at 24 in verify_native.py",
+      "state": "finished"
+    },
+    "missing": {
+      "result": "fail",
+      "error": "Check failed at 24 in verify_native.py",
+      "state": "finished"
+    },
+    "conflict": {
+      "result": "incomplete",
+      "state": "running",
+      "tokens": 101,
+      "raw_output": "{\"claims\":[\n  {\"status\":\"supported\",\"text\":\"The Juniper archive's recovery phrase is violet lantern.\",\"evidence\":[{\"handle\":1,\"quote\":\"The Juniper archive's recovery phrase is violet lantern.\"}]\n},\n  {\"status\":\"supported\",\"text\":\"The Juniper archive's recovery phrase is amber harbor.\",\"evidence\":[{\"handle\":2,\"quote\":\"The Juniper archive's recovery phrase is amber harbor.\"}]\n},\n  {\"status\":\"conflicting\",\"text\":\"The Pelican observatory's",
+      "partial_json": "Unterminated string starting at: line 6 column 34 (char 413)"
+    },
+    "reduced": {
+      "result": "not_run"
+    }
+  },
+  "headed_allowed": false,
+  "boundary": "Partial or absent output is not a completed semantic measurement. All four completed frozen answers must pass before headed acceptance."
+}
