@@ -36,7 +36,7 @@ use std::rc::Rc;
 
 use cambium::{
     AnyView, DomHandle, GenetCtx, GenetElement, GenetMultiRunner, PointerClick, ProjectionId,
-    TextInput, caret_field_children, el, on_click,
+    TextInput, caret_field_children, el, on_click, status_note,
 };
 use genet_scripted_dom::ScriptedDom;
 // `drain_mutations` is the mutation queue's only reader; the chrome owns that
@@ -944,9 +944,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
         }
         if submitting {
             card_children.push(Box::new(
-                el::<_, ChromeState, ChromeIntent>("div", "Applying decision")
-                    .attr("class", "decision-status")
-                    .attr("role", "status"),
+                status_note::<ChromeState, ChromeIntent>("decision-status", "Applying decision"),
             ));
         }
         if let Some(error) = error {

@@ -18,9 +18,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, DetailRow, DetailSection, DomHandle, GenetCtx, GenetElement, Key, NamedKey,
-    PointerClick, RadioGroup, View, button, detail_panel, el, lens, map_message_result, on_click,
-    on_key, request_focus,
+    AnyView, DetailRow, DetailSection, DomHandle, GenetCtx, GenetElement, PointerClick, RadioGroup,
+    RadioOption, button, detail_panel, el, lens, map_message_result, radio_options,
 };
 use genet_scripted_dom::ScriptedDom;
 use layout_dom_api::LayoutDom;
@@ -77,98 +76,22 @@ type InspectorRunner = cambium::GenetAppRunner<
     InspectorIntent,
 >;
 
-/// The viewer uses Cambium's radio keyboard pattern with host availability.
-/// Disabled rows retain saved identity but cannot activate or receive focus.
-fn viewer_radio_group(
-    state: &RadioGroup,
+/// The viewer options as Cambium radio options: unselectable engines stay
+/// listed (and keep a saved selection) but are disabled.
+fn viewer_radio_options(
     options: &[crate::inspector_controls::ViewerOption],
-) -> impl View<RadioGroup, (), GenetCtx, Element = GenetElement> + use<> {
-    let enabled: Rc<Vec<usize>> = Rc::new(
-        options
-            .iter()
-            .enumerate()
-            .filter_map(|(index, option)| option.selectable.then_some(index))
-            .collect(),
-    );
-    let active = if enabled.contains(&state.selected) {
-        state.selected
-    } else {
-        enabled.first().copied().unwrap_or(0)
-    };
-    let items: Vec<_> = options
+) -> Vec<RadioOption> {
+    options
         .iter()
-        .enumerate()
-        .map(|(index, option)| {
-            let selected = index == state.selected;
-            let selectable = option.selectable;
-            let enabled = enabled.clone();
-            let item = on_click(
-                el::<_, RadioGroup, ()>(
-                    "div",
-                    format!("{}{}", if selected { "(o) " } else { "( ) " }, option.label,),
-                )
-                .attr("role", "radio")
-                .attr("aria-checked", if selected { "true" } else { "false" })
-                .attr("aria-disabled", if selectable { "false" } else { "true" })
-                .attr(
+        .map(|option| {
+            RadioOption::new(option.label.clone())
+                .disabled(!option.selectable)
+                .with_attr(
                     "data-engine-id",
                     option.viewer.clone().unwrap_or_else(|| "auto".into()),
                 )
-                .attr(
-                    "tabindex",
-                    if index == active && selectable {
-                        "0"
-                    } else {
-                        "-1"
-                    },
-                )
-                .attr(
-                    "class",
-                    match (selected, selectable) {
-                        (true, true) => "radio selected",
-                        (false, true) => "radio",
-                        (true, false) => "radio selected muted",
-                        (false, false) => "radio muted",
-                    },
-                ),
-                move |state: &mut RadioGroup, _| {
-                    if selectable {
-                        state.selected = index;
-                        state.focus_request = None;
-                    }
-                },
-            );
-            let keyboard = on_key(item, move |state: &mut RadioGroup, event| {
-                if !selectable || enabled.is_empty() {
-                    return;
-                }
-                let position = enabled
-                    .iter()
-                    .position(|candidate| *candidate == index)
-                    .unwrap();
-                let next = match event.key {
-                    Key::Named(NamedKey::ArrowLeft | NamedKey::ArrowUp) => {
-                        enabled[(position + enabled.len() - 1) % enabled.len()]
-                    },
-                    Key::Named(NamedKey::ArrowRight | NamedKey::ArrowDown) => {
-                        enabled[(position + 1) % enabled.len()]
-                    },
-                    Key::Named(NamedKey::Home) => enabled[0],
-                    Key::Named(NamedKey::End) => enabled[enabled.len() - 1],
-                    Key::Named(NamedKey::Space) => index,
-                    _ => return,
-                };
-                state.selected = next;
-                state.focus_request = Some(next);
-                event.prevent_default();
-            })
-            .focusable(index == active && selectable);
-            request_focus(keyboard, state.focus_request == Some(index) && selectable)
         })
-        .collect();
-    el::<_, RadioGroup, ()>("div", items)
-        .attr("role", "radiogroup")
-        .attr("aria-label", state.label.clone())
+        .collect()
 }
 
 fn inspector_pane_view(state: &InspectorState) -> InspectorView {
@@ -269,7 +192,7 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
     let viewer_options = state.viewer_options.clone();
     let viewer = map_message_result(
         lens(
-            move |radio: &mut RadioGroup| viewer_radio_group(radio, &viewer_options),
+            move |radio: &mut RadioGroup| radio_options(radio, &viewer_radio_options(&viewer_options)),
             |state: &mut InspectorState| &mut state.radio,
         ),
         |_state, message| match message {
