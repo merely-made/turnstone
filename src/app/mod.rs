@@ -114,20 +114,14 @@ fn migrate_retired_viewer_overrides(
     migrated
 }
 
-/// The at-rest "where am I" caption: the focused node's display label (and
-/// host, when it adds information), or `None` with nothing focused.
+/// The at-rest "where am I" caption: the focused node's display caption (its
+/// label, plus its host when that adds information), or `None` with nothing
+/// focused.
 pub fn focused_caption(canvas: &mere::canvas::Canvas) -> Option<String> {
     let url = canvas.focused_url()?.to_string();
     let graph = canvas.graph();
-    let (key, node) = graph.get_node_by_url(&url)?;
-    let label = graph.node_display_label(key);
-    let host = url::Url::parse(node.url())
-        .ok()
-        .and_then(|parsed| parsed.host_str().map(str::to_owned));
-    match host.as_deref() {
-        Some(host) if !label.contains(host) => Some(format!("{label}  \u{00b7}  {host}")),
-        _ => Some(label),
-    }
+    let (key, _) = graph.get_node_by_url(&url)?;
+    Some(graph.node_display_caption(key))
 }
 
 /// The content controlled by the navigation row can differ from the graph's
@@ -138,7 +132,7 @@ pub(crate) fn navigation_caption(app: &App) -> Option<String> {
         let canvas = app.graph_runtimes.canvas(graph)?;
         let graph = canvas.graph();
         let (key, _) = graph.nodes().find(|(_, node)| node.id == member)?;
-        Some(graph.node_display_label(key))
+        Some(graph.node_display_caption(key))
     });
     label.or_else(|| focused_caption(&app.graph_runtimes))
 }
@@ -201,6 +195,8 @@ pub struct App {
     /// because suggestion recomputation — the first stage the palette open-lag
     /// note names — happens on App's input edge, outside any frame.
     pub frame_timings: crate::frame_timing::FrameTimings,
+    /// The Map's resolved theme, kept until the appearance changes.
+    pub(crate) map_theme: crate::map_theme::MapThemeCache,
     /// Read-only diagnostic view, refreshed by its Shell owner. This is neither
     /// the observation store nor durable graph/session data.
     pub diagnostic_inspection: Option<Result<apparatus::Inspection, String>>,
@@ -791,12 +787,41 @@ impl App {
         Some(result)
     }
 
+    /// The scale one pane is composed at: its window's device scale. A graph
+    /// pane's scene is built at `physical / scale` and rasterized at `scale`,
+    /// and its pointers arrive through `/ scale`, the convention Graphshell's
+    /// rootstock host keeps for the same canvas.
+    pub fn pane_layout_scale(&self, pane: PaneId) -> f32 {
+        let scale = self.shell_chrome_config().pane_scale(self, pane);
+        if scale.is_finite() { scale.clamp(0.5, 4.0) } else { 1.0 }
+    }
+
+    fn logical(&self, pane: PaneId, x: f32, y: f32) -> (f32, f32) {
+        let scale = self.pane_layout_scale(pane);
+        (x / scale, y / scale)
+    }
+
+    /// The Map's theme, resolved from the live appearance; `None` until a
+    /// presentation exists, when the canvas keeps its own colours.
+    pub fn map_theme(&mut self) -> Option<mere::canvas::CanvasTheme> {
+        self.map_theme.resolve(&self.shell.chrome().appearance)
+    }
+
+    /// One frame of a graph pane whose surface is `width` x `height` physical
+    /// pixels: the scene is at logical size, for rasterization at
+    /// [`pane_layout_scale`](Self::pane_layout_scale).
     pub fn graph_pane_frame(
         &mut self,
         pane: PaneId,
         width: u32,
         height: u32,
     ) -> Option<(netrender::Scene, bool)> {
+        let scale = self.pane_layout_scale(pane);
+        let (width, height) = (
+            (width as f32 / scale).round().max(1.0) as u32,
+            (height as f32 / scale).round().max(1.0) as u32,
+        );
+        let theme = self.map_theme();
         let graph = self.graph_for_pane(pane)?;
         let mut transition = self.graph_runtimes.get_mut(graph)?.scene_transition.take();
         let restored = std::mem::take(&mut self.graph_runtimes.get_mut(graph)?.scene_restore_pending);
@@ -804,6 +829,9 @@ impl App {
         static CLOCK: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
         let host_ms = CLOCK.get_or_init(std::time::Instant::now).elapsed().as_secs_f64() * 1000.0;
         let result = self.with_graph_pane(pane, |canvas| {
+            if let Some(theme) = &theme {
+                canvas.apply_theme(theme);
+            }
             if (!restored || !Self::prime_restored_layout(canvas, width, height))
                 && Self::drive_layout_strategy_for(canvas, width, height)
             {
@@ -853,6 +881,7 @@ impl App {
         x: f32,
         y: f32,
     ) -> Option<uuid::Uuid> {
+        let (x, y) = self.logical(pane, x, y);
         self.with_graph_pane(pane, |canvas| canvas.node_at_screen(x, y))
             .flatten()
     }
@@ -863,11 +892,13 @@ impl App {
     }
 
     pub fn graph_pane_cursor_moved(&mut self, pane: PaneId, x: f32, y: f32) -> bool {
+        let (x, y) = self.logical(pane, x, y);
         self.with_graph_pane(pane, |canvas| canvas.cursor_moved(x, y))
             .unwrap_or(false)
     }
 
     pub fn graph_pane_wheel(&mut self, pane: PaneId, dx: f32, dy: f32) -> bool {
+        let (dx, dy) = self.logical(pane, dx, dy);
         self.with_graph_pane(pane, |canvas| canvas.wheel(dx, dy))
             .unwrap_or(false)
     }
@@ -879,6 +910,7 @@ impl App {
         x: f32,
         y: f32,
     ) -> bool {
+        let (x, y) = self.logical(pane, x, y);
         if let Some(graph) = self.graph_for_pane(pane) {
             self.graph_runtimes.get_mut(graph).unwrap().scene_transition = None;
         }
@@ -905,6 +937,7 @@ impl App {
         x: f32,
         y: f32,
     ) -> bool {
+        let (x, y) = self.logical(pane, x, y);
         self.with_graph_pane(pane, |canvas| canvas.pointer_up(button, x, y))
             .unwrap_or(false)
     }

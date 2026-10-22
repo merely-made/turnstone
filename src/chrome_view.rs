@@ -494,68 +494,52 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                         "Reveal this document in Map",
                         state.focused_node.map(ChromeIntent::RevealMember),
                     ));
-                    if state.relationships_start > 0 {
-                        rows.push(Box::new(on_click(
-                            el::<_, ChromeState, ChromeIntent>("button", "Previous relationships").attr("class", "shell-control").attr("aria-label", "Previous relationships"),
-                            |state: &mut ChromeState, _: PointerClick| { state.relationships_start = state.relationships_start.saturating_sub(6); state.menu_selected = 0; ChromeIntent::MenuChanged },
-                        )));
-                    }
-                    for row in state.connections.iter().skip(state.relationships_start).take(6) {
-                        let target = row.target;
-                        rows.push(cambium::shell_navigation_item(row.title.clone(), format!("{} · {}", row.relationship, row.address), Default::default(),
-                            move |_: &mut ChromeState, _| ChromeIntent::NavigateRelationship(target)));
-                    }
-                    if state.relationships_start + 6 < state.connections.len() {
-                        rows.push(Box::new(on_click(
-                            el::<_, ChromeState, ChromeIntent>("button", "More relationships").attr("class", "shell-control").attr("aria-label", "More relationships"),
-                            |state: &mut ChromeState, _: PointerClick| { state.relationships_start += 6; state.menu_selected = 0; ChromeIntent::MenuChanged },
-                        )));
-                    }
-                    if state.connections.is_empty() {
-                        rows.push(browser_button("No connected documents yet", None));
-                    }
+                    rows.extend(cambium::shell_paged_list(
+                        mere::navigation::RELATIONSHIPS_NOUN,
+                        mere::navigation::NO_RELATIONSHIPS,
+                        &state.connections,
+                        state.relationships_start,
+                        mere::navigation::RELATIONSHIPS_PAGE_SIZE,
+                        |row| {
+                            let target = row.target;
+                            cambium::shell_navigation_item(
+                                row.title.clone(),
+                                mere::navigation::relationship_detail(row),
+                                Default::default(),
+                                move |_: &mut ChromeState, _| ChromeIntent::NavigateRelationship(target),
+                            )
+                        },
+                        |state: &mut ChromeState, start| {
+                            state.relationships_start = start;
+                            state.menu_selected = 0;
+                            ChromeIntent::MenuChanged
+                        },
+                    ));
                 },
                 ChromeMenu::Documents => {
                     rows.push(browser_button(
                         "Reveal current document in Map",
                         state.focused_node.map(ChromeIntent::RevealMember),
                     ));
-                    if state.documents_start > 0 {
-                        rows.push(Box::new(on_click(
-                            el::<_, ChromeState, ChromeIntent>("button", "Previous documents")
-                                .attr("aria-label", "Previous documents")
-                                .attr("class", "shell-control"),
-                            |state: &mut ChromeState, _: PointerClick| {
-                                state.documents_start = state.documents_start.saturating_sub(8);
-                                state.menu_selected = 0;
-                                ChromeIntent::MenuChanged
-                            },
-                        )));
-                    }
-                    for (member, label, arranged) in
-                        state.documents.iter().skip(state.documents_start).take(8)
-                    {
-                        rows.push(selected_button(
-                            format!("{label}{}", if *arranged { " · in Read" } else { "" }),
-                            ChromeIntent::ReadMember(*member),
-                            state.focused_node == Some(*member),
-                        ));
-                    }
-                    if state.documents.is_empty() {
-                        rows.push(browser_button("Enter an address to add to this map", None));
-                    }
-                    if state.documents_start + 8 < state.documents.len() {
-                        rows.push(Box::new(on_click(
-                            el::<_, ChromeState, ChromeIntent>("button", "More documents")
-                                .attr("aria-label", "More documents")
-                                .attr("class", "shell-control"),
-                            |state: &mut ChromeState, _: PointerClick| {
-                                state.documents_start += 8;
-                                state.menu_selected = 0;
-                                ChromeIntent::MenuChanged
-                            },
-                        )));
-                    }
+                    rows.extend(cambium::shell_paged_list(
+                        "documents",
+                        "Enter an address to add to this map",
+                        &state.documents,
+                        state.documents_start,
+                        8,
+                        |(member, label, arranged)| {
+                            selected_button(
+                                format!("{label}{}", if *arranged { " · in Read" } else { "" }),
+                                ChromeIntent::ReadMember(*member),
+                                state.focused_node == Some(*member),
+                            )
+                        },
+                        |state: &mut ChromeState, start| {
+                            state.documents_start = start;
+                            state.menu_selected = 0;
+                            ChromeIntent::MenuChanged
+                        },
+                    ));
                 },
             }
             let width = (win.w - 16.0).clamp(
