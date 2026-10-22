@@ -599,6 +599,8 @@ struct PlannedScene {
     kind: SurfaceKind,
     placement: ExternalTexturePlacement,
     dims: (u32, u32),
+    /// The scale `scene` is rasterized at; its coordinates are `dims / scale`.
+    scale: f32,
     scene: Scene,
     // Stored as the `Copy` clear color (netrender's `ColorLoad` derives nothing,
     // so it cannot be moved out of the collected vec); wrapped at the call.
