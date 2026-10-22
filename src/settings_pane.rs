@@ -15,7 +15,7 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, button, el, setting_row,
+    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, button, el, setting_row, status_note,
 };
 use genet_scripted_dom::ScriptedDom;
 use layout_dom_api::LayoutDom;
@@ -267,9 +267,7 @@ fn settings_view(state: &SettingsState) -> SettingsView {
     let reference = SettingsRef(APPLICATION_REFERENCE.into());
     let body: SettingsView = match SettingsProjection::resolve(&state.provider, &reference) {
         Ok(projection) if projection.specs.is_empty() => Box::new(
-            el::<_, SettingsState, ()>("div", "No settings are available for this source.")
-                .attr("class", "setting-empty")
-                .attr("role", "status"),
+            status_note::<SettingsState, ()>("setting-empty", "No settings are available for this source."),
         ),
         Ok(projection) => {
             let rows = projection
@@ -293,9 +291,7 @@ fn settings_view(state: &SettingsState) -> SettingsView {
                     .attr("class", "list-section-title"),
                 el::<_, SettingsState, ()>("div", APPLICATION_REFERENCE)
                     .attr("class", "list-row muted"),
-                el::<_, SettingsState, ()>("div", state.provider.appearance_notice())
-                    .attr("class", "list-row muted")
-                    .attr("role", "status"),
+                status_note::<SettingsState, ()>("list-row muted", state.provider.appearance_notice()),
                 button(
                     "Edit themes",
                     |state: &mut SettingsState, _: cambium::PointerClick| {
@@ -307,15 +303,10 @@ fn settings_view(state: &SettingsState) -> SettingsView {
                 .attr("class", "setting-apply")
                 .attr("data-action", "edit-themes"),
                 body,
-                el::<_, SettingsState, ()>(
-                    "div",
-                    state
+                status_note::<SettingsState, ()>("list-row muted", state
                         .live_settings
                         .notice()
-                        .unwrap_or_else(|| state.status.clone()),
-                )
-                .attr("class", "list-row muted")
-                .attr("role", "status"),
+                        .unwrap_or_else(|| state.status.clone())),
             ),
         )
         .attr("class", "pane")
