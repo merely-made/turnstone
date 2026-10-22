@@ -1,0 +1,8 @@
+{
+  "result": "rejected",
+  "reason": "First combined answer ignored the requested structured format and mixed source names. Raw output retained. Remaining probe cases stopped before rerunning the stronger request.",
+  "completed_cases": [
+    "missing",
+    "cross"
+  ]
+}

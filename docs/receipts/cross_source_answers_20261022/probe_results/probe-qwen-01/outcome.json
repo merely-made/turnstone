@@ -1,0 +1,5 @@
+{
+  "result": "rejected",
+  "reason": "JSON was returned, but the model copied the instruction placeholder as quotation and mismatched first two passage handles. The missing-fact response also substituted a different property. Streamed output retained.",
+  "scope": "provider-only; excluded from headed acceptance"
+}

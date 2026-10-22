@@ -1,0 +1,5 @@
+{
+  "result": "rejected",
+  "reason": "The fixed probe completed, but combined claims omitted their evidence arrays and misdeclared note evidence as conflicting. The absent-fact answer added unrelated claims; conflict output did not provide the required two-source conflict claim. Raw completed outputs retained.",
+  "scope": "provider-only completion is not an answer-quality pass"
+}

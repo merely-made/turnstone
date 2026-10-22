@@ -1,0 +1,33 @@
+{
+  "result": "gate_not_passed",
+  "headed_answer": "not_run",
+  "headed_cold_reopen": "not_run",
+  "reason": "First frozen case exceeded its 900-second answer deadline; test process failed after 1029.55 seconds including setup. Last retained view was running with 60 tokens. No complete answer was available for semantic assessment. Remaining cases were not run.",
+  "model": {
+    "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+    "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+    "architecture": "qwen2",
+    "source": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct",
+    "artifacts": {
+      "config.json": "98d2ff8cc47488d08a2b0b3acf4eb99ef210779b42bd48605f6b8e36acdbf670",
+      "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+      "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583",
+      "model.safetensors": "dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee"
+    }
+  },
+  "runtime": {
+    "device": "AMD Radeon Pro Vega 56, Metal discrete adapter",
+    "weight_loading": "existing f32 layered streaming",
+    "esp_opt_level": 3,
+    "dev_debug": 0,
+    "test_debug": 0,
+    "resident_executable_sha256": "9089045ac2cf341dac254412040efaaac61e7c65096fbde980b46aed17e6c671"
+  },
+  "cases_sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+  "frozen_rubric": "case-freeze.json",
+  "gate": "probe_results/probe-qwen15-02/gate.json",
+  "execution_log": "probe_results/model-probe-qwen15-02.log",
+  "boundary": "Provider-only probe over synthetic PageTextCorpus fixtures. It supplies no headed or retained-producer qualification. Partial JSON and unexecuted cases are not completed semantic measurements. Earlier smaller checkpoints are retained as rejected controls, not acceptance.",
+  "full_local_execution_log_sha256": "90d49cbe584097876d0a64c3e87c436fae82551a96448ce7991761087464d138",
+  "execution_log_normalization": "Trailing empty log lines removed in the public copy; raw model output JSON is unchanged."
+}

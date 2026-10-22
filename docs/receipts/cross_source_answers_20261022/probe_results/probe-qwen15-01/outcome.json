@@ -1,0 +1,5 @@
+{
+  "result": "incomplete",
+  "reason": "Unoptimized esp::infer::decoder::weight_format::values conversion dominated the streamed execution; only three tokens after about ten minutes. Stopped for an optimized build. This is not a semantic-answer failure.",
+  "scope": "provider-only; excluded from acceptance"
+}

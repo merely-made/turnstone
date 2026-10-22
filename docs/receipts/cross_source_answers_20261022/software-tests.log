@@ -1,0 +1,218 @@
+eidetic_library
+running 144 tests
+test browsing::frecency::tests::recency_decays_on_the_half_life ... ok
+test browsing::frecency::tests::dwell_past_the_threshold_promotes ... ok
+test browsing::page::tests::tracking_params_and_fragment_collapse_to_one_record ... ok
+test browsing::captures::tests::text_is_distinct_evidence_and_damaged_reference_is_refused ... ok
+test browsing::tests::a_trace_round_trips_as_a_localonly_typed_payload ... ok
+test browsing::page::tests::url_fallback_source_is_visible ... ok
+test browsing::frecency::tests::redirects_and_reloads_contribute_near_zero ... ok
+test browsing::captures::tests::aliases_share_versions_and_reopen_keeps_earlier_resources ... ok
+test browsing::frecency::tests::transition_weights_order_the_kinds ... ok
+test browsing::page::tests::frecency_by_fingerprint_sums_the_collapsed_urls ... ok
+test browsing::tests::adopted_traces_join_reads_but_not_quota ... ok
+test browsing::tests::bootstrap_is_idempotent ... ok
+test browsing::page::tests::unrelated_text_stays_apart ... ok
+test browsing::tests::forget_url_removes_every_trace_mentioning_it ... ok
+test browsing::tests::per_owner_segments_flush_into_per_owner_traces ... ok
+test browsing::tests::load_reconstructs_memory_from_the_store ... ok
+test browsing::tests::reads_answer_over_flushed_and_open_segments_together ... ok
+test browsing::tests::quota_ages_out_the_oldest_stored_traces ... ok
+test browsing::text::tests::put_then_text_for_round_trips_through_the_canonical_key ... ok
+test browsing::text::tests::a_second_page_leaves_the_first_slot_alone ... ok
+test browsing::page::tests::identical_text_under_different_urls_collapses ... ok
+test bundle::tests::member_lookup_finds_kind ... ok
+test browsing::text::tests::the_body_is_stored_once_however_many_addresses_reach_it ... ok
+test browsing::text::tests::the_snapshot_supplies_page_tables_text ... ok
+test bundle::tests::verify_required_members_errors_listing_missing ... ok
+test bundle::tests::schema_ref_is_stable ... ok
+test codicil::tests::codicil_id_equals_manifest_id_of_payload ... ok
+test bundle::tests::save_then_load_bundle_round_trips ... ok
+test codicil::tests::invalid_time_bounds_are_rejected ... ok
+test bundle::tests::verify_required_members_passes_when_all_present ... ok
+test codicil::tests::new_codicil_passes_integrity_check ... ok
+test codicil::tests::codicil_round_trips_through_serde_and_keeps_integrity ... ok
+test codicil::tests::legacy_engram_loads_with_default_version_when_field_missing ... ok
+test content_store::tests::absent_url_loads_to_none ... ok
+test content_store::tests::round_trips_body_and_content_type ... ok
+test content_store::tests::evict_drops_cached_content ... ok
+test deleted::tests::list_deleted_is_empty_on_a_fresh_store ... ok
+test codicil::tests::tampered_payload_fails_integrity_check ... ok
+test content_store::tests::body_only_round_trips_with_no_content_type ... ok
+test browsing::page::tests::near_duplicate_text_collapses_at_the_default_threshold ... ok
+test image_content::tests::existing_image_namespace_and_content_identity_are_preserved ... ok
+test import::encounters::tests::missing_parent_cycle_and_conflict_are_retained_or_refused ... ok
+test deleted::tests::purge_forgets_one_node_and_clear_empties_the_bin ... ok
+test deleted::tests::recorded_tombstones_list_newest_first ... ok
+test import::history::tests::transitions_map_onto_the_frecency_weights_they_were_chosen_for ... ok
+test import::history::tests::segments_chunk_the_way_a_captured_corpus_does ... ok
+test import::history::tests::visits_become_ordered_events_with_referrers_and_dwell ... ok
+test import::tests::detects_chrome_json_bookmark_file ... ok
+test import::tests::legacy_history_payload_without_dwell_deserializes_unchanged ... ok
+test import::tests::netscape_intake_reports_a_skipped_anchor_and_preserves_its_source ... ok
+test import::encounters::tests::late_parent_branches_replay_and_profile_collisions_survive_serialization ... ok
+test import::tests::parses_chrome_json_bookmarks_into_folder_paths ... ok
+test import::tests::parses_netscape_bookmarks_into_nested_folder_paths ... ok
+test manifest::tests::local_only_ref_is_not_transferable ... ok
+test manifest::tests::load_manifest_returns_none_for_unknown_id ... ok
+test manifest::tests::manifest_loads_with_default_version_when_field_missing ... ok
+test manifest::tests::resolve_errors_when_all_sources_yield_none ... ok
+test import::tests::intake_keeps_source_bytes_and_reports_projection_losses ... ok
+test manifest::tests::local_only_ref_round_trips_through_serde_for_local_storage ... ok
+test manifest::tests::resolve_falls_through_local_then_iroh_then_https ... ok
+test manifest::tests::resolve_propagates_fetcher_error_when_no_source_succeeds ... ok
+test manifest::tests::resolve_returns_bytes_from_local_source ... ok
+test manifest::tests::resolve_returns_embedded_bytes_directly ... ok
+test manifest::tests::resolve_rejects_hash_mismatch ... ok
+test manifest::tests::to_transferable_errors_when_only_local_only_refs_present ... ok
+test manifest::tests::save_and_load_manifest_round_trip ... ok
+test models::adapter::tests::rejects_ambiguous_or_non_finite_envelopes ... ok
+test models::answer::tests::chunk_quotes_preserve_the_full_source_hash_and_absolute_range ... ok
+test models::adapter::tests::typed_round_trip_preserves_compatibility_envelope ... ok
+test models::answer::tests::conflict_requires_distinct_sources_and_keeps_both_versions ... ok
+test models::answer::tests::corrupt_passage_ranges_and_repeated_claims_are_reported ... ok
+test models::answer::tests::exact_links_use_unicode_offsets_and_do_not_certify_entailment ... ok
+test models::answer::tests::malformed_unknown_and_invented_support_fail_closed ... ok
+test models::answer::tests::insufficient_is_a_retained_model_judgment_not_an_absence_proof ... ok
+test models::training::tests::schema_refs_are_stable ... ok
+test models::training::tests::rejects_ambiguous_corpora_and_incomparable_reports ... ok
+test models::embedding::tests::unknown_versions_and_ambiguous_corpus_identities_are_refused ... ok
+test models::training::tests::validates_adapter_provenance_without_reading_mesh_facts ... ok
+test models::training::tests::v1_training_corpus_schema_and_fields_remain_readable ... ok
+test models::training::tests::typed_round_trips_preserve_immutable_training_artifacts ... ok
+test pack::tests::wrong_author_is_broken_and_no_claim_is_unsigned ... ok
+test schema::tests::hash_from_chunks_matches_full_slice ... ok
+test schema::tests::hash_multihash_bytes_round_trip ... ok
+test schema::tests::hash_of_known_input_matches_blake3_reference ... ok
+test retention::tests::integrity_quota_and_keyless_private_refusals_write_nothing ... ok
+test schema::tests::hash_from_reader_matches_full_slice ... ok
+test models::embedding::tests::every_output_or_corpus_setting_is_part_of_compatibility ... ok
+test retention::tests::competing_copies_share_one_atomic_owner_quota ... ok
+test schema::tests::hash_parse_accepts_tagged_and_legacy_bare_hex ... ok
+test retention::tests::exact_copy_is_atomic_idempotent_and_owner_scoped ... ok
+test retention::tests::private_copy_uses_actual_aead_and_refuses_missing_or_wrong_wallet_keys ... ok
+test schema::tests::hash_serializes_as_self_describing_string ... ok
+test schema::tests::manifest_id_store_key_is_prefix_plus_hex ... ok
+test schema::tests::privacy_class_defaults_to_local_only ... ok
+test schema::tests::trust_envelope_self_asserted_starts_unreviewed ... ok
+test schema::tests::provenance_self_imported_records_source ... ok
+test schema_def::tests::json_ld_accepts_array_schema_with_multi_type_payload ... ok
+test schema_def::tests::json_ld_accepts_array_type_subsumption ... ok
+test schema_def::tests::bootstrap_meta_schema_seeds_codicil_idempotently ... ok
+test schema_def::tests::json_ld_rejects_type_mismatch ... ok
+test schema_def::tests::bootstrap_enables_strict_schema_resolution ... ok
+test schema_def::tests::json_ld_required_props_rejects_missing_property ... ok
+test schema_def::tests::json_ld_rejects_payload_without_context_or_type ... ok
+test schema_def::tests::json_ld_validates_payload_with_context_and_type ... ok
+test schema_def::tests::mere_native_enum_field_validates_against_values ... ok
+test schema_def::tests::mere_native_builder_produces_validating_schema ... ok
+test schema_def::tests::mere_native_rejects_missing_required_field ... ok
+test schema_def::tests::mere_native_validates_required_field_present ... ok
+test schema_def::tests::mere_native_rejects_wrong_field_type ... ok
+test schema_def::tests::meta_schema_codicil_id_is_stable_and_self_describing ... ok
+test schema_def::tests::find_schema_by_id_locates_matching_codicil ... ok
+test schema_def::tests::meta_schema_payload_validates_a_well_formed_schema_definition ... ok
+test schema_def::tests::schema_codicil_round_trips_through_save_and_load ... ok
+test schema_def::tests::validate_against_unknown_schema_is_tolerant ... ok
+test schema_facets::tests::an_unknown_facet_remains_forward_compatible ... ok
+test schema_def::tests::validate_against_schema_resolves_codicil_and_runs_validator ... ok
+test schema_facets::tests::a_preloaded_schema_accepts_valid_and_rejects_invalid_payloads ... ok
+test seal::tests::no_sealer_leaves_private_payload_cleartext ... ok
+test seal::tests::plain_resolve_blob_rejects_a_sealed_manifest ... ok
+test seal::tests::public_lane_stays_cleartext ... ok
+test seal::tests::marker_survives_manifest_json_round_trip_and_keeps_metadata ... ok
+test seal::tests::reads_a_pre_rotation_epoch_from_history ... ok
+test tests::dispatch_load_returns_none_for_unknown_key ... ok
+test seal::tests::unmarked_manifest_reads_as_cleartext ... ok
+test seal::tests::sealed_manifest_without_a_sealer_is_a_hard_error ... ok
+test seal::tests::tampered_sealed_bytes_are_rejected ... ok
+test tests::dispatch_propagates_store_errors ... ok
+test schema_facets::tests::registered_schemas_and_content_classes_round_trip_as_codicils ... ok
+test tests::dispatch_round_trips_save_then_load ... ok
+test seal::tests::seals_private_lane_and_round_trips_to_cleartext ... ok
+test seal::tests::wrong_epoch_key_fails_to_unseal ... ok
+test typed::tests::load_typed_rejects_blob_whose_hash_no_longer_matches_manifest ... ok
+test typed::tests::load_typed_returns_none_for_unknown_id ... ok
+test typed::tests::save_then_load_round_trips_value ... ok
+test typed::tests::schema_mismatch_load_returns_error ... ok
+test typed::tests::multiple_schemas_coexist_in_one_store ... ok
+test typed::tests::list_typed_returns_only_matching_schema_manifests ... ok
+test typed::tests::sealed_typed_round_trips_and_stores_non_cleartext ... ok
+test schema_def::tests::json_schema_rejects_constraint_violation ... ok
+test schema_def::tests::json_schema_validates_simple_object ... ok
+test pack::tests::a_signed_pack_round_trips_and_verifies ... ok
+test pack::tests::a_tampered_pack_is_broken ... ok
+test retention::tests::a_nontransactional_backend_refuses_custody_without_fallback_writes ... ok
+test retention::tests::verified_copy_reopens_on_a_real_disk_backend ... ok
+test result: ok. 144 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.10s
+
+distillery_inference_and_wire
+running 35 tests
+test inference::recall::tests::retained_blob_corruption_is_an_error_instead_of_a_new_version ... ok
+test inference::recall::tests::absent_source_owner_never_turns_a_marker_into_a_citation ... ok
+test inference::durable::tests::recall_entries_refuse_legacy_readers_instead_of_losing_context ... ok
+test inference::recall::tests::short_passage_context_contains_content_and_keeps_identity_in_evidence ... ok
+test inference::recall::tests::budgets_never_clip_a_citable_passage ... ok
+test inference::recall::tests::structured_quote_anchors_accept_alternative_json_unicode_escapes ... ok
+test inference::recall::tests::changed_page_is_reported_stale_without_substituting_or_citing_it ... ok
+test inference::publication_tests::publications_require_owner_and_exact_page_text_bytes_and_never_make_a_stub_answer ... ok
+test inference::recall::tests::scopes_filter_passage_handles_and_ties_are_stable ... ok
+test inference::recall::tests::exact_quote_annotations_are_distinct_from_model_markers_and_partial_matches ... ok
+test inference::publication_tests::publishers_cannot_replace_another_live_owner_and_disconnect_withdraws_heads ... ok
+test inference::recall::tests::short_accidental_matches_do_not_become_quote_citations ... ok
+test inference::publication_tests::published_rankings_follow_explicit_scope_republication_lock_and_withdrawal ... ok
+test inference::observations::tests::stale_worker_replies_neither_revive_nor_rejournal_terminal_work ... ok
+test inference::recall::tests::structured_claim_quotes_keep_historical_support_but_withdraw_stale_inspection ... ok
+test inference::recall::tests::stub_cannot_satisfy_a_retained_ask ... ok
+test inference::recall::tests::unicode_selectors_and_passage_ids_bind_exact_retained_bytes ... ok
+test inference::tests::another_sessions_requests_are_errors ... ok
+test inference::recall::tests::source_changes_advance_projection_revision_without_rewriting_the_run ... ok
+test inference::tests::retained_asks_do_not_auto_execute_without_current_authority ... ok
+test inference::tests::duplicate_and_unknown_runs_are_refused ... ok
+test inference_protocol::recall::answer_wire_tests::existing_prose_asks_keep_their_wire_shape ... ok
+test inference::tests::disconnected_durable_ask_is_failed_and_later_refusal_is_not_journaled ... ok
+test inference::tests::a_stub_ask_streams_to_a_finished_answer ... ok
+test inference::tests::a_load_failure_is_visible_and_each_ask_fails ... ok
+test inference::tests::buffered_finished_update_survives_a_later_actor_panic ... ok
+test inference::tests::actor_panic_is_reported_even_after_all_runs_become_terminal ... ok
+test inference::tests::close_retains_every_terminal_journal_failure ... ok
+test inference::tests::the_route_asks_streams_and_rings ... ok
+test inference::tests::close_cancels_an_ask_waiting_for_a_gpu_worker_to_stop ... ok
+test inference::durable::tests::encrypted_logs_refuse_wrong_keys_signers_and_modified_bodies ... ok
+test inference::tests::a_cancel_mid_stream_keeps_partial_text_and_nothing_after ... ok
+test inference::durable::tests::two_continuations_are_a_visible_fork_and_never_a_silent_winner ... ok
+test inference::durable::tests::claim_support_is_sealed_reopened_and_bound_to_raw_output ... ok
+test inference::tests::close_cancels_queued_runs_and_refuses_later_asks ... ok
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.21s
+
+resident_route
+running 7 tests
+test a_real_model_cites_exact_retained_versions_and_reopens_its_run ... ignored, requires pinned ESP_SMOLLM2_DIR and a discrete GPU
+test probe_bounded_cross_source_answers ... ignored, requires pinned ESP_SMOLLM2_DIR and CROSS_SOURCE_CASES/OUTPUT
+test serve_trained_model_for_headed_turnstone ... ignored, requires ESP_SMOLLM2_DIR, DJINN_HEADED_DIR and headed Turnstone
+test the_lane_without_a_distillery_lane_is_refused_before_anything_opens ... ok
+test a_resident_answers_an_ask_on_its_route_and_closes_the_lane ... ok
+test a_library_model_answers_through_the_resident_app_door_without_a_trainer ... ok
+test keyed_personal_graph_devices_continue_a_seeded_ask has been running for over 60 seconds
+test keyed_personal_graph_devices_continue_a_seeded_ask ... ok
+test result: ok. 4 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 63.10s
+
+turnstone_inference
+running 9 tests
+test inference_service::tests::admitted_research_route_refuses_wrong_owner ... ignored, requires the isolated R3 real resident and a public probe receipt path
+test inference_service::tests::withdrawn_citations_and_wrong_source_text_cannot_open ... ok
+test inference_service::tests::citation_open_reads_the_exact_source_version_and_checks_its_passage_identity ... ok
+test inference_service::tests::saved_citation_requires_requested_scope_and_exact_unicode_passage ... ok
+test inference_service::tests::claim_inspection_rechecks_the_exact_subrange_and_raw_answer_binding ... ok
+test inference_service::tests::a_selector_beyond_the_source_is_refused_even_when_it_would_copy_the_same_text ... ok
+test inference_surface::tests::research_panes_share_one_publisher_and_reject_foreign_or_legacy_sources ... ok
+test inference_service::tests::publication_bounds_encoded_bytes_and_rejects_owner_hash_and_legacy_substitution ... ok
+test trail_memory::inference_owner_tests::the_actor_lends_versions_without_reopening_its_store_or_substituting_a_new_head ... ok
+test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 1150 filtered out; finished in 0.77s
+
+resident_gpu_build
+Finished `test` profile [unoptimized] target(s) in 1m 45s
+Executable tests/inference_route.rs (/Users/markik/Code/output/embedding-envelope-20261020/resident-build/debug/deps/inference_route-7a5b95a3e29b9995)
+
+turnstone_build
+Finished `dev` profile [unoptimized] target(s) in 3m 45s
