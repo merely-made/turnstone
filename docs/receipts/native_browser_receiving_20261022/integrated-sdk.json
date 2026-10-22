@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "recorded_at_utc": "2026-10-22T20:57:49.749780+00:00",
+  "scope": "Clean integration of browser receiving onto current Turnstone origin/main, retaining its SDK compatibility work",
+  "upstream_base": "8eebb5a375cc56a619b61acfcf2fcf4b88b094f5",
+  "receiving_source_head": "a622c96070932cbbb74bfb37289040eae9d32a4d",
+  "supplier_adoption": {
+    "old_canonical_mere": "a483d29a88de0159896c2e8406f97f49a2b6a80a",
+    "qualified_canonical_mere": "af5c3ba85a19fe3eddbabc283b6fab7572fc1cf3",
+    "changed_canonical_source_rows": 62,
+    "manifest_changed": false,
+    "package_versions_changed": false,
+    "dependency_tables_changed": false,
+    "registry_entries_changed": false,
+    "other_git_pins_changed": false,
+    "note": "Upstream already adopted the AccessKit and other SDK compatibility fixes. Prior receiving-lane compatibility patch was deliberately not cherry-picked."
+  },
+  "hashes": {
+    "upstream_lock_sha256": "8595ab0d8cb541ba0378075098015260369410e5f7064f775c279c88aec09471",
+    "receiving_lock_sha256": "521d344e4a60b068c8d8b6a00ea3b3891b100463e38afdbbf7815dc7883e41a5",
+    "manifest_sha256": "b89a0673e0151a2174c57235a16d5913e27a2938adb8734f4b7aa7475c29b613",
+    "upstream_package_graph_sha256": "f16e7428c31810b5fe10236aa3a01ba27c53e3516834bf274efc14049b2cae09",
+    "receiving_package_graph_sha256": "6155b9864534dec22a5db9dd4ed95287fc8fa1b7f85cee07929340826cef012f"
+  },
+  "resolution": {
+    "command": "cargo metadata --format-version 1 --offline --locked",
+    "exit_code": 0,
+    "resolved_packages": 1279,
+    "lock_unchanged": true
+  },
+  "git_sources": {
+    "git+https://github.com/kyren/gc-arena": [
+      "git+https://github.com/kyren/gc-arena?rev=5a7534b883b703f23cfb8c3cfdf033460aa77ea9#5a7534b883b703f23cfb8c3cfdf033460aa77ea9"
+    ],
+    "git+https://github.com/mark-ik/arboard.git": [
+      "git+https://github.com/mark-ik/arboard.git?branch=custom-formats#57a68d037e51eff34974928f56b434c87b827fb8"
+    ],
+    "git+https://github.com/mark-ik/firewheel.git": [
+      "git+https://github.com/mark-ik/firewheel.git?rev=2b03846d2e0dcc6ded2a85367bb8c5071ae99cdc#2b03846d2e0dcc6ded2a85367bb8c5071ae99cdc"
+    ],
+    "git+https://github.com/mark-ik/p2panda.git": [
+      "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bcb9f2a9d798b1c25b2ec2f47c0416bd65"
+    ],
+    "git+https://github.com/mark-ik/vello": [
+      "git+https://github.com/mark-ik/vello?rev=276b46648c08f3d2062e70559afa999842e1873c#276b46648c08f3d2062e70559afa999842e1873c"
+    ],
+    "git+https://github.com/merely-made/armillary.git": [
+      "git+https://github.com/merely-made/armillary.git?rev=75643df1f178757bb7b6386913af1a39353f3069#75643df1f178757bb7b6386913af1a39353f3069",
+      "git+https://github.com/merely-made/armillary.git?rev=92d5b15cf39aaac40a3f2d863ffee69c9be11bfc#92d5b15cf39aaac40a3f2d863ffee69c9be11bfc"
+    ],
+    "git+https://github.com/merely-made/didgeridoo": [
+      "git+https://github.com/merely-made/didgeridoo?rev=e77309c648b91d59c1ded9b20e54999ae8b19741#e77309c648b91d59c1ded9b20e54999ae8b19741"
+    ],
+    "git+https://github.com/merely-made/dramatis.git": [
+      "git+https://github.com/merely-made/dramatis.git?branch=main#7d498c27df8076dacccb74ba4a05f863f9f48c76"
+    ],
+    "git+https://github.com/merely-made/eidetic.git": [
+      "git+https://github.com/merely-made/eidetic.git?rev=34105d63ec17826e0a58a5b461b65150357dd000#34105d63ec17826e0a58a5b461b65150357dd000"
+    ],
+    "git+https://github.com/merely-made/errand.git": [
+      "git+https://github.com/merely-made/errand.git?rev=3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab#3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab"
+    ],
+    "git+https://github.com/merely-made/esp.git": [
+      "git+https://github.com/merely-made/esp.git?rev=6d6ad84b773c9baf2390bd7807a21ca9887e6efd#6d6ad84b773c9baf2390bd7807a21ca9887e6efd"
+    ],
+    "git+https://github.com/merely-made/gemot.git": [
+      "git+https://github.com/merely-made/gemot.git?rev=4342aed4bd101e68b1e71d24e010190d81765201#4342aed4bd101e68b1e71d24e010190d81765201"
+    ],
+    "git+https://github.com/merely-made/genet.git": [
+      "git+https://github.com/merely-made/genet.git?branch=main#7d1d89dbe729a853cf59c7b3f43ee3d8e494fde8"
+    ],
+    "git+https://github.com/merely-made/knot-editor.git": [
+      "git+https://github.com/merely-made/knot-editor.git?branch=main#f44259964cd0b6ff27c21ab368ea7830fc11e0fe"
+    ],
+    "git+https://github.com/merely-made/mere.git": [
+      "git+https://github.com/merely-made/mere.git?branch=main#af5c3ba85a19fe3eddbabc283b6fab7572fc1cf3",
+      "git+https://github.com/merely-made/mere.git?rev=70deef2c8cf3d3410ae35b496a9396514070b24f#70deef2c8cf3d3410ae35b496a9396514070b24f"
+    ],
+    "git+https://github.com/merely-made/murm.git": [
+      "git+https://github.com/merely-made/murm.git?branch=main#5b1c5cac2f5d0e275ead94ae4b8b25c65a183694"
+    ],
+    "git+https://github.com/merely-made/netrender.git": [
+      "git+https://github.com/merely-made/netrender.git?branch=main#ec15eb269855c798467c93a6d10031100fdfdf65"
+    ],
+    "git+https://github.com/merely-made/turquet.git": [
+      "git+https://github.com/merely-made/turquet.git?rev=bc3c454f755d0bfd70ab48bd9556a1cda2213d41#bc3c454f755d0bfd70ab48bd9556a1cda2213d41"
+    ],
+    "git+https://github.com/merely-made/wgpu-graft.git": [
+      "git+https://github.com/merely-made/wgpu-graft.git?rev=bb48281bd4a88a726a009e0518706881b74b7604#bb48281bd4a88a726a009e0518706881b74b7604"
+    ],
+    "git+https://github.com/merely-made/woodshed.git": [
+      "git+https://github.com/merely-made/woodshed.git?branch=main#62dde4c0c85fcca87e949ef9ab8b1950a4d528c0"
+    ],
+    "git+https://github.com/servo/servo": [
+      "git+https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f31a259f04a574f5ec4e959c943ad7cc7"
+    ],
+    "git+https://github.com/unicode-org/icu4x": [
+      "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+    ]
+  },
+  "native_client_boundary": {
+    "retinue_pin_unchanged": "5b1c5cac2f5d0e275ead94ae4b8b25c65a183694",
+    "client_cap_or_timeout_changes": false,
+    "lifecycle_fix": "Ordinary page fetch drains queued proof and link closure within its existing outer deadline, separately qualified by product tests",
+    "registry_dependency_entries_unchanged": true
+  },
+  "historical_receipts": [
+    "../../../support/receipts/smolweb-browser-receiving/sdk.json",
+    "../../../support/receipts/smolweb-browser-receiving/sdk-accessibility.json"
+  ],
+  "validation_pending": [
+    "Integrated product compilation",
+    "Integrated focused receiving/accessibility tests",
+    "Integrated governed-host browser process proof"
+  ],
+  "resources": {
+    "worktree": "C:/Users/mark_/Code/worktrees/turnstone-browser-receiving",
+    "owner": "root integration lane",
+    "reason": "Actual collision with advanced origin/main and shared primary WIP",
+    "cargo_target": "C:/t/cargo-targets/turnstone",
+    "cargo_build_dir": "C:/t/cargo-targets/turnstone/build",
+    "new_cargo_home": null,
+    "new_target": null
+  }
+}
