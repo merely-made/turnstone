@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "scope": "Independent source review of native receiving and optional governed-host probe",
+  "result": "No blocking correctness findings",
+  "product_source_sha256": {
+    "src/nomadnet.rs": "6c7fb643396661731968469899455f227610aadc84c7fd1aa218fef6a714a076",
+    "src/shell/effects.rs": "08cff8c2bcda95da83ea6323b2c2b9b08c360d2aaf3c974b379b4002fbc39131",
+    "src/shell/nomadnet_receiving_tests.rs": "8f14b2819b82f792900881bb62b9d026c109388a5aa557cef6c398a88af70a6e",
+    "src/shell/smolweb_receiving_tests.rs": "5c4c5675eb4fe32c6dfefe738b82bbd8208ae1f9a051ae8e2e8281a18edbe443"
+  },
+  "governed_hook_source": "ce5e31318dafc49431b3dc700e2c5aecce68ede9",
+  "proof_checks": [
+    "Exact ignored test name and nonzero-test success required",
+    "Child exit and standalone structured proof required",
+    "Exact saved native bytes pass ordinary reducer and registered controller",
+    "Actual laid-out link hit-testing retains same-node destination",
+    "Child and output bounded; process killed/reaped on failure"
+  ],
+  "evidence_boundary": "Ordinary fetch helper -> typed outcome -> product correlation/reducer/controller. Stop proves late-result rejection. Does not qualify fetch actor dispatch/concurrency, transport cancellation, a window, GPU presentation, independent readers or radio.",
+  "client_policy": "Public validation order, settings/defaults/caps/deadlines unchanged; SDK receipt proves complete Retinue source and registry closure equality"
+}
