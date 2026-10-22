@@ -6,7 +6,7 @@
 
 use cambium::{
     AnyView, GenetCtx, GenetElement, PointerClick, SurfaceViewport, TextInput, clickable, el, lens,
-    text, text_field_typed,
+    status_note, text, text_field_typed,
 };
 use jiff::civil::Date;
 
@@ -387,9 +387,7 @@ pub(super) fn sky_surface_view(state: &SkySurfaceState) -> SkyView {
         .iter()
         .map(|message| {
             Box::new(
-                el::<_, SkySurfaceState, ()>("div", message.clone())
-                    .attr("class", "list-row muted")
-                    .attr("role", "status"),
+                status_note::<SkySurfaceState, ()>("list-row muted", message.clone()),
             ) as SkyView
         })
         .collect();

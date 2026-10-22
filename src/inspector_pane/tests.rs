@@ -122,8 +122,10 @@ fn picking_a_viewer_reports_the_intent_and_mirrors_back() {
             .all_with_class(dom.document(), "radio")
             .into_iter()
             .find(|&n| {
-                dom.dom_children(n)
-                    .any(|c| dom.text(c).is_some_and(|t| t == "( ) Genet"))
+                dom.dom_children(n).any(|c| {
+                    dom.dom_children(c)
+                        .any(|text| dom.text(text).is_some_and(|t| t == "Genet"))
+                })
             })
             .expect("the livery option is drawn");
         let (rx, ry, rw, rh) =
