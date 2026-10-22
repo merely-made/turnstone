@@ -70,6 +70,7 @@ impl OuterFrame {
         let appearance = crate::shell_services::AppearanceConfig::default();
         let sheet = crate::frame_style::stylesheet(
             None,
+            &appearance.theme_mode.tabard(),
             &appearance.theme_typography,
             "",
             appearance.zoom(),
@@ -153,6 +154,7 @@ impl OuterFrame {
             self.controls.invalidate();
             self.sheet = crate::frame_style::stylesheet(
                 appearance.theme_presentation.as_ref(),
+                &appearance.theme_mode.tabard(),
                 &appearance.theme_typography,
                 &appearance.interface_font_properties,
                 appearance.zoom(),
