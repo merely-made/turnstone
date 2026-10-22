@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "recorded_at_utc": "2026-10-22T20:37:30.310291+00:00",
+  "scope": "Required direct AccessKit SDK compatibility during browser receiving adoption; resolution only, compilation and tests recorded separately",
+  "previous_receipt": "sdk.json",
+  "previous_lock_sha256": "edc7df3cb318edce462d80e6427a0dad9f5e669fd67198c522188af20a5f3fd0",
+  "qualified_mere": "af5c3ba85a19fe3eddbabc283b6fab7572fc1cf3",
+  "hashes": {
+    "Cargo.toml": "9ec3d1be686488622ecaf7eb53c945549144fcf98c4fd7b04d417c4afdab92c9",
+    "Cargo.lock": "b250339ec06cd9a80721fd81e0351bbd46313b36f29357cd328792b7838d259b",
+    "src/foreign_a11y.rs": "2c29a58c4cfe65b52b23a589a3fb2b8d760413525df25f5cb3285036af13a23f",
+    "src/contributed_a11y.rs": "70c0fb5c35b9b37b663668641bc3e3dc8a54c7e070f3125e8cbd919fe2f6ab9a",
+    "src/shell/document_a11y.rs": "41b65103ae00c7ac4868b82063afb580017fddfcc66323babca145e3743eb6bb"
+  },
+  "receiving_package_graph_sha256": "998773bd89c6e862d194a42fd1c50b24b484d57d4cf1fa12182dbe952e74b3b3",
+  "resolution": {
+    "command": "cargo metadata --format-version 1 --offline",
+    "exit_code": 0,
+    "resolved_packages": 1279,
+    "accesskit_versions": [
+      "0.25.1"
+    ],
+    "accesskit_consumer_versions": [
+      "0.39.1"
+    ],
+    "full_graph_retains_existing_registry_versions": true
+  },
+  "registry_delta_since_previous_receipt": {
+    "added": [],
+    "removed": [
+      {
+        "name": "accesskit_consumer",
+        "version": "0.35.0",
+        "checksum": "53cf47daed85312e763fbf85ceca136e0d7abc68e0a7e12abe11f48172bc3b10"
+      },
+      {
+        "name": "accesskit_consumer",
+        "version": "0.36.0",
+        "checksum": "25e0d7e25d06f4dc21d1774d67146e9e80d6789216cbd4d1e88185b0095dba60"
+      },
+      {
+        "name": "accesskit_consumer",
+        "version": "0.38.0",
+        "checksum": "5d10a236f96f87d70732e44520046785431ef01d5bcd6b041317bfadd2f88245"
+      }
+    ]
+  },
+  "source_adaptations": [
+    "Direct AccessKit 0.25.1 and exact consumer 0.39.1 match the selected Mere/Windows/Unix cohorts",
+    "Remove obsolete separately named consumer 0.35/0.36 dev dependencies; both platform-named recursive acceptance modules use current canonical consumer",
+    "Use consumer NodeRef in existing callback type aliases, preserving stable IDs and tree lookup semantics",
+    "Map DocumentA11yRole::MenuBar explicitly to AccessKit Role::MenuBar"
+  ],
+  "surface_contract": "Qualified supplier SurfaceAccessibilityTreeId/Update/ActionRequest are direct AccessKit aliases; no wrapper casts or lossy conversions introduced",
+  "client_limit_preservation": {
+    "source_edits": false,
+    "retinue_registry_closure_unchanged": true,
+    "registry_dependency_package_count": 93,
+    "registry_dependency_graph_sha256": "769ecb25f9745b62cb7356e3014d82c1ea8b345c7177b9f33fd06f5b655d13ce"
+  },
+  "validation_pending": [
+    "Portable Turnstone libtest compilation",
+    "Affected foreign/accessibility/surface tests",
+    "Browser receiving tests and governed-host hook"
+  ],
+  "resources": {
+    "new_target": null,
+    "new_cargo_home": null,
+    "new_worktree": null
+  }
+}

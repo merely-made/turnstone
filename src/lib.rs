@@ -14,6 +14,7 @@ pub mod action;
 pub mod reading_view;
 pub mod app;
 mod appearance;
+mod map_theme;
 mod arrange_pane;
 pub mod behaviors;
 mod browse;
