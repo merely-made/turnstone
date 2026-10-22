@@ -353,7 +353,7 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
                 detail_panel(&sections),
             ),
         )
-        .attr("class", "pane")
+        .attr("class", "pane cambium-shell-panel")
         .attr(
             "style",
             format!(
