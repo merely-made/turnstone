@@ -1,0 +1,63 @@
+# Explicit held prose, real document-canvas layout, and the normal shell.
+assert snap source == saved graph
+remember initial
+click role:button Fit graph
+settle 20
+click role:button Inspector
+reveal role:button Find and filter
+click role:button Find and filter
+reveal role:textbox Search
+click role:textbox Search
+input-text mere://reading/field-notes
+click role:button Apply filter
+click role:button Inspector
+click role:button Fit graph
+settle 20
+click-node mere://reading/field-notes
+assert snap detail-address == mere://reading/field-notes
+click role:button Inspector
+reveal role:button Clear filter
+click role:button Clear filter
+click role:button Find and filter
+click role:button Inspector
+click role:button Panes
+click role:button Read selected
+wait 120
+assert snap forme-accesses == 1
+assert snap pelt-sessions == 1
+same initial node-count
+assert snap reading-text-size == 18
+assert snap reading-column-em == 36
+click role:button Larger reading text
+wait 30
+assert snap reading-text-size == 20
+click role:button Narrower reading column
+wait 30
+assert snap reading-column-em == 32
+capture graphshell_read_toolbar
+click role:button Find in reading
+settle 10
+click role:textbox Find text in reading
+input-text projection
+settle 10
+assert snap reading-find == 1 of 3
+click role:button Next reading match
+settle 10
+assert snap reading-find == 2 of 3
+key ArrowLeft
+settle 10
+assert snap reading-find == 2 of 3
+capture graphshell_read_find
+click role:button Previous reading match
+settle 10
+assert snap reading-find == 1 of 3
+key Escape
+settle 10
+assert snap reading-find == closed
+click role:button Map
+click role:button Fit graph
+settle 20
+capture graphshell_fitted_map
+click role:button Read
+settle 10
+same initial node-count

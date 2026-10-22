@@ -32,6 +32,7 @@ pub(super) struct Pane {
     feedback: Option<(DropEffect, [f32; 4])>,
     drag: Option<(Uuid, (f32, f32), bool)>,
     cancelled_drag: bool,
+    pub(super) reading_ui: std::collections::BTreeMap<Uuid, super::reading::ReadUi>,
 }
 impl Pane {
     pub(super) async fn open(product: &product::SavedProduct) -> Result<Self, String> {
@@ -54,6 +55,7 @@ impl Pane {
             feedback: None,
             drag: None,
             cancelled_drag: false,
+            reading_ui: Default::default(),
         }
     }
     pub(super) fn projected_model(&self) -> &FormeWorkspace {
@@ -72,7 +74,7 @@ impl Pane {
         let region = self.current().project_region(owner, canvas.graph())?;
         canvas.set_forme_region(region)
     }
-    fn save(&mut self, kind: SaveKind) {
+    pub(super) fn save(&mut self, kind: SaveKind) {
         if self.saving {
             return;
         }
@@ -626,6 +628,15 @@ pub(super) fn shortcut(page: &mut TreePage, event: &cambium::KeyEvent) -> bool {
     {
         finish_preview(page, false);
         return true;
+    }
+    if let Some(member) = page.forme.as_ref().filter(|pane|pane.workbench).and_then(|pane|pane.model().focused_reading) {
+        let find_open = page.forme.as_ref().and_then(|pane|pane.reading_ui.get(&member)).is_some_and(|ui|ui.open);
+        if matches!(event.key, Key::Named(NamedKey::Escape)) && find_open {
+            super::reading::read_command(page,member,cambium::ReadCommand::CloseFind); return true;
+        }
+        if (event.mods.ctrl || event.mods.meta) && !event.mods.alt && matches!(&event.key, Key::Character(key) if key.eq_ignore_ascii_case("f")) {
+            super::reading::read_command(page,member,cambium::ReadCommand::Find); return true;
+        }
     }
     if (event.mods.ctrl || event.mods.meta)
         && !event.mods.alt
@@ -1188,6 +1199,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 }
             }
             super::reading::prepare(page);
+            let reading_toolbars: std::collections::BTreeMap<_, _> = appearances.keys().map(|member| (*member, super::reading::toolbar_snapshot(page, *member))).collect();
             let reading = move |tile: &Tile| -> Slot<TreePage, ()> {
                 let ContentSource::Open { id, .. } = &tile.content else {
                     return Slot::Hole;
@@ -1203,7 +1215,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 let title = node.title.clone();
                 let address = node.url().to_string();
                 let mut controls: Vec<Child> = vec![Box::new(
-                    button("Show in Mere", move |p: &mut TreePage, _| {
+                    button("Show on Map", move |p: &mut TreePage, _| {
                         p.shared.canvas.borrow_mut().select_member(member);
                         if let Some(f) = &mut p.forme {
                             f.workbench = false;
@@ -1211,7 +1223,8 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                         selection_changed(p);
                         p.shared.dirty.set(true);
                     })
-                    .attr("aria-description", address.clone()),
+                    .attr("aria-description", address.clone())
+                    .attr("class", "shell-control reading-map-control"),
                 )];
                 let mut tags: Vec<_> = graph
                     .node_content_tags(key)
@@ -1220,12 +1233,13 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                     .collect();
                 tags.sort();
                 if !tags.is_empty() {
-                    controls.push(Box::new(el("p", tags.join(" · "))));
+                    controls.push(Box::new(el("p", tags.join(" · ")).attr("class", "shell-reading-status")));
                 }
                 if let Some(snapshot) = query_appearances.get(&member) {
                     controls.push(super::query_view::render(snapshot.clone()));
                 }
                 if let Some(appearance) = appearances.get(&member) {
+                    controls.push(super::reading::toolbar(member, reading_toolbars[&member].clone()));
                     controls.push(super::reading::render(appearance.clone()));
                 }
                 if !locked {
@@ -1291,12 +1305,12 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
     })
 }
 pub(super) const SHEET: &str = " .forme-workbench { width:100%;height:100%;min-height:0; } \
-    .forme-workbench .frisket-content { background:inherit; } .reading-pane { padding:16px;color:inherit;height:100%;box-sizing:border-box;min-height:0;overflow:auto; } \
+    .forme-workbench .frisket-content { background:inherit; } .reading-pane { padding:8px;color:inherit;height:100%;box-sizing:border-box;min-height:0;overflow:auto; } \
     .retained-reading-pane { display:flex;flex-direction:column;overflow:hidden; } \
     .retained-reading-pane > button, .retained-reading-pane > p { flex-shrink:0; } \
     .pelt-reading { display:flex;flex-direction:column;flex-grow:1;flex-shrink:1;flex-basis:0px;min-height:0; } \
     .pelt-reading > p { flex-shrink:0; } \
-    .reading-pane button { padding:5px 10px;border:1px solid currentColor; } \
+    .reading-pane button { padding:4px 8px;min-height:28px;border:1px solid currentColor; } .reading-map-control { align-self:flex-start;margin-bottom:6px; } \
     .reading-address { overflow-wrap:anywhere; } .reading-body { white-space:pre-wrap;overflow-wrap:anywhere; } ";
 
 /// Activate an already arranged member without changing its tile or split.

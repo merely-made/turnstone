@@ -27,7 +27,7 @@ cp "$script_root/bridge.css" "$destination_path/bridge.css"
 cp "$script_root/bridge.js" "$destination_path/bridge.js"
 cp "$web_root/index.html" "$destination_path/graph.html"
 cp "$web_root/styles.css" "$destination_path/styles.css"
-for font in IBMPlexSans-Regular.ttf IBMPlexMono-Regular.ttf Newsreader-Regular.ttf OFL-IBMPlex.txt OFL-Newsreader.txt; do
+for font in IBMPlexSans-Regular.ttf IBMPlexMono-Regular.ttf Newsreader-Regular.ttf NotoSansMath-Regular.ttf OFL-IBMPlex.txt OFL-Newsreader.txt OFL-NotoSansMath.txt; do
   cp "$web_root/$font" "$destination_path/$font"
 done
 # Segmenter dictionaries the page fetches when reading text needs them.

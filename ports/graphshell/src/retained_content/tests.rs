@@ -801,3 +801,76 @@ fn held_thai_text_asks_for_its_dictionary_and_lays_out_again_with_it() {
         "later sessions get it too"
     );
 }
+
+#[test]
+fn host_font_roles_keep_code_and_missing_glyph_fallback_across_reflow() {
+    let serif = include_bytes!("../../web/Newsreader-Regular.ttf").to_vec();
+    let sans = include_bytes!("../../web/IBMPlexSans-Regular.ttf").to_vec();
+    let mono = include_bytes!("../../web/IBMPlexMono-Regular.ttf").to_vec();
+    let symbols = include_bytes!("../../web/NotoSansMath-Regular.ttf").to_vec();
+    let engines = pelt_core::native::sessions_with_generic_fonts(
+        pelt_core::native::HeldResources::default(),
+        vec![serif.clone(), sans.clone(), mono.clone(), symbols.clone()],
+        vec!["Newsreader".into(), "IBM Plex Sans".into(), "Noto Sans Math".into()],
+        vec![("sans-serif".into(), sans.clone()), ("monospace".into(), mono.clone())],
+    );
+    let mut document = inker::EngineDocument {
+        address: "mere://reading/font-roles".into(),
+        title: None,
+        content_type: "text/plain".into(),
+        lang: None,
+        provenance: Default::default(),
+        trust: Default::default(),
+        diagnostics: Vec::new(),
+        navigation: Default::default(),
+        blocks: vec![
+            inker::Block::Paragraph { spans: vec![inker::InlineSpan::Text("Reading → a related source".into())] },
+            inker::Block::CodeBlock { language: None, text: "document -> projection".into() },
+            inker::Block::Paragraph { spans: vec![inker::InlineSpan::Link {
+                url: "mere://reading/next".into(), title: None,
+                spans: vec![inker::InlineSpan::Text("Same-scheme link".into())], predicate: None,
+            }] },
+        ],
+    };
+    document.provenance.source_kind = Some(pelt_core::native::DOCUMENT_ENGINE_ID.into());
+    let mut session = engines.spawn(pelt_core::native::DOCUMENT_ENGINE_ID,
+        &SessionSpawnRequest::new(&document.address)
+            .with_body(serde_json::to_string(&document).unwrap())
+            .with_content_type("application/vnd.mere.document+json")
+    ).unwrap();
+    for width in [800, 280] {
+        let scene = session.frame(width, 400);
+        for op in &scene.ops {
+            if let netrender::SceneOp::GlyphRun(run) = op {
+                assert!(run.glyphs.iter().all(|glyph| glyph.id != 0),
+                    "reading, code and both link arrows must have real glyphs");
+            }
+        }
+        for (role, bytes) in [("prose", &serif), ("fallback", &sans), ("code", &mono), ("symbols", &symbols)] {
+            assert!(scene.fonts.iter().any(|face| face.data.as_ref() == bytes.as_slice()),
+                "{role} must use its actual supplied face at viewport {width}");
+        }
+    }
+}
+
+#[test]
+fn reading_controls_keep_held_accesses_and_search_independent() {
+    let mut host=ContentHost::default();
+    let a=Uuid::from_u128(11); let b=Uuid::from_u128(12);
+    let source=HeldContent::text("mere://saved/shared","Shared paper","One needle in each paragraph. ".repeat(80));
+    let first=host.open(a,source.clone()).unwrap(); let second=host.open(b,source.clone()).unwrap();
+    host.show_only(&[a,b]);
+    first.borrow_mut().frame(640.,240.,1.).unwrap(); second.borrow_mut().frame(640.,240.,1.).unwrap();
+    let identity=first.borrow().session_identity();
+    let mut value=tabard::ReadingPreferences::default();value.step_text(true);value.step_column(false);
+    assert!(first.borrow_mut().reading_preferences(value).unwrap());
+    first.borrow_mut().frame(640.,240.,2.).unwrap();
+    assert_eq!(first.borrow_mut().find("needle",None).unwrap().count,80);
+    assert_eq!(first.borrow_mut().find("needle",Some(ReadFindDirection::Previous)).unwrap().current,Some(79));
+    assert_eq!(second.borrow_mut().find("absent",None).unwrap().count,0);
+    assert_eq!(first.borrow().session_identity(),identity);
+    assert_eq!(first.borrow().source().bytes,source.bytes);
+    assert!(Rc::ptr_eq(&first,&host.open(a,source).unwrap()));
+    first.borrow_mut().clear_find();
+    assert_eq!(first.borrow_mut().find("",Some(ReadFindDirection::Next)).unwrap().count,0);
+}

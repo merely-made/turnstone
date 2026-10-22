@@ -158,14 +158,17 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         params.get("fixture").as_deref() == Some("family-assertions");
     let promoted_link_fixture = params.get("fixture").as_deref() == Some("promoted-link");
     let query_fixture = params.get("fixture").as_deref() == Some("retained-content-query");
+    let reading_fixture = params.get("fixture").as_deref() == Some("reading-typography");
     let retained_fixture =
-        query_fixture || params.get("fixture").as_deref() == Some("retained-content");
+        query_fixture || reading_fixture || params.get("fixture").as_deref() == Some("retained-content");
     let database = if promoted_link_fixture {
         "graphshell-promoted-link-p7-v1"
     } else if link_family_assertion_fixture {
         "graphshell-link-family-assertions-p6-v1"
     } else if link_rest_fixture {
         "graphshell-link-rest-p4-v1"
+    } else if reading_fixture {
+        "graphshell-reading-typography-acceptance"
     } else if query_fixture {
         "graphshell-retained-content-query-acceptance"
     } else if retained_fixture {
@@ -218,6 +221,9 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     if retained_fixture && !reopened {
         graphshell::retained_content::fixture::seed(&mut app, super::reading::clip_limits()?)
             .await?;
+    }
+    if reading_fixture && !reopened {
+        graphshell::retained_content::fixture::seed_reading(&mut app).await?;
     }
     if query_fixture && !reopened {
         graphshell::query_views::seed_fixture(&mut app).await?;

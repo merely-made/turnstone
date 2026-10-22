@@ -592,6 +592,240 @@ fn authored_grouping_preserves_the_v4_record_and_reopens_exactly() {
     );
 }
 
+#[derive(Clone, Copy, Debug)]
+enum NarrowedNumber {
+    MixPart,
+    GroupedOuter,
+    TargetPull,
+    Damping,
+    ScheduledMixPart,
+    ScheduledGroupedOuter,
+}
+
+impl NarrowedNumber {
+    fn path(self) -> &'static str {
+        match self {
+            Self::MixPart => "root.parts[1].weight",
+            Self::GroupedOuter => "root.outer.weight",
+            Self::TargetPull => "target.anchored_pull",
+            Self::Damping => "realization.damping",
+            Self::ScheduledMixPart => "root.stages[0].node.parts[1].weight",
+            Self::ScheduledGroupedOuter => "root.stages[0].node.outer.weight",
+        }
+    }
+}
+
+fn numeric_spec(
+    mut spec: mere::canvas::dynamics_spec::DynamicsSpec,
+    field: NarrowedNumber,
+    value: f64,
+) -> mere::canvas::dynamics_spec::DynamicsSpec {
+    use mere::canvas::dynamics_spec::{Node, Realization, Stage, Stop};
+
+    fn weighted_law(value: f64) -> Node {
+        Node::Preset {
+            id: PhysicsLaw::Springs.id().to_string(),
+            weight: value,
+            terms: Default::default(),
+            rung: None,
+            overlays: Vec::new(),
+        }
+    }
+    fn weighted_root(field: NarrowedNumber, value: f64) -> Node {
+        match field {
+            NarrowedNumber::MixPart | NarrowedNumber::ScheduledMixPart => Node::Mix {
+                parts: vec![Node::preset(PhysicsLaw::Springs.id()), weighted_law(value)],
+                weight: 1.0,
+                overlays: Vec::new(),
+            },
+            NarrowedNumber::GroupedOuter | NarrowedNumber::ScheduledGroupedOuter => Node::Grouped {
+                partition: "groups.site".into(),
+                outer: Box::new(weighted_law(value)),
+                inner: Box::new(Node::preset(PhysicsLaw::Springs.id())),
+                weight: 1.0,
+                overlays: Vec::new(),
+            },
+            _ => unreachable!("this field does not live in the root"),
+        }
+    }
+
+    match field {
+        NarrowedNumber::MixPart | NarrowedNumber::GroupedOuter => {
+            spec.root = weighted_root(field, value);
+        },
+        NarrowedNumber::TargetPull => {
+            spec.target.as_mut().expect("fixture target").anchored_pull = value;
+        },
+        NarrowedNumber::Damping => {
+            spec.realization = Realization::Integrate {
+                damping: Some(value),
+            };
+        },
+        NarrowedNumber::ScheduledMixPart | NarrowedNumber::ScheduledGroupedOuter => {
+            spec.root = Node::Schedule {
+                stages: vec![Stage {
+                    node: weighted_root(field, value),
+                    stop: Stop::Rest,
+                    capture: None,
+                }],
+                weight: 1.0,
+                overlays: Vec::new(),
+            };
+        },
+    }
+    spec
+}
+
+fn codicil_with_scene<B: muniment::Backend + Clone>(
+    host: &crate::mere_host::MereHost<B>,
+    member: uuid::Uuid,
+    scene: &crate::product::SavedSceneV3,
+) -> Vec<u8> {
+    use crate::product::{ExportRequest, TransferScope};
+
+    host.export_product_codicil(ExportRequest {
+        focused: member,
+        selected: vec![member],
+        scope: TransferScope::ObjectOnly,
+        exported_at_ms: 22,
+        include_local_file_locations: false,
+        scene: Some(scene.clone()),
+    })
+    .unwrap()
+}
+
+#[test]
+fn v4_codicil_refuses_f64_values_that_do_not_survive_canvas_binding_atomically() {
+    use crate::local_scene::{capture_scene, open_codicil};
+    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
+    use crate::product::{SAVED_SCENE_FACET, SavedDynamics};
+
+    let fields = [
+        NarrowedNumber::MixPart,
+        NarrowedNumber::GroupedOuter,
+        NarrowedNumber::TargetPull,
+        NarrowedNumber::Damping,
+        NarrowedNumber::ScheduledMixPart,
+        NarrowedNumber::ScheduledGroupedOuter,
+    ];
+    let persona = SelectedPersonaRef {
+        persona: FIXTURE_PERSONA_ADDRESS.into(),
+        profile: "profile:graphshell-tree".into(),
+    };
+    let mut app =
+        crate::app::GraphshellApp::fixture(muniment::MemoryBackend::new(), persona).unwrap();
+    let mut canvas = p2_fixture_canvas();
+    let member = app
+        .host
+        .graph()
+        .get_node_by_url(FIXTURE_WEB_ADDRESS)
+        .unwrap()
+        .1
+        .id;
+    const ADDRESS: &str = "mere://scene/numeric-guard";
+    for field in fields {
+        for value in [1.0e300, 1.0e-300] {
+            let mut scene = capture_scene(&canvas, "phyllotaxis.default", "page").unwrap();
+            app.host.save_product_scene(ADDRESS, &scene).unwrap();
+            let saved_facet = app
+                .host
+                .facet_value(ADDRESS, SAVED_SCENE_FACET)
+                .unwrap()
+                .clone();
+            let spec = numeric_spec(scene.dynamics_spec().unwrap(), field, value);
+            scene.dynamics = SavedDynamics::from_spec(&spec);
+            let session = app.host.graph_session().id().0;
+            let graph = serde_json::to_value(app.host.graph().to_snapshot_at(0)).unwrap();
+            let record = canvas.dynamics_spec().unwrap();
+            let geometry = canvas.cartography_geometry();
+            let canvas_graph = serde_json::to_value(canvas.graph().to_snapshot_at(0)).unwrap();
+            let bytes = codicil_with_scene(&app.host, member, &scene);
+
+            let error = match open_codicil(&mut app.host, &mut canvas, &bytes, TREE_CANVAS) {
+                Ok(_) => panic!("unrepresentable f64 scene values must be refused before import"),
+                Err(error) => error,
+            };
+            assert!(error.contains(field.path()), "{field:?}: {error}");
+            assert_eq!(app.host.graph_session().id().0, session, "{field:?}");
+            assert_eq!(
+                serde_json::to_value(app.host.graph().to_snapshot_at(0)).unwrap(),
+                graph,
+                "{field:?} host graph changed"
+            );
+            assert_eq!(canvas.dynamics_spec().unwrap(), record, "{field:?}");
+            assert_eq!(canvas.cartography_geometry(), geometry, "{field:?}");
+            assert_eq!(
+                serde_json::to_value(canvas.graph().to_snapshot_at(0)).unwrap(),
+                canvas_graph,
+                "{field:?} canvas graph changed"
+            );
+            assert_eq!(
+                app.host.facet_value(ADDRESS, SAVED_SCENE_FACET).unwrap(),
+                &saved_facet,
+                "{field:?} saved scene facet changed"
+            );
+        }
+    }
+}
+
+#[test]
+fn v4_scene_save_reopen_preserves_zero_subnormal_and_exact_decimal_f64_values() {
+    use crate::local_scene::{capture_scene, restore_scene};
+    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+    use crate::product::{SAVED_SCENE_FACET, SavedDynamics};
+
+    let persona = SelectedPersonaRef {
+        persona: FIXTURE_PERSONA_ADDRESS.into(),
+        profile: "profile:graphshell-tree".into(),
+    };
+    let mut app =
+        crate::app::GraphshellApp::fixture(muniment::MemoryBackend::new(), persona).unwrap();
+    let mut canvas = p2_fixture_canvas();
+    const ADDRESS: &str = "mere://scene/numeric-roundtrip";
+    let fields = [
+        NarrowedNumber::MixPart,
+        NarrowedNumber::GroupedOuter,
+        NarrowedNumber::TargetPull,
+        NarrowedNumber::Damping,
+        NarrowedNumber::ScheduledMixPart,
+        NarrowedNumber::ScheduledGroupedOuter,
+    ];
+    let values = [0.0, f64::from(f32::from_bits(1)), 0.1];
+    for field in fields {
+        for value in values {
+            let baseline = capture_scene(&canvas, "phyllotaxis.default", "page").unwrap();
+            let spec = numeric_spec(baseline.dynamics_spec().unwrap(), field, value);
+            let expected = spec.clone();
+            let mut scene = baseline;
+            scene.dynamics = SavedDynamics::from_spec(&spec);
+            app.host.save_product_scene(ADDRESS, &scene).unwrap();
+
+            let facet = app
+                .host
+                .facet_value(ADDRESS, SAVED_SCENE_FACET)
+                .unwrap()
+                .clone();
+            assert_eq!(
+                &facet["dynamics"],
+                scene.dynamics.value(),
+                "{field:?} {value}"
+            );
+            let reopened = app.host.product_scene(ADDRESS).unwrap();
+            assert_eq!(
+                reopened.dynamics_spec().unwrap(),
+                expected,
+                "{field:?} {value}"
+            );
+            restore_scene(&mut canvas, app.host.graph(), &reopened, TREE_CANVAS).unwrap();
+            assert_eq!(
+                canvas.dynamics_spec().unwrap(),
+                expected,
+                "{field:?} {value}"
+            );
+        }
+    }
+}
+
 #[test]
 fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
     use crate::local_scene::{capture_scene, restore_scene};
@@ -813,6 +1047,170 @@ fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
     assert!(refusal.contains("kind.site"), "{refusal}");
     assert_eq!(subject.dynamics_spec().unwrap(), before_bad);
     assert_eq!(subject.cartography_geometry(), before_bad_geometry);
+    assert_eq!(
+        app.host.facet_value(ADDRESS, SAVED_SCENE_FACET).unwrap()["dynamics"],
+        facet["dynamics"]
+    );
+}
+
+#[test]
+fn authored_two_stage_schedule_survives_v4_reopen_capture_progress_and_refusal() {
+    use crate::local_scene::{capture_scene, restore_scene};
+    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+    use crate::product::SAVED_SCENE_FACET;
+    use mere::canvas::dynamics_spec::{GroupRoles, Node, Target};
+    use mere::canvas::physics_controls::{
+        StageDraft, TwoStageSchedule, apply_two_stage_schedule, read_two_stage_schedule,
+    };
+    use mere::canvas::{Channel, PhysicsOverlay, Role, StageStop};
+    use std::collections::BTreeMap;
+
+    let persona = SelectedPersonaRef {
+        persona: FIXTURE_PERSONA_ADDRESS.into(),
+        profile: "profile:graphshell-tree".into(),
+    };
+    let mut app =
+        crate::app::GraphshellApp::fixture(muniment::MemoryBackend::new(), persona).unwrap();
+    let mut subject = p2_fixture_canvas();
+
+    // Retain nonempty group and item target maps around the schedule root.
+    let keys: Vec<_> = subject.graph().nodes().map(|(key, _)| key).collect();
+    let mut same_site = None;
+    'outer: for (i, &a) in keys.iter().enumerate() {
+        let Some(site) = subject.role_group_of(a) else {
+            continue;
+        };
+        for &b in keys.iter().skip(i + 1) {
+            if subject.role_group_of(b).as_deref() == Some(site.as_str()) {
+                same_site = Some((site, a, b));
+                break 'outer;
+            }
+        }
+    }
+    let (site, _group_member, item_member) = same_site.expect("fixture has a multi-node site");
+    let capture_member = keys
+        .iter()
+        .copied()
+        .find(|key| subject.role_group_of(*key).as_deref() != Some(site.as_str()))
+        .expect("fixture has a node outside the selected site");
+    let item_id = subject.graph().get_node(item_member).unwrap().id;
+    let mut original = subject.dynamics_spec().unwrap();
+    original.target = Some(Target {
+        arrangement: "free".into(),
+        anchored_pull: 0.4,
+        default_role: Role::Seeded,
+        groups: Some(GroupRoles {
+            channel: Channel::Groups(PhysicsKindSource::Site).id(),
+            roles: BTreeMap::from([(site.clone(), Role::Anchored)]),
+        }),
+        items: BTreeMap::from([(item_id.to_string(), Role::Pinned)]),
+    });
+    subject.set_dynamics_spec(&original).unwrap();
+    assert_eq!(subject.arrangement_role_of(capture_member), Role::Seeded);
+
+    let schedule = TwoStageSchedule {
+        first: StageDraft {
+            law: PhysicsLaw::Springs,
+            stop: StageStop::Frames(1),
+            capture: Some(Role::Anchored),
+        },
+        second: StageDraft {
+            law: PhysicsLaw::Charge,
+            stop: StageStop::Frames(10_000),
+            capture: None,
+        },
+        overlays: vec![PhysicsOverlay::GravityLocus],
+    };
+    apply_two_stage_schedule(&mut subject, &schedule).unwrap();
+    assert_eq!(subject.physics_schedule_stage(), Some(0));
+    assert!(!subject.physics_paused());
+    let _ = subject.frame(800, 600);
+    assert_eq!(subject.physics_schedule_stage(), Some(1));
+    assert_eq!(subject.arrangement_role_of(capture_member), Role::Anchored);
+    assert_eq!(
+        subject.captured_positions().unwrap().len(),
+        subject.graph().node_count()
+    );
+
+    // A rejected shared overlay cannot replace the live schedule or its state.
+    subject.set_physics_paused(true);
+    let before_spec = subject.dynamics_spec().unwrap();
+    let before_positions = subject.cartography_geometry();
+    let mut refused = schedule.clone();
+    refused.second.law = PhysicsLaw::Density;
+    refused.overlays = vec![PhysicsOverlay::DomainCluster];
+    let error = apply_two_stage_schedule(&mut subject, &refused).unwrap_err();
+    assert!(
+        error.contains("Density") || error.contains("overlay"),
+        "{error}"
+    );
+    assert_eq!(subject.dynamics_spec().unwrap(), before_spec);
+    assert_eq!(subject.cartography_geometry(), before_positions);
+    assert_eq!(subject.physics_schedule_stage(), Some(1));
+    assert!(subject.physics_paused());
+
+    // Source and role edits keep the paused stage and progress. The group/item
+    // role maps survive alongside the default role edit.
+    let mut choice = PhysicsChoice::live(&subject);
+    choice.kind = PhysicsKindSource::Degree;
+    apply_physics(&mut subject, &choice);
+    assert_eq!(subject.physics_schedule_stage(), Some(1));
+    assert!(subject.physics_paused());
+    apply_role(&mut subject, Role::Pinned).unwrap();
+    assert_eq!(subject.physics_schedule_stage(), Some(1));
+    assert!(subject.physics_paused());
+
+    let saved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
+    let saved_spec = saved.dynamics_spec().unwrap();
+    let Node::Schedule { stages, .. } = &saved_spec.root else {
+        panic!("saved v4 scene keeps the authored schedule recipe")
+    };
+    assert_eq!(stages.len(), 2);
+    assert_eq!(stages[0].capture, Some(Role::Anchored));
+    assert_eq!(stages[1].capture, None);
+    let target = saved_spec.target.as_ref().unwrap();
+    assert_eq!(target.default_role, Role::Pinned);
+    assert_eq!(target.groups.as_ref().unwrap().roles[&site], Role::Anchored);
+    assert_eq!(target.items[&item_id.to_string()], Role::Pinned);
+    const ADDRESS: &str = "mere://scene/g4b3-schedule";
+    app.host.save_product_scene(ADDRESS, &saved).unwrap();
+    let facet = app
+        .host
+        .facet_value(ADDRESS, SAVED_SCENE_FACET)
+        .unwrap()
+        .clone();
+    assert_eq!(
+        facet["dynamics"],
+        serde_json::to_value(&saved_spec).unwrap()
+    );
+    assert_eq!(facet["dynamics"]["root"]["node"], "schedule");
+    assert_eq!(
+        facet["dynamics"]["root"]["stages"]
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
+    assert_eq!(
+        read_two_stage_schedule(&subject).unwrap(),
+        Some(schedule.clone())
+    );
+
+    // Clearing the recipe is explicit; reopening the saved scene restores the
+    // canonical two-stage root at stage zero, paused as saved.
+    let choice = PhysicsChoice::live(&subject);
+    apply_single_law(&mut subject, &choice).unwrap();
+    assert_eq!(subject.physics_schedule_stage(), None);
+    let reopened = app.host.product_scene(ADDRESS).unwrap();
+    restore_scene(&mut subject, app.host.graph(), &reopened, TREE_CANVAS).unwrap();
+    assert_eq!(subject.dynamics_spec().unwrap(), saved_spec);
+    assert_eq!(subject.physics_schedule_stage(), Some(0));
+    assert!(subject.physics_paused());
+    assert_eq!(read_two_stage_schedule(&subject).unwrap(), Some(schedule));
+    assert_eq!(subject.graph().node_count(), app.host.graph().node_count());
+
+    let resaved = capture_scene(&subject, "phyllotaxis.default", "page").unwrap();
+    app.host.save_product_scene(ADDRESS, &resaved).unwrap();
     assert_eq!(
         app.host.facet_value(ADDRESS, SAVED_SCENE_FACET).unwrap()["dynamics"],
         facet["dynamics"]

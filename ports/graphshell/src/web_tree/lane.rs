@@ -605,7 +605,75 @@ impl TreeLane {
                 page.physics.group_outer_share.text(),
             )
             .with_field("panel-grouping-note", page.physics.group_note.clone())
+            .with_field(
+                "panel-schedule-first-law",
+                mere::canvas::PhysicsLaw::ALL[page
+                    .physics
+                    .schedule_first_law
+                    .selected
+                    .min(mere::canvas::PhysicsLaw::ALL.len() - 1)]
+                .id(),
+            )
+            .with_field(
+                "panel-schedule-first-stop",
+                ["Rest", "Frames", "law-done"][page.physics.schedule_first_stop.selected.min(2)],
+            )
+            .with_field(
+                "panel-schedule-first-frames",
+                page.physics.schedule_first_frames.text(),
+            )
+            .with_field(
+                "panel-schedule-first-capture",
+                page.physics
+                    .schedule_first_capture
+                    .selected
+                    .checked_sub(1)
+                    .and_then(|index| mere::canvas::Role::ALL.get(index))
+                    .map_or("none", |role| role.id()),
+            )
+            .with_field(
+                "panel-schedule-second-law",
+                mere::canvas::PhysicsLaw::ALL[page
+                    .physics
+                    .schedule_second_law
+                    .selected
+                    .min(mere::canvas::PhysicsLaw::ALL.len() - 1)]
+                .id(),
+            )
+            .with_field(
+                "panel-schedule-second-stop",
+                ["Rest", "Frames", "law-done"][page.physics.schedule_second_stop.selected.min(2)],
+            )
+            .with_field(
+                "panel-schedule-second-frames",
+                page.physics.schedule_second_frames.text(),
+            )
+            .with_field(
+                "panel-schedule-second-capture",
+                page.physics
+                    .schedule_second_capture
+                    .selected
+                    .checked_sub(1)
+                    .and_then(|index| mere::canvas::Role::ALL.get(index))
+                    .map_or("none", |role| role.id()),
+            )
+            .with_field("panel-schedule-note", page.physics.schedule_note.clone())
+            .with_field(
+                "panel-schedule-overlays",
+                mere::canvas::PhysicsOverlay::ALL
+                    .into_iter()
+                    .zip(&page.physics.schedule_overlays)
+                    .filter_map(|(overlay, checked)| checked.then_some(overlay.id()))
+                    .collect::<Vec<_>>()
+                    .join(","),
+            )
             .with_field("grouping-partition", grouping_partition)
+            .with_field(
+                "actual-schedule-stage",
+                canvas
+                    .physics_schedule_stage()
+                    .map_or_else(|| "none".to_string(), |stage| stage.to_string()),
+            )
             .with_field(
                 "physics-root-spec",
                 canvas
@@ -2423,6 +2491,9 @@ fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> Pr
     snapshot
         .with_field("forme", pane.current().document.id.as_uuid().to_string())
         .with_field("forme-accesses", pane.current().members().len().to_string())
+        .with_field("reading-text-size", pane.current().focused_reading.map(|id|pane.current().reading_preferences.get(&id).copied().unwrap_or_default().text_size.to_string()).unwrap_or_default())
+        .with_field("reading-column-em", pane.current().focused_reading.map(|id|pane.current().reading_preferences.get(&id).copied().unwrap_or_default().column_em.to_string()).unwrap_or_default())
+        .with_field("reading-find", pane.current().focused_reading.and_then(|id|pane.reading_ui.get(&id)).filter(|ui|ui.open).map_or("closed",|ui|ui.status.as_str()))
         .with_field(
             "forme-cells",
             region.map_or(0, |r| r.cells.len()).to_string(),

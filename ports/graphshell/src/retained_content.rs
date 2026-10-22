@@ -240,6 +240,36 @@ pub struct ContentSlot {
     semantic_child_tokens: BTreeMap<u64, cambium_rootstock::ProducerChildToken>,
 }
 impl ContentSlot {
+    pub fn has_document_find(&self) -> bool {
+        self.content.document().is_some_and(|controller| matches!(controller.session().document_capabilities().find_in_page,
+            inker::DocumentCapabilityStatus::Supported | inker::DocumentCapabilityStatus::Partial{..}))
+    }
+    pub fn has_reading_controls(&self) -> bool {
+        self.content.document().is_some_and(|controller| {
+            let session=controller.session().as_any_ref();
+            session.is::<mere_document_lanes::ReaderDocumentSession>() || session.is::<mere_document_lanes::SmolwebDocumentSession>()
+        })
+    }
+    pub fn reading_preferences(&mut self, value: tabard::ReadingPreferences) -> Result<bool, String> {
+        let session = self.content.document_mut().ok_or("No retained document")?.session_mut().as_any();
+        let changed = if let Some(reader) = session.downcast_mut::<mere_document_lanes::ReaderDocumentSession>() {
+            reader.set_reading_preferences(value)?
+        } else if let Some(doc) = session.downcast_mut::<mere_document_lanes::SmolwebDocumentSession>() {
+            doc.document_mut().set_reading_preferences(value)?
+        } else { return Err("This engine does not expose reading typography".into()); };
+        if changed { self.revision = self.revision.wrapping_add(1); }
+        Ok(changed)
+    }
+    pub fn find(&mut self, query: &str, step: Option<inker::DocumentFindDirection>) -> Result<inker::DocumentFindState, String> {
+        let session = self.content.document_mut().ok_or("No retained document")?.session_mut();
+        let result = match step { Some(direction) => session.document_find_step(direction), None => session.document_find(&inker::DocumentFindQuery::new(query)) };
+        self.revision = self.revision.wrapping_add(1);
+        result.map_err(|e| e.to_string())
+    }
+    pub fn clear_find(&mut self) {
+        if let Some(controller) = self.content.document_mut() { let _ = controller.session_mut().clear_document_find(); }
+        self.revision = self.revision.wrapping_add(1);
+    }
     pub fn glyph_runs(&self) -> usize {
         self.glyph_runs
     }
@@ -394,12 +424,21 @@ impl ContentHost {
         Self::with_native_presentation(fonts, None)
     }
     pub fn with_native_presentation(fonts: Vec<Vec<u8>>, family: Option<String>) -> Self {
+        Self::with_native_font_roles(fonts, family.into_iter().collect(), Vec::new())
+    }
+    /// Portable text roles use the same explicit host-held font inventory.
+    pub fn with_native_font_roles(
+        fonts: Vec<Vec<u8>>,
+        families: Vec<String>,
+        generic_fonts: Vec<(String, Vec<u8>)>,
+    ) -> Self {
         Self::new(
             pelt_core::PeltRegistries::new(
-                pelt_core::native::sessions_with_presentation(
+                pelt_core::native::sessions_with_generic_fonts(
                     pelt_core::native::HeldResources::default(),
                     fonts,
-                    family,
+                    families,
+                    generic_fonts,
                 ),
                 inker::SurfaceEngineRegistry::new(),
                 pelt_core::native::route_policy(),
@@ -563,3 +602,5 @@ fn lane_dictionaries(
 
 #[cfg(test)]
 mod tests;
+
+pub use inker::DocumentFindDirection as ReadFindDirection;
