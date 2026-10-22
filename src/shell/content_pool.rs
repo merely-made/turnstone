@@ -7,6 +7,9 @@ use netrender::Scene;
 use pelt_core::{PeltContent, PeltControllerPool};
 use std::sync::Arc;
 
+// Held fallback for reading symbols missing from native prose families.
+const READING_SYMBOL_FONT: &[u8] = include_bytes!("../../assets/NotoSansMath-Regular.ttf");
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) enum ContentKey {
     Node(uuid::Uuid),
@@ -21,6 +24,8 @@ pub(super) struct HostPlacement {
     pub window: u64,
     pub focused: bool,
     pub scale_factor: f32,
+    /// Reading type is authored in logical pixels, while this plan is physical.
+    pub reading_scale: f32,
 }
 
 impl HostPlacement {
@@ -47,13 +52,18 @@ impl HostPlacement {
         surface: Surface,
         window: u64,
         focused: bool,
-        _native_scale: f64,
+        native_scale: f64,
     ) -> Self {
         Self {
             surface,
             window,
             focused,
             scale_factor: 1.0,
+            reading_scale: if native_scale.is_finite() {
+                (native_scale as f32).clamp(0.5, 4.0)
+            } else {
+                1.0
+            },
         }
     }
 }
@@ -184,7 +194,9 @@ impl NodeDocuments {
                     })
                     .is_some_and(|retained| Arc::ptr_eq(&source, &retained.source_document()));
                 if !current {
-                    let session = reader.new_appearance((1, 1));
+                    let mut session = reader.new_appearance((1, 1));
+                    session.set_fonts(vec![READING_SYMBOL_FONT.to_vec()]);
+                    session.set_font_family("serif, sans-serif, \"Noto Sans Math\"");
                     let config = pelt_core::PeltControllerConfig::from_request(
                         controller.engine_id(),
                         controller.request().clone(),
@@ -200,6 +212,18 @@ impl NodeDocuments {
                     );
                     self.pool
                         .insert(key, PeltContent::from_controller(controller, route));
+                }
+            }
+            if let Some(controller) = self.pool.content_mut(&key).and_then(PeltContent::document_mut) {
+                let session = controller.session_mut();
+                if let Some(reader) = session.as_any()
+                    .downcast_mut::<mere_document_lanes::ReaderDocumentSession>()
+                {
+                    reader.set_display_scale(host.reading_scale);
+                } else if let Some(document) = session.as_any()
+                    .downcast_mut::<mere_document_lanes::SmolwebDocumentSession>()
+                {
+                    document.document_mut().set_display_scale(host.reading_scale);
                 }
             }
             let r = host.surface.rect;
@@ -502,6 +526,7 @@ mod tests {
             let placement = HostPlacement::physical(surface, 1, false, scale);
             assert_eq!(placement.surface.rect, surface.rect);
             assert_eq!(placement.scale_factor, 1.0);
+            assert_eq!(placement.reading_scale, scale as f32);
         }
     }
 
@@ -896,11 +921,12 @@ mod tests {
                     surface: Surface {
                         id: SurfaceId(11),
                         kind: SurfaceKind::Content(node),
-                        rect: Rect::new(0., 0., 320., 200.),
+                        rect: Rect::new(0., 0., 640., 400.),
                     },
                     window: 0,
                     focused: true,
                     scale_factor: 1.,
+                    reading_scale: 2.,
                 },
                 HostPlacement {
                     surface: Surface {
@@ -911,6 +937,7 @@ mod tests {
                     window: 1,
                     focused: false,
                     scale_factor: 1.,
+                    reading_scale: 1.,
                 },
             ]
         };
@@ -933,9 +960,16 @@ mod tests {
             &reader(&contents, &first).source_document(),
             &reader(&contents, &second).source_document()
         ));
-        assert!(contents.pool.frame(&SurfaceId(11)).is_some());
+        let Some(pelt_core::PeltLayer::Document(scene)) = contents.pool.frame(&SurfaceId(11)) else {
+            panic!("the reading appearance must paint");
+        };
+        assert!(scene.iter_glyph_runs().all(|run| run.glyphs.iter().all(|glyph| glyph.id != 0)),
+            "the same-scheme link adornment has a supplied symbol face");
+        assert!(scene.fonts.iter().any(|font| font.data.as_ref() == READING_SYMBOL_FONT));
         assert!(contents.pool.frame(&SurfaceId(12)).is_some());
-        assert_eq!(reader(&contents, &first).viewport(), (320, 200));
+        assert_eq!(reader(&contents, &first).viewport(), (640, 400));
+        assert_eq!(reader(&contents, &first).display_scale(), 2.0);
+        assert_eq!(reader(&contents, &second).display_scale(), 1.0);
         assert_eq!(reader(&contents, &second).viewport(), (640, 300));
         let first_projection = contents
             .pool

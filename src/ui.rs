@@ -1108,7 +1108,7 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
     let controls = format!(
         ".turnstone-stone-hidden {{ display:none; }}
         .browser-strip {{ background-color:transparent; border:0; border-radius:0; gap:2px; padding:0; }}
-        .shell-control {{ color:inherit; font-size:{:.2}px; }}
+        .shell-control, .browser-status {{ color:inherit; font-size:{:.2}px; }}
         .shell-control[aria-pressed=true] {{ background-color:{}; color:{}; }}
         .browser-status {{ --app-region:no-drag; text-align:left; flex:1 1 0; min-width:0; border:1px solid {}; border-radius:5px; background-color:{}; color:{}; padding:4px 7px; overflow:hidden; white-space:nowrap; }}
         .chrome-menu-dismiss {{ --app-region:no-drag; background:transparent; }}
@@ -1120,7 +1120,7 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         .chrome-menu .shell-popup {{ padding:0; border:0; background:transparent; max-height:none; }}
         .chrome-panes-menu .shell-popup {{ flex-direction:row; flex-wrap:wrap; }}
         .chrome-panes-menu .chrome-menu-entry {{ width:50%; flex-basis:50%; }}",
-        12.0*zoom,
+        cambium::ShellMetrics::INTERFACE_FONT_SIZE*zoom,
         role_color(appearance,"surface-2",palette.field),role_color(appearance,"text-header",palette.text),
         role_color(appearance,"text-dim",palette.border),role_color(appearance,"bg",palette.surface),role_color(appearance,"text",palette.body_text),
         role_color(appearance,"surface",palette.raised),role_color(appearance,"text",palette.body_text),role_color(appearance,"text-dim",palette.border),22.0+6.0*zoom,38.0+6.0*zoom,
@@ -2961,7 +2961,7 @@ pub const CAMBIUM_SHEET: &str = "\
     .grid-cell { color: rgb(200, 208, 224); padding: 5px 10px; \
                  white-space: nowrap; overflow: hidden; } \
     .grid-row-selected .grid-cell { color: rgb(28, 22, 10); } \
-    .pane { background-color: rgb(22, 27, 40); } \n    .tablist { display: flex; height: 24px; background-color: rgb(18, 22, 33); } \
+    .pane { background-color: rgb(22, 27, 40); } \n    .tablist { display: flex; height: 26px; background-color: rgb(18, 22, 33); } \
     .tab { color: rgb(150, 160, 180); font-size: 12px; padding: 4px 9px; \
            white-space: nowrap; } \
     .wb-tabs-vertical .tablist { flex-direction: column; width: 100%; height: 100%; } \
