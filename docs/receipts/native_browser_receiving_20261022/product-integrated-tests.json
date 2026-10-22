@@ -1,0 +1,239 @@
+{
+  "schema": "turnstone-native-browser-receiving-integrated-focused-gates-v1",
+  "recorded_at_utc": "2026-10-22T21:01:57.4069154Z",
+  "receiving_source_commit": "a622c96070932cbbb74bfb37289040eae9d32a4d",
+  "upstream_basis": "8eebb5a375cc56a619b61acfcf2fcf4b88b094f5",
+  "checkout_head": "a622c96070932cbbb74bfb37289040eae9d32a4d",
+  "cargo_lock_sha256": "521d344e4a60b068c8d8b6a00ea3b3891b100463e38afdbbf7815dc7883e41a5",
+  "executable": "C:\\t\\cargo-targets\\turnstone\\build\\debug\\deps\\turnstone-8dd5b365f4434541.exe",
+  "executable_sha256_before": "4ef1b302235202607cbc466e7a2019d331fb4a583eccc07614e4befcd1f61757",
+  "executable_sha256_after": "4ef1b302235202607cbc466e7a2019d331fb4a583eccc07614e4befcd1f61757",
+  "gates": [
+    {
+      "filter": "receiving_tests",
+      "exit_code": 0,
+      "elapsed_seconds": 2.509,
+      "counts": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 1
+      },
+      "summary": [
+        "test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 1166 filtered out; finished in 2.47s"
+      ],
+      "passed": true
+    },
+    {
+      "filter": "local_micron_source_tests",
+      "exit_code": 0,
+      "elapsed_seconds": 0.301,
+      "counts": {
+        "passed": 7,
+        "failed": 0,
+        "ignored": 0
+      },
+      "summary": [
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 1163 filtered out; finished in 0.27s"
+      ],
+      "passed": true
+    },
+    {
+      "filter": "foreign_a11y",
+      "exit_code": 0,
+      "elapsed_seconds": 0.054,
+      "counts": {
+        "passed": 19,
+        "failed": 0,
+        "ignored": 0
+      },
+      "summary": [
+        "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 1151 filtered out; finished in 0.02s"
+      ],
+      "passed": true
+    },
+    {
+      "filter": "document_a11y",
+      "exit_code": 0,
+      "elapsed_seconds": 0.138,
+      "counts": {
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0
+      },
+      "summary": [
+        "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 1161 filtered out; finished in 0.10s"
+      ],
+      "passed": true
+    },
+    {
+      "filter": "a11y_bridge",
+      "exit_code": 0,
+      "elapsed_seconds": 0.033,
+      "counts": {
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0
+      },
+      "summary": [
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1168 filtered out; finished in 0.00s"
+      ],
+      "passed": true
+    },
+    {
+      "filter": "contributed_a11y",
+      "exit_code": 0,
+      "elapsed_seconds": 0.171,
+      "counts": {
+        "passed": 10,
+        "failed": 0,
+        "ignored": 0
+      },
+      "summary": [
+        "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 1160 filtered out; finished in 0.13s"
+      ],
+      "passed": true
+    },
+    {
+      "filter": "app::palette::tests",
+      "exit_code": 0,
+      "elapsed_seconds": 0.122,
+      "counts": {
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0
+      },
+      "summary": [
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1166 filtered out; finished in 0.09s"
+      ],
+      "passed": true
+    },
+    {
+      "filter": "inference_service::tests",
+      "exit_code": 0,
+      "elapsed_seconds": 0.04,
+      "counts": {
+        "passed": 5,
+        "failed": 0,
+        "ignored": 1
+      },
+      "summary": [
+        "test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 1164 filtered out; finished in 0.01s"
+      ],
+      "passed": true
+    },
+    {
+      "filter": "remote_projection::tests::live_mere_graph_becomes_cards_and_routed_relations",
+      "exit_code": 0,
+      "elapsed_seconds": 0.075,
+      "counts": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1169 filtered out; finished in 0.04s"
+      ],
+      "passed": true
+    },
+    {
+      "filter": "trail_memory::inference_owner_tests",
+      "exit_code": 0,
+      "elapsed_seconds": 0.555,
+      "counts": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1169 filtered out; finished in 0.52s"
+      ],
+      "passed": true
+    },
+    {
+      "filter": "trail_memory::research_owner_tests::research_owner_loads_only_live_captures_and_reopens_exact_versions_without_page_text_fallback",
+      "exit_code": 0,
+      "elapsed_seconds": 0.872,
+      "counts": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1169 filtered out; finished in 0.84s"
+      ],
+      "passed": true
+    },
+    {
+      "filter": "trail_memory::saved_sources::tests",
+      "exit_code": 0,
+      "elapsed_seconds": 1.71,
+      "counts": {
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0
+      },
+      "summary": [
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1166 filtered out; finished in 1.68s"
+      ],
+      "passed": true
+    },
+    {
+      "filter": "reading_view::tests",
+      "exit_code": 0,
+      "elapsed_seconds": 0.058,
+      "counts": {
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0
+      },
+      "summary": [
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1168 filtered out; finished in 0.02s"
+      ],
+      "passed": true
+    },
+    {
+      "filter": "app::palette::command_menu_tests::offered_actions_carry_the_hosts_effect_and_destructive_declarations",
+      "exit_code": 0,
+      "elapsed_seconds": 0.055,
+      "counts": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1169 filtered out; finished in 0.02s"
+      ],
+      "passed": true
+    },
+    {
+      "filter": "app::tests::toolbar_address_navigation_reads_without_changing_graph_command_semantics",
+      "exit_code": 0,
+      "elapsed_seconds": 0.105,
+      "counts": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1169 filtered out; finished in 0.07s"
+      ],
+      "passed": true
+    }
+  ],
+  "absent_requested_filter": "surface_a11y",
+  "current_upstream_test_inventory_notes": [
+    "foreign_a11y uses one platform_consumer module rather than duplicated unix/windows modules",
+    "command effect/destructive metadata is upstream command_menu_tests, tested explicitly",
+    "reading_view and toolbar navigation preservation tested against current upstream"
+  ],
+  "complete": true,
+  "passed": true,
+  "native_fixture_sender_proofs_required": true,
+  "native_fixture_completed_response_count_equals_admitted": true,
+  "limits_or_deadlines_changed": false,
+  "boundary": [
+    "native helper -> outcome -> correlation/reducer -> registered retained controller",
+    "Stop is late correlation rejection, not actor dispatch/concurrency or transport cancellation",
+    "no window/GPU/headed/physical accessibility qualification"
+  ]
+}
