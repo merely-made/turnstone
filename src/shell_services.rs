@@ -193,6 +193,8 @@ pub struct AppearanceConfig {
     /// Scale for retained UI surfaces, constrained by the application store's
     /// 0.5..=3.0 setting contract.
     pub ui_zoom: f32,
+    /// Transient native window density; never written to application settings.
+    pub display_scale: f32,
     /// Shared derived roles or exact authored CSS for host-owned surfaces.
     pub theme_presentation: Option<tabard::ThemePresentation>,
     /// Optional authored role declarations for the shared outer pane furniture.
@@ -207,6 +209,7 @@ impl Default for AppearanceConfig {
             theme_id: None,
             theme_mode: ThemeMode::System,
             ui_zoom: 1.1,
+            display_scale: 1.0,
             theme_presentation: None,
             theme_typography: Default::default(),
             interface_font_properties: String::new(),
@@ -244,6 +247,7 @@ pub struct ShellChromeConfig {
     /// Live native caption reservations in each window's physical pixels.
     /// Host observations only; never written into durable settings.
     pub titlebar_insets: BTreeMap<usize, cambium_rootstock::TitlebarInsets>,
+    pub native_scales: BTreeMap<usize, f32>,
     pub transcript_placement: ChromePlacement,
     pub transcript_retention: TranscriptRetention,
 }
@@ -256,6 +260,7 @@ impl Default for ShellChromeConfig {
             shellbar: ShellbarConfig::default(),
             appearance: AppearanceConfig::default(),
             titlebar_insets: BTreeMap::new(),
+            native_scales: BTreeMap::new(),
             transcript_placement: ChromePlacement::Hidden,
             transcript_retention: TranscriptRetention::default(),
         }
@@ -263,6 +268,17 @@ impl Default for ShellChromeConfig {
 }
 
 impl ShellChromeConfig {
+    pub fn display_scale(&self, slot: usize) -> f32 { self.native_scales.get(&slot).copied().unwrap_or(1.0) }
+    pub fn appearance_for_window(&self, slot:usize) -> AppearanceConfig {
+        let mut appearance = self.appearance.clone(); appearance.display_scale = self.display_scale(slot); appearance
+    }
+    pub fn pane_scale(&self, app: &crate::app::App, pane: crate::panes::PaneId) -> f32 {
+        let slot = if app.frisket.iter_leaves().any(|(id,_,_)|id==pane) { 0 } else {
+            app.lenses.iter().position(|layout| layout.as_ref().is_some_and(|layout|layout.iter_leaves().any(|(id,_,_)|id==pane))).map_or(0,|i|i+1)
+        };
+        self.display_scale(slot)
+    }
+
     /// Apply durable composition from a space blueprint while retaining
     /// application-owned row, shortcut, and retention policy.
     pub fn apply_blueprint(&mut self, blueprint: &ChromeBlueprint) {

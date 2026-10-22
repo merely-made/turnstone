@@ -186,6 +186,7 @@ pub struct App {
     /// The person's command menu: kept, dropped and recent commands, read
     /// through Cambium's command set (Scenograph editor plan SE28 to SE32).
     /// Saved in the session's view sidecar, never in graph truth.
+    pub reading: crate::reading_view::ReadingState,
     pub(crate) command_choices: cambium::CommandChoices,
     /// Find in the captured active document. This is separate from the
     /// omnibar's graph recall and command lanes.
@@ -1166,6 +1167,7 @@ impl App {
 
     fn dispatch(&mut self, action: Action) -> Vec<Effect> {
         match action {
+            Action::Reading(action) => self.read_action(action),
             Action::OpenThemeWorkshop => vec![Effect::OpenThemeWorkshop],
             Action::OpenAddress(url) => self.open_address(url),
             Action::RetainProducerSelection { choice, selection } => self.retain_producer_selection(choice, selection),

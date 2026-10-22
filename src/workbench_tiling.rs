@@ -33,6 +33,8 @@ pub const WB_SEAM: f32 = crate::pane::DIVIDER_WIDTH;
 /// `ui::TABLIST_HEIGHT` of `rect`; [`CellPlacement::body`] is what remains.
 #[derive(Clone, Debug, PartialEq)]
 pub struct CellPlacement {
+    pub chrome_scale: f32,
+    pub reading_toolbar_height: f32,
     pub tab_edge: crate::chrome_layout::TabEdge,
     /// The stack's members in tab order.
     pub members: Vec<Uuid>,
@@ -54,7 +56,15 @@ impl CellPlacement {
     }
 
     /// The cell's body rect (below the tab bar), pane-local.
+    pub fn toolbar_rect(&self) -> Rect {
+        let rect = self.stack_body();
+        Rect::new(rect.x, rect.y, rect.w, self.reading_toolbar_height.min(rect.h))
+    }
     pub fn body(&self) -> Rect {
+        let rect = self.stack_body(); let toolbar = self.toolbar_rect();
+        Rect::new(rect.x, rect.y + toolbar.h, rect.w, (rect.h - toolbar.h).max(0.0))
+    }
+    fn stack_body(&self) -> Rect {
         use crate::chrome_layout::TabEdge;
         let tabs = self.tab_rect();
         match self.tab_edge {
@@ -87,8 +97,8 @@ impl CellPlacement {
 
     pub fn tab_rect(&self) -> Rect {
         use crate::chrome_layout::TabEdge;
-        let height = crate::ui::TABLIST_HEIGHT.min(self.rect.h);
-        let width = cambium::ShellMetrics::DOCUMENT_RAIL_MAX_WIDTH.min(self.rect.w * 0.30);
+        let height = (crate::ui::TABLIST_HEIGHT * self.chrome_scale).min(self.rect.h);
+        let width = (cambium::ShellMetrics::DOCUMENT_RAIL_MAX_WIDTH * self.chrome_scale).min(self.rect.w * 0.30);
         match self.tab_edge {
             TabEdge::Top => Rect::new(self.rect.x, self.rect.y, self.rect.w, height),
             TabEdge::Bottom => Rect::new(
@@ -172,9 +182,24 @@ pub fn place_workbench_at(
     out
 }
 
+/// One geometry path for painted controls, document holes and input planning.
+pub(crate) fn place_reading_workbench(app: &crate::app::App, pane: crate::panes::PaneId, geom: Option<&TreeGeometry>, area: Rect) -> WorkbenchTiling {
+    let mut tiling = place_workbench_at(geom, area, app.shell_chrome_config().layout.document_tabs);
+    let scale = app.shell_chrome_config().pane_scale(app, pane);
+    for cell in &mut tiling.cells {
+        cell.chrome_scale = scale;
+        let open = cell.active_member().is_some_and(|member| app.reading.find.get(&crate::reading_view::ReadTarget { pane, member }).is_some_and(|ui|ui.open));
+        let width = cell.stack_body().w / scale;
+        cell.reading_toolbar_height = (if width >= 460.0 {32.0} else if width >= 180.0 {64.0} else {96.0} + if open {32.0} else {0.0}) * scale;
+    }
+    tiling
+}
+
 fn walk(node: &TreeGeometry, area: Rect, path: &mut Vec<usize>, out: &mut WorkbenchTiling) {
     match node {
         TreeGeometry::Stack { members, active } => out.cells.push(CellPlacement {
+            chrome_scale: 1.0,
+            reading_toolbar_height: 0.0,
             tab_edge: Default::default(),
             members: members.clone(),
             active: *active,
@@ -492,6 +517,7 @@ mod tests {
         use crate::action::{Action, WbAxis};
         let (d, t) = (Uuid::new_v4(), Uuid::new_v4());
         let other_cell = CellPlacement {
+            chrome_scale:1.0, reading_toolbar_height:0.0,
             tab_edge: Default::default(),
             members: vec![t],
             active: 0,
@@ -536,6 +562,7 @@ mod tests {
         // The OWN cell (a stack holding the dragged tab): edges split OUT,
         // the centre and tab bar are a click.
         let own_cell = CellPlacement {
+            chrome_scale:1.0, reading_toolbar_height:0.0,
             tab_edge: Default::default(),
             members: vec![d, t],
             active: 1,

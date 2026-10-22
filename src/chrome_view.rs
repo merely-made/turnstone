@@ -172,6 +172,7 @@ struct WindowChrome {
     /// Only the primary window carries the omnibar; lenses show the chip.
     primary: bool,
     titlebar_insets: cambium_rootstock::TitlebarInsets,
+    display_scale: f32,
 }
 
 /// The one chrome state every projection renders (the one-state contract).
@@ -228,14 +229,16 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
     let Some(win) = state.windows.get(slot).cloned() else {
         return Box::new(el::<_, ChromeState, ChromeIntent>("div", ()));
     };
+    let scale = if win.display_scale > 0.0 { win.display_scale } else { 1.0 };
+    let zoom = state.zoom * scale;
     let mut children: Vec<ChromeView> = Vec::new();
-    let navigation_height = navigation_height(state.zoom);
-    let status_height = status_height(state.zoom);
+    let navigation_height = navigation_height(state.zoom) * scale;
+    let status_height = status_height(state.zoom) * scale;
     let caption_at_top = matches!(
         state.shellbar_placement,
         ChromePlacement::Docked(ChromeEdge::Top)
     );
-    let title_height = titlebar_height(state.zoom, win.titlebar_insets);
+    let title_height = navigation_height.max(win.titlebar_insets.height);
     let merged = win.primary && state.shellbar_visible && !state.layout.toolbar_bottom;
     let navigation_top = if state.layout.toolbar_bottom {
         (win.h - navigation_height).max(title_height)
@@ -251,7 +254,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
             0.0
         };
         let available = win.w - leading;
-        let density = cambium::ShellDensity::for_width(available, state.zoom);
+        let density = cambium::ShellDensity::for_width(available, zoom);
         let tiny = density == cambium::ShellDensity::Tiny;
         let compact = density.is_compact();
         let wide = density == cambium::ShellDensity::Wide;
@@ -323,7 +326,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                     .map(ChromeIntent::KeepNode),
             ));
         }
-        if !state.layout.activity_rail && (!tiny || available >= 230.0 * state.zoom) {
+        if !state.layout.activity_rail && (!tiny || available >= 230.0 * zoom) {
             controls.push(cambium::shell_projection_switch(state.map_active, tiny,
                 |_: &mut ChromeState, map| ChromeIntent::WorkspaceMap(map)));
         }
@@ -357,7 +360,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
         ));
         let left_padding = leading
             + if merged && !tiny {
-                38.0 * state.zoom
+                38.0 * zoom
             } else {
                 6.0
             };
@@ -370,7 +373,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
         let rail_bottom = if top_status { 0.0 } else { status_height }
             + if state.layout.toolbar_bottom { navigation_height } else { 0.0 };
         let rail_height = (win.h - rail_top - rail_bottom).max(0.0);
-        let rail_width = if state.layout.activity_rail { cambium::ShellMetrics::ACTIVITY_RAIL_WIDTH * state.zoom } else { 0.0 };
+        let rail_width = if state.layout.activity_rail { cambium::ShellMetrics::ACTIVITY_RAIL_WIDTH * zoom } else { 0.0 };
         if state.layout.activity_rail {
         let projections = vec![
             activity_button("▤", "Read", "Read", ChromeIntent::WorkspaceMap(false), Some(!state.map_active)),
@@ -386,7 +389,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
         let utilities = vec![activity_button("⌖", "Fit", "Fit graph", ChromeIntent::FitGraph, None)];
         children.push(Box::new(el("div", cambium::shell_activity_rail(projections, tools, utilities))
             .attr("class", "turnstone-activity-rail")
-            .attr("style", format!("position:absolute;left:0px;top:{rail_top}px;width:{rail_width}px;height:{rail_height}px;--shell-rail-width:{rail_width}px;--shell-activity-size:{}px;--shell-activity-mark-size:{}px;--shell-activity-caption-size:{}px;", 46.0*state.zoom,18.0*state.zoom,10.0*state.zoom))));
+            .attr("style", format!("position:absolute;left:0px;top:{rail_top}px;width:{rail_width}px;height:{rail_height}px;--shell-rail-width:{rail_width}px;--shell-activity-size:{}px;--shell-activity-mark-size:{}px;--shell-activity-caption-size:{}px;", 46.0*zoom,18.0*zoom,10.0*zoom))));
         }
         if state.layout.document_rail {
             let groups = if state.reading_stacks.is_empty() {
@@ -396,7 +399,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                     (format!("Tile {}", i + 1), stack.iter().map(|(member, title, active)| selected_button(title, ChromeIntent::ReadMember(*member), *active)).collect())
                 }).collect()
             };
-            let width = cambium::ShellMetrics::DOCUMENT_NAV_WIDTH * state.zoom;
+            let width = cambium::ShellMetrics::DOCUMENT_NAV_WIDTH * zoom;
             children.push(Box::new(el("div", cambium::shell_document_rail(groups))
                 .attr("class", "turnstone-reading-tabs")
                 .attr("style", format!("position:absolute;left:{rail_width}px;top:{rail_top}px;width:{width}px;height:{rail_height}px;--shell-document-width:{width}px;"))));
@@ -558,9 +561,9 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
             let width = (win.w - 16.0).clamp(
                 0.0,
                 if menu == ChromeMenu::Panes {
-                    420.0
+                    420.0 * scale
                 } else {
-                    360.0
+                    360.0 * scale
                 },
             );
             let row_count = if menu == ChromeMenu::Panes {
@@ -569,8 +572,8 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                 rows.len()
             };
             let menu_height = if menu == ChromeMenu::Connections {
-                row_count as f32 * (38.0 + 6.0 * state.zoom) + 16.0
-            } else { row_count as f32 * (22.0 + 6.0 * state.zoom) + 16.0 };
+                row_count as f32 * (38.0 * scale + 6.0 * zoom) + 16.0 * scale
+            } else { row_count as f32 * (22.0 * scale + 6.0 * zoom) + 16.0 * scale };
             let menu_height = menu_height.min((win.h - title_height - navigation_height - 12.0).max(0.0));
             let top = if state.layout.toolbar_bottom {
                 (navigation_top - menu_height - 4.0).max(title_height)
@@ -969,7 +972,8 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
 }
 
 fn window_title_bar(state: &ChromeState, win: &WindowChrome, slot: usize) -> ChromeView {
-    let height = titlebar_height(state.zoom, win.titlebar_insets);
+    let scale = if win.display_scale > 0.0 { win.display_scale } else { 1.0 };
+    let height = (navigation_height(state.zoom) * scale).max(win.titlebar_insets.height);
     let merged = win.primary && state.shellbar_visible && !state.layout.toolbar_bottom;
     let title: cambium::TitleBarSlot<ChromeState> = Box::new(
         el(
@@ -1115,17 +1119,12 @@ pub(crate) fn workspace_area_for_window(
     height: u32,
 ) -> crate::surface::Rect {
     let primary = slot == 0;
-    let title = titlebar_height(
-        chrome.appearance.zoom(),
-        chrome
-            .titlebar_insets
-            .get(&slot)
-            .copied()
-            .unwrap_or_default(),
-    );
+    let scale = chrome.display_scale(slot);
+    let title = (navigation_height(chrome.appearance.zoom()) * scale)
+        .max(chrome.titlebar_insets.get(&slot).copied().unwrap_or_default().height);
     let visible = chrome.projects_shellbar();
     let status = if visible {
-        status_height(chrome.appearance.zoom())
+        status_height(chrome.appearance.zoom()) * scale
     } else {
         0.0
     };
@@ -1137,7 +1136,7 @@ pub(crate) fn workspace_area_for_window(
     let top = title + if top_status { status } else { 0.0 };
     let bottom = (if top_status { 0.0 } else { status })
         + if visible && primary && chrome.layout.toolbar_bottom {
-            navigation_height(chrome.appearance.zoom())
+            navigation_height(chrome.appearance.zoom()) * scale
         } else {
             0.0
         };
@@ -1145,7 +1144,7 @@ pub(crate) fn workspace_area_for_window(
     let rail = if primary && visible {
         ((if chrome.layout.activity_rail { cambium::ShellMetrics::ACTIVITY_RAIL_WIDTH } else { 0.0 })
             + if chrome.layout.document_rail { cambium::ShellMetrics::DOCUMENT_NAV_WIDTH } else { 0.0 })
-            * chrome.appearance.zoom()
+            * chrome.appearance.zoom() * scale
     } else { 0.0 };
     let left = rail.min(width as f32);
     crate::surface::Rect::new(
@@ -1577,6 +1576,7 @@ impl ChromeSurfaces {
                     state.windows.push(WindowChrome::default());
                 }
                 let win = &mut state.windows[slot];
+                win.display_scale = chrome.display_scale(slot);
                 win.w = w;
                 win.h = h;
                 win.caption = caption.clone();
@@ -1628,7 +1628,7 @@ impl ChromeSurfaces {
         let Some(root) = self.runner.window_root(id) else {
             return netrender::Scene::new(w, h);
         };
-        let sheet = crate::ui::chrome_sheet(&self.appearance);
+        let sheet = crate::ui::chrome_sheet(&{ let mut a = self.appearance.clone(); a.display_scale = self.runner.state().windows.get(slot).map_or(1.0, |w|w.display_scale.max(0.5)); a });
         let dom = self.dom.borrow();
         let Some(layout) = self.layouts.get_mut(slot) else {
             return netrender::Scene::new(w, h);
@@ -1651,7 +1651,7 @@ impl ChromeSurfaces {
         let Some(root) = self.runner.window_root(id) else {
             return Default::default();
         };
-        let sheet = crate::ui::chrome_sheet(&self.appearance);
+        let sheet = crate::ui::chrome_sheet(&{ let mut a = self.appearance.clone(); a.display_scale = self.runner.state().windows.get(slot).map_or(1.0, |w|w.display_scale.max(0.5)); a });
         let dom = self.dom.borrow();
         let Some(layout) = self.layouts.get_mut(slot) else {
             return Default::default();
@@ -1671,7 +1671,7 @@ impl ChromeSurfaces {
             let Some(root) = self.runner.window_root(id) else {
                 return Vec::new();
             };
-            let sheet = crate::ui::chrome_sheet(&self.appearance);
+            let sheet = crate::ui::chrome_sheet(&{ let mut a = self.appearance.clone(); a.display_scale = self.runner.state().windows.get(slot).map_or(1.0, |w|w.display_scale.max(0.5)); a });
             let dom = self.dom.borrow();
             let Some(layout) = self.layouts.get_mut(slot) else {
                 return Vec::new();
@@ -1780,6 +1780,23 @@ pub(crate) mod tests {
         )
         .unwrap();
         (x + w / 2.0, y + h / 2.0)
+    }
+
+    #[test]
+    fn native_density_is_per_window_and_keeps_workspace_reservations_in_step() {
+        let mut app=App::test_stub();
+        let mut config=app.shell_chrome_config().clone();
+        config.native_scales.insert(0,2.0); config.native_scales.insert(1,1.0);
+        app.set_shell_chrome_config(config.clone());
+        let mut chrome=ChromeSurfaces::new(); chrome.sync(&app,&[(0,1600.,1200.),(1,800.,600.)]);
+        let primary=workspace_area_for_window(&config,0,1600,1200);
+        let lens=workspace_area_for_window(&config,1,800,600);
+        assert!((primary.y-2.0*lens.y).abs()<0.01);
+        assert_eq!(chrome.runner.state().windows[0].display_scale,2.0);
+        assert_eq!(chrome.runner.state().windows[1].display_scale,1.0);
+        assert_eq!(config.appearance.ui_zoom,1.1);
+        assert_eq!(config.appearance_for_window(0).ui_zoom,1.1);
+        assert_ne!(crate::ui::chrome_sheet(&config.appearance_for_window(0)),crate::ui::chrome_sheet(&config.appearance_for_window(1)));
     }
 
     #[test]
@@ -2261,14 +2278,13 @@ pub(crate) mod tests {
                 assert!(body.y >= area.y);
                 assert!(body.y + body.h <= area.y + area.h + 0.1);
             }
-            let (_, tab_y) = frame
-                .selector_point(&taproot::Selector::class("frisket-tab"))
-                .unwrap()
-                .unwrap();
-            assert!(
-                tab_y >= area.y,
-                "painted and clickable tabs must follow navigation"
-            );
+            assert_eq!(frame.header_height(), 0.0,
+                "the main Read/Map switch replaces the singleton frame header");
+            assert_eq!(frame.selector_point(&taproot::Selector::class("frisket-tab")).unwrap(), None);
+            let (_, body) = frame.prepare(&app.frisket, app.active_pane, None,
+                (width, height), &config.appearance,
+                app.session_id.as_uuid().as_u128()).unwrap()[0];
+            assert_eq!(body, area, "the body uses exactly the space reserved below navigation");
         }
     }
 
@@ -2961,14 +2977,8 @@ pub(crate) mod tests {
                 out
             })
             .collect();
-        let joined = texts.join("|");
-        assert!(joined.contains("ab"), "text before the caret: {joined}");
-        assert!(joined.contains('c'), "the preedit rides inline: {joined}");
-        assert!(
-            joined.contains('\u{258d}'),
-            "the caret glyph is at the split: {joined}"
-        );
-        assert!(joined.contains('d'), "text after the caret: {joined}");
+        assert_eq!(texts, ["ab", "c", "|", "d"],
+            "committed prefix, IME preedit, font-safe caret, committed suffix");
     }
 
     /// The retention contract: a chrome that nothing has changed re-paints

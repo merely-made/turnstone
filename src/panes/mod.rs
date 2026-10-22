@@ -85,7 +85,7 @@ impl FrisketId {
 }
 
 /// Stable identifier for an individual pane within a layout.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct PaneId(pub u64);
 
 /// Direction of a split between two child panes.

@@ -90,7 +90,7 @@ pub(super) fn frame_body_geometry(
                 None
             },
             size,
-            &app.shell_chrome_config().appearance,
+            &app.shell_chrome_config().appearance_for_window(match space { SpaceRef::Primary => 0, SpaceRef::Lens(i) => i+1 }),
             app.session_id.as_uuid().as_u128(),
         )
         .unwrap_or_default();
@@ -285,16 +285,6 @@ impl Shell {
                     if found.is_some()
                         || crate::surface::hit_test(&plan, self.app.focus, point.0, point.1)
                             .is_none_or(|hit| hit.id != surface.id)
-                        || (name == "workbench"
-                            && self.renderers.workbench.get(&pane).is_none_or(|view| {
-                                view.tab_at(
-                                    local.0,
-                                    local.1,
-                                    surface.rect.w as u32,
-                                    surface.rect.h as u32,
-                                )
-                                .is_none()
-                            }))
                     {
                         return taproot::SelectorTarget::Miss;
                     }
@@ -417,7 +407,7 @@ impl Shell {
                 self.app.active_pane,
                 maximize,
                 size,
-                &self.app.shell_chrome_config().appearance,
+                &self.app.shell_chrome_config().appearance_for_window(slot),
                 self.app.session_id.as_uuid().as_u128(),
             )
             .unwrap_or_default()

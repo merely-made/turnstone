@@ -484,6 +484,7 @@ impl App {
                 result,
             ),
             Update::ContentSpawned { node, facts } => {
+                self.reading.find.retain(|target,_|target.member != node);
                 // Retained engines report their document title at admission,
                 // before later title-change events. Give tabs and captions
                 // the same identity as the opened document immediately.
@@ -504,6 +505,7 @@ impl App {
                 effects.push(Effect::Redraw);
                 effects
             },
+            Update::ReadingFindChanged{target,query,result} => self.read_find_changed(target,query,result),
             Update::DocumentFindChanged {
                 node,
                 request,

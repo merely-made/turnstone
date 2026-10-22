@@ -572,45 +572,7 @@ impl taproot::Automatable for Shell {
                     _ => taproot::SelectorTarget::Miss,
                 }
             },
-            Some("workbench") => {
-                let plan = self.surface_plan();
-                let mut selected = None;
-                for surface in &plan {
-                    let crate::surface::SurfaceKind::Pane(id) = surface.kind else {
-                        continue;
-                    };
-                    if self.pane_content(id) != Some(PaneContent::Workbench) {
-                        continue;
-                    }
-                    let Some(pane) = self.renderers.workbench.get(&id) else {
-                        continue;
-                    };
-                    let point = match pane.selector_point(selector) {
-                        Ok(Some((x, y))) => (surface.rect.x + x, surface.rect.y + y),
-                        Ok(None) => continue,
-                        Err(_) => return taproot::SelectorTarget::Miss,
-                    };
-                    if crate::surface::hit_test(&plan, self.app.focus, point.0, point.1)
-                        .is_none_or(|hit| hit.id != surface.id)
-                        || pane
-                            .tab_at(
-                                point.0 - surface.rect.x,
-                                point.1 - surface.rect.y,
-                                surface.rect.w as u32,
-                                surface.rect.h as u32,
-                            )
-                            .is_none()
-                        || selected.is_some()
-                    {
-                        return taproot::SelectorTarget::Miss;
-                    }
-                    selected = Some(taproot::Hit {
-                        surface: "workbench",
-                        point,
-                    });
-                }
-                selected.map_or(taproot::SelectorTarget::Miss, taproot::SelectorTarget::Hit)
-            },
+            Some("workbench") => self.retained_pane_selector_target(selector),
             Some("settings") => {
                 let plan = self.surface_plan();
                 let mut selected = None;
@@ -775,7 +737,11 @@ impl taproot::Automatable for Shell {
             .and_then(|reader| reader.target.selector.as_ref())
             .map(|selector| format!("{}..{}", selector.start, selector.end))
             .unwrap_or_default();
+        let reading_target=self.app.focused_read_target();
         let mut out = taproot::ProbeSnapshot::default()
+            .with_field("reading-text-size",reading_target.map(|target|self.app.reading.preferences(target).text_size.to_string()).unwrap_or_default())
+            .with_field("reading-column-em",reading_target.map(|target|self.app.reading.preferences(target).column_em.to_string()).unwrap_or_default())
+            .with_field("reading-find",reading_target.and_then(|target|self.app.reading.find.get(&target)).filter(|ui|ui.open).map_or("closed",|ui|ui.status.as_str()))
             .with_field("scene-arrangement", snap.graph_scene.arrangement)
             .with_field("scene-saved-seed", snap.graph_scene.saved_seed.to_string())
             .with_field("scene-regions", snap.graph_scene.regions.to_string())

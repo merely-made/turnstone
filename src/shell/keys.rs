@@ -139,6 +139,7 @@ impl Shell {
             || self.app.user_agent_decision.is_open()
             || self.app.document_find.open
             || (self.ctrl && is_claimed_ctrl_chord(key))
+            || (self.meta && matches!(key, WinitKey::Character(value) if value.eq_ignore_ascii_case("f")))
             || (self.alt
                 && matches!(
                     key,
@@ -429,12 +430,24 @@ impl Shell {
             }
             return;
         }
-        if self.deliver_frame_key(slot, size, key) {
+        // Close projection Find before the generic pane/frame Escape path
+        // blurs its editable field back to the graph.
+        if !self.app.omnibar.open && !self.app.document_find.open
+            && matches!(key, WinitKey::Named(WinitNamedKey::Escape))
+            && let Some(target) = self.app.focused_read_target().filter(|target|
+                self.app.reading.find.get(target).is_some_and(|ui| ui.open))
+        {
+            self.act(Action::Reading(crate::reading_view::ReadAction::Command(target, cambium::ReadCommand::CloseFind)));
             return;
         }
-        if matches!(key, WinitKey::Character(value) if self.ctrl && value.eq_ignore_ascii_case("f"))
+        if matches!(key, WinitKey::Character(value) if (self.ctrl || self.meta) && value.eq_ignore_ascii_case("f"))
         {
-            self.act(Action::OpenDocumentFind);
+            if let Some(target) = self.app.focused_read_target() {
+                self.act(Action::Reading(crate::reading_view::ReadAction::Command(target, cambium::ReadCommand::Find)));
+            } else { self.act(Action::OpenDocumentFind); }
+            return;
+        }
+        if self.deliver_frame_key(slot, size, key) {
             return;
         }
         // Page zoom on the focused document, beside Ctrl+F because it is the

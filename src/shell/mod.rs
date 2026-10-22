@@ -2114,7 +2114,9 @@ impl Shell {
         // Surface plans and native pointer positions are physical pixels.
         // A factor of one prevents applying native DPI a second time.
         let placement = |surface: crate::surface::Surface, window, active, native_scale| {
-            HostPlacement::for_focus(surface, window, active, focus, native_scale)
+            let mut host = HostPlacement::for_focus(surface, window, active, focus, native_scale);
+            host.reading_preferences = self.app.reading.for_surface(surface, window);
+            host
         };
         let mut placements: Vec<_> = self
             .surface_plan()
@@ -2357,6 +2359,7 @@ impl Shell {
                             .into_iter()
                             .map(|event| Action::WorkbenchActivate(event.0)),
                     );
+                    out.extend(pane.take_read_actions());
                 }
             },
             PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::SETTINGS => {
@@ -3600,7 +3603,7 @@ fn primary_content_plan_with_rects(
             let geom = app
                 .workbench_for_pane(*pane)
                 .and_then(|workbench| workbench.to_arrangement().1);
-            crate::workbench_tiling::place_workbench_at(geom.as_ref(), *rect, app.shell_chrome_config().layout.document_tabs)
+            crate::workbench_tiling::place_reading_workbench(app, *pane, geom.as_ref(), *rect)
                 .cells
                 .iter()
                 .filter_map(|c| {
@@ -3688,7 +3691,7 @@ fn primary_content_plan_with_rects(
         let geom = app
             .workbench_for_pane(*pane)
             .and_then(|workbench| workbench.to_arrangement().1);
-        for cell in crate::workbench_tiling::place_workbench_at(geom.as_ref(), *rect, app.shell_chrome_config().layout.document_tabs).cells {
+        for cell in crate::workbench_tiling::place_reading_workbench(app, *pane, geom.as_ref(), *rect).cells {
             if let Some(node) = cell.active_member()
                 && contents.contains_key(&node)
             {
@@ -3740,7 +3743,7 @@ fn primary_content_plan_with_rects(
             let geom = app
                 .workbench_for_pane(id)
                 .and_then(|w| w.to_arrangement().1);
-            for cell in crate::workbench_tiling::place_workbench_at(geom.as_ref(), rect, app.shell_chrome_config().layout.document_tabs).cells {
+            for cell in crate::workbench_tiling::place_reading_workbench(app, id, geom.as_ref(), rect).cells {
                 if let Some(node) = cell.active_member().filter(|n| contents.contains_key(n)) {
                     let body = cell.body();
                     appearance_roles.push((

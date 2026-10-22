@@ -181,6 +181,7 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::BeginRenameSession
         | Action::RenameSession { .. }
         | Action::CancelInstallDenizen
+        | Action::Reading(..)
         | Action::WorkbenchActivate(..)
         | Action::CloseWorkbenchTile
         | Action::WorkbenchStackOnto { .. }

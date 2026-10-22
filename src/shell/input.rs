@@ -1045,6 +1045,15 @@ impl Shell {
                                         self.app.focus = crate::surface::FocusTarget::Pane(id);
                                         self.app.publish_member_context(id, Some(member));
                                         self.wb_tab_drag = Some((id, member));
+                                    } else {
+                                        // Controls are ordinary pane input. Only tabs
+                                        // and dividers enter the tiling gesture path.
+                                        let member=pane.tiling().cell_at(lx,ly).and_then(|cell|cell.active_member());
+                                        self.app.focus=crate::surface::FocusTarget::Pane(id);
+                                        self.app.active_pane=Some(id);
+                                        self.app.publish_member_context(id,member);
+                                        let actions=self.pane_click_actions(id,&PaneContent::Workbench,(lx,ly),(rw,rh));
+                                        for action in actions { self.act(action); }
                                     }
                                 }
                             },
