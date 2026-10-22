@@ -32,7 +32,7 @@ pub(super) struct Pane {
     feedback: Option<(DropEffect, [f32; 4])>,
     drag: Option<(Uuid, (f32, f32), bool)>,
     cancelled_drag: bool,
-    pub(super) reading_ui: std::collections::BTreeMap<Uuid, super::reading::ReadUi>,
+    pub(super) reading_ui: std::collections::BTreeMap<Uuid, cambium::ReadFind>,
 }
 impl Pane {
     pub(super) async fn open(product: &product::SavedProduct) -> Result<Self, String> {

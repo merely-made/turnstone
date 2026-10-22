@@ -38,7 +38,7 @@ pub struct FormeWorkspace {
     pub focused_reading: Option<Uuid>,
     /// Per-access projection intent. Never serialized into the graph source.
     #[serde(default)]
-    pub reading_preferences: BTreeMap<Uuid, tabard::ReadingPreferences>,
+    pub reading_preferences: tabard::ReadingProjections<Uuid>,
     tile_ids: BTreeMap<Uuid, u64>,
 }
 
@@ -54,7 +54,7 @@ impl FormeWorkspace {
             inspector_source: Default::default(),
             focused_reading: None,
             tile_ids: BTreeMap::new(),
-            reading_preferences: BTreeMap::new(),
+            reading_preferences: Default::default(),
         }
     }
     pub fn layout(&self) -> TileLayout {
@@ -259,10 +259,9 @@ impl FormeWorkspace {
         }
     }
     pub fn validate(&self, graph_id: Uuid) -> Result<(), String> {
-        if self.reading_preferences.len() > 1024 { return Err("Too many reading preferences".into()); }
-        for (access, value) in &self.reading_preferences {
-            if !self.tile_ids.contains_key(access) { return Err("Reading preferences have no projection".into()); }
-            value.validate()?;
+        self.reading_preferences.validate()?;
+        if self.reading_preferences.keys().any(|access| !self.tile_ids.contains_key(access)) {
+            return Err("Reading preferences have no projection".into());
         }
         if self.version != WORKSPACE_VERSION {
             return Err("unsupported forme workspace version".into());
