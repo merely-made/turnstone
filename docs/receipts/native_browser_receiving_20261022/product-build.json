@@ -1,0 +1,61 @@
+{
+  "schema": "turnstone-native-browser-receiving-build-v1",
+  "recorded_at_utc": "2026-10-22T20:41:22.4437431Z",
+  "checkout_head": "9c8420d5cf79848a693d67775cc1438540670e38",
+  "command": "cargo test --lib --no-default-features --no-run --locked --offline --message-format=json",
+  "exit_code": 0,
+  "elapsed_seconds": 96.254,
+  "source_sha256_before": {
+    "Cargo.toml": "9ec3d1be686488622ecaf7eb53c945549144fcf98c4fd7b04d417c4afdab92c9",
+    "Cargo.lock": "b250339ec06cd9a80721fd81e0351bbd46313b36f29357cd328792b7838d259b",
+    "src/nomadnet.rs": "6c7fb643396661731968469899455f227610aadc84c7fd1aa218fef6a714a076",
+    "src/shell/effects.rs": "08cff8c2bcda95da83ea6323b2c2b9b08c360d2aaf3c974b379b4002fbc39131",
+    "src/shell/nomadnet_receiving_tests.rs": "8f14b2819b82f792900881bb62b9d026c109388a5aa557cef6c398a88af70a6e",
+    "src/shell/smolweb_receiving_tests.rs": "5c4c5675eb4fe32c6dfefe738b82bbd8208ae1f9a051ae8e2e8281a18edbe443",
+    "src/foreign_a11y.rs": "2c29a58c4cfe65b52b23a589a3fb2b8d760413525df25f5cb3285036af13a23f",
+    "src/contributed_a11y.rs": "70c0fb5c35b9b37b663668641bc3e3dc8a54c7e070f3125e8cbd919fe2f6ab9a",
+    "src/shell/document_a11y.rs": "41b65103ae00c7ac4868b82063afb580017fddfcc66323babca145e3743eb6bb",
+    "src/trail_memory.rs": "ac6d12878078186a97cebe16ea17687345fed92bf6db53fd866cb7b332fa8795",
+    "src/trail_memory/saved_sources.rs": "176f564b3c4d815144d2bb175d3b78506d59c8f883a1534e5d631f18976d0d5b",
+    "src/app/fixtures.rs": "71d44e69f394ed030bdd41a00f6c2255b3b5d5316df4f8899224bf71c42f609a",
+    "src/inference_service.rs": "8affd7acbd1a47443270b7f48d2ad501ad7daa7827da2bed79538105fb4259ce",
+    "src/app/palette.rs": "f01bb9eba102a8c2bee02edf4e9af2b1f4f2e789e43dd23347cc5a0ded08b73d"
+  },
+  "source_sha256_after": {
+    "Cargo.toml": "9ec3d1be686488622ecaf7eb53c945549144fcf98c4fd7b04d417c4afdab92c9",
+    "Cargo.lock": "b250339ec06cd9a80721fd81e0351bbd46313b36f29357cd328792b7838d259b",
+    "src/nomadnet.rs": "6c7fb643396661731968469899455f227610aadc84c7fd1aa218fef6a714a076",
+    "src/shell/effects.rs": "08cff8c2bcda95da83ea6323b2c2b9b08c360d2aaf3c974b379b4002fbc39131",
+    "src/shell/nomadnet_receiving_tests.rs": "8f14b2819b82f792900881bb62b9d026c109388a5aa557cef6c398a88af70a6e",
+    "src/shell/smolweb_receiving_tests.rs": "5c4c5675eb4fe32c6dfefe738b82bbd8208ae1f9a051ae8e2e8281a18edbe443",
+    "src/foreign_a11y.rs": "2c29a58c4cfe65b52b23a589a3fb2b8d760413525df25f5cb3285036af13a23f",
+    "src/contributed_a11y.rs": "70c0fb5c35b9b37b663668641bc3e3dc8a54c7e070f3125e8cbd919fe2f6ab9a",
+    "src/shell/document_a11y.rs": "41b65103ae00c7ac4868b82063afb580017fddfcc66323babca145e3743eb6bb",
+    "src/trail_memory.rs": "ac6d12878078186a97cebe16ea17687345fed92bf6db53fd866cb7b332fa8795",
+    "src/trail_memory/saved_sources.rs": "176f564b3c4d815144d2bb175d3b78506d59c8f883a1534e5d631f18976d0d5b",
+    "src/app/fixtures.rs": "71d44e69f394ed030bdd41a00f6c2255b3b5d5316df4f8899224bf71c42f609a",
+    "src/inference_service.rs": "8affd7acbd1a47443270b7f48d2ad501ad7daa7827da2bed79538105fb4259ce",
+    "src/app/palette.rs": "f01bb9eba102a8c2bee02edf4e9af2b1f4f2e789e43dd23347cc5a0ded08b73d"
+  },
+  "source_paths_changed_during_build": [],
+  "test_artifacts": [
+    {
+      "path": "C:\\t\\cargo-targets\\turnstone\\build\\debug\\deps\\turnstone-40843ff52415de23.exe",
+      "sha256": "34e654e29c21a67aa1614dbbda05949e6d47e9780968ea0bc8484eda57833e63"
+    }
+  ],
+  "warning_count": 102,
+  "error_count": 1,
+  "errors": [
+    "error: invalid type: boolean `true`, expected a map"
+  ],
+  "resources": {
+    "target": "C:\\t\\cargo-targets\\turnstone",
+    "build_directory": "C:\\t\\cargo-targets\\turnstone\\build",
+    "isolated_cargo_home": null,
+    "new_worktree": null,
+    "full_logs_retained": false,
+    "whole_task_receipt_cap_bytes": 100000000
+  },
+  "scope": "Portable locked-graph default-featureless Turnstone libtest compilation after bounded SDK compatibility. Runtime receiving and compatibility checks are separate gates."
+}

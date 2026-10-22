@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "scope": "Receiving client-policy comparison, including broader SDK qualification boundary",
+  "mere_fetch_comparison": [
+    "500bc78a7fa9e0b9abe8f35d189c465f93d3ccab",
+    "af5c3ba85a19fe3eddbabc283b6fab7572fc1cf3"
+  ],
+  "errand_comparison": [
+    "dce1f08546b8475e42a5a01ca1ea18794c6e9b97",
+    "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab"
+  ],
+  "unchanged": [
+    "Micron public validation order, settings, defaults, caps and deadlines",
+    "Entire Retinue source tree and its93registry dependencies (SDK receipts)",
+    "Shared fetch redirect count5 and per-hop30seconddeadline",
+    "Existing64MiB HTTP/read_capped and explicit-submission validation cap",
+    "Existing32MiB subresource post-buffer check",
+    "Scroll client header line4096byteguard and buffered read_to_end"
+  ],
+  "shared_fetch_changes": [
+    "Explicit Submit admission before initial request and every redirect hop",
+    "Diagnostic URL redaction",
+    "Complete response MIME preservation"
+  ],
+  "errand_crate_tree": "c7fd2904dc591411d039cd00e4f8bc4a17a87553",
+  "old_embedded_errand_source_files_equal_extracted_dce": 21,
+  "scroll_response_limits": "New4096/1MiB ResponseLimits apply outgoing Reply/server encoding, not browser receiving",
+  "preserved_open_limit_gate": "Shared smolweb pages remain buffered in Errand; subresource length checked after buffering. This task does not qualify bounded streaming allocation or repair client caps.",
+  "broader_sdk_http_changes": [
+    "Netfetcher referrer over4096bytes reduces to origin",
+    "Optional upgrade-insecure-requests per request/redirect, defaultfalse",
+    "Block-all-mixed-content carrier flag",
+    "OptionalWebSocket dependency0.29->0.30"
+  ],
+  "interpretation": "Micron and existing shared smolweb limits remain unchanged. Do not claim all browser policies unchanged: broad SDK adoption includes upstream HTTP security/referrer updates."
+}
