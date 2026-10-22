@@ -127,7 +127,7 @@ fn picking_a_viewer_reports_the_intent_and_mirrors_back() {
             })
             .expect("the livery option is drawn");
         let (rx, ry, rw, rh) =
-            crate::ui::node_rect(&dom, radio, crate::ui::CAMBIUM_SHEET, 400, 600).unwrap();
+            crate::ui::node_rect(&dom, radio, crate::ui::cambium_shell_sheet(), 400, 600).unwrap();
         (rx + rw / 2.0, ry + rh / 2.0)
     };
     let intents = pane.click(x, y, 400, 600);
