@@ -40,6 +40,53 @@ const STATIC_COMMANDS: &str = "turnstone";
 /// The bare `>` lane's last row, which expands it to the whole catalog.
 pub(crate) const ALL_COMMANDS_ROW: &str = "All commands\u{2026}";
 
+/// Describe offered host commands without changing their execution authority.
+/// Shared verbs retain the catalogue's declarations, including contextual rows.
+fn host_command_semantics(action: &Action) -> (cambium::EffectClass, bool) {
+    use cambium::EffectClass::{Curation, DomainTruth, ExternalEffect};
+    if let Some(command) = crate::action::shared_command_id(action)
+        .and_then(cambium::catalogue::command)
+    {
+        return (command.effect, command.destructive);
+    }
+    let effect = match action {
+        Action::KeepNode { .. }
+        | Action::SubscribeFocusedFeed { .. }
+        | Action::UnsubscribeFocusedFeed
+        | Action::ForkFocusedNode
+        | Action::EmptyRecycleBin
+        | Action::NewSession
+        | Action::CloseSession
+        | Action::ConfirmInstallDenizen
+        | Action::UninstallDenizen { .. }
+        | Action::ChooseResearchNote { .. }
+        | Action::RevokePlaceMember { .. } => DomainTruth,
+        Action::RefreshFeeds
+        | Action::ToggleNodeContent
+        | Action::ChooseClipPackageFile
+        | Action::ChooseKnotDocumentFile { .. }
+        | Action::ChooseClipExportFile
+        | Action::CaptureSourceDocument { .. }
+        | Action::RetrySourceDocumentCapture { .. }
+        | Action::NewResearchNote
+        | Action::OpenResearchNote
+        | Action::RunDenizen { .. }
+        | Action::ShareFocusedNode
+        | Action::CopyLocalRendezvous
+        | Action::LeavePlace
+        | Action::ReconnectPlace
+        | Action::RejoinPlace => ExternalEffect,
+        // Remaining offered rows arrange views, edit a composer, or select
+        // local reading scope. Persistence does not change that classification.
+        _ => Curation,
+    };
+    let destructive = matches!(action,
+        Action::EmptyRecycleBin | Action::CloseSession | Action::UninstallDenizen { .. }
+        | Action::RevokePlaceMember { .. }
+    );
+    (effect, destructive)
+}
+
 /// The catalog registered as a command set: each row once, under its shared
 /// id or its label, with the action it runs.
 pub(crate) struct CommandCatalog {
@@ -324,7 +371,9 @@ impl App {
                     } else {
                         STATIC_COMMANDS
                     };
-                    cambium::Command::new(label.clone(), label.clone(), category)
+                    let (effect, destructive) = host_command_semantics(&action);
+                    cambium::Command::new(label.clone(), label.clone(), category, effect)
+                        .with_destructive(destructive)
                 },
             };
             if set.get(&command.id).is_some() {
@@ -703,6 +752,26 @@ fn collection_id_hex(collection: &crate::place::PlaceCollectionId) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn command_metadata_distinguishes_presentation_authorship_and_external_effects() {
+        use cambium::EffectClass::{Curation, DomainTruth, ExternalEffect};
+        assert_eq!(
+            host_command_semantics(&Action::ComposeFocusedSmolwebSubmission),
+            (Curation, false)
+        );
+        assert_eq!(
+            host_command_semantics(&Action::RefreshFeeds),
+            (ExternalEffect, false)
+        );
+        for action in [Action::EmptyRecycleBin, Action::CloseSession, Action::DeleteFocusedNode] {
+            assert_eq!(host_command_semantics(&action), (DomainTruth, true));
+        }
+        assert_eq!(
+            host_command_semantics(&Action::SaveSession),
+            (ExternalEffect, false)
+        );
+    }
 
     fn version(seed: u8) -> crate::place::PlaceCollectionVersion {
         crate::place::PlaceCollectionVersion {
