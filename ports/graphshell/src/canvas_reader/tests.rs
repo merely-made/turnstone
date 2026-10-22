@@ -360,6 +360,54 @@ fn recycled_slot_fixture(
 }
 
 #[test]
+fn captured_pin_cannot_follow_same_member_restoration_between_semantic_reads() {
+    use mere::kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
+    let canvas = sample_canvas();
+    let mut host = harness(canvas.clone(), Plant::None);
+    let old = canvas.borrow().describe_items(DESCRIBED_ITEMS).items[0].clone();
+    let stale = host
+        .a11y_produced_actions()
+        .into_values()
+        .find(|action| action.key == old.key && action.id == PIN_INTENT)
+        .unwrap();
+    let old_slot = canvas
+        .borrow()
+        .graph()
+        .get_node_key_by_id(old.member)
+        .unwrap();
+    assert!(canvas.borrow_mut().ingest_graph(|graph| matches!(
+        apply_graph_delta(graph, GraphDelta::RemoveNode { key: old_slot }),
+        GraphDeltaResult::NodeRemoved(true)
+    )));
+    assert!(canvas.borrow_mut().ingest_graph(|graph| {
+        assert!(matches!(
+            apply_graph_delta(
+                graph,
+                GraphDelta::AddNode {
+                    id: Some(old.member),
+                    url: "https://restored-member.example/".into(),
+                    position: Default::default()
+                }
+            ),
+            GraphDeltaResult::NodeAdded(_)
+        ));
+        true
+    }));
+    // Both model transitions happened without rebuilding the published maps.
+    host.a11y_produced_request(A11yAction::Click, stale);
+    let current_slot = canvas
+        .borrow()
+        .graph()
+        .get_node_key_by_id(old.member)
+        .unwrap();
+    assert_ne!(
+        canvas.borrow().arrangement_role_of(current_slot),
+        ItemRole::Pinned
+    );
+    assert_ne!(described_key(&canvas, old.member), old.key);
+}
+
+#[test]
 fn captured_pin_does_not_target_a_replacement_before_description_refresh() {
     let (mut host, canvas, old, stale, replacement) = recycled_slot_fixture(PIN_INTENT, false);
     host.a11y_produced_request(A11yAction::Click, stale);

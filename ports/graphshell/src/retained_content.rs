@@ -218,6 +218,12 @@ impl PeltClock for Clock {
     }
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct SemanticChild {
+    key: u64,
+    lifetime: cambium_rootstock::ProducerChildLifetime,
+}
+
 pub struct ContentSlot {
     pub(crate) content: PeltContent<Scene>,
     source: HeldContent,
@@ -228,7 +234,10 @@ pub struct ContentSlot {
     glyph_runs: usize,
     // Allocated by the content owner after an admitted layout/frame, never by
     // semantic reads. Keys retain session identity across producer recreation.
-    semantic_keys: BTreeMap<(u64, u64, u64), u64>,
+    semantic_keys: BTreeMap<(u64, u64, u64), SemanticChild>,
+    // Derived lookup only: semantic_keys owns the strong child lives. Avoid a
+    // full key-map scan for every action when publishing a large document.
+    semantic_child_tokens: BTreeMap<u64, cambium_rootstock::ProducerChildToken>,
 }
 impl ContentSlot {
     pub fn glyph_runs(&self) -> usize {
@@ -346,14 +355,24 @@ impl ContentSlot {
                 .or_insert_with(|| {
                     static NEXT: std::sync::atomic::AtomicU64 =
                         std::sync::atomic::AtomicU64::new(1);
-                    NEXT.fetch_update(
-                        std::sync::atomic::Ordering::Relaxed,
-                        std::sync::atomic::Ordering::Relaxed,
-                        |n| n.checked_add(1),
-                    )
-                    .expect("content action keys exhausted")
+                    let key = NEXT
+                        .fetch_update(
+                            std::sync::atomic::Ordering::Relaxed,
+                            std::sync::atomic::Ordering::Relaxed,
+                            |n| n.checked_add(1),
+                        )
+                        .expect("content action keys exhausted");
+                    SemanticChild {
+                        key,
+                        lifetime: cambium_rootstock::ProducerChildLifetime::new(),
+                    }
                 });
         }
+        self.semantic_child_tokens = self
+            .semantic_keys
+            .values()
+            .map(|child| (child.key, child.lifetime.token()))
+            .collect();
     }
 }
 
@@ -483,10 +502,14 @@ impl ContentHost {
             visible: false,
             glyph_runs: 0,
             semantic_keys: BTreeMap::new(),
+            semantic_child_tokens: BTreeMap::new(),
         }));
         if let Some(old) = self.slots.insert(access, slot.clone()) {
-            old.borrow_mut().visible = false;
-            old.borrow_mut().content.set_hidden(true);
+            let mut old = old.borrow_mut();
+            old.visible = false;
+            old.content.set_hidden(true);
+            old.semantic_keys.clear();
+            old.semantic_child_tokens.clear();
         }
         Ok(slot)
     }
@@ -503,8 +526,11 @@ impl ContentHost {
     }
     pub fn close(&mut self, access: Uuid) {
         if let Some(slot) = self.slots.remove(&access) {
-            slot.borrow_mut().visible = false;
-            slot.borrow_mut().content.set_hidden(true);
+            let mut slot = slot.borrow_mut();
+            slot.visible = false;
+            slot.content.set_hidden(true);
+            slot.semantic_keys.clear();
+            slot.semantic_child_tokens.clear();
         }
     }
 }

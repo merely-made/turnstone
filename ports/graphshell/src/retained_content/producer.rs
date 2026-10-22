@@ -120,11 +120,10 @@ impl TextureProducer for ContentProducer {
         let mut children = vec![];
         if let Some(projection) = controller.accessibility_projection() {
             for node in projection.nodes() {
-                let key = *slot.semantic_keys.get(&(
-                    identity.instance_id,
-                    identity.generation,
-                    node.id.get(),
-                ))?;
+                let key = slot
+                    .semantic_keys
+                    .get(&(identity.instance_id, identity.generation, node.id.get()))?
+                    .key;
                 let actions = node
                     .actions
                     .iter()
@@ -177,6 +176,9 @@ impl TextureProducer for ContentProducer {
             children,
         })
     }
+    fn child_lifetime(&self, key: u64) -> Option<cambium_rootstock::ProducerChildToken> {
+        self.slot.borrow().semantic_child_tokens.get(&key).cloned()
+    }
     fn act(&mut self, key: u64, action: &str) -> bool {
         let Some((action, observed_revision)) = action.split_once('/') else {
             return false;
@@ -194,8 +196,8 @@ impl TextureProducer for ContentProducer {
         let Some(target_id) =
             slot.semantic_keys
                 .iter()
-                .find_map(|(&(instance, generation, node), &value)| {
-                    (value == key
+                .find_map(|(&(instance, generation, node), value)| {
+                    (value.key == key
                         && instance == identity.instance_id
                         && generation == identity.generation)
                         .then_some(node)

@@ -147,11 +147,14 @@ fn readonly_tests_producer_actions_keep_owner_identity_and_reject_retired_source
                 .map(|a| (n.key, a.id.clone()))
         })
         .unwrap();
+    let life = producer.child_lifetime(target.0).unwrap();
     let second = producer.semantics().unwrap();
+    assert_eq!(producer.child_lifetime(target.0), Some(life.clone()));
     assert!(second.children.iter().any(|n| n.key == target.0));
     assert!(!producer.act(target.0, "activate/999999"));
     let recreated = ContentProducer::new(slot.clone(), 92);
     let recreated_description = recreated.semantics().unwrap();
+    assert_eq!(recreated.child_lifetime(target.0), Some(life.clone()));
     assert!(
         recreated_description
             .children
@@ -170,6 +173,7 @@ fn readonly_tests_producer_actions_keep_owner_identity_and_reject_retired_source
             .is_some_and(|navigation| navigation.request.address == "https://held.example/target")
     }));
     host.close(access);
+    assert_eq!(producer.child_lifetime(target.0), None);
     assert!(!producer.act(target.0, &target.1));
     assert!(producer.semantics().is_none());
 }
