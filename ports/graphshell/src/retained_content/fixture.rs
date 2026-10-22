@@ -84,3 +84,46 @@ pub async fn seed<B: muniment::Backend + Clone>(
     crate::local_intake::persist_intake(app, member, 7).await?;
     Ok(())
 }
+
+/// Opt-in reading fixture. It uses the ordinary normalized-document lane and
+/// persisted graph intake, so captures exercise the real portable text layout.
+pub async fn seed_reading<B: muniment::Backend + Clone>(
+    app: &mut crate::app::GraphshellApp<B>,
+) -> Result<(), String> {
+    use inker::{Block, EngineDocument, InlineSpan};
+    let address = "mere://reading/field-notes";
+    let paragraph = |text: &str| Block::Paragraph {
+        spans: vec![InlineSpan::Text(text.into())],
+    };
+    let mut document = EngineDocument {
+        address: address.into(),
+        title: Some("Reading from the graph".into()),
+        content_type: "text/plain".into(),
+        lang: Some("en".into()),
+        provenance: Default::default(),
+        trust: Default::default(),
+        diagnostics: Vec::new(),
+        navigation: Default::default(),
+        blocks: vec![
+            Block::Heading { level: 1, spans: vec![InlineSpan::Text("Reading from the graph".into())] },
+            paragraph("A useful reading space keeps the text close enough to follow and leaves room for a thought to settle. The document remains part of the graph: its sources, connections and saved places are available without crowding the page."),
+            paragraph("A Map and a Read are different projections of the same material. Moving between them changes the presentation, while the document keeps its identity. An Inspector can follow the current view or stay pinned to a source that is worth keeping nearby."),
+            Block::Heading { level: 2, spans: vec![InlineSpan::Text("Room to think".into())] },
+            paragraph("Long lines make it easy to lose the next sentence. A measured column and a little space between lines give the eye a reliable place to return. On a narrow window the column follows the available space; the text stays readable without a second horizontal journey."),
+            Block::CodeBlock { language: None, text: "document → reading projection\n         → map projection\n         → related sources".into() },
+            Block::Paragraph { spans: vec![InlineSpan::Link { url: "https://retained.example/notes".into(), title: None, spans: vec![InlineSpan::Text("Visit the related field notes".into())], predicate: None }] },
+            paragraph("The surrounding controls use a smaller interface scale. Their labels remain clear, but their spacing gives the page priority. This local document is a deterministic layout sample; it does not fetch remote content."),
+        ],
+    };
+    document.provenance.source_kind = Some(pelt_core::native::DOCUMENT_ENGINE_ID.into());
+    let body = serde_json::to_string(&document).map_err(|e| e.to_string())?;
+    let member = crate::local_intake::create_address(app, address, "Reading from the graph")?;
+    let key = app.host.graph().get_node_key_by_id(member).ok_or("Missing reading fixture member")?;
+    app.host.mutate_product_graph(|graph| {
+        use mere::kernel::graph::apply::{apply_graph_delta, GraphDelta};
+        apply_graph_delta(graph, GraphDelta::SetNodeMimeHint { key, mime_hint: Some("application/vnd.mere.document+json".into()) });
+        apply_graph_delta(graph, GraphDelta::SetNodeBody { key, body: Some(body) });
+    }).map_err(|e| e.to_string())?;
+    crate::local_intake::persist_intake(app, member, 7).await?;
+    Ok(())
+}

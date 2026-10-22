@@ -375,12 +375,21 @@ impl ContentHost {
         Self::with_native_presentation(fonts, None)
     }
     pub fn with_native_presentation(fonts: Vec<Vec<u8>>, family: Option<String>) -> Self {
+        Self::with_native_font_roles(fonts, family.into_iter().collect(), Vec::new())
+    }
+    /// Portable text roles use the same explicit host-held font inventory.
+    pub fn with_native_font_roles(
+        fonts: Vec<Vec<u8>>,
+        families: Vec<String>,
+        generic_fonts: Vec<(String, Vec<u8>)>,
+    ) -> Self {
         Self::new(
             pelt_core::PeltRegistries::new(
-                pelt_core::native::sessions_with_presentation(
+                pelt_core::native::sessions_with_generic_fonts(
                     pelt_core::native::HeldResources::default(),
                     fonts,
-                    family,
+                    families,
+                    generic_fonts,
                 ),
                 inker::SurfaceEngineRegistry::new(),
                 pelt_core::native::route_policy(),
