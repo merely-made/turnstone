@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-22",
+  "result": "focused software receiving qualified",
+  "repository": "https://github.com/merely-made/turnstone",
+  "source_base": "dfe5955ca5efed8d3343ced1093a6d4f1334825a",
+  "scope": "Receive the repaired Armillary pool supplier through the coordinated ESP, Knot and Mere cohort; retain dedicated product actor ownership.",
+  "manifest_sha256": "7765d94db6dd8438661f2849c75722cf6b64afd43038f694ca64ae9cb14b55c3",
+  "lock_sha256": "c8885ff2c7bb25040524699058dbb80fded090a776b86f685584cc259d0127ac",
+  "central_ledger": "https://github.com/merely-made/mere/blob/main/support/family-promotion/pool-cohort-rollout-20261022.json",
+  "changes": [
+    "Root Armillary direct and compatibility patches converge on the repaired supplier.",
+    "Root ESP and complete existing Errand patch family follow the qualified SDK.",
+    "Cambium requirement accepts the shared 0.6 API.",
+    "Cargo generated the lock update, including paired Genet/Murm identities and final Knot selector repair.",
+    "Retain the concurrently published typography product/source delivery through its canonical merged Mere supplier a01a22d0."
+  ],
+  "metadata": {
+    "command": [
+      "cargo",
+      "+1.99.1",
+      "metadata",
+      "--format-version",
+      "1",
+      "--locked",
+      "--offline",
+      "--filter-platform",
+      "aarch64-apple-darwin"
+    ],
+    "exit_code": 0,
+    "artifact": {
+      "path": "/Users/markik/Code/output/turnstone-pool-intake-20261021/metadata.json",
+      "sha256": "c4205a34d142ce40c9ee7305773c29380bea89b70adefa20271461e079dcc7be"
+    }
+  },
+  "source_identity_checks": {
+    "result": "pass",
+    "selected_packages": {
+      "armillary": {
+        "version": "0.1.1",
+        "source": "git+https://github.com/merely-made/armillary.git?rev=92d5b15cf39aaac40a3f2d863ffee69c9be11bfc#92d5b15cf39aaac40a3f2d863ffee69c9be11bfc"
+      },
+      "esp": {
+        "version": "0.1.0",
+        "source": "git+https://github.com/merely-made/esp.git?rev=6d6ad84b773c9baf2390bd7807a21ca9887e6efd#6d6ad84b773c9baf2390bd7807a21ca9887e6efd"
+      },
+      "mere": {
+        "version": "0.0.2",
+        "source": "git+https://github.com/merely-made/mere.git?branch=main#a01a22d02cd3e9437da6724e0c34fa6eef885478"
+      },
+      "knot-editor": {
+        "version": "0.0.3",
+        "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#f44259964cd0b6ff27c21ab368ea7830fc11e0fe"
+      },
+      "genet-livery": {
+        "version": "0.0.4",
+        "source": "git+https://github.com/merely-made/genet.git?branch=main#7d1d89dbe729a853cf59c7b3f43ee3d8e494fde8"
+      },
+      "mere-transport": {
+        "version": "0.0.2",
+        "source": "git+https://github.com/merely-made/murm.git?branch=main#5b1c5cac2f5d0e275ead94ae4b8b25c65a183694"
+      },
+      "netrender": {
+        "version": "0.1.2",
+        "source": "git+https://github.com/merely-made/netrender.git?branch=main#ec15eb269855c798467c93a6d10031100fdfdf65"
+      },
+      "errand": {
+        "version": "0.4.0",
+        "source": "git+https://github.com/merely-made/errand.git?rev=3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab#3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab"
+      },
+      "apparatus-core": {
+        "version": "0.1.0",
+        "source": "git+https://github.com/merely-made/armillary.git?rev=75643df1f178757bb7b6386913af1a39353f3069#75643df1f178757bb7b6386913af1a39353f3069"
+      },
+      "mere-source-edit": {
+        "version": "0.1.0",
+        "source": "git+https://github.com/merely-made/mere.git?rev=70deef2c8cf3d3410ae35b496a9396514070b24f#70deef2c8cf3d3410ae35b496a9396514070b24f"
+      }
+    },
+    "local_packages": [
+      "turnstone",
+      "turnstone-sandbox-bootstrap-win"
+    ],
+    "mutable_family_sources": {
+      "mere": "git+https://github.com/merely-made/mere.git?branch=main#a01a22d02cd3e9437da6724e0c34fa6eef885478",
+      "knot-editor": "git+https://github.com/merely-made/knot-editor.git?branch=main#f44259964cd0b6ff27c21ab368ea7830fc11e0fe",
+      "genet": "git+https://github.com/merely-made/genet.git?branch=main#7d1d89dbe729a853cf59c7b3f43ee3d8e494fde8",
+      "murm": "git+https://github.com/merely-made/murm.git?branch=main#5b1c5cac2f5d0e275ead94ae4b8b25c65a183694",
+      "netrender": "git+https://github.com/merely-made/netrender.git?branch=main#ec15eb269855c798467c93a6d10031100fdfdf65"
+    },
+    "mere_site_packages_in_default_graph": 0,
+    "manifest_sha256": "7765d94db6dd8438661f2849c75722cf6b64afd43038f694ca64ae9cb14b55c3",
+    "lock_sha256": "c8885ff2c7bb25040524699058dbb80fded090a776b86f685584cc259d0127ac"
+  },
+  "qualification_environment": {
+    "host": "m4-imac.lan",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "environment": {
+      "CARGO_PROFILE_DEV_DEBUG": "0",
+      "CARGO_PROFILE_TEST_DEBUG": "0",
+      "CARGO_INCREMENTAL": "0"
+    },
+    "build_jobs": 1
+  },
+  "gates": [
+    {
+      "name": "diagnostic",
+      "command": [
+        "cargo",
+        "+1.99.1",
+        "--config",
+        "build.build-dir=\"/Users/markik/Code/repos/mere/target/build\"",
+        "test",
+        "--locked",
+        "--offline",
+        "--target-dir",
+        "/Users/markik/Code/repos/mere/target",
+        "-j1",
+        "--lib",
+        "diagnostic",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "passed": 16,
+      "failed": 0,
+      "log": {
+        "path": "/Users/markik/Code/output/turnstone-pool-intake-20261021/diagnostic.log",
+        "sha256": "f0511ea997b44cd11ac33a926c39199484ec268434e4009ab7ab03c24389ea44"
+      }
+    },
+    {
+      "name": "download",
+      "command": [
+        "/Users/markik/Code/repos/mere/target/build/debug/deps/turnstone-1ff6e2c8aef06ede",
+        "download::tests",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0,
+      "log": {
+        "path": "/Users/markik/Code/output/turnstone-pool-intake-20261021/download.log",
+        "sha256": "a835718fb331e5403290bbf4b8500fa4f4460d63c9501835f93a1557d07562a4"
+      }
+    },
+    {
+      "name": "actor-session-release-reopen",
+      "command": [
+        "/Users/markik/Code/repos/mere/target/build/debug/deps/turnstone-1ff6e2c8aef06ede",
+        "worker_releases_files_before_reopen_and_advances_generation",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0,
+      "log": {
+        "path": "/Users/markik/Code/output/turnstone-pool-intake-20261021/worker-reopen.log",
+        "sha256": "923fe7feeed99eba13c806c0f2e17308dafb996a64ed75896a7351954a69c7dd"
+      }
+    }
+  ],
+  "focused_passed": 20,
+  "focused_failed": 0,
+  "boundaries": [
+    "All 20 final reported cases used the Cargo-validated artifact for product source dfe5955, merged Mere SDK a01a22d0 and final code Knot f4425996.",
+    "The actor gate proves session release acknowledgement permits directory rename and generation-2 reopening in the same process. It does not assert OS worker-thread retirement.",
+    "Pool admission/retirement regression qualification belongs to the Armillary supplier receipt. Product actors were not migrated onto Pool.",
+    "No full-product-suite, native UI, physical-device, or fresh-process acceptance claim.",
+    "No Knot checkpoint or product GUI implementation changes."
+  ],
+  "build_diagnostics": [
+    "Cargo reports 102 Turnstone library-test warnings; this receipt makes no strict-lint claim.",
+    "Cargo Git package discovery prints the optional Servo tidy invalid-manifest fixture diagnostic; metadata and selected build/tests all returned zero."
+  ],
+  "artifact_directory": "/Users/markik/Code/output/turnstone-pool-intake-20261021",
+  "concurrent_owner_delivery": {
+    "product_revision": "dfe5955ca5efed8d3343ced1093a6d4f1334825a",
+    "supplier_revision": "b22bcdc0988d5e7d3ee051889c1ebf0e07f02427",
+    "qualified_supplier_merge": "a01a22d02cd3e9437da6724e0c34fa6eef885478",
+    "original_execution_sdk": "a07a375ed9f49d31bb757c4dd516a0fa7af33fde",
+    "description": "Preserved all published native reading typography, shared-shell and font asset changes. The qualified Mere merge contains the execution SDK and owner supplier code; its root manifest/lock and shared host are unchanged from the execution SDK."
+  },
+  "prior_controls": [
+    {
+      "knot_revision": "a38f4253663845515bbf67ccfc04b26d7f6b715d",
+      "focused_passed": 20,
+      "counted_in_final_total": false,
+      "artifacts": "/Users/markik/Code/output/turnstone-pool-intake-20261021/a38-initial"
+    },
+    {
+      "mere_revision": "a07a375ed9f49d31bb757c4dd516a0fa7af33fde",
+      "knot_revision": "f44259964cd0b6ff27c21ab368ea7830fc11e0fe",
+      "focused_passed": 20,
+      "counted_in_final_total": false,
+      "artifacts": "/Users/markik/Code/output/turnstone-pool-intake-20261021/a07-final"
+    }
+  ]
+}
