@@ -1,0 +1,30 @@
+{
+  "selected_sources": [
+    {
+      "name": "distillery",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#138fed73d36d2cf48ab92acd0c9db4387359256e"
+    },
+    {
+      "name": "eidetic",
+      "source": "git+https://github.com/merely-made/eidetic.git?rev=44f0664748238d7a96603925a0268caf60e091aa#44f0664748238d7a96603925a0268caf60e091aa"
+    },
+    {
+      "name": "esp",
+      "source": "git+https://github.com/merely-made/esp.git?rev=b9f050b2947822aa0e5908a9aaedfc47a4f23930#b9f050b2947822aa0e5908a9aaedfc47a4f23930"
+    },
+    {
+      "name": "knot-editor",
+      "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#23b8f55ea2dc7c3262baebb62b2db68a08837f1c"
+    }
+  ],
+  "active_mere_source": [
+    "git+https://github.com/merely-made/mere.git?branch=main#138fed73d36d2cf48ab92acd0c9db4387359256e"
+  ],
+  "unchanged_legacy_leaf": [
+    {
+      "name": "mere-source-edit",
+      "source": "git+https://github.com/merely-made/mere.git?rev=70deef2c8cf3d3410ae35b496a9396514070b24f#70deef2c8cf3d3410ae35b496a9396514070b24f"
+    }
+  ],
+  "boundary": "Canonical Cargo Git sources for the integration cohort. The preexisting source-edit leaf remains on its separate revision. No ESP or Eidetic development path overlay."
+}

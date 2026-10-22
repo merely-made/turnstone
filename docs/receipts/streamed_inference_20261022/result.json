@@ -1,0 +1,42 @@
+{
+  "utc": "2026-10-22T23:18:52.334459+00:00",
+  "result": "answer_gate_not_passed",
+  "runtime_execution": {
+    "completed": 4,
+    "total": 4,
+    "timed_out": 0,
+    "process_exit": 0,
+    "session_mismatch": false
+  },
+  "answer_contract": {
+    "passed": 0,
+    "total": 4,
+    "result": "fail"
+  },
+  "headed_answer": "not_run_gate_not_passed",
+  "headed_cold_reopen": "not_run_gate_not_passed",
+  "software_checks": {
+    "esp_library": {
+      "passed": 189,
+      "failed": 0,
+      "ignored": 1
+    },
+    "explicit_gpu_architecture_walkthrough": {
+      "passed": 1,
+      "architectures": 8
+    },
+    "resident_settings": {
+      "passed": 7
+    },
+    "resident_route": {
+      "passed": 4,
+      "ignored": 3
+    },
+    "turnstone_inference": {
+      "passed": 9,
+      "ignored": 1
+    },
+    "turnstone_native_build": "pass"
+  },
+  "scope": "Budgeted cache and dispatch changes, canonical supplier pins, software checks and all four frozen headless Qwen2.5-1.5B cases. This is not headed retained-answer or cold-reopen acceptance."
+}

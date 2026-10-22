@@ -1,0 +1,11 @@
+{
+  "result": "diagnostic_stopped",
+  "reason": "Both cache budgets are honored, but cached layers still drain the GPU individually. Stop before semantic qualification to remove this unnecessary synchronization and remeasure.",
+  "setup_seconds": 517.3192353879567,
+  "decode_window_seconds": 246.1815647019539,
+  "decode_tokens": 35,
+  "tokens_per_second": 0.14217149055159212,
+  "last_tokens": 36,
+  "sample_interference": "A three-second CPU sample was taken during this diagnostic window.",
+  "session_matches_baseline": true
+}

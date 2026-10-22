@@ -1,0 +1,31 @@
+{
+  "evidence_sha256": {
+    "baseline-generation-sample.txt": "8c63cb335c0d59549013d9219122c8eb53c64f3aeb8d8e6d9aa8b02cef73fe7d",
+    "cache-generation-sample.txt": "45bd0a2f409ab2dca8c3ca10702829896666fb166a922db9cddf2fbdab79bb7d",
+    "esp-cache-tests.log": "e2135336ff6d751efabc80278dd6607394a0c0e59a1389d377e89a1c62dd16e1",
+    "esp-cache-parity-tests.log": "d616f3abdbc5372228915c61ba59e271953f043c27e5f244a098c9cdead1a7a4",
+    "esp-device-cache-tests.log": "ef101b880d55d4898ae48b9e8aa3188fb6780fddfda2f53e9a75aac7e0b350a5",
+    "esp-final-library-tests.log": "fc114e141e63d3802314d4f0714c25a275fdc33113c06143f5c60d46ddf98a7e",
+    "esp-cache-gpu-parity.log": "4979dd6a0576e05504ad4d1ebf30f2c32254044bdce97752fcafdcd2d83ded3f",
+    "djinn-cache-settings-tests.log": "401f784942f07327b0521bdf80473f61b1639d5cc5ff4b9c5aae97aee197a14d",
+    "mere-cache-format-check.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "boundary": "Diagnostic CPU samples and stopped probe windows identify repeated work; they are not completed frozen-case semantic results. Full raw samples remain outside Git in output/streamed-inference-20261022.",
+  "tests": {
+    "esp_gpu_feature_library": {
+      "passed": 189,
+      "failed": 0,
+      "ignored": 1
+    },
+    "explicit_gpu_architecture_walkthrough": {
+      "passed": 1,
+      "architectures": 8
+    },
+    "resident_settings": {
+      "passed": 7,
+      "failed": 0
+    }
+  },
+  "root_cause": "Each token reread and reverified immutable layer artifacts, converted encoded weights to f32 and staged device uploads. Host cache alone removed store work but left repeated conversion and upload for every layer. Device cache retains a first-fit dense f32 subset while the remaining layers continue to stream.",
+  "stage": "Initial diagnostic development evidence. Final source cohort and software checks are recorded in source-pins.json, result.json and the final optimized logs."
+}
