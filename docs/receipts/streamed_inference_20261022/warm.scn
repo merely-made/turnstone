@@ -1,0 +1,129 @@
+resize 1200 900
+settle 5
+key escape
+act New session
+settle 5
+open ${MR_ORIGIN}/A
+settle 5
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+capture 01_capture_A
+record-source-captures 01_capture_A
+open ${MR_ORIGIN}/B
+settle 5
+act Open Inspector pane
+settle 3
+click-row Save source and keep
+wait-row 600 Source save: Saved
+capture 02_capture_B
+record-source-captures 02_capture_B
+import-clip ${MR_KNOT}
+settle 5
+import-clip ${MR_NOTE}
+settle 5
+act Open node in Workbench
+settle 5
+act Maximize pane
+settle 5
+assert content-live
+capture 03_mixed_sources
+record-saved-sources 03_mixed_sources
+act Save session
+touch ${MR_CONTROL}/stop-origin
+wait-file 600 ${MR_CONTROL}/origin-stopped
+act Ask saved sources
+settle 30
+assert text Connected to resident inference.
+touch ${MR_CONTROL}/selecting-sources
+click surface:contributed role:button Choose source: Mixed Capture A
+wait-file 1800 ${MR_CONTROL}/selected-1.json
+settle 5
+assert text 1 saved sources chosen
+click surface:contributed role:button Choose source: Knot selection
+wait-file 1800 ${MR_CONTROL}/selected-2.json
+settle 5
+assert text 2 saved sources chosen
+click surface:contributed role:button Choose source: Redshank note
+wait-file 1800 ${MR_CONTROL}/selected-3.json
+settle 5
+assert text 3 saved sources chosen
+capture explicit_scope
+click surface:contributed role:textbox Question
+insert ${MR_CROSS_QUESTION}
+click surface:contributed role:button Ask with evidence
+wait-file 24000 ${MR_RESIDENT}/mixed-0-cross.json
+settle 10
+capture cross_answer
+assert text Support proposed
+assert text semantic support has not been reviewed
+click surface:contributed role:button Show raw output
+settle 5
+capture cross_raw
+click surface:contributed role:button Hide raw output
+settle 5
+click surface:contributed role:button Inspect claim 1 source
+settle 5
+act Open node in Workbench
+settle 5
+assert content-live
+wait-saved-reader 600
+assert snap saved-reader-text == ${MR_CAPTURE_TEXT}
+capture cross_warm_claim_1_citation
+record-saved-sources cross_warm_claim_1_citation
+act Ask saved sources
+settle 5
+click surface:contributed role:button Inspect claim 2 source
+settle 5
+act Open node in Workbench
+settle 5
+assert content-live
+assert snap browser-current ~ ${MR_KNOT_ADDRESS}
+capture cross_warm_claim_2_citation
+record-saved-sources cross_warm_claim_2_citation
+act Ask saved sources
+settle 5
+click surface:contributed role:button Inspect claim 3 source
+settle 5
+act Open node in Workbench
+settle 5
+assert content-live
+assert snap browser-current ~ ${MR_NOTE_ADDRESS}
+capture cross_warm_claim_3_citation
+record-saved-sources cross_warm_claim_3_citation
+act Ask saved sources
+settle 5
+click surface:contributed role:textbox Question
+insert ${MR_MISSING_QUESTION}
+click surface:contributed role:button Ask with evidence
+wait-file 24000 ${MR_RESIDENT}/mixed-0-missing.json
+settle 10
+capture missing_answer
+assert text Insufficient evidence
+click surface:contributed role:button Choose source: Mixed Capture B
+wait-file 1800 ${MR_CONTROL}/selected-4.json
+settle 5
+assert text 4 saved sources chosen
+click surface:contributed role:textbox Question
+insert ${MR_CONFLICT_QUESTION}
+click surface:contributed role:button Ask with evidence
+wait-file 24000 ${MR_RESIDENT}/mixed-0-conflict.json
+settle 10
+capture conflict_answer
+assert text Conflicting evidence
+touch ${MR_CONTROL}/reducing-scope
+click surface:contributed role:button Remove source: Mixed Capture B
+settle 10
+click surface:contributed role:button Remove source: Redshank note
+wait-file 1800 ${MR_CONTROL}/reduced-scope.json
+settle 5
+assert text 2 saved sources chosen
+click surface:contributed role:textbox Question
+insert ${MR_REDUCED_QUESTION}
+click surface:contributed role:button Ask with evidence
+wait-file 24000 ${MR_RESIDENT}/mixed-0-reduced.json
+settle 10
+capture reduced_answer
+assert text Insufficient evidence
+act Save session

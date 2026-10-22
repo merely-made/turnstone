@@ -1,0 +1,7 @@
+{
+  "result": "diagnostic_stopped",
+  "reason": "Verified host cache removes store reads but remaining tensor conversion/upload is too slow for acceptance. Stopped before the frozen-case deadline to repair the remaining bottleneck.",
+  "window_seconds": 292.4196733729914,
+  "tokens": 26,
+  "tokens_per_second": 0.08891330634528172
+}

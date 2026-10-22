@@ -1,0 +1,61 @@
+{
+  "setup_seconds_from_process_launch_to_first_ask": 157.43470708094537,
+  "process_seconds": 2182.942489056848,
+  "cases": {
+    "cross": {
+      "state": "finished",
+      "tokens": 124,
+      "case_seconds_including_prefill": 482.6857109540142,
+      "prefill_until_first_token_seconds": 48.88864111993462,
+      "decode_seconds_after_first_token": 433.7970698340796,
+      "decode_tokens_after_first": 123,
+      "decode_tokens_per_second_after_first": 0.283542717444001,
+      "answer_contract": "fail"
+    },
+    "missing": {
+      "state": "finished",
+      "tokens": 175,
+      "case_seconds_including_prefill": 694.8247762608808,
+      "prefill_until_first_token_seconds": 43.626714947866276,
+      "decode_seconds_after_first_token": 651.1980613130145,
+      "decode_tokens_after_first": 174,
+      "decode_tokens_per_second_after_first": 0.2671998126793602,
+      "answer_contract": "fail"
+    },
+    "conflict": {
+      "state": "finished",
+      "tokens": 130,
+      "case_seconds_including_prefill": 456.0283241439611,
+      "prefill_until_first_token_seconds": 24.71705509000458,
+      "decode_seconds_after_first_token": 431.3112690539565,
+      "decode_tokens_after_first": 129,
+      "decode_tokens_per_second_after_first": 0.2990879424109419,
+      "answer_contract": "fail"
+    },
+    "reduced": {
+      "state": "finished",
+      "tokens": 122,
+      "case_seconds_including_prefill": 387.1596397019457,
+      "prefill_until_first_token_seconds": 23.144173753913492,
+      "decode_seconds_after_first_token": 364.0154659480322,
+      "decode_tokens_after_first": 121,
+      "decode_tokens_per_second_after_first": 0.3324034589708182,
+      "answer_contract": "fail"
+    }
+  },
+  "cache": {
+    "host_capacity_budget_bytes": 3221225472,
+    "observed_host_capacity_bytes": 2620715168,
+    "observed_host_entries": 28,
+    "observed_host_source_misses_total": 28,
+    "device_layer_payload_budget_bytes": 4294967296,
+    "observed_device_layer_payload_bytes": 4118208512,
+    "observed_device_layers_per_ask": 22
+  },
+  "boundaries": [
+    "Rates exclude initial verification/import and per-ask prefill. Case wall time includes prefill.",
+    "Shared development host; these are observed qualification timings, not a controlled attribution of gains to caching alone.",
+    "Earlier diagnostic binaries optimized ESP only; this final profile also optimizes the hot tensor/backend crates and SHA-256.",
+    "Memory counters cover retained host Vec capacity and device layer payload, not RSS or total VRAM."
+  ]
+}

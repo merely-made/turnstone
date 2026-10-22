@@ -1,0 +1,62 @@
+{
+  "esp-optimized-runtime-build.log": {
+    "original_sha256": "2570819cd2b942fed56ed175bed7c3aa54d31444a259d92851045c3ca308552f",
+    "published_sha256": "2570819cd2b942fed56ed175bed7c3aa54d31444a259d92851045c3ca308552f",
+    "normalization": "Only terminal empty lines removed for diff hygiene."
+  },
+  "turnstone-final-build.log": {
+    "original_sha256": "44e28bd36f59b8fb6d881806dd70234441b6290a0a4638191729968ea3fa44a4",
+    "published_sha256": "44e28bd36f59b8fb6d881806dd70234441b6290a0a4638191729968ea3fa44a4",
+    "normalization": "Only terminal empty lines removed for diff hygiene."
+  },
+  "probe/run.log": {
+    "original_sha256": "507573de78707079127621642885a7e78251927efe44583b972bb95edfbed119",
+    "published_sha256": "e847d29099ba843f759716621d5a364b54cc76b9221be74f76498f5ff063447a",
+    "normalization": "Only terminal empty lines removed for diff hygiene."
+  },
+  "esp-optimized-library-tests.log": {
+    "original_sha256": "9feef11563363e78c10e63efaa98faf9e088d5faccdb5da323acd35c60c1a8a4",
+    "published_sha256": "a65035a2adf77496089fafa41746bbec9727c2c436592f5af9ec36e50e0c0b6a",
+    "normalization": "Only terminal empty lines removed for diff hygiene."
+  },
+  "esp-optimized-gpu-parity.log": {
+    "original_sha256": "a4a71afd41908678b24852d1690a096c4fe2462b60ca13f759f248434d650710",
+    "published_sha256": "5909b98dd10b8ddf4b950728edb749abe233696075ae5e6718421ecc73e13d9c",
+    "normalization": "Only terminal empty lines removed for diff hygiene."
+  },
+  "esp-batched-cache-tests.log": {
+    "original_sha256": "63aafc70f5609f2aeb12900586f5afc9b3dbcb0dd54d9a0d47271e86ea71e08f",
+    "published_sha256": "a7e5900a2cb0ec20c86358f0d704ae173f5c5b3455afef298369f4f011554502",
+    "normalization": "Only terminal empty lines removed for diff hygiene."
+  },
+  "esp-batched-cache-gpu-parity.log": {
+    "original_sha256": "30f4757ebbfb6fda18ed8083f4cb22c66bc2ca6d76e2a9c1c5b099858fbd5ba4",
+    "published_sha256": "c4a4521cd1980a090a7d47ea5a8b37a502344c78c5e18b63aa1a75ec0095e49f",
+    "normalization": "Only terminal empty lines removed for diff hygiene."
+  },
+  "resident-final-route-tests.log": {
+    "original_sha256": "f216bb168b1265de7ddc24dbb3c68f8ba2143f8c9de112c56979fa9d76cd15d5",
+    "published_sha256": "788a59a07fa4b755224f8c87558f9cf1aa9eaecd4b1353b4efc3c6cb39d89b04",
+    "normalization": "Only terminal empty lines removed for diff hygiene."
+  },
+  "resident-optimized-route-tests.log": {
+    "original_sha256": "83f37698c7327bea228d6c4067ff31f8bb8a2da82af2b04b0ea9d3db59bcca82",
+    "published_sha256": "0d05800ec36e8d05600445f710839277d61e2f646bb66dc9246288d93121aa4f",
+    "normalization": "Only terminal empty lines removed for diff hygiene."
+  },
+  "djinn-cache-settings-tests.log": {
+    "original_sha256": "401f784942f07327b0521bdf80473f61b1639d5cc5ff4b9c5aae97aee197a14d",
+    "published_sha256": "add783afd4a2eedc7fa16d2755a6a1c860adb7527df48f2bd61d5e8d36ff8cf6",
+    "normalization": "Only terminal empty lines removed for diff hygiene."
+  },
+  "turnstone-inference-library-tests.log": {
+    "original_sha256": "92a78ad41b9c625c93f99d5cbad1a55d50db1b7a71313f9058f23abe8bba280d",
+    "published_sha256": "bcf740b1d5b64ce5a3020099755496d3f21d70626569586ecbaf9f54509710ee",
+    "normalization": "Only terminal empty lines removed for diff hygiene."
+  },
+  "turnstone-final-inference-tests.log": {
+    "original_sha256": "644f63c58fea5017dbd9c26552a2f77f052e0aab87abc50cfd472d6d8d187655",
+    "published_sha256": "53c459fc6f60ffac3d395185b8b9afebc6be20cb3ad50ee8338e158bf0291ad5",
+    "normalization": "Only terminal empty lines removed for diff hygiene."
+  }
+}

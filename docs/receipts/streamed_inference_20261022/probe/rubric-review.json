@@ -1,0 +1,68 @@
+{
+  "scope": "Case-specific review against the pre-frozen rubric; no general model quality claim and no change to semantic_review=unreviewed.",
+  "cases": {
+    "cross": {
+      "result": "fail",
+      "kind": "invalid_output_contract",
+      "state": "finished",
+      "tokens": 124,
+      "raw_output": "blake3:ea9d359acd73f084ec8506bba2943288978b1ad7a095b529639979de37ed5771",
+      "parser_error": "Extra data: line 1 column 351 (char 350)",
+      "admitted_claims": 0,
+      "reason": "The claims array closes after the first claim; later claim fields are outside that array and the final source fragment is outside the root object. The complete document is rejected; no partial claims are admitted.",
+      "frozen_rubric": "Three supported claims in requested capture, Knot, listener order with checked quotations."
+    },
+    "missing": {
+      "result": "fail",
+      "kind": "wrong_requested_fact_and_status",
+      "state": "finished",
+      "tokens": 175,
+      "raw_output": "blake3:67c3341e9edb9474f0b00d8a65d8011bcb6671eb02ac52d9c4e6c57f708403b5",
+      "statuses": [
+        "supported",
+        "supported",
+        "supported"
+      ],
+      "reason": "The budget question receives three supported claims about the recovery phrase, access word and listener note. It does not return the required single insufficient-evidence budget statement.",
+      "frozen_rubric": "One insufficient budget claim, no value invented and no supporting links."
+    },
+    "conflict": {
+      "result": "fail",
+      "kind": "split_conflict_without_joint_support",
+      "state": "finished",
+      "tokens": 130,
+      "raw_output": "blake3:dd1f801c23093a984f9234dcb96598c505eedbd187a8f5fa558eb3bb2e3b61de",
+      "statuses": [
+        "conflicting",
+        "conflicting"
+      ],
+      "issues": [
+        [
+          "Conflicting claim needs checked quotations from at least two distinct sources."
+        ],
+        [
+          "Conflicting claim needs checked quotations from at least two distinct sources."
+        ]
+      ],
+      "reason": "Two conflicting claims separately assert each phrase with only one source each. Each claim is flagged for lacking checked quotations from at least two distinct sources. The required single disagreement claim with both sources is absent.",
+      "frozen_rubric": "One conflicting claim explaining disagreement without choosing a winner, quoting both distinct capture sources."
+    },
+    "reduced": {
+      "result": "fail",
+      "kind": "wrong_requested_fact_and_status",
+      "state": "finished",
+      "tokens": 122,
+      "raw_output": "blake3:6e17fcefd2dd714bfab3d95fa1bde260c1b8b75d76e90760a85f66424bd8799b",
+      "statuses": [
+        "supported",
+        "supported"
+      ],
+      "reason": "Only the chosen capture and Knot passages were supplied. The model returned their two supported facts instead of one insufficient-evidence statement about the unavailable listener reminder. No listener-note passage or harbor text was supplied or returned. The café word occurs in the in-scope Knot passage; this failure is not evidence of note leakage.",
+      "frozen_rubric": "One insufficient listener-reminder claim, no supporting links and no removed note facts."
+    }
+  },
+  "headed_allowed": false,
+  "result": "fail",
+  "passed": 0,
+  "total": 4
+}
