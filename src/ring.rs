@@ -179,6 +179,13 @@ pub fn ring_of(action: &Action) -> Ring {
         | SetPhysicsMassSource(_)
         | SetPhysicsDepthSource(_)
         | ApplyPhysicsProfile(_)
+        | SetPhysicsRole(_)
+        | SetPhysicsRoleGroups(_)
+        | ApplyPhysicsMix(_)
+        | ApplyPhysicsGrouping(_)
+        | ApplyPhysicsSchedule(_)
+        | UseSingleLaw
+        | SetPhysicsSpeed(_)
         | ToggleIsometric
         | OrbitBy(_)
         | TiltBy(_)

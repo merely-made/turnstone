@@ -45,6 +45,7 @@ mod source_capture_persistence_tests;
 mod r1_source_keep_tests;
 mod fold_arms;
 mod scene_arms;
+mod physics_arms;
 #[cfg(test)]
 mod scene_tests;
 mod runtime_pool;
@@ -1234,6 +1235,10 @@ impl App {
                 | Action::SetPhysicsKindSource(_) | Action::SetPhysicsMassSource(_)
                 | Action::SetPhysicsDepthSource(_) | Action::ApplyPhysicsProfile(_)
                 | Action::TogglePhysics) => self.edit_graph_physics(action),
+            action @ (Action::SetPhysicsRole(_) | Action::SetPhysicsRoleGroups(_)
+                | Action::ApplyPhysicsMix(_) | Action::ApplyPhysicsGrouping(_)
+                | Action::ApplyPhysicsSchedule(_) | Action::UseSingleLaw
+                | Action::SetPhysicsSpeed(_)) => self.compose_graph_physics(action),
             Action::ToggleIsometric => {
                 let on = !self.graph_runtimes.is_isometric();
                 self.graph_runtimes.set_isometric(on);

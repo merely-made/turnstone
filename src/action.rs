@@ -32,6 +32,7 @@ mod command_metadata;
 pub(crate) use command_metadata::command_metadata;
 
 use crate::panes::{PaneKindId, PaneSource};
+use mere::canvas::controls::CanvasCommand;
 
 /// A short-lived secret whose debug representation never contains the value.
 #[derive(Clone, Default, PartialEq, Eq)]
@@ -306,6 +307,21 @@ pub enum Action {
     SetPhysicsDepthSource(&'static str),
     /// Apply a named physics profile (a law plus overlays), by id.
     ApplyPhysicsProfile(&'static str),
+    /// The role every item takes unless a group or the item says otherwise,
+    /// by `mere::canvas::Role::id`.
+    SetPhysicsRole(&'static str),
+    /// Which groups channel role overrides read, by kind-source id.
+    SetPhysicsRoleGroups(&'static str),
+    /// Replace the law with one bounded two-law force mix.
+    ApplyPhysicsMix(mere::canvas::physics_controls::TwoLawMix),
+    /// Replace the law with one bounded grouped composition.
+    ApplyPhysicsGrouping(mere::canvas::physics_controls::TwoLawGrouping),
+    /// Replace the law with a two-stage schedule and start it.
+    ApplyPhysicsSchedule(mere::canvas::physics_controls::TwoStageSchedule),
+    /// Return from a composition to the single law the canvas is running.
+    UseSingleLaw,
+    /// Run the simulation at a speed preset, by `SPEED_PRESETS` id.
+    SetPhysicsSpeed(&'static str),
     /// Toggle the isometric (2.5D foreshortened) view.
     ToggleIsometric,
     /// Orbit the view (yaw) by radians.
@@ -736,14 +752,14 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Refresh feeds", Action::RefreshFeeds),
         ("Mark feed entry read", Action::MarkFocusedFeedEntryRead),
         ("Reseed layout", Action::ReseedLayout),
-        ("Reset to seed", Action::ResetToSeed),
-        ("Set seed", Action::SetSeed),
-        ("Restore recipe seed", Action::RestoreRecipeSeed),
-        ("Foreground pin", Action::ToggleForegroundPin),
-        ("Dismiss retained", Action::DismissRetained),
-        ("Grow tiles", Action::GrowTiles),
-        ("Shrink tiles", Action::ShrinkTiles),
-        ("Territory", Action::ToggleTerritory),
+        shared(Action::ResetToSeed),
+        shared(Action::SetSeed),
+        shared(Action::RestoreRecipeSeed),
+        shared(Action::ToggleForegroundPin),
+        shared(Action::DismissRetained),
+        shared(Action::GrowTiles),
+        shared(Action::ShrinkTiles),
+        shared(Action::ToggleTerritory),
         shared(Action::FitView),
         shared(Action::FoldSelection),
         shared(Action::ExpandFold),
@@ -878,11 +894,62 @@ pub fn palette_actions() -> Vec<(String, Action)> {
     for (id, label) in mere::canvas::CANVAS_PHYSICS_DEPTH_SOURCES {
         physics.push((format!("Depth: {label}"), Action::SetPhysicsDepthSource(id)));
     }
+    for role in mere::canvas::Role::ALL {
+        physics.push((
+            format!("Role: {}", role.label()),
+            Action::SetPhysicsRole(role.id()),
+        ));
+    }
+    for (id, label) in mere::canvas::CANVAS_PHYSICS_KIND_SOURCES {
+        physics.push((
+            format!("Role groups: {label}"),
+            Action::SetPhysicsRoleGroups(id),
+        ));
+    }
+    physics.push(("Physics: Use single law".into(), Action::UseSingleLaw));
+    for (id, label) in mere::canvas::physics_controls::SPEED_PRESETS {
+        physics.push((format!("Speed: {label}"), Action::SetPhysicsSpeed(id)));
+    }
     for (offset, row) in physics.into_iter().enumerate() {
         rows.insert(after_layout + offset, row);
     }
 
     rows
+}
+
+impl Action {
+    /// The canvas verb this action carries out: one table for the shell's
+    /// arms and the Arrange pane's buttons, labelled by `CanvasCommand::label`.
+    pub fn canvas_verb(&self) -> Option<CanvasCommand> {
+        Some(match self {
+            Self::ResetToSeed => CanvasCommand::ResetToSeed,
+            Self::SetSeed => CanvasCommand::SetSeed,
+            Self::RestoreRecipeSeed => CanvasCommand::RestoreRecipeSeed,
+            Self::ToggleForegroundPin => CanvasCommand::ToggleForegroundPin,
+            Self::DismissRetained => CanvasCommand::DismissRetained,
+            Self::GrowTiles => CanvasCommand::GrowTiles,
+            Self::ShrinkTiles => CanvasCommand::ShrinkTiles,
+            Self::ToggleTerritory => CanvasCommand::ToggleTerritory,
+            _ => return None,
+        })
+    }
+
+    /// The action for a canvas verb Turnstone offers, the inverse of
+    /// [`Action::canvas_verb`].
+    pub fn from_canvas_verb(verb: CanvasCommand) -> Option<Self> {
+        [
+            Self::ResetToSeed,
+            Self::SetSeed,
+            Self::RestoreRecipeSeed,
+            Self::ToggleForegroundPin,
+            Self::DismissRetained,
+            Self::GrowTiles,
+            Self::ShrinkTiles,
+            Self::ToggleTerritory,
+        ]
+        .into_iter()
+        .find(|action| action.canvas_verb() == Some(verb))
+    }
 }
 
 /// The stack's shared command id for an action Turnstone offers under one
@@ -903,6 +970,14 @@ pub fn shared_command_id(action: &Action) -> Option<&'static str> {
         Action::TogglePhysics => ids::PHYSICS_TOGGLE,
         Action::DeleteFocusedNode => ids::NODE_DELETE,
         Action::SaveSession => ids::SESSION_SAVE,
+        Action::ResetToSeed => ids::ARRANGEMENT_RESET_TO_SEED,
+        Action::SetSeed => ids::ARRANGEMENT_SET_SEED,
+        Action::RestoreRecipeSeed => ids::ARRANGEMENT_RESTORE_RECIPE_SEED,
+        Action::DismissRetained => ids::ARRANGEMENT_DISMISS_RETAINED,
+        Action::ToggleForegroundPin => ids::NODE_FOREGROUND_PIN,
+        Action::GrowTiles => ids::TILE_GROW,
+        Action::ShrinkTiles => ids::TILE_SHRINK,
+        Action::ToggleTerritory => ids::VIEW_TERRITORY,
         Action::SummonPane(kind) => match kind.as_str() {
             crate::panes::kind::SETTINGS => ids::PANE_SETTINGS,
             crate::panes::kind::TRAIL => ids::PANE_TRAIL,
