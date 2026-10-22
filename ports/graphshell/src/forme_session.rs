@@ -429,7 +429,7 @@ impl FormeSession {
             SaveKind::Reading(access, value) => {
                 value.validate()?;
                 if next.workspace.tile_for_member(access).is_none() { return Err("Reading projection is no longer present".into()); }
-                next.workspace.reading_preferences.insert(access, value);
+                next.workspace.reading_preferences.set(access, value);
             },
             SaveKind::Visibility => next.workspace.visible = !next.workspace.visible,
             SaveKind::InspectorSource(source) => next.workspace.inspector_source = source,
@@ -462,7 +462,7 @@ impl FormeSession {
         result?;
         match proposal.kind {
             SaveKind::Reading(access, value) => {
-                if let Some(draft) = &mut self.draft { draft.workspace.reading_preferences.insert(access, value); }
+                if let Some(draft) = &mut self.draft { draft.workspace.reading_preferences.set(access, value); }
             },
             SaveKind::Visibility => {
                 if let Some(draft) = &mut self.draft {
@@ -689,11 +689,11 @@ mod tests {
             let layout=LayoutState::capture(session.view());
             save(&mut session,backend.clone(),SaveKind::Reading(a,preferences)).await;
             assert!(session.editing()); assert_eq!(LayoutState::capture(session.view()),layout);
-            assert_eq!(session.view().reading_preferences.get(&a),Some(&preferences));
+            assert_eq!(session.view().reading_preferences.get(&a),preferences);
             session.discard().unwrap();
             let cold=FormeSession::load(backend.clone(),owner,&graph).await.unwrap();
-            assert_eq!(cold.view().reading_preferences.get(&a),Some(&preferences));
-            assert!(!cold.view().reading_preferences.contains_key(&b));
+            assert_eq!(cold.view().reading_preferences.get(&a),preferences);
+            assert!(!cold.view().reading_preferences.contains(&b));
             assert!(!cold.can_undo(),"reading preference writes are not layout gestures");
             let original=serde_json::to_value(session.committed()).unwrap();
             preferences.step_text(true);

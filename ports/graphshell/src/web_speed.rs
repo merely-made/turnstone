@@ -19,24 +19,10 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 pub(crate) use graphshell::frame_budget::{FrameBudget, Period};
+use mere::canvas::physics_controls::{MAX_SPEED, speed_label};
 use mere::canvas::{Canvas, DEFAULT_BUDGET_SHARE, ElapsedStepConfig, Speed};
 
 use crate::web_timing::now_ms;
-
-/// The presets, as option value and label; the default is 1x. Max is as fast
-/// as the budget allows.
-pub(crate) const PRESETS: [(&str, &str); 8] = [
-    ("0.2", "0.2x"),
-    ("0.5", "0.5x"),
-    ("1", "1x"),
-    ("2", "2x"),
-    ("5", "5x"),
-    ("10", "10x"),
-    ("50", "50x"),
-    (MAX_VALUE, "Max"),
-];
-pub(crate) const DEFAULT_PRESET: usize = 2;
-const MAX_VALUE: &str = "max";
 
 /// Time the gate keeps past the forecast tick unless the page asks
 /// otherwise, in clock steps: two. A tick and its forecast are both read in
@@ -121,7 +107,7 @@ pub(crate) fn options() -> Result<SpeedOptions, String> {
     let params =
         web_sys::UrlSearchParams::new_with_str(&search).map_err(|_| "invalid page options")?;
     let speed = match params.get("physics_speed").as_deref() {
-        Some(MAX_VALUE) => Speed::UNCAPPED,
+        Some(MAX_SPEED) => Speed::UNCAPPED,
         Some(value) => Speed::from_factor(value.parse().map_err(|_| "invalid physics_speed")?),
         None => Speed::REAL_TIME,
     };
@@ -290,38 +276,10 @@ pub(crate) fn apply(canvas: &mut Canvas, options: SpeedOptions, budget: &FrameBu
     canvas.set_physics_step_budget(Some(budget.budget()));
 }
 
-/// The preset showing the canvas's speed (a page option may name any speed:
-/// the nearest).
-pub(crate) fn preset_of(canvas: &Canvas) -> usize {
-    let speed = canvas.physics_speed();
-    if speed == Speed::UNCAPPED {
-        return PRESETS.len() - 1;
-    }
-    let factor = speed.factor();
-    PRESETS[..PRESETS.len() - 1]
-        .iter()
-        .enumerate()
-        .min_by(|(_, (a, _)), (_, (b, _))| {
-            let distance =
-                |value: &str| (value.parse::<f32>().unwrap_or(1.0).ln() - factor.ln()).abs();
-            distance(a).total_cmp(&distance(b))
-        })
-        .map_or(DEFAULT_PRESET, |(index, _)| index)
-}
-
-/// A speed as the pages print it: "2x", "0.2x", "3.7x", "Max".
-pub(crate) fn label(speed: Speed) -> String {
-    if speed == Speed::UNCAPPED {
-        return "Max".into();
-    }
-    let text = format!("{:.3}", speed.factor());
-    format!("{}x", text.trim_end_matches('0').trim_end_matches('.'))
-}
-
 /// A speed as the receipts read it: the factor, or "max".
 pub(crate) fn field(speed: Speed) -> String {
     if speed == Speed::UNCAPPED {
-        MAX_VALUE.into()
+        MAX_SPEED.into()
     } else {
         speed.factor().to_string()
     }
@@ -329,18 +287,10 @@ pub(crate) fn field(speed: Speed) -> String {
 
 /// The line a remote board shows: its speed, the viewer's own dial.
 pub(crate) fn board_line(speed: Speed) -> String {
-    format!("Board speed {}, from your Speed setting", label(speed))
-}
-
-/// Set preset `index`; the status line the page shows.
-pub(crate) fn choose(canvas: &mut Canvas, index: usize) -> String {
-    let (value, label) = PRESETS[index.min(PRESETS.len() - 1)];
-    canvas.set_physics_speed(if value == MAX_VALUE {
-        Speed::UNCAPPED
-    } else {
-        Speed::from_factor(value.parse().unwrap_or(1.0))
-    });
-    format!("Speed set to {label}")
+    format!(
+        "Board speed {}, from your Speed setting",
+        speed_label(speed)
+    )
 }
 
 /// The speed reached while the layout moves, and whether the budget held it.

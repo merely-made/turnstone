@@ -475,7 +475,7 @@ pub(super) fn view(page: &TreePage) -> Option<Child> {
             (!browsing).then_some(choice),
             (!browsing).then(|| button("Close commands", |page: &mut TreePage, _| close(page))),
         )).attr("class", "command-actions"),
-        el("p", if browsing { format!("Commands {}–{} of {}", if count == 0 { 0 } else { start + 1 }, end, count) } else { format!("Wheel: {} · {}", page.shared.wheel_mode.get().name(), page.commands.last) }).attr("role", "status"),
+        status_note("", if browsing { format!("Commands {}–{} of {}", if count == 0 { 0 } else { start + 1 }, end, count) } else { format!("Wheel: {} · {}", page.shared.wheel_mode.get().name(), page.commands.last) }),
         (!browsing).then(|| el("p", "Menu choices apply while this viewer is open.")),
     )).attr("class", "tree-command-menu").attr("role", "dialog").attr("aria-label", "Graph commands")
         .attr("style", format!("position:absolute;left:{left}px;top:{top}px;width:{width}px;max-height:{height}px;overflow-y:auto;")), |page: &mut TreePage, event: cambium::KeyEvent| {

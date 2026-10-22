@@ -38,7 +38,7 @@ pub(super) fn controls(page: &TreePage) -> Option<Child> {
     children.push(Box::new(
         el("nav", breadcrumbs).attr("aria-label", "Graph location"),
     ));
-    children.push(Box::new(el("p", format!("{} visible of {} disclosed occurrences; {} external context items. Group changes pause physics and preserve coordinates.", projection.visible.len(), grouped.total_occurrences(), projection.boundary.len())).attr("role", "status")));
+    children.push(Box::new(status_note("", format!("{} visible of {} disclosed occurrences; {} external context items. Group changes pause physics and preserve coordinates.", projection.visible.len(), grouped.total_occurrences(), projection.boundary.len()))));
     let mut rows: Vec<Child> = Vec::new();
     for id in grouped
         .hierarchy
@@ -66,17 +66,13 @@ pub(super) fn controls(page: &TreePage) -> Option<Child> {
         );
         let toggle = (!entered).then(|| {
             Box::new(
-                button(
-                    format!("{} {label}", if expanded { "Collapse" } else { "Expand" }),
-                    move |page: &mut TreePage, _| {
+                disclosure_trigger(format!("{} {label}", if expanded { "Collapse" } else { "Expand" }), expanded, move |page: &mut TreePage| {
                         page.change_group(|state| {
                             if !state.expanded.remove(&id_for_toggle) {
                                 state.expanded.insert(id_for_toggle.clone());
                             }
                         });
-                    },
-                )
-                .attr("aria-expanded", if expanded { "true" } else { "false" }),
+                    }),
             ) as Child
         });
         let enter = (!entered).then(|| {
@@ -91,24 +87,13 @@ pub(super) fn controls(page: &TreePage) -> Option<Child> {
     }
     children.push(Box::new(el("ul", rows).attr("role", "list")));
     children.push(Box::new(
-        button(
-            if page.grouping_evidence {
+        disclosure_trigger(if page.grouping_evidence {
                 "Hide relationship evidence"
             } else {
                 "Show relationship evidence"
-            },
-            |page: &mut TreePage, _| {
+            }, page.grouping_evidence, |page: &mut TreePage| {
                 page.grouping_evidence = !page.grouping_evidence;
-            },
-        )
-        .attr(
-            "aria-expanded",
-            if page.grouping_evidence {
-                "true"
-            } else {
-                "false"
-            },
-        ),
+            }),
     ));
     if page.grouping_evidence {
         for (id, witnesses) in &projection.internal_relationships {
