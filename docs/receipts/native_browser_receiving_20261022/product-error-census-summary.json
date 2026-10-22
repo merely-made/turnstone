@@ -1,0 +1,136 @@
+{
+  "schema": "turnstone-sdk-compile-error-census-summary-v1",
+  "census": "docs/receipts/native_browser_receiving_20261022/product-error-census.json",
+  "census_sha256": "35055a580bd11ea6f4ae51eea02ad0ed78cef1d51342399d8809f3befc03378c",
+  "diagnostic_count": 241,
+  "by_file": [
+    {
+      "file": "src/a11y.rs",
+      "count": 51
+    },
+    {
+      "file": "src/shell/document_a11y.rs",
+      "count": 29
+    },
+    {
+      "file": "src/panes/projection.rs",
+      "count": 22
+    },
+    {
+      "file": "src/foreign_a11y.rs",
+      "count": 18
+    },
+    {
+      "file": "src/shell/mod.rs",
+      "count": 17
+    },
+    {
+      "file": "src/contributed_a11y.rs",
+      "count": 17
+    },
+    {
+      "file": "src/frame_a11y.rs",
+      "count": 12
+    },
+    {
+      "file": "src/shell/window_a11y.rs",
+      "count": 11
+    },
+    {
+      "file": "src/shell/a11y_bridge.rs",
+      "count": 10
+    },
+    {
+      "file": "src/shell/lens_tests.rs",
+      "count": 10
+    },
+    {
+      "file": "src/window_projection.rs",
+      "count": 10
+    },
+    {
+      "file": "src/arrange_pane.rs",
+      "count": 6
+    },
+    {
+      "file": "src/swatch_pane/mod.rs",
+      "count": 5
+    },
+    {
+      "file": "src/shell/drive.rs",
+      "count": 4
+    },
+    {
+      "file": "src/shell/lens.rs",
+      "count": 4
+    },
+    {
+      "file": "src/shell/contributed_window_a11y_tests.rs",
+      "count": 3
+    },
+    {
+      "file": "src/shell/foreign_a11y.rs",
+      "count": 3
+    },
+    {
+      "file": "src/app/palette.rs",
+      "count": 3
+    },
+    {
+      "file": "src/panes/tests.rs",
+      "count": 2
+    },
+    {
+      "file": "src/ui.rs",
+      "count": 1
+    },
+    {
+      "file": "src/inference_service.rs",
+      "count": 1
+    },
+    {
+      "file": "src/app/fixtures.rs",
+      "count": 1
+    },
+    {
+      "file": "C:/Users/mark_/.rustup/toolchains/1.99.1-x86_64-pc-windows-msvc/lib/rustlib/src/rust/library/core/src/macros/mod.rs",
+      "count": 1
+    }
+  ],
+  "by_code": [
+    {
+      "code": "E0308",
+      "count": 213
+    },
+    {
+      "code": "E0277",
+      "count": 19
+    },
+    {
+      "code": "E0053",
+      "count": 3
+    },
+    {
+      "code": "E0271",
+      "count": 2
+    },
+    {
+      "code": "E0004",
+      "count": 1
+    },
+    {
+      "code": "E0061",
+      "count": 1
+    },
+    {
+      "code": "E0063",
+      "count": 1
+    },
+    {
+      "code": "E0559",
+      "count": 1
+    }
+  ],
+  "owned_receiving_diagnostics": [],
+  "note": "Recomputed from the saved diagnostic objects because the original OrderedDictionary grouping did not resolve keys. Full diagnostic entries remain valid and unchanged. Parent-approved actor and accessibility compatibility edits began during this diagnostic run; this is an error inventory rather than frozen-source qualification."
+}

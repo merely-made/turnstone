@@ -100,7 +100,16 @@ set.
   records published source and passing Windows/Linux source qualification.
   Its browser-sidecar scope proposal separates local/attached session authority
   from PWA/extension capabilities; native SC/session/S8 ownership and stage
-  order remain unchanged.
+  order remain unchanged. The October 22 receiving continuation commits typed
+  Scroll MIME replacement, shared explicit-Submit guard adoption and real native
+  Micron controller tests. Coherent SDK adoption and 10 receiving/local-source
+  tests pass. The first governed Djinn probe exposed discarded native close
+  packets; graceful cleanup and stricter sender-completion checks now pass the
+  focused tests and live governed-host retry. Exact native bytes, the 128 KiB
+  Resource, retained controller and native link navigation are qualified by the
+  fixed consumer executable. Client limits and headed/physical evidence retain
+  their separate gates; incidental upstream HTTP policy uptake is recorded
+  independently.
 - [Page lifecycle](2026-09-06_page_lifecycle_plan.md): one page across
   visiting, keeping, capturing, annotating, collecting, sharing, revision
   and deletion; rulings L1-L7 join the surfaces, capture and recycle bin
