@@ -30,26 +30,16 @@ pub enum ReadAction {
     Command(ReadTarget, cambium::ReadCommand),
     Query(ReadTarget, cambium::TextInput),
 }
-#[derive(Clone, Default)]
-pub struct FindUi {
-    pub open: bool,
-    pub input: cambium::TextInput,
-    pub status: String,
-}
 #[derive(Default)]
 pub struct ReadingState {
-    preferences: BTreeMap<ReadTarget, tabard::ReadingPreferences>,
-    pub find: BTreeMap<ReadTarget, FindUi>,
+    preferences: tabard::ReadingProjections<ReadTarget>,
+    pub find: BTreeMap<ReadTarget, cambium::ReadFind>,
     pub load_error: Option<String>,
 }
-#[derive(Serialize, Deserialize)]
-struct Choice {
-    target: ReadTarget,
-    preferences: tabard::ReadingPreferences,
-}
+const FILE: &str = "reading-projections.json";
 impl ReadingState {
     pub fn preferences(&self, target: ReadTarget) -> tabard::ReadingPreferences {
-        self.preferences.get(&target).copied().unwrap_or_default()
+        self.preferences.get(&target)
     }
     pub(crate) fn for_surface(
         &self,
@@ -62,28 +52,12 @@ impl ReadingState {
             .unwrap_or_default()
     }
     pub fn load(root: &Path) -> Self {
-        let result = (|| -> Result<BTreeMap<ReadTarget, tabard::ReadingPreferences>, String> {
-            let bytes = match std::fs::read(root.join("reading-projections.json")) {
-                Ok(bytes) => bytes,
-                Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Default::default()),
-                Err(e) => return Err(e.to_string()),
-            };
-            if bytes.len() > 256 * 1024 {
-                return Err("Reading preferences exceed size limit".into());
-            }
-            let choices: Vec<Choice> = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
-            if choices.len() > 1024 {
-                return Err("Too many reading projections".into());
-            }
-            let mut map = BTreeMap::new();
-            for choice in choices {
-                choice.preferences.validate()?;
-                if map.insert(choice.target, choice.preferences).is_some() {
-                    return Err("Duplicate reading projection".into());
-                }
-            }
-            Ok(map)
-        })();
+        let result = match std::fs::read(root.join(FILE)) {
+            Ok(bytes) => tabard::ReadingProjections::from_json(&bytes)
+                .and_then(|loaded| loaded.validate().map(|()| loaded)),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(Default::default()),
+            Err(e) => Err(e.to_string()),
+        };
         match result {
             Ok(preferences) => Self {
                 preferences,
@@ -99,19 +73,11 @@ impl ReadingState {
         if let Some(error) = &self.load_error {
             return Err(format!("Reading settings were not loaded: {error}"));
         }
-        let choices: Vec<_> = self
-            .preferences
-            .iter()
-            .map(|(target, preferences)| Choice {
-                target: *target,
-                preferences: *preferences,
-            })
-            .collect();
-        let bytes = serde_json::to_vec_pretty(&choices).map_err(|e| e.to_string())?;
+        let bytes = self.preferences.to_json()?;
         std::fs::create_dir_all(root).map_err(|e| e.to_string())?;
         let temp = root.join(format!("reading-projections.{}.tmp", std::process::id()));
         std::fs::write(&temp, bytes).map_err(|e| e.to_string())?;
-        std::fs::rename(temp, root.join("reading-projections.json")).map_err(|e| e.to_string())
+        std::fs::rename(temp, root.join(FILE)).map_err(|e| e.to_string())
     }
 }
 impl App {
@@ -162,10 +128,8 @@ impl App {
             .filter(|ui| ui.open && ui.input.text() == query)
         {
             ui.status = match result {
-                Ok(_) if query.is_empty() => "Type to find".into(),
-                Ok(state) if state.count == 0 => "No matches".into(),
-                Ok(state) => format!("{} of {}", state.current.map_or(0, |i| i + 1), state.count),
-                Err(error) => error,
+                Ok(state) => cambium::find_status(query.is_empty(), false, state.count, state.current),
+                Err(error) => cambium::find_failed(&error),
             };
         }
         vec![Effect::Redraw]
@@ -234,11 +198,7 @@ impl App {
         if self.reading.load_error.is_some() {
             return vec![Effect::Redraw];
         }
-        if preferences == Default::default() {
-            self.reading.preferences.remove(&target);
-        } else {
-            self.reading.preferences.insert(target, preferences);
-        }
+        self.reading.preferences.set(target, preferences);
         vec![Effect::SaveReadingPreferences, Effect::Redraw]
     }
 }
@@ -261,7 +221,7 @@ mod tests {
         let mut value = state.preferences(a);
         value.step_text(true);
         value.step_column(false);
-        state.preferences.insert(a, value);
+        state.preferences.set(a, value);
         state.find.entry(a).or_default().open = true;
         state.save(dir.path()).unwrap();
         let cold = ReadingState::load(dir.path());

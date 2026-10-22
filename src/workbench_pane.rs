@@ -64,7 +64,7 @@ struct CellView {
     preferences: tabard::ReadingPreferences,
     text_controls: bool,
     find_enabled: bool,
-    find: crate::reading_view::FindUi,
+    find: cambium::ReadFind,
 }
 
 struct WorkbenchState {
@@ -161,33 +161,15 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
 fn reading_toolbar(state: &WorkbenchState, index: usize) -> WbView {
     let cell = &state.cells[index];
     let Some(target) = cell.target else { return Box::new(el("div", ())); };
-    let query = cambium::request_focus(cambium::on_key(
-        el("div", cambium::caret_field_children::<WorkbenchState, ()>(&cell.find.input, &[]))
-            .attr("role", "textbox").attr("aria-label", "Find text in reading")
-            .attr("class", "read-query").attr("data-cambium-text-value", cell.find.input.text())
-            .attr("style", cambium::SINGLE_LINE_FIELD_STYLE),
-        move |state: &mut WorkbenchState, event: cambium::KeyEvent| {
-            use cambium::{Key, NamedKey, ReadCommand};
-            let action = match event.key {
-                Key::Named(NamedKey::Enter) => crate::reading_view::ReadAction::Command(target,
-                    if event.mods.shift {ReadCommand::Previous} else {ReadCommand::Next}),
-                Key::Named(NamedKey::Escape) => crate::reading_view::ReadAction::Command(target, ReadCommand::CloseFind),
-                _ => {
-                    state.cells[index].find.input.apply_key(&event, cambium::TextFieldMode::SingleLine);
-                    crate::reading_view::ReadAction::Query(target, state.cells[index].find.input.clone())
-                },
+    let find = cell.find_enabled.then_some(&cell.find);
+    cambium::read_toolbar(cell.preferences.text_size, cell.preferences.column_em, cell.text_controls, find,
+        move |state: &mut WorkbenchState, event| {
+            use crate::reading_view::ReadAction;
+            let action = match event {
+                cambium::ReadEvent::Command(command) => ReadAction::Command(target, command),
+                cambium::ReadEvent::Query(input) => ReadAction::Query(target, input),
             };
             state.read_actions.push(crate::action::Action::Reading(action));
-            event.prevent_default(); event.stop_propagation();
-        },
-    ), cell.find.open);
-    let field: WbView = Box::new(el("div", (
-        query,
-        el("span", cell.find.status.clone()).attr("class", "read-result").attr("role", "status").attr("aria-live", "polite"),
-    )).attr("class", "read-find-input"));
-    cambium::read_toolbar(cell.preferences.text_size, cell.preferences.column_em, cell.text_controls, cell.find.open && cell.find_enabled, cell.find_enabled.then_some(field),
-        move |state: &mut WorkbenchState, command| {
-            state.read_actions.push(crate::action::Action::Reading(crate::reading_view::ReadAction::Command(target,command)));
         })
 }
 
