@@ -96,9 +96,7 @@ pub(super) fn view(page: &TreePage) -> Option<Child> {
                 .borrow()
                 .graph()
                 .get_node_by_id(id)
-                .map(|(key, _)| {
-                    mere::navigation::document_label(page.shared.canvas.borrow().graph(), key)
-                })
+                .map(|(key, _)| page.shared.canvas.borrow().graph().node_display_label(key))
         })
         .unwrap_or_else(|| "Source unavailable".into());
     let current = ctx.map(|c| c.rule).unwrap_or_default();
