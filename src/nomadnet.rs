@@ -252,8 +252,19 @@ pub async fn fetch_page(address: &str) -> Result<crate::action::FetchedPage, Str
         .unwrap_or(4 * 1024 * 1024)
         .clamp(1, 64 * 1024 * 1024);
 
+    fetch_page_on_interface(address, tcp, Duration::from_secs(timeout), max_page_bytes).await
+}
+
+/// The ordinary page operation with caller-supplied interface settings. The
+/// environment entry point above retains its existing validation and policy.
+pub(crate) async fn fetch_page_on_interface(
+    address: NomadNetAddress,
+    tcp: SocketAddr,
+    timeout: Duration,
+    max_page_bytes: usize,
+) -> Result<crate::action::FetchedPage, String> {
     let destination = address.destination();
-    let result = tokio::time::timeout(Duration::from_secs(timeout), async {
+    let result = tokio::time::timeout(timeout, async {
         // Endpoint owns its interface and its Drop closes it. Keeping the full
         // operation in this future makes cancellation and the host deadline
         // release that transport even during connect or discovery.
@@ -279,22 +290,26 @@ pub async fn fetch_page(address: &str) -> Result<crate::action::FetchedPage, Str
         let config = retinue::nomadnet::FetchPageConfig {
             max_page_bytes,
             transfer: retinue::endpoint::ResourceTransferConfig {
-                timeout: Duration::from_secs(timeout),
+                timeout,
                 ..retinue::endpoint::ResourceTransferConfig::default()
             },
         };
-        retinue::nomadnet::fetch_page_with_config(
+        let result = retinue::nomadnet::fetch_page_with_config(
             &endpoint,
             destination,
             peer,
             address.path().as_bytes(),
             config,
         )
-        .await
-        .map_err(|error| format!("NomadNet page request failed: {error}"))
+        .await;
+        // The completed request drops its session, queuing its Resource proof
+        // and link close. Drain them before Endpoint::Drop aborts the writer;
+        // the existing outer request deadline still bounds this shutdown.
+        endpoint.shutdown(timeout).await;
+        result.map_err(|error| format!("NomadNet page request failed: {error}"))
     })
     .await
-    .map_err(|_| format!("NomadNet page request timed out after {timeout}s"))?;
+    .map_err(|_| format!("NomadNet page request timed out after {}s", timeout.as_secs()))?;
     let bytes = result?;
     Ok(crate::action::FetchedPage {
         content_type: None,

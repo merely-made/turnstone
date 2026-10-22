@@ -339,6 +339,7 @@ impl Shell {
                 rect.w.round().max(1.0) as u32,
                 rect.h.round().max(1.0) as u32,
             );
+            let mut scale = 1.0_f32;
             let (scene, clear) = match surface.kind {
                 crate::surface::SurfaceKind::Graph(pane) => {
                     let (scene, anim) = self
@@ -348,7 +349,8 @@ impl Shell {
                     self.save_ready_graph_scene(pane);
                     animating |= anim;
                     animating |= self.app.resolve_pending_images() > 0;
-                    (scene, wgpu::Color::WHITE)
+                    scale = self.app.pane_layout_scale(pane);
+                    (scene, crate::map_theme::clear_color(self.app.map_theme()))
                 },
                 crate::surface::SurfaceKind::Pane(pid) => {
                     if self
@@ -429,6 +431,7 @@ impl Shell {
                 } else {
                     (rw, rh)
                 },
+                scale,
                 scene,
                 clear,
             }));
@@ -448,6 +451,7 @@ impl Shell {
                 kind: crate::surface::SurfaceKind::Chrome,
                 placement: ExternalTexturePlacement::new([0.0, 0.0, lw as f32, lh as f32]),
                 dims: (lw, lh),
+                scale: 1.0,
                 scene,
                 clear: wgpu::Color::TRANSPARENT,
             }));
@@ -483,7 +487,7 @@ impl Shell {
                                 scene.dims.0,
                                 scene.dims.1,
                                 ColorLoad::Clear(scene.clear),
-                                1.0,
+                                scene.scale,
                             )
                             .map_err(|failure| (scene.id, failure))?;
                         let raster = texture.clone();

@@ -130,7 +130,16 @@ set.
   records published source and passing Windows/Linux source qualification.
   Its browser-sidecar scope proposal separates local/attached session authority
   from PWA/extension capabilities; native SC/session/S8 ownership and stage
-  order remain unchanged.
+  order remain unchanged. The October 22 receiving continuation commits typed
+  Scroll MIME replacement, shared explicit-Submit guard adoption and real native
+  Micron controller tests. Its final port preserves current upstream `8eebb5a3`
+  reading/navigation/command behavior and changes only receiving files plus 62
+  Mere source pins. All 70 focused tests and the governed Djinn process probe
+  pass on the integrated executable, covering exact native bytes, the 128 KiB
+  Resource, retained controller and native link navigation. Old isolated SDK
+  adoption and failed process receipts remain historical evidence. Client limits
+  and headed/physical evidence retain their separate gates; HTTP policy is
+  unchanged relative to the current upstream base.
 - [Page lifecycle](2026-09-06_page_lifecycle_plan.md): one page across
   visiting, keeping, capturing, annotating, collecting, sharing, revision
   and deletion; rulings L1-L7 join the surfaces, capture and recycle bin

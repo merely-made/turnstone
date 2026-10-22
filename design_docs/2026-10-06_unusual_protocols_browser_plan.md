@@ -1,11 +1,15 @@
 # Unusual-protocols browser plan
 
 **Date:** 2026-10-06
-**Status (2026-10-10): in progress.** The resource-family handoff and shared
-controller pumping are qualified at Turnstone `25f85bd`. The current pass
-implements SC5/S8 live document accessibility, Graphshell's five public mounts,
-and SC6 retained content with shared input and placements. See the latest
-continuation for source owners and evidence boundaries. The U1–U17 and AC1–AC6
+**Status (2026-10-22): in progress.** The native receiving continuation below is
+qualified on current upstream `8eebb5a3` plus receiving source/lock `a622c960`:
+70 focused native tests and the governed-host process probe pass. The earlier
+`9c842`/`cab743c1` checkpoint remains historical evidence, separate from this
+current-upstream port.
+The earlier resource-family handoff and shared controller pumping are qualified
+at Turnstone `25f85bd`. SC5/S8 live document accessibility, Graphshell's five
+public mounts and SC6 retained content retain their existing continuations and
+source owners. The U1–U17 and AC1–AC6
 rulings remain recorded in §7; S8's physical assistive-technology receipts
 remain separate gates.
 
@@ -2047,6 +2051,128 @@ tests establish the final supplier or consumer release gates.
 Physical free disk space was 570,935,758,848 bytes at the latest check, above the
 user's 500,000,000,000-byte cleanup threshold. No deletion was performed. Builds
 continue serially in the existing shared target cache.
+
+### 2026-10-22, native receiving continuation
+
+This slice connects the existing browser receiving paths to the newly governed
+Djinn host. Native Micron fetching already exists in Turnstone; local `.mu`
+source tests and the September stock-node receipt remain separate evidence.
+The new receiving fixture carries actual native page bytes through ordinary
+request correlation, the App reducer, the standard registered Micron engine,
+controller construction, a retained frame and a qualified same-node link into
+the next native fetch. Its optional cross-process gate reads a private fixture
+configuration supplied while the governed resident is live. It qualifies the
+native product controller boundary, with no window, GPU or headed claim.
+
+The existing page operation now has an internal explicit-interface entry point
+so tests need not mutate process environment. The public entry point retains
+its address-validation order, launch settings, deadlines, defaults and caps.
+The local native regression includes exact CRLF/Unicode bytes, a Resource-sized
+body, Reload, Stop and stale completion. Tests invoke the ordinary fetch helper
+and then supply its typed outcome through the product adapter. Stop checks
+request-correlation and late-answer rejection; actor command dispatch, concurrent
+actor behavior and transport cancellation remain separately qualified. An empty
+native binary response remains
+an ordinary empty document: the response cannot distinguish a legitimate empty
+page from the host's refusal and supplies no invented unavailable/revoked status.
+Independent Python/Go readers, public interfaces and constrained radio remain
+separate qualification gates.
+
+Scroll's supplied body MIME must reach both initial controller construction and
+live response replacement. The shared session repair preserves that input;
+Turnstone's replacement boundary supplies the current held response MIME rather
+than guessing from the address. The new product regression checks a level-five
+heading and a `Citation` predicate, which distinguish native Scroll grammar from
+the ordinary heading/link presentation exercised by the older route receipt.
+It also changes the response MIME to prove that old grammar is not retained.
+Rich Scroll response headers, projected transport trust and client-certificate
+UI remain separate work.
+
+The receiving SDK also supplies the explicit-Submit ruling: ordinary Titan
+reads and Spartan reads with any query must fail before transport contact,
+including redirects in the shared fetcher. The product control checks ordinary
+fetching and registered body-less session loading without contacting its local
+listener. Explicit Submit remains its existing operation.
+
+Final qualification uses current upstream `8eebb5a3`, retaining its 41 commits
+after the initially cached `9c842` baseline, including projection-owned Read
+controls, navigation and command metadata. Only the four receiving files were
+ported as `934494bf` and `1e5c7f47`; source and lock are committed at `a622c960`.
+The manifest is unchanged. The [integrated SDK
+receipt](../docs/receipts/native_browser_receiving_20261022/integrated-sdk.json)
+records only 62 Mere source identifiers changing in the lock from `a483…` to
+published `af5c3ba85`; versions, registry entries, dependency tables and other
+supplier pins remain those of current upstream. The old checkpoint's SDK
+compatibility commit `6e5da6dc` was not applied to this port.
+
+The [integrated build
+receipt](../docs/receipts/native_browser_receiving_20261022/product-integrated-build.json)
+records unchanged source hashes, lock SHA256 `521d344e…`, zero compiler errors
+and executable SHA256 `4ef1b302…`. The [integrated focused
+receipt](../docs/receipts/native_browser_receiving_20261022/product-integrated-tests.json)
+records 70 passing tests across 15 filters: 3 receiving, 7 existing local
+Micron, and 60 current accessibility, command, reading, navigation and owner
+regressions. Current upstream has one platform-consumer accessibility test
+module and a separate command-menu metadata test; the older count of 69 is not
+reused. Reading preferences survive cold load, invalid preferences remain
+recoverable, toolbar address navigation retains its semantics, and offered
+commands retain upstream effect/destructive declarations. The external-host
+fixture and one unrelated inference fixture remain ignored in this ordinary
+run. `surface_a11y` has no current tests and is recorded as absent.
+
+The live current-upstream proof is
+`knot-editor/support/receipts/smolweb-browser-receiving/process-integrated.json`.
+It passes on the exact `4ef1b302…` consumer executable against unchanged host
+SHA256 `d2ee5884…`, host source `1f660dcb`. Exact 57-byte Unicode/CRLF index and
+131072-byte Resource bodies reach request correlation, the reducer, standard
+`nematic.micron` engine, retained controller/frame and qualified same-node link.
+All three initial host sessions join without cancellation, covering the fixture
+handoff and both browser reads. The later one-link authority replacement,
+revocation, restoration and withdrawal proof, submission-map refusal and stalled
+session cancelled/joined shutdown also pass. This native process probe uses a
+libtest executable. Installed application, window/GPU/headed, independent
+readers, actor dispatch/concurrency and physical radio remain separate gates.
+
+The first live attempt exposed a receiving lifecycle bug: dropping a completed
+Resource session queues proofs and encrypted link close, while immediately
+dropping its endpoint aborts the interface writer. TCP EOF alone does not retire
+the active inbound session, so old connections could occupy the unchanged
+two-session host allowance and block the next link setup. The page helper now
+drains its endpoint before returning, following the existing explicit-Submit
+lifecycle inside the same outer deadline. Its local regression requires server
+response success, equal completed/admitted counts and joined response tasks.
+Knot `3596dce3` drains its original client with its existing 1000 ms shutdown
+grace before handing the host to the browser. No admission or deadline increase
+is used.
+
+Against current upstream `8eebb5a3`, Micron and shared smolweb allocation caps,
+deadlines, defaults, redirect count, Scroll line guard and native dependencies
+are unchanged. The source-only SDK selection introduces no HTTP security or
+referrer policy, package-version or registry changes relative to that current
+base. Buffered Scroll body limits remain open. Existing SC/session/S8,
+headed/physical assistive-technology and full-family release gates remain.
+
+The earlier isolated checkpoint remains reproducible historical evidence.
+Starting from stale `9c842`, SDK adoption first failed with 242 compiler errors,
+mostly Accesskit 0.24.1 versus 0.25.1. The [failed build
+receipt](../docs/receipts/native_browser_receiving_20261022/product-build-failed-20261022T203202Z.json),
+[diagnostic census](../docs/receipts/native_browser_receiving_20261022/product-error-census.json)
+and [corrected grouping](../docs/receipts/native_browser_receiving_20261022/product-error-census-summary.json)
+are preserved. That checkpoint's `6e5da6dc` aligned Accesskit, test `NodeRef`
+callbacks, the `MenuBar` role, three join-result assertions, retired Semantic and
+optional embedding fixtures, and command semantic metadata. Its `dddbc94e9`
+build and 69-test receipts preceded the failed live process proof at
+`knot-editor/support/receipts/smolweb-browser-receiving/process.json`.
+The graceful fix at `cab743c1` then passed its [build](../docs/receipts/native_browser_receiving_20261022/product-graceful-build.json),
+[69 focused tests](../docs/receipts/native_browser_receiving_20261022/product-graceful-tests.json)
+and `knot-editor/support/receipts/smolweb-browser-receiving/process-graceful.json`.
+Those old receipts do not qualify current upstream; the integrated receipts
+above do. The old `500bc78a7` to `af5c3ba85` SDK comparison included HTTP referrer
+origin reduction, optional insecure-request upgrade/mixed-content handling and
+an optional WebSocket 0.29 to 0.30 dependency change. That caveat applies only to
+the old checkpoint comparison, not this source-only current-upstream port. A
+Servo tidy fixture's nonfatal `invalid type: boolean true, expected a map` stderr
+is recorded separately from compiler errors in each successful build receipt.
 
 ## Cross-references
 

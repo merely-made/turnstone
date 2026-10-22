@@ -178,6 +178,19 @@ impl ThemeMode {
             _ => Self::System,
         }
     }
+
+    /// The Tabard mode this selects; `System` has no live preference yet and
+    /// reads as dark, as the host palettes do.
+    pub fn tabard(&self) -> tabard::theme::registry::Mode {
+        use tabard::theme::registry::Mode;
+        match self {
+            Self::Light => Mode::Light,
+            Self::System | Self::Dark => Mode::Dark,
+            Self::HcLight => Mode::HcLight,
+            Self::HcDark => Mode::HcDark,
+            Self::Custom(key) => Mode::Custom(key.clone()),
+        }
+    }
 }
 
 /// The running host presentation selected by Turnstone's application
