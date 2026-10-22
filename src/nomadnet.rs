@@ -294,15 +294,19 @@ pub(crate) async fn fetch_page_on_interface(
                 ..retinue::endpoint::ResourceTransferConfig::default()
             },
         };
-        retinue::nomadnet::fetch_page_with_config(
+        let result = retinue::nomadnet::fetch_page_with_config(
             &endpoint,
             destination,
             peer,
             address.path().as_bytes(),
             config,
         )
-        .await
-        .map_err(|error| format!("NomadNet page request failed: {error}"))
+        .await;
+        // The completed request drops its session, queuing its Resource proof
+        // and link close. Drain them before Endpoint::Drop aborts the writer;
+        // the existing outer request deadline still bounds this shutdown.
+        endpoint.shutdown(timeout).await;
+        result.map_err(|error| format!("NomadNet page request failed: {error}"))
     })
     .await
     .map_err(|_| format!("NomadNet page request timed out after {}s", timeout.as_secs()))?;
