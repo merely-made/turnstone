@@ -138,10 +138,23 @@ mod tests {
     #[test]
     fn retired_panes_restore_their_content_and_arrangement_in_frame_and_lenses() {
         let dir = temp_session_dir("retired-pane-content");
-        let old = serde_json::to_string(&sample_layout())
-            .unwrap()
-            .replace("\"Workbench\"", "\"Apparatus\"")
-            .replace("\"Roster\"", "\"Steward\"");
+        // A real legacy tree has pane tags, without Workspace tab titles.
+        // Replacing every matching string in today's saved layout also changes
+        // a retained title, which migration correctly preserves as user text.
+        let old = serde_json::json!({
+            "id": "content", "label": "content",
+            "root": { "Split": {
+                "axis": "Horizontal", "ratio": 0.66,
+                "first": { "Leaf": {
+                    "pane_id": 0, "content": "Apparatus",
+                    "graph_id": "00000000-0000-0000-0000-000000000001"
+                } },
+                "second": { "Leaf": {
+                    "pane_id": 1, "content": "Steward",
+                    "graph_id": "00000000-0000-0000-0000-000000000001"
+                } }
+            } }
+        }).to_string();
         fs::write(dir.join(LEGACY_FRAME_FILE), &old).unwrap();
         fs::write(dir.join(LEGACY_WINDOWS_FILE), format!("[{old},null]")).unwrap();
         let restored = load_frisket_layout(&dir).unwrap().unwrap();

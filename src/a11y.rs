@@ -967,7 +967,7 @@ mod tests {
         let app = app_with_live_doc();
         let lines = a11y_lines(&app);
         let has = |s: &str| lines.iter().any(|l| l.contains(s));
-        assert!(has("group: workbench"), "{lines:?}");
+        assert!(has("group: Read"), "{lines:?}");
         assert!(has("tab: Tile"), "the tile's tab projects");
         assert!(has("document: Example Domain"), "{lines:?}");
         assert!(has("heading: Example Domain"));
