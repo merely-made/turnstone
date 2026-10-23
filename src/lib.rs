@@ -34,6 +34,7 @@ mod denizen;
 mod device_receipts_pane;
 mod device_receipts_service;
 pub mod diagnostic_observations;
+pub mod client_limits;
 pub mod distillery_installed_surface;
 pub mod document_find;
 mod document_pump;

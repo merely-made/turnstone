@@ -196,7 +196,7 @@ getrandom = "0.2"
 # Protocol-faithful RSS/Atom parsing for the graph-native feed subscription
 # loop. Gemini feed discovery remains gemtext-native in Turnstone; errand owns
 # the shared XML grammar already used by Nematic.
-errand = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+errand = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
 # Optional app-control scripting. Piccolo is a Turnstone mod/workflow backend,
 # not a browser-page engine; Vano/Boa remain the JavaScript lanes.
 script-engine-api = { git = "https://github.com/merely-made/genet.git", branch = "main", optional = true }
@@ -368,19 +368,19 @@ armillary = { git = "https://github.com/merely-made/armillary.git", rev = "92d5b
 chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
 commons-spine = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
-errand = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
-finger-protocol = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+errand = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
+finger-protocol = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
 gemot = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
-gopher-protocol = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
-guppy-protocol = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+gopher-protocol = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
+guppy-protocol = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
 luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
 mien = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
-misfin = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+misfin = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
 mooting = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
-nex-protocol = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
-scroll-protocol = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+nex-protocol = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
+scroll-protocol = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
 servitor = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
-spartan-protocol = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+spartan-protocol = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
 stickleback = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
 mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
 # Dramatis Gaz takes Muniment from the registry; keep its types on the same
@@ -406,7 +406,7 @@ mozjs_icu_normalizer = { path = "vendor/mozjs-icu-normalizer" }
 # registry consumers (Scrying, Welding) must share it to keep one Grafting.
 grafting = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "bb48281bd4a88a726a009e0518706881b74b7604" }
 # Match Distillery's stable Burn graph; root patches are not inherited.
-gemini-protocol = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+gemini-protocol = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
 # No Stylo-family patch: Genet's live route is Livery/Buckram. The surviving
 # `stylo_malloc_size_of` utility is independent and does not link a CSS engine.
 #
@@ -473,7 +473,7 @@ armillary = { git = "https://github.com/merely-made/armillary.git", rev = "92d5b
 chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
 commons-spine = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
-errand = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+errand = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
 esp = { git = "https://github.com/merely-made/esp.git", rev = "6d6ad84b773c9baf2390bd7807a21ca9887e6efd" }
 gemot = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
 luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
@@ -505,7 +505,7 @@ armillary = { git = "https://github.com/merely-made/armillary.git", rev = "92d5b
 chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
 commons-spine = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
-errand = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+errand = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
 esp = { git = "https://github.com/merely-made/esp.git", rev = "6d6ad84b773c9baf2390bd7807a21ca9887e6efd" }
 gemot = { git = "https://github.com/merely-made/gemot.git", rev = "4342aed4bd101e68b1e71d24e010190d81765201" }
 luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "34105d63ec17826e0a58a5b461b65150357dd000" }
