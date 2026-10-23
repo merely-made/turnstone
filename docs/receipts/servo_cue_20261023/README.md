@@ -1,10 +1,11 @@
 # Concrete Servo and Genet Cue receiving — 2026-10-23
 
-The finite macOS/Metal receiver passes offscreen with real Genet and Servo
+The finite macOS/Metal receiver passes both offscreen and headed with real Genet and Servo
 producers. Both use `PeltSharedContent`, Webcue controls and the WgpuCue
 presenter on one producer device. Genet renders onto the host device; Servo
 hands over a retained native texture normalized by the existing Graft
-pre-present hook. The visible-window run is pending the user's unlock signal.
+pre-present hook. After the user unlocked the session, the same receiver binary
+completed the headed run with a visible, focused window and 30 presentations.
 
 This is a reusable native binding and receiving example. Full Turnstone UI
 adoption, the product inspector and per-card/site policy UI are outside this
@@ -38,6 +39,13 @@ does not pass that gate. `.app` binaries and profiles remain in the local run
 roots; only synthetic fixtures, reports, pixels, hashes and logs are copied here.
 
 ## Executed receiving evidence
+
+[`headed/qualification.json`](headed/qualification.json) passes the same full
+sequence after unlock with **30 actual window presentations** on one producer
+device. The driver exited successfully after the application completed. The
+SHA-256 matches the offscreen-qualified receiver exactly; only the launch
+script changed. This is window-presentation evidence, without a compositor
+capture or human-input/AT qualification.
 
 [`offscreen2/qualification.json`](offscreen2/qualification.json) passes all
 phases with `window_presentations: 0`, explicitly classified as
@@ -112,6 +120,10 @@ Earlier native runs remain alongside the successful one:
 - `attempt3`: explicit activation still could not present in the locked session.
   Its driver also became invalid after an in-flight script edit introduced an
   unset mode variable. Neither application timeout nor driver error is a pass.
+- `headed-launcher-failure`: after unlock, the first launcher invocation failed
+  before opening the application because bundled Bash 3 treats an empty array
+  as unset under `set -u`. The driver now keeps its argument array nonempty.
+  The corrected driver passes the headed run on `/bin/bash`.
 - `offscreen1`: actual input/zoom receiving passed, then the strict hidden-input
   check exposed Genet still admitting input. Mere `737fec2df` corrects that
   boundary for both shared input and synchronous retained dispatch.
@@ -125,5 +137,6 @@ handles field; this is not a `-D warnings` gate. The complete output is retained
 primary checkouts. Mere and Turnstone advanced through concurrent work outside
 this receiving worktree; Cue and Graft remain at their initial commits. This
 pass made source changes only in its isolated Mere and Turnstone worktrees.
-The compiled receiver and isolated worktrees remain available for the pending
-headed run.
+The compiled receiver and clean isolated worktrees remain available for reuse.
+The bounded native Metal receiving gate is complete; the broader product and
+platform limits above remain unchanged.
