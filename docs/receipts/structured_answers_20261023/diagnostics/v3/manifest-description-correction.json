@@ -1,0 +1,15 @@
+{
+  "reason": "The new task initially inherited descriptive fields from the prior receipt. Actual frozen module SHA, binary SHA, cases, model/session and inputs.json already identify the executed source correctly. No frozen file or result was rewritten.",
+  "inherited": {
+    "supplier_commit": "5262ae5775344741a76545ba895a8dbf33256409",
+    "instruction_characters": 1416,
+    "change": "Compact question-driven claim support prompt with orthogonal examples, explicit single-line minified JSON, retained task binding and v1 replay compatibility; no output repair or fixture-specific extraction",
+    "prior_diagnostic": "candidate-01 was deliberately stopped while cross was incomplete: 3419-character instruction cost, 0.138 token/s, code fences and indentation. No semantic result or acceptance claimed."
+  },
+  "correct_descriptions": {
+    "supplier_commit": "c6997f54eb298023d0542bfc196451e617e51ba5",
+    "instruction_characters": 1633,
+    "change": "Enforced bounded grammar with v3 compare-all-candidates instructions",
+    "prior_diagnostic": "This is the first complete cohort of 2026-10-23; it finished all four, passed raw structure 4/4 and semantic rubric 2/4."
+  }
+}
