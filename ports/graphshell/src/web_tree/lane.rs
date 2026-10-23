@@ -556,117 +556,9 @@ impl TreeLane {
             .with_field("physics-depth-source", choice.depth.id())
             .with_field("panel-law", page.physics.choice().law.id())
             .with_field("panel-group-source", page.physics.choice().groups.id())
-            .with_field(
-                "panel-role-group-source",
-                mere::canvas::PhysicsKindSource::ALL[page
-                    .physics
-                    .role_groups
-                    .selected
-                    .min(mere::canvas::PhysicsKindSource::ALL.len() - 1)]
-                .id(),
-            )
             .with_field("panel-overlays", page.physics.ticked())
             .with_field("panel-profile", page.physics.profile_id())
             .with_field("panel-status", page.physics.status.clone())
-            .with_field("panel-mix-first-share", page.physics.mix_first_share.text())
-            .with_field(
-                "panel-mix-second-share",
-                page.physics.mix_second_share.text(),
-            )
-            .with_field(
-                "panel-grouping-partition",
-                mere::canvas::PhysicsKindSource::ALL[page
-                    .physics
-                    .group_partition
-                    .selected
-                    .min(mere::canvas::PhysicsKindSource::ALL.len() - 1)]
-                .id(),
-            )
-            .with_field(
-                "panel-grouping-outer",
-                mere::canvas::PhysicsLaw::ALL[page
-                    .physics
-                    .group_outer
-                    .selected
-                    .min(mere::canvas::PhysicsLaw::ALL.len() - 1)]
-                .id(),
-            )
-            .with_field(
-                "panel-grouping-inner",
-                mere::canvas::PhysicsLaw::ALL[page
-                    .physics
-                    .group_inner
-                    .selected
-                    .min(mere::canvas::PhysicsLaw::ALL.len() - 1)]
-                .id(),
-            )
-            .with_field(
-                "panel-grouping-outer-share",
-                page.physics.group_outer_share.text(),
-            )
-            .with_field("panel-grouping-note", page.physics.group_note.clone())
-            .with_field(
-                "panel-schedule-first-law",
-                mere::canvas::PhysicsLaw::ALL[page
-                    .physics
-                    .schedule_first_law
-                    .selected
-                    .min(mere::canvas::PhysicsLaw::ALL.len() - 1)]
-                .id(),
-            )
-            .with_field(
-                "panel-schedule-first-stop",
-                ["Rest", "Frames", "law-done"][page.physics.schedule_first_stop.selected.min(2)],
-            )
-            .with_field(
-                "panel-schedule-first-frames",
-                page.physics.schedule_first_frames.text(),
-            )
-            .with_field(
-                "panel-schedule-first-capture",
-                page.physics
-                    .schedule_first_capture
-                    .selected
-                    .checked_sub(1)
-                    .and_then(|index| mere::canvas::Role::ALL.get(index))
-                    .map_or("none", |role| role.id()),
-            )
-            .with_field(
-                "panel-schedule-second-law",
-                mere::canvas::PhysicsLaw::ALL[page
-                    .physics
-                    .schedule_second_law
-                    .selected
-                    .min(mere::canvas::PhysicsLaw::ALL.len() - 1)]
-                .id(),
-            )
-            .with_field(
-                "panel-schedule-second-stop",
-                ["Rest", "Frames", "law-done"][page.physics.schedule_second_stop.selected.min(2)],
-            )
-            .with_field(
-                "panel-schedule-second-frames",
-                page.physics.schedule_second_frames.text(),
-            )
-            .with_field(
-                "panel-schedule-second-capture",
-                page.physics
-                    .schedule_second_capture
-                    .selected
-                    .checked_sub(1)
-                    .and_then(|index| mere::canvas::Role::ALL.get(index))
-                    .map_or("none", |role| role.id()),
-            )
-            .with_field("panel-schedule-note", page.physics.schedule_note.clone())
-            .with_field(
-                "panel-schedule-overlays",
-                mere::canvas::PhysicsOverlay::ALL
-                    .into_iter()
-                    .zip(&page.physics.schedule_overlays)
-                    .filter_map(|(overlay, checked)| checked.then_some(overlay.id()))
-                    .collect::<Vec<_>>()
-                    .join(","),
-            )
             .with_field("grouping-partition", grouping_partition)
             .with_field(
                 "actual-schedule-stage",
@@ -773,6 +665,10 @@ impl TreeLane {
                 .with_field("layout-overlaps", stats.overlaps.to_string());
         }
         for (name, value) in mere::canvas::physics_controls::framing_fields(&canvas) {
+            snapshot = snapshot.with_field(name, value);
+        }
+        // The composing editors' controls, applied or not.
+        for (name, value) in page.physics.observed() {
             snapshot = snapshot.with_field(name, value);
         }
         // The GPU repulsion lane (P5c): whether the page has a device, and
@@ -1157,7 +1053,6 @@ impl Product for TreeLane {
             // Arrangement roles (dynamics grammar plan, G7): the recipe's role
             // and how many settles Settled has recorded.
             .with_field("arrangement-role", canvas.arrangement_roles().default.id())
-            .with_field("panel-role", page.physics.role().id())
             .with_field("role-group-source", canvas.role_group_source().id())
             .with_field("effective-roles", {
                 let mut roles: Vec<_> = canvas

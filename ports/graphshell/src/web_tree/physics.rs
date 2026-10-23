@@ -6,24 +6,30 @@
 
 //! The "Graph tools" side region's first section: arrangement and physics.
 //!
-//! Cambium controls hold the form; Apply reads them into the typed inputs of
-//! `mere::canvas::physics_controls`, which the old page's form also calls.
+//! Cambium controls hold the form; a button reads them into
+//! `mere::canvas::physics_form`, the model Turnstone's Arrange pane drives
+//! too. The model owns the composing fields (role, role groups, two-law mix,
+//! grouping, two-stage schedule, speed): their choices, defaults, read-back,
+//! validation and refusals, and the edit each Apply makes. This file draws
+//! them and carries the scenario hooks.
 use super::*;
 use cambium::{
-    SelectState, TextInput, button, checkbox, checkbox_disabled, disclosure, lens, select, text_field_typed,
+    SelectState, TextInput, button, checkbox, checkbox_disabled, disclosure, lens, select,
+    text_field_typed,
 };
-use mere::canvas::channels::Channel;
-use mere::canvas::dynamics_spec::Node;
 use mere::canvas::physics_controls::{
-    self, ArrangementTransition, CUSTOM_PROFILE, LawStart, StageDraft, TwoLawGrouping, TwoLawMix,
-    SPEED_PRESETS, TwoStageSchedule, arrangement_choices,
+    self, ArrangementTransition, CUSTOM_PROFILE, LawStart, arrangement_choices,
+};
+use mere::canvas::physics_form::{
+    Command, Control, Field, FieldId, FormAction, Group, PhysicsForm, Readback, STOP_FRAMES,
+    STOP_LAW, Section, Slot,
 };
 use mere::canvas::{
     CANVAS_PHYSICS_DEPTH_SOURCES, CANVAS_PHYSICS_KIND_SOURCES, CANVAS_PHYSICS_LAWS,
     CANVAS_PHYSICS_MASS_SOURCES, CANVAS_PHYSICS_OVERLAYS, CANVAS_PHYSICS_PROFILES, PhysicsChoice,
-    PhysicsDepthSource, PhysicsKindSource, PhysicsLaw, PhysicsMassSource, PhysicsOverlay, Role,
-    StageStop,
+    PhysicsDepthSource, PhysicsKindSource, PhysicsLaw, PhysicsMassSource, PhysicsOverlay,
 };
+use std::collections::HashMap;
 
 /// The profile picker's first entry, read when the live pair names no profile.
 const CUSTOM_LABEL: &str = "Custom (no profile)";
@@ -31,43 +37,12 @@ const CUSTOM_LABEL: &str = "Custom (no profile)";
 /// The panel's control state and the arrangement it last applied.
 pub(super) struct PhysicsPanel {
     pub(super) arrangement: SelectState,
-    /// The recipe's role for the arrangement's positions (F48).
-    pub(super) role: SelectState,
     pub(super) law: SelectState,
-    /// The two explicit law choices for the bounded mix editor.
-    pub(super) mix_first: SelectState,
-    pub(super) mix_second: SelectState,
-    /// Text fields preserve authored f64 shares on reopen. Apply still checks
-    /// that each share can be represented by the runtime's f32 weight.
-    pub(super) mix_first_share: TextInput,
-    pub(super) mix_second_share: TextInput,
-    pub(super) mix_note: String,
-    /// The grouped root's partition channel, separate from Group pull and
-    /// the role target's grouping channel.
-    pub(super) group_partition: SelectState,
-    pub(super) group_outer: SelectState,
-    pub(super) group_inner: SelectState,
-    pub(super) group_outer_share: TextInput,
-    pub(super) group_note: String,
-    /// The bounded authored schedule editor: exactly two plain law stages.
-    pub(super) schedule_first_law: SelectState,
-    pub(super) schedule_first_stop: SelectState,
-    pub(super) schedule_first_frames: TextInput,
-    pub(super) schedule_first_capture: SelectState,
-    pub(super) schedule_second_law: SelectState,
-    pub(super) schedule_second_stop: SelectState,
-    pub(super) schedule_second_frames: TextInput,
-    pub(super) schedule_second_capture: SelectState,
-    /// Explicit common overlays, independent of either stage law.
-    pub(super) schedule_overlays: Vec<bool>,
-    pub(super) schedule_note: String,
     pub(super) kind: SelectState,
     pub(super) mass: SelectState,
     pub(super) depth: SelectState,
     /// Group pull's channel (any kind source; F37).
     pub(super) groups: SelectState,
-    /// Role overrides' group channel, independent of Group pull (F49).
-    pub(super) role_groups: SelectState,
     /// Index 0 is custom; profile `i` is at `i + 1`.
     pub(super) profile: SelectState,
     /// One per `CANVAS_PHYSICS_OVERLAYS` entry, in catalog order.
@@ -77,9 +52,17 @@ pub(super) struct PhysicsPanel {
     pub(super) transition: Option<ArrangementTransition>,
     /// The layout where the last law was applied.
     pub(super) law_start: Option<LawStart>,
-    /// The speed preset picked, the one the canvas runs, and the note on the
-    /// speed reached while the budget binds.
-    pub(super) speed: SelectState,
+    /// The composing form, as of the last time the controls were read into it.
+    form: PhysicsForm,
+    /// What the canvas authored when the controls last followed it.
+    readback: Readback,
+    /// The controls that edit the form, one per field: a choice's select, a
+    /// number's text, a toggle's box. Text keeps its authored digits.
+    selects: HashMap<FieldId, SelectState>,
+    inputs: HashMap<FieldId, TextInput>,
+    ticks: HashMap<FieldId, bool>,
+    /// The speed preset the canvas runs, and the note on the speed reached
+    /// while the budget binds. The picked preset is the speed select's.
     pub(super) applied_speed: usize,
     pub(super) speed_note: Option<String>,
 }
@@ -92,55 +75,63 @@ fn labels(catalog: &[(&'static str, &'static str)]) -> Vec<&'static str> {
     catalog.iter().map(|(_, label)| *label).collect()
 }
 
+/// Every field of the composing form, in the order it is drawn.
+fn composing_fields() -> Vec<FieldId> {
+    [FieldId::Role, FieldId::RoleGroups, FieldId::Speed]
+        .into_iter()
+        .chain(
+            Section::ALL
+                .into_iter()
+                .flat_map(Section::groups)
+                .flat_map(|group| group.fields),
+        )
+        .collect()
+}
+
 impl PhysicsPanel {
     pub(super) fn new(canvas: &Canvas, layout_id: &str) -> Self {
+        let form = PhysicsForm::new(canvas);
+        let (mut selects, mut inputs, mut ticks) = (HashMap::new(), HashMap::new(), HashMap::new());
+        for id in composing_fields() {
+            let field = form.field(id);
+            match field.control {
+                Control::Choice { .. } => {
+                    selects.insert(id, SelectState::new(0).with_label(field.label));
+                },
+                Control::Number { text, .. } => {
+                    inputs.insert(id, TextInput::new(text));
+                },
+                Control::Toggle(on) => {
+                    ticks.insert(id, on);
+                },
+            }
+        }
         let mut panel = Self {
             arrangement: SelectState::new(index_of(
                 arrangement_choices().map(|(id, _)| id),
                 layout_id,
             ))
             .with_label("Arrangement"),
-            role: SelectState::new(0).with_label("Role"),
             law: SelectState::new(0).with_label("Physics law"),
-            mix_first: SelectState::new(0).with_label("First law"),
-            mix_second: SelectState::new(1).with_label("Second law"),
-            mix_first_share: TextInput::new("1"),
-            mix_second_share: TextInput::new("1"),
-            mix_note: String::new(),
-            group_partition: SelectState::new(0).with_label("Grouping partition"),
-            group_outer: SelectState::new(index_of(PhysicsLaw::ALL, PhysicsLaw::Charge))
-                .with_label("Outer law"),
-            group_inner: SelectState::new(index_of(PhysicsLaw::ALL, PhysicsLaw::Springs))
-                .with_label("Inner law"),
-            group_outer_share: TextInput::new(
-                mere::canvas::composition::CHARGE_BETWEEN_WEIGHT.to_string(),
-            ),
-            group_note: String::new(),
-            schedule_first_law: SelectState::new(0).with_label("First stage law"),
-            schedule_first_stop: SelectState::new(0).with_label("First stage stop"),
-            schedule_first_frames: TextInput::new("60"),
-            schedule_first_capture: SelectState::new(0).with_label("First stage capture"),
-            schedule_second_law: SelectState::new(1).with_label("Second stage law"),
-            schedule_second_stop: SelectState::new(0).with_label("Second stage stop"),
-            schedule_second_frames: TextInput::new("60"),
-            schedule_second_capture: SelectState::new(0).with_label("Second stage capture"),
-            schedule_overlays: vec![false; CANVAS_PHYSICS_OVERLAYS.len()],
-            schedule_note: String::new(),
             kind: SelectState::new(0).with_label("Kinds"),
             mass: SelectState::new(0).with_label("Mass"),
             depth: SelectState::new(0).with_label("Depth"),
             groups: SelectState::new(0).with_label("Groups"),
-            role_groups: SelectState::new(0).with_label("Role groups"),
             profile: SelectState::new(0).with_label("Profile"),
             overlays: vec![false; CANVAS_PHYSICS_OVERLAYS.len()],
             layout_id: layout_id.to_string(),
             status: String::new(),
             transition: None,
             law_start: None,
-            speed: SelectState::new(physics_controls::speed_preset(canvas)).with_label("Speed"),
-            applied_speed: physics_controls::speed_preset(canvas),
+            form,
+            readback: Readback::of(canvas),
+            selects,
+            inputs,
+            ticks,
+            applied_speed: mere::canvas::physics_controls::speed_preset(canvas),
             speed_note: None,
         };
+        panel.push();
         panel.sync(canvas);
         panel
     }
@@ -154,7 +145,6 @@ impl PhysicsPanel {
         self.mass.selected = index_of(PhysicsMassSource::ALL, live.mass);
         self.depth.selected = index_of(PhysicsDepthSource::ALL, live.depth);
         self.groups.selected = index_of(PhysicsKindSource::ALL, live.groups);
-        self.sync_role_target(canvas);
         for (checked, overlay) in self.overlays.iter_mut().zip(PhysicsOverlay::ALL) {
             *checked = live.overlays.contains(&overlay);
         }
@@ -162,183 +152,142 @@ impl PhysicsPanel {
             .profile_id()
             .and_then(|id| CANVAS_PHYSICS_PROFILES.iter().position(|p| p.id == id))
             .map_or(0, |index| index + 1);
-        let spec = canvas.dynamics_spec().ok();
-        if spec.as_ref().is_some_and(|spec| {
-            matches!(
-                &spec.root,
-                Node::Mix { .. } | Node::Grouped { .. } | Node::Schedule { .. }
-            )
-        }) {
+        self.readback = Readback::of(canvas);
+        if !matches!(self.readback.mix, Ok(None))
+            || !matches!(self.readback.grouping, Ok(None))
+            || !matches!(self.readback.schedule, Ok(None))
+        {
             // A composed or scheduled root cannot be named by a profile
             // inferred from the live law or first stage.
             self.profile.selected = 0;
         }
-        self.sync_mix(canvas);
-        self.sync_grouping(canvas);
-        self.sync_schedule(canvas);
+        self.pull();
+        self.form.follow_roles(&self.readback);
+        self.form.follow_composition(&self.readback);
+        self.push();
     }
 
-    /// Sync role controls from the live, canonical target and resolved Canvas.
-    fn sync_role_target(&mut self, canvas: &Canvas) {
-        self.role.selected = index_of(Role::ALL, canvas.arrangement_roles().default);
-        self.role_groups.selected = index_of(PhysicsKindSource::ALL, canvas.role_group_source());
+    /// Set the role controls to the canvas's role and role groups, leaving
+    /// the composing forms' unapplied values as they are.
+    fn sync_roles(&mut self, canvas: &Canvas) {
+        self.pull();
+        self.form.follow_roles(&Readback::of(canvas));
+        self.push();
     }
 
-    /// Read the authored root when it is the exact two-law form this editor
-    /// can represent. A flat live choice is not presented as the whole mix.
-    fn sync_mix(&mut self, canvas: &Canvas) {
-        match physics_controls::read_two_law_mix(canvas) {
-            Ok(Some(mix)) => {
-                self.mix_first.selected = index_of(PhysicsLaw::ALL, mix.first);
-                self.mix_second.selected = index_of(PhysicsLaw::ALL, mix.second);
-                self.mix_first_share = TextInput::new(mix.first_share.to_string());
-                self.mix_second_share = TextInput::new(mix.second_share.to_string());
-                self.mix_note.clear();
-            },
-            Ok(None) => self.mix_note = "No authored two-law mix".into(),
-            Err(reason) => {
-                self.mix_note = format!(
-                    "Unsupported authored mix shape · {reason} · editor values are not readback"
-                );
-            },
+    /// Read the controls into the form.
+    fn pull(&mut self) {
+        for id in composing_fields() {
+            match self.form.field(id).control {
+                Control::Choice { options, .. } => {
+                    let picked = self.selects[&id].selected.min(options.len() - 1);
+                    self.form.choose(id, options[picked].0);
+                },
+                Control::Number { .. } => {
+                    self.form.enter(id, self.inputs[&id].text());
+                },
+                Control::Toggle(_) => {
+                    self.form.tick(id, self.ticks[&id]);
+                },
+            }
         }
     }
 
-    /// Read the authored root only when it is the exact plain grouped form
-    /// this editor can represent. The outer share remains authored f64 text.
-    fn sync_grouping(&mut self, canvas: &Canvas) {
-        match physics_controls::read_two_law_grouping(canvas) {
-            Ok(Some(grouping)) => {
-                self.group_partition.selected =
-                    index_of(PhysicsKindSource::ALL, grouping.partition);
-                self.group_outer.selected = index_of(PhysicsLaw::ALL, grouping.outer);
-                self.group_inner.selected = index_of(PhysicsLaw::ALL, grouping.inner);
-                self.group_outer_share = TextInput::new(grouping.outer_share.to_string());
-                self.group_note.clear();
-            },
-            Ok(None) => self.group_note = "No authored grouping".into(),
-            Err(reason) => {
-                self.group_note = format!(
-                    "Unsupported authored grouping shape · {reason} · editor values are not readback"
-                );
-            },
+    /// Show the form in the controls.
+    fn push(&mut self) {
+        for id in composing_fields() {
+            match self.form.field(id).control {
+                Control::Choice { options, current } => {
+                    if let Some(select) = self.selects.get_mut(&id) {
+                        select.selected = index_of(options.iter().map(|(id, _)| *id), current);
+                    }
+                },
+                Control::Number { text, .. } => {
+                    if let Some(input) = self.inputs.get_mut(&id)
+                        && input.text() != text
+                    {
+                        *input = TextInput::new(text);
+                    }
+                },
+                Control::Toggle(on) => {
+                    self.ticks.insert(id, on);
+                },
+            }
         }
     }
 
-    /// Read only the exact shape represented by the bounded two-stage form.
-    /// Unsupported records leave the draft untouched and state that its
-    /// values are not readback.
-    fn sync_schedule(&mut self, canvas: &Canvas) {
-        match physics_controls::read_two_stage_schedule(canvas) {
-            Ok(Some(schedule)) => {
-                self.set_schedule_stage(true, schedule.first);
-                self.set_schedule_stage(false, schedule.second);
-                for (checked, overlay) in self.schedule_overlays.iter_mut().zip(PhysicsOverlay::ALL)
-                {
-                    *checked = schedule.overlays.contains(&overlay);
-                }
-                self.schedule_note.clear();
-            },
-            Ok(None) => self.schedule_note = "No authored two-stage schedule".into(),
-            Err(reason) => {
-                self.schedule_note = format!(
-                    "Unsupported authored schedule shape · {reason} · editor values are not readback"
-                );
-            },
+    /// The form as the controls hold it now, applied or not.
+    pub(super) fn pulled(&self) -> PhysicsForm {
+        let mut panel_form = self.form.clone();
+        for id in composing_fields() {
+            match self.form.field(id).control {
+                Control::Choice { options, .. } => {
+                    let picked = self.selects[&id].selected.min(options.len() - 1);
+                    panel_form.choose(id, options[picked].0);
+                },
+                Control::Number { .. } => {
+                    panel_form.enter(id, self.inputs[&id].text());
+                },
+                Control::Toggle(_) => {
+                    panel_form.tick(id, self.ticks[&id]);
+                },
+            }
         }
+        panel_form
     }
 
-    fn set_schedule_stage(&mut self, first: bool, stage: StageDraft) {
-        let (law, stop, frames, capture) = if first {
-            (
-                &mut self.schedule_first_law,
-                &mut self.schedule_first_stop,
-                &mut self.schedule_first_frames,
-                &mut self.schedule_first_capture,
-            )
-        } else {
-            (
-                &mut self.schedule_second_law,
-                &mut self.schedule_second_stop,
-                &mut self.schedule_second_frames,
-                &mut self.schedule_second_capture,
-            )
+    /// The panel's form controls as observation fields: what the scenarios
+    /// read back of the editors, unapplied values included.
+    pub(super) fn observed(&self) -> Vec<(&'static str, String)> {
+        let form = self.pulled();
+        let stop = |slot| match form.value(FieldId::StageStop(slot)).as_str() {
+            STOP_FRAMES => "Frames",
+            STOP_LAW => "law-done",
+            _ => "Rest",
         };
-        law.selected = index_of(PhysicsLaw::ALL, stage.law);
-        match stage.stop {
-            StageStop::Rest => stop.selected = 0,
-            StageStop::Frames(count) => {
-                stop.selected = 1;
-                *frames = TextInput::new(count.to_string());
-            },
-            StageStop::LawDone => stop.selected = 2,
+        let mut fields = vec![
+            ("panel-role", form.value(FieldId::Role)),
+            ("panel-role-group-source", form.value(FieldId::RoleGroups)),
+            ("panel-mix-first-share", form.value(FieldId::MixShare(Slot::First))),
+            ("panel-mix-second-share", form.value(FieldId::MixShare(Slot::Second))),
+            ("panel-grouping-partition", form.value(FieldId::GroupPartition)),
+            ("panel-grouping-outer", form.value(FieldId::GroupOuter)),
+            ("panel-grouping-inner", form.value(FieldId::GroupInner)),
+            ("panel-grouping-outer-share", form.value(FieldId::GroupOuterShare)),
+            ("panel-grouping-note", self.readback.note(Section::Grouping)),
+        ];
+        const STAGE_KEYS: [[&str; 4]; 2] = [
+            [
+                "panel-schedule-first-law",
+                "panel-schedule-first-stop",
+                "panel-schedule-first-frames",
+                "panel-schedule-first-capture",
+            ],
+            [
+                "panel-schedule-second-law",
+                "panel-schedule-second-stop",
+                "panel-schedule-second-frames",
+                "panel-schedule-second-capture",
+            ],
+        ];
+        for (slot, [law, stop_key, frames, capture]) in
+            Slot::BOTH.into_iter().zip(STAGE_KEYS)
+        {
+            fields.push((law, form.value(FieldId::StageLaw(slot))));
+            fields.push((stop_key, stop(slot).to_string()));
+            fields.push((frames, form.value(FieldId::StageFrames(slot))));
+            fields.push((capture, form.value(FieldId::StageCapture(slot))));
         }
-        capture.selected = stage
-            .capture
-            .and_then(|role| Role::ALL.iter().position(|candidate| *candidate == role))
-            .map_or(0, |index| index + 1);
-    }
-
-    fn stage_draft(
-        law: &SelectState,
-        stop: &SelectState,
-        frames: &TextInput,
-        capture: &SelectState,
-        label: &str,
-    ) -> Result<StageDraft, String> {
-        let stage_stop = match stop.selected.min(2) {
-            0 => StageStop::Rest,
-            1 => {
-                let count = frames
-                    .text()
-                    .parse::<u32>()
-                    .ok()
-                    .filter(|count| *count > 0)
-                    .ok_or_else(|| format!("{label} frames must be a positive integer"))?;
-                StageStop::Frames(count)
-            },
-            _ => StageStop::LawDone,
-        };
-        Ok(StageDraft {
-            law: PhysicsLaw::ALL[law.selected.min(PhysicsLaw::ALL.len() - 1)],
-            stop: stage_stop,
-            capture: capture
-                .selected
-                .checked_sub(1)
-                .and_then(|index| Role::ALL.get(index).copied()),
-        })
-    }
-
-    fn schedule_draft(&self) -> Result<TwoStageSchedule, String> {
-        let first = Self::stage_draft(
-            &self.schedule_first_law,
-            &self.schedule_first_stop,
-            &self.schedule_first_frames,
-            &self.schedule_first_capture,
-            "First stage",
-        )?;
-        let second = Self::stage_draft(
-            &self.schedule_second_law,
-            &self.schedule_second_stop,
-            &self.schedule_second_frames,
-            &self.schedule_second_capture,
-            "Second stage",
-        )?;
-        let overlays = PhysicsOverlay::ALL
-            .into_iter()
-            .zip(&self.schedule_overlays)
-            .filter_map(|(overlay, checked)| checked.then_some(overlay))
-            .collect();
-        Ok(TwoStageSchedule {
-            first,
-            second,
-            overlays,
-        })
-    }
-
-    /// The recipe role the role control holds.
-    pub(super) fn role(&self) -> Role {
-        Role::ALL[self.role.selected.min(Role::ALL.len() - 1)]
+        fields.push(("panel-schedule-note", self.readback.note(Section::Schedule)));
+        fields.push((
+            "panel-schedule-overlays",
+            form.schedule_overlays()
+                .iter()
+                .map(|overlay| overlay.id())
+                .collect::<Vec<_>>()
+                .join(","),
+        ));
+        fields
     }
 
     /// The choice the controls hold. Overlays the picked law refuses are
@@ -347,7 +296,7 @@ impl PhysicsPanel {
         let law = self.picked_law();
         PhysicsChoice {
             law,
-            overlays: physics_controls::ticked_overlays(|overlay| {
+            overlays: mere::canvas::physics_controls::ticked_overlays(|overlay| {
                 law.refuses(overlay).is_none()
                     && PhysicsOverlay::ALL
                         .iter()
@@ -384,12 +333,24 @@ impl PhysicsPanel {
 
     /// Whether the speed picker names a preset the canvas does not run yet.
     pub(super) fn speed_pending(&self) -> bool {
-        self.speed.selected != self.applied_speed
+        self.selects[&FieldId::Speed].selected != self.applied_speed
     }
 
     /// The law the picker names (applied or not).
     pub(super) fn picked_law(&self) -> PhysicsLaw {
         PhysicsLaw::ALL[self.law.selected.min(PhysicsLaw::ALL.len() - 1)]
+    }
+
+    fn select_mut(&mut self, id: FieldId) -> &mut SelectState {
+        self.selects.get_mut(&id).expect("a choice field has a select")
+    }
+
+    fn input_mut(&mut self, id: FieldId) -> &mut TextInput {
+        self.inputs.get_mut(&id).expect("a number field has an input")
+    }
+
+    fn tick_mut(&mut self, id: FieldId) -> &mut bool {
+        self.ticks.get_mut(&id).expect("a toggle field has a box")
     }
 }
 
@@ -412,38 +373,33 @@ impl TreePage {
         self.shared.dirty.set(true);
     }
 
-    /// The recipe's role: every item takes it unless a group or the item
-    /// says otherwise (F22, F48).
-    fn apply_role(&mut self) {
-        let role = self.physics.role();
-        let mut canvas = self.shared.canvas.borrow_mut();
-        match physics_controls::apply_role(&mut canvas, role) {
-            Ok(status) => {
-                self.physics.status = status;
-                self.physics.sync_role_target(&canvas);
-                self.shared.dirty.set(true);
-            },
-            Err(error) => self.physics.status = format!("Role change refused · {error}"),
+    /// A form button: read the controls into the model, and run what it asks.
+    fn press(&mut self, command: Command) {
+        self.physics.pull();
+        match self.physics.form.action(command, &self.physics.choice()) {
+            Ok(action) => self.run_form(action),
+            Err(refusal) => self.physics.status = refusal,
         }
     }
 
-    /// Set the channel used to read role overrides. Group pull remains an
-    /// independent physics source.
-    fn apply_role_groups(&mut self) {
-        let source = PhysicsKindSource::ALL[self
-            .physics
-            .role_groups
-            .selected
-            .min(PhysicsKindSource::ALL.len() - 1)];
+    /// Run an edit the form asked for. A law-changing edit remembers where
+    /// the law started and refreshes the controls from the canvas; a role
+    /// edit refreshes the role controls alone.
+    fn run_form(&mut self, action: FormAction) {
         let mut canvas = self.shared.canvas.borrow_mut();
-        match physics_controls::apply_role_group_source(&mut canvas, source) {
-            Ok(status) => {
-                self.physics.status = status;
-                self.physics.sync_role_target(&canvas);
-                self.shared.dirty.set(true);
-            },
-            Err(error) => self.physics.status = format!("Role groups change refused · {error}"),
+        let law_start = action.changes_law().then(|| LawStart::of(&canvas));
+        let outcome = action.run(&mut canvas);
+        self.physics.status = outcome.status;
+        if !outcome.applied {
+            return;
         }
+        if law_start.is_some() {
+            self.physics.law_start = law_start;
+            self.physics.sync(&canvas);
+        } else {
+            self.physics.sync_roles(&canvas);
+        }
+        self.shared.dirty.set(true);
     }
 
     fn apply_physics(&mut self) {
@@ -452,138 +408,6 @@ impl TreePage {
         self.physics.law_start = Some(LawStart::of(&canvas));
         self.physics.status = physics_controls::apply_physics(&mut canvas, &choice);
         self.physics.sync(&canvas);
-        self.shared.dirty.set(true);
-    }
-
-    /// Apply only the editor's explicit two-law mix form.
-    fn apply_mix(&mut self) {
-        let parsed = self
-            .physics
-            .mix_first_share
-            .text()
-            .parse::<f64>()
-            .and_then(|first_share| {
-                self.physics
-                    .mix_second_share
-                    .text()
-                    .parse::<f64>()
-                    .map(|second_share| (first_share, second_share))
-            });
-        let Ok((first_share, second_share)) = parsed else {
-            self.physics.status = "Mix shares must be numbers".into();
-            return;
-        };
-        let mix = TwoLawMix {
-            first: PhysicsLaw::ALL[self
-                .physics
-                .mix_first
-                .selected
-                .min(PhysicsLaw::ALL.len() - 1)],
-            second: PhysicsLaw::ALL[self
-                .physics
-                .mix_second
-                .selected
-                .min(PhysicsLaw::ALL.len() - 1)],
-            first_share,
-            second_share,
-        };
-        let mut canvas = self.shared.canvas.borrow_mut();
-        let law_start = LawStart::of(&canvas);
-        match physics_controls::apply_mix(&mut canvas, &mix) {
-            Ok(status) => {
-                self.physics.law_start = Some(law_start);
-                self.physics.status = status;
-                self.physics.sync(&canvas);
-                self.shared.dirty.set(true);
-            },
-            Err(error) => self.physics.status = format!("Mix refused · {error}"),
-        }
-    }
-
-    /// Apply one bounded grouped composition. Its partition source is
-    /// independent of Group pull and role-target sources.
-    fn apply_grouping(&mut self) {
-        let Ok(outer_share) = self.physics.group_outer_share.text().parse::<f64>() else {
-            self.physics.status = "Grouping outer share must be a number".into();
-            return;
-        };
-        let grouping = TwoLawGrouping {
-            partition: PhysicsKindSource::ALL[self
-                .physics
-                .group_partition
-                .selected
-                .min(PhysicsKindSource::ALL.len() - 1)],
-            outer: PhysicsLaw::ALL[self
-                .physics
-                .group_outer
-                .selected
-                .min(PhysicsLaw::ALL.len() - 1)],
-            inner: PhysicsLaw::ALL[self
-                .physics
-                .group_inner
-                .selected
-                .min(PhysicsLaw::ALL.len() - 1)],
-            outer_share,
-        };
-        let mut canvas = self.shared.canvas.borrow_mut();
-        let law_start = LawStart::of(&canvas);
-        match physics_controls::apply_grouping(&mut canvas, &grouping) {
-            Ok(status) => {
-                self.physics.law_start = Some(law_start);
-                self.physics.status = status;
-                self.physics.sync(&canvas);
-                self.shared.dirty.set(true);
-            },
-            Err(error) => self.physics.status = format!("Grouping refused · {error}"),
-        }
-    }
-
-    /// Apply the bounded two-stage form. The typed action owns the canonical
-    /// spec update and intentionally starts this schedule at stage zero.
-    fn apply_schedule(&mut self) {
-        let draft = match self.physics.schedule_draft() {
-            Ok(draft) => draft,
-            Err(error) => {
-                self.physics.status = format!("Schedule refused · {error}");
-                return;
-            },
-        };
-        let mut canvas = self.shared.canvas.borrow_mut();
-        let law_start = LawStart::of(&canvas);
-        match physics_controls::apply_two_stage_schedule(&mut canvas, &draft) {
-            Ok(status) => {
-                self.physics.law_start = Some(law_start);
-                self.physics.status = status;
-                self.physics.sync(&canvas);
-                self.shared.dirty.set(true);
-            },
-            Err(error) => self.physics.status = format!("Schedule refused · {error}"),
-        }
-    }
-
-    /// Explicitly replace any authored composition with the picked single law.
-    fn use_single_law(&mut self) {
-        let choice = self.physics.choice();
-        let mut canvas = self.shared.canvas.borrow_mut();
-        let law_start = LawStart::of(&canvas);
-        match physics_controls::apply_single_law(&mut canvas, &choice) {
-            Ok(status) => {
-                self.physics.law_start = Some(law_start);
-                self.physics.status = status;
-                self.physics.sync(&canvas);
-                self.shared.dirty.set(true);
-            },
-            Err(error) => self.physics.status = format!("Single law refused · {error}"),
-        }
-    }
-
-    /// The picked speed, applied when chosen (ruled 2026-10-04, "Speed select").
-    pub(super) fn apply_speed(&mut self) {
-        let index = self.physics.speed.selected.min(SPEED_PRESETS.len() - 1);
-        let mut canvas = self.shared.canvas.borrow_mut();
-        self.physics.status = physics_controls::apply_speed(&mut canvas, SPEED_PRESETS[index].0)
-            .unwrap_or_else(|error| format!("Speed refused · {error}"));
-        self.physics.applied_speed = index;
         self.shared.dirty.set(true);
     }
 
@@ -596,6 +420,15 @@ impl TreePage {
             Err(error) => format!("Failed · {error}"),
         };
         self.physics.sync(&canvas);
+        self.shared.dirty.set(true);
+    }
+
+    /// The picked speed, applied when chosen (ruled 2026-10-04, "Speed select").
+    pub(super) fn apply_speed(&mut self) {
+        self.physics.pull();
+        let mut canvas = self.shared.canvas.borrow_mut();
+        self.physics.status = self.physics.form.speed_action().run(&mut canvas).status;
+        self.physics.applied_speed = self.physics.selects[&FieldId::Speed].selected;
         self.shared.dirty.set(true);
     }
 
@@ -656,183 +489,168 @@ fn picker(
     ))
 }
 
-/// A tagged law selector for the mix editor's stable browser/test hooks.
-fn mix_law_picker(
-    caption: &'static str,
-    role: &'static str,
-    state: fn(&mut TreePage) -> &mut SelectState,
-) -> Child {
-    let options = labels(CANVAS_PHYSICS_LAWS);
-    Box::new(
-        el(
-            "label",
-            (
-                el("span", caption).attr("class", "tools-caption"),
-                lens(move |s: &mut SelectState| select(s, &options), state),
-            ),
-        )
-        .attr("data-physics-law-role", role),
-    )
+/// The attributes a scenario finds a composing control by.
+fn hooks(id: FieldId) -> Vec<(&'static str, &'static str)> {
+    use FieldId::*;
+    let stage = |slot: Slot, part| {
+        vec![
+            ("data-physics-schedule-stage", slot.id()),
+            ("data-physics-schedule-field", part),
+        ]
+    };
+    match id {
+        MixLaw(slot) => vec![("data-physics-law-role", slot.id())],
+        GroupOuter => vec![("data-physics-law-role", "group-outer")],
+        GroupInner => vec![("data-physics-law-role", "group-inner")],
+        MixShare(slot) => vec![("data-physics-share-role", slot.id())],
+        GroupOuterShare => vec![("data-physics-share-role", "group-outer")],
+        StageLaw(slot) => stage(slot, "law"),
+        StageStop(slot) => stage(slot, "stop"),
+        StageFrames(slot) => stage(slot, "frames"),
+        StageCapture(slot) => stage(slot, "capture"),
+        ScheduleOverlay(overlay) => vec![
+            ("data-physics-schedule-overlay", overlay.id()),
+            ("data-overlay-id", overlay.id()),
+        ],
+        Role | RoleGroups | Speed | GroupPartition => Vec::new(),
+    }
 }
 
-/// An arbitrary-precision share editor. Parsing and validity checks happen at
-/// Apply time, where a refusal leaves the live canvas untouched.
-fn mix_share_field(
-    caption: &'static str,
-    role: &'static str,
-    state: fn(&mut TreePage) -> &mut TextInput,
-) -> Child {
-    Box::new(
-        el(
-            "label",
-            (
-                el("span", caption).attr("class", "tools-caption"),
-                lens(
-                    move |input: &mut TextInput| {
-                        text_field_typed(input).attr("aria-label", caption)
-                    },
-                    state,
+/// `label` with the attributes a scenario finds the field by.
+fn hooked<Seq, State, Action>(
+    mut label: cambium::El<Seq, State, Action>,
+    id: FieldId,
+) -> cambium::El<Seq, State, Action> {
+    for (name, value) in hooks(id) {
+        label = label.attr(name, value);
+    }
+    label
+}
+
+/// One of the form's fields as a labelled control bound to the panel's
+/// state for it. Parsing and validity checks happen at Apply, where a
+/// refusal leaves the live canvas untouched.
+fn field_view(field: Field) -> Child {
+    let id = field.id;
+    let caption = field.label;
+    match field.control {
+        Control::Choice { options, .. } => {
+            let options: Vec<&'static str> = options.iter().map(|(_, label)| *label).collect();
+            Box::new(hooked(
+                el(
+                    "label",
+                    (
+                        el("span", caption).attr("class", "tools-caption"),
+                        lens(
+                            move |s: &mut SelectState| select(s, &options),
+                            move |page: &mut TreePage| page.physics.select_mut(id),
+                        ),
+                    ),
+                ),
+                id,
+            ))
+        },
+        Control::Number { .. } => Box::new(hooked(
+            el(
+                "label",
+                (
+                    el("span", caption.clone()).attr("class", "tools-caption"),
+                    lens(
+                        move |input: &mut TextInput| {
+                            text_field_typed(input).attr("aria-label", caption.clone())
+                        },
+                        move |page: &mut TreePage| page.physics.input_mut(id),
+                    ),
                 ),
             ),
-        )
-        .attr("data-physics-share-role", role),
-    )
-}
-
-fn schedule_law_picker(
-    caption: &'static str,
-    stage: &'static str,
-    state: fn(&mut TreePage) -> &mut SelectState,
-) -> Child {
-    let options = labels(CANVAS_PHYSICS_LAWS);
-    Box::new(
-        el(
-            "label",
-            (
-                el("span", caption).attr("class", "tools-caption"),
-                lens(move |s: &mut SelectState| select(s, &options), state),
-            ),
-        )
-        .attr("data-physics-schedule-stage", stage)
-        .attr("data-physics-schedule-field", "law"),
-    )
-}
-
-fn schedule_stop_picker(
-    caption: &'static str,
-    stage: &'static str,
-    state: fn(&mut TreePage) -> &mut SelectState,
-) -> Child {
-    let options = vec!["Rest", "Frames", "Law done"];
-    Box::new(
-        el(
-            "label",
-            (
-                el("span", caption).attr("class", "tools-caption"),
-                lens(move |s: &mut SelectState| select(s, &options), state),
-            ),
-        )
-        .attr("data-physics-schedule-stage", stage)
-        .attr("data-physics-schedule-field", "stop"),
-    )
-}
-
-fn schedule_capture_picker(
-    caption: &'static str,
-    stage: &'static str,
-    state: fn(&mut TreePage) -> &mut SelectState,
-) -> Child {
-    let options: Vec<_> = std::iter::once("No capture")
-        .chain(Role::ALL.iter().map(|role| role.label()))
-        .collect();
-    Box::new(
-        el(
-            "label",
-            (
-                el("span", caption).attr("class", "tools-caption"),
-                lens(move |s: &mut SelectState| select(s, &options), state),
-            ),
-        )
-        .attr("data-physics-schedule-stage", stage)
-        .attr("data-physics-schedule-field", "capture"),
-    )
-}
-
-fn schedule_frames_field(
-    caption: &'static str,
-    stage: &'static str,
-    state: fn(&mut TreePage) -> &mut TextInput,
-) -> Child {
-    Box::new(
-        el(
-            "label",
-            (
-                el("span", caption).attr("class", "tools-caption"),
-                lens(
-                    move |input: &mut TextInput| {
-                        text_field_typed(input).attr("aria-label", caption)
-                    },
-                    state,
-                ),
-            ),
-        )
-        .attr("data-physics-schedule-stage", stage)
-        .attr("data-physics-schedule-field", "frames"),
-    )
-}
-
-/// Common schedule overlays are intentionally never filtered or disabled by
-/// either stage law. The complete selected set is offered to the binder.
-fn schedule_overlay_group() -> Child {
-    let boxes: Vec<Child> = CANVAS_PHYSICS_OVERLAYS
-        .iter()
-        .zip(PhysicsOverlay::ALL)
-        .enumerate()
-        .map(|(index, ((id, label), overlay))| {
-            Box::new(
+            id,
+        )),
+        Control::Toggle(_) => {
+            let shown = match id {
+                FieldId::ScheduleOverlay(overlay) => overlay.label(),
+                _ => "",
+            };
+            Box::new(hooked(
                 el(
                     "label",
                     (
                         lens(
                             move |checked: &mut bool| {
-                                checkbox(*checked).attr("aria-label", format!("Schedule {label}"))
+                                checkbox(*checked).attr("aria-label", caption.clone())
                             },
-                            move |page: &mut TreePage| &mut page.physics.schedule_overlays[index],
+                            move |page: &mut TreePage| page.physics.tick_mut(id),
                         ),
-                        el("span", *label),
+                        el("span", shown),
                     ),
-                )
-                .attr("data-physics-schedule-overlay", overlay.id())
-                .attr("data-overlay-id", *id),
-            ) as Child
-        })
-        .collect();
-    Box::new(
-        el(
-            "fieldset",
-            (
-                el("legend", "Common overlays"),
-                el("p", "Every selected overlay applies to both stages. If either law rejects one, the whole schedule is refused.")
-                    .attr("class", "tools-note"),
-                el("div", boxes),
-            ),
-        )
-        .attr("data-physics-schedule-overlays", "common"),
-    )
+                ),
+                id,
+            ))
+        },
+    }
+}
+
+fn tools_note(text: &'static str) -> Child {
+    Box::new(el("p", text).attr("class", "tools-note"))
+}
+
+/// Common schedule overlays are intentionally never filtered or disabled by
+/// either stage law. The complete selected set is offered to the binder.
+fn overlay_fieldset(page: &TreePage, group: &Group) -> Child {
+    let mut body: Vec<Child> = vec![Box::new(el("legend", group.title.unwrap_or_default()))];
+    body.extend(group.note.map(tools_note));
+    body.push(Box::new(el(
+        "div",
+        group
+            .fields
+            .iter()
+            .map(|id| field_view(page.physics.form.field(*id)))
+            .collect::<Vec<_>>(),
+    )));
+    Box::new(el("fieldset", body).attr("data-physics-schedule-overlays", "common"))
+}
+
+/// A form button. Role's sits bare; the others carry an id for scenarios.
+fn command_button(command: Command) -> Child {
+    let button = button(command.label(), move |page: &mut TreePage, _| {
+        page.press(command)
+    });
+    if command == Command::ApplyRole {
+        Box::new(button)
+    } else {
+        Box::new(el("div", button).attr("data-physics-action", command.id()))
+    }
+}
+
+/// One composing editor: its fields in groups, its notes and buttons, and
+/// what the canvas authored for it.
+fn editor(page: &TreePage, section: Section) -> Child {
+    let mut body: Vec<Child> = vec![Box::new(el("h3", section.title()))];
+    body.extend(section.intro().iter().copied().map(tools_note));
+    for group in section.groups() {
+        if matches!(group.fields.first(), Some(FieldId::ScheduleOverlay(_))) {
+            body.push(overlay_fieldset(page, &group));
+            continue;
+        }
+        body.extend(group.title.map(|title| Box::new(el("h4", title)) as Child));
+        body.extend(
+            group
+                .fields
+                .iter()
+                .map(|id| field_view(page.physics.form.field(*id))),
+        );
+        body.extend(group.note.map(tools_note));
+    }
+    body.extend(section.commands().iter().copied().map(command_button));
+    body.push(Box::new(status_note_labelled(
+        "tools-note",
+        section.status_label(),
+        page.physics.readback.note(section),
+    )));
+    Box::new(el("div", body).attr("data-physics-composition-editor", section.editor()))
 }
 
 fn apply(label: &'static str, action: fn(&mut TreePage)) -> Child {
     Box::new(button(label, move |page: &mut TreePage, _| action(page)))
-}
-
-fn physics_action(label: &'static str, id: &'static str, action: fn(&mut TreePage)) -> Child {
-    Box::new(
-        el(
-            "div",
-            button(label, move |page: &mut TreePage, _| action(page)),
-        )
-        .attr("data-physics-action", id),
-    )
 }
 
 /// The overlay checkboxes, each greyed and inert while the picked law
@@ -913,6 +731,7 @@ pub(super) fn section(page: &TreePage) -> Child {
     let profiles: Vec<&'static str> = std::iter::once(CUSTOM_LABEL)
         .chain(CANVAS_PHYSICS_PROFILES.iter().map(|profile| profile.label))
         .collect();
+    let field = |id: FieldId| field_view(page.physics.form.field(id));
     let section: Vec<Child> = vec![
         picker(
             "Arrangement",
@@ -920,12 +739,8 @@ pub(super) fn section(page: &TreePage) -> Child {
             |page| &mut page.physics.arrangement,
         ),
         apply("Apply arrangement", TreePage::apply_arrangement),
-        picker(
-            "Role",
-            Role::ALL.iter().map(|role| role.label()).collect(),
-            |page| &mut page.physics.role,
-        ),
-        apply("Apply role", TreePage::apply_role),
+        field(FieldId::Role),
+        command_button(Command::ApplyRole),
         picker("Physics law", labels(CANVAS_PHYSICS_LAWS), |page| {
             &mut page.physics.law
         }),
@@ -936,21 +751,11 @@ pub(super) fn section(page: &TreePage) -> Child {
         picker("Groups", labels(CANVAS_PHYSICS_KIND_SOURCES), |page| {
             &mut page.physics.groups
         }),
-        picker("Role groups", labels(CANVAS_PHYSICS_KIND_SOURCES), |page| {
-            &mut page.physics.role_groups
-        }),
-        Box::new(
-            el(
-                "p",
-                "Role groups chooses which groups role overrides use. Groups supplies Group pull.",
-            )
-            .attr("class", "tools-note"),
+        field(FieldId::RoleGroups),
+        tools_note(
+            "Role groups chooses which groups role overrides use. Groups supplies Group pull.",
         ),
-        physics_action(
-            "Apply role groups",
-            "apply-role-groups",
-            TreePage::apply_role_groups,
-        ),
+        command_button(Command::ApplyRoleGroups),
         picker("Mass", labels(CANVAS_PHYSICS_MASS_SOURCES), |page| {
             &mut page.physics.mass
         }),
@@ -958,119 +763,10 @@ pub(super) fn section(page: &TreePage) -> Child {
             &mut page.physics.depth
         }),
         apply("Apply physics", TreePage::apply_physics),
-        Box::new(
-            el(
-                "div",
-                (
-                    el("h3", "Two-law mix"),
-                    mix_law_picker("First law", "first", |page| &mut page.physics.mix_first),
-                    mix_share_field("First share", "first", |page| {
-                        &mut page.physics.mix_first_share
-                    }),
-                    mix_law_picker("Second law", "second", |page| &mut page.physics.mix_second),
-                    mix_share_field("Second share", "second", |page| {
-                        &mut page.physics.mix_second_share
-                    }),
-                    el(
-                        "p",
-                        "Shares set each law’s contribution; they do not need to add to one.",
-                    )
-                    .attr("class", "tools-note"),
-                    physics_action("Apply mix", "apply-mix", TreePage::apply_mix),
-                    physics_action("Use single law", "use-single-law", TreePage::use_single_law),
-                    status_note_labelled("tools-note", "Authored mix status", page.physics.mix_note.clone()),
-                ),
-            )
-            .attr("data-physics-composition-editor", "two-law-mix"),
-        ),
-        Box::new(
-            el(
-                "div",
-                (
-                    el("h3", "Grouped composition"),
-                    picker("Grouping partition", labels(CANVAS_PHYSICS_KIND_SOURCES), |page| {
-                        &mut page.physics.group_partition
-                    }),
-                    mix_law_picker("Outer law", "group-outer", |page| {
-                        &mut page.physics.group_outer
-                    }),
-                    mix_share_field("Outer share", "group-outer", |page| {
-                        &mut page.physics.group_outer_share
-                    }),
-                    mix_law_picker("Inner law", "group-inner", |page| {
-                        &mut page.physics.group_inner
-                    }),
-                    el(
-                        "p",
-                        "The outer law's repulsion acts between groups; the inner law acts within each group. The outer share scales that repulsion and is not normalized.",
-                    )
-                    .attr("class", "tools-note"),
-                    physics_action("Apply grouping", "apply-grouping", TreePage::apply_grouping),
-                    status_note_labelled("tools-note", "Authored grouping status", page.physics.group_note.clone()),
-                ),
-            )
-            .attr("data-physics-composition-editor", "grouped"),
-        ),
-        Box::new(
-            el(
-                "div",
-                (
-                    el("h3", "Two-stage schedule"),
-                    el(
-                        "p",
-                        "Frame counts apply only when a stage stops after Frames. A capture applies its role when that stage ends.",
-                    )
-                    .attr("class", "tools-note"),
-                    el(
-                        "p",
-                        "Applying starts stage 1 from the current layout. Source and role edits keep the running stage.",
-                    )
-                    .attr("class", "tools-note"),
-                    el("h4", "Stage 1"),
-                    schedule_law_picker("First stage law", "first", |page| {
-                        &mut page.physics.schedule_first_law
-                    }),
-                    schedule_stop_picker("First stage stop", "first", |page| {
-                        &mut page.physics.schedule_first_stop
-                    }),
-                    schedule_frames_field("First stage frames", "first", |page| {
-                        &mut page.physics.schedule_first_frames
-                    }),
-                    schedule_capture_picker("First stage capture", "first", |page| {
-                        &mut page.physics.schedule_first_capture
-                    }),
-                    el("h4", "Stage 2"),
-                    schedule_law_picker("Second stage law", "second", |page| {
-                        &mut page.physics.schedule_second_law
-                    }),
-                    schedule_stop_picker("Second stage stop", "second", |page| {
-                        &mut page.physics.schedule_second_stop
-                    }),
-                    schedule_frames_field("Second stage frames", "second", |page| {
-                        &mut page.physics.schedule_second_frames
-                    }),
-                    schedule_capture_picker("Second stage capture", "second", |page| {
-                        &mut page.physics.schedule_second_capture
-                    }),
-                    schedule_overlay_group(),
-                    physics_action(
-                        "Apply and run schedule",
-                        "apply-schedule",
-                        TreePage::apply_schedule,
-                    ),
-                    status_note_labelled("tools-note", "Authored schedule status", page.physics.schedule_note.clone()),
-                ),
-            )
-            .attr("data-physics-composition-editor", "two-stage-schedule"),
-        ),
-        picker(
-            "Speed",
-            SPEED_PRESETS
-                .iter()
-                .map(|(_, label)| *label)
-                .collect(),
-            |page| &mut page.physics.speed,
-        ),
+        editor(page, Section::Mix),
+        editor(page, Section::Grouping),
+        editor(page, Section::Schedule),
+        field(FieldId::Speed),
         speed_note(page),
         picker("Profile", profiles, |page| &mut page.physics.profile),
         apply("Apply profile", TreePage::apply_profile),
