@@ -59,7 +59,7 @@ fn root_carries_frame_label() {
 }
 
 #[test]
-fn each_leaf_emits_a_pane_node_with_content_tag_label() {
+fn each_leaf_emits_a_pane_node_with_its_visible_label() {
     let layout = fixture_three_pane_frame();
     let tree = project_frisket(&layout);
     let labels: Vec<_> = tree
@@ -67,8 +67,8 @@ fn each_leaf_emits_a_pane_node_with_content_tag_label() {
         .iter()
         .filter_map(|(_, n)| n.label().map(|s| s.to_string()))
         .collect();
-    assert!(labels.contains(&"workbench".to_string()));
-    assert!(labels.contains(&"orrery".to_string()));
+    assert!(labels.contains(&"Read".to_string()));
+    assert!(labels.contains(&"Map".to_string()));
     assert!(labels.contains(&kind::SETTINGS.to_string()));
 }
 
