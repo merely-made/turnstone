@@ -361,6 +361,9 @@ windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 # release tags. The two vendored Mozilla ICU patches below are self-contained
 # source copies, so a clean checkout does not require sibling paths.
 [patch.crates-io]
+# Schema-owned NodeId traversal for native publication namespaces: standalone
+# native consumers of Mere use Mere's patched AccessKit (support/patches/accesskit).
+accesskit = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # Promoted sources shared with immutable older Mere suppliers.
 esp = { git = "https://github.com/merely-made/esp.git", rev = "6d6ad84b773c9baf2390bd7807a21ca9887e6efd" }
 # Canonical promoted families; keep registry and Git consumers type-identical.
