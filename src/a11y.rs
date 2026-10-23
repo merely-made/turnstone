@@ -359,7 +359,7 @@ fn project_chrome(app: &App) -> UxTree {
         let input_id = node_id_for_path("turnstone/chrome/document-find/input");
         let mut input = Node::new(Role::SearchInput);
         input.set_label("Find in document");
-        input.set_value(app.document_find.query.clone());
+        input.set_value(app.document_find.query());
         nodes.push((input_id, input));
         children.push(input_id);
 

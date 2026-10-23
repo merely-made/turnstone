@@ -197,8 +197,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | Reading(_)
         | OpenDocumentFind
         | CloseDocumentFind
-        | InsertDocumentFind(_)
-        | BackspaceDocumentFind
+        | EditDocumentFind(_)
         | StepDocumentFind(_)
         // Page zoom edits how one node is SHOWN, the same tier as its viewer
         // override — not navigation, and never chrome or session scope.

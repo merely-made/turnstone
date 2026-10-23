@@ -231,13 +231,12 @@ pub(super) fn dispatch_primary_chrome_press(
         crate::chrome_view::ChromeIntent::Territory => Action::ToggleTerritory,
         crate::chrome_view::ChromeIntent::AllPanes => Action::OmnibarOpen { command: true },
         crate::chrome_view::ChromeIntent::MenuChanged => { host.pointer_redraw(); return true; },
-        crate::chrome_view::ChromeIntent::FindPrevious => {
-            Action::StepDocumentFind(crate::action::DocumentFindDirection::Previous)
+        crate::chrome_view::ChromeIntent::Find(event) => {
+            let Some(action) = crate::document_find::find_action(event) else {
+                return false;
+            };
+            action
         },
-        crate::chrome_view::ChromeIntent::FindNext => {
-            Action::StepDocumentFind(crate::action::DocumentFindDirection::Next)
-        },
-        crate::chrome_view::ChromeIntent::FindClose => Action::CloseDocumentFind,
         crate::chrome_view::ChromeIntent::Permission { request, choice } => {
             Action::ChoosePermission { request, choice }
         },
