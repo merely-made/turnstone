@@ -72,7 +72,7 @@ impl FrisketLayout {
             target.0,
             edge(side),
             pane_id.0,
-            content.tag().into(),
+            content.label().into(),
             (content, graph_id),
         )
     }

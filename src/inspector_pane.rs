@@ -55,7 +55,8 @@ struct InspectorState {
     member: Option<uuid::Uuid>,
     radio: RadioGroup,
     viewer_options: Vec<crate::inspector_controls::ViewerOption>,
-    capabilities: Vec<String>,
+    viewer_expanded: bool,
+    research_expanded: bool,
     clip_target: Option<String>,
     clip_offer: Option<uuid::Uuid>,
     clip_status: String,
@@ -117,7 +118,7 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
                 "document"
             }
         ),
-        (None, _) => "Create or choose a research note first".into(),
+        (None, _) => "Clip passage".into(),
         (Some(_), false) => "Clip unavailable; see status below".into(),
     };
     let clip_status = el::<_, InspectorState, InspectorIntent>(
@@ -203,88 +204,28 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
             cambium::MessageResult::Stale => cambium::MessageResult::Stale,
         },
     );
-    let capabilities = state
-        .capabilities
-        .iter()
-        .cloned()
-        .map(|line| el::<_, InspectorState, InspectorIntent>("div", line).attr("class", "list-row"))
-        .collect::<Vec<_>>();
-    Box::new(
-        el::<_, InspectorState, InspectorIntent>(
-            "div",
-            (
-                crate::pane_binding::binding_view(&state.binding, |s: &mut InspectorState| &mut s.binding, InspectorIntent::Binding),
-                el::<_, InspectorState, InspectorIntent>("div", "Document controls")
-                    .attr("class", "list-section-title"),
-                el::<_, InspectorState, InspectorIntent>(
-                    "div",
-                    format!(
-                        "Research note: {}",
-                        state
-                            .clip_target
-                            .as_deref()
-                            .unwrap_or("choose or create a note")
-                    ),
-                )
-                .attr("class", "detail-value")
-                .attr("style", "overflow-wrap: anywhere;"),
-                el(
-                    "div",
-                    (
-                        button("New research note", |_: &mut InspectorState, _| {
-                            InspectorIntent::NewResearchNote
-                        }),
-                        button("Open research note", |state: &mut InspectorState, _| {
-                            state
-                                .clip_target
-                                .as_ref()
-                                .map(|_| InspectorIntent::OpenResearchNote)
-                        }),
-                        {
-                            let choice = state.note_choice.clone();
-                            button(
-                                choice
-                                    .as_ref()
-                                    .map(|choice| choice.use_label())
-                                    .unwrap_or_else(|| "Use this document as research note".into()),
-                                move |_: &mut InspectorState, _| {
-                                    choice.clone().map(|choice| {
-                                        InspectorIntent::ChooseResearchNote { choice }
-                                    })
-                                },
-                            )
-                            .attr(
-                                "style",
-                                if state.note_choice.is_some() {
-                                    ""
-                                } else {
-                                    "display: none;"
-                                },
-                            )
-                        },
-                    ),
-                )
-                .attr("style", "display: flex; flex-wrap: wrap; gap: 4px;"),
-                clip_status,
-                clip_button,
-                source_button,
-                source_status,
-                capabilities,
-                el::<_, InspectorState, InspectorIntent>("div", "Viewer")
-                    .attr("class", "list-section-title"),
-                viewer,
-                detail_panel(&sections),
-            ),
-        )
-        .attr("class", "pane cambium-shell-panel")
-        .attr(
-            "style",
-            format!(
-                "width: {}px; height: {}px;",
-                state.viewport_w, state.viewport_h
-            ),
-        ),
-    )
+    let current_viewer=state.viewer_options.get(state.radio.selected).map(|option|option.label.as_str()).unwrap_or("Unavailable saved viewer");
+    Box::new(el::<_,InspectorState,InspectorIntent>("div",(
+        crate::pane_binding::binding_view(&state.binding,|state:&mut InspectorState|&mut state.binding,InspectorIntent::Binding),
+        button(format!("Viewer: {current_viewer}"),|state:&mut InspectorState,_|{state.viewer_expanded=!state.viewer_expanded;None::<InspectorIntent>})
+            .attr("aria-label","Change viewer").attr("aria-expanded",if state.viewer_expanded {"true"} else {"false"}).attr("class","shell-control"),
+        el("div",viewer).attr("style",if state.viewer_expanded {""} else {"display:none;"}),
+        detail_panel(&sections),
+        source_button,source_status,
+        button("Research tools",|state:&mut InspectorState,_|{state.research_expanded=!state.research_expanded;None::<InspectorIntent>})
+            .attr("aria-expanded",if state.research_expanded {"true"} else {"false"}).attr("class","shell-control"),
+        el("div",(
+            el("p",state.clip_target.as_ref().map(|target|format!("Research note: {target}")).unwrap_or_else(||"Choose a research note to keep passages.".into())).attr("class","detail-value"),
+            el("div",(
+                button("New research note",|_:&mut InspectorState,_|InspectorIntent::NewResearchNote),
+                button("Open research note",|state:&mut InspectorState,_|state.clip_target.as_ref().map(|_|InspectorIntent::OpenResearchNote))
+                    .attr("style",if state.clip_target.is_some() {""} else {"display:none;"}),
+                {let choice=state.note_choice.clone();button(choice.as_ref().map(|choice|choice.use_label()).unwrap_or_else(||"Use this document as research note".into()),move |_:&mut InspectorState,_|choice.clone().map(|choice|InspectorIntent::ChooseResearchNote{choice}))
+                    .attr("style",if state.note_choice.is_some() {""} else {"display:none;"})}
+            )).attr("style","display:flex;flex-wrap:wrap;gap:4px;"),
+            el("div",(clip_status,clip_button)).attr("style",if state.clip_target.is_some() {""} else {"display:none;"}),
+        )).attr("style",if state.research_expanded {""} else {"display:none;"}),
+    )).attr("class","pane cambium-shell-panel").attr("style",format!("width:{}px;height:{}px;",state.viewport_w,state.viewport_h)))
 }
 
 /// The Inspector pane: a retained cambium runner over the detail sections.
@@ -326,7 +267,8 @@ impl InspectorPane {
                 label: "Auto".into(),
                 selectable: true,
             }],
-            capabilities: Vec::new(),
+            viewer_expanded: false,
+            research_expanded: false,
             clip_target: None,
             clip_offer: None,
             note_choice: None,
@@ -382,6 +324,9 @@ impl InspectorPane {
             self.runner.update(|state| state.binding.expanded = false);
             return Vec::new();
         }
+        if matches!(event.key,cambium::Key::Named(cambium::NamedKey::Escape)) && self.runner.state().viewer_expanded {
+            self.runner.update(|state|state.viewer_expanded=false);return Vec::new();
+        }
         let previous = self.runner.state().radio.selected;
         let mut intents = self.runner.dispatch_key(event);
         let state = self.runner.state();
@@ -435,10 +380,10 @@ impl InspectorPane {
         let saved_viewer = member
             .and_then(|member| app.browser.get(member))
             .and_then(|browser| browser.viewer_override.as_deref());
-        let viewer_options = crate::inspector_controls::viewer_options(app, saved_viewer);
+        let viewer_options:Vec<_> = crate::inspector_controls::viewer_options(app, saved_viewer).into_iter()
+            .filter(|option|option.selectable || option.viewer.as_deref()==saved_viewer).collect();
         let synced_viewer =
             crate::inspector_controls::index_for_viewer(&viewer_options, saved_viewer);
-        let capabilities = crate::inspector_controls::capabilities(app, member);
         let note_choice = member
             .and_then(|member| app.note_choice(member))
             .filter(|choice| {
@@ -459,11 +404,11 @@ impl InspectorPane {
             .unwrap_or_default();
         self.runner.update(|state| {
             state.binding.sync(app, pane_id);
+            if state.member!=member {state.viewer_expanded=false;state.research_expanded=false;}
             state.member = member;
             state.radio.selected = synced_viewer;
             state.radio.focus_request = None;
             state.viewer_options = viewer_options;
-            state.capabilities = capabilities;
             state.note_choice = note_choice;
             state.source_target = source_target;
             state.source_status = source_status;

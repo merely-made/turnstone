@@ -22,7 +22,7 @@ use super::App;
 impl App {
     /// Named navigation must reveal its destination, including from a maximized
     /// reader. Focus still belongs to the destination's graph or pane surface.
-    pub(super) fn reveal_pane(&mut self, pane: PaneId) {
+    pub(crate) fn reveal_pane(&mut self, pane: PaneId) {
         if let Some(space) = self.space_of(pane)
             && self.ensure_shared_space(space).is_ok()
             && let Some(layout) = self.space_mut(space)
@@ -61,6 +61,7 @@ impl App {
             .filter(|(_, content, id)| matches!(content, PaneContent::Orrery) && *id == graph)
             .map(|(pane, _, _)| pane)
             .collect::<Vec<_>>();
+        if let Some(pane)=self.active_pane.filter(|p|candidates.contains(p)) {return Some(pane);}
         candidates
             .iter()
             .copied()
@@ -111,6 +112,7 @@ impl App {
     }
 
     pub(crate) fn read_member_in_graph(&mut self, graph: GraphId, member: Uuid) -> Vec<Effect> {
+        self.capture_scope_origin();
         if !self.graph_runtimes.canvas(graph).is_some_and(|canvas| canvas.graph().get_node_by_id(member).is_some()) {
             return vec![Effect::Redraw];
         }
@@ -157,6 +159,36 @@ impl App {
         let mut effects = self.open_in_workbench();
         effects.extend(self.update(Action::WorkbenchActivate(member)));
         effects
+    }
+
+    pub(crate) fn read_visit_in_pane(&mut self,pane:PaneId,member:Uuid)->Vec<Effect> {
+        if let Some(workbench)=self.workbench_for_pane_mut(pane) {
+            if !workbench.has_tile(member) {
+                let current=workbench.slot_views().find_map(|slot|slot.members.get(slot.active).copied());
+                if let Some(current)=current {workbench.open_in_slot_of(member,current);} else {workbench.open_tile(member);}
+            }
+            workbench.activate(member);
+        }
+        self.reveal_pane(pane);self.publish_member_context(pane,Some(member));
+        self.focus=crate::surface::FocusTarget::Pane(pane);
+        vec![Effect::SaveSession,Effect::Redraw]
+    }
+    pub(crate) fn reveal_reading_on_graph(&mut self,target:crate::reading_view::ReadTarget)->Vec<Effect> {
+        let Some(graph)=self.graph_for_pane(target.pane) else {return vec![Effect::Redraw];};
+        let Some(pane)=self.graph_pane_for_navigation(graph) else {return vec![Effect::Redraw];};
+        self.reveal_pane(pane);self.graph_pane_select_member(pane,target.member);
+        self.with_graph_pane(pane,|canvas|canvas.center_on_selected());
+        self.focus=crate::surface::FocusTarget::Graph(pane);
+        vec![Effect::SaveSession,Effect::Redraw]
+    }
+
+    pub(crate) fn reveal_relationship(&mut self,target:crate::relationship_navigation::RelationshipTarget)->Vec<Effect> {
+        if !self.valid_relationship(target) {return vec![Effect::Redraw];}
+        let Some(pane)=self.graph_pane_for_navigation(target.graph) else {return vec![Effect::Redraw];};
+        self.reveal_pane(pane); self.graph_pane_select_member(pane,target.member);
+        self.with_graph_pane(pane,|canvas|canvas.center_on_selected());
+        self.focus=crate::surface::FocusTarget::Graph(pane);
+        vec![Effect::SaveSession,Effect::Redraw]
     }
 
     pub(super) fn reveal_graph_member(&mut self, member: Uuid) -> Vec<Effect> {
@@ -324,6 +356,9 @@ impl App {
         if layout.summon_leaf(&anchor_path, InsertSide::Right, new_leaf) {
             self.next_pane_id += 1;
             self.reveal_pane(id);
+            if kind.as_str()==kind::INSPECTOR {
+                self.set_active_pane_divider(0.70);
+            }
             self.index_pane_spaces();
             self.events
                 .push(AppEvent::PaneSummoned(definition.display_name));
@@ -451,22 +486,24 @@ impl App {
         let workbench_pane = match workbench_pane {
             Some(pane) => pane,
             None => {
-                // The initial reader should use the window. Keep Orrery as a
-                // sibling tab rather than an empty half-width split. Preserve
-                // any arrangement the user has already composed.
+                // A first Read projection replaces its map's main surface,
+                // keeping any adjacent tools. Opening Inspect first must not
+                // leave a spare map split beside the same document.
                 let reading_stack = self.space_of(graph_pane).filter(|space| {
-                    if self.active_pane.is_some_and(|pane| pane != graph_pane) {
-                        return false;
-                    }
                     self.space(*space).and_then(|layout| layout.outer_workspace().ok())
-                        .is_some_and(|frame| frame.workspace.floating().is_empty()
-                            && matches!(frame.workspace.tiled(), workbench::TileTree::Stack(stack)
-                                if stack.tabs.len() == 1 && stack.tabs[0].id == workbench::TileId(graph_pane.0)))
+                        .is_some_and(|frame| {
+                            crate::panes::workspace_bridge::path_for(frame.workspace.tiled(), workbench::TileId(graph_pane.0))
+                                .and_then(|path| crate::panes::workspace_bridge::tree_at(frame.workspace.tiled(), &path))
+                                .is_some_and(|tree| matches!(tree,workbench::TileTree::Stack(stack) if stack.tabs.len()==1))
+                        })
                 });
                 effects.extend(self.update(Action::SummonPane(PaneKindId::new(kind::WORKBENCH))));
                 let pane = self.active_pane.unwrap_or(graph_pane);
                 if pane != graph_pane
                     && let Some(space) = reading_stack
+                    && let Some(stack) = self.space(space).and_then(|layout|layout.outer_workspace().ok())
+                        .and_then(|frame|crate::panes::workspace_bridge::path_for(frame.workspace.tiled(),workbench::TileId(graph_pane.0)))
+                        .map(|path|crate::panes::workspace_bridge::path_indices(&path))
                 {
                     effects.extend(
                         self.update(Action::OuterWorkspace {
@@ -474,7 +511,7 @@ impl App {
                             event: workbench::TileEvent::Dragged {
                                 tile: workbench::TileId(pane.0),
                                 to: workbench::DropTarget::Stack {
-                                    stack: workbench::TilePath(vec![0]),
+                                    stack,
                                     index: 1,
                                 },
                             }

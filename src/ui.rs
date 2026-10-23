@@ -914,12 +914,12 @@ pub(crate) const CHROME_SHEET: &str = "\
                       padding: 5px 8px; white-space: nowrap; } \
     .whereami { position: absolute; color: rgb(170, 178, 195); \
                 background-color: rgb(20, 25, 38); font-size: 12px; \
-                box-sizing: border-box; padding: 7px 12px; border-radius: 0; overflow: hidden; \
+                box-sizing: border-box; padding: 2px 12px; border-radius: 0; overflow: hidden; \
                 border: 0; white-space: nowrap; } \
     .browser-strip { position: absolute; display: flex; align-items: center; \
                       gap: 5px; box-sizing: border-box; color: rgb(216, 222, 234); \
                       background-color: rgb(20, 25, 38); border: 1px solid rgb(52, 62, 86); \
-                      border-radius: 0; padding: 5px 12px; overflow: hidden; } \
+                      border-radius: 0; padding: 3px 12px; overflow: visible; } \
     .browser-loading { border-bottom: 2px solid rgb(206, 84, 47); } \
     .browser-button, .browser-button-disabled { flex-shrink: 0; font-size: 12px; padding: 4px 8px; \
                       border-radius: 6px; white-space: nowrap; } \
@@ -1010,6 +1010,7 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
     );
     let controls = format!(
         ".turnstone-stone-hidden {{ display:none; }}
+        .browser-strip, .whereami {{ --shell-background:var(--tabard-color-surface); --shell-foreground:var(--tabard-color-text); --shell-rule:var(--tabard-color-text-dim); }}
         .browser-strip {{ background-color:transparent; border:0; border-radius:0; gap:2px; padding:0; }}
         .shell-control, .browser-status {{ color:inherit; font-size:{interface:.2}px; }}
         .shell-control[aria-pressed=true] {{ background-color:var(--tabard-color-surface-2); color:var(--tabard-color-text-header); }}

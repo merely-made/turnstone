@@ -161,7 +161,9 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
 fn reading_toolbar(state: &WorkbenchState, index: usize) -> WbView {
     let cell = &state.cells[index];
     let Some(target) = cell.target else { return Box::new(el("div", ())); };
-    let find = cell.find_enabled.then_some(&cell.find);
+    let mut ui = cell.find.clone();
+    ui.available = cell.find_enabled;
+    let find = Some(&ui);
     cambium::read_toolbar(cell.preferences.text_size, cell.preferences.column_em, cell.text_controls, find,
         move |state: &mut WorkbenchState, event| {
             use crate::reading_view::ReadAction;
@@ -541,6 +543,11 @@ mod tests {
         let mut chrome=app.shell_chrome_config().clone(); chrome.layout_scales.insert(0,2.0); app.set_shell_chrome_config(chrome);
         let mut pane=WorkbenchPane::new(); pane.sync(&app,pane_id,1200.,800.);pane.scene(1200,800,2.0);
         let selector=taproot::Selector::role("button").on_surface("workbench").containing("Larger reading text");
+        assert!(pane.selector_point(&selector).unwrap().is_none(),"appearance controls start folded");
+        let aa=taproot::Selector::role("button").on_surface("workbench").containing("Reading appearance");
+        let (x,y)=pane.selector_point(&aa).unwrap().unwrap();pane.click(x,y,1200,800);
+        for action in pane.take_read_actions() {app.update(action);}
+        pane.sync(&app,pane_id,1200.,800.);pane.scene(1200,800,2.0);
         let point=pane.selector_point(&selector).unwrap().unwrap();
         let cell=&pane.tiling().cells[0];
         assert!(cell.toolbar_rect().contains(point.0,point.1));

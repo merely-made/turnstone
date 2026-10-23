@@ -1175,7 +1175,9 @@ impl App {
         // the surface default. Set through the runtimes directly: the app-level
         // arm clears the score for a non-Spiral strategy, which is right for a
         // fresh choice and wrong for a restore of the pair.
+        let pending_scope=self.reading.scope.pending.is_some().then(||std::mem::take(&mut self.reading.scope));
         self.reading = crate::reading_view::ReadingState::load(&sdir);
+        if let Some(scope) = pending_scope { self.reading.scope = scope; }
         // The folds and the command menu ride the view intent; the scene
         // itself is restored below, once the facets are reconciled.
         let mut opened_view = {
@@ -1373,6 +1375,7 @@ impl App {
         let primary_graph_pane = self.default_graph_pane();
         let active_graph = self.graph_runtimes.active_graph();
         if let Some(canvas) = self.graph_runtimes.canvas_mut(active_graph) {
+            self.graph_views.bind_graph(primary_graph_pane,active_graph);
             self.graph_views.install(primary_graph_pane, canvas);
         }
         self.publish_graph_context(primary_graph_pane);
@@ -1420,6 +1423,7 @@ impl App {
         }
         let label = self.session_label(id);
         self.events.push(AppEvent::SessionSwitched(label));
+        effects.extend(self.restore_scope_after_session());
         effects.push(Effect::Redraw);
         effects
     }

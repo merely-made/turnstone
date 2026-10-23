@@ -211,6 +211,7 @@ pub(super) fn dispatch_primary_chrome_press(
     let action = match intent {
         crate::chrome_view::ChromeIntent::CommitRow(index) => Action::OmnibarCommitRow(index),
         crate::chrome_view::ChromeIntent::ToggleKeep(index) => Action::OmnibarToggleKeepRow(index),
+        crate::chrome_view::ChromeIntent::Scope(command) => Action::Scope(command),
         crate::chrome_view::ChromeIntent::NavBack => Action::NavBack,
         crate::chrome_view::ChromeIntent::NavForward => Action::NavForward,
         crate::chrome_view::ChromeIntent::Reload => Action::Reload,
@@ -221,6 +222,7 @@ pub(super) fn dispatch_primary_chrome_press(
         crate::chrome_view::ChromeIntent::Tool(kind) => Action::ToggleToolPane(crate::panes::PaneKindId::new(kind)),
         crate::chrome_view::ChromeIntent::ReadMember(member) => Action::ReadGraphMember(member),
         crate::chrome_view::ChromeIntent::NavigateRelationship(target) => Action::NavigateRelationship(target),
+        crate::chrome_view::ChromeIntent::RevealRelationship(target) => Action::RevealRelationship(target),
         crate::chrome_view::ChromeIntent::RevealMember(member) => Action::RevealGraphMember(member),
         crate::chrome_view::ChromeIntent::Layout(layout) => Action::SetChromeLayout(layout),
         crate::chrome_view::ChromeIntent::FitGraph => {
@@ -830,7 +832,7 @@ impl Shell {
                                         ) => self.act(Action::OpenAddress(url)),
                                         crate::swatch_pane::SwatchIntent::Activate(
                                             crate::swatch_pane::SwatchActivate::Switch(id),
-                                        ) => self.act(Action::SwitchSession(id)),
+                                        ) => self.act(Action::SelectScopeMere(id)),
                                         // A composed Removed row: recover the
                                         // node under its ORIGINAL id.
                                         crate::swatch_pane::SwatchIntent::Activate(
@@ -1007,7 +1009,7 @@ impl Shell {
                                         ) => self.act(Action::OpenAddress(url)),
                                         crate::swatch_pane::SwatchIntent::Activate(
                                             crate::swatch_pane::SwatchActivate::Switch(id),
-                                        ) => self.act(Action::SwitchSession(id)),
+                                        ) => self.act(Action::SelectScopeMere(id)),
                                         // A composed Removed row: recover the
                                         // node under its ORIGINAL id.
                                         crate::swatch_pane::SwatchIntent::Activate(
