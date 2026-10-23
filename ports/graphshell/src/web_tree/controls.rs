@@ -202,7 +202,7 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
         buttons.push(blocks::control(page));
     }
     // Collapsed, the Graph tools region opens over the canvas from here.
-    if !tools_docked(page) {
+    {
         buttons.push(Box::new(
             button("Graph tools", |page: &mut TreePage, _| {
                 page.tools_open = !page.tools_open;

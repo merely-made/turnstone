@@ -97,6 +97,12 @@ pub struct HeldContent {
     pub engine: Option<String>,
     pub media: Option<HeldMedia>,
 }
+/// A bounded preview of an already retained portable packet; never fetches.
+pub fn retained_packet_excerpt(body:&str)->Option<String> {
+    if body.len()>256*1024 {return None;}
+    let document:inker::EngineDocument=serde_json::from_str(body).ok()?;
+    mere_document_lanes::reading_excerpt(&document)
+}
 impl HeldContent {
     pub fn text(
         address: impl Into<String>,
@@ -240,6 +246,25 @@ impl ContentSlot {
             let session=controller.session().as_any_ref();
             session.is::<mere_document_lanes::ReaderDocumentSession>() || session.is::<mere_document_lanes::SmolwebDocumentSession>()
         })
+    }
+    pub fn reading_excerpt(&self)->Option<String> {
+        let session=self.content.document()?.session().as_any_ref();
+        let document=session.downcast_ref::<mere_document_lanes::ReaderDocumentSession>().map(|r|r.source_document())
+            .or_else(||session.downcast_ref::<mere_document_lanes::SmolwebDocumentSession>().map(|d|d.document().source_document()))?;
+        mere_document_lanes::reading_excerpt(&document)
+    }
+    pub fn reading_anchor(&self) -> Option<tabard::ReadingAnchor> {
+        let session=self.content.document()?.session().as_any_ref();
+        session.downcast_ref::<mere_document_lanes::ReaderDocumentSession>().and_then(|r|r.reading_anchor())
+            .or_else(||session.downcast_ref::<mere_document_lanes::SmolwebDocumentSession>().and_then(|d|d.document().reading_anchor()))
+    }
+    pub fn restore_reading_anchor(&mut self, anchor:tabard::ReadingAnchor) {
+        if let Some(controller)=self.content.document_mut() {
+            let session=controller.session_mut().as_any();
+            if let Some(reader)=session.downcast_mut::<mere_document_lanes::ReaderDocumentSession>() {reader.restore_reading_anchor(anchor);}
+            else if let Some(doc)=session.downcast_mut::<mere_document_lanes::SmolwebDocumentSession>() {doc.document_mut().restore_reading_anchor(anchor);}
+        }
+        self.revision=self.revision.wrapping_add(1);
     }
     pub fn reading_preferences(&mut self, value: tabard::ReadingPreferences) -> Result<bool, String> {
         let session = self.content.document_mut().ok_or("No retained document")?.session_mut().as_any();

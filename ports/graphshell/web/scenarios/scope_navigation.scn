@@ -1,0 +1,87 @@
+# Structural scope and temporal history use the same retained product owners.
+assert snap source == saved graph
+remember initial
+click role:button Fit graph
+settle 20
+click role:button Inspector
+reveal role:button Find and filter
+click role:button Find and filter
+reveal role:textbox Search
+click role:textbox Search
+input-text mere://reading/field-notes
+click role:button Apply filter
+click role:button Inspector
+click role:button Fit graph
+settle 20
+click-node mere://reading/field-notes
+click role:button Inspector
+reveal role:button Clear filter
+click role:button Clear filter
+click role:button Find and filter
+click role:button Inspector
+click role:button Panes
+click role:button Read selected
+wait 120
+assert snap scope-level == Document
+click role:button Find in reading
+settle 10
+click role:textbox Find text in reading
+input-text Field observation 4
+settle 10
+key Escape
+wait 90
+remember origin
+capture graphshell_scope_reading
+click role:button Up:
+wait 120
+assert snap scope-level == Neighborhood
+capture graphshell_scope_neighborhood
+click role:button Scope: Local Mere
+wait 120
+assert snap scope-level == Graph
+capture graphshell_scope_graph
+click role:button Up:
+wait 120
+assert snap scope-level == Meres
+capture graphshell_scope_meres
+click role:button Down:
+wait 120
+assert snap scope-level == Graph
+click role:button Down:
+wait 120
+assert snap scope-level == Neighborhood
+click role:button Down:
+wait 120
+assert snap scope-level == Document
+same origin reading-anchor
+capture graphshell_scope_returned
+click role:button Up:
+wait 120
+click role:button Back:
+wait 120
+assert snap scope-level == Document
+same origin reading-anchor
+click role:button Forward:
+wait 120
+assert snap scope-level == Neighborhood
+click-node mere://reading/related-note
+click role:button Down:
+wait 120
+assert snap scope-level == Document
+capture graphshell_scope_entered_neighbor
+click role:button Up:
+wait 120
+click-node mere://reading/field-notes
+click role:button Down:
+wait 120
+same origin reading-anchor
+same initial node-count
+capture graphshell_scope_final_reading
+click role:button Find in reading
+settle 10
+click role:textbox Find text in reading
+input-text Room to think
+settle 10
+key Escape
+wait 120
+capture graphshell_scope_later_passage

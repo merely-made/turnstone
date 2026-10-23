@@ -116,6 +116,9 @@ pub async fn seed_reading<B: muniment::Backend + Clone>(
         ],
     };
     document.provenance.source_kind = Some(pelt_core::native::DOCUMENT_ENGINE_ID.into());
+    for index in 1..=8 {
+        document.blocks.push(paragraph(&format!("Field observation {index}. A saved place in a document is a passage, with enough nearby wording to find it again when the page changes shape. Returning should leave the surrounding map where it was and keep a pinned inspector on its chosen source.")));
+    }
     let body = serde_json::to_string(&document).map_err(|e| e.to_string())?;
     let member = crate::local_intake::create_address(app, address, "Reading from the graph")?;
     let key = app.host.graph().get_node_key_by_id(member).ok_or("Missing reading fixture member")?;
@@ -125,5 +128,21 @@ pub async fn seed_reading<B: muniment::Backend + Clone>(
         apply_graph_delta(graph, GraphDelta::SetNodeBody { key, body: Some(body) });
     }).map_err(|e| e.to_string())?;
     crate::local_intake::persist_intake(app, member, 7).await?;
+    let related_address="mere://reading/related-note";
+    let mut related=document.clone();
+    related.address=related_address.into();related.title=Some("Relationship field notes".into());
+    related.blocks=vec![Block::Heading{level:1,spans:vec![InlineSpan::Text("Relationship field notes".into())]},
+        paragraph("A relationship is a recorded connection between sources. A preview lets the reader inspect a destination without losing the passage they came from."),
+        paragraph("Read follows the connection. Graph shows the destination in its surrounding scope. Closing this preview keeps the reading pane and its source binding in place.")];
+    let related_body=serde_json::to_string(&related).map_err(|e|e.to_string())?;
+    let other=crate::local_intake::create_address(app,related_address,"Relationship field notes")?;
+    let other_key=app.host.graph().get_node_key_by_id(other).ok_or("Missing related fixture member")?;
+    app.host.mutate_product_graph(|graph| {
+        use mere::kernel::graph::{apply::{apply_graph_delta,GraphDelta,assert_relation},EdgeAssertion,SemanticSubKind};
+        apply_graph_delta(graph,GraphDelta::SetNodeMimeHint{key:other_key,mime_hint:Some("application/vnd.mere.document+json".into())});
+        apply_graph_delta(graph,GraphDelta::SetNodeBody{key:other_key,body:Some(related_body)});
+        assert_relation(graph,key,other_key,EdgeAssertion::Semantic{sub_kind:SemanticSubKind::Cites,label:None}).expect("fixture endpoints");
+    }).map_err(|e|e.to_string())?;
+    crate::local_intake::persist_intake(app,other,8).await?;
     Ok(())
 }

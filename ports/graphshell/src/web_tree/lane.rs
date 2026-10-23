@@ -993,6 +993,10 @@ impl Product for TreeLane {
         let mut lines = vec![format!("RESULT {}", if outcome.ok { "ok" } else { "fail" })];
         lines.extend(outcome.log.iter().cloned());
         lines.extend(self.receipt_lines());
+        #[cfg(feature="product")]
+        let scope_receipt=(scope_navigation::place(ctx.runner.state()).map(|p|p.level.label()),scope_navigation::place(ctx.runner.state()).and_then(|p|p.focus),reading::anchor_field(ctx.runner.state()));
+        #[cfg(not(feature="product"))]
+        let scope_receipt:(Option<&str>,Option<uuid::Uuid>,String)=(None,None,String::new());
         let saved = ctx.runner.state().product.as_ref().map(|product| {
             json!({
                 "session": product.session, "selected": product.selected,
@@ -1001,6 +1005,9 @@ impl Product for TreeLane {
                 "save_state": product.save_state, "reopened": product.reopened,
                 "owner_observation": owner_receipt(ctx.runner.state()),
                 "link_path_source": link_paths::source_receipt(&self.shared.canvas.borrow()),
+                "scope_level": scope_receipt.0,
+                "scope_focus": scope_receipt.1,
+                "reading_anchor": scope_receipt.2,
             })
         });
         publish(outcome.ok, &lines.join("\n"), &self.shared, saved);
@@ -1101,6 +1108,8 @@ impl Product for TreeLane {
         let snapshot = source_binding::fields(page, snapshot);
         #[cfg(feature = "product")]
         let snapshot = navigation::fields(page, snapshot);
+        #[cfg(feature = "product")]
+        let snapshot = scope_navigation::fields(page,snapshot);
         #[cfg(feature = "product")]
         let snapshot = link_inspection::fields(page, snapshot);
         #[cfg(feature = "product")]
@@ -2493,6 +2502,9 @@ fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> Pr
         .with_field("forme-accesses", pane.current().members().len().to_string())
         .with_field("reading-text-size", pane.current().focused_reading.map(|id|pane.current().reading_preferences.get(&id).copied().unwrap_or_default().text_size.to_string()).unwrap_or_default())
         .with_field("reading-column-em", pane.current().focused_reading.map(|id|pane.current().reading_preferences.get(&id).copied().unwrap_or_default().column_em.to_string()).unwrap_or_default())
+        .with_field("reading-history-back",pane.current().reading_trail.can_back().to_string())
+        .with_field("reading-history-forward",pane.current().reading_trail.can_forward().to_string())
+        .with_field("reading-anchor",super::reading::anchor_field(page))
         .with_field("reading-find", pane.current().focused_reading.and_then(|id|pane.reading_ui.get(&id)).filter(|ui|ui.open).map_or("closed",|ui|ui.status.as_str()))
         .with_field(
             "forme-cells",

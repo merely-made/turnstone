@@ -1,0 +1,16 @@
+assert snap source == saved graph
+click role:button Read
+wait 120
+assert snap reading-text-size == 20
+assert snap reading-column-em == 32
+assert snap reading-find == closed
+assert snap reading-history-forward == true
+remember reopened
+capture graphshell_anchored_reading_reopened
+click role:button Next reading visit
+wait 120
+assert snap reading-history-back == true
+click role:button Previous reading visit
+wait 120
+same reopened reading-anchor
+capture graphshell_anchored_reading_returned

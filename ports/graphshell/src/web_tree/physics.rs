@@ -881,6 +881,7 @@ fn schedule_overlay_group() -> Child {
                 el("legend", "Common overlays"),
                 el("p", "Every selected overlay applies to both stages. If either law rejects one, the whole schedule is refused.")
                     .attr("class", "tools-note"),
+                el("p","Hub room gives connected hubs more space. Group pull keeps matching group values together. Tide gently moves the attraction centre; Skeleton stiffens spanning-tree connections.").attr("class","tools-note"),
                 el("div", boxes),
             ),
         )
@@ -933,7 +934,7 @@ fn overlay_group(page: &TreePage) -> Child {
                         el(
                             "label",
                             (
-                                el("span", "[ ]")
+                                el("span",cambium::choice_indicator::<TreePage,()>(false,false))
                                     .attr("role", "checkbox")
                                     .attr("data-overlay", overlay.id())
                                     .attr("aria-label", *label)
@@ -959,6 +960,7 @@ fn overlay_group(page: &TreePage) -> Child {
                 .attr("class", "tools-note"),
         ));
     }
+    boxes.push(Box::new(el("p","Hub room gives highly connected nodes more space. Group pull draws nodes with the same grouping value together. Tide adds slow drift; Skeleton strengthens the graph's spanning-tree links.").attr("class","tools-note")));
     let group = el("div", boxes)
         .attr("class", "tools-overlays")
         .attr("role", "group")

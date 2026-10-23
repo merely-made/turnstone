@@ -14,6 +14,7 @@ pub(super) struct State {
     pub open: bool,
     source: Option<(Uuid, Uuid)>,
     page: usize,
+    preview: Option<RelationshipTarget>,
 }
 
 fn rows(page: &TreePage) -> Vec<RelationshipRow> {
@@ -36,6 +37,7 @@ pub(super) fn control(page: &TreePage) -> Child {
             page.instrument.navigation.open = !page.instrument.navigation.open;
             page.instrument.navigation.source = super::source_binding::active(page);
             page.instrument.navigation.page = 0;
+            page.instrument.navigation.preview=None;
             page.instrument.panes_open = false;
             page.shared.dirty.set(true);
         },
@@ -50,7 +52,7 @@ fn activate(page: &mut TreePage, target: RelationshipTarget) {
     {
         return;
     }
-    super::forme::open_retained(page, target.member);
+    super::forme::read_related(page, target.member);
     if !page
         .forme
         .as_ref()
@@ -94,15 +96,25 @@ pub(super) fn popup(page: &TreePage) -> Option<Child> {
             .attr("role", "status"),
         ));
     }
-    for row in all.into_iter().skip(index * PAGE_SIZE).take(PAGE_SIZE) {
+    if let Some(row)=page.instrument.navigation.preview.and_then(|target|all.iter().find(|row|row.target==target)) {
+        let target=row.target;
+        let excerpt=super::reading::preview_excerpt(page,target.member);
+        children.push(cambium::relationship_preview(row.title.clone(),row.relationship.clone(),row.address.clone(),excerpt,move |page:&mut TreePage,command| {
+            use cambium::RelationshipPreviewCommand as C;
+            if !rows(page).iter().any(|row|row.target==target) {return;}
+            match command {C::Read=>activate(page,target), C::ShowGraph=> {super::reading::show_graph(page,target.member);page.instrument.navigation.open=false;}, C::Close=>page.instrument.navigation.preview=None}
+            page.shared.dirty.set(true);
+        }));
+    }
+    for row in all.into_iter().skip(index * PAGE_SIZE).take(PAGE_SIZE).filter(|_|page.instrument.navigation.preview.is_none()) {
         children.push(shell_navigation_item(
             row.title,
             format!("{} · {}", row.relationship, row.address),
             ShellControl::default(),
-            move |page: &mut TreePage, _| activate(page, row.target),
+            move |page: &mut TreePage, _| {page.instrument.navigation.preview=Some(row.target);page.shared.dirty.set(true);},
         ));
     }
-    if count > PAGE_SIZE {
+    if page.instrument.navigation.preview.is_none() && count > PAGE_SIZE {
         children.push(Box::new(el(
             "p",
             format!(
@@ -140,6 +152,7 @@ pub(super) fn popup(page: &TreePage) -> Option<Child> {
 
 pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot {
     snapshot
+        .with_field("relationship-preview",page.instrument.navigation.preview.map(|target|target.member.to_string()).unwrap_or_default())
         .with_field("relationship-count", rows(page).len().to_string())
         .with_field(
             "relationship-open",

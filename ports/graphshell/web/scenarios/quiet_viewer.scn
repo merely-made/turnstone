@@ -1,0 +1,109 @@
+# Retained viewer's real search field and command activation path.
+# tree.html or grouped-dataset.html; start on a fresh mount.
+assert snap ready == true
+click role:button Fit graph
+settle 10
+capture graphshell_quiet_dataset_viewer
+assert snap wheel-mode == zoom
+assert snap commands-open == false
+click role:button Graph commands
+settle 2
+assert snap commands-open == true
+click role:textbox Search graph commands
+input-text Fit selection
+settle 2
+remember unselected
+key ArrowDown
+key Enter
+settle 2
+assert snap commands-open == true
+assert snap command-last == Select a visible node first
+same unselected camera
+same unselected zoom
+key Escape
+settle 2
+assert snap commands-open == false
+assert snap focus-kind == graph
+remember camera-start
+click role:button Graph commands
+settle 2
+click role:textbox Search graph commands
+input-text Pan right
+settle 2
+key Enter
+wait 120
+assert snap commands-open == false
+assert snap command-last == Pan right
+differs camera-start camera
+click role:button Graph commands
+settle 2
+click role:textbox Search graph commands
+input-text Wheel: pan graph
+settle 2
+key Enter
+settle 2
+assert snap wheel-mode == pan
+remember pan-start
+wheel-graph 90
+settle 2
+assert snap wheel-use == Some(Pan)
+assert snap gesture == wheel kept false
+same pan-start zoom
+differs pan-start camera
+click role:button Graph commands
+settle 2
+click role:textbox Search graph commands
+input-text Wheel: scroll page
+settle 2
+key Enter
+settle 2
+assert snap wheel-mode == page
+# A preceding pan impulse glides; observe page policy only after it settles.
+wait 120
+remember page-start
+wheel-graph 90
+settle 2
+assert snap wheel-use == Some(Page)
+assert snap gesture == wheel kept true
+same page-start zoom
+same page-start camera
+click role:button Graph commands
+settle 2
+click role:textbox Search graph commands
+input-text Wheel: zoom graph
+settle 2
+key Enter
+settle 2
+assert snap wheel-mode == zoom
+set-zoom 1
+settle 2
+wheel-graph -90
+settle 2
+assert snap wheel-use == Some(Zoom)
+assert snap gesture == wheel kept false
+assert snap zoom >= 1.1
+click role:button Graph commands
+settle 2
+click role:textbox Search graph commands
+input-text impossible command
+settle 2
+key Enter
+settle 2
+assert snap commands-open == true
+key Escape
+settle 2
+assert snap commands-open == false
+assert snap focus-kind == graph
+capture viewer_commands
+log viewer commands receipt complete
+
+click role:button View controls
+settle 5
+capture graphshell_viewer_controls_expanded
+click role:button Graph tools
+settle 5
+reveal role:checkbox Schedule Skeleton
+click role:checkbox Schedule Hub room
+settle 3
+reveal role:checkbox Schedule Skeleton
+capture graphshell_shared_choice_indicators
