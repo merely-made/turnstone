@@ -8,8 +8,10 @@ RUN_ROOT="${2:?supply a fresh absolute receipt directory}"
 [[ -x "$BINARY" ]] || { echo "Executable missing: $BINARY" >&2; exit 1; }
 [[ "$RUN_ROOT" = /* && ! -e "$RUN_ROOT" ]] || { echo 'Receipt directory must be fresh and absolute' >&2; exit 1; }
 MODE="${3:-headed}"
-EXTRA_ARGS=()
-case "$MODE" in headed) ;; offscreen) EXTRA_ARGS+=(--offscreen) ;; *) echo "Mode must be headed or offscreen" >&2; exit 1 ;; esac
+# Keep this array nonempty: bundled Bash 3 treats an empty array as unset
+# under nounset, even when expanding it with [@].
+RECEIVER_ARGS=("$RUN_ROOT/receiving")
+case "$MODE" in headed) ;; offscreen) RECEIVER_ARGS+=(--offscreen) ;; *) echo "Mode must be headed or offscreen" >&2; exit 1 ;; esac
 APP="$RUN_ROOT/CueReceiver.app"
 EXE="$APP/Contents/MacOS/cue_surfaces"
 mkdir -p "$APP/Contents/MacOS"
@@ -32,7 +34,7 @@ stop_own_app() {
 }
 trap stop_own_app EXIT
 open -n -F --stdout "$RUN_ROOT/stdout.log" --stderr "$RUN_ROOT/stderr.log" \
-    --env WGPU_BACKEND=metal "$APP" --args "$RUN_ROOT/receiving" "${EXTRA_ARGS[@]}"
+    --env WGPU_BACKEND=metal "$APP" --args "${RECEIVER_ARGS[@]}"
 deadline=$((SECONDS + 120))
 launch_deadline=$((SECONDS + 10))
 saw_process=0
