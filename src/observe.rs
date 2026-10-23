@@ -191,6 +191,9 @@ pub struct OmnibarView {
 pub struct DocumentFindView {
     pub target: Uuid,
     pub query: String,
+    /// The field's caret as a grapheme index, and the text it selects.
+    pub caret: usize,
+    pub selection: String,
     pub count: usize,
     pub current: Option<usize>,
     pub pending: bool,
@@ -1086,7 +1089,9 @@ pub fn snapshot(app: &App) -> Snapshot {
                     .document_find
                     .target
                     .expect("an open find has a captured target"),
-                query: app.document_find.query.clone(),
+                query: app.document_find.query().to_owned(),
+                caret: app.document_find.input.caret(),
+                selection: app.document_find.input.selected_text().to_owned(),
                 count: app.document_find.model.count,
                 current,
                 pending: app.document_find.pending,

@@ -155,8 +155,9 @@ pub enum Action {
     /// Capture the focused live document and open its retained find field.
     OpenDocumentFind,
     CloseDocumentFind,
-    InsertDocumentFind(String),
-    BackspaceDocumentFind,
+    /// The find field's edited input, text and caret: the one edit the
+    /// field's shared key map reports.
+    EditDocumentFind(cambium::TextInput),
     StepDocumentFind(DocumentFindDirection),
     /// Step one member's requested page zoom a rung up the ladder. A document
     /// scale: chrome appearance and the canvas camera are untouched. The

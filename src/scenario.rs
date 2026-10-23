@@ -357,6 +357,8 @@ pub enum EditKey {
     Left,
     Right,
     ShiftRight,
+    ShiftLeft,
+    ShiftEnter,
     SelectAll,
     Home,
     End,
@@ -455,6 +457,8 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 "left" => Step::Key(EditKey::Left),
                 "right" => Step::Key(EditKey::Right),
                 "shift+right" => Step::Key(EditKey::ShiftRight),
+                "shift+left" => Step::Key(EditKey::ShiftLeft),
+                "shift+enter" => Step::Key(EditKey::ShiftEnter),
                 "ctrl+a" => Step::Key(EditKey::SelectAll),
                 "home" => Step::Key(EditKey::Home),
                 "end" => Step::Key(EditKey::End),
@@ -466,7 +470,7 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 "ctrl+d" => Step::Key(EditKey::KeepCommand),
                 _ => {
                     return err(
-                        "key wants enter|escape|tab|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space|shift+right|ctrl+a|ctrl+s|ctrl+f|ctrl+d",
+                        "key wants enter|escape|tab|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space|shift+right|shift+left|shift+enter|ctrl+a|ctrl+s|ctrl+f|ctrl+d",
                     );
                 }
             },
