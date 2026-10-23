@@ -426,12 +426,22 @@ impl DerefMut for GraphRuntimePool {
 /// without silently sharing camera, pan inertia, yaw, or tilt.
 #[derive(Default)]
 pub struct GraphPaneViews {
+    owners: HashMap<PaneId, GraphId>,
     pending_fits: std::collections::HashSet<PaneId>,
+    scopes: HashMap<PaneId, Option<Vec<uuid::Uuid>>>,
+    neighborhoods: HashMap<PaneId, uuid::Uuid>,
     viewports: HashMap<PaneId, Viewport>,
     selections: HashMap<PaneId, Vec<uuid::Uuid>>,
 }
 
 impl GraphPaneViews {
+    pub(crate) fn bind_graph(&mut self,pane:PaneId,graph:GraphId) {
+        if self.owners.get(&pane).is_some_and(|owner|*owner!=graph) {self.remove(pane);}
+        self.owners.insert(pane,graph);
+    }
+    pub(crate) fn set_scope(&mut self, pane: PaneId, scope: Option<Vec<uuid::Uuid>>) { self.neighborhoods.remove(&pane); self.scopes.insert(pane,scope); }
+    pub(crate) fn set_neighborhood(&mut self,pane:PaneId,root:uuid::Uuid) {self.neighborhoods.insert(pane,root);}
+    pub(crate) fn neighborhood_root(&self,pane:PaneId)->Option<uuid::Uuid> {self.neighborhoods.get(&pane).copied()}
     /// Finish an explicit fit after this pane receives its actual render size.
     pub(crate) fn request_fit(&mut self, pane: PaneId) { self.pending_fits.insert(pane); }
     pub(crate) fn take_fit(&mut self, pane: PaneId) -> bool { self.pending_fits.remove(&pane) }
@@ -439,6 +449,11 @@ impl GraphPaneViews {
     /// Install `pane`'s saved viewport, or capture the runtime's current
     /// viewport for a fresh pane. Call before the pane's input/render pass.
     pub fn install(&mut self, pane: PaneId, canvas: &mut Canvas) {
+        self.scopes.entry(pane).or_insert(None);
+        if let Some(scope)=self.scopes.get(&pane) { if let Some(scope)=scope { canvas.scope_to_exact_members(scope.iter().copied()); } else { canvas.clear_scope(); } }
+        if let Some(root)=self.neighborhoods.get(&pane) {
+            canvas.scope_to_exact_members(mere::navigation::neighborhood_members(canvas.graph(),*root).unwrap_or_default());
+        }
         if let Some(viewport) = self.viewports.get(&pane).copied() {
             canvas.set_viewport(viewport);
         } else {
@@ -453,6 +468,7 @@ impl GraphPaneViews {
 
     /// Save the working viewport after the pane's input/render pass.
     pub fn stash(&mut self, pane: PaneId, canvas: &Canvas) {
+        self.scopes.insert(pane,canvas.scope_members());
         self.viewports.insert(pane, canvas.viewport());
         self.selections.insert(pane, canvas.selected_members());
     }
@@ -462,8 +478,11 @@ impl GraphPaneViews {
     }
 
     pub fn remove(&mut self, pane: PaneId) -> Option<Viewport> {
+        self.owners.remove(&pane);
         self.pending_fits.remove(&pane);
         self.selections.remove(&pane);
+        self.scopes.remove(&pane);
+        self.neighborhoods.remove(&pane);
         self.viewports.remove(&pane)
     }
 

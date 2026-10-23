@@ -471,6 +471,10 @@ impl Shell {
             self.act(Action::Reading(crate::reading_view::ReadAction::Command(target, cambium::ReadCommand::CloseFind)));
             return;
         }
+        if matches!(key,WinitKey::Named(WinitNamedKey::Escape)) && !self.app.omnibar.open && !self.app.document_find.open
+            && let Some(target)=self.app.focused_read_target().filter(|target|self.app.reading.find.get(target).is_some_and(|ui|ui.appearance_open)) {
+            self.act(Action::Reading(crate::reading_view::ReadAction::Command(target,cambium::ReadCommand::Appearance)));return;
+        }
         if self.cambium_key(key).as_ref().is_some_and(cambium::is_find_shortcut) {
             if let Some(target) = self.app.focused_read_target() {
                 self.act(Action::Reading(crate::reading_view::ReadAction::Command(target, cambium::ReadCommand::Find)));

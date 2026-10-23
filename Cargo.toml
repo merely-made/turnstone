@@ -361,6 +361,8 @@ windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 # release tags. The two vendored Mozilla ICU patches below are self-contained
 # source copies, so a clean checkout does not require sibling paths.
 [patch.crates-io]
+# Registry Webcue and native Genet sessions use the same document contract.
+document-session-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # Schema-owned NodeId traversal for native publication namespaces: standalone
 # native consumers of Mere use Mere's patched AccessKit (support/patches/accesskit).
 accesskit = { git = "https://github.com/merely-made/mere.git", branch = "main" }

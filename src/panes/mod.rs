@@ -190,6 +190,10 @@ impl PaneContent {
     }
 
     /// Compact tag suitable for tracing fields and accessible names.
+    /// Human-facing pane names; serialized kind tags remain stable.
+    pub fn label(&self)->&str {
+        match self {Self::Orrery=>"Map",Self::Workbench=>"Read",Self::Inspector=>"Inspect",Self::Roster=>"Roster",Self::Trail=>"Trail",Self::Comms=>"Comms",Self::Gloss(_)=>"Overview",Self::Alembic=>"Alembic",Self::Overmap(_)=>"Overmap",Self::Tile(_)=>"Document",Self::Registered(kind)=>kind.as_str()}
+    }
     pub fn tag(&self) -> &str {
         match self {
             PaneContent::Workbench => "workbench",

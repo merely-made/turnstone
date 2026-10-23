@@ -198,7 +198,7 @@ where
             }
 
             let mut leaf_node = Node::new(Role::Group);
-            leaf_node.set_label(content.tag().to_string());
+            leaf_node.set_label(content.label().to_string());
             leaf_node.set_children(leaf_children);
             nodes.push((leaf_id, leaf_node));
             leaf_id

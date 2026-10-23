@@ -12,6 +12,7 @@
 pub mod a11y;
 pub mod action;
 pub mod reading_view;
+pub mod scope_navigation;
 pub mod app;
 mod appearance;
 mod map_theme;

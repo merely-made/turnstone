@@ -3715,6 +3715,26 @@ fn workbench_initial_reader_shares_orrery_stack_and_survives_restart() {
 }
 
 #[test]
+fn graph_navigation_initial_read_keeps_inspect_beside_the_main_projection() {
+    let mut app=App::test_stub();
+    let graph=app.default_graph_pane();
+    app.update(Action::OpenAddress("https://example.test/read-with-inspect".into()));
+    let member=app.graph_pane_focused_member(graph).unwrap();
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(crate::panes::kind::INSPECTOR)));
+    let inspect=app.active_pane.unwrap();
+    app.update(Action::ReadGraphMember(member));
+    let read=app.active_pane.unwrap();
+    let frame=app.frisket.outer_workspace().unwrap();
+    assert_eq!(frame.active_ids().len(),2,"Read and Inspect use two main surfaces");
+    assert!(frame.active_ids().contains(&workbench::TileId(read.0)));
+    assert!(frame.active_ids().contains(&workbench::TileId(inspect.0)));
+    assert!(!frame.active_ids().contains(&workbench::TileId(graph.0)),"the map is retained behind its Read projection");
+    let path=crate::panes::workspace_bridge::path_for(frame.workspace.tiled(),workbench::TileId(graph.0)).unwrap();
+    let workbench::TileTree::Stack(stack)=crate::panes::workspace_bridge::tree_at(frame.workspace.tiled(),&path).unwrap() else {panic!("main stack")};
+    assert_eq!(stack.tabs.len(),2);
+}
+
+#[test]
 fn toolbar_read_map_round_trip_preserves_member_identity_and_reveals_selection() {
     let mut app=App::test_stub();
     app.update(Action::OpenAddress("https://example.test/first".into()));
@@ -3766,15 +3786,22 @@ fn toolbar_tool_toggle_retains_identity_state_and_restores_the_same_split() {
 }
 
 #[test]
-fn workbench_open_preserves_an_existing_custom_split() {
+fn workbench_open_preserves_adjacent_tools_and_their_split_share() {
     let mut app = App::test_stub();
     let graph = app.default_graph_pane();
     app.update(Action::SummonPane(crate::panes::PaneKindId::new(crate::panes::kind::INSPECTOR)));
+    let inspector=app.active_pane.unwrap();
+    let before=app.frisket.split_at(&[]).unwrap();
     app.active_pane = Some(graph);
     app.update(Action::OpenAddress("https://example.com/reading".into()));
     app.update(Action::OpenInWorkbench);
+    let reader=app.active_pane.unwrap();
+    assert_eq!(app.frisket.split_at(&[]).unwrap(),before,"the adjacent tool keeps its existing share");
     let frame = app.frisket.outer_workspace().unwrap();
-    assert_eq!(frame.active_ids().len(), 3, "custom splits remain visible");
+    assert_eq!(frame.active_ids().len(),2,"Read occupies its map's main area beside the tool");
+    assert!(frame.active_ids().contains(&workbench::TileId(inspector.0)));
+    assert!(frame.active_ids().contains(&workbench::TileId(reader.0)));
+    assert!(!frame.active_ids().contains(&workbench::TileId(graph.0)));
     assert!(matches!(frame.workspace.tiled(), workbench::TileTree::Split { .. }));
 }
 

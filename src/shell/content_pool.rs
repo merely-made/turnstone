@@ -30,6 +30,7 @@ pub(super) struct HostPlacement {
     /// pixels at their own boundary.
     pub scale_factor: f32,
     pub reading_preferences: tabard::ReadingPreferences,
+    pub reading_anchor: Option<tabard::ReadingAnchor>,
 }
 
 impl HostPlacement {
@@ -57,6 +58,7 @@ impl HostPlacement {
             focused,
             scale_factor: crate::ui::clean_scale(scale as f32),
             reading_preferences: Default::default(),
+            reading_anchor: None,
         }
     }
 }
@@ -180,10 +182,13 @@ impl NodeDocuments {
                     if !current {
                         let session: Box<dyn inker::DocumentSession<Scene>> = if let Some(reader)=reader {
                             let mut appearance=reader.new_appearance((1,1));
+                            if let Some(anchor)=host.reading_anchor.clone() {appearance.restore_reading_anchor(anchor);}
                             appearance.set_fonts(vec![READING_SYMBOL_FONT.to_vec()]);
                             appearance.set_font_family("serif, sans-serif, \"Noto Sans Math\"");
                             Box::new(appearance)
-                        } else { Box::new(portable.unwrap().new_appearance((1,1))) };
+                        } else { let mut appearance=portable.unwrap().new_appearance((1,1));
+                            if let Some(anchor)=host.reading_anchor.clone() {appearance.document_mut().restore_reading_anchor(anchor);}
+                            Box::new(appearance) };
                         let config = pelt_core::PeltControllerConfig::from_request(controller.engine_id(),controller.request().clone()).with_host_history();
                         let route=canonical.route().clone();
                         let controller=pelt_core::PeltController::from_session_shared(engines.clone(),surface_engines.clone(),config,super::ShellClock(epoch),session);
@@ -909,6 +914,7 @@ mod tests {
                     focused: true,
                     scale_factor: 2.,
                     reading_preferences: Default::default(),
+            reading_anchor: None,
                 },
                 HostPlacement {
                     surface: Surface {
@@ -920,6 +926,7 @@ mod tests {
                     focused: false,
                     scale_factor: 1.,
                     reading_preferences: tabard::ReadingPreferences {text_size:20,column_em:32},
+                    reading_anchor: None,
                 },
             ]
         };

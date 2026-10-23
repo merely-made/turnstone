@@ -110,7 +110,7 @@ fn convert(
                 return Err("Duplicate legacy pane identity".into());
             }
             Ok(TileTree::Stack(TabStack {
-                tabs: vec![OuterWorkspace::tile(pane_id.0, content.tag().into())],
+                tabs: vec![OuterWorkspace::tile(pane_id.0, content.label().into())],
                 active: 0,
             }))
         },
