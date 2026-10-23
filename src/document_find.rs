@@ -22,7 +22,7 @@ pub fn find_action(event: cambium::ReadEvent) -> Option<Action> {
         cambium::ReadEvent::Command(C::CloseFind) => Some(Action::CloseDocumentFind),
         cambium::ReadEvent::Command(C::Find) => Some(Action::OpenDocumentFind),
         cambium::ReadEvent::Command(
-            C::Smaller | C::Larger | C::Narrower | C::Wider | C::Reset,
+            C::Smaller | C::Larger | C::Narrower | C::Wider | C::Reset | C::Appearance | C::Back | C::Forward | C::ShowGraph,
         ) => None,
     }
 }

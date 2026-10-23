@@ -368,6 +368,8 @@ windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 # release tags. The two vendored Mozilla ICU patches below are self-contained
 # source copies, so a clean checkout does not require sibling paths.
 [patch.crates-io]
+# Registry Webcue and native Genet sessions use the same document contract.
+document-session-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # Schema-owned NodeId traversal for native publication namespaces: standalone
 # native consumers of Mere use Mere's patched AccessKit (support/patches/accesskit).
 accesskit = { git = "https://github.com/merely-made/mere.git", branch = "main" }
@@ -424,7 +426,6 @@ gemini-protocol = { git = "https://github.com/merely-made/errand.git", rev = "11
 # registry version. Keep a clean Turnstone consumer on the same Git type family
 # as its direct Genet dependencies instead of resolving the retired registry
 # paint/observable chain.
-document-session-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 engine-observables-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-paint-types = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-livery = { version = ">=0.0.3, <0.0.5", git = "https://github.com/merely-made/genet.git", branch = "main" }

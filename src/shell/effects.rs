@@ -1946,6 +1946,14 @@ impl Shell {
                         self.run_effects(effects);
                     }
                 }
+                Effect::RestoreReadingAnchor{target,anchor} => {
+                    let keys:Vec<_>=self.content_sessions.pool.keys().copied().filter(|key| matches!(key,super::content_pool::ContentKey::Reader{node,appearance} if *node==target.member && (0..=self.app.lenses.len() as u64).any(|window|target.appearance(window)==*appearance))).collect();
+                    for key in keys {if let Some(controller)=self.content_sessions.pool.content_mut(&key).and_then(pelt_core::PeltContent::document_mut) {
+                        let session=controller.session_mut().as_any();
+                        if let Some(reader)=session.downcast_mut::<mere_document_lanes::ReaderDocumentSession>() {reader.restore_reading_anchor(anchor.clone());}
+                        else if let Some(doc)=session.downcast_mut::<mere_document_lanes::SmolwebDocumentSession>() {doc.document_mut().restore_reading_anchor(anchor.clone());}
+                    }}
+                },
                 Effect::SaveReadingPreferences => {
                     if let Err(error) = self.app.reading.save(&self.app.session_dir()) { tracing::warn!(%error, "reading preferences were not saved"); }
                 },

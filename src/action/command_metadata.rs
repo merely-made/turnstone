@@ -178,6 +178,7 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::SetWorkspaceMap(..)
         | Action::ReadGraphMember(..)
         | Action::NavigateRelationship(..)
+        | Action::RevealRelationship(..)
         | Action::SetPaneBinding(..)
         | Action::RevealGraphMember(..)
         | Action::ToggleToolPane(..)
@@ -187,6 +188,8 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::BeginRenameSession
         | Action::RenameSession { .. }
         | Action::CancelInstallDenizen
+        | Action::Scope(..)
+        | Action::SelectScopeMere(..)
         | Action::Reading(..)
         | Action::WorkbenchActivate(..)
         | Action::CloseWorkbenchTile

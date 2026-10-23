@@ -1712,11 +1712,11 @@ impl App {
         vec![Effect::SaveSession, Effect::Redraw]
     }
 
-    pub(super) fn nav_back(&mut self) -> Vec<Effect> {
+    pub(crate) fn nav_back(&mut self) -> Vec<Effect> {
         self.navigate_focused_lineage(true)
     }
 
-    pub(super) fn nav_forward(&mut self) -> Vec<Effect> {
+    pub(crate) fn nav_forward(&mut self) -> Vec<Effect> {
         self.navigate_focused_lineage(false)
     }
 
@@ -1794,7 +1794,7 @@ impl App {
     /// Whether `node`'s live content is a web surface, by the lane its
     /// content reported rather than by engine id, so every surface engine
     /// (Weld, Scry, Servo) takes the web plane's own navigation.
-    fn node_uses_web_surface(&self, node: Uuid) -> bool {
+    pub(crate) fn node_uses_web_surface(&self, node: Uuid) -> bool {
         self.content
             .facts(node)
             .is_some_and(|facts| facts.lane == crate::content::ContentLane::Surface)
