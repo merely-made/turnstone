@@ -1,0 +1,22 @@
+RESULT fail
+waited 67 frames
+waited 0 frames
+captured 01_servo_inspector
+captured 02_servo_primary
+FAIL: assert snap browser-current Contains 'Servo A | text=alpha | clicks=0': got 'Servo A  http://127.0.0.1:43119/browser_servo/page-a.html'
+FAIL: assert snap browser-current Contains 'result.html?page=A&text=alpha&clicks=1': got 'Servo A | result= | clicks=1  http://127.0.0.1:43119/browser_servo/result.html?page=A&text=&clicks=1'
+FAIL: assert snap browser-current Contains 'Servo A | result=alpha | clicks=1': got 'Servo A | result= | clicks=1  http://127.0.0.1:43119/browser_servo/result.html?page=A&text=&clicks=1'
+captured 02b_input_navigation
+FAIL: assert snap browser-current Contains 'Servo A | result=alpha | clicks=1': got 'Servo A | result= | clicks=1  http://127.0.0.1:43119/browser_servo/result.html?page=A&text=&clicks=1'
+FAIL: assert snap browser-current Contains 'Servo A | result=alpha | clicks=1': got 'Servo A  http://127.0.0.1:43119/browser_servo/page-a.html'
+captured 02c_controls
+captured 04_servo_docked
+captured 05_servo_reopened
+Real Turnstone Servo Cue primary/lens/return/reopen receiving complete
+presentation frames=416 captures=6 blank=0
+capture /Users/markik/Code/output/cue-ui-servo-attempt2/receiving/01_servo_inspector.png digest=745238729eab5b93 blank=false
+capture /Users/markik/Code/output/cue-ui-servo-attempt2/receiving/02_servo_primary.png digest=12e554e529478c7a blank=false
+capture /Users/markik/Code/output/cue-ui-servo-attempt2/receiving/02b_input_navigation.png digest=f7ca6f5e24edc439 blank=false
+capture /Users/markik/Code/output/cue-ui-servo-attempt2/receiving/02c_controls.png digest=5641d6b7f13db307 blank=false
+capture /Users/markik/Code/output/cue-ui-servo-attempt2/receiving/04_servo_docked.png digest=059477d3350cacf2 blank=false
+capture /Users/markik/Code/output/cue-ui-servo-attempt2/receiving/05_servo_reopened.png digest=0f7d9bb096116dd5 blank=false

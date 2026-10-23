@@ -1,0 +1,13 @@
+RESULT ok
+waited 69 frames
+waited 0 frames
+captured 01_servo_inspector
+captured 02_servo_primary
+captured 02a_field_focused
+captured 02b_typed
+Actual product input focus probe complete
+presentation frames=226 captures=4 blank=0
+capture /Users/markik/Code/output/cue-ui-focus-probe1/receiving/01_servo_inspector.png digest=a7316344cbac1c5b blank=false
+capture /Users/markik/Code/output/cue-ui-focus-probe1/receiving/02_servo_primary.png digest=12e554e529478c7a blank=false
+capture /Users/markik/Code/output/cue-ui-focus-probe1/receiving/02a_field_focused.png digest=e335d1836f5f10fa blank=false
+capture /Users/markik/Code/output/cue-ui-focus-probe1/receiving/02b_typed.png digest=d0f91ad8ab34d06c blank=false

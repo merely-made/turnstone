@@ -1,0 +1,6 @@
+{
+  "status": "incomplete_timeout",
+  "budget_seconds": 240,
+  "passed": false,
+  "reason": "No complete scenario outcome before the bounded driver terminated its own app."
+}

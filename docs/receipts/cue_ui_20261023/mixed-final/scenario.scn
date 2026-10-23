@@ -1,0 +1,54 @@
+# The real engine picker installs Servo in the product pool on Metal.
+settle 15
+key escape
+open ${SERVO_FIXTURE_BASE}/browser_servo/page-a.html
+wait 240
+act Open node in Workbench
+wait 240
+act Open Inspector pane
+settle 15
+click surface:inspector role:button Change viewer
+settle 5
+click-row graft.servo
+settle 25
+assert row Viewer: graft.servo
+assert snap browser-current-engine == graft.servo
+assert snap browser-current-content == live
+assert snap host-servo-views == 1
+assert snap host-cue-frames >= 1
+assert row Platform: macos
+assert row Presentation: NativeFrame
+assert row NativeKeyboard: unavailable
+assert row Ime: unavailable
+click surface:inspector role:button Change viewer
+settle 5
+record-idle 01_servo_inspector
+capture 01_servo_inspector
+act Close pane
+settle 20
+act Open node in Workbench
+settle 20
+assert wb-cells == 1
+record-idle 02_servo_primary
+capture 02_servo_primary
+
+
+open ${SERVO_FIXTURE_BASE}/document_a11y/article.html
+wait 240
+act Open node in Workbench
+wait 240
+assert wb-cells == 2
+assert snap host-servo-views == 1
+assert snap browser-current-engine ~ genet
+assert snap host-cue-frames >= 1
+record-idle 06_mixed_retained
+capture 06_mixed_retained
+click surface:workbench .tab Servo A
+settle 25
+assert snap browser-current-engine == graft.servo
+assert snap browser-current ~ /page-a.html
+assert snap host-servo-views == 1
+assert snap host-cue-frames >= 1
+record-idle 07_mixed_native
+capture 07_mixed_native
+log Real product selects retained and native producers per card on one host

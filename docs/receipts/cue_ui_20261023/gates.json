@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-23",
+  "source_commit": "5e9e3bfea88e9e9b9133d01ec9486ed7fd056322",
+  "mere_supplier": "86796a2447d68b3e6538d0ceff9f387a5d56e29c",
+  "runtime_binary_sha256": "c962c7f715dc5e020b258d89034c8bdc1deaf6cf168adcfddcd3f71dcda3726f",
+  "library": {
+    "passed": 1183,
+    "ignored": 17,
+    "failed": 0,
+    "partition_verified": true
+  },
+  "mere_focused_tests": 259,
+  "mere_explicit_metal_tests": 9,
+  "turnstone_explicit_pending_frame_metal_test": "passed",
+  "default_all_targets_check": "passed",
+  "servo_library_clippy": "passed_with_warnings",
+  "native_ui": {
+    "retained-final": {
+      "passed": true,
+      "primary_presentations": 226,
+      "primary_captures": 3,
+      "blank_primary_captures": 0,
+      "all_png_captures": 4
+    },
+    "servo-final": {
+      "passed": true,
+      "primary_presentations": 484,
+      "primary_captures": 13,
+      "blank_primary_captures": 0,
+      "all_png_captures": 14
+    },
+    "mixed-final": {
+      "passed": true,
+      "primary_presentations": 720,
+      "primary_captures": 4,
+      "blank_primary_captures": 0,
+      "all_png_captures": 4
+    }
+  },
+  "same_live_producer_scope_across_servo_stations": true,
+  "new_scope_after_servo_close_reopen": true,
+  "mixed_frame_directions_on_one_host": true,
+  "qualification_bounds": [
+    "macOS/Metal product paths exercised with synthetic fixtures and scripted host input",
+    "Composed window captures and successful present calls; OS compositor pixel correlation unqualified",
+    "Physical IME/candidate-window and human assistive-technology acceptance unqualified",
+    "Linux/Vulkan and fresh Windows receiving unqualified",
+    "Weld/Scry concrete platform bindings retain their existing product paths",
+    "Native Servo shared IME/semantics and host-import evidence feedback remain separate gaps",
+    "Physical device loss and transparent native colour/alpha acceptance unqualified",
+    "Browser polling remains runnable; these receipts do not qualify global native-browser idle behaviour"
+  ]
+}

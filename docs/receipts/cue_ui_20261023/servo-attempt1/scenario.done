@@ -1,0 +1,14 @@
+RESULT fail
+waited 76 frames
+waited 0 frames
+captured 01_servo_inspector
+captured 02_servo_primary
+FAIL: assert surface 'content': the plan is ["canvas", "chrome"]
+captured 04_servo_docked
+captured 05_servo_reopened
+Real Turnstone Servo Cue primary/lens/return/reopen receiving complete
+presentation frames=391 captures=4 blank=0
+capture /Users/markik/Code/output/cue-ui-servo-attempt1/receiving/01_servo_inspector.png digest=745238729eab5b93 blank=false
+capture /Users/markik/Code/output/cue-ui-servo-attempt1/receiving/02_servo_primary.png digest=12e554e529478c7a blank=false
+capture /Users/markik/Code/output/cue-ui-servo-attempt1/receiving/04_servo_docked.png digest=011be6defb6207b3 blank=false
+capture /Users/markik/Code/output/cue-ui-servo-attempt1/receiving/05_servo_reopened.png digest=c1f12dd042e291a0 blank=false

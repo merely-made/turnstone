@@ -1,0 +1,22 @@
+{
+  "entries": [
+    {
+      "surface": 7620955730202814384,
+      "content": "Node(56d47d75-9b24-4117-aeab-e2fa2dc3cbc4)",
+      "direction": "host-device",
+      "sampled_layers": 279,
+      "scope": "3:1",
+      "revision": 140,
+      "pending": false
+    },
+    {
+      "surface": 12576899193115707638,
+      "content": "Node(0086d0a7-a27e-42fc-b3aa-90e315f2cb8a)",
+      "direction": "native-frame",
+      "sampled_layers": 640,
+      "scope": "260927026501932082658125598634039778534:1",
+      "revision": 6,
+      "pending": false
+    }
+  ]
+}

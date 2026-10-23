@@ -1,0 +1,28 @@
+RESULT fail
+waited 58 frames
+waited 0 frames
+captured 01_servo_inspector
+captured 02_servo_primary
+FAIL: wait-row 'Servo A | text=alpx | clicks=0' after 120 frames: trail [] roster [] inspector [] arrange []
+FAIL: wait-row 'Servo A | text=alp | clicks=0' after 120 frames: trail [] roster [] inspector [] arrange []
+FAIL: wait-row 'Servo A | text=alpha | clicks=0' after 120 frames: trail [] roster [] inspector [] arrange []
+FAIL: assert snap browser-current Contains 'Servo A | text=alpha | clicks=0': got 'Servo A  http://127.0.0.1:43119/browser_servo/page-a.html'
+FAIL: wait-row 'Servo A | result=alpha | clicks=1' after 120 frames: trail [] roster [] inspector [] arrange []
+FAIL: assert snap browser-current Contains 'result.html?page=A&text=alpha&clicks=1': got 'Servo A | result= | clicks=1  http://127.0.0.1:43119/browser_servo/result.html?page=A&text=&clicks=1'
+FAIL: assert snap browser-current Contains 'Servo A | result=alpha | clicks=1': got 'Servo A | result= | clicks=1  http://127.0.0.1:43119/browser_servo/result.html?page=A&text=&clicks=1'
+captured 02b_input_navigation
+FAIL: assert snap browser-current Contains 'Servo A | result=alpha | clicks=1': got 'Servo A | result= | clicks=1  http://127.0.0.1:43119/browser_servo/result.html?page=A&text=&clicks=1'
+FAIL: wait-row 'URL: http://127.0.0.1:43119/browser_servo/page-a.html' after 120 frames: trail [] roster [] inspector [] arrange []
+FAIL: wait-row 'Servo A | result=alpha | clicks=1' after 120 frames: trail [] roster [] inspector [] arrange []
+FAIL: assert snap browser-current Contains 'Servo A | result=alpha | clicks=1': got 'Servo A | result= | clicks=1  http://127.0.0.1:43119/browser_servo/result.html?page=A&text=&clicks=1'
+captured 02c_controls
+captured 04_servo_docked
+captured 05_servo_reopened
+Real Turnstone Servo Cue primary/lens/return/reopen receiving complete
+presentation frames=375 captures=6 blank=0
+capture /Users/markik/Code/output/cue-ui-servo-final2/receiving/01_servo_inspector.png digest=16b3b0e168d928ea blank=false
+capture /Users/markik/Code/output/cue-ui-servo-final2/receiving/02_servo_primary.png digest=12e554e529478c7a blank=false
+capture /Users/markik/Code/output/cue-ui-servo-final2/receiving/02b_input_navigation.png digest=f7ca6f5e24edc439 blank=false
+capture /Users/markik/Code/output/cue-ui-servo-final2/receiving/02c_controls.png digest=fabff8ff1379d4c4 blank=false
+capture /Users/markik/Code/output/cue-ui-servo-final2/receiving/04_servo_docked.png digest=3a4a80b012111b45 blank=false
+capture /Users/markik/Code/output/cue-ui-servo-final2/receiving/05_servo_reopened.png digest=27c9f57f82b28d56 blank=false
