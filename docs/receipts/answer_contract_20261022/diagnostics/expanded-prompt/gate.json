@@ -1,0 +1,24 @@
+{
+  "result": "gate_not_passed",
+  "cases_sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+  "cases": {
+    "cross": {
+      "result": "incomplete",
+      "state": "running",
+      "tokens": 30,
+      "raw_output": "```json\n{\n  \"claims\": [\n    {\n      \"status\": \"supported\",\n      \"text\": \"The Juniper archive recovery phrase is",
+      "partial_json": "Expecting value: line 1 column 1 (char 0)"
+    },
+    "missing": {
+      "result": "not_run"
+    },
+    "conflict": {
+      "result": "not_run"
+    },
+    "reduced": {
+      "result": "not_run"
+    }
+  },
+  "headed_allowed": false,
+  "boundary": "Partial or absent output is not a completed semantic measurement. All four completed frozen answers must pass before headed acceptance."
+}

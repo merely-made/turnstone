@@ -1,0 +1,72 @@
+resize 1200 900
+settle 5
+key escape
+assert snap network-offline == true
+act Ask saved sources
+settle 20
+assert text Connected to resident inference.
+assert text 2 saved sources chosen
+capture cold_scope
+wait-file 24000 ${MR_RESIDENT}/history-1-cross.json
+click surface:contributed role:button Reopen: ${MR_CROSS_REOPEN}
+settle 10
+capture cross_historical_answer
+assert text Support proposed
+click surface:contributed role:button Inspect claim 1 source
+settle 5
+act Open node in Workbench
+settle 5
+assert content-live
+wait-saved-reader 600
+assert snap saved-reader-text == ${MR_CAPTURE_TEXT}
+capture cross_cold_claim_1_citation
+record-saved-sources cross_cold_claim_1_citation
+act Ask saved sources
+settle 5
+click surface:contributed role:button Inspect claim 2 source
+settle 5
+act Open node in Workbench
+settle 5
+assert content-live
+assert snap browser-current ~ ${MR_KNOT_ADDRESS}
+capture cross_cold_claim_2_citation
+record-saved-sources cross_cold_claim_2_citation
+act Ask saved sources
+settle 5
+click surface:contributed role:button Inspect claim 3 source
+settle 5
+act Open node in Workbench
+settle 5
+assert content-live
+assert snap browser-current ~ ${MR_NOTE_ADDRESS}
+capture cross_cold_claim_3_citation
+record-saved-sources cross_cold_claim_3_citation
+act Ask saved sources
+settle 5
+wait-file 24000 ${MR_RESIDENT}/history-1-missing.json
+click surface:contributed role:button Reopen: ${MR_MISSING_REOPEN}
+settle 10
+capture missing_historical_answer
+assert text Insufficient evidence
+wait-file 24000 ${MR_RESIDENT}/history-1-conflict.json
+click surface:contributed role:button Reopen: ${MR_CONFLICT_REOPEN}
+settle 10
+capture conflict_historical_answer
+assert text Conflicting evidence
+wait-file 24000 ${MR_RESIDENT}/history-1-reduced.json
+click surface:contributed role:button Reopen: ${MR_REDUCED_REOPEN}
+settle 10
+capture reduced_historical_answer
+assert text Insufficient evidence
+click surface:contributed role:button Choose source: Redshank note
+wait-file 1800 ${MR_CONTROL}/cold-scope.json
+settle 5
+assert text 3 saved sources chosen
+click surface:contributed role:textbox Question
+insert ${MR_CROSS_QUESTION}
+click surface:contributed role:button Ask with evidence
+wait-file 24000 ${MR_RESIDENT}/mixed-1-cross.json
+settle 10
+capture cross_answer
+assert text Support proposed
+act Save session

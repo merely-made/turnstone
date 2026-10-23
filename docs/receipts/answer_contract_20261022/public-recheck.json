@@ -1,0 +1,20 @@
+{
+  "result": "pass",
+  "checks": {
+    "verify_probe.py": {
+      "exit_code": 1,
+      "expected_exit_code": 1
+    },
+    "verify_wire_defaults.py": {
+      "exit_code": 1,
+      "expected_exit_code": 1
+    },
+    "verify_contract_inputs.py": {
+      "exit_code": 0,
+      "expected_exit_code": 0
+    }
+  },
+  "original_gate_reproduced_byte_for_byte": true,
+  "raw_model_exports_unchanged": true,
+  "frozen_acceptance_inputs_unchanged": true
+}

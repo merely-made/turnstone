@@ -1,0 +1,91 @@
+{
+  "environment": {
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_INCREMENTAL": "0"
+  },
+  "resident_build": [
+    "cargo",
+    "--config",
+    "/Users/markik/Code/output/streamed-inference-20261022/optimized-runtime.toml",
+    "--config",
+    "build.target-dir=\"/Users/markik/Code/output/embedding-envelope-20261020/resident-target\"",
+    "--config",
+    "build.build-dir=\"/Users/markik/Code/output/embedding-envelope-20261020/resident-build\"",
+    "test",
+    "--locked",
+    "-j4",
+    "-p",
+    "djinn",
+    "--features",
+    "inference-embedding,inference-gpu",
+    "--test",
+    "inference_route",
+    "--no-run"
+  ],
+  "workdir": "/Users/markik/Code/worktrees/mere-cross-source-answers-20261022",
+  "unit_tests": [
+    "cargo",
+    "--config",
+    "same optimized-runtime.toml and target/build directories",
+    "test",
+    "--locked",
+    "-j4",
+    "-p",
+    "djinn",
+    "-p",
+    "distillery",
+    "--features",
+    "djinn/inference-embedding,djinn/inference-gpu",
+    "--lib",
+    "inference"
+  ],
+  "route_tests": {
+    "command": [
+      "/Users/markik/Code/output/embedding-envelope-20261020/resident-build/debug/deps/inference_route-b8b99e5f376dd91f"
+    ],
+    "environment": {
+      "TMPDIR": "/tmp"
+    },
+    "result": "4 passed,0 failed,3ignored",
+    "seconds": 136.52,
+    "diagnostic": "DefaultmacOS temp path creates117byteUnixsocketname; initialrun2failed, isolatedshorttmpdiagnosticpassed; completecorrectedrunpassed."
+  },
+  "final_supplier_commit": "5262ae5775344741a76545ba895a8dbf33256409",
+  "turnstone_product_commit": "e0fa597dd29f2d8722818dd560eca57995bf250c",
+  "final_unit_tests": {
+    "distillery": 40,
+    "djinn": 8,
+    "failed": 0,
+    "log": "compact-unit-tests.log"
+  },
+  "final_route_tests": {
+    "passed": 4,
+    "failed": 0,
+    "ignored": 3,
+    "seconds": 101.46,
+    "environment": {
+      "TMPDIR": "/tmp"
+    },
+    "log": "compact-resident-route-tests.log"
+  },
+  "turnstone_native": {
+    "result": "pass",
+    "seconds": 1809,
+    "log": "turnstone-final-build.log",
+    "jobs": 2,
+    "target_dir": "/Users/markik/Code/output/turnstone-embedding-headed-20261020/target",
+    "build_dir": "/Users/markik/Code/output/embedding-envelope-20261020/resident-build"
+  },
+  "turnstone_inference_tests": {
+    "passed": 9,
+    "failed": 0,
+    "ignored": 1,
+    "seconds": 16.04,
+    "log": "turnstone-inference-tests.log"
+  },
+  "diagnostics": {
+    "initial_expanded_prompt": "candidate-01 stopped while incomplete; sourcev1immutableandpreserved",
+    "default_tmp_route": "Initial117-byteUnixsocketnamefailed;73-byteTMPDIR=/tmprerunpassed. Completefailurelogretained."
+  }
+}

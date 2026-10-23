@@ -1,0 +1,24 @@
+{
+  "branch": "codex/cross-source-answers-20261022",
+  "mere": "5262ae5775344741a76545ba895a8dbf33256409",
+  "turnstone_product": "e0fa597dd29f2d8722818dd560eca57995bf250c",
+  "eidetic_unchanged": "44f0664748238d7a96603925a0268caf60e091aa",
+  "esp_unchanged": "b9f050b2947822aa0e5908a9aaedfc47a4f23930",
+  "knot_unchanged": "23b8f55ea2dc7c3262baebb62b2db68a08837f1c",
+  "resolved": {
+    "distillery": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5262ae5775344741a76545ba895a8dbf33256409"
+    ],
+    "eidetic": [
+      "git+https://github.com/merely-made/eidetic.git?rev=44f0664748238d7a96603925a0268caf60e091aa#44f0664748238d7a96603925a0268caf60e091aa"
+    ],
+    "esp": [
+      "git+https://github.com/merely-made/esp.git?rev=b9f050b2947822aa0e5908a9aaedfc47a4f23930#b9f050b2947822aa0e5908a9aaedfc47a4f23930"
+    ],
+    "mere-source-edit": [
+      "git+https://github.com/merely-made/mere.git?rev=70deef2c8cf3d3410ae35b496a9396514070b24f#70deef2c8cf3d3410ae35b496a9396514070b24f"
+    ]
+  },
+  "resident_binary_sha256": "69a5507c537dea82237a74892a2d6832a7268f3b667e065abf6407edac8822e9",
+  "turnstone_binary_sha256": "5f613b3fb788dc368014b73e7953a9bb0fbf9b8346936f242f6775c40b7653bd"
+}

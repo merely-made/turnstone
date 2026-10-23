@@ -1,0 +1,104 @@
+{
+  "compact-resident-build.log": {
+    "original_sha256": "e7d2a695890430075e1a14ad9cf55c26b87373910e4dee40a45e26c0a415c315",
+    "published_sha256": "e7d2a695890430075e1a14ad9cf55c26b87373910e4dee40a45e26c0a415c315",
+    "terminal_newlines_removed": 0,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "compact-resident-route-tests.log": {
+    "original_sha256": "fee62bcfa9cb7faefc49421981ef59db4b18e8b82a6d7b4fa7cc25b290c5c80b",
+    "published_sha256": "8659461c725ccfdfe7c7abc247c8139f34c636b07e17018c106b1aa29c56f1a0",
+    "terminal_newlines_removed": 1,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "compact-unit-tests.log": {
+    "original_sha256": "7573b1e892ee9fed1dad4f67e467082ab03c984772e65da30a2175a22cbaea83",
+    "published_sha256": "6126993be037f1368b07bee5f2ac6b5efed4c17c0f04cfbd9a8e6720a647f6b2",
+    "terminal_newlines_removed": 1,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "diagnostics/expanded-prompt/contract-verification.log": {
+    "original_sha256": "67222c2a2219788634dd64cb07bb1ce734dfb2bceb1e25638953c9a32b588c32",
+    "published_sha256": "67222c2a2219788634dd64cb07bb1ce734dfb2bceb1e25638953c9a32b588c32",
+    "terminal_newlines_removed": 0,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "diagnostics/expanded-prompt/run.log": {
+    "original_sha256": "e007d0286df7d9bfb061281daf68ebfb7979eab1ac442380541ab762a2edaad4",
+    "published_sha256": "e007d0286df7d9bfb061281daf68ebfb7979eab1ac442380541ab762a2edaad4",
+    "terminal_newlines_removed": 0,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "diagnostics/resident-route-short-tmp-tests.log": {
+    "original_sha256": "43dd596bb77ad90f682c37593fbd7b7ca8d53d1877c061d80333ae161108a896",
+    "published_sha256": "9e2cfe7fa913c933f649ead1911ab45a98224d2fad8bab91fb914441a5952e22",
+    "terminal_newlines_removed": 1,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "diagnostics/resident-route-tests.log": {
+    "original_sha256": "255a441592583aafc252e6e4955f7bd372266803d02314eab73dfd36fd632cb6",
+    "published_sha256": "67f73cbdf68f71ebe4fd80c865d1a2c0734ef642798c4124a6e80f6b1244b8ef",
+    "terminal_newlines_removed": 1,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "diagnostics/route-short-tmp-diagnostic.log": {
+    "original_sha256": "bcbe72723620452af4616da37a127e6003fb7021da8e814e5fcc285551841ece",
+    "published_sha256": "35408329cd659e88709e48e06a81bcbcde05125c10ee26d73c5a4b6b2f86595c",
+    "terminal_newlines_removed": 1,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "probe/contract-input-review.log": {
+    "original_sha256": "b4e154aba9433f3741d2d647359d253d6cda11bf2893f1c520b1b445ea5793c0",
+    "published_sha256": "b4e154aba9433f3741d2d647359d253d6cda11bf2893f1c520b1b445ea5793c0",
+    "terminal_newlines_removed": 0,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "probe/contract-verification.log": {
+    "original_sha256": "0278653f60fcdf7b7471b9640ed43d75a862dda110a0d9b5caafd1d4ea77871f",
+    "published_sha256": "0278653f60fcdf7b7471b9640ed43d75a862dda110a0d9b5caafd1d4ea77871f",
+    "terminal_newlines_removed": 0,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "probe/run.log": {
+    "original_sha256": "38e87c2101b0cc8c43dc24e0e579d707b6b494c4bb95f4a75e5c7f3d6036faf0",
+    "published_sha256": "85d324b61fc67577840881f60da909fa28803bb6f28d12deb680847ed6a026d7",
+    "terminal_newlines_removed": 1,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "probe/verification.log": {
+    "original_sha256": "454dbf00a8678bdd81162009ffcc7778f2bac3e282b7d2da0d90972634f8f14e",
+    "published_sha256": "454dbf00a8678bdd81162009ffcc7778f2bac3e282b7d2da0d90972634f8f14e",
+    "terminal_newlines_removed": 0,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "turnstone-final-build.log": {
+    "original_sha256": "108b10f33a3f5ff6be4061640ccf1bfa8a9fe5b7a11f4c6de37e5d2f77fcf1a9",
+    "published_sha256": "108b10f33a3f5ff6be4061640ccf1bfa8a9fe5b7a11f4c6de37e5d2f77fcf1a9",
+    "terminal_newlines_removed": 0,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "turnstone-inference-tests.log": {
+    "original_sha256": "fdd09ca10fd74df01c0fc476a7b8332d226d159e7530f020babeac96d7d62307",
+    "published_sha256": "be772922b5fa37cba784110675059c51514bfb3c3a16dd7104d5afee30caa358",
+    "terminal_newlines_removed": 1,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "verify_contract_inputs-public-recheck.log": {
+    "original_sha256": "b4e154aba9433f3741d2d647359d253d6cda11bf2893f1c520b1b445ea5793c0",
+    "published_sha256": "b4e154aba9433f3741d2d647359d253d6cda11bf2893f1c520b1b445ea5793c0",
+    "terminal_newlines_removed": 0,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "verify_probe-public-recheck.log": {
+    "original_sha256": "454dbf00a8678bdd81162009ffcc7778f2bac3e282b7d2da0d90972634f8f14e",
+    "published_sha256": "454dbf00a8678bdd81162009ffcc7778f2bac3e282b7d2da0d90972634f8f14e",
+    "terminal_newlines_removed": 0,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  },
+  "verify_wire_defaults-public-recheck.log": {
+    "original_sha256": "91b3d0def7800543e279da3d59e2e5d3f285a87a0aabc7cb958c53855e09685c",
+    "published_sha256": "91b3d0def7800543e279da3d59e2e5d3f285a87a0aabc7cb958c53855e09685c",
+    "terminal_newlines_removed": 0,
+    "policy": "Only excess terminal LF bytes removed. All log content retained."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "distillery": [
+    "git+https://github.com/merely-made/mere.git?branch=main#5262ae5775344741a76545ba895a8dbf33256409"
+  ],
+  "eidetic": [
+    "git+https://github.com/merely-made/eidetic.git?rev=44f0664748238d7a96603925a0268caf60e091aa#44f0664748238d7a96603925a0268caf60e091aa"
+  ],
+  "esp": [
+    "git+https://github.com/merely-made/esp.git?rev=b9f050b2947822aa0e5908a9aaedfc47a4f23930#b9f050b2947822aa0e5908a9aaedfc47a4f23930"
+  ],
+  "mere-source-edit": [
+    "git+https://github.com/merely-made/mere.git?rev=70deef2c8cf3d3410ae35b496a9396514070b24f#70deef2c8cf3d3410ae35b496a9396514070b24f"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "last_state": "running",
+  "last_tokens": 122,
+  "limit_seconds": 900,
+  "reason": "generation_deadline"
+}
