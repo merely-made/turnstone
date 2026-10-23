@@ -1,0 +1,13 @@
+{
+  "entries": [
+    {
+      "surface": 4134379584006242804,
+      "content": "Node(dcfdab2b-3aac-408b-830e-fc79f32160c1)",
+      "direction": "host-device",
+      "sampled_layers": 4,
+      "scope": "1:1",
+      "revision": 2,
+      "pending": true
+    }
+  ]
+}

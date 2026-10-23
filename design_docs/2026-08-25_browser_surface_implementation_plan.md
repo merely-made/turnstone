@@ -902,3 +902,47 @@ and exact source/binary identity; compile coverage is separate from runtime.
   launch exposed a bundled-Bash empty-array issue; the corrected driver passes
   on `/bin/bash`. This closes the finite native Metal receiving gate while
   preserving the wider product, physical-input and platform limits above.
+
+## Product UI receiving through Cue (2026-10-23)
+
+**Status: the real retained and Servo/Metal product paths are qualified.**
+This closes the earlier slice's explicit full-UI exclusion for those bindings.
+The earlier finite example remains separate evidence. Implementation
+`5e9e3bfea88e9e9b9133d01ec9486ed7fd056322` consumes Mere
+`86796a2447d68b3e6538d0ceff9f387a5d56e29c`.
+[Product receipt, captures and retained failures](../docs/receipts/cue_ui_20261023/README.md).
+
+- **The pool remains the owner.** Main and lens presentation borrow an admitted
+  Pelt controller for shared host-device rendering, or acquire a concrete
+  shared browser's owned native frame. App fetching/history and independent
+  Reader appearances retain their existing identities and resources.
+- **Control draining is separate from mutation.** Navigation, title, cursor,
+  extension messages and correlated results use the Cue stream. Observing
+  that stream no longer invalidates retained semantic publications at every
+  wake. Native extensions retain their original producer owner.
+- **A completed older frame cannot consume a newer input's final paint.**
+  Pool paint revisions schedule a follow-up after pending-frame completion;
+  runnable and exact due timer work keep their actual receiver. Non-admitted
+  transition geometry skips presentation without retiring content.
+- **Browser traversal keeps graph lineage intact.** Matching Back/Forward
+  commits move the existing graph cursor. Duplicate callbacks, ordinary links,
+  and scope-correlated refusals have independent regression coverage.
+- **Runtime reports reach the actual Inspector.** Engine/platform, both frame
+  directions, evidence, semantic protocol and all 28 support reasons are shown
+  beside the existing per-card viewer choice. Servo remains `Constructed`
+  pending an explicit import-observation feedback seam.
+- **Executed product evidence names both windows and both directions.**
+  Retained and Servo cases pass primary/lens/return/dock presentation. Servo
+  also passes text editing, page navigation, Reload, Back/Forward, zoom and
+  close/reopen; its station moves retain the scope, and reopening replaces it.
+  A mixed case presents Servo and Genet side by side on one host device.
+- **The remaining bounds stay visible.** Linux/Vulkan, fresh Windows receiving,
+  concrete Weld/Scry shared-native adapters, physical IME, human accessibility,
+  physical device loss and transparent native colour/alpha acceptance retain
+  their own gates. A runnable browser-polling diagnosis is not an idle receipt.
+
+Current-source validation covers the entire 1,200-test library as an exact
+partition: 1,183 passed, 17 explicitly ignored, zero failed. The new GPU
+pending-frame regression also passes explicitly. Default all-target checks and
+Servo library Clippy pass; Clippy retains warnings. The receipt records the
+binary/source hashes, exact scenarios and qualification limits.

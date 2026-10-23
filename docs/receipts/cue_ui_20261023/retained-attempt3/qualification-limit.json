@@ -1,0 +1,6 @@
+{
+  "result": "not_qualified",
+  "reason": "The original driver accepted a nonblank lens window without sampled shared content. The stricter final gate requires a nonempty lens frame receipt.",
+  "old_scenario_outcome": "RESULT ok",
+  "sampled_lens_entries": 0
+}

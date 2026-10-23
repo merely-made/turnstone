@@ -1,0 +1,10 @@
+RESULT fail
+waited 68 frames
+waited 0 frames
+captured 01_retained_primary
+waited 0 frames
+captured 02_reader_primary
+presentation frames=180 captures=2 blank=0
+capture /Users/markik/Code/output/cue-ui-retained-attempt2/receiving/01_retained_primary.png digest=f7486ac74d275ecf blank=false
+capture /Users/markik/Code/output/cue-ui-retained-attempt2/receiving/02_reader_primary.png digest=0fdc262b1204977e blank=false
+FAIL: shared content 31de6105-1e91-4c9f-8ffe-40e3567d7b54: Backend("placement has no admitted geometry")

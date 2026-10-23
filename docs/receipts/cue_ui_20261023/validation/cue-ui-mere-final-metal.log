@@ -1,0 +1,46 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> ports/pelt/core/src/pool_a11y.rs:65:18
+   |
+65 |                 .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+   |                  ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+65 -                 .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+65 +                 .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+   --> ports/pelt/core/src/lib.rs:208:10
+    |
+208 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+    |          ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+208 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+208 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+    |
+
+warning: `pelt-core` (lib) generated 2 warnings (run `cargo fix --lib -p pelt-core` to apply 2 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.24s
+     Running tests/cue.rs (target/build/debug/deps/cue-b0923a58abd032ab)
+
+running 9 tests
+test atomic_input_backpressure_does_not_mutate_the_retained_receiver ... ok
+test canonical_ime_composition_changes_the_same_retained_pelt_value ... ok
+test hidden_retained_input_refuses_mutation_while_commands_still_advance ... ok
+test pool_lends_the_exact_receiver_for_shared_frames_and_revokes_hidden_admission ... ok
+test pool_visual_mutations_have_revisions_independent_of_layout_admission ... ok
+test retained_genet_receives_ordered_requests_input_and_retirement ... ok
+test semantic_publication_retires_on_input_and_replacement_changes_scope ... ok
+test shared_content_preserves_routing_and_presents_genet_through_the_neutral_host ... ok
+test two_genet_producers_render_on_one_host_device_without_sharing_quality_state ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.19s
+

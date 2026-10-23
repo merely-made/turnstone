@@ -1,0 +1,50 @@
+# The real engine picker installs Servo in the product pool on Metal.
+settle 15
+key escape
+open ${SERVO_FIXTURE_BASE}/browser_servo/page-a.html
+wait 240
+act Open node in Workbench
+wait 240
+act Open Inspector pane
+settle 15
+click surface:inspector role:button Change viewer
+settle 5
+click-row graft.servo
+settle 100
+assert row Viewer: graft.servo
+assert snap browser-current-engine == graft.servo
+assert snap browser-current-content == live
+assert snap host-servo-views == 1
+assert snap host-cue-frames >= 1
+record-idle 01_servo_inspector
+capture 01_servo_inspector
+act Close pane
+settle 20
+act Open node in Workbench
+settle 20
+assert wb-cells == 1
+record-idle 02_servo_primary
+capture 02_servo_primary
+act Tear out pane
+settle 40
+assert windows == 2
+assert lens-surface content
+record-idle 03_servo_lens
+capture-lens 03_servo_lens
+act Return pane to primary
+settle 40
+assert surface content
+assert snap host-servo-views == 1
+record-idle 04_servo_docked
+capture 04_servo_docked
+act Toggle live content
+settle 30
+assert snap host-servo-views == 0
+act Toggle live content
+settle 80
+assert snap browser-current-engine == graft.servo
+assert snap host-servo-views == 1
+assert snap host-cue-frames >= 1
+record-idle 05_servo_reopened
+capture 05_servo_reopened
+log Real Turnstone Servo Cue primary/lens/return/reopen receiving complete
