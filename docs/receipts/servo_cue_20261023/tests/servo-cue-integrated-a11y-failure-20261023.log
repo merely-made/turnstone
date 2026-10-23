@@ -1,0 +1,15 @@
+
+running 1 test
+
+thread 'a11y::tests::panes_workbench_and_documents_project_under_one_root' (58597682) panicked at src/a11y.rs:970:9:
+["window: Turnstone", "group: chrome", "button: Read document", "button: Reveal document in map", "button: Toggle Roster pane", "button: Toggle Trail pane", "button: Toggle Gloss pane", "button: Toggle Inspect pane", "button: Toggle Overmap pane", "button: Toggle Settings pane", "button: Toggle Arrange pane", "button: Toggle Transcript pane", "button: Toggle Publishing pane", "button: Toggle Shared document pane", "button: Toggle Device Receipts pane", "button: Toggle Frozen Projection pane", "label: Example Domain  ·  example.com", "group: content", "group: Workspace", "group: Read", "group: Workbench documents", "group: Tile layout", "group: Slot 0", "tab: Tile 290d29db-5f89-40c2-a648-9baa4a210588", "document: Example Domain", "heading: Example Domain", "link: More information..."]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test a11y::tests::panes_workbench_and_documents_project_under_one_root ... FAILED
+
+failures:
+
+failures:
+    a11y::tests::panes_workbench_and_documents_project_under_one_root
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1194 filtered out; finished in 0.36s
+

@@ -1,0 +1,21 @@
+
+running 3 tests
+test shell::frame_keys::tests::actual_frame_prepare_uses_session_identity_and_refuses_retired_route ... 
+thread 'shell::frame_keys::tests::actual_frame_prepare_uses_session_identity_and_refuses_retired_route' (57996473) panicked at src/shell/frame_keys.rs:466:14:
+called `Option::unwrap()` on a `None` value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test shell::frame_keys::tests::header_accessibility_focus_precedes_body_but_keeps_host_editor_priority ... 
+thread 'shell::frame_keys::tests::header_accessibility_focus_precedes_body_but_keeps_host_editor_priority' (57996494) panicked at src/shell/frame_keys.rs:428:14:
+called `Option::unwrap()` on a `None` value
+FAILED
+test shell::frame_keys::tests::header_focus_retirement_is_window_scoped_and_terminal ... ok
+
+failures:
+
+failures:
+    shell::frame_keys::tests::actual_frame_prepare_uses_session_identity_and_refuses_retired_route
+    shell::frame_keys::tests::header_accessibility_focus_precedes_body_but_keeps_host_editor_priority
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 1180 filtered out; finished in 0.89s
+

@@ -1,0 +1,24 @@
+{
+  "source_commit": "5335c658dfd1fbca07bf0883c5e00eef9d2b45e6",
+  "mere_supplier": "737fec2df874315e2edaaab64407f6aafff48486",
+  "files": {
+    "Cargo.toml": "4201dbec0171215e670da0da71af51a2bca298e8d58990b64b5e7dc6d7f72639",
+    "Cargo.lock": "667d86141140d912dfb6ff1fd60a964699e457aa2dfffd4e02e7e3121ac8b9d7",
+    "src/lib.rs": "0e571290f1a489988ef263fcb1f007ad2de22c053c5f705b761702961e1c827d",
+    "src/shell/mod.rs": "55cedadc5725026e42e909fa483cdfcb9a6604a1bd3eae88759660e150fe3c90",
+    "src/shell/servo.rs": "a2d45e96e1233bda5609a206a7aae332978f6c058e10022fb3bc7029c2662ada",
+    "src/shell/servo_cue.rs": "dfd50f9d07352dee8df0879224a73e42c426ab77544e1e53e485880d91729417",
+    "src/shell/frame_keys.rs": "2a0639d65ede8fe68b03ead514a73a6ead3a006c49cb3991f009198e0ddae018",
+    "examples/cue_surfaces.rs": "df30ac07c445ea6923ea75400cf6611010608025a051adf415d22e4948c09a4d",
+    "scripts/receive-cue-surfaces-mac.sh": "f664c3c9cade55325407150f596cf5641456fc3dd992f7e5eb181e26aa9ff60b"
+  },
+  "test_fixture_followup": {
+    "source_commit": "85c57a0d01877756db86a07f6a0e9f084d98e76a",
+    "files": {
+      "src/a11y.rs": "83b2729519feb6a965a7fbafb3f0c282f5ce56051ba9216acfbda9d3ec8e2aa7",
+      "src/panes/tests.rs": "932dab61fc62fbfe5503b82baefbd299b584822e475ceac2f1d2ef8849b65207",
+      "src/panes/store.rs": "61fcc2da37198f6c5b6f7cd45f107b3ffe3eefc87bb630c4aa49cedb876afddb"
+    },
+    "scope": "test-only updates after the native receiving build"
+  }
+}

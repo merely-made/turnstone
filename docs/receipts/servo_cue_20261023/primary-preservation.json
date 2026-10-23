@@ -1,0 +1,38 @@
+{
+  "mere": {
+    "path": "/Users/markik/Code/repos/mere",
+    "initial_head_recorded_at_task_start": "e1b0a13bf133ca2e62cecc44e1c87b9a8d4c123e",
+    "current_head": "d918f670c8328ac6544242b0b753992b5124df09",
+    "porcelain_v1": "",
+    "same_head": false,
+    "clean": true,
+    "initial_is_ancestor": true
+  },
+  "turnstone": {
+    "path": "/Users/markik/Code/repos/turnstone",
+    "initial_head_recorded_at_task_start": "5fa9c537b770d8bfb05c7ceab919e7bfc01a0b3c",
+    "current_head": "e5f2e97964a9d353def509e9197ab7c9dbf29014",
+    "porcelain_v1": "",
+    "same_head": false,
+    "clean": true,
+    "initial_is_ancestor": true
+  },
+  "wgpu-cue": {
+    "path": "/Users/markik/Code/repos/wgpu-cue",
+    "initial_head_recorded_at_task_start": "694d8d20d2acb375f4abfb0bfe58c5e5f3ee6092",
+    "current_head": "694d8d20d2acb375f4abfb0bfe58c5e5f3ee6092",
+    "porcelain_v1": "",
+    "same_head": true,
+    "clean": true,
+    "initial_is_ancestor": true
+  },
+  "wgpu-graft": {
+    "path": "/Users/markik/Code/repos/wgpu-graft",
+    "initial_head_recorded_at_task_start": "244fe063293d280ba7d0a3750bc30062aeeb9944",
+    "current_head": "244fe063293d280ba7d0a3750bc30062aeeb9944",
+    "porcelain_v1": "",
+    "same_head": true,
+    "clean": true,
+    "initial_is_ancestor": true
+  }
+}

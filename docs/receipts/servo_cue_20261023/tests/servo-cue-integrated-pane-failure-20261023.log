@@ -1,0 +1,15 @@
+
+running 1 test
+
+thread 'panes::tests::each_leaf_emits_a_pane_node_with_content_tag_label' (58597723) panicked at src/panes/tests.rs:70:5:
+assertion failed: labels.contains(&"workbench".to_string())
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test panes::tests::each_leaf_emits_a_pane_node_with_content_tag_label ... FAILED
+
+failures:
+
+failures:
+    panes::tests::each_leaf_emits_a_pane_node_with_content_tag_label
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1194 filtered out; finished in 0.02s
+

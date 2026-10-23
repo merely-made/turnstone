@@ -1,0 +1,15 @@
+
+running 1 test
+
+thread 'panes::store::tests::retired_panes_restore_their_content_and_arrangement_in_frame_and_lenses' (58597721) panicked at src/panes/store.rs:164:13:
+assertion failed: !saved.contains("Apparatus") && !saved.contains("Steward")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test panes::store::tests::retired_panes_restore_their_content_and_arrangement_in_frame_and_lenses ... FAILED
+
+failures:
+
+failures:
+    panes::store::tests::retired_panes_restore_their_content_and_arrangement_in_frame_and_lenses
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1194 filtered out; finished in 0.00s
+

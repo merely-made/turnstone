@@ -1,0 +1,1275 @@
+{
+  "passed": false,
+  "error": "Invalid(\"hidden card accepted input\")",
+  "phase": 1,
+  "records": [
+    {
+      "phase": "constructed",
+      "capabilities": [
+        {
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "engine": "genet.livery",
+          "version": null,
+          "platform": "macos",
+          "build_features": [
+            "retained-session"
+          ],
+          "presentation": "HostDevice",
+          "evidence": "Constructed",
+          "semantics": "DocumentSnapshot",
+          "features": {
+            "Navigation": {
+              "permits": true,
+              "status": "Partial(\"host receives an acquisition request; routing and history stay with the host\")"
+            },
+            "InlineHtml": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Reload": {
+              "permits": true,
+              "status": "Partial(\"host receives an acquisition request; routing and history stay with the host\")"
+            },
+            "Stop": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "History": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Find": {
+              "permits": true,
+              "status": "Partial(\"new forward queries; stepping uses the document extension\")"
+            },
+            "Zoom": {
+              "permits": true,
+              "status": "Supported"
+            },
+            "Capture": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "ScriptResult": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "CookieRead": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Mouse": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "Scroll": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "Keyboard": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "NativeKeyboard": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Text": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "Ime": {
+              "permits": true,
+              "status": "Partial(\"canonical retained composition; acceptance is reported per input, native candidate-window placement stays with the host\")"
+            },
+            "Focus": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "Touch": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Pen": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Drag": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Semantics": {
+              "permits": true,
+              "status": "Partial(\"current retained document projection and advertised actions; host owns native AT publication\")"
+            },
+            "SemanticActions": {
+              "permits": true,
+              "status": "Partial(\"current retained document projection and advertised actions; host owns native AT publication\")"
+            },
+            "ResourceInterception": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Downloads": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Permissions": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Authentication": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Popups": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Devtools": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            }
+          }
+        },
+        {
+          "scope": "Scope { owner: 357645309519, generation: 1 }",
+          "engine": "graft.servo",
+          "version": "Servo 0.7.0 / aac43a3f",
+          "platform": "macos",
+          "build_features": [
+            "wgpu-30",
+            "metal",
+            "pre-present-graft"
+          ],
+          "presentation": "NativeFrame",
+          "evidence": "Constructed",
+          "semantics": "Unavailable",
+          "features": {
+            "Navigation": {
+              "permits": true,
+              "status": "Partial(\"asynchronous native navigation; completion acknowledges dispatch, with ordered navigation observations\")"
+            },
+            "InlineHtml": {
+              "permits": false,
+              "status": "Unsupported(\"this host loads addresses; inline HTML/base-address construction is not implemented\")"
+            },
+            "Reload": {
+              "permits": true,
+              "status": "Partial(\"asynchronous native navigation; completion acknowledges dispatch, with ordered navigation observations\")"
+            },
+            "Stop": {
+              "permits": false,
+              "status": "Unsupported(\"pinned Servo has no stop-loading API\")"
+            },
+            "History": {
+              "permits": true,
+              "status": "Partial(\"asynchronous native navigation; completion acknowledges dispatch, with ordered navigation observations\")"
+            },
+            "Find": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Zoom": {
+              "permits": true,
+              "status": "Partial(\"native page zoom with effective-value readback; content settles asynchronously\")"
+            },
+            "Capture": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "ScriptResult": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "CookieRead": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Mouse": {
+              "permits": true,
+              "status": "Partial(\"move and primary/secondary/auxiliary buttons without modifiers\")"
+            },
+            "Scroll": {
+              "permits": true,
+              "status": "Partial(\"unmodified pixel wheel input\")"
+            },
+            "Keyboard": {
+              "permits": true,
+              "status": "Partial(\"canonical logical keys; physical codes and repeat are not projected\")"
+            },
+            "NativeKeyboard": {
+              "permits": false,
+              "status": "Unsupported(\"physical key codes and independent native character fields are not projected\")"
+            },
+            "Text": {
+              "permits": true,
+              "status": "Partial(\"logical character-key input; explicit IME composition is not exposed\")"
+            },
+            "Ime": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Focus": {
+              "permits": true,
+              "status": "Supported"
+            },
+            "Touch": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Pen": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Drag": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Semantics": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "SemanticActions": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "ResourceInterception": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Downloads": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Permissions": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Authentication": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Popups": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Devtools": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            }
+          }
+        }
+      ],
+      "frames": [
+        {
+          "stamp": "None",
+          "size": null,
+          "background": null,
+          "hash": null
+        },
+        {
+          "stamp": "None",
+          "size": null,
+          "background": null,
+          "hash": null
+        }
+      ]
+    },
+    {
+      "phase": "initial-pixels",
+      "capabilities": [
+        {
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "engine": "genet.livery",
+          "version": null,
+          "platform": "macos",
+          "build_features": [
+            "retained-session"
+          ],
+          "presentation": "HostDevice",
+          "evidence": "Observed",
+          "semantics": "DocumentSnapshot",
+          "features": {
+            "Navigation": {
+              "permits": true,
+              "status": "Partial(\"host receives an acquisition request; routing and history stay with the host\")"
+            },
+            "InlineHtml": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Reload": {
+              "permits": true,
+              "status": "Partial(\"host receives an acquisition request; routing and history stay with the host\")"
+            },
+            "Stop": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "History": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Find": {
+              "permits": true,
+              "status": "Partial(\"new forward queries; stepping uses the document extension\")"
+            },
+            "Zoom": {
+              "permits": true,
+              "status": "Supported"
+            },
+            "Capture": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "ScriptResult": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "CookieRead": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Mouse": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "Scroll": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "Keyboard": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "NativeKeyboard": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Text": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "Ime": {
+              "permits": true,
+              "status": "Partial(\"canonical retained composition; acceptance is reported per input, native candidate-window placement stays with the host\")"
+            },
+            "Focus": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "Touch": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Pen": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Drag": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Semantics": {
+              "permits": true,
+              "status": "Partial(\"current retained document projection and advertised actions; host owns native AT publication\")"
+            },
+            "SemanticActions": {
+              "permits": true,
+              "status": "Partial(\"current retained document projection and advertised actions; host owns native AT publication\")"
+            },
+            "ResourceInterception": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Downloads": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Permissions": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Authentication": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Popups": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Devtools": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            }
+          }
+        },
+        {
+          "scope": "Scope { owner: 357645309519, generation: 1 }",
+          "engine": "graft.servo",
+          "version": "Servo 0.7.0 / aac43a3f",
+          "platform": "macos",
+          "build_features": [
+            "wgpu-30",
+            "metal",
+            "pre-present-graft"
+          ],
+          "presentation": "NativeFrame",
+          "evidence": "Constructed",
+          "semantics": "Unavailable",
+          "features": {
+            "Navigation": {
+              "permits": true,
+              "status": "Partial(\"asynchronous native navigation; completion acknowledges dispatch, with ordered navigation observations\")"
+            },
+            "InlineHtml": {
+              "permits": false,
+              "status": "Unsupported(\"this host loads addresses; inline HTML/base-address construction is not implemented\")"
+            },
+            "Reload": {
+              "permits": true,
+              "status": "Partial(\"asynchronous native navigation; completion acknowledges dispatch, with ordered navigation observations\")"
+            },
+            "Stop": {
+              "permits": false,
+              "status": "Unsupported(\"pinned Servo has no stop-loading API\")"
+            },
+            "History": {
+              "permits": true,
+              "status": "Partial(\"asynchronous native navigation; completion acknowledges dispatch, with ordered navigation observations\")"
+            },
+            "Find": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Zoom": {
+              "permits": true,
+              "status": "Partial(\"native page zoom with effective-value readback; content settles asynchronously\")"
+            },
+            "Capture": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "ScriptResult": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "CookieRead": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Mouse": {
+              "permits": true,
+              "status": "Partial(\"move and primary/secondary/auxiliary buttons without modifiers\")"
+            },
+            "Scroll": {
+              "permits": true,
+              "status": "Partial(\"unmodified pixel wheel input\")"
+            },
+            "Keyboard": {
+              "permits": true,
+              "status": "Partial(\"canonical logical keys; physical codes and repeat are not projected\")"
+            },
+            "NativeKeyboard": {
+              "permits": false,
+              "status": "Unsupported(\"physical key codes and independent native character fields are not projected\")"
+            },
+            "Text": {
+              "permits": true,
+              "status": "Partial(\"logical character-key input; explicit IME composition is not exposed\")"
+            },
+            "Ime": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Focus": {
+              "permits": true,
+              "status": "Supported"
+            },
+            "Touch": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Pen": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Drag": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Semantics": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "SemanticActions": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "ResourceInterception": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Downloads": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Permissions": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Authentication": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Popups": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Devtools": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            }
+          }
+        }
+      ],
+      "frames": [
+        {
+          "stamp": "Some(FrameStamp { scope: Scope { owner: 1, generation: 1 }, allocation_epoch: 1, content_revision: 1 })",
+          "size": [
+            320,
+            240
+          ],
+          "background": [
+            208,
+            32,
+            32,
+            255
+          ],
+          "hash": "afa3a00e19f4cde41ab940a2bde2b578de62677530e1552002299d56840681b5"
+        },
+        {
+          "stamp": "Some(FrameStamp { scope: Scope { owner: 357645309519, generation: 1 }, allocation_epoch: 2, content_revision: 2 })",
+          "size": [
+            320,
+            240
+          ],
+          "background": [
+            208,
+            32,
+            32,
+            255
+          ],
+          "hash": "7829fe33246bd32fd20629c7f3d232e7c481959e60d0a913b093cd0259f36ec9"
+        }
+      ]
+    },
+    {
+      "phase": "input-and-command-results",
+      "capabilities": [
+        {
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "engine": "genet.livery",
+          "version": null,
+          "platform": "macos",
+          "build_features": [
+            "retained-session"
+          ],
+          "presentation": "HostDevice",
+          "evidence": "Observed",
+          "semantics": "DocumentSnapshot",
+          "features": {
+            "Navigation": {
+              "permits": true,
+              "status": "Partial(\"host receives an acquisition request; routing and history stay with the host\")"
+            },
+            "InlineHtml": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Reload": {
+              "permits": true,
+              "status": "Partial(\"host receives an acquisition request; routing and history stay with the host\")"
+            },
+            "Stop": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "History": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Find": {
+              "permits": true,
+              "status": "Partial(\"new forward queries; stepping uses the document extension\")"
+            },
+            "Zoom": {
+              "permits": true,
+              "status": "Supported"
+            },
+            "Capture": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "ScriptResult": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "CookieRead": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Mouse": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "Scroll": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "Keyboard": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "NativeKeyboard": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Text": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "Ime": {
+              "permits": true,
+              "status": "Partial(\"canonical retained composition; acceptance is reported per input, native candidate-window placement stays with the host\")"
+            },
+            "Focus": {
+              "permits": true,
+              "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+            },
+            "Touch": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Pen": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Drag": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Semantics": {
+              "permits": true,
+              "status": "Partial(\"current retained document projection and advertised actions; host owns native AT publication\")"
+            },
+            "SemanticActions": {
+              "permits": true,
+              "status": "Partial(\"current retained document projection and advertised actions; host owns native AT publication\")"
+            },
+            "ResourceInterception": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Downloads": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Permissions": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Authentication": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Popups": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            },
+            "Devtools": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+            }
+          }
+        },
+        {
+          "scope": "Scope { owner: 357645309519, generation: 1 }",
+          "engine": "graft.servo",
+          "version": "Servo 0.7.0 / aac43a3f",
+          "platform": "macos",
+          "build_features": [
+            "wgpu-30",
+            "metal",
+            "pre-present-graft"
+          ],
+          "presentation": "NativeFrame",
+          "evidence": "Constructed",
+          "semantics": "Unavailable",
+          "features": {
+            "Navigation": {
+              "permits": true,
+              "status": "Partial(\"asynchronous native navigation; completion acknowledges dispatch, with ordered navigation observations\")"
+            },
+            "InlineHtml": {
+              "permits": false,
+              "status": "Unsupported(\"this host loads addresses; inline HTML/base-address construction is not implemented\")"
+            },
+            "Reload": {
+              "permits": true,
+              "status": "Partial(\"asynchronous native navigation; completion acknowledges dispatch, with ordered navigation observations\")"
+            },
+            "Stop": {
+              "permits": false,
+              "status": "Unsupported(\"pinned Servo has no stop-loading API\")"
+            },
+            "History": {
+              "permits": true,
+              "status": "Partial(\"asynchronous native navigation; completion acknowledges dispatch, with ordered navigation observations\")"
+            },
+            "Find": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Zoom": {
+              "permits": true,
+              "status": "Partial(\"native page zoom with effective-value readback; content settles asynchronously\")"
+            },
+            "Capture": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "ScriptResult": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "CookieRead": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Mouse": {
+              "permits": true,
+              "status": "Partial(\"move and primary/secondary/auxiliary buttons without modifiers\")"
+            },
+            "Scroll": {
+              "permits": true,
+              "status": "Partial(\"unmodified pixel wheel input\")"
+            },
+            "Keyboard": {
+              "permits": true,
+              "status": "Partial(\"canonical logical keys; physical codes and repeat are not projected\")"
+            },
+            "NativeKeyboard": {
+              "permits": false,
+              "status": "Unsupported(\"physical key codes and independent native character fields are not projected\")"
+            },
+            "Text": {
+              "permits": true,
+              "status": "Partial(\"logical character-key input; explicit IME composition is not exposed\")"
+            },
+            "Ime": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Focus": {
+              "permits": true,
+              "status": "Supported"
+            },
+            "Touch": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Pen": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Drag": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Semantics": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "SemanticActions": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "ResourceInterception": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Downloads": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Permissions": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Authentication": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Popups": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            },
+            "Devtools": {
+              "permits": false,
+              "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+            }
+          }
+        }
+      ],
+      "frames": [
+        {
+          "stamp": "Some(FrameStamp { scope: Scope { owner: 1, generation: 1 }, allocation_epoch: 4, content_revision: 6 })",
+          "size": [
+            320,
+            240
+          ],
+          "background": [
+            208,
+            32,
+            32,
+            255
+          ],
+          "hash": "4b2aae28f41628668bcaa67e48fb407c2c3c927809597d60b9fbaa6814ff162f"
+        },
+        {
+          "stamp": "Some(FrameStamp { scope: Scope { owner: 357645309519, generation: 1 }, allocation_epoch: 4, content_revision: 4 })",
+          "size": [
+            320,
+            240
+          ],
+          "background": [
+            208,
+            32,
+            32,
+            255
+          ],
+          "hash": "57242b2656cdadfecfcfeee7491f3f0962953822524f81d8e8529647071a9e43"
+        }
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "report": {
+        "scope": "Scope { owner: 1, generation: 1 }",
+        "engine": "genet.livery",
+        "version": null,
+        "platform": "macos",
+        "build_features": [
+          "retained-session"
+        ],
+        "presentation": "HostDevice",
+        "evidence": "Observed",
+        "semantics": "DocumentSnapshot",
+        "features": {
+          "Navigation": {
+            "permits": true,
+            "status": "Partial(\"host receives an acquisition request; routing and history stay with the host\")"
+          },
+          "InlineHtml": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "Reload": {
+            "permits": true,
+            "status": "Partial(\"host receives an acquisition request; routing and history stay with the host\")"
+          },
+          "Stop": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "History": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "Find": {
+            "permits": true,
+            "status": "Partial(\"new forward queries; stepping uses the document extension\")"
+          },
+          "Zoom": {
+            "permits": true,
+            "status": "Supported"
+          },
+          "Capture": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "ScriptResult": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "CookieRead": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "Mouse": {
+            "permits": true,
+            "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+          },
+          "Scroll": {
+            "permits": true,
+            "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+          },
+          "Keyboard": {
+            "permits": true,
+            "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+          },
+          "NativeKeyboard": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "Text": {
+            "permits": true,
+            "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+          },
+          "Ime": {
+            "permits": true,
+            "status": "Partial(\"canonical retained composition; acceptance is reported per input, native candidate-window placement stays with the host\")"
+          },
+          "Focus": {
+            "permits": true,
+            "status": "Partial(\"canonical retained dispatch; each input result reports whether this session handled it\")"
+          },
+          "Touch": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "Pen": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "Drag": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "Semantics": {
+            "permits": true,
+            "status": "Partial(\"current retained document projection and advertised actions; host owns native AT publication\")"
+          },
+          "SemanticActions": {
+            "permits": true,
+            "status": "Partial(\"current retained document projection and advertised actions; host owns native AT publication\")"
+          },
+          "ResourceInterception": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "Downloads": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "Permissions": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "Authentication": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "Popups": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          },
+          "Devtools": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed by this retained-session adapter\")"
+          }
+        }
+      },
+      "background": [
+        208,
+        32,
+        32,
+        255
+      ],
+      "size": [
+        320,
+        240
+      ],
+      "typed_observed": true,
+      "requests": 2,
+      "completions": 2,
+      "navigation_observations": 0,
+      "events": [
+        {
+          "sequence": 1,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "CapabilitiesChanged(CapabilityReport { identity: BackendIdentity { engine: \"genet.livery\", version: None, platform: \"macos\", build_features: [\"retained-session\"] }, presentation: HostDevice, evidence: Observed, semantics: DocumentSnapshot, features: {Navigation: Partial(\"host receives an acquisition request; routing and history stay with the host\"), InlineHtml: Unsupported(\"not exposed by this retained-session adapter\"), Reload: Partial(\"host receives an acquisition request; routing and history stay with the host\"), Stop: Unsupported(\"not exposed by this retained-session adapter\"), History: Unsupported(\"not exposed by this retained-session adapter\"), Find: Partial(\"new forward queries; stepping uses the document extension\"), Zoom: Supported, Capture: Unsupported(\"not exposed by this retained-session adapter\"), ScriptResult: Unsupported(\"not exposed by this retained-session adapter\"), CookieRead: Unsupported(\"not exposed by this retained-session adapter\"), Mouse: Partial(\"canonical retained dispatch; each input result reports whether this session handled it\"), Scroll: Partial(\"canonical retained dispatch; each input result reports whether this session handled it\"), Keyboard: Partial(\"canonical retained dispatch; each input result reports whether this session handled it\"), NativeKeyboard: Unsupported(\"not exposed by this retained-session adapter\"), Text: Partial(\"canonical retained dispatch; each input result reports whether this session handled it\"), Ime: Partial(\"canonical retained composition; acceptance is reported per input, native candidate-window placement stays with the host\"), Focus: Partial(\"canonical retained dispatch; each input result reports whether this session handled it\"), Touch: Unsupported(\"not exposed by this retained-session adapter\"), Pen: Unsupported(\"not exposed by this retained-session adapter\"), Drag: Unsupported(\"not exposed by this retained-session adapter\"), Semantics: Partial(\"current retained document projection and advertised actions; host owns native AT publication\"), SemanticActions: Partial(\"current retained document projection and advertised actions; host owns native AT publication\"), ResourceInterception: Unsupported(\"not exposed by this retained-session adapter\"), Downloads: Unsupported(\"not exposed by this retained-session adapter\"), Permissions: Unsupported(\"not exposed by this retained-session adapter\"), Authentication: Unsupported(\"not exposed by this retained-session adapter\"), Popups: Unsupported(\"not exposed by this retained-session adapter\"), Devtools: Unsupported(\"not exposed by this retained-session adapter\")} })"
+        },
+        {
+          "sequence": 2,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "DocumentInput(SessionInputResult { effect: Handled, cursor: None, capture: None, editable: false })"
+        },
+        {
+          "sequence": 3,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "DocumentInput(SessionInputResult { effect: Ignored, cursor: Some(Text), capture: None, editable: false })"
+        },
+        {
+          "sequence": 4,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "CursorChanged(\"text\")"
+        },
+        {
+          "sequence": 5,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "DocumentInput(SessionInputResult { effect: Handled, cursor: Some(Text), capture: Some(true), editable: true })"
+        },
+        {
+          "sequence": 6,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "CursorChanged(\"text\")"
+        },
+        {
+          "sequence": 7,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "DocumentInput(SessionInputResult { effect: Handled, cursor: Some(Text), capture: Some(false), editable: true })"
+        },
+        {
+          "sequence": 8,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "CursorChanged(\"text\")"
+        },
+        {
+          "sequence": 9,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "DocumentInput(SessionInputResult { effect: Handled, cursor: None, capture: None, editable: true })"
+        },
+        {
+          "sequence": 10,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "Completed { request: RequestKey { scope: Scope { owner: 1, generation: 1 }, id: RequestId(1) }, result: Ok(Zoom(DocumentZoomState { requested: 1.25, applied: 1.25, min: 0.25, max: 5.0 })) }"
+        },
+        {
+          "sequence": 11,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "Semantics { publication: PublicationKey { scope: Scope { owner: 1, generation: 1 }, revision: 4 }, payload: Snapshot(DocumentA11yProjection { revision: 1, support: DocumentA11ySupport { capability: Partial, limitations: [\"Laid-out element roles and states are exposed; custom leaves, standalone text nodes, and the complete accessible-name algorithm are not yet included.\"] }, root: DocumentA11yNodeId(1099511627776), nodes: [DocumentA11yNode { id: DocumentA11yNodeId(1099511627786), parent: Some(DocumentA11yNodeId(1099511627785)), children: [], role: TextField, name: None, description: None, value: Some(\"heXllo\"), numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: Some(DocumentA11yBounds { x: 20.0, y: 20.0, width: 200.0, height: 50.0 }), state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: true, editable: true, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [Click, Focus, SetValue] }, DocumentA11yNode { id: DocumentA11yNodeId(1099511627787), parent: Some(DocumentA11yNodeId(1099511627785)), children: [], role: Link, name: Some(\"next\"), description: None, value: None, numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: Some(DocumentA11yBounds { x: 20.0, y: 112.5, width: 47.5, height: 25.0 }), state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: false, editable: false, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [Click, Focus] }, DocumentA11yNode { id: DocumentA11yNodeId(1099511627785), parent: Some(DocumentA11yNodeId(1099511627778)), children: [DocumentA11yNodeId(1099511627786), DocumentA11yNodeId(1099511627787)], role: Unknown, name: None, description: None, value: None, numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: Some(DocumentA11yBounds { x: 0.0, y: 0.0, width: 320.0, height: 0.0 }), state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: false, editable: false, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [] }, DocumentA11yNode { id: DocumentA11yNodeId(1099511627778), parent: Some(DocumentA11yNodeId(1099511627776)), children: [DocumentA11yNodeId(1099511627785)], role: Document, name: None, description: None, value: None, numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: Some(DocumentA11yBounds { x: 0.0, y: 0.0, width: 320.0, height: 0.0 }), state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: false, editable: false, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [] }, DocumentA11yNode { id: DocumentA11yNodeId(1099511627776), parent: None, children: [DocumentA11yNodeId(1099511627778)], role: Window, name: None, description: None, value: None, numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: None, state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: false, editable: false, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [] }] }) }"
+        },
+        {
+          "sequence": 12,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "Completed { request: RequestKey { scope: Scope { owner: 1, generation: 1 }, id: RequestId(2) }, result: Ok(Done) }"
+        },
+        {
+          "sequence": 13,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "SemanticsRetired(PublicationKey { scope: Scope { owner: 1, generation: 1 }, revision: 4 })"
+        },
+        {
+          "sequence": 14,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "Semantics { publication: PublicationKey { scope: Scope { owner: 1, generation: 1 }, revision: 5 }, payload: Snapshot(DocumentA11yProjection { revision: 1, support: DocumentA11ySupport { capability: Partial, limitations: [\"Laid-out element roles and states are exposed; custom leaves, standalone text nodes, and the complete accessible-name algorithm are not yet included.\"] }, root: DocumentA11yNodeId(1099511627776), nodes: [DocumentA11yNode { id: DocumentA11yNodeId(1099511627786), parent: Some(DocumentA11yNodeId(1099511627785)), children: [], role: TextField, name: None, description: None, value: Some(\"heXllo\"), numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: Some(DocumentA11yBounds { x: 20.0, y: 20.0, width: 200.0, height: 50.0 }), state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: true, editable: true, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [Click, Focus, SetValue] }, DocumentA11yNode { id: DocumentA11yNodeId(1099511627787), parent: Some(DocumentA11yNodeId(1099511627785)), children: [], role: Link, name: Some(\"next\"), description: None, value: None, numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: Some(DocumentA11yBounds { x: 20.0, y: 112.5, width: 47.5, height: 25.0 }), state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: false, editable: false, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [Click, Focus] }, DocumentA11yNode { id: DocumentA11yNodeId(1099511627785), parent: Some(DocumentA11yNodeId(1099511627778)), children: [DocumentA11yNodeId(1099511627786), DocumentA11yNodeId(1099511627787)], role: Unknown, name: None, description: None, value: None, numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: Some(DocumentA11yBounds { x: 0.0, y: 0.0, width: 320.0, height: 0.0 }), state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: false, editable: false, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [] }, DocumentA11yNode { id: DocumentA11yNodeId(1099511627778), parent: Some(DocumentA11yNodeId(1099511627776)), children: [DocumentA11yNodeId(1099511627785)], role: Document, name: None, description: None, value: None, numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: Some(DocumentA11yBounds { x: 0.0, y: 0.0, width: 320.0, height: 0.0 }), state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: false, editable: false, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [] }, DocumentA11yNode { id: DocumentA11yNodeId(1099511627776), parent: None, children: [DocumentA11yNodeId(1099511627778)], role: Window, name: None, description: None, value: None, numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: None, state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: false, editable: false, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [] }] }) }"
+        },
+        {
+          "sequence": 15,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "SemanticsRetired(PublicationKey { scope: Scope { owner: 1, generation: 1 }, revision: 5 })"
+        },
+        {
+          "sequence": 16,
+          "scope": "Scope { owner: 1, generation: 1 }",
+          "event": "Semantics { publication: PublicationKey { scope: Scope { owner: 1, generation: 1 }, revision: 7 }, payload: Snapshot(DocumentA11yProjection { revision: 1, support: DocumentA11ySupport { capability: Partial, limitations: [\"Laid-out element roles and states are exposed; custom leaves, standalone text nodes, and the complete accessible-name algorithm are not yet included.\"] }, root: DocumentA11yNodeId(1099511627776), nodes: [DocumentA11yNode { id: DocumentA11yNodeId(1099511627786), parent: Some(DocumentA11yNodeId(1099511627785)), children: [], role: TextField, name: None, description: None, value: Some(\"heXllo\"), numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: Some(DocumentA11yBounds { x: 20.0, y: 20.0, width: 200.0, height: 50.0 }), state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: true, editable: true, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [Click, Focus, SetValue] }, DocumentA11yNode { id: DocumentA11yNodeId(1099511627787), parent: Some(DocumentA11yNodeId(1099511627785)), children: [], role: Link, name: Some(\"next\"), description: None, value: None, numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: Some(DocumentA11yBounds { x: 20.0, y: 112.5, width: 47.5, height: 25.0 }), state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: false, editable: false, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [Click, Focus] }, DocumentA11yNode { id: DocumentA11yNodeId(1099511627785), parent: Some(DocumentA11yNodeId(1099511627778)), children: [DocumentA11yNodeId(1099511627786), DocumentA11yNodeId(1099511627787)], role: Unknown, name: None, description: None, value: None, numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: Some(DocumentA11yBounds { x: 0.0, y: 0.0, width: 320.0, height: 0.0 }), state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: false, editable: false, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [] }, DocumentA11yNode { id: DocumentA11yNodeId(1099511627778), parent: Some(DocumentA11yNodeId(1099511627776)), children: [DocumentA11yNodeId(1099511627785)], role: Document, name: None, description: None, value: None, numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: Some(DocumentA11yBounds { x: 0.0, y: 0.0, width: 320.0, height: 0.0 }), state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: false, editable: false, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [] }, DocumentA11yNode { id: DocumentA11yNodeId(1099511627776), parent: None, children: [DocumentA11yNodeId(1099511627778)], role: Window, name: None, description: None, value: None, numeric_value: None, numeric_minimum: None, numeric_maximum: None, bounds: None, state: DocumentA11yState { disabled: false, hidden: false, selected: None, expanded: None, checked: None, toggled: None, focused: false, editable: false, multiline: false, read_only: false, required: false, live: None, orientation: None, has_popup: None }, actions: [] }] }) }"
+        }
+      ]
+    },
+    {
+      "report": {
+        "scope": "Scope { owner: 357645309519, generation: 1 }",
+        "engine": "graft.servo",
+        "version": "Servo 0.7.0 / aac43a3f",
+        "platform": "macos",
+        "build_features": [
+          "wgpu-30",
+          "metal",
+          "pre-present-graft"
+        ],
+        "presentation": "NativeFrame",
+        "evidence": "Constructed",
+        "semantics": "Unavailable",
+        "features": {
+          "Navigation": {
+            "permits": true,
+            "status": "Partial(\"asynchronous native navigation; completion acknowledges dispatch, with ordered navigation observations\")"
+          },
+          "InlineHtml": {
+            "permits": false,
+            "status": "Unsupported(\"this host loads addresses; inline HTML/base-address construction is not implemented\")"
+          },
+          "Reload": {
+            "permits": true,
+            "status": "Partial(\"asynchronous native navigation; completion acknowledges dispatch, with ordered navigation observations\")"
+          },
+          "Stop": {
+            "permits": false,
+            "status": "Unsupported(\"pinned Servo has no stop-loading API\")"
+          },
+          "History": {
+            "permits": true,
+            "status": "Partial(\"asynchronous native navigation; completion acknowledges dispatch, with ordered navigation observations\")"
+          },
+          "Find": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "Zoom": {
+            "permits": true,
+            "status": "Partial(\"native page zoom with effective-value readback; content settles asynchronously\")"
+          },
+          "Capture": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "ScriptResult": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "CookieRead": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "Mouse": {
+            "permits": true,
+            "status": "Partial(\"move and primary/secondary/auxiliary buttons without modifiers\")"
+          },
+          "Scroll": {
+            "permits": true,
+            "status": "Partial(\"unmodified pixel wheel input\")"
+          },
+          "Keyboard": {
+            "permits": true,
+            "status": "Partial(\"canonical logical keys; physical codes and repeat are not projected\")"
+          },
+          "NativeKeyboard": {
+            "permits": false,
+            "status": "Unsupported(\"physical key codes and independent native character fields are not projected\")"
+          },
+          "Text": {
+            "permits": true,
+            "status": "Partial(\"logical character-key input; explicit IME composition is not exposed\")"
+          },
+          "Ime": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "Focus": {
+            "permits": true,
+            "status": "Supported"
+          },
+          "Touch": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "Pen": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "Drag": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "Semantics": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "SemanticActions": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "ResourceInterception": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "Downloads": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "Permissions": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "Authentication": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "Popups": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          },
+          "Devtools": {
+            "permits": false,
+            "status": "Unsupported(\"not exposed through this concrete shared binding; platform extensions retain their original owner\")"
+          }
+        }
+      },
+      "background": [
+        208,
+        32,
+        32,
+        255
+      ],
+      "size": [
+        320,
+        240
+      ],
+      "typed_observed": true,
+      "requests": 1,
+      "completions": 1,
+      "navigation_observations": 1,
+      "events": [
+        {
+          "sequence": 1,
+          "scope": "Scope { owner: 357645309519, generation: 1 }",
+          "event": "AddressChanged(\"file:///Users/markik/Code/output/servo-cue-metal-20261023-offscreen1/receiving/page-a.html\")"
+        },
+        {
+          "sequence": 2,
+          "scope": "Scope { owner: 357645309519, generation: 1 }",
+          "event": "TitleChanged(\"\")"
+        },
+        {
+          "sequence": 3,
+          "scope": "Scope { owner: 357645309519, generation: 1 }",
+          "event": "TitleChanged(\"Cue A\")"
+        },
+        {
+          "sequence": 4,
+          "scope": "Scope { owner: 357645309519, generation: 1 }",
+          "event": "AddressChanged(\"file:///Users/markik/Code/output/servo-cue-metal-20261023-offscreen1/receiving/page-a.html\")"
+        },
+        {
+          "sequence": 5,
+          "scope": "Scope { owner: 357645309519, generation: 1 }",
+          "event": "TitleChanged(\"Cue A\")"
+        },
+        {
+          "sequence": 6,
+          "scope": "Scope { owner: 357645309519, generation: 1 }",
+          "event": "NavigationFinished { address: \"file:///Users/markik/Code/output/servo-cue-metal-20261023-offscreen1/receiving/page-a.html\", success: true }"
+        },
+        {
+          "sequence": 7,
+          "scope": "Scope { owner: 357645309519, generation: 1 }",
+          "event": "Completed { request: RequestKey { scope: Scope { owner: 357645309519, generation: 1 }, id: RequestId(1) }, result: Ok(Zoom(DocumentZoomState { requested: 1.25, applied: 1.25, min: 0.1, max: 10.0 })) }"
+        },
+        {
+          "sequence": 8,
+          "scope": "Scope { owner: 357645309519, generation: 1 }",
+          "event": "TitleChanged(\"Cue value=heXllo\")"
+        },
+        {
+          "sequence": 9,
+          "scope": "Scope { owner: 357645309519, generation: 1 }",
+          "event": "CursorChanged(\"text\")"
+        }
+      ]
+    }
+  ]
+}

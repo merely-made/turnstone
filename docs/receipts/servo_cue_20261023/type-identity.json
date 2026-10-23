@@ -1,0 +1,80 @@
+{
+  "webcue": [
+    {
+      "version": "0.1.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    }
+  ],
+  "wgpu-cue": [
+    {
+      "version": "0.1.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    }
+  ],
+  "grafting-frame": [
+    {
+      "version": "0.1.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    }
+  ],
+  "wgpu-cue-netrender": [
+    {
+      "version": "0.1.1",
+      "source": "git+https://github.com/merely-made/wgpu-cue.git?rev=94ba59574838a70c8283d3f5d3cf3ddbb838cfc5#94ba59574838a70c8283d3f5d3cf3ddbb838cfc5"
+    }
+  ],
+  "document-session-api": [
+    {
+      "version": "0.1.0",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#7d1d89dbe729a853cf59c7b3f43ee3d8e494fde8"
+    }
+  ],
+  "inker": [
+    {
+      "version": "0.1.1",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#737fec2df874315e2edaaab64407f6aafff48486"
+    }
+  ],
+  "pelt-core": [
+    {
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#737fec2df874315e2edaaab64407f6aafff48486"
+    }
+  ],
+  "servo": [
+    {
+      "version": "0.7.0",
+      "source": "git+https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f31a259f04a574f5ec4e959c943ad7cc7"
+    }
+  ],
+  "grafting": [
+    {
+      "version": "0.6.0",
+      "source": "git+https://github.com/merely-made/wgpu-graft.git?rev=bb48281bd4a88a726a009e0518706881b74b7604#bb48281bd4a88a726a009e0518706881b74b7604"
+    }
+  ],
+  "servo-wgpu-interop-adapter": [
+    {
+      "version": "0.1.0",
+      "source": "git+https://github.com/merely-made/wgpu-graft.git?rev=bb48281bd4a88a726a009e0518706881b74b7604#bb48281bd4a88a726a009e0518706881b74b7604"
+    }
+  ],
+  "genet-host-api": [
+    {
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#7d1d89dbe729a853cf59c7b3f43ee3d8e494fde8"
+    }
+  ],
+  "netrender": [
+    {
+      "version": "0.1.2",
+      "source": "git+https://github.com/merely-made/netrender.git?branch=main#ec15eb269855c798467c93a6d10031100fdfdf65"
+    }
+  ],
+  "wgpu": [
+    {
+      "version": "30.0.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "offscreen_metal": {
+    "status": "passed",
+    "receipt": "offscreen2/qualification.json"
+  },
+  "headed_metal": {
+    "status": "not_run_pending_user_unlock_signal"
+  },
+  "mere_focused": {
+    "status": "passed",
+    "passed": 254,
+    "gpu_ignored": 2,
+    "doctest_ignored": 1
+  },
+  "mere_explicit_metal": {
+    "status": "passed",
+    "passed": 2
+  },
+  "turnstone_initial_broad": {
+    "status": "failed",
+    "passed": 1162,
+    "failed": 5,
+    "ignored": 16
+  },
+  "turnstone_integrated_serial_before_fixture_corrections": {
+    "status": "failed",
+    "passed": 1176,
+    "failed": 3,
+    "ignored": 16
+  },
+  "turnstone_corrected_affected_cohorts": {
+    "status": "passed",
+    "passed": 71,
+    "failed": 0,
+    "filtered_out": 1124
+  },
+  "clippy_library_and_example": {
+    "status": "completed_with_warnings"
+  },
+  "linux_vulkan": {
+    "status": "not_run"
+  },
+  "windows_runtime": {
+    "status": "not_run"
+  },
+  "physical_ime_human_at": {
+    "status": "not_run"
+  }
+}
