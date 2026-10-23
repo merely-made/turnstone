@@ -1,0 +1,11 @@
+{
+  "session": "Type=wayland\nActive=yes\nLockedHint=no\n",
+  "fixture_base": "http://127.0.0.1:40325",
+  "environment": {
+    "XDG_RUNTIME_DIR": "/run/user/1000",
+    "WAYLAND_DISPLAY": "wayland-0",
+    "XDG_SESSION_TYPE": "wayland",
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
+    "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/radeon_icd.x86_64.json"
+  }
+}

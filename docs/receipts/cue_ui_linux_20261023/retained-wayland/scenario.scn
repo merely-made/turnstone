@@ -1,0 +1,53 @@
+# Actual product pool, primary composition, independent Reader appearances,
+# lens composition and reopen. Serve scenarios/fixtures on loopback.
+settle 15
+key escape
+open ${SERVO_FIXTURE_BASE}/document_a11y/article.html
+wait 240
+act Open node in Workbench
+wait 240
+assert content-live
+assert surface content
+assert snap host-cue-frames >= 1
+record-idle 01_retained_primary
+capture 01_retained_primary
+act Open Inspector pane
+settle 15
+click surface:inspector role:button Change viewer
+settle 5
+click-row genet.reader
+wait 240
+assert row Viewer: genet.reader
+act Close pane
+settle 15
+act Open node in Workbench
+settle 30
+assert reader-appearances >= 1
+assert reader-sources == 1
+assert snap host-cue-frames >= 1
+record-reader-appearances 02_reader_primary
+record-idle 02_reader_primary
+capture 02_reader_primary
+act Float pane
+settle 5
+act Tear out pane
+settle 5
+act Dock pane
+settle 30
+assert windows == 2
+assert lens-surface content
+assert snap host-cue-frames >= 1
+record-idle 03_reader_lens
+capture-lens 03_reader_lens
+act Float pane
+settle 5
+act Return pane to primary
+settle 10
+assert pane workbench
+act Dock pane
+settle 30
+assert surface content
+assert snap host-cue-frames >= 1
+record-idle 04_reader_docked
+capture 04_reader_docked
+log Real Turnstone retained Cue primary/lens/return receiving complete

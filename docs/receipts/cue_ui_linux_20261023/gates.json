@@ -1,0 +1,99 @@
+{
+  "source_commit": "86ccb619ba506d2a17d3fea0f26d0cf82566abd0",
+  "mere_supplier": "86796a2447d68b3e6538d0ceff9f387a5d56e29c",
+  "runtime_binary_sha256": "f35bc3c473d88ab6a8d2eec19d344a38121e74738f89c9a8362885816b17148c",
+  "native_ui": {
+    "retained-wayland": {
+      "qualified": true,
+      "raw_case": "retained-attempt1",
+      "primary_presentations": 241,
+      "primary_captures": 3,
+      "blank_primary_captures": 0,
+      "binary_sha256": "f35bc3c473d88ab6a8d2eec19d344a38121e74738f89c9a8362885816b17148c"
+    },
+    "controls-missing-observations": {
+      "qualified": false,
+      "raw_case": "controls-attempt1",
+      "primary_presentations": 286,
+      "primary_captures": 5,
+      "blank_primary_captures": 0,
+      "binary_sha256": "f35bc3c473d88ab6a8d2eec19d344a38121e74738f89c9a8362885816b17148c",
+      "limit": "Scenario assertions passed, but omitted record-idle steps supplied no shared-frame observations; the receiving driver correctly rejected this case."
+    },
+    "controls-wayland": {
+      "qualified": true,
+      "raw_case": "controls-final",
+      "primary_presentations": 292,
+      "primary_captures": 5,
+      "blank_primary_captures": 0,
+      "binary_sha256": "f35bc3c473d88ab6a8d2eec19d344a38121e74738f89c9a8362885816b17148c"
+    }
+  },
+  "close_reopen_scopes": {
+    "before": [
+      "1:1"
+    ],
+    "after": [
+      "2:1"
+    ],
+    "replaced": true
+  },
+  "validation": {
+    "build-locked": {
+      "exit": 0,
+      "elapsed_seconds": 142.684
+    },
+    "turnstone-pending-vulkan": {
+      "exit": 0,
+      "elapsed_seconds": 85.206
+    },
+    "turnstone-history": {
+      "exit": 0,
+      "elapsed_seconds": 3.598
+    },
+    "turnstone-inspector": {
+      "exit": 0,
+      "elapsed_seconds": 7.93
+    },
+    "turnstone-all-targets": {
+      "exit": 0,
+      "elapsed_seconds": 54.564
+    },
+    "pelt-shared-vulkan": {
+      "exit": 0,
+      "elapsed_seconds": 152.94
+    }
+  },
+  "guard_controls": {
+    "scope": "Synthetic receiving-driver negative controls only; no native rendering or hardware qualification",
+    "controls": [
+      {
+        "control": "software-vulkan",
+        "expected_refusal": "'device_type': 'Cpu'",
+        "driver_exit": 1,
+        "refused": true
+      },
+      {
+        "control": "wrong-backend",
+        "expected_refusal": "'backend': 'Metal'",
+        "driver_exit": 1,
+        "refused": true
+      },
+      {
+        "control": "blank-lens",
+        "expected_refusal": "blank content in lens",
+        "driver_exit": 1,
+        "refused": true
+      }
+    ]
+  },
+  "limits": [
+    "Hardware Vulkan and native GNOME Wayland retained Genet/Reader receiving only; no Xwayland or X11 claim",
+    "Linux native-frame Cue importer and concrete Servo shared binding remain absent",
+    "Scripted input and canonical IME tests do not qualify physical IME/candidate windows or human AT",
+    "Composed captures and present calls do not establish OS-compositor pixel correlation",
+    "Physical device loss, transparent native colour/alpha and cross-GPU import remain unqualified",
+    "Pelt emits an ICU4X complex-script segmentation diagnostic; these tests do not qualify CJK segmentation",
+    "The full library suite was not rerun on Linux; this receipt names its focused tests and all-target check"
+  ]
+}

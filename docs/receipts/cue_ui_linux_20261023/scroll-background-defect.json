@@ -1,0 +1,95 @@
+{
+  "status": "observed unresolved producer appearance defect; excluded from successful frame-receiving gates",
+  "turnstone_source": "b4628119208e970eb485d45f83f88c7586e4fee6",
+  "binary_sha256": "ec18a4abedea09ab01fa1d180421962bba1ae2e1006cceb8387a4122edd7448a",
+  "fixture": "scenarios/fixtures/document_a11y/article.html",
+  "fixture_sha256": "5c21b6b713a7ac5dcad9ba5653668917f8e32e68c9c1f34936d1534523c84742",
+  "trigger": "effective page zoom 110%, then a positive document wheel delta of 120",
+  "observed": "Document moves upward; a lower viewport band loses its opaque beige canvas fill. Dark host background becomes visible behind text.",
+  "raster_measurements": [
+    {
+      "checkpoint": "02_retained_zoomed",
+      "source_raster": "cohort-controls-wayland/02_retained_zoomed.source-1176657005713031170.png",
+      "sha256": "d48b4112dd753d7ce6c34ab5a9344cdf6d20db4ef30c31a1b5f5c08e1a36555a",
+      "dimensions": [
+        1024,
+        477
+      ],
+      "sample_position": [
+        8,
+        469
+      ],
+      "sample_rgba8": [
+        244,
+        239,
+        227,
+        255
+      ],
+      "measurement": "Pillow RGBA read on the ThinkPad before transfer",
+      "adapter": {
+        "backend": "Vulkan",
+        "device": 5686,
+        "device_type": "IntegratedGpu",
+        "name": "AMD Radeon Graphics (RADV RENOIR)",
+        "vendor": 4098
+      }
+    },
+    {
+      "checkpoint": "03_retained_scrolled",
+      "source_raster": "cohort-controls-wayland/03_retained_scrolled.source-1176657005713031170.png",
+      "sha256": "c068d63c8d9877785dbbfba198da14dea6f05a3796f9e955ec874112772bd8e0",
+      "dimensions": [
+        1024,
+        477
+      ],
+      "sample_position": [
+        8,
+        469
+      ],
+      "sample_rgba8": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measurement": "Pillow RGBA read on the ThinkPad before transfer",
+      "adapter": {
+        "backend": "Vulkan",
+        "device": 5686,
+        "device_type": "IntegratedGpu",
+        "name": "AMD Radeon Graphics (RADV RENOIR)",
+        "vendor": 4098
+      }
+    }
+  ],
+  "source_evidence": [
+    {
+      "path": "components/genet-livery/src/document/frame.rs",
+      "source_commit": "7d1d89dbe729a853cf59c7b3f43ee3d8e494fde8",
+      "file_sha256": "9572402ec09647de940dac017858376f400374881ac7d1440876f231d7b5f189",
+      "first_line": 150,
+      "last_line": 156,
+      "excerpt": "    pub fn frame(&mut self, width: u32, height: u32) -> Result<LiveryPaintList, LayoutError> {\n        if let Some((viewport, list)) = &self.cached\n            && *viewport == (width, height)\n        {\n            return Ok(list.clone().translated(-self.scroll.0, -self.scroll.1));\n        }\n"
+    },
+    {
+      "path": "components/genet-livery/src/paint.rs",
+      "source_commit": "7d1d89dbe729a853cf59c7b3f43ee3d8e494fde8",
+      "file_sha256": "9d7b9e0bdf879af61dd4a982ee53a5ce5ff592722aae98828a384bc8a6889761",
+      "first_line": 519,
+      "last_line": 532,
+      "excerpt": "    pub fn translated(mut self, x: f32, y: f32) -> Self {\n        if x == 0.0 && y == 0.0 {\n            return self;\n        }\n        let transform = TransformSpec {\n            origin: LayoutPoint::new(0.0, 0.0),\n            transform: LayoutTransform::translation(x, y, 0.0),\n            kind: TransformKind::Standard,\n        };\n        self.commands.insert(0, PaintCmd::PushTransform(transform));\n        self.commands.push(PaintCmd::PopTransform);\n        self.shift_slots_after(0, 1, None);\n        self\n    }"
+    },
+    {
+      "path": "components/genet-livery/src/paint.rs",
+      "source_commit": "7d1d89dbe729a853cf59c7b3f43ee3d8e494fde8",
+      "file_sha256": "9d7b9e0bdf879af61dd4a982ee53a5ce5ff592722aae98828a384bc8a6889761",
+      "first_line": 4076,
+      "last_line": 4101,
+      "excerpt": "    let canvas = Fragment {\n        x: 0.0,\n        y: 0.0,\n        width: list.viewport.width.max(0) as f32,\n        height: list.viewport.height.max(0) as f32,\n    };\n    let positioning = fragments\n        .get(root)\n        .map(|fragment| fragment.physical_rect())\n        .unwrap_or(canvas);\n    let canvas_rect = bounds(&canvas);\n    let positioning = bounds(&positioning);\n    let positioning = if source_style.background_attachment == BackgroundAttachment::Fixed {\n        canvas_rect\n    } else {\n        background_box_rect(source_style, positioning, source_style.background_origin)\n    };\n    let color = resolve_color(&source_style.background_color);\n    if color.a > 0.0 {\n        list.commands.push(PaintCmd::DrawRect(RectItem {\n            placement: CommonPlacement::new(bounds(&canvas)),\n            color,\n        }));\n    }\n    emit_background_image_in(list, source_style, positioning, canvas_rect);\n    Some(source)"
+    }
+  ],
+  "source_supported_explanation": "The canvas background rectangle is sized to the viewport, and the cached paint-list scroll path translates the entire list, including that canvas rectangle.",
+  "improvement_cue": "Keep the canvas fill covering the viewport while scrolling document content; prove opaque lower-viewport coverage with source-raster pixel checks.",
+  "fix_included": false,
+  "qualification_limits": "This is a producer-raster observation before host staging, not a physical OS-compositor pixel correlation; no Metal reproduction was run in this pass."
+}

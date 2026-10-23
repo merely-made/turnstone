@@ -1,0 +1,2 @@
+# Preserve the exact diagnostic and compiler output in the qualification packet.
+*.log -whitespace

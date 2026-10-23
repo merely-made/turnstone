@@ -1,0 +1,15 @@
+RESULT ok
+waited 70 frames
+waited 0 frames
+captured 01_retained_before_controls
+captured 02_retained_zoomed
+captured 03_retained_scrolled
+captured 04_live_taxonomy
+captured 05_retained_reopened
+Linux retained Cue taxonomy, controls and reopen receiving complete
+presentation frames=291 captures=5 blank=0
+capture /home/markik/Code/output/cue-vulkan-thinkpad-20261023/cohort-controls-final/receiving/01_retained_before_controls.png digest=46ef42294e810fe8 blank=false
+capture /home/markik/Code/output/cue-vulkan-thinkpad-20261023/cohort-controls-final/receiving/02_retained_zoomed.png digest=08570815bd449c18 blank=false
+capture /home/markik/Code/output/cue-vulkan-thinkpad-20261023/cohort-controls-final/receiving/03_retained_scrolled.png digest=c626b3cff8223266 blank=false
+capture /home/markik/Code/output/cue-vulkan-thinkpad-20261023/cohort-controls-final/receiving/04_live_taxonomy.png digest=b25f69cc1d32344d blank=false
+capture /home/markik/Code/output/cue-vulkan-thinkpad-20261023/cohort-controls-final/receiving/05_retained_reopened.png digest=30aac6569b4e3afb blank=false

@@ -1,0 +1,23 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.99.1",
+    "build",
+    "--bin",
+    "turnstone",
+    "--locked",
+    "-j2"
+  ],
+  "cwd": "/home/markik/Code/worktrees/turnstone-cue-vulkan-20261023",
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/markik/Code/target",
+    "CARGO_BUILD_BUILD_DIR": "/home/markik/Code/repos/turnstone/target/build",
+    "CARGO_BUILD_JOBS": "2"
+  },
+  "started": 1792781015.886368,
+  "exit": 0,
+  "elapsed_seconds": 142.684
+}
