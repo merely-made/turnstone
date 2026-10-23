@@ -207,6 +207,8 @@ pub enum Action {
     },
     /// Step the focused node back through its own content lineage. No-op at
     /// that node's oldest entry.
+    Scope(cambium::scope_navigation::ScopeCommand),
+    SelectScopeMere(crate::panes::SessionId),
     NavBack,
     /// Step the focused node forward through its own content lineage.
     NavForward,
@@ -567,6 +569,7 @@ pub enum Action {
     SetWorkspaceMap(bool),
     ReadGraphMember(uuid::Uuid),
     NavigateRelationship(crate::relationship_navigation::RelationshipTarget),
+    RevealRelationship(crate::relationship_navigation::RelationshipTarget),
     SetPaneBinding(crate::pane_binding::BindingIntent),
     /// Reveal an existing graph member without changing its reading arrangement.
     RevealGraphMember(uuid::Uuid),
@@ -1016,6 +1019,7 @@ pub enum ContentControl {
 #[derive(Clone, Debug, PartialEq)]
 pub enum Effect {
     SaveReadingPreferences,
+    RestoreReadingAnchor {target:crate::reading_view::ReadTarget,anchor:tabard::ReadingAnchor},
     ReadFind { target: crate::reading_view::ReadTarget, query: String, step: Option<inker::DocumentFindDirection>, close:bool },
     /// Persist curation for the resolved graph runtime and its session.
     SaveGraphFolds { graph: crate::panes::GraphId },
