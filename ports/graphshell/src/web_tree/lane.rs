@@ -2397,6 +2397,9 @@ fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> Pr
         .with_field("forme-accesses", pane.current().members().len().to_string())
         .with_field("reading-text-size", pane.current().focused_reading.map(|id|pane.current().reading_preferences.get(&id).text_size.to_string()).unwrap_or_default())
         .with_field("reading-column-em", pane.current().focused_reading.map(|id|pane.current().reading_preferences.get(&id).column_em.to_string()).unwrap_or_default())
+        .with_field("reading-history-back", pane.current().reading_trail.can_back().to_string())
+        .with_field("reading-history-forward", pane.current().reading_trail.can_forward().to_string())
+        .with_field("reading-anchor", super::reading::anchor_field(page))
         .with_field("reading-find", pane.current().focused_reading.and_then(|id|pane.reading_ui.get(&id)).filter(|ui|ui.open).map_or("closed",|ui|ui.status.as_str()))
         .with_field(
             "forme-cells",
