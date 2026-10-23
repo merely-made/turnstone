@@ -129,5 +129,10 @@ Its invariants are:
   palette's `Physics:` / `Overlay on|off:` / `Profile:` / `Kinds:` / `Mass:`
   / `Depth:` rows fire; the observe snapshot's `arrange_rows` feed
   `assert row`; the choice rides `ViewIntentV1` per session. Receipt:
-  `scenarios/physics_native.scn`. Plan:
+  `scenarios/physics_native.scn`. The role, role-groups, two-law mix,
+  grouping, two-stage schedule and speed sections are drawn from
+  `mere::canvas::physics_form` (2026-10-23), the model the web host's tools
+  region draws too; the role, mix, grouping and schedule are in the dynamics
+  spec the saved scene carries and reopen into the form, while the speed is
+  the canvas's pace and is not saved. Plan:
   `mere/design_docs/mere_docs/implementation_strategy/2026-09-02_physics_catalog_plan.md`.
