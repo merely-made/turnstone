@@ -936,8 +936,8 @@ The earlier finite example remains separate evidence. Implementation
   also passes text editing, page navigation, Reload, Back/Forward, zoom and
   close/reopen; its station moves retain the scope, and reopening replaces it.
   A mixed case presents Servo and Genet side by side on one host device.
-- **The remaining bounds stay visible.** Linux/Vulkan, fresh Windows receiving,
-  concrete Weld/Scry shared-native adapters, physical IME, human accessibility,
+- **The remaining bounds stay visible.** Linux native-frame receiving, fresh
+  Windows receiving, concrete Weld/Scry shared-native adapters, physical IME, human accessibility,
   physical device loss and transparent native colour/alpha acceptance retain
   their own gates. A runnable browser-polling diagnosis is not an idle receipt.
 
@@ -946,3 +946,55 @@ partition: 1,183 passed, 17 explicitly ignored, zero failed. The new GPU
 pending-frame regression also passes explicitly. Default all-target checks and
 Servo library Clippy pass; Clippy retains warnings. The receipt records the
 binary/source hashes, exact scenarios and qualification limits.
+
+### Retained Linux/Vulkan product receiving, 2026-10-23
+
+- **The same retained consumer reaches hardware Vulkan.** ThinkPad receiving
+  first uses Turnstone `86ccb619ba506d2a17d3fea0f26d0cf82566abd0` and Mere
+  `86796a2447d68b3e6538d0ceff9f387a5d56e29c`, with the same 19 Rust/Cargo inputs
+  as the Metal implementation. A fresh build, focused checks and both native
+  cases also pass after the dependency cohort advances to Turnstone `b4628119`;
+  the 17 Rust inputs remain identical. The actual source-raster observations
+  identify AMD Radeon Graphics (RADV RENOIR), Vulkan and `IntegratedGpu`.
+- **Wayland receiving includes document content in both windows.** An unlocked
+  GNOME Wayland session, with no `DISPLAY` supplied, passes the retained Genet,
+  Reader, lens and return/dock scenario. Successful primary presentations and
+  nonblank composed captures accompany a sampled shared-content lens entry.
+- **The pending-frame guarantee survives the backend change.** The explicit
+  Vulkan regression preserves the retained receiver while an input mutation
+  between submission and completion reaches a settled blue frame after the
+  older red frame. The source and shared contract did not need a rendering fix.
+- **A requested backend is insufficient evidence.** The Linux receiving driver
+  checks actual adapter observations and rejects CPU Vulkan, a different
+  backend, and lens captures without sampled content. Synthetic negative
+  controls qualify those refusals separately from the real product runs.
+- **The other frame direction still needs its concrete binding.** Published
+  `wgpu-cue` 0.1.1 exports only the Metal native importer; Turnstone's Linux
+  consumer refuses shared native import, and its concrete Servo registration
+  is gated to Windows/macOS. Graft's lower Vulkan/DMA-BUF primitives do not by
+  themselves qualify that missing shared adapter. Physical IME, human AT,
+  compositor pixel correlation, physical device loss and native alpha/colour
+  acceptance retain their own gates.
+
+- **Taxonomy and controls have receiving evidence too.** The second native
+  Wayland case asserts all 28 feature rows, `linux`, `HostDevice`, `Observed`
+  and `DocumentSnapshot` in the live Inspector. Requested/applied zoom reaches
+  110%; scrolling presents another frame; close/reopen replaces scope `1:1`
+  with `2:1`. Its five primary captures are nonblank.
+- **Scroll receiving exposes a producer-paint defect.** With the correct
+  positive delta, document content moves, but the lower viewport loses its
+  beige background. Source-raster pixels change from opaque beige to transparent
+  before staging. Genet's cached scroll path moves the viewport-sized canvas
+  background with the document. Anchoring that fill to the viewport would keep
+  text readable over the intended background; this qualification includes no
+  repair and does not accept correct opaque coverage after scrolling.
+
+[The Linux receipt](../docs/receipts/cue_ui_linux_20261023/README.md) binds both
+final cases to one executable. Focused validation passes the explicit pending
+Vulkan regression, seven history/control tests, 27 Inspector tests (two explicit
+endpoint-dependent ignores), nine Pelt shared-contract tests and the default
+Linux all-targets check. These are bounded Linux gates, separate from the full
+Metal library run above. The rejected controls fixture without sampled-frame
+observations is preserved alongside the successful corrected fixture. The
+receipt's explicit appearance finding remains open despite passing transport,
+control and lifecycle gates.

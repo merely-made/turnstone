@@ -1,0 +1,52 @@
+[
+  {
+    "adapter": {
+      "backend": "Vulkan",
+      "device": 5686,
+      "device_type": "IntegratedGpu",
+      "name": "AMD Radeon Graphics (RADV RENOIR)",
+      "vendor": 4098
+    },
+    "alpha": "Straight",
+    "content_generation": 305,
+    "device_generation": 1,
+    "dimensions": [
+      512,
+      535
+    ],
+    "file": "04_reader_docked.source-1176657005713031174.png",
+    "format": "Rgba8Unorm",
+    "image_key": 15011715060995194886,
+    "native_window_scale": 1.0,
+    "producer_key": 1176657005713031174,
+    "raster_scale": 1.0,
+    "session": "c0d2ce83-5c07-4cf2-adf8-5ba6ae3ff28b",
+    "surface_id": 20075162472808448,
+    "window": 0
+  },
+  {
+    "adapter": {
+      "backend": "Vulkan",
+      "device": 5686,
+      "device_type": "IntegratedGpu",
+      "name": "AMD Radeon Graphics (RADV RENOIR)",
+      "vendor": 4098
+    },
+    "alpha": "Straight",
+    "content_generation": 306,
+    "device_generation": 1,
+    "dimensions": [
+      511,
+      477
+    ],
+    "file": "04_reader_docked.source-1176657005713031183.png",
+    "format": "Rgba8Unorm",
+    "image_key": 15011715060995194895,
+    "native_window_scale": 1.0,
+    "producer_key": 1176657005713031183,
+    "raster_scale": 1.0,
+    "session": "c0d2ce83-5c07-4cf2-adf8-5ba6ae3ff28b",
+    "surface_id": 8544220976751668849,
+    "window": 0
+  }
+]

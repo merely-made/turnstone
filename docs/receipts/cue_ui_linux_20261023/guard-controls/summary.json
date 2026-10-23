@@ -1,0 +1,23 @@
+{
+  "scope": "Synthetic receiving-driver negative controls only; no native rendering or hardware qualification",
+  "controls": [
+    {
+      "control": "software-vulkan",
+      "expected_refusal": "'device_type': 'Cpu'",
+      "driver_exit": 1,
+      "refused": true
+    },
+    {
+      "control": "wrong-backend",
+      "expected_refusal": "'backend': 'Metal'",
+      "driver_exit": 1,
+      "refused": true
+    },
+    {
+      "control": "blank-lens",
+      "expected_refusal": "blank content in lens",
+      "driver_exit": 1,
+      "refused": true
+    }
+  ]
+}

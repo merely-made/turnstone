@@ -1,0 +1,48 @@
+{
+  "turnstone": [
+    {
+      "path": "/home/markik/Code/repos/turnstone",
+      "head": "e5f2e97964a9d353def509e9197ab7c9dbf29014",
+      "status": ""
+    },
+    {
+      "path": "/home/markik/Code/worktrees/turnstone-retained-geometry-20261017",
+      "head": "ea81f942b513c9d270bc324476e236514f13cd50",
+      "status": ""
+    }
+  ],
+  "mere": [
+    {
+      "path": "/home/markik/Code/repos/mere",
+      "head": "d918f670c8328ac6544242b0b753992b5124df09",
+      "status": ""
+    },
+    {
+      "path": "/home/markik/Code/worktrees/mere-coop-thinkpad-20261020",
+      "head": "a58b8014e14829356d1d013f4abb7051e1717111",
+      "status": ""
+    },
+    {
+      "path": "/home/markik/Code/worktrees/mere-djinn-rollout-20261023",
+      "head": "d706ed7122400c2b87f9eae9d9054e76a9a93ec4",
+      "status": ""
+    },
+    {
+      "path": "/home/markik/Code/worktrees/mere-render-admission-20261017",
+      "head": "c7667fa7aa76d0e827769afe876d169cf4c7ab01",
+      "status": ""
+    },
+    {
+      "path": "/home/markik/Code/worktrees/mere-retained-geometry-20261017",
+      "head": "af97a5c1a85983d5e0ba2b9baacbea4e1744c504",
+      "status": ""
+    }
+  ],
+  "wgpu-graft": [
+    {
+      "path": "/home/markik/Code/repos/wgpu-graft",
+      "head": "91de8cf33249d6a7492679350f45f26e9a21a615",
+      "status": ""
+    }
+  ]
+}

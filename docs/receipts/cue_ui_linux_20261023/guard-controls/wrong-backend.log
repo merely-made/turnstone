@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/markik/Code/worktrees/turnstone-cue-vulkan-20261023/scripts/receive-cue-ui-linux.py", line 107, in <module>
+    main()
+    ~~~~^^
+  File "/home/markik/Code/worktrees/turnstone-cue-vulkan-20261023/scripts/receive-cue-ui-linux.py", line 99, in main
+    assert info["backend"] == "Vulkan", info
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'backend': 'Metal', 'device_type': 'IntegratedGpu', 'name': 'synthetic guard control'}
