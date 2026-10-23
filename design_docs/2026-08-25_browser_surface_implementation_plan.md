@@ -848,8 +848,8 @@ Done-conditions:
 
 ## Shared-contract Servo receiving — 2026-10-23
 
-**Status (2026-10-23): offscreen Metal receiving qualified; headed gate pending
-the user's unlock signal.** The reusable Servo host and finite two-engine Cue
+**Status (2026-10-23): offscreen and headed Metal receiving qualified.**
+The reusable Servo host and finite two-engine Cue
 receiver run on macOS. The existing Windows product path keeps using the same
 host implementation. This slice does not migrate the full Turnstone UI or
 qualify Linux/Vulkan, physical IME, foreign accessibility or older Windows gates.
@@ -897,3 +897,8 @@ and exact source/binary identity; compile coverage is separate from runtime.
   import observation is recorded externally: its report remains `Constructed`
   because the browser adapter has no host-import feedback seam. Supplying that
   feedback would make runtime taxonomy evidence visible directly in inspectors.
+- 2026-10-23: after unlock, the exact offscreen-qualified receiver binary also
+  passes with a visible, focused window and 30 actual presentations. The first
+  launch exposed a bundled-Bash empty-array issue; the corrected driver passes
+  on `/bin/bash`. This closes the finite native Metal receiving gate while
+  preserving the wider product, physical-input and platform limits above.

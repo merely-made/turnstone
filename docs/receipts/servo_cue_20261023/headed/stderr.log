@@ -1,0 +1,14 @@
+Cue shared receiver GPU: AdapterInfo { name: "AMD Radeon Pro Vega 56", vendor: 0, device: 0, device_type: DiscreteGpu, device_pci_bus_id: "", driver: "", driver_info: "", backend: Metal, subgroup_min_size: 4, subgroup_max_size: 64, transient_saves_memory: Some(false), limit_bucket: None }
+Cue window: visible=Some(true) focused=true
+Cue receiving phase: constructed
+Cue first pixels: genet.livery Some([320, 240]) Some([208, 32, 32, 255])
+Cue first pixels: graft.servo Some([320, 240]) Some([208, 32, 32, 255])
+Cue receiving phase: initial-pixels
+Cue receiving phase: input-and-command-results
+Cue receiving phase: hidden-navigation-progress-without-frame-acquisition
+Cue receiving phase: resized-and-native-held
+Cue receiving phase: shared-navigation-dispatch-and-observation
+Cue first pixels: graft.servo Some([300, 200]) Some([255, 255, 255, 255])
+Cue first pixels: genet.livery Some([300, 200]) Some([32, 80, 208, 255])
+Cue receiving phase: replacement-pixels
+CUE RECEIVING PASSED

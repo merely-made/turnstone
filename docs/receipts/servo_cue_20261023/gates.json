@@ -4,7 +4,11 @@
     "receipt": "offscreen2/qualification.json"
   },
   "headed_metal": {
-    "status": "not_run_pending_user_unlock_signal"
+    "status": "passed",
+    "receipt": "headed/qualification.json",
+    "window_presentations": 30,
+    "producer_device_count": 1,
+    "same_binary_as_offscreen": true
   },
   "mere_focused": {
     "status": "passed",

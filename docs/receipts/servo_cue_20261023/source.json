@@ -20,5 +20,12 @@
       "src/panes/store.rs": "61fcc2da37198f6c5b6f7cd45f107b3ffe3eefc87bb630c4aa49cedb876afddb"
     },
     "scope": "test-only updates after the native receiving build"
+  },
+  "headed_driver_followup": {
+    "source_commit": "d4a03dd89a4ba637886dd35b17c103efd67c5ec8",
+    "files": {
+      "scripts/receive-cue-surfaces-mac.sh": "5641f3fda11c86a097f5e37b3104f274c4dfc5037fb19e6f0b323c1f5f7ac2ce"
+    },
+    "scope": "Bash 3 nonempty argument-array fix; receiver binary unchanged"
   }
 }
