@@ -1,0 +1,36 @@
+{
+  "result": "pass",
+  "cases": {
+    "cross": {
+      "prompt": "blake3:10e9b88b67440389cc2317fc0636833e1f5a5e127c718d2337c02bd0c091497c",
+      "checked_rows": 44,
+      "invalid_rows": 0,
+      "prefix_recomputations": 0,
+      "failed_recoveries": 0
+    },
+    "missing": {
+      "prompt": "blake3:e1c5eb18a2190901d2cf652e85ca77815aaf1a3034b7c57c86fab30b764d3370",
+      "checked_rows": 13,
+      "invalid_rows": 0,
+      "prefix_recomputations": 0,
+      "failed_recoveries": 0
+    },
+    "conflict": {
+      "prompt": "blake3:a6ce7fc1857a712852b2f55f9f6635c7c8439a763cf7121d43a9cf0637563a75",
+      "checked_rows": 13,
+      "invalid_rows": 0,
+      "prefix_recomputations": 0,
+      "failed_recoveries": 0
+    },
+    "reduced": {
+      "prompt": "blake3:12072c658a3e706f09c8d42d35883713da278f44420bef5c2905d24c271e5dc5",
+      "checked_rows": 21,
+      "invalid_rows": 0,
+      "prefix_recomputations": 0,
+      "failed_recoveries": 0
+    }
+  },
+  "total_observed_invalid_rows": 0,
+  "total_prefix_recomputations": 0,
+  "boundary": "Content-free score observations for this cohort. No recovery-needed conclusion is drawn from suppressed logs; all four logged requests are required. Recomputed rows stay inside the same original token, deadline and model budgets. Frozen semantics remains separate."
+}

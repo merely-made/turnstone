@@ -1,0 +1,79 @@
+{
+  "result": "gate_not_passed",
+  "implementation": "Finite score eligibility, one bounded exact-prefix recomputation and content-free score health implemented and pushed.",
+  "origin_boundary": "Intermittent backend production of non-finite scores remains unresolved; recovery is fault-tested and was not invoked in this cohort.",
+  "software_checks": {
+    "esp_infer": 111,
+    "esp_prompt_template": 6,
+    "resident_inference": 42,
+    "djinn_inference": 8,
+    "resident_routes": 4,
+    "turnstone_inference": 9,
+    "total": 180
+  },
+  "probe": {
+    "cases": {
+      "cross": {
+        "state": "finished",
+        "tokens": 389,
+        "error": null,
+        "semantic_result": "pass",
+        "finding": "Three requested facts in order, with exact source quotes."
+      },
+      "missing": {
+        "state": "finished",
+        "tokens": 131,
+        "error": null,
+        "semantic_result": "fail",
+        "finding": "Reports recovery phrase as supported instead of refusing absent annual budget."
+      },
+      "conflict": {
+        "state": "finished",
+        "tokens": 128,
+        "error": null,
+        "semantic_result": "fail",
+        "finding": "Selects violet lantern as supported instead of reporting disagreement."
+      },
+      "reduced": {
+        "state": "finished",
+        "tokens": 136,
+        "error": null,
+        "semantic_result": "fail",
+        "finding": "Substitutes observatory access word for absent listener reminder."
+      }
+    },
+    "completed_answers": 4,
+    "semantic_passes": 1,
+    "raw_shape_passes": 4,
+    "input_binding_passes": 4,
+    "score_health_passes": 4,
+    "observed_invalid_rows": 0,
+    "prefix_recomputations": 0,
+    "process": {
+      "exit_code": 0,
+      "elapsed_seconds": 450.37368226097897,
+      "session_mismatch": false
+    },
+    "gate_returns": {
+      "verify_probe.py": 1,
+      "verify_contract_inputs.py": 0,
+      "verify_wire_defaults.py": 1,
+      "verify_structured_output.py": 0,
+      "verify_score_health.py": 0
+    }
+  },
+  "headed_answer": "not_run_gate_not_passed",
+  "source_absent_cold_reopen": "not_run_gate_not_passed",
+  "new_native_binary_build": "not_run_gate_not_passed",
+  "supplier_pins": {
+    "eidetic": "dceb5fcd07bfaeffc57142b06f07259eed0e89ef",
+    "esp": "f92f5c1d90fa873e4b05374d763a29b9c59de556",
+    "knot": "4686132023783fd778b48c9184d3db0f4af936d7",
+    "cleromancy": "a7e3cac60620364e7b049caf5aed6d3cd59d8758",
+    "gemot": "391c95b1d39ed660043c121928ef59a241bc9ced",
+    "murm": "b266e38b91d35121040fac84944c6418a7a02bdf",
+    "mere": "09e135d3de727c9b0ad2bdab2663715d1f6d7017",
+    "turnstone": "d933478fda2af3917ec0764da38ba5e8acfeb7f5"
+  },
+  "excluded": "Model weights, executables, live profiles, vaults and keys."
+}

@@ -1,0 +1,11 @@
+{
+  "pid": 62996,
+  "command": [
+    "/Users/markik/Code/output/decoder-finite-20261023/candidate-01/frozen/inference_route",
+    "probe_bounded_cross_source_answers",
+    "--exact",
+    "--ignored",
+    "--nocapture"
+  ],
+  "utc": "2026-10-23T19:40:06.908612+00:00"
+}

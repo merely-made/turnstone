@@ -1,0 +1,12 @@
+{
+  "pid": 59222,
+  "command": [
+    "/Users/markik/Code/output/requested-facts-20261023/candidate-01/frozen/inference_route",
+    "probe_bounded_cross_source_answers",
+    "--exact",
+    "--ignored",
+    "--nocapture"
+  ],
+  "scope": "single unchanged frozen cross case for isolation, not full qualification",
+  "utc": "2026-10-23T19:03:44.984941+00:00"
+}

@@ -1,0 +1,2 @@
+complete 389
+trace sliced output tokens=389, stats=Some(StreamingReadStats { layer_reads: 346, encoded_bytes_read: 32384553536, largest_encoded_layer: 93596976, expert_reads: 0, expert_encoded_bytes_read: 0, largest_encoded_expert: 0, verified_cache: Some(LayerCacheStats { hits: 318, misses: 28, retained_capacity_bytes: 2620715168, entries: 28, capacity_budget_bytes: 3221225472 }), device_cache: Some(DeviceLayerCacheStats { hits: 1166, misses: 346, retained_payload_bytes: 4118208512, payload_budget_bytes: 4294967296, layers: 22 }) })
