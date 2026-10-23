@@ -719,6 +719,7 @@ mod tests {
             continuations: vec![],
             recall: Some(RecallEvidence {
                 answer_format: Default::default(),
+                answer_contract: None,
                 support: None,
                 owner: Some("turnstone/session".into()),
                 scope: vec![],
