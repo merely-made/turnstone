@@ -1,0 +1,52 @@
+{
+  "/Users/markik/Code/worktrees/eidetic-cross-source-answers-20261022": {
+    "head": "dceb5fcd07bfaeffc57142b06f07259eed0e89ef",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/worktrees/esp-cross-source-answers-20261022": {
+    "head": "7021d4c52f96f5c55468fe521a21536d4e7290c1",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/worktrees/knot-cross-source-answers-20261022": {
+    "head": "505c0b76ee7281846b1d56b03c7b55e4815a39d0",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/worktrees/mere-cross-source-answers-20261022": {
+    "head": "487b6648211800a613db39891bd7691b157b0d7a",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/worktrees/turnstone-cross-source-answers-20261022": {
+    "head": "66ac331ebe2a543432258139fe8ddb13b9a85ac6",
+    "status": "?? docs/receipts/requested_facts_20261023/CONTRACT.md\n?? docs/receipts/requested_facts_20261023/README.md\n?? docs/receipts/requested_facts_20261023/answer_contract.rs\n?? docs/receipts/requested_facts_20261023/candidate-01/conflict.json\n?? docs/receipts/requested_facts_20261023/candidate-01/conflict.partial.json\n?? docs/receipts/requested_facts_20261023/candidate-01/contract-input-review.json\n?? docs/receipts/requested_facts_20261023/candidate-01/contract-verification.log\n?? docs/receipts/requested_facts_20261023/candidate-01/cross.json\n?? docs/receipts/requested_facts_20261023/candidate-01/cross.partial.json\n?? docs/receipts/requested_facts_20261023/candidate-01/frozen/answer_contract.rs\n?? docs/receipts/requested_facts_20261023/candidate-01/frozen/case-freeze.json\n?? docs/receipts/requested_facts_20261023/candidate-01/frozen/cases.json\n?? docs/receipts/requested_facts_20261023/candidate-01/frozen/measurement-contract.json\n?? docs/receipts/requested_facts_20261023/candidate-01/frozen/optimized-runtime.toml\n?? docs/receipts/requested_facts_20261023/candidate-01/frozen/run_probe.py\n?? docs/receipts/requested_facts_20261023/candidate-01/frozen/verify_contract_inputs.py\n?? docs/receipts/requested_facts_20261023/candidate-01/frozen/verify_native.py\n?? docs/receipts/requested_facts_20261023/candidate-01/frozen/verify_probe.py\n?? docs/receipts/requested_facts_20261023/candidate-01/frozen/verify_structured_output.py\n?? docs/receipts/requested_facts_20261023/candidate-01/frozen/verify_wire_defaults.py\n?? docs/receipts/requested_facts_20261023/candidate-01/gate.json\n?? docs/receipts/requested_facts_20261023/candidate-01/inputs.json\n?? docs/receipts/requested_facts_20261023/candidate-01/missing.json\n?? docs/receipts/requested_facts_20261023/candidate-01/missing.partial.json\n?? docs/receipts/requested_facts_20261023/candidate-01/process-exit.json\n?? docs/receipts/requested_facts_20261023/candidate-01/process.json\n?? docs/receipts/requested_facts_20261023/candidate-01/progress.jsonl\n?? docs/receipts/requested_facts_20261023/candidate-01/reduced.json\n?? docs/receipts/requested_facts_20261023/candidate-01/reduced.partial.json\n?? docs/receipts/requested_facts_20261023/candidate-01/run.log\n?? docs/receipts/requested_facts_20261023/candidate-01/structured-output-review.json\n?? docs/receipts/requested_facts_20261023/candidate-01/structured-verification.log\n?? docs/receipts/requested_facts_20261023/candidate-01/verification.log\n?? docs/receipts/requested_facts_20261023/candidate-01/wire-default-review.json\n?? docs/receipts/requested_facts_20261023/candidate-01/wire-default-verification.log\n?? docs/receipts/requested_facts_20261023/case-freeze.json\n?? docs/receipts/requested_facts_20261023/cases.json\n?? docs/receipts/requested_facts_20261023/checks/eidetic-model-tests.log\n?? docs/receipts/requested_facts_20261023/checks/resident-build.log\n?? docs/receipts/requested_facts_20261023/checks/resident-route-tests.log\n?? docs/receipts/requested_facts_20261023/checks/resident-unit-tests-final.log\n?? docs/receipts/requested_facts_20261023/checks/turnstone-tests.log\n?? docs/receipts/requested_facts_20261023/checks/verify_contract_inputs.py.log\n?? docs/receipts/requested_facts_20261023/checks/verify_probe.py.log\n?? docs/receipts/requested_facts_20261023/checks/verify_structured_output.py.log\n?? docs/receipts/requested_facts_20261023/checks/verify_wire_defaults.py.log\n?? docs/receipts/requested_facts_20261023/cold.scn\n?? docs/receipts/requested_facts_20261023/companions-before.json\n?? docs/receipts/requested_facts_20261023/constraint-diagnostic.json\n?? docs/receipts/requested_facts_20261023/diagnostics/constraint-diagnostic.log\n?? docs/receipts/requested_facts_20261023/diagnostics/constraint.rs\n?? docs/receipts/requested_facts_20261023/diagnostics/debug-constraint.rs\n?? docs/receipts/requested_facts_20261023/diagnostics/debug-grammar.json\n?? docs/receipts/requested_facts_20261023/diagnostics/debug-prefix.txt\n?? docs/receipts/requested_facts_20261023/fixture_server.py\n?? docs/receipts/requested_facts_20261023/knot.mereclip\n?? docs/receipts/requested_facts_20261023/log-provenance.json\n?? docs/receipts/requested_facts_20261023/measurement-contract.json\n?? docs/receipts/requested_facts_20261023/murm-before.json\n?? docs/receipts/requested_facts_20261023/optimized-runtime.toml\n?? docs/receipts/requested_facts_20261023/preservation-before.json\n?? docs/receipts/requested_facts_20261023/redshank.mereclip\n?? docs/receipts/requested_facts_20261023/remote-source-heads.json\n?? docs/receipts/requested_facts_20261023/resident-source-graph.json\n?? docs/receipts/requested_facts_20261023/run_macos_scenario.py\n?? docs/receipts/requested_facts_20261023/run_native.py\n?? docs/receipts/requested_facts_20261023/run_probe.py\n?? docs/receipts/requested_facts_20261023/sources/answer.rs\n?? docs/receipts/requested_facts_20261023/sources/answer_contract.rs\n?? docs/receipts/requested_facts_20261023/sources/durable.rs\n?? docs/receipts/requested_facts_20261023/sources/inference.rs\n?? docs/receipts/requested_facts_20261023/sources/requested.rs\n?? docs/receipts/requested_facts_20261023/summary.json\n?? docs/receipts/requested_facts_20261023/supplier-pins.json\n?? docs/receipts/requested_facts_20261023/turnstone-source-graph.json\n?? docs/receipts/requested_facts_20261023/verify_contract_inputs.py\n?? docs/receipts/requested_facts_20261023/verify_native.py\n?? docs/receipts/requested_facts_20261023/verify_native_defaults.py\n?? docs/receipts/requested_facts_20261023/verify_native_facts.py\n?? docs/receipts/requested_facts_20261023/verify_probe.py\n?? docs/receipts/requested_facts_20261023/verify_receipt.py\n?? docs/receipts/requested_facts_20261023/verify_structured_output.py\n?? docs/receipts/requested_facts_20261023/verify_wire_defaults.py\n?? docs/receipts/requested_facts_20261023/warm.scn\n",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/repos/mere": {
+    "head": "50afede99966eeb5859ff332931d6b0004813d67",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/repos/turnstone": {
+    "head": "e5f2e97964a9d353def509e9197ab7c9dbf29014",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/worktrees/cleromancy-cross-source-answers-20261022": {
+    "head": "a7e3cac60620364e7b049caf5aed6d3cd59d8758",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/worktrees/gemot-cross-source-answers-20261022": {
+    "head": "391c95b1d39ed660043c121928ef59a241bc9ced",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/worktrees/murm-cross-source-answers-20261022": {
+    "head": "b266e38b91d35121040fac84944c6418a7a02bdf",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

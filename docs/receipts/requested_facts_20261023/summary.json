@@ -1,0 +1,75 @@
+{
+  "result": "gate_not_passed",
+  "implementation": "retained requested fact set and fixed count/order slots implemented and pushed",
+  "policy": "distillery.requested-facts/v5",
+  "software_checks": {
+    "eidetic_models": 18,
+    "resident_inference": 42,
+    "djinn_inference": 8,
+    "resident_routes": 4,
+    "turnstone_inference": 9,
+    "total": 81
+  },
+  "probe": {
+    "cases": {
+      "cross": {
+        "state": "failed",
+        "tokens": 106,
+        "error": "invalid request: output grammar has no finite eligible token",
+        "complete": false,
+        "prescribed_claims": 3
+      },
+      "missing": {
+        "state": "failed",
+        "tokens": 125,
+        "error": "invalid request: output grammar has no finite eligible token",
+        "complete": false,
+        "prescribed_claims": 1
+      },
+      "conflict": {
+        "state": "failed",
+        "tokens": 228,
+        "error": "invalid request: output grammar has no finite eligible token",
+        "complete": false,
+        "prescribed_claims": 1
+      },
+      "reduced": {
+        "state": "finished",
+        "tokens": 112,
+        "error": null,
+        "complete": true,
+        "prescribed_claims": 1
+      }
+    },
+    "elapsed_seconds": 714.7865694318898,
+    "child_exit": 101,
+    "session_mismatch": false,
+    "timeouts": 0,
+    "completed_answers": 1,
+    "semantic_passes_under_declared_wire_defaults": 1,
+    "raw_shape_passes": 1,
+    "input_binding_passes": 4,
+    "gate_returns": {
+      "verify_probe.py": 1,
+      "verify_contract_inputs.py": 0,
+      "verify_wire_defaults.py": 1,
+      "verify_structured_output.py": 1
+    }
+  },
+  "headed_answer": "not_run_gate_not_passed",
+  "source_absent_cold_reopen": "not_run_gate_not_passed",
+  "new_native_binary_build": "not_run_gate_not_passed",
+  "diagnostic": "Exact failed cross prefix admits handles 1,2,3 with synthetic finite scores. Live decoder found no finite eligible score. Root cause of score failure unresolved. No raw output repaired.",
+  "publication": "Existing qualification branches; no production acceptance or release implied",
+  "supplier_pins": {
+    "eidetic": "dceb5fcd07bfaeffc57142b06f07259eed0e89ef",
+    "esp": "7021d4c52f96f5c55468fe521a21536d4e7290c1",
+    "knot": "505c0b76ee7281846b1d56b03c7b55e4815a39d0",
+    "cleromancy": "a7e3cac60620364e7b049caf5aed6d3cd59d8758",
+    "gemot": "391c95b1d39ed660043c121928ef59a241bc9ced",
+    "murm": "b266e38b91d35121040fac84944c6418a7a02bdf",
+    "mere": "487b6648211800a613db39891bd7691b157b0d7a",
+    "turnstone": "66ac331ebe2a543432258139fe8ddb13b9a85ac6"
+  },
+  "excluded": "Model weights, compiled binaries, live vaults, private profiles and keys"
+}

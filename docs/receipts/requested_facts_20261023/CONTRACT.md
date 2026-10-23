@@ -1,0 +1,11 @@
+# Retained requested facts
+
+A structured answer now starts with a bounded requested-fact set. Each fact is an exact Unicode scalar range in the original question, its exact excerpt, and a content identity binding the question hash, range, and excerpt. The set preserves caller order and has its own content identity. It is saved as a sealed Eidetic `RequestedFactSet/v1` artifact before generation is enqueued.
+
+The resident's v5 answer contract binds that set, the full question, the exact evidence context, the versioned instructions, and the decoding grammar. The grammar prescribes exactly one claim slot per fact, in order, and emits that slot's exact `fact` object before the model chooses its status or claim text. Every generated token still follows the existing checkpointed decoder path. No completed output is repaired or rewritten.
+
+Eidetic admission checks exact claim count and full fact equality in each slot. Missing, additional, foreign, or reordered bindings reject the document without admitting claims. The retained answer support includes the set identity and each claim's question binding, alongside the existing claim-to-passage quotation links. Replay reconstructs the exact v5 contract and refuses altered or absent fact plans. A sealed getter checks the stored plan against the authenticated journal copy.
+
+Question-only requests use a deliberately bounded notation: one fact, or an explicit `What are A, B, and C? Give one claim for each, in that order.` list. Unmarked conjunctions, nested or quoted lists, and multiple questions require explicit ranges. The Rust host API `ask_recalled_with_facts` accepts a validated caller-ordered set for those requests. Planning reads the question only; source text, expected answers, and fixture labels do not select the facts.
+
+Count and order do not establish meaning. The model still chooses supported, insufficient, or conflicting and writes the answer. Exact quotations prove passage identity; the unchanged frozen semantic rubric separately checks relevance, missing evidence, conflicting values, and all three requested source facts. Historical contracts retain their previous bytes and replay policy. New journals require `recall/requested-fact-set-v1` semantics, so older readers refuse the new representation.

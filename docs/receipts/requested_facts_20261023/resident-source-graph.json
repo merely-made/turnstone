@@ -1,0 +1,167 @@
+[
+  {
+    "name": "chartulary",
+    "version": "0.2.2",
+    "source": "git+https://github.com/merely-made/eidetic.git?rev=dceb5fcd07bfaeffc57142b06f07259eed0e89ef#dceb5fcd07bfaeffc57142b06f07259eed0e89ef"
+  },
+  {
+    "name": "cleromancy-core-acceptance",
+    "version": "0.1.0",
+    "source": "git+https://github.com/merely-made/cleromancy.git?branch=main#a7e3cac60620364e7b049caf5aed6d3cd59d8758"
+  },
+  {
+    "name": "commons-spine",
+    "version": "0.0.1",
+    "source": "git+https://github.com/merely-made/gemot.git?rev=391c95b1d39ed660043c121928ef59a241bc9ced#391c95b1d39ed660043c121928ef59a241bc9ced"
+  },
+  {
+    "name": "eidetic",
+    "version": "0.0.2",
+    "source": "git+https://github.com/merely-made/eidetic.git?rev=dceb5fcd07bfaeffc57142b06f07259eed0e89ef#dceb5fcd07bfaeffc57142b06f07259eed0e89ef"
+  },
+  {
+    "name": "embedded-graphics",
+    "version": "0.8.2",
+    "source": "git+https://github.com/merely-made/murm.git?branch=main#b266e38b91d35121040fac84944c6418a7a02bdf"
+  },
+  {
+    "name": "embedded-graphics-core",
+    "version": "0.4.1",
+    "source": "git+https://github.com/merely-made/murm.git?branch=main#b266e38b91d35121040fac84944c6418a7a02bdf"
+  },
+  {
+    "name": "esp",
+    "version": "0.1.0",
+    "source": "git+https://github.com/merely-made/esp.git?rev=7021d4c52f96f5c55468fe521a21536d4e7290c1#7021d4c52f96f5c55468fe521a21536d4e7290c1"
+  },
+  {
+    "name": "esp-test-support",
+    "version": "0.1.0",
+    "source": "git+https://github.com/merely-made/esp.git?rev=7021d4c52f96f5c55468fe521a21536d4e7290c1#7021d4c52f96f5c55468fe521a21536d4e7290c1"
+  },
+  {
+    "name": "gemot",
+    "version": "0.1.1",
+    "source": "git+https://github.com/merely-made/gemot.git?rev=391c95b1d39ed660043c121928ef59a241bc9ced#391c95b1d39ed660043c121928ef59a241bc9ced"
+  },
+  {
+    "name": "knot-capture",
+    "version": "0.0.1",
+    "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#505c0b76ee7281846b1d56b03c7b55e4815a39d0"
+  },
+  {
+    "name": "knot-composition",
+    "version": "0.0.1",
+    "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#505c0b76ee7281846b1d56b03c7b55e4815a39d0"
+  },
+  {
+    "name": "knot-document",
+    "version": "0.0.1",
+    "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#505c0b76ee7281846b1d56b03c7b55e4815a39d0"
+  },
+  {
+    "name": "knot-editor",
+    "version": "0.0.3",
+    "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#505c0b76ee7281846b1d56b03c7b55e4815a39d0"
+  },
+  {
+    "name": "knot-file-catalog",
+    "version": "0.0.1",
+    "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#505c0b76ee7281846b1d56b03c7b55e4815a39d0"
+  },
+  {
+    "name": "knot-site",
+    "version": "0.0.1",
+    "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#505c0b76ee7281846b1d56b03c7b55e4815a39d0"
+  },
+  {
+    "name": "luggage",
+    "version": "0.1.0",
+    "source": "git+https://github.com/merely-made/eidetic.git?rev=dceb5fcd07bfaeffc57142b06f07259eed0e89ef#dceb5fcd07bfaeffc57142b06f07259eed0e89ef"
+  },
+  {
+    "name": "mere-proofs",
+    "version": "0.1.0",
+    "source": "git+https://github.com/merely-made/eidetic.git?rev=dceb5fcd07bfaeffc57142b06f07259eed0e89ef#dceb5fcd07bfaeffc57142b06f07259eed0e89ef"
+  },
+  {
+    "name": "mere-transport",
+    "version": "0.0.2",
+    "source": "git+https://github.com/merely-made/murm.git?branch=main#b266e38b91d35121040fac84944c6418a7a02bdf"
+  },
+  {
+    "name": "mere-webrtc-carrier",
+    "version": "0.0.1",
+    "source": "git+https://github.com/merely-made/murm.git?branch=main#b266e38b91d35121040fac84944c6418a7a02bdf"
+  },
+  {
+    "name": "mien",
+    "version": "0.0.1",
+    "source": "git+https://github.com/merely-made/gemot.git?rev=391c95b1d39ed660043c121928ef59a241bc9ced#391c95b1d39ed660043c121928ef59a241bc9ced"
+  },
+  {
+    "name": "mooting",
+    "version": "0.1.0",
+    "source": "git+https://github.com/merely-made/gemot.git?rev=391c95b1d39ed660043c121928ef59a241bc9ced#391c95b1d39ed660043c121928ef59a241bc9ced"
+  },
+  {
+    "name": "muniment",
+    "version": "0.1.2",
+    "source": "git+https://github.com/merely-made/eidetic.git?rev=dceb5fcd07bfaeffc57142b06f07259eed0e89ef#dceb5fcd07bfaeffc57142b06f07259eed0e89ef"
+  },
+  {
+    "name": "murm-wire",
+    "version": "0.1.0",
+    "source": "git+https://github.com/merely-made/murm.git?branch=main#b266e38b91d35121040fac84944c6418a7a02bdf"
+  },
+  {
+    "name": "outrider",
+    "version": "0.3.0",
+    "source": "git+https://github.com/merely-made/murm.git?branch=main#b266e38b91d35121040fac84944c6418a7a02bdf"
+  },
+  {
+    "name": "postilion",
+    "version": "0.3.0",
+    "source": "git+https://github.com/merely-made/murm.git?branch=main#b266e38b91d35121040fac84944c6418a7a02bdf"
+  },
+  {
+    "name": "radio-face",
+    "version": "0.0.1",
+    "source": "git+https://github.com/merely-made/murm.git?branch=main#b266e38b91d35121040fac84944c6418a7a02bdf"
+  },
+  {
+    "name": "radio-hand",
+    "version": "0.0.1",
+    "source": "git+https://github.com/merely-made/murm.git?branch=main#b266e38b91d35121040fac84944c6418a7a02bdf"
+  },
+  {
+    "name": "retinue",
+    "version": "0.3.0",
+    "source": "git+https://github.com/merely-made/murm.git?branch=main#b266e38b91d35121040fac84944c6418a7a02bdf"
+  },
+  {
+    "name": "selvage",
+    "version": "0.1.0",
+    "source": "git+https://github.com/merely-made/murm.git?branch=main#b266e38b91d35121040fac84944c6418a7a02bdf"
+  },
+  {
+    "name": "seneschal",
+    "version": "0.2.0",
+    "source": "git+https://github.com/merely-made/murm.git?branch=main#b266e38b91d35121040fac84944c6418a7a02bdf"
+  },
+  {
+    "name": "servitor",
+    "version": "0.0.2",
+    "source": "git+https://github.com/merely-made/eidetic.git?rev=dceb5fcd07bfaeffc57142b06f07259eed0e89ef#dceb5fcd07bfaeffc57142b06f07259eed0e89ef"
+  },
+  {
+    "name": "stickleback",
+    "version": "0.1.1",
+    "source": "git+https://github.com/merely-made/eidetic.git?rev=dceb5fcd07bfaeffc57142b06f07259eed0e89ef#dceb5fcd07bfaeffc57142b06f07259eed0e89ef"
+  },
+  {
+    "name": "tulle",
+    "version": "0.2.0",
+    "source": "git+https://github.com/merely-made/murm.git?branch=main#b266e38b91d35121040fac84944c6418a7a02bdf"
+  }
+]

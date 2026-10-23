@@ -1,0 +1,14 @@
+{
+  "receipt_verification": "pass",
+  "recorded_qualification": "gate_not_passed",
+  "recorded_semantic_passes": 1,
+  "source_plan_bindings": 4,
+  "software_checks": 81,
+  "gate_returns": {
+    "verify_probe.py": 1,
+    "verify_contract_inputs.py": 0,
+    "verify_wire_defaults.py": 1,
+    "verify_structured_output.py": 1
+  },
+  "headed_and_cold_reopen": "not_run_gate_not_passed"
+}

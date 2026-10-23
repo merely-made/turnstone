@@ -1,0 +1,14 @@
+warning: method `complete` is never used
+   --> /Users/markik/Code/worktrees/esp-cross-source-answers-20261022/crates/esp/src/infer/decoder/constraint.rs:259:12
+    |
+ 55 | impl Constraint {
+    | --------------- method in this implementation
+...
+259 |     pub fn complete(&self) -> bool {
+    |            ^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: 1 warning emitted
+
+mask=Ok(()), eligible=[(16, Some("1")), (17, Some("2")), (18, Some("3"))], forced=Ok([])
