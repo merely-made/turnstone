@@ -955,7 +955,9 @@ pub(super) fn read_command(page: &mut TreePage, member: Uuid, command: cambium::
     page.shared.dirty.set(true);
 }
 pub(super) fn toolbar(member: Uuid, snapshot: ToolbarSnapshot) -> Child {
-    let field = Some(&snapshot.ui);
+    let mut ui = snapshot.ui;
+    ui.available = snapshot.find_enabled;
+    let field = Some(&ui);
     cambium::read_toolbar(snapshot.preferences.text_size, snapshot.preferences.column_em, snapshot.text_controls, field,
         move |page: &mut TreePage, event| match event {
             cambium::ReadEvent::Command(command) => read_command(page, member, command),

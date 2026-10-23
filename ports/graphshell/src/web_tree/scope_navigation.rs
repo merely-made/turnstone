@@ -183,7 +183,7 @@ fn label(page: &TreePage, place: &ScopePlace<Uuid, Uuid>) -> String {
                 canvas
                     .graph()
                     .get_node_by_id(id)
-                    .map(|(key, _)| mere::navigation::document_label(canvas.graph(), key))
+                    .map(|(key, _)| canvas.graph().node_display_label(key))
             })
             .unwrap_or_else(|| "document".into())
     };
