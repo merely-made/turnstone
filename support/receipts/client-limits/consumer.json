@@ -1,0 +1,223 @@
+{
+  "schema": "client-limits-qualification-v1",
+  "owner": "turnstone",
+  "date": "2026-10-22",
+  "qualified_source": "6737085d38fe8932008e46d88b2c2333fecba60c",
+  "upstream": "636e7bd755aabb3d47a771bf0e72add3d327312d",
+  "source_files": [
+    {
+      "path": "src/client_limits.rs",
+      "git_blob": "d1646064cdd699dcf30710545a4aa71f794dcf74",
+      "native_sha256": "4b76e85f3751cb21c2fd38cd484c23302390b56b15f5b9316297cbec5aa73b45"
+    },
+    {
+      "path": "src/lib.rs",
+      "git_blob": "eb6fae11e7a54f007b3bb11ec12821006f889d07",
+      "native_sha256": "8a4616fdb076e9990185cbed287120e2d5a3d16f8b032748e8e0a20016af14a4"
+    },
+    {
+      "path": "src/shell/mod.rs",
+      "git_blob": "ba4e6c5ff8df0d716b0d957e0446111221f583d5",
+      "native_sha256": "e58b31f3bcc17bb20ecd9e71c489437ace5d458170d7749c8c22cd3eccf0294c"
+    },
+    {
+      "path": "src/nomadnet.rs",
+      "git_blob": "39116c5b16d3a0862d2ee37a1894f21dbf294a43",
+      "native_sha256": "8eec28da033d2137766e43f3bbf5c98aa9157d1a91576c167229e3d22ac5f6c0"
+    },
+    {
+      "path": "src/nomadnet_client_limits_tests.rs",
+      "git_blob": "28b671a5c02a881de6b783271a476e147d1523ea",
+      "native_sha256": "56a3c599d742bf239c66fcfdc940c3e10d1c6183f3c318ba8813aebc18e155e1"
+    }
+  ],
+  "native_lock_sha256": "ade7860fd3277fb0723efb40b6dedcd1a12267a83dbd0f83a255e7d0433fdaad",
+  "supplier_sources": {
+    "mere": "faa6f1fb3b5e522efd22a087c12dd9872b5eb5c9",
+    "errand": "1155897e6debc61102ea219cced245d0abccb658",
+    "murm": "36bad79bcc0199d20a2ad127a9801ac8a062f123",
+    "immutable_source_edit_unchanged": "70deef2c8cf3d3410ae35b496a9396514070b24f"
+  },
+  "source_only_lock_delta": {
+    "mere_branch_main_lines": 62,
+    "errand_lines": 9,
+    "murm_lines": 4,
+    "all_registry_versions_dependency_tables_other_sources_unchanged": true
+  },
+  "target": "C:\\t\\cargo-targets\\turnstone",
+  "build_dir": "C:\\t\\cargo-targets\\turnstone\\build",
+  "build": {
+    "command": "cargo test --lib --no-default-features --no-run --locked --message-format=json",
+    "exit_code": 0,
+    "compile_errors": 0,
+    "elapsed_seconds": 226.255,
+    "scope": "Native libtest, ordinary default feature set is empty; no API repair needed",
+    "nonfatal": "Known Servo tidy invalid-fixture stderr; zero compiler errors"
+  },
+  "test_executable": "C:\\t\\cargo-targets\\turnstone\\build\\debug\\deps\\turnstone-a571715c89d3e4d5.exe",
+  "executable_sha256_before_and_after": "2477b02d16b9b38134f0e850b7c3e8109131b09ef9ad099dea00019817a8ea02",
+  "command_template": "<test_executable> <filter> --test-threads=1",
+  "commands": [
+    {
+      "filter": "client_limits",
+      "passed": 3,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "nomadnet::tests",
+      "passed": 5,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "receiving_tests",
+      "passed": 3,
+      "ignored": 1,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "local_micron_source_tests",
+      "passed": 7,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "foreign_a11y",
+      "passed": 19,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "document_a11y",
+      "passed": 9,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "a11y_bridge",
+      "passed": 2,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "contributed_a11y",
+      "passed": 10,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "app::palette::tests",
+      "passed": 4,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "inference_service::tests",
+      "passed": 5,
+      "ignored": 1,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "remote_projection::tests::live_mere_graph_becomes_cards_and_routed_relations",
+      "passed": 1,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "trail_memory::inference_owner_tests",
+      "passed": 1,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "trail_memory::research_owner_tests::research_owner_loads_only_live_captures_and_reopens_exact_versions_without_page_text_fallback",
+      "passed": 1,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "trail_memory::saved_sources::tests",
+      "passed": 4,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "reading_view::tests",
+      "passed": 2,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "app::palette::command_menu_tests::offered_actions_carry_the_hosts_effect_and_destructive_declarations",
+      "passed": 1,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "filter": "app::tests::toolbar_address_navigation_reads_without_changing_graph_command_semantics",
+      "passed": 1,
+      "ignored": 0,
+      "failed": 0,
+      "exit_code": 0
+    }
+  ],
+  "total": {
+    "passed": 78,
+    "failed": 0,
+    "ignored": 2,
+    "elapsed_seconds_approx": 9.88
+  },
+  "ignored": [
+    "shell::nomadnet_receiving_tests::governed_djinn_native_page_reaches_product_controller",
+    "inference_service::tests::admitted_research_route_refuses_wrong_owner"
+  ],
+  "native_budget_cases": {
+    "operations": [
+      "Read",
+      "explicit Submit"
+    ],
+    "body_bytes": 4096,
+    "cases": [
+      "exact body4096 and decoded cap Response::pack length; complete bytes and successful sender proof",
+      "encoded cap1 refuses",
+      "decoded packed length minus1 refuses",
+      "body cap4095 refuses"
+    ],
+    "invalid_policy": "encoded cap0 refuses before TCP contact",
+    "submit_map": "field=sent preserved"
+  },
+  "launch_settings": "Explicit values retained, HTTP20 versus Smolweb4 defaults preserved, malformed/zero-positive settings refused; concurrency0 disables remote I/O",
+  "preserved": [
+    "snapshotV1 qualified at Mere supplier",
+    "existing local native/controller receiving",
+    "effect/destructive command declarations",
+    "reading and saved-source ownership"
+  ],
+  "unqualified": [
+    "new external governed-host process proof",
+    "window/GPU/headed",
+    "installed application",
+    "radio",
+    "independent readers",
+    "new actor cancellation guarantee",
+    "aggregate memory/traffic or fetch actor task cap"
+  ],
+  "receipt_byte_convention": "UTF-8 JSON, -text attribute; Git and native receipt bytes identical"
+}

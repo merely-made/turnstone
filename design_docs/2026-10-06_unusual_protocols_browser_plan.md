@@ -2114,6 +2114,12 @@ Invalid native policy refuses before TCP contact. Launch settings, existing
 receiving/controller, reading, command and owner regressions pass. The two
 existing governed-host/R3 prerequisite tests remain ignored; this continuation
 does not claim a new external-host, window, installed-binary or radio receipt.
+The [client receiving receipt](../support/receipts/client-limits/consumer.json)
+names qualified source `6737085d`, exact executable SHA256, all 17 test filters
+and the 62 Mere/nine Errand/four Murm source-only lock substitutions. The
+immutable source-edit supplier, registry versions, dependency tables and all
+unrelated suppliers are preserved. Source code and the independent bounded
+review require no receiving compatibility repairs.
 
 This slice connects the existing browser receiving paths to the newly governed
 Djinn host. Native Micron fetching already exists in Turnstone; local `.mu`
