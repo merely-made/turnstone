@@ -848,10 +848,11 @@ Done-conditions:
 
 ## Shared-contract Servo receiving — 2026-10-23
 
-**Status (2026-10-23): in progress.** The reusable Servo host is compiled on
-macOS for a concrete Cue receiver. The existing Windows product path keeps
-using the same host implementation. This receiving slice does not qualify
-Linux/Vulkan, physical IME, foreign accessibility or the older Windows gates.
+**Status (2026-10-23): offscreen Metal receiving qualified; headed gate pending
+the user's unlock signal.** The reusable Servo host and finite two-engine Cue
+receiver run on macOS. The existing Windows product path keeps using the same
+host implementation. This slice does not migrate the full Turnstone UI or
+qualify Linux/Vulkan, physical IME, foreign accessibility or older Windows gates.
 
 ### Native custody and shared controls
 
@@ -886,3 +887,13 @@ and exact source/binary identity; compile coverage is separate from runtime.
 
 - 2026-10-23: current supplier and host source inspected; clean primary
   checkouts preserved and an isolated receiving worktree opened.
+- 2026-10-23: real same-device Genet and Servo offscreen receiving passes input,
+  typed zoom, hidden reload without frame acquisition, resize, navigation,
+  replacement and teardown. Native custody survives source destruction;
+  foreign-device import refuses. The strict fixture exposed retained input
+  admission while hidden; Mere `737fec2df` repairs it with a real Genet regression.
+  [Receipt and retained failures](../docs/receipts/servo_cue_20261023/README.md).
+- 2026-10-23: both producers expose complete 28-feature reports. Servo's native
+  import observation is recorded externally: its report remains `Constructed`
+  because the browser adapter has no host-import feedback seam. Supplying that
+  feedback would make runtime taxonomy evidence visible directly in inspectors.
