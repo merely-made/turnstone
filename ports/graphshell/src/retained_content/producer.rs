@@ -118,9 +118,7 @@ impl TextureProducer for ContentProducer {
             .is_some_and(|(generation, _)| *generation == cx.core.generation())
         {
             self.cue_renderer = Some(
-                wgpu_cue_netrender::SceneRasterizer::new(
-                    cx.core.renderer().wgpu_device.core.clone(),
-                )
+                wgpu_cue_netrender::SceneRasterizer::new(core_handles(cx.core)?)
                 .map_err(|e| genet_render_host::RasterizeFailure::SourceError(e.to_string()))?,
             );
             self.cue_host = Some((
@@ -489,6 +487,17 @@ impl wgpu_cue::TextureSource for ContentProducer {
         Ok(result)
     }
 }
+/// The Core's device handles; the browser reaches its renderer only through
+/// the checked accessor, which refuses while a browser frame is in flight.
+fn core_handles(
+    core: &genet_render_host::RenderCore,
+) -> Result<wgpu_cue_netrender::WgpuHandles, genet_render_host::RasterizeFailure> {
+    #[cfg(target_arch = "wasm32")]
+    let handles = core.try_renderer()?.wgpu_device.core.clone();
+    #[cfg(not(target_arch = "wasm32"))]
+    let handles = core.renderer().wgpu_device.core.clone();
+    Ok(handles)
+}
 impl ContentProducer {
     /// Attach a private retained renderer on the caller's existing device.
     pub fn with_core(
@@ -496,9 +505,9 @@ impl ContentProducer {
         core: &genet_render_host::RenderCore,
     ) -> inker::webcue::Result<Self> {
         let mut producer = Self::new(slot, Self::allocate_key());
-        producer.cue_renderer = Some(wgpu_cue_netrender::SceneRasterizer::new(
-            core.renderer().wgpu_device.core.clone(),
-        )?);
+        let handles =
+            core_handles(core).map_err(|e| inker::webcue::Error::Backend(e.to_string()))?;
+        producer.cue_renderer = Some(wgpu_cue_netrender::SceneRasterizer::new(handles)?);
         Ok(producer)
     }
 }
