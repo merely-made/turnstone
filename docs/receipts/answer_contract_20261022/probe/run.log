@@ -1,0 +1,23 @@
+
+running 1 test
+test probe_bounded_cross_source_answers has been running for over 60 seconds
+resident inference GPU: AMD Radeon Pro Vega 56 (metal, discrete adapter)
+2026-10-23T04:54:44.189633Z DEBUG distillery::inference::gpu: inference layer cache tokens=32 stats=Some(StreamingReadStats { layer_reads: 214, encoded_bytes_read: 20029752704, largest_encoded_layer: 93596976, expert_reads: 0, expert_encoded_bytes_read: 0, largest_encoded_expert: 0, verified_cache: Some(LayerCacheStats { hits: 186, misses: 28, retained_capacity_bytes: 2620715168, entries: 28, capacity_budget_bytes: 3221225472 }), device_cache: Some(DeviceLayerCacheStats { hits: 682, misses: 214, retained_payload_bytes: 4118208512, payload_budget_bytes: 4294967296, layers: 22 }) })
+2026-10-23T04:58:15.467119Z DEBUG distillery::inference::gpu: inference layer cache tokens=64 stats=Some(StreamingReadStats { layer_reads: 406, encoded_bytes_read: 38000372096, largest_encoded_layer: 93596976, expert_reads: 0, expert_encoded_bytes_read: 0, largest_encoded_expert: 0, verified_cache: Some(LayerCacheStats { hits: 378, misses: 28, retained_capacity_bytes: 2620715168, entries: 28, capacity_budget_bytes: 3221225472 }), device_cache: Some(DeviceLayerCacheStats { hits: 1386, misses: 406, retained_payload_bytes: 4118208512, payload_budget_bytes: 4294967296, layers: 22 }) })
+2026-10-23T05:01:45.404464Z DEBUG distillery::inference::gpu: inference layer cache tokens=96 stats=Some(StreamingReadStats { layer_reads: 598, encoded_bytes_read: 55970991488, largest_encoded_layer: 93596976, expert_reads: 0, expert_encoded_bytes_read: 0, largest_encoded_expert: 0, verified_cache: Some(LayerCacheStats { hits: 570, misses: 28, retained_capacity_bytes: 2620715168, entries: 28, capacity_budget_bytes: 3221225472 }), device_cache: Some(DeviceLayerCacheStats { hits: 2090, misses: 598, retained_payload_bytes: 4118208512, payload_budget_bytes: 4294967296, layers: 22 }) })
+2026-10-23T05:08:13.126571Z DEBUG distillery::inference::gpu: inference layer cache tokens=29 stats=Some(StreamingReadStats { layer_reads: 202, encoded_bytes_read: 18906588992, largest_encoded_layer: 93596976, expert_reads: 0, expert_encoded_bytes_read: 0, largest_encoded_expert: 0, verified_cache: Some(LayerCacheStats { hits: 934, misses: 28, retained_capacity_bytes: 2620715168, entries: 28, capacity_budget_bytes: 3221225472 }), device_cache: Some(DeviceLayerCacheStats { hits: 638, misses: 202, retained_payload_bytes: 4118208512, payload_budget_bytes: 4294967296, layers: 22 }) })
+2026-10-23T05:11:17.662990Z DEBUG distillery::inference::gpu: inference layer cache tokens=32 stats=Some(StreamingReadStats { layer_reads: 214, encoded_bytes_read: 20029752704, largest_encoded_layer: 93596976, expert_reads: 0, expert_encoded_bytes_read: 0, largest_encoded_expert: 0, verified_cache: Some(LayerCacheStats { hits: 1148, misses: 28, retained_capacity_bytes: 2620715168, entries: 28, capacity_budget_bytes: 3221225472 }), device_cache: Some(DeviceLayerCacheStats { hits: 682, misses: 214, retained_payload_bytes: 4118208512, payload_budget_bytes: 4294967296, layers: 22 }) })
+2026-10-23T05:12:38.691008Z DEBUG distillery::inference::gpu: inference layer cache tokens=48 stats=Some(StreamingReadStats { layer_reads: 316, encoded_bytes_read: 29576644256, largest_encoded_layer: 93596976, expert_reads: 0, expert_encoded_bytes_read: 0, largest_encoded_expert: 0, verified_cache: Some(LayerCacheStats { hits: 1250, misses: 28, retained_capacity_bytes: 2620715168, entries: 28, capacity_budget_bytes: 3221225472 }), device_cache: Some(DeviceLayerCacheStats { hits: 1056, misses: 316, retained_payload_bytes: 4118208512, payload_budget_bytes: 4294967296, layers: 22 }) })
+2026-10-23T05:15:08.169183Z DEBUG distillery::inference::gpu: inference layer cache tokens=29 stats=Some(StreamingReadStats { layer_reads: 202, encoded_bytes_read: 18906588992, largest_encoded_layer: 93596976, expert_reads: 0, expert_encoded_bytes_read: 0, largest_encoded_expert: 0, verified_cache: Some(LayerCacheStats { hits: 1452, misses: 28, retained_capacity_bytes: 2620715168, entries: 28, capacity_budget_bytes: 3221225472 }), device_cache: Some(DeviceLayerCacheStats { hits: 638, misses: 202, retained_payload_bytes: 4118208512, payload_budget_bytes: 4294967296, layers: 22 }) })
+
+thread 'probe_bounded_cross_source_answers' (57418334) panicked at ports/djinn/tests/inference_route.rs:2446:5:
+incomplete frozen cases: [("cross", Cancelled)]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test probe_bounded_cross_source_answers ... FAILED
+
+failures:
+
+failures:
+    probe_bounded_cross_source_answers
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 1702.05s

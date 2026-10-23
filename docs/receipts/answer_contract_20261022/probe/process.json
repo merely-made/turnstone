@@ -1,0 +1,11 @@
+{
+  "pid": 98209,
+  "command": [
+    "/Users/markik/Code/output/answer-contract-20261022/candidate-02/frozen/inference_route",
+    "probe_bounded_cross_source_answers",
+    "--exact",
+    "--ignored",
+    "--nocapture"
+  ],
+  "utc": "2026-10-23T04:46:36.427576+00:00"
+}

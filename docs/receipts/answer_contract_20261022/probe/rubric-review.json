@@ -1,0 +1,45 @@
+{
+  "utc": "2026-10-23T05:21:47.131209+00:00",
+  "overall": "gate_not_passed",
+  "cases": {
+    "cross": {
+      "result": "incomplete",
+      "state": "cancelled",
+      "tokens": 122,
+      "review": "900-second generation deadline; cancelled at 122 tokens. Partial output is not a semantic result.",
+      "raw_output": null,
+      "support_error": null,
+      "admitted_claims": 0
+    },
+    "missing": {
+      "result": "pass_with_protocol_default",
+      "state": "finished",
+      "tokens": 29,
+      "review": "One insufficient-budget claim, no guesses, evidence[], no citations. Frozen checker needs the declared omitted-array default; nonempty/null citation controls fail.",
+      "raw_output": "blake3:709eae653c5748523ce754562d15c217ce4e8e15f4a74bbff5f2214921118392",
+      "support_error": null,
+      "admitted_claims": 1
+    },
+    "conflict": {
+      "result": "fail",
+      "state": "finished",
+      "tokens": 48,
+      "review": "Parseable JSON but unsupported conflicting top-level key, a supported single-source winner, and no jointly supported disagreement. Strict document validator admits zero claims.",
+      "raw_output": "blake3:433f415cb47a11f16f4e9a1ae94dfbdaba4828eb1046c28bb10ae508901d1cc4",
+      "support_error": "The model did not return a complete claim-support document. Raw output is retained.",
+      "admitted_claims": 0
+    },
+    "reduced": {
+      "result": "fail",
+      "state": "finished",
+      "tokens": 29,
+      "review": "Appropriate insufficiency wording inside an unfinished code fence with a stray trailing quote. Whole-document parse fails; zero claims admitted. Removed note was not supplied or returned.",
+      "raw_output": "blake3:7757926bbd50f4f15fe076e6f5264d40324f32b25b93d5ec2a0547749883e452",
+      "support_error": "The model did not return a complete claim-support document. Raw output is retained.",
+      "admitted_claims": 0
+    }
+  },
+  "headed": "not_run",
+  "cold_reopen": "not_run",
+  "boundary": "Original frozen questions, source cuts and rubric. Only decoding the protocol-declared omitted empty citations array is supplemented; model text and strict document checks are never repaired."
+}

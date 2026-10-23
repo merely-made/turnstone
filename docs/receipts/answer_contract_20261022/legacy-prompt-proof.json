@@ -1,0 +1,8 @@
+{
+  "result": "pass",
+  "published_v1_commit": "374351329f5ae6b296bd685b79e8fa44545db3c8",
+  "instruction_bytes_preserved": true,
+  "instruction_sha256": "5830e0b02e0584fd8cbe189ca7de1363fd7a1bd09472a07d7386debdabf623b2",
+  "new_method": "distillery.requested-facts/v2",
+  "v1_prompt_replay_test": "bounds_and_legacy_answers_are_explicit"
+}

@@ -1,0 +1,19 @@
+{
+  "baseline_receipt": "/Users/markik/Code/worktrees/turnstone-cross-source-answers-20261022/docs/receipts/streamed_inference_20261022",
+  "unchanged_frozen_sha256": {
+    "case-freeze.json": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d",
+    "verify_probe.py": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d",
+    "verify_native.py": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594",
+    "optimized-runtime.toml": "7ed6fb12d461f4b4bcec5bba79f0a23d47b3266118ceedf2e8f641c24ec3bbc8",
+    "cases.json": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "cases": "All four original questions, source cuts and expectations unchanged",
+  "runtime": "Same Qwen2.5-1.5B weights, template, 1024-token cap, 900-second per-case limit, 3GiB host and 4GiB device layer budgets",
+  "change": "Compact question-driven claim support prompt with orthogonal examples, explicit single-line minified JSON, retained task binding and v1 replay compatibility; no output repair or fixture-specific extraction",
+  "gate": "All four completed answers must pass the original independent verifier before headed checks",
+  "prompt_module_sha256_before_measurement": "a76f49f1ffe33fd3b8bf0dcc2be2b58a8bb146efc22e9531dbfe8aeed74c1603",
+  "instruction_characters": 1416,
+  "probe_source_sha256": "81510b572b8028cf46bf892254a8971f59f2f7ec66d39eb409538d42c4e1bb91",
+  "prior_diagnostic": "candidate-01 was deliberately stopped while cross was incomplete: 3419-character instruction cost, 0.138 token/s, code fences and indentation. No semantic result or acceptance claimed.",
+  "supplier_commit": "5262ae5775344741a76545ba895a8dbf33256409"
+}

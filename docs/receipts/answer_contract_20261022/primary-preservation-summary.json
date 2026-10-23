@@ -1,0 +1,27 @@
+{
+  "before_after": {
+    "repos/mere": {
+      "head_equal": false,
+      "status_equal": true,
+      "tracked_diff_equal": true
+    },
+    "repos/turnstone": {
+      "head_equal": false,
+      "status_equal": true,
+      "tracked_diff_equal": true
+    },
+    "repos/eidetic": {
+      "head_equal": true,
+      "status_equal": true,
+      "tracked_diff_equal": true
+    }
+  },
+  "task_write_scope": [
+    "worktrees/mere-cross-source-answers-20261022/ports/distillery",
+    "worktrees/turnstone-cross-source-answers-20261022/Cargo.lock",
+    "worktrees/turnstone-cross-source-answers-20261022/src/inference_service.rs",
+    "worktrees/turnstone-cross-source-answers-20261022/docs/receipts/answer_contract_20261022",
+    "output/answer-contract-20261022"
+  ],
+  "note": "Concurrent primary activity is preserved; this task only edited the listed isolated source paths and its own qualification output."
+}

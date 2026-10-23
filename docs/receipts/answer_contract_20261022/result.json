@@ -1,0 +1,51 @@
+{
+  "utc": "2026-10-23T05:23:31.099117+00:00",
+  "result": "gate_not_passed",
+  "runtime_execution": {
+    "exit_code": 101,
+    "elapsed_seconds": 1715.2502984730527,
+    "session_mismatch": false,
+    "finished": 3,
+    "cancelled": 1,
+    "timed_out": 1,
+    "total": 4
+  },
+  "headed_answer": "not_run_gate_not_passed",
+  "headed_cold_reopen": "not_run_gate_not_passed",
+  "software_checks": {
+    "distillery_inference": {
+      "passed": 40,
+      "failed": 0
+    },
+    "djinn_inference": {
+      "passed": 8,
+      "failed": 0
+    },
+    "resident_route": {
+      "passed": 4,
+      "failed": 0,
+      "ignored": 3
+    },
+    "turnstone_inference": {
+      "passed": 9,
+      "failed": 0,
+      "ignored": 1
+    },
+    "turnstone_native_build": "pass",
+    "focused_passing_checks": 61
+  },
+  "scope": "Frozen synthetic cases and current local software checks. Retained quotations and task identity do not establish general semantic correctness.",
+  "original_frozen_gate": {
+    "passed": 0,
+    "total": 4
+  },
+  "protocol_default_aware_rubric": {
+    "passed": 1,
+    "failed": 2,
+    "incomplete": 1,
+    "total": 4,
+    "result": "gate_not_passed",
+    "normalization": "Omitted citations only -> []; raw output and support unchanged."
+  },
+  "retained_input_contracts": "4 passed; no answer or cold-reopen acceptance"
+}
