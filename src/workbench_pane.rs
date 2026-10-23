@@ -63,6 +63,8 @@ struct CellView {
     target: Option<crate::reading_view::ReadTarget>,
     preferences: tabard::ReadingPreferences,
     text_controls: bool,
+    can_back: bool,
+    can_forward: bool,
     find_enabled: bool,
     find: crate::reading_view::FindUi,
 }
@@ -185,7 +187,7 @@ fn reading_toolbar(state: &WorkbenchState, index: usize) -> WbView {
         query,
         el("span", cell.find.status.clone()).attr("class", "read-result").attr("role", "status").attr("aria-live", "polite"),
     )).attr("class", "read-find-input"));
-    cambium::read_toolbar(cell.preferences.text_size, cell.preferences.column_em, cell.text_controls, cell.find.open && cell.find_enabled, cell.find_enabled.then_some(field),
+    cambium::read_toolbar(cell.preferences.text_size, cell.preferences.column_em, cell.text_controls, cell.find.appearance_open, cell.can_back, cell.can_forward, cell.find.open && cell.find_enabled, cell.find_enabled.then_some(field),
         move |state: &mut WorkbenchState, command| {
             state.read_actions.push(crate::action::Action::Reading(crate::reading_view::ReadAction::Command(target,command)));
         })
@@ -359,6 +361,8 @@ impl WorkbenchPane {
                 };
                 CellView {
                     toolbar: c.toolbar_rect(),
+                    can_back: app.reading.trails.get(&pane_id).is_some_and(|trail|trail.can_back()),
+                    can_forward: app.reading.trails.get(&pane_id).is_some_and(|trail|trail.can_forward()),
                     target: c.active_member().map(|member| crate::reading_view::ReadTarget { pane:pane_id, member }),
                     find_enabled: c.active_member().is_some_and(|member|app.content.facts(member).is_some_and(|facts|facts.capabilities.find_in_page.is_available())),
                     text_controls: c.active_member().is_some_and(|member|app.has_reading_controls(crate::reading_view::ReadTarget{pane:pane_id,member})),
@@ -557,6 +561,11 @@ mod tests {
         let mut chrome=app.shell_chrome_config().clone(); chrome.native_scales.insert(0,2.0); app.set_shell_chrome_config(chrome);
         let mut pane=WorkbenchPane::new(); pane.sync(&app,pane_id,1200.,800.);pane.scene(1200,800);
         let selector=taproot::Selector::role("button").on_surface("workbench").containing("Larger reading text");
+        assert!(pane.selector_point(&selector).unwrap().is_none(),"appearance controls start folded");
+        let aa=taproot::Selector::role("button").on_surface("workbench").containing("Reading appearance");
+        let (x,y)=pane.selector_point(&aa).unwrap().unwrap();pane.click(x,y,1200,800);
+        for action in pane.take_read_actions() {app.update(action);}
+        pane.sync(&app,pane_id,1200.,800.);pane.scene(1200,800);
         let point=pane.selector_point(&selector).unwrap().unwrap();
         let cell=&pane.tiling().cells[0];
         assert!(cell.toolbar_rect().contains(point.0,point.1));

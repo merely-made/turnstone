@@ -163,6 +163,11 @@ impl OuterFrame {
         }
         let frame = layout.outer_workspace()?;
         let mut workspace = frame.workspace.clone();
+        for (id,(content,_)) in &frame.panes {
+            if let Some(tile)=workspace.tile_mut(TileId(*id)) {
+                if matches!(tile.title.as_str(),"orrery"|"Orrery"|"inspector"|"Inspector"|"workbench"|"Workbench") {tile.title=content.label().into();}
+            }
+        }
         if let Some(id) = maximize {
             if let Some(tile) = workspace.find(TileId(id.0)).cloned() {
                 workspace = Workspace::new(TileTree::single(tile));
@@ -193,6 +198,7 @@ impl OuterFrame {
                                     content,
                                     crate::panes::PaneContent::Orrery
                                         | crate::panes::PaneContent::Workbench
+                                        | crate::panes::PaneContent::Overmap(_)
                                 )
                             })
                         };
@@ -202,7 +208,7 @@ impl OuterFrame {
                             })
                         }) && stack.tabs.iter().any(|t| {
                             frame.panes.get(&t.id.0).is_some_and(|(c, _)| {
-                                matches!(c, crate::panes::PaneContent::Workbench)
+                                matches!(c, crate::panes::PaneContent::Workbench | crate::panes::PaneContent::Overmap(_))
                             })
                         });
                         Some((pair || stack.tabs.len()==1) && stack.tabs.get(stack.active).is_some_and(main))

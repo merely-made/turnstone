@@ -7,12 +7,16 @@
 use super::*;
 use crate::action::Action;
 use layout_dom_api::LayoutDom;
+fn content_lines(pane:&InspectorPane)->Vec<String> {
+    pane.runner.state().sections.iter().filter(|section|section.title=="Content").flat_map(|section|section.rows.iter().map(|(key,value)|format!("{key}: {value}"))).collect()
+}
 
 /// The pane draws the sections it was synced with: headers and key/value
 /// rows land in the DOM under the panel's classes.
 #[test]
 fn synced_sections_reach_the_dom() {
     let mut pane = InspectorPane::new();
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     pane.runner.update(|state| {
         state.sections = vec![InspectorSection {
             title: "Node".to_string(),
@@ -40,6 +44,7 @@ fn synced_sections_reach_the_dom() {
 #[test]
 fn clip_button_bubbles_a_typed_inspector_intent() {
     let mut pane = InspectorPane::new();
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     pane.runner.update(|state| {
         state.clip_target = Some("file:///notes/field.knot".into());
         state.clip_offer = Some(uuid::Uuid::nil());
@@ -66,6 +71,7 @@ fn clip_button_bubbles_a_typed_inspector_intent() {
 #[test]
 fn probe_resolved_clip_button_reaches_the_pane_at_receipt_size() {
     let mut pane = InspectorPane::new();
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     pane.runner.update(|state| {
         state.sections = vec![InspectorSection {
             title: "Node".to_string(),
@@ -80,6 +86,8 @@ fn probe_resolved_clip_button_reaches_the_pane_at_receipt_size() {
         state.viewport_h = 576.0;
     });
     let _ = pane.scene(509, 576);
+    pane.scroll_by(0.,2000.);
+    let _=pane.scene(509,576);
     let (x, y) = pane
         .selector_point(
             &taproot::Selector::role("button")
@@ -106,6 +114,7 @@ fn picking_a_viewer_reports_the_intent_and_mirrors_back() {
     let mut app = App::test_stub();
     app.update(Action::OpenAddress("https://example.com/x".to_string()));
     let mut pane = InspectorPane::new();
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     pane.sync(
         &app,
         app.default_graph_pane(),
@@ -115,6 +124,7 @@ fn picking_a_viewer_reports_the_intent_and_mirrors_back() {
         None,
         "unconfigured",
     );
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     // Resolve the livery option's centre off the laid-out DOM.
     let (x, y) = {
         let dom = pane.dom.borrow();
@@ -122,8 +132,7 @@ fn picking_a_viewer_reports_the_intent_and_mirrors_back() {
             .all_with_class(dom.document(), "radio")
             .into_iter()
             .find(|&n| {
-                dom.dom_children(n)
-                    .any(|c| dom.text(c).is_some_and(|t| t == "( ) Genet"))
+                dom.outer_html(n).contains("data-engine-id=\"genet.livery\"")
             })
             .expect("the livery option is drawn");
         let (rx, ry, rw, rh) =
@@ -150,6 +159,7 @@ fn picking_a_viewer_reports_the_intent_and_mirrors_back() {
         None,
         "unconfigured",
     );
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     assert_eq!(
         pane.runner.state().radio.selected,
         1,
@@ -213,6 +223,7 @@ fn focused_document_capabilities_sit_beside_the_viewer_picker() {
         }),
     );
     let mut pane = InspectorPane::new();
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     pane.sync(
         &app,
         app.default_graph_pane(),
@@ -222,17 +233,14 @@ fn focused_document_capabilities_sit_beside_the_viewer_picker() {
         None,
         "unconfigured",
     );
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     assert!(
-        pane.runner
-            .state()
-            .capabilities
+        content_lines(&pane)
             .iter()
             .any(|line| line == "Find in page: supported")
     );
     assert!(
-        pane.runner
-            .state()
-            .capabilities
+        content_lines(&pane)
             .iter()
             .any(|line| { line == "Navigation controls: partial: host-owned lineage" })
     );
@@ -261,6 +269,7 @@ fn the_requested_page_zoom_is_mirrored_beside_the_capability() {
         }),
     );
     let mut pane = InspectorPane::new();
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     pane.sync(
         &app,
         app.default_graph_pane(),
@@ -270,10 +279,9 @@ fn the_requested_page_zoom_is_mirrored_beside_the_capability() {
         None,
         "unconfigured",
     );
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     assert!(
-        pane.runner
-            .state()
-            .capabilities
+        content_lines(&pane)
             .iter()
             .any(|line| line == "Requested page zoom: 100%")
     );
@@ -288,14 +296,13 @@ fn the_requested_page_zoom_is_mirrored_beside_the_capability() {
         None,
         "unconfigured",
     );
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     assert!(
-        pane.runner
-            .state()
-            .capabilities
+        content_lines(&pane)
             .iter()
             .any(|line| line == "Requested page zoom: 90%"),
         "{:?}",
-        pane.runner.state().capabilities
+        content_lines(&pane)
     );
 
     // A retained session answers with the level it settled on, and that
@@ -318,14 +325,13 @@ fn the_requested_page_zoom_is_mirrored_beside_the_capability() {
         None,
         "unconfigured",
     );
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     assert!(
-        pane.runner
-            .state()
-            .capabilities
+        content_lines(&pane)
             .iter()
             .any(|line| line == "Requested page zoom: 90% (applied 90%)"),
         "{:?}",
-        pane.runner.state().capabilities
+        content_lines(&pane)
     );
 }
 #[test]
@@ -343,7 +349,9 @@ fn viewer_controls_write_the_followed_member_instead_of_the_runtime_cursor() {
     )));
     let id = app.active_pane.unwrap();
     let mut pane = InspectorPane::new();
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     pane.sync(&app, id, 400.0, 600.0, None, None, "unconfigured");
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     assert_eq!(pane.runner.state().member, Some(followed));
     let _ = pane.scene(400, 600);
     let (x, y) = pane
@@ -387,6 +395,7 @@ fn viewer_controls_write_the_followed_member_instead_of_the_runtime_cursor() {
             .is_none()
     );
     pane.sync(&app, id, 400.0, 600.0, None, None, "unconfigured");
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     assert_eq!(pane.runner.state().radio.selected, 2);
 }
 
@@ -449,6 +458,7 @@ fn engine_inventory_saved_unknown_is_selected_disabled_and_refuses_click() {
     let member = app.graph_runtimes.focused_member().unwrap();
     app.browser.entry(member).viewer_override = Some("unknown.lane".into());
     let mut pane = InspectorPane::new();
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     pane.sync(
         &app,
         app.default_graph_pane(),
@@ -458,6 +468,7 @@ fn engine_inventory_saved_unknown_is_selected_disabled_and_refuses_click() {
         None,
         "unconfigured",
     );
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     let selected = pane.runner.state().radio.selected;
     assert_ne!(selected, 0);
     let _ = pane.scene(400, 2000);
@@ -508,6 +519,7 @@ fn engine_inventory_human_label_keeps_engine_id_scenario_target() {
     app.update(Action::OpenAddress("https://example.test/".into()));
     let member = app.graph_runtimes.focused_member().unwrap();
     let mut pane = InspectorPane::new();
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     pane.sync(
         &app,
         app.default_graph_pane(),
@@ -517,6 +529,7 @@ fn engine_inventory_human_label_keeps_engine_id_scenario_target() {
         None,
         "unconfigured",
     );
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     let _ = pane.scene(400, 2000);
     let (x, y) = pane
         .selector_point(
@@ -533,19 +546,9 @@ fn engine_inventory_human_label_keeps_engine_id_scenario_target() {
             viewer: Some("genet.reader".into()),
         }]
     );
-    // The first click mutated the retained DOM. Repaint before targeting the
-    // unavailable row so the test follows the current presented geometry.
     let _ = pane.scene(400, 2000);
-    let (x, y) = pane
-        .selector_point(
-            &taproot::Selector::class("radio").with_attr("data-engine-id", "scrying.web"),
-        )
-        .expect("System webview row is unambiguous")
-        .expect("unavailable System webview row remains painted");
-    assert!(
-        pane.click(x, y, 400, 2000).is_empty(),
-        "an unavailable row cannot repeat an earlier unsynced selection"
-    );
+    assert!(pane.selector_point(&taproot::Selector::class("radio").with_attr("data-engine-id","scrying.web")).unwrap().is_none(),
+        "an unavailable engine is hidden unless it is the saved choice");
 }
 
 #[test]
@@ -563,6 +566,7 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
         )));
         let inspector = app.active_pane.unwrap();
         let mut pane = InspectorPane::new();
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
         if reuse_after_on_demand_a {
             app.engine_inventory
                 .iter_mut()
@@ -573,6 +577,7 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
             };
             app.browser.entry(a).viewer_override = Some("scrying.web".into());
             pane.sync(&app, inspector, 256.0, 570.0, None, None, "unconfigured");
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
             let _ = pane.scene(256, 570);
         }
         app.update(Action::OpenAddress(
@@ -597,6 +602,7 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
             }),
         );
         pane.sync(&app, inspector, 251.0, 570.0, None, None, "unconfigured");
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
         assert_eq!(pane.runner.state().member, Some(b));
         let _ = pane.scene(251, 570);
         let selector = taproot::Selector::class("radio")
@@ -666,6 +672,7 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
         let (scroll_x, scroll_y) = pane.scroll.offset();
         pane.scroll_by(-scroll_x, -scroll_y);
         pane.sync(&app, inspector, 251.0, 100.0, None, None, "unconfigured");
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
         let _ = pane.scene(251, 100);
         assert_eq!(pane.selector_point(&selector), Ok(None));
         for _ in 0..16 {
@@ -693,6 +700,7 @@ fn engine_inventory_resync_discards_focus_request_when_rows_change() {
     let mut app = App::test_stub();
     app.update(Action::OpenAddress("https://example.test/".into()));
     let mut pane = InspectorPane::new();
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     pane.sync(
         &app,
         app.default_graph_pane(),
@@ -702,6 +710,7 @@ fn engine_inventory_resync_discards_focus_request_when_rows_change() {
         None,
         "unconfigured",
     );
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     pane.runner
         .update(|state| state.radio.focus_request = Some(state.viewer_options.len() - 1));
     let previous_options = pane.runner.state().viewer_options.clone();
@@ -721,6 +730,7 @@ fn engine_inventory_resync_discards_focus_request_when_rows_change() {
         None,
         "unconfigured",
     );
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     assert_eq!(pane.runner.state().radio.focus_request, None);
     assert_ne!(pane.runner.state().viewer_options, previous_options);
 }
@@ -781,7 +791,9 @@ fn source_binding_disclosure_is_hit_testable_at_narrow_width_and_emits_exact_pin
     app.update(Action::SummonPane(crate::panes::PaneKindId::new(crate::panes::kind::INSPECTOR)));
     let owner = app.frisket.iter_leaves().find(|(_,content,_)| matches!(content, crate::panes::PaneContent::Inspector)).unwrap().0;
     let mut pane = InspectorPane::new();
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     pane.sync(&app, owner, 251.0, 600.0, None, None, "unconfigured");
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     let _ = pane.scene(251,600);
     let (x,y) = pane.selector_point(&taproot::Selector::role("button").containing("Pane source:")).unwrap().unwrap();
     assert!(x >= 0.0 && x < 251.0 && y >= 0.0 && y < 100.0);
@@ -794,5 +806,19 @@ fn source_binding_disclosure_is_hit_testable_at_narrow_width_and_emits_exact_pin
     assert!(matches!(intent.choice, crate::pane_binding::BindingChoice::Pin { member: Some(_), .. }));
     app.update(Action::SetPaneBinding(*intent));
     pane.sync(&app, owner,251.0,600.0,None,None,"unconfigured");
+    pane.runner.update(|state|{state.viewer_expanded=true;state.research_expanded=true;});
     assert_eq!(app.pane_binding_snapshot(owner).unwrap().mode,"Pinned");
+}
+
+#[test]
+fn inspector_starts_with_a_compact_viewer_and_one_capability_table() {
+    let mut app=App::test_stub();app.update(Action::OpenAddress("https://example.test/quiet".into()));
+    let mut pane=InspectorPane::new();pane.sync(&app,app.default_graph_pane(),400.,600.,None,None,"unconfigured");
+    let _=pane.scene(400,600);
+    assert!(!pane.runner.state().viewer_expanded);assert!(!pane.runner.state().research_expanded);
+    assert!(pane.selector_point(&taproot::Selector::role("radio").on_surface("inspector")).unwrap().is_none());
+    let (x,y)=pane.selector_point(&taproot::Selector::role("button").containing("Change viewer").on_surface("inspector")).unwrap().unwrap();
+    pane.click(x,y,400,600);assert!(pane.runner.state().viewer_expanded);
+    let _=pane.scene(400,600);
+    assert!(pane.runner.state().viewer_options.iter().all(|option|option.selectable));
 }

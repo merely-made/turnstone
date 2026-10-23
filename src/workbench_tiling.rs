@@ -188,9 +188,11 @@ pub(crate) fn place_reading_workbench(app: &crate::app::App, pane: crate::panes:
     let scale = app.shell_chrome_config().pane_scale(app, pane);
     for cell in &mut tiling.cells {
         cell.chrome_scale = scale;
-        let open = cell.active_member().is_some_and(|member| app.reading.find.get(&crate::reading_view::ReadTarget { pane, member }).is_some_and(|ui|ui.open));
-        let width = cell.stack_body().w / scale;
-        cell.reading_toolbar_height = (if width >= 460.0 {32.0} else if width >= 180.0 {64.0} else {96.0} + if open {32.0} else {0.0}) * scale;
+        let ui=cell.active_member().and_then(|member|app.reading.find.get(&crate::reading_view::ReadTarget{pane,member}));
+        let width=cell.stack_body().w / scale;
+        let header=if width>=240.0 {32.0} else {64.0};
+        let appearance=if ui.is_some_and(|ui|ui.appearance_open) {if width>=460.0 {32.0} else if width>=180.0 {64.0} else {96.0}} else {0.0};
+        cell.reading_toolbar_height=(header + appearance + if ui.is_some_and(|ui|ui.open) {32.0} else {0.0}) * scale;
     }
     tiling
 }
