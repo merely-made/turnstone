@@ -1,0 +1,34 @@
+{
+  "eidetic": {
+    "head": "dceb5fcd07bfaeffc57142b06f07259eed0e89ef",
+    "status": ""
+  },
+  "esp": {
+    "head": "7021d4c52f96f5c55468fe521a21536d4e7290c1",
+    "status": ""
+  },
+  "knot": {
+    "head": "505c0b76ee7281846b1d56b03c7b55e4815a39d0",
+    "status": ""
+  },
+  "cleromancy": {
+    "head": "a7e3cac60620364e7b049caf5aed6d3cd59d8758",
+    "status": ""
+  },
+  "gemot": {
+    "head": "391c95b1d39ed660043c121928ef59a241bc9ced",
+    "status": ""
+  },
+  "murm": {
+    "head": "b266e38b91d35121040fac84944c6418a7a02bdf",
+    "status": ""
+  },
+  "mere": {
+    "head": "487b6648211800a613db39891bd7691b157b0d7a",
+    "status": ""
+  },
+  "turnstone": {
+    "head": "265694905f9fde6518860b33ea73b6064235598c",
+    "status": ""
+  }
+}

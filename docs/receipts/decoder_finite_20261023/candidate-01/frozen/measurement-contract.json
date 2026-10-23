@@ -1,0 +1,45 @@
+{
+  "baseline_receipt": "/Users/markik/Code/worktrees/turnstone-cross-source-answers-20261022/docs/receipts/requested_facts_20261023",
+  "unchanged_frozen_sha256": {
+    "case-freeze.json": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d",
+    "verify_probe.py": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d",
+    "verify_native.py": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594",
+    "optimized-runtime.toml": "7ed6fb12d461f4b4bcec5bba79f0a23d47b3266118ceedf2e8f641c24ec3bbc8",
+    "cases.json": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "cases": "All four original questions, source cuts and expectations unchanged",
+  "runtime": "Same Qwen2.5-1.5B weights, template, 1024-token cap, 900-second per-case limit, 3GiB host and 4GiB device layer budgets",
+  "gate": "All four complete answers must pass unchanged frozen semantic assertions under declared wire defaults, raw structured-output checks and exact input binding before headed checks",
+  "output_constraint": "ByteLevel token masking with canonical forced syntax spans; every emitted token checkpointed; no repair",
+  "semantic_gate": "Same original verify_answer assertions with declared empty-citations wire default; original frozen checker also retained",
+  "headed_condition": "all four Finished within original deadlines, same session, raw structured shape passes, original semantic assertions pass under declared wire defaults",
+  "change": "Finite constrained-token eligibility and one bounded exact-prefix f32 score recomputation per generation invocation; repeated/persistent invalid scores fail before token choice. No output repair, model/prompt/grammar change, sampling-draw advancement, deadline extension or budget increase.",
+  "prompt_module_sha256_before_measurement": "1ec16cb220461ea71a3edd4e06fd7f2eea23e6ba1965d151bce3bd9b3893be47",
+  "instruction_characters": 1678,
+  "probe_source_sha256": "436a123a09d69263b82bf670d4028f1db00f9882d383a72689b0cbcc41619e13",
+  "unchanged_probe_function_sha256": "3ba8ee4d699a6c90c7f23e1af8ad2f8a91fa670ddca23820db5c1beaafa057ac",
+  "supplier_pins": {
+    "eidetic": "dceb5fcd07bfaeffc57142b06f07259eed0e89ef",
+    "esp": "f92f5c1d90fa873e4b05374d763a29b9c59de556",
+    "knot": "4686132023783fd778b48c9184d3db0f4af936d7",
+    "cleromancy": "a7e3cac60620364e7b049caf5aed6d3cd59d8758",
+    "gemot": "391c95b1d39ed660043c121928ef59a241bc9ced",
+    "murm": "b266e38b91d35121040fac84944c6418a7a02bdf",
+    "mere": "09e135d3de727c9b0ad2bdab2663715d1f6d7017",
+    "turnstone": "66ac331ebe2a543432258139fe8ddb13b9a85ac6"
+  },
+  "policy": "distillery.requested-facts/v5",
+  "prior_diagnostic": "v5 previous full cohort: three decoder failures and one completed reduced-scope pass. Original binary now completes the same cross-source diagnostic with identical retained inputs, establishing intermittency.",
+  "additional_gates": [
+    "independent question-only plan, Unicode ranges and content identities",
+    "exact fixed claim count/order and raw/support fact links",
+    "whole raw JSON and exact candidate links",
+    "exact grammar/prompt/question/context hashes",
+    "negative controls for missing, extra, reordered and tampered facts",
+    "fault-injected checkpoint equality for greedy and seeded sampling",
+    "repeated corrupt row fails before second decision",
+    "score-health counts for every exact frozen prompt; no failed or more than one prefix recovery per invocation"
+  ],
+  "supplier_commit": "09e135d3de727c9b0ad2bdab2663715d1f6d7017",
+  "score_health_verifier_sha256": "6dfbc4ab0dc034e0ee9997aab1b4a42be38ed841e938c461bccfb87023a4550f"
+}

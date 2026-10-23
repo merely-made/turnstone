@@ -1,0 +1,12 @@
+
+running 7 tests
+test a_real_model_cites_exact_retained_versions_and_reopens_its_run ... ignored, requires pinned ESP_SMOLLM2_DIR and a discrete GPU
+test probe_bounded_cross_source_answers ... ignored, requires pinned ESP_SMOLLM2_DIR and CROSS_SOURCE_CASES/OUTPUT
+test serve_trained_model_for_headed_turnstone ... ignored, requires ESP_SMOLLM2_DIR, DJINN_HEADED_DIR and headed Turnstone
+test the_lane_without_a_distillery_lane_is_refused_before_anything_opens ... ok
+test a_resident_answers_an_ask_on_its_route_and_closes_the_lane ... ok
+test a_library_model_answers_through_the_resident_app_door_without_a_trainer ... ok
+test keyed_personal_graph_devices_continue_a_seeded_ask has been running for over 60 seconds
+test keyed_personal_graph_devices_continue_a_seeded_ask ... ok
+
+test result: ok. 4 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 62.20s

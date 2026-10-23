@@ -1,0 +1,44 @@
+{
+  "result": "pass",
+  "cases": {
+    "cross": {
+      "result": "pass",
+      "claims": 3,
+      "whole_raw_json": true,
+      "exact_candidate_links": 3
+    },
+    "missing": {
+      "result": "pass",
+      "claims": 1,
+      "whole_raw_json": true,
+      "exact_candidate_links": 1
+    },
+    "conflict": {
+      "result": "pass",
+      "claims": 1,
+      "whole_raw_json": true,
+      "exact_candidate_links": 1
+    },
+    "reduced": {
+      "result": "pass",
+      "claims": 1,
+      "whole_raw_json": true,
+      "exact_candidate_links": 1
+    }
+  },
+  "negative_controls": {
+    "cross_fence": "rejected",
+    "cross_suffix": "rejected",
+    "cross_extra_field": "rejected",
+    "missing_fence": "rejected",
+    "missing_suffix": "rejected",
+    "missing_extra_field": "rejected",
+    "conflict_fence": "rejected",
+    "conflict_suffix": "rejected",
+    "conflict_extra_field": "rejected",
+    "reduced_fence": "rejected",
+    "reduced_suffix": "rejected",
+    "reduced_extra_field": "rejected"
+  },
+  "boundary": "Raw whole-document syntax and bounded quotation shape; semantic correctness remains the separate frozen rubric."
+}

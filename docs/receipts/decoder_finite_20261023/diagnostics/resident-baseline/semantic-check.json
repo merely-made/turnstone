@@ -1,0 +1,16 @@
+{
+  "claims": 3,
+  "status": [
+    "supported",
+    "supported",
+    "supported"
+  ],
+  "checked_quotes": 3,
+  "sources": [
+    "capture",
+    "knot",
+    "note"
+  ],
+  "semantic_review": "unreviewed",
+  "raw_output": "blake3:608bdbc25485f49ac36ca01c996aa6c49dc67dd448a0c97dcf910a9e00ee544d"
+}

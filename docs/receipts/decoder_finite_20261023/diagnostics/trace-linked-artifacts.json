@@ -1,0 +1,8 @@
+{
+  "esp": "/Users/markik/Code/output/embedding-envelope-20261020/resident-build/debug/deps/libesp-a46f87b6edd2ca9c.rlib",
+  "burn": "/Users/markik/Code/output/embedding-envelope-20261020/resident-build/debug/deps/libburn-9253b0a0656160d7.rlib",
+  "safetensors": "/Users/markik/Code/output/embedding-envelope-20261020/resident-build/debug/deps/libsafetensors-02530967e08a0a6c.rlib",
+  "tokenizers": "/Users/markik/Code/output/embedding-envelope-20261020/resident-build/debug/deps/libtokenizers-36d49347e9aeded0.rlib",
+  "serde_json": "/Users/markik/Code/output/embedding-envelope-20261020/resident-build/debug/deps/libserde_json-4643e9c9343f9c63.rlib",
+  "zeroize": "/Users/markik/Code/output/embedding-envelope-20261020/resident-build/debug/deps/libzeroize-ec607698869c5c0b.rlib"
+}
