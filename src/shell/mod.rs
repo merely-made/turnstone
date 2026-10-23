@@ -33,7 +33,7 @@ mod research_notes;
 #[cfg(all(feature = "scry", windows))]
 mod scry;
 #[cfg(all(feature = "servo", windows))]
-mod servo;
+use crate::servo_host as servo;
 #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
 mod surface_frames;
 mod surface_poll;

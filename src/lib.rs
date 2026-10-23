@@ -100,6 +100,9 @@ mod settings_pane;
 pub mod settings_provider;
 mod share_reader_pane;
 mod share_reader_service;
+#[cfg(feature = "servo")]
+#[path = "shell/servo.rs"]
+pub mod servo_host;
 pub mod shell;
 pub mod shell_services;
 pub mod sky_receipt;
